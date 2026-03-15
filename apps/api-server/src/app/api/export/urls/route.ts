@@ -13,6 +13,11 @@ import { container } from '@/modules/core/container';
 export const dynamic = 'force-dynamic';
 const log = logger.child({ module: 'export-urls' });
 
+function isValidStudentInsightPdfRef(ref: string): boolean {
+  const lower = ref.toLowerCase();
+  return lower.endsWith('.pdf') && (lower.includes('/reports/') || lower.startsWith('reports/'));
+}
+
 async function getHandler(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -51,6 +56,10 @@ async function getHandler(req: NextRequest) {
       const cachedUrl = await redis.get<string>(cacheKey);
       if (typeof cachedUrl === 'string' && cachedUrl.trim() !== '') {
         const { storage } = await import('@/lib/storage');
+        if (format === 'student-insight-pdf' && !isValidStudentInsightPdfRef(cachedUrl)) {
+          await redis.del(cacheKey).catch(() => {});
+          return ApiResponse.success({ url: null, source: 'stale' }, 200);
+        }
         const exists = await storage.exists(cachedUrl);
         if (!exists) {
           // Stale cache pointer (blob deleted). Clear cache and force regeneration path.
@@ -84,6 +93,15 @@ async function getHandler(req: NextRequest) {
 
     if (typeof url === 'string' && url.trim() !== '') {
       const { storage } = await import('@/lib/storage');
+      if (format === 'student-insight-pdf' && !isValidStudentInsightPdfRef(url)) {
+        // Invalid pointer (e.g. JSON saved into student_insight_pdf). Clear it so the next click regenerates.
+        const existingUrls = (exam.exportUrls as Record<string, unknown> | null) ?? {};
+        const nextUrls = { ...existingUrls };
+        delete (nextUrls as Record<string, unknown>).student_insight_pdf;
+        await db.update(exams).set({ exportUrls: nextUrls }).where(eq(exams.id, examId)).catch(() => {});
+        await redis.del(cacheKey).catch(() => {});
+        return ApiResponse.success({ url: null, source: 'stale' }, 200);
+      }
       const exists = await storage.exists(url);
       if (!exists) {
         // Stale DB pointer. Clear the field so future calls regenerate.

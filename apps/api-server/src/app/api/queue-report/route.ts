@@ -1,4 +1,4 @@
-import { db, exams } from "@quiz/db";
+import { db, exams, reports } from "@quiz/db";
 import { METRICS } from "@quiz/observability";
 import { Client } from "@upstash/workflow";
 import { eq } from "drizzle-orm";
@@ -104,6 +104,19 @@ async function postHandler(req: NextRequest) {
         return ApiResponse.success({ status: "ready", attemptId, downloadUrl: existingReport.fileRef });
       }
       logger.warn({ attemptId }, "[QueueReport] Stale report.fileRef detected (missing in storage) - regenerating");
+
+      // Reset the stale "ready" state so /api/report-status can report pending/generating instead of not_found.
+      // Also clear the stale fileRef so future existence checks don't keep failing.
+      await db
+        .update(reports)
+        .set({
+          status: "pending",
+          fileRef: null,
+          errorStage: null,
+          updatedAt: new Date(),
+        })
+        .where(eq(reports.attemptId, attemptId))
+        .catch(() => {});
     }
 
     const examExport = await db.query.exams.findFirst({
@@ -119,6 +132,15 @@ async function postHandler(req: NextRequest) {
         return ApiResponse.success({ status: "ready", attemptId, downloadUrl: existingPdfUrl });
       }
       logger.warn({ attemptId }, "[QueueReport] Stale exams.export_urls.analytics_pdf detected (missing in storage) - regenerating");
+
+      // Clear the stale pointer so UI ticks and status don't keep claiming a missing artifact exists.
+      const nextUrls = { ...((examExport?.exportUrls as Record<string, unknown> | null) ?? {}) };
+      delete (nextUrls as Record<string, unknown>).analytics_pdf;
+      await db
+        .update(exams)
+        .set({ exportUrls: nextUrls })
+        .where(eq(exams.id, attemptId))
+        .catch(() => {});
     }
 
     // 3. Proactive Rate Limit check (3 per min)

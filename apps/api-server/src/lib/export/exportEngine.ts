@@ -55,19 +55,55 @@ export class ExportEngine {
           where: eq(exams.id, examId),
           columns: { exportUrls: true }
         });
+        const exportUrls = (examRow?.exportUrls as Record<string, unknown> | null) ?? null;
         const existingUrl = format === 'json'
-          ? (examRow?.exportUrls as { analytics_json?: string } | null)?.analytics_json
+          ? (exportUrls as { analytics_json?: string } | null)?.analytics_json
           : format === 'csv'
-          ? (examRow?.exportUrls as { analytics_csv?: string } | null)?.analytics_csv
-          : (examRow?.exportUrls as { student_insight_pdf?: string } | null)?.student_insight_pdf;
+          ? (exportUrls as { analytics_csv?: string } | null)?.analytics_csv
+          : (exportUrls as { student_insight_pdf?: string } | null)?.student_insight_pdf;
+
         if (typeof existingUrl === 'string' && existingUrl.trim() !== '') {
-          this.log.info({ examId, userId, format }, 'Export idempotency hit from exams.export_urls');
-          try {
-            await redis.set(cacheKey, existingUrl, { ex: 900 });
-          } catch (error: unknown) {
-            this.log.warn({ err: error, examId, userId }, 'Export cache write failed after idempotency hit');
+          // Guard: student-insight-pdf must be a real PDF report artifact, not a stale JSON export.
+          if (format === 'student-insight-pdf') {
+            const lower = existingUrl.toLowerCase();
+            const looksLikePdf = lower.endsWith('.pdf');
+            const looksLikeReportsPath = lower.includes('/reports/') || lower.startsWith('reports/');
+            if (!looksLikePdf || !looksLikeReportsPath) {
+              this.log.warn({ examId, format, existingUrl }, 'Ignoring invalid student_insight_pdf pointer (expected reports/*.pdf)');
+            } else {
+              const { storage } = await import('@/lib/storage');
+              const exists = await storage.exists(existingUrl);
+              if (!exists) {
+                this.log.warn({ examId, format, existingUrl }, 'Ignoring missing student_insight_pdf artifact in storage');
+              } else {
+                this.log.info({ examId, userId, format }, 'Export idempotency hit from exams.export_urls');
+                try {
+                  await redis.set(cacheKey, existingUrl, { ex: 900 });
+                } catch (error: unknown) {
+                  this.log.warn({ err: error, examId, userId }, 'Export cache write failed after idempotency hit');
+                }
+                return existingUrl;
+              }
+            }
+
+            // Best-effort cleanup of stale/invalid pointers.
+            try {
+              const nextUrls = { ...(exportUrls ?? {}) };
+              delete (nextUrls as Record<string, unknown>).student_insight_pdf;
+              await db.update(exams).set({ exportUrls: nextUrls }).where(eq(exams.id, examId));
+              await redis.del(cacheKey).catch(() => {});
+            } catch {
+              // ignore cleanup errors
+            }
+          } else {
+            this.log.info({ examId, userId, format }, 'Export idempotency hit from exams.export_urls');
+            try {
+              await redis.set(cacheKey, existingUrl, { ex: 900 });
+            } catch (error: unknown) {
+              this.log.warn({ err: error, examId, userId }, 'Export cache write failed after idempotency hit');
+            }
+            return existingUrl;
           }
-          return existingUrl;
         }
       } catch (error: unknown) {
         this.log.warn({ err: error, examId, userId }, 'Export idempotency lookup failed');
