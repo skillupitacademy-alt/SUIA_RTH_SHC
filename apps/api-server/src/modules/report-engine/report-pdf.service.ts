@@ -104,6 +104,36 @@ export class ReportPdfService {
 
     try {
       const page = await browser.newPage();
+
+      // Lightweight diagnostics for "ready signal never appeared" failures.
+      // This is intentionally bounded to avoid log spam in production.
+      const consoleMessages: Array<{ type: string; text: string }> = [];
+      const pageErrors: string[] = [];
+      const requestFailures: Array<{ url: string; resourceType: string; errorText: string }> = [];
+      const responseErrors: Array<{ url: string; status: number }> = [];
+
+      page.on("console", (msg) => {
+        if (consoleMessages.length >= 25) return;
+        consoleMessages.push({ type: msg.type(), text: msg.text() });
+      });
+      page.on("pageerror", (err) => {
+        if (pageErrors.length >= 10) return;
+        pageErrors.push(err instanceof Error ? err.message : String(err));
+      });
+      page.on("requestfailed", (req) => {
+        if (requestFailures.length >= 25) return;
+        requestFailures.push({
+          url: req.url(),
+          resourceType: req.resourceType(),
+          errorText: req.failure()?.errorText ?? "unknown",
+        });
+      });
+      page.on("response", (res) => {
+        const status = res.status();
+        if (status < 400) return;
+        if (responseErrors.length >= 25) return;
+        responseErrors.push({ url: res.url(), status });
+      });
       
       // Keep a consistent rendering baseline (A4 landscape) across reports.
       // Student Insight pages control their own fixed canvas sizing via CSS.
@@ -116,11 +146,19 @@ export class ReportPdfService {
 
       let url = options?.customPath !== undefined && options?.customPath !== null && options?.customPath !== ""
         ? `${webAppUrl}${options.customPath}`
-        : `${webAppUrl}/report/${attemptId}/print?internalId=${nodeId ?? ""}&type=${nodeType ?? ""}`;
+        : `${webAppUrl}/report/print/${attemptId}`;
       
       if (!url.includes('?')) url += '?';
       else url += '&';
-      url += `key=${internalKey}`;
+      // Web report route expects this query param (used to forward x-internal-key on client fetches)
+      url += `internalKey=${encodeURIComponent(internalKey)}`;
+
+      if (nodeId !== undefined && nodeId !== null && nodeId !== "") {
+        url += `&nodeId=${encodeURIComponent(nodeId)}`;
+      }
+      if (nodeType !== undefined && nodeType !== null && nodeType !== "") {
+        url += `&nodeType=${encodeURIComponent(nodeType)}`;
+      }
 
       if (pageOffset !== undefined) {
         url += `&pageOffset=${pageOffset}`;
@@ -173,9 +211,46 @@ export class ReportPdfService {
 
       this.log.info({ attemptId }, "[ReportPdfService] Waiting for Neural Signal [data-pdf-ready=\"true\"]");
       try {
-        await page.waitForSelector('[data-pdf-ready="true"]', { timeout: 30000 });
+        // Wait for either:
+        // - success signal: [data-pdf-ready="true"]
+        // - explicit error signal: #pdf-error-signal OR [data-pdf-ready="false"]
+        await page.waitForFunction(
+          () => {
+            const ok = document.querySelector('[data-pdf-ready="true"]');
+            const err =
+              document.querySelector("#pdf-error-signal") ?? document.querySelector('[data-pdf-ready="false"]');
+            return ok !== null || err !== null;
+          },
+          { timeout: 30000 }
+        );
+
+        const isReady = (await page.$('[data-pdf-ready="true"]')) !== null;
+        if (!isReady) {
+          const errText = await page
+            .evaluate(() => (document.body?.innerText ?? "").slice(0, 500))
+            .catch(() => "");
+          throw new Error(`Render Error Signal Detected: ${errText}`.trim());
+        }
       } catch (selectorErr) {
-        this.log.error({ attemptId, err: selectorErr }, "[ReportPdfService] Signal timeout - possible hydration delay");
+        const debug = await (async () => {
+          const title = await page.title().catch(() => null);
+          const currentUrl = page.url();
+          const html = await page.content().catch(() => null);
+          return {
+            title,
+            currentUrl,
+            htmlSnippet: typeof html === "string" ? html.slice(0, 2000) : null,
+            consoleMessages,
+            pageErrors,
+            requestFailures,
+            responseErrors,
+          };
+        })();
+
+        this.log.error(
+          { attemptId, err: selectorErr, debug },
+          "[ReportPdfService] Signal timeout - page did not reach ready state"
+        );
         throw new Error("Synthesis Timeout: The report engine failed to emit a ready signal within 30s.");
       }
 

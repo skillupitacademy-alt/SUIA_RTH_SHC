@@ -90,7 +90,7 @@ export default function StudentInsightPdfPage() {
       {/* Page 1: Performance Story */}
       <Page>
         <Header data={data} />
-        
+
         <Section title="YOUR BEHAVIOUR TODAY" subheading="Cognitive Pattern Analysis">
           <BehaviourAnalysis data={data} />
         </Section>
@@ -98,7 +98,7 @@ export default function StudentInsightPdfPage() {
         <Section title="YOUR EXACT KNOWLEDGE GAP" subheading="From Broad to Precise">
           <KnowledgeGapAnalysis data={data} />
         </Section>
-        
+
         <Footer data={data} page={1} />
       </Page>
 
@@ -207,7 +207,7 @@ function Header({ data }: { data: StudentInsightData }) {
         <div className="text-xl font-black tracking-[0.4em] text-white mb-1">NEURAL DIAGNOSTICS</div>
         <div className="h-1 w-12 bg-indigo-600" />
       </div>
-      
+
       <div className="flex gap-4">
         <div className="bg-slate-900/80 border border-white/5 px-4 py-2 rounded-xl text-right">
           <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Vector Source</div>
@@ -233,7 +233,7 @@ function Header({ data }: { data: StudentInsightData }) {
           Examined on {data.meta?.lineage?.topic} - {data.meta?.totalQuestions || 10} questions
         </div>
       </div>
-      
+
       <div className="h-60" /> {/* Spacer for the centered block */}
     </div>
   );
@@ -241,7 +241,7 @@ function Header({ data }: { data: StudentInsightData }) {
 
 function BehaviourAnalysis({ data }: { data: StudentInsightData }) {
   const { timePattern, stableCount, logicCount, errorCount } = data.behaviour;
-  
+
   const getPatternText = () => {
     switch (timePattern) {
       case 'fast_and_correct':
@@ -297,12 +297,12 @@ function KnowledgeGapAnalysis({ data }: { data: StudentInsightData }) {
     <div className="grid grid-cols-1 gap-6">
       <GapLevel
         label="LEVEL 1 - SUBJECT VIEW"
-        text={isSingleSubject 
+        text={isSingleSubject
           ? `Only one subject assessed: ${data.meta?.lineage?.subject}. Drilling deeper for precise gap location.`
           : `Your weakest subject is ${l1[0]?.subject} at ${Math.round(l1[0]?.accuracyPct)}% accuracy compared to ${l1[l1.length - 1]?.subject} at ${Math.round(l1[l1.length - 1]?.accuracyPct)}%.`
         }
       />
-      
+
       <GapLevel
         label="LEVEL 2 - TOPIC VIEW"
         text={isSingleTopic
@@ -339,12 +339,12 @@ function SkillProfile({ data }: { data: StudentInsightData }) {
         <div key={idx} className="flex items-center gap-6">
           <div className="w-[200px] text-xs font-black text-slate-400 uppercase tracking-widest truncate">{skill.skillName}</div>
           <div className="flex-1 h-3 bg-slate-900 rounded-full overflow-hidden border border-white/5">
-            <div 
-              className="h-full transition-all duration-1000" 
-              style={{ 
+            <div
+              className="h-full transition-all duration-1000"
+              style={{
                 width: `${skill.accuracyPct}%`,
                 backgroundColor: skill.accuracyPct >= 80 ? '#6366f1' : skill.accuracyPct >= 50 ? '#f59e0b' : '#f43f5e'
-              }} 
+              }}
             />
           </div>
           <div className="w-12 text-right text-xs font-black text-white">{Math.round(skill.accuracyPct)}%</div>
@@ -376,7 +376,7 @@ function SkillsByTopic({ data }: { data: StudentInsightData }) {
                 <td className="py-4 text-xs font-bold text-slate-200">{skill.skillName}</td>
                 <td className="py-4 text-xs font-black text-right text-white">{Math.round(skill.accuracyPct)}%</td>
                 <td className="py-4 text-right">
-                   <div className={`inline-block w-2 h-2 rounded-full ${skill.accuracyPct >= 80 ? 'bg-indigo-500' : skill.accuracyPct >= 50 ? 'bg-amber-500' : 'bg-rose-500'}`} />
+                  <div className={`inline-block w-2 h-2 rounded-full ${skill.accuracyPct >= 80 ? 'bg-indigo-500' : skill.accuracyPct >= 50 ? 'bg-amber-500' : 'bg-rose-500'}`} />
                 </td>
               </tr>
             ))}
@@ -399,7 +399,7 @@ function SkillsByTopic({ data }: { data: StudentInsightData }) {
                   <span>{Math.round(skill.accuracyPct)}%</span>
                 </div>
                 <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                  <div className="h-full" style={{ 
+                  <div className="h-full" style={{
                     width: `${skill.accuracyPct}%`,
                     backgroundColor: skill.accuracyPct >= 80 ? '#6366f1' : skill.accuracyPct >= 50 ? '#f59e0b' : '#f43f5e'
                   }} />
@@ -476,10 +476,10 @@ function PrioritySignals({ data }: { data: StudentInsightData }) {
             <div className={`self-start px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest mb-6 border ${colorClasses}`}>
               {p.severity}
             </div>
-            
+
             <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 line-clamp-1">{p.hierarchy}</div>
             <div className="text-sm font-black text-white italic mb-4 flex-1">{p.recommendation}</div>
-            
+
             <div className="mt-auto pt-6 border-t border-white/5 flex items-center justify-between">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Current</span>
               <span className="text-sm font-black text-white">{Math.round(p.currentValue)}%</span>
@@ -600,9 +600,9 @@ function NextSteps({ data }: { data: StudentInsightData }) {
         <div>
           <div className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2">Encouragement</div>
           <p className="text-sm font-bold text-white leading-relaxed">
-            {score >= 80 
-              ? "Expert-Ready status confirmed. Push into advanced vectors." 
-              : score >= 60 
+            {score >= 80
+              ? "Expert-Ready status confirmed. Push into advanced vectors."
+              : score >= 60
                 ? "Borderline threshold. One focused session closes the gap."
                 : "Foundations need reinforcement. Slow down. Master basics first."
             }
@@ -629,7 +629,7 @@ function Footer({ data, page }: { data: StudentInsightData; page: number }) {
         </div>
       </div>
       <p className="mt-4 text-[7px] text-slate-700 font-medium leading-relaxed max-w-2xl">
-        This report is personalised to your exam session data and performance patterns. Results reflect a single assessment vector. 
+        This report is personalised to your exam session data and performance patterns. Results reflect a single assessment vector.
         Analytical engines are assistive in nature and should be used as part of a comprehensive pedagogical strategy.
       </p>
     </div>
