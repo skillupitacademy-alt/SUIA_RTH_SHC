@@ -112,7 +112,7 @@ export const RadialKPI = React.memo(({ data, suppressAnimation = false }: Radial
                         <div className="mt-2 px-3 py-1 bg-white/5 rounded-full border border-white/10 flex items-center gap-2">
                             <Activity size={10} className="text-indigo-400" />
                             <span className="text-[9px] font-black text-indigo-400 uppercase tracking-widest">
-                                AI Matrix Active
+                                Neural Matrix Active
                             </span>
                         </div>
                     )}

@@ -344,14 +344,21 @@ body {
 
 [data-report-theme="light"] .border-white\/5,
 [data-report-theme="light"] .border-white\/\[0\.03\],
+[data-report-theme="light"] .border-slate-800,
 [data-report-theme="light"] .border-slate-800\/60 {
   border-color: rgba(0, 0, 0, 0.06) !important;
 }
 
 [data-report-theme="light"] .text-slate-300,
 [data-report-theme="light"] .text-slate-400,
-[data-report-theme="light"] .text-slate-500 {
+[data-report-theme="light"] .text-slate-500,
+[data-report-theme="light"] .text-slate-600 {
   color: #475569 !important;
+}
+
+[data-report-theme="light"] .text-indigo-400,
+[data-report-theme="light"] .text-indigo-500 {
+  color: #4f46e5 !important; /* Slightly darker indigo for better contrast on white */
 }
 
 [data-report-theme="light"] .text-white {
