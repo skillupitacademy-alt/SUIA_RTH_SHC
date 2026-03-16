@@ -12,6 +12,8 @@ const typeIcons: Record<string, React.ComponentType<{ size?: number }>> = {
     notes_sent: Mail,
     level_up: Trophy,
     live_session: Sparkles,
+    live_session_alert: Sparkles,
+    help_requested: Sparkles,
     system: BookOpen,
 };
 
@@ -19,6 +21,8 @@ const filterOptions = [
     { label: "All", value: null },
     { label: "Notes", value: "notes_sent" },
     { label: "Levels", value: "level_up" },
+    { label: "Live", value: "live_session_alert" },
+    { label: "Help", value: "help_requested" },
     { label: "System", value: "system" },
 ];
 

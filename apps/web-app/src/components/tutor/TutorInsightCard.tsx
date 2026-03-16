@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Brain, ChevronDown, ChevronUp, ExternalLink, Sparkles, Zap, AlertCircle, FileText, MessagesSquare, CheckCircle2 } from "lucide-react";
+import { Brain, ChevronDown, ChevronUp, ExternalLink, Sparkles, Zap, AlertCircle, FileText, MessagesSquare, CheckCircle2, Bell } from "lucide-react";
 import { apiClient } from "@quiz/api-client";
 import { recordCounter } from "@quiz/observability";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { TopicProgressChart } from "./TopicProgressChart";
 import { NotesViewer } from "./NotesViewer";
@@ -26,12 +27,27 @@ export function TutorInsightCard() {
     const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [notice, setNotice] = useState<string | null>(null);
+    const [unreadCount, setUnreadCount] = useState(0);
     const [expandedTopic, setExpandedTopic] = useState<string | null>(null);
     const [viewingNotes, setViewingNotes] = useState<{ id: string; name: string } | null>(null);
     const [requestingHelp, setRequestingHelp] = useState<string | null>(null);
     const [requestedTopics, setRequestedTopics] = useState<Set<string>>(new Set());
 
     useEffect(() => {
+        let isMounted = true;
+        const fetchUnread = async () => {
+            try {
+                const res = await fetch(`${apiBase}/notifications/unread-count`, { credentials: "include" });
+                if (!res.ok) return;
+                const data = await res.json().catch(() => ({}));
+                if (!isMounted) return;
+                setUnreadCount(typeof data?.unread === "number" ? data.unread : 0);
+            } catch {
+                // Ignore: inbox bell already provides visibility; this is a best-effort hint.
+            }
+        };
+
         async function fetchRecommendations() {
             try {
                 const res = await fetch(`${apiBase}/recommendations/explain`, { credentials: "include" });
@@ -56,7 +72,13 @@ export function TutorInsightCard() {
                 setLoading(false);
             }
         }
+        fetchUnread();
+        const interval = setInterval(fetchUnread, 30000);
         fetchRecommendations();
+        return () => {
+            isMounted = false;
+            clearInterval(interval);
+        };
     }, [apiBase]);
 
     const toggleExpand = (topicId: string) => {
@@ -70,14 +92,25 @@ export function TutorInsightCard() {
         setRequestingHelp(topicId);
         recordCounter('web.ui.tutor.help_request.click', 1, { topicId });
         try {
-            await apiClient.tutor.requestHelp(topicId);
+            const res = await apiClient.tutor.requestHelp(topicId);
             recordCounter('web.ui.tutor.help_request.success', 1, { topicId });
+            if (res?.message) setNotice(res.message);
+            setError(null);
             setRequestedTopics(prev => new Set(prev).add(topicId));
+            // Best-effort: refresh inbox unread badge so "admin reply" is noticeable later.
+            try {
+                const r = await fetch(`${apiBase}/notifications/unread-count`, { credentials: "include" });
+                const d = await r.json().catch(() => ({}));
+                setUnreadCount(typeof d?.unread === "number" ? d.unread : 0);
+            } catch {
+                // noop
+            }
         } catch (err) {
             const msg = err instanceof Error ? err.message : "Unable to request help right now";
             clientLogger.error("Failed to request help", { error: msg });
             recordCounter('web.ui.tutor.help_request.error', 1, { topicId });
             setError(msg);
+            setNotice(null);
         } finally {
             setRequestingHelp(null);
         }
@@ -99,6 +132,11 @@ export function TutorInsightCard() {
 
     return (
         <>
+            {notice && (
+                <div className="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+                    {notice}
+                </div>
+            )}
             {error && (
                 <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
                     {error}
@@ -118,8 +156,24 @@ export function TutorInsightCard() {
                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">AI-Powered Guidance</p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-50 border border-slate-100 text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                        <Zap size={10} className="text-orange-500 fill-orange-500" /> {recommendations.length} Focus Areas
+                    <div className="flex items-center gap-2">
+                        <Link
+                            href="/dashboard/inbox"
+                            className="relative inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-50 border border-slate-100 text-[10px] font-black text-slate-500 uppercase tracking-widest hover:bg-slate-100 transition-colors"
+                            aria-label={`${unreadCount} unread notifications`}
+                            title="Open Secure Inbox"
+                        >
+                            <Bell size={12} className="text-slate-400" />
+                            Inbox
+                            {unreadCount > 0 ? (
+                                <span className="ml-1 inline-flex items-center justify-center rounded-full bg-red-500 text-white text-[9px] font-black px-1.5 py-0.5">
+                                    {unreadCount > 9 ? "9+" : unreadCount}
+                                </span>
+                            ) : null}
+                        </Link>
+                        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-50 border border-slate-100 text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                            <Zap size={10} className="text-orange-500 fill-orange-500" /> {recommendations.length} Focus Areas
+                        </div>
                     </div>
                 </div>
 

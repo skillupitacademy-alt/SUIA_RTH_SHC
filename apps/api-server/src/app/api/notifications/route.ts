@@ -33,7 +33,7 @@ async function getHandler(req: NextRequest) {
     const limit = Number.isFinite(limitParam) && limitParam > 0 ? Math.min(limitParam, 200) : 50;
     const offset = Number.isFinite(offsetParam) && offsetParam >= 0 ? offsetParam : 0;
     const typeParam = req.nextUrl.searchParams.get("type");
-    const allowedTypes = ["notes_sent", "level_up", "live_session", "system"] as const;
+    const allowedTypes = ["notes_sent", "level_up", "live_session", "system", "help_requested", "live_session_alert"] as const;
     type NotificationType = (typeof allowedTypes)[number];
     const type: NotificationType | null =
       typeof typeParam === "string" && allowedTypes.includes(typeParam.trim() as NotificationType)

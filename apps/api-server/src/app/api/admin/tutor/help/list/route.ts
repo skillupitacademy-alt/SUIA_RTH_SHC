@@ -1,4 +1,4 @@
-import { db, tutorHelpRequests } from "@quiz/db";
+import { db, notifications, topics, tutorHelpRequests } from "@quiz/db";
 import { METRICS } from "@quiz/observability";
 import { eq, sql } from "drizzle-orm";
 import { type NextRequest } from "next/server";
@@ -120,10 +120,49 @@ async function patchHandler(req: NextRequest) {
 
     const updateShape: Record<string, unknown> = { status: statusRaw };
     if (note !== undefined) {
-      updateShape.metadata = sql`jsonb_set(COALESCE(metadata, '{}'::jsonb), '{adminNote}', to_jsonb(${note}))`;
+      // Cast is required here; `to_jsonb($1)` can fail with "unknown" param types in prepared statements.
+      updateShape.metadata = sql`jsonb_set(COALESCE(metadata, '{}'::jsonb), '{adminNote}', to_jsonb(${note}::text))`;
     }
 
+    const existing = await db.query.tutorHelpRequests.findFirst({
+      where: eq(tutorHelpRequests.id, requestId),
+      columns: { userId: true, topicId: true, status: true }
+    });
+
     await db.update(tutorHelpRequests).set(updateShape).where(eq(tutorHelpRequests.id, requestId));
+
+    // Send a secure inbox message back to the student so the "admin reply" is visible user-side.
+    if (existing) {
+      const topic = await db.query.topics.findFirst({
+        where: eq(topics.id, existing.topicId),
+        columns: { name: true }
+      });
+      const topicName = typeof topic?.name === "string" && topic.name.trim().length > 0 ? topic.name.trim() : "your topic";
+
+      const title =
+        statusRaw === "scheduled" ? "Tutor Scheduled" :
+          statusRaw === "resolved" ? "Tutor Resolved" :
+            statusRaw === "cancelled" ? "Tutor Update" :
+              "Tutor Update";
+
+      const message =
+        typeof note === "string" && note.trim().length > 0
+          ? note.trim()
+          : statusRaw === "scheduled"
+            ? `Your live help request for ${topicName} is scheduled. Please check your inbox for details.`
+            : statusRaw === "resolved"
+              ? `Your live help request for ${topicName} has been resolved. Please check your inbox for details.`
+              : `Your live help request for ${topicName} has been updated.`;
+
+      await db.insert(notifications).values({
+        userId: existing.userId,
+        type: "live_session_alert",
+        title,
+        message,
+        metadata: { requestId, topicId: existing.topicId, status: statusRaw },
+        actionUrl: null,
+      });
+    }
 
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.tutor.help.update.success', 1, { status: statusRaw });

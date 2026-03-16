@@ -58,7 +58,7 @@ async function postHandler(req: NextRequest) {
 
     if (recentRequest !== null && recentRequest !== undefined) {
       if (recentRequest.status === "pending") {
-        return ApiResponse.success({ message: "Help request already pending for this topic" });
+        return ApiResponse.success({ success: true, message: "Help request already pending for this topic" });
       } else {
         return ApiResponse.error(new Error(`You can only request live help once every ${HELP_REQUEST_COOLDOWN_HOURS} hours per topic.`), 429);
       }

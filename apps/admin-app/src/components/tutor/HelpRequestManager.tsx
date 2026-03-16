@@ -32,6 +32,14 @@ export function HelpRequestManager() {
     const promptId = activePrompt?.id ?? "";
     const promptStatus = activePrompt?.status ?? "pending";
 
+    const getCsrfToken = () => {
+        if (typeof document === "undefined") return "";
+        return document.cookie
+            .split("; ")
+            .find(row => row.startsWith("csrfToken="))
+            ?.split("=")[1] ?? "";
+    };
+
     const fetchRequests = useCallback(async () => {
         setLoading(true);
         setError(null);
@@ -55,17 +63,20 @@ export function HelpRequestManager() {
         setUpdating(requestId);
         try {
             apiClient.client.setPortalIdentity("admin");
+            const csrfToken = getCsrfToken();
             await apiClient.client.patch<{ success: boolean }, { requestId: string; status: string; note?: string }>(
                 "/admin/tutor/help/list",
-                { requestId, status: nextStatus, note }
+                { requestId, status: nextStatus, note },
+                { headers: csrfToken ? { "x-csrf-token": csrfToken } : undefined }
             );
             setRequests((prev) => prev.filter((r) => r.id !== requestId));
             setActivePrompt(null);
             setAdminNote("");
             setError(null);
         } catch (err) {
-            clientLogger.error("Failed to update request status", { error: err instanceof Error ? err.message : "unknown" });
-            setError("Failed to update request status. Please retry.");
+            const msg = err instanceof Error ? err.message : "unknown";
+            clientLogger.error("Failed to update request status", { error: msg });
+            setError(msg);
         } finally {
             setUpdating(null);
         }

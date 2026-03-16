@@ -15,6 +15,18 @@ export class TimeoutError extends Error {
   }
 }
 
+class RetryableStatusError extends Error {
+  status: number;
+  retryAfterMs?: number;
+
+  constructor(status: number, message: string, retryAfterMs?: number) {
+    super(message);
+    this.name = 'RetryableStatusError';
+    this.status = status;
+    this.retryAfterMs = retryAfterMs;
+  }
+}
+
 export interface RetryOptions {
   maxRetries?: number;
   delay?: number;
@@ -76,11 +88,14 @@ export class FetchClient {
       } catch (err: unknown) {
         attempt++;
         
-        const isRetryableError = err instanceof TimeoutError || (err instanceof Error && err.message === 'Network error');
+        const isRetryableError =
+          err instanceof TimeoutError ||
+          err instanceof RetryableStatusError ||
+          (err instanceof Error && err.message === 'Network error');
         const canRetry = attempt <= retryOptions.maxRetries && 
                          (options.method === undefined || IDEMPOTENT_METHODS.includes(options.method));
 
-        if (!canRetry && !isRetryableError) throw err;
+        if (!canRetry || !isRetryableError) throw err;
         
         // Final attempt failed
         if (attempt > retryOptions.maxRetries) throw err;
@@ -88,7 +103,8 @@ export class FetchClient {
         // Calculate backoff
         const delay = retryOptions.delay * Math.pow(retryOptions.backoff, attempt - 1);
         const jitter = retryOptions.jitter ? Math.random() * 0.3 * delay : 0;
-        const totalDelay = delay + jitter;
+        const retryAfterMs = err instanceof RetryableStatusError ? err.retryAfterMs : undefined;
+        const totalDelay = (retryAfterMs ?? delay) + jitter;
 
         await new Promise(resolve => setTimeout(resolve, totalDelay));
       }
@@ -179,19 +195,22 @@ export class FetchClient {
         if (rid) sessionStorage.setItem('last_request_id', rid);
       }
 
-      // Check for retryable status
+      const errorBody = await response.json().catch(() => ({ message: 'Unknown error' }));
+      const errorMessage = errorBody.message || 
+                          errorBody.error || 
+                          errorBody._error || 
+                          (errorBody.issues && errorBody.issues.length > 0 ? errorBody.issues[0].message : null) || 
+                          `API Error: ${response.status}`;
+
+      // Retry only for safe/idempotent requests, but keep the backend message.
       if (RETRYABLE_STATUSES.includes(response.status) && !options._isRetry) {
-        // Handle 429 Retry-After
-        if (response.status === 429) {
-          const retryAfter = response.headers.get('Retry-After');
-          if (retryAfter) {
-            const delay = parseInt(retryAfter, 10) * 1000;
-            if (!isNaN(delay)) {
-              await new Promise(resolve => setTimeout(resolve, delay));
-            }
-          }
+        const method = (options.method || 'GET').toUpperCase();
+        const canRetryMethod = IDEMPOTENT_METHODS.includes(method);
+        if (canRetryMethod) {
+          const retryAfter = response.status === 429 ? response.headers.get('Retry-After') : null;
+          const retryAfterMs = retryAfter ? parseInt(retryAfter, 10) * 1000 : undefined;
+          throw new RetryableStatusError(response.status, errorMessage, retryAfterMs);
         }
-        throw new Error(`Retryable status: ${response.status}`);
       }
 
       // 401/403 Auto-Refresh
@@ -226,13 +245,6 @@ export class FetchClient {
           }
         }
       }
-      
-      const errorBody = await response.json().catch(() => ({ message: 'Unknown error' }));
-      const errorMessage = errorBody.message || 
-                          errorBody.error || 
-                          errorBody._error || 
-                          (errorBody.issues && errorBody.issues.length > 0 ? errorBody.issues[0].message : null) || 
-                          `API Error: ${response.status}`;
       throw new Error(errorMessage);
     }
 
