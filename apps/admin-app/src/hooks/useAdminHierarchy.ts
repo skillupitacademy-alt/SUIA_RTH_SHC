@@ -16,7 +16,7 @@ export function useDomains() {
         setLoading(true);
         setError(null);
         try {
-            const res = await apiClient.admin.getDomains('1', 100);
+            const res = await apiClient.admin.getDomains(null, 100);
             const domains: Domain[] = Array.isArray(res.data)
                 ? res.data.map((d) => ({
                     id: String(d.id),
@@ -90,7 +90,7 @@ export function useAllSkills() {
         setLoading(true);
         setError(null);
         try {
-            const res = await apiClient.admin.getSkills('1', 2000);
+            const res = await apiClient.admin.getSkills(null, 2000);
             setData(res.data as Skill[]);
         } catch (e) {
             clientLogger.error('Fetch skills failed', { error: e instanceof Error ? e.message : 'unknown' });
@@ -114,7 +114,7 @@ export function useSubjects(domainId?: string) {
         setLoading(true);
         setError(null);
         try {
-            const res = await apiClient.admin.getSubjects('1', 200, domainId);
+            const res = await apiClient.admin.getSubjects(null, 200, domainId);
             const subjects: Subject[] = Array.isArray(res.data)
                 ? res.data.map((s) => ({
                     id: String(s.id),
@@ -168,7 +168,7 @@ export function useTopics(subjectId?: string) {
         setLoading(true);
         setError(null);
         try {
-            const res = await apiClient.admin.getTopics('1', 500, subjectId);
+            const res = await apiClient.admin.getTopics(null, 500, subjectId);
             const topics: Topic[] = Array.isArray(res.data)
                 ? res.data.map((t) => ({
                     id: String(t.id),
@@ -223,7 +223,7 @@ export function useSubtopics(topicId?: string) {
         setLoading(true);
         setError(null);
         try {
-            const res = await apiClient.admin.getSubtopics('1', 1000, topicId);
+            const res = await apiClient.admin.getSubtopics(null, 1000, topicId);
             setData(res.data as Subtopic[]);
         } catch (e) {
             clientLogger.error('Fetch subtopics failed', { error: e instanceof Error ? e.message : 'unknown' });

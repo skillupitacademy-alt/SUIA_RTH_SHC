@@ -26,6 +26,17 @@ export class DrizzleSkillRepository extends BaseRepository<typeof skills.$inferS
     }
 
     const cursorConditions: SQL[] = [];
+    const extractNameCursor = (value: string | null): string | null => {
+      if (value === null || value === '') return null;
+      try {
+        const decoded = decodePageCursor(value);
+        return decoded.lastSortValue;
+      } catch {
+        const [cursorDate] = value.split('|');
+        if (Number.isNaN(new Date(cursorDate).getTime())) return value;
+        return null;
+      }
+    };
     if (cursor !== null && cursor !== '') {
       try {
         const { lastSortValue, lastId } = decodePageCursor(cursor);
@@ -56,31 +67,67 @@ export class DrizzleSkillRepository extends BaseRepository<typeof skills.$inferS
     const allConditions = [...baseConditions, ...cursorConditions];
     const whereClause = allConditions.length > 0 ? and(...allConditions) : undefined;
 
-    const dataRaw = await this.dbInstance.query.skills.findMany({
-      where: whereClause,
-      limit: limit + 1,
-      orderBy: [desc(skills.createdAt), desc(skills.id)]
-    });
+    try {
+      const dataRaw = await this.dbInstance.query.skills.findMany({
+        where: whereClause,
+        limit: limit + 1,
+        orderBy: [desc(skills.createdAt), desc(skills.id)]
+      });
 
-    const [{ count: totalCount }] = await this.dbInstance
-      .select({ count: sql<number>`count(*)` })
-      .from(skills)
-      .where(baseConditions.length > 0 ? and(...baseConditions) : sql`true`);
+      const [{ count: totalCount }] = await this.dbInstance
+        .select({ count: sql<number>`count(*)` })
+        .from(skills)
+        .where(baseConditions.length > 0 ? and(...baseConditions) : sql`true`);
 
-    const total = Number(totalCount ?? 0);
-    const paginated = buildPaginatedResponse(
-      dataRaw,
-      limit,
-      item => item.createdAt.toISOString(),
-      total
-    );
+      const total = Number(totalCount ?? 0);
+      const paginated = buildPaginatedResponse(
+        dataRaw,
+        limit,
+        item => item.createdAt.toISOString(),
+        total
+      );
 
-    return {
-      data: paginated.data,
-      total: paginated.total ?? 0,
-      nextCursor: paginated.nextCursor,
-      limit
-    };
+      return {
+        data: paginated.data,
+        total: paginated.total ?? 0,
+        nextCursor: paginated.nextCursor,
+        limit
+      };
+    } catch {
+      // Backward-compatibility fallback for deployments where skills.created_at is not migrated yet.
+      const legacyCursor = extractNameCursor(cursor);
+      const legacyConditions = [...baseConditions];
+      if (legacyCursor !== null && legacyCursor !== '') {
+        legacyConditions.push(lt(skills.name, legacyCursor));
+      }
+
+      const legacyWhere = legacyConditions.length > 0 ? and(...legacyConditions) : undefined;
+      const dataRaw = await this.dbInstance.query.skills.findMany({
+        where: legacyWhere,
+        limit: limit + 1,
+        orderBy: [desc(skills.name), desc(skills.id)]
+      });
+
+      const [{ count: totalCount }] = await this.dbInstance
+        .select({ count: sql<number>`count(*)` })
+        .from(skills)
+        .where(baseConditions.length > 0 ? and(...baseConditions) : sql`true`);
+
+      const total = Number(totalCount ?? 0);
+      const paginated = buildPaginatedResponse(
+        dataRaw,
+        limit,
+        item => item.name,
+        total
+      );
+
+      return {
+        data: paginated.data,
+        total: paginated.total ?? 0,
+        nextCursor: paginated.nextCursor,
+        limit
+      };
+    }
   }
 
   async create(data: typeof skills.$inferInsert) {
