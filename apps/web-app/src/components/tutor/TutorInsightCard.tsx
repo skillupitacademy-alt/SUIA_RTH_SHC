@@ -217,34 +217,6 @@ export function TutorInsightCard() {
 
                                     <TopicProgressChart topicId={item.topicId} />
 
-                                    {/* Live Help CTA for Revise level */}
-                                    {item.recommendationLevel === "revise" && (
-                                        <div className="mt-6 p-5 rounded-2xl bg-slate-900 text-white flex flex-col md:flex-row items-center justify-between gap-4 border border-slate-800 shadow-xl shadow-slate-900/20 group/cta overflow-hidden relative">
-                                            <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full blur-3xl -mr-16 -mt-16" />
-                                            <div className="flex items-center gap-4 relative z-10">
-                                                <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-orange-400 group-hover/cta:scale-110 transition-transform">
-                                                    <MessagesSquare size={24} />
-                                                </div>
-                                                <div>
-                                                    <p className="text-sm font-black uppercase tracking-tight">Need 1-on-1 Guidance?</p>
-                                                    <p className="text-[10px] font-medium text-slate-400">Request a live review session with a subject expert.</p>
-                                                </div>
-                                            </div>
-                                            {requestedTopics.has(item.topicId) ? (
-                                                <div className="flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-black uppercase tracking-widest text-[10px]">
-                                                    <CheckCircle2 size={14} /> Request Sent
-                                                </div>
-                                            ) : (
-                                                <button
-                                                    onClick={() => handleRequestHelp(item.topicId)}
-                                                    disabled={requestingHelp === item.topicId}
-                                                    className="w-full md:w-auto px-6 py-3 rounded-xl bg-orange-500 text-white font-black uppercase tracking-widest text-[10px] hover:bg-orange-600 transition-all hover:shadow-lg hover:shadow-orange-500/30 disabled:opacity-50 relative z-10"
-                                                >
-                                                    {requestingHelp === item.topicId ? "Processing..." : "Request Live Help"}
-                                                </button>
-                                            )}
-                                        </div>
-                                    )}
                                 </div>
                             )}
 
@@ -259,6 +231,33 @@ export function TutorInsightCard() {
                                     />
                                 </div>
                                 <span className="text-[10px] font-black text-slate-500">{item.accuracy}%</span>
+                            </div>
+
+                            {/* Live Help CTA for all recommendation levels */}
+                            <div className="mt-5 p-5 rounded-2xl bg-slate-900 text-white flex flex-col md:flex-row items-center justify-between gap-4 border border-slate-800 shadow-xl shadow-slate-900/20 group/cta overflow-hidden relative">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full blur-3xl -mr-16 -mt-16" />
+                                <div className="flex items-center gap-4 relative z-10">
+                                    <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-orange-400 group-hover/cta:scale-110 transition-transform">
+                                        <MessagesSquare size={24} />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-black uppercase tracking-tight">Need 1-on-1 Guidance?</p>
+                                        <p className="text-[10px] font-medium text-slate-400">Request a live review session with a subject expert.</p>
+                                    </div>
+                                </div>
+                                {requestedTopics.has(item.topicId) ? (
+                                    <div className="flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-black uppercase tracking-widest text-[10px]">
+                                        <CheckCircle2 size={14} /> Request Sent
+                                    </div>
+                                ) : (
+                                    <button
+                                        onClick={() => handleRequestHelp(item.topicId)}
+                                        disabled={requestingHelp === item.topicId}
+                                        className="w-full md:w-auto px-6 py-3 rounded-xl bg-orange-500 text-white font-black uppercase tracking-widest text-[10px] hover:bg-orange-600 transition-all hover:shadow-lg hover:shadow-orange-500/30 disabled:opacity-50 relative z-10"
+                                    >
+                                        {requestingHelp === item.topicId ? "Processing..." : "Request Live Help"}
+                                    </button>
+                                )}
                             </div>
                         </div>
                     ))}
