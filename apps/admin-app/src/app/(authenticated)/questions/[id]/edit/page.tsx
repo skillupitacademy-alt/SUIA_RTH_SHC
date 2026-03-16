@@ -33,7 +33,7 @@ interface Question {
         option_text?: string;
         isCorrect?: boolean;
         is_correct?: boolean;
-    }>;
+    } | string> | Record<string, string>;
     explanation?: string;
     difficulty?: string;
     metadata?: {
@@ -229,11 +229,29 @@ export default function EditQuestionPage() {
                                     text: (question?.questionText != null && question.questionText !== '') ? question.questionText : (question?.question_text ?? ''),
                                     type: (question?.type === 'mcq' || question?.type === 'single') ? 'single' : 'multiple',
                                     options: (() => {
-                                        const mapped = question?.options?.map((o) => ({
-                                            id: o.id,
-                                            text: (o.text != null && o.text !== '') ? o.text : ((o.optionText != null && o.optionText !== '') ? o.optionText : (o.option_text ?? '')),
-                                            isCorrect: (o.isCorrect === true || o.is_correct === true)
-                                        })) ?? [];
+                                        const raw = question?.options;
+                                        if (raw == null) return undefined;
+
+                                        const asArray = Array.isArray(raw)
+                                            ? raw
+                                            : Object.values(raw).filter((v): v is string => typeof v === 'string');
+
+                                        const mapped = asArray.map((o, idx) => {
+                                            if (typeof o === 'string') {
+                                                return {
+                                                    id: `opt-${idx + 1}`,
+                                                    text: o,
+                                                    isCorrect: false
+                                                };
+                                            }
+
+                                            return {
+                                                id: (o.id != null && o.id !== '') ? o.id : `opt-${idx + 1}`,
+                                                text: (o.text != null && o.text !== '') ? o.text : ((o.optionText != null && o.optionText !== '') ? o.optionText : (o.option_text ?? '')),
+                                                isCorrect: (o.isCorrect === true || o.is_correct === true)
+                                            };
+                                        });
+
                                         return mapped.length > 0 ? mapped : undefined;
                                     })(),
                                     explanation: question?.explanation ?? '',
