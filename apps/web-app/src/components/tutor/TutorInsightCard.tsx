@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Brain, ChevronDown, ChevronUp, ExternalLink, Sparkles, Zap, AlertCircle, FileText, MessagesSquare, CheckCircle2 } from "lucide-react";
+import { apiClient } from "@quiz/api-client";
 import { recordCounter } from "@quiz/observability";
 import { cn } from "@/lib/utils";
 import { TopicProgressChart } from "./TopicProgressChart";
@@ -69,16 +70,7 @@ export function TutorInsightCard() {
         setRequestingHelp(topicId);
         recordCounter('web.ui.tutor.help_request.click', 1, { topicId });
         try {
-            const res = await fetch(`${apiBase}/tutor/help/request`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ topicId }),
-                credentials: "include",
-            });
-            if (!res.ok) {
-                const data = await res.json().catch(() => ({}));
-                throw new Error(data.error ?? `Help request failed (${res.status})`);
-            }
+            await apiClient.tutor.requestHelp(topicId);
             recordCounter('web.ui.tutor.help_request.success', 1, { topicId });
             setRequestedTopics(prev => new Set(prev).add(topicId));
         } catch (err) {
