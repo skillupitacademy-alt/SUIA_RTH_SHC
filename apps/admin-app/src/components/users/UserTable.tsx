@@ -14,6 +14,7 @@ import { clientLogger } from '@/utils/clientLogger';
 interface UserData {
     id: string;
     email: string;
+    name?: string;
     emailVerified?: boolean;
     isBlocked?: boolean;
     lastActiveAt?: string;
@@ -278,7 +279,7 @@ export function UserTable() {
                                                 </div>
                                                 <div>
                                                     <div className="flex items-center gap-2">
-                                                        <p className="font-bold text-[#1A1A1A]">{(user.profile?.name != null && user.profile.name !== '') ? user.profile.name : 'Unknown Agent'}</p>
+                                                        <p className="font-bold text-[#1A1A1A]">{(user.name != null && user.name !== '') ? user.name : (user.profile?.name != null && user.profile.name !== '') ? user.profile.name : 'Unknown Agent'}</p>
                                                         {user.emailVerified === true ? <div className="p-0.5 rounded-full bg-green-500 text-white" title="Identity Verified">
                                                             <CheckCircle size={10} />
                                                         </div> : null}
