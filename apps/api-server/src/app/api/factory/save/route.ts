@@ -25,7 +25,7 @@ const generatedQuestionSchema = z.object({
   correctAnswer: z.string().min(1),
   explanation: z.string().min(1),
   difficulty: z.enum(['simple', 'intermediate', 'expert']),
-  depthLevel: z.number().int().min(1).max(5),
+  depthLevel: z.number().int().min(1).max(10),
   mappingType: z.enum(['conceptual', 'technical', 'practical']),
   skillNames: z.array(z.string()).optional(),
 });
@@ -113,6 +113,10 @@ async function handler(req: NextRequest) {
                     mappingType: q.mappingType as MappingType,
                     explanation: q.explanation,
                     codeSnippet: (q.codeSnippet !== undefined && q.codeSnippet !== null && q.codeSnippet !== '') ? q.codeSnippet : null,
+                    metadata: {
+                        depthLevel: q.depthLevel,
+                        source: 'factory',
+                    },
                     status: "active",
                 })
                 .returning({ id: questions.id });

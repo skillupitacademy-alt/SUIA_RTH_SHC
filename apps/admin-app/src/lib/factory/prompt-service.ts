@@ -44,7 +44,7 @@ You MUST generate the questions with this exact difficulty breakdown:
 For each question, you must calculate and include:
 1. 'depthLevel' (Integer 1-10): Rate the complexity (1=Syntax, 5=Pattern, 10=Architecture).
 2. 'mappingType': Label as 'conceptual' (Theory), 'technical' (Syntax), or 'practical' (Real-world).
-3. 'skillNames': Select the most relevant technical terms from the provided ### OFFICIAL TAXONOMY list. You may only extract from source code if the taxonomy is empty or if Strict Mode is OFF.
+3. 'skillNames': Select the most relevant terms from the provided OFFICIAL TAXONOMY list. If strict mode is ON and taxonomy is available, do not create new skill names.
 
 ---
 
@@ -52,8 +52,8 @@ For each question, you must calculate and include:
 You must follow these syntax rules EXACTLY to ensure the output is machine-readable:
 1. **NO MARKDOWN**: Do not wrap output in markdown code blocks (\`\`\`json). Return raw JSON only.
 2. **STRICT ESCAPING**: All internal double quotes inside strings (especially in "codeSnippet" and "explanation") MUST be escaped with a backslash.
-   - CORRECT: 'var x = "hello";'
-   - INCORRECT: 'var x = "hello";' (missing escaping inside JSON string)
+   - CORRECT JSON VALUE: "var x = \\u0022hello\\u0022;\\nconsole.log(x);"
+   - INCORRECT JSON VALUE: "var x = "hello";\nconsole.log(x);"
 3. **SINGLE LINE STRINGS**: All values must be single-line strings. Use literal \\n for newlines. Do not use multi-line strings.
 4. **NO TRAILING COMMAS**: Verify that no trailing commas exist after the last item in arrays or objects.
 
@@ -82,6 +82,24 @@ You must return ONLY a raw JSON object matching this schema:
 
 ### SOURCE MATERIAL (THE TRUTH)
 Use ONLY the following content to generate the questions. Do not hallucinate facts outside this scope.
+
+The provided code and concepts represent the authoritative knowledge boundary for question generation.
+
+You may generate questions using any permutation, combination, or variation of the concepts contained in this material, including combining multiple concepts into a single question.
+
+Allowed transformations include:
+
+Rearranging code snippets.
+
+Creating logical variations of the given examples.
+
+Embedding the code into conditional or logical scenarios.
+
+Combine multiple concepts into a single question.
+
+Create scenario-based or logic-based questions using these concepts.
+
+Rearrange or slightly modify code examples to test understanding.
 
 ${blueprint.sourceCode}
 `.trim();

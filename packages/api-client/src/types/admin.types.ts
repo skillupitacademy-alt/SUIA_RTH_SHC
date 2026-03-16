@@ -124,7 +124,7 @@ export interface AdminLiveSession {
 }
 
 export interface DuplicateCheckResponse {
-  details: Array<{ id?: string; questionText: string }>;
+  details: Array<{ index: number; originalId: string; isDuplicate: true }>;
   foundCount: number;
 }
 

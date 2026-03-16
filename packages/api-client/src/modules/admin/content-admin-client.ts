@@ -37,8 +37,20 @@ type SkillPayload = Pick<Skill, 'name' | 'description' | 'category'> & {
   topicId?: string;
 };
 type QuestionPayload = Omit<QuestionSummary, 'id'> & Record<string, unknown>;
+type FactoryGeneratedQuestionPayload = {
+  id?: string;
+  questionText: string;
+  codeSnippet?: string;
+  options: string[];
+  correctAnswer: string;
+  explanation: string;
+  difficulty: 'simple' | 'intermediate' | 'expert';
+  depthLevel: number;
+  mappingType: 'conceptual' | 'technical' | 'practical';
+  skillNames?: string[];
+};
 type FactoryBatchPayload = {
-  questions: QuestionSummary[];
+  questions: FactoryGeneratedQuestionPayload[];
   topicId: string;
   subtopicId?: string;
 };

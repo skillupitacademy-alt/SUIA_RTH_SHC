@@ -45,7 +45,7 @@ async function getHandler(req: NextRequest) {
         thr.metadata
       FROM tutor_help_requests thr
       JOIN users u ON u.id = thr.user_id
-      LEFT JOIN profiles p ON p.user_id = u.id
+      LEFT JOIN user_profiles p ON p.user_id = u.id
       JOIN topics t ON t.id = thr.topic_id
       WHERE thr.status = ${status}
       ORDER BY 

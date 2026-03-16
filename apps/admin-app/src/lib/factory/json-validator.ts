@@ -164,8 +164,26 @@ export const JsonValidator = {
                 if (itemObj.questionText == null || itemObj.questionText === '') errors.push(`Q${idx}: Missing questionText`);
                 if (!Array.isArray(itemObj.options) || itemObj.options.length < 2) errors.push(`Q${idx}: Options must be an array of at least 2 items`);
                 if (itemObj.correctAnswer == null || itemObj.correctAnswer === '') errors.push(`Q${idx}: Missing correctAnswer`);
+                if (itemObj.explanation == null || itemObj.explanation === '') errors.push(`Q${idx}: Missing explanation`);
                 if ((itemObj.correctAnswer != null && itemObj.correctAnswer !== '') && (Array.isArray(itemObj.options) && (itemObj.options as unknown[]).includes(itemObj.correctAnswer) === false)) {
                     errors.push(`Q${idx}: Correct answer "${itemObj.correctAnswer as string}" not found in options`);
+                }
+
+                const rawDepth = typeof itemObj.depthLevel === 'number'
+                    ? itemObj.depthLevel
+                    : (typeof itemObj.depthLevel === 'string' ? parseInt(itemObj.depthLevel, 10) : NaN);
+                if (!Number.isInteger(rawDepth) || rawDepth < 1 || rawDepth > 10) {
+                    errors.push(`Q${idx}: depthLevel must be an integer between 1 and 10`);
+                }
+
+                const allowedDifficulty = ['simple', 'intermediate', 'expert'];
+                if (itemObj.difficulty != null && !allowedDifficulty.includes(String(itemObj.difficulty))) {
+                    errors.push(`Q${idx}: difficulty must be simple, intermediate, or expert`);
+                }
+
+                const allowedMapping = ['conceptual', 'technical', 'practical'];
+                if (itemObj.mappingType != null && !allowedMapping.includes(String(itemObj.mappingType))) {
+                    errors.push(`Q${idx}: mappingType must be conceptual, technical, or practical`);
                 }
 
                 if (errors.length > 0) {

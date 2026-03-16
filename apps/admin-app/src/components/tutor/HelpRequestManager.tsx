@@ -1,5 +1,6 @@
 'use client';
 
+import { apiClient } from "@quiz/api-client";
 import { formatDistanceToNow } from "date-fns";
 import { BookOpen, Calendar, CheckCircle2, Clock, MessageSquare, User, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
@@ -35,12 +36,8 @@ export function HelpRequestManager() {
         setLoading(true);
         setError(null);
         try {
-            const res = await fetch(`/api/admin/tutor/help/list?status=${status}`, { credentials: "include" });
-            if (!res.ok) {
-                const body = await res.text();
-                throw new Error(`Fetch failed (${res.status}) ${body}`);
-            }
-            const data = await res.json();
+            apiClient.client.setPortalIdentity("admin");
+            const data = await apiClient.client.get<{ requests: HelpRequest[] }>(`/admin/tutor/help/list?status=${status}`);
             setRequests(data.requests);
         } catch (err) {
             clientLogger.error("Failed to fetch help requests", { error: err instanceof Error ? err.message : "unknown" });
@@ -57,17 +54,12 @@ export function HelpRequestManager() {
     const updateStatus = async (requestId: string, nextStatus: string, note?: string) => {
         setUpdating(requestId);
         try {
-            const res = await fetch('/api/admin/tutor/help/list', {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ requestId, status: nextStatus, note }),
-                credentials: "include",
-            });
-            if (!res.ok) {
-                const body = await res.text();
-                throw new Error(`Update failed (${res.status}) ${body}`);
-            }
-            setRequests(requests.filter(r => r.id !== requestId));
+            apiClient.client.setPortalIdentity("admin");
+            await apiClient.client.patch<{ success: boolean }, { requestId: string; status: string; note?: string }>(
+                "/admin/tutor/help/list",
+                { requestId, status: nextStatus, note }
+            );
+            setRequests((prev) => prev.filter((r) => r.id !== requestId));
             setActivePrompt(null);
             setAdminNote("");
             setError(null);

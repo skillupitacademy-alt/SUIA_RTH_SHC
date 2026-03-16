@@ -99,6 +99,26 @@ export function ReviewConsole() {
     const [duplicateMap, setDuplicateMap] = React.useState<Map<number, string>>(new Map()); // Index -> Original ID
     const { blueprint } = useFactory();
 
+    const validateBeforeCommit = () => {
+        const errors: string[] = [];
+
+        stagedQuestions.forEach((q, idx) => {
+            const row = idx + 1;
+            if (q.questionText == null || q.questionText.trim() === '') errors.push(`Q${row}: Missing question text`);
+            if (!Array.isArray(q.options) || q.options.length < 2) errors.push(`Q${row}: Minimum 2 options required`);
+            if (q.correctAnswer == null || q.correctAnswer.trim() === '') errors.push(`Q${row}: Missing correct answer`);
+            if (Array.isArray(q.options) && (q.correctAnswer != null && q.correctAnswer !== '') && !q.options.includes(q.correctAnswer)) {
+                errors.push(`Q${row}: Correct answer must match one option exactly`);
+            }
+            if (q.explanation == null || q.explanation.trim() === '') errors.push(`Q${row}: Missing explanation`);
+            if (!Number.isInteger(q.depthLevel) || q.depthLevel < 1 || q.depthLevel > 10) {
+                errors.push(`Q${row}: depthLevel must be an integer between 1 and 10`);
+            }
+        });
+
+        return errors;
+    };
+
     // Fetch existing skills on mount to prevent duplicates/typos
     React.useEffect(() => {
         const fetchSkills = async () => {
@@ -132,9 +152,11 @@ export function ReviewConsole() {
 
                 if (result.details != null && result.details.length > 0) {
                     const nextMap = new Map<number, string>();
-                    result.details.forEach((d: { id?: string }, idx: number) => {
-                        if (d.id != null) {
-                            nextMap.set(idx, d.id);
+                    result.details.forEach((d: { index?: number; originalId?: string; id?: string }, idx: number) => {
+                        const questionIndex = typeof d.index === 'number' ? d.index : idx;
+                        const originalId = d.originalId ?? d.id;
+                        if (originalId != null && originalId !== '') {
+                            nextMap.set(questionIndex, originalId);
                         }
                     });
                     setDuplicateMap(nextMap);
@@ -159,19 +181,17 @@ export function ReviewConsole() {
                 questions: stagedQuestions.map((q, idx) => ({
                     id: q.id ?? `gen-${idx}`,
                     questionText: q.questionText,
-                    type: 'single',
-                    status: 'draft',
+                    codeSnippet: q.codeSnippet,
+                    options: q.options,
+                    correctAnswer: q.correctAnswer,
+                    explanation: q.explanation,
                     difficulty: q.difficulty,
-                    topicId: blueprint.topicId,
-                    subtopicId: blueprint.subtopicId,
-                    options: q.options.map((opt, optIdx) => ({
-                        id: `${idx}-${optIdx}`,
-                        text: opt,
-                        isCorrect: opt === q.correctAnswer
-                    }))
+                    depthLevel: Math.max(1, Math.min(10, q.depthLevel)),
+                    mappingType: q.mappingType,
+                    skillNames: q.skillNames
                 })),
                 topicId: blueprint.topicId,
-                subtopicId: blueprint.subtopicId
+                subtopicId: blueprint.subtopicId != null && blueprint.subtopicId !== '' ? blueprint.subtopicId : undefined
             };
 
             const result = await apiClient.admin.saveFactoryBatch(payload) as { success: boolean; insertedCount: number; newSkillsCreated: number };
@@ -192,6 +212,13 @@ export function ReviewConsole() {
     const handleSave = async () => {
         if (blueprint.topicId == null || blueprint.topicId === '') {
             toast.error("No blueprint context found (Missing Topic). Please return to Ingest.");
+            return;
+        }
+
+        const commitValidationErrors = validateBeforeCommit();
+        if (commitValidationErrors.length > 0) {
+            const preview = commitValidationErrors.slice(0, 3).join(' | ');
+            toast.error(`Commit blocked: ${preview}${commitValidationErrors.length > 3 ? ' ...' : ''}`);
             return;
         }
 
