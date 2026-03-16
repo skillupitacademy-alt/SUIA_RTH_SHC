@@ -1,8 +1,9 @@
 'use client';
 
-import { cn,PageTitle } from '@quiz/ui';
+import { cn, PageTitle } from '@quiz/ui';
 import {
     Activity,
+    AlertTriangle,
     ArrowRight,
     BarChart3,
     Cpu,
@@ -16,6 +17,10 @@ import {
     Users
 } from 'lucide-react';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+
+import { getAdminDashboardSummary } from '@/lib/admin-bff-client';
+import { AdminDashboardSummary as DashboardData } from '@/lib/bff-types';
 const dashboardCards = [
     {
         title: "Control Center",
@@ -110,6 +115,23 @@ const dashboardCards = [
 ];
 
 export default function AdminDashboard() {
+    const [data, setData] = useState<DashboardData | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const summary = await getAdminDashboardSummary();
+                setData(summary);
+            } catch (error) {
+                console.error('Failed to fetch dashboard summary:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        void fetchData();
+    }, []);
+
     return (
         <div className="space-y-10 pb-16">
             {/* Header Section */}
@@ -130,10 +152,21 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="flex items-center gap-3">
+                    {data?.status === 'degraded' && (
+                        <div className="px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center gap-2">
+                            <AlertTriangle size={12} className="text-amber-500" />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-amber-600">
+                                Partial Degradation
+                            </span>
+                        </div>
+                    )}
                     <div className="px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                        <div className={cn(
+                            "w-2 h-2 rounded-full transition-colors duration-500",
+                            data?.status === 'degraded' ? "bg-amber-500" : "bg-emerald-500 animate-pulse"
+                        )} />
                         <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600">
-                            Cluster Operational
+                            {data?.status === 'degraded' ? 'Cluster Degraded' : 'Cluster Operational'}
                         </span>
                     </div>
                 </div>
@@ -187,22 +220,37 @@ export default function AdminDashboard() {
                 <div className="p-6 rounded-3xl bg-slate-50 border border-slate-100">
                     <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Connectivity</h4>
                     <div className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                        <span className="text-xs font-bold text-[#1A1A1A]">Database Edge: 22ms</span>
+                        <div className={cn(
+                            "w-1.5 h-1.5 rounded-full",
+                            (data?.sources.metrics === 'ok') ? "bg-emerald-500" : "bg-slate-300"
+                        )} />
+                        <span className="text-xs font-bold text-[#1A1A1A]">
+                            Users: {isLoading ? '...' : (data?.metrics.totalUsers ?? 'ERR')} · Exams: {isLoading ? '...' : (data?.metrics.totalExams ?? 'ERR')}
+                        </span>
                     </div>
                 </div>
                 <div className="p-6 rounded-3xl bg-slate-50 border border-slate-100">
                     <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Security</h4>
                     <div className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                        <span className="text-xs font-bold text-[#1A1A1A]">SSL Encryption: Active</span>
+                        <div className={cn(
+                            "w-1.5 h-1.5 rounded-full",
+                            (data?.sources.security === 'ok') ? "bg-emerald-500" : "bg-slate-300"
+                        )} />
+                        <span className="text-xs font-bold text-[#1A1A1A]">
+                            Active Sessions: {isLoading ? '...' : (data?.security.activeSessions ?? 'ERR')}
+                        </span>
                     </div>
                 </div>
                 <div className="p-6 rounded-3xl bg-slate-50 border border-slate-100">
                     <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Intelligence</h4>
                     <div className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                        <span className="text-xs font-bold text-[#1A1A1A]">AI Inference: Synchronized</span>
+                        <div className={cn(
+                            "w-1.5 h-1.5 rounded-full",
+                            (data?.sources.activity === 'ok' && data?.sources.queue === 'ok') ? "bg-emerald-500" : "bg-slate-300"
+                        )} />
+                        <span className="text-xs font-bold text-[#1A1A1A]">
+                            Live: {isLoading ? '...' : (data?.activity.activeExams ?? 'ERR')} · Queue: {isLoading ? '...' : (data?.queue.isHealthy === true ? 'Healthy' : 'Syncing')}
+                        </span>
                     </div>
                 </div>
             </div>
