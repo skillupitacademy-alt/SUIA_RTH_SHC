@@ -19,6 +19,8 @@ interface QuestionData {
     status: string;
     createdAt: string;
     mappingType?: string;
+    explanation?: string;
+    correctAnswer?: string;
     options?: (string | { text: string; isCorrect: boolean })[];
     questionSkills?: Array<{
         skill: {
@@ -138,17 +140,43 @@ export function QuestionTable() {
                     status?: string;
                     createdAt?: string;
                     mappingType?: string;
-                    options?: { text: string; isCorrect?: boolean; id?: string }[] | Record<string, string>;
+                    explanation?: string;
+                    correctAnswer?: string;
+                    options?: Array<string | { text?: string; optionText?: string; option_text?: string; isCorrect?: boolean; is_correct?: boolean; id?: string }> | Record<string, string>;
                     questionSkills?: QuestionData['questionSkills'];
                     topic?: QuestionData['topic'];
                 };
 
-                const normalizeOptions = (options: RawQuestion['options']) => {
-                    if (Array.isArray(options)) return options;
+                const normalizeOptions = (options: RawQuestion['options'], correctAnswer?: string) => {
+                    if (Array.isArray(options)) {
+                        return options.map((opt, idx) => {
+                            if (typeof opt === 'string') {
+                                return {
+                                    id: `opt-${idx + 1}`,
+                                    text: opt,
+                                    isCorrect: correctAnswer != null && correctAnswer !== '' ? opt === correctAnswer : false,
+                                };
+                            }
+                            const text = (opt.text != null && opt.text !== '')
+                                ? opt.text
+                                : ((opt.optionText != null && opt.optionText !== '')
+                                    ? opt.optionText
+                                    : (opt.option_text ?? ''));
+                            return {
+                                id: opt.id ?? `opt-${idx + 1}`,
+                                text,
+                                isCorrect: opt.isCorrect === true || opt.is_correct === true || (correctAnswer != null && correctAnswer !== '' ? text === correctAnswer : false),
+                            };
+                        });
+                    }
                     if (options != null && typeof options === 'object') {
                         return Object.values(options)
                             .filter((val): val is string => typeof val === 'string')
-                            .map((text) => ({ text }));
+                            .map((text, idx) => ({
+                                id: `opt-${idx + 1}`,
+                                text,
+                                isCorrect: correctAnswer != null && correctAnswer !== '' ? text === correctAnswer : false,
+                            }));
                     }
                     return [];
                 };
@@ -161,7 +189,9 @@ export function QuestionTable() {
                     status: q.status ?? 'draft',
                     createdAt: (q as { createdAt?: string }).createdAt ?? new Date().toISOString(),
                     mappingType: (q as { mappingType?: string }).mappingType,
-                    options: normalizeOptions(q.options).map((opt: { text: string; isCorrect?: boolean; id?: string }, optIdx: number) => ({
+                    explanation: q.explanation,
+                    correctAnswer: q.correctAnswer,
+                    options: normalizeOptions(q.options, q.correctAnswer).map((opt: { text: string; isCorrect?: boolean; id?: string }, optIdx: number) => ({
                         text: opt.text,
                         isCorrect: opt.isCorrect ?? false,
                         id: opt.id ?? `${idx}-${optIdx}`
