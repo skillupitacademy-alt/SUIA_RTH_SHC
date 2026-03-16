@@ -1,4 +1,4 @@
-﻿'use client';
+'use client'; // UI FIX APPLIED
 
 import { apiClient } from '@quiz/api-client';
 import { Button, Input, ZLoader } from '@quiz/ui';
@@ -75,25 +75,29 @@ export default function AdminLoginPage() {
             </div> : null}
 
             <form onSubmit={(e) => void handleSubmit(e)} className="space-y-6" autoComplete="off">
-                <div className="relative">
-                    <Mail className="absolute left-4 top-4 text-slate-400 h-5 w-5 z-10" />
-                    <Input
-                        type="email"
-                        required
-                        id="admin-login-email"
-                        name="username"
-                        label="Email Address"
-                        autoComplete="username"
-                        className="pl-12"
-                        placeholder="admin@quizplatform.com"
-                        value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    />
+                <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1" htmlFor="admin-login-email">
+                        Email Address
+                    </label>
+                    <div className="relative">
+                        <Mail className="absolute left-4 top-4 text-slate-400 h-5 w-5 z-10" />
+                        <Input
+                            type="email"
+                            required
+                            id="admin-login-email"
+                            name="username"
+                            autoComplete="username"
+                            className="pl-12"
+                            placeholder="admin@quizplatform.com"
+                            value={formData.email}
+                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        />
+                    </div>
                 </div>
 
                 <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                        <label className="text-sm font-medium leading-none text-slate-500" htmlFor="admin-login-password">Password</label>
+                    <div className="flex items-center justify-between px-1">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400" htmlFor="admin-login-password">Password</label>
                         <Link
                             href="/forgot-password"
                             className="text-sm font-medium text-[#FF4B91] hover:underline"
