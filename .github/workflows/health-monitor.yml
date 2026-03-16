@@ -1,0 +1,108 @@
+name: Health Monitor
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  monitor:
+    name: Production Health Monitor
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Tier Cadence Check
+        id: check
+        run: |
+          TIER="${{ secrets.DEPLOYMENT_TIER }}"
+          MINUTE=$(date +%M | sed 's/^0//')
+          if [ -z "$MINUTE" ]; then MINUTE=0; fi
+
+          if [[ -z "$TIER" || "$TIER" == "free" ]]; then
+            if [ $((MINUTE % 15)) -ne 0 ]; then
+              echo "FREE MODE: skipping run (minute $MINUTE is not divisible by 15)"
+              echo "skip=true" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+            echo "tier_label=free (15m)" >> $GITHUB_ENV
+          else
+            echo "tier_label=paid (5m)" >> $GITHUB_ENV
+          fi
+          echo "skip=false" >> $GITHUB_OUTPUT
+
+      - name: Run Health Checks
+        if: steps.check.outputs.skip == 'false'
+        id: health
+        run: |
+          API_URL="https://${{ secrets.VERCEL_PROJECT_NAME }}.vercel.app/api/healthz"
+          WEB_URL="https://${{ secrets.VERCEL_PROJECT_NAME_WEB }}.vercel.app"
+
+          API_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$API_URL" || echo "000")
+          WEB_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$WEB_URL" || echo "000")
+
+          echo "api=$API_STATUS" >> $GITHUB_OUTPUT
+          echo "web=$WEB_STATUS" >> $GITHUB_OUTPUT
+
+          if [ "$API_STATUS" != "200" ] || [ "$WEB_STATUS" != "200" ]; then
+            echo "UNHEALTHY=true" >> $GITHUB_ENV
+          fi
+
+      - name: Check Existing Incident
+        if: env.UNHEALTHY == 'true'
+        id: incident
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'incident,auto-generated',
+              state: 'open'
+            });
+            return issues.data.length > 0 ? 'true' : 'false'
+
+      - name: Create Incident Issue
+        if: env.UNHEALTHY == 'true' && steps.incident.outputs.result == 'false'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const apiStatus = "${{ steps.health.outputs.api }}";
+            const webStatus = "${{ steps.health.outputs.web }}";
+            const tier = process.env.tier_label;
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Production Alert: Health check failed [${new Date().toISOString()}]`,
+              labels: ['incident', 'auto-generated'],
+              body: `
+            ## Production Health Alert
+            **Time**: ${new Date().toISOString()}
+            **API Server**: ${apiStatus === '200' ? '200' : apiStatus}
+            **Web App**: ${webStatus === '200' ? '200' : webStatus}
+
+            ## Immediate Actions
+            1. Check Vercel dashboard for deployment errors
+            2. Check Sentry for recent error spikes
+            3. If bad deployment suspected:
+               Actions tab -> Rollback Deployment -> Run workflow
+               Select target_app: all
+
+            ## To Resolve
+            Once production is healthy, close this issue.
+
+            ---
+            Monitor tier: ${tier}
+            Set DEPLOYMENT_TIER=paid for 5-min monitoring + Slack alerts
+            `
+            });
+
+      - name: Slack Alert (Paid Tier)
+        if: env.UNHEALTHY == 'true' && secrets.DEPLOYMENT_TIER == 'paid' && secrets.SLACK_WEBHOOK_URL != ''
+        run: |
+          curl -X POST "${{ secrets.SLACK_WEBHOOK_URL }}" \
+            -H 'Content-type: application/json' \
+            --data '{
+              "text": "Production Alert\nAPI: ${{ steps.health.outputs.api }}\nWeb: ${{ steps.health.outputs.web }}\nCheck GitHub Issues for details."
+            }'

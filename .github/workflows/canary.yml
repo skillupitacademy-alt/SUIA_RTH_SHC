@@ -1,0 +1,178 @@
+name: Canary Deployment
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  canary:
+    name: Canary Verification
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+
+      - name: Deploy API Server Canary
+        id: deploy-api
+        run: |
+          echo "Deploying API Server to Canary..."
+          API_URL=$(vercel deploy \
+            --token ${{ secrets.VERCEL_TOKEN }} \
+            --scope ${{ secrets.VERCEL_ORG_ID }} \
+            --project ${{ secrets.VERCEL_PROJECT_ID }} \
+            --yes)
+          echo "API_PREVIEW_URL=$API_URL" >> $GITHUB_ENV
+          echo "API Preview URL: $API_URL"
+
+      - name: Health Check API Server
+        run: |
+          MAX_ATTEMPTS=6
+          WAIT_SECONDS=30
+          HEALTH_URL="${{ env.API_PREVIEW_URL }}/api/healthz"
+          DOMAINS_URL="${{ env.API_PREVIEW_URL }}/api/v1/domains"
+
+          echo "Checking API health: $HEALTH_URL"
+          for i in $(seq 1 $MAX_ATTEMPTS); do
+            echo "Attempt $i/$MAX_ATTEMPTS..."
+            H_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$HEALTH_URL" || echo "000")
+            D_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$DOMAINS_URL" || echo "000")
+
+            if [ "$H_STATUS" = "200" ] && [ "$D_STATUS" = "200" ]; then
+              echo "API Server healthy"
+              exit 0
+            fi
+            echo "Status: Health=$H_STATUS, Domains=$D_STATUS. Waiting ${WAIT_SECONDS}s..."
+            sleep $WAIT_SECONDS
+          done
+          echo "API Server failed health checks"
+          exit 1
+
+      - name: Deploy Web App Canary
+        id: deploy-web
+        run: |
+          echo "Deploying Web App to Canary..."
+          WEB_URL=$(vercel deploy \
+            --token ${{ secrets.VERCEL_TOKEN }} \
+            --scope ${{ secrets.VERCEL_ORG_ID }} \
+            --project ${{ secrets.VERCEL_PROJECT_ID_WEB }} \
+            --yes)
+          echo "WEB_PREVIEW_URL=$WEB_URL" >> $GITHUB_ENV
+          echo "Web Preview URL: $WEB_URL"
+
+      - name: Health Check Web App
+        run: |
+          MAX_ATTEMPTS=5
+          WAIT_SECONDS=10
+          echo "Checking Web App health: ${{ env.WEB_PREVIEW_URL }}"
+          for i in $(seq 1 $MAX_ATTEMPTS); do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${{ env.WEB_PREVIEW_URL }}" || echo "000")
+            if [ "$STATUS" = "200" ]; then
+              echo "Web App healthy"
+              exit 0
+            fi
+            sleep $WAIT_SECONDS
+          done
+          echo "Web App failed health check"
+          exit 1
+
+      - name: Deploy Admin App Canary (Optional)
+        id: deploy-admin
+        continue-on-error: true
+        run: |
+          echo "Deploying Admin App to Canary..."
+          ADMIN_URL=$(vercel deploy \
+            --token ${{ secrets.VERCEL_TOKEN }} \
+            --scope ${{ secrets.VERCEL_ORG_ID }} \
+            --project ${{ secrets.VERCEL_PROJECT_ID_ADMIN }} \
+            --yes)
+          echo "ADMIN_PREVIEW_URL=$ADMIN_URL" >> $GITHUB_ENV
+
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$ADMIN_URL" || echo "000")
+          if [ "$STATUS" = "200" ]; then
+            echo "Admin App healthy"
+            echo "ADMIN_HEALTH=pass" >> $GITHUB_ENV
+          else
+            echo "Admin App failed health check (warning only)"
+            echo "ADMIN_HEALTH=warn" >> $GITHUB_ENV
+          fi
+
+      - name: Success Summary
+        if: success()
+        run: |
+          echo "### Canary Results" >> $GITHUB_STEP_SUMMARY
+          echo "API Server canary passed: ${{ env.API_PREVIEW_URL }}" >> $GITHUB_STEP_SUMMARY
+          echo "Web App canary passed: ${{ env.WEB_PREVIEW_URL }}" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ env.ADMIN_HEALTH }}" = "warn" ] || [ -z "${{ env.ADMIN_PREVIEW_URL }}" ]; then
+            echo "Admin App: Warning (check failed or not available)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Admin App canary passed: ${{ env.ADMIN_PREVIEW_URL }}" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "Safe to promote all apps to production." >> $GITHUB_STEP_SUMMARY
+
+          # PAID TIER UPGRADE:
+          # After API + Web pass, add this step to auto-promote:
+          # if [ "${{ secrets.DEPLOYMENT_TIER }}" = "paid" ]; then
+          #   vercel promote ${{ env.API_PREVIEW_URL }} --token ${{ secrets.VERCEL_TOKEN }} --scope ${{ secrets.VERCEL_ORG_ID }} --yes
+          #   vercel promote ${{ env.WEB_PREVIEW_URL }} --token ${{ secrets.VERCEL_TOKEN }} --scope ${{ secrets.VERCEL_ORG_ID }} --yes
+          # fi
+
+      - name: Commit Status (Success)
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              state: 'success',
+              context: 'canary-passed',
+              description: 'API and Web canaries passed'
+            });
+
+      - name: Commit Status (Failure)
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              state: 'failure',
+              context: 'canary-failed',
+              description: 'API or Web canary failed'
+            });
+
+      - name: Create Failure Issue
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { API_PREVIEW_URL, WEB_PREVIEW_URL, ADMIN_PREVIEW_URL } = process.env;
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Canary Failed: ${context.sha.substring(0, 7)}`,
+              labels: ['canary-failed', 'auto-generated'],
+              body: `
+            ## Canary Deployment Failed
+
+            **Commit**: ${context.sha}
+            **Author**: ${context.actor}
+            **Timestamp**: ${new Date().toISOString()}
+
+            ### Deployment Status
+            - **API Server**: ${API_PREVIEW_URL || 'Failed to deploy'}
+            - **Web App**: ${WEB_PREVIEW_URL || 'Not attempted'}
+            - **Admin App**: ${ADMIN_PREVIEW_URL || 'Not attempted'}
+
+            Please investigate the logs before promoting this version to production.
+            `
+            });
