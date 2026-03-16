@@ -95,25 +95,44 @@ export class DrizzleSkillRepository extends BaseRepository<typeof skills.$inferS
       };
     } catch {
       // Backward-compatibility fallback for deployments where skills.created_at is not migrated yet.
+      // Use raw SQL selecting only legacy columns so Drizzle does not reference missing timestamp columns.
       const legacyCursor = extractNameCursor(cursor);
-      const legacyConditions = [...baseConditions];
-      if (legacyCursor !== null && legacyCursor !== '') {
-        legacyConditions.push(lt(skills.name, legacyCursor));
-      }
+      const searchTerm = filters?.search !== undefined && filters.search !== null && filters.search.trim() !== ''
+        ? `%${filters.search}%`
+        : null;
 
-      const legacyWhere = legacyConditions.length > 0 ? and(...legacyConditions) : undefined;
-      const dataRaw = await this.dbInstance.query.skills.findMany({
-        where: legacyWhere,
-        limit: limit + 1,
-        orderBy: [desc(skills.name), desc(skills.id)]
-      });
+      const rowsQuery = await this.dbInstance.execute(sql`
+        SELECT "id", "name", "category", "mapping_type", "weight"
+        FROM "skills"
+        WHERE
+          (${searchTerm}::text IS NULL OR "name" ILIKE ${searchTerm})
+          AND (${legacyCursor}::text IS NULL OR "name" < ${legacyCursor})
+        ORDER BY "name" DESC, "id" DESC
+        LIMIT ${limit + 1}
+      `);
 
-      const [{ count: totalCount }] = await this.dbInstance
-        .select({ count: sql<number>`count(*)` })
-        .from(skills)
-        .where(baseConditions.length > 0 ? and(...baseConditions) : sql`true`);
+      const countQuery = await this.dbInstance.execute(sql`
+        SELECT count(*)::int AS count
+        FROM "skills"
+        WHERE (${searchTerm}::text IS NULL OR "name" ILIKE ${searchTerm})
+      `);
 
-      const total = Number(totalCount ?? 0);
+      const dataRaw = rowsQuery.rows.map((row) => ({
+        id: String((row as { id: unknown }).id),
+        name: String((row as { name: unknown }).name),
+        category: ((row as { category: unknown }).category as typeof skills.$inferSelect['category']) ?? null,
+        mappingType: ((row as { mapping_type?: unknown; mappingType?: unknown }).mapping_type
+          ?? (row as { mappingType?: unknown }).mappingType
+          ?? null) as typeof skills.$inferSelect['mappingType'],
+        weight: Number((row as { weight: unknown }).weight ?? 1),
+        // Synthetic timestamps for legacy-schema fallback path only.
+        createdAt: new Date(0),
+        updatedAt: new Date(0),
+      })) as Array<typeof skills.$inferSelect>;
+
+      const totalCountRow = countQuery.rows[0] as { count?: unknown } | undefined;
+      const total = Number(totalCountRow?.count ?? 0);
+
       const paginated = buildPaginatedResponse(
         dataRaw,
         limit,
