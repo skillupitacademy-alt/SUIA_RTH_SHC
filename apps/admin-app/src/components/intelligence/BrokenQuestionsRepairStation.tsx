@@ -1,5 +1,6 @@
 'use client';
 
+import { apiClient } from "@quiz/api-client";
 import { recordCounter } from "@quiz/observability";
 import { ZLoader } from "@quiz/ui";
 import {
@@ -43,14 +44,9 @@ export function BrokenQuestionsRepairStation() {
 
     const fetchData = useCallback(async () => {
         try {
-            const apiBase = process.env.NEXT_PUBLIC_API_URL ?? "";
             setError(null);
-            const res = await fetch(`${apiBase}/api/admin/metrics/broken-questions?limit=10&floor=10`, { credentials: "include" });
-            if (!res.ok) {
-                const body = await res.text();
-                throw new Error(`Fetch failed (${res.status}) ${body}`);
-            }
-            const data = await res.json();
+            apiClient.client.setPortalIdentity("admin");
+            const data = await apiClient.client.get<BrokenQuestion[]>("/admin/metrics/broken-questions?limit=10&floor=10");
             setQuestions(data);
 
             if (data.length === 0) {

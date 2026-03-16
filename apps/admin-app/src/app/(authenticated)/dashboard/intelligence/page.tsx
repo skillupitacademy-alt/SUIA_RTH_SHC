@@ -1,5 +1,6 @@
 ﻿'use client';
 
+import { apiClient } from "@quiz/api-client";
 import { ZLoader, ZSkeleton } from "@quiz/ui";
 import type { EChartsOption } from "echarts";
 import { BarChart3, BrainCircuit, Layers, LayoutDashboard, Microscope, PieChart as PieChartIcon, ShieldCheck, TrendingDown } from "lucide-react";
@@ -39,22 +40,18 @@ export default function AdminIntelligencePage() {
     const fetchTutorMetrics = useCallback(async () => {
         try {
             setError(null);
-            const apiBase = process.env.NEXT_PUBLIC_API_URL ?? "";
-            const res = await fetch(`${apiBase}/api/admin/metrics/tutor`, { credentials: "include" });
-            if (!res.ok) {
-                const msg = `Status: ${res.status}`;
-                if (res.status === 401 || res.status === 403) {
-                    toast.error("Session expired or unauthorized. Please re-login.");
-                } else {
-                    toast.error(`Metrics fetch failed (${msg})`);
-                }
-                throw new Error(msg);
-            }
-            const json: TutorMetrics = await res.json();
+            apiClient.client.setPortalIdentity("admin");
+            const json = await apiClient.client.get<TutorMetrics>("/admin/metrics/tutor");
             setTutorData(json);
         } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : "Unknown error";
+            if (errorMessage.includes("401") || errorMessage.includes("403")) {
+                toast.error("Session expired or unauthorized. Please re-login.");
+            } else {
+                toast.error(`Metrics fetch failed (${errorMessage})`);
+            }
             clientLogger.error("Failed to fetch tutor analytics", { error: err instanceof Error ? err.message : "unknown" });
-            setError(err instanceof Error ? err.message : "Unknown error");
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }
