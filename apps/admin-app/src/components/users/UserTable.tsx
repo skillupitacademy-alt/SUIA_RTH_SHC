@@ -46,6 +46,9 @@ export function UserTable() {
     const [pageSize, setPageSize] = useState(10);
     const [totalPages, setTotalPages] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
+    const [cursor, setCursor] = useState<string | null>(null);
+    const [nextCursor, setNextCursor] = useState<string | null>(null);
+    const [cursorStack, setCursorStack] = useState<Array<string | null>>([]);
     const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
     const [editingUser, setEditingUser] = useState<UserData | null>(null);
     const [isSaving, setIsSaving] = useState(false);
@@ -78,8 +81,8 @@ export function UserTable() {
             if (filterVerified === 'UNVERIFIED') serverFilters.isVerified = false;
 
             const [activeData] = await Promise.all([
-                apiClient.admin.getUsers(page.toString(), pageSize, 'active', serverFilters),
-                apiClient.admin.getUsers('1', 10, 'deleted')
+                apiClient.admin.getUsers(cursor, pageSize, 'active', serverFilters),
+                apiClient.admin.getUsers(null, 10, 'deleted')
             ]);
 
             const activeUsers = activeData.data ?? [];
@@ -89,6 +92,7 @@ export function UserTable() {
             setUsers(activeUsers);
             setTotalPages(totalPagesCalc);
             setTotalCount(total);
+            setNextCursor(activeData.nextCursor ?? null);
 
             if (activeUsers.length === 0) {
                 recordCounter('admin.ui.users.empty', 1, { filterRole });
@@ -105,13 +109,14 @@ export function UserTable() {
     }, [filterBlocked, filterRole, filterVerified, page, pageSize, debouncedSearchQuery]);
 
     useEffect(() => {
-        // fetchUsers is stable for the same dependencies
-        if (page === 1) {
-            void fetchUsers();
-        } else {
-            setPage(1);
-        }
-    }, [fetchUsers, page, debouncedSearchQuery]);
+        setPage(1);
+        setCursor(null);
+        setCursorStack([]);
+    }, [filterBlocked, filterRole, filterVerified, debouncedSearchQuery, pageSize]);
+
+    useEffect(() => {
+        void fetchUsers();
+    }, [fetchUsers, cursor]);
 
     const handleSaveUser = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -378,6 +383,22 @@ export function UserTable() {
                 totalPages={totalPages}
                 totalCount={totalCount}
                 pageSize={pageSize}
+                mode="cursor"
+                canGoPrevious={cursorStack.length > 0}
+                hasNextPage={nextCursor != null}
+                onPrevious={() => {
+                    if (cursorStack.length === 0) return;
+                    const prevCursor = cursorStack[cursorStack.length - 1] ?? null;
+                    setCursorStack(cursorStack.slice(0, -1));
+                    setCursor(prevCursor);
+                    setPage(Math.max(1, page - 1));
+                }}
+                onNext={() => {
+                    if (nextCursor == null) return;
+                    setCursorStack([...cursorStack, cursor]);
+                    setCursor(nextCursor);
+                    setPage(page + 1);
+                }}
                 onPageChange={setPage}
                 onPageSizeChange={(size) => {
                     setPageSize(size);

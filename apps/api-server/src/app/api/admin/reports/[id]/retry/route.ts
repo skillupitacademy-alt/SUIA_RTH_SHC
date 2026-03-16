@@ -8,6 +8,8 @@ import { ApiResponse } from "@/lib/api-response";
 import { recordCounter, recordTimer } from "@/lib/metrics";
 import { withLogging } from "@/lib/withLogging";
 import { ReportRepository } from "@/modules/report-engine/report-repository";
+import { TokenService } from "@/modules/auth/token.service";
+import { container } from "@/modules/core/container";
 
 export const runtime = "nodejs";
 
@@ -21,13 +23,19 @@ async function postHandler(
 ) {
   const start = Date.now();
   try {
-    // Auth: Internal API Key Required
+    // Auth: allow either internal key or admin token
     const internalKeyHeader = req.headers.get("x-internal-key") ?? "";
     const internalSecret = process.env.INTERNAL_API_KEY;
-    const missingSecret = typeof internalSecret !== "string" || internalSecret.length === 0;
+    const hasInternalSecret = typeof internalSecret === "string" && internalSecret.length > 0;
+    const internalAuthorized = hasInternalSecret && internalKeyHeader === internalSecret;
 
-    if (missingSecret || internalKeyHeader !== internalSecret) {
-      throw unauthorized("Unauthorized");
+    if (!internalAuthorized) {
+      const tokenService = container.get(TokenService);
+      const accessToken = tokenService.getAccessToken(req, { scope: "admin" });
+      if (accessToken === undefined || accessToken === null || accessToken === "") {
+        throw unauthorized("Unauthorized");
+      }
+      await tokenService.verifyAdminAccessToken(accessToken);
     }
 
     const { id: attemptId } = await params;

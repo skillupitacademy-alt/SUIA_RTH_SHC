@@ -17,6 +17,7 @@ export default function AdminDiscriminationScatter() {
     useEffect(() => {
         async function fetchData() {
             try {
+                apiClient.client.setPortalIdentity("admin");
                 const res = await apiClient.analytics.getAdminDiscrimination();
                 setPoints(res.points);
             } catch (err: unknown) {

@@ -16,6 +16,7 @@ export default function AdminPlannedVsActualDifficulty() {
     useEffect(() => {
         async function fetchData() {
             try {
+                apiClient.client.setPortalIdentity("admin");
                 const res = await apiClient.analytics.getAdminPlannedVsActualDifficulty();
                 setData(res);
             } catch (err: unknown) {

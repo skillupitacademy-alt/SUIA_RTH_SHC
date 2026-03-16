@@ -22,6 +22,7 @@ export default function AdminTopicSkillHeatmap() {
     useEffect(() => {
         async function fetchData() {
             try {
+                apiClient.client.setPortalIdentity("admin");
                 const res = await apiClient.analytics.getAdminTopicSkillHeatmap();
                 setData(res);
             } catch (err: unknown) {

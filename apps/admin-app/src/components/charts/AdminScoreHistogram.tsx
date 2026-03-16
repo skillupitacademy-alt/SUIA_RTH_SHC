@@ -21,6 +21,7 @@ export default function AdminScoreHistogram() {
     useEffect(() => {
         async function fetchData() {
             try {
+                apiClient.client.setPortalIdentity("admin");
                 const res = await apiClient.analytics.getAdminScoreHistogram();
                 setData(res);
             } catch (err: unknown) {

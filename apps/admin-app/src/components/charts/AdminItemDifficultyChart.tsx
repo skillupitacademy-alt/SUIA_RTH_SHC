@@ -21,6 +21,7 @@ export default function AdminItemDifficultyChart() {
     useEffect(() => {
         async function fetchData() {
             try {
+                apiClient.client.setPortalIdentity("admin");
                 const res = await apiClient.analytics.getAdminItemDifficulty();
                 setData(res);
             } catch (err: unknown) {

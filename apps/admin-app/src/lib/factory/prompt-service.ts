@@ -54,8 +54,10 @@ You must follow these syntax rules EXACTLY to ensure the output is machine-reada
 2. **STRICT ESCAPING**: All internal double quotes inside strings (especially in "codeSnippet" and "explanation") MUST be escaped with a backslash.
    - CORRECT JSON VALUE: "var x = \\u0022hello\\u0022;\\nconsole.log(x);"
    - INCORRECT JSON VALUE: "var x = "hello";\nconsole.log(x);"
+3. **VALID JSON ONLY**: Every string must be valid JSON. Do not use unescaped double quotes anywhere inside string values. Do not use single quotes for JSON keys or values.
 3. **SINGLE LINE STRINGS**: All values must be single-line strings. Use literal \\n for newlines. Do not use multi-line strings.
 4. **NO TRAILING COMMAS**: Verify that no trailing commas exist after the last item in arrays or objects.
+5. **FINAL CHECK**: Ensure the output can be parsed by a strict JSON parser without modifications.
 
 ---
 

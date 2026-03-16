@@ -36,6 +36,9 @@ export default function AdminIntelligencePage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<"command" | "audit" | "cohort" | "telemetry">("command");
+    useEffect(() => {
+        apiClient.client.setPortalIdentity("admin");
+    }, []);
 
     const fetchTutorMetrics = useCallback(async () => {
         try {

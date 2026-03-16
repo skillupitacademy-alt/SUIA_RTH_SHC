@@ -17,6 +17,7 @@ export default function AdminPoolSufficiency() {
     useEffect(() => {
         async function fetchData() {
             try {
+                apiClient.client.setPortalIdentity("admin");
                 const res = await apiClient.analytics.getAdminPoolSufficiency();
                 setData(res);
             } catch (err: unknown) {

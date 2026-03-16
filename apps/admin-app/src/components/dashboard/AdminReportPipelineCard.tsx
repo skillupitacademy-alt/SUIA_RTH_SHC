@@ -1,5 +1,6 @@
 'use client';
 
+import { apiClient } from '@quiz/api-client';
 import { recordCounter } from '@quiz/observability';
 import {
     AlertTriangle,
@@ -47,28 +48,18 @@ export function AdminReportPipelineCard() {
     const [error, setError] = useState<string | null>(null);
     const hasError = typeof error === 'string' && error.length > 0;
 
-    const apiBase = process.env.NEXT_PUBLIC_API_URL ?? '';
-    const internalKey = process.env.INTERNAL_API_KEY ?? '';
-
     const fetchReports = useCallback(async () => {
         try {
             setLoading(true);
             setError(null);
-            const url = new URL(`${apiBase}/admin/reports`);
+            const url = new URL('/admin/reports', 'http://local');
             if (filter.length > 0) url.searchParams.set('status', filter);
             url.searchParams.set('limit', '20');
 
-            const res = await fetch(url.toString(), {
-                headers: { 'x-internal-key': internalKey },
-                credentials: 'include',
-            });
-
-            if (!res.ok) {
-                const body = await res.text();
-                throw new Error(`Fetch failed (${res.status}) ${body}`);
-            }
-
-            const data = await res.json();
+            const data = await apiClient.client.get<{
+                reports?: ReportRow[];
+                stats?: ReportStats | null;
+            }>(`${url.pathname}${url.search}`);
             setReports(data.reports ?? []);
             setStats(data.stats ?? null);
 
@@ -84,7 +75,7 @@ export function AdminReportPipelineCard() {
         } finally {
             setLoading(false);
         }
-    }, [apiBase, internalKey, filter]);
+    }, [filter]);
 
     useEffect(() => {
         void fetchReports();
@@ -93,15 +84,7 @@ export function AdminReportPipelineCard() {
     const handleRetry = async (attemptId: string) => {
         try {
             setRetrying(attemptId);
-            const res = await fetch(`${apiBase}/admin/reports/${attemptId}/retry`, {
-                method: 'POST',
-                headers: { 'x-internal-key': internalKey },
-                credentials: 'include',
-            });
-            if (!res.ok) {
-                const body = await res.text();
-                throw new Error(`Retry failed (${res.status}) ${body}`);
-            }
+            await apiClient.client.post(`/admin/reports/${attemptId}/retry`, {});
             recordCounter('admin.ui.reports.pipeline.retry_success', 1, { attemptId });
             // Refresh after short delay
             setTimeout(() => {
