@@ -6,7 +6,7 @@ export interface IBlueprintRepository {
    */
   withDb(dbClient: typeof db): this;
 
-  findAll(cursor: string | null, limit: number, filters?: { search?: string }): Promise<{
+  findAll(cursor: string | null, limit: number, filters?: { search?: string; fields?: string }): Promise<{
     data: (typeof examBlueprints.$inferSelect)[];
     total: number;
     nextCursor: string | null;

@@ -1,6 +1,7 @@
 import { db, examBlueprints } from '@quiz/db';
 import { and, desc, eq, lt, sql } from 'drizzle-orm';
 
+import { getDrizzleFields } from '@/lib/field-selector';
 import { BaseRepository } from '@/modules/core/repositories/base.repository';
 
 import { IBlueprintRepository } from '../interfaces/blueprint.repository.interface';
@@ -17,7 +18,7 @@ export class DrizzleBlueprintRepository extends BaseRepository<typeof examBluepr
   }
 
 
-  async findAll(cursor: string | null = null, limit: number = 20, filters?: { search?: string }) {
+  async findAll(cursor: string | null = null, limit: number = 20, filters?: { search?: string; fields?: string }) {
     const conditions = [];
 
     if (cursor !== null && cursor !== '') {
@@ -30,10 +31,22 @@ export class DrizzleBlueprintRepository extends BaseRepository<typeof examBluepr
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
+    const BLUEPRINT_ADMIN_ALLOWLIST = [
+        'id',
+        'name',
+        'description',
+        'config',
+        'version',
+        'createdAt',
+        'updatedAt'
+    ];
+    const columns = getDrizzleFields(filters?.fields, BLUEPRINT_ADMIN_ALLOWLIST, examBlueprints as unknown as Record<string, unknown>);
+
     const dataRaw = await this.dbInstance.query.examBlueprints.findMany({
       where: whereClause,
       limit: limit + 1,
-      orderBy: [desc(examBlueprints.createdAt)]
+      orderBy: [desc(examBlueprints.createdAt)],
+      ...(columns ? { columns } : {}),
     });
 
     const hasNext = dataRaw.length > limit;

@@ -1,6 +1,7 @@
 import { db, questions, questionSkills } from '@quiz/db';
-import { and, desc, eq, inArray, lt, or,sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, lt, or, sql } from 'drizzle-orm';
 
+import { getDrizzleFields } from '@/lib/field-selector';
 import { buildPaginatedResponse, decodePageCursor } from '@/lib/pagination';
 
 import { BaseRepository } from '../../modules/core/repositories/base.repository';
@@ -22,6 +23,7 @@ export class DrizzleQuestionRepository extends BaseRepository<typeof questions.$
     subtopicId?: string; 
     status?: string;
     search?: string;
+    fields?: string;
   }) {
     const baseConditions = [];
 
@@ -66,10 +68,29 @@ export class DrizzleQuestionRepository extends BaseRepository<typeof questions.$
     const allConditions = [...baseConditions, ...cursorConditions];
     const whereClause = allConditions.length > 0 ? and(...allConditions) : undefined;
 
+    const QUESTION_ADMIN_ALLOWLIST = [
+        'id',
+        'topicId',
+        'subtopicId',
+        'questionText',
+        'options',
+        'correctAnswer',
+        'explanation',
+        'difficulty',
+        'type',
+        'status',
+        'estimatedTime',
+        'tags',
+        'createdAt',
+        'updatedAt'
+    ];
+    const columns = getDrizzleFields(filters?.fields, QUESTION_ADMIN_ALLOWLIST, questions as unknown as Record<string, unknown>);
+
     const dataRaw = await this.dbInstance.query.questions.findMany({
       where: whereClause,
       limit: limit + 1,
       orderBy: [desc(questions.updatedAt), desc(questions.id)],
+      ...(columns ? { columns } : {}),
       with: {
         questionSkills: {
           with: {

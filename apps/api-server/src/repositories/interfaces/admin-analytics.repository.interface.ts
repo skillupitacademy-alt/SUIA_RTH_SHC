@@ -20,7 +20,14 @@ export interface IAdminAnalyticsRepository {
     avgTime: number | null;
   }>;
   getEfficiencyAnalytics(): Promise<EfficiencyRow[]>;
-  getAuditLogs(cursor: string | null, limit: number): Promise<{ data: UnknownRecord[]; nextCursor: string | null }>;
+  getAuditLogs(cursor: string | null, limit: number, fields?: string): Promise<{ data: UnknownRecord[]; nextCursor: string | null }>;
+  getLiveSessions(page: number, limit: number, search?: string, fields?: string): Promise<{
+    sessions: UnknownRecord[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }>;
   getRBACMetrics(): Promise<UnknownRecord[]>;
   getAllDomainHierarchy(): Promise<DomainHierarchy[]>;
 }

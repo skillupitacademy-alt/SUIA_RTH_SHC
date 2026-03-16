@@ -209,13 +209,14 @@ export interface IAdminQuestionConfigClient {
       skillIds?: string[];
       status?: string;
       search?: string;
+      fields?: string;
     }
   ): Promise<PaginatedQuestions>;
   createQuestion(data: Omit<QuestionSummary, 'id'> & Record<string, unknown>): Promise<QuestionSummary>;
 }
 
 export interface IAdminBlueprintConfigClient {
-  getBlueprints(cursor?: string | null, limit?: number, search?: string): Promise<PaginatedResponse<AdminBlueprint>>;
+  getBlueprints(cursor?: string | null, limit?: number, search?: string, fields?: string): Promise<PaginatedResponse<AdminBlueprint>>;
   getBlueprintById(id: string): Promise<AdminBlueprint>;
   createBlueprint(data: Record<string, unknown>): Promise<AdminBlueprint>;
   updateBlueprint(id: string, data: Partial<Record<string, unknown>>): Promise<AdminBlueprint>;

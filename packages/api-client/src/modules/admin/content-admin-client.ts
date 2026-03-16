@@ -215,6 +215,7 @@ export class ContentAdminClient implements IAdminQuestionConfigClient, IAdminBlu
       skillIds?: string[];
       status?: string;
       search?: string;
+      fields?: string;
     }
   ) {
     const query = new URLSearchParams({ limit: limit.toString() });
@@ -226,6 +227,7 @@ export class ContentAdminClient implements IAdminQuestionConfigClient, IAdminBlu
     if (filters?.skillIds) filters.skillIds.forEach(id => query.append('skillIds', id));
     if (filters?.status) query.append('status', filters.status);
     if (filters?.search) query.append('search', filters.search);
+    if (filters?.fields) query.append('fields', filters.fields);
 
     const response = await this.client.get<PaginatedResponse<QuestionSummary>>(`/admin/questions?${query.toString()}`);
     return {
@@ -276,10 +278,11 @@ export class ContentAdminClient implements IAdminQuestionConfigClient, IAdminBlu
   }
 
   // --- BLUEPRINTS ---
-  async getBlueprints(cursor?: string | null, limit: number = 20, search?: string) {
+  async getBlueprints(cursor?: string | null, limit: number = 20, search?: string, fields?: string) {
     const query = new URLSearchParams({ limit: limit.toString() });
     if (cursor != null && cursor !== '') query.append('cursor', cursor);
     if (search != null && search !== '') query.append('search', search);
+    if (fields != null && fields !== '') query.append('fields', fields);
 
     return this.client.get<PaginatedResponse<AdminBlueprint>>(`/admin/blueprints?${query.toString()}`);
   }

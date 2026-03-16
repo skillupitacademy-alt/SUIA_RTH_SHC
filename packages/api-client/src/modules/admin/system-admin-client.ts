@@ -32,8 +32,11 @@ export class SystemAdminClient {
   }
 
   // --- SESSIONS ---
-  async getLiveSessions() {
-    return this.client.get<AdminLiveSession[]>('/admin/sessions/live');
+  async getLiveSessions(page: number = 1, limit: number = 20, search?: string, fields?: string) {
+    const query = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
+    if (search != null && search !== '') query.append('search', search);
+    if (fields != null && fields !== '') query.append('fields', fields);
+    return this.client.get<PaginatedResponse<AdminLiveSession> | Record<string, unknown>>(`/admin/sessions/live?${query.toString()}`);
   }
 
   async getSystemUsage() {
@@ -41,7 +44,7 @@ export class SystemAdminClient {
   }
 
   // --- AUDIT ---
-  async getAuditLogs(cursor?: string | null, limit: number = 20, filters?: any) {
+  async getAuditLogs(cursor?: string | null, limit: number = 20, filters?: { [key: string]: string | number | boolean | undefined | null; fields?: string }) {
     const query = new URLSearchParams({ limit: limit.toString() });
     if (cursor) query.append('cursor', cursor);
     if (filters) {

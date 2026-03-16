@@ -14,7 +14,7 @@ export class AdminBlueprintEngine {
     return new AdminBlueprintEngine(this.repository.withDb(dbClient));
   }
 
-  async getBlueprints(cursor: string | null = null, limit: number = 20, filters?: { search?: string }) {
+  async getBlueprints(cursor: string | null = null, limit: number = 20, filters?: { search?: string; fields?: string }) {
     const result = await this.repository.findAll(cursor, limit, filters);
     return {
         blueprints: result.data,

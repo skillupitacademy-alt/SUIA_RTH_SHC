@@ -23,9 +23,10 @@ async function handler(_req: NextRequest) {
         const searchParams = _req.nextUrl.searchParams;
         const cursor = searchParams.get('cursor');
         const limit = parseInt(searchParams.get('limit') ?? '50');
+        const fields = searchParams.get('fields') ?? undefined;
         
         bootstrapCQRS();
-        const data = await queryBus.dispatch(new GetAuditLogsQuery(cursor, limit));
+        const data = await queryBus.dispatch(new GetAuditLogsQuery(cursor, limit, fields));
         return ApiResponse.success(data);
     } catch (_error: unknown) {
         const message = _error instanceof Error ? _error.message : 'Internal Server Error';

@@ -20,6 +20,7 @@ export interface IQuestionRepository {
     subtopicId?: string; 
     status?: string;
     search?: string;
+    fields?: string;
   }): Promise<{
     data: QuestionWithRelations[];
     total: number;

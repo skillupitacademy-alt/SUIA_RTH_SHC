@@ -1,5 +1,7 @@
-import { auditLogs, db, questions, roles, userRoles } from '@quiz/db';
-import { and, desc, eq, lt, or, sql } from 'drizzle-orm';
+import { auditLogs, db, questions, roles, sessions, userProfiles, userRoles, users } from '@quiz/db';
+import { and, desc, eq, ilike, lt, or, sql } from 'drizzle-orm';
+
+import { getDrizzleFields } from '@/lib/field-selector';
 
 import { IAdminAnalyticsRepository } from '../interfaces/admin-analytics.repository.interface';
 
@@ -88,7 +90,7 @@ export class DrizzleAdminAnalyticsRepository implements IAdminAnalyticsRepositor
     }));
   }
 
-  async getAuditLogs(cursor: string | null, limit: number) {
+  async getAuditLogs(cursor: string | null, limit: number, fields?: string) {
     const conditions = [];
     if (cursor !== null && cursor !== '') {
         const [cursorDate, cursorId] = cursor.split('|');
@@ -105,10 +107,22 @@ export class DrizzleAdminAnalyticsRepository implements IAdminAnalyticsRepositor
         }
     }
 
+    const AUDIT_ADMIN_ALLOWLIST = [
+        'id',
+        'userId',
+        'action',
+        'ip',
+        'device',
+        'metadata',
+        'createdAt'
+    ];
+    const columns = getDrizzleFields(fields, AUDIT_ADMIN_ALLOWLIST, auditLogs as unknown as Record<string, unknown>);
+
     const dataRaw = await this.dbInstance.query.auditLogs.findMany({
       where: conditions.length > 0 ? and(...conditions) : undefined,
       limit: limit + 1,
       orderBy: [desc(auditLogs.createdAt), desc(auditLogs.id)],
+      ...(columns ? { columns } : {}),
       with: {
           user: true
       }
@@ -119,6 +133,95 @@ export class DrizzleAdminAnalyticsRepository implements IAdminAnalyticsRepositor
     const nextCursor = hasNext ? `${data[data.length - 1].createdAt.toISOString()}|${data[data.length - 1].id}` : null;
 
     return { data, nextCursor };
+  }
+
+  async getLiveSessions(page: number, limit: number, search?: string, fields?: string) {
+    const safePage = Number.isFinite(page) && page > 0 ? page : 1;
+    const safeLimit = Number.isFinite(limit) && limit > 0 ? limit : 20;
+    const offset = (safePage - 1) * safeLimit;
+    const conditions = [];
+
+    if (search !== undefined && search !== null && search.trim() !== '') {
+        const pattern = `%${search.trim()}%`;
+        conditions.push(or(
+            ilike(users.email, pattern),
+            ilike(userProfiles.name, pattern)
+        ));
+    }
+
+    const SESSION_ADMIN_ALLOWLIST = [
+        'id',
+        'userId',
+        'ip',
+        'device',
+        'expiresAt',
+        'createdAt'
+    ];
+    const columns = getDrizzleFields(fields, SESSION_ADMIN_ALLOWLIST, sessions as unknown as Record<string, unknown>);
+
+    const selectFields = {
+        ...(columns ?? {
+            id: sessions.id,
+            userId: sessions.userId,
+            ip: sessions.ip,
+            device: sessions.device,
+            expiresAt: sessions.expiresAt,
+            createdAt: sessions.createdAt
+        }),
+        userEmail: users.email,
+        profileName: userProfiles.name,
+        lastActiveAt: users.lastActiveAt
+    };
+
+    const rows = await this.dbInstance
+      .select(selectFields)
+      .from(sessions)
+      .leftJoin(users, eq(sessions.userId, users.id))
+      .leftJoin(userProfiles, eq(userProfiles.userId, users.id))
+      .where(conditions.length > 0 ? and(...conditions) : undefined)
+      .orderBy(desc(sessions.createdAt), desc(sessions.id))
+      .limit(safeLimit)
+      .offset(offset) as Array<Record<string, unknown>>;
+
+    const [{ count: totalCount }] = await this.dbInstance
+      .select({ count: sql<number>`count(*)` })
+      .from(sessions)
+      .leftJoin(users, eq(sessions.userId, users.id))
+      .leftJoin(userProfiles, eq(userProfiles.userId, users.id))
+      .where(conditions.length > 0 ? and(...conditions) : undefined);
+
+    const total = Number(totalCount ?? 0);
+    const totalPages = Math.max(1, Math.ceil(total / safeLimit));
+
+    const now = new Date();
+    const sessionsData = rows.map((row) => {
+        const lastActiveAtRaw = row.lastActiveAt as unknown;
+        const lastActiveAt = lastActiveAtRaw instanceof Date ? lastActiveAtRaw : (lastActiveAtRaw != null ? new Date(lastActiveAtRaw as string) : null);
+        const diffMinutes = lastActiveAt ? (now.getTime() - lastActiveAt.getTime()) / (1000 * 60) : null;
+        const status = diffMinutes !== null && diffMinutes < 5 ? 'active' : 'idle';
+        return {
+            id: String(row.id ?? ''),
+            userId: String(row.userId ?? ''),
+            ip: (row.ip as string | null | undefined) ?? null,
+            device: (row.device as string | null | undefined) ?? null,
+            expiresAt: (row.expiresAt as Date | null | undefined) ?? null,
+            createdAt: (row.createdAt as Date | null | undefined) ?? null,
+            lastActiveAt: (row.lastActiveAt as Date | null | undefined) ?? null,
+            status,
+            user: {
+                email: (row.userEmail as string | null | undefined) ?? null,
+                profile: { name: (row.profileName as string | null | undefined) ?? null }
+            }
+        };
+    });
+
+    return {
+        sessions: sessionsData,
+        total,
+        page: safePage,
+        limit: safeLimit,
+        totalPages
+    };
   }
 
   async getRBACMetrics() {

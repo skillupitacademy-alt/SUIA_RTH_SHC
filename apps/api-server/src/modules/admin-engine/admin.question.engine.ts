@@ -51,7 +51,8 @@ export class AdminQuestionEngine {
     subtopicId?: string; 
     skillIds?: string[]; 
     status?: string; 
-    search?: string 
+    search?: string;
+    fields?: string;
   }) {
     const result = await this.repository.findAll(cursor, limit, filters);
     return {

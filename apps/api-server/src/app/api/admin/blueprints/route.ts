@@ -41,9 +41,10 @@ async function getHandler(_req: NextRequest) {
         const cursor = searchParams.get('cursor');
         const limit = parseInt(searchParams.get('limit') ?? '20');
         const search = searchParams.get('search') ?? undefined;
+        const fields = searchParams.get('fields') ?? undefined;
 
         bootstrapCQRS();
-        const data = await queryBus.dispatch(new GetBlueprintsQuery(cursor, limit, { search }));
+        const data = await queryBus.dispatch(new GetBlueprintsQuery(cursor, limit, { search, fields }));
         
         const durationMs = Date.now() - start;
         recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.blueprints.get.success', 1);

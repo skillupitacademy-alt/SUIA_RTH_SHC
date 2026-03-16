@@ -192,8 +192,8 @@ export class AdminAnalyticsEngine {
     }
   }
 
-  async getRecentAuditLogs(cursor: string | null = null, limit: number = 20) {
-    const result = await this.repository.getAuditLogs(cursor, limit);
+  async getRecentAuditLogs(cursor: string | null = null, limit: number = 20, fields?: string) {
+    const result = await this.repository.getAuditLogs(cursor, limit, fields);
     return {
         logs: result.data,
         nextCursor: result.nextCursor
@@ -256,5 +256,7 @@ export class AdminAnalyticsEngine {
   }
   async getSecuritySignals() { return { threats: [], status: 'nominal' as const }; }
   async getAccountMetrics() { return { active: 0, new: 0, churn: 0 }; }
-  async getLiveSessions() { return { active: 0, peak24h: 0 }; }
+  async getLiveSessions(page: number = 1, limit: number = 20, search?: string, fields?: string) {
+    return await this.repository.getLiveSessions(page, limit, search, fields);
+  }
 }

@@ -43,6 +43,7 @@ async function getHandler(_req: NextRequest) {
     const searchParams = _req.nextUrl.searchParams;
     const cursor = searchParams.get('cursor');
     const limit = parseInt(searchParams.get('limit') ?? '20');
+    const fields = searchParams.get('fields') ?? undefined;
     
     const filters = {
         domainId: searchParams.get('domainId') ?? undefined,
@@ -52,6 +53,7 @@ async function getHandler(_req: NextRequest) {
         skillIds: searchParams.getAll('skillIds').length > 0 ? searchParams.getAll('skillIds') : undefined,
         status: searchParams.get('status') ?? undefined,
         search: searchParams.get('search') ?? undefined,
+        fields,
     };
 
     bootstrapCQRS();

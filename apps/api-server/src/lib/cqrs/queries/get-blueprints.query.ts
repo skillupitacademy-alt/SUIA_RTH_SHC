@@ -10,7 +10,7 @@ export class GetBlueprintsQuery implements Query {
   constructor(
     public readonly cursor: string | null = null,
     public readonly limit: number = 20,
-    public readonly filters?: { search?: string }
+    public readonly filters?: { search?: string; fields?: string }
   ) {}
 }
 

@@ -17,7 +17,8 @@ export class GetQuestionsQuery implements Query {
       subtopicId?: string; 
       skillIds?: string[]; 
       status?: string; 
-      search?: string 
+      search?: string;
+      fields?: string;
     }
   ) {}
 }

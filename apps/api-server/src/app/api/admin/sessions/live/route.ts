@@ -24,8 +24,14 @@ async function handler(_req: NextRequest) {
     try {
         await _verifyAdmin(_req);
         
+        const searchParams = _req.nextUrl.searchParams;
+        const page = parseInt(searchParams.get('page') ?? '1', 10);
+        const limit = parseInt(searchParams.get('limit') ?? '20', 10);
+        const search = searchParams.get('search') ?? undefined;
+        const fields = searchParams.get('fields') ?? undefined;
+
         bootstrapCQRS();
-        const data = await queryBus.dispatch(new GetLiveSessionsQuery());
+        const data = await queryBus.dispatch(new GetLiveSessionsQuery(page, limit, search, fields));
         
         const durationMs = Date.now() - start;
         recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.sessions.live.success', 1);
