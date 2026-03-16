@@ -215,7 +215,11 @@ export class ContentAdminClient implements IAdminQuestionConfigClient, IAdminBlu
     if (filters?.status) query.append('status', filters.status);
     if (filters?.search) query.append('search', filters.search);
 
-    return this.client.get<PaginatedQuestions>(`/admin/questions?${query.toString()}`);
+    const response = await this.client.get<PaginatedResponse<QuestionSummary>>(`/admin/questions?${query.toString()}`);
+    return {
+      ...response,
+      questions: response.data
+    } satisfies PaginatedQuestions;
   }
 
   async getQuestionById(id: string) {

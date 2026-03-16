@@ -32,7 +32,9 @@ type DomainForm = {
 export function DomainTable() {
     const [data, setData] = useState<Domain[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [page, setPage] = useState(1);
+    const [currentCursor, setCurrentCursor] = useState<string | null>(null);
+    const [cursorStack, setCursorStack] = useState<Array<string | null>>([]);
+    const [nextCursor, setNextCursor] = useState<string | null>(null);
     const [pageSize, setPageSize] = useState(20);
     const [totalPages, setTotalPages] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
@@ -66,7 +68,7 @@ export function DomainTable() {
     const fetchDomains = useCallback(async () => {
         setIsLoading(true);
         try {
-            const response = await apiClient.admin.getDomains(page.toString(), pageSize, debouncedSearch || undefined);
+            const response = await apiClient.admin.getDomains(currentCursor, pageSize, debouncedSearch || undefined);
             const domains: Domain[] = Array.isArray(response.data)
                 ? response.data.map((d) => ({
                     id: String(d.id),
@@ -79,8 +81,10 @@ export function DomainTable() {
                 }))
                 : [];
             setData(domains);
-            setTotalPages(response.totalPages ?? 1);
-            setTotalCount(response.total ?? response.data.length ?? 0);
+            const total = response.total ?? response.data.length ?? 0;
+            setTotalPages(Math.max(1, Math.ceil(total / pageSize)));
+            setTotalCount(total);
+            setNextCursor(response.nextCursor ?? null);
             setSelectedIds(new Set()); // Reset selection on refresh
         } catch (error) {
             clientLogger.error('Failed to fetch domains', { error: error instanceof Error ? error.message : 'unknown' });
@@ -88,11 +92,35 @@ export function DomainTable() {
         } finally {
             setIsLoading(false);
         }
-    }, [debouncedSearch, page, pageSize]);
+    }, [currentCursor, debouncedSearch, pageSize]);
 
     useEffect(() => {
         void fetchDomains();
     }, [fetchDomains]);
+
+    const currentPage = cursorStack.length + 1;
+
+    const resetPagination = () => {
+        setCurrentCursor(null);
+        setCursorStack([]);
+        setNextCursor(null);
+    };
+
+    const handleNextPage = () => {
+        if (nextCursor === null) return;
+        setCursorStack((prev) => [...prev, currentCursor]);
+        setCurrentCursor(nextCursor);
+    };
+
+    const handlePreviousPage = () => {
+        setCursorStack((prev) => {
+            if (prev.length === 0) return prev;
+            const nextStack = [...prev];
+            const previousCursor = nextStack.pop() ?? null;
+            setCurrentCursor(previousCursor);
+            return nextStack;
+        });
+    };
 
     // --- SELECTION LOGIC ---
     const handleSelect = (id: string, selected: boolean) => {
@@ -407,7 +435,7 @@ export function DomainTable() {
                     <HierarchySearchBar
                         value={searchQuery}
                         placeholder="Search Domains..."
-                        onChange={(val: string) => { setSearchQuery(val); setPage(1); }}
+                        onChange={(val: string) => { setSearchQuery(val); resetPagination(); }}
                         onSelectAll={handleSelectAll}
                         selectAllChecked={data.length > 0 && selectedIds.size === data.length}
                         leftIcon={<Globe className="w-5 h-5" />}
@@ -457,7 +485,7 @@ export function DomainTable() {
                                 <DomainReviewCard
                                     key={domain.id}
                                     domain={domainSummary}
-                                    index={index + (page - 1) * 20}
+                                    index={index + (currentPage - 1) * pageSize}
                                     isSelected={selectedIds.has(domain.id)}
                                     onSelect={handleSelect}
                                     onDeleteRequest={(d) => { setCurrentDomain({
@@ -482,14 +510,19 @@ export function DomainTable() {
             </div>
 
             <ZPagination
-                currentPage={page}
+                mode="cursor"
+                currentPage={currentPage}
                 totalPages={totalPages}
                 totalCount={totalCount}
                 pageSize={pageSize}
-                onPageChange={setPage}
+                canGoPrevious={cursorStack.length > 0}
+                hasNextPage={nextCursor !== null}
+                onPrevious={handlePreviousPage}
+                onNext={handleNextPage}
+                onPageChange={() => undefined}
                 onPageSizeChange={(size) => {
                     setPageSize(size);
-                    setPage(1);
+                    resetPagination();
                 }}
             />
         </div>

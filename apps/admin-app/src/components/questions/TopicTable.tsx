@@ -43,7 +43,9 @@ interface Topic {
 export function TopicTable() {
     const [data, setData] = useState<Topic[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [page, setPage] = useState(1);
+    const [currentCursor, setCurrentCursor] = useState<string | null>(null);
+    const [cursorStack, setCursorStack] = useState<Array<string | null>>([]);
+    const [nextCursor, setNextCursor] = useState<string | null>(null);
     const [pageSize, setPageSize] = useState(20);
     const [totalPages, setTotalPages] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
@@ -85,15 +87,17 @@ export function TopicTable() {
         setIsLoading(true);
         try {
             const searchTerm = debouncedSearch.trim() === '' ? undefined : debouncedSearch;
-            const response = await apiClient.admin.getTopics(page.toString(), pageSize, searchTerm);
+            const response = await apiClient.admin.getTopics(currentCursor, pageSize, undefined, searchTerm);
             const mapped = response.data.map((topic: Topic) => ({
                 ...topic,
                 learningUrl: topic.learningUrl ?? '',
                 detailedNotesPath: topic.detailedNotesPath ?? '',
             }));
             setData(mapped);
-            setTotalPages(response.totalPages ?? 1);
-            setTotalCount(response.total ?? response.data.length ?? 0);
+            const total = response.total ?? response.data.length ?? 0;
+            setTotalPages(Math.max(1, Math.ceil(total / pageSize)));
+            setTotalCount(total);
+            setNextCursor(response.nextCursor ?? null);
             setSelectedIds(new Set());
         } catch (error) {
             clientLogger.error('Failed to fetch topics', { error: error instanceof Error ? error.message : 'unknown' });
@@ -101,11 +105,35 @@ export function TopicTable() {
         } finally {
             setIsLoading(false);
         }
-    }, [debouncedSearch, page, pageSize]);
+    }, [currentCursor, debouncedSearch, pageSize]);
 
     useEffect(() => {
         void fetchTopics();
     }, [fetchTopics]);
+
+    const currentPage = cursorStack.length + 1;
+
+    const resetPagination = () => {
+        setCurrentCursor(null);
+        setCursorStack([]);
+        setNextCursor(null);
+    };
+
+    const handleNextPage = () => {
+        if (nextCursor === null) return;
+        setCursorStack((prev) => [...prev, currentCursor]);
+        setCurrentCursor(nextCursor);
+    };
+
+    const handlePreviousPage = () => {
+        setCursorStack((prev) => {
+            if (prev.length === 0) return prev;
+            const nextStack = [...prev];
+            const previousCursor = nextStack.pop() ?? null;
+            setCurrentCursor(previousCursor);
+            return nextStack;
+        });
+    };
 
     const handleOpenForm = (topic: Topic | null = null) => {
         if (topic != null) {
@@ -251,7 +279,7 @@ export function TopicTable() {
                 <HierarchySearchBar
                     value={searchQuery}
                     placeholder="Search Topic Nodes..."
-                    onChange={(val) => { setSearchQuery(val); setPage(1); }}
+                    onChange={(val) => { setSearchQuery(val); resetPagination(); }}
                     onSelectAll={() => toggleSelectAll()}
                     selectAllChecked={selectedIds.size === data.length && data.length > 0}
                     leftIcon={<Hash size={18} />}
@@ -346,14 +374,19 @@ export function TopicTable() {
             </div>
 
             <ZPagination
-                currentPage={page}
+                mode="cursor"
+                currentPage={currentPage}
                 totalPages={totalPages}
                 totalCount={totalCount}
                 pageSize={pageSize}
-                onPageChange={setPage}
+                canGoPrevious={cursorStack.length > 0}
+                hasNextPage={nextCursor !== null}
+                onPrevious={handlePreviousPage}
+                onNext={handleNextPage}
+                onPageChange={() => undefined}
                 onPageSizeChange={(size) => {
                     setPageSize(size);
-                    setPage(1);
+                    resetPagination();
                 }}
             />
 

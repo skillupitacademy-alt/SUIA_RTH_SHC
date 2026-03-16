@@ -11,6 +11,11 @@ interface ZPaginationProps {
     pageSize: number;
     onPageChange: (page: number) => void;
     onPageSizeChange: (size: number) => void;
+    mode?: 'page' | 'cursor';
+    canGoPrevious?: boolean;
+    hasNextPage?: boolean;
+    onPrevious?: () => void;
+    onNext?: () => void;
     pageSizeOptions?: number[];
     className?: string;
     accentColor?: string;
@@ -23,14 +28,41 @@ export const ZPagination: React.FC<ZPaginationProps> = ({
     pageSize,
     onPageChange,
     onPageSizeChange,
+    mode = 'page',
+    canGoPrevious,
+    hasNextPage,
+    onPrevious,
+    onNext,
     pageSizeOptions = [10, 25, 50],
     className = '',
     accentColor = '#FF2D55'
 }) => {
     if (totalCount === 0) return null;
 
-    const startRange = (currentPage - 1) * pageSize + 1;
-    const endRange = Math.min(currentPage * pageSize, totalCount);
+    const safeCurrentPage = Math.max(currentPage, 1);
+    const safeTotalPages = Math.max(totalPages, 1);
+    const startRange = (safeCurrentPage - 1) * pageSize + 1;
+    const endRange = Math.min(safeCurrentPage * pageSize, totalCount);
+    const previousDisabled = mode === 'cursor' ? !(canGoPrevious ?? safeCurrentPage > 1) : safeCurrentPage === 1;
+    const nextDisabled = mode === 'cursor' ? !(hasNextPage ?? safeCurrentPage < safeTotalPages) : safeCurrentPage === safeTotalPages;
+
+    const handlePrevious = () => {
+        if (previousDisabled) return;
+        if (mode === 'cursor') {
+            onPrevious?.();
+            return;
+        }
+        onPageChange(safeCurrentPage - 1);
+    };
+
+    const handleNext = () => {
+        if (nextDisabled) return;
+        if (mode === 'cursor') {
+            onNext?.();
+            return;
+        }
+        onPageChange(safeCurrentPage + 1);
+    };
 
     return (
         <div className={`flex flex-col md:flex-row items-center justify-between gap-6 py-6 px-2 border-t border-slate-100/60 ${className}`}>
@@ -54,9 +86,9 @@ export const ZPagination: React.FC<ZPaginationProps> = ({
                 <div className="flex flex-col">
                     <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Page Progress</p>
                     <div className="flex items-center gap-2">
-                        <span className="text-sm font-black text-slate-900 font-inter">{currentPage}</span>
+                        <span className="text-sm font-black text-slate-900 font-inter">{safeCurrentPage}</span>
                         <span className="text-xs font-bold text-slate-400">/</span>
-                        <span className="text-sm font-black text-slate-400 font-inter">{totalPages}</span>
+                        <span className="text-sm font-black text-slate-400 font-inter">{safeTotalPages}</span>
                     </div>
                 </div>
             </div>
@@ -81,8 +113,8 @@ export const ZPagination: React.FC<ZPaginationProps> = ({
 
                 <div className="flex items-center gap-2">
                     <button
-                        onClick={() => onPageChange(currentPage - 1)}
-                        disabled={currentPage === 1}
+                        onClick={handlePrevious}
+                        disabled={previousDisabled}
                         className="p-3 rounded-xl border border-slate-100 bg-white shadow-sm hover:border-slate-200 disabled:opacity-30 disabled:grayscale transition-all active:scale-95 group"
                         aria-label="Previous Page"
                     >
@@ -90,8 +122,8 @@ export const ZPagination: React.FC<ZPaginationProps> = ({
                     </button>
 
                     <button
-                        onClick={() => onPageChange(currentPage + 1)}
-                        disabled={currentPage === totalPages}
+                        onClick={handleNext}
+                        disabled={nextDisabled}
                         className="p-3 rounded-xl border border-slate-100 bg-white shadow-sm hover:border-slate-200 disabled:opacity-30 disabled:grayscale transition-all active:scale-95 group"
                         aria-label="Next Page"
                     >

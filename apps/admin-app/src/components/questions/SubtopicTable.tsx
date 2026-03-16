@@ -43,7 +43,9 @@ type SubtopicForm = {
 
 export function SubtopicTable() {
     const [data, setData] = useState<SubtopicRow[]>([]);
-    const [page, setPage] = useState(1);
+    const [currentCursor, setCurrentCursor] = useState<string | null>(null);
+    const [cursorStack, setCursorStack] = useState<Array<string | null>>([]);
+    const [nextCursor, setNextCursor] = useState<string | null>(null);
     const [pageSize, setPageSize] = useState(20);
     const [totalPages, setTotalPages] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
@@ -89,7 +91,7 @@ export function SubtopicTable() {
 
     const fetchSubtopics = useCallback(async () => {
         try {
-            const response = await apiClient.admin.getSubtopics(page.toString(), pageSize, debouncedSearch || undefined);
+            const response = await apiClient.admin.getSubtopics(currentCursor, pageSize, undefined, debouncedSearch || undefined);
             const mapped: SubtopicRow[] = Array.isArray(response.data)
                 ? response.data.map((s) => ({
                     id: String((s as { id?: string }).id ?? crypto.randomUUID()),
@@ -103,18 +105,44 @@ export function SubtopicTable() {
                 }))
                 : [];
             setData(mapped);
-            setTotalPages(response.totalPages ?? 1);
-            setTotalCount(response.total ?? mapped.length ?? 0);
+            const total = response.total ?? mapped.length ?? 0;
+            setTotalPages(Math.max(1, Math.ceil(total / pageSize)));
+            setTotalCount(total);
+            setNextCursor(response.nextCursor ?? null);
             setSelectedIds(new Set());
         } catch (error) {
             clientLogger.error('Failed to fetch subtopics', { error: error instanceof Error ? error.message : 'unknown' });
             setErrorMessage('Connection Error: Unable to load subtopics at this time.');
         }
-    }, [debouncedSearch, page, pageSize]);
+    }, [currentCursor, debouncedSearch, pageSize]);
 
     useEffect(() => {
         void fetchSubtopics();
     }, [fetchSubtopics]);
+
+    const currentPage = cursorStack.length + 1;
+
+    const resetPagination = () => {
+        setCurrentCursor(null);
+        setCursorStack([]);
+        setNextCursor(null);
+    };
+
+    const handleNextPage = () => {
+        if (nextCursor === null) return;
+        setCursorStack((prev) => [...prev, currentCursor]);
+        setCurrentCursor(nextCursor);
+    };
+
+    const handlePreviousPage = () => {
+        setCursorStack((prev) => {
+            if (prev.length === 0) return prev;
+            const nextStack = [...prev];
+            const previousCursor = nextStack.pop() ?? null;
+            setCurrentCursor(previousCursor);
+            return nextStack;
+        });
+    };
 
     const handleOpenForm = (subtopic: SubtopicRow | null = null) => {
         if (subtopic != null) {
@@ -429,7 +457,7 @@ export function SubtopicTable() {
                 <HierarchySearchBar
                     value={searchQuery}
                     placeholder="Search Subtopics..."
-                    onChange={(val) => setSearchQuery(val)}
+                    onChange={(val) => { setSearchQuery(val); resetPagination(); }}
                     onSelectAll={() => toggleSelectAll()}
                     selectAllChecked={selectedIds.size === data.length && data.length > 0}
                     leftIcon={<GitBranch size={18} />}
@@ -526,14 +554,19 @@ export function SubtopicTable() {
             </div>
 
             <ZPagination
-                currentPage={page}
+                mode="cursor"
+                currentPage={currentPage}
                 totalPages={totalPages}
                 totalCount={totalCount}
                 pageSize={pageSize}
-                onPageChange={setPage}
+                canGoPrevious={cursorStack.length > 0}
+                hasNextPage={nextCursor !== null}
+                onPrevious={handlePreviousPage}
+                onNext={handleNextPage}
+                onPageChange={() => undefined}
                 onPageSizeChange={(size) => {
                     setPageSize(size);
-                    setPage(1);
+                    resetPagination();
                 }}
             />
 

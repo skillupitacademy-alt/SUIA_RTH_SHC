@@ -56,7 +56,9 @@ const SKILL_CATEGORIES: Record<string, string> = {
 export function SkillTable() {
     const [data, setData] = useState<SkillRow[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [page, setPage] = useState(1);
+    const [currentCursor, setCurrentCursor] = useState<string | null>(null);
+    const [cursorStack, setCursorStack] = useState<Array<string | null>>([]);
+    const [nextCursor, setNextCursor] = useState<string | null>(null);
     const [pageSize, setPageSize] = useState(20);
     const [totalPages, setTotalPages] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
@@ -92,7 +94,7 @@ export function SkillTable() {
     const fetchSkills = useCallback(async () => {
         setIsLoading(true);
         try {
-            const response = await apiClient.admin.getSkills(page.toString(), pageSize, debouncedSearch || undefined);
+            const response = await apiClient.admin.getSkills(currentCursor, pageSize, debouncedSearch || undefined);
             const skills: SkillRow[] = Array.isArray(response.data)
                 ? (response.data as Skill[]).map((s) => ({
                     id: String(s.id),
@@ -106,8 +108,10 @@ export function SkillTable() {
                 }) as SkillRow)
                 : [];
             setData(skills);
-            setTotalPages(response.totalPages ?? 1);
-            setTotalCount(response.total ?? skills.length ?? 0);
+            const total = response.total ?? skills.length ?? 0;
+            setTotalPages(Math.max(1, Math.ceil(total / pageSize)));
+            setTotalCount(total);
+            setNextCursor(response.nextCursor ?? null);
             setSelectedIds(new Set());
         } catch (error) {
             clientLogger.error('Failed to fetch skills', { error: error instanceof Error ? error.message : 'unknown' });
@@ -115,11 +119,35 @@ export function SkillTable() {
         } finally {
             setIsLoading(false);
         }
-    }, [debouncedSearch, page, pageSize]);
+    }, [currentCursor, debouncedSearch, pageSize]);
 
     useEffect(() => {
         void fetchSkills();
     }, [fetchSkills]);
+
+    const currentPage = cursorStack.length + 1;
+
+    const resetPagination = () => {
+        setCurrentCursor(null);
+        setCursorStack([]);
+        setNextCursor(null);
+    };
+
+    const handleNextPage = () => {
+        if (nextCursor === null) return;
+        setCursorStack((prev) => [...prev, currentCursor]);
+        setCurrentCursor(nextCursor);
+    };
+
+    const handlePreviousPage = () => {
+        setCursorStack((prev) => {
+            if (prev.length === 0) return prev;
+            const nextStack = [...prev];
+            const previousCursor = nextStack.pop() ?? null;
+            setCurrentCursor(previousCursor);
+            return nextStack;
+        });
+    };
 
     // --- SELECTION LOGIC ---
     const handleSelect = (id: string, selected: boolean) => {
@@ -442,7 +470,7 @@ export function SkillTable() {
                 <HierarchySearchBar
                     value={searchQuery}
                     placeholder="Search Skills..."
-                    onChange={(val: string) => { setSearchQuery(val); setPage(1); }}
+                    onChange={(val: string) => { setSearchQuery(val); resetPagination(); }}
                     onSelectAll={(checked: boolean) => handleSelectAll(checked)}
                     selectAllChecked={data.length > 0 && selectedIds.size === data.length}
                     leftIcon={<Shield className="w-5 h-5" />}
@@ -486,7 +514,7 @@ export function SkillTable() {
                                 <SkillReviewCard
                                     key={skill.id}
                                     skill={normalized}
-                                    index={index + (page - 1) * pageSize}
+                                    index={index + (currentPage - 1) * pageSize}
                                     isSelected={selectedIds.has(skill.id)}
                                     onSelect={handleSelect}
                                     onDeleteRequest={(d) => { setCurrentSkill({
@@ -515,14 +543,19 @@ export function SkillTable() {
             </div>
 
             <ZPagination
-                currentPage={page}
+                mode="cursor"
+                currentPage={currentPage}
                 totalPages={totalPages}
                 totalCount={totalCount}
                 pageSize={pageSize}
-                onPageChange={setPage}
+                canGoPrevious={cursorStack.length > 0}
+                hasNextPage={nextCursor !== null}
+                onPrevious={handlePreviousPage}
+                onNext={handleNextPage}
+                onPageChange={() => undefined}
                 onPageSizeChange={(size) => {
                     setPageSize(size);
-                    setPage(1);
+                    resetPagination();
                 }}
             />
         </div>

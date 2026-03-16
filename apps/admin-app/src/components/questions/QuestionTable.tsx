@@ -41,7 +41,9 @@ interface QuestionData {
 export function QuestionTable() {
     const [questions, setQuestions] = useState<QuestionData[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [page, setPage] = useState(1);
+    const [currentCursor, setCurrentCursor] = useState<string | null>(null);
+    const [cursorStack, setCursorStack] = useState<Array<string | null>>([]);
+    const [nextCursor, setNextCursor] = useState<string | null>(null);
     const [pageSize, setPageSize] = useState(20);
     const [totalPages, setTotalPages] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
@@ -67,6 +69,30 @@ export function QuestionTable() {
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [isBatchDeleting, setIsBatchDeleting] = useState(false);
 
+    const currentPage = cursorStack.length + 1;
+
+    const resetPagination = useCallback(() => {
+        setCurrentCursor(null);
+        setCursorStack([]);
+        setNextCursor(null);
+    }, []);
+
+    const handleNextPage = useCallback(() => {
+        if (nextCursor === null) return;
+        setCursorStack((prev) => [...prev, currentCursor]);
+        setCurrentCursor(nextCursor);
+    }, [currentCursor, nextCursor]);
+
+    const handlePreviousPage = useCallback(() => {
+        setCursorStack((prev) => {
+            if (prev.length === 0) return prev;
+            const nextStack = [...prev];
+            const previousCursor = nextStack.pop() ?? null;
+            setCurrentCursor(previousCursor);
+            return nextStack;
+        });
+    }, []);
+
     const handleFilterChange = useCallback((selection: Selection) => {
         setFilters(prev => {
             if (
@@ -87,15 +113,15 @@ export function QuestionTable() {
                 skillIds: (selection.skillIds != null) ? selection.skillIds : []
             };
         });
-        setPage(1);
-    }, []);
+        resetPagination();
+    }, [resetPagination]);
 
 
     useEffect(() => {
         const fetchQuestions = async () => {
             setIsLoading(true);
             try {
-                const data = await apiClient.admin.getQuestions(page.toString(), pageSize, {
+                const data = await apiClient.admin.getQuestions(currentCursor, pageSize, {
                     domainId: (filters.domainId != null && filters.domainId !== '') ? filters.domainId : undefined,
                     subjectId: (filters.subjectId != null && filters.subjectId !== '') ? filters.subjectId : undefined,
                     topicId: (filters.topicId != null && filters.topicId !== '') ? filters.topicId : undefined,
@@ -133,8 +159,10 @@ export function QuestionTable() {
                     topic: (q as { topic?: QuestionData['topic'] }).topic
                 }));
                 setQuestions(mappedQuestions);
-                setTotalPages(data.totalPages ?? 1);
-                setTotalCount(data.total ?? data.questions.length ?? 0); // Fallback if total is missing
+                const total = data.total ?? data.questions.length ?? 0;
+                setTotalPages(Math.max(1, Math.ceil(total / pageSize)));
+                setTotalCount(total);
+                setNextCursor(data.nextCursor ?? null);
             } catch (error) {
                 clientLogger.error('Failed to fetch questions', { error: error instanceof Error ? error.message : 'unknown' });
                 // We keep silence for main table load but could set an error state if requested
@@ -143,7 +171,7 @@ export function QuestionTable() {
             }
         };
         void fetchQuestions();
-    }, [page, pageSize, filters, debouncedSearch]);
+    }, [currentCursor, pageSize, filters, debouncedSearch]);
 
     const handleDelete = async () => {
         if (deleteModal.questionId === null) return;
@@ -229,7 +257,7 @@ export function QuestionTable() {
                                     placeholder="Search assessment text..."
                                     aria-label="Search assessments"
                                     value={searchQuery}
-                                    onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
+                                    onChange={(e) => { setSearchQuery(e.target.value); resetPagination(); }}
                                     className="w-full bg-slate-50 border-none rounded-2xl pl-12 pr-6 py-3.5 text-[11px] font-black tracking-widest text-[#1A1A1A] placeholder:text-slate-300 focus:ring-2 focus:ring-[#FF4B91]/10 transition-all outline-none border border-transparent shadow-inner"
                                 />
                             </div>
@@ -238,7 +266,7 @@ export function QuestionTable() {
                                 onClick={() => {
                                     setFilters({ domainId: '', subjectId: '', topicId: '', subtopicId: '', skillIds: [] });
                                     setSearchQuery('');
-                                    setPage(1);
+                                    resetPagination();
                                 }}
                                 className="flex-shrink-0 flex items-center gap-2 px-4 py-3.5 rounded-2xl bg-red-50 text-red-600 text-[10px] font-black uppercase tracking-widest hover:bg-red-100 transition-all border border-red-100 h-full"
                                 aria-label="Clear filters"
@@ -274,7 +302,7 @@ export function QuestionTable() {
                             <QuestionReviewCard
                                 key={q.id}
                                 question={q}
-                                index={(page - 1) * 20 + idx}
+                                index={(currentPage - 1) * pageSize + idx}
                                 isSelected={selectedIds.has(q.id)}
                                 onSelect={toggleSelect}
                                 onDeleteRequest={openDeleteModal}
@@ -334,14 +362,19 @@ export function QuestionTable() {
 
             {/* Pagination Standard */}
             <ZPagination
-                currentPage={page}
+                mode="cursor"
+                currentPage={currentPage}
                 totalPages={totalPages}
                 totalCount={totalCount}
                 pageSize={pageSize}
-                onPageChange={setPage}
+                canGoPrevious={cursorStack.length > 0}
+                hasNextPage={nextCursor !== null}
+                onPrevious={handlePreviousPage}
+                onNext={handleNextPage}
+                onPageChange={() => undefined}
                 onPageSizeChange={(size) => {
                     setPageSize(size);
-                    setPage(1); // Reset to first page on size change
+                    resetPagination();
                 }}
             />
 

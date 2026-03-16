@@ -45,7 +45,9 @@ type SubjectItem = {
 export function SubjectTable() {
     const [data, setData] = useState<SubjectItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [page, setPage] = useState(1);
+    const [currentCursor, setCurrentCursor] = useState<string | null>(null);
+    const [cursorStack, setCursorStack] = useState<Array<string | null>>([]);
+    const [nextCursor, setNextCursor] = useState<string | null>(null);
     const [pageSize, setPageSize] = useState(20);
     const [totalPages, setTotalPages] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
@@ -84,7 +86,7 @@ export function SubjectTable() {
     const fetchSubjects = useCallback(async () => {
         setIsLoading(true);
         try {
-            const response = await apiClient.admin.getSubjects(page.toString(), pageSize, debouncedSearch || undefined);
+            const response = await apiClient.admin.getSubjects(currentCursor, pageSize, undefined, debouncedSearch || undefined);
             const mapped: SubjectItem[] = (Array.isArray(response.data) ? response.data : []).map((s) => ({
                 id: String(s.id),
                 name: s.name ?? '',
@@ -105,8 +107,10 @@ export function SubjectTable() {
                 }
             }));
             setData(mapped);
-            setTotalPages(response.totalPages ?? 1);
-            setTotalCount(response.total ?? response.data.length ?? 0);
+            const total = response.total ?? response.data.length ?? 0;
+            setTotalPages(Math.max(1, Math.ceil(total / pageSize)));
+            setTotalCount(total);
+            setNextCursor(response.nextCursor ?? null);
             setSelectedIds(new Set());
         } catch (error) {
             clientLogger.error('Failed to fetch subjects', { error: error instanceof Error ? error.message : 'unknown' });
@@ -114,11 +118,35 @@ export function SubjectTable() {
         } finally {
             setIsLoading(false);
         }
-    }, [debouncedSearch, page, pageSize]);
+    }, [currentCursor, debouncedSearch, pageSize]);
 
     useEffect(() => {
         void fetchSubjects();
     }, [fetchSubjects]);
+
+    const currentPage = cursorStack.length + 1;
+
+    const resetPagination = () => {
+        setCurrentCursor(null);
+        setCursorStack([]);
+        setNextCursor(null);
+    };
+
+    const handleNextPage = () => {
+        if (nextCursor === null) return;
+        setCursorStack((prev) => [...prev, currentCursor]);
+        setCurrentCursor(nextCursor);
+    };
+
+    const handlePreviousPage = () => {
+        setCursorStack((prev) => {
+            if (prev.length === 0) return prev;
+            const nextStack = [...prev];
+            const previousCursor = nextStack.pop() ?? null;
+            setCurrentCursor(previousCursor);
+            return nextStack;
+        });
+    };
 
     // --- SELECTION LOGIC ---
     const handleSelect = (id: string, selected: boolean) => {
@@ -459,7 +487,7 @@ export function SubjectTable() {
                 <HierarchySearchBar
                     value={searchQuery}
                     placeholder="Search Subjects..."
-                    onChange={(val) => { setSearchQuery(val); setPage(1); }}
+                    onChange={(val) => { setSearchQuery(val); resetPagination(); }}
                     onSelectAll={(checked) => handleSelectAll(checked)}
                     selectAllChecked={data.length > 0 && selectedIds.size === data.length}
                     leftIcon={<BookOpen className="w-5 h-5" />}
@@ -506,7 +534,7 @@ export function SubjectTable() {
                                 <SubjectReviewCard
                                     key={subject.id}
                                     subject={normalized}
-                                    index={index + (page - 1) * pageSize}
+                                    index={index + (currentPage - 1) * pageSize}
                                     isSelected={selectedIds.has(subject.id)}
                                     onSelect={handleSelect}
                                     onDeleteRequest={(d) => {
@@ -534,14 +562,19 @@ export function SubjectTable() {
                 )}
             </div>
             <ZPagination
-                currentPage={page}
+                mode="cursor"
+                currentPage={currentPage}
                 totalPages={totalPages}
                 totalCount={totalCount}
                 pageSize={pageSize}
-                onPageChange={setPage}
+                canGoPrevious={cursorStack.length > 0}
+                hasNextPage={nextCursor !== null}
+                onPrevious={handlePreviousPage}
+                onNext={handleNextPage}
+                onPageChange={() => undefined}
                 onPageSizeChange={(size) => {
                     setPageSize(size);
-                    setPage(1);
+                    resetPagination();
                 }}
             />
         </div>

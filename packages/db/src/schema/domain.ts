@@ -68,6 +68,8 @@ export const skills = pgTable("skills", {
   category: skillCategoryEnum("category"),
   mappingType: mappingTypeEnum("mapping_type"),
   weight: integer("weight").notNull().default(1),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 export const topicSkills = pgTable("topic_skills", {

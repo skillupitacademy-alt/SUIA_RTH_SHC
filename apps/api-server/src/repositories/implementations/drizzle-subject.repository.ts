@@ -1,6 +1,7 @@
 import { db, subjects } from '@quiz/db';
-import { and, desc, eq, inArray, lt, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, lt, or, sql } from 'drizzle-orm';
 
+import { buildPaginatedResponse, decodePageCursor } from '@/lib/pagination';
 import { BaseRepository } from '@/modules/core/repositories/base.repository';
 
 import { ISubjectRepository } from '../interfaces/subject.repository.interface';
@@ -18,42 +19,71 @@ export class DrizzleSubjectRepository extends BaseRepository<typeof subjects.$in
 
 
   async findAll(cursor: string | null, limit: number, filters?: { domainId?: string; search?: string }) {
-    const conditions = [];
-
-    if (cursor !== null && cursor !== '') {
-        conditions.push(lt(subjects.createdAt, new Date(cursor)));
-    }
+    const baseConditions = [];
 
     if (filters?.domainId !== undefined && filters?.domainId !== null && filters?.domainId !== '') {
-        conditions.push(eq(subjects.domainId, filters.domainId));
+        baseConditions.push(eq(subjects.domainId, filters.domainId));
     }
     if (filters?.search !== undefined && filters?.search !== null && filters?.search.trim() !== '') {
-        conditions.push(sql`${subjects.name} ILIKE ${'%' + filters.search + '%'}`);
+        baseConditions.push(sql`${subjects.name} ILIKE ${'%' + filters.search + '%'}`);
     }
 
-    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+    const cursorConditions = [];
+    if (cursor !== null && cursor !== '') {
+      try {
+        const { lastSortValue, lastId } = decodePageCursor(cursor);
+        cursorConditions.push(
+          or(
+            lt(subjects.createdAt, new Date(lastSortValue)),
+            and(eq(subjects.createdAt, new Date(lastSortValue)), lt(subjects.id, lastId))
+          )
+        );
+      } catch {
+        const [cursorDate, cursorId] = cursor.split('|');
+        if (cursorId) {
+          cursorConditions.push(
+            or(
+              lt(subjects.createdAt, new Date(cursorDate)),
+              and(eq(subjects.createdAt, new Date(cursorDate)), lt(subjects.id, cursorId))
+            )
+          );
+        } else {
+          cursorConditions.push(lt(subjects.createdAt, new Date(cursorDate)));
+        }
+      }
+    }
+
+    const allConditions = [...baseConditions, ...cursorConditions];
+    const whereClause = allConditions.length > 0 ? and(...allConditions) : undefined;
 
     const dataRaw = await this.dbInstance.query.subjects.findMany({
       where: whereClause,
       limit: limit + 1,
-      orderBy: [desc(subjects.createdAt)],
+      orderBy: [desc(subjects.createdAt), desc(subjects.id)],
       with: {
         domain: true,
       }
     });
 
-    const hasNext = dataRaw.length > limit;
-    const data = hasNext ? dataRaw.slice(0, limit) : dataRaw;
-    const nextCursor = hasNext ? data[data.length - 1].createdAt.toISOString() : null;
-
-    const [{ count }] = await this.dbInstance
+    const [{ count: totalCount }] = await this.dbInstance
       .select({ count: sql<number>`count(*)` })
       .from(subjects)
-      .where(conditions.length > 0 ? and(...conditions.filter(c => !c.toString().includes('created_at <'))) : sql`true`);
+      .where(baseConditions.length > 0 ? and(...baseConditions) : sql`true`);
 
-    const total = Number(count ?? 0);
+    const total = Number(totalCount ?? 0);
+    const paginated = buildPaginatedResponse(
+      dataRaw,
+      limit,
+      item => item.createdAt.toISOString(),
+      total
+    );
 
-    return { data, total, nextCursor, limit };
+    return {
+      data: paginated.data,
+      total: paginated.total ?? 0,
+      nextCursor: paginated.nextCursor,
+      limit
+    };
   }
 
   async create(data: typeof subjects.$inferInsert) {

@@ -1,6 +1,7 @@
 import { db, skills } from '@quiz/db';
-import { and, desc, eq, inArray, lt, type SQL,sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, lt, or, type SQL, sql } from 'drizzle-orm';
 
+import { buildPaginatedResponse, decodePageCursor } from '@/lib/pagination';
 import { BaseRepository } from '@/modules/core/repositories/base.repository';
 
 import { ISkillRepository } from '../interfaces/skill.repository.interface';
@@ -18,37 +19,68 @@ export class DrizzleSkillRepository extends BaseRepository<typeof skills.$inferS
 
 
   async findAll(cursor: string | null, limit: number, filters?: { search?: string }) {
-    const conditions: SQL[] = [];
-
-    if (cursor !== null && cursor !== '') {
-        // Use lexicographic cursor on name for deterministic ordering
-        conditions.push(lt(skills.name, cursor));
-    }
+    const baseConditions: SQL[] = [];
 
     if (filters?.search !== undefined && filters?.search !== null && filters?.search.trim() !== '') {
-        conditions.push(sql`${skills.name} ILIKE ${'%' + filters.search + '%'}`);
+        baseConditions.push(sql`${skills.name} ILIKE ${'%' + filters.search + '%'}`);
     }
 
-    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+    const cursorConditions: SQL[] = [];
+    if (cursor !== null && cursor !== '') {
+      try {
+        const { lastSortValue, lastId } = decodePageCursor(cursor);
+        cursorConditions.push(
+          or(
+            lt(skills.createdAt, new Date(lastSortValue)),
+            and(eq(skills.createdAt, new Date(lastSortValue)), lt(skills.id, lastId))
+          ) as SQL
+        );
+      } catch {
+        const [cursorDate, cursorId] = cursor.split('|');
+        if (cursorId) {
+          cursorConditions.push(
+            or(
+              lt(skills.createdAt, new Date(cursorDate)),
+              and(eq(skills.createdAt, new Date(cursorDate)), lt(skills.id, cursorId))
+            ) as SQL
+          );
+        } else if (!Number.isNaN(new Date(cursorDate).getTime())) {
+          cursorConditions.push(lt(skills.createdAt, new Date(cursorDate)));
+        } else {
+          // Legacy skill cursor support (name-based pagination)
+          cursorConditions.push(lt(skills.name, cursor));
+        }
+      }
+    }
+
+    const allConditions = [...baseConditions, ...cursorConditions];
+    const whereClause = allConditions.length > 0 ? and(...allConditions) : undefined;
 
     const dataRaw = await this.dbInstance.query.skills.findMany({
       where: whereClause,
       limit: limit + 1,
-      orderBy: [desc(skills.name)]
+      orderBy: [desc(skills.createdAt), desc(skills.id)]
     });
 
-    const hasNext = dataRaw.length > limit;
-    const data = hasNext ? dataRaw.slice(0, limit) : dataRaw;
-    const nextCursor = hasNext ? data[data.length - 1].name : null;
-
-    const [{ count }] = await this.dbInstance
+    const [{ count: totalCount }] = await this.dbInstance
       .select({ count: sql<number>`count(*)` })
       .from(skills)
-      .where(whereClause ?? sql`true`);
+      .where(baseConditions.length > 0 ? and(...baseConditions) : sql`true`);
 
-    const total = Number(count ?? 0);
+    const total = Number(totalCount ?? 0);
+    const paginated = buildPaginatedResponse(
+      dataRaw,
+      limit,
+      item => item.createdAt.toISOString(),
+      total
+    );
 
-    return { data, total, nextCursor, limit };
+    return {
+      data: paginated.data,
+      total: paginated.total ?? 0,
+      nextCursor: paginated.nextCursor,
+      limit
+    };
   }
 
   async create(data: typeof skills.$inferInsert) {

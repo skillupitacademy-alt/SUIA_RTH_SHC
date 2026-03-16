@@ -71,18 +71,16 @@ export interface AdminUserProfile extends UserProfile {
 export interface PaginatedResponse<T> {
   data: T[];
   total: number;
-  page?: number;
   limit: number;
+  nextCursor: string | null;
+  hasMore?: boolean;
+  page?: number;
   totalPages?: number;
-  nextCursor?: string | null;
 }
 
-export interface PaginatedQuestions {
+export interface PaginatedQuestions extends PaginatedResponse<QuestionSummary> {
+  // Maintaining 'questions' as an alias for 'data' for backward compatibility
   questions: QuestionSummary[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
 }
 
 export interface DomainHierarchy extends Domain {
