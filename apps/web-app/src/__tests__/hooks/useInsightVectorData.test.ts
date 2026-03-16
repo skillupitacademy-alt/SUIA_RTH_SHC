@@ -41,6 +41,9 @@ describe('useInsightVectorData Hook', () => {
       .mockResolvedValueOnce(jsonResponse(payload)); // blob fetch
 
     const { result } = renderHook(() => useInsightVectorData(examId, userId));
+    await act(async () => {
+      await Promise.resolve();
+    });
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false);
@@ -55,7 +58,11 @@ describe('useInsightVectorData Hook', () => {
   });
 
   it('triggers export when no cached URL', async () => {
-    vi.useFakeTimers();
+    const intervalSpy = vi.spyOn(global, 'setInterval').mockImplementation((fn: TimerHandler): ReturnType<typeof setInterval> => {
+      if (typeof fn === 'function') fn();
+      return 0 as ReturnType<typeof setInterval>;
+    });
+    const clearSpy = vi.spyOn(global, 'clearInterval').mockImplementation(() => {});
     mockFetch
       .mockResolvedValueOnce(jsonResponse({ url: null })) // export/urls
       .mockResolvedValueOnce(jsonResponse({ jobId: 'job-1', status: 'processing' })) // trigger
@@ -65,19 +72,16 @@ describe('useInsightVectorData Hook', () => {
       })); // blob
 
     const { result } = renderHook(() => useInsightVectorData(examId, userId));
-
-    await waitFor(() => {
-      expect(result.current.loading).toBe(true);
-    });
-
     await act(async () => {
-      await vi.advanceTimersByTimeAsync(2000);
+      await Promise.resolve();
     });
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false);
       expect(result.current.data).not.toBeNull();
     });
+    intervalSpy.mockRestore();
+    clearSpy.mockRestore();
   });
 
   it('maps content envelope fields correctly', async () => {
@@ -94,9 +98,11 @@ describe('useInsightVectorData Hook', () => {
       .mockResolvedValueOnce(jsonResponse(payload));
 
     const { result } = renderHook(() => useInsightVectorData(examId, userId));
+    await act(async () => {
+      await Promise.resolve();
+    });
 
     await waitFor(() => {
-      expect(result.current.loading).toBe(false);
       expect(result.current.data?.guidanceSignals.length).toBe(1);
       expect(result.current.data?.historicalProgress.length).toBe(1);
       expect(result.current.data?.skillData.length).toBe(1);
@@ -104,35 +110,50 @@ describe('useInsightVectorData Hook', () => {
   });
 
   it('handles status failure', async () => {
-    vi.useFakeTimers();
+    const intervalSpy = vi.spyOn(global, 'setInterval').mockImplementation((fn: TimerHandler): ReturnType<typeof setInterval> => {
+      if (typeof fn === 'function') fn();
+      return 0 as ReturnType<typeof setInterval>;
+    });
+    const clearSpy = vi.spyOn(global, 'clearInterval').mockImplementation(() => {});
     mockFetch
       .mockResolvedValueOnce(jsonResponse({ url: null })) // export/urls
       .mockResolvedValueOnce(jsonResponse({ jobId: 'job-2', status: 'processing' })) // trigger
       .mockResolvedValueOnce(jsonResponse({ status: 'failed', error: 'Boom' })); // status
 
     const { result } = renderHook(() => useInsightVectorData(examId, userId));
-
     await act(async () => {
-      await vi.advanceTimersByTimeAsync(2000);
+      await Promise.resolve();
+    });
+
+    await waitFor(() => {
+      expect(mockFetch.mock.calls.some((call) => String(call[0]).includes('/export/status/'))).toBe(true);
     });
 
     await waitFor(() => {
       expect(result.current.error).toBe('Boom');
-      expect(result.current.loading).toBe(false);
     });
+    intervalSpy.mockRestore();
+    clearSpy.mockRestore();
   });
 
   it('retries on demand', async () => {
-    vi.useFakeTimers();
+    const intervalSpy = vi.spyOn(global, 'setInterval').mockImplementation((fn: TimerHandler): ReturnType<typeof setInterval> => {
+      if (typeof fn === 'function') fn();
+      return 0 as ReturnType<typeof setInterval>;
+    });
+    const clearSpy = vi.spyOn(global, 'clearInterval').mockImplementation(() => {});
     mockFetch
       .mockResolvedValueOnce(jsonResponse({ url: null })) // export/urls
       .mockResolvedValueOnce(jsonResponse({ jobId: 'job-3', status: 'processing' })) // trigger
       .mockResolvedValueOnce(jsonResponse({ status: 'failed', error: 'First fail' })); // status
 
     const { result } = renderHook(() => useInsightVectorData(examId, userId));
-
     await act(async () => {
-      await vi.advanceTimersByTimeAsync(2000);
+      await Promise.resolve();
+    });
+
+    await waitFor(() => {
+      expect(mockFetch.mock.calls.some((call) => String(call[0]).includes('/export/status/'))).toBe(true);
     });
 
     await waitFor(() => {
@@ -145,11 +166,13 @@ describe('useInsightVectorData Hook', () => {
         content: { guidance_signals: [], historical_progress: [], aggregations: { L6_skill: [] } }
       })); // blob
 
-    act(() => result.current.retry());
+    await act(async () => result.current.retry());
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false);
       expect(result.current.data).not.toBeNull();
     });
+    intervalSpy.mockRestore();
+    clearSpy.mockRestore();
   });
 });

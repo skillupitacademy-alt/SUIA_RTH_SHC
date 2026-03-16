@@ -428,6 +428,9 @@ importers:
       '@quiz/api-client':
         specifier: workspace:*
         version: link:../../packages/api-client
+      '@quiz/observability':
+        specifier: workspace:*
+        version: link:../../packages/observability
       '@quiz/types':
         specifier: workspace:*
         version: link:../../packages/types

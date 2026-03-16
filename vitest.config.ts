@@ -12,12 +12,13 @@ export default defineConfig({
   },
   resolve: {
     tsconfigPaths: true,
-    alias: {
-      '@': path.resolve(__dirname, 'apps/api-server/src'),
-      '@quiz/db': path.resolve(__dirname, 'packages/db/src'),
-      '@quiz/api-client': path.resolve(__dirname, 'packages/api-client/src'),
-      '@quiz/types': path.resolve(__dirname, 'packages/types/src'),
-      '@quiz/observability': path.resolve(__dirname, 'packages/observability/src'),
-    },
+    alias: [
+      { find: /^@quiz\/api-client\/(.*)$/, replacement: path.resolve(__dirname, 'packages/api-client/src/$1') },
+      { find: '@', replacement: path.resolve(__dirname, 'apps/api-server/src') },
+      { find: '@quiz/db', replacement: path.resolve(__dirname, 'packages/db/src') },
+      { find: '@quiz/api-client', replacement: path.resolve(__dirname, 'packages/api-client/src') },
+      { find: '@quiz/types', replacement: path.resolve(__dirname, 'packages/types/src') },
+      { find: '@quiz/observability', replacement: path.resolve(__dirname, 'packages/observability/src') },
+    ],
   },
 })

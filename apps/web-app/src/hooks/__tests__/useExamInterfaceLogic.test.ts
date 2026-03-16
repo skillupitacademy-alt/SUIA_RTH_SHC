@@ -66,7 +66,10 @@ describe('useExamInterfaceLogic', () => {
             isSubmitted: false,
         });
 
-        vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+        vi.useRealTimers();
     });
 
     it('should initialize and load exam state into the store', async () => {
@@ -86,7 +89,7 @@ describe('useExamInterfaceLogic', () => {
         renderHook(() => useExamInterfaceLogic());
 
         await act(async () => {
-            await vi.runAllTimersAsync();
+            await Promise.resolve();
         });
 
         const store = useQuizStore.getState();
@@ -97,6 +100,9 @@ describe('useExamInterfaceLogic', () => {
     });
 
     it('should handle answer submission through the store and API', async () => {
+        (useSearchParams as unknown as vi.Mock).mockReturnValue({
+            get: () => null,
+        });
         const mockQuestions = [
             { id: 'q1', text: 'Q1', options: ['A', 'B'], difficulty: 'Simple', type: 'MCQ' as const },
         ];
@@ -122,9 +128,15 @@ describe('useExamInterfaceLogic', () => {
     });
 
     it('should handle finish attempt with confirmation', async () => {
+        (useSearchParams as unknown as vi.Mock).mockReturnValue({
+            get: () => null,
+        });
         useQuizStore.setState({
             examId: mockExamId,
-            questions: [{ id: 'q1' }, { id: 'q2' }],
+            questions: [
+                { id: 'q1', options: ['A', 'B'] },
+                { id: 'q2', options: ['C', 'D'] },
+            ],
             answers: { q1: 0 }, // Only one answered
         });
 

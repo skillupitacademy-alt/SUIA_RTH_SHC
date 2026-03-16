@@ -4,15 +4,18 @@ import { FetchClient, TimeoutError } from '../fetch-client';
 describe('Core: FetchClient Resilience (Task 101, 102)', () => {
     const BASE_URL = 'https://api.example.com';
     let client: FetchClient;
+    const headers = () => new Headers();
 
     beforeEach(() => {
         client = new FetchClient(BASE_URL);
         vi.stubGlobal('fetch', vi.fn());
         vi.useFakeTimers();
+        vi.spyOn(Math, 'random').mockReturnValue(0);
     });
 
     afterEach(() => {
         vi.unstubAllGlobals();
+        vi.restoreAllMocks();
         vi.useRealTimers();
     });
 
@@ -21,15 +24,15 @@ describe('Core: FetchClient Resilience (Task 101, 102)', () => {
         
         // Fail twice, succeed on third
         mockFetch
-            .mockResolvedValueOnce({ ok: false, status: 500, statusText: 'Internal Server Error', json: () => Promise.resolve({}) } as Response)
-            .mockResolvedValueOnce({ ok: false, status: 500, statusText: 'Internal Server Error', json: () => Promise.resolve({}) } as Response)
-            .mockResolvedValueOnce({ ok: true, status: 200, json: () => Promise.resolve({ success: true }) } as Response);
+            .mockResolvedValueOnce({ ok: false, status: 500, statusText: 'Internal Server Error', headers: headers(), json: () => Promise.resolve({}) } as Response)
+            .mockResolvedValueOnce({ ok: false, status: 500, statusText: 'Internal Server Error', headers: headers(), json: () => Promise.resolve({}) } as Response)
+            .mockResolvedValueOnce({ ok: true, status: 200, headers: headers(), json: () => Promise.resolve({ success: true }) } as Response);
 
-        const promise = client.get('/test');
-        
-        // Fast-forward through retries
-        await vi.runAllTimersAsync();
-        
+        const promise = client.get('/test', {
+            retry: { maxRetries: 2, delay: 10, backoff: 1, jitter: false }
+        });
+
+        vi.useRealTimers();
         const result = await promise;
         expect(result).toEqual({ success: true });
         expect(mockFetch).toHaveBeenCalledTimes(3);
@@ -40,6 +43,7 @@ describe('Core: FetchClient Resilience (Task 101, 102)', () => {
         mockFetch.mockResolvedValueOnce({ 
             ok: false, 
             status: 500, 
+            headers: headers(),
             json: () => Promise.resolve({ message: 'Server Error' }) 
         } as Response);
 
@@ -51,16 +55,31 @@ describe('Core: FetchClient Resilience (Task 101, 102)', () => {
         const mockFetch = vi.mocked(fetch);
         
         // Mock a slow request that triggers AbortController
-        mockFetch.mockImplementation(() => new Promise(() => {})); // Never resolves
+        mockFetch.mockImplementation((_url, options) => {
+            return new Promise((_resolve, reject) => {
+                if (options?.signal) {
+                    options.signal.addEventListener('abort', () => {
+                        const error = new Error('The operation was aborted');
+                        error.name = 'AbortError';
+                        reject(error);
+                    });
+                }
+            });
+        });
 
-        const promise = client.get('/test', { timeout: 100 });
+        const promise = client.get('/test', { 
+            timeout: 50,
+            retry: { maxRetries: 1, delay: 10, backoff: 1, jitter: false }
+        });
 
-        // Trigger timeout
-        await vi.advanceTimersByTimeAsync(150);
-        // Trigger first retry delay
-        await vi.advanceTimersByTimeAsync(2000); 
-        
-        // We expect it to have attempted at least twice
+        let caught: unknown;
+        const handled = promise.catch((err) => {
+            caught = err;
+        });
+
+        await vi.runAllTimersAsync();
+        await handled;
+        expect(caught).toBeInstanceOf(TimeoutError);
         expect(mockFetch).toHaveBeenCalledTimes(2);
     });
 
@@ -74,12 +93,11 @@ describe('Core: FetchClient Resilience (Task 101, 102)', () => {
                 headers: new Headers({ 'Retry-After': '5' }),
                 json: () => Promise.resolve({}) 
             } as Response)
-            .mockResolvedValueOnce({ ok: true, status: 200, json: () => Promise.resolve({ success: true }) } as Response);
+            .mockResolvedValueOnce({ ok: true, status: 200, headers: headers(), json: () => Promise.resolve({ success: true }) } as Response);
 
         const promise = client.get('/test');
 
-        // Wait for 429 delay (5s)
-        await vi.advanceTimersByTimeAsync(5100);
+        await vi.runAllTimersAsync();
         
         const result = await promise;
         expect(result).toEqual({ success: true });

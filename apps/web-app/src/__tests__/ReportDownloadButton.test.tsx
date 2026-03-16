@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { ReportDownloadButton } from '../components/reports/ReportDownloadButton';
 import React from 'react';
 
@@ -10,8 +10,38 @@ vi.mock('../hooks/useExportJob', () => ({
     status: 'idle',
     downloadUrl: null,
     error: null,
-    isInitial: true
+    isInitial: true,
+    isExporting: false,
+    stage: null
   })
+}));
+
+vi.mock('../hooks/useReportStatus', () => ({
+  useReportStatus: () => ({
+    status: 'ready',
+    stage: null,
+    loading: false,
+    downloadUrl: 'http://example.com/report.pdf',
+    error: null,
+    triggerGeneration: vi.fn(),
+    cooldown: 0,
+  })
+}));
+
+vi.mock('../components/reports/context/ReportThemeContext', () => ({
+  useReportTheme: () => ({ theme: 'dark' }),
+}));
+
+vi.mock('../components/reports/hooks/useReportThemeTokens', () => ({
+  useReportThemeTokens: () => ({
+    tokens: {
+      cardBg: '#000',
+      borderSubtle: '#222',
+      textMuted: '#888',
+      textPrimary: '#fff',
+      textSecondary: '#aaa',
+    },
+  }),
 }));
 
 type ChildrenProps = React.PropsWithChildren;
@@ -50,13 +80,14 @@ describe('ReportDownloadButton Component', () => {
     render(<ReportDownloadButton {...defaultProps} />);
     // In our simplified mock, clicking the main button might trigger PDF directly or open menu
     // We check if the dropdown trigger exists
-    const trigger = screen.getByRole('button');
-    expect(trigger).toBeDefined();
+    const triggers = screen.getAllByRole('button');
+    expect(triggers.length).toBeGreaterThan(1);
   });
 
   it('contains multi-format export options', () => {
     render(<ReportDownloadButton {...defaultProps} />);
-    // Since we mock the dropdown, we check if labels are present if rendered
+    const buttons = screen.getAllByRole('button');
+    fireEvent.click(buttons[buttons.length - 1]);
     expect(screen.getByText(/Deep Analytics/i)).toBeDefined();
     expect(screen.getByText(/Data Engineering/i)).toBeDefined();
   });

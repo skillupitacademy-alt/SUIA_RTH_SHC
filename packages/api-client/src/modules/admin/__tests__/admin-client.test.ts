@@ -6,18 +6,16 @@ import { UserAdminClient } from '../user-admin-client';
 
 // Mock FetchClient
 vi.mock('../../../core/fetch-client', () => {
-  return {
-    FetchClient: vi.fn().mockImplementation(() => {
-      return {
-        get: vi.fn(),
-        post: vi.fn(),
-        put: vi.fn(),
-        delete: vi.fn(),
-        request: vi.fn(),
-        setPortalIdentity: vi.fn(),
-      };
-    }),
-  };
+  const FetchClient = vi.fn().mockImplementation(function (this: any) {
+    this.get = vi.fn();
+    this.post = vi.fn();
+    this.put = vi.fn();
+    this.patch = vi.fn();
+    this.delete = vi.fn();
+    this.request = vi.fn();
+    this.setPortalIdentity = vi.fn();
+  });
+  return { FetchClient };
 });
 
 describe('AdminClient & Specialized Sub-Clients', () => {
@@ -58,9 +56,11 @@ describe('AdminClient & Specialized Sub-Clients', () => {
     it('should call the correct endpoint for getDomains with cursor', async () => {
       fetchClient.get.mockResolvedValue({ items: [], nextCursor: null });
       await adminClient.questions.getDomains('cursor-abc', 10, 'math');
-      expect(fetchClient.get).toHaveBeenCalledWith(
-        expect.stringContaining('/admin/domains?cursor=cursor-abc&limit=10&search=math')
-      );
+      const calledWith = fetchClient.get.mock.calls[0]?.[0];
+      expect(calledWith).toContain('/admin/domains?');
+      expect(calledWith).toContain('cursor=cursor-abc');
+      expect(calledWith).toContain('limit=10');
+      expect(calledWith).toContain('search=math');
     });
 
     it('should handle batch deletion of domains', async () => {

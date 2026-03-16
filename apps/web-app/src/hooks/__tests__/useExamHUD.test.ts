@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useExamHUD } from '../useExamHUD';
 import { apiClient } from '@quiz/api-client';
@@ -51,8 +51,13 @@ describe('useExamHUD', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         (useRouter as unknown as vi.Mock).mockReturnValue(mockRouter);
-        // Mock setTimeout to execute immediately
         vi.useFakeTimers();
+        vi.spyOn(Math, 'random').mockReturnValue(0);
+    });
+
+    afterEach(() => {
+        vi.useRealTimers();
+        vi.restoreAllMocks();
     });
 
     it('should initialize with loading state', () => {
@@ -84,7 +89,7 @@ describe('useExamHUD', () => {
 
         // Let the effect run (inc. jitter delay)
         await act(async () => {
-            vi.runAllTimers();
+            await vi.advanceTimersByTimeAsync(0);
         });
 
         expect(result.current.isLoading).toBe(false);
@@ -104,7 +109,7 @@ describe('useExamHUD', () => {
         renderHook(() => useExamHUD(mockExamId));
 
         await act(async () => {
-            vi.runAllTimers();
+            await vi.advanceTimersByTimeAsync(0);
         });
 
         expect(mockRouter.replace).toHaveBeenCalledWith(`/reports/${mockExamId}`);
@@ -124,7 +129,7 @@ describe('useExamHUD', () => {
         const { result } = renderHook(() => useExamHUD(mockExamId));
 
         await act(async () => {
-            vi.runAllTimers();
+            await vi.advanceTimersByTimeAsync(0);
         });
 
         expect(result.current.timeLeft).toBe(600);
@@ -150,7 +155,7 @@ describe('useExamHUD', () => {
         const { result } = renderHook(() => useExamHUD(mockExamId));
 
         await act(async () => {
-            vi.runAllTimers();
+            await vi.advanceTimersByTimeAsync(0);
         });
 
         await act(async () => {
@@ -173,7 +178,7 @@ describe('useExamHUD', () => {
         const { result } = renderHook(() => useExamHUD(mockExamId));
 
         await act(async () => {
-            vi.runAllTimers();
+            await vi.advanceTimersByTimeAsync(0);
         });
 
         (apiClient.quiz.submitExam as unknown as vi.Mock).mockRejectedValue(new Error('Network Error'));

@@ -33,6 +33,7 @@ tsc_output.txt
 # build artifacts
 *.tsbuildinfo
 build_error_cache.log
+coverage/
 
 # playwright artifacts/reports
 playwright-report

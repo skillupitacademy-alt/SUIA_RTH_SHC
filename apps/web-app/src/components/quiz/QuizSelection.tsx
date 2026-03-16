@@ -21,6 +21,7 @@ import { useAuthStore } from '@/store/auth-store';
 import { apiClient, Domain, DomainHierarchy, QuestionCounts, Subject, Topic, Subtopic } from '@quiz/api-client';
 import { clientLogger } from '@/utils/clientLogger';
 import { recordClientMetric, METRICS } from '@quiz/observability';
+import { getBffExamConfig, getBffQuizHierarchy } from '@/lib/bff-client';
 
 // Map icons to domain IDs (fallback/static mapping for aesthetics)
 const ICON_MAP: Record<string, typeof Code> = {
@@ -44,6 +45,7 @@ export function QuizSelection() {
     const router = useRouter();
     const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
     const [domains, setDomains] = useState<Domain[]>([]);
+    const [domainHierarchies, setDomainHierarchies] = useState<DomainHierarchy[]>([]);
     const [loading, setLoading] = useState(true);
     const [starting, setStarting] = useState(false);
     const [fetchingHierarchy, setFetchingHierarchy] = useState(false);
@@ -66,10 +68,11 @@ export function QuizSelection() {
         const fetchDomains = async () => {
             if (!isAuthenticated) return;
             try {
-                const data = await apiClient.quiz.getDomains();
-                setDomains(data);
+                const data = await getBffQuizHierarchy();
+                setDomainHierarchies(data.domains);
+                setDomains(data.domains);
                 setError(null);
-                if (data.length === 0) {
+                if (data.domains.length === 0) {
                     recordClientMetric('ui.selection.empty_domains', 1);
                 }
             } catch (err) {
@@ -85,30 +88,21 @@ export function QuizSelection() {
 
     // Fetch full hierarchy when a domain is selected
     useEffect(() => {
-        const fetchHierarchy = async () => {
-            if (!selectedDomain) {
-                setFullHierarchy(null);
-                return;
-            }
+        if (!selectedDomain) {
+            setFullHierarchy(null);
+            setFetchingHierarchy(false);
+            return;
+        }
 
-            setFetchingHierarchy(true);
-            try {
-                const hierarchy = await apiClient.quiz.getDomainHierarchy(selectedDomain);
-                setFullHierarchy(hierarchy);
-                setError(null);
-                if (!hierarchy.subjects || hierarchy.subjects.length === 0) {
-                    recordClientMetric('ui.selection.empty_hierarchy', 1, { domainId: selectedDomain });
-                }
-            } catch (err) {
-                clientLogger.error('Failed to fetch domain hierarchy', { error: err instanceof Error ? err.message : 'unknown' });
-                setError("We couldn't load topics for this domain. Please retry.");
-                recordClientMetric('ui.selection.fetch_error', 1, { stage: 'hierarchy', domainId: selectedDomain });
-            } finally {
-                setFetchingHierarchy(false);
-            }
-        };
-        fetchHierarchy();
-    }, [selectedDomain]);
+        setFetchingHierarchy(true);
+        const hierarchy = domainHierarchies.find((domain) => domain.id === selectedDomain) || null;
+        setFullHierarchy(hierarchy);
+        setError(null);
+        if (!hierarchy?.subjects || hierarchy.subjects.length === 0) {
+            recordClientMetric('ui.selection.empty_hierarchy', 1, { domainId: selectedDomain });
+        }
+        setFetchingHierarchy(false);
+    }, [selectedDomain, domainHierarchies]);
 
     // Fetch available question counts based on filters
     useEffect(() => {
@@ -118,18 +112,18 @@ export function QuizSelection() {
                 return;
             }
             try {
-                const counts = await apiClient.quiz.getQuestionCount({
+                const config = await getBffExamConfig({
                     domainId: selectedDomain,
-                    subjects: selectedSubjects,
+                    subjectIds: selectedSubjects,
                     topicIds: selectedTopics,
                     subtopicIds: selectedSubtopics,
                 });
-                setAvailableCounts(counts);
+                setAvailableCounts(config.questionCount);
                 setError(null);
-                if (!counts.isReady) {
+                if (!config.questionCount.isReady) {
                     recordClientMetric('ui.selection.insufficient_content', 1, {
                         domainId: selectedDomain,
-                        total: counts.total.toString()
+                        total: config.questionCount.total.toString()
                     });
                 }
             } catch (err) {

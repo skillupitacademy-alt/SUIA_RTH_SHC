@@ -17,6 +17,7 @@
     "cross-env": "^7.0.3",
     "@next/bundle-analyzer": "^16.1.6",
     "@quiz/api-client": "workspace:*",
+    "@quiz/observability": "workspace:*",
     "@quiz/types": "workspace:*",
     "@quiz/ui": "workspace:*",
     "@sentry/nextjs": "^10.40.0",

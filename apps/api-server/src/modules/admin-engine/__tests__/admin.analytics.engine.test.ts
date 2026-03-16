@@ -37,6 +37,7 @@ describe('AdminAnalyticsEngine', () => {
     getExamActivity: vi.fn(),
     getEfficiencyAnalytics: vi.fn(),
     getAuditLogs: vi.fn(),
+    getLiveSessions: vi.fn(),
     getAllDomainHierarchy: vi.fn(),
     getRBACMetrics: vi.fn(),
   };
@@ -61,6 +62,7 @@ describe('AdminAnalyticsEngine', () => {
       { quadrant: 'no_data', count: 3 },
     ]);
     repository.getAuditLogs.mockResolvedValue({ data: [{ id: 'a1' }], nextCursor: null });
+    repository.getLiveSessions.mockResolvedValue({ sessions: [], total: 0, page: 1, limit: 20, totalPages: 0 });
     repository.getRBACMetrics.mockResolvedValue({ admins: 1 });
     repository.getAllDomainHierarchy.mockResolvedValue([
       {
@@ -105,7 +107,7 @@ describe('AdminAnalyticsEngine', () => {
     await expect(engine.getGrowthZones()).resolves.toEqual({ areas: [] });
     await expect(engine.getSecuritySignals()).resolves.toEqual({ threats: [], status: 'nominal' });
     await expect(engine.getAccountMetrics()).resolves.toEqual({ active: 0, new: 0, churn: 0 });
-    await expect(engine.getLiveSessions()).resolves.toEqual({ active: 0, peak24h: 0 });
+    await expect(engine.getLiveSessions()).resolves.toEqual({ sessions: [], total: 0, page: 1, limit: 20, totalPages: 0 });
 
     const health = await engine.getContentHealthReport();
     expect(health[0].stats.total).toBe(1);
