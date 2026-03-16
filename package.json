@@ -31,6 +31,9 @@
                     "typecheck:all":  "turbo run type-check --filter=@quiz/web-app --filter=@quiz/admin-app --filter=@quiz/api-server",
                     "ci":  "pnpm lint:all \u0026\u0026 pnpm typecheck:all \u0026\u0026 pnpm build:all",
                     "clean":  "turbo run clean \u0026\u0026 rm -rf node_modules",
+                    "lighthouse:web": "cd apps/web-app && npx lhci autorun",
+                    "lighthouse:admin": "cd apps/admin-app && npx lhci autorun",
+                    "lighthouse:all": "pnpm lighthouse:web && pnpm lighthouse:admin",
                     "prepare":  "echo \"husky prepare temporarily disabled; set scripts.prepare=\\\"husky\\\" to re-enable\""
                 },
     "devDependencies":  {
