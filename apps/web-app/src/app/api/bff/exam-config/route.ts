@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import { getApiBase } from '@/utils/apiBase';
-import { QuestionCounts } from '@quiz/api-client';
+import { QuestionCounts, applyBffCacheHeaders } from '@quiz/api-client';
 
 function getInternalApiBase(): string {
     const internal = process.env.INTERNAL_API_URL?.trim();
@@ -85,23 +85,29 @@ export async function GET(req: NextRequest) {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),
-        next: { revalidate: 0 }
+        next: { revalidate: 300 }
     });
 
     if (!res.ok) {
         const body = await res.text().catch(() => '');
-        return NextResponse.json(
-            { error: 'Failed to fetch question counts', details: body },
-            { status: res.status }
+        return applyBffCacheHeaders(
+            NextResponse.json(
+                { error: 'Failed to fetch question counts', details: body },
+                { status: res.status }
+            ),
+            'BFF_NOCACHE'
         );
     }
 
     const counts = (await res.json()) as QuestionCounts;
 
-    return NextResponse.json({
-        questionCount: counts,
-        minQuestions: 5,
-        maxQuestions: 30,
-        availableBlueprints: [] as Array<{ id: string; name: string }>,
-    });
+    return applyBffCacheHeaders(
+        NextResponse.json({
+            questionCount: counts,
+            minQuestions: 5,
+            maxQuestions: 30,
+            availableBlueprints: [] as Array<{ id: string; name: string }>,
+        }),
+        'BFF_AGGREGATE'
+    );
 }

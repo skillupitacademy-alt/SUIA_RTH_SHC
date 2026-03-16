@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
 
-export type CachePolicy = 'IMMUTABLE' | 'SESSION' | 'DYNAMIC';
+export type CachePolicy = 'IMMUTABLE' | 'SESSION' | 'DYNAMIC' | 'BFF_AGGREGATE';
 
 const CACHE_POLICIES: Record<CachePolicy, string> = {
   IMMUTABLE: 'public, max-age=31536000, immutable',
   SESSION: 'private, no-cache, max-age=0, must-revalidate',
   DYNAMIC: 'no-store, no-cache, must-revalidate, proxy-revalidate',
+  BFF_AGGREGATE: 'public, max-age=60, s-maxage=300, stale-while-revalidate=60',
 };
 
 /** Apply cache headers to a generic Headers object (tests use this). */
@@ -17,7 +18,7 @@ export function applyCacheHeaders(headers: Headers, policy: CachePolicy): void {
   }
   if (policy === 'SESSION') {
     headers.set('Vary', 'Authorization, Cookie');
-  } else if (policy === 'IMMUTABLE') {
+  } else if (policy === 'IMMUTABLE' || policy === 'BFF_AGGREGATE') {
     headers.set('Vary', 'Accept-Encoding');
   }
 }

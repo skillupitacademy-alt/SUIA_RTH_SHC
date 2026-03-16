@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { getApiBase } from '@/utils/apiBase';
-import { Domain, DomainHierarchy } from '@quiz/api-client';
+import { Domain, DomainHierarchy, applyBffCacheHeaders } from '@quiz/api-client';
 
 function getInternalApiBase(): string {
     const internal = process.env.INTERNAL_API_URL?.trim();
@@ -53,14 +53,17 @@ export async function GET() {
 
     const domainsRes = await fetch(`${apiUrl}/domains`, {
         headers,
-        next: { revalidate: 0 }
+        next: { revalidate: 300 }
     });
 
     if (!domainsRes.ok) {
         const body = await domainsRes.text().catch(() => '');
-        return NextResponse.json(
-            { error: 'Failed to fetch domains', details: body },
-            { status: domainsRes.status }
+        return applyBffCacheHeaders(
+            NextResponse.json(
+                { error: 'Failed to fetch domains', details: body },
+                { status: domainsRes.status }
+            ),
+            'BFF_NOCACHE'
         );
     }
 
@@ -71,7 +74,7 @@ export async function GET() {
             domains.map(async (domain) => {
                 const hierarchyRes = await fetch(`${apiUrl}/domains?id=${domain.id}`, {
                     headers,
-                    next: { revalidate: 0 }
+                    next: { revalidate: 300 }
                 });
 
                 if (!hierarchyRes.ok) {
@@ -83,11 +86,17 @@ export async function GET() {
             })
         );
 
-        return NextResponse.json({ domains: hierarchies });
+        return applyBffCacheHeaders(
+            NextResponse.json({ domains: hierarchies }),
+            'BFF_AGGREGATE'
+        );
     } catch (error) {
-        return NextResponse.json(
-            { error: 'Failed to fetch domain hierarchy', details: error instanceof Error ? error.message : 'unknown' },
-            { status: 502 }
+        return applyBffCacheHeaders(
+            NextResponse.json(
+                { error: 'Failed to fetch domain hierarchy', details: error instanceof Error ? error.message : 'unknown' },
+                { status: 502 }
+            ),
+            'BFF_NOCACHE'
         );
     }
 }

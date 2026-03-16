@@ -60,6 +60,7 @@ export * from './modules/telemetry-client';
 export * from './modules/analytics-client';
 export * from './modules/tutor-client';
 export * from './types';
+export * from './lib/bff-cache';
 
 export const apiClient = {
   auth: new AuthClient(baseClient),

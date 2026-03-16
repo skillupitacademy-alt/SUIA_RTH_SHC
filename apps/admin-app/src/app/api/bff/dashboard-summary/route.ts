@@ -1,4 +1,4 @@
-import { apiClient } from '@quiz/api-client';
+import { apiClient, applyBffCacheHeaders } from '@quiz/api-client';
 import { NextResponse } from 'next/server';
 
 import { AdminDashboardSummary } from '@/lib/bff-types';
@@ -55,5 +55,5 @@ export async function GET() {
     response.status = 'degraded';
   }
 
-  return NextResponse.json(response);
+  return applyBffCacheHeaders(NextResponse.json(response), 'BFF_PRIVATE');
 }

@@ -35,6 +35,9 @@ describe('BFF quiz selection routes', () => {
 
         const res = await getQuizHierarchy();
         expect(res.status).toBe(200);
+        expect(res.headers.get('Cache-Control')).toBe(
+            'public, max-age=60, s-maxage=300, stale-while-revalidate=60'
+        );
         const body = await res.json();
         expect(body.domains).toHaveLength(2);
         expect(body.domains[0].id).toBe('dom-1');

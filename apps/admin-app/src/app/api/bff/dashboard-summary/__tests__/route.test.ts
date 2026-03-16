@@ -13,12 +13,12 @@ vi.mock('@quiz/api-client', () => ({
       getExamActivity: vi.fn(),
     },
   },
-}));
-
-vi.mock('next/server', () => ({
-  NextResponse: {
-    json: vi.fn((data) => data),
-  },
+  applyBffCacheHeaders: vi.fn((response: Response, policy: string) => {
+    if (policy === 'BFF_PRIVATE' && response?.headers) {
+      response.headers.set('Cache-Control', 'private, no-store');
+    }
+    return response;
+  }),
 }));
 
 describe('Admin Dashboard BFF Route', () => {
@@ -53,12 +53,13 @@ describe('Admin Dashboard BFF Route', () => {
     });
 
     const response = await GET();
-    const data = (await response as unknown) as AdminDashboardSummary;
+    const data = (await response.json()) as AdminDashboardSummary;
 
     expect(data.status).toBe('healthy');
     expect(data.metrics.totalUsers).toBe(100);
     expect(data.sources.metrics).toBe('ok');
     expect(data.sources.queue).toBe('ok');
+    expect(response.headers.get('Cache-Control')).toBe('private, no-store');
   });
 
   it('should return degraded status when some upstream calls fail', async () => {
@@ -84,7 +85,7 @@ describe('Admin Dashboard BFF Route', () => {
     });
 
     const response = await GET();
-    const data = (await response as unknown) as AdminDashboardSummary;
+    const data = (await response.json()) as AdminDashboardSummary;
 
     expect(data.status).toBe('degraded');
     expect(data.queue.pendingJobs).toBeNull();
@@ -103,7 +104,7 @@ describe('Admin Dashboard BFF Route', () => {
     vi.mocked(apiClient.admin.getExamActivity).mockRejectedValue(new Error('Activity down'));
 
     const response = await GET();
-    const data = (await response as unknown) as AdminDashboardSummary;
+    const data = (await response.json()) as AdminDashboardSummary;
 
     expect(data.status).toBe('degraded');
     expect(data.metrics.totalUsers).toBeNull();
