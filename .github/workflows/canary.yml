@@ -34,8 +34,8 @@ jobs:
         run: |
           MAX_ATTEMPTS=6
           WAIT_SECONDS=30
-          HEALTH_URL="${{ env.API_PREVIEW_URL }}/api/healthz"
-          DOMAINS_URL="${{ env.API_PREVIEW_URL }}/api/v1/domains"
+          HEALTH_URL="${{ env.API_PREVIEW_URL }}/api/health/ready"
+          DOMAINS_URL="${{ env.API_PREVIEW_URL }}/api/domains"
 
           echo "Checking API health: $HEALTH_URL"
           for i in $(seq 1 $MAX_ATTEMPTS); do

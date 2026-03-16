@@ -34,7 +34,7 @@ If GitHub Actions is down, use Vercel directly:
 - Admin: https://vercel.com/team_Lk0sFRq1NFdIPDTgA9zfGY4f/quiz-platform-admin-app/deployments
 
 ## Post-Rollback Checklist
-- [ ] Verify health monitor shows green.
+- [ ] Verify health monitor shows green (API `/api/health/ready`, Web `/`).
 - [ ] Check Sentry error rate returning to baseline.
 - [ ] Notify the team.
 - [ ] Write a postmortem within 24 hours.

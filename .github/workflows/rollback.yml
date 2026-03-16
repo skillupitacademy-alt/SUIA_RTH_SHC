@@ -139,9 +139,9 @@ jobs:
           }
 
           if [[ "$TARGET" == "all" || "$TARGET" == "api" ]]; then
-            API_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://${{ secrets.VERCEL_PROJECT_NAME }}.vercel.app/api/healthz" || echo "000")
+            API_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://${{ secrets.VERCEL_PROJECT_NAME }}.vercel.app/api/health/ready" || echo "000")
             echo "API_STATUS=$API_STATUS" >> $GITHUB_ENV
-            if ! check_health "https://${{ secrets.VERCEL_PROJECT_NAME }}.vercel.app/api/healthz" "API Server"; then FAILED=true; fi
+            if ! check_health "https://${{ secrets.VERCEL_PROJECT_NAME }}.vercel.app/api/health/ready" "API Server"; then FAILED=true; fi
           fi
           if [[ "$TARGET" == "all" || "$TARGET" == "web" ]]; then
             WEB_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://${{ secrets.VERCEL_PROJECT_NAME_WEB }}.vercel.app" || echo "000")

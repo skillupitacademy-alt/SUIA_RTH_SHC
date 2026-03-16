@@ -35,7 +35,7 @@ jobs:
         if: steps.check.outputs.skip == 'false'
         id: health
         run: |
-          API_URL="https://${{ secrets.VERCEL_PROJECT_NAME }}.vercel.app/api/healthz"
+          API_URL="https://${{ secrets.VERCEL_PROJECT_NAME }}.vercel.app/api/health/ready"
           WEB_URL="https://${{ secrets.VERCEL_PROJECT_NAME_WEB }}.vercel.app"
 
           API_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$API_URL" || echo "000")
