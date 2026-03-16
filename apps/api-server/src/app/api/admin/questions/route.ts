@@ -1,7 +1,6 @@
 import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
 
-import type { AdminQuestionInput } from '@/dtos/admin.dto';
 import { badRequest } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { withCorrelationId } from '@/lib/correlation-id.middleware';
@@ -57,15 +56,12 @@ async function getHandler(_req: NextRequest) {
 
     bootstrapCQRS();
     const result = await queryBus.dispatch(new GetQuestionsQuery(cursor, limit, filters)) as QuestionsQueryResult;
-    
-    const { toAdminQuestionDTO } = await import('@/dtos/admin.dto');
-    const questionsDto = (result.questions as unknown[]).map((q) => toAdminQuestionDTO(q as AdminQuestionInput));
 
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.questions.get.success', 1);
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.questions.get.duration', durationMs, { outcome: 'success' });
     return ApiResponse.success({
-      data: questionsDto,
+      data: result.questions,
       total: result.total,
       nextCursor: result.nextCursor,
       limit: result.limit

@@ -131,26 +131,37 @@ export function QuestionTable() {
                 });
                 type RawQuestion = {
                     id?: string;
-                    questionText: string;
+                    questionText?: string;
+                    text?: string;
                     type?: string;
                     difficulty?: string;
                     status?: string;
                     createdAt?: string;
                     mappingType?: string;
-                    options?: { text: string; isCorrect?: boolean; id?: string }[];
+                    options?: { text: string; isCorrect?: boolean; id?: string }[] | Record<string, string>;
                     questionSkills?: QuestionData['questionSkills'];
                     topic?: QuestionData['topic'];
                 };
 
+                const normalizeOptions = (options: RawQuestion['options']) => {
+                    if (Array.isArray(options)) return options;
+                    if (options != null && typeof options === 'object') {
+                        return Object.values(options)
+                            .filter((val): val is string => typeof val === 'string')
+                            .map((text) => ({ text }));
+                    }
+                    return [];
+                };
+
                 const mappedQuestions: QuestionData[] = data.questions.map((q: RawQuestion, idx: number) => ({
                     id: q.id ?? `q-${idx}`,
-                    questionText: q.questionText,
+                    questionText: (q.questionText != null && q.questionText !== '') ? q.questionText : (q.text ?? ''),
                     type: q.type ?? 'single',
                     difficulty: q.difficulty ?? 'intermediate',
                     status: q.status ?? 'draft',
                     createdAt: (q as { createdAt?: string }).createdAt ?? new Date().toISOString(),
                     mappingType: (q as { mappingType?: string }).mappingType,
-                    options: q.options?.map((opt: { text: string; isCorrect?: boolean; id?: string }, optIdx: number) => ({
+                    options: normalizeOptions(q.options).map((opt: { text: string; isCorrect?: boolean; id?: string }, optIdx: number) => ({
                         text: opt.text,
                         isCorrect: opt.isCorrect ?? false,
                         id: opt.id ?? `${idx}-${optIdx}`

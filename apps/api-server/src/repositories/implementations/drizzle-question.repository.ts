@@ -71,6 +71,11 @@ export class DrizzleQuestionRepository extends BaseRepository<typeof questions.$
       limit: limit + 1,
       orderBy: [desc(questions.updatedAt), desc(questions.id)],
       with: {
+        questionSkills: {
+          with: {
+            skill: true,
+          },
+        },
         topic: {
           with: {
             subject: {
