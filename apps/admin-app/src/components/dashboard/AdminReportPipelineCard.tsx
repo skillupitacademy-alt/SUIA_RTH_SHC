@@ -60,13 +60,14 @@ export function AdminReportPipelineCard() {
                 reports?: ReportRow[];
                 stats?: ReportStats | null;
             }>(`${url.pathname}${url.search}`);
-            setReports(data.reports ?? []);
+            const fetchedReports = data.reports ?? [];
+            setReports(fetchedReports);
             setStats(data.stats ?? null);
 
-            if ((data.reports ?? []).length === 0) {
+            if (fetchedReports.length === 0) {
                 recordCounter('admin.ui.reports.pipeline.empty', 1);
             } else {
-                recordCounter('admin.ui.reports.pipeline.fetch_success', 1, { count: data.reports.length });
+                recordCounter('admin.ui.reports.pipeline.fetch_success', 1, { count: fetchedReports.length });
             }
         } catch (err) {
             recordCounter('admin.ui.reports.pipeline.fetch_error', 1, { reason: err instanceof Error ? err.message : 'unknown' });

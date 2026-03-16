@@ -106,7 +106,7 @@ export function UserTable() {
         } finally {
             setIsLoading(false);
         }
-    }, [filterBlocked, filterRole, filterVerified, page, pageSize, debouncedSearchQuery]);
+    }, [cursor, filterBlocked, filterRole, filterVerified, pageSize, debouncedSearchQuery]);
 
     useEffect(() => {
         setPage(1);
