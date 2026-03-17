@@ -24,6 +24,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      '@quiz/api-client': path.resolve(__dirname, '../../packages/api-client/src'),
+      '@quiz/ui': path.resolve(__dirname, '../../packages/ui/src'),
     },
   },
 })
