@@ -20,7 +20,7 @@ export class DrizzleAdminUserRepository extends BaseRepository<typeof users.$inf
     return new DrizzleAdminUserRepository(dbClient) as this;
   }
 
-  async findAll(cursor: string | null, limit: number, status: 'active' | 'deleted', filters?: { 
+  async findAll(cursor: string | null, limit: number, status: 'active' | 'deleted' , filters?: { 
     search?: string; 
     role?: string; 
     isBlocked?: boolean; 
@@ -121,7 +121,11 @@ export class DrizzleAdminUserRepository extends BaseRepository<typeof users.$inf
   }
 
   async update(id: string, data: Partial<typeof users.$inferInsert>) {
-    const [updated] = await this.dbInstance.update(users).set(data).where(eq(users.id, id)).returning();
+    const updateData = {
+      ...data,
+      updatedAt: data.updatedAt ?? new Date(),
+    };
+    const [updated] = await this.dbInstance.update(users).set(updateData).where(eq(users.id, id)).returning();
     return updated;
   }
 
@@ -136,7 +140,7 @@ export class DrizzleAdminUserRepository extends BaseRepository<typeof users.$inf
   }
 
   async toggleBlockStatus(userId: string, isBlocked: boolean) {
-    return await this.dbInstance.update(users).set({ isBlocked }).where(eq(users.id, userId)).returning();
+    return await this.dbInstance.update(users).set({ isBlocked, updatedAt: new Date() }).where(eq(users.id, userId)).returning();
   }
 
   private async applyUserSearchFilter(search: string, conditions: SQL[]) {

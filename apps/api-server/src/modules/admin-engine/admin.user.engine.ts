@@ -2,6 +2,7 @@ import { db } from "@quiz/db";
 
 import { TOKENS } from "@/lib/app.container";
 import { AuditService } from "@/modules/auth/audit.service";
+import { PasswordService } from "@/modules/auth/password.service";
 import { container } from "@/modules/core/container";
 import { IAdminUserRepository } from "@/repositories/interfaces/admin-user.repository.interface";
 
@@ -13,16 +14,19 @@ export interface UpdateUserInput {
 
 type UpdateUserRepoInput = {
   isBlocked?: boolean;
+  password?: string;
+  updatedAt?: Date;
 };
 
 export class AdminUserEngine {
   constructor(
     private readonly repository: IAdminUserRepository = container.get(TOKENS.AdminUserRepo),
-    private readonly auditService = container.get(AuditService)
+    private readonly auditService = container.get(AuditService),
+    private readonly passwordService = container.get(PasswordService)
   ) {}
 
   withDb(dbClient: typeof db): AdminUserEngine {
-    return new AdminUserEngine(this.repository.withDb(dbClient), this.auditService);
+    return new AdminUserEngine(this.repository.withDb(dbClient), this.auditService, this.passwordService);
   }
 
   async getUsers(cursor: string | null = null, limit: number = 20, status: 'active' | 'deleted' = 'active', filters?: { search?: string; role?: string; isBlocked?: boolean; isVerified?: boolean; status?: string; fields?: string }) {
@@ -50,10 +54,16 @@ export class AdminUserEngine {
 
   async updateUser(id: string, data: UpdateUserInput, adminId: string) {
     const updateData: UpdateUserRepoInput = {
-        isBlocked: data.isBlocked
+        isBlocked: data.isBlocked,
+        updatedAt: new Date()
     };
+
+    if (data.password !== undefined && data.password !== null && data.password !== '') {
+        updateData.password = await this.passwordService.hash(data.password);
+    }
+
     const updated = await this.repository.update(id, updateData);
-    await this.auditService.log({ userId: adminId, action: 'admin_update_user', metadata: { targetUserId: id } });
+    await this.auditService.log({ userId: adminId, action: 'admin_update_user', metadata: { targetUserId: id, fields: Object.keys(data) } });
     return updated;
   }
 
