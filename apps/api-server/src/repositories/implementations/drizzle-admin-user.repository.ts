@@ -142,6 +142,50 @@ export class DrizzleAdminUserRepository extends BaseRepository<typeof users.$inf
   async toggleBlockStatus(userId: string, isBlocked: boolean) {
     return await this.dbInstance.update(users).set({ isBlocked, updatedAt: new Date() }).where(eq(users.id, userId)).returning();
   }
+  
+  async create(data: { email: string; passwordHash: string; name: string; roleNames: string[] }) {
+    return await this.dbInstance.transaction(async (tx) => {
+        const [newUser] = await tx.insert(users).values({
+            email: data.email,
+            passwordHash: data.passwordHash,
+            emailVerified: true // Admin-created users are pre-verified
+        }).returning();
+
+        await tx.insert(userProfiles).values({
+            userId: newUser.id,
+            name: data.name
+        });
+
+        if (data.roleNames.length > 0) {
+            const rolesList = await tx.query.roles.findMany({
+                where: (r, { inArray: inArr }) => inArr(r.name, data.roleNames.map(rn => rn.toUpperCase()))
+            });
+
+            if (rolesList.length > 0) {
+                await tx.insert(userRoles).values(
+                    rolesList.map(r => ({
+                        userId: newUser.id,
+                        roleId: r.id
+                    }))
+                );
+            }
+        }
+
+        const fullUser = await tx.query.users.findFirst({
+            where: (u, { eq: equal }) => equal(u.id, newUser.id),
+            with: {
+                profile: true,
+                userRoles: {
+                    with: {
+                        role: true
+                    }
+                }
+            }
+        });
+
+        return fullUser as unknown as typeof users.$inferSelect & { [key: string]: unknown };
+    });
+  }
 
   private async applyUserSearchFilter(search: string, conditions: SQL[]) {
     const searchPattern = `%${search.toLowerCase()}%`;

@@ -181,6 +181,7 @@ export interface IAdminUserClient {
     }
   ): Promise<PaginatedResponse<AdminUserProfile>>;
   updateUser(id: string, data: Partial<AdminUserProfile> & Record<string, unknown>): Promise<AdminUserProfile>;
+  createUser(data: { email: string; name: string; password?: string; roles: string[] }): Promise<AdminUserProfile>;
   deleteUser(id: string): Promise<AdminSuccessResponse>;
   login(email: string, password: string): Promise<{
     user: AdminUserProfile;
@@ -237,6 +238,3 @@ export interface IAdminAuditClient {
 }
 
 export interface IAdminReportClient extends IAdminAnalyticsClient, IAdminAuditClient {}
-
-
-

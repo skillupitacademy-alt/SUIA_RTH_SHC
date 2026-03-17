@@ -77,6 +77,14 @@ export const updateUserSchema = z.object({
 });
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
 
+export const createUserSchema = z.object({
+  email: z.string().email(),
+  name: z.string().min(1),
+  password: z.string().min(6).optional(),
+  roles: z.array(z.string()).min(1),
+});
+export type CreateUserInput = z.infer<typeof createUserSchema>;
+
 export const idArraySchema = z.object({
   ids: z.array(uuid).min(1),
 });

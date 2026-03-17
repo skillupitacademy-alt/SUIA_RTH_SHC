@@ -109,6 +109,7 @@ export const apiClient = {
     getAuditLogs: systemAdmin.getAuditLogs.bind(systemAdmin),
 
     getUsers: userAdmin.getUsers.bind(userAdmin),
+    createUser: userAdmin.createUser.bind(userAdmin),
     updateUser: userAdmin.updateUser.bind(userAdmin),
     deleteUser: userAdmin.deleteUser.bind(userAdmin),
 

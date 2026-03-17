@@ -1,9 +1,16 @@
-import { PageTitle } from '@quiz/ui';
-import { Users } from 'lucide-react';
+'use client';
 
+import { PageTitle } from '@quiz/ui';
+import { Plus, Users } from 'lucide-react';
+import { useState } from 'react';
+
+import { UserCreateWizard } from '@/components/users/UserCreateWizard';
 import { UserTable } from '@/components/users/UserTable';
 
 export default function UsersPage() {
+    const [isWizardOpen, setIsWizardOpen] = useState(false);
+    const [refreshKey, setRefreshKey] = useState(0);
+
     return (
         <div className="space-y-8 pb-24">
             {/* Header Section */}
@@ -17,11 +24,22 @@ export default function UsersPage() {
                     <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest mt-2">Access Control • Demographics • Verification</p>
                 </div>
                 <div className="flex flex-col items-end gap-3 text-right">
-                    <span className="px-4 py-2 rounded-xl bg-primary/5 text-primary text-[10px] font-black uppercase tracking-widest border border-primary/10">Read Only Access</span>
+                    <button
+                        onClick={() => setIsWizardOpen(true)}
+                        className="px-6 py-3 rounded-2xl bg-[#1A1A1A] text-white text-[10px] font-black uppercase tracking-widest border border-black shadow-xl shadow-black/10 hover:scale-105 active:scale-95 transition-all flex items-center gap-3"
+                    >
+                        <Plus size={16} /> Provision Identity
+                    </button>
                 </div>
             </div>
 
-            <UserTable />
+            <UserTable key={refreshKey} />
+
+            <UserCreateWizard 
+                isOpen={isWizardOpen} 
+                onClose={() => setIsWizardOpen(false)}
+                onSuccess={() => setRefreshKey(prev => prev + 1)}
+            />
         </div>
     );
 }

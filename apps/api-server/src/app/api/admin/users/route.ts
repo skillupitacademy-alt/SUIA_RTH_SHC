@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server';
 
 import type { AdminUserInput } from '@/dtos/admin.dto';
-import { unauthorized } from '@/lib/api-error';
+import { badRequest, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { bootstrapCQRS, GetAdminUsersQuery, queryBus } from '@/lib/cqrs';
 import { selectFields } from '@/lib/field-selector';
@@ -78,6 +78,37 @@ async function getHandler(_req: NextRequest) {
   }
 }
 
+async function postHandler(_req: NextRequest) {
+  const start = Date.now();
+  try {
+    const auth = await container.get(TokenService).verifyAdminAccessToken(
+      container.get(TokenService).getAccessToken(_req, { scope: 'admin' })!
+    );
+
+    const body = await _req.json();
+    const { createUserSchema } = await import('@/schemas/admin.schemas');
+    const parsed = createUserSchema.safeParse(body);
+    
+    if (!parsed.success) {
+      return ApiResponse.error(badRequest('Invalid payload', 'BAD_REQUEST', parsed.error.issues));
+    }
+
+    const { AdminUserEngine } = await import('@/modules/admin-engine/admin.user.engine');
+    const engine = new AdminUserEngine();
+    const result = await engine.createUser(parsed.data, auth.userId!);
+
+    recordCounter('admin.api.users.post.success', 1);
+    recordTimer('admin.api.users.post.duration', Date.now() - start, { outcome: 'success' });
+
+    return ApiResponse.success(result);
+  } catch (_error: unknown) {
+    log.error({ error: _error }, 'ADMIN_USER_POST failed');
+    recordCounter('admin.api.users.post.failure', 1);
+    return ApiResponse.error(_error);
+  }
+}
+
 import { withCorrelationId } from '@/lib/correlation-id.middleware';
 
 export const GET = withCorrelationId(withLogging(getHandler, { component: 'admin', operation: 'get_users' }));
+export const POST = withCorrelationId(withLogging(postHandler, { component: 'admin', operation: 'create_user' }));

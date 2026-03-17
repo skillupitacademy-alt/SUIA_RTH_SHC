@@ -60,6 +60,10 @@ export class UserAdminClient implements IAdminUserClient {
     return this.client.delete<AdminSuccessResponse>(`/admin/users/${id}`);
   }
 
+  async createUser(data: { email: string; name: string; password?: string; roles: string[] }) {
+    return this.client.post<AdminUserProfile, any>('/admin/users', data);
+  }
+
   async login(email: string, password: string) {
     return this.client.post<{
       user: AdminUserProfile;

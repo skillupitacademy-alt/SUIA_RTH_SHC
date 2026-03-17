@@ -52,6 +52,26 @@ export class AdminUserEngine {
     };
   }
 
+  async createUser(data: { email: string; passwordHash?: string; password?: string; name: string; roles: string[] }, adminId: string) {
+    const password = data.password ?? 'Welcome@123'; // Default password if not provided
+    const passwordHash = await this.passwordService.hash(password);
+    
+    const newUser = await this.repository.create({
+        email: data.email,
+        passwordHash,
+        name: data.name,
+        roleNames: data.roles
+    });
+
+    await this.auditService.log({ 
+        userId: adminId, 
+        action: 'admin_create_user', 
+        metadata: { targetUserId: newUser.id, email: data.email } 
+    });
+
+    return newUser;
+  }
+
   async updateUser(id: string, data: UpdateUserInput, adminId: string) {
     const updateData: UpdateUserRepoInput = {
         isBlocked: data.isBlocked,

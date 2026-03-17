@@ -28,6 +28,7 @@ export interface IAdminUserRepository {
     limit: number;
   }>;
   findById(id: string): Promise<AdminUserRecord | undefined>;
+  create(data: { email: string; passwordHash: string; name: string; roleNames: string[] }): Promise<AdminUserRecord>;
   update(id: string, data: Record<string, unknown>): Promise<AdminUserRecord>;
   softDelete(id: string): Promise<AdminUserRecord>;
   delete(id: string): Promise<AdminUserRecord>;
