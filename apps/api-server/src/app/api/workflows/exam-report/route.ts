@@ -1,7 +1,9 @@
 import { JobStatus } from "@quiz/types";
 import { serve } from "@upstash/workflow/nextjs";
+import { NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
+import { verifyQStashSignature } from "@/lib/qstash-verify";
 import { withLogging } from "@/lib/withLogging";
 import { container } from "@/modules/core/container";
 import { EmailService } from "@/modules/email/EmailService";
@@ -93,4 +95,13 @@ const { POST: workflowHandler } = serve<{ examId: string; userId: string; jobId?
   }
 );
 
-export const POST = withLogging(workflowHandler, { component: 'workflow', operation: 'exam_report' });
+const securedHandler = async (req: Request) => {
+  const { valid, body } = await verifyQStashSignature(req);
+  if (!valid) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  const nextReq = new Request(req.url, { method: 'POST', headers: req.headers, body });
+  return workflowHandler(nextReq);
+};
+
+export const POST = withLogging(securedHandler, { component: 'workflow', operation: 'exam_report' });

@@ -1,62 +1,29 @@
-import { type NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
-import { badRequest, unauthorized } from "@/lib/api-error";
+import { badRequest } from "@/lib/api-error";
 import { ApiResponse } from "@/lib/api-response";
 import { logger } from '@/lib/logger';
 import { recordCounter, recordTimer } from "@/lib/metrics";
+import { verifyQStashSignature } from '@/lib/qstash-verify';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from "@/lib/sanitize";
 import { withLogging } from "@/lib/withLogging";
 import { JobOrchestrator } from '@/modules/system/job-orchestrator';
 
 export const dynamic = "force-dynamic";
 
-async function postHandler(req: NextRequest) {
+async function postHandler(req: Request) {
   const start = Date.now();
   try {
-    const signatureRaw = req.headers.get('upstash-signature');
+    const { valid, body: rawBody } = await verifyQStashSignature(req);
+    if (!valid) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const jobType = req.headers.get('upstash-forward-job-type');
-    const signature = typeof signatureRaw === 'string' ? signatureRaw.trim() : '';
 
-    if (signature === '') {
-        logger.error('[Worker] Missing signature');
-        throw unauthorized("Unauthorized");
-    }
-
-    // Phase 6 Armor: Webhook Verification
-    // We verify the signature using the signing keys provided by Upstash.
-    if (process.env.NODE_ENV === 'production') {
-        try {
-            // Priority 1: Use Current Signing Key if available
-            // Priority 2: Fallback to Token (simplified check)
-            const currentKey = process.env.QSTASH_CURRENT_SIGNING_KEY ?? '';
-            const token = process.env.QSTASH_TOKEN ?? '';
-            
-            // In a production environment with millions of users, we expect a valid JWT.
-            // For now, we verify that the signature matches our known secrets.
-            const isValid = (currentKey !== '' && signature === currentKey) || 
-                            (token !== '' && signature === token) || 
-                            signature.startsWith('eyJ'); // Basic JWT check (detailed verification requires @upstash/qstash)
-
-            if (!isValid) {
-                throw new Error('Invalid signature');
-            }
-        } catch (err) {
-            logger.error({ err }, '[Worker] Signature verification failed');
-            throw unauthorized("Unauthorized");
-        }
-    } else {
-        // In non-production, still require a token to avoid accidental open access
-        const token = process.env.QSTASH_TOKEN ?? '';
-        if (token !== '' && signature !== token) {
-            logger.error('[Worker] Non-production signature mismatch');
-            throw unauthorized("Unauthorized");
-        }
-    }
-    
-    // Ingest and sanitize JSON body
     let raw;
     try {
-      raw = await req.json();
+      raw = JSON.parse(rawBody);
       validateJsonSize(raw);
       validateJsonDepth(raw);
     } catch {

@@ -1,8 +1,10 @@
 import { db, exams } from "@quiz/db";
 import { serve } from "@upstash/workflow/nextjs";
 import { eq } from "drizzle-orm";
+import { NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
+import { verifyQStashSignature } from "@/lib/qstash-verify";
 import { uploadReport } from "@/lib/storage/upload-report";
 import { withLogging } from "@/lib/withLogging";
 import { ReportPdfService } from "@/modules/report-engine/report-pdf.service";
@@ -83,4 +85,13 @@ const { POST: workflowHandler } = serve<{ attemptId: string; userId: string }>(a
   logger.info({ attemptId }, "[PDF Workflow] PDF generation completed");
 });
 
-export const POST = withLogging(workflowHandler, { component: "workflow", operation: "pdf_report" });
+const securedHandler = async (req: Request) => {
+  const { valid, body } = await verifyQStashSignature(req);
+  if (!valid) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  const nextReq = new Request(req.url, { method: 'POST', headers: req.headers, body });
+  return workflowHandler(nextReq);
+};
+
+export const POST = withLogging(securedHandler, { component: "workflow", operation: "pdf_report" });

@@ -44,6 +44,7 @@ export class ReadModelUpdater {
       if (viewNames.length === 0) return;
       const tupleArgs = viewNames as [string, ...string[]];
       await redis.sadd(DIRTY_VIEWS_KEY, ...tupleArgs);
+      await redis.expire(DIRTY_VIEWS_KEY, 86400);
       logger.debug({ viewNames }, '[ReadModelUpdater] Marked views as dirty');
     } catch (error) {
       logger.error({ error, viewNames }, '[ReadModelUpdater] Failed to mark views as dirty');

@@ -1,6 +1,8 @@
 import { serve } from "@upstash/workflow/nextjs";
+import { NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
+import { verifyQStashSignature } from "@/lib/qstash-verify";
 import { withLogging } from "@/lib/withLogging";
 
 export const dynamic = "force-dynamic";
@@ -44,4 +46,13 @@ const { POST: workflowHandler } = serve<{ userId: string; examId: string; score:
   }
 );
 
-export const POST = withLogging(workflowHandler, { component: 'workflow', operation: 'learning_journey' });
+const securedHandler = async (req: Request) => {
+  const { valid, body } = await verifyQStashSignature(req);
+  if (!valid) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  const nextReq = new Request(req.url, { method: 'POST', headers: req.headers, body });
+  return workflowHandler(nextReq);
+};
+
+export const POST = withLogging(securedHandler, { component: 'workflow', operation: 'learning_journey' });
