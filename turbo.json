@@ -26,9 +26,6 @@
     "test": {
       "dependsOn": [
         "^build"
-      ],
-      "outputs": [
-        "coverage/**"
       ]
     },
     "type-check": {

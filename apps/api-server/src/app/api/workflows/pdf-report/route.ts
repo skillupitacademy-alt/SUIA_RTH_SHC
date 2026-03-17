@@ -3,6 +3,7 @@ import { serve } from "@upstash/workflow/nextjs";
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
+import { acquireJobLock, releaseJobLock } from "@/lib/job-lock";
 import { logger } from "@/lib/logger";
 import { verifyQStashSignature } from "@/lib/qstash-verify";
 import { uploadReport } from "@/lib/storage/upload-report";
@@ -90,8 +91,31 @@ const securedHandler = async (req: Request) => {
   if (!valid) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  const nextReq = new Request(req.url, { method: 'POST', headers: req.headers, body });
-  return workflowHandler(nextReq);
+
+  let payload: { attemptId?: string };
+  try {
+    payload = JSON.parse(body) as { attemptId?: string };
+  } catch {
+    return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
+  }
+
+  const attemptId = typeof payload.attemptId === 'string' ? payload.attemptId.trim() : '';
+  if (attemptId === '') {
+    return NextResponse.json({ error: 'Missing attemptId' }, { status: 400 });
+  }
+
+  const lockId = `pdf-report:${attemptId}`;
+  const locked = await acquireJobLock(lockId);
+  if (!locked) {
+    return NextResponse.json({ message: 'Duplicate job ignored' }, { status: 200 });
+  }
+
+  try {
+    const nextReq = new Request(req.url, { method: 'POST', headers: req.headers, body });
+    return await workflowHandler(nextReq);
+  } finally {
+    await releaseJobLock(lockId);
+  }
 };
 
 export const POST = withLogging(securedHandler, { component: "workflow", operation: "pdf_report" });

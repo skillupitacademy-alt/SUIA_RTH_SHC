@@ -1,6 +1,7 @@
 import { serve } from "@upstash/workflow/nextjs";
 import { NextResponse } from "next/server";
 
+import { acquireJobLock, releaseJobLock } from "@/lib/job-lock";
 import { logger } from "@/lib/logger";
 import { verifyQStashSignature } from "@/lib/qstash-verify";
 import { withLogging } from "@/lib/withLogging";
@@ -51,8 +52,32 @@ const securedHandler = async (req: Request) => {
   if (!valid) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  const nextReq = new Request(req.url, { method: 'POST', headers: req.headers, body });
-  return workflowHandler(nextReq);
+
+  let payload: { userId?: string; examId?: string };
+  try {
+    payload = JSON.parse(body) as { userId?: string; examId?: string };
+  } catch {
+    return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
+  }
+
+  const userId = typeof payload.userId === 'string' ? payload.userId.trim() : '';
+  const examId = typeof payload.examId === 'string' ? payload.examId.trim() : '';
+  if (userId === '' || examId === '') {
+    return NextResponse.json({ error: 'Missing userId or examId' }, { status: 400 });
+  }
+
+  const lockId = `learning-journey:${userId}:${examId}`;
+  const locked = await acquireJobLock(lockId);
+  if (!locked) {
+    return NextResponse.json({ message: 'Duplicate job ignored' }, { status: 200 });
+  }
+
+  try {
+    const nextReq = new Request(req.url, { method: 'POST', headers: req.headers, body });
+    return await workflowHandler(nextReq);
+  } finally {
+    await releaseJobLock(lockId);
+  }
 };
 
 export const POST = withLogging(securedHandler, { component: 'workflow', operation: 'learning_journey' });

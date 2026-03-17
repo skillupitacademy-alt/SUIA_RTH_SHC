@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { badRequest } from "@/lib/api-error";
 import { ApiResponse } from "@/lib/api-response";
+import { acquireJobLock, releaseJobLock } from '@/lib/job-lock';
 import { logger } from '@/lib/logger';
 import { recordCounter, recordTimer } from "@/lib/metrics";
 import { verifyQStashSignature } from '@/lib/qstash-verify';
@@ -38,11 +39,20 @@ async function postHandler(req: Request) {
         throw badRequest("jobId is required");
     }
 
+    const locked = await acquireJobLock(jobId);
+    if (!locked) {
+      return NextResponse.json({ message: 'Duplicate job ignored' }, { status: 200 });
+    }
+
     logger.info({ jobType, jobId }, '[Worker] Processing job');
 
-    // 2. Execute the job via the main orchestrator
-    // The orchestrator handles status updates (running, completed, failed)
-    await JobOrchestrator.runJob(jobId, userId);
+    try {
+      // 2. Execute the job via the main orchestrator
+      // The orchestrator handles status updates (running, completed, failed)
+      await JobOrchestrator.runJob(jobId, userId);
+    } finally {
+      await releaseJobLock(jobId);
+    }
 
     const durationMs = Date.now() - start;
     recordCounter('worker.api.job.success', 1, { jobType: jobType ?? 'unknown' });

@@ -14,7 +14,7 @@ export async function verifyQStashSignature(
   }
   const body = await req.text();
   try {
-    await receiver.verify({ signature: signature.trim(), body });
+    await receiver.verify({ signature: signature.trim(), body, clockTolerance: 60 });
     return { valid: true, body };
   } catch {
     return { valid: false, body: '' };
