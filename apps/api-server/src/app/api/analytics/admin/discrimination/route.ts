@@ -53,7 +53,7 @@ async function getHandler(req: NextRequest) {
 
     const rows = (await sqlReplica`
       SELECT t.name as topic_name, idm.question_id, idm.rit_correlation
-      FROM mv_item_difficulty_metrics idm
+      FROM mv_item_difficulty idm
       JOIN questions q ON q.id = idm.question_id
       JOIN topics t ON t.id = q.topic_id
       ORDER BY idm.rit_correlation DESC
