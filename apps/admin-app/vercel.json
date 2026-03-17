@@ -3,5 +3,6 @@
     "deploymentEnabled": {
       "dependabot/**": false
     }
-  }
+  },
+  "skewProtection": true
 }
