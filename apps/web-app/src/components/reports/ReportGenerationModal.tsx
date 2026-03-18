@@ -139,18 +139,14 @@ export function ReportGenerationModal({
     const uiReady = isReady && displayStageIndex >= stages.length - 1;
 
     const handleDownload = () => {
-        if (downloadUrl) {
-            const frameId = "artifact-download-frame";
-            let frame = document.getElementById(frameId) as HTMLIFrameElement | null;
-            if (!frame) {
-                frame = document.createElement("iframe");
-                frame.id = frameId;
-                frame.title = "Download frame";
-                frame.style.display = "none";
-                document.body.appendChild(frame);
-            }
-            frame.src = downloadUrl;
-        }
+        if (!downloadUrl) return;
+        const link = document.createElement("a");
+        link.href = downloadUrl;
+        link.rel = "noopener";
+        link.download = "";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
     };
 
     const modalContent = (

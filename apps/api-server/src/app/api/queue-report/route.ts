@@ -21,6 +21,15 @@ import { ReportRepository } from "@/modules/report-engine/report-repository";
 
 export const runtime = "nodejs";
 
+function buildReportDownloadUrl(attemptId: string) {
+  const rawBase = process.env.NEXT_PUBLIC_API_URL ?? "";
+  if (rawBase.trim() === "") {
+    return `/api/reports/download?attemptId=${encodeURIComponent(attemptId)}`;
+  }
+  const base = rawBase.replace(/\/api\/?$/, "").replace(/\/+$/, "");
+  return `${base}/api/reports/download?attemptId=${encodeURIComponent(attemptId)}`;
+}
+
 async function postHandler(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -102,7 +111,7 @@ async function postHandler(req: NextRequest) {
       const exists = await storage.exists(existingReport.fileRef);
       if (exists) {
         logger.info({ attemptId }, "[QueueReport] PDF idempotency hit via report record");
-        return ApiResponse.success({ status: "ready", attemptId, downloadUrl: existingReport.fileRef });
+        return ApiResponse.success({ status: "ready", attemptId, downloadUrl: buildReportDownloadUrl(attemptId) });
       }
       logger.warn({ attemptId }, "[QueueReport] Stale report.fileRef detected (missing in storage) - regenerating");
 
@@ -130,7 +139,7 @@ async function postHandler(req: NextRequest) {
       const exists = await storage.exists(existingPdfUrl);
       if (exists) {
         logger.info({ attemptId }, "[QueueReport] PDF idempotency hit via exams.export_urls");
-        return ApiResponse.success({ status: "ready", attemptId, downloadUrl: existingPdfUrl });
+        return ApiResponse.success({ status: "ready", attemptId, downloadUrl: buildReportDownloadUrl(attemptId) });
       }
       logger.warn({ attemptId }, "[QueueReport] Stale exams.export_urls.analytics_pdf detected (missing in storage) - regenerating");
 

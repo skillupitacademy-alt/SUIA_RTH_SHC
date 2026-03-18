@@ -111,35 +111,27 @@ export function ReportDownloadButton({ attemptId, userId, className }: ReportDow
         return () => controller.abort();
     }, [isDropdownOpen, attemptId, userId, exportUrlMap]);
 
+    const triggerDownload = (url: string) => {
+        const link = document.createElement("a");
+        link.href = url;
+        link.rel = "noopener";
+        link.download = "";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    };
+
     const handlePdfDownload = (urlParam?: string) => {
         const url = urlParam || pdfUrl;
         if (url) {
-            const frameId = "pdf-download-frame";
-            let frame = document.getElementById(frameId) as HTMLIFrameElement;
-            if (!frame) {
-                frame = document.createElement("iframe");
-                frame.id = frameId;
-                frame.title = "PDF download frame";
-                frame.style.display = "none";
-                document.body.appendChild(frame);
-            }
-            frame.src = url;
+            triggerDownload(url);
             setShowNotification(false);
             setIsDropdownOpen(false);
         }
     };
 
     const handleExportDownload = (url: string) => {
-        const frameId = "export-download-frame";
-        let frame = document.getElementById(frameId) as HTMLIFrameElement;
-        if (!frame) {
-            frame = document.createElement("iframe");
-            frame.id = frameId;
-            frame.title = "Export download frame";
-            frame.style.display = "none";
-            document.body.appendChild(frame);
-        }
-        frame.src = url;
+        triggerDownload(url);
         setIsDropdownOpen(false);
     };
 
@@ -389,10 +381,6 @@ export function ReportDownloadButton({ attemptId, userId, className }: ReportDow
                     </motion.div>
                 )}
             </AnimatePresence>
-
-            {/* Hidden download frame */}
-            <iframe id="pdf-download-frame-hidden" title="PDF download frame" className="hidden" />
-            <iframe id="export-download-frame-hidden" title="Export download frame" className="hidden" />
 
             <ReportGenerationModal
                 isOpen={isModalOpen}

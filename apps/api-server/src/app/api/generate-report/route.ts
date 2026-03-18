@@ -9,7 +9,6 @@ import { ApiResponse } from "@/lib/api-response";
 import { logger } from "@/lib/logger";
 import { recordCounter, recordTimer } from "@/lib/metrics";
 import { redis } from "@/lib/redis";
-import { getDownloadUrl } from "@/lib/storage/get-download-url";
 import { uploadReport } from "@/lib/storage/upload-report";
 import { withLogging } from "@/lib/withLogging";
 import { TokenService } from "@/modules/auth/token.service";
@@ -23,6 +22,15 @@ import { ReportJobService } from "@/services/reports/ReportJobService";
 
 export const runtime = "nodejs"; // Required for Puppeteer
 export const dynamic = "force-dynamic";
+
+function buildReportDownloadUrl(attemptId: string) {
+  const rawBase = process.env.NEXT_PUBLIC_API_URL ?? "";
+  if (rawBase.trim() === "") {
+    return `/api/reports/download?attemptId=${encodeURIComponent(attemptId)}`;
+  }
+  const base = rawBase.replace(/\/api\/?$/, "").replace(/\/+$/, "");
+  return `${base}/api/reports/download?attemptId=${encodeURIComponent(attemptId)}`;
+}
 
 /**
  * POST /api/generate-report
@@ -123,7 +131,7 @@ async function postHandler(req: NextRequest) {
       const { storage } = await import("@/lib/storage");
       const exists = await storage.exists(report.fileRef as string);
       if (exists) {
-        const url = await getDownloadUrl(report.fileRef as string);
+        const url = buildReportDownloadUrl(attemptId);
         recordCounter(METRICS.REPORTS.PDF_GEN, 1, { outcome: 'success', cached: 'true' });
         return ApiResponse.success({ url, cached: true });
       }
@@ -172,7 +180,7 @@ async function postHandler(req: NextRequest) {
         pageCount
       });
 
-      const url = await getDownloadUrl(fileRef);
+      const url = buildReportDownloadUrl(attemptId);
       recordCounter(METRICS.REPORTS.PDF_GEN, 1, { outcome: 'success', cached: 'false' });
       recordTimer(METRICS.REPORTS.PDF_GEN + '.duration', Date.now() - start, { outcome: 'success' });
       return ApiResponse.success({ url, cached: false });

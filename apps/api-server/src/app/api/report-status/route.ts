@@ -5,7 +5,6 @@ import { badRequest, forbidden, unauthorized } from "@/lib/api-error";
 import { ApiResponse } from "@/lib/api-response";
 import { logger } from "@/lib/logger";
 import { recordCounter, recordTimer } from "@/lib/metrics";
-import { getDownloadUrl } from "@/lib/storage/get-download-url";
 import { withLogging } from "@/lib/withLogging";
 import { TokenService } from "@/modules/auth/token.service";
 import { container } from "@/modules/core/container";
@@ -63,7 +62,7 @@ async function getHandler(req: NextRequest) {
           const { storage } = await import("@/lib/storage");
           const exists = await storage.exists(analyticsPdfRef);
           if (exists) {
-            const url = await getDownloadUrl(analyticsPdfRef);
+            const url = buildReportDownloadUrl(attemptId);
             recordCounter(METRICS.REPORTS.VIEW, 1, { outcome: 'success', status: 'ready', source: 'exams.export_urls' });
             return ApiResponse.success({ status: "ready", url }, 200, { "Cache-Control": "no-store" });
           }
@@ -99,7 +98,7 @@ async function getHandler(req: NextRequest) {
       const exists = await storage.exists(report.fileRef as string);
 
       if (exists) {
-        const url = await getDownloadUrl(report.fileRef as string);
+        const url = buildReportDownloadUrl(attemptId);
         recordCounter(METRICS.REPORTS.VIEW, 1, { outcome: 'success', status: 'ready' });
         return ApiResponse.success(
           { status: "ready", url },
@@ -163,4 +162,13 @@ function sanitizeReportError(message: string | null | undefined): string | undef
     return "PDF generation failed. Please retry.";
   }
   return message;
+}
+
+function buildReportDownloadUrl(attemptId: string) {
+  const rawBase = process.env.NEXT_PUBLIC_API_URL ?? "";
+  if (rawBase.trim() === "") {
+    return `/api/reports/download?attemptId=${encodeURIComponent(attemptId)}`;
+  }
+  const base = rawBase.replace(/\/api\/?$/, "").replace(/\/+$/, "");
+  return `${base}/api/reports/download?attemptId=${encodeURIComponent(attemptId)}`;
 }

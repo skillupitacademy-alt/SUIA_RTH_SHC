@@ -8,6 +8,16 @@ import { JobsService } from '@/modules/system/jobs.service';
 
 const log = logger.child({ module: 'export-trigger-api' });
 
+function buildExportDownloadUrl(examId: string, format: string) {
+  const rawBase = process.env.NEXT_PUBLIC_API_URL ?? "";
+  const suffix = `/api/export/download?examId=${encodeURIComponent(examId)}&format=${encodeURIComponent(format)}`;
+  if (rawBase.trim() === "") {
+    return suffix;
+  }
+  const base = rawBase.replace(/\/api\/?$/, "").replace(/\/+$/, "");
+  return `${base}${suffix}`;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as unknown;
@@ -60,7 +70,8 @@ export async function POST(req: NextRequest) {
     if (isDev) {
       const { ExportEngine } = await import('@/lib/export/exportEngine');
       const engine = ExportEngine.getInstance();
-      const downloadUrl = await engine.processExport(examId, userId, format as ExportFormat);
+      await engine.processExport(examId, userId, format as ExportFormat);
+      const downloadUrl = buildExportDownloadUrl(examId, format);
       return NextResponse.json({ 
         downloadUrl, 
         status: 'completed'
