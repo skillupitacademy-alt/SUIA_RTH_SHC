@@ -127,6 +127,13 @@
       "when": 1773640987000,
       "tag": "0017_restore_analytics_materialized_views",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1773844464361,
+      "tag": "0018_reset_ajay_password",
+      "breakpoints": true
     }
   ]
 }
