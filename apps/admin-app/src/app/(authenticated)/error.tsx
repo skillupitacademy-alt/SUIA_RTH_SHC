@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect } from 'react';
 
 export default function Error({
     error,
@@ -9,6 +10,10 @@ export default function Error({
     error: Error & { digest?: string };
     reset: () => void;
 }) {
+    useEffect(() => {
+        console.error(error);
+    }, [error]);
+
     return (
         <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 text-center">
             <div className="w-16 h-16 bg-red-50 text-red-600 rounded-full flex items-center justify-center mb-6">
@@ -18,7 +23,7 @@ export default function Error({
             </div>
             <h2 className="text-2xl font-bold text-slate-900 mb-2">Admin Resource Error</h2>
             <p className="text-slate-500 mb-8 max-w-md">
-                We failed to load this administrative component. If the problem persists, contact system support.
+                We could not load this administrative component. Please try again.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
                 <button
@@ -34,16 +39,6 @@ export default function Error({
                     Return to Dashboard
                 </Link>
             </div>
-            {process.env.NODE_ENV === 'development' && (
-                <div className="mt-12 text-left p-6 bg-slate-50 rounded-xl border border-slate-200 max-w-2xl w-full">
-                    <p className="text-sm font-semibold text-red-600 mb-2 font-mono">DEBUG INFO:</p>
-                    <pre className="text-xs text-slate-600 overflow-auto whitespace-pre-wrap">
-                        {error.message}
-                        {"\n\n"}
-                        {error.stack}
-                    </pre>
-                </div>
-            )}
         </div>
     );
 }

@@ -7,6 +7,7 @@ import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
 import { AuthService } from '@/modules/auth/auth.service';
+import { getClientIp } from '@/modules/auth/client-ip';
 import { setCsrfToken } from '@/modules/auth/csrf.middleware';
 import { container } from '@/modules/core/container';
 import { signupSchema } from '@/schemas/auth.schemas';
@@ -23,12 +24,13 @@ async function handler(_req: NextRequest) {
       return ApiResponse.error(badRequest('Invalid payload', 'BAD_REQUEST', parsed.error.issues));
     }
     const { email, password, name } = parsed.data;
+    const ip = getClientIp(_req);
 
     const authService = container.get(AuthService);
     const _user = await authService.signup(email, password, name);
 
     // Auto-login after signup
-    const { accessToken, refreshToken } = await authService.login(email, password);
+    const { accessToken, refreshToken } = await authService.login(email, password, ip);
 
     recordCounter(METRICS.AUTH.SIGNUP, 1, { outcome: 'success' });
     recordTimer(METRICS.AUTH.SIGNUP + '.duration', Date.now() - start, { outcome: 'success' });

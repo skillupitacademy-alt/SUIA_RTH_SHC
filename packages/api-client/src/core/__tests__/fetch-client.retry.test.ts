@@ -103,4 +103,20 @@ describe('Core: FetchClient Resilience (Task 101, 102)', () => {
         expect(result).toEqual({ success: true });
         expect(mockFetch).toHaveBeenCalledTimes(2);
     });
+
+    it('should not auto-refresh auth login failures', async () => {
+        const mockFetch = vi.mocked(fetch);
+        mockFetch.mockResolvedValueOnce({
+            ok: false,
+            status: 401,
+            headers: headers(),
+            json: () => Promise.resolve({ message: 'Invalid credentials' }),
+        } as Response);
+
+        await expect(client.post('/auth/login', { email: 'a@b.com', password: 'pw' }))
+            .rejects.toThrow('Invalid credentials');
+
+        expect(mockFetch).toHaveBeenCalledTimes(1);
+        expect(mockFetch.mock.calls[0]?.[0]).toBe('https://api.example.com/auth/login');
+    });
 });

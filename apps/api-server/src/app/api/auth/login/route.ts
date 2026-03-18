@@ -2,11 +2,12 @@ import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
 
 import { toUserSummaryDTO } from '@/dtos/auth.dto';
-import { unauthorized,validationError } from '@/lib/api-error';
+import { forbidden, locked, unauthorized, validationError } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
 import { AuthService } from '@/modules/auth/auth.service';
+import { getClientIp } from '@/modules/auth/client-ip';
 import { setCsrfToken } from '@/modules/auth/csrf.middleware';
 import { container } from '@/modules/core/container';
 import { loginSchema } from '@/schemas/auth.schemas';
@@ -25,8 +26,9 @@ async function handler(req: NextRequest) {
       return ApiResponse.error(validationError(parsed.error.issues));
     }
     const { email, password } = parsed.data;
+    const ip = getClientIp(req);
 
-    const { _user, accessToken, refreshToken, isAdmin } = await container.get(AuthService).login(email, password);
+    const { _user, accessToken, refreshToken, isAdmin } = await container.get(AuthService).login(email, password, ip);
     const rawProfile = Array.isArray(_user.profile) ? _user.profile[0] ?? {} : (_user.profile ?? {});
     const authUserInput = {
       id: _user.id,
@@ -83,7 +85,23 @@ async function handler(req: NextRequest) {
 
     return response;
   } catch (_error) {
-    recordCounter(METRICS.AUTH.FAILURE, 1, { reason: 'credentials_invalid' });
+    const message = _error instanceof Error ? _error.message : 'Invalid credentials';
+    recordCounter(METRICS.AUTH.FAILURE, 1, {
+      reason: message === 'Account temporarily locked. Try again later.'
+        ? 'account_locked'
+        : message === 'Account has been blocked. Contact administrator.'
+          ? 'account_blocked'
+          : 'credentials_invalid'
+    });
+
+    if (message === 'Account temporarily locked. Try again later.') {
+      return ApiResponse.error(locked(message));
+    }
+
+    if (message === 'Account has been blocked. Contact administrator.') {
+      return ApiResponse.error(forbidden(message));
+    }
+
     return ApiResponse.error(unauthorized('Invalid credentials'));
   }
 }

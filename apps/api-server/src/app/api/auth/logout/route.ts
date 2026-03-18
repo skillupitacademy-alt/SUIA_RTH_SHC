@@ -3,13 +3,14 @@ import { type NextRequest } from 'next/server';
 import { ApiResponse } from '@/lib/api-response';
 import { withLogging } from '@/lib/withLogging';
 import { AuthService } from '@/modules/auth/auth.service';
+import { getClientIp } from '@/modules/auth/client-ip';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 
 export const dynamic = 'force-dynamic';
 
 async function handler(_req: NextRequest) {
-  const ip = _req.headers.get('x-forwarded-for') ?? '0.0.0.0';
+  const ip = getClientIp(_req);
   const tokenService = container.get(TokenService);
   const authService = container.get(AuthService);
 

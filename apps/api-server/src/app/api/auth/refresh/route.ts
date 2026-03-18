@@ -5,6 +5,7 @@ import { ApiResponse } from '@/lib/api-response';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
 import { AuthService } from '@/modules/auth/auth.service';
+import { getClientIp } from '@/modules/auth/client-ip';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 
@@ -31,7 +32,7 @@ async function handler(_req: NextRequest) {
 
     const cookieName = portalIdentity === 'infrastructure' ? 'infra_refreshToken' : portalIdentity === 'admin' ? 'admin_refreshToken' : 'refreshToken';
 
-    const ip = _req.headers.get('x-forwarded-for') ?? '0.0.0.0';
+    const ip = getClientIp(_req);
     
     const rawBody = await _req.json().catch(() => ({}));
     if (!validateJsonDepth(rawBody) || !validateJsonSize(rawBody)) {

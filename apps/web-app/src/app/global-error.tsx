@@ -1,10 +1,8 @@
 'use client';
 
 export default function GlobalError({
-    error,
     reset,
 }: {
-    error: Error & { digest?: string };
     reset: () => void;
 }) {
     return (
@@ -18,7 +16,7 @@ export default function GlobalError({
                     </div>
                     <h1 className="text-2xl font-bold text-gray-900 mb-2">Something went wrong</h1>
                     <p className="text-gray-500 mb-8">
-                        A critical error occurred. We&apos;ve been notified and are working on it.
+                        We could not load this page. Please try again.
                     </p>
                     <button
                         onClick={() => reset()}
@@ -26,12 +24,6 @@ export default function GlobalError({
                     >
                         Try Again
                     </button>
-                    {process.env.NODE_ENV === 'development' && (
-                        <div className="mt-4 text-left p-4 bg-gray-100 rounded text-xs overflow-auto max-h-40">
-                            <p className="font-mono text-red-600">{error.message}</p>
-                            {error.stack != null ? <pre className="mt-2 text-gray-600">{error.stack}</pre> : null}
-                        </div>
-                    )}
                 </div>
             </body>
         </html>

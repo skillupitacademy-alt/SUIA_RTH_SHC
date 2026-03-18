@@ -44,7 +44,7 @@ export class AuthService {
     return service.signup(email, password, name, ip);
   }
 
-  async login(email: string, password: string, ip: string = '0.0.0.0') {
+  async login(email: string, password: string, ip: string = 'unknown') {
     const service = await this.getLoginService();
     return service.login(email, password, ip);
   }

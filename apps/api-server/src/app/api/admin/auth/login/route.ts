@@ -5,6 +5,7 @@ import { withApiHandler } from '@/lib/api-wrapper';
 import { withCorrelationId } from '@/lib/correlation-id.middleware';
 import { recordCounter } from '@/lib/metrics';
 import { AdminAuthService } from '@/modules/auth/admin-auth.service';
+import { getClientIp } from '@/modules/auth/client-ip';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -17,7 +18,9 @@ const loginSchema = z.object({
 async function handler(_req: Request, body: z.infer<typeof loginSchema>) {
   const { email, password } = body;
 
-  const ip = _req.headers.get('x-forwarded-for') ?? '';
+  const ip = getClientIp({
+    headers: _req.headers,
+  });
   const portalIdentity = _req.headers.get('x-portal-identity') ?? 'admin';
   const audience = portalIdentity === 'infrastructure' ? 'infra' : 'admin';
   

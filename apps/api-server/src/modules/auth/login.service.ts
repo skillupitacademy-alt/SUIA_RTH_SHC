@@ -16,7 +16,7 @@ export class LoginService {
     private tokenService = container.get(TokenService)
   ) {}
 
-  async login(email: string, password: string, ip: string = '0.0.0.0') {
+  async login(email: string, password: string, ip: string = 'unknown') {
     if (await this.securityService.isAccountLocked(email, ip)) {
       await this.auditService.log({ action: 'login_locked', metadata: { email }, ip });
       throw new Error('Account temporarily locked. Try again later.');

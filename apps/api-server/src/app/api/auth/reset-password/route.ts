@@ -5,6 +5,7 @@ import { ApiResponse } from '@/lib/api-response';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
 import { AuthService } from '@/modules/auth/auth.service';
+import { getClientIp } from '@/modules/auth/client-ip';
 import { container } from '@/modules/core/container';
 import { resetPasswordSchema } from '@/schemas/auth.schemas';
 
@@ -40,7 +41,7 @@ async function postHandler(_req: NextRequest) {
     }
     const { token, password } = parsed.data;
 
-    const ip = _req.headers.get('x-forwarded-for') ?? '0.0.0.0';
+    const ip = getClientIp(_req);
     await container.get(AuthService).resetPassword(token, password, ip);
 
     return ApiResponse.success({ success: true });

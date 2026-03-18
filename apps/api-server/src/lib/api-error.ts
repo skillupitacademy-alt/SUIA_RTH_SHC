@@ -7,6 +7,7 @@ export type ApiErrorCode =
   | 'BAD_REQUEST'
   | 'UNAUTHORIZED'
   | 'FORBIDDEN'
+  | 'LOCKED'
   | 'NOT_FOUND'
   | 'VALIDATION_FAILED'
   | 'TOO_MANY_REQUESTS'
@@ -63,6 +64,9 @@ export const unauthorized = (message: string = 'Unauthorized', code: ApiErrorCod
 
 export const forbidden = (message: string = 'Forbidden', code: ApiErrorCode = 'FORBIDDEN') => 
   new ApiError(403, message, code);
+
+export const locked = (message: string = 'Locked') =>
+  new ApiError(423, message, 'LOCKED');
 
 export const notFound = (resource: string, id?: string) => {
   const hasId = id !== undefined && id !== null && id !== '';

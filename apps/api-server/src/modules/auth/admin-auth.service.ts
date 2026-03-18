@@ -9,7 +9,7 @@ import { SecurityService } from './security.service';
 import { TokenService } from './token.service';
 
 export class AdminAuthService {
-  static async login(email: string, password: string, ip: string = '0.0.0.0', requestedAudience: string = 'admin') {
+  static async login(email: string, password: string, ip: string = 'unknown', requestedAudience: string = 'admin') {
     const cleanEmail = email.trim();
 
     // 1. Check Lockout

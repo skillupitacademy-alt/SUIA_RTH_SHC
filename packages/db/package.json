@@ -11,6 +11,7 @@
         "db:migrations:check": "node scripts/validate-drizzle-chain.js",
         "db:baseline:dry": "node scripts/baseline-drizzle-migrations.js",
         "db:baseline:apply": "node scripts/baseline-drizzle-migrations.js --apply",
+        "db:reset:test-passwords": "node scripts/reset-test-user-passwords.js",
         "test": "vitest run",
         "test:watch": "vitest",
         "test:coverage": "vitest run --coverage"

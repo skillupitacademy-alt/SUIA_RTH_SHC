@@ -1,10 +1,8 @@
 'use client';
 
 export default function GlobalError({
-    error,
     reset,
 }: {
-    error: Error & { digest?: string };
     reset: () => void;
 }) {
     return (
@@ -18,7 +16,7 @@ export default function GlobalError({
                     </div>
                     <h1 className="text-2xl font-bold text-slate-900 mb-2">Critical Admin Error</h1>
                     <p className="text-slate-500 mb-8">
-                        A critical error occurred in the administrative interface.
+                        We could not load this page. Please try again.
                     </p>
                     <button
                         onClick={() => reset()}
@@ -26,12 +24,6 @@ export default function GlobalError({
                     >
                         Attempt Recovery
                     </button>
-                    {process.env.NODE_ENV === 'development' && (
-                        <div className="mt-4 text-left p-4 bg-slate-100 rounded text-xs overflow-auto max-h-40">
-                            <p className="font-mono text-red-600">{error.message}</p>
-                            {error.stack != null ? <pre className="mt-2 text-slate-600">{error.stack}</pre> : null}
-                        </div>
-                    )}
                 </div>
             </body>
         </html>

@@ -49,6 +49,13 @@ const DEFAULT_RETRY: Required<RetryOptions> = {
 
 const RETRYABLE_STATUSES = [408, 429, 500, 502, 503, 504];
 const IDEMPOTENT_METHODS = ['GET', 'HEAD', 'OPTIONS'];
+const AUTH_REFRESH_BYPASS_ENDPOINTS = new Set([
+  '/auth/login',
+  '/auth/signup',
+  '/auth/forgot-password',
+  '/auth/reset-password',
+  '/admin/auth/login',
+]);
 
 // In-memory ETag cache for Task 104
 const ETAG_CACHE = new Map<string, { etag: string; data: any }>();
@@ -214,7 +221,9 @@ export class FetchClient {
       }
 
       // 401/403 Auto-Refresh
-      if ((response.status === 401 || response.status === 403) && !options._isRetry && endpoint !== '/auth/refresh') {
+      const shouldBypassAutoRefresh = AUTH_REFRESH_BYPASS_ENDPOINTS.has(endpoint.split('?')[0]);
+
+      if ((response.status === 401 || response.status === 403) && !options._isRetry && endpoint !== '/auth/refresh' && !shouldBypassAutoRefresh) {
         try {
           if (!globalRefreshPromise) {
             globalRefreshPromise = this.performRequest('/auth/refresh', { method: 'POST', _isRetry: true });

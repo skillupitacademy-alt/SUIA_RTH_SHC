@@ -24,7 +24,7 @@ export default function Error({
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">An error occurred</h2>
             <p className="text-gray-500 mb-8 max-w-md">
-                We encountered an error while loading this page. This might be a temporary issue.
+                We could not load this page. Please try again.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
                 <button
@@ -40,16 +40,6 @@ export default function Error({
                     Back to Dashboard
                 </Link>
             </div>
-            {process.env.NODE_ENV === 'development' && (
-                <div className="mt-12 text-left p-6 bg-gray-50 rounded-xl border border-gray-200 max-w-2xl w-full">
-                    <p className="text-sm font-semibold text-red-600 mb-2 font-mono">DEBUG INFO:</p>
-                    <pre className="text-xs text-gray-600 overflow-auto whitespace-pre-wrap">
-                        {error.message}
-                        {"\n\n"}
-                        {error.stack}
-                    </pre>
-                </div>
-            )}
         </div>
     );
 }
