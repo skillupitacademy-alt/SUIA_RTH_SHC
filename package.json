@@ -27,6 +27,8 @@
                     "test:ui":  "vitest --ui",
                     "test:all":  "pnpm --recursive run test",
                     "test:load":  "k6 run scripts/load/smoke.js",
+                    "k6:exam":  "k6 run k6/exam-flow.js",
+                    "k6:auth":  "k6 run k6/auth-flow.js",
                     "type-check":  "turbo run type-check",
                     "typecheck:all":  "turbo run type-check --filter=@quiz/web-app --filter=@quiz/admin-app --filter=@quiz/api-server",
                     "ci":  "pnpm lint:all \u0026\u0026 pnpm typecheck:all \u0026\u0026 pnpm build:all",
