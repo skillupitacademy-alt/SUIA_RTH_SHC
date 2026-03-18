@@ -14,7 +14,7 @@ export interface UpdateUserInput {
 
 type UpdateUserRepoInput = {
   isBlocked?: boolean;
-  password?: string;
+  passwordHash?: string;
   updatedAt?: Date;
 };
 
@@ -79,7 +79,7 @@ export class AdminUserEngine {
     };
 
     if (data.password !== undefined && data.password !== null && data.password !== '') {
-        updateData.password = await this.passwordService.hash(data.password);
+        updateData.passwordHash = await this.passwordService.hash(data.password);
     }
 
     const updated = await this.repository.update(id, updateData);

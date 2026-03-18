@@ -42,4 +42,14 @@ describe('AdminUserEngine', () => {
 
     expect(audit.log).toHaveBeenCalledTimes(3);
   });
+
+  it('stores password changes as passwordHash', async () => {
+    repository.update.mockResolvedValue({ id: 'u9', passwordHash: 'hashed-new-password' });
+    const passwordService = { hash: vi.fn().mockResolvedValue('hashed-new-password') };
+    const passwordEngine = new AdminUserEngine(repository as any, audit as any, passwordService as any);
+
+    await expect(passwordEngine.updateUser('u9', { password: 'new-password' }, 'admin-9')).resolves.toEqual({ id: 'u9', passwordHash: 'hashed-new-password' });
+    expect(passwordService.hash).toHaveBeenCalledWith('new-password');
+    expect(repository.update).toHaveBeenCalledWith('u9', expect.objectContaining({ passwordHash: 'hashed-new-password' }));
+  });
 });
