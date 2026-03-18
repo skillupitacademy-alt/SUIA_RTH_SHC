@@ -43,3 +43,6 @@ test-results
 .vercel
 .env*.local
 tmp/
+
+.vercel
+.env*.local
