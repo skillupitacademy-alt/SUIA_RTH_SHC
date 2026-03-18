@@ -54,4 +54,14 @@ describe('FeatureFlagService', () => {
     expect(service.getAllFlags()).toEqual({});
     expect(errorSpy).toHaveBeenCalled();
   });
+
+  it('refreshes flags on each public read', () => {
+    process.env.FEATURE_FLAGS = '{"FLAG_A":true}';
+    const service = new FeatureFlagService();
+
+    process.env.FEATURE_FLAGS = '{"FLAG_A":false,"FLAG_B":true}';
+
+    expect(service.isEnabled('FLAG_A' as any)).toBe(false);
+    expect(service.getAllFlags()).toEqual({ FLAG_A: false, FLAG_B: true });
+  });
 });

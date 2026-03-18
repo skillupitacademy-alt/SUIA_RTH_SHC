@@ -5,6 +5,9 @@ import { baseSecurityHeaders, standardSecurityHeaders, getCSPHeader } from '../.
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const apiUrlBase = (process.env.NEXT_PUBLIC_API_URL || "https://api.realtutorialhub.com")
+    .replace(/\/api\/?$/, "")
+    .replace(/\/$/, "");
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -58,7 +61,7 @@ const nextConfig = {
                             apiUrls,
                             webAppUrl: process.env.NEXT_PUBLIC_WEB_APP_URL,
                             adminUrl: process.env.NEXT_PUBLIC_ADMIN_URL,
-                            reportUri: `${process.env.NEXT_PUBLIC_API_URL || "https://api.realtutorialhub.com"}/api/security/report`,
+                            reportUri: `${apiUrlBase}/api/security/report`,
                             isDev
                         })
                     },

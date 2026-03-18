@@ -40,10 +40,15 @@ export class FeatureFlagService {
     }
   }
 
+  public refreshOnRequest(): void {
+    this.refresh();
+  }
+
   /**
    * Checks if a specific feature flag is enabled.
    */
   public isEnabled(flag: FeatureFlag): boolean {
+    this.refreshOnRequest();
     const value = this.flags[flag];
     return value === true;
   }
@@ -52,6 +57,7 @@ export class FeatureFlagService {
    * Returns all currently active flags.
    */
   public getAllFlags(): FeatureFlagsMap {
+    this.refreshOnRequest();
     return { ...this.flags };
   }
 }

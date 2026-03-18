@@ -43,5 +43,6 @@ WORKDIR /app
 COPY --from=builder /app/apps/admin-app/.next/standalone ./
 COPY --from=builder /app/apps/admin-app/.next/static ./apps/admin-app/.next/static
 COPY --from=builder /app/apps/admin-app/public ./apps/admin-app/public
+COPY --from=builder /app/docs ./docs
 EXPOSE 3002
 CMD ["node", "apps/admin-app/server.js"]

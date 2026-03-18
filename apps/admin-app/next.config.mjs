@@ -6,6 +6,10 @@ const withBundleAnalyzer = bundleAnalyzer({
     enabled: process.env.ANALYZE === 'true',
 });
 
+const apiUrlBase = (process.env.NEXT_PUBLIC_API_URL || "https://api.realtutorialhub.com")
+    .replace(/\/api\/?$/, "")
+    .replace(/\/$/, "");
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     compress: true,
@@ -44,7 +48,7 @@ const nextConfig = {
                             apiUrls,
                             webAppUrl: process.env.NEXT_PUBLIC_WEB_APP_URL,
                             adminUrl: process.env.NEXT_PUBLIC_ADMIN_URL,
-                            reportUri: `${process.env.NEXT_PUBLIC_API_URL || "https://api.realtutorialhub.com"}/api/security/report`,
+                            reportUri: `${apiUrlBase}/api/security/report`,
                             isDev
                         })
                     },
