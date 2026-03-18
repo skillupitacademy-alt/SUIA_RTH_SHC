@@ -1,7 +1,10 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { UserCreateWizard } from '../UserCreateWizard';
 import { apiClient } from '@quiz/api-client';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { UserCreateWizard } from '../UserCreateWizard';
+
+const createUserMock = vi.mocked(apiClient.user.createUser);
 
 // Mock the API client
 vi.mock('@quiz/api-client', () => ({
@@ -53,7 +56,7 @@ describe('UserCreateWizard Unit Tests', () => {
     });
 
     it('should validate required fields and handle successful submission', async () => {
-        (apiClient.user.createUser as any).mockResolvedValueOnce({});
+        createUserMock.mockResolvedValueOnce({});
 
         render(
             <UserCreateWizard 
@@ -95,7 +98,7 @@ describe('UserCreateWizard Unit Tests', () => {
 
     it('should display error message on API failure', async () => {
         const errorMessage = 'Registry Sync Failed';
-        (apiClient.user.createUser as any).mockRejectedValueOnce(new Error(errorMessage));
+        createUserMock.mockRejectedValueOnce(new Error(errorMessage));
 
         render(<UserCreateWizard isOpen={true} onClose={mockOnClose} />);
 

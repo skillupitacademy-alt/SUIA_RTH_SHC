@@ -9,6 +9,7 @@ const __dirname = path.dirname(__filename);
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     compress: true,
+    output: process.env.CLOUD_RUN_BUILD === 'true' ? 'standalone' : undefined,
     transpilePackages: ['@quiz/api-client', '@quiz/db', '@quiz/ui', 'lucide-react'],
     // Bundle ioredis/BullMQ to avoid Turbopack “can't be external” warnings; keep heavy binaries out.
     serverExternalPackages: [],
