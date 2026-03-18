@@ -1,7 +1,7 @@
 import "./globals.css";
 
 import { ZErrorBoundary } from "@quiz/ui";
-import { Analytics } from "@vercel/analytics/react";
+// import { Analytics } from "@vercel/analytics/react";
 import type { Metadata } from "next";
 import { Inter, Outfit } from "next/font/google";
 import React from "react";
@@ -48,7 +48,7 @@ export default function RootLayout({
                                 <FetchCredentialsProvider />
                                 <SecurityMuzzle />
                                 {children}
-                                <Analytics />
+                                {/* <Analytics /> */}
                             </QueryProvider>
                         </ThemeProvider>
                     </ZErrorBoundary>

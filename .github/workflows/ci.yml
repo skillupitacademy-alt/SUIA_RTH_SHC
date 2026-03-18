@@ -5,7 +5,7 @@ on:
     branches: [main, master]
   pull_request:
     branches: ["*"]
-  deployment_status:
+  # deployment_status:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -166,14 +166,14 @@ jobs:
             apps/web-app/.next/analyze/
             apps/admin-app/.next/analyze/
 
-  preview-check:
-    if: github.event_name == 'deployment_status' && github.event.deployment_status.state == 'success'
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - name: Health Check
-        run: |
-          curl -s --fail ${{ github.event.deployment_status.target_url }}/api/health || exit 1
+  # preview-check:
+  #   if: github.event_name == 'deployment_status' && github.event.deployment_status.state == 'success'
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 5
+  #   steps:
+  #     - name: Health Check
+  #       run: |
+  #         curl -s --fail ${{ github.event.deployment_status.target_url }}/api/health || exit 1
 
   ci-success:
     needs: [lint, type-check, test, build, e2e-smoke, bundle-check]

@@ -18,7 +18,7 @@ const outfit = Outfit({
 import { SecurityMuzzle } from "@/components/auth/SecurityMuzzle";
 import { ZErrorBoundary } from "@quiz/ui";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
-import { Analytics } from "@vercel/analytics/react";
+// import { Analytics } from "@vercel/analytics/react";
 import { GlobalNavigationLoader } from "@/components/layout/GlobalNavigationLoader";
 import { MonitoringProvider } from "@/components/providers/MonitoringProvider";
 import { QueryProvider } from "@/components/providers/QueryProvider";
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     openGraph: {
         type: "website",
         locale: "en_US",
-        url: "https://quiz-platform.vercel.app",
+        // url: "https://quiz-platform.vercel.app",
         siteName: "Quiz Platform",
         title: "Quiz Platform | Elite Learning & Assessment",
         description: "Adaptive testing, deep analytics, and mastery-based learning.",
@@ -68,7 +68,7 @@ export default function RootLayout({
                                 <SecurityMuzzle />
                                 <GlobalNavigationLoader />
                                 {children}
-                                <Analytics />
+                                {/* <Analytics /> */}
                                 <div id="modal-root" />
                             </QueryProvider>
                         </ThemeProvider>
