@@ -16,6 +16,7 @@ RUN pnpm install --frozen-lockfile
 FROM base AS builder
 ENV CLOUD_RUN_BUILD=true
 COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/apps/web-app/node_modules ./apps/web-app/node_modules
 COPY . .
 RUN pnpm --filter @quiz/web-app build
 
