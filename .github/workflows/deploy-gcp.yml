@@ -162,7 +162,7 @@ jobs:
           ADMIN_URL=$(gcloud run services describe quiz-admin-app --region asia-south1 --format 'value(status.url)')
 
           declare -A CHECKS=(
-            [quiz-api-server]="$API_URL/api/health"
+            [quiz-api-server]="$API_URL/api/health/live"
             [quiz-web-app]="$WEB_URL/"
             [quiz-admin-app]="$ADMIN_URL/"
           )
