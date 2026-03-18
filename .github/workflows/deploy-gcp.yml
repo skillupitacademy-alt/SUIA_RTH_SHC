@@ -161,17 +161,18 @@ jobs:
           WEB_URL=$(gcloud run services describe quiz-web-app --region asia-south1 --format 'value(status.url)')
           ADMIN_URL=$(gcloud run services describe quiz-admin-app --region asia-south1 --format 'value(status.url)')
 
-          declare -A CHECKS=(
-            [quiz-api-server]="$API_URL/api/health/live"
-            [quiz-web-app]="$WEB_URL/"
-            [quiz-admin-app]="$ADMIN_URL/"
-          )
-
-          for SERVICE in "${!CHECKS[@]}"; do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${CHECKS[$SERVICE]}")
-            echo "$SERVICE: $STATUS"
-            if [ "$STATUS" != "200" ]; then
-              echo "FAILED: $SERVICE"
+          check_service() {
+            local name=$1
+            local url=$2
+            local expected=$3
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$url")
+            echo "$name: $STATUS"
+            if [ "$STATUS" != "$expected" ]; then
+              echo "FAILED: $name (expected $expected, got $STATUS)"
               exit 1
             fi
-          done
+          }
+
+          check_service "quiz-api-server" "$API_URL/api/health/live" "200"
+          check_service "quiz-web-app" "$WEB_URL/" "200"
+          check_service "quiz-admin-app" "$ADMIN_URL/" "307"

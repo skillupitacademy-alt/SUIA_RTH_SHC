@@ -15,21 +15,23 @@ const r2 = new S3Client({
 const BUCKET = process.env.R2_BUCKET!;
 
 export const r2Storage: StorageProvider = {
-  async uploadReport(buffer, { userId, attemptId, fileBasename }) {
-    const basename = (typeof fileBasename === 'string' && fileBasename.trim() !== '') ? fileBasename.trim() : attemptId;
-    const key = `reports/${userId}/${basename}.pdf`;
-
+  async uploadObject(buffer, { key, contentType }) {
     await r2.send(
       new PutObjectCommand({
         Bucket: BUCKET,
         Key: key,
         Body: buffer,
-        ContentType: "application/pdf",
+        ContentType: contentType,
       })
     );
 
-    // Return the key for R2, as we use signed URLs for access
     return key;
+  },
+
+  async uploadReport(buffer, { userId, attemptId, fileBasename }) {
+    const basename = (typeof fileBasename === 'string' && fileBasename.trim() !== '') ? fileBasename.trim() : attemptId;
+    const key = `reports/${userId}/${basename}.pdf`;
+    return await this.uploadObject(buffer, { key, contentType: "application/pdf" });
   },
 
   async exists(fileRef) {
@@ -56,6 +58,10 @@ export const r2Storage: StorageProvider = {
     // the presigner's Client type incompatible with our S3Client instance.
     // Runtime behavior is unaffected because the presigner only calls send().
     return await sign(r2 as unknown as S3Client, command, { expiresIn: 3600 });
+  },
+
+  async getReadUrl(fileRef) {
+    return await this.getDownloadUrl(fileRef);
   },
 
   async delete(fileRef) {

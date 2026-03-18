@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { badRequest, forbidden, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { logger } from '@/lib/logger';
+import { storage } from '@/lib/storage';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 import { JobsService } from '@/modules/system/jobs.service';
@@ -40,7 +41,7 @@ export async function GET(req: NextRequest) {
       throw unauthorized('Unauthorized');
     }
 
-    let blobUrl: string;
+    let fileRef: string;
     let format: string;
 
     if (jobId !== null && jobId.trim() !== '') {
@@ -57,7 +58,7 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: 'Export not ready' }, { status: 404 });
       }
 
-      blobUrl = job.result.downloadUrl as string;
+      fileRef = job.result.downloadUrl as string;
       format = (job.result?.format as string) ?? 'json';
     } else {
       if (formatParam !== 'json' && formatParam !== 'csv' && formatParam !== 'student-insight-pdf') {
@@ -87,13 +88,13 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: 'Export not ready' }, { status: 404 });
       }
 
-      blobUrl = url;
+      fileRef = url;
       format = formatParam;
     }
 
     // If the job result didn't preserve format reliably, infer it from the blob key.
     // This prevents "PDF saved as JSON" issues when the underlying artifact is a PDF.
-    const lowerUrl = blobUrl.toLowerCase();
+    const lowerUrl = fileRef.toLowerCase();
     if (lowerUrl.endsWith('.pdf')) {
       format = 'student-insight-pdf';
     } else if (lowerUrl.endsWith('.zip')) {
@@ -102,15 +103,11 @@ export async function GET(req: NextRequest) {
       format = 'json';
     }
 
-    // Fetch from private blob
-    const response = await fetch(blobUrl, {
-      headers: {
-        'Authorization': `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}`,
-      },
-    });
+    const readUrl = await storage.getReadUrl(fileRef);
+    const response = await fetch(readUrl);
 
     if (!response.ok) {
-      log.error({ jobId, status: response.status }, 'Failed to fetch export from blob storage');
+      log.error({ jobId, status: response.status, fileRef }, 'Failed to fetch export from storage');
       if (response.status === 404) {
         // Blob was deleted or URL is stale. Tell client to regenerate.
         return NextResponse.json({ error: 'Export artifact missing. Please regenerate.' }, { status: 404 });

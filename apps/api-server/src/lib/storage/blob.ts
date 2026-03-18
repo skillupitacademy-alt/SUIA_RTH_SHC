@@ -3,19 +3,22 @@ import { del, put } from "@vercel/blob";
 import { StorageProvider } from "./types";
 
 export const blobStorage: StorageProvider = {
+  async uploadObject(buffer, { key, contentType }) {
+    const { url } = await put(key, buffer, {
+      access: "private",
+      contentType,
+      addRandomSuffix: false,
+      allowOverwrite: true,
+    });
+
+    return url;
+  },
+
   async uploadReport(buffer, { userId, attemptId, fileBasename }) {
     // Standard fixed path for reports - clean and predictable
     const basename = (typeof fileBasename === 'string' && fileBasename.trim() !== '') ? fileBasename.trim() : attemptId;
     const key = `reports/${userId}/${basename}.pdf`;
-
-    const { url } = await put(key, buffer, {
-      access: "private",
-      contentType: "application/pdf",
-      addRandomSuffix: false, // Keep the exact name we specified
-      allowOverwrite: true,    // Overwrite if it already exists (prevents the 400 error)
-    });
-
-    return url;
+    return await this.uploadObject(buffer, { key, contentType: "application/pdf" });
   },
 
   async exists(fileRef) {
@@ -45,6 +48,10 @@ export const blobStorage: StorageProvider = {
     } catch (_error) {
       return fileRef;
     }
+  },
+
+  async getReadUrl(fileRef) {
+    return fileRef;
   },
 
   async delete(fileRef) {

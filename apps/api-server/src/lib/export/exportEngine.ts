@@ -1,9 +1,9 @@
 import { db, exams } from '@quiz/db';
-import { put } from '@vercel/blob';
 import { eq } from 'drizzle-orm';
 
 import { logger } from '@/lib/logger';
 import { redis } from '@/lib/redis';
+import { storage } from '@/lib/storage';
 import { withSpan } from '@/lib/tracer';
 
 import { ExportAggregator } from './exportAggregator';
@@ -203,23 +203,18 @@ export class ExportEngine {
         throw new Error(`Unsupported format: ${format}`);
       }
 
-      // 4. Upload to Vercel Blob
+      // 4. Upload to shared storage provider
       const filename = `exports/${userId}/${examId}/analysis_${Date.now()}.${extension}`;
-      const { url } = await put(filename, buffer, {
-        access: 'private',
-        contentType,
-        addRandomSuffix: false,
-        allowOverwrite: true,
-      });
+      const fileRef = await storage.uploadObject(buffer, { key: filename, contentType });
 
       try {
-        await redis.set(cacheKey, url, { ex: 900 });
+        await redis.set(cacheKey, fileRef, { ex: 900 });
       } catch (error: unknown) {
         this.log.warn({ err: error, examId, userId }, 'Export cache write failed');
       }
 
-      this.log.info({ examId, url }, 'Export completed and uploaded');
-      return url;
+      this.log.info({ examId, fileRef }, 'Export completed and uploaded');
+      return fileRef;
     });
   }
 }

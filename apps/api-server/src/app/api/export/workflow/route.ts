@@ -1,7 +1,6 @@
 import { db, exams } from '@quiz/db';
 import { JobStatus } from '@quiz/types';
 import { serve } from '@upstash/workflow/nextjs';
-import { put } from '@vercel/blob';
 import { eq } from 'drizzle-orm';
 
 import { eventBus } from '@/lib/event-bus';
@@ -13,6 +12,7 @@ import { CsvFormatter } from '@/lib/export/formatters/csvFormatter';
 import { JsonFormatter } from '@/lib/export/formatters/jsonFormatter';
 import { logger } from '@/lib/logger';
 import { redis } from '@/lib/redis';
+import { storage } from '@/lib/storage';
 import { JobsService } from '@/modules/system/jobs.service';
 
 const log = logger.child({ module: 'export-workflow' });
@@ -193,21 +193,16 @@ export const { POST } = serve<{
     return { contentType, extension, bufferLength: buffer.length };
   });
 
-  const downloadUrl = await context.run('upload-to-blob', async () => {
-    log.info({ examId, jobId }, 'Step: Upload to Blob');
+  const downloadUrl = await context.run('upload-to-storage', async () => {
+    log.info({ examId, jobId }, 'Step: Upload to storage');
     const payload = aggregated;
     const buffer = format === 'csv' ? await csvFormatter.formatAsZip(payload) : jsonFormatter.format(payload);
     const contentType = format === 'csv' ? 'application/zip' : 'application/json';
     const extension = format === 'csv' ? 'zip' : 'json';
     const filename = `exports/${userId}/${examId}/analysis_${Date.now()}.${extension}`;
-    const { url } = await put(filename, buffer, {
-      access: 'private',
-      contentType,
-      addRandomSuffix: false,
-      allowOverwrite: true,
-    });
-    await persistState({ step: 'upload-to-blob', examId, userId, format, downloadUrl: url, bufferBytes: buffer.length });
-    return url;
+    const fileRef = await storage.uploadObject(buffer, { key: filename, contentType });
+    await persistState({ step: 'upload-to-storage', examId, userId, format, downloadUrl: fileRef, bufferBytes: buffer.length });
+    return fileRef;
   });
 
   await context.run('notify-client', async () => {

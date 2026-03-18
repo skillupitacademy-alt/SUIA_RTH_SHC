@@ -3,16 +3,16 @@ import { METRICS } from "@quiz/observability";
 import { eq } from "drizzle-orm";
 import { type NextRequest } from "next/server";
 
-export const dynamic = 'force-dynamic';
-
 import { badRequest, forbidden, notFound, unauthorized } from "@/lib/api-error";
 import { ApiResponse } from "@/lib/api-response";
 import { recordCounter, recordTimer } from "@/lib/metrics";
+import { storage } from "@/lib/storage";
 import { withLogging } from "@/lib/withLogging";
 import { TokenService } from "@/modules/auth/token.service";
 import { container } from '@/modules/core/container';
 import { ReportRepository } from "@/modules/report-engine/report-repository";
 
+export const dynamic = 'force-dynamic';
 export const runtime = "nodejs";
 
 async function getHandler(req: NextRequest) {
@@ -71,13 +71,10 @@ async function getHandler(req: NextRequest) {
       throw notFound("Report ready file", attemptId);
     }
 
-    // 4. Fetch the private blob content and stream it
+    // 4. Fetch the stored report content and stream it
     const fileRef = report.fileRef;
-    const response = await fetch(fileRef, {
-      headers: {
-        'Authorization': `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}`
-      }
-    });
+    const readUrl = await storage.getReadUrl(fileRef);
+    const response = await fetch(readUrl);
 
     if (!response.ok) {
       throw new Error(`Failed to fetch report from storage: ${response.statusText}`);
