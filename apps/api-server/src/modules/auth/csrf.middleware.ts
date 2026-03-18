@@ -17,7 +17,8 @@ export async function csrfProtection(_request: NextRequest) {
   // EXEMPTION: Public/Telemetry Endpoints
   // Browser-automated POSTs for CSP violations and telemetry do not carry CSRF tokens.
   const isWorkflowRoute = path.startsWith('/api/workflows');
-  if (path === '/api/security/report' || path === '/api/logs/client' || isWorkflowRoute) return null;
+  const isExportTriggerRoute = path === '/api/export/trigger';
+  if (path === '/api/security/report' || path === '/api/logs/client' || isWorkflowRoute || isExportTriggerRoute) return null;
   
   // Check if origin is allowed
   const isAllowed = config.csrf.allowedOrigins.includes(origin ?? '') || 
