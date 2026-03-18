@@ -36,7 +36,7 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    ReactDOM.preconnect(apiUrl !== undefined && apiUrl !== null && apiUrl !== '' ? apiUrl : "http://localhost:3002", { crossOrigin: "use-credentials" });
+    ReactDOM.preconnect(apiUrl !== undefined && apiUrl !== null && apiUrl !== '' ? apiUrl : "https://api.realtutorialhub.com", { crossOrigin: "use-credentials" });
 
     return (
         <html lang="en" suppressHydrationWarning className={`${inter.variable} ${outfit.variable}`}>

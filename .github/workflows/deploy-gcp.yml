@@ -40,7 +40,14 @@ jobs:
       - run: gcloud auth configure-docker asia-south1-docker.pkg.dev
       - name: Build and push API
         run: |
-          docker build             -f apps/api-server/Dockerfile             -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-api-server:$GITHUB_SHA             -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-api-server:latest .
+          docker build \
+            --build-arg NEXT_PUBLIC_API_URL=https://api.realtutorialhub.com/api \
+            --build-arg NEXT_PUBLIC_WEB_APP_URL=https://quiz.realtutorialhub.com \
+            --build-arg NEXT_PUBLIC_ADMIN_URL=https://admin.realtutorialhub.com \
+            --build-arg NEXT_PUBLIC_SENTRY_DSN=${{ secrets.NEXT_PUBLIC_SENTRY_DSN }} \
+            -f apps/api-server/Dockerfile \
+            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-api-server:$GITHUB_SHA \
+            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-api-server:latest .
           docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-api-server:$GITHUB_SHA
           docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-api-server:latest
       - name: Deploy API to Cloud Run
@@ -84,7 +91,13 @@ jobs:
       - run: gcloud auth configure-docker asia-south1-docker.pkg.dev
       - name: Build and push Web
         run: |
-          docker build             -f apps/web-app/Dockerfile             -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-web-app:$GITHUB_SHA             -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-web-app:latest .
+          docker build \
+            --build-arg NEXT_PUBLIC_API_URL=https://api.realtutorialhub.com/api \
+            --build-arg NEXT_PUBLIC_WEB_APP_URL=https://quiz.realtutorialhub.com \
+            --build-arg NEXT_PUBLIC_ADMIN_URL=https://admin.realtutorialhub.com \
+            -f apps/web-app/Dockerfile \
+            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-web-app:$GITHUB_SHA \
+            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-web-app:latest .
           docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-web-app:$GITHUB_SHA
           docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-web-app:latest
       - name: Deploy Web to Cloud Run
@@ -124,7 +137,13 @@ jobs:
       - run: gcloud auth configure-docker asia-south1-docker.pkg.dev
       - name: Build and push Admin
         run: |
-          docker build             -f apps/admin-app/Dockerfile             -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-admin-app:$GITHUB_SHA             -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-admin-app:latest .
+          docker build \
+            --build-arg NEXT_PUBLIC_API_URL=https://api.realtutorialhub.com/api \
+            --build-arg NEXT_PUBLIC_WEB_APP_URL=https://quiz.realtutorialhub.com \
+            --build-arg NEXT_PUBLIC_ADMIN_URL=https://admin.realtutorialhub.com \
+            -f apps/admin-app/Dockerfile \
+            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-admin-app:$GITHUB_SHA \
+            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-admin-app:latest .
           docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-admin-app:$GITHUB_SHA
           docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-admin-app:latest
       - name: Deploy Admin to Cloud Run
