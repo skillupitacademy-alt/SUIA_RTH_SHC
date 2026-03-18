@@ -39,7 +39,12 @@
         "../../packages/observability/src/index.ts"
       ]
     },
-    "jsx": "preserve"
+    "jsx": "preserve",
+    "types": [
+      "node",
+      "react",
+      "react-dom"
+    ]
   },
   "include": [
     "next-env.d.ts",
@@ -50,6 +55,7 @@
   ],
   "exclude": [
     "node_modules",
+    "playwright.config.ts",
     "*.config.js",
     "*.config.mjs",
     "**/*.test.ts",

@@ -36,6 +36,6 @@ ENV HOSTNAME=0.0.0.0
 WORKDIR /app
 COPY --from=builder /app/apps/api-server/.next/standalone ./
 COPY --from=builder /app/apps/api-server/.next/static ./apps/api-server/.next/static
-COPY --from=builder /app/apps/api-server/public ./apps/api-server/public
+RUN mkdir -p ./apps/api-server/public
 EXPOSE 3000
 CMD ["node", "apps/api-server/server.js"]

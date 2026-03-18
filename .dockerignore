@@ -1,9 +1,46 @@
+# Node modules
 node_modules
-.next
-*.log
-.env*.local
-coverage
+**/node_modules
+**/.pnpm-store
+
+# Next.js build outputs
+**/.next
+**/out
+
+# Turbo cache
+.turbo
+**/.turbo
+
+# Test artifacts
+**/coverage
+**/.nyc_output
+
+# Local env files
+**/.env
+**/.env.local
+**/.env.*.local
+
+# Git
 .git
+.gitignore
 .github
+
+# Docker
+**/Dockerfile
+**/.dockerignore
+
+# Logs
+**/*.log
+**/npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode
+.idea
+
+# Project-specific
 tests/load
 tmp
