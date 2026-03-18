@@ -57,7 +57,11 @@ export async function proxy(request: NextRequest) {
   // 5. Auth Protection
   const isSecurityReport = pathname.toLowerCase().includes('security/report');
   const isWorkflowRoute = pathname.startsWith('/api/workflows') || pathname.startsWith('/api/api/workflows') || pathname.startsWith('/api/export/workflow') || pathname.startsWith('/api/api/export/workflow');
-  const isPublicRoute = isAuthRoute || isSecurityReport || pathname.includes('/api/status') || isWorkflowRoute;
+  const isHealthRoute =
+    pathname === '/api/health' ||
+    pathname === '/api/health/live' ||
+    pathname === '/api/health/ready';
+  const isPublicRoute = isAuthRoute || isSecurityReport || pathname === '/api/status' || isHealthRoute || isWorkflowRoute;
 
   if (!isPublicRoute) {
     const pathname = request.nextUrl.pathname;
