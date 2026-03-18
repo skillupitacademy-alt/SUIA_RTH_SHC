@@ -37,7 +37,7 @@ export class ReportRepository {
         attemptId: input.attemptId,
         userId: input.userId,
         status: input.status ?? 'pending',
-        storageProvider: input.storageProvider ?? process.env.STORAGE_PROVIDER ?? 'blob',
+        storageProvider: input.storageProvider ?? process.env.STORAGE_PROVIDER ?? 'r2',
       })
       .returning();
     
