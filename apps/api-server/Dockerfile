@@ -17,6 +17,11 @@ FROM base AS builder
 ENV CLOUD_RUN_BUILD=true
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps/api-server/node_modules ./apps/api-server/node_modules
+COPY --from=deps /app/packages/ui/node_modules ./packages/ui/node_modules
+COPY --from=deps /app/packages/db/node_modules ./packages/db/node_modules
+COPY --from=deps /app/packages/types/node_modules ./packages/types/node_modules
+COPY --from=deps /app/packages/api-client/node_modules ./packages/api-client/node_modules
+COPY --from=deps /app/packages/observability/node_modules ./packages/observability/node_modules
 COPY . .
 RUN pnpm --filter @quiz/api-server build
 
