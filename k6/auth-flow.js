@@ -11,8 +11,8 @@ const PROFILE = __ENV.STAGE_PROFILE || "mini";
 export const options = {
   stages: resolveProfile(PROFILE).stages,
   thresholds: {
-    http_req_failed: ["rate<0.05"],
-    http_req_duration: ["p(95)<1500"],
+    http_req_failed: ["rate<0.005"],
+    http_req_duration: ["p(95)<1000"],
   },
 };
 
@@ -66,7 +66,7 @@ export default function () {
   });
 
   let lockoutSeen = false;
-  for (let i = 0; i < 6; i += 1) {
+  for (let i = 0; i < 5; i += 1) {
     const attempt = login(LOCKOUT_EMAIL, randomPassword());
     if (attempt.res.status === 423) {
       lockoutSeen = true;
@@ -87,7 +87,6 @@ export default function () {
   }
 
   if (!lockoutSeen) {
-    fail("lockout response was not observed within 6 attempts");
+    fail("lockout response was not observed within 5 attempts");
   }
 }
-

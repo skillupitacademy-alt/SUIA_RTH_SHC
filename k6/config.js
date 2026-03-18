@@ -1,4 +1,5 @@
-export const DEFAULT_API_URL = "https://quiz-api-server-581488566988.asia-south1.run.app";
+export const DEFAULT_API_URL = "https://quiz-api-server-plldp3atca-el.a.run.app";
+export const DEFAULT_ADMIN_URL = "https://quiz-admin-app-plldp3atca-el.a.run.app";
 
 export const stageProfiles = {
   mini: { stages: [{ duration: "1m", target: 3 }] },
@@ -16,3 +17,7 @@ export function normalizeApiUrl(value) {
   return base.length > 0 ? base : DEFAULT_API_URL;
 }
 
+export function normalizeAdminUrl(value) {
+  const base = (value ?? DEFAULT_ADMIN_URL).trim().replace(/\/+$/, "");
+  return base.length > 0 ? base : DEFAULT_ADMIN_URL;
+}

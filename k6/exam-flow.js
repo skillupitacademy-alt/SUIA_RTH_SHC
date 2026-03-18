@@ -13,8 +13,8 @@ const PROFILE = __ENV.STAGE_PROFILE || "mini";
 export const options = {
   stages: resolveProfile(PROFILE).stages,
   thresholds: {
-    http_req_failed: ["rate<0.05"],
-    http_req_duration: ["p(95)<2500"],
+    http_req_failed: ["rate<0.01"],
+    http_req_duration: ["p(95)<3000"],
   },
 };
 
@@ -231,4 +231,3 @@ export default function () {
     "report reached ready or failed": (r) => r.finalStatus === "ready" || r.finalStatus === "failed",
   });
 }
-

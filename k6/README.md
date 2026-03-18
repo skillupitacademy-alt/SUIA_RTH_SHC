@@ -1,6 +1,6 @@
 # k6 Load Flows
 
-This folder contains two k6 scripts for the Cloud Run deployment.
+This folder contains three k6 scripts for the Cloud Run deployment.
 
 ## Scripts
 
@@ -14,13 +14,20 @@ This folder contains two k6 scripts for the Cloud Run deployment.
   - successful login
   - invalid password returns `401`
   - lockout account eventually returns `423`
+- `admin-flow.js` validates the admin surface:
+  - admin login
+  - list users
+  - list questions
+  - dashboard summary
+  - service health
 
 ## Environment
 
-Use the direct Cloud Run API URL only:
+Use the direct Cloud Run URLs only:
 
 ```bash
-API_URL=https://quiz-api-server-581488566988.asia-south1.run.app
+API_URL=https://quiz-api-server-plldp3atca-el.a.run.app
+ADMIN_URL=https://quiz-admin-app-plldp3atca-el.a.run.app
 ```
 
 Required env vars:
@@ -28,6 +35,8 @@ Required env vars:
 - `TEST_EMAIL` defaults to `k6-test@loadtest.example.com`
 - `TEST_PASSWORD`
 - `LOCKOUT_EMAIL` defaults to `k6-lockout@loadtest.example.com`
+- `ADMIN_EMAIL`
+- `ADMIN_PASSWORD`
 - `DOMAIN_ID`
 - `DIFFICULTY` defaults to `simple`
 - `QUESTION_COUNT` defaults to `10`
@@ -45,12 +54,13 @@ Required env vars:
 ```bash
 k6 run k6/exam-flow.js
 k6 run k6/auth-flow.js
+k6 run k6/admin-flow.js
 ```
 
 With env vars:
 
 ```bash
-API_URL=https://quiz-api-server-581488566988.asia-south1.run.app \
+API_URL=https://quiz-api-server-plldp3atca-el.a.run.app \
 TEST_PASSWORD='your-password' \
 DOMAIN_ID='your-domain-id' \
 QUESTION_COUNT=10 \
@@ -59,11 +69,20 @@ k6 run k6/exam-flow.js
 ```
 
 ```bash
-API_URL=https://quiz-api-server-581488566988.asia-south1.run.app \
+API_URL=https://quiz-api-server-plldp3atca-el.a.run.app \
 TEST_PASSWORD='your-password' \
 LOCKOUT_EMAIL='k6-lockout@loadtest.example.com' \
 STAGE_PROFILE=mini \
 k6 run k6/auth-flow.js
+```
+
+```bash
+API_URL=https://quiz-api-server-plldp3atca-el.a.run.app \
+ADMIN_URL=https://quiz-admin-app-plldp3atca-el.a.run.app \
+ADMIN_EMAIL='admin@example.com' \
+ADMIN_PASSWORD='your-password' \
+STAGE_PROFILE=mini \
+k6 run k6/admin-flow.js
 ```
 
 ## CI
@@ -72,6 +91,7 @@ The root `package.json` includes:
 
 - `pnpm k6:exam`
 - `pnpm k6:auth`
+- `pnpm k6:admin`
+- `pnpm k6:all`
 
 These assume `k6` is installed in the execution environment.
-
