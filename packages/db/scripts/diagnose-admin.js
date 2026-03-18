@@ -49,7 +49,7 @@ async function diagnose() {
     console.log(JSON.stringify(lockRes.rows, null, 2));
 
     // 5. Verify password hash matches admin123
-    const bcrypt = require('bcrypt');
+    const bcrypt = require('bcryptjs');
     const match = await bcrypt.compare('admin123', userRes.rows[0].password_hash);
     console.log('\n=== PASSWORD CHECK ===');
     console.log('Password "admin123" matches hash:', match);

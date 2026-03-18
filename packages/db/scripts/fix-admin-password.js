@@ -1,5 +1,5 @@
 require('dotenv').config({ path: 'd:/onlinewebsites/quiz-platform/packages/db/.env' });
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const { Pool } = require('pg');
 
 const pool = new Pool({
