@@ -10,6 +10,11 @@ export class MaintenanceWorker {
 
   static start(intervalMs: number = 30000) {
     if (this.interval !== null) return;
+    
+    if (process.env.DISABLE_BACKGROUND_WORKERS === 'true' || process.env.CLOUD_RUN_BUILD === 'true') {
+      logger.info('[MaintenanceWorker] Background workers disabled via environment');
+      return;
+    }
 
     this.interval = setInterval(() => {
       void this.processDirtyViews();

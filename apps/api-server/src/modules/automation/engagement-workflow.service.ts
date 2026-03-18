@@ -36,11 +36,11 @@ export class EngagementWorkflowService {
     try {
       // The URL points to our app's workflow endpoint
       const publicUrl = process.env.NEXT_PUBLIC_APP_URL;
-      const vercelUrl = process.env.VERCEL_URL;
+      const internalUrl = process.env.INTERNAL_API_URL;
       const appUrl = typeof publicUrl === 'string' && publicUrl.trim() !== ''
         ? publicUrl
-        : typeof vercelUrl === 'string' && vercelUrl.trim() !== ''
-          ? `https://${vercelUrl}`
+        : typeof internalUrl === 'string' && internalUrl.trim() !== ''
+          ? internalUrl
           : 'http://localhost:3000';
       const workflowUrl = `${appUrl}/api/workflows/learning-journey`;
 

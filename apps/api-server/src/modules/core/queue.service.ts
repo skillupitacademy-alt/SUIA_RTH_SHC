@@ -19,11 +19,12 @@ export class QueueService {
     this.qstashToken = (typeof token === 'string' && token.trim() !== '') ? token : null;
 
     const publicUrl = process.env.NEXT_PUBLIC_APP_URL;
-    const vercelUrl = process.env.VERCEL_URL;
+    const internalUrl = process.env.INTERNAL_API_URL;
+
     if (typeof publicUrl === 'string' && publicUrl.trim() !== '') {
       this.appUrl = publicUrl;
-    } else if (typeof vercelUrl === 'string' && vercelUrl.trim() !== '') {
-      this.appUrl = `https://${vercelUrl}`;
+    } else if (typeof internalUrl === 'string' && internalUrl.trim() !== '') {
+      this.appUrl = internalUrl;
     } else {
       this.appUrl = 'http://localhost:3000';
     }

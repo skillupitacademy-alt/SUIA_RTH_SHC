@@ -9,6 +9,7 @@ import { logger } from '@/lib/logger';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
+import { cacheService } from '@/modules/core/cache.service';
 
 const MAX_BODY_BYTES = 2_048;
 const RATE_LIMIT_WINDOW_MS = 60_000;
@@ -22,22 +23,13 @@ const payloadSchema = z.object({
   path: z.string().max(300).optional(),
 });
 
-type Bucket = { count: number; resetAt: number };
-const buckets = new Map<string, Bucket>();
-
-function bucketFor(key: string): Bucket {
-  const now = Date.now();
-  const existing = buckets.get(key);
-  if (existing && existing.resetAt > now) return existing;
-  const bucket = { count: 0, resetAt: now + RATE_LIMIT_WINDOW_MS };
-  buckets.set(key, bucket);
-  return bucket;
-}
-
-function rateLimited(key: string): boolean {
-  const bucket = bucketFor(key);
-  bucket.count += 1;
-  return bucket.count > RATE_LIMIT_MAX;
+async function rateLimited(key: string): Promise<boolean> {
+  try {
+    const { count } = await cacheService.increment(`ratelimit:logs:${key}`, RATE_LIMIT_WINDOW_MS);
+    return count > RATE_LIMIT_MAX;
+  } catch {
+    return false; // Fail open
+  }
 }
 
 function scrubPII(input: string): string {
@@ -106,7 +98,7 @@ async function handler(req: NextRequest) {
   }
 
   const rateKey = `${ip}:${source ?? 'client'}`;
-  if (rateLimited(rateKey)) {
+  if (await rateLimited(rateKey)) {
     return ApiResponse.error(badRequest('Rate limited'), 429);
   }
 

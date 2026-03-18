@@ -25,13 +25,13 @@ describe('QueueService branch coverage', () => {
     expect((qs as unknown as { appUrl: string }).appUrl).toBe('https://public.example.com');
   });
 
-  it('falls back to VERCEL_URL when public url is empty', () => {
+  it('falls back to INTERNAL_API_URL when public url is empty', () => {
     process.env.NEXT_PUBLIC_APP_URL = '   ';
-    process.env.VERCEL_URL = 'my-app.vercel.app';
+    process.env.INTERNAL_API_URL = 'https://internal.example.com';
     resetSingleton();
 
     const qs = QueueService.getInstance();
-    expect((qs as unknown as { appUrl: string }).appUrl).toBe('https://my-app.vercel.app');
+    expect((qs as unknown as { appUrl: string }).appUrl).toBe('https://internal.example.com');
   });
 
   it('adds delay and retries headers when options passed', async () => {
@@ -80,6 +80,7 @@ describe('QueueService branch coverage', () => {
 
   it('falls back to localhost appUrl when no env urls set', () => {
     process.env.NEXT_PUBLIC_APP_URL = '';
+    process.env.INTERNAL_API_URL = '';
     process.env.VERCEL_URL = '';
     resetSingleton();
 

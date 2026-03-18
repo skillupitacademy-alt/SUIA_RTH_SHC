@@ -71,9 +71,13 @@ async function handler(_req: NextRequest) {
     });
 
     // Trigger Upstash Workflow instead of processing synchronously
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? '';
-    const vercelUrl = process.env.VERCEL_URL ?? '';
-    const publicUrl = appUrl !== '' ? appUrl : (vercelUrl !== '' ? `https://${vercelUrl}` : 'http://localhost:3000');
+    const publicEnvUrl = process.env.NEXT_PUBLIC_APP_URL;
+    const internalEnvUrl = process.env.INTERNAL_API_URL;
+    const publicUrl = typeof publicEnvUrl === 'string' && publicEnvUrl.trim() !== ''
+        ? publicEnvUrl
+        : typeof internalEnvUrl === 'string' && internalEnvUrl.trim() !== ''
+            ? internalEnvUrl
+            : 'http://localhost:3000';
     const workflowUrl = `${publicUrl}/api/workflows/bulk-import`;
     
     // We fire-and-forget or await the trigger

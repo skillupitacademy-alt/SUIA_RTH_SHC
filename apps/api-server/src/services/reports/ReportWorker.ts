@@ -17,6 +17,11 @@ export class ReportWorker {
             return;
         }
 
+        if (process.env.DISABLE_BACKGROUND_WORKERS === 'true' || process.env.CLOUD_RUN_BUILD === 'true') {
+            this.log.info("Background report worker disabled via environment");
+            return;
+        }
+
         this.isRunning = true;
         this.log.info("Background report worker started");
         

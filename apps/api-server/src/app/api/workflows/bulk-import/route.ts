@@ -30,7 +30,7 @@ const { POST: workflowHandler } = serve<{
     
     logger.info({ count: questions.length, adminId }, "[Workflow] Starting Bulk Import Workflow");
 
-    // Process in batches of 10 to ensure we stay well within Vercel's 10s execution limit per step
+    // Cloud Run supports up to 3600s — larger batches are safe, but we keep 10 for stability for now
     const batchSize = 10;
     const totalBatches = Math.ceil(questions.length / batchSize);
 
