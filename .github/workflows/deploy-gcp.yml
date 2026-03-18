@@ -45,7 +45,19 @@ jobs:
           docker push gcr.io/$PROJECT_ID/quiz-api-server:latest
       - name: Deploy API to Cloud Run
         run: |
-          gcloud run deploy quiz-api-server             --image gcr.io/$PROJECT_ID/quiz-api-server:$GITHUB_SHA             --region $REGION             --platform managed             --allow-unauthenticated             --port 3000             --memory 2Gi             --cpu 2             --concurrency 1000             --max-instances 10             --min-instances 0
+          gcloud run deploy quiz-api-server \
+            --image gcr.io/$PROJECT_ID/quiz-api-server:$GITHUB_SHA \
+            --region $REGION \
+            --platform managed \
+            --allow-unauthenticated \
+            --port 3000 \
+            --set-env-vars "NODE_ENV=production,CLOUD_RUN_BUILD=true" \
+            --set-secrets "DATABASE_URL=DATABASE_URL:latest,DATABASE_POOL_URL=DATABASE_POOL_URL:latest,UPSTASH_REDIS_REST_URL=UPSTASH_REDIS_REST_URL:latest,UPSTASH_REDIS_REST_TOKEN=UPSTASH_REDIS_REST_TOKEN:latest,QSTASH_URL=QSTASH_URL:latest,QSTASH_TOKEN=QSTASH_TOKEN:latest,QSTASH_CURRENT_SIGNING_KEY=QSTASH_CURRENT_SIGNING_KEY:latest,QSTASH_NEXT_SIGNING_KEY=QSTASH_NEXT_SIGNING_KEY:latest,JWT_SECRET=JWT_SECRET:latest,JWT_REFRESH_SECRET=JWT_REFRESH_SECRET:latest,ADMIN_JWT_SECRET=ADMIN_JWT_SECRET:latest,RESEND_API_KEY=RESEND_API_KEY:latest,NEXT_PUBLIC_API_URL=NEXT_PUBLIC_API_URL:latest,NEXT_PUBLIC_SENTRY_DSN=NEXT_PUBLIC_SENTRY_DSN:latest,SENTRY_AUTH_TOKEN=SENTRY_AUTH_TOKEN:latest,CSRF_SECRET=CSRF_SECRET:latest,INTERNAL_API_KEY=INTERNAL_API_KEY:latest,COOKIE_DOMAIN=COOKIE_DOMAIN:latest" \
+            --memory 2Gi \
+            --cpu 2 \
+            --concurrency 1000 \
+            --max-instances 10 \
+            --min-instances 0
       - name: Get API URL
         run: |
           gcloud run services describe quiz-api-server             --region $REGION             --format 'value(status.url)'
@@ -77,7 +89,18 @@ jobs:
           docker push gcr.io/$PROJECT_ID/quiz-web-app:latest
       - name: Deploy Web to Cloud Run
         run: |
-          gcloud run deploy quiz-web-app             --image gcr.io/$PROJECT_ID/quiz-web-app:$GITHUB_SHA             --region $REGION             --platform managed             --allow-unauthenticated             --port 3001             --memory 1Gi             --cpu 1             --concurrency 1000             --max-instances 10
+          gcloud run deploy quiz-web-app \
+            --image gcr.io/$PROJECT_ID/quiz-web-app:$GITHUB_SHA \
+            --region $REGION \
+            --platform managed \
+            --allow-unauthenticated \
+            --port 3001 \
+            --set-env-vars "NODE_ENV=production,CLOUD_RUN_BUILD=true" \
+            --set-secrets "NEXT_PUBLIC_API_URL=NEXT_PUBLIC_API_URL:latest,NEXT_PUBLIC_WEB_APP_URL=NEXT_PUBLIC_WEB_APP_URL:latest,NEXT_PUBLIC_SENTRY_DSN=NEXT_PUBLIC_SENTRY_DSN:latest,SENTRY_AUTH_TOKEN=SENTRY_AUTH_TOKEN:latest,JWT_SECRET=JWT_SECRET:latest,JWT_REFRESH_SECRET=JWT_REFRESH_SECRET:latest,COOKIE_DOMAIN=COOKIE_DOMAIN:latest,INTERNAL_API_KEY=INTERNAL_API_KEY:latest,INTERNAL_API_URL=INTERNAL_API_URL:latest" \
+            --memory 1Gi \
+            --cpu 1 \
+            --concurrency 1000 \
+            --max-instances 10
 
   deploy-admin:
     name: Deploy Admin App
@@ -106,7 +129,18 @@ jobs:
           docker push gcr.io/$PROJECT_ID/quiz-admin-app:latest
       - name: Deploy Admin to Cloud Run
         run: |
-          gcloud run deploy quiz-admin-app             --image gcr.io/$PROJECT_ID/quiz-admin-app:$GITHUB_SHA             --region $REGION             --platform managed             --allow-unauthenticated             --port 3002             --memory 1Gi             --cpu 1             --concurrency 1000             --max-instances 10
+          gcloud run deploy quiz-admin-app \
+            --image gcr.io/$PROJECT_ID/quiz-admin-app:$GITHUB_SHA \
+            --region $REGION \
+            --platform managed \
+            --allow-unauthenticated \
+            --port 3002 \
+            --set-env-vars "NODE_ENV=production,CLOUD_RUN_BUILD=true" \
+            --set-secrets "NEXT_PUBLIC_API_URL=NEXT_PUBLIC_API_URL:latest,NEXT_PUBLIC_ADMIN_URL=NEXT_PUBLIC_ADMIN_URL:latest,NEXT_PUBLIC_SENTRY_DSN=NEXT_PUBLIC_SENTRY_DSN:latest,SENTRY_AUTH_TOKEN=SENTRY_AUTH_TOKEN:latest,JWT_SECRET=JWT_SECRET:latest,JWT_REFRESH_SECRET=JWT_REFRESH_SECRET:latest,ADMIN_JWT_SECRET=ADMIN_JWT_SECRET:latest,COOKIE_DOMAIN=COOKIE_DOMAIN:latest,CSRF_SECRET=CSRF_SECRET:latest,INTERNAL_API_KEY=INTERNAL_API_KEY:latest" \
+            --memory 1Gi \
+            --cpu 1 \
+            --concurrency 1000 \
+            --max-instances 10
 
   health-check:
     name: Verify all services
