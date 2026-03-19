@@ -118,7 +118,8 @@ describe('useInsightVectorData Hook', () => {
     mockFetch
       .mockResolvedValueOnce(jsonResponse({ url: null })) // export/urls
       .mockResolvedValueOnce(jsonResponse({ jobId: 'job-2', status: 'processing' })) // trigger
-      .mockResolvedValueOnce(jsonResponse({ status: 'failed', error: 'Boom' })); // status
+      .mockResolvedValueOnce(jsonResponse({ status: 'failed', error: 'Boom' })) // status
+      .mockResolvedValueOnce(jsonResponse({ url: null })); // fallback export/urls
 
     const { result } = renderHook(() => useInsightVectorData(examId, userId));
     await act(async () => {
@@ -145,7 +146,8 @@ describe('useInsightVectorData Hook', () => {
     mockFetch
       .mockResolvedValueOnce(jsonResponse({ url: null })) // export/urls
       .mockResolvedValueOnce(jsonResponse({ jobId: 'job-3', status: 'processing' })) // trigger
-      .mockResolvedValueOnce(jsonResponse({ status: 'failed', error: 'First fail' })); // status
+      .mockResolvedValueOnce(jsonResponse({ status: 'failed', error: 'First fail' })) // status
+      .mockResolvedValueOnce(jsonResponse({ url: null })); // fallback export/urls
 
     const { result } = renderHook(() => useInsightVectorData(examId, userId));
     await act(async () => {
@@ -172,6 +174,38 @@ describe('useInsightVectorData Hook', () => {
       expect(result.current.loading).toBe(false);
       expect(result.current.data).not.toBeNull();
     });
+    intervalSpy.mockRestore();
+    clearSpy.mockRestore();
+  });
+
+  it('recovers when export status polling returns 404 but the artifact exists', async () => {
+    const intervalSpy = vi.spyOn(global, 'setInterval').mockImplementation((fn: TimerHandler): ReturnType<typeof setInterval> => {
+      if (typeof fn === 'function') fn();
+      return 0 as ReturnType<typeof setInterval>;
+    });
+    const clearSpy = vi.spyOn(global, 'clearInterval').mockImplementation(() => {});
+
+    mockFetch
+      .mockResolvedValueOnce(jsonResponse({ url: null })) // export/urls precheck
+      .mockResolvedValueOnce(jsonResponse({ jobId: 'job-4', status: 'processing' })) // trigger
+      .mockResolvedValueOnce(jsonResponse({}, false, 404)) // status
+      .mockResolvedValueOnce(jsonResponse({ url: 'http://recovered.url' })) // export/urls recovery
+      .mockResolvedValueOnce(jsonResponse({
+        content: { guidance_signals: [], historical_progress: [], aggregations: { L6_skill: [] } }
+      })); // payload
+
+    const { result } = renderHook(() => useInsightVectorData(examId, userId));
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+      expect(result.current.data).not.toBeNull();
+    });
+
+    expect(String(mockFetch.mock.calls[2]?.[0])).toContain('/export/status/job-4?examId=exam-1&format=json');
+    expect(String(mockFetch.mock.calls[3]?.[0])).toContain('/export/urls?examId=exam-1&format=json');
     intervalSpy.mockRestore();
     clearSpy.mockRestore();
   });

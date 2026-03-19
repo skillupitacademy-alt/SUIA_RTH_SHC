@@ -28,12 +28,16 @@ export function useReportStatus(attemptId: string) {
       
       if (res.status === 404) {
         setStatus("not_found");
+        setStage(null);
+        setDownloadUrl(null);
+        setError(null);
         setLoading(false);
         return;
       }
       
       if (res.status === 401) {
         setStatus("failed");
+        setDownloadUrl(null);
         setError("Session expired. Please refresh and log in again.");
         setLoading(false);
         return;
@@ -48,9 +52,13 @@ export function useReportStatus(attemptId: string) {
       setStage(data.stage ?? null);
       
       if (data.status === "failed") {
+        setDownloadUrl(null);
         setError(sanitizeErrorMessage(data.error ?? "Generation failed"));
       } else if (data.status === "ready" && data.url) {
         setDownloadUrl(data.url);
+        setError(null);
+      } else {
+        setError(null);
       }
 
       // Exponential backoff logic

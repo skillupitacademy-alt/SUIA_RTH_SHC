@@ -58,12 +58,22 @@ export function useInsightVectorData(examId?: string, userId?: string) {
   const [error, setError] = useState<string | null>(null);
   
   const pollInterval = useRef<NodeJS.Timeout | null>(null);
+  const recoveryTimeout = useRef<NodeJS.Timeout | null>(null);
+  const recoveryDeadline = useRef<number>(0);
 
   const clearPolling = useCallback(() => {
-    if (pollInterval.current) {
+    if (pollInterval.current !== null) {
       clearInterval(pollInterval.current);
       pollInterval.current = null;
     }
+  }, []);
+
+  const clearRecovery = useCallback(() => {
+    if (recoveryTimeout.current !== null) {
+      clearTimeout(recoveryTimeout.current);
+      recoveryTimeout.current = null;
+    }
+    recoveryDeadline.current = 0;
   }, []);
 
   const fetchPayload = useCallback(async (url: string) => {
@@ -78,38 +88,13 @@ export function useInsightVectorData(examId?: string, userId?: string) {
         historicalProgress: content.historical_progress || content.historicalProgress || [],
         skillData: content.aggregations?.L6_skill || []
       });
+      setError(null);
       setLoading(false);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to load insight vectors");
       setLoading(false);
     }
   }, []);
-
-  const checkStatus = useCallback(async (id: string) => {
-    try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
-      const res = await fetch(`${apiUrl}/export/status/${id}`, {
-        credentials: "include",
-      });
-
-      if (!res.ok) throw new Error("Failed to check export status");
-
-      const statusData: ExportJobResponse = await res.json();
-      
-      if (statusData.status === "completed" && statusData.downloadUrl) {
-        clearPolling();
-        await fetchPayload(statusData.downloadUrl);
-      } else if (statusData.status === "failed") {
-        clearPolling();
-        setError(statusData.error || "Insight vector generation failed");
-        setLoading(false);
-      }
-    } catch (err: unknown) {
-      clearPolling();
-      setError(err instanceof Error ? err.message : "Status sync failed");
-      setLoading(false);
-    }
-  }, [clearPolling, fetchPayload]);
 
   const fetchExistingUrl = useCallback(async () => {
     if (!examId) return null;
@@ -121,6 +106,103 @@ export function useInsightVectorData(examId?: string, userId?: string) {
     const data = await res.json();
     return typeof data.url === "string" && data.url.trim() !== "" ? data.url : null;
   }, [examId]);
+
+  const recoverFromArtifact = useCallback(async () => {
+    const existingUrl = await fetchExistingUrl();
+    if (existingUrl) {
+      await fetchPayload(existingUrl);
+      return true;
+    }
+    return false;
+  }, [fetchExistingUrl, fetchPayload]);
+
+  const retryArtifactRecovery = useCallback((fallbackMessage: string) => {
+    if (recoveryDeadline.current === 0) {
+      recoveryDeadline.current = Date.now() + 30000;
+    }
+
+    if (recoveryTimeout.current !== null) {
+      return;
+    }
+
+    clearPolling();
+    setLoading(true);
+    setError(null);
+
+    recoveryTimeout.current = setTimeout(async () => {
+      recoveryTimeout.current = null;
+      const recovered = await recoverFromArtifact();
+      if (recovered) {
+        clearRecovery();
+        return;
+      }
+
+      if (Date.now() < recoveryDeadline.current) {
+        retryArtifactRecovery(fallbackMessage);
+        return;
+      }
+
+      clearRecovery();
+      setError(fallbackMessage);
+      setLoading(false);
+    }, 2000);
+  }, [clearPolling, clearRecovery, recoverFromArtifact]);
+
+  const checkStatus = useCallback(async (id: string) => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+      const res = await fetch(`${apiUrl}/export/status/${id}?examId=${encodeURIComponent(examId ?? "")}&format=json`, {
+        credentials: "include",
+      });
+
+      if (res.status === 404) {
+        const recovered = await recoverFromArtifact();
+        if (recovered) {
+          clearPolling();
+          clearRecovery();
+          return;
+        }
+        retryArtifactRecovery("Export job not found");
+        return;
+      }
+
+      if (!res.ok) throw new Error("Failed to check export status");
+
+      const statusData: ExportJobResponse = await res.json();
+      
+      if (statusData.status === "completed") {
+        if (statusData.downloadUrl) {
+          clearPolling();
+          clearRecovery();
+          await fetchPayload(statusData.downloadUrl);
+          return;
+        }
+        const recovered = await recoverFromArtifact();
+        if (recovered) {
+          clearPolling();
+          clearRecovery();
+          return;
+        }
+        retryArtifactRecovery("Export job not found");
+      } else if (statusData.status === "failed") {
+        const recovered = await recoverFromArtifact();
+        if (recovered) {
+          clearPolling();
+          clearRecovery();
+          return;
+        }
+        clearPolling();
+        clearRecovery();
+        setError(statusData.error || "Insight vector generation failed");
+        setLoading(false);
+      }
+    } catch (err: unknown) {
+      clearPolling();
+      clearRecovery();
+      setError(err instanceof Error ? err.message : "Status sync failed");
+      setLoading(false);
+    }
+  }, [clearPolling, clearRecovery, examId, fetchPayload, recoverFromArtifact, retryArtifactRecovery]);
 
   const trigger = useCallback(async () => {
     if (!examId || !userId) return;
@@ -176,14 +258,18 @@ export function useInsightVectorData(examId?: string, userId?: string) {
     if (examId && userId && !data && !loading && !error) {
       trigger();
     }
-    return () => clearPolling();
-  }, [examId, userId, trigger, data, loading, error, clearPolling]);
+    return () => {
+      clearPolling();
+      clearRecovery();
+    };
+  }, [examId, userId, trigger, data, loading, error, clearPolling, clearRecovery]);
 
   const retry = useCallback(() => {
+    clearRecovery();
     setData(null);
     setError(null);
     trigger();
-  }, [trigger]);
+  }, [clearRecovery, trigger]);
 
   return { data, loading, error, retry };
 }

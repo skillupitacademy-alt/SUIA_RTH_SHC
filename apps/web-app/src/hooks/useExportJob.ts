@@ -1,6 +1,13 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 
 export type ExportStatus = "idle" | "processing" | "ready" | "failed";
+type ExportFormat = "json" | "csv" | "student-insight-pdf";
+
+interface ExportRequestContext {
+  examId: string;
+  userId: string;
+  format: ExportFormat;
+}
 
 interface ExportJobResponse {
   jobId: string;
@@ -20,22 +27,53 @@ export function useExportJob() {
   const [jobId, setJobId] = useState<string | null>(null);
   
   const pollInterval = useRef<NodeJS.Timeout | null>(null);
+  const exportContextRef = useRef<ExportRequestContext | null>(null);
 
   const clearPolling = useCallback(() => {
-    if (pollInterval.current) {
+    if (pollInterval.current !== null) {
       clearInterval(pollInterval.current);
       pollInterval.current = null;
+    }
+  }, []);
+
+  const resolveDownloadUrl = useCallback(async (apiUrl: string, context: ExportRequestContext | null) => {
+    if (context === null) return null;
+    try {
+      const res = await fetch(
+        `${apiUrl}/export/urls?examId=${encodeURIComponent(context.examId)}&format=${encodeURIComponent(context.format)}`,
+        { credentials: "include" }
+      );
+      if (!res.ok) return null;
+      const data = (await res.json()) as { url?: string | null };
+      return typeof data.url === "string" && data.url.trim() !== "" ? data.url : null;
+    } catch {
+      return null;
     }
   }, []);
 
   const checkStatus = useCallback(async (id: string) => {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
-      const res = await fetch(`${apiUrl}/export/status/${id}`, {
+      const context = exportContextRef.current;
+      const statusUrl = context
+        ? `${apiUrl}/export/status/${id}?examId=${encodeURIComponent(context.examId)}&format=${encodeURIComponent(context.format)}`
+        : `${apiUrl}/export/status/${id}`;
+      const res = await fetch(statusUrl, {
         credentials: "include",
       });
 
       if (res.status === 404) {
+        const fallbackUrl = await resolveDownloadUrl(apiUrl, context);
+        if (fallbackUrl !== null) {
+          setStatus("ready");
+          setStage("ready");
+          setDownloadUrl(fallbackUrl);
+          setError(null);
+          setIsExporting(false);
+          clearPolling();
+          return;
+        }
+
         setStatus("failed");
         setError("Export job not found");
         setIsExporting(false);
@@ -56,18 +94,38 @@ export function useExportJob() {
       const data: ExportJobResponse = await res.json();
       if (data.stage !== undefined) setStage(data.stage ?? null);
       if (data.status === "completed") {
-        setStatus("ready");
+        const downloadUrl = data.downloadUrl ?? (await resolveDownloadUrl(apiUrl, context));
+        if (downloadUrl !== null) {
+          setStatus("ready");
+          setStage("ready");
+          setDownloadUrl(downloadUrl);
+          setError(null);
+          setIsExporting(false);
+          clearPolling();
+          return;
+        }
+        setStatus("failed");
+        setError("Export job not found");
+        setIsExporting(false);
+        clearPolling();
+        return;
       } else if (data.status === "processing" || data.status === "pending") {
         setStatus("processing");
       } else {
         setStatus("failed");
       }
       
-      if (data.status === "completed" && data.downloadUrl) {
-        setDownloadUrl(data.downloadUrl);
-        setIsExporting(false);
-        clearPolling();
-      } else if (data.status === "failed") {
+      if (data.status === "failed") {
+        const fallbackUrl = await resolveDownloadUrl(apiUrl, context);
+        if (fallbackUrl !== null) {
+          setStatus("ready");
+          setStage("ready");
+          setDownloadUrl(fallbackUrl);
+          setError(null);
+          setIsExporting(false);
+          clearPolling();
+          return;
+        }
         setError(sanitizeErrorMessage(data.error ?? "Export failed"));
         setIsExporting(false);
         clearPolling();
@@ -77,7 +135,7 @@ export function useExportJob() {
       setIsExporting(false);
       clearPolling();
     }
-  }, [clearPolling]);
+  }, [clearPolling, resolveDownloadUrl]);
 
   const triggerExport = async (examId: string, userId: string, format: "json" | "csv" | "student-insight-pdf") => {
     setIsExporting(true);
@@ -86,6 +144,7 @@ export function useExportJob() {
     setStatus("processing");
     setStage("queued");
     setJobId(null);
+    exportContextRef.current = { examId, userId, format };
 
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
@@ -122,6 +181,7 @@ export function useExportJob() {
         // Dev/non-job response path
         setDownloadUrl(data.downloadUrl);
         setStatus("ready");
+        setError(null);
         setIsExporting(false);
       } else {
         throw new Error("Export did not return a jobId");

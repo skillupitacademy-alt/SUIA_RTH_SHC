@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { GuidanceSignalRow, HistoricalProgressRow, AggregationRow } from "@/hooks/useInsightVectorData";
 import { ExamReport } from "./ExamReportLayout";
 import { PrecisionGuidanceCard } from "./PrecisionGuidanceCard";
+import { ZLoader } from "@quiz/ui";
 
 interface InsightVectorTabProps {
   guidanceSignals: GuidanceSignalRow[];
@@ -50,16 +51,16 @@ export const InsightVectorTab: React.FC<InsightVectorTabProps> = ({
 
   if (loading) {
     return (
-      <div className="space-y-16 pt-6">
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="space-y-6 animate-pulse">
-            <div className="h-4 w-64 bg-slate-800 rounded" />
-            <div className="space-y-4">
-              <div className="h-48 bg-slate-900/40 rounded-[2rem] border border-white/5" />
-              <div className="h-48 bg-slate-900/40 rounded-[2rem] border border-white/5" />
-            </div>
-          </div>
-        ))}
+      <div className="p-12 rounded-[3rem] bg-slate-900/40 border border-white/5 flex flex-col items-center justify-center text-center space-y-6 min-h-[420px]">
+        <ZLoader />
+        <div className="space-y-3 max-w-xl">
+          <h3 className="text-xl font-black text-white uppercase tracking-tighter">
+            Analytics is loading
+          </h3>
+          <p className="text-slate-400 font-bold uppercase text-[10px] tracking-[0.3em] max-w-md mx-auto leading-relaxed">
+            Preparing precision guidance and insight vectors. This can take a moment while your export artifact is reconciled.
+          </p>
+        </div>
       </div>
     );
   }
