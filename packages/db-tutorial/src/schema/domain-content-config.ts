@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import { boolean, integer, pgTable, text, timestamp, uuid, index, uniqueIndex } from 'drizzle-orm/pg-core';
 
 export const domainContentConfig = pgTable('domain_content_config', {

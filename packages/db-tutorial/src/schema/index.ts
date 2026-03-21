@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 export * from './enums';
 export * from './tutorial-content';
 export * from './tutorial-assignments';

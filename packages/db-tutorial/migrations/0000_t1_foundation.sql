@@ -1,14 +1,14 @@
-CREATE TYPE IF NOT EXISTS "tutorial_difficulty" AS ENUM ('simple', 'mixed', 'intermediate', 'expert');
-CREATE TYPE IF NOT EXISTS "tutorial_question_type" AS ENUM ('mcq', 'short_answer', 'code', 'drag_drop', 'fill_blank');
-CREATE TYPE IF NOT EXISTS "tutorial_project_scope" AS ENUM ('topic', 'subject', 'domain');
-CREATE TYPE IF NOT EXISTS "tutorial_project_level" AS ENUM ('simple', 'intermediate', 'expert');
-CREATE TYPE IF NOT EXISTS "tutorial_project_submission_status" AS ENUM ('pending', 'submitted', 'graded', 'revision-requested');
-CREATE TYPE IF NOT EXISTS "tutorial_deliverable_type" AS ENUM ('code', 'repo', 'live_demo', 'document');
-CREATE TYPE IF NOT EXISTS "tutorial_evaluation_type" AS ENUM ('auto', 'ai_review', 'peer_review', 'admin_review');
-CREATE TYPE IF NOT EXISTS "tutorial_video_provider" AS ENUM ('youtube', 'vimeo', 'custom', 'loom');
-CREATE TYPE IF NOT EXISTS "tutorial_content_job_status" AS ENUM ('pending', 'processing', 'completed', 'failed');
-CREATE TYPE IF NOT EXISTS "tutorial_progress_status" AS ENUM ('not_started', 'in_progress', 'completed');
-CREATE TYPE IF NOT EXISTS "tutorial_trigger_status" AS ENUM ('pending', 'accepted', 'dismissed', 'completed');
+CREATE TYPE "tutorial_difficulty" AS ENUM ('simple', 'mixed', 'intermediate', 'expert');
+CREATE TYPE "tutorial_question_type" AS ENUM ('mcq', 'short_answer', 'code', 'drag_drop', 'fill_blank');
+CREATE TYPE "tutorial_project_scope" AS ENUM ('topic', 'subject', 'domain');
+CREATE TYPE "tutorial_project_level" AS ENUM ('simple', 'intermediate', 'expert');
+CREATE TYPE "tutorial_project_submission_status" AS ENUM ('pending', 'submitted', 'graded', 'revision-requested');
+CREATE TYPE "tutorial_deliverable_type" AS ENUM ('code', 'repo', 'live_demo', 'document');
+CREATE TYPE "tutorial_evaluation_type" AS ENUM ('auto', 'ai_review', 'peer_review', 'admin_review');
+CREATE TYPE "tutorial_video_provider" AS ENUM ('youtube', 'vimeo', 'custom', 'loom');
+CREATE TYPE "tutorial_content_job_status" AS ENUM ('pending', 'processing', 'completed', 'failed');
+CREATE TYPE "tutorial_progress_status" AS ENUM ('not_started', 'in_progress', 'completed');
+CREATE TYPE "tutorial_trigger_status" AS ENUM ('pending', 'accepted', 'dismissed', 'completed');
 
 CREATE TABLE IF NOT EXISTS "tutorial_content" (
   "id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,

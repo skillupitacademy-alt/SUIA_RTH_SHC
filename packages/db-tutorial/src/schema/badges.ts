@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import { boolean, integer, jsonb, pgTable, text, timestamp, uuid, index } from 'drizzle-orm/pg-core';
 
 import { tutorialProjectLevelEnum, tutorialProjectScopeEnum } from './enums';

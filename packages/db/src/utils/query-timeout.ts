@@ -31,7 +31,6 @@ export async function withTimeout<T>(
   const timeoutPromise = new Promise<never>((_, reject) => {
     timeoutId = setTimeout(() => {
       const error = new QueryTimeoutError(queryDescription, timeoutMs);
-      console.warn(`[DB Timeout] ${queryDescription} exceeded ${timeoutMs}ms`);
       reject(error);
     }, timeoutMs);
   });

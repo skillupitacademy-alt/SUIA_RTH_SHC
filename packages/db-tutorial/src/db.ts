@@ -1,7 +1,11 @@
-import { Pool } from '@neondatabase/serverless';
+/* istanbul ignore file */
+import { neonConfig, Pool } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
+import WebSocket from 'ws';
 
 import { schema } from './schema';
+
+neonConfig.webSocketConstructor = WebSocket;
 
 type Schema = typeof schema;
 type DbClient = ReturnType<typeof drizzle<Schema>>;

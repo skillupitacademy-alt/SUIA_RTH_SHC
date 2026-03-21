@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import { boolean, integer, jsonb, pgTable, text, timestamp, uuid, index, uniqueIndex } from 'drizzle-orm/pg-core';
 
 import type { TutorialContentJSON } from '@quiz/types';

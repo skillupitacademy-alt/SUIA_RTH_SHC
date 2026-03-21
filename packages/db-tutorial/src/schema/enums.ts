@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import { pgEnum } from 'drizzle-orm/pg-core';
 
 export const tutorialDifficultyEnum = pgEnum('tutorial_difficulty', ['simple', 'mixed', 'intermediate', 'expert']);

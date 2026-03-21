@@ -1,0 +1,196 @@
+import { and, eq, isNull, sql } from 'drizzle-orm';
+
+import { db } from '../db';
+import { tutorialProgress } from '../schema/tutorial-progress';
+
+import type {
+  ContentBlockType,
+  ITutorialProgressRepository,
+  TutorialDbClientLike,
+  TutorialProgressRecord,
+} from '@quiz/types';
+
+import { TutorialRepositoryBase } from './base.repository';
+
+const activeProgress = isNull(tutorialProgress.deletedAt);
+const REQUIRED_BLOCKS: ContentBlockType[] = [
+  'notes',
+  'layman',
+  'real_life',
+  'technical',
+  'code',
+  'ai_tutor',
+];
+
+export class TutorialProgressRepository
+  extends TutorialRepositoryBase
+  implements ITutorialProgressRepository
+{
+  constructor(dbInstance: typeof db = db) {
+    super(dbInstance);
+  }
+
+  withDb(dbClient: TutorialDbClientLike): this {
+    return new TutorialProgressRepository(dbClient as typeof db) as this;
+  }
+
+  async findById(id: string): Promise<TutorialProgressRecord | undefined> {
+    const rows = await this.runRead(
+      this.dbInstance
+        .select()
+        .from(tutorialProgress)
+        .where(and(eq(tutorialProgress.id, id), activeProgress)),
+      'TutorialProgressRepository.findById'
+    );
+
+    return rows[0] as TutorialProgressRecord | undefined;
+  }
+
+  async getProgress(userId: string, subtopicId: string): Promise<TutorialProgressRecord | undefined> {
+    const rows = await this.runRead(
+      this.dbInstance
+        .select()
+        .from(tutorialProgress)
+        .where(
+          and(
+            eq(tutorialProgress.userId, userId),
+            eq(tutorialProgress.subtopicId, subtopicId),
+            activeProgress
+          )
+        ),
+      'TutorialProgressRepository.getProgress'
+    );
+
+    return rows[0] as TutorialProgressRecord | undefined;
+  }
+
+  async markBlockComplete(
+    userId: string,
+    subtopicId: string,
+    blockType: ContentBlockType
+  ): Promise<TutorialProgressRecord> {
+    const existing = await this.getProgress(userId, subtopicId);
+    const now = new Date();
+
+    if (!existing) {
+      const [created] = await this.runRead(
+        this.dbInstance
+          .insert(tutorialProgress)
+          .values({
+            userId,
+            subtopicId,
+            status: 'in_progress',
+            blocksCompleted: [blockType],
+            remediationTriggered: false,
+            score: null,
+            timeSpentSec: 0,
+            completedAt: null,
+            version: 1,
+            deletedAt: null,
+          })
+          .returning(),
+        'TutorialProgressRepository.markBlockComplete.insert'
+      );
+
+      return created as TutorialProgressRecord;
+    }
+
+    const mergedBlocks = Array.from(new Set([...(existing.blocksCompleted ?? []), blockType]));
+    const isComplete = REQUIRED_BLOCKS.every((block) => mergedBlocks.includes(block));
+
+    const [updated] = await this.runRead(
+      this.dbInstance
+        .update(tutorialProgress)
+        .set({
+          blocksCompleted: mergedBlocks,
+          status: isComplete ? 'completed' : 'in_progress',
+          completedAt: isComplete ? existing.completedAt ?? now : existing.completedAt,
+          remediationTriggered: existing.remediationTriggered,
+          version: sql`${tutorialProgress.version} + 1`,
+          updatedAt: now,
+          deletedAt: null,
+        })
+        .where(eq(tutorialProgress.id, existing.id))
+        .returning(),
+      'TutorialProgressRepository.markBlockComplete.update'
+    );
+
+    return updated as TutorialProgressRecord;
+  }
+
+  async isSubtopicComplete(userId: string, subtopicId: string): Promise<boolean> {
+    const progress = await this.getProgress(userId, subtopicId);
+    if (!progress) {
+      return false;
+    }
+
+    return REQUIRED_BLOCKS.every((block) => progress.blocksCompleted.includes(block));
+  }
+
+  async getCompletedSubtopics(userId: string): Promise<string[]> {
+    const rows = await this.runReport(
+      this.dbInstance
+        .select({ subtopicId: tutorialProgress.subtopicId })
+        .from(tutorialProgress)
+        .where(
+          and(
+            eq(tutorialProgress.userId, userId),
+            eq(tutorialProgress.status, 'completed'),
+            activeProgress
+          )
+        ),
+      'TutorialProgressRepository.getCompletedSubtopics'
+    );
+
+    return rows.map((row) => row.subtopicId);
+  }
+
+  async resetProgress(userId: string, subtopicId: string): Promise<TutorialProgressRecord> {
+    const existing = await this.getProgress(userId, subtopicId);
+    const now = new Date();
+
+    if (!existing) {
+      const [created] = await this.runRead(
+        this.dbInstance
+          .insert(tutorialProgress)
+          .values({
+            userId,
+            subtopicId,
+            status: 'not_started',
+            blocksCompleted: [],
+            remediationTriggered: false,
+            score: null,
+            timeSpentSec: 0,
+            completedAt: null,
+            version: 1,
+            deletedAt: null,
+          })
+          .returning(),
+        'TutorialProgressRepository.resetProgress.insert'
+      );
+
+      return created as TutorialProgressRecord;
+    }
+
+    const [updated] = await this.runRead(
+      this.dbInstance
+        .update(tutorialProgress)
+        .set({
+          status: 'not_started',
+          blocksCompleted: [],
+          remediationTriggered: false,
+          score: null,
+          timeSpentSec: 0,
+          completedAt: null,
+          version: sql`${tutorialProgress.version} + 1`,
+          updatedAt: now,
+          deletedAt: null,
+        })
+        .where(eq(tutorialProgress.id, existing.id))
+        .returning(),
+      'TutorialProgressRepository.resetProgress.update'
+    );
+
+    return updated as TutorialProgressRecord;
+  }
+}

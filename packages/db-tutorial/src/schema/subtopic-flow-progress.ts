@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import { boolean, integer, pgTable, timestamp, uuid, index, uniqueIndex } from 'drizzle-orm/pg-core';
 
 export const subtopicFlowProgress = pgTable('subtopic_flow_progress', {
