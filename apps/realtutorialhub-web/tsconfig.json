@@ -1,0 +1,79 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ],
+      "@quiz/ui": [
+        "../../packages/ui/src/index.ts"
+      ],
+      "@quiz/api-client": [
+        "../../packages/api-client/src/index.ts"
+      ],
+      "@quiz/api-client/*": [
+        "../../packages/api-client/src/*"
+      ],
+      "@quiz/config": [
+        "../../packages/config/envPaths.ts"
+      ],
+      "@quiz/config/*": [
+        "../../packages/config/*"
+      ],
+      "@quiz/db": [
+        "../../packages/db/src/index.ts"
+      ],
+      "@quiz/db/*": [
+        "../../packages/db/src/*"
+      ],
+      "@quiz/db-tutorial": [
+        "../../packages/db-tutorial/src/index.ts"
+      ],
+      "@quiz/db-tutorial/*": [
+        "../../packages/db-tutorial/src/*"
+      ],
+      "@quiz/types": [
+        "../../packages/types/src/index.ts"
+      ],
+      "@quiz/types/*": [
+        "../../packages/types/src/*"
+      ],
+      "@quiz/observability": [
+        "../../packages/observability/src/index.ts"
+      ]
+    },
+    "jsx": "preserve",
+    "types": [
+      "bcryptjs"
+    ],
+    "typeRoots": [
+      "../../packages/types/src/globals",
+      "../../node_modules/@types"
+    ]
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "../../packages/types/src/globals/**/*.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "playwright.config.ts",
+    "*.config.js",
+    "*.config.mjs",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "src/test",
+    "src/__tests__",
+    "vitest.config.ts",
+    "vitest.setup.ts"
+  ]
+}

@@ -1,0 +1,89 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root,
+[data-tutorial-theme="classic"] {
+  --block-layman-bg: linear-gradient(135deg, #eef4ff 0%, #e8f0ff 100%);
+  --block-reallife-bg: linear-gradient(135deg, #fff8e8 0%, #fff3d4 100%);
+  --block-technical-bg: linear-gradient(135deg, #fff0ee 0%, #ffe8e4 100%);
+  --block-code-bg: linear-gradient(135deg, #1e2d3d 0%, #0d1018 100%);
+  --block-aitutor-bg: linear-gradient(135deg, #f5eeff 0%, #ede0ff 100%);
+  --block-notes-bg: linear-gradient(135deg, #fffde7 0%, #fff8e1 100%);
+  --block-text-primary: #1a2340;
+  --block-text-secondary: #4a5568;
+}
+
+[data-tutorial-theme="midnight"] {
+  --block-layman-bg: linear-gradient(135deg, #1a2540 0%, #1e2e50 100%);
+  --block-reallife-bg: linear-gradient(135deg, #1a2a1a 0%, #1e321e 100%);
+  --block-technical-bg: linear-gradient(135deg, #2a1a18 0%, #321e1c 100%);
+  --block-code-bg: linear-gradient(135deg, #0d1018 0%, #060810 100%);
+  --block-aitutor-bg: linear-gradient(135deg, #1e1530 0%, #261840 100%);
+  --block-notes-bg: linear-gradient(135deg, #1a1810 0%, #22200c 100%);
+  --block-text-primary: #e8edf8;
+  --block-text-secondary: #a0aec0;
+}
+
+[data-tutorial-theme="pastel"] {
+  --block-layman-bg: linear-gradient(135deg, #f0f7ff 0%, #e8f2ff 100%);
+  --block-reallife-bg: linear-gradient(135deg, #f5fff0 0%, #eefce8 100%);
+  --block-technical-bg: linear-gradient(135deg, #fff5f0 0%, #ffeee8 100%);
+  --block-code-bg: linear-gradient(135deg, #1e2d3d 0%, #0d1018 100%);
+  --block-aitutor-bg: linear-gradient(135deg, #faf0ff 0%, #f5e8ff 100%);
+  --block-notes-bg: linear-gradient(135deg, #fffff0 0%, #fefee8 100%);
+  --block-text-primary: #2d3748;
+  --block-text-secondary: #4a5568;
+}
+
+[data-tutorial-theme="forest"] {
+  --block-layman-bg: linear-gradient(135deg, #e8f5e8 0%, #dff0df 100%);
+  --block-reallife-bg: linear-gradient(135deg, #fff3e0 0%, #ffe8c8 100%);
+  --block-technical-bg: linear-gradient(135deg, #f0ece0 0%, #e8e4d4 100%);
+  --block-code-bg: linear-gradient(135deg, #1a2018 0%, #0d120c 100%);
+  --block-aitutor-bg: linear-gradient(135deg, #f0e8f8 0%, #e8ddf4 100%);
+  --block-notes-bg: linear-gradient(135deg, #faf5e8 0%, #f5eed8 100%);
+  --block-text-primary: #1a2a1a;
+  --block-text-secondary: #4a5a3a;
+}
+
+[data-tutorial-theme="ocean"] {
+  --block-layman-bg: linear-gradient(135deg, #e8f4f8 0%, #deeef5 100%);
+  --block-reallife-bg: linear-gradient(135deg, #e8f8f5 0%, #ddf4ef 100%);
+  --block-technical-bg: linear-gradient(135deg, #e8eef8 0%, #dde8f5 100%);
+  --block-code-bg: linear-gradient(135deg, #0d1820 0%, #060e14 100%);
+  --block-aitutor-bg: linear-gradient(135deg, #f0e8f8 0%, #e8ddf4 100%);
+  --block-notes-bg: linear-gradient(135deg, #f8f5e8 0%, #f4eedc 100%);
+  --block-text-primary: #0d2a3a;
+  --block-text-secondary: #2a4a5a;
+}
+
+[data-tutorial-theme="saffron"] {
+  --block-layman-bg: linear-gradient(135deg, #fff8e8 0%, #fff3d4 100%);
+  --block-reallife-bg: linear-gradient(135deg, #fff0e0 0%, #ffe8cc 100%);
+  --block-technical-bg: linear-gradient(135deg, #fff5e8 0%, #ffede0 100%);
+  --block-code-bg: linear-gradient(135deg, #1e1808 0%, #100e04 100%);
+  --block-aitutor-bg: linear-gradient(135deg, #fdf0ff 0%, #fae8ff 100%);
+  --block-notes-bg: linear-gradient(135deg, #fffde0 0%, #fff8cc 100%);
+  --block-text-primary: #2a1a00;
+  --block-text-secondary: #5a4010;
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  background: #f5f6fa;
+  color: var(--block-text-primary);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.tutorial-scaffold {
+  min-height: 100vh;
+}
