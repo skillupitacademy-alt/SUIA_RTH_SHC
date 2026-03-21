@@ -9,6 +9,7 @@ export const tutorialContent = pgTable('tutorial_content', {
   id: uuid('id').primaryKey().defaultRandom(),
   subtopicId: uuid('subtopic_id').notNull(),
   difficulty: tutorialDifficultyEnum('difficulty').notNull(),
+  contentType: text('content_type').notNull().default('standard'),
   content: jsonb('content').$type<TutorialContentJSON>().notNull(),
   version: integer('version').notNull().default(1),
   language: text('language').notNull().default('en'),
@@ -26,6 +27,10 @@ export const tutorialContent = pgTable('tutorial_content', {
 }, (table) => ({
   idxTutorialContentSubtopic: index('idx_tutorial_content_subtopic').on(table.subtopicId),
   idxTutorialContentPublished: index('idx_tutorial_content_published').on(table.subtopicId, table.isPublished),
-  uqTutorialContentVersion: uniqueIndex('uq_tutorial_content_subtopic_difficulty').on(table.subtopicId, table.difficulty),
+  uqTutorialContentVersion: uniqueIndex('uq_tutorial_content_subtopic_difficulty_type').on(
+    table.subtopicId,
+    table.difficulty,
+    table.contentType
+  ),
   idxTutorialContentContentGin: index('idx_tutorial_content_content_gin').using('gin', table.content),
 }));

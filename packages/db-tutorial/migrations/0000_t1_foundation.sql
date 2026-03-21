@@ -1,14 +1,39 @@
-CREATE TYPE "tutorial_difficulty" AS ENUM ('simple', 'mixed', 'intermediate', 'expert');
-CREATE TYPE "tutorial_question_type" AS ENUM ('mcq', 'short_answer', 'code', 'drag_drop', 'fill_blank');
-CREATE TYPE "tutorial_project_scope" AS ENUM ('topic', 'subject', 'domain');
-CREATE TYPE "tutorial_project_level" AS ENUM ('simple', 'intermediate', 'expert');
-CREATE TYPE "tutorial_project_submission_status" AS ENUM ('pending', 'submitted', 'graded', 'revision-requested');
-CREATE TYPE "tutorial_deliverable_type" AS ENUM ('code', 'repo', 'live_demo', 'document');
-CREATE TYPE "tutorial_evaluation_type" AS ENUM ('auto', 'ai_review', 'peer_review', 'admin_review');
-CREATE TYPE "tutorial_video_provider" AS ENUM ('youtube', 'vimeo', 'custom', 'loom');
-CREATE TYPE "tutorial_content_job_status" AS ENUM ('pending', 'processing', 'completed', 'failed');
-CREATE TYPE "tutorial_progress_status" AS ENUM ('not_started', 'in_progress', 'completed');
-CREATE TYPE "tutorial_trigger_status" AS ENUM ('pending', 'accepted', 'dismissed', 'completed');
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'tutorial_difficulty') THEN
+    CREATE TYPE "tutorial_difficulty" AS ENUM ('simple', 'mixed', 'intermediate', 'expert');
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'tutorial_question_type') THEN
+    CREATE TYPE "tutorial_question_type" AS ENUM ('mcq', 'short_answer', 'code', 'drag_drop', 'fill_blank');
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'tutorial_project_scope') THEN
+    CREATE TYPE "tutorial_project_scope" AS ENUM ('topic', 'subject', 'domain');
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'tutorial_project_level') THEN
+    CREATE TYPE "tutorial_project_level" AS ENUM ('simple', 'intermediate', 'expert');
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'tutorial_project_submission_status') THEN
+    CREATE TYPE "tutorial_project_submission_status" AS ENUM ('pending', 'submitted', 'graded', 'revision-requested');
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'tutorial_deliverable_type') THEN
+    CREATE TYPE "tutorial_deliverable_type" AS ENUM ('code', 'repo', 'live_demo', 'document');
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'tutorial_evaluation_type') THEN
+    CREATE TYPE "tutorial_evaluation_type" AS ENUM ('auto', 'ai_review', 'peer_review', 'admin_review');
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'tutorial_video_provider') THEN
+    CREATE TYPE "tutorial_video_provider" AS ENUM ('youtube', 'vimeo', 'custom', 'loom');
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'tutorial_content_job_status') THEN
+    CREATE TYPE "tutorial_content_job_status" AS ENUM ('pending', 'processing', 'completed', 'failed');
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'tutorial_progress_status') THEN
+    CREATE TYPE "tutorial_progress_status" AS ENUM ('not_started', 'in_progress', 'completed');
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'tutorial_trigger_status') THEN
+    CREATE TYPE "tutorial_trigger_status" AS ENUM ('pending', 'accepted', 'dismissed', 'completed');
+  END IF;
+END $$;
 
 CREATE TABLE IF NOT EXISTS "tutorial_content" (
   "id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TutorialContentJSON } from '@quiz/types';
+import { ZodError } from 'zod';
 
 const mocks = vi.hoisted(() => ({
   withTimeout: vi.fn((promise: Promise<unknown>) => promise),
@@ -37,6 +38,7 @@ const makeRow = (overrides: Record<string, unknown> = {}) => {
     id: 'content-1',
     subtopicId: 'subtopic-1',
     difficulty: 'simple',
+    contentType: 'standard',
     content,
     version: 1,
     language: 'en',
@@ -165,6 +167,7 @@ describe('TutorialContentRepository', () => {
       expect.objectContaining({
         subtopicId: 'subtopic-1',
         difficulty: 'simple',
+        contentType: 'standard',
         language: 'en',
         isPublished: false,
         generatedByAi: false,
@@ -172,6 +175,89 @@ describe('TutorialContentRepository', () => {
         deletedAt: null,
       })
     );
+  });
+
+  it('valid JSON inserts successfully', async () => {
+    const db = createDbMock();
+    const repo = new TutorialContentRepository(db as never);
+
+    await expect(
+      repo.upsertBlocks({
+        subtopicId: 'subtopic-1',
+        difficulty: 'simple',
+        content: db.row.content,
+      })
+    ).resolves.toEqual(db.row);
+  });
+
+  it('invalid JSON throws ZodError, no DB write', async () => {
+    const db = createDbMock();
+    const repo = new TutorialContentRepository(db as never);
+
+    await expect(
+      repo.upsertBlocks({
+        subtopicId: 'subtopic-1',
+        difficulty: 'simple',
+        content: { nope: true } as never,
+      })
+    ).rejects.toBeInstanceOf(ZodError);
+
+    expect(db.insert).not.toHaveBeenCalled();
+    expect(db.update).not.toHaveBeenCalled();
+  });
+
+  it('missing layman block throws ZodError', async () => {
+    const db = createDbMock();
+    const repo = new TutorialContentRepository(db as never);
+    const invalidContent = {
+      notes: { markdown: 'Notes' },
+      real_life: {
+        title: 'Real life',
+        scenario: 'A scenario',
+        bullets: [],
+        tip: 'Tip',
+      },
+      technical: { markdown: 'Tech', bullets: [], tip: 'Tip' },
+      code: { language: 'javascript', intro: 'Intro', code: 'console.log(1)', steps: [] },
+      ai_tutor: { greeting: 'Hello', qa_pairs: [] },
+    } as never;
+
+    await expect(
+      repo.upsertBlocks({
+        subtopicId: 'subtopic-1',
+        difficulty: 'simple',
+        content: invalidContent,
+      })
+    ).rejects.toBeInstanceOf(ZodError);
+  });
+
+  it('image with both svgKey and url set throws ZodError', async () => {
+    const db = createDbMock();
+    const repo = new TutorialContentRepository(db as never);
+
+    const invalidContent = {
+      ...db.row.content,
+      layman: {
+        ...db.row.content.layman,
+        image: {
+          type: 'svg_standard',
+          svgKey: 'promise-chain',
+          url: 'https://cdn.realtutorialhub.com/content/abc.png',
+          alt: 'Promise state transitions showing pending moving to fulfilled or rejected',
+          caption: 'Promise lifecycle',
+          position: 'right',
+          width: 180,
+        },
+      },
+    } as never;
+
+    await expect(
+      repo.upsertBlocks({
+        subtopicId: 'subtopic-1',
+        difficulty: 'simple',
+        content: invalidContent,
+      })
+    ).rejects.toBeInstanceOf(ZodError);
   });
 
   it('publish updates the row without hard deleting it', async () => {

@@ -10,6 +10,7 @@ import type {
   TutorialContentUpsertInput,
   TutorialDifficulty,
 } from '@quiz/types';
+import { TutorialContentSchema } from '@quiz/types';
 
 import { TutorialRepositoryBase } from './base.repository';
 
@@ -84,13 +85,15 @@ export class TutorialContentRepository
   }
 
   async upsertBlocks(data: TutorialContentUpsertInput): Promise<TutorialContentRecord> {
+    const validatedContent = TutorialContentSchema.parse(data.content);
     const [row] = (await this.runRead(
       this.dbInstance
         .insert(tutorialContent)
         .values({
           subtopicId: data.subtopicId,
           difficulty: data.difficulty,
-          content: data.content,
+          contentType: 'standard',
+          content: validatedContent,
           version: 1,
           language: data.language ?? 'en',
           isPublished: data.isPublished ?? false,
@@ -104,9 +107,10 @@ export class TutorialContentRepository
           deletedAt: null,
         })
         .onConflictDoUpdate({
-          target: [tutorialContent.subtopicId, tutorialContent.difficulty],
+          target: [tutorialContent.subtopicId, tutorialContent.difficulty, tutorialContent.contentType],
           set: {
-            content: data.content,
+            content: validatedContent,
+            contentType: 'standard',
             language: data.language ?? 'en',
             isPublished: data.isPublished ?? false,
             generatedByAi: data.generatedByAi ?? false,
