@@ -16,6 +16,15 @@ const nextConfig = {
   compress: true,
   output: process.env.CLOUD_RUN_BUILD === 'true' ? 'standalone' : undefined,
   transpilePackages: ['@quiz/api-client', '@quiz/db', '@quiz/db-tutorial', '@quiz/types', '@quiz/ui', 'lucide-react'],
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'cdn.realtutorialhub.com',
+        pathname: '/content/**',
+      },
+    ],
+  },
   async headers() {
     const isDev = process.env.NODE_ENV === 'development';
     const apiUrls = [

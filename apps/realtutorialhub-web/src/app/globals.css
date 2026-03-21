@@ -4,6 +4,12 @@
 
 :root,
 [data-tutorial-theme="classic"] {
+  --tutorial-page-bg: #f5f6fa;
+  --tutorial-surface: #ffffff;
+  --tutorial-surface-soft: #f8fafc;
+  --tutorial-border: #e2e8f0;
+  --tutorial-muted-border: #edf2f7;
+  --tutorial-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
   --block-layman-bg: linear-gradient(135deg, #eef4ff 0%, #e8f0ff 100%);
   --block-reallife-bg: linear-gradient(135deg, #fff8e8 0%, #fff3d4 100%);
   --block-technical-bg: linear-gradient(135deg, #fff0ee 0%, #ffe8e4 100%);
@@ -15,6 +21,12 @@
 }
 
 [data-tutorial-theme="midnight"] {
+  --tutorial-page-bg: #09111f;
+  --tutorial-surface: #10192b;
+  --tutorial-surface-soft: #111b2f;
+  --tutorial-border: #22324f;
+  --tutorial-muted-border: #1a2740;
+  --tutorial-shadow: 0 10px 32px rgba(0, 0, 0, 0.2);
   --block-layman-bg: linear-gradient(135deg, #1a2540 0%, #1e2e50 100%);
   --block-reallife-bg: linear-gradient(135deg, #1a2a1a 0%, #1e321e 100%);
   --block-technical-bg: linear-gradient(135deg, #2a1a18 0%, #321e1c 100%);
@@ -26,6 +38,12 @@
 }
 
 [data-tutorial-theme="pastel"] {
+  --tutorial-page-bg: #fbfbff;
+  --tutorial-surface: #ffffff;
+  --tutorial-surface-soft: #fbfcff;
+  --tutorial-border: #e5ecf8;
+  --tutorial-muted-border: #edf3fb;
+  --tutorial-shadow: 0 8px 24px rgba(110, 125, 160, 0.08);
   --block-layman-bg: linear-gradient(135deg, #f0f7ff 0%, #e8f2ff 100%);
   --block-reallife-bg: linear-gradient(135deg, #f5fff0 0%, #eefce8 100%);
   --block-technical-bg: linear-gradient(135deg, #fff5f0 0%, #ffeee8 100%);
@@ -37,6 +55,12 @@
 }
 
 [data-tutorial-theme="forest"] {
+  --tutorial-page-bg: #f6faf6;
+  --tutorial-surface: #ffffff;
+  --tutorial-surface-soft: #f8fbf8;
+  --tutorial-border: #dfe9df;
+  --tutorial-muted-border: #ebf1eb;
+  --tutorial-shadow: 0 8px 24px rgba(68, 102, 68, 0.08);
   --block-layman-bg: linear-gradient(135deg, #e8f5e8 0%, #dff0df 100%);
   --block-reallife-bg: linear-gradient(135deg, #fff3e0 0%, #ffe8c8 100%);
   --block-technical-bg: linear-gradient(135deg, #f0ece0 0%, #e8e4d4 100%);
@@ -48,6 +72,12 @@
 }
 
 [data-tutorial-theme="ocean"] {
+  --tutorial-page-bg: #f4fbfd;
+  --tutorial-surface: #ffffff;
+  --tutorial-surface-soft: #f7fcfd;
+  --tutorial-border: #dceaf1;
+  --tutorial-muted-border: #e9f2f6;
+  --tutorial-shadow: 0 8px 24px rgba(46, 125, 139, 0.08);
   --block-layman-bg: linear-gradient(135deg, #e8f4f8 0%, #deeef5 100%);
   --block-reallife-bg: linear-gradient(135deg, #e8f8f5 0%, #ddf4ef 100%);
   --block-technical-bg: linear-gradient(135deg, #e8eef8 0%, #dde8f5 100%);
@@ -59,6 +89,12 @@
 }
 
 [data-tutorial-theme="saffron"] {
+  --tutorial-page-bg: #fffdf6;
+  --tutorial-surface: #ffffff;
+  --tutorial-surface-soft: #fffdf8;
+  --tutorial-border: #f0e7cf;
+  --tutorial-muted-border: #f6eedb;
+  --tutorial-shadow: 0 8px 24px rgba(168, 119, 0, 0.08);
   --block-layman-bg: linear-gradient(135deg, #fff8e8 0%, #fff3d4 100%);
   --block-reallife-bg: linear-gradient(135deg, #fff0e0 0%, #ffe8cc 100%);
   --block-technical-bg: linear-gradient(135deg, #fff5e8 0%, #ffede0 100%);
@@ -75,7 +111,7 @@ html {
 
 body {
   margin: 0;
-  background: #f5f6fa;
+  background: var(--tutorial-page-bg);
   color: var(--block-text-primary);
   font-family: Arial, Helvetica, sans-serif;
 }
@@ -86,4 +122,32 @@ body {
 
 .tutorial-scaffold {
   min-height: 100vh;
+}
+
+[data-design-version="aesthetic"] {
+  --design-surface: rgba(255, 255, 255, 0.74);
+  --design-surface-border: 1px solid rgba(255, 255, 255, 0.24);
+  --design-backdrop: blur(20px);
+  --design-shadow: 0 14px 44px rgba(31, 38, 135, 0.12);
+  --design-radius: 18px;
+}
+
+[data-design-version="logic"] {
+  --design-surface: var(--tutorial-surface);
+  --design-surface-border: 1px solid var(--tutorial-border);
+  --design-backdrop: none;
+  --design-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --design-radius: 10px;
+}
+
+.design-panel {
+  background: var(--design-surface);
+  border: var(--design-surface-border);
+  border-radius: var(--design-radius);
+  box-shadow: var(--design-shadow);
+  backdrop-filter: var(--design-backdrop);
+}
+
+.design-panel * {
+  box-sizing: border-box;
 }
