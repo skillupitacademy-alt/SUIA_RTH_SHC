@@ -24,17 +24,35 @@
         "isolatedModules": true,
         "incremental": true,
         "paths": {
+            "@quiz/auth": [
+                "./packages/auth/src/index.ts"
+            ],
+            "@quiz/auth/*": [
+                "./packages/auth/src/*"
+            ],
             "@quiz/db": [
                 "./packages/db/src/index.ts"
             ],
             "@quiz/db/*": [
                 "./packages/db/src/*"
             ],
+            "@quiz/db-tutorial": [
+                "./packages/db-tutorial/src/index.ts"
+            ],
+            "@quiz/db-tutorial/*": [
+                "./packages/db-tutorial/src/*"
+            ],
             "@quiz/api-client": [
                 "./packages/api-client/src/index.ts"
             ],
             "@quiz/api-client/*": [
                 "./packages/api-client/src/*"
+            ],
+            "@quiz/events": [
+                "./packages/events/src/index.ts"
+            ],
+            "@quiz/events/*": [
+                "./packages/events/src/*"
             ],
             "@quiz/config": [
                 "./packages/config/envPaths.ts"
