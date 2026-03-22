@@ -29,6 +29,13 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 tsc_output.txt
+git_log.txt
+git_log_utf8.txt
+coverage_report.txt
+scoped_coverage.txt
+tsc_errors.txt
+vitest_admin_out.txt
+vitest_output.txt
 
 # build artifacts
 *.tsbuildinfo
