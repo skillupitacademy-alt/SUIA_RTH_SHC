@@ -143,6 +143,24 @@ describe('api-gateway', () => {
     expect(blocked.status).toBe(429);
   });
 
+  it('skips rate limiting when redis config is missing', async () => {
+    const token = await makeToken(['student']);
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
+
+    const response = await app.request('https://api.example.com/tutorial/lessons/1', {
+      headers: {
+        authorization: `Bearer ${token}`,
+      },
+    }, {
+      ...env,
+      UPSTASH_REDIS_REST_URL: undefined,
+      UPSTASH_REDIS_REST_TOKEN: undefined,
+    } as unknown as typeof env);
+
+    expect(response.status).toBe(200);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+  });
+
   it('blocks disallowed cors origins', async () => {
     const response = await app.request('https://api.example.com/healthz', {
       method: 'OPTIONS',

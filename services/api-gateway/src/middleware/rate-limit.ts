@@ -29,39 +29,44 @@ function getLimiter(env: GatewayBindings): Ratelimit {
 
 export function createRateLimitMiddleware(): MiddlewareHandler {
   return async (c, next) => {
-    if (c.req.method === 'OPTIONS') {
+    try {
+      if (c.req.method === 'OPTIONS') {
+        await next();
+        return;
+      }
+
+      if (
+        typeof c.env.UPSTASH_REDIS_REST_URL !== 'string' ||
+        c.env.UPSTASH_REDIS_REST_URL.length === 0 ||
+        typeof c.env.UPSTASH_REDIS_REST_TOKEN !== 'string' ||
+        c.env.UPSTASH_REDIS_REST_TOKEN.length === 0
+      ) {
+        await next();
+        return;
+      }
+
+      const ip =
+        c.req.header('CF-Connecting-IP') ??
+        c.req.header('X-Forwarded-For')?.split(',')[0]?.trim() ??
+        'unknown';
+      const { success, remaining, reset } = await getLimiter(c.env).limit(ip);
+
+      if (!success) {
+        return c.json(
+          {
+            error: 'Too many requests',
+            requestId: c.get('requestId'),
+            retryAfter: Math.max(1, Math.ceil((reset - Date.now()) / 1000)),
+          },
+          429,
+        );
+      }
+
+      c.header('X-RateLimit-Remaining', String(remaining));
       await next();
-      return;
-    }
-
-    if (
-      typeof c.env.UPSTASH_REDIS_REST_URL !== 'string' ||
-      c.env.UPSTASH_REDIS_REST_URL.length === 0 ||
-      typeof c.env.UPSTASH_REDIS_REST_TOKEN !== 'string' ||
-      c.env.UPSTASH_REDIS_REST_TOKEN.length === 0
-    ) {
+    } catch (error) {
+      console.error('Rate limit error:', error);
       await next();
-      return;
     }
-
-    const ip =
-      c.req.header('CF-Connecting-IP') ??
-      c.req.header('X-Forwarded-For')?.split(',')[0]?.trim() ??
-      'unknown';
-    const { success, remaining, reset } = await getLimiter(c.env).limit(ip);
-
-    if (!success) {
-      return c.json(
-        {
-          error: 'Too many requests',
-          requestId: c.get('requestId'),
-          retryAfter: Math.max(1, Math.ceil((reset - Date.now()) / 1000)),
-        },
-        429,
-      );
-    }
-
-    c.header('X-RateLimit-Remaining', String(remaining));
-    await next();
   };
 }
