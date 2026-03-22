@@ -1,0 +1,30 @@
+export type ProxyRequestOptions = {
+  requestId: string;
+  gatewaySecret: string;
+  userId?: string;
+};
+
+export async function proxyRequest(request: Request, upstream: string, options: ProxyRequestOptions): Promise<Response> {
+  const url = new URL(request.url);
+  const upstreamUrl = new URL(`${url.pathname}${url.search}`, upstream).toString();
+  const headers = new Headers(request.headers);
+
+  headers.set('X-Request-ID', options.requestId);
+  headers.set('X-Gateway-Secret', options.gatewaySecret);
+  if (options.userId !== undefined) {
+    headers.set('X-User-ID', options.userId);
+  }
+
+  headers.delete('CF-Connecting-IP');
+  headers.delete('cf-connecting-ip');
+  headers.delete('X-Forwarded-For');
+  headers.delete('x-forwarded-for');
+
+  const body = request.method === 'GET' || request.method === 'HEAD' ? undefined : await request.clone().arrayBuffer();
+
+  return fetch(upstreamUrl, {
+    method: request.method,
+    headers,
+    body,
+  });
+}

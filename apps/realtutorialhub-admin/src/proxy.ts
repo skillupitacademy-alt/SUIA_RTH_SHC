@@ -5,6 +5,7 @@ const SKILLHUBCORE_LOGIN_URL =
   process.env.SKILLHUBCORE_LOGIN_URL ??
   process.env.NEXT_PUBLIC_SKILLHUBCORE_LOGIN_URL ??
   'https://api.skillhubcore.in/login';
+const INTERNAL_GATEWAY_SECRET = process.env.INTERNAL_GATEWAY_SECRET;
 
 const PUBLIC_PATHS = ['/api/healthz', '/login', '/forgot-password', '/reset-password', '/unauthorized'];
 const PROTECTED_PREFIXES = [
@@ -50,6 +51,14 @@ export function getSkillHubCoreLoginUrl(request: NextRequest, redirectPath: stri
   return loginUrl;
 }
 
+function hasValidGatewaySecret(request: NextRequest): boolean {
+  if (typeof INTERNAL_GATEWAY_SECRET !== 'string' || INTERNAL_GATEWAY_SECRET.length === 0) {
+    return true;
+  }
+
+  return request.headers.get('x-gateway-secret') === INTERNAL_GATEWAY_SECRET;
+}
+
 function getUnauthorizedUrl(request: NextRequest): URL {
   return new URL('/unauthorized', request.url);
 }
@@ -79,6 +88,10 @@ function hasAdminRole(payload: SkillHubCoreTokenPayload): boolean {
 
 export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
+  if (hasValidGatewaySecret(request) === false) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
   const user = await resolveUser(request);
   const redirectPath = `${pathname}${search}`;
 

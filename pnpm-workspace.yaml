@@ -6,5 +6,6 @@ packages:
   - "apps/skillup-admin"
   - "apps/faculty-app"
   - "apps/skillhubcore-admin"
+  - "services/api-gateway"
   - "packages/*"
   - "services/*"

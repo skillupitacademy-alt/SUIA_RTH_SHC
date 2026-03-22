@@ -2,6 +2,7 @@ import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
 
 import { logger } from '@/lib/logger';
+import { requireGatewaySecret } from '@/middleware/verify-gateway-secret';
 import { createAuthRoutes } from '@/modules/auth/auth.routes';
 import { AuthService } from '@/modules/auth/auth.service';
 import { PasswordService } from '@/modules/auth/password.service';
@@ -19,6 +20,7 @@ export const createApp = () => {
   const authService = new AuthService(userRepo, tokenService, passwordService, cache);
   const hierarchyService = new HierarchyService();
 
+  app.use('*', requireGatewaySecret);
   app.get('/healthz', (c) => c.json({ status: 'ok', service: 'skillhubcore', ts: Date.now() }));
   app.route('/auth', createAuthRoutes(authService));
   app.route('/api/hierarchy', createHierarchyRoutes(hierarchyService));

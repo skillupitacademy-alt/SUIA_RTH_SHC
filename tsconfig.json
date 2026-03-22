@@ -110,6 +110,7 @@
         "packages/types/src/globals/**/*.d.ts",
         "apps",
         "packages",
+        "services",
         "tests"
     ]
 }
