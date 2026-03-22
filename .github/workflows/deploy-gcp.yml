@@ -95,7 +95,7 @@ jobs:
             --build-arg NEXT_PUBLIC_API_URL=https://api.realtutorialhub.com/api \
             --build-arg NEXT_PUBLIC_WEB_APP_URL=https://quiz.realtutorialhub.com \
             --build-arg NEXT_PUBLIC_ADMIN_URL=https://admin.realtutorialhub.com \
-            -f apps/web-app/Dockerfile \
+            -f apps/realtutorialhub-quiz/Dockerfile \
             -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-web-app:$GITHUB_SHA \
             -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-web-app:latest .
           docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-web-app:$GITHUB_SHA
@@ -141,7 +141,7 @@ jobs:
             --build-arg NEXT_PUBLIC_API_URL=https://api.realtutorialhub.com/api \
             --build-arg NEXT_PUBLIC_WEB_APP_URL=https://quiz.realtutorialhub.com \
             --build-arg NEXT_PUBLIC_ADMIN_URL=https://admin.realtutorialhub.com \
-            -f apps/admin-app/Dockerfile \
+            -f apps/realtutorialhub-admin/Dockerfile \
             -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-admin-app:$GITHUB_SHA \
             -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-admin-app:latest .
           docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-admin-app:$GITHUB_SHA

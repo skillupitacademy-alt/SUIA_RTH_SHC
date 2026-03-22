@@ -150,8 +150,8 @@ jobs:
       - name: Check bundle budget
         run: |
           MAX_SIZE_KB=500
-          # Check for artifacts in web-app only as per prompt
-          REPORT_DIR="apps/web-app/.next/analyze"
+          # Check for artifacts in quiz app only as per prompt
+          REPORT_DIR="apps/realtutorialhub-quiz/.next/analyze"
           if [ -d "$REPORT_DIR" ]; then
             echo "✅ Bundle analysis generated"
             # In a real scenario, we would parse the JSON/HTML, but for now we verify existence
@@ -163,8 +163,8 @@ jobs:
         with:
           name: bundle-analysis
           path: |
-            apps/web-app/.next/analyze/
-            apps/admin-app/.next/analyze/
+            apps/realtutorialhub-quiz/.next/analyze/
+            apps/realtutorialhub-admin/.next/analyze/
 
   # preview-check:
   #   if: github.event_name == 'deployment_status' && github.event.deployment_status.state == 'success'

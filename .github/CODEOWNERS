@@ -11,8 +11,8 @@
 /apps/api-server/src/modules/auth/ @realtutorialhub
 
 # Application owners
-/apps/web-app/    @realtutorialhub
-/apps/admin-app/  @realtutorialhub
+/apps/realtutorialhub-quiz/    @realtutorialhub
+/apps/realtutorialhub-admin/   @realtutorialhub
 /apps/api-server/ @realtutorialhub
 
 # Infrastructure owners

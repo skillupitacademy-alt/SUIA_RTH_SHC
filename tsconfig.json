@@ -85,7 +85,9 @@
                 "./packages/observability/src/index.ts"
             ],
             "@/*": [
-                "./apps/web-app/src/*",
+                "./apps/realtutorialhub-quiz/src/*",
+                "./apps/realtutorialhub-admin/src/*",
+                "apps/realtutorialhub-quiz/src/*",
                 "./apps/admin-app/src/*",
                 "./apps/api-server/src/*",
                 "./packages/ui/src/*"

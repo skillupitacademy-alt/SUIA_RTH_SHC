@@ -1,4 +1,6 @@
 packages:
   - "apps/*"
+  - "apps/realtutorialhub-admin"
+  - "apps/realtutorialhub-quiz"
   - "packages/*"
   - "services/*"

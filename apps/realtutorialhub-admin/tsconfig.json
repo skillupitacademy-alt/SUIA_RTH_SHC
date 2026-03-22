@@ -15,7 +15,7 @@
         "../../packages/api-client/src/index.ts"
       ],
       "@web-tests/*": [
-        "../web-app/tests/e2e/*"
+        "../realtutorialhub-quiz/tests/e2e/*"
       ],
       "@quiz/api-client/*": [
         "../../packages/api-client/src/*"
