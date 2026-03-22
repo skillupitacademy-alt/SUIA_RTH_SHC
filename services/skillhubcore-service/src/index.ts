@@ -39,7 +39,5 @@ export const startServer = (port = Number(process.env.PORT ?? 8080)) => {
 };
 
 if (process.env.SKILLHUBCORE_DISABLE_AUTOSTART !== '1' && process.env.NODE_ENV !== 'test') {
-  if (process.argv[1] !== undefined && process.argv[1].includes('index')) {
-    startServer();
-  }
+  startServer();
 }

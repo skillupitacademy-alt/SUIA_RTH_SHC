@@ -22,10 +22,9 @@ COPY --from=deps /app/packages/db-people/node_modules ./packages/db-people/node_
 COPY . .
 RUN pnpm --filter @quiz/skillhubcore-service build
 
-FROM node:20-alpine AS runner
+FROM base AS runner
 WORKDIR /app
 ENV NODE_ENV=production
-COPY --from=builder /app/services/skillhubcore-service/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app ./
 EXPOSE 3000
-CMD ["node", "dist/index.js"]
+CMD ["/app/services/skillhubcore-service/node_modules/.bin/tsx", "--tsconfig", "services/skillhubcore-service/tsconfig.json", "services/skillhubcore-service/src/index.ts"]

@@ -1,6 +1,11 @@
 import { createMiddleware } from 'hono/factory';
 
 export const requireGatewaySecret = createMiddleware(async (c, next) => {
+  if (c.req.path === '/healthz') {
+    await next();
+    return;
+  }
+
   const INTERNAL_GATEWAY_SECRET = process.env.INTERNAL_GATEWAY_SECRET;
   if (typeof INTERNAL_GATEWAY_SECRET !== 'string' || INTERNAL_GATEWAY_SECRET.length === 0) {
     await next();
