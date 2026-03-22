@@ -12,9 +12,9 @@ vi.mock('../logger', () => ({
 
 vi.mock('@quiz/db-tutorial', () => {
   return {
-    TutorialContentRepository: vi.fn().mockImplementation(() => ({
-      getPublished: vi.fn(),
-    })),
+    TutorialContentRepository: vi.fn().mockImplementation(function () {
+      return { getPublished: vi.fn() };
+    }),
   };
 });
 
@@ -53,7 +53,7 @@ describe('tutorial-content-api', () => {
         deletedAt: null,
       };
 
-      vi.mocked(tutorialContentRepository.getPublished).mockResolvedValue([mockRecord] as any);
+      vi.mocked(tutorialContentRepository.getPublished).mockResolvedValue([mockRecord] as never);
 
       const result = await getTutorialContentBySubtopicId(validUuid);
 

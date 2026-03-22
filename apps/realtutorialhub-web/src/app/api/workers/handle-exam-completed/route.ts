@@ -164,21 +164,6 @@ export async function processExamCompletedEnvelope(
           if (remediation === null) {
             throw new Error('Failed to create remediation trigger');
           }
-
-          const updatedRows = await withTimeout(
-            tx
-              .update(remediationTriggers)
-              .set({
-                status: 'completed',
-                updatedAt: deps.now(),
-              })
-              .where(eq(remediationTriggers.id, remediation.id))
-              .returning(),
-            STANDARD_QUERY_TIMEOUT,
-            'handle-exam-completed.complete'
-          );
-
-          remediation = updatedRows[0] ?? remediation;
         });
       } catch (error) {
         deps.logger.error({

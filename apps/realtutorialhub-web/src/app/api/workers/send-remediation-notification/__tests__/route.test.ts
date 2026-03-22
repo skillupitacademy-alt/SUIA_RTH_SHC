@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { PlatformEventTypes } from '@quiz/events';
 import { SignatureError } from '@upstash/qstash';
 
 const mocks = vi.hoisted(() => {
@@ -39,16 +38,6 @@ vi.mock('@/lib/logger', () => ({
 
 import { POST } from '../route';
 
-const createEnvelope = (data: Record<string, unknown>) => ({
-  id: crypto.randomUUID(),
-  type: PlatformEventTypes.EXAM_COMPLETED,
-  correlationId: crypto.randomUUID(),
-  source: 'exam-engine',
-  occurredAt: new Date().toISOString(),
-  version: 1,
-  data,
-});
-
 const createRequest = (data: Record<string, unknown>, signature = 'valid-signature') =>
   new Request('https://realtutorialhub.test/api/workers/send-remediation-notification', {
     method: 'POST',
@@ -56,7 +45,7 @@ const createRequest = (data: Record<string, unknown>, signature = 'valid-signatu
       'content-type': 'application/json',
       'upstash-signature': signature,
     },
-    body: JSON.stringify(createEnvelope(data)),
+    body: JSON.stringify(data),
   });
 
 describe('send-remediation-notification worker', () => {
@@ -87,6 +76,8 @@ describe('send-remediation-notification worker', () => {
       weakSubtopics,
     }));
 
+    const responseText = await response.text();
+    if (response.status !== 200) console.log('Zod Error:', responseText);
     expect(response.status).toBe(200);
     expect(mocks.loggerInfo).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -112,9 +103,9 @@ describe('send-remediation-notification worker', () => {
 
   it('returns 400 for malformed payloads', async () => {
     // Missing required fields
-    const malformed = createEnvelope({
+    const malformed = {
       examResultId,
-    });
+    };
 
     const response = await POST(new Request('https://realtutorialhub.test/api/workers/send-remediation-notification', {
       method: 'POST',

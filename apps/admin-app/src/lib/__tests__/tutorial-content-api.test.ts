@@ -1,6 +1,8 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { TokenService } from '@quiz/auth';
 import type { NextRequest } from 'next/server';
+import { afterEach,beforeEach, describe, expect, it, vi } from 'vitest';
+
+import type { TutorialContentJSON } from '@quiz/types';
 
 // Mock DB dependency
 vi.mock('@quiz/db-tutorial', () => {
@@ -10,11 +12,19 @@ vi.mock('@quiz/db-tutorial', () => {
 });
 
 // Import after DB mock to avoid instantiation errors if DB mock is needed
-import { requireAdmin, TutorialAuthError, normalizeTutorialWritePayload, isTutorialAuthError } from '../tutorial-content-api';
+import {
+  isTutorialAuthError,
+  normalizeTutorialWritePayload,
+  requireAdmin,
+  TutorialAuthError,
+  type TutorialContentWritePayload,
+} from '../tutorial-content-api';
+
+const tutorialContent = {} as TutorialContentJSON;
 
 describe('admin tutorial-content-api', () => {
-  let getAccessTokenSpy: any;
-  let verifyAdminAccessTokenSpy: any;
+  let getAccessTokenSpy: ReturnType<typeof vi.spyOn>;
+  let verifyAdminAccessTokenSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -41,10 +51,10 @@ describe('admin tutorial-content-api', () => {
 
   describe('normalizeTutorialWritePayload', () => {
     it('normalizes a partial payload into an upsert input format', () => {
-      const payload: any = {
+      const payload: TutorialContentWritePayload = {
         subtopicId: '123',
         difficulty: 'simple',
-        content: { } as any,
+        content: tutorialContent,
         adminApprovedAt: '2026-03-22T10:00:00Z'
       };
 
@@ -59,10 +69,10 @@ describe('admin tutorial-content-api', () => {
 
     it('handles Date objects correctly for adminApprovedAt', () => {
       const date = new Date();
-      const payload: any = {
+      const payload: TutorialContentWritePayload = {
         subtopicId: '123',
         difficulty: 'simple',
-        content: { } as any,
+        content: tutorialContent,
         adminApprovedAt: date
       };
 

@@ -38,6 +38,28 @@ const tutorialApiMock = vi.hoisted(() => {
 
 vi.mock('@/lib/tutorial-content-api', () => tutorialApiMock);
 
+const eventsMock = vi.hoisted(() => ({
+  publishEvent: vi.fn(async () => ({
+    messageId: 'msg-1',
+    envelope: {
+      id: 'envelope-1',
+      type: 'content.approved_and_published',
+      correlationId: 'correlation-1',
+      source: 'admin-app',
+      occurredAt: new Date('2026-01-01T00:00:00.000Z').toISOString(),
+      version: 1,
+      data: {},
+    },
+  })),
+}));
+
+vi.mock('@quiz/events', () => ({
+  PlatformEventTypes: {
+    CONTENT_APPROVED_AND_PUBLISHED: 'content.approved_and_published',
+  },
+  publishEvent: eventsMock.publishEvent,
+}));
+
 const cacheMock = vi.hoisted(() => ({
   revalidateTag: vi.fn(),
 }));
@@ -45,6 +67,8 @@ const cacheMock = vi.hoisted(() => ({
 vi.mock('next/cache', () => ({
   revalidateTag: cacheMock.revalidateTag,
 }));
+
+import { publishEvent } from '@quiz/events';
 
 import {
   requireAdmin,
@@ -120,5 +144,17 @@ describe('POST /api/tutorial/content/[id]/publish', () => {
     expect(await response.json()).toEqual({ data: { id: 'content-1' }, revalidated: true });
     expect(cacheMock.revalidateTag).toHaveBeenCalledWith('tutorial-content:11111111-1111-1111-1111-111111111111', 'max');
     expect(cacheMock.revalidateTag).toHaveBeenCalledWith('tutorial-content', 'max');
+    expect(publishEvent).toHaveBeenCalledWith(
+      'content.approved_and_published',
+      expect.objectContaining({
+        subtopicId: '11111111-1111-1111-1111-111111111111',
+        approvedBy: 'admin-1',
+        version: 2,
+      }),
+      expect.objectContaining({
+        destinationUrl: expect.stringContaining('/api/workers/index-content-vector'),
+        source: 'admin-app',
+      })
+    );
   });
 });

@@ -289,7 +289,7 @@ describe('handle-exam-completed worker', () => {
   });
 
   it('returns 500 and logs transaction and worker errors when the DB write fails', async () => {
-    mocks.state.dbUpdateThrows = new Error('db failed');
+    mocks.state.dbInsertThrows = new Error('db failed');
 
     const response = await POST(createRequest({
       userId,

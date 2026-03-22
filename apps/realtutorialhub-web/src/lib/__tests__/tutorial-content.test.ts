@@ -4,7 +4,9 @@ import { TutorialContentRepository } from '@quiz/db-tutorial';
 
 vi.mock('@quiz/db-tutorial', () => {
   return {
-    TutorialContentRepository: vi.fn(),
+    TutorialContentRepository: vi.fn().mockImplementation(function () {
+      return { findBySubtopicId: vi.fn() };
+    }),
   };
 });
 
@@ -21,9 +23,10 @@ describe('tutorial-content', () => {
     };
 
     const mockFindBySubtopicId = vi.fn().mockResolvedValue([mockRow]);
-    vi.mocked(TutorialContentRepository).mockImplementation(() => ({
-      findBySubtopicId: mockFindBySubtopicId
-    }) as any);
+    class MockTutorialContentRepository {
+      findBySubtopicId = mockFindBySubtopicId;
+    }
+    vi.mocked(TutorialContentRepository).mockImplementation(MockTutorialContentRepository);
 
     const result = await getSeededTutorialContent();
     expect(mockFindBySubtopicId).toHaveBeenCalledWith(SEED_SUBTOPIC_ID, 'simple');
@@ -38,9 +41,10 @@ describe('tutorial-content', () => {
     };
 
     const mockFindBySubtopicId = vi.fn().mockResolvedValue([mockRow]);
-    vi.mocked(TutorialContentRepository).mockImplementation(() => ({
-      findBySubtopicId: mockFindBySubtopicId
-    }) as any);
+    class MockTutorialContentRepository {
+      findBySubtopicId = mockFindBySubtopicId;
+    }
+    vi.mocked(TutorialContentRepository).mockImplementation(MockTutorialContentRepository);
 
     const result = await getSeededTutorialContent();
     expect(result).toEqual(mockContentJSON);
@@ -48,9 +52,10 @@ describe('tutorial-content', () => {
 
   it('falls back to embedded DEFAULT_TUTORIAL_CONTENT when DB throws error', async () => {
     const mockFindBySubtopicId = vi.fn().mockRejectedValue(new Error('DB Connection Failed'));
-    vi.mocked(TutorialContentRepository).mockImplementation(() => ({
-      findBySubtopicId: mockFindBySubtopicId
-    }) as any);
+    class MockTutorialContentRepository {
+      findBySubtopicId = mockFindBySubtopicId;
+    }
+    vi.mocked(TutorialContentRepository).mockImplementation(MockTutorialContentRepository);
 
     const result = await getSeededTutorialContent();
     expect(result).toEqual(DEFAULT_TUTORIAL_CONTENT);
@@ -58,9 +63,10 @@ describe('tutorial-content', () => {
 
   it('falls back to embedded DEFAULT_TUTORIAL_CONTENT when DB returns empty array', async () => {
     const mockFindBySubtopicId = vi.fn().mockResolvedValue([]);
-    vi.mocked(TutorialContentRepository).mockImplementation(() => ({
-      findBySubtopicId: mockFindBySubtopicId
-    }) as any);
+    class MockTutorialContentRepository {
+      findBySubtopicId = mockFindBySubtopicId;
+    }
+    vi.mocked(TutorialContentRepository).mockImplementation(MockTutorialContentRepository);
 
     const result = await getSeededTutorialContent();
     expect(result).toEqual(DEFAULT_TUTORIAL_CONTENT);

@@ -1,14 +1,13 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { createAiTutorVectorIndex, buildAiTutorVectorChunks, queryAiTutorVector } from '../ai-tutor-vector';
 import { Index } from '@upstash/vector';
-import * as dbUtils from '@quiz/db-tutorial';
 import { DEFAULT_TUTORIAL_CONTENT } from '../tutorial-content';
 
 vi.mock('@upstash/vector', () => {
   return {
-    Index: vi.fn().mockImplementation(() => ({
-      query: vi.fn(),
-    })),
+    Index: vi.fn().mockImplementation(function () {
+      return { query: vi.fn() };
+    }),
   };
 });
 
@@ -68,9 +67,10 @@ describe('ai-tutor-vector', () => {
   describe('queryAiTutorVector', () => {
     it('queries the index with correct parameters and filters', async () => {
       const mockQuery = vi.fn().mockResolvedValue([{ id: 'mock-1', score: 0.9 }]);
-      vi.mocked(Index).mockImplementation(() => ({
-        query: mockQuery,
-      }) as any);
+      class MockIndex {
+        query = mockQuery;
+      }
+      vi.mocked(Index).mockImplementation(MockIndex);
 
       await queryAiTutorVector('how to write async wait?', {
         subtopicId: 'subtopic-xyz',
@@ -89,9 +89,10 @@ describe('ai-tutor-vector', () => {
 
     it('queries without difficulty filter if not provided', async () => {
       const mockQuery = vi.fn().mockResolvedValue([]);
-      vi.mocked(Index).mockImplementation(() => ({
-        query: mockQuery,
-      }) as any);
+      class MockIndex {
+        query = mockQuery;
+      }
+      vi.mocked(Index).mockImplementation(MockIndex);
 
       await queryAiTutorVector('what is a promise?', {
         subtopicId: 'subtopic-123',

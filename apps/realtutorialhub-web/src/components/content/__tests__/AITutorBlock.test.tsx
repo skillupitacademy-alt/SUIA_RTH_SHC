@@ -4,6 +4,8 @@ import { AITutorBlock } from '../AITutorBlock';
 import React from 'react';
 
 describe('AITutorBlock', () => {
+  type AITutorTheme = Parameters<typeof AITutorBlock>[0]['theme'];
+
   const mockData = {
     greeting: 'Hello! I am your AI tutor.',
     qa_pairs: [
@@ -15,10 +17,10 @@ describe('AITutorBlock', () => {
   const mockTheme = {
     blockAITutor: '#111',
     blockAITutorHeader: '#222',
-  };
+  } satisfies AITutorTheme;
 
   it('renders correctly with given QA pairs and greeting', () => {
-    render(<AITutorBlock data={mockData} theme={mockTheme as any} />);
+    render(<AITutorBlock data={mockData} theme={mockTheme} />);
 
     // Check Header and Greeting
     expect(screen.getByText('AI Tutor')).toBeDefined();
@@ -32,7 +34,7 @@ describe('AITutorBlock', () => {
   });
 
   it('updates text area value when typed into', () => {
-    render(<AITutorBlock data={mockData} theme={mockTheme as any} />);
+    render(<AITutorBlock data={mockData} theme={mockTheme} />);
 
     const textarea = screen.getByPlaceholderText('Type your question here') as HTMLTextAreaElement;
     expect(textarea.value).toBe('');
@@ -42,7 +44,7 @@ describe('AITutorBlock', () => {
   });
 
   it('renders a disabled submit button', () => {
-    render(<AITutorBlock data={mockData} theme={mockTheme as any} />);
+    render(<AITutorBlock data={mockData} theme={mockTheme} />);
 
     const button = screen.getByText('Send question') as HTMLButtonElement;
     expect(button.disabled).toBe(true);

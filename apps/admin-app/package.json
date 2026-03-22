@@ -18,6 +18,7 @@
         "@next/bundle-analyzer": "^16.1.6",
         "@quiz/api-client": "workspace:*",
         "@quiz/auth": "workspace:*",
+        "@quiz/events": "workspace:*",
         "@quiz/db-tutorial": "workspace:*",
         "@quiz/observability": "workspace:*",
         "@quiz/types": "workspace:*",

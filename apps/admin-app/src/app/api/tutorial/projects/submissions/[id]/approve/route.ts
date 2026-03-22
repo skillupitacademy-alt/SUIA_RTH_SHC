@@ -1,9 +1,8 @@
+import { ProjectRepository } from '@quiz/db-tutorial';
+import { ProjectTransitionError } from '@quiz/types';
 import { Client } from '@upstash/qstash';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-
-import { ProjectRepository } from '@quiz/db-tutorial';
-import { ProjectTransitionError } from '@quiz/types';
 
 import { isTutorialAuthError, logger, requireAdmin } from '@/lib/tutorial-content-api';
 

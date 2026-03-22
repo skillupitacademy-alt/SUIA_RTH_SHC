@@ -104,8 +104,10 @@ describe('issue certificate worker', () => {
   beforeEach(() => {
     mocks.mode = 'ok';
     vi.clearAllMocks();
-    process.env.QSTASH_TOKEN = 'test-token';
-    process.env.CERTIFICATE_ISSUED_EVENT_URL = 'https://tutorial.example.com/api/events/certificate-issued';
+    vi.stubEnv('QSTASH_TOKEN', 'test-token');
+    vi.stubEnv('CERTIFICATE_ISSUED_EVENT_URL', 'https://tutorial.example.com/api/events/certificate-issued');
+    vi.stubEnv('UPSTASH_REDIS_REST_URL', 'https://redis.example.com');
+    vi.stubEnv('UPSTASH_REDIS_REST_TOKEN', 'test-token');
     mocks.redisGet.mockResolvedValue(null);
     mocks.redisSet.mockResolvedValue('OK');
     mocks.publishEvent.mockResolvedValue({ messageId: 'event-1', envelope: {} });

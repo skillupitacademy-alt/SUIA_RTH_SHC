@@ -68,7 +68,7 @@ vi.mock('@quiz/db-tutorial', () => ({
     updateSubmissionStatus = mocks.updateSubmissionStatus;
     getProject = mocks.getProject;
     awardBadge = mocks.awardBadge;
-    withDb = vi.fn(function () {
+    withDb = vi.fn(function (this: object) {
       return this;
     });
   },
@@ -111,8 +111,10 @@ describe('award project badge worker', () => {
   beforeEach(() => {
     mocks.mode = 'ok';
     vi.clearAllMocks();
-    process.env.QSTASH_TOKEN = 'test-token';
-    process.env.NEXT_PUBLIC_APP_URL = 'https://tutorial.example.com';
+    vi.stubEnv('QSTASH_TOKEN', 'test-token');
+    vi.stubEnv('NEXT_PUBLIC_APP_URL', 'https://tutorial.example.com');
+    vi.stubEnv('UPSTASH_REDIS_REST_URL', 'https://redis.example.com');
+    vi.stubEnv('UPSTASH_REDIS_REST_TOKEN', 'test-token');
     mocks.redisGet.mockResolvedValue(null);
     mocks.redisSet.mockResolvedValue('OK');
     mocks.getSubmission.mockResolvedValue({
@@ -152,6 +154,8 @@ describe('award project badge worker', () => {
       },
     }));
 
+    const responseText = await response.clone().text();
+    if (response.status !== 200) console.log('Response Error:', responseText);
     expect(response.status).toBe(200);
     expect(mocks.dbTransaction).toHaveBeenCalledTimes(1);
     expect(mocks.publishJSON).toHaveBeenCalledTimes(1);

@@ -1,8 +1,8 @@
+import { liveSessionService } from '@quiz/db-tutorial/live-session.service';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
 import { isTutorialAuthError, requireAdmin } from '@/lib/tutorial-content-api';
-import { liveSessionService } from '@quiz/db-tutorial/live-session.service';
 
 export const dynamic = 'force-dynamic';
 

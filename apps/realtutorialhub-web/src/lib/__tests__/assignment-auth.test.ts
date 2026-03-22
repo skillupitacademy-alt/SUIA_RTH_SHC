@@ -3,15 +3,16 @@ import { requireStudent, AssignmentAuthError } from '../assignment-auth';
 import { TokenService } from '@quiz/auth';
 
 describe('assignment-auth', () => {
-  let getAccessTokenSpy: any;
-  let verifyAccessTokenSpy: any;
+  let getAccessTokenSpy: ReturnType<typeof vi.spyOn>;
+  let verifyAccessTokenSpy: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     vi.clearAllMocks();
     getAccessTokenSpy = vi.spyOn(TokenService.prototype, 'getAccessToken');
     // Using simple mock replacement since we might fail vi.spyOn if property not perfectly clear statically
     verifyAccessTokenSpy = vi.fn();
-    (TokenService as any).verifyAccessToken = verifyAccessTokenSpy;
+    (TokenService as typeof TokenService & { verifyAccessToken: typeof verifyAccessTokenSpy }).verifyAccessToken =
+      verifyAccessTokenSpy;
   });
 
   afterEach(() => {
@@ -46,7 +47,7 @@ describe('assignment-auth', () => {
     it('returns the token payload when token is valid and verified', async () => {
       getAccessTokenSpy.mockReturnValue('valid-token');
       const expectedPayload = { sub: 'user-id', roles: [] };
-      verifyAccessTokenSpy.mockResolvedValue(expectedPayload as any);
+      verifyAccessTokenSpy.mockResolvedValue(expectedPayload as never);
       
       const request = new Request('https://realtutorialhub.test');
       const result = await requireStudent(request);

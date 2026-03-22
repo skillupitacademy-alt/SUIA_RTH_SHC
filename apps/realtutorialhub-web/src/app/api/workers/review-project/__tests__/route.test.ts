@@ -61,7 +61,7 @@ vi.mock('@quiz/db-tutorial', () => ({
     getSubmission = mocks.getSubmission;
     getProject = mocks.getProject;
     updateSubmissionStatus = mocks.updateSubmissionStatus;
-    withDb = vi.fn(function () {
+    withDb = vi.fn(function (this: object) {
       return this;
     });
   },
@@ -96,6 +96,8 @@ describe('review project worker', () => {
   beforeEach(() => {
     mocks.mode = 'ok';
     vi.clearAllMocks();
+    vi.stubEnv('UPSTASH_REDIS_REST_URL', 'https://redis.example.com');
+    vi.stubEnv('UPSTASH_REDIS_REST_TOKEN', 'test-token');
     mocks.redisGet.mockResolvedValue(null);
     mocks.redisSet.mockResolvedValue('OK');
     mocks.getSubmission.mockResolvedValue({

@@ -6,6 +6,8 @@ import { STANDARD_QUERY_TIMEOUT, withTimeout } from '@quiz/db-tutorial';
 import { Redis } from '@upstash/redis';
 
 import { logger } from '@/lib/logger';
+import { markAiTutorBlockComplete } from '@/lib/ai-tutor-progress';
+import { DEFAULT_TUTORIAL_CONTENT } from '../../../../lib/tutorial-content';
 import {
   queryAiTutorVector,
   type AiTutorVectorMetadata,
@@ -15,7 +17,7 @@ export const dynamic = 'force-dynamic';
 
 const QuerySchema = z.object({
   subtopicId: z.string().uuid(),
-  question: z.string().min(1),
+  question: z.string().min(3).max(500),
   difficulty: z.enum(['simple', 'mixed', 'intermediate', 'expert']),
 });
 
@@ -51,6 +53,7 @@ const defaultDeps: QueryDeps = {
 
 const RATE_LIMIT = 10;
 const RATE_LIMIT_WINDOW_SECONDS = 60 * 60;
+const aiTutorQaPairs = DEFAULT_TUTORIAL_CONTENT.ai_tutor.qa_pairs;
 
 const toErrorMessage = (error: unknown) => (error instanceof Error ? error.message : String(error));
 
@@ -104,6 +107,39 @@ const getSessionUserId = async (request: Request): Promise<string | null> => {
   }
 };
 
+const normalizeText = (value: string) => value.toLowerCase().replace(/[^a-z0-9\s]+/g, ' ');
+
+const tokenize = (value: string) =>
+  normalizeText(value)
+    .split(/\s+/)
+    .map((token) => token.trim())
+    .filter((token) => token.length >= 3);
+
+const findQaPairMatch = (question: string) => {
+  const tokens = tokenize(question);
+  if (tokens.length === 0) return null;
+
+  return (
+    aiTutorQaPairs.find((pair) => {
+      const haystack = normalizeText(pair.question);
+      return tokens.some((token) => haystack.includes(token));
+    }) ?? null
+  );
+};
+
+const maybeMarkAiTutorComplete = async (userId: string, subtopicId: string) => {
+  try {
+    await markAiTutorBlockComplete(userId, subtopicId);
+  } catch (error) {
+    logger.warn({
+      event: 'ai_tutor.progress_mark_failed',
+      userId,
+      subtopicId,
+      error: toErrorMessage(error),
+    });
+  }
+};
+
 export async function processAiTutorQuery(
   request: Request,
   deps: QueryDeps = defaultDeps
@@ -148,6 +184,26 @@ export async function processAiTutorQuery(
       );
     }
 
+    const questionsRemaining = Math.max(0, RATE_LIMIT - rateLimit.count);
+    const qaPairMatch = findQaPairMatch(input.question);
+
+    if (qaPairMatch !== null) {
+      await maybeMarkAiTutorComplete(userId, input.subtopicId);
+      deps.logger.info({
+        event: 'ai_tutor.query',
+        userId,
+        subtopicId: input.subtopicId,
+        scoreRange: null,
+      });
+
+      return NextResponse.json({
+        source: 'qa_pairs',
+        answer: qaPairMatch.answer,
+        chunks: null,
+        questionsRemaining,
+      });
+    }
+
     const results = await queryAiTutorVector(input.question, {
       subtopicId: input.subtopicId,
       difficulty: input.difficulty,
@@ -180,7 +236,14 @@ export async function processAiTutorQuery(
       });
     }
 
-    return NextResponse.json({ chunks });
+    await maybeMarkAiTutorComplete(userId, input.subtopicId);
+
+    return NextResponse.json({
+      source: 'vector_search',
+      answer: null,
+      chunks,
+      questionsRemaining,
+    });
   } catch (error) {
     deps.logger.error({
       event: 'ai_tutor.query_failed',

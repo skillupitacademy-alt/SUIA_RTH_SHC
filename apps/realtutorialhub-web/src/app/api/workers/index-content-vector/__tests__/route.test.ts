@@ -5,6 +5,9 @@ import { SignatureError } from '@upstash/qstash';
 const mocks = vi.hoisted(() => {
   return {
     receiverVerify: vi.fn(),
+    redisGet: vi.fn(),
+    redisSet: vi.fn(),
+    redisDel: vi.fn(),
     indexUpsert: vi.fn(),
     loggerInfo: vi.fn(),
     loggerError: vi.fn(),
@@ -32,6 +35,15 @@ vi.mock('@upstash/qstash', () => {
 vi.mock('@upstash/vector', () => ({
   Index: class {
     upsert = mocks.indexUpsert;
+    constructor() {}
+  },
+}));
+
+vi.mock('@upstash/redis', () => ({
+  Redis: class {
+    get = mocks.redisGet;
+    set = mocks.redisSet;
+    del = mocks.redisDel;
     constructor() {}
   },
 }));
@@ -126,11 +138,16 @@ describe('index-content-vector worker', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.receiverVerify.mockResolvedValue(undefined);
+    mocks.redisGet.mockResolvedValue(null);
+    mocks.redisSet.mockResolvedValue('OK');
+    mocks.redisDel.mockResolvedValue(1);
     mocks.indexUpsert.mockResolvedValue({ success: true });
     vi.stubEnv('QSTASH_CURRENT_SIGNING_KEY', 'current-signing-key');
     vi.stubEnv('QSTASH_NEXT_SIGNING_KEY', 'next-signing-key');
     vi.stubEnv('UPSTASH_VECTOR_REST_URL', 'https://vector.example.com');
     vi.stubEnv('UPSTASH_VECTOR_REST_TOKEN', 'vector-token');
+    vi.stubEnv('UPSTASH_REDIS_REST_URL', 'https://redis.example.com');
+    vi.stubEnv('UPSTASH_REDIS_REST_TOKEN', 'redis-token');
   });
 
   it('indexes five chunks for a valid publish payload', async () => {
@@ -150,6 +167,20 @@ describe('index-content-vector worker', () => {
     expect(mocks.loggerInfo).toHaveBeenCalledWith(expect.objectContaining({
       event: 'ai_tutor.vector_indexed',
     }));
+  });
+
+  it('skips a duplicate publish for the same version', async () => {
+    mocks.redisGet.mockResolvedValueOnce('1');
+
+    const response = await POST(createRequest(createEnvelope()));
+
+    expect(response.status).toBe(200);
+    expect(mocks.indexUpsert).not.toHaveBeenCalled();
+    expect(mocks.redisSet).not.toHaveBeenCalledWith(
+      expect.any(String),
+      expect.stringContaining('processing'),
+      expect.anything()
+    );
   });
 
   it('returns 401 for an invalid QStash signature', async () => {

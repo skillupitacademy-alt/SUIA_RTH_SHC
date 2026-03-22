@@ -29,10 +29,10 @@ vi.mock('@quiz/db-tutorial/live-session.service', () => ({
   },
 }));
 
-import { GET } from '../route';
 import { PATCH as acceptRequest } from '../[id]/accept/route';
-import { PATCH as scheduleRequest } from '../[id]/schedule/route';
 import { PATCH as completeRequest } from '../[id]/complete/route';
+import { PATCH as scheduleRequest } from '../[id]/schedule/route';
+import { GET } from '../route';
 
 const adminId = crypto.randomUUID();
 const requestId = crypto.randomUUID();

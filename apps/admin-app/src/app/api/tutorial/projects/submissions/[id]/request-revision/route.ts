@@ -1,7 +1,6 @@
+import { ProjectRepository } from '@quiz/db-tutorial';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-
-import { ProjectRepository } from '@quiz/db-tutorial';
 
 import { isTutorialAuthError, logger, requireAdmin } from '@/lib/tutorial-content-api';
 

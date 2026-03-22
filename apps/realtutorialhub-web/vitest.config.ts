@@ -5,6 +5,9 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   root: __dirname,
   plugins: [react()],
+  esbuild: {
+    jsx: 'automatic',
+  },
   test: {
     environment: 'jsdom',
     globals: true,
@@ -22,6 +25,7 @@ export default defineConfig({
       { find: '@quiz/types', replacement: path.resolve(__dirname, '../../packages/types/src') },
       { find: '@quiz/observability', replacement: path.resolve(__dirname, '../../packages/observability/src') },
       { find: '@quiz/ui', replacement: path.resolve(__dirname, '../../packages/ui/src') },
+      { find: /^@\/(.*)$/, replacement: path.resolve(__dirname, './src/$1') },
       { find: '@', replacement: path.resolve(__dirname, './src') },
     ],
   },

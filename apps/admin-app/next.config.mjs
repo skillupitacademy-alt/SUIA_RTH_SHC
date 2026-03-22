@@ -14,7 +14,7 @@ const apiUrlBase = (process.env.NEXT_PUBLIC_API_URL || "https://api.realtutorial
 const nextConfig = {
     compress: true,
     output: process.env.CLOUD_RUN_BUILD === 'true' ? 'standalone' : undefined,
-    transpilePackages: ['@quiz/api-client', '@quiz/db', 'react-markdown', 'remark-gfm', 'lucide-react'],
+    transpilePackages: ['@quiz/api-client', '@quiz/db', '@quiz/events', 'react-markdown', 'remark-gfm', 'lucide-react'],
     async headers() {
         const isDev = process.env.NODE_ENV === 'development';
         const apiUrls = [
