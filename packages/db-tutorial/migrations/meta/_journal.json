@@ -57,6 +57,13 @@
       "when": 1774183908666,
       "tag": "0007_tiny_bill_hollister",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1774217227063,
+      "tag": "0008_opposite_wiccan",
+      "breakpoints": true
     }
   ]
 }

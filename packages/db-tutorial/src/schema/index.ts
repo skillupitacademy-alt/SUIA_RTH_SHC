@@ -1,12 +1,16 @@
 /* istanbul ignore file */
 export * from './enums';
 export * from './tutorial-content';
+export * from './tutorial-domains';
 export * from './tutorial-content-versions';
 export * from './tutorial-content-audit';
 export * from './tutorial-assignments';
 export * from './assignment-progress';
 export * from './assignment-help-requests';
 export * from './live-session-requests';
+export * from './tutorial-subjects';
+export * from './tutorial-topics';
+export * from './tutorial-subtopics';
 export * from './tutorial-projects';
 export * from './tutorial-project-submissions';
 export * from './student-badges';
@@ -22,6 +26,7 @@ export * from './student-streaks';
 
 import * as enums from './enums';
 import * as tutorialContentModule from './tutorial-content';
+import * as tutorialDomainsModule from './tutorial-domains';
 import * as tutorialContentVersionsModule from './tutorial-content-versions';
 import * as tutorialContentAuditModule from './tutorial-content-audit';
 import * as tutorialAssignmentsModule from './tutorial-assignments';
@@ -32,6 +37,9 @@ import * as tutorialProjectSubmissionsModule from './tutorial-project-submission
 import * as studentBadgesModule from './student-badges';
 import * as tutorialProgressModule from './tutorial-progress';
 import * as tutorialVideoLinksModule from './tutorial-video-links';
+import * as tutorialSubjectsModule from './tutorial-subjects';
+import * as tutorialTopicsModule from './tutorial-topics';
+import * as tutorialSubtopicsModule from './tutorial-subtopics';
 import * as badgesModule from './badges';
 import * as certificatesModule from './certificates';
 import * as remediationTriggersModule from './remediation-triggers';
@@ -43,11 +51,15 @@ import * as studentStreaksModule from './student-streaks';
 export const schema = {
   ...enums,
   ...tutorialContentModule,
+  ...tutorialDomainsModule,
   ...tutorialContentVersionsModule,
   ...tutorialContentAuditModule,
   ...tutorialAssignmentsModule,
   ...assignmentProgressModule,
   ...assignmentHelpRequestsModule,
+  ...tutorialSubjectsModule,
+  ...tutorialTopicsModule,
+  ...tutorialSubtopicsModule,
   ...tutorialProjectsModule,
   ...tutorialProjectSubmissionsModule,
   ...studentBadgesModule,

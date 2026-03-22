@@ -1,5 +1,11 @@
-CREATE TYPE "public"."live_session_request_status" AS ENUM('pending', 'accepted', 'scheduled', 'completed', 'cancelled');--> statement-breakpoint
-CREATE TABLE "live_session_requests" (
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'live_session_request_status') THEN
+    CREATE TYPE "public"."live_session_request_status" AS ENUM('pending', 'accepted', 'scheduled', 'completed', 'cancelled');
+  END IF;
+END $$;
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "live_session_requests" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"student_id" uuid NOT NULL,
 	"subtopic_id" uuid NOT NULL,
@@ -16,6 +22,6 @@ CREATE TABLE "live_session_requests" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE INDEX "idx_session_requests_student" ON "live_session_requests" USING btree ("student_id");--> statement-breakpoint
-CREATE INDEX "idx_session_requests_faculty" ON "live_session_requests" USING btree ("faculty_id");--> statement-breakpoint
-CREATE INDEX "idx_session_requests_status" ON "live_session_requests" USING btree ("status");
+CREATE INDEX IF NOT EXISTS "idx_session_requests_student" ON "live_session_requests" USING btree ("student_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "idx_session_requests_faculty" ON "live_session_requests" USING btree ("faculty_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "idx_session_requests_status" ON "live_session_requests" USING btree ("status");
