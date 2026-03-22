@@ -1,0 +1,191 @@
+'use client';
+
+import { useEffect, useMemo, useState } from 'react';
+
+import { facultyAttendanceRoster } from '@/lib/faculty-demo-data';
+
+type AttendanceMap = Record<string, boolean>;
+
+interface AttendanceQueueEntry {
+  batchId: string;
+  sessionId: string;
+  attendanceRecords: Array<{ studentId: string; present: boolean }>;
+}
+
+interface AttendanceBoardProps {
+  batchId: string;
+  sessionId: string;
+}
+
+const getStorageKey = (batchId: string, sessionId: string) => `faculty-attendance:${batchId}:${sessionId}`;
+const getQueueKey = (batchId: string, sessionId: string) => `faculty-attendance-queue:${batchId}:${sessionId}`;
+
+export function AttendanceBoard({ batchId, sessionId }: AttendanceBoardProps) {
+  const [attendance, setAttendance] = useState<AttendanceMap>(() =>
+    Object.fromEntries(facultyAttendanceRoster.map((student) => [student.id, true]))
+  );
+  const [isOnline, setIsOnline] = useState(true);
+  const [status, setStatus] = useState<string>('Ready to submit.');
+
+  const presentCount = useMemo(() => Object.values(attendance).filter(Boolean).length, [attendance]);
+
+  useEffect(() => {
+    const cached = localStorage.getItem(getStorageKey(batchId, sessionId));
+    if (cached !== null) {
+      try {
+        const parsed = JSON.parse(cached) as AttendanceMap;
+        setAttendance((current) => ({ ...current, ...parsed }));
+      } catch {
+        // Ignore bad cache entries and continue with defaults.
+      }
+    }
+
+    const queue = localStorage.getItem(getQueueKey(batchId, sessionId));
+    if (queue !== null) {
+      setStatus('Queued attendance exists. It will sync when the browser is back online.');
+    }
+
+    const updateOnlineState = () => {
+      setIsOnline(navigator.onLine);
+    };
+
+    updateOnlineState();
+    window.addEventListener('online', updateOnlineState);
+    window.addEventListener('offline', updateOnlineState);
+    return () => {
+      window.removeEventListener('online', updateOnlineState);
+      window.removeEventListener('offline', updateOnlineState);
+    };
+  }, [batchId, sessionId]);
+
+  useEffect(() => {
+    localStorage.setItem(getStorageKey(batchId, sessionId), JSON.stringify(attendance));
+  }, [attendance, batchId, sessionId]);
+
+  useEffect(() => {
+    const syncQueuedAttendance = async () => {
+      if (!isOnline) return;
+      const queued = localStorage.getItem(getQueueKey(batchId, sessionId));
+      if (queued === null) return;
+
+      try {
+        const payload = JSON.parse(queued) as AttendanceQueueEntry;
+        const response = await fetch('/api/faculty/attendance', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        if (response.ok) {
+          localStorage.removeItem(getQueueKey(batchId, sessionId));
+          setStatus('Queued attendance synced successfully.');
+        }
+      } catch {
+        setStatus('Queued attendance will retry on the next reconnect.');
+      }
+    };
+
+    void syncQueuedAttendance();
+  }, [batchId, isOnline, sessionId]);
+
+  const toggleStudent = (studentId: string, present: boolean) => {
+    setAttendance((current) => ({ ...current, [studentId]: present }));
+  };
+
+  const handleSubmit = async () => {
+    const attendanceRecords = facultyAttendanceRoster.map((student) => ({
+      studentId: student.id,
+      present: attendance[student.id] ?? false,
+    }));
+    const payload: AttendanceQueueEntry = { batchId, sessionId, attendanceRecords };
+
+    if (!navigator.onLine) {
+      localStorage.setItem(getQueueKey(batchId, sessionId), JSON.stringify(payload));
+      setStatus('Offline mode: attendance queued locally and will sync when you reconnect.');
+      return;
+    }
+
+    setStatus('Submitting attendance...');
+    const response = await fetch('/api/faculty/attendance', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      localStorage.setItem(getQueueKey(batchId, sessionId), JSON.stringify(payload));
+      setStatus('Submission failed. Attendance was queued locally.');
+      return;
+    }
+
+    localStorage.removeItem(getQueueKey(batchId, sessionId));
+    setStatus('Attendance submitted successfully with one bulk payload.');
+  };
+
+  return (
+    <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <p className="text-xs font-black uppercase tracking-[0.35em] text-cyan-600">Attendance sheet</p>
+          <h3 className="mt-2 text-3xl font-black tracking-tight text-slate-950">Mark the session in one bulk submit</h3>
+          <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
+            The roster stays cached locally so this page can tolerate short offline gaps. A single submit sends all 30 rows together.
+          </p>
+        </div>
+        <div className="rounded-3xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm text-slate-700">
+          <p className="font-semibold text-slate-950">{presentCount}/30 marked present</p>
+          <p className="mt-1 text-slate-500">{isOnline ? 'Online and ready to submit.' : 'Offline mode enabled.'}</p>
+        </div>
+      </div>
+
+      <div className="mt-6 overflow-hidden rounded-[1.75rem] border border-slate-200 bg-slate-50">
+        <div className="grid grid-cols-[1.1fr_0.5fr_0.5fr] gap-4 border-b border-slate-200 px-5 py-3 text-xs font-black uppercase tracking-[0.3em] text-slate-500">
+          <span>Student</span>
+          <span>Roll</span>
+          <span>Status</span>
+        </div>
+        <div className="divide-y divide-slate-200">
+          {facultyAttendanceRoster.map((student) => (
+            <div key={student.id} className="grid grid-cols-[1.1fr_0.5fr_0.5fr] items-center gap-4 px-5 py-4">
+              <div>
+                <p className="text-sm font-semibold text-slate-950">{student.name}</p>
+                <p className="text-xs text-slate-500">{student.id}</p>
+              </div>
+              <p className="text-sm text-slate-600">{student.rollNumber}</p>
+              <div className="inline-flex overflow-hidden rounded-full border border-slate-200 bg-white shadow-sm">
+                <button
+                  type="button"
+                  onClick={() => toggleStudent(student.id, true)}
+                  className={`px-3 py-1.5 text-xs font-black uppercase tracking-[0.25em] transition ${
+                    attendance[student.id] ? 'bg-emerald-500 text-white' : 'bg-white text-slate-600 hover:bg-slate-100'
+                  }`}
+                >
+                  Present
+                </button>
+                <button
+                  type="button"
+                  onClick={() => toggleStudent(student.id, false)}
+                  className={`px-3 py-1.5 text-xs font-black uppercase tracking-[0.25em] transition ${
+                    attendance[student.id] === false ? 'bg-rose-500 text-white' : 'bg-white text-slate-600 hover:bg-slate-100'
+                  }`}
+                >
+                  Absent
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="text-sm text-slate-600">{status}</div>
+        <button
+          type="button"
+          onClick={() => void handleSubmit()}
+          className="rounded-full bg-cyan-600 px-5 py-3 text-sm font-black uppercase tracking-[0.25em] text-white transition hover:bg-cyan-700"
+        >
+          Submit bulk attendance
+        </button>
+      </div>
+    </section>
+  );
+}

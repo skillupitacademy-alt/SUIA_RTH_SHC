@@ -7,10 +7,13 @@
     "build": "next build",
     "start": "next start",
     "lint": "cross-env ESLINT_USE_FLAT_CONFIG=false eslint --ext .ts,.tsx,.js,.jsx .",
+    "test": "vitest run",
     "type-check": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
     "@quiz/auth": "workspace:*",
+    "@quiz/events": "workspace:*",
+    "@upstash/qstash": "^2.8.1",
     "@quiz/types": "workspace:*",
     "@types/node": "^20",
     "@types/react": "^19.0.0",

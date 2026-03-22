@@ -8,14 +8,14 @@
 }
 
 html {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 body {
   margin: 0;
   font-family: var(--font-inter);
-  background: #06111c;
-  color: #e2e8f0;
+  background: #f5f7fb;
+  color: #0f172a;
 }
 
 h1,

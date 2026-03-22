@@ -73,7 +73,7 @@ describe('GET /api/report-status', () => {
   it('rejects when attemptId is missing', async () => {
      const { GET } = await import('../route');
      const req = new NextRequest('http://localhost/api/report-status');
-     // @ts-ignore
+     // @ts-expect-error - route context params shape is mocked for the test
      const res = await GET(req, { params: Promise.resolve({}) });
      expect(res.status).toBe(400); 
   });
@@ -82,7 +82,7 @@ describe('GET /api/report-status', () => {
      getAccessTokenMock.mockReturnValue(null);
      const { GET } = await import('../route');
      const req = new NextRequest('http://localhost/api/report-status?attemptId=att-1');
-     // @ts-ignore
+     // @ts-expect-error - route context params shape is mocked for the test
      const res = await GET(req, { params: Promise.resolve({}) });
      expect(res.status).toBe(401);
   });
@@ -100,7 +100,7 @@ describe('GET /api/report-status', () => {
 
      const { GET } = await import('../route');
      const req = new NextRequest('http://localhost/api/report-status?attemptId=att-1');
-     // @ts-ignore
+     // @ts-expect-error - route context params shape is mocked for the test
      const res = await GET(req, { params: Promise.resolve({}) });
      expect(res.status).toBe(200);
      const body = await res.json();
@@ -120,7 +120,7 @@ describe('GET /api/report-status', () => {
 
      const { GET } = await import('../route');
      const req = new NextRequest('http://localhost/api/report-status?attemptId=att-1');
-     // @ts-ignore
+     // @ts-expect-error - route context params shape is mocked for the test
      const res = await GET(req, { params: Promise.resolve({}) });
      expect(res.status).toBe(403);
   });
@@ -150,7 +150,7 @@ describe('GET /api/report-status', () => {
       },
     });
 
-    // @ts-ignore
+    // @ts-expect-error - route context params shape is mocked for the test
     const res = await GET(req, { params: Promise.resolve({}) });
 
     expect(res.status).toBe(200);
@@ -184,7 +184,7 @@ describe('GET /api/report-status', () => {
       },
     });
 
-    // @ts-ignore
+    // @ts-expect-error - route context params shape is mocked for the test
     const res = await GET(req, { params: Promise.resolve({}) });
 
     expect(res.status).toBe(200);
@@ -203,7 +203,7 @@ describe('GET /api/report-status', () => {
 
      const { GET } = await import('../route');
      const req = new NextRequest('http://localhost/api/report-status?attemptId=att-1', { headers: { 'x-internal-key': 'internal-key' }});
-     // @ts-ignore
+     // @ts-expect-error - route context params shape is mocked for the test
      const res = await GET(req, { params: Promise.resolve({}) });
      expect(res.status).toBe(200);
      const body = await res.json();
@@ -217,7 +217,7 @@ describe('GET /api/report-status', () => {
 
      const { GET } = await import('../route');
      const req = new NextRequest('http://localhost/api/report-status?attemptId=att-1', { headers: { 'x-internal-key': 'internal-key' }});
-     // @ts-ignore
+     // @ts-expect-error - route context params shape is mocked for the test
      const res = await GET(req, { params: Promise.resolve({}) });
      expect(res.status).toBe(404);
   });
@@ -233,7 +233,7 @@ describe('GET /api/report-status', () => {
 
      const { GET } = await import('../route');
      const req = new NextRequest('http://localhost/api/report-status?attemptId=att-fail', { headers: { 'x-internal-key': 'internal-key' }});
-     // @ts-ignore
+     // @ts-expect-error - route context params shape is mocked for the test
      const res = await GET(req, { params: Promise.resolve({}) });
      expect(res.status).toBe(200);
      const body = await res.json();
@@ -252,7 +252,7 @@ describe('GET /api/report-status', () => {
 
     const { GET } = await import('../route');
     const req = new NextRequest('http://localhost/api/report-status?attemptId=att-1', { headers: { 'x-internal-key': 'internal-key' }});
-    // @ts-ignore
+     // @ts-expect-error - route context params shape is mocked for the test
     const res = await GET(req, { params: Promise.resolve({}) });
     expect(res.status).toBe(200);
     const body = await res.json();
