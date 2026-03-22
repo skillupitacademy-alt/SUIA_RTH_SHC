@@ -132,9 +132,18 @@ importers:
       '@quiz/api-client':
         specifier: workspace:*
         version: link:../../packages/api-client
+      '@quiz/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
+      '@quiz/db-tutorial':
+        specifier: workspace:*
+        version: link:../../packages/db-tutorial
       '@quiz/observability':
         specifier: workspace:*
         version: link:../../packages/observability
+      '@quiz/types':
+        specifier: workspace:*
+        version: link:../../packages/types
       '@quiz/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -192,6 +201,9 @@ importers:
       next:
         specifier: 16.1.6
         version: 16.1.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      pino:
+        specifier: ^10.3.1
+        version: 10.3.1
       postcss:
         specifier: ^8
         version: 8.5.8
@@ -497,6 +509,9 @@ importers:
       next-themes:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      pino:
+        specifier: ^10.3.1
+        version: 10.3.1
       postcss:
         specifier: ^8
         version: 8.5.8
@@ -722,7 +737,7 @@ importers:
         version: 0.31.9
       vitest:
         specifier: ^4.0.18
-        version: 4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.5.0)(@vitest/ui@4.1.0)(jsdom@28.1.0)(vite@8.0.0(@types/node@25.5.0)(esbuild@0.25.12)(jiti@1.21.7)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
+        version: 4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.5.0)(@vitest/ui@4.1.0)(jsdom@28.1.0)(vite@8.0.0(@types/node@25.5.0)(esbuild@0.27.4)(jiti@1.21.7)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
 
   packages/db-tutorial:
     dependencies:
@@ -759,10 +774,10 @@ importers:
         version: 4.21.0
       vite-tsconfig-paths:
         specifier: ^6.1.1
-        version: 6.1.1(typescript@5.9.3)(vite@8.0.0(@types/node@25.5.0)(esbuild@0.27.4)(jiti@1.21.7)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
+        version: 6.1.1(typescript@5.9.3)(vite@8.0.0(@types/node@25.5.0)(esbuild@0.25.12)(jiti@1.21.7)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
       vitest:
         specifier: ^4.0.18
-        version: 4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.5.0)(@vitest/ui@4.1.0)(jsdom@28.1.0)(vite@8.0.0(@types/node@25.5.0)(esbuild@0.27.4)(jiti@1.21.7)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
+        version: 4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.5.0)(@vitest/ui@4.1.0)(jsdom@28.1.0)(vite@8.0.0(@types/node@25.5.0)(esbuild@0.25.12)(jiti@1.21.7)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
 
   packages/eslint-config:
     dependencies:
@@ -15080,6 +15095,16 @@ snapshots:
       globrex: 0.1.2
       tsconfck: 3.1.6(typescript@5.9.3)
       vite: 8.0.0(@types/node@22.19.15)(esbuild@0.27.4)(jiti@1.21.7)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
+
+  vite-tsconfig-paths@6.1.1(typescript@5.9.3)(vite@8.0.0(@types/node@25.5.0)(esbuild@0.25.12)(jiti@1.21.7)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)):
+    dependencies:
+      debug: 4.4.3
+      globrex: 0.1.2
+      tsconfck: 3.1.6(typescript@5.9.3)
+      vite: 8.0.0(@types/node@25.5.0)(esbuild@0.25.12)(jiti@1.21.7)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
     transitivePeerDependencies:
       - supports-color
       - typescript
