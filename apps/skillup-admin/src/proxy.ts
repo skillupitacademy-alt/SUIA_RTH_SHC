@@ -25,6 +25,8 @@ function getSkillHubCoreLoginUrl(request: NextRequest, redirectPath: string): UR
 function addUserHeaders(response: NextResponse, payload: SkillHubCoreTokenPayload): NextResponse {
   response.headers.set('x-user-id', payload.sub);
   response.headers.set('x-skillhubcore-user-id', payload.sub);
+  response.headers.set('x-user-roles', payload.roles.join(','));
+  response.headers.set('x-user-primary-role', payload.roles[0] ?? 'student');
   return response;
 }
 
@@ -67,6 +69,8 @@ export async function proxy(request: NextRequest) {
   const headers = new Headers(request.headers);
   headers.set('x-user-id', user.sub);
   headers.set('x-skillhubcore-user-id', user.sub);
+  headers.set('x-user-roles', user.roles.join(','));
+  headers.set('x-user-primary-role', user.roles[0] ?? 'student');
   return addUserHeaders(NextResponse.next({ request: { headers } }), user);
 }
 

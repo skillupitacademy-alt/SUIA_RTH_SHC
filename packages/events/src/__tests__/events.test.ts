@@ -69,9 +69,9 @@ describe('events package', () => {
         version: 1,
         data: {
           userId: crypto.randomUUID(),
-          paymentId: crypto.randomUUID(),
+          installmentId: crypto.randomUUID(),
           amount: 100,
-          receivedAt: new Date().toISOString(),
+          paidAt: new Date().toISOString(),
         },
       }),
     }));
@@ -162,7 +162,7 @@ describe('events package', () => {
       method: 'POST', headers: { 'upstash-signature': 'sig' },
       body: JSON.stringify({
         id: crypto.randomUUID(), type: PlatformEventTypes.PAYMENT_RECEIVED, correlationId: crypto.randomUUID(), source: 'src', occurredAt: new Date().toISOString(), version: 1,
-        data: { userId: crypto.randomUUID(), paymentId: crypto.randomUUID(), amount: 100, receivedAt: new Date().toISOString() },
+        data: { userId: crypto.randomUUID(), installmentId: crypto.randomUUID(), amount: 100, paidAt: new Date().toISOString() },
       })
     });
     
@@ -178,7 +178,7 @@ describe('events package', () => {
       method: 'POST', headers: { 'upstash-signature': 'sig' },
       body: JSON.stringify({
         id: crypto.randomUUID(), type: PlatformEventTypes.PAYMENT_RECEIVED, correlationId: crypto.randomUUID(), source: 'src', occurredAt: new Date().toISOString(), version: 1,
-        data: { userId: crypto.randomUUID(), paymentId: crypto.randomUUID(), amount: 100, receivedAt: new Date().toISOString() },
+        data: { userId: crypto.randomUUID(), installmentId: crypto.randomUUID(), amount: 100, paidAt: new Date().toISOString() },
       })
     });
     const response = await voidHandler(req);

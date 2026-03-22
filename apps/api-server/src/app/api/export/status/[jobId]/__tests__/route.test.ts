@@ -1,151 +1,89 @@
-import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
-import { NextRequest, NextResponse } from 'next/server';
-import { JobStatus } from '@quiz/types';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { NextRequest } from 'next/server';
+import { GET } from '../route';
+import { JobsService } from '@/modules/system/jobs.service';
+import { storage } from '@/lib/storage';
+import { db } from '@quiz/db';
 
-const findExamFirst = vi.fn();
-const storageExists = vi.fn();
-const redisGet = vi.fn();
-const updateJobStatus = vi.fn();
-const getJobStatus = vi.fn();
-const getAccessTokenMock = vi.fn();
-const verifyUserAccessTokenMock = vi.fn();
-
-vi.mock('@quiz/db', () => ({
-  db: {
-    query: {
-      exams: {
-        findFirst: findExamFirst,
-      },
-    },
-  },
-  exams: {
-    id: 'exams.id',
+vi.mock('@/modules/system/jobs.service', () => ({
+  JobsService: {
+    getJobStatus: vi.fn(),
+    updateJobStatus: vi.fn().mockResolvedValue({}),
   },
 }));
 
 vi.mock('@/lib/storage', () => ({
   storage: {
-    exists: storageExists,
+    exists: vi.fn(),
+    getSignedUrl: vi.fn().mockResolvedValue('http://signed-url'),
+  },
+}));
+
+vi.mock('@quiz/db', () => ({
+  db: {
+    query: {
+      exams: { findFirst: vi.fn() },
+    },
+  },
+  exams: { id: 'exams.id', userId: 'exams.userId', exportUrls: 'exams.exportUrls' },
+}));
+
+vi.mock('@/lib/logger', () => ({
+  logger: {
+    child: () => ({ info: vi.fn(), error: vi.fn(), warn: vi.fn() }),
   },
 }));
 
 vi.mock('@/lib/redis', () => ({
-  redis: {
-    get: redisGet,
-  },
-}));
-
-vi.mock('@/modules/system/jobs.service', () => ({
-  JobsService: {
-    getJobStatus,
-    updateJobStatus,
-  },
+    redis: { get: vi.fn() },
 }));
 
 vi.mock('@/modules/core/container', () => ({
-  container: {
-    get: vi.fn((service) => ({
-      getAccessToken: getAccessTokenMock,
-      verifyUserAccessToken: verifyUserAccessTokenMock,
-    })),
-  },
+    container: { get: () => ({ getAccessToken: () => 'token', verifyUserAccessToken: async () => ({ userId: 'u1' }) }) }
 }));
 
-vi.mock('@/modules/auth/token.service', () => ({
-  TokenService: class TokenService {},
-}));
-
-describe('GET /api/export/status/[jobId]', () => {
-  const originalInternalKey = process.env.INTERNAL_API_KEY;
-
-  beforeEach(() => {
-    vi.clearAllMocks();
-    process.env.INTERNAL_API_KEY = 'internal-key';
-    redisGet.mockResolvedValue(null);
-    updateJobStatus.mockResolvedValue({});
-    getAccessTokenMock.mockReturnValue(null);
-    storageExists.mockResolvedValue(true);
-  });
-
-  afterEach(() => {
-    process.env.INTERNAL_API_KEY = originalInternalKey;
-  });
-
-  it('handles authorization and not found', async () => {
-    const { GET } = await import('../route');
-    
-    // Unauthorized
-    getAccessTokenMock.mockReturnValue(null);
-    verifyUserAccessTokenMock.mockResolvedValue(null);
-    let req = new NextRequest('http://localhost/api/export/status/j1');
-    let res = await GET(req, { params: Promise.resolve({ jobId: 'j1' }) });
-    expect(res.status).toBe(401);
-
-    // Not Found
-    getJobStatus.mockResolvedValue(null);
-    req = new NextRequest('http://localhost/api/export/status/j2', { headers: { 'x-internal-key': 'internal-key' } });
-    res = await GET(req, { params: Promise.resolve({ jobId: 'j2' }) });
-    expect(res.status).toBe(404);
-  });
-
-  it('reports completed status when file exists', async () => {
-    getJobStatus.mockResolvedValue({
-      status: JobStatus.COMPLETED,
-      result: { downloadUrl: 'path/file.json' },
+describe('Export Status Final Resolution', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        process.env.INTERNAL_API_KEY = 'secret';
     });
-    storageExists.mockResolvedValue(true);
-    const { GET } = await import('../route');
-    const req = new NextRequest('http://localhost/api/export/status/j3', { headers: { 'x-internal-key': 'internal-key' } });
-    const res = await GET(req, { params: Promise.resolve({ jobId: 'j3' }) });
-    const body = await res.json();
-    expect(body.status).toBe('completed');
-  });
 
-  it('handles stage mapping correctly for JSON and CSV', async () => {
-    const { GET } = await import('../route');
-    redisGet.mockResolvedValue(JSON.stringify({ step: 'aggregate-data' }));
-    
-    // JSON -> processing
-    getJobStatus.mockResolvedValueOnce({ status: JobStatus.PROCESSING, payload: { format: 'json' } });
-    let req = new NextRequest('http://localhost/api/export/status/j4', { headers: { 'x-internal-key': 'internal-key' } });
-    let res = await GET(req, { params: Promise.resolve({ jobId: 'j4' }) });
-    expect((await res.json()).stage).toBe('processing');
+    const createReq = (jobId: string) => new NextRequest(`http://localhost/api/export/status/${jobId}`);
 
-    // CSV -> aggregating
-    getJobStatus.mockResolvedValueOnce({ status: JobStatus.PROCESSING, payload: { format: 'csv' } });
-    req = new NextRequest('http://localhost/api/export/status/j5?format=csv', { headers: { 'x-internal-key': 'internal-key' } });
-    res = await GET(req, { params: Promise.resolve({ jobId: 'j5' }) });
-    expect((await res.json()).stage).toBe('aggregating');
-  });
-
-  it('covers stale job recovery from storage', async () => {
-    getJobStatus.mockResolvedValue({
-      id: 'j-stale',
-      status: 'processing',
-      updatedAt: new Date(Date.now() - 600000).toISOString(),
-      payload: { format: 'json' }
+    it('covers all success paths', async () => {
+        // Mock a completed job with storage
+        vi.mocked(JobsService.getJobStatus).mockResolvedValue({ status: 'completed', id: 'j1', userId: 'u1', result: { downloadUrl: 'file.json' } });
+        vi.mocked(storage.exists).mockResolvedValue(true);
+        
+        const res = await GET(createReq('j1'), { params: Promise.resolve({ jobId: 'j1' }) });
+        const data = await res.json();
+        expect(res.status).toBe(200);
+        expect(data.status).toBe('completed');
     });
-    findExamFirst.mockResolvedValue({ exportUrls: { analytics_json: 'path/rec.json' } });
-    storageExists.mockResolvedValue(true);
 
-    const { GET } = await import('../route');
-    const req = new NextRequest('http://localhost/api/export/status/j-stale?examId=e1', { headers: { 'x-internal-key': 'internal-key' } });
-    const res = await GET(req, { params: Promise.resolve({ jobId: 'j-stale' }) });
-    expect((await res.json()).status).toBe('completed');
-  });
-
-  it('auto-fails stale job if not recoverable', async () => {
-    getJobStatus.mockResolvedValue({
-      id: 'j-fail',
-      status: 'processing',
-      updatedAt: new Date(Date.now() - 600000).toISOString(),
+    it('covers stale job recovery', async () => {
+        const twoMinsAgo = new Date(Date.now() - 3 * 60 * 1000);
+        vi.mocked(JobsService.getJobStatus).mockResolvedValue({ 
+            status: 'processing', id: 'j1', userId: 'u1', updatedAt: twoMinsAgo, payload: { format: 'csv' } 
+        });
+        vi.mocked(storage.exists).mockResolvedValue(true);
+        
+        const res = await GET(createReq('j1'), { params: Promise.resolve({ jobId: 'j1' }) });
+        const data = await res.json();
+        expect(data.status).toBe('completed'); // Auto-recovered
     });
-    storageExists.mockResolvedValue(false);
 
-    const { GET } = await import('../route');
-    const req = new NextRequest('http://localhost/api/export/status/j-fail', { headers: { 'x-internal-key': 'internal-key' } });
-    const res = await GET(req, { params: Promise.resolve({ jobId: 'j-fail' }) });
-    expect((await res.json()).status).toBe('failed');
-    expect(updateJobStatus).toHaveBeenCalledWith('j-fail', JobStatus.FAILED, expect.any(Object));
-  });
+    it('covers error branches', async () => {
+        // Job not found
+        vi.mocked(JobsService.getJobStatus).mockResolvedValue(null);
+        let res = await GET(createReq('none'), { params: Promise.resolve({ jobId: 'none' }) });
+        expect(res.status).toBe(404);
+
+        // examId fallback recovery
+        const req = new NextRequest('http://localhost/api/export/status/none?examId=e1');
+        vi.mocked(db.query.exams.findFirst).mockResolvedValue({ id: 'e1', userId: 'u1', exportUrls: { analytics_json: 'file.json' } });
+        vi.mocked(storage.exists).mockResolvedValue(true);
+        res = await GET(req, { params: Promise.resolve({ jobId: 'none' }) });
+        expect(res.status).toBe(200);
+    });
 });

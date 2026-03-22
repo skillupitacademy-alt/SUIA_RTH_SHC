@@ -44,7 +44,13 @@ const baseFields = {
 const idPayload = (extra: Record<string, z.ZodTypeAny>) => z.object(extra);
 
 export const PlatformEventPayloadSchemas = {
-  [PlatformEventTypes.STUDENT_ENROLLED]: idPayload({ userId: z.string().uuid(), batchId: z.string().uuid(), enrolledAt: isoString }),
+  [PlatformEventTypes.STUDENT_ENROLLED]: idPayload({
+    userId: z.string().uuid(),
+    domainId: z.string().uuid(),
+    batchId: z.string().uuid(),
+    enrollmentType: z.literal('batch'),
+    enrolledAt: isoString,
+  }),
   [PlatformEventTypes.HIERARCHY_SUBTOPIC_ADDED]: idPayload({
     subtopicId: z.string().uuid(),
     topicId: z.string().uuid(),
@@ -56,13 +62,22 @@ export const PlatformEventPayloadSchemas = {
   }),
   [PlatformEventTypes.STUDENT_CREATED]: idPayload({ userId: z.string().uuid(), createdBy: z.string().uuid(), createdAt: isoString }),
   [PlatformEventTypes.EXAM_COMPLETED]: idPayload({ userId: z.string().uuid(), examId: z.string().uuid(), score: z.number(), completedAt: isoString }),
-  [PlatformEventTypes.PAYMENT_RECEIVED]: idPayload({ userId: z.string().uuid(), paymentId: z.string().uuid(), amount: z.number().nonnegative(), receivedAt: isoString }),
+  [PlatformEventTypes.PAYMENT_RECEIVED]: idPayload({
+    userId: z.string().uuid(),
+    installmentId: z.string().uuid(),
+    amount: z.number().nonnegative(),
+    paidAt: isoString,
+  }),
   [PlatformEventTypes.PAYMENT_OVERDUE]: idPayload({ userId: z.string().uuid(), installmentId: z.string().uuid(), overdueByDays: z.number().int().nonnegative(), detectedAt: isoString }),
   [PlatformEventTypes.TUTORIAL_SUBTOPIC_COMPLETED]: idPayload({ userId: z.string().uuid(), subtopicId: z.string().uuid(), completedAt: isoString }),
   [PlatformEventTypes.BATCH_SESSION_COMPLETED]: idPayload({ batchId: z.string().uuid(), sessionId: z.string().uuid(), completedAt: isoString }),
   [PlatformEventTypes.BATCH_SUBTOPICS_COVERED]: idPayload({ batchId: z.string().uuid(), subtopicIds: z.array(z.string().uuid()).min(1), coveredAt: isoString }),
   [PlatformEventTypes.ATTENDANCE_MARKED]: idPayload({ batchId: z.string().uuid(), userId: z.string().uuid(), sessionId: z.string().uuid(), markedAt: isoString, present: z.boolean() }),
-  [PlatformEventTypes.ADMISSION_COMPLETED]: idPayload({ admissionId: z.string().uuid(), userId: z.string().uuid(), completedAt: isoString }),
+  [PlatformEventTypes.ADMISSION_COMPLETED]: idPayload({
+    userId: z.string().uuid(),
+    batchId: z.string().uuid(),
+    admittedAt: isoString,
+  }),
   [PlatformEventTypes.PROJECT_SUBMITTED]: idPayload({ userId: z.string().uuid(), projectId: z.string().uuid(), submittedAt: isoString }),
   [PlatformEventTypes.CERTIFICATE_ISSUED]: idPayload({ certificateId: z.string().uuid(), userId: z.string().uuid(), issuedAt: isoString }),
   [PlatformEventTypes.PLACEMENT_OFFER_ACCEPTED]: idPayload({ userId: z.string().uuid(), offerId: z.string().uuid(), acceptedAt: isoString }),
