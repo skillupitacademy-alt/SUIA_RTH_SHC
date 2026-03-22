@@ -1625,9 +1625,157 @@ Stop and report.
 ---
 
 # ═══════════════════════════════════════════
-# STEP 15 — RTH-1: Full Frontend Polish
-# (START ONLY AFTER STEPS 1-14 VERIFIED)
+# STEP 15 — Admin Factory Pages Redesign
+# (START ONLY AFTER STEPS 11-14 VERIFIED)
 # ═══════════════════════════════════════════
+
+## UPLOAD THESE FILES
+```
+- COMPLETE-EXECUTION-KIT.md
+- content-json-schema.md
+- FAANG-COMPLIANCE-WINDOW2-WINDOW3.md
+```
+
+## STEP PROMPT
+```
+Current task: Step 15 — Admin Factory Pages Redesign.
+
+Reason this comes before student flow:
+  Content Factory needs real subtopic selection.
+  Assignment Factory needs the same selection.
+  Both need hierarchy from SkillHubCore.
+  Without this, admin cannot create content for real subtopics.
+
+SESSION A — Hierarchy reference tables:
+  Add to packages/db-tutorial/src/schema/:
+    tutorial-domains.ts
+    tutorial-subjects.ts
+    tutorial-topics.ts
+    tutorial-subtopics.ts
+
+  Each table is a READ-ONLY local replica:
+    tutorial_domains:
+      id UUID, name TEXT, slug TEXT UNIQUE,
+      skillhubcore_id UUID UNIQUE,
+      created_at, deleted_at
+
+    tutorial_subjects:
+      id UUID, domain_id UUID FK,
+      name TEXT, slug TEXT,
+      skillhubcore_id UUID UNIQUE,
+      created_at, deleted_at
+
+    tutorial_topics:
+      id UUID, subject_id UUID FK,
+      name TEXT, slug TEXT,
+      skillhubcore_id UUID UNIQUE,
+      created_at, deleted_at
+
+    tutorial_subtopics:
+      id UUID, topic_id UUID FK,
+      name TEXT, slug TEXT,
+      difficulty TEXT[] (array of available difficulties),
+      skillhubcore_id UUID UNIQUE,
+      created_at, deleted_at
+
+  Export all from schema index.
+  Generate + run migration.
+  Seed with test data:
+    1 domain: "Full Stack Development"
+    1 subject: "JavaScript"
+    1 topic: "Async Programming"
+    1 subtopic: "JavaScript Promises"
+    difficulties: ['simple','mixed','intermediate','expert']
+
+SESSION B — Content Factory redesign:
+  Replace apps/admin-app/src/app/(authenticated)/
+  dashboard/content/page.tsx
+
+  New layout matching Question Bank Factory:
+    Section 1 — Target Context:
+      Domain -> Subject -> Topic -> Subtopic -> Difficulty
+      Cascading dropdowns reading from tutorial_* tables
+      Warning shown until all 5 selected
+
+    Section 2 — Block Status:
+      Show all 6 blocks with completion status
+      (published / draft / missing)
+      All 6 mandatory before publish allowed
+
+    Section 3 — Source Material:
+      Optional paste area for reference content
+      Admin can paste syllabus, notes, textbook excerpt
+
+    Section 4 — Content Editor:
+      Generate Prompt button
+        -> copies prompt to clipboard
+        -> prompt embeds content-json-schema.md structure
+      JSON Payload Editor (IDE style, line numbers)
+        -> Paste AI-generated JSON here
+        -> Zod validates on paste
+        -> Shows field-level errors
+      Process & Review button
+        -> Validates all 6 blocks
+        -> Shows preview of each block
+      Save Draft / Publish buttons
+
+SESSION C — Unified /dashboard/tutorial page:
+  New parent route:
+    apps/admin-app/src/app/(authenticated)/
+    dashboard/tutorial/page.tsx
+
+  Layout:
+    Header: shared subtopic selection
+      (Domain -> Subject -> Topic -> Subtopic -> Difficulty)
+    Tabs:
+      Tab 1: Content (Session B editor)
+      Tab 2: Assignments (existing assignment factory)
+      Tab 3: Version History
+      Tab 4: Audit Log
+
+  Update AdminLayout.tsx sidebar:
+    Remove: Content and Assignments as separate links
+    Add: Tutorial (single link -> /dashboard/tutorial)
+
+SESSION D — Assignment Factory alignment:
+  Update existing assignment factory page to match
+  Question Bank Factory visual layout exactly:
+    Section 1: pre-filled from parent selection
+    Section 2: volume per tier
+      Simple: +/- counter
+      Mixed: +/- counter
+      Intermediate: +/- counter
+      Expert: +/- counter
+      Total: calculated
+    Section 3: source material
+      (pre-filled with published content for this subtopic)
+    Section 4: JSON payload editor + Generate Prompt
+
+SESSION E — SkillHubCore hierarchy sync consumer:
+  Create worker:
+    apps/realtutorialhub-web/src/app/api/workers/
+    sync-hierarchy/route.ts
+
+  Triggered by: hierarchy.subtopic_added event from QStash
+  -> Verify QStash signature
+  -> Upsert into tutorial_subtopics (and parents if needed)
+  -> Invalidate Redis cache for hierarchy
+  -> Return 200
+
+QUALITY GATE:
+  pnpm lint -> zero errors
+  pnpm typecheck:all -> zero errors
+  pnpm test -> 1167+ passing
+  pnpm build:all -> all apps build
+
+Commit: "feat(admin): Step 15 — unified tutorial factory, hierarchy tables, QBF-aligned layout"
+Stop and report.
+```
+
+---
+
+# STEP 16 — RTH-1: Full Frontend Polish
+# (START ONLY AFTER STEPS 1-15 VERIFIED)
 
 ## UPLOAD THESE FILES
 ```
@@ -1638,7 +1786,7 @@ Stop and report.
 
 ## STEP PROMPT
 ```
-Current task: RTH-1 — Full frontend polish for apps/realtutorialhub-web.
+Current task: Step 16 — RTH-1 Full frontend polish for apps/realtutorialhub-web.
 
 PREREQUISITE CHECK — confirm before starting:
   □ All Window 2 backend (T3-T8) committed and verified
@@ -1746,7 +1894,7 @@ Stop and report Lighthouse scores.
 ---
 
 # ═══════════════════════════════════════════
-# STEP 16 — SkillUp + Admin UI Polish
+# STEP 17 — SkillUp + Admin UI Polish
 # ═══════════════════════════════════════════
 
 ## UPLOAD THESE FILES
@@ -1757,7 +1905,7 @@ Stop and report Lighthouse scores.
 
 ## STEP PROMPT
 ```
-Current task: Step 16 — UI polish for all SkillUp and Admin apps.
+Current task: Step 17 — UI polish for all SkillUp and Admin apps.
 
 Polish these 4 apps to production quality:
   apps/skillup-web
@@ -1804,7 +1952,7 @@ All apps:
   → axe-core: zero WCAG violations
   → pnpm test → 1167+ passing
 
-Commit: "feat(ui): Step 16 — SkillUp + Admin apps UI polish"
+Commit: "feat(ui): Step 17 — SkillUp + Admin apps UI polish"
 Stop and report Lighthouse scores per app.
 ```
 
