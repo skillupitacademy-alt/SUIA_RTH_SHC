@@ -21,14 +21,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
     }
 
-    const request = await assignmentService.submitHelpRequest(
-      user.userId,
-      parsed.data.subtopicId,
-      parsed.data.assignmentId,
-      parsed.data.question
-    );
+    try {
+      const request = await assignmentService.submitHelpRequest(
+        user.userId,
+        parsed.data.subtopicId,
+        parsed.data.assignmentId,
+        parsed.data.question
+      );
 
-    return NextResponse.json({ data: request }, { status: 201 });
+      return NextResponse.json({ data: request }, { status: 201 });
+    } catch (error) {
+      return NextResponse.json({ error: error instanceof Error ? error.message : 'Internal Server Error' }, { status: 500 });
+    }
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : 'Unauthorized' }, { status: 401 });
   }

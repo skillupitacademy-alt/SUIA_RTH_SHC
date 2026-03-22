@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { AssignmentTierAlreadyCompletedError, AssignmentTierLockedError } from '@quiz/types';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -65,6 +66,8 @@ const makeJsonRequest = (url: string, body: unknown) =>
     body: JSON.stringify(body),
   });
 
+const params = { params: Promise.resolve({ subtopicId }) };
+
 describe('assignment routes', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -87,7 +90,7 @@ describe('assignment routes', () => {
   });
 
   it('returns assignments for a valid student request', async () => {
-    const response = await GET(makeGetRequest());
+    const response = await GET(makeGetRequest(), params);
 
     expect(response.status).toBe(200);
     const json = await response.json();
@@ -98,13 +101,13 @@ describe('assignment routes', () => {
   it('returns 401 when student auth is missing', async () => {
     mocks.requireStudent.mockRejectedValueOnce(new Error('Unauthorized'));
 
-    const response = await GET(makeGetRequest());
+    const response = await GET(makeGetRequest(), params);
 
     expect(response.status).toBe(401);
   });
 
   it('returns 400 for invalid difficulty', async () => {
-    const response = await GET(makeGetRequest('invalid'));
+    const response = await GET(makeGetRequest('invalid'), params);
 
     expect(response.status).toBe(400);
   });
@@ -118,6 +121,16 @@ describe('assignment routes', () => {
     expect(mocks.startTier).toHaveBeenCalledWith(userId, subtopicId, 'simple');
   });
 
+  it('returns 403 when starting a locked tier', async () => {
+    mocks.startTier.mockRejectedValueOnce(new AssignmentTierLockedError('mixed', 'simple'));
+
+    const response = await POSTStart(makeJsonRequest(`http://localhost/api/tutorial/assignments/${subtopicId}/start`, {
+      difficulty: 'mixed',
+    }), { params: Promise.resolve({ subtopicId }) });
+
+    expect(response.status).toBe(403);
+  });
+
   it('completes a tier and returns the next unlocked tier', async () => {
     const response = await POSTComplete(makeJsonRequest(`http://localhost/api/tutorial/assignments/${subtopicId}/complete`, {
       difficulty: 'simple',
@@ -127,5 +140,15 @@ describe('assignment routes', () => {
     expect(mocks.completeTier).toHaveBeenCalledWith(userId, subtopicId, 'simple');
     const json = await response.json();
     expect(json.data.nextUnlockedTier).toBe('mixed');
+  });
+
+  it('returns 409 when completing an already completed tier', async () => {
+    mocks.completeTier.mockRejectedValueOnce(new AssignmentTierAlreadyCompletedError('simple'));
+
+    const response = await POSTComplete(makeJsonRequest(`http://localhost/api/tutorial/assignments/${subtopicId}/complete`, {
+      difficulty: 'simple',
+    }), { params: Promise.resolve({ subtopicId }) });
+
+    expect(response.status).toBe(409);
   });
 });

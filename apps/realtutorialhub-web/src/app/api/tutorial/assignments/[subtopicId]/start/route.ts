@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { requireStudent } from '@/lib/assignment-auth';
 import { assignmentService, assignmentStartSchema } from '@/lib/assignment';
+import { AssignmentTierAlreadyCompletedError, AssignmentTierLockedError } from '@quiz/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,6 +30,16 @@ export async function POST(
     return NextResponse.json({ error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
   }
 
-  const progress = await assignmentService.startTier(user.userId, params.subtopicId, parsed.data.difficulty);
-  return NextResponse.json({ data: progress }, { status: 200 });
+  try {
+    const progress = await assignmentService.startTier(user.userId, params.subtopicId, parsed.data.difficulty);
+    return NextResponse.json({ data: progress }, { status: 200 });
+  } catch (error) {
+    if (error instanceof AssignmentTierLockedError) {
+      return NextResponse.json({ error: error.message }, { status: 403 });
+    }
+    if (error instanceof AssignmentTierAlreadyCompletedError) {
+      return NextResponse.json({ error: error.message }, { status: 409 });
+    }
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Internal Server Error' }, { status: 500 });
+  }
 }
