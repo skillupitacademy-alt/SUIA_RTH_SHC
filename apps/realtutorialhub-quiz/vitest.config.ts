@@ -23,8 +23,10 @@ export default defineConfig({
   },
   resolve: {
     alias: [
+      { find: /^@quiz\/auth\/(.*)$/, replacement: path.resolve(__dirname, '../../packages/auth/src/$1') },
       { find: /^@quiz\/api-client\/(.*)$/, replacement: path.resolve(__dirname, '../../packages/api-client/src/$1') },
       { find: '@quiz/api-client', replacement: path.resolve(__dirname, '../../packages/api-client/src') },
+      { find: '@quiz/auth', replacement: path.resolve(__dirname, '../../packages/auth/src') },
       { find: '@quiz/types', replacement: path.resolve(__dirname, '../../packages/types/src') },
       { find: '@quiz/observability', replacement: path.resolve(__dirname, '../../packages/observability/src') },
       { find: '@', replacement: path.resolve(__dirname, './src') },

@@ -21,6 +21,13 @@ export type RefreshTokenPayload = JWTPayload & {
   aud?: string;
 };
 
+export type SkillHubCoreTokenPayload = JWTPayload & {
+  sub: string;
+  roles: string[];
+  subscriptions: string[];
+  iss: 'skillhubcore.in';
+};
+
 export type AccessTokenRequestLike = {
   cookies?: { get(name: string): { value?: string } | undefined };
   headers?: { get(name: string): string | null };
@@ -211,6 +218,29 @@ export class TokenService {
     }
   }
 
+  async verifySkillHubCoreJWT(token: string): Promise<SkillHubCoreTokenPayload> {
+    try {
+      const { payload } = await jwtVerify(token, this.ACCESS_SECRET, { issuer: 'skillhubcore.in' });
+
+      if (
+        typeof payload.sub !== 'string' ||
+        payload.sub.trim().length === 0 ||
+        !Array.isArray((payload as { roles?: unknown }).roles) ||
+        !Array.isArray((payload as { subscriptions?: unknown }).subscriptions)
+      ) {
+        throw new Error('Invalid SkillHubCore token payload');
+      }
+
+      return payload as SkillHubCoreTokenPayload;
+    } catch (error) {
+      if (error instanceof Error && error.name === 'JWTExpired') {
+        throw new Error('Token expired');
+      }
+
+      throw new Error('Invalid SkillHubCore token');
+    }
+  }
+
   async verifyRefreshToken(token: string, options?: { audience?: string }): Promise<RefreshTokenPayload> {
     const requestedAudience = options?.audience;
     const enforceAudience = requestedAudience !== undefined && requestedAudience !== null && requestedAudience !== '';
@@ -302,6 +332,10 @@ export class TokenService {
 
   static verifyAccessToken(token: string, options?: { audience?: string; isAdmin?: boolean }) {
     return this.getInstance().verifyAccessToken(token, options);
+  }
+
+  static verifySkillHubCoreJWT(token: string) {
+    return this.getInstance().verifySkillHubCoreJWT(token);
   }
 
   static async verifyAdminAccessToken(token: string, options?: { audience?: string }) {

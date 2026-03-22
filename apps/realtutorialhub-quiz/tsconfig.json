@@ -23,6 +23,12 @@
       "@quiz/api-client/*": [
         "../../packages/api-client/src/*"
       ],
+      "@quiz/auth": [
+        "../../packages/auth/src/index.ts"
+      ],
+      "@quiz/auth/*": [
+        "../../packages/auth/src/*"
+      ],
       "@quiz/config": [
         "../../packages/config/envPaths.ts"
       ],

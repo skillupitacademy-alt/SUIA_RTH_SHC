@@ -137,6 +137,56 @@ describe('TokenService', () => {
     it('normalizes non-Error failures in verifyAccessToken when isAdmin is false', async () => {
       await expect(service.verifyAccessToken('mock-string-error', { isAdmin: false })).rejects.toThrow('Invalid token signature or audience mismatch');
     });
+
+    it('verifies SkillHubCore JWTs with required claims and ignores extra claims', async () => {
+      const token = await new SignJWT({
+        sub: 'u1',
+        roles: ['student'],
+        subscriptions: ['notes'],
+        platforms: ['skillup'],
+      })
+        .setProtectedHeader({ alg: 'HS256' })
+        .setIssuer('skillhubcore.in')
+        .setIssuedAt()
+        .setExpirationTime('1h')
+        .sign(TokenService.ACCESS_SECRET);
+
+      const payload = await service.verifySkillHubCoreJWT(token);
+      expect(payload.sub).toBe('u1');
+      expect(payload.roles).toEqual(['student']);
+      expect(payload.subscriptions).toEqual(['notes']);
+      expect((payload as unknown as { platforms?: string[] }).platforms).toEqual(['skillup']);
+    });
+
+    it('rejects expired SkillHubCore JWTs', async () => {
+      const token = await new SignJWT({
+        sub: 'u1',
+        roles: ['student'],
+        subscriptions: ['notes'],
+      })
+        .setProtectedHeader({ alg: 'HS256' })
+        .setIssuer('skillhubcore.in')
+        .setIssuedAt()
+        .setExpirationTime(Math.floor(Date.now() / 1000) - 10)
+        .sign(TokenService.ACCESS_SECRET);
+
+      await expect(service.verifySkillHubCoreJWT(token)).rejects.toThrow(/expired/i);
+    });
+
+    it('rejects SkillHubCore JWTs signed with the wrong secret', async () => {
+      const token = await new SignJWT({
+        sub: 'u1',
+        roles: ['student'],
+        subscriptions: ['notes'],
+      })
+        .setProtectedHeader({ alg: 'HS256' })
+        .setIssuer('skillhubcore.in')
+        .setIssuedAt()
+        .setExpirationTime('1h')
+        .sign(new TextEncoder().encode('wrong-secret'));
+
+      await expect(service.verifySkillHubCoreJWT(token)).rejects.toThrow(/invalid/i);
+    });
   });
 
   describe('RefreshToken generation and verification', () => {

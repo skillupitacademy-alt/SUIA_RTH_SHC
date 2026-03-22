@@ -7,23 +7,19 @@ const SKILLHUBCORE_LOGIN_URL =
   'https://api.skillhubcore.in/login';
 
 const PUBLIC_PATHS = ['/', '/api/healthz'];
-const PROTECTED_PREFIXES = ['/dashboard/', '/dashboard', '/exam/', '/exam', '/api/', '/onboarding/', '/onboarding', '/reports/', '/reports', '/quiz/', '/quiz', '/profile/', '/profile'];
-const AUTH_PATHS = ['/login', '/signup', '/forgot-password', '/reset-password'];
+const PUBLIC_PREFIXES = ['/api/certificates/verify/'];
+const PROTECTED_PREFIXES = ['/learn/', '/api/tutorial/', '/api/ai-tutor/', '/remediation/'];
 
 function hasPrefix(pathname: string, prefixes: string[]): boolean {
   return prefixes.some((prefix) => pathname === prefix.slice(0, -1) || pathname.startsWith(prefix));
 }
 
 export function isPublicRoute(pathname: string): boolean {
-  return PUBLIC_PATHS.includes(pathname);
+  return PUBLIC_PATHS.includes(pathname) || hasPrefix(pathname, PUBLIC_PREFIXES);
 }
 
 export function isProtectedRoute(pathname: string): boolean {
-  return hasPrefix(pathname, PROTECTED_PREFIXES) && pathname !== '/api/healthz';
-}
-
-function isAuthRoute(pathname: string): boolean {
-  return AUTH_PATHS.includes(pathname);
+  return hasPrefix(pathname, PROTECTED_PREFIXES);
 }
 
 export function getSkillHubCoreToken(request: NextRequest): string | undefined {
@@ -65,10 +61,6 @@ export async function proxy(request: NextRequest) {
 
   if (isProtectedRoute(pathname) && user === null) {
     return NextResponse.redirect(getSkillHubCoreLoginUrl(request, redirectPath));
-  }
-
-  if (user !== null && isAuthRoute(pathname)) {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
   if (user !== null) {
