@@ -20,6 +20,7 @@ export interface TutorialContentRecord {
   id: string;
   subtopicId: string;
   difficulty: TutorialDifficulty;
+  contentType: string;
   content: TutorialContentJSON;
   version: number;
   language: string;
@@ -113,6 +114,10 @@ export interface ITutorialContentRepository {
     difficulty?: TutorialDifficulty
   ): Promise<TutorialContentRecord[]>;
   upsertBlocks(data: TutorialContentUpsertInput): Promise<TutorialContentRecord>;
+  updateById(
+    contentId: string,
+    data: TutorialContentUpsertInput
+  ): Promise<TutorialContentRecord | undefined>;
   publish(contentId: string): Promise<TutorialContentRecord | undefined>;
   getVersionHistory(contentId: string): Promise<TutorialContentRecord[]>;
   softDelete(contentId: string): Promise<TutorialContentRecord | undefined>;

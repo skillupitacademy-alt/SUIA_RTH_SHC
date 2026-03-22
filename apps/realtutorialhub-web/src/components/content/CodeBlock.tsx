@@ -15,7 +15,14 @@ export function CodeBlock({ data, theme }: CodeBlockProps) {
   return (
     <section className="design-panel" aria-label={`Code example in ${data.language}`}>
       <BlockHeader icon="💻" title={`Code (${data.language})`} accentColor={theme.blockCodeHeader} />
-      <div style={{ padding: 18, background: theme.blockCode, color: '#f7fafc' }}>
+      <div
+        style={{
+          padding: 18,
+          background: 'var(--block-code-bg, #0d1018)',
+          color: '#f7fafc',
+          borderTop: 'var(--design-content-border)',
+        }}
+      >
         <p style={{ margin: '0 0 12px', color: 'rgba(255,255,255,0.85)', lineHeight: 1.65 }}>{data.intro}</p>
         <div
           style={{
@@ -40,9 +47,12 @@ export function CodeBlock({ data, theme }: CodeBlockProps) {
             ))}
           </ol>
         </div>
-        {data.image ? <div style={{ marginTop: 16 }}><ContentImage image={data.image} /></div> : null}
+        {data.image ? (
+          <div style={{ marginTop: 16 }}>
+            <ContentImage image={data.image} />
+          </div>
+        ) : null}
       </div>
     </section>
   );
 }
-

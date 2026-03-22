@@ -3,7 +3,6 @@ import type { ContentBlockType, TutorialContentJSON } from '@quiz/types';
 import type { DomainTheme } from '@/lib/domain-themes';
 
 import { BlockNavPills } from './BlockNavPills';
-import { BlockPreviewCard } from './BlockPreviewCard';
 import { BlockRenderer } from './BlockRenderer';
 import { SubtopicHeader } from './SubtopicHeader';
 import { DomainBreadcrumb } from '../layout/DomainBreadcrumb';
@@ -56,23 +55,29 @@ export function TutorialExperience({ params, content, theme, mode, blockType }: 
     { term: 'Theme', detail: 'Each version uses a separate design frame but the same content.' },
   ];
 
-  const renderPanel = (version: 'aesthetic' | 'logic') => (
+  const renderPanel = () => (
     <section
-      key={version}
-      data-design-version={version}
+      data-design-version="aesthetic"
       className="design-panel"
       style={{
         padding: 18,
-        background: 'var(--design-surface)',
+        background: 'var(--design-page-bg)',
+        border: 'var(--design-surface-border)',
+        borderRadius: 'var(--design-radius)',
+        boxShadow: 'var(--design-shadow)',
+        backdropFilter: 'var(--design-backdrop)',
+        WebkitBackdropFilter: 'var(--design-backdrop)',
+        fontFamily: 'var(--design-body-font)',
+        overflow: 'hidden',
       }}
     >
       <div style={{ marginBottom: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
         <div>
           <div style={{ fontSize: 12, fontWeight: 800, color: theme.sidebarAccent, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-            {version === 'aesthetic' ? 'Version A' : 'Version B'}
+            Production Design
           </div>
-          <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--block-text-primary)' }}>
-            {version === 'aesthetic' ? 'Aesthetic Maverick' : 'Logic Legend'}
+          <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--design-ink)', fontFamily: 'var(--design-heading-font)' }}>
+            Aesthetic Maverick
           </div>
         </div>
         <span
@@ -85,7 +90,7 @@ export function TutorialExperience({ params, content, theme, mode, blockType }: 
             color: 'var(--block-text-secondary)',
           }}
         >
-          {mode === 'compare' ? 'Side-by-side review' : 'Detail view'}
+          {mode === 'compare' ? 'Production review' : 'Detail view'}
         </span>
       </div>
 
@@ -129,30 +134,15 @@ export function TutorialExperience({ params, content, theme, mode, blockType }: 
           activeSubtopicSlug={params.subtopicSlug}
         />
         <main style={{ flex: 1, minWidth: 0, padding: 24 }}>
-          <div id="compare" style={{ marginBottom: 16 }}>
-            <BlockPreviewCard
-              blockType="layman"
-              blockContent={content.layman.simpleExplanation.slice(0, 120)}
-              isCompleted={false}
-              isLocked={false}
-              theme={theme}
-              subtopicSlug={params.subtopicSlug}
-              domainSlug={params.domainSlug}
-              subjectSlug={params.subjectSlug}
-              topicSlug={params.topicSlug}
-            />
-          </div>
-
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: mode === 'compare' ? 'repeat(2, minmax(0, 1fr))' : 'minmax(0, 1fr)',
+              gridTemplateColumns: 'minmax(0, 1fr)',
               gap: 18,
               alignItems: 'start',
             }}
           >
-            {renderPanel('aesthetic')}
-            {mode === 'compare' ? renderPanel('logic') : null}
+            {renderPanel()}
           </div>
         </main>
       </div>

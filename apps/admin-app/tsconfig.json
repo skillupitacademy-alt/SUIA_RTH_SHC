@@ -20,6 +20,18 @@
       "@quiz/api-client/*": [
         "../../packages/api-client/src/*"
       ],
+      "@quiz/auth": [
+        "../../packages/auth/src/index.ts"
+      ],
+      "@quiz/auth/*": [
+        "../../packages/auth/src/*"
+      ],
+      "@quiz/db-tutorial": [
+        "../../packages/db-tutorial/src/index.ts"
+      ],
+      "@quiz/db-tutorial/*": [
+        "../../packages/db-tutorial/src/*"
+      ],
       "@quiz/db/*": [
         "../../packages/db/src/*"
       ],

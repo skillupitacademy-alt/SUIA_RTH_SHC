@@ -20,8 +20,14 @@ export function AITutorBlock({ data, theme }: AITutorBlockProps) {
   return (
     <section className="design-panel" aria-label="AI tutor block">
       <BlockHeader icon="🤖" title="AI Tutor" accentColor={theme.blockAITutorHeader} badge="Chat" />
-      <div style={{ padding: 18, background: theme.blockAITutor }}>
-        <div style={{ padding: '12px 14px', borderRadius: 14, background: 'rgba(255,255,255,0.7)', marginBottom: 14 }}>
+      <div
+        style={{
+          padding: 18,
+          background: 'var(--design-content-surface)',
+          borderTop: 'var(--design-content-border)',
+        }}
+      >
+        <div style={{ padding: '12px 14px', borderRadius: 14, background: 'var(--design-content-surface-soft)', marginBottom: 14 }}>
           <div style={{ fontWeight: 800, marginBottom: 6, color: theme.blockAITutorHeader }}>{data.greeting}</div>
           <div style={{ fontSize: 13, lineHeight: 1.7, color: 'var(--block-text-secondary)' }}>
             Ask a question after you complete the other blocks.
@@ -38,7 +44,16 @@ export function AITutorBlock({ data, theme }: AITutorBlockProps) {
           }}
         >
           {data.qa_pairs.map((pair) => (
-            <div key={pair.question} style={{ padding: 12, borderRadius: 12, background: 'rgba(255,255,255,0.55)' }}>
+            <div
+              key={pair.question}
+              style={{
+                padding: 12,
+                borderRadius: 12,
+                background: 'var(--design-content-surface-soft)',
+                border: 'var(--design-content-border)',
+                boxShadow: 'var(--design-content-shadow)',
+              }}
+            >
               <div style={{ fontSize: 12.5, fontWeight: 800, color: theme.blockAITutorHeader, marginBottom: 4 }}>
                 Q: {pair.question}
               </div>
@@ -58,10 +73,10 @@ export function AITutorBlock({ data, theme }: AITutorBlockProps) {
               width: '100%',
               resize: 'vertical',
               borderRadius: 12,
-              border: '1px solid rgba(255,255,255,0.8)',
+              border: 'var(--design-content-border)',
               padding: 12,
               font: 'inherit',
-              background: 'rgba(255,255,255,0.78)',
+              background: 'var(--design-content-surface)',
               color: 'var(--block-text-primary)',
             }}
           />
@@ -88,4 +103,3 @@ export function AITutorBlock({ data, theme }: AITutorBlockProps) {
     </section>
   );
 }
-

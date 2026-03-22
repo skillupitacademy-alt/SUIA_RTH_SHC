@@ -22,7 +22,13 @@ export function LaymanBlock({ data, theme, isCompleted = false }: LaymanBlockPro
         badge={isCompleted ? 'Completed' : 'Plain English'}
         badgeTone={isCompleted ? 'success' : 'neutral'}
       />
-      <div style={{ padding: 18, background: theme.blockLayman }}>
+      <div
+        style={{
+          padding: 18,
+          background: 'var(--design-content-surface)',
+          borderTop: 'var(--design-content-border)',
+        }}
+      >
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 20, alignItems: 'start' }}>
           <div>
             <p style={{ margin: 0, fontSize: 15, lineHeight: 1.75, color: 'var(--block-text-primary)' }}>
@@ -33,8 +39,9 @@ export function LaymanBlock({ data, theme, isCompleted = false }: LaymanBlockPro
                 marginTop: 14,
                 padding: '12px 14px',
                 borderRadius: 12,
-                background: 'rgba(255,255,255,0.55)',
-                border: '1px solid rgba(255,255,255,0.8)',
+                background: 'var(--design-content-surface-soft)',
+                border: 'var(--design-content-border)',
+                boxShadow: 'var(--design-content-shadow)',
               }}
             >
               <div style={{ fontSize: 13, fontWeight: 800, color: theme.blockLaymanHeader, marginBottom: 6 }}>
@@ -55,8 +62,8 @@ export function LaymanBlock({ data, theme, isCompleted = false }: LaymanBlockPro
                 width: 180,
                 minHeight: 140,
                 borderRadius: 16,
-                background: 'rgba(255,255,255,0.4)',
-                border: '1px dashed rgba(255,255,255,0.6)',
+                background: 'var(--design-content-surface-soft)',
+                border: 'var(--design-content-border)',
               }}
             />
           )}
@@ -76,8 +83,9 @@ export function LaymanBlock({ data, theme, isCompleted = false }: LaymanBlockPro
               style={{
                 padding: '14px 16px',
                 borderRadius: 12,
-                background: index === 0 ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.35)',
-                border: '1px solid rgba(255,255,255,0.5)',
+                background: index === 0 ? 'var(--design-content-surface)' : 'var(--design-content-surface-soft)',
+                border: 'var(--design-content-border)',
+                boxShadow: 'var(--design-content-shadow)',
               }}
             >
               <div style={{ fontSize: 12.5, fontWeight: 800, color: theme.blockLaymanHeader, marginBottom: 6 }}>
@@ -91,4 +99,3 @@ export function LaymanBlock({ data, theme, isCompleted = false }: LaymanBlockPro
     </section>
   );
 }
-

@@ -125,19 +125,43 @@ body {
 }
 
 [data-design-version="aesthetic"] {
-  --design-surface: rgba(255, 255, 255, 0.74);
-  --design-surface-border: 1px solid rgba(255, 255, 255, 0.24);
+  --design-page-bg: linear-gradient(135deg, rgba(102, 126, 234, 0.18) 0%, rgba(118, 75, 162, 0.18) 50%, rgba(240, 147, 251, 0.12) 100%);
+  --design-surface: rgba(255, 255, 255, 0.65);
+  --design-surface-border: 1px solid rgba(255, 255, 255, 0.3);
   --design-backdrop: blur(20px);
-  --design-shadow: 0 14px 44px rgba(31, 38, 135, 0.12);
+  --design-shadow: 0 8px 32px rgba(31, 38, 135, 0.1), 0 2px 8px rgba(255, 255, 255, 0.5) inset;
+  --design-hover-shadow: 0 16px 40px rgba(31, 38, 135, 0.15);
   --design-radius: 18px;
+  --design-header-bg: rgba(255, 255, 255, 0.4);
+  --design-header-border: 1px solid rgba(255, 255, 255, 0.24);
+  --design-content-surface: rgba(255, 255, 255, 0.55);
+  --design-content-surface-soft: rgba(255, 255, 255, 0.38);
+  --design-content-border: 1px solid rgba(255, 255, 255, 0.55);
+  --design-content-shadow: 0 8px 20px rgba(31, 38, 135, 0.08);
+  --design-ink: #1a2340;
+  --design-muted: #4a5568;
+  --design-heading-font: 'Outfit', 'Segoe UI', sans-serif;
+  --design-body-font: 'Inter', 'Segoe UI', sans-serif;
 }
 
 [data-design-version="logic"] {
-  --design-surface: var(--tutorial-surface);
-  --design-surface-border: 1px solid var(--tutorial-border);
+  --design-page-bg: #f8fafc;
+  --design-surface: #ffffff;
+  --design-surface-border: 1px solid #e2e8f0;
   --design-backdrop: none;
-  --design-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  --design-radius: 10px;
+  --design-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --design-hover-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  --design-radius: 8px;
+  --design-header-bg: #f8fafc;
+  --design-header-border: 1px solid #e2e8f0;
+  --design-content-surface: #ffffff;
+  --design-content-surface-soft: #f8fafc;
+  --design-content-border: 1px solid #e2e8f0;
+  --design-content-shadow: none;
+  --design-ink: #0f172a;
+  --design-muted: #475569;
+  --design-heading-font: 'Inter', 'Segoe UI', sans-serif;
+  --design-body-font: 'Inter', 'Segoe UI', sans-serif;
 }
 
 .design-panel {
@@ -146,8 +170,19 @@ body {
   border-radius: var(--design-radius);
   box-shadow: var(--design-shadow);
   backdrop-filter: var(--design-backdrop);
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
 }
 
 .design-panel * {
   box-sizing: border-box;
+}
+
+[data-design-version="aesthetic"].design-panel:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--design-hover-shadow);
+}
+
+[data-design-version="logic"].design-panel:hover {
+  border-color: #cbd5e0;
+  box-shadow: var(--design-hover-shadow);
 }

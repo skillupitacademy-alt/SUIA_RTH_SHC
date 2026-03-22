@@ -15,7 +15,13 @@ export function NotesBlock({ data, theme }: NotesBlockProps) {
   return (
     <section className="design-panel" aria-label="Notes block">
       <BlockHeader icon="📝" title="Notes" accentColor={theme.blockNotesHeader} />
-      <div style={{ padding: 18, background: theme.blockNotes }}>
+      <div
+        style={{
+          padding: 18,
+          background: 'var(--design-content-surface)',
+          borderTop: 'var(--design-content-border)',
+        }}
+      >
         <div
           style={{
             color: 'var(--block-text-primary)',
@@ -26,9 +32,12 @@ export function NotesBlock({ data, theme }: NotesBlockProps) {
         >
           {data.markdown}
         </div>
-        {data.image ? <div style={{ marginTop: 16 }}><ContentImage image={data.image} /></div> : null}
+        {data.image ? (
+          <div style={{ marginTop: 16 }}>
+            <ContentImage image={data.image} />
+          </div>
+        ) : null}
       </div>
     </section>
   );
 }
-

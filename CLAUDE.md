@@ -9,6 +9,9 @@
 ## Current Window Focus
 - Window 2: Tutorial Engine.
 - Sprint 0 scope: root CLAUDE.md, `packages/auth`, `packages/events`, `packages/db-tutorial`, and tutorial DTO types.
+- TutorialSubtopicPage design is locked to Aesthetic Maverick (Version A).
+- Do not restore compare mode or reference Logic Legend / Version B in tutorial UI work.
+- Glass cards, backdrop blur, and gradient page background are mandatory for tutorial cards.
 
 ## Non-Negotiable Architecture
 - One monorepo, separate Neon database per service.

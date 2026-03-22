@@ -132,6 +132,38 @@ export class TutorialContentRepository
     return row;
   }
 
+  async updateById(
+    contentId: string,
+    data: TutorialContentUpsertInput
+  ): Promise<TutorialContentRecord | undefined> {
+    const validatedContent = TutorialContentSchema.parse(data.content);
+    const rows = await this.runRead(
+      this.dbInstance
+        .update(tutorialContent)
+        .set({
+          content: validatedContent,
+          contentType: 'standard',
+          language: data.language ?? 'en',
+          isPublished: data.isPublished ?? false,
+          generatedByAi: data.generatedByAi ?? false,
+          aiModelUsed: data.aiModelUsed ?? null,
+          generationJobId: data.generationJobId ?? null,
+          adminApprovedBy: data.adminApprovedBy ?? null,
+          adminApprovedAt: data.adminApprovedAt ?? null,
+          qualityScore: data.qualityScore ?? null,
+          version: sql`${tutorialContent.version} + 1`,
+          regenerationCount: sql`${tutorialContent.regenerationCount} + 1`,
+          updatedAt: new Date(),
+          deletedAt: null,
+        })
+        .where(and(eq(tutorialContent.id, contentId), activeContent))
+        .returning(),
+      'TutorialContentRepository.updateById'
+    );
+
+    return rows[0] as TutorialContentRecord | undefined;
+  }
+
   async publish(contentId: string): Promise<TutorialContentRecord | undefined> {
     const rows = await this.runRead(
       this.dbInstance
