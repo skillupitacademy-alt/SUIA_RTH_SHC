@@ -1,6 +1,6 @@
 'use client';
 
-import { type TutorialContentJSON,TutorialContentSchema } from '@quiz/types';
+import { type TutorialContentJSON, TutorialContentSchema } from '@quiz/types';
 import {
     AlertCircle,
     Bookmark,
@@ -21,6 +21,7 @@ import {
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
+import { BlockEditor } from '@/components/admin/BlockEditor';
 import { SelectField } from '@/components/entry/SelectionFields';
 import { FactoryLayout } from '@/components/layout/FactoryLayout';
 import { useDomains, useSubjects, useSubtopics, useTopics } from '@/hooks/useAdminHierarchy';
@@ -164,6 +165,7 @@ export default function ContentFactoryPage() {
     const [isSavingDraft, setIsSavingDraft] = useState(false);
     const [isPublishing, setIsPublishing] = useState(false);
     const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
+    const [editingBlock, setEditingBlock] = useState<BlockKey | null>(null);
     const [promptText, setPromptText] = useState('');
     const [lastValidatedAt, setLastValidatedAt] = useState<string | null>(null);
 
@@ -179,6 +181,10 @@ export default function ContentFactoryPage() {
         const subtopicName = subtopics.find((item) => item.id === selection.subtopicId)?.name ?? 'Selected Subtopic';
         return { domainName, subjectName, topicName, subtopicName };
     }, [domains, selection.domainId, selection.subjectId, selection.topicId, selection.subtopicId, subjects, subtopics, topics]);
+
+    const resolvedDomainSlug = useMemo(() => {
+        return domains.find((item) => item.id === selection.domainId)?.slug ?? 'full-stack';
+    }, [domains, selection.domainId]);
 
     const validation = useMemo<ValidationState>(() => {
         if (rawJson.trim() === '') {
@@ -221,6 +227,7 @@ export default function ContentFactoryPage() {
     }, [rawJson]);
 
     const previewContent = validation.parsedContent;
+    const activeContent = previewContent ?? DEFAULT_CONTENT;
     const selectionComplete = selection.domainId !== '' && selection.subjectId !== '' && selection.topicId !== '' && selection.subtopicId !== '';
     const canPersist = selectionComplete && validation.isValid && validation.parsedContent !== null;
 
@@ -524,9 +531,19 @@ export default function ContentFactoryPage() {
                                                     <p className="text-sm font-black uppercase tracking-widest text-[#1A1A1A]">{block.label}</p>
                                                     <p className="text-xs text-slate-500 font-medium mt-1">{block.description}</p>
                                                 </div>
-                                                <span className={cn('text-[10px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded-full border', statusTone)}>
-                                                    {titleCaseStatus(status)}
-                                                </span>
+                                                <div className="flex flex-col items-end gap-2">
+                                                    <span className={cn('text-[10px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded-full border', statusTone)}>
+                                                        {titleCaseStatus(status)}
+                                                    </span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setEditingBlock(block.key)}
+                                                        className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-slate-600 hover:border-[#FF4B91]/30 hover:text-[#FF4B91] transition-colors"
+                                                    >
+                                                        <PencilLine size={12} />
+                                                        Edit
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     );
@@ -627,7 +644,7 @@ export default function ContentFactoryPage() {
                                         onClick={validateNow}
                                         className="h-10 px-4 rounded-2xl bg-white border border-slate-200 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 transition-all shadow-sm"
                                     >
-                                        Validate
+                                        Process & Review
                                     </button>
                                 </div>
 
@@ -867,6 +884,36 @@ export default function ContentFactoryPage() {
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    ) : null}
+
+                    {editingBlock != null ? (
+                        <div className="fixed inset-0 z-[90] overflow-y-auto bg-slate-950/55 px-4 py-6 backdrop-blur-sm">
+                            <div className="mx-auto max-w-[1500px]">
+                                <div className="mb-4 flex items-center justify-between gap-4 rounded-[2rem] border border-slate-200 bg-white px-6 py-4 shadow-xl">
+                                    <div>
+                                        <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#FF4B91]">Block editor</p>
+                                        <h2 className="mt-1 text-xl font-black uppercase tracking-tight text-[#1A1A1A]">
+                                            {BLOCK_DEFINITIONS.find((block) => block.key === editingBlock)?.label ?? 'Content'} editor
+                                        </h2>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => setEditingBlock(null)}
+                                        className="h-11 rounded-2xl border border-slate-200 bg-slate-50 px-5 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-100 transition-all"
+                                    >
+                                        Close
+                                    </button>
+                                </div>
+
+                                <BlockEditor
+                                    initialContent={activeContent}
+                                    initialActiveBlock={editingBlock}
+                                    subtopicName={resolvedContext.subtopicName}
+                                    domainName={resolvedContext.domainName}
+                                    domainSlug={resolvedDomainSlug}
+                                />
                             </div>
                         </div>
                     ) : null}

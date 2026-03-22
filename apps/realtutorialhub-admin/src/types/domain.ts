@@ -6,6 +6,8 @@ export type MappingType = 'conceptual' | 'technical' | 'practical';
 export interface Domain {
     id: string;
     name: string;
+    slug?: string;
+    externalId?: string;
     description?: string | null;
     category?: string | null;
     status: Status;
@@ -17,6 +19,8 @@ export interface Domain {
 export interface Subject {
     id: string;
     name: string;
+    slug?: string;
+    externalId?: string;
     domainId: string;
     description?: string | null;
     order?: number;
@@ -30,6 +34,8 @@ export interface Subject {
 export interface Topic {
     id: string;
     name: string;
+    slug?: string;
+    externalId?: string;
     subjectId: string;
     description?: string | null;
     complexityLevel: number;
@@ -48,11 +54,14 @@ export interface Topic {
 export interface Subtopic {
     id: string;
     name: string;
+    slug?: string;
+    externalId?: string;
     topicId: string;
     description?: string | null;
     depthLevel?: number;
     orderIndex?: number;
     status?: Status; // UI may supply, though DB does not store
+    difficultyLevels?: string[];
     createdAt?: string;
     updatedAt?: string;
     [key: string]: unknown;

@@ -16,6 +16,7 @@ interface BlockEditorProps {
     subtopicName?: string;
     domainName?: string;
     domainSlug?: string;
+    initialActiveBlock?: ContentBlockType;
 }
 
 interface StatusState {
@@ -145,7 +146,14 @@ function ensureArrayItem<T>(items: T[], fallback: T): T[] {
     return items.length > 0 ? items : [fallback];
 }
 
-export function BlockEditor({ initialContent, initialVersions, subtopicName = 'JavaScript Promises', domainName = 'Full Stack', domainSlug = 'full-stack' }: BlockEditorProps) {
+export function BlockEditor({
+    initialContent,
+    initialVersions,
+    subtopicName = 'JavaScript Promises',
+    domainName = 'Full Stack',
+    domainSlug = 'full-stack',
+    initialActiveBlock = 'layman',
+}: BlockEditorProps) {
     const seededVersions = useMemo<ContentVersionEntry[]>(() => {
         if (initialVersions != null && initialVersions.length > 0) return initialVersions;
 
@@ -165,7 +173,7 @@ export function BlockEditor({ initialContent, initialVersions, subtopicName = 'J
 
     const [content, setContent] = useState<TutorialContentJSON>(cloneContent(initialContent));
     const [versions, setVersions] = useState<ContentVersionEntry[]>(seededVersions);
-    const [activeBlock, setActiveBlock] = useState<ContentBlockType>('layman');
+    const [activeBlock, setActiveBlock] = useState<ContentBlockType>(initialActiveBlock);
     const [status, setStatus] = useState<StatusState>({ tone: 'neutral', text: 'Ready for review.' });
 
     useEffect(() => {
