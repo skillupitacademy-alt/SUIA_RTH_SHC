@@ -6,20 +6,20 @@ const SKILLHUBCORE_LOGIN_URL =
   process.env.NEXT_PUBLIC_SKILLHUBCORE_LOGIN_URL ??
   'https://api.skillhubcore.in/login';
 
-const PUBLIC_PATHS = ['/', '/api/healthz'];
-const PROTECTED_PREFIXES = ['/student/'];
-const OVERRIDE_ROLES = ['super_admin'];
+const PUBLIC_PATHS = ['/', '/programs', '/api/healthz', '/verify'];
+const STUDENT_PATHS = ['/student'];
+const OVERRIDE_ROLES = ['admin', 'super_admin', 'faculty'];
 
 function hasPrefix(pathname: string, prefixes: string[]): boolean {
-  return prefixes.some((prefix) => pathname === prefix.slice(0, -1) || pathname.startsWith(prefix));
+  return prefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 }
 
 function isPublicRoute(pathname: string): boolean {
-  return PUBLIC_PATHS.includes(pathname);
+  return PUBLIC_PATHS.includes(pathname) || hasPrefix(pathname, ['/verify']);
 }
 
-function isProtectedRoute(pathname: string): boolean {
-  return hasPrefix(pathname, PROTECTED_PREFIXES);
+function isStudentRoute(pathname: string): boolean {
+  return hasPrefix(pathname, STUDENT_PATHS);
 }
 
 function getSkillHubCoreToken(request: NextRequest): string | undefined {
@@ -63,15 +63,21 @@ export async function proxy(request: NextRequest) {
   const user = await resolveUser(request);
   const redirectPath = `${pathname}${search}`;
 
-  if (isProtectedRoute(pathname) && user === null) {
+  if (isStudentRoute(pathname) && user === null) {
     return NextResponse.redirect(getSkillHubCoreLoginUrl(request, redirectPath));
   }
 
-  if (user !== null && isProtectedRoute(pathname) && hasRequiredRole(user) === false) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  if (isPublicRoute(pathname)) {
+    return user !== null
+      ? addUserHeaders(NextResponse.next({ request: { headers: new Headers(request.headers) } }), user)
+      : NextResponse.next();
   }
 
-  if (user !== null || isPublicRoute(pathname)) {
+  if (isStudentRoute(pathname)) {
+    if (user !== null && hasRequiredRole(user) === false) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const headers = new Headers(request.headers);
     if (user !== null) {
       headers.set('x-user-id', user.sub);
