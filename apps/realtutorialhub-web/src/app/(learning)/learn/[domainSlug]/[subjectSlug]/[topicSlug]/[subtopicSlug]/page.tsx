@@ -17,6 +17,5 @@ export default async function TutorialSubtopicPage({ params }: PageProps) {
   const content = await getSeededTutorialContent();
   const theme = getDomainTheme(resolved.domainSlug);
 
-  return <TutorialExperience params={resolved} content={content} theme={theme} mode="compare" />;
+  return <TutorialExperience params={resolved} content={content} theme={theme} mode="learn" />;
 }
-

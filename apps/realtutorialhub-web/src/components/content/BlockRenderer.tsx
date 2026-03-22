@@ -50,7 +50,14 @@ export function BlockRenderer({ content, theme, completedBlocks = 0, activeBlock
   return (
     <div style={{ display: 'grid', gap: 16 }}>
       {blocksToRender.map((blockType) => (
-        <div key={blockType}>{renderBlock(blockType)}</div>
+        <div
+          key={blockType}
+          id={`block-${blockType}`}
+          data-tutorial-block={blockType}
+          style={{ scrollMarginTop: 112 }}
+        >
+          {renderBlock(blockType)}
+        </div>
       ))}
     </div>
   );

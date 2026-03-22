@@ -14,5 +14,5 @@ export default async function HomePage() {
   const content = await getSeededTutorialContent();
   const theme = getDomainTheme(rootParams.domainSlug);
 
-  return <TutorialExperience params={rootParams} content={content} theme={theme} mode="compare" />;
+  return <TutorialExperience params={rootParams} content={content} theme={theme} mode="learn" />;
 }

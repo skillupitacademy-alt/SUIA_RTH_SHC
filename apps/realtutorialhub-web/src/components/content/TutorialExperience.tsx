@@ -5,6 +5,7 @@ import type { DomainTheme } from '@/lib/domain-themes';
 import { BlockNavPills } from './BlockNavPills';
 import { BlockRenderer } from './BlockRenderer';
 import { SubtopicHeader } from './SubtopicHeader';
+import { LearnerProgressPanel } from './LearnerProgressPanel';
 import { DomainBreadcrumb } from '../layout/DomainBreadcrumb';
 import { TutorialNavbar } from '../layout/TutorialNavbar';
 import { TutorialSidebar } from '../layout/TutorialSidebar';
@@ -18,7 +19,7 @@ interface TutorialExperienceProps {
   };
   content: TutorialContentJSON;
   theme: DomainTheme;
-  mode: 'compare' | 'detail';
+  mode: 'compare' | 'detail' | 'learn';
   blockType?: ContentBlockType;
 }
 
@@ -52,7 +53,8 @@ export function TutorialExperience({ params, content, theme, mode, blockType }: 
   const notes = [
     { term: 'Learning order', detail: 'Layman first, then scenario, technical detail, code, AI tutor.' },
     { term: 'Images', detail: 'Promise chain and async flow placeholders are available now.' },
-    { term: 'Theme', detail: 'Each version uses a separate design frame but the same content.' },
+    { term: 'Theme', detail: 'Version A aesthetic styling is locked for the learner experience.' },
+    { term: 'Assignments', detail: 'Simple unlocks only after all six blocks are completed.' },
   ];
 
   const renderPanel = () => (
@@ -74,10 +76,10 @@ export function TutorialExperience({ params, content, theme, mode, blockType }: 
       <div style={{ marginBottom: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
         <div>
           <div style={{ fontSize: 12, fontWeight: 800, color: theme.sidebarAccent, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-            Production Design
+            {mode === 'learn' ? 'Learner Flow' : 'Production Design'}
           </div>
           <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--design-ink)', fontFamily: 'var(--design-heading-font)' }}>
-            Aesthetic Maverick
+            {mode === 'learn' ? 'T3-A Learner View' : 'Aesthetic Maverick'}
           </div>
         </div>
         <span
@@ -90,16 +92,20 @@ export function TutorialExperience({ params, content, theme, mode, blockType }: 
             color: 'var(--block-text-secondary)',
           }}
         >
-          {mode === 'compare' ? 'Production review' : 'Detail view'}
+          {mode === 'compare' ? 'Production review' : mode === 'learn' ? 'Learner view' : 'Detail view'}
         </span>
       </div>
 
-      <SubtopicHeader
-        subtopicName={subtopicName}
-        completedBlocks={0}
-        totalBlocks={6}
-        theme={theme}
-      />
+      {mode === 'learn' ? (
+        <LearnerProgressPanel
+          subtopicId={params.subtopicSlug}
+          subtopicName={subtopicName}
+          theme={theme}
+          blockOrder={blockOrder}
+        />
+      ) : (
+        <SubtopicHeader subtopicName={subtopicName} completedBlocks={0} totalBlocks={6} theme={theme} />
+      )}
 
       {mode === 'detail' && blockType ? (
         <BlockNavPills
@@ -114,6 +120,8 @@ export function TutorialExperience({ params, content, theme, mode, blockType }: 
       ) : null}
 
       {mode === 'compare' ? (
+        <BlockRenderer content={content} theme={theme} />
+      ) : mode === 'learn' ? (
         <BlockRenderer content={content} theme={theme} />
       ) : blockType ? (
         <BlockRenderer content={content} theme={theme} activeBlockType={blockType} />
