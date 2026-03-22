@@ -41,6 +41,46 @@ No scoring. No evaluation. No pass/fail. No certificates.
   assignment_tier_unlocks  -> DO NOT CREATE (old design, replaced)
 
 ---
+
+## Assignment Factory (Admin UI)
+## Built in T8 - not T3
+
+Admin creates assignments via Assignment Factory page
+following the same Question Bank Factory pattern.
+
+Location: apps/admin-app/src/app/(authenticated)/dashboard/assignments/
+
+Workflow (identical to Question Bank Factory):
+  1. Admin selects: domain -> subject -> topic -> subtopic -> difficulty
+  2. TutorialPromptService generates prompt embedding assignment schema
+  3. Admin copies prompt -> pastes in external AI -> gets JSON back
+  4. Admin pastes JSON into ingest box
+  5. Zod validates against AssignmentSchema
+  6. Admin previews assignments
+  7. Save as draft -> Publish
+
+Generated JSON shape:
+  {
+    "assignments": [
+      {
+        "question_type": "mcq" | "short_answer" | "code" | "open_ended",
+        "question": "string",
+        "hints": ["string"],
+        "reference_answer": "string (self-check only, not for scoring)"
+      }
+    ]
+  }
+
+Per tier question counts:
+  Simple:       3-5 questions (MCQ only)
+  Mixed:        6-10 questions (MCQ + short_answer)
+  Intermediate: 8-12 questions (MCQ + short_answer + code)
+  Expert:       12-20 questions (all types including open_ended)
+
+No scoring. No correct/wrong. Reference answer shown AFTER student attempts.
+Admin publishes -> assignments available to students for that subtopic + difficulty.
+
+---
 # Original design preserved below for reference only
 # Do not implement anything below this line
 ---
