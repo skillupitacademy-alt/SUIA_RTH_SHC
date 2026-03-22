@@ -1,0 +1,40 @@
+import Link from 'next/link';
+
+import { skillupPrograms } from '@/lib/skillup-demo-data';
+
+export const metadata = {
+  title: 'Programs',
+  description: 'Explore the active SkillUp IT Academy programs.',
+};
+
+export default function ProgramsPage() {
+  return (
+    <main className="mx-auto max-w-7xl px-6 py-8 lg:py-10">
+      <section className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-[0.65rem] font-black uppercase tracking-[0.45em] text-cyan-600">Programs</p>
+            <h1 className="mt-3 text-4xl font-black tracking-tight text-slate-950">Active learning tracks</h1>
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600">
+              Course catalog cards follow the same light layout as the rest of the platform while keeping the content easy to scan.
+            </p>
+          </div>
+          <Link href="/" className="text-sm font-semibold text-cyan-700 transition hover:text-cyan-900">
+            Back to home
+          </Link>
+        </div>
+
+        <div className="mt-8 grid gap-4 md:grid-cols-3">
+          {skillupPrograms.map((program) => (
+            <article key={program.id} className="rounded-3xl border border-slate-200 bg-slate-50 p-6">
+              <p className="text-xs font-black uppercase tracking-[0.32em] text-slate-500">{program.duration}</p>
+              <h2 className="mt-3 text-xl font-black tracking-tight text-slate-950">{program.name}</h2>
+              <p className="mt-3 text-sm leading-6 text-slate-600">{program.description}</p>
+              <p className="mt-4 text-sm font-semibold text-slate-700">{program.audience}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+    </main>
+  );
+}

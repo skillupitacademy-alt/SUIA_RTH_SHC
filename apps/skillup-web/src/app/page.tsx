@@ -1,60 +1,106 @@
 import Link from 'next/link';
 
-const programs = [
-  {
-    title: 'Full Stack Developer',
-    description: 'Structured learning tracks for modern web application delivery.',
-  },
-  {
-    title: 'Data Analyst',
-    description: 'Spreadsheet, SQL, BI, and reporting foundations with guided mentorship.',
-  },
-  {
-    title: 'Cloud Support',
-    description: 'Ops, observability, incident response, and deployment workflows.',
-  },
-];
+import { skillupFacultyShowcase, skillupHeroStats, skillupPrograms } from '@/lib/skillup-demo-data';
+
+export const metadata = {
+  title: 'SkillUp IT Academy',
+  description: 'Learn, practice, and progress through the SkillUp IT Academy student portal.',
+};
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.2),_transparent_40%),linear-gradient(180deg,_#07111f_0%,_#0f172a_100%)] px-6 py-12 text-slate-100">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-10">
-        <section className="rounded-3xl border border-white/10 bg-white/5 p-8 shadow-2xl shadow-slate-950/40 backdrop-blur">
-          <div className="max-w-3xl space-y-5">
-            <p className="text-xs font-black uppercase tracking-[0.32em] text-cyan-300">SkillUp IT Academy</p>
-            <h1 className="max-w-2xl text-4xl font-black tracking-tight text-white sm:text-6xl">
-              Student portal scaffold for onboarding, learning, and placements.
+    <main className="mx-auto flex min-h-screen max-w-7xl flex-col gap-10 px-6 py-8 lg:py-10">
+      <section className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-[0_24px_120px_rgba(15,23,42,0.08)]">
+        <div className="grid gap-8 xl:grid-cols-[1.25fr_0.75fr] xl:items-end">
+          <div className="space-y-5">
+            <p className="text-[0.65rem] font-black uppercase tracking-[0.45em] text-cyan-600">SkillUp IT Academy</p>
+            <h1 className="max-w-3xl text-4xl font-black tracking-tight text-slate-950 sm:text-6xl">
+              Learn with expert instructors and move from training to placement.
             </h1>
-            <p className="max-w-2xl text-base leading-7 text-slate-300">
-              This shell gives students a single place to track progress, reach the faculty desk, and
-              move through the academy workflow while the feature pages are being built.
+            <p className="max-w-2xl text-base leading-7 text-slate-600">
+              The student portal keeps courses, sessions, attendance, payments, and placement progress in one light shell that matches the rest of the platform.
             </p>
             <div className="flex flex-wrap gap-3">
               <Link
                 href="/student"
-                className="rounded-full bg-cyan-400 px-5 py-3 text-sm font-bold text-slate-950 transition hover:bg-cyan-300"
+                className="rounded-full bg-cyan-500 px-5 py-3 text-sm font-bold text-white transition hover:bg-cyan-600"
               >
-                Open student area
+                Open student dashboard
+              </Link>
+              <Link
+                href="/programs"
+                className="rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-cyan-300 hover:bg-cyan-50"
+              >
+                Explore programs
               </Link>
               <a
                 href={process.env.SKILLHUBCORE_LOGIN_URL ?? 'https://api.skillhubcore.in/login'}
-                className="rounded-full border border-white/15 px-5 py-3 text-sm font-bold text-white transition hover:bg-white/10"
+                className="rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-cyan-300 hover:bg-cyan-50"
               >
-                Continue with SkillHubCore
+                Sign in with SkillHubCore
               </a>
             </div>
           </div>
-        </section>
 
-        <section className="grid gap-4 md:grid-cols-3">
-          {programs.map((program) => (
-            <article key={program.title} className="rounded-2xl border border-white/10 bg-slate-950/40 p-6">
-              <h2 className="text-lg font-bold text-white">{program.title}</h2>
-              <p className="mt-3 text-sm leading-6 text-slate-300">{program.description}</p>
-            </article>
-          ))}
-        </section>
-      </div>
+          <aside className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
+            {skillupHeroStats.map((stat) => (
+              <div key={stat.label} className="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-5">
+                <p className="text-xs font-black uppercase tracking-[0.35em] text-slate-500">{stat.label}</p>
+                <p className="mt-3 text-4xl font-black tracking-tight text-slate-950">{stat.value}</p>
+              </div>
+            ))}
+          </aside>
+        </div>
+      </section>
+
+      <section className="grid gap-4 md:grid-cols-3">
+        {skillupPrograms.map((program) => (
+          <article key={program.id} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <p className="text-xs font-black uppercase tracking-[0.32em] text-cyan-600">{program.duration}</p>
+            <h2 className="mt-3 text-xl font-black tracking-tight text-slate-950">{program.name}</h2>
+            <p className="mt-3 text-sm leading-6 text-slate-600">{program.description}</p>
+            <p className="mt-4 text-sm font-semibold text-slate-700">{program.audience}</p>
+          </article>
+        ))}
+      </section>
+
+      <section className="grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
+        <article className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+          <p className="text-xs font-black uppercase tracking-[0.35em] text-slate-500">Why SkillUp</p>
+          <div className="mt-5 space-y-4">
+            {[
+              'Structured batches with faculty support and session tracking',
+              'Attendance, payments, and placement are visible in one student portal',
+              'Cross-platform JWT lets students move between SkillUp and tutorial tools',
+            ].map((item) => (
+              <div key={item} className="rounded-3xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-700">
+                {item}
+              </div>
+            ))}
+          </div>
+        </article>
+
+        <article className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.35em] text-slate-500">Faculty showcase</p>
+              <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-950">Mentors who support the journey</h2>
+            </div>
+            <Link href="/register" className="text-sm font-semibold text-cyan-700 transition hover:text-cyan-900">
+              Apply now
+            </Link>
+          </div>
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            {skillupFacultyShowcase.map((mentor) => (
+              <div key={mentor.name} className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                <p className="text-sm font-black text-slate-950">{mentor.name}</p>
+                <p className="mt-1 text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">{mentor.title}</p>
+                <p className="mt-3 text-sm leading-6 text-slate-600">{mentor.description}</p>
+              </div>
+            ))}
+          </div>
+        </article>
+      </section>
     </main>
   );
 }

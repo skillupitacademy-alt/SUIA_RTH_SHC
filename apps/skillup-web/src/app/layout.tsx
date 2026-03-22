@@ -17,8 +17,11 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: 'SkillUp IT Academy',
-  description: 'Student portal scaffold for SkillUp IT Academy',
+  title: {
+    default: 'SkillUp IT Academy',
+    template: '%s | SkillUp IT Academy',
+  },
+  description: 'Student portal for SkillUp IT Academy',
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
