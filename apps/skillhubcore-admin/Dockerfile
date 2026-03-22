@@ -1,0 +1,35 @@
+FROM node:20-alpine AS base
+RUN apk add --no-cache \
+  libc6-compat \
+  python3 \
+  make \
+  g++
+RUN npm install -g pnpm@9
+WORKDIR /app
+
+FROM base AS deps
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/skillhubcore-admin/package.json ./apps/skillhubcore-admin/
+COPY packages/auth/package.json ./packages/auth/
+COPY packages/types/package.json ./packages/types/
+RUN pnpm install --frozen-lockfile
+
+FROM base AS builder
+ENV CLOUD_RUN_BUILD=true
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/apps/skillhubcore-admin/node_modules ./apps/skillhubcore-admin/node_modules
+COPY --from=deps /app/packages/auth/node_modules ./packages/auth/node_modules
+COPY --from=deps /app/packages/types/node_modules ./packages/types/node_modules
+COPY . .
+RUN pnpm --filter @quiz/skillhubcore-admin build
+
+FROM base AS runner
+ENV NODE_ENV=production
+ENV PORT=3007
+ENV HOSTNAME=0.0.0.0
+WORKDIR /app
+COPY --from=builder /app/apps/skillhubcore-admin/.next/standalone ./
+COPY --from=builder /app/apps/skillhubcore-admin/.next/static ./apps/skillhubcore-admin/.next/static
+COPY --from=builder /app/apps/skillhubcore-admin/public ./apps/skillhubcore-admin/public
+EXPOSE 3007
+CMD ["node", "apps/skillhubcore-admin/server.js"]
