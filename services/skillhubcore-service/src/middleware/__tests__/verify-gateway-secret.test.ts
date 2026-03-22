@@ -14,8 +14,19 @@ describe('requireGatewaySecret', () => {
     const app = new Hono();
     app.use('*', requireGatewaySecret);
     app.get('/healthz', (c) => c.json({ status: 'ok' }));
+    app.get('/healthz/', (c) => c.json({ status: 'ok' }));
 
     const response = await app.request('http://localhost/healthz');
+    expect(response.status).toBe(200);
+  });
+
+  it('allows trailing-slash healthz without the gateway secret', async () => {
+    const app = new Hono();
+    app.use('*', requireGatewaySecret);
+    app.get('/healthz', (c) => c.json({ status: 'ok' }));
+    app.get('/healthz/', (c) => c.json({ status: 'ok' }));
+
+    const response = await app.request('http://localhost/healthz/');
     expect(response.status).toBe(200);
   });
 

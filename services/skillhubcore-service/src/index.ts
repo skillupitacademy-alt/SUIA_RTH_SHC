@@ -22,6 +22,7 @@ export const createApp = () => {
 
   app.use('*', requireGatewaySecret);
   app.get('/healthz', (c) => c.json({ status: 'ok', service: 'skillhubcore', ts: Date.now() }));
+  app.get('/healthz/', (c) => c.json({ status: 'ok', service: 'skillhubcore', ts: Date.now() }));
   app.route('/auth', createAuthRoutes(authService));
   app.route('/api/hierarchy', createHierarchyRoutes(hierarchyService));
 
