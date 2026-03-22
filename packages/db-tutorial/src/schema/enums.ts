@@ -8,6 +8,10 @@ export const tutorialProjectLevelEnum = pgEnum('tutorial_project_level', ['simpl
 export const tutorialProjectSubmissionStatusEnum = pgEnum('tutorial_project_submission_status', [
   'pending',
   'submitted',
+  'ai_reviewing',
+  'needs_review',
+  'approved',
+  'revision_needed',
   'graded',
   'revision-requested',
 ]);

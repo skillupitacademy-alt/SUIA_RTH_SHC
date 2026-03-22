@@ -10,12 +10,24 @@ import type {
   AssignmentRecord,
   AssignmentTierStatusMap,
 } from './assignment.types';
+import type {
+  ProjectBadgeAwardRecord,
+  ProjectRecord,
+  ProjectScope,
+  ProjectSubmissionCreateInput,
+  ProjectSubmissionRecord,
+  ProjectSubmissionStatus,
+} from './project.types';
 
 export type TutorialDifficulty = 'simple' | 'mixed' | 'intermediate' | 'expert';
 export type TutorialProjectLevel = 'simple' | 'intermediate' | 'expert';
 export type TutorialProjectSubmissionStatus =
   | 'pending'
   | 'submitted'
+  | 'ai_reviewing'
+  | 'needs_review'
+  | 'approved'
+  | 'revision_needed'
   | 'graded'
   | 'revision-requested';
 
@@ -88,6 +100,10 @@ export interface TutorialProjectSubmissionRecord {
   status: TutorialProjectSubmissionStatus;
   score: number | null;
   feedback: string | null;
+  aiReview: Record<string, unknown> | null;
+  peerReviews: Record<string, unknown>[];
+  adminReview: Record<string, unknown> | null;
+  badgeAwarded: boolean;
   videoRequired: boolean;
   videoUrl: string | null;
   submittedAt: Date | null;
@@ -107,10 +123,30 @@ export interface TutorialProjectSubmissionCreateInput {
   status?: TutorialProjectSubmissionStatus;
   score?: number | null;
   feedback?: string | null;
+  aiReview?: Record<string, unknown> | null;
+  peerReviews?: Record<string, unknown>[];
+  adminReview?: Record<string, unknown> | null;
+  badgeAwarded?: boolean;
   videoRequired?: boolean;
   videoUrl?: string | null;
   submittedAt?: Date | null;
   gradedAt?: Date | null;
+}
+
+export interface IProjectRepository {
+  withDb(dbClient: TutorialDbClientLike): this;
+  getProject(projectId: string): Promise<ProjectRecord | undefined>;
+  getSubmission(submissionId: string): Promise<ProjectSubmissionRecord | undefined>;
+  getSubmissionsByUser(userId: string): Promise<ProjectSubmissionRecord[]>;
+  createSubmission(data: ProjectSubmissionCreateInput): Promise<ProjectSubmissionRecord>;
+  updateSubmissionStatus(
+    submissionId: string,
+    status: ProjectSubmissionStatus,
+    reviewData?: Record<string, unknown> | null
+  ): Promise<ProjectSubmissionRecord | undefined>;
+  awardBadge(userId: string, badgeId: string, submissionId: string): Promise<ProjectBadgeAwardRecord>;
+  getBadgesByUser(userId: string): Promise<ProjectBadgeAwardRecord[]>;
+  getProjectsByScope(scope: ProjectScope, parentId: string): Promise<ProjectRecord[]>;
 }
 
 export interface ITutorialContentRepository {

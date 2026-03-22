@@ -6,6 +6,7 @@ export * from './assignment-progress';
 export * from './assignment-help-requests';
 export * from './tutorial-projects';
 export * from './tutorial-project-submissions';
+export * from './student-badges';
 export * from './tutorial-progress';
 export * from './tutorial-video-links';
 export * from './badges';
@@ -23,6 +24,7 @@ import * as assignmentProgressModule from './assignment-progress';
 import * as assignmentHelpRequestsModule from './assignment-help-requests';
 import * as tutorialProjectsModule from './tutorial-projects';
 import * as tutorialProjectSubmissionsModule from './tutorial-project-submissions';
+import * as studentBadgesModule from './student-badges';
 import * as tutorialProgressModule from './tutorial-progress';
 import * as tutorialVideoLinksModule from './tutorial-video-links';
 import * as badgesModule from './badges';
@@ -41,6 +43,7 @@ export const schema = {
   ...assignmentHelpRequestsModule,
   ...tutorialProjectsModule,
   ...tutorialProjectSubmissionsModule,
+  ...studentBadgesModule,
   ...tutorialProgressModule,
   ...tutorialVideoLinksModule,
   ...badgesModule,
