@@ -56,4 +56,8 @@ jobs:
         working-directory: services/api-gateway
 
       - name: Smoke test
-        run: curl --fail --silent --show-error https://api.realtutorialhub.com/healthz
+        run: |
+          # Smoke test uses workers.dev URL
+          # api.realtutorialhub.com DNS cutover pending
+          curl --fail --silent --show-error \
+            https://platform-api-gateway-production.realtutorialh.workers.dev/healthz
