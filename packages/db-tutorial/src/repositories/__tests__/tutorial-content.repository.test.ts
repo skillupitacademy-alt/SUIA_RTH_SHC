@@ -260,6 +260,26 @@ describe('TutorialContentRepository', () => {
     ).rejects.toBeInstanceOf(ZodError);
   });
 
+  it('updateById updates the row returning the new record', async () => {
+    const db = createDbMock();
+    const repo = new TutorialContentRepository(db as never);
+
+    const result = await repo.updateById('content-1', {
+      subtopicId: 'subtopic-1',
+      difficulty: 'simple',
+      content: db.row.content,
+      language: 'fr',
+    });
+
+    expect(result).toEqual(db.row);
+    expect(db.update).toHaveBeenCalledTimes(1);
+    expect(db.set).toHaveBeenCalledWith(
+      expect.objectContaining({
+        language: 'fr',
+      })
+    );
+  });
+
   it('publish updates the row without hard deleting it', async () => {
     const db = createDbMock(makeRow({ isPublished: true }));
     const repo = new TutorialContentRepository(db as never);

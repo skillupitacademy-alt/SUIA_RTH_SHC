@@ -146,6 +146,13 @@ describe('TutorialProgressRepository', () => {
     );
   });
 
+  it('isSubtopicComplete returns false when no progress exists', async () => {
+    const db = createDbMock({ selectRows: [] });
+    const repo = new TutorialProgressRepository(db as never);
+
+    await expect(repo.isSubtopicComplete('user-1', 'subtopic-1')).resolves.toBe(false);
+  });
+
   it('isSubtopicComplete returns false until every required block is done', async () => {
     const db = createDbMock({ selectRows: [makeRow({ blocksCompleted: ['notes', 'layman'] })] });
     const repo = new TutorialProgressRepository(db as never);
