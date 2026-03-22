@@ -1,14 +1,17 @@
 /* istanbul ignore file */
 import { boolean, integer, jsonb, pgTable, text, timestamp, uuid, index } from 'drizzle-orm/pg-core';
 
-import { tutorialDifficultyEnum, tutorialQuestionTypeEnum } from './enums';
+import { assignmentQuestionTypeEnum, tutorialDifficultyEnum } from './enums';
 
 export const tutorialAssignments = pgTable('tutorial_assignments', {
   id: uuid('id').primaryKey().defaultRandom(),
   subtopicId: uuid('subtopic_id').notNull(),
   difficulty: tutorialDifficultyEnum('difficulty').notNull(),
-  questionType: tutorialQuestionTypeEnum('question_type').notNull(),
-  title: text('title').notNull(),
+  questionType: assignmentQuestionTypeEnum('question_type').notNull(),
+  question: text('question').notNull().default(''),
+  hints: jsonb('hints').$type<string[]>().notNull().default([]),
+  referenceAnswer: text('reference_answer').notNull().default(''),
+  title: text('title').notNull().default(''),
   content: jsonb('content').notNull(),
   orderIndex: integer('order_index'),
   points: integer('points').notNull().default(10),

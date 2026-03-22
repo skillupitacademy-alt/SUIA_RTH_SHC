@@ -80,6 +80,25 @@ Per tier question counts:
 No scoring. No correct/wrong. Reference answer shown AFTER student attempts.
 Admin publishes -> assignments available to students for that subtopic + difficulty.
 
+## Assignment Factory Prompt Contract
+
+The admin Assignment Factory in T8 uses `TutorialPromptService.generateAssignmentPrompt()`
+to produce a tier-specific prompt for an external AI model.
+
+The factory prompt must:
+- include the selected domain, subject, topic, subtopic, and difficulty
+- embed the assignment JSON schema structure
+- describe the per-tier question count ranges
+- clearly state that assignments are practice only
+- require `reference_answer` to be included for self-check only
+- validate the pasted JSON with `AssignmentSchema` before preview/publish
+
+The admin UI lives at:
+- `apps/admin-app/src/app/(authenticated)/dashboard/assignments/page.tsx`
+
+The page should match the existing Question Bank Factory workflow and layout
+so the assignment factory feels native to the current admin UX.
+
 ---
 # Original design preserved below for reference only
 # Do not implement anything below this line

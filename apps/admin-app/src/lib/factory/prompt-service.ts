@@ -15,6 +15,18 @@ export interface FactoryBlueprint {
     strictMode?: boolean;
 }
 
+export type AssignmentDifficulty = 'simple' | 'mixed' | 'intermediate' | 'expert';
+
+export interface AssignmentPromptBlueprint {
+    context: {
+        domainName: string;
+        subjectName: string;
+        topicName: string;
+        subtopicName: string;
+    };
+    difficulty: AssignmentDifficulty;
+}
+
 export const PromptService = {
     generateTechnicalPrompt: (blueprint: FactoryBlueprint): string => {
         const total = blueprint.counts.simple + blueprint.counts.intermediate + blueprint.counts.expert;
@@ -105,5 +117,66 @@ Rearrange or slightly modify code examples to test understanding.
 
 ${blueprint.sourceCode}
 `.trim();
+    },
+
+    generateAssignmentPrompt: (blueprint: AssignmentPromptBlueprint): string => {
+        const difficultyRules: Record<AssignmentDifficulty, { countRange: string; typeRules: string }> = {
+            simple: {
+                countRange: '3-5 questions',
+                typeRules: 'MCQ only',
+            },
+            mixed: {
+                countRange: '6-10 questions',
+                typeRules: 'MCQ + short_answer',
+            },
+            intermediate: {
+                countRange: '8-12 questions',
+                typeRules: 'MCQ + short_answer + code',
+            },
+            expert: {
+                countRange: '12-20 questions',
+                typeRules: 'all types including open_ended',
+            },
+        };
+
+        const rules = difficultyRules[blueprint.difficulty];
+
+        return `
+ACT AS A SENIOR PRACTICE-ONLY ASSIGNMENT GENERATOR.
+Create assignment practice questions for:
+${blueprint.context.domainName} > ${blueprint.context.subjectName} > ${blueprint.context.topicName} > ${blueprint.context.subtopicName}
+
+TARGET DIFFICULTY: ${blueprint.difficulty.toUpperCase()}
+QUESTION COUNT: ${rules.countRange}
+QUESTION TYPES: ${rules.typeRules}
+
+IMPORTANT RULES:
+- Assignments are practice only. Do not score answers.
+- Do not include pass/fail logic.
+- Include reference_answer for self-check only.
+- Reference answers are shown after the student attempts the assignment.
+- Return raw JSON only.
+
+JSON SHAPE REQUIRED:
+{
+  "assignments": [
+    {
+      "question_type": "mcq | short_answer | code | open_ended",
+      "question": "string",
+      "hints": ["string"],
+      "reference_answer": "string"
+    }
+  ]
+}
+
+QUESTION WRITING GUIDANCE:
+- Make each question practical, specific, and appropriate for the selected difficulty.
+- Use hints to support learning without revealing the answer immediately.
+- Keep reference_answer concise and self-check focused.
+
+Use only the selected tutorial context. Do not invent unrelated topics.
+`.trim();
     }
 };
+
+export const TutorialPromptService = PromptService;

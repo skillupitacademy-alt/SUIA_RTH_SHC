@@ -1,4 +1,15 @@
 import type { ContentBlockType, TutorialContentJSON } from './tutorial-content.types';
+import type {
+  AssignmentDifficulty,
+  AssignmentHelpRequestCreateInput,
+  AssignmentHelpRequestRecord,
+  AssignmentHelpRequestStatus,
+  AssignmentHelpRequestUpdateInput,
+  AssignmentProgressRecord,
+  AssignmentProgressStatus,
+  AssignmentRecord,
+  AssignmentTierStatusMap,
+} from './assignment.types';
 
 export type TutorialDifficulty = 'simple' | 'mixed' | 'intermediate' | 'expert';
 export type TutorialProjectLevel = 'simple' | 'intermediate' | 'expert';
@@ -153,4 +164,31 @@ export interface IProjectSubmissionRepository {
   ): Promise<TutorialProjectSubmissionRecord[]>;
   requiresVideo(projectId: string, difficulty: TutorialDifficulty): Promise<boolean>;
   softDelete(id: string): Promise<TutorialProjectSubmissionRecord | undefined>;
+}
+
+export interface IAssignmentRepository {
+  withDb(dbClient: TutorialDbClientLike): this;
+  getAssignments(subtopicId: string, difficulty: AssignmentDifficulty): Promise<AssignmentRecord[]>;
+  getProgress(
+    userId: string,
+    subtopicId: string,
+    difficulty: AssignmentDifficulty
+  ): Promise<AssignmentProgressRecord | undefined>;
+  upsertProgress(
+    userId: string,
+    subtopicId: string,
+    difficulty: AssignmentDifficulty,
+    status: AssignmentProgressStatus
+  ): Promise<AssignmentProgressRecord>;
+  getTierStatus(userId: string, subtopicId: string): Promise<AssignmentTierStatusMap>;
+  createHelpRequest(data: AssignmentHelpRequestCreateInput): Promise<AssignmentHelpRequestRecord>;
+  getHelpRequests(filters: {
+    status?: AssignmentHelpRequestStatus;
+    assignedTo?: string;
+    subtopicId?: string;
+  }): Promise<AssignmentHelpRequestRecord[]>;
+  updateHelpRequest(
+    id: string,
+    data: AssignmentHelpRequestUpdateInput
+  ): Promise<AssignmentHelpRequestRecord | undefined>;
 }

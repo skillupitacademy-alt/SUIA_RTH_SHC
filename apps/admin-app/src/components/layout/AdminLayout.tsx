@@ -13,11 +13,12 @@ import {
     LogOut,
     PenSquare,
     ShieldCheck,
+    Sparkles,
     Users
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { type ComponentType, type ReactNode,useState } from 'react';
+import { type ComponentType, type ReactNode, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 
 import { AdminGuard } from '@/components/auth/AdminGuard';
@@ -68,6 +69,7 @@ const ADMIN_SECTIONS: SidebarSection[] = [
         label: 'Tutorial',
         items: [
             { type: 'link', name: 'Tutorial Content', href: '/dashboard/content', icon: PenSquare },
+            { type: 'link', name: 'Assignments', href: '/dashboard/assignments', icon: Sparkles },
             { type: 'soon', name: 'Content Versions', icon: Clock3 },
             { type: 'soon', name: 'Audit Trail', icon: Clock3 },
             { type: 'soon', name: 'Prompt Generator', icon: Clock3 },

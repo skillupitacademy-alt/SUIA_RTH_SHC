@@ -2,5 +2,7 @@ export * from './jobs';
 export * from './report';
 export * from './feature-flags';
 export * from './tutorial-content.types';
+export * from './assignment.types';
+export * from './assignment-errors';
 export * from './tutorial-content.schema';
 export * from './tutorial-repositories.types';

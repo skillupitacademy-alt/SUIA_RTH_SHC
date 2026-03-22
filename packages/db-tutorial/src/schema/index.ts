@@ -2,6 +2,8 @@
 export * from './enums';
 export * from './tutorial-content';
 export * from './tutorial-assignments';
+export * from './assignment-progress';
+export * from './assignment-help-requests';
 export * from './tutorial-projects';
 export * from './tutorial-project-submissions';
 export * from './tutorial-progress';
@@ -17,6 +19,8 @@ export * from './student-streaks';
 import * as enums from './enums';
 import * as tutorialContentModule from './tutorial-content';
 import * as tutorialAssignmentsModule from './tutorial-assignments';
+import * as assignmentProgressModule from './assignment-progress';
+import * as assignmentHelpRequestsModule from './assignment-help-requests';
 import * as tutorialProjectsModule from './tutorial-projects';
 import * as tutorialProjectSubmissionsModule from './tutorial-project-submissions';
 import * as tutorialProgressModule from './tutorial-progress';
@@ -33,6 +37,8 @@ export const schema = {
   ...enums,
   ...tutorialContentModule,
   ...tutorialAssignmentsModule,
+  ...assignmentProgressModule,
+  ...assignmentHelpRequestsModule,
   ...tutorialProjectsModule,
   ...tutorialProjectSubmissionsModule,
   ...tutorialProgressModule,
