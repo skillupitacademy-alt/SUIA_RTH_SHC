@@ -18,6 +18,33 @@ const idParamsSchema = z.object({
   id: z.string().uuid(),
 });
 
+export async function GET(
+  req: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
+  try {
+    const params = await context.params;
+    const parsedParams = idParamsSchema.safeParse(params);
+    if (!parsedParams.success) {
+      return NextResponse.json({ error: 'Invalid content id' }, { status: 400 });
+    }
+
+    const requestUrl = new URL(req.url);
+    const difficultyParam = requestUrl.searchParams.get('difficulty');
+    const difficulty = difficultyParam === 'simple' || difficultyParam === 'mixed' || difficultyParam === 'intermediate' || difficultyParam === 'expert'
+      ? difficultyParam
+      : undefined;
+
+    const publishedRows = await tutorialContentRepository.getPublished(parsedParams.data.id, difficulty);
+    const record = [...publishedRows].sort((left, right) => right.version - left.version)[0] ?? null;
+
+    return NextResponse.json({ data: record != null ? toTutorialContentDTO(record) : null });
+  } catch (error) {
+    logRouteError('Tutorial content fetch failed', error, { route: 'GET /api/tutorial/content/[id]' });
+    return NextResponse.json({ error: 'Failed to load tutorial content' }, { status: 500 });
+  }
+}
+
 export async function PATCH(
   req: NextRequest,
   context: { params: Promise<{ id: string }> }

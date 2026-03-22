@@ -34,4 +34,34 @@ describe('PromptService', () => {
     expect(prompt).toContain('reference_answer');
     expect(prompt).toContain('MCQ + short_answer');
   });
+
+  it('generates an assignment prompt with tier counts when provided', () => {
+    const prompt = PromptService.generateAssignmentPrompt({
+      context: {
+        domainName: 'Full Stack',
+        subjectName: 'JavaScript',
+        topicName: 'Async Programming',
+        subtopicName: 'Promises',
+      },
+      difficulty: 'expert',
+      tierCounts: {
+        simple: 3,
+        mixed: 6,
+        intermediate: 8,
+        expert: 12,
+      },
+      questionTypesByTier: {
+        simple: ['mcq'],
+        mixed: ['mcq', 'short_answer'],
+        intermediate: ['mcq', 'short_answer', 'code'],
+        expert: ['mcq', 'short_answer', 'code', 'open_ended'],
+      },
+      referenceAnswerGuidance: 'Keep answers concise.',
+    });
+
+    expect(prompt).toContain('ASSIGNMENT VOLUME');
+    expect(prompt).toContain('Simple: 3 questions');
+    expect(prompt).toContain('QUESTION TYPES PER TIER');
+    expect(prompt).toContain('Keep answers concise.');
+  });
 });

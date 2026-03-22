@@ -25,6 +25,14 @@ export interface AssignmentPromptBlueprint {
         subtopicName: string;
     };
     difficulty: AssignmentDifficulty;
+    tierCounts?: {
+        simple: number;
+        mixed: number;
+        intermediate: number;
+        expert: number;
+    };
+    questionTypesByTier?: Partial<Record<AssignmentDifficulty, string[]>>;
+    referenceAnswerGuidance?: string;
 }
 
 export interface ContentPromptBlueprint {
@@ -150,6 +158,47 @@ ${blueprint.sourceCode}
         };
 
         const rules = difficultyRules[blueprint.difficulty];
+        const tierCounts = blueprint.tierCounts;
+        const questionTypesByTier = blueprint.questionTypesByTier;
+        const countSection = tierCounts != null
+            ? `
+ASSIGNMENT VOLUME:
+- Simple: ${tierCounts.simple} questions
+- Mixed: ${tierCounts.mixed} questions
+- Intermediate: ${tierCounts.intermediate} questions
+- Expert: ${tierCounts.expert} questions
+- Total: ${tierCounts.simple + tierCounts.mixed + tierCounts.intermediate + tierCounts.expert} questions
+`
+            : `
+QUESTION COUNT:
+- Simple: 3-5 questions
+- Mixed: 6-10 questions
+- Intermediate: 8-12 questions
+- Expert: 12-20 questions
+`;
+
+        const typeSection = questionTypesByTier != null
+            ? `
+QUESTION TYPES PER TIER:
+- Simple: ${(questionTypesByTier.simple ?? ['mcq']).join(' + ')}
+- Mixed: ${(questionTypesByTier.mixed ?? ['mcq', 'short_answer']).join(' + ')}
+- Intermediate: ${(questionTypesByTier.intermediate ?? ['mcq', 'short_answer', 'code']).join(' + ')}
+- Expert: ${(questionTypesByTier.expert ?? ['mcq', 'short_answer', 'code', 'open_ended']).join(' + ')}
+`
+            : `
+QUESTION TYPES: ${rules.typeRules}
+`;
+
+        const referenceAnswerSection = blueprint.referenceAnswerGuidance != null && blueprint.referenceAnswerGuidance.trim() !== ''
+            ? `
+REFERENCE ANSWER GUIDANCE:
+${blueprint.referenceAnswerGuidance.trim()}
+`
+            : `
+REFERENCE ANSWER GUIDANCE:
+- Keep reference_answer concise and self-check focused.
+- Do not include pass/fail logic.
+`;
 
         return `
 ACT AS A SENIOR PRACTICE-ONLY ASSIGNMENT GENERATOR.
@@ -157,8 +206,8 @@ Create assignment practice questions for:
 ${blueprint.context.domainName} > ${blueprint.context.subjectName} > ${blueprint.context.topicName} > ${blueprint.context.subtopicName}
 
 TARGET DIFFICULTY: ${blueprint.difficulty.toUpperCase()}
-QUESTION COUNT: ${rules.countRange}
-QUESTION TYPES: ${rules.typeRules}
+${countSection}
+${typeSection}
 
 IMPORTANT RULES:
 - Assignments are practice only. Do not score answers.
@@ -166,6 +215,7 @@ IMPORTANT RULES:
 - Include reference_answer for self-check only.
 - Reference answers are shown after the student attempts the assignment.
 - Return raw JSON only.
+${referenceAnswerSection}
 
 JSON SHAPE REQUIRED:
 {

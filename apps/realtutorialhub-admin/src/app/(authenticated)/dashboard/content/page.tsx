@@ -394,7 +394,7 @@ export default function ContentFactoryPage({ embedded = false }: ContentFactoryP
                         </div>
                         <h1 className="text-4xl md:text-5xl font-black tracking-tighter uppercase text-[#1A1A1A]">Content Factory</h1>
                         <p className="text-sm font-bold text-slate-500 uppercase tracking-widest mt-2">
-                            Domain Ã¢â‚¬Â¢ Subject Ã¢â‚¬Â¢ Topic Ã¢â‚¬Â¢ Subtopic Ã¢â‚¬Â¢ Difficulty
+                            Domain â€¢ Subject â€¢ Topic â€¢ Subtopic â€¢ Difficulty
                         </p>
                     </div>
                     <div className="flex flex-col items-end gap-3 text-right">
@@ -498,7 +498,7 @@ export default function ContentFactoryPage({ embedded = false }: ContentFactoryP
                             </div>
                             <h1 className="text-4xl md:text-5xl font-black tracking-tighter uppercase text-[#1A1A1A]">Content Factory</h1>
                             <p className="text-sm font-bold text-slate-500 uppercase tracking-widest mt-2">
-                                Domain â€¢ Subject â€¢ Topic â€¢ Subtopic â€¢ Difficulty
+                                Domain • Subject • Topic • Subtopic • Difficulty
                             </p>
                         </div>
                         <div className="flex flex-col items-end gap-3 text-right">

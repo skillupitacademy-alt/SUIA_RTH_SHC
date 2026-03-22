@@ -301,8 +301,8 @@ export default function TutorialDashboardPage() {
             </div>
 
             <div className="p-6 space-y-6">
-              {activeTab === 'content' ? <ContentFactoryPage /> : null}
-              {activeTab === 'assignments' ? <AssignmentFactoryPage /> : null}
+              {activeTab === 'content' ? <ContentFactoryPage embedded /> : null}
+              {activeTab === 'assignments' ? <AssignmentFactoryPage embedded /> : null}
 
               {activeTab === 'versions' ? (
                 <div className="space-y-4">

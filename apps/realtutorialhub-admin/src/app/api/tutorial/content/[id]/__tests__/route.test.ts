@@ -32,6 +32,7 @@ const tutorialApiMock = vi.hoisted(() => {
     normalizeTutorialWritePayload: (value: unknown) => value,
     tutorialContentRepository: {
       withDb: vi.fn(() => tutorialApiMock.tutorialContentRepository),
+      getPublished: vi.fn(),
       upsertBlocks: vi.fn(),
       updateById: vi.fn(),
       publish: vi.fn(),
@@ -58,7 +59,7 @@ import {
   tutorialContentRepository,
 } from '@/lib/tutorial-content-api';
 
-import { PATCH } from '../route';
+import { GET, PATCH } from '../route';
 
 const validContent = {
   notes: { markdown: 'Notes content', image: null },
@@ -191,6 +192,39 @@ describe('PATCH /api/tutorial/content/[id]', () => {
       difficulty: 'simple',
       content: validContent,
     }), {
+      params: Promise.resolve({ id: '11111111-1111-1111-1111-111111111111' }),
+    });
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ data: { id: 'content-1' } });
+  });
+
+  it('returns published content for a subtopic id', async () => {
+    vi.mocked(tutorialContentRepository.getPublished).mockResolvedValueOnce([
+      {
+        id: 'content-1',
+        subtopicId: '11111111-1111-1111-1111-111111111111',
+        difficulty: 'simple',
+        contentType: 'standard',
+        content: validContent,
+        version: 3,
+        language: 'en',
+        isPublished: true,
+        generatedByAi: false,
+        aiModelUsed: null,
+        generationJobId: null,
+        adminApprovedBy: null,
+        adminApprovedAt: null,
+        qualityScore: null,
+        regenerationCount: 0,
+        createdAt: new Date('2026-01-03T00:00:00.000Z'),
+        updatedAt: new Date('2026-01-03T00:00:00.000Z'),
+        deletedAt: null,
+      } as never,
+    ]);
+    vi.mocked(toTutorialContentDTO).mockReturnValueOnce({ id: 'content-1' } as never);
+
+    const response = await GET(new Request('http://localhost/api/tutorial/content/11111111-1111-1111-1111-111111111111?difficulty=simple') as NextRequest, {
       params: Promise.resolve({ id: '11111111-1111-1111-1111-111111111111' }),
     });
 
