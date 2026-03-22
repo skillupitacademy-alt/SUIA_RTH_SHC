@@ -1,0 +1,37 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ],
+      "@quiz/db": [
+        "../../packages/db/src/index.ts"
+      ],
+      "@quiz/db/*": [
+        "../../packages/db/src/*"
+      ],
+      "@quiz/db-people": [
+        "../../packages/db-people/src/index.ts"
+      ],
+      "@quiz/db-people/*": [
+        "../../packages/db-people/src/*"
+      ],
+      "@quiz/types": [
+        "../../packages/types/src/index.ts"
+      ],
+      "@quiz/types/*": [
+        "../../packages/types/src/*"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}

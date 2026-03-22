@@ -5,7 +5,8 @@
     "description":  "A modern quiz platform monorepo",
     "workspaces":  [
                        "apps/*",
-                       "packages/*"
+                       "packages/*",
+                       "services/*"
                    ],
     "lint-staged":  {
                         "apps/**/*.{ts,tsx,js,jsx}":  [
@@ -18,7 +19,7 @@
     "scripts":  {
                     "dev":  "turbo run dev",
                     "build":  "turbo run build",
-                    "build:all":  "turbo run build --filter=@quiz/web-app --filter=@quiz/admin-app --filter=@quiz/api-server --filter=@quiz/realtutorialhub-web",
+                    "build:all":  "turbo run build --filter=@quiz/web-app --filter=@quiz/admin-app --filter=@quiz/api-server --filter=@quiz/realtutorialhub-web --filter=@quiz/skillhubcore-service --filter=@quiz/db-people",
                     "analyze:all":  "turbo run build --filter=@quiz/web-app --filter=@quiz/admin-app --filter=@quiz/realtutorialhub-web --env ANALYZE=true",
                     "lint":  "turbo run lint -- --max-warnings=0",
                     "lint:all":  "turbo run lint",
@@ -32,7 +33,7 @@
                     "k6:admin":  "k6 run k6/admin-flow.js",
                     "k6:all":  "k6 run k6/exam-flow.js && k6 run k6/auth-flow.js && k6 run k6/admin-flow.js",
                     "type-check":  "turbo run type-check",
-                    "typecheck:all":  "turbo run type-check --filter=@quiz/web-app --filter=@quiz/admin-app --filter=@quiz/api-server --filter=@quiz/realtutorialhub-web",
+                    "typecheck:all":  "turbo run type-check --filter=@quiz/web-app --filter=@quiz/admin-app --filter=@quiz/api-server --filter=@quiz/realtutorialhub-web --filter=@quiz/skillhubcore-service --filter=@quiz/db-people",
                     "ci":  "pnpm lint:all \u0026\u0026 pnpm typecheck:all \u0026\u0026 pnpm build:all",
                     "clean":  "turbo run clean \u0026\u0026 rm -rf node_modules",
                     "lighthouse:web": "cd apps/web-app && npx lhci autorun",

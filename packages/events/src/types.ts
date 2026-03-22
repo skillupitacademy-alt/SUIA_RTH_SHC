@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 export const PlatformEventTypes = {
   STUDENT_ENROLLED: 'student.enrolled',
+  HIERARCHY_SUBTOPIC_ADDED: 'hierarchy.subtopic_added',
   STUDENT_CREATED: 'student.created',
   EXAM_COMPLETED: 'exam.completed',
   PAYMENT_RECEIVED: 'payment.received',
@@ -44,6 +45,15 @@ const idPayload = (extra: Record<string, z.ZodTypeAny>) => z.object(extra);
 
 export const PlatformEventPayloadSchemas = {
   [PlatformEventTypes.STUDENT_ENROLLED]: idPayload({ userId: z.string().uuid(), batchId: z.string().uuid(), enrolledAt: isoString }),
+  [PlatformEventTypes.HIERARCHY_SUBTOPIC_ADDED]: idPayload({
+    subtopicId: z.string().uuid(),
+    topicId: z.string().uuid(),
+    subjectId: z.string().uuid(),
+    domainId: z.string().uuid(),
+    name: z.string().min(1),
+    slug: z.string().min(1),
+    difficultyLevels: z.array(z.string()),
+  }),
   [PlatformEventTypes.STUDENT_CREATED]: idPayload({ userId: z.string().uuid(), createdBy: z.string().uuid(), createdAt: isoString }),
   [PlatformEventTypes.EXAM_COMPLETED]: idPayload({ userId: z.string().uuid(), examId: z.string().uuid(), score: z.number(), completedAt: isoString }),
   [PlatformEventTypes.PAYMENT_RECEIVED]: idPayload({ userId: z.string().uuid(), paymentId: z.string().uuid(), amount: z.number().nonnegative(), receivedAt: isoString }),
@@ -66,6 +76,7 @@ export type PlatformEventPayloadMap = {
 
 export const PlatformEventEnvelopeSchemas = {
   [PlatformEventTypes.STUDENT_ENROLLED]: z.object({ ...baseFields, type: z.literal(PlatformEventTypes.STUDENT_ENROLLED), data: PlatformEventPayloadSchemas[PlatformEventTypes.STUDENT_ENROLLED] }),
+  [PlatformEventTypes.HIERARCHY_SUBTOPIC_ADDED]: z.object({ ...baseFields, type: z.literal(PlatformEventTypes.HIERARCHY_SUBTOPIC_ADDED), data: PlatformEventPayloadSchemas[PlatformEventTypes.HIERARCHY_SUBTOPIC_ADDED] }),
   [PlatformEventTypes.STUDENT_CREATED]: z.object({ ...baseFields, type: z.literal(PlatformEventTypes.STUDENT_CREATED), data: PlatformEventPayloadSchemas[PlatformEventTypes.STUDENT_CREATED] }),
   [PlatformEventTypes.EXAM_COMPLETED]: z.object({ ...baseFields, type: z.literal(PlatformEventTypes.EXAM_COMPLETED), data: PlatformEventPayloadSchemas[PlatformEventTypes.EXAM_COMPLETED] }),
   [PlatformEventTypes.PAYMENT_RECEIVED]: z.object({ ...baseFields, type: z.literal(PlatformEventTypes.PAYMENT_RECEIVED), data: PlatformEventPayloadSchemas[PlatformEventTypes.PAYMENT_RECEIVED] }),

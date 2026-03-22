@@ -18,6 +18,7 @@ COPY packages/api-client/package.json ./packages/api-client/
 COPY packages/types/package.json ./packages/types/
 COPY packages/observability/package.json ./packages/observability/
 COPY packages/ui/package.json ./packages/ui/
+COPY packages/events/package.json ./packages/events/
 RUN pnpm install --frozen-lockfile
 COPY . .
 ARG NEXT_PUBLIC_API_URL

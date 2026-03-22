@@ -1,0 +1,23 @@
+{
+  "extends": ["@quiz/eslint-config"],
+  "parserOptions": {
+    "project": "./tsconfig.json"
+  },
+  "ignorePatterns": ["dist", "coverage", "vitest.config.ts"],
+  "overrides": [
+    {
+      "files": ["**/__tests__/**", "**/*.test.ts"],
+      "parserOptions": {
+        "project": null
+      },
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/no-unused-vars": "off",
+        "@typescript-eslint/no-floating-promises": "off",
+        "@typescript-eslint/no-misused-promises": "off",
+        "simple-import-sort/imports": "off",
+        "simple-import-sort/exports": "off"
+      }
+    }
+  ]
+}

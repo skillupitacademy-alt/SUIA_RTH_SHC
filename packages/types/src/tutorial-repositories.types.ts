@@ -266,3 +266,95 @@ export interface ILiveSessionRepository {
   cancelRequest(id: string, reason: string): Promise<LiveSessionRequestRecord>;
   updateMeetingLink(id: string, meetingLink: string): Promise<LiveSessionRequestRecord | undefined>;
 }
+
+export type PeoplePlatform = 'realtutorialhub' | 'skillup' | 'both';
+export type PeopleUserRole = 'student' | 'faculty' | 'admin' | 'super_admin';
+
+export interface PeopleDbClientLike {
+  query: Record<string, any>;
+  transaction: <T>(callback: (tx: PeopleDbClientLike) => Promise<T>) => Promise<T>;
+  select: (...args: any[]) => any;
+  insert: (...args: any[]) => any;
+  update: (...args: any[]) => any;
+  delete: (...args: any[]) => any;
+}
+
+export interface PeopleUserRecord {
+  id: string;
+  email: string;
+  passwordHash: string;
+  role: PeopleUserRole;
+  platform: PeoplePlatform;
+  isActive: boolean;
+  deletedAt: Date | null;
+  version: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface PeopleSubscriptionRecord {
+  id: string;
+  userId: string;
+  planType: 'free' | 'pro' | 'enterprise';
+  features: string[];
+  status: 'active' | 'cancelled' | 'expired';
+  startedAt: Date;
+  expiresAt: Date | null;
+  deletedAt: Date | null;
+}
+
+export interface AuthUserDTO {
+  id: string;
+  email: string;
+  roles: PeopleUserRole[];
+  platforms: PeoplePlatform[];
+  subscriptions: string[];
+}
+
+export interface AuthResultDTO {
+  accessToken: string;
+  refreshToken: string;
+  user: AuthUserDTO;
+}
+
+export interface IUserRepository {
+  withDb(dbClient: PeopleDbClientLike): this;
+  transaction<T>(callback: (repo: IUserRepository) => Promise<T>): Promise<T>;
+  findByEmail(email: string): Promise<PeopleUserRecord | undefined>;
+  findById(userId: string): Promise<PeopleUserRecord | undefined>;
+  createUser(input: {
+    email: string;
+    passwordHash: string;
+    role: PeopleUserRole;
+    platform: PeoplePlatform;
+  }): Promise<PeopleUserRecord>;
+  createSubscription(input: {
+    userId: string;
+    planType: 'free' | 'pro' | 'enterprise';
+    features: string[];
+  }): Promise<PeopleSubscriptionRecord>;
+  grantPlatformAccess(userId: string, platform: PeoplePlatform): Promise<unknown>;
+  listPlatforms(userId: string): Promise<PeoplePlatform[]>;
+  getActiveSubscription(userId: string): Promise<PeopleSubscriptionRecord | undefined>;
+  createSession(input: {
+    userId: string;
+    jwtFamily: string;
+    platform: PeoplePlatform;
+    refreshTokenHash: string;
+  }): Promise<unknown>;
+  findSessionByFamily(userId: string, familyId: string): Promise<unknown>;
+  revokeSessionByFamily(userId: string, familyId: string, reason: string): Promise<unknown>;
+  revokeAllSessions(userId: string, reason: string): Promise<unknown>;
+  createTokenFamily(input: { userId: string; familyId: string }): Promise<unknown>;
+  findTokenFamilyByFamilyId(familyId: string): Promise<unknown>;
+  markTokenFamilyCompromised(familyId: string): Promise<unknown>;
+  updateTokenFamilyUsage(familyId: string): Promise<unknown>;
+  createAuditLog(input: {
+    actorId?: string | null;
+    action: string;
+    platform?: string | null;
+    ip?: string | null;
+    success?: boolean | null;
+    metadata?: Record<string, unknown> | null;
+  }): Promise<unknown>;
+}

@@ -19,9 +19,9 @@ import { PlatformEventTypes, PlatformEventPayloadSchemas, PlatformEventEnvelopeS
 import { EVENT_CONSUMER_MAP } from '../consumer-map';
 
 describe('events package', () => {
-  it('exposes schemas for all 15 Sprint 0 events', () => {
-    expect(Object.keys(PlatformEventPayloadSchemas)).toHaveLength(15);
-    expect(Object.keys(PlatformEventEnvelopeSchemas)).toHaveLength(15);
+  it('exposes schemas for all 16 Sprint 0 events', () => {
+    expect(Object.keys(PlatformEventPayloadSchemas)).toHaveLength(16);
+    expect(Object.keys(PlatformEventEnvelopeSchemas)).toHaveLength(16);
   });
 
   it('validates an event envelope through Zod', () => {
@@ -100,9 +100,9 @@ describe('events package', () => {
   });
 
   it('consumer-map.ts: validates all events map to valid URLs', () => {
-    expect(Object.keys(EVENT_CONSUMER_MAP)).toHaveLength(15);
+    expect(Object.keys(EVENT_CONSUMER_MAP)).toHaveLength(16);
     for (const key of Object.values(PlatformEventTypes)) {
-      expect(EVENT_CONSUMER_MAP[key]).toMatch(/^https:\/\/placeholder\.invalid\/consumers\//);
+      expect(EVENT_CONSUMER_MAP[key]).toEqual(expect.arrayContaining([expect.stringMatching(/^https:\/\/(?:placeholder\.invalid|tutorial-service\.invalid)\/(?:api\/workers\/|consumers\/)/)]));
     }
   });
 

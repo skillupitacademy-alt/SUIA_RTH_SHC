@@ -42,6 +42,18 @@
             "@quiz/db-tutorial/*": [
                 "./packages/db-tutorial/src/*"
             ],
+            "@quiz/db-people": [
+                "./packages/db-people/src/index.ts"
+            ],
+            "@quiz/db-people/*": [
+                "./packages/db-people/src/*"
+            ],
+            "@quiz/skillhubcore-service": [
+                "./services/skillhubcore-service/src/index.ts"
+            ],
+            "@quiz/skillhubcore-service/*": [
+                "./services/skillhubcore-service/src/*"
+            ],
             "@quiz/api-client": [
                 "./packages/api-client/src/index.ts"
             ],

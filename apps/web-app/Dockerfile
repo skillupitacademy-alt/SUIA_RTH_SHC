@@ -15,17 +15,23 @@ COPY packages/api-client/package.json ./packages/api-client/
 COPY packages/types/package.json ./packages/types/
 COPY packages/observability/package.json ./packages/observability/
 COPY packages/ui/package.json ./packages/ui/
+COPY packages/auth/package.json ./packages/auth/
+COPY packages/db-tutorial/package.json ./packages/db-tutorial/
+COPY packages/events/package.json ./packages/events/
 RUN pnpm install --frozen-lockfile
 
 FROM base AS builder
 ENV CLOUD_RUN_BUILD=true
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps/web-app/node_modules ./apps/web-app/node_modules
-COPY --from=deps /app/packages/ui/node_modules ./packages/ui/node_modules
-COPY --from=deps /app/packages/db/node_modules ./packages/db/node_modules
-COPY --from=deps /app/packages/types/node_modules ./packages/types/node_modules
 COPY --from=deps /app/packages/api-client/node_modules ./packages/api-client/node_modules
+COPY --from=deps /app/packages/auth/node_modules ./packages/auth/node_modules
+COPY --from=deps /app/packages/db/node_modules ./packages/db/node_modules
+COPY --from=deps /app/packages/db-tutorial/node_modules ./packages/db-tutorial/node_modules
+COPY --from=deps /app/packages/events/node_modules ./packages/events/node_modules
 COPY --from=deps /app/packages/observability/node_modules ./packages/observability/node_modules
+COPY --from=deps /app/packages/types/node_modules ./packages/types/node_modules
+COPY --from=deps /app/packages/ui/node_modules ./packages/ui/node_modules
 COPY . .
 ARG NEXT_PUBLIC_API_URL
 ARG NEXT_PUBLIC_WEB_APP_URL
