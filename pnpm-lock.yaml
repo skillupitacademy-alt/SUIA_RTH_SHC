@@ -1203,9 +1203,6 @@ importers:
 
   services/api-gateway:
     dependencies:
-      '@quiz/auth':
-        specifier: workspace:*
-        version: link:../../packages/auth
       '@upstash/ratelimit':
         specifier: ^2.0.6
         version: 2.0.8(@upstash/redis@1.37.0)
