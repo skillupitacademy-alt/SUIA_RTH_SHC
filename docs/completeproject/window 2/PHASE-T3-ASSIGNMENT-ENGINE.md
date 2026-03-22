@@ -1,3 +1,50 @@
+# WARNING - ARCHITECTURAL DECISION UPDATED (LOCKED)
+## Date: 2026-03-22 | Supersedes original design below
+
+## What Changed
+Tutorial assignments are SELF-DIRECTED PRACTICE only.
+No scoring. No evaluation. No pass/fail. No certificates.
+
+## What Was Removed From Original Design
+- Score tracking on assignment answers
+- Pass/fail on assignment sessions
+- Score-based tier unlocking (Simple >= 60% etc.)
+- QStash AI scoring workers (score-assignment-session, ai-score-answer)
+- assignment_answers table
+- assignment_sessions scoring fields (score, passed, time_limit_sec)
+- assignment_tier_unlocks table
+- Idempotency key pattern on sessions (not needed without scoring)
+
+## What Replaces It
+- assignment_progress table (tracks started/self_completed per tier)
+- Completion-based tier unlocking (student self-declares done)
+- Help request system (student flags question for faculty/admin)
+- Reference answers shown AFTER attempt (self-check only, not scored)
+
+## Updated Tier Unlock Sequence
+  Simple       -> always available after all 6 content blocks complete
+  Mixed        -> unlocks when Simple status = 'self_completed'
+  Intermediate -> unlocks when Mixed status = 'self_completed'
+  Expert       -> unlocks when Intermediate status = 'self_completed'
+
+## Where Evaluation Lives
+  Projects (T4)   -> evaluated by AI/peers/admin -> awards certificates
+  Exam Engine     -> formal periodic evaluation -> triggers remediation
+  Assignments     -> practice only -> no evaluation, no certificates
+
+## DB Tables Decision
+  tutorial_assignments     -> KEEP (stores practice questions)
+  assignment_progress      -> NEW (replaces assignment_sessions)
+  assignment_help_requests -> NEW (student flags question for help)
+  assignment_sessions      -> DO NOT CREATE (old design, replaced)
+  assignment_answers       -> DO NOT CREATE (old design, removed)
+  assignment_tier_unlocks  -> DO NOT CREATE (old design, replaced)
+
+---
+# Original design preserved below for reference only
+# Do not implement anything below this line
+---
+
 # PHASE-T3: Assignment Engine
 ## docs/blueprints/PHASE-T3-ASSIGNMENT-ENGINE.md
 

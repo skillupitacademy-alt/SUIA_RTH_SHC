@@ -174,6 +174,32 @@ Commit: "feat(tutorial): T2 — 6 content blocks, block editor, content API"
 **No new files needed.**
 
 ```
+### ASSIGNMENT ENGINE ARCHITECTURAL DECISION (LOCKED)
+
+Assignments are PRACTICE ONLY - no scoring, no evaluation.
+
+This overrides the original T3 design in PHASE-T3-ASSIGNMENT-ENGINE.md.
+
+What to build:
+  -> assignment_progress table (completion tracking per tier)
+  -> assignment_help_requests table (student help requests)
+  -> Tier unlock based on completion not scores
+  -> Student self-declares tier complete
+  -> Faculty/admin sees open help requests
+
+What NOT to build:
+  -> No QStash scoring workers
+  -> No score fields on any assignment table
+  -> No pass/fail logic
+  -> No assignment_sessions table
+  -> No assignment_answers table
+  -> No assignment_tier_unlocks table
+
+Evaluation path:
+  Projects (T4) -> certificates
+  Exam Engine   -> formal evaluation
+  Assignments   -> practice only
+
 T2 complete. Now execute Phase T3.
 Read T3 prompts from TUTORIAL-ENGINE-EXECUTION-PLAN.md.
 Read T3 FAANG additions from FAANG-COMPLIANCE-WINDOW2-WINDOW3.md.
