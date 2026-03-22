@@ -10,6 +10,7 @@ import { useDomains, useSubjects, useSubtopics, useTopics } from '@/hooks/useAdm
 import { AssignmentSchema, type AssignmentSchemaType } from '@/lib/factory/assignment-schema';
 import { TutorialPromptService } from '@/lib/factory/prompt-service';
 import { cn } from '@/lib/utils';
+import { useTutorialFactoryStore } from '@/store/tutorial-factory-store';
 
 type AssignmentDifficulty = 'simple' | 'mixed' | 'intermediate' | 'expert';
 
@@ -23,13 +24,14 @@ const DIFFICULTIES: Array<{ key: AssignmentDifficulty; label: string; descriptio
 ];
 
 export default function AssignmentFactoryPage() {
-    const [selections, setSelections] = useState({
-        domainId: '',
-        subjectId: '',
-        topicId: '',
-        subtopicId: '',
-    });
-    const [difficulty, setDifficulty] = useState<AssignmentDifficulty>('simple');
+    const selections = useTutorialFactoryStore((state) => ({
+        domainId: state.selection.domainId,
+        subjectId: state.selection.subjectId,
+        topicId: state.selection.topicId,
+        subtopicId: state.selection.subtopicId,
+    }));
+    const difficulty = useTutorialFactoryStore((state) => state.selection.difficulty);
+    const setFactorySelection = useTutorialFactoryStore((state) => state.setSelection);
     const [generatedPrompt, setGeneratedPrompt] = useState('');
     const [rawJson, setRawJson] = useState('');
     const [assignmentPreview, setAssignmentPreview] = useState<AssignmentEntry[]>([]);
@@ -222,7 +224,22 @@ export default function AssignmentFactoryPage() {
                         <div className="bg-white rounded-[2.5rem] p-10 border border-slate-200 shadow-sm flex flex-col gap-6 relative group h-full min-h-[420px]">
                             <ContextSelector
                                 selections={selections}
-                                onChange={(field, value) => setSelections((prev) => ({ ...prev, [field]: value }))}
+                                onChange={(field, value) => {
+                                    const next: Record<string, string> = { [field]: value };
+                                    if (field === 'domainId') {
+                                        next.subjectId = '';
+                                        next.topicId = '';
+                                        next.subtopicId = '';
+                                    }
+                                    if (field === 'subjectId') {
+                                        next.topicId = '';
+                                        next.subtopicId = '';
+                                    }
+                                    if (field === 'topicId') {
+                                        next.subtopicId = '';
+                                    }
+                                    setFactorySelection(next as never);
+                                }}
                             />
                         </div>
 
@@ -241,7 +258,7 @@ export default function AssignmentFactoryPage() {
                                         <button
                                             key={option.key}
                                             type="button"
-                                            onClick={() => setDifficulty(option.key)}
+                                            onClick={() => setFactorySelection({ difficulty: option.key })}
                                             className={cn(
                                                 'rounded-[1.75rem] border p-5 text-left transition-all',
                                                 active

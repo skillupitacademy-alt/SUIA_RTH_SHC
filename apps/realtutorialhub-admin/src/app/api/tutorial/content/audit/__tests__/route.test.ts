@@ -9,15 +9,16 @@ const tutorialApiMock = vi.hoisted(() => {
     }
   }
 
-  return {
-    TutorialAuthError,
-    isTutorialAuthError: (error: unknown) => error instanceof TutorialAuthError,
-    requireAdmin: vi.fn(),
-    tutorialContentRepository: {
-      getAuditEntries: vi.fn(),
-    },
-    logRouteError: vi.fn(),
-  };
+    return {
+      TutorialAuthError,
+      isTutorialAuthError: (error: unknown) => error instanceof TutorialAuthError,
+      requireAdmin: vi.fn(),
+      tutorialContentRepository: {
+        findBySubtopicId: vi.fn(),
+        getAuditEntries: vi.fn(),
+      },
+      logRouteError: vi.fn(),
+    };
 });
 
 vi.mock('@/lib/tutorial-content-api', () => tutorialApiMock);
@@ -72,5 +73,28 @@ describe('GET /api/tutorial/content/audit', () => {
         ]),
       })
     );
+  });
+
+  it('returns audit entries for a subtopic filter', async () => {
+    vi.mocked(requireAdmin).mockResolvedValueOnce({ userId: 'admin-1', roles: ['ADMIN'], isAdmin: true } as never);
+    vi.mocked(tutorialContentRepository.findBySubtopicId).mockResolvedValueOnce([
+      { id: 'content-1' },
+      { id: 'content-2' },
+    ] as never);
+    vi.mocked(tutorialContentRepository.getAuditEntries).mockResolvedValue([
+      {
+        id: 'audit-1',
+        contentId: 'content-1',
+        userId: 'admin-1',
+        action: 'updated',
+        diff: { after: true },
+        createdAt: new Date('2026-03-22T00:00:00.000Z'),
+      },
+    ] as never);
+
+    const response = await GET(createRequest('?subtopicId=11111111-1111-1111-1111-111111111111'));
+
+    expect(response.status).toBe(200);
+    expect(tutorialContentRepository.findBySubtopicId).toHaveBeenCalledWith('11111111-1111-1111-1111-111111111111');
   });
 });

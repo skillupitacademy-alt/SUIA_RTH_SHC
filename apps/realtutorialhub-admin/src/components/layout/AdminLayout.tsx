@@ -11,7 +11,6 @@ import {
     Database,
     LayoutDashboard,
     LogOut,
-    PenSquare,
     ShieldCheck,
     Sparkles,
     Users
@@ -68,8 +67,7 @@ const ADMIN_SECTIONS: SidebarSection[] = [
     {
         label: 'Tutorial',
         items: [
-            { type: 'link', name: 'Tutorial Content', href: '/dashboard/content', icon: PenSquare },
-            { type: 'link', name: 'Assignments', href: '/dashboard/assignments', icon: Sparkles },
+            { type: 'link', name: 'Tutorial', href: '/dashboard/tutorial', icon: Sparkles },
             { type: 'soon', name: 'Content Versions', icon: Clock3 },
             { type: 'soon', name: 'Audit Trail', icon: Clock3 },
             { type: 'soon', name: 'Prompt Generator', icon: Clock3 },

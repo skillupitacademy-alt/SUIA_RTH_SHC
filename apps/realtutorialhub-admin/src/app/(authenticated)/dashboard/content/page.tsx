@@ -28,6 +28,7 @@ import { useDomains, useSubjects, useSubtopics, useTopics } from '@/hooks/useAdm
 import { JsonValidator } from '@/lib/factory/json-validator';
 import { TutorialPromptService } from '@/lib/factory/prompt-service';
 import { cn } from '@/lib/utils';
+import { useTutorialFactoryStore } from '@/store/tutorial-factory-store';
 
 type ContentDifficulty = 'simple' | 'mixed' | 'intermediate' | 'expert';
 type PublishState = 'draft' | 'published';
@@ -148,14 +149,19 @@ function toIssueLabel(issue: { path: (string | number)[]; message: string }) {
     return `${path}: ${issue.message}`;
 }
 
-export default function ContentFactoryPage() {
-    const [selection, setSelection] = useState<ContextSelection>({
-        domainId: '',
-        subjectId: '',
-        topicId: '',
-        subtopicId: '',
-    });
-    const [difficulty, setDifficulty] = useState<ContentDifficulty>('mixed');
+type ContentFactoryPageProps = {
+    embedded?: boolean;
+};
+
+export default function ContentFactoryPage({ embedded = false }: ContentFactoryPageProps = {}) {
+    const selection = useTutorialFactoryStore((state) => ({
+        domainId: state.selection.domainId,
+        subjectId: state.selection.subjectId,
+        topicId: state.selection.topicId,
+        subtopicId: state.selection.subtopicId,
+    }));
+    const difficulty = useTutorialFactoryStore((state) => state.selection.difficulty);
+    const setFactorySelection = useTutorialFactoryStore((state) => state.setSelection);
     const [sourceMaterial, setSourceMaterial] = useState(
         'Source material is optional. Paste syllabus notes, a textbook excerpt, or working notes here.'
     );
@@ -279,28 +285,26 @@ export default function ContentFactoryPage() {
     };
 
     const updateSelection = (field: keyof ContextSelection, value: string) => {
-        setSelection((previous) => {
-            const next = { ...previous, [field]: value } as ContextSelection;
-            if (field === 'domainId') {
-                next.subjectId = '';
-                next.topicId = '';
-                next.subtopicId = '';
-            }
-            if (field === 'subjectId') {
-                next.topicId = '';
-                next.subtopicId = '';
-            }
-            if (field === 'topicId') {
-                next.subtopicId = '';
-            }
-            return next;
-        });
+        const next: Partial<ContextSelection> = { [field]: value } as Partial<ContextSelection>;
+        if (field === 'domainId') {
+            next.subjectId = '';
+            next.topicId = '';
+            next.subtopicId = '';
+        }
+        if (field === 'subjectId') {
+            next.topicId = '';
+            next.subtopicId = '';
+        }
+        if (field === 'topicId') {
+            next.subtopicId = '';
+        }
+        setFactorySelection(next);
         setSavedContentId(null);
         setPublishState('draft');
     };
 
     const updateDifficulty = (nextDifficulty: ContentDifficulty) => {
-        setDifficulty(nextDifficulty);
+        setFactorySelection({ difficulty: nextDifficulty });
         setSavedContentId(null);
         setPublishState('draft');
     };
@@ -379,7 +383,110 @@ export default function ContentFactoryPage() {
         }
     };
 
-    return (
+    const body = (
+        <div className="flex-1 overflow-y-auto custom-scrollbar bg-slate-50/50">
+            <div className="max-w-[1600px] mx-auto p-8 space-y-8 pb-32">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-slate-200/70">
+                    <div>
+                        <div className="flex items-center gap-3 mb-2">
+                            <WandSparkles size={20} className="text-[#FF4B91]" />
+                            <span className="text-xs font-black uppercase tracking-[0.3em] text-[#FF4B91]">Canonical Content Builder</span>
+                        </div>
+                        <h1 className="text-4xl md:text-5xl font-black tracking-tighter uppercase text-[#1A1A1A]">Content Factory</h1>
+                        <p className="text-sm font-bold text-slate-500 uppercase tracking-widest mt-2">
+                            Domain Ã¢â‚¬Â¢ Subject Ã¢â‚¬Â¢ Topic Ã¢â‚¬Â¢ Subtopic Ã¢â‚¬Â¢ Difficulty
+                        </p>
+                    </div>
+                    <div className="flex flex-col items-end gap-3 text-right">
+                        <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-slate-200 text-[10px] font-black uppercase tracking-widest text-slate-500 shadow-sm">
+                            <Sparkles size={14} className="text-[#FF4B91]" />
+                            QBF-aligned content flow
+                        </div>
+                        <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-slate-200 text-[10px] font-black uppercase tracking-widest text-slate-500 shadow-sm">
+                            <Eye size={14} className={publishState === 'published' ? 'text-emerald-500' : 'text-amber-500'} />
+                            {publishState === 'published' ? 'Published' : 'Draft workspace'}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                    <section className="bg-white rounded-[2.5rem] p-10 border border-slate-200 shadow-sm flex flex-col gap-6 h-full">
+                        <div className="flex items-center gap-3">
+                            <div className="h-6 w-1 bg-[#FF4B91] rounded-full" />
+                            <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
+                                1. Target Context
+                            </h3>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <SelectField
+                                label="Domain"
+                                value={selection.domainId}
+                                onChange={(value) => updateSelection('domainId', value)}
+                                options={domains}
+                                loading={loadingDomains}
+                                placeholder="Select Domain"
+                                active={selection.domainId !== ''}
+                                icon={<Layers3 className="w-3 h-3" />}
+                                hideCreate={true}
+                            />
+                            <SelectField
+                                label="Subject"
+                                value={selection.subjectId}
+                                onChange={(value) => updateSelection('subjectId', value)}
+                                options={subjects}
+                                loading={loadingSubjects}
+                                disabled={selection.domainId === ''}
+                                placeholder="Select Subject"
+                                active={selection.domainId !== ''}
+                                icon={<Box className="w-3 h-3" />}
+                                hideCreate={true}
+                            />
+                            <SelectField
+                                label="Topic"
+                                value={selection.topicId}
+                                onChange={(value) => updateSelection('topicId', value)}
+                                options={topics}
+                                loading={loadingTopics}
+                                disabled={selection.subjectId === ''}
+                                placeholder="Select Topic"
+                                active={selection.subjectId !== ''}
+                                icon={<BookOpenText className="w-3 h-3" />}
+                                hideCreate={true}
+                            />
+                            <SelectField
+                                label="Subtopic"
+                                value={selection.subtopicId}
+                                onChange={(value) => updateSelection('subtopicId', value)}
+                                options={subtopics}
+                                loading={loadingSubtopics}
+                                disabled={selection.topicId === ''}
+                                placeholder="Select Subtopic"
+                                active={selection.topicId !== ''}
+                                icon={<Target className="w-3 h-3" />}
+                                hideCreate={true}
+                            />
+                        </div>
+
+                        {selectionComplete === false ? (
+                            <div className="rounded-[1.5rem] border border-amber-200 bg-amber-50/80 p-4 text-amber-700">
+                                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em]">
+                                    <AlertCircle size={14} />
+                                    Context incomplete
+                                </div>
+                                <p className="mt-2 text-sm">
+                                    Select Domain, Subject, Topic, Subtopic, and Difficulty before generating prompts.
+                                </p>
+                            </div>
+                        ) : null}
+                    </section>
+                    {/* truncated */}
+                </div>
+            </div>
+        </div>
+    );
+
+    return embedded ? body : (
         <FactoryLayout title="Tutorial Content Factory" subtitle="Question Bank Factory Layout" backPath="/dashboard">
             <div className="flex-1 overflow-y-auto custom-scrollbar bg-slate-50/50">
                 <div className="max-w-[1600px] mx-auto p-8 space-y-8 pb-32">

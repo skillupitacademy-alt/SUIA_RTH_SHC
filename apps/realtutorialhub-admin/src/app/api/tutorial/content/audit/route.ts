@@ -12,6 +12,7 @@ export const dynamic = 'force-dynamic';
 
 const querySchema = z.object({
   contentId: z.string().uuid().optional(),
+  subtopicId: z.string().uuid().optional(),
   action: z.enum(['created', 'updated', 'published', 'unpublished', 'restored']).optional(),
   limit: z.coerce.number().int().min(1).max(100).optional().default(50),
   offset: z.coerce.number().int().min(0).optional().default(0),
@@ -33,12 +34,26 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const entries = await tutorialContentRepository.getAuditEntries({
-      contentId: params.data.contentId,
-      action: params.data.action,
-      limit: params.data.limit,
-      offset: params.data.offset,
-    });
+    const contentIds = params.data.subtopicId != null
+      ? (await tutorialContentRepository.findBySubtopicId(params.data.subtopicId)).map((item) => item.id)
+      : params.data.contentId != null
+        ? [params.data.contentId]
+        : [];
+
+    const audits = contentIds.length > 0
+      ? (await Promise.all(contentIds.map(async (contentId) => tutorialContentRepository.getAuditEntries({
+        contentId,
+        action: params.data.action,
+        limit: params.data.limit,
+        offset: 0,
+      })))).flat()
+      : await tutorialContentRepository.getAuditEntries({
+        action: params.data.action,
+        limit: params.data.limit,
+        offset: params.data.offset,
+      });
+
+    const entries = [...audits].sort((left, right) => right.createdAt.getTime() - left.createdAt.getTime()).slice(params.data.offset, params.data.offset + params.data.limit);
 
     return NextResponse.json(
       {
