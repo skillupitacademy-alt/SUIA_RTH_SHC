@@ -11,6 +11,35 @@ const mocks = vi.hoisted(() => {
     dbUpdateThrows: null as Error | null,
   };
 
+  const dbInsertReturning = vi.fn(async () => {
+    if (state.dbInsertThrows !== null) {
+      throw state.dbInsertThrows;
+    }
+    return state.insertRows;
+  });
+
+  const dbUpdateReturning = vi.fn(async () => {
+    if (state.dbUpdateThrows !== null) {
+      throw state.dbUpdateThrows;
+    }
+    return state.updateRows;
+  });
+
+  const transactionClient = {
+    insert: vi.fn(() => ({
+      values: vi.fn(() => ({
+        returning: dbInsertReturning,
+      })),
+    })),
+    update: vi.fn(() => ({
+      set: vi.fn(() => ({
+        where: vi.fn(() => ({
+          returning: dbUpdateReturning,
+        })),
+      })),
+    })),
+  };
+
   return {
     state,
     receiverVerify: vi.fn(),
@@ -19,18 +48,11 @@ const mocks = vi.hoisted(() => {
     redisDel: vi.fn(),
     publishJSON: vi.fn(),
     dbSelectWhere: vi.fn(async () => state.selectRows),
-    dbInsertReturning: vi.fn(async () => {
-      if (state.dbInsertThrows !== null) {
-        throw state.dbInsertThrows;
-      }
-      return state.insertRows;
-    }),
-    dbUpdateReturning: vi.fn(async () => {
-      if (state.dbUpdateThrows !== null) {
-        throw state.dbUpdateThrows;
-      }
-      return state.updateRows;
-    }),
+    dbInsertReturning,
+    dbUpdateReturning,
+    dbTransaction: vi.fn(async (callback: (tx: typeof transactionClient) => Promise<unknown>) =>
+      callback(transactionClient)
+    ),
     loggerInfo: vi.fn(),
     loggerError: vi.fn(),
     withTimeout: vi.fn((promise: Promise<unknown>) => promise),
@@ -86,6 +108,7 @@ vi.mock('@quiz/db-tutorial', () => ({
         })),
       })),
     })),
+    transaction: mocks.dbTransaction,
   },
   remediationTriggers: { name: 'remediation_triggers' },
   STANDARD_QUERY_TIMEOUT: 15_000,
@@ -182,6 +205,7 @@ describe('handle-exam-completed worker', () => {
 
     expect(response.status).toBe(200);
     expect(mocks.dbSelectWhere).toHaveBeenCalledTimes(1);
+    expect(mocks.dbTransaction).toHaveBeenCalledTimes(1);
     expect(mocks.publishJSON).toHaveBeenCalledTimes(1);
     expect(mocks.publishJSON).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -210,6 +234,7 @@ describe('handle-exam-completed worker', () => {
 
     expect(response.status).toBe(200);
     expect(mocks.dbSelectWhere).not.toHaveBeenCalled();
+    expect(mocks.dbTransaction).not.toHaveBeenCalled();
     expect(mocks.publishJSON).not.toHaveBeenCalled();
     expect(mocks.redisSet).not.toHaveBeenCalled();
   });
@@ -225,6 +250,7 @@ describe('handle-exam-completed worker', () => {
 
     expect(response.status).toBe(401);
     expect(mocks.dbSelectWhere).not.toHaveBeenCalled();
+    expect(mocks.dbTransaction).not.toHaveBeenCalled();
     expect(mocks.publishJSON).not.toHaveBeenCalled();
   });
 
@@ -245,6 +271,7 @@ describe('handle-exam-completed worker', () => {
 
     expect(response.status).toBe(400);
     expect(mocks.dbSelectWhere).not.toHaveBeenCalled();
+    expect(mocks.dbTransaction).not.toHaveBeenCalled();
     expect(mocks.publishJSON).not.toHaveBeenCalled();
   });
 
@@ -257,11 +284,12 @@ describe('handle-exam-completed worker', () => {
 
     expect(response.status).toBe(200);
     expect(mocks.publishJSON).not.toHaveBeenCalled();
+    expect(mocks.dbTransaction).toHaveBeenCalledTimes(1);
     expect(mocks.redisSet).toHaveBeenNthCalledWith(2, `remediation:${examResultId}`, 'processed', { ex: 86_400 });
   });
 
-  it('returns 500 and logs a structured error when the DB write fails', async () => {
-    mocks.state.dbInsertThrows = new Error('db failed');
+  it('returns 500 and logs transaction and worker errors when the DB write fails', async () => {
+    mocks.state.dbUpdateThrows = new Error('db failed');
 
     const response = await POST(createRequest({
       userId,
@@ -270,6 +298,14 @@ describe('handle-exam-completed worker', () => {
     }));
 
     expect(response.status).toBe(500);
+    expect(mocks.loggerError).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event: 'transaction_failed',
+        operation: 'handle-exam-completed.remediation-upsert',
+        error: 'db failed',
+        context: { userId, examResultId },
+      })
+    );
     expect(mocks.loggerError).toHaveBeenCalledWith(
       expect.objectContaining({
         event: 'remediation.worker_failed',

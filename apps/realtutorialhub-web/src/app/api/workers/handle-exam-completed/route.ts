@@ -53,6 +53,7 @@ type QStashClientLike = {
 };
 
 type DbLike = typeof db;
+type DbTransactionLike = Parameters<DbLike['transaction']>[0] extends (tx: infer T) => Promise<unknown> | unknown ? T : never;
 
 interface WorkerDeps {
   getRedis: () => RedisLike;
@@ -142,22 +143,52 @@ export async function processExamCompletedEnvelope(
     let remediation = existingRows[0] ?? null;
 
     if (remediation === null) {
-      const insertedRows = await withTimeout(
-        deps.dbClient
-          .insert(remediationTriggers)
-          .values({
-            examResultId,
-            userId,
-            weakSubtopicIds: weakSubtopics.map((item: { subtopicId: string }) => item.subtopicId),
-            recommendedContentTypes: [],
-            status: 'pending',
-          })
-          .returning(),
-        STANDARD_QUERY_TIMEOUT,
-        'handle-exam-completed.insert'
-      );
+      try {
+        await deps.dbClient.transaction(async (tx: DbTransactionLike) => {
+          const insertedRows = await withTimeout(
+            tx
+              .insert(remediationTriggers)
+              .values({
+                examResultId,
+                userId,
+                weakSubtopicIds: weakSubtopics.map((item: { subtopicId: string }) => item.subtopicId),
+                recommendedContentTypes: [],
+                status: 'pending',
+              })
+              .returning(),
+            STANDARD_QUERY_TIMEOUT,
+            'handle-exam-completed.insert'
+          );
 
-      remediation = insertedRows[0] ?? null;
+          remediation = insertedRows[0] ?? null;
+          if (remediation === null) {
+            throw new Error('Failed to create remediation trigger');
+          }
+
+          const updatedRows = await withTimeout(
+            tx
+              .update(remediationTriggers)
+              .set({
+                status: 'completed',
+                updatedAt: deps.now(),
+              })
+              .where(eq(remediationTriggers.id, remediation.id))
+              .returning(),
+            STANDARD_QUERY_TIMEOUT,
+            'handle-exam-completed.complete'
+          );
+
+          remediation = updatedRows[0] ?? remediation;
+        });
+      } catch (error) {
+        deps.logger.error({
+          event: 'transaction_failed',
+          operation: 'handle-exam-completed.remediation-upsert',
+          error: toErrorMessage(error),
+          context: { userId, examResultId },
+        });
+        throw error;
+      }
     }
 
     if (remediation === null) {
@@ -177,7 +208,7 @@ export async function processExamCompletedEnvelope(
         });
       }
 
-      await withTimeout(
+      const updatedRows = await withTimeout(
         deps.dbClient
           .update(remediationTriggers)
           .set({
@@ -189,6 +220,8 @@ export async function processExamCompletedEnvelope(
         STANDARD_QUERY_TIMEOUT,
         'handle-exam-completed.complete'
       );
+
+      remediation = updatedRows[0] ?? remediation;
     }
 
     await redis.set(redisKey, 'processed', { ex: 86_400 });
