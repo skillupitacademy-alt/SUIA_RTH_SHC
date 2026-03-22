@@ -15,7 +15,7 @@ const apiUrlBase = (process.env.NEXT_PUBLIC_API_URL || 'https://api.realtutorial
 const nextConfig = {
   compress: true,
   output: process.env.CLOUD_RUN_BUILD === 'true' ? 'standalone' : undefined,
-  transpilePackages: ['@quiz/api-client', '@quiz/db', '@quiz/db-tutorial', '@quiz/events', '@quiz/types', '@quiz/ui', 'lucide-react'],
+  transpilePackages: ['@quiz/api-client', '@quiz/auth', '@quiz/db', '@quiz/db-tutorial', '@quiz/events', '@quiz/types', '@quiz/ui', 'lucide-react'],
   images: {
     remotePatterns: [
       {

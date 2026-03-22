@@ -475,6 +475,9 @@ importers:
       '@quiz/api-client':
         specifier: workspace:*
         version: link:../../packages/api-client
+      '@quiz/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
       '@quiz/db-tutorial':
         specifier: workspace:*
         version: link:../../packages/db-tutorial
@@ -514,6 +517,9 @@ importers:
       '@upstash/redis':
         specifier: ^1.36.2
         version: 1.37.0
+      '@upstash/vector':
+        specifier: ^1.2.3
+        version: 1.2.3
       '@vercel/analytics':
         specifier: ^1.6.1
         version: 1.6.1(next@16.1.6(@opentelemetry/api@1.9.0)(@playwright/test@1.58.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)

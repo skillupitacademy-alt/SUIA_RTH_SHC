@@ -13,6 +13,7 @@
     "dependencies": {
         "@next/bundle-analyzer": "^16.1.6",
         "@quiz/api-client": "workspace:*",
+        "@quiz/auth": "workspace:*",
         "@quiz/events": "workspace:*",
         "@quiz/db-tutorial": "workspace:*",
         "@quiz/observability": "workspace:*",
@@ -20,6 +21,7 @@
     "@quiz/ui": "workspace:*",
         "@upstash/qstash": "^2.9.1",
         "@upstash/redis": "^1.36.2",
+        "@upstash/vector": "^1.2.3",
         "@sentry/nextjs": "^10.40.0",
         "@tanstack/react-query": "^5.90.21",
         "@tanstack/react-query-devtools": "^5.91.3",
