@@ -6,7 +6,7 @@ const SKILLHUBCORE_LOGIN_URL =
   process.env.NEXT_PUBLIC_SKILLHUBCORE_LOGIN_URL ??
   'https://api.skillhubcore.in/login';
 
-const PUBLIC_PATHS = ['/', '/api/healthz', '/login', '/forgot-password', '/reset-password', '/unauthorized'];
+const PUBLIC_PATHS = ['/api/healthz', '/login', '/forgot-password', '/reset-password', '/unauthorized'];
 const PROTECTED_PREFIXES = [
   '/dashboard/',
   '/dashboard',
@@ -21,6 +21,7 @@ const PROTECTED_PREFIXES = [
   '/reports/',
   '/reports',
   '/api/',
+  '/',
 ];
 const ADMIN_ROLES = ['admin', 'super_admin'];
 

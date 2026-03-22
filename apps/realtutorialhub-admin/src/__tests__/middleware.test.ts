@@ -17,6 +17,14 @@ const makeRequest = (pathname: string, cookie?: string) =>
   });
 
 describe('realtutorialhub-admin proxy', () => {
+  it('redirects the root route to SkillHubCore login when unauthenticated', async () => {
+    const response = await proxy(makeRequest('/'));
+
+    expect(response.status).toBe(307);
+    expect(response.headers.get('location')).toContain('skillhubcore');
+    expect(new URL(response.headers.get('location') ?? '').searchParams.get('redirect')).toBe('/');
+  });
+
   it('redirects protected dashboard routes to SkillHubCore login when unauthenticated', async () => {
     const response = await proxy(makeRequest('/dashboard/users'));
 
