@@ -1,6 +1,44 @@
 # PHASE-T1: Tutorial Engine Foundation
 ## docs/blueprints/PHASE-T1-TUTORIAL-FOUNDATION.md
 
+## ⚠️ VIDEO SECTION REDESIGNED (LOCKED)
+## Date: 2026-03-22 | Supersedes original video design
+
+Original design: pre-recorded video links per subtopic
+New design: live session request system
+
+REMOVED:
+  ✗ VideoBlock component
+  ✗ video field in TutorialContentJSON
+  ✗ tutorial_video_links table (do not populate)
+  ✗ video_watched column
+  ✗ VideoNotWatchedError
+  ✗ Video gate on assignments
+
+REPLACED WITH:
+  ✓ Live session request system
+  ✓ Student requests live session per subtopic when they have a doubt
+  ✓ Faculty sees requests in admin app, accepts and adds meeting link
+  ✓ Platform sends meeting link to student via notification
+  ✓ No video conferencing built - platform manages requests only
+  ✓ Faculty uses their own tool (Zoom/Meet/Teams) - they paste the link
+
+FLOW:
+  Student reads subtopic -> has doubt -> clicks "Request Live Session"
+  -> Describes doubt (optional text)
+  -> Request saved with subtopic context
+  -> Faculty sees open requests in admin app
+  -> Faculty accepts -> sets time -> pastes meeting link
+  -> Student notified with link + time
+  -> Both join at scheduled time via external tool
+
+NO third-party video API. No cost. Faculty pastes link manually.
+
+---
+Original video design preserved below for reference only.
+Do not implement video links or VideoBlock.
+---
+
 > Status: Ready for implementation
 > Prerequisites: Phase 2 Tasks 56 (Repository Pattern), 62 (Event Bus), 95 (DB Transactions)
 > Sprint: Tutorial Sprint 1 (Month 1, Weeks 1–4)
