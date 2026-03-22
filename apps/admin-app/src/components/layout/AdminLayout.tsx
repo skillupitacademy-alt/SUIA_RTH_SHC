@@ -10,6 +10,7 @@ import {
     Database,
     LayoutDashboard,
     LogOut,
+    PenSquare,
     ShieldCheck,
     Users
 } from 'lucide-react';
@@ -34,6 +35,7 @@ const ADMIN_NAV = [
     { name: 'Smart Tutor', href: '/dashboard/tutor', icon: Brain },
     { name: 'Question Bank', href: '/questions', icon: Database },
     { name: 'Question Factory', href: '/factory/question-generator', icon: BarChart3 },
+    { name: 'Tutorial Content', href: '/dashboard/content', icon: PenSquare },
     { name: 'Reports', href: '/reports', icon: BarChart3 },
     { name: 'Users', href: '/users', icon: Users },
     { name: 'Governance', href: '/governance', icon: ShieldCheck },
