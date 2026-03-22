@@ -46,8 +46,8 @@ vi.mock('@upstash/ratelimit', () => {
 const env = {
   JWT_SECRET: 'gateway-secret',
   INTERNAL_GATEWAY_SECRET: 'internal-gateway-secret',
-  UPSTASH_REDIS_URL: 'https://redis.example.com',
-  UPSTASH_REDIS_TOKEN: 'redis-token',
+  UPSTASH_REDIS_REST_URL: 'https://redis.example.com',
+  UPSTASH_REDIS_REST_TOKEN: 'redis-token',
   SKILLHUBCORE_URL: 'https://skillhubcore.example.com',
   STUDENT_FACULTY_URL: 'https://student-faculty.example.com',
   EXAM_SERVICE_URL: 'https://exam.example.com',

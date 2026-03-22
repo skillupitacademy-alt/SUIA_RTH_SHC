@@ -11,14 +11,14 @@ type RatelimitEntry = {
 const limiterCache = new Map<string, RatelimitEntry>();
 
 function getLimiter(env: GatewayBindings): Ratelimit {
-  const cacheKey = `${env.UPSTASH_REDIS_URL}:${env.UPSTASH_REDIS_TOKEN}`;
+  const cacheKey = `${env.UPSTASH_REDIS_REST_URL}:${env.UPSTASH_REDIS_REST_TOKEN}`;
   const existing = limiterCache.get(cacheKey);
   if (existing !== undefined) {
     return existing.limiter;
   }
 
   const limiter = new Ratelimit({
-    redis: new Redis({ url: env.UPSTASH_REDIS_URL, token: env.UPSTASH_REDIS_TOKEN }),
+    redis: new Redis({ url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN }),
     limiter: Ratelimit.slidingWindow(100, '1 m'),
     prefix: 'gateway:rl',
   });
@@ -35,10 +35,10 @@ export function createRateLimitMiddleware(): MiddlewareHandler {
     }
 
     if (
-      typeof c.env.UPSTASH_REDIS_URL !== 'string' ||
-      c.env.UPSTASH_REDIS_URL.length === 0 ||
-      typeof c.env.UPSTASH_REDIS_TOKEN !== 'string' ||
-      c.env.UPSTASH_REDIS_TOKEN.length === 0
+      typeof c.env.UPSTASH_REDIS_REST_URL !== 'string' ||
+      c.env.UPSTASH_REDIS_REST_URL.length === 0 ||
+      typeof c.env.UPSTASH_REDIS_REST_TOKEN !== 'string' ||
+      c.env.UPSTASH_REDIS_REST_TOKEN.length === 0
     ) {
       await next();
       return;

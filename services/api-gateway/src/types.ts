@@ -10,8 +10,8 @@ export interface GatewayBindings {
   ENVIRONMENT?: string;
   JWT_SECRET: string;
   INTERNAL_GATEWAY_SECRET: string;
-  UPSTASH_REDIS_URL: string;
-  UPSTASH_REDIS_TOKEN: string;
+  UPSTASH_REDIS_REST_URL: string;
+  UPSTASH_REDIS_REST_TOKEN: string;
   SKILLHUBCORE_URL: string;
   STUDENT_FACULTY_URL: string;
   EXAM_SERVICE_URL: string;
