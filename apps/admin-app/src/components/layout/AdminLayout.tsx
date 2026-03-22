@@ -7,6 +7,7 @@ import {
     BarChart3,
     Brain,
     ChevronRight,
+    Clock3,
     Database,
     LayoutDashboard,
     LogOut,
@@ -16,7 +17,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { type ComponentType, type ReactNode,useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 
 import { AdminGuard } from '@/components/auth/AdminGuard';
@@ -29,20 +30,53 @@ import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth-store';
 import { clientLogger } from '@/utils/clientLogger';
 
-const ADMIN_NAV = [
-    { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-    { name: 'Global Intelligence', href: '/dashboard/intelligence', icon: BarChart3 },
-    { name: 'Smart Tutor', href: '/dashboard/tutor', icon: Brain },
-    { name: 'Question Bank', href: '/questions', icon: Database },
-    { name: 'Question Factory', href: '/factory/question-generator', icon: BarChart3 },
-    { name: 'Tutorial Content', href: '/dashboard/content', icon: PenSquare },
-    { name: 'Reports', href: '/reports', icon: BarChart3 },
-    { name: 'Users', href: '/users', icon: Users },
-    { name: 'Governance', href: '/governance', icon: ShieldCheck },
+type SidebarLinkItem = {
+    type: 'link';
+    name: string;
+    href: string;
+    icon: ComponentType<{ size?: number; className?: string }>;
+};
+
+type SidebarComingSoonItem = {
+    type: 'soon';
+    name: string;
+    icon: ComponentType<{ size?: number; className?: string }>;
+};
+
+type SidebarItem = SidebarLinkItem | SidebarComingSoonItem;
+
+type SidebarSection = {
+    label: string;
+    items: SidebarItem[];
+};
+
+const ADMIN_SECTIONS: SidebarSection[] = [
+    {
+        label: 'Platform Control',
+        items: [
+            { type: 'link', name: 'Dashboard', href: '/', icon: LayoutDashboard },
+            { type: 'link', name: 'Global Intelligence', href: '/dashboard/intelligence', icon: BarChart3 },
+            { type: 'link', name: 'Smart Tutor', href: '/dashboard/tutor', icon: Brain },
+            { type: 'link', name: 'Question Bank', href: '/questions', icon: Database },
+            { type: 'link', name: 'Question Factory', href: '/factory/question-generator', icon: BarChart3 },
+            { type: 'link', name: 'Reports', href: '/reports', icon: BarChart3 },
+            { type: 'link', name: 'Users', href: '/users', icon: Users },
+            { type: 'link', name: 'Governance', href: '/governance', icon: ShieldCheck },
+        ],
+    },
+    {
+        label: 'Tutorial',
+        items: [
+            { type: 'link', name: 'Tutorial Content', href: '/dashboard/content', icon: PenSquare },
+            { type: 'soon', name: 'Content Versions', icon: Clock3 },
+            { type: 'soon', name: 'Audit Trail', icon: Clock3 },
+            { type: 'soon', name: 'Prompt Generator', icon: Clock3 },
+        ],
+    },
 ];
 
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default function AdminLayout({ children }: { children: ReactNode }) {
     useStrictNavigation();
     usePresenceHeartbeat();
     const pathname = usePathname();
@@ -84,6 +118,68 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     const onManualLogout = () => { void handleLogout(); };
     const onExpiryLogout = () => { void handleLogout('session_expired'); };
+
+    const renderNavItem = (item: SidebarItem) => {
+        const isLink = item.type === 'link';
+        const isActive = isLink && pathname === item.href;
+
+        const itemClassName = cn(
+            'flex items-center justify-between group px-4 py-3 rounded-[1.25rem] transition-all duration-300',
+            isLink
+                ? (isActive
+                    ? 'bg-[#FF4B91] text-white shadow-xl shadow-[#FF4B91]/30 scale-[1.02]'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-[#1A1A1A]')
+                : 'cursor-default border border-dashed border-slate-200 bg-slate-50 text-slate-400'
+        );
+
+        const content = (
+            <>
+                <div className="flex items-center gap-3">
+                    <item.icon size={20} className={cn('transition-colors', isLink ? (isActive ? 'text-white' : 'text-[#FF4B91]') : 'text-slate-300')} />
+                    <span className="font-inter font-bold text-[15px]">{item.name}</span>
+                    {item.type === 'soon' ? (
+                        <span className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.18em] text-slate-400">
+                            Soon
+                        </span>
+                    ) : null}
+                </div>
+                {isLink ? (
+                    <ChevronRight
+                        size={16}
+                        className={cn(
+                            'transition-all duration-300',
+                            isActive ? 'opacity-100 rotate-90' : 'opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0'
+                        )}
+                    />
+                ) : null}
+            </>
+        );
+
+        if (item.type === 'soon') {
+            return (
+                <div
+                    key={item.name}
+                    className={itemClassName}
+                    aria-disabled="true"
+                    title="Coming soon"
+                >
+                    {content}
+                </div>
+            );
+        }
+
+        return (
+            <Link
+                key={item.name}
+                href={item.href}
+                className={itemClassName}
+                aria-label={item.name}
+                aria-current={isActive ? 'page' : undefined}
+            >
+                {content}
+            </Link>
+        );
+    };
 
     const handleRefresh = async () => {
         const response = await apiClient.auth.refresh();
@@ -145,37 +241,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             </div>
                         </div>
 
-                        <p className="alpha-terminal text-slate-400 mb-6 px-4">Platform Control</p>
-                        <nav className="space-y-2">
-                            {ADMIN_NAV.map((item) => {
-                                const isActive = pathname === item.href;
-                                return (
-                                    <Link
-                                        key={item.name}
-                                        href={item.href}
-                                        className={cn(
-                                            "flex items-center justify-between group px-4 py-3 rounded-[1.25rem] transition-all duration-300",
-                                            isActive
-                                                ? "bg-[#FF4B91] text-white shadow-xl shadow-[#FF4B91]/30 scale-[1.02]"
-                                                : "text-slate-600 hover:bg-slate-50 hover:text-[#1A1A1A]"
-                                        )}
-                                        aria-label={item.name}
-                                        aria-current={isActive ? "page" : undefined}
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <item.icon size={20} className={cn("transition-colors", isActive ? "text-white" : "text-[#FF4B91]")} />
-                                            <span className="font-inter font-bold text-[15px]">{item.name}</span>
-                                        </div>
-                                        <ChevronRight
-                                            size={16}
-                                            className={cn(
-                                                "transition-all duration-300",
-                                                isActive ? "opacity-100 rotate-90" : "opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0"
-                                            )}
-                                        />
-                                    </Link>
-                                );
-                            })}
+                        <nav className="space-y-5">
+                            {ADMIN_SECTIONS.map((section) => (
+                                <div key={section.label} className="space-y-2">
+                                    <p className="alpha-terminal text-slate-400 px-4">{section.label}</p>
+                                    <div className="space-y-2">
+                                        {section.items.map((item) => renderNavItem(item))}
+                                    </div>
+                                </div>
+                            ))}
                         </nav>
                     </div>
 
