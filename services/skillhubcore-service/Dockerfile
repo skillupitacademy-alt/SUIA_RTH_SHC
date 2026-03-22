@@ -15,6 +15,10 @@ RUN pnpm install --frozen-lockfile
 FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/services/skillhubcore-service/node_modules ./services/skillhubcore-service/node_modules
+COPY --from=deps /app/packages/types/node_modules ./packages/types/node_modules
+COPY --from=deps /app/packages/auth/node_modules ./packages/auth/node_modules
+COPY --from=deps /app/packages/events/node_modules ./packages/events/node_modules
+COPY --from=deps /app/packages/db-people/node_modules ./packages/db-people/node_modules
 COPY . .
 RUN pnpm --filter @quiz/skillhubcore-service build
 
