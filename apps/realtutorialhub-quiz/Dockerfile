@@ -9,7 +9,7 @@ WORKDIR /app
 
 FROM base AS deps
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY apps/web-app/package.json ./apps/web-app/
+COPY apps/realtutorialhub-quiz/package.json ./apps/realtutorialhub-quiz/
 COPY packages/db/package.json ./packages/db/
 COPY packages/api-client/package.json ./packages/api-client/
 COPY packages/types/package.json ./packages/types/
@@ -23,7 +23,7 @@ RUN pnpm install --frozen-lockfile
 FROM base AS builder
 ENV CLOUD_RUN_BUILD=true
 COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/apps/web-app/node_modules ./apps/web-app/node_modules
+COPY --from=deps /app/apps/realtutorialhub-quiz/node_modules ./apps/realtutorialhub-quiz/node_modules
 COPY --from=deps /app/packages/api-client/node_modules ./packages/api-client/node_modules
 COPY --from=deps /app/packages/auth/node_modules ./packages/auth/node_modules
 COPY --from=deps /app/packages/db/node_modules ./packages/db/node_modules
@@ -39,15 +39,15 @@ ARG NEXT_PUBLIC_ADMIN_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_WEB_APP_URL=$NEXT_PUBLIC_WEB_APP_URL
 ENV NEXT_PUBLIC_ADMIN_URL=$NEXT_PUBLIC_ADMIN_URL
-RUN pnpm --filter @quiz/web-app build
+RUN pnpm --filter @quiz/realtutorialhub-quiz build
 
 FROM base AS runner
 ENV NODE_ENV=production
 ENV PORT=3001
 ENV HOSTNAME=0.0.0.0
 WORKDIR /app
-COPY --from=builder /app/apps/web-app/.next/standalone ./
-COPY --from=builder /app/apps/web-app/.next/static ./apps/web-app/.next/static
-COPY --from=builder /app/apps/web-app/public ./apps/web-app/public
+COPY --from=builder /app/apps/realtutorialhub-quiz/.next/standalone ./
+COPY --from=builder /app/apps/realtutorialhub-quiz/.next/static ./apps/realtutorialhub-quiz/.next/static
+COPY --from=builder /app/apps/realtutorialhub-quiz/public ./apps/realtutorialhub-quiz/public
 EXPOSE 3001
-CMD ["node", "apps/web-app/server.js"]
+CMD ["node", "apps/realtutorialhub-quiz/server.js"]

@@ -10,7 +10,7 @@ WORKDIR /app
 FROM base AS builder
 ENV CLOUD_RUN_BUILD=true
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY apps/admin-app/package.json ./apps/admin-app/
+COPY apps/realtutorialhub-admin/package.json ./apps/realtutorialhub-admin/
 COPY packages/auth/package.json ./packages/auth/
 COPY packages/db/package.json ./packages/db/
 COPY packages/db-tutorial/package.json ./packages/db-tutorial/
@@ -27,16 +27,16 @@ ARG NEXT_PUBLIC_ADMIN_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_WEB_APP_URL=$NEXT_PUBLIC_WEB_APP_URL
 ENV NEXT_PUBLIC_ADMIN_URL=$NEXT_PUBLIC_ADMIN_URL
-RUN pnpm --filter @quiz/admin-app build
+RUN pnpm --filter @quiz/realtutorialhub-admin build
 
 FROM base AS runner
 ENV NODE_ENV=production
 ENV PORT=3002
 ENV HOSTNAME=0.0.0.0
 WORKDIR /app
-COPY --from=builder /app/apps/admin-app/.next/standalone ./
-COPY --from=builder /app/apps/admin-app/.next/static ./apps/admin-app/.next/static
-COPY --from=builder /app/apps/admin-app/public ./apps/admin-app/public
+COPY --from=builder /app/apps/realtutorialhub-admin/.next/standalone ./
+COPY --from=builder /app/apps/realtutorialhub-admin/.next/static ./apps/realtutorialhub-admin/.next/static
+COPY --from=builder /app/apps/realtutorialhub-admin/public ./apps/realtutorialhub-admin/public
 COPY --from=builder /app/docs ./docs
 EXPOSE 3002
-CMD ["node", "apps/admin-app/server.js"]
+CMD ["node", "apps/realtutorialhub-admin/server.js"]
