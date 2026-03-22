@@ -158,6 +158,9 @@ importers:
       '@quiz/db-tutorial':
         specifier: workspace:*
         version: link:../../packages/db-tutorial
+      '@quiz/events':
+        specifier: workspace:*
+        version: link:../../packages/events
       '@quiz/observability':
         specifier: workspace:*
         version: link:../../packages/observability
@@ -478,6 +481,9 @@ importers:
       '@quiz/auth':
         specifier: workspace:*
         version: link:../../packages/auth
+      '@quiz/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       '@quiz/db-tutorial':
         specifier: workspace:*
         version: link:../../packages/db-tutorial
@@ -803,9 +809,18 @@ importers:
       '@quiz/types':
         specifier: workspace:*
         version: link:../types
+      '@upstash/qstash':
+        specifier: ^2.9.1
+        version: 2.9.1
+      '@upstash/vector':
+        specifier: ^1.2.3
+        version: 1.2.3
       drizzle-orm:
         specifier: ^0.45.1
         version: 0.45.1(@neondatabase/serverless@0.10.4)(@opentelemetry/api@1.9.0)(@types/pg@8.18.0)(@upstash/redis@1.37.0)(pg@8.20.0)
+      pino:
+        specifier: ^10.3.1
+        version: 10.3.1
       typescript:
         specifier: ^5
         version: 5.9.3
