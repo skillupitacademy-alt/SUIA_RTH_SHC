@@ -11,6 +11,13 @@ import type {
   AssignmentTierStatusMap,
 } from './assignment.types';
 import type {
+  LiveSessionRequestCreateInput,
+  LiveSessionRequestFilters,
+  LiveSessionRequestRecord,
+  LiveSessionRequestStatus,
+  LiveSessionRequestUpdateInput,
+} from './live-session.types';
+import type {
   ProjectBadgeAwardRecord,
   ProjectRecord,
   ProjectScope,
@@ -227,4 +234,18 @@ export interface IAssignmentRepository {
     id: string,
     data: AssignmentHelpRequestUpdateInput
   ): Promise<AssignmentHelpRequestRecord | undefined>;
+}
+
+export interface ILiveSessionRepository {
+  withDb(dbClient: TutorialDbClientLike): this;
+  createRequest(studentId: string, subtopicId: string, doubtText?: string | null): Promise<LiveSessionRequestRecord>;
+  getRequest(id: string): Promise<LiveSessionRequestRecord | undefined>;
+  getRequestsByStudent(studentId: string, status?: LiveSessionRequestStatus): Promise<LiveSessionRequestRecord[]>;
+  getRequestsByFaculty(facultyId: string, status?: LiveSessionRequestStatus): Promise<LiveSessionRequestRecord[]>;
+  getPendingRequests(filters?: LiveSessionRequestFilters): Promise<LiveSessionRequestRecord[]>;
+  acceptRequest(id: string, facultyId: string): Promise<LiveSessionRequestRecord>;
+  scheduleRequest(id: string, scheduledAt: Date, meetingLink: string): Promise<LiveSessionRequestRecord>;
+  completeRequest(id: string): Promise<LiveSessionRequestRecord>;
+  cancelRequest(id: string, reason: string): Promise<LiveSessionRequestRecord>;
+  updateMeetingLink(id: string, meetingLink: string): Promise<LiveSessionRequestRecord | undefined>;
 }

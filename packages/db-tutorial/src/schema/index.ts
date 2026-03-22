@@ -4,6 +4,7 @@ export * from './tutorial-content';
 export * from './tutorial-assignments';
 export * from './assignment-progress';
 export * from './assignment-help-requests';
+export * from './live-session-requests';
 export * from './tutorial-projects';
 export * from './tutorial-project-submissions';
 export * from './student-badges';

@@ -4,6 +4,7 @@ export * from './feature-flags';
 export * from './tutorial-content.types';
 export * from './assignment.types';
 export * from './assignment-errors';
+export * from './live-session.types';
 export * from './project.types';
 export * from './project-errors';
 export * from './tutorial-content.schema';
