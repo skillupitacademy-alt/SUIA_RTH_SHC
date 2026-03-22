@@ -1,3 +1,51 @@
+# ⚠️ PROJECT EVALUATION DESIGN (LOCKED)
+## Date: 2026-03-22 | Supersedes original design below
+
+Projects are evaluated by HUMANS assisted by AI.
+AI never approves a project. AI only generates feedback.
+Final approval is always made by admin or faculty.
+
+REMOVED from original design:
+  ✗ Stub AI review with fixed rubric scores (72/100)
+  ✗ Auto-approve if total ≥ 70
+  ✗ Score-based approval logic
+  ✗ Any automated pass/fail on projects
+
+REPLACED WITH:
+  ✓ AI review generates structured feedback only
+    Returns: { feedback, checklist, suggestedStatus: 'needs_review' }
+    suggestedStatus is ALWAYS 'needs_review' — never 'approved'
+  ✓ Admin/faculty makes final approval decision
+  ✓ Peer review feeds into admin decision for expert projects
+  ✓ No scores. No thresholds. Human judgment only.
+
+UPDATED STATUS FLOW:
+  submitted → ai_reviewing → needs_review
+  → approved (human approved)
+  → revision_needed (human requested changes)
+  → revision_needed → submitted (student resubmits, cycle repeats)
+
+AI ROLE:
+  → Check: does deliverable exist
+  → Check: is README present
+  → Check: does code reference requirements
+  → Return structured checklist for human reviewer
+  → Never decide outcome
+
+HUMAN ROLE:
+  → Admin/faculty reviews AI checklist + student deliverable
+  → Clicks Approve or Request Revision in admin UI
+  → That action sets the final status
+  → Expert projects: admin approval only, no AI involvement in decision
+
+Admin review UI is built in T8 — not T4.
+T4 builds the backend engine only.
+
+---
+# Original design preserved below for reference only
+# Do not implement score-based approval logic
+---
+
 # PHASE-T4: Project Engine
 ## docs/blueprints/PHASE-T4-PROJECT-ENGINE.md
 
