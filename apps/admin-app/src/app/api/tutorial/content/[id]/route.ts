@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
 import {
+  isTutorialAuthError,
   logRouteError,
   normalizeTutorialWritePayload,
   requireAdmin,
@@ -22,7 +23,10 @@ export async function PATCH(
 ) {
   try {
     await requireAdmin(req);
-  } catch {
+  } catch (error) {
+    if (isTutorialAuthError(error)) {
+      return NextResponse.json({ error: error.message }, { status: error.statusCode });
+    }
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

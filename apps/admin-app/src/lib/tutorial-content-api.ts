@@ -23,6 +23,7 @@ export const logger = pino({
 
 export const tutorialContentRepository = new TutorialContentRepository();
 const tokenService = new TokenService();
+const ADMIN_ROLE_NAMES = new Set(['ADMIN', 'SUPER_ADMIN', 'INFRASTRUCTURE']);
 
 const optionalNullableString = z.union([z.string(), z.null()]).optional();
 
@@ -62,6 +63,17 @@ export type TutorialContentApiDTO = {
 };
 
 export type TutorialContentWritePayload = z.infer<typeof tutorialContentWriteSchema>;
+
+export class TutorialAuthError extends Error {
+  constructor(message: string, public readonly statusCode: 401 | 403) {
+    super(message);
+    this.name = 'TutorialAuthError';
+  }
+}
+
+export function isTutorialAuthError(error: unknown): error is TutorialAuthError {
+  return error instanceof TutorialAuthError;
+}
 
 export function normalizeTutorialWritePayload(
   payload: TutorialContentWritePayload
@@ -112,12 +124,20 @@ export function toTutorialContentDTO(record: TutorialContentRecord): TutorialCon
 export async function requireAdmin(req: NextRequest) {
   const token = tokenService.getAccessToken(req, { scope: 'admin' });
   if (token == null || token.trim() === '') {
-    throw new Error('Unauthorized');
+    throw new TutorialAuthError('Unauthorized', 401);
   }
 
-  const payload = await tokenService.verifyAdminAccessToken(token);
-  if (payload == null) {
-    throw new Error('Unauthorized');
+  let payload: Awaited<ReturnType<typeof tokenService.verifyAdminAccessToken>>;
+  try {
+    payload = await tokenService.verifyAdminAccessToken(token);
+  } catch {
+    throw new TutorialAuthError('Unauthorized', 401);
+  }
+
+  const roles = Array.isArray(payload.roles) ? payload.roles : [];
+  const hasAdminRole = roles.some((role) => ADMIN_ROLE_NAMES.has(role.toUpperCase()));
+  if (payload.isAdmin !== true || hasAdminRole === false) {
+    throw new TutorialAuthError('Forbidden', 403);
   }
 
   return payload;

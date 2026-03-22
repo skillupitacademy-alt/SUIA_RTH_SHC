@@ -178,6 +178,14 @@ export function BlockEditor({ initialContent, initialVersions, subtopicName = 'J
 
     const validationErrors = useMemo(() => buildValidationErrors(content), [content]);
     const isValid = Object.keys(validationErrors).length === 0;
+    const publishReady = [
+        content.notes.markdown,
+        content.layman.simpleExplanation,
+        content.real_life.scenario,
+        content.technical.markdown,
+        content.code.code,
+        content.ai_tutor.greeting,
+    ].every((value) => value.trim().length > 10) && content.ai_tutor.qa_pairs.length >= 3;
     const currentVersionId = versions[0]?.id ?? 'seed-v1';
     const currentVersion = versions[0];
     const svgOptions = SVG_KEYS_BY_DOMAIN[domainSlug] ?? SVG_KEYS_BY_DOMAIN['full-stack'];
@@ -757,7 +765,12 @@ export function BlockEditor({ initialContent, initialVersions, subtopicName = 'J
                         <button
                             type="button"
                             onClick={() => commitVersion('published')}
-                            className="inline-flex items-center gap-2 rounded-2xl border border-[#FF4B91]/20 bg-[#FF4B91] px-4 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-white transition-colors hover:bg-[#ff3382]"
+                            disabled={!publishReady}
+                            title={publishReady ? 'Publish tutorial content' : 'Complete all 6 blocks before publishing'}
+                            className={cn(
+                                'inline-flex items-center gap-2 rounded-2xl border border-[#FF4B91]/20 bg-[#FF4B91] px-4 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-white transition-colors hover:bg-[#ff3382]',
+                                !publishReady ? 'cursor-not-allowed opacity-50 hover:bg-[#FF4B91]' : ''
+                            )}
                         >
                             <Sparkles size={14} />
                             Publish

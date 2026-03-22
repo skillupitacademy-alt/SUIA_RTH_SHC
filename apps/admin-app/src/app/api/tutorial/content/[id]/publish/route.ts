@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
 import {
+  isTutorialAuthError,
   logRouteError,
   requireAdmin,
   toTutorialContentDTO,
@@ -21,7 +22,10 @@ export async function POST(
 ) {
   try {
     await requireAdmin(req);
-  } catch {
+  } catch (error) {
+    if (isTutorialAuthError(error)) {
+      return NextResponse.json({ error: error.message }, { status: error.statusCode });
+    }
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import {
+  isTutorialAuthError,
   logRouteError,
   normalizeTutorialWritePayload,
   requireAdmin,
@@ -14,7 +15,10 @@ export const dynamic = 'force-dynamic';
 export async function POST(req: NextRequest) {
   try {
     await requireAdmin(req);
-  } catch {
+  } catch (error) {
+    if (isTutorialAuthError(error)) {
+      return NextResponse.json({ error: error.message }, { status: error.statusCode });
+    }
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
