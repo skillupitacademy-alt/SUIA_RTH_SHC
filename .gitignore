@@ -42,6 +42,11 @@ test-results
 
 .vercel
 .env*.local
+
+# test logs
+packages/events/test.log
+packages/events/test_utf8.log
+
 tmp/
 
 .vercel

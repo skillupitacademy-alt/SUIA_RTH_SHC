@@ -9,6 +9,7 @@ import { LearnerProgressPanel } from './LearnerProgressPanel';
 import { DomainBreadcrumb } from '../layout/DomainBreadcrumb';
 import { TutorialNavbar } from '../layout/TutorialNavbar';
 import { TutorialSidebar } from '../layout/TutorialSidebar';
+import { TutorialKeyboardNav } from './TutorialKeyboardNav';
 
 interface TutorialExperienceProps {
   params: {
@@ -131,6 +132,7 @@ export function TutorialExperience({ params, content, theme, mode, blockType }: 
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--tutorial-page-bg)' }}>
+      <TutorialKeyboardNav mode={mode} blockType={blockType} blockOrder={blockOrder} params={params} />
       <TutorialNavbar />
       <DomainBreadcrumb domain={domainName} subtopic={subtopicName} theme={theme} />
       <div style={{ display: 'flex', alignItems: 'stretch', maxWidth: 1680, margin: '0 auto' }}>
