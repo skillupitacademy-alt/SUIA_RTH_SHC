@@ -114,6 +114,40 @@ After all 5:
   Stop and report.
 ```
 
+## FACTORY PATTERN DESIGN RULE (LOCKED)
+
+All admin content creation pages follow the same UI/UX pattern.
+Question Bank Factory is the reference template.
+
+Three factory pages in the admin app:
+  Question Bank Factory  → /dashboard/questions  (existing, reference)
+  Content Factory        → /dashboard/content    (T2, built)
+  Assignment Factory     → /dashboard/assignments (T8, scaffold exists)
+
+All three share the same interaction model:
+  1. Admin selects: domain → subject → topic → subtopic → difficulty
+  2. System generates a prompt (TutorialPromptService)
+  3. Admin copies prompt → pastes in external AI → gets JSON back
+  4. Admin pastes JSON into ingest box
+  5. Zod validates the JSON
+  6. Admin previews the content
+  7. Admin saves as draft
+  8. Admin publishes
+
+Visual consistency rules:
+  - Same overall page layout as Question Bank Factory
+  - Same selection dropdowns pattern
+  - Same prompt copy button
+  - Same ingest box for pasting JSON
+  - Same validation error display
+  - Same preview section
+  - Same draft/publish button pattern
+  - Same sidebar grouping under Tutorial section
+
+This is about workflow and layout consistency.
+Labels and field names differ per factory.
+The interaction model must match exactly.
+
 ---
 
 ## STEP 3 — Task sequence (follow in order)

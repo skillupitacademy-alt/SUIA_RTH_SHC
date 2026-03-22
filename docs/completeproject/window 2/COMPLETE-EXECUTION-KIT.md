@@ -956,6 +956,19 @@ Stop and report.
 # STEP 9 — T8: Admin Content Management
 # ═══════════════════════════════════════════
 
+FACTORY PATTERN NOTE:
+  All three admin factory pages follow the same UI/UX as
+  Question Bank Factory. See WINDOW-2-TUTORIAL-ENGINE-GUIDE.md
+  FACTORY PATTERN DESIGN RULE section for full spec.
+  
+  Content Factory (already built in T2):
+    → Review against Question Bank Factory pattern
+    → Align any UI/UX inconsistencies found
+  
+  Assignment Factory (scaffold exists from T3-A-02 work):
+    → Wire Save Draft and Publish to backend persistence
+    → Align UI/UX with Question Bank Factory pattern
+
 ## UPLOAD THESE FILES
 ```
 - TUTORIAL-ENGINE-PHASE-GUIDE.md (T8 section)

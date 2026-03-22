@@ -1020,6 +1020,16 @@ Commit: "feat(tutorial): T7 — remediation saga, materialized view, dashboard"
 # PHASE T8 — Admin Content Management (Full)
 ## Start after T7 Deep Audit passes.
 
+FACTORY PATTERN (LOCKED — read before building T8):
+  All admin creation pages follow Question Bank Factory UI/UX.
+  Question Bank Factory = base pattern for all factory pages.
+  See WINDOW-2-TUTORIAL-ENGINE-GUIDE.md for full design rule.
+  
+  T8 must ensure:
+    Content Factory    → matches Question Bank Factory pattern
+    Assignment Factory → matches Question Bank Factory pattern
+    Both in same Tutorial section of admin sidebar
+
 ```
 Prompt to agent:
 
