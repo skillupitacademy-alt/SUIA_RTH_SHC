@@ -17,8 +17,11 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: 'SkillHubCore Admin',
-  description: 'SkillHubCore management UI scaffold',
+  title: {
+    default: 'SkillHubCore Admin',
+    template: '%s | SkillHubCore Admin',
+  },
+  description: 'SkillHubCore management UI',
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

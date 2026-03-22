@@ -36,6 +36,7 @@ scoped_coverage.txt
 tsc_errors.txt
 vitest_admin_out.txt
 vitest_output.txt
+apps/api-server/coverage-final-*.txt
 
 # build artifacts
 *.tsbuildinfo
