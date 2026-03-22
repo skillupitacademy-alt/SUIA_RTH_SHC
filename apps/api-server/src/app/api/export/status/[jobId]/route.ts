@@ -3,7 +3,7 @@ import { JobStatus } from '@quiz/types';
 import { eq } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
-import { unauthorized } from '@/lib/api-error';
+import { ApiError, unauthorized } from '@/lib/api-error';
 import { logger } from '@/lib/logger';
 import { redis } from '@/lib/redis';
 import { storage } from '@/lib/storage';
@@ -250,6 +250,9 @@ export async function GET(
     });
   } catch (error: unknown) {
     log.error({ err: error }, 'Failed to fetch export status');
+    if (error instanceof ApiError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
