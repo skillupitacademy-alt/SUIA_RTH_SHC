@@ -2,11 +2,13 @@
 import { jsonb, pgTable, text, timestamp, uuid, index } from 'drizzle-orm/pg-core';
 
 import { tutorialTriggerStatusEnum } from './enums';
+import type { RemediationWeakSubtopicInput } from '@quiz/types';
 
 export const remediationTriggers = pgTable('remediation_triggers', {
   id: uuid('id').primaryKey().defaultRandom(),
   examResultId: uuid('exam_result_id').notNull(),
   userId: uuid('user_id').notNull(),
+  weakSubtopics: jsonb('weak_subtopics').$type<RemediationWeakSubtopicInput[]>().notNull().default([]),
   weakSubtopicIds: jsonb('weak_subtopic_ids').$type<string[]>().notNull().default([]),
   recommendedContentTypes: jsonb('recommended_content_types').$type<string[]>().notNull().default([]),
   status: tutorialTriggerStatusEnum('status').notNull().default('pending'),

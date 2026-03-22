@@ -24,4 +24,4 @@ export const tutorialEvaluationTypeEnum = pgEnum('tutorial_evaluation_type', ['a
 export const tutorialVideoProviderEnum = pgEnum('tutorial_video_provider', ['youtube', 'vimeo', 'custom', 'loom']);
 export const tutorialContentJobStatusEnum = pgEnum('tutorial_content_job_status', ['pending', 'processing', 'completed', 'failed']);
 export const tutorialProgressStatusEnum = pgEnum('tutorial_progress_status', ['not_started', 'in_progress', 'completed']);
-export const tutorialTriggerStatusEnum = pgEnum('tutorial_trigger_status', ['pending', 'accepted', 'dismissed', 'completed']);
+export const tutorialTriggerStatusEnum = pgEnum('tutorial_trigger_status', ['pending', 'accepted', 'dismissed', 'completed', 'failed']);

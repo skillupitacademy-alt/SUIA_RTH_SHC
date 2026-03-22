@@ -43,6 +43,13 @@
       "when": 1774177951851,
       "tag": "0005_nebulous_jane_foster",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1774181525989,
+      "tag": "0006_heavy_sally_floyd",
+      "breakpoints": true
     }
   ]
 }

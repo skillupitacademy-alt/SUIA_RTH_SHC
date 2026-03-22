@@ -1,8 +1,7 @@
 import { TokenService } from '@quiz/auth';
-import type { NextRequest } from 'next/server';
-import { afterEach,beforeEach, describe, expect, it, vi } from 'vitest';
-
 import type { TutorialContentJSON } from '@quiz/types';
+import type { NextRequest } from 'next/server';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock DB dependency
 vi.mock('@quiz/db-tutorial', () => {
