@@ -1,3 +1,4 @@
+import { db } from '@quiz/db-tutorial';
 import { NextRequest, NextResponse } from 'next/server';
 
 import {
@@ -13,8 +14,10 @@ import {
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
+  let adminUserId: string | null = null;
   try {
-    await requireAdmin(req);
+    const admin = await requireAdmin(req);
+    adminUserId = admin.userId;
   } catch (error) {
     if (isTutorialAuthError(error)) {
       return NextResponse.json({ error: error.message }, { status: error.statusCode });
@@ -38,7 +41,20 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const record = await tutorialContentRepository.upsertBlocks(normalizeTutorialWritePayload(parsed.data));
+    const record = await db.transaction(async (tx) => {
+      const repository = tutorialContentRepository.withDb(tx as never);
+      const saved = await repository.upsertBlocks(normalizeTutorialWritePayload(parsed.data));
+      if (saved == null) {
+        throw new Error('Failed to create tutorial content');
+      }
+      await repository.createAuditEntry({
+        contentId: saved.id,
+        userId: adminUserId ?? '00000000-0000-0000-0000-000000000000',
+        action: 'created',
+        diff: { after: saved.content },
+      });
+      return saved;
+    });
     return NextResponse.json({ data: toTutorialContentDTO(record) }, { status: 201 });
   } catch (error) {
     logRouteError('Tutorial content create failed', error, { route: 'POST /api/tutorial/content' });

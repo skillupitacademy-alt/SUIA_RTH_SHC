@@ -2,6 +2,10 @@ import type { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const tutorialApiMock = vi.hoisted(() => {
+  const dbMock = {
+    transaction: vi.fn(async (callback: (tx: unknown) => Promise<unknown>) => callback({})),
+  };
+
   class TutorialAuthError extends Error {
     constructor(message: string, public readonly statusCode: 401 | 403) {
       super(message);
@@ -27,16 +31,25 @@ const tutorialApiMock = vi.hoisted(() => {
     },
     normalizeTutorialWritePayload: (value: unknown) => value,
     tutorialContentRepository: {
+      withDb: vi.fn(() => tutorialApiMock.tutorialContentRepository),
       upsertBlocks: vi.fn(),
       updateById: vi.fn(),
       publish: vi.fn(),
+      findById: vi.fn(),
+      createAuditEntry: vi.fn(),
+      createVersionSnapshot: vi.fn(),
+      getVersionSnapshot: vi.fn(),
     },
     toTutorialContentDTO: vi.fn(),
     logRouteError: vi.fn(),
+    dbMock,
   };
 });
 
 vi.mock('@/lib/tutorial-content-api', () => tutorialApiMock);
+vi.mock('@quiz/db-tutorial', () => ({
+  db: tutorialApiMock.dbMock,
+}));
 
 import {
   requireAdmin,
@@ -96,6 +109,7 @@ function createRequest(body: unknown) {
 describe('PATCH /api/tutorial/content/[id]', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(tutorialApiMock.dbMock.transaction).mockImplementation(async (callback: (tx: unknown) => Promise<unknown>) => callback({}));
   });
 
   it('returns 401 when unauthenticated', async () => {
@@ -122,6 +136,26 @@ describe('PATCH /api/tutorial/content/[id]', () => {
 
   it('updates content for admin', async () => {
     vi.mocked(requireAdmin).mockResolvedValueOnce({ userId: 'admin-1', roles: ['ADMIN'], isAdmin: true } as never);
+    vi.mocked(tutorialContentRepository.findById).mockResolvedValueOnce({
+      id: 'content-1',
+      subtopicId: '11111111-1111-1111-1111-111111111111',
+      difficulty: 'simple',
+      contentType: 'standard',
+      content: validContent,
+      version: 1,
+      language: 'en',
+      isPublished: false,
+      generatedByAi: false,
+      aiModelUsed: null,
+      generationJobId: null,
+      adminApprovedBy: null,
+      adminApprovedAt: null,
+      qualityScore: null,
+      regenerationCount: 0,
+      createdAt: new Date('2026-01-01T00:00:00.000Z'),
+      updatedAt: new Date('2026-01-01T00:00:00.000Z'),
+      deletedAt: null,
+    } as never);
     vi.mocked(tutorialContentRepository.updateById).mockResolvedValueOnce({
       id: 'content-1',
       subtopicId: '11111111-1111-1111-1111-111111111111',
@@ -141,6 +175,14 @@ describe('PATCH /api/tutorial/content/[id]', () => {
       createdAt: new Date('2026-01-01T00:00:00.000Z'),
       updatedAt: new Date('2026-01-02T00:00:00.000Z'),
       deletedAt: null,
+    } as never);
+    vi.mocked(tutorialContentRepository.createAuditEntry).mockResolvedValueOnce({
+      id: 'audit-1',
+      contentId: 'content-1',
+      userId: 'admin-1',
+      action: 'updated',
+      diff: null,
+      createdAt: new Date('2026-01-02T00:00:00.000Z'),
     } as never);
     vi.mocked(toTutorialContentDTO).mockReturnValueOnce({ id: 'content-1' } as never);
 

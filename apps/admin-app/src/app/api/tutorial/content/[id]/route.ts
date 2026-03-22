@@ -1,3 +1,4 @@
+import { db } from '@quiz/db-tutorial';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
@@ -21,8 +22,10 @@ export async function PATCH(
   req: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
+  let adminUserId: string | null = null;
   try {
-    await requireAdmin(req);
+    const admin = await requireAdmin(req);
+    adminUserId = admin.userId;
   } catch (error) {
     if (isTutorialAuthError(error)) {
       return NextResponse.json({ error: error.message }, { status: error.statusCode });
@@ -52,10 +55,33 @@ export async function PATCH(
   }
 
   try {
-    const record = await tutorialContentRepository.updateById(
-      parsedParams.data.id,
-      normalizeTutorialWritePayload(parsed.data)
-    );
+    const record = await db.transaction(async (tx) => {
+      const repository = tutorialContentRepository.withDb(tx as never);
+      const existing = await repository.findById(parsedParams.data.id);
+      if (existing == null) {
+        return null;
+      }
+
+      const updated = await repository.updateById(
+        parsedParams.data.id,
+        normalizeTutorialWritePayload(parsed.data)
+      );
+      if (updated == null) {
+        throw new Error('Failed to update tutorial content');
+      }
+
+      await repository.createAuditEntry({
+        contentId: updated.id,
+        userId: adminUserId ?? '00000000-0000-0000-0000-000000000000',
+        action: 'updated',
+        diff: {
+          before: existing.content,
+          after: updated.content,
+        },
+      });
+
+      return updated;
+    });
     if (record == null) {
       return NextResponse.json({ error: 'Tutorial content not found' }, { status: 404 });
     }

@@ -37,6 +37,8 @@ export default function AssignmentFactoryPage() {
     const [isCopying, setIsCopying] = useState(false);
     const [draftSavedAt, setDraftSavedAt] = useState<string | null>(null);
     const [publishState, setPublishState] = useState<'draft' | 'published' | null>(null);
+    const [isSavingDraft, setIsSavingDraft] = useState(false);
+    const [isPublishing, setIsPublishing] = useState(false);
 
     const { data: domains } = useDomains();
     const { data: subjects } = useSubjects(selections.domainId !== '' ? selections.domainId : undefined);
@@ -124,26 +126,73 @@ export default function AssignmentFactoryPage() {
         }
     };
 
-    const saveDraft = () => {
+    const saveDraft = async () => {
         if (assignmentPreview.length === 0) {
             toast.error('Validate assignments before saving a draft.');
             return;
         }
 
-        const now = new Date().toISOString();
-        setDraftSavedAt(now);
-        setPublishState('draft');
-        toast.success('Draft saved.');
+        setIsSavingDraft(true);
+        try {
+            const response = await fetch('/api/tutorial/assignments/draft', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    subtopicId: selections.subtopicId,
+                    difficulty,
+                    assignments: assignmentPreview,
+                }),
+            });
+
+            const payload = await response.json().catch(() => null) as { draftId?: string; error?: string } | null;
+            if (response.ok === false) {
+                throw new Error(payload?.error ?? 'Failed to save draft.');
+            }
+
+            const now = new Date().toISOString();
+            setDraftSavedAt(now);
+            setPublishState('draft');
+            toast.success(`Draft saved${payload?.draftId != null ? ` (${payload.draftId})` : ''}.`);
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : 'Failed to save draft.');
+        } finally {
+            setIsSavingDraft(false);
+        }
     };
 
-    const publishAssignments = () => {
+    const publishAssignments = async () => {
         if (assignmentPreview.length === 0) {
             toast.error('Validate assignments before publishing.');
             return;
         }
 
-        setPublishState('published');
-        toast.success('Assignments published for the selected subtopic.');
+        setIsPublishing(true);
+        try {
+            const response = await fetch('/api/tutorial/assignments/publish', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    subtopicId: selections.subtopicId,
+                    difficulty,
+                }),
+            });
+
+            const payload = await response.json().catch(() => null) as { publishedCount?: number; error?: string } | null;
+            if (response.ok === false) {
+                throw new Error(payload?.error ?? 'Failed to publish assignments.');
+            }
+
+            setPublishState('published');
+            toast.success(`Assignments published${payload?.publishedCount != null ? ` (${payload.publishedCount})` : ''}.`);
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : 'Failed to publish assignments.');
+        } finally {
+            setIsPublishing(false);
+        }
     };
 
     return (
@@ -391,19 +440,21 @@ export default function AssignmentFactoryPage() {
 
                                     <button
                                         type="button"
-                                        onClick={saveDraft}
+                                        onClick={() => { void saveDraft(); }}
+                                        disabled={isSavingDraft}
                                         className="h-12 px-6 rounded-2xl bg-slate-50 border border-slate-200 text-slate-500 font-black uppercase tracking-widest text-[10px] hover:bg-slate-100 transition-all shadow-sm"
                                     >
-                                        Save Draft
+                                        {isSavingDraft ? 'Saving...' : 'Save Draft'}
                                     </button>
 
                                     <button
                                         type="button"
-                                        onClick={publishAssignments}
+                                        onClick={() => { void publishAssignments(); }}
+                                        disabled={isPublishing}
                                         className="h-12 px-10 rounded-2xl flex items-center justify-center gap-3 font-black uppercase tracking-widest text-[11px] transition-all bg-[#FF4B91] hover:bg-[#FF4B91]/90 text-white shadow-xl shadow-[#FF4B91]/30 active:scale-[0.98]"
                                     >
                                         <Check size={18} />
-                                        <span className="whitespace-nowrap">Publish Assignments</span>
+                                        <span className="whitespace-nowrap">{isPublishing ? 'Publishing...' : 'Publish Assignments'}</span>
                                     </button>
                                 </div>
                                 <div />

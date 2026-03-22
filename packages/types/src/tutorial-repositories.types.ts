@@ -1,4 +1,11 @@
-import type { ContentBlockType, TutorialContentJSON } from './tutorial-content.types';
+import type {
+  ContentBlockType,
+  TutorialContentAuditCreateInput,
+  TutorialContentAuditRecord,
+  TutorialContentJSON,
+  TutorialContentVersionCreateInput,
+  TutorialContentVersionRecord,
+} from './tutorial-content.types';
 import type {
   AssignmentDifficulty,
   AssignmentHelpRequestCreateInput,
@@ -175,6 +182,16 @@ export interface ITutorialContentRepository {
   publish(contentId: string): Promise<TutorialContentRecord | undefined>;
   getVersionHistory(contentId: string): Promise<TutorialContentRecord[]>;
   softDelete(contentId: string): Promise<TutorialContentRecord | undefined>;
+  createVersionSnapshot(input: TutorialContentVersionCreateInput): Promise<TutorialContentVersionRecord>;
+  getVersionSnapshot(versionId: string): Promise<TutorialContentVersionRecord | undefined>;
+  getVersionSnapshots(contentId: string): Promise<TutorialContentVersionRecord[]>;
+  createAuditEntry(input: TutorialContentAuditCreateInput): Promise<TutorialContentAuditRecord>;
+  getAuditEntries(filters: {
+    contentId?: string;
+    action?: TutorialContentAuditRecord['action'];
+    limit?: number;
+    offset?: number;
+  }): Promise<TutorialContentAuditRecord[]>;
 }
 
 export interface ITutorialProgressRepository {

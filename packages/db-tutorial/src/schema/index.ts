@@ -1,6 +1,8 @@
 /* istanbul ignore file */
 export * from './enums';
 export * from './tutorial-content';
+export * from './tutorial-content-versions';
+export * from './tutorial-content-audit';
 export * from './tutorial-assignments';
 export * from './assignment-progress';
 export * from './assignment-help-requests';
@@ -20,6 +22,8 @@ export * from './student-streaks';
 
 import * as enums from './enums';
 import * as tutorialContentModule from './tutorial-content';
+import * as tutorialContentVersionsModule from './tutorial-content-versions';
+import * as tutorialContentAuditModule from './tutorial-content-audit';
 import * as tutorialAssignmentsModule from './tutorial-assignments';
 import * as assignmentProgressModule from './assignment-progress';
 import * as assignmentHelpRequestsModule from './assignment-help-requests';
@@ -39,6 +43,8 @@ import * as studentStreaksModule from './student-streaks';
 export const schema = {
   ...enums,
   ...tutorialContentModule,
+  ...tutorialContentVersionsModule,
+  ...tutorialContentAuditModule,
   ...tutorialAssignmentsModule,
   ...assignmentProgressModule,
   ...assignmentHelpRequestsModule,

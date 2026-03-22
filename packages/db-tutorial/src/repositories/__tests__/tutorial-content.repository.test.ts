@@ -2,6 +2,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TutorialContentJSON } from '@quiz/types';
 import { ZodError } from 'zod';
 
+import { tutorialContentAudit } from '../../schema/tutorial-content-audit';
+import { tutorialContentVersions } from '../../schema/tutorial-content-versions';
+
 const mocks = vi.hoisted(() => ({
   withTimeout: vi.fn((promise: Promise<unknown>) => promise),
 }));
@@ -85,6 +88,71 @@ const createDbMock = (row = makeRow()) => {
     update,
     set,
     updateWhere,
+  } as const;
+};
+
+const makeVersionRow = (overrides: Record<string, unknown> = {}) => ({
+  id: 'version-1',
+  contentId: 'content-1',
+  version: 1,
+  content: makeRow().content,
+  savedBy: 'admin-1',
+  createdAt: new Date('2026-01-01T00:00:00.000Z'),
+  ...overrides,
+});
+
+const makeAuditRow = (overrides: Record<string, unknown> = {}) => ({
+  id: 'audit-1',
+  contentId: 'content-1',
+  userId: 'admin-1',
+  action: 'created',
+  diff: { after: makeRow().content },
+  createdAt: new Date('2026-01-01T00:00:00.000Z'),
+  ...overrides,
+});
+
+const createVersionAuditDbMock = (
+  versionRows = [makeVersionRow()],
+  auditRows = [makeAuditRow()]
+) => {
+  const select = vi.fn(() => ({
+    from: vi.fn((table: unknown) => {
+      const rows = table === tutorialContentVersions
+        ? versionRows
+        : table === tutorialContentAudit
+          ? auditRows
+          : [];
+
+      const makeResult = async (selectedRows = rows) => selectedRows as never;
+      return {
+        where: vi.fn(async () => rows as never),
+        orderBy: vi.fn(() => ({
+          limit: vi.fn((limit: number) => ({
+            offset: vi.fn(async (offset: number) => rows.slice(offset, offset + limit) as never),
+          })),
+          offset: vi.fn(async (offset: number) => rows.slice(offset) as never),
+        })),
+        limit: vi.fn((limit: number) => ({
+          offset: vi.fn(async (offset: number) => rows.slice(offset, offset + limit) as never),
+        })),
+        offset: vi.fn(async (offset: number) => rows.slice(offset) as never),
+        returning: vi.fn(async () => rows as never),
+        makeResult,
+      };
+    }),
+  }));
+
+  const insert = vi.fn((table: unknown) => ({
+    values: vi.fn(() => ({
+      returning: vi.fn(async () => [
+        table === tutorialContentVersions ? versionRows[0] : auditRows[0],
+      ] as never),
+    })),
+  }));
+
+  return {
+    select,
+    insert,
   } as const;
 };
 
@@ -315,8 +383,67 @@ describe('TutorialContentRepository', () => {
     expect(db.set).toHaveBeenCalledWith(
       expect.objectContaining({
         isPublished: false,
-        deletedAt: expect.any(Date),
+      deletedAt: expect.any(Date),
       })
     );
+  });
+
+  it('creates a version snapshot', async () => {
+    const db = createVersionAuditDbMock();
+    const repo = new TutorialContentRepository(db as never);
+    const versionRow = makeVersionRow();
+
+    await expect(
+      repo.createVersionSnapshot({
+        contentId: versionRow.contentId as string,
+        version: versionRow.version as number,
+        content: versionRow.content as TutorialContentJSON,
+        savedBy: versionRow.savedBy as string,
+      })
+    ).resolves.toEqual(versionRow);
+  });
+
+  it('returns version snapshots ordered by created date', async () => {
+    const rows = [
+      makeVersionRow({ id: 'version-2', version: 2, createdAt: new Date('2026-01-02T00:00:00.000Z') }),
+      makeVersionRow({ id: 'version-1', version: 1, createdAt: new Date('2026-01-01T00:00:00.000Z') }),
+    ];
+    const db = createVersionAuditDbMock(rows);
+    const repo = new TutorialContentRepository(db as never);
+
+    await expect(repo.getVersionSnapshots('content-1')).resolves.toEqual(rows);
+  });
+
+  it('creates an audit entry', async () => {
+    const db = createVersionAuditDbMock();
+    const repo = new TutorialContentRepository(db as never);
+    const auditRow = makeAuditRow();
+
+    await expect(
+      repo.createAuditEntry({
+        contentId: auditRow.contentId as string,
+        userId: auditRow.userId as string,
+        action: 'created',
+        diff: auditRow.diff as Record<string, unknown>,
+      })
+    ).resolves.toEqual(auditRow);
+  });
+
+  it('returns audit entries with filters and pagination', async () => {
+    const rows = [
+      makeAuditRow({ id: 'audit-2', action: 'published', createdAt: new Date('2026-01-02T00:00:00.000Z') }),
+      makeAuditRow({ id: 'audit-1', action: 'created', createdAt: new Date('2026-01-01T00:00:00.000Z') }),
+    ];
+    const db = createVersionAuditDbMock([], rows);
+    const repo = new TutorialContentRepository(db as never);
+
+    await expect(
+      repo.getAuditEntries({
+        contentId: 'content-1',
+        action: 'created',
+        limit: 1,
+        offset: 0,
+      })
+    ).resolves.toEqual([rows[0]]);
   });
 });

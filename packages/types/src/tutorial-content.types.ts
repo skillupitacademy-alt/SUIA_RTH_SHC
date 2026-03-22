@@ -54,3 +54,42 @@ export type TechnicalContent = TutorialContentJSON['technical'];
 export type CodeContent = TutorialContentJSON['code'];
 export type AITutorContent = TutorialContentJSON['ai_tutor'];
 export type NotesContent = TutorialContentJSON['notes'];
+
+export type TutorialContentAuditAction =
+  | 'created'
+  | 'updated'
+  | 'published'
+  | 'unpublished'
+  | 'restored';
+
+export interface TutorialContentVersionRecord {
+  id: string;
+  contentId: string;
+  version: number;
+  content: TutorialContentJSON;
+  savedBy: string;
+  createdAt: Date;
+}
+
+export interface TutorialContentVersionCreateInput {
+  contentId: string;
+  version: number;
+  content: TutorialContentJSON;
+  savedBy: string;
+}
+
+export interface TutorialContentAuditRecord {
+  id: string;
+  contentId: string;
+  userId: string;
+  action: TutorialContentAuditAction;
+  diff: Record<string, unknown> | null;
+  createdAt: Date;
+}
+
+export interface TutorialContentAuditCreateInput {
+  contentId: string;
+  userId: string;
+  action: TutorialContentAuditAction;
+  diff?: Record<string, unknown> | null;
+}

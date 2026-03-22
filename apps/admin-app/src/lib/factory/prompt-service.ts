@@ -27,6 +27,16 @@ export interface AssignmentPromptBlueprint {
     difficulty: AssignmentDifficulty;
 }
 
+export interface ContentPromptBlueprint {
+    context: {
+        domainName: string;
+        subjectName: string;
+        topicName: string;
+        subtopicName: string;
+    };
+    difficulty: AssignmentDifficulty;
+}
+
 export const PromptService = {
     generateTechnicalPrompt: (blueprint: FactoryBlueprint): string => {
         const total = blueprint.counts.simple + blueprint.counts.intermediate + blueprint.counts.expert;
@@ -175,6 +185,89 @@ QUESTION WRITING GUIDANCE:
 - Keep reference_answer concise and self-check focused.
 
 Use only the selected tutorial context. Do not invent unrelated topics.
+`.trim();
+    },
+
+    generateContentPrompt: (blueprint: ContentPromptBlueprint): string => {
+        const difficultyGuidance: Record<AssignmentDifficulty, string> = {
+            simple: 'Keep the explanation beginner-friendly, concrete, and short enough for a first pass review.',
+            mixed: 'Balance beginner clarity with a little more depth and practical detail.',
+            intermediate: 'Go deeper on mechanics, edge cases, and implementation details.',
+            expert: 'Aim for architecture-level clarity, nuanced tradeoffs, and careful examples.',
+        };
+
+        return `
+ACT AS A SENIOR TUTORIAL CONTENT GENERATOR.
+Create one canonical tutorial content JSON object for:
+${blueprint.context.domainName} > ${blueprint.context.subjectName} > ${blueprint.context.topicName} > ${blueprint.context.subtopicName}
+
+TARGET DIFFICULTY: ${blueprint.difficulty.toUpperCase()}
+GUIDANCE: ${difficultyGuidance[blueprint.difficulty]}
+
+OUTPUT RULES:
+- Return raw JSON only.
+- Follow the content JSON schema exactly.
+- Include notes, layman, real_life, technical, code, and ai_tutor blocks.
+- Keep ai_tutor.qa_pairs at 3-5 entries.
+- If images are included, follow the optional image object structure from the locked schema.
+- Do not use Anthropic or OpenAI APIs in this step. This prompt is for external AI copy/paste workflows only.
+
+JSON SHAPE REQUIRED:
+{
+  "notes": {
+    "markdown": "string",
+    "image": {
+      "type": "svg_standard | r2_custom",
+      "svgKey": "string | null",
+      "url": "string | null",
+      "alt": "string",
+      "caption": "string | null",
+      "position": "right | bottom | inline",
+      "width": 200
+    }
+  },
+  "layman": {
+    "simpleExplanation": "string",
+    "analogyOrStory": "string",
+    "example1": { "company": "string", "content": "string" },
+    "example2": { "company": "string", "content": "string" },
+    "image": { "type": "svg_standard | r2_custom", "svgKey": "string | null", "url": "string | null", "alt": "string", "caption": "string | null", "position": "right | bottom | inline", "width": 200 }
+  },
+  "real_life": {
+    "title": "string",
+    "scenario": "string",
+    "bullets": [{ "label": "string", "detail": "string" }],
+    "tip": "string",
+    "image": { "type": "svg_standard | r2_custom", "svgKey": "string | null", "url": "string | null", "alt": "string", "caption": "string | null", "position": "right | bottom | inline", "width": 200 }
+  },
+  "technical": {
+    "markdown": "string",
+    "bullets": [{ "term": "string", "detail": "string" }],
+    "tip": "string",
+    "image": { "type": "svg_standard | r2_custom", "svgKey": "string | null", "url": "string | null", "alt": "string", "caption": "string | null", "position": "right | bottom | inline", "width": 200 }
+  },
+  "code": {
+    "language": "javascript | typescript | python | sql | scala | java | bash",
+    "intro": "string",
+    "code": "string",
+    "steps": ["string"],
+    "image": { "type": "svg_standard | r2_custom", "svgKey": "string | null", "url": "string | null", "alt": "string", "caption": "string | null", "position": "right | bottom | inline", "width": 200 }
+  },
+  "ai_tutor": {
+    "greeting": "string",
+    "qa_pairs": [{ "question": "string", "answer": "string" }]
+  }
+}
+
+QUALITY CHECKS:
+- notes markdown should be substantial and precise.
+- layman explanation should avoid jargon and explain with a relatable example.
+- real_life must connect the idea to a concrete workflow.
+- technical must be precise and define the main terms.
+- code should be minimal but runnable or clearly executable.
+- ai_tutor answers should reinforce the same concept in plain language.
+
+Use the selected context only.
 `.trim();
     }
 };

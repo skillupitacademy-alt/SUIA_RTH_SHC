@@ -2,6 +2,10 @@ import type { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const tutorialApiMock = vi.hoisted(() => {
+  const dbMock = {
+    transaction: vi.fn(async (callback: (tx: unknown) => Promise<unknown>) => callback({})),
+  };
+
   class TutorialAuthError extends Error {
     constructor(message: string, public readonly statusCode: 401 | 403) {
       super(message);
@@ -27,16 +31,24 @@ const tutorialApiMock = vi.hoisted(() => {
     },
     normalizeTutorialWritePayload: (value: unknown) => value,
     tutorialContentRepository: {
+      withDb: vi.fn(() => tutorialApiMock.tutorialContentRepository),
       upsertBlocks: vi.fn(),
       updateById: vi.fn(),
       publish: vi.fn(),
+      createAuditEntry: vi.fn(),
+      createVersionSnapshot: vi.fn(),
+      getVersionSnapshot: vi.fn(),
     },
     toTutorialContentDTO: vi.fn(),
     logRouteError: vi.fn(),
+    dbMock,
   };
 });
 
 vi.mock('@/lib/tutorial-content-api', () => tutorialApiMock);
+vi.mock('@quiz/db-tutorial', () => ({
+  db: tutorialApiMock.dbMock,
+}));
 
 import {
   requireAdmin,
@@ -96,6 +108,7 @@ function createRequest(body: unknown) {
 describe('POST /api/tutorial/content', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(tutorialApiMock.dbMock.transaction).mockImplementation(async (callback: (tx: unknown) => Promise<unknown>) => callback({}));
   });
 
   it('returns 401 when unauthenticated', async () => {
@@ -138,6 +151,14 @@ describe('POST /api/tutorial/content', () => {
       updatedAt: new Date('2026-01-01T00:00:00.000Z'),
       deletedAt: null,
     } as never);
+    vi.mocked(tutorialContentRepository.createAuditEntry).mockResolvedValueOnce({
+      id: 'audit-1',
+      contentId: 'content-1',
+      userId: 'admin-1',
+      action: 'created',
+      diff: null,
+      createdAt: new Date('2026-01-01T00:00:00.000Z'),
+    } as never);
     vi.mocked(toTutorialContentDTO).mockReturnValueOnce({ id: 'content-1' } as never);
 
     const response = await POST(createRequest({
@@ -148,5 +169,8 @@ describe('POST /api/tutorial/content', () => {
 
     expect(response.status).toBe(201);
     expect(await response.json()).toEqual({ data: { id: 'content-1' } });
+    expect(tutorialContentRepository.createAuditEntry).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'created' })
+    );
   });
 });

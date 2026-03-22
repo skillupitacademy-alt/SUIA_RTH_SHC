@@ -25,3 +25,10 @@ export const tutorialVideoProviderEnum = pgEnum('tutorial_video_provider', ['you
 export const tutorialContentJobStatusEnum = pgEnum('tutorial_content_job_status', ['pending', 'processing', 'completed', 'failed']);
 export const tutorialProgressStatusEnum = pgEnum('tutorial_progress_status', ['not_started', 'in_progress', 'completed']);
 export const tutorialTriggerStatusEnum = pgEnum('tutorial_trigger_status', ['pending', 'accepted', 'dismissed', 'completed', 'failed']);
+export const tutorialContentAuditActionEnum = pgEnum('tutorial_content_audit_action', [
+  'created',
+  'updated',
+  'published',
+  'unpublished',
+  'restored',
+]);

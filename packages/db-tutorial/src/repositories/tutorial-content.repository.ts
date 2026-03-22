@@ -1,12 +1,18 @@
 import { and, eq, isNull, sql } from 'drizzle-orm';
 
 import { tutorialContent } from '../schema/tutorial-content';
+import { tutorialContentVersions } from '../schema/tutorial-content-versions';
+import { tutorialContentAudit } from '../schema/tutorial-content-audit';
 import { db } from '../db';
 
 import type {
   ITutorialContentRepository,
   TutorialDbClientLike,
+  TutorialContentAuditCreateInput,
+  TutorialContentAuditRecord,
   TutorialContentRecord,
+  TutorialContentVersionCreateInput,
+  TutorialContentVersionRecord,
   TutorialContentUpsertInput,
   TutorialDifficulty,
 } from '@quiz/types';
@@ -208,5 +214,100 @@ export class TutorialContentRepository
     );
 
     return rows[0] as TutorialContentRecord | undefined;
+  }
+
+  async createVersionSnapshot(
+    input: TutorialContentVersionCreateInput
+  ): Promise<TutorialContentVersionRecord> {
+    const [row] = (await this.runRead(
+      this.dbInstance
+        .insert(tutorialContentVersions)
+        .values({
+          contentId: input.contentId,
+          version: input.version,
+          content: input.content,
+          savedBy: input.savedBy,
+          createdAt: new Date(),
+        })
+        .returning(),
+      'TutorialContentRepository.createVersionSnapshot'
+    )) as TutorialContentVersionRecord[];
+
+    return row;
+  }
+
+  async getVersionSnapshot(versionId: string): Promise<TutorialContentVersionRecord | undefined> {
+    const rows = await this.runRead(
+      this.dbInstance
+        .select()
+        .from(tutorialContentVersions)
+        .where(eq(tutorialContentVersions.id, versionId)),
+      'TutorialContentRepository.getVersionSnapshot'
+    );
+
+    return rows[0] as TutorialContentVersionRecord | undefined;
+  }
+
+  async getVersionSnapshots(contentId: string): Promise<TutorialContentVersionRecord[]> {
+    const rows = await this.runReport(
+      this.dbInstance
+        .select()
+        .from(tutorialContentVersions)
+        .where(eq(tutorialContentVersions.contentId, contentId)),
+      'TutorialContentRepository.getVersionSnapshots'
+    );
+
+    return [...(rows as TutorialContentVersionRecord[])].sort(
+      (left, right) => right.createdAt.getTime() - left.createdAt.getTime()
+    );
+  }
+
+  async createAuditEntry(input: TutorialContentAuditCreateInput): Promise<TutorialContentAuditRecord> {
+    const [row] = (await this.runRead(
+      this.dbInstance
+        .insert(tutorialContentAudit)
+        .values({
+          contentId: input.contentId,
+          userId: input.userId,
+          action: input.action,
+          diff: input.diff ?? null,
+          createdAt: new Date(),
+        })
+        .returning(),
+      'TutorialContentRepository.createAuditEntry'
+    )) as TutorialContentAuditRecord[];
+
+    return row;
+  }
+
+  async getAuditEntries(filters: {
+    contentId?: string;
+    action?: TutorialContentAuditRecord['action'];
+    limit?: number;
+    offset?: number;
+  }): Promise<TutorialContentAuditRecord[]> {
+    const conditions = [];
+    if (filters.contentId) {
+      conditions.push(eq(tutorialContentAudit.contentId, filters.contentId));
+    }
+    if (filters.action) {
+      conditions.push(eq(tutorialContentAudit.action, filters.action));
+    }
+
+    const query = this.dbInstance
+      .select()
+      .from(tutorialContentAudit);
+
+    const rows = await this.runReport(
+      conditions.length > 0 ? query.where(and(...conditions)) : query,
+      'TutorialContentRepository.getAuditEntries'
+    );
+
+    const ordered = [...(rows as TutorialContentAuditRecord[])].sort(
+      (left, right) => right.createdAt.getTime() - left.createdAt.getTime()
+    );
+    const offset = filters.offset ?? 0;
+    const limit = filters.limit ?? ordered.length;
+    return ordered.slice(offset, offset + limit);
   }
 }

@@ -1,3 +1,4 @@
+import { db } from '@quiz/db-tutorial';
 import { PlatformEventTypes, publishEvent } from '@quiz/events';
 import { revalidateTag } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
@@ -49,7 +50,34 @@ export async function POST(
   }
 
   try {
-    const published = await tutorialContentRepository.publish(parsedParams.data.id);
+    const published = await db.transaction(async (tx) => {
+      const repository = tutorialContentRepository.withDb(tx as never);
+      const current = await repository.findById(parsedParams.data.id);
+      if (current == null) {
+        return null;
+      }
+
+      await repository.createVersionSnapshot({
+        contentId: current.id,
+        version: current.version,
+        content: current.content,
+        savedBy: adminUserId ?? '00000000-0000-0000-0000-000000000000',
+      });
+
+      await repository.createAuditEntry({
+        contentId: current.id,
+        userId: adminUserId ?? '00000000-0000-0000-0000-000000000000',
+        action: 'published',
+        diff: { before: current.isPublished, after: true, version: current.version },
+      });
+
+      const published = await repository.publish(parsedParams.data.id);
+      if (published == null) {
+        throw new Error('Failed to publish tutorial content');
+      }
+
+      return published;
+    });
     if (published == null) {
       return NextResponse.json({ error: 'Tutorial content not found' }, { status: 404 });
     }
