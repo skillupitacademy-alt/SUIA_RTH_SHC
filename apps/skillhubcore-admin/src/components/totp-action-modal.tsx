@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 
 type TotpActionModalProps = {
   triggerLabel: string;
@@ -27,7 +27,6 @@ export function TotpActionModal({
   const [totpCode, setTotpCode] = useState('');
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const payload = useMemo(() => body, [body]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -35,13 +34,31 @@ export function TotpActionModal({
     setError(null);
 
     try {
+      const verifyResponse = await fetch('/api/admin/auth/verify-totp', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({ code: totpCode.trim() }),
+      });
+
+      if (verifyResponse.ok === false) {
+        const data = (await verifyResponse.json().catch(() => null)) as { error?: string } | null;
+        throw new Error(data?.error ?? 'Request failed');
+      }
+
+      const verifiedBody = (await verifyResponse.json().catch(() => null)) as { sessionToken?: string } | null;
+      if (typeof verifiedBody?.sessionToken !== 'string' || verifiedBody.sessionToken.length === 0) {
+        throw new Error('Request failed');
+      }
+
       const response = await fetch(endpoint, {
         method,
         headers: {
           'content-type': 'application/json',
-          'x-totp-code': totpCode.trim(),
+          'x-totp-session': verifiedBody.sessionToken,
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(body),
       });
 
       if (response.ok === false) {

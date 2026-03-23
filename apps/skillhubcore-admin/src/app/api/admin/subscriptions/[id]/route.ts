@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
 import { findAdminSubscription } from '@/lib/skillhubcore-admin-data';
-import { requireSuperAdmin, requireTotp } from '@/lib/skillhubcore-admin-guards';
+import { requireSuperAdmin, requireTotpSession } from '@/lib/skillhubcore-admin-guards';
 
 const payloadSchema = z.object({
   plan: z.enum(['free', 'premium', 'combo', 'training']).optional(),
@@ -19,9 +19,9 @@ export async function PATCH(request: Request, { params }: Params) {
     return access;
   }
 
-  const totp = requireTotp(request);
-  if (totp instanceof NextResponse) {
-    return totp;
+  const totpSession = requireTotpSession(request);
+  if (totpSession instanceof NextResponse) {
+    return totpSession;
   }
 
   const { id } = await params;
