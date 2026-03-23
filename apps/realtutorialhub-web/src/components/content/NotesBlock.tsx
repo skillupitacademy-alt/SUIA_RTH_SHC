@@ -7,7 +7,7 @@ import { BlockHeader } from './BlockHeader';
 import { ContentImage } from './ContentImage';
 
 interface NotesBlockProps {
-  data: TutorialContentJSON['notes'];
+  data: TutorialContentJSON['notes'] | null | undefined;
   theme: {
     blockNotes: string;
     blockNotesHeader: string;
@@ -16,6 +16,7 @@ interface NotesBlockProps {
 
 export function NotesBlock({ data, theme }: NotesBlockProps) {
   const t = useTranslations('blocks.notes');
+  const safeData = data ?? { markdown: '', image: null };
 
   return (
     <section className="design-panel" aria-label={t('ariaLabel')}>
@@ -29,17 +30,17 @@ export function NotesBlock({ data, theme }: NotesBlockProps) {
       >
         <div
           style={{
-            color: 'var(--block-text-primary)',
-            fontSize: 14,
-            lineHeight: 1.75,
-            whiteSpace: 'pre-wrap',
-          }}
-        >
-          {data.markdown}
+          color: 'var(--block-text-primary)',
+          fontSize: 14,
+          lineHeight: 1.75,
+          whiteSpace: 'pre-wrap',
+        }}
+      >
+          {safeData.markdown}
         </div>
-        {data.image ? (
+        {safeData.image ? (
           <div style={{ marginTop: 16 }}>
-            <ContentImage image={data.image} />
+            <ContentImage image={safeData.image} />
           </div>
         ) : null}
       </div>

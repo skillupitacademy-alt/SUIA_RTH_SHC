@@ -22,6 +22,7 @@ interface TutorialExperienceProps {
     topicSlug: string;
     subtopicSlug: string;
   };
+  subtopicId?: string;
   content: TutorialContentJSON;
   theme: DomainTheme;
   mode: 'compare' | 'detail' | 'learn';
@@ -32,7 +33,7 @@ interface TutorialExperienceProps {
 
 const blockOrder: ContentBlockType[] = ['notes', 'layman', 'real_life', 'technical', 'code', 'ai_tutor'];
 
-export function TutorialExperience({ params, content, theme, mode, blockType, simulateSlowLoad = false, simulateError = false }: TutorialExperienceProps) {
+export function TutorialExperience({ params, subtopicId, content, theme, mode, blockType, simulateSlowLoad = false, simulateError = false }: TutorialExperienceProps) {
   const t = useTranslations('subtopic');
   const blockTranslations = useTranslations('blocks');
   const sidebar = useTranslations('sidebar');
@@ -128,11 +129,33 @@ export function TutorialExperience({ params, content, theme, mode, blockType, si
       ) : null}
 
       {mode === 'compare' ? (
-        <BlockRenderer content={content} theme={theme} simulateSlowLoad={simulateSlowLoad} simulateError={simulateError} />
+        <BlockRenderer
+          content={content}
+          theme={theme}
+          subtopicId={subtopicId}
+          subtopicName={subtopicName}
+          simulateSlowLoad={simulateSlowLoad}
+          simulateError={simulateError}
+        />
       ) : mode === 'learn' ? (
-        <BlockRenderer content={content} theme={theme} simulateSlowLoad={simulateSlowLoad} simulateError={simulateError} />
+        <BlockRenderer
+          content={content}
+          theme={theme}
+          subtopicId={subtopicId}
+          subtopicName={subtopicName}
+          simulateSlowLoad={simulateSlowLoad}
+          simulateError={simulateError}
+        />
       ) : blockType ? (
-        <BlockRenderer content={content} theme={theme} activeBlockType={blockType} simulateSlowLoad={simulateSlowLoad} simulateError={simulateError} />
+        <BlockRenderer
+          content={content}
+          theme={theme}
+          subtopicId={subtopicId}
+          subtopicName={subtopicName}
+          activeBlockType={blockType}
+          simulateSlowLoad={simulateSlowLoad}
+          simulateError={simulateError}
+        />
       ) : null}
     </section>
   );

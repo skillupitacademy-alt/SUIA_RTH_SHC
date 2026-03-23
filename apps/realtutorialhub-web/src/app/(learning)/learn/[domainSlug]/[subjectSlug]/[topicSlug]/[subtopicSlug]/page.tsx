@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 import { getDomainTheme } from '@/lib/domain-themes';
-import { getSeededTutorialContent } from '@/lib/tutorial-content';
+import { SEED_SUBTOPIC_ID, getSeededTutorialContent } from '@/lib/tutorial-content';
 import { getHierarchyBySlugs, getPublishedTutorialContent, slugifySegment } from '@/lib/tutorial-hierarchy';
 
 import { TutorialExperience } from '@/components/content/TutorialExperience';
@@ -22,12 +22,15 @@ interface PageProps {
 export default async function TutorialSubtopicPage({ params, searchParams }: PageProps) {
   const resolved = await params;
   const resolvedSearchParams = searchParams ? await searchParams : {};
+  const hierarchy = await getHierarchyBySlugs(resolved);
   const content = await getSeededTutorialContent();
   const theme = getDomainTheme(resolved.domainSlug);
+  const subtopicId = hierarchy?.subtopic.id ?? SEED_SUBTOPIC_ID;
 
   return (
     <TutorialExperience
       params={resolved}
+      subtopicId={subtopicId}
       content={content}
       theme={theme}
       mode="learn"

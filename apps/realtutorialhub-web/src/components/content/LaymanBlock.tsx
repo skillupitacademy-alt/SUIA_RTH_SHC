@@ -7,7 +7,7 @@ import { BlockHeader } from './BlockHeader';
 import { ContentImage } from './ContentImage';
 
 interface LaymanBlockProps {
-  data: TutorialContentJSON['layman'];
+  data: TutorialContentJSON['layman'] | null | undefined;
   theme: {
     blockLayman: string;
     blockLaymanHeader: string;
@@ -18,6 +18,13 @@ interface LaymanBlockProps {
 export function LaymanBlock({ data, theme, isCompleted = false }: LaymanBlockProps) {
   const t = useTranslations('blocks.layman');
   const common = useTranslations('common');
+  const safeData = data ?? {
+    simpleExplanation: '',
+    analogyOrStory: '',
+    example1: { company: '', content: '' },
+    example2: { company: '', content: '' },
+    image: null,
+  };
 
   return (
     <section className="design-panel" aria-label={t('ariaLabel')}>
@@ -39,7 +46,7 @@ export function LaymanBlock({ data, theme, isCompleted = false }: LaymanBlockPro
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 20, alignItems: 'start' }}>
           <div>
             <p style={{ margin: 0, fontSize: 15, lineHeight: 1.75, color: 'var(--block-text-primary)' }}>
-              {data.simpleExplanation}
+              {safeData.simpleExplanation}
             </p>
             <div
               style={{
@@ -55,13 +62,13 @@ export function LaymanBlock({ data, theme, isCompleted = false }: LaymanBlockPro
                 {common('analogy')}
               </div>
               <div style={{ fontSize: 13.5, lineHeight: 1.65, color: 'var(--block-text-secondary)', fontStyle: 'italic' }}>
-                {data.analogyOrStory}
+                {safeData.analogyOrStory}
               </div>
             </div>
           </div>
 
-          {data.image ? (
-            <ContentImage image={data.image} />
+          {safeData.image ? (
+            <ContentImage image={safeData.image} />
           ) : (
             <div
               aria-hidden="true"
@@ -84,7 +91,7 @@ export function LaymanBlock({ data, theme, isCompleted = false }: LaymanBlockPro
             gap: 12,
           }}
         >
-          {[data.example1, data.example2].map((example, index) => (
+          {[safeData.example1, safeData.example2].map((example, index) => (
             <article
               key={example.company}
               style={{

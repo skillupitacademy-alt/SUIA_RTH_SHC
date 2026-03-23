@@ -7,7 +7,7 @@ import { BlockHeader } from './BlockHeader';
 import { ContentImage } from './ContentImage';
 
 interface TechnicalBlockProps {
-  data: TutorialContentJSON['technical'];
+  data: TutorialContentJSON['technical'] | null | undefined;
   theme: {
     blockTechnical: string;
     blockTechnicalHeader: string;
@@ -17,6 +17,12 @@ interface TechnicalBlockProps {
 export function TechnicalBlock({ data, theme }: TechnicalBlockProps) {
   const t = useTranslations('blocks.technical');
   const common = useTranslations('common');
+  const safeData = data ?? {
+    markdown: '',
+    bullets: [],
+    tip: '',
+    image: null,
+  };
 
   return (
     <section className="design-panel" aria-label={t('ariaLabel')}>
@@ -28,9 +34,9 @@ export function TechnicalBlock({ data, theme }: TechnicalBlockProps) {
           borderTop: 'var(--design-content-border)',
         }}
       >
-        <p style={{ margin: 0, fontSize: 14.5, lineHeight: 1.75, color: 'var(--block-text-primary)' }}>{data.markdown}</p>
+        <p style={{ margin: 0, fontSize: 14.5, lineHeight: 1.75, color: 'var(--block-text-primary)' }}>{safeData.markdown}</p>
         <div style={{ marginTop: 14, display: 'grid', gap: 10 }}>
-          {data.bullets.map((bullet) => (
+          {safeData.bullets.map((bullet) => (
             <div
               key={bullet.term}
               style={{
@@ -60,11 +66,11 @@ export function TechnicalBlock({ data, theme }: TechnicalBlockProps) {
             boxShadow: 'var(--design-content-shadow)',
           }}
         >
-          <strong style={{ color: theme.blockTechnicalHeader }}>{common('tip')}:</strong> {data.tip}
+          <strong style={{ color: theme.blockTechnicalHeader }}>{common('tip')}:</strong> {safeData.tip}
         </div>
-        {data.image ? (
+        {safeData.image ? (
           <div style={{ marginTop: 16 }}>
-            <ContentImage image={data.image} />
+            <ContentImage image={safeData.image} />
           </div>
         ) : null}
       </div>

@@ -7,7 +7,7 @@ import { BlockHeader } from './BlockHeader';
 import { ContentImage } from './ContentImage';
 
 interface CodeBlockProps {
-  data: TutorialContentJSON['code'];
+  data: TutorialContentJSON['code'] | null | undefined;
   theme: {
     blockCode: string;
     blockCodeHeader: string;
@@ -17,10 +17,17 @@ interface CodeBlockProps {
 export function CodeBlock({ data, theme }: CodeBlockProps) {
   const t = useTranslations('blocks.code');
   const common = useTranslations('common');
+  const safeData = data ?? {
+    language: 'javascript' as const,
+    intro: '',
+    code: '',
+    steps: [],
+    image: null,
+  };
 
   return (
     <section className="design-panel" aria-label={t('ariaLabel')}>
-      <BlockHeader icon="C" title={`${t('title')} (${data.language})`} accentColor={theme.blockCodeHeader} headingId="block-code-heading" />
+      <BlockHeader icon="C" title={`${t('title')} (${safeData.language})`} accentColor={theme.blockCodeHeader} headingId="block-code-heading" />
       <div
         style={{
           padding: 18,
@@ -29,7 +36,7 @@ export function CodeBlock({ data, theme }: CodeBlockProps) {
           borderTop: 'var(--design-content-border)',
         }}
       >
-        <p style={{ margin: '0 0 12px', color: 'rgba(255,255,255,0.85)', lineHeight: 1.65 }}>{data.intro}</p>
+        <p style={{ margin: '0 0 12px', color: 'rgba(255,255,255,0.85)', lineHeight: 1.65 }}>{safeData.intro}</p>
         <div
           style={{
             padding: 16,
@@ -40,22 +47,22 @@ export function CodeBlock({ data, theme }: CodeBlockProps) {
           }}
         >
           <pre style={{ margin: 0, whiteSpace: 'pre-wrap', fontFamily: 'Consolas, Monaco, monospace', fontSize: 13, lineHeight: 1.65 }}>
-            {data.code}
+            {safeData.code}
           </pre>
         </div>
         <div style={{ marginTop: 14 }}>
           <div style={{ fontSize: 12.5, fontWeight: 800, marginBottom: 8, color: 'rgba(255,255,255,0.82)' }}>{common('steps')}</div>
           <ol style={{ margin: 0, paddingLeft: 20, lineHeight: 1.65, color: 'rgba(255,255,255,0.82)' }}>
-            {data.steps.map((step) => (
+            {safeData.steps.map((step) => (
               <li key={step} style={{ marginBottom: 6 }}>
                 {step}
               </li>
             ))}
           </ol>
         </div>
-        {data.image ? (
+        {safeData.image ? (
           <div style={{ marginTop: 16 }}>
-            <ContentImage image={data.image} />
+            <ContentImage image={safeData.image} />
           </div>
         ) : null}
       </div>

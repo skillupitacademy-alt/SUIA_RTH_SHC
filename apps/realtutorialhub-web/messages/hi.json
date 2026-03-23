@@ -80,11 +80,25 @@
     },
     "ai_tutor": {
       "title": "AI ट्यूटर",
-      "ariaLabel": "AI ट्यूटर ब्लॉक"
+      "ariaLabel": "AI ट्यूटर ब्लॉक",
+      "askPrompt": "{subtopicName} के बारे में एक प्रश्न पूछें...",
+      "you": "आप",
+      "assistant": "AI उत्तर",
+      "relevantBlocks": "संबंधित अध्ययन ब्लॉक नीचे दिए गए हैं।",
+      "noResults": "कोई मेल खाने वाले अध्ययन ब्लॉक नहीं मिले।",
+      "rateLimitMessage": "आप इस घंटे में 10 प्रश्न उपयोग कर चुके हैं। Unlimited AI Tutor access के लिए upgrade करें।",
+      "networkError": "कनेक्ट नहीं हो सका। कृपया फिर कोशिश करें।"
     },
     "aiTutor": {
       "title": "AI ट्यूटर",
-      "ariaLabel": "AI ट्यूटर ब्लॉक"
+      "ariaLabel": "AI ट्यूटर ब्लॉक",
+      "askPrompt": "{subtopicName} के बारे में एक प्रश्न पूछें...",
+      "you": "आप",
+      "assistant": "AI उत्तर",
+      "relevantBlocks": "संबंधित अध्ययन ब्लॉक नीचे दिए गए हैं।",
+      "noResults": "कोई मेल खाने वाले अध्ययन ब्लॉक नहीं मिले।",
+      "rateLimitMessage": "आप इस घंटे में 10 प्रश्न उपयोग कर चुके हैं। Unlimited AI Tutor access के लिए upgrade करें।",
+      "networkError": "कनेक्ट नहीं हो सका। कृपया फिर कोशिश करें।"
     }
   }
 }

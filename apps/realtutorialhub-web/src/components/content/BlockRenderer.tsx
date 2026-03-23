@@ -26,6 +26,8 @@ const DynamicAITutorBlock = dynamic(() => import('./AITutorBlock').then((mod) =>
 interface BlockRendererProps {
   content: TutorialContentJSON;
   theme: DomainTheme;
+  subtopicId?: string;
+  subtopicName?: string;
   completedBlocks?: number;
   activeBlockType?: ContentBlockType;
   simulateSlowLoad?: boolean;
@@ -53,6 +55,8 @@ function BlockShell({
 export function BlockRenderer({
   content,
   theme,
+  subtopicId,
+  subtopicName,
   completedBlocks = 0,
   activeBlockType,
   simulateSlowLoad = false,
@@ -85,7 +89,7 @@ export function BlockRenderer({
       case 'code':
         return <DynamicCodeBlock data={content.code} theme={theme} />;
       case 'ai_tutor':
-        return <DynamicAITutorBlock data={content.ai_tutor} theme={theme} />;
+        return <DynamicAITutorBlock data={content.ai_tutor} theme={theme} subtopicId={subtopicId} subtopicName={subtopicName} />;
       default:
         return null;
     }

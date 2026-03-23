@@ -1,36 +1,43 @@
-import { render, screen } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
+import { screen } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
+
 import { CodeBlock } from '../CodeBlock';
-import React from 'react';
+import { mockTutorialContent } from '../__fixtures__/mock-content';
+import { getDomainTheme } from '@/lib/domain-themes';
+
+import { renderWithIntl, runAxe } from './test-utils';
+
+const theme = getDomainTheme('full-stack');
 
 describe('CodeBlock', () => {
-  const mockData = {
-    language: 'javascript',
-    intro: 'This is a test introduction',
-    code: 'console.log("Hello, World!");',
-    steps: ['Step 1: Open terminal', 'Step 2: Run node script.js'],
-    image: null,
-  };
+  it('renders content, exposes an aria-label, and passes axe', async () => {
+    const { container } = renderWithIntl(<CodeBlock data={mockTutorialContent.code} theme={theme} />);
 
-  const mockTheme = {
-    blockCode: '#000',
-    blockCodeHeader: '#fff',
-  };
+    expect(screen.getByLabelText('Code example block')).toBeDefined();
+    expect(screen.getByText(/This example shows how a promise resolves/)).toBeDefined();
 
-  it('renders correctly with given data', () => {
-    render(<CodeBlock data={mockData} theme={mockTheme} />);
+    const results = await runAxe(container);
+    expect(results.violations).toHaveLength(0);
+  });
 
-    // Check header
-    expect(screen.getByText('Code (javascript)')).toBeDefined();
+  it('handles null and empty content without crashing', () => {
+    const { rerender } = renderWithIntl(<CodeBlock data={null} theme={theme} />);
 
-    // Check intro text
-    expect(screen.getByText('This is a test introduction')).toBeDefined();
+    expect(screen.getByLabelText('Code example block')).toBeDefined();
 
-    // Check code snippet
-    expect(screen.getByText('console.log("Hello, World!");')).toBeDefined();
+    rerender(
+      <CodeBlock
+        data={{
+          language: 'javascript',
+          intro: '',
+          code: '',
+          steps: [],
+          image: null,
+        }}
+        theme={theme}
+      />
+    );
 
-    // Check steps
-    expect(screen.getByText('Step 1: Open terminal')).toBeDefined();
-    expect(screen.getByText('Step 2: Run node script.js')).toBeDefined();
+    expect(screen.getByLabelText('Code example block')).toBeDefined();
   });
 });

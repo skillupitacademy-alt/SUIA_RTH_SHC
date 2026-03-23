@@ -7,7 +7,7 @@ import { BlockHeader } from './BlockHeader';
 import { ContentImage } from './ContentImage';
 
 interface RealLifeBlockProps {
-  data: TutorialContentJSON['real_life'];
+  data: TutorialContentJSON['real_life'] | null | undefined;
   theme: {
     blockRealLife: string;
     blockRealLifeHeader: string;
@@ -17,10 +17,17 @@ interface RealLifeBlockProps {
 export function RealLifeBlock({ data, theme }: RealLifeBlockProps) {
   const t = useTranslations('blocks.realLife');
   const common = useTranslations('common');
+  const safeData = data ?? {
+    title: '',
+    scenario: '',
+    bullets: [],
+    tip: '',
+    image: null,
+  };
 
   return (
     <section className="design-panel" aria-label={t('ariaLabel')}>
-      <BlockHeader icon="R" title={data.title} accentColor={theme.blockRealLifeHeader} headingId="block-real_life-heading" />
+      <BlockHeader icon="R" title={safeData.title || t('title')} accentColor={theme.blockRealLifeHeader} headingId="block-real_life-heading" />
       <div
         style={{
           padding: 18,
@@ -31,10 +38,10 @@ export function RealLifeBlock({ data, theme }: RealLifeBlockProps) {
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 16, alignItems: 'start' }}>
           <div>
             <p style={{ margin: 0, fontSize: 14.5, lineHeight: 1.75, color: 'var(--block-text-primary)' }}>
-              {data.scenario}
+              {safeData.scenario}
             </p>
             <div style={{ marginTop: 14, display: 'grid', gap: 10 }}>
-              {data.bullets.map((bullet) => (
+              {safeData.bullets.map((bullet) => (
                 <div
                   key={bullet.label}
                   style={{
@@ -64,11 +71,11 @@ export function RealLifeBlock({ data, theme }: RealLifeBlockProps) {
                 boxShadow: 'var(--design-content-shadow)',
               }}
             >
-              <strong style={{ color: theme.blockRealLifeHeader }}>{common('tip')}:</strong> {data.tip}
+              <strong style={{ color: theme.blockRealLifeHeader }}>{common('tip')}:</strong> {safeData.tip}
             </div>
           </div>
 
-          {data.image ? <ContentImage image={data.image} /> : null}
+          {safeData.image ? <ContentImage image={safeData.image} /> : null}
         </div>
       </div>
     </section>

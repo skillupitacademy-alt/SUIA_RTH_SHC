@@ -80,11 +80,25 @@
     },
     "ai_tutor": {
       "title": "AI Tutor",
-      "ariaLabel": "AI tutor block"
+      "ariaLabel": "AI tutor block",
+      "askPrompt": "Ask a question about {subtopicName}...",
+      "you": "You",
+      "assistant": "AI response",
+      "relevantBlocks": "Relevant study blocks are listed below.",
+      "noResults": "No matching study blocks were returned.",
+      "rateLimitMessage": "You have used 10 questions this hour. Upgrade for unlimited AI Tutor access.",
+      "networkError": "Unable to connect. Try again."
     },
     "aiTutor": {
       "title": "AI Tutor",
-      "ariaLabel": "AI tutor block"
+      "ariaLabel": "AI tutor block",
+      "askPrompt": "Ask a question about {subtopicName}...",
+      "you": "You",
+      "assistant": "AI response",
+      "relevantBlocks": "Relevant study blocks are listed below.",
+      "noResults": "No matching study blocks were returned.",
+      "rateLimitMessage": "You have used 10 questions this hour. Upgrade for unlimited AI Tutor access.",
+      "networkError": "Unable to connect. Try again."
     }
   }
 }
