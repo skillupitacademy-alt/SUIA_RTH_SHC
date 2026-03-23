@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 import type { DomainTheme } from '@/lib/domain-themes';
 
@@ -30,6 +31,7 @@ const statusStyles: Record<SidebarItemStatus, { color: string; label: string }> 
 };
 
 export function TutorialSidebar({ currentDomain, topicGroups, notes, theme, activeSubtopicSlug }: TutorialSidebarProps) {
+  const t = useTranslations('sidebar');
   const [expanded, setExpanded] = useState(() => topicGroups.map((group) => group.defaultExpanded));
   const visibleNotes = useMemo(() => notes.slice(0, 6), [notes]);
 
@@ -148,7 +150,7 @@ export function TutorialSidebar({ currentDomain, topicGroups, notes, theme, acti
       </div>
 
       <div style={{ display: 'flex', gap: 8, padding: '14px 12px 8px' }}>
-        {['💡', '⚙️', '📚', '🎯'].map((icon) => (
+        {['i', 'c', 'b', 't'].map((icon) => (
           <button
             key={icon}
             type="button"
@@ -177,7 +179,7 @@ export function TutorialSidebar({ currentDomain, topicGroups, notes, theme, acti
           border: '1px solid #ffe082',
         }}
       >
-        <div style={{ fontWeight: 800, fontSize: 12.5, color: '#5d4037', marginBottom: 8 }}>📋 Notes</div>
+        <div style={{ fontWeight: 800, fontSize: 12.5, color: '#5d4037', marginBottom: 8 }}>{t('notes')}</div>
         <div style={{ display: 'grid', gap: 8, maxHeight: 180, overflow: 'hidden' }}>
           {visibleNotes.map((note) => (
             <div key={note.term} style={{ fontSize: 11.5, lineHeight: 1.55, color: '#5d4037' }}>
@@ -189,4 +191,3 @@ export function TutorialSidebar({ currentDomain, topicGroups, notes, theme, acti
     </aside>
   );
 }
-

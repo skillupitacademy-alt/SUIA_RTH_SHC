@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import type { TutorialContentJSON } from '@quiz/types';
 
 import { BlockHeader } from './BlockHeader';
@@ -12,9 +15,12 @@ interface TechnicalBlockProps {
 }
 
 export function TechnicalBlock({ data, theme }: TechnicalBlockProps) {
+  const t = useTranslations('blocks.technical');
+  const common = useTranslations('common');
+
   return (
-    <section className="design-panel" aria-label="Technical block">
-      <BlockHeader icon="⚙️" title="Technical" accentColor={theme.blockTechnicalHeader} />
+    <section className="design-panel" aria-label={t('ariaLabel')}>
+      <BlockHeader icon="T" title={t('title')} accentColor={theme.blockTechnicalHeader} headingId="block-technical-heading" />
       <div
         style={{
           padding: 18,
@@ -54,7 +60,7 @@ export function TechnicalBlock({ data, theme }: TechnicalBlockProps) {
             boxShadow: 'var(--design-content-shadow)',
           }}
         >
-          <strong style={{ color: theme.blockTechnicalHeader }}>Tip:</strong> {data.tip}
+          <strong style={{ color: theme.blockTechnicalHeader }}>{common('tip')}:</strong> {data.tip}
         </div>
         {data.image ? (
           <div style={{ marginTop: 16 }}>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 import type { TutorialContentJSON } from '@quiz/types';
 
@@ -16,10 +17,12 @@ interface AITutorBlockProps {
 
 export function AITutorBlock({ data, theme }: AITutorBlockProps) {
   const [question, setQuestion] = useState('');
+  const t = useTranslations('blocks.aiTutor');
+  const common = useTranslations('common');
 
   return (
-    <section className="design-panel" aria-label="AI tutor block">
-      <BlockHeader icon="🤖" title="AI Tutor" accentColor={theme.blockAITutorHeader} badge="Chat" />
+    <section className="design-panel" aria-label={t('ariaLabel')}>
+      <BlockHeader icon="AI" title={t('title')} accentColor={theme.blockAITutorHeader} badge={common('chat')} headingId="block-ai_tutor-heading" />
       <div
         style={{
           padding: 18,
@@ -29,9 +32,7 @@ export function AITutorBlock({ data, theme }: AITutorBlockProps) {
       >
         <div style={{ padding: '12px 14px', borderRadius: 14, background: 'var(--design-content-surface-soft)', marginBottom: 14 }}>
           <div style={{ fontWeight: 800, marginBottom: 6, color: theme.blockAITutorHeader }}>{data.greeting}</div>
-          <div style={{ fontSize: 13, lineHeight: 1.7, color: 'var(--block-text-secondary)' }}>
-            Ask a question after you complete the other blocks.
-          </div>
+          <div style={{ fontSize: 13, lineHeight: 1.7, color: 'var(--block-text-secondary)' }}>{common('askTheTutor')} after you complete the other blocks.</div>
         </div>
 
         <div
@@ -63,7 +64,7 @@ export function AITutorBlock({ data, theme }: AITutorBlockProps) {
         </div>
 
         <label style={{ display: 'grid', gap: 8 }}>
-          <span style={{ fontSize: 12.5, fontWeight: 800, color: theme.blockAITutorHeader }}>Ask the tutor</span>
+          <span style={{ fontSize: 12.5, fontWeight: 800, color: theme.blockAITutorHeader }}>{common('askTheTutor')}</span>
           <textarea
             value={question}
             onChange={(event) => setQuestion(event.target.value)}
@@ -97,7 +98,7 @@ export function AITutorBlock({ data, theme }: AITutorBlockProps) {
             cursor: 'not-allowed',
           }}
         >
-          Send question
+          {common('sendQuestion')}
         </button>
       </div>
     </section>

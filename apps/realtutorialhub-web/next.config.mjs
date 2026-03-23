@@ -1,5 +1,7 @@
 import bundleAnalyzer from '@next/bundle-analyzer';
 import { withSentryConfig } from '@sentry/nextjs';
+import withSerwist from '@serwist/next';
+import createNextIntlPlugin from 'next-intl/plugin';
 
 import { standardSecurityHeaders, getCSPHeader } from '../../packages/config/security-headers.mjs';
 
@@ -64,7 +66,20 @@ const nextConfig = {
   },
 };
 
-export default withSentryConfig(withBundleAnalyzer(nextConfig), {
+const withTutorialSerwist = withSerwist({
+  swSrc: 'src/app/sw.ts',
+  swDest: 'public/sw.js',
+  swUrl: '/sw.js',
+  scope: '/',
+  register: true,
+  cacheOnNavigation: true,
+  reloadOnOnline: true,
+  disable: process.env.NODE_ENV !== 'production',
+});
+
+const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
+
+export default withSentryConfig(withTutorialSerwist(withNextIntl(withBundleAnalyzer(nextConfig))), {
   org: 'real-tutorial-hub',
   project: process.env.SENTRY_PROJECT || 'quiz-platform',
   silent: true,

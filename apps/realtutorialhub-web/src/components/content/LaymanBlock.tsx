@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import type { TutorialContentJSON } from '@quiz/types';
 
 import { BlockHeader } from './BlockHeader';
@@ -13,14 +16,18 @@ interface LaymanBlockProps {
 }
 
 export function LaymanBlock({ data, theme, isCompleted = false }: LaymanBlockProps) {
+  const t = useTranslations('blocks.layman');
+  const common = useTranslations('common');
+
   return (
-    <section className="design-panel" aria-label="Layman block">
+    <section className="design-panel" aria-label={t('ariaLabel')}>
       <BlockHeader
-        icon="🎓"
-        title="Layman Explanation"
+        icon="L"
+        title={t('title')}
         accentColor={theme.blockLaymanHeader}
-        badge={isCompleted ? 'Completed' : 'Plain English'}
+        badge={isCompleted ? common('completed') : common('plainEnglish')}
         badgeTone={isCompleted ? 'success' : 'neutral'}
+        headingId="block-layman-heading"
       />
       <div
         style={{
@@ -45,7 +52,7 @@ export function LaymanBlock({ data, theme, isCompleted = false }: LaymanBlockPro
               }}
             >
               <div style={{ fontSize: 13, fontWeight: 800, color: theme.blockLaymanHeader, marginBottom: 6 }}>
-                Analogy
+                {common('analogy')}
               </div>
               <div style={{ fontSize: 13.5, lineHeight: 1.65, color: 'var(--block-text-secondary)', fontStyle: 'italic' }}>
                 {data.analogyOrStory}
@@ -89,7 +96,7 @@ export function LaymanBlock({ data, theme, isCompleted = false }: LaymanBlockPro
               }}
             >
               <div style={{ fontSize: 12.5, fontWeight: 800, color: theme.blockLaymanHeader, marginBottom: 6 }}>
-                Example {index + 1}: {example.company}
+                {common('example', { index: index + 1 })}: {example.company}
               </div>
               <div style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--block-text-secondary)' }}>{example.content}</div>
             </article>

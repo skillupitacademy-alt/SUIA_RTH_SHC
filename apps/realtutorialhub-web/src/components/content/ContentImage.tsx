@@ -1,4 +1,7 @@
+'use client';
+
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 
 import type { ContentImage as ContentImageType } from '@quiz/types';
 
@@ -10,6 +13,7 @@ interface ContentImageProps {
 }
 
 export function ContentImage({ image, className }: ContentImageProps) {
+  const t = useTranslations('common');
   const isBottom = image.position === 'bottom';
   const width = image.width;
   const SVGComponent = image.type === 'svg_standard' ? getSVGComponent(image.svgKey ?? '') : null;
@@ -39,7 +43,7 @@ export function ContentImage({ image, className }: ContentImageProps) {
             background: 'var(--tutorial-surface-soft)',
           }}
         >
-          Illustration pending
+          {t('illustrationPending')}
         </div>
       ) : (
         <Image
@@ -68,4 +72,3 @@ export function ContentImage({ image, className }: ContentImageProps) {
     </figure>
   );
 }
-

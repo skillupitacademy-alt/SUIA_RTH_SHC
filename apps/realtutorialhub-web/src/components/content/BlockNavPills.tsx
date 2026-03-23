@@ -1,4 +1,7 @@
+"use client";
+
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 
 import type { ContentBlockType } from '@quiz/types';
 
@@ -14,24 +17,9 @@ interface BlockNavPillsProps {
   theme: DomainTheme;
 }
 
-const labels: Record<ContentBlockType, string> = {
-  notes: 'Notes',
-  layman: 'Layman',
-  real_life: 'Real-Life',
-  technical: 'Technical',
-  code: 'Code',
-  ai_tutor: 'AI Tutor',
-};
+export function BlockNavPills({ currentBlockType, blocks, domainSlug, subjectSlug, topicSlug, subtopicSlug, theme }: BlockNavPillsProps) {
+  const t = useTranslations('blocks');
 
-export function BlockNavPills({
-  currentBlockType,
-  blocks,
-  domainSlug,
-  subjectSlug,
-  topicSlug,
-  subtopicSlug,
-  theme,
-}: BlockNavPillsProps) {
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
       {blocks.map((block) => {
@@ -41,6 +29,13 @@ export function BlockNavPills({
           <Link
             key={block}
             href={href}
+            onClick={() => {
+              try {
+                window.sessionStorage.setItem('rth-last-block', block);
+              } catch {
+                // Ignore storage failures.
+              }
+            }}
             style={{
               textDecoration: 'none',
               padding: '8px 12px',
@@ -52,11 +47,10 @@ export function BlockNavPills({
               fontSize: 12.5,
             }}
           >
-            {labels[block]}
+            {t(`${block}.title`)}
           </Link>
         );
       })}
     </div>
   );
 }
-

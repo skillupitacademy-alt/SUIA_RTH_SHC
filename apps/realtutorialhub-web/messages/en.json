@@ -1,0 +1,90 @@
+{
+  "navbar": {
+    "brand": "RealTutorialHub",
+    "dashboard": "Dashboard",
+    "progress": "My Progress",
+    "language": "Language",
+    "theme": "Theme",
+    "english": "EN",
+    "hindi": "HI"
+  },
+  "offline": {
+    "title": "Learning is paused - reconnect to continue.",
+    "description": "Your last visited subtopic is saved below.",
+    "restore": "Open last visited subtopic",
+    "empty": "No saved subtopic yet."
+  },
+  "subtopic": {
+    "learnerFlow": "Learner Flow",
+    "learnerTitle": "Learner Path",
+    "productionDesign": "Production Design",
+    "aestheticMaverick": "Aesthetic Maverick",
+    "productionReview": "Production review",
+    "learnerView": "Learner view",
+    "detailView": "Detail view",
+    "blockProgress": "Block progress",
+    "completed": "{completed}/{total} Completed",
+    "progressText": "Progress: {pct}% complete",
+    "takeQuiz": "Take Quiz",
+    "unlockQuiz": "Complete all 6 blocks to unlock the quiz"
+  },
+  "sidebar": {
+    "notes": "Notes",
+    "learningOrder": "Layman first, then scenario, technical detail, code, AI tutor.",
+    "imagesLabel": "Images",
+    "images": "Promise chain and async flow placeholders are available now.",
+    "themeLabel": "Theme",
+    "theme": "Version A aesthetic styling is locked for the learner experience.",
+    "assignmentsLabel": "Assignments",
+    "assignments": "Simple unlocks only after all six blocks are completed."
+  },
+  "common": {
+    "example": "Example {index}",
+    "analogy": "Analogy",
+    "tip": "Tip",
+    "steps": "Steps",
+    "completed": "Completed",
+    "plainEnglish": "Plain English",
+    "chat": "Chat",
+    "askTheTutor": "Ask the tutor",
+    "sendQuestion": "Send question",
+    "retry": "Retry",
+    "illustrationPending": "Illustration pending",
+    "loading": "Loading...",
+    "unableToLoadBlock": "Unable to load {blockName}. Try refreshing."
+  },
+  "blocks": {
+    "notes": {
+      "title": "Notes",
+      "ariaLabel": "Notes block"
+    },
+    "layman": {
+      "title": "Layman Explanation",
+      "ariaLabel": "Layman block"
+    },
+    "real_life": {
+      "title": "Real-Life",
+      "ariaLabel": "Real life block"
+    },
+    "realLife": {
+      "title": "Real-Life",
+      "ariaLabel": "Real life block"
+    },
+    "technical": {
+      "title": "Technical",
+      "ariaLabel": "Technical block"
+    },
+    "code": {
+      "title": "Code",
+      "ariaLabel": "Code example block"
+    },
+    "ai_tutor": {
+      "title": "AI Tutor",
+      "ariaLabel": "AI tutor block"
+    },
+    "aiTutor": {
+      "title": "AI Tutor",
+      "ariaLabel": "AI tutor block"
+    }
+  }
+}

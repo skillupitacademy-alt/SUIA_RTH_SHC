@@ -1,6 +1,21 @@
+'use client';
+
 import Link from 'next/link';
+import { useLocale, useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
+
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 export function TutorialNavbar() {
+  const t = useTranslations('navbar');
+  const locale = useLocale();
+  const router = useRouter();
+
+  const setLocale = (nextLocale: 'en' | 'hi') => {
+    document.cookie = `rth-locale=${nextLocale}; path=/; max-age=31536000; samesite=lax`;
+    router.refresh();
+  };
+
   return (
     <header
       style={{
@@ -26,16 +41,49 @@ export function TutorialNavbar() {
         }}
       >
         <Link href="/" style={{ textDecoration: 'none', color: 'var(--block-text-primary)', fontWeight: 900, fontSize: 18 }}>
-          📚 RealTutorialHub
+          {t('brand')}
         </Link>
         <nav style={{ display: 'flex', alignItems: 'center', gap: 18, fontSize: 14, color: 'var(--block-text-secondary)' }}>
           <a href="#compare" style={{ color: 'inherit', textDecoration: 'none' }}>
-            Dashboard
+            {t('dashboard')}
           </a>
           <a href="#compare" style={{ color: 'inherit', textDecoration: 'none' }}>
-            My Progress
+            {t('progress')}
           </a>
-          <span aria-hidden="true">🔔</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--block-text-secondary)' }}>{t('language')}</span>
+            <button
+              type="button"
+              onClick={() => setLocale('en')}
+              aria-pressed={locale === 'en'}
+              style={{
+                border: '1px solid var(--tutorial-border)',
+                borderRadius: 999,
+                padding: '6px 10px',
+                background: locale === 'en' ? 'var(--tutorial-surface-soft)' : 'var(--tutorial-surface)',
+                fontWeight: 800,
+                cursor: 'pointer',
+              }}
+            >
+              {t('english')}
+            </button>
+            <button
+              type="button"
+              onClick={() => setLocale('hi')}
+              aria-pressed={locale === 'hi'}
+              style={{
+                border: '1px solid var(--tutorial-border)',
+                borderRadius: 999,
+                padding: '6px 10px',
+                background: locale === 'hi' ? 'var(--tutorial-surface-soft)' : 'var(--tutorial-surface)',
+                fontWeight: 800,
+                cursor: 'pointer',
+              }}
+            >
+              {t('hindi')}
+            </button>
+          </div>
+          <ThemeToggle />
           <span
             aria-hidden="true"
             style={{
@@ -56,4 +104,3 @@ export function TutorialNavbar() {
     </header>
   );
 }
-

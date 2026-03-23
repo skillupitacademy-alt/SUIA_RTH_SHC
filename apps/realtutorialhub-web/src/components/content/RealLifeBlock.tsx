@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import type { TutorialContentJSON } from '@quiz/types';
 
 import { BlockHeader } from './BlockHeader';
@@ -12,9 +15,12 @@ interface RealLifeBlockProps {
 }
 
 export function RealLifeBlock({ data, theme }: RealLifeBlockProps) {
+  const t = useTranslations('blocks.realLife');
+  const common = useTranslations('common');
+
   return (
-    <section className="design-panel" aria-label="Real life block">
-      <BlockHeader icon="🧭" title={data.title} accentColor={theme.blockRealLifeHeader} />
+    <section className="design-panel" aria-label={t('ariaLabel')}>
+      <BlockHeader icon="R" title={data.title} accentColor={theme.blockRealLifeHeader} headingId="block-real_life-heading" />
       <div
         style={{
           padding: 18,
@@ -58,7 +64,7 @@ export function RealLifeBlock({ data, theme }: RealLifeBlockProps) {
                 boxShadow: 'var(--design-content-shadow)',
               }}
             >
-              <strong style={{ color: theme.blockRealLifeHeader }}>Tip:</strong> {data.tip}
+              <strong style={{ color: theme.blockRealLifeHeader }}>{common('tip')}:</strong> {data.tip}
             </div>
           </div>
 

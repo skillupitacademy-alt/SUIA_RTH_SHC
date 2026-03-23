@@ -15,12 +15,17 @@ interface PageProps {
     subtopicSlug: string;
     blockType: string;
   }>;
+  searchParams?: Promise<{
+    slow?: string;
+    error?: string;
+  }>;
 }
 
 const validBlockTypes: ContentBlockType[] = ['notes', 'layman', 'real_life', 'technical', 'code', 'ai_tutor'];
 
-export default async function TutorialBlockPage({ params }: PageProps) {
+export default async function TutorialBlockPage({ params, searchParams }: PageProps) {
   const resolved = await params;
+  const resolvedSearchParams = searchParams ? await searchParams : {};
   if (!validBlockTypes.includes(resolved.blockType as ContentBlockType)) {
     notFound();
   }
@@ -35,7 +40,8 @@ export default async function TutorialBlockPage({ params }: PageProps) {
       theme={theme}
       mode="detail"
       blockType={resolved.blockType as ContentBlockType}
+      simulateSlowLoad={resolvedSearchParams.slow === 'true'}
+      simulateError={resolvedSearchParams.error === 'true'}
     />
   );
 }
-

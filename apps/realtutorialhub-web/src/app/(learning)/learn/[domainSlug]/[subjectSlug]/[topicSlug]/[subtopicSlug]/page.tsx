@@ -13,14 +13,28 @@ interface PageProps {
     topicSlug: string;
     subtopicSlug: string;
   }>;
+  searchParams?: Promise<{
+    slow?: string;
+    error?: string;
+  }>;
 }
 
-export default async function TutorialSubtopicPage({ params }: PageProps) {
+export default async function TutorialSubtopicPage({ params, searchParams }: PageProps) {
   const resolved = await params;
+  const resolvedSearchParams = searchParams ? await searchParams : {};
   const content = await getSeededTutorialContent();
   const theme = getDomainTheme(resolved.domainSlug);
 
-  return <TutorialExperience params={resolved} content={content} theme={theme} mode="learn" />;
+  return (
+    <TutorialExperience
+      params={resolved}
+      content={content}
+      theme={theme}
+      mode="learn"
+      simulateSlowLoad={resolvedSearchParams.slow === 'true'}
+      simulateError={resolvedSearchParams.error === 'true'}
+    />
+  );
 }
 
 function titleCaseFromSlug(value: string) {

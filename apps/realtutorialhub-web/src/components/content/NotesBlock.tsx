@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import type { TutorialContentJSON } from '@quiz/types';
 
 import { BlockHeader } from './BlockHeader';
@@ -12,9 +15,11 @@ interface NotesBlockProps {
 }
 
 export function NotesBlock({ data, theme }: NotesBlockProps) {
+  const t = useTranslations('blocks.notes');
+
   return (
-    <section className="design-panel" aria-label="Notes block">
-      <BlockHeader icon="📝" title="Notes" accentColor={theme.blockNotesHeader} />
+    <section className="design-panel" aria-label={t('ariaLabel')}>
+      <BlockHeader icon="N" title={t('title')} accentColor={theme.blockNotesHeader} headingId="block-notes-heading" />
       <div
         style={{
           padding: 18,

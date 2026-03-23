@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import type { TutorialContentJSON } from '@quiz/types';
 
 import { BlockHeader } from './BlockHeader';
@@ -12,9 +15,12 @@ interface CodeBlockProps {
 }
 
 export function CodeBlock({ data, theme }: CodeBlockProps) {
+  const t = useTranslations('blocks.code');
+  const common = useTranslations('common');
+
   return (
-    <section className="design-panel" aria-label={`Code example in ${data.language}`}>
-      <BlockHeader icon="💻" title={`Code (${data.language})`} accentColor={theme.blockCodeHeader} />
+    <section className="design-panel" aria-label={t('ariaLabel')}>
+      <BlockHeader icon="C" title={`${t('title')} (${data.language})`} accentColor={theme.blockCodeHeader} headingId="block-code-heading" />
       <div
         style={{
           padding: 18,
@@ -38,7 +44,7 @@ export function CodeBlock({ data, theme }: CodeBlockProps) {
           </pre>
         </div>
         <div style={{ marginTop: 14 }}>
-          <div style={{ fontSize: 12.5, fontWeight: 800, marginBottom: 8, color: 'rgba(255,255,255,0.82)' }}>Steps</div>
+          <div style={{ fontSize: 12.5, fontWeight: 800, marginBottom: 8, color: 'rgba(255,255,255,0.82)' }}>{common('steps')}</div>
           <ol style={{ margin: 0, paddingLeft: 20, lineHeight: 1.65, color: 'rgba(255,255,255,0.82)' }}>
             {data.steps.map((step) => (
               <li key={step} style={{ marginBottom: 6 }}>

@@ -1,3 +1,5 @@
+'use client';
+
 import type { ReactNode } from 'react';
 
 interface BlockHeaderProps {
@@ -6,10 +8,11 @@ interface BlockHeaderProps {
   accentColor: string;
   badge?: string;
   badgeTone?: 'success' | 'neutral';
+  headingId?: string;
   children?: ReactNode;
 }
 
-export function BlockHeader({ icon, title, accentColor, badge, badgeTone = 'neutral', children }: BlockHeaderProps) {
+export function BlockHeader({ icon, title, accentColor, badge, badgeTone = 'neutral', headingId, children }: BlockHeaderProps) {
   const badgeBg = badgeTone === 'success' ? 'rgba(46, 125, 70, 0.12)' : 'rgba(255, 255, 255, 0.24)';
   const badgeColor = badgeTone === 'success' ? '#2e7d46' : 'inherit';
 
@@ -32,7 +35,13 @@ export function BlockHeader({ icon, title, accentColor, badge, badgeTone = 'neut
         <span aria-hidden="true" style={{ fontSize: 18, lineHeight: 1 }}>
           {icon}
         </span>
-        <h2 style={{ margin: 0, fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', fontFamily: 'var(--design-heading-font)' }}>{title}</h2>
+        <h2
+          id={headingId}
+          tabIndex={-1}
+          style={{ margin: 0, fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', fontFamily: 'var(--design-heading-font)' }}
+        >
+          {title}
+        </h2>
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>

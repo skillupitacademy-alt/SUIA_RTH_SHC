@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 import type { DomainTheme } from '@/lib/domain-themes';
 
 interface SubtopicHeaderProps {
@@ -10,6 +12,7 @@ interface SubtopicHeaderProps {
 }
 
 export function SubtopicHeader({ subtopicName, completedBlocks, totalBlocks, theme }: SubtopicHeaderProps) {
+  const t = useTranslations('subtopic');
   const pct = Math.round((completedBlocks / totalBlocks) * 100);
   const unlocked = completedBlocks >= totalBlocks;
 
@@ -43,11 +46,17 @@ export function SubtopicHeader({ subtopicName, completedBlocks, totalBlocks, the
             boxShadow: 'var(--tutorial-shadow)',
           }}
         >
-          <span aria-hidden="true">✏️</span>
+          <span aria-hidden="true">#</span>
           <span style={{ fontSize: 13, color: 'var(--block-text-secondary)', fontWeight: 600 }}>
-            {completedBlocks}/{totalBlocks} Completed
+            {t('completed', { completed: completedBlocks, total: totalBlocks })}
           </span>
-          <div style={{ flex: 1, height: 8, borderRadius: 999, background: '#dde1ef', overflow: 'hidden' }}>
+          <div
+            role="progressbar"
+            aria-valuenow={pct}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            style={{ flex: 1, height: 8, borderRadius: 999, background: '#dde1ef', overflow: 'hidden' }}
+          >
             <div
               style={{
                 width: `${pct}%`,
@@ -57,8 +66,8 @@ export function SubtopicHeader({ subtopicName, completedBlocks, totalBlocks, the
               }}
             />
           </div>
-          <span aria-hidden="true">⚙️</span>
-          <span aria-hidden="true">🔍</span>
+          <span aria-hidden="true">*</span>
+          <span aria-hidden="true">?</span>
         </div>
 
         <button
@@ -77,14 +86,12 @@ export function SubtopicHeader({ subtopicName, completedBlocks, totalBlocks, the
             boxShadow: '0 2px 8px rgba(245,124,0,0.35)',
             whiteSpace: 'nowrap',
           }}
-          title={unlocked ? 'Take the quiz' : 'Complete all 6 blocks to unlock the quiz'}
+          title={unlocked ? t('takeQuiz') : t('unlockQuiz')}
         >
-          Take Quiz
+          {t('takeQuiz')}
         </button>
       </div>
-      <div style={{ marginTop: 6, fontSize: 12, color: 'var(--block-text-secondary)' }}>
-        Progress: {pct}% complete
-      </div>
+      <div style={{ marginTop: 6, fontSize: 12, color: 'var(--block-text-secondary)' }}>{t('progressText', { pct })}</div>
     </header>
   );
 }

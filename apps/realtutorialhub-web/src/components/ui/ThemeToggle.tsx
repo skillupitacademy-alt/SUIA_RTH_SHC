@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 const THEME_SWATCHES = [
   { key: 'classic', label: 'Classic', color: '#3d5a9e' },
@@ -17,6 +18,7 @@ interface ThemeToggleProps {
 }
 
 export function ThemeToggle({ currentTheme, onThemeChange }: ThemeToggleProps) {
+  const t = useTranslations('navbar');
   const [theme, setTheme] = useState(currentTheme ?? 'classic');
 
   useEffect(() => {
@@ -34,7 +36,7 @@ export function ThemeToggle({ currentTheme, onThemeChange }: ThemeToggleProps) {
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-      <span style={{ fontSize: 12, color: 'var(--block-text-secondary)', fontWeight: 600 }}>Theme:</span>
+      <span style={{ fontSize: 12, color: 'var(--block-text-secondary)', fontWeight: 600 }}>{t('theme')}</span>
       {THEME_SWATCHES.map((swatch) => {
         const active = swatch.key === theme;
         return (
@@ -60,4 +62,3 @@ export function ThemeToggle({ currentTheme, onThemeChange }: ThemeToggleProps) {
     </div>
   );
 }
-

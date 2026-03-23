@@ -1,0 +1,90 @@
+{
+  "navbar": {
+    "brand": "RealTutorialHub",
+    "dashboard": "डैशबोर्ड",
+    "progress": "मेरी प्रगति",
+    "language": "भाषा",
+    "theme": "थीम",
+    "english": "EN",
+    "hindi": "HI"
+  },
+  "offline": {
+    "title": "सीखना रुका हुआ है - जारी रखने के लिए फिर से कनेक्ट करें।",
+    "description": "आपका आख़िरी देखा गया सबटॉपिक नीचे सुरक्षित है।",
+    "restore": "आख़िरी सबटॉपिक खोलें",
+    "empty": "अभी कोई सबटॉपिक सहेजा नहीं गया है।"
+  },
+  "subtopic": {
+    "learnerFlow": "सीखने का प्रवाह",
+    "learnerTitle": "सीखने का पथ",
+    "productionDesign": "प्रोडक्शन डिज़ाइन",
+    "aestheticMaverick": "Aesthetic Maverick",
+    "productionReview": "प्रोडक्शन समीक्षा",
+    "learnerView": "लर्नर व्यू",
+    "detailView": "डिटेल व्यू",
+    "blockProgress": "ब्लॉक प्रगति",
+    "completed": "{completed}/{total} पूर्ण",
+    "progressText": "प्रगति: {pct}% पूर्ण",
+    "takeQuiz": "क्विज़ शुरू करें",
+    "unlockQuiz": "क्विज़ अनलॉक करने के लिए सभी 6 ब्लॉक पूरे करें"
+  },
+  "sidebar": {
+    "notes": "नोट्स",
+    "learningOrder": "पहले सरल भाषा, फिर उदाहरण, तकनीकी विवरण, कोड, AI ट्यूटर।",
+    "imagesLabel": "चित्र",
+    "images": "Promise chain और async flow के placeholders अभी उपलब्ध हैं।",
+    "themeLabel": "थीम",
+    "theme": "Version A aesthetic styling learner experience के लिए locked है।",
+    "assignmentsLabel": "असाइनमेंट",
+    "assignments": "सिर्फ सभी छह ब्लॉक पूरे होने पर Simple unlock होगा।"
+  },
+  "common": {
+    "example": "उदाहरण {index}",
+    "analogy": "उपमा",
+    "tip": "सुझाव",
+    "steps": "कदम",
+    "completed": "पूर्ण",
+    "plainEnglish": "सरल भाषा",
+    "chat": "चैट",
+    "askTheTutor": "ट्यूटर से पूछें",
+    "sendQuestion": "प्रश्न भेजें",
+    "retry": "फिर से कोशिश करें",
+    "illustrationPending": "चित्र तैयार नहीं है",
+    "loading": "लोड हो रहा है...",
+    "unableToLoadBlock": "{blockName} लोड नहीं हो सका। कृपया फिर से रिफ्रेश करें।"
+  },
+  "blocks": {
+    "notes": {
+      "title": "नोट्स",
+      "ariaLabel": "नोट्स ब्लॉक"
+    },
+    "layman": {
+      "title": "सरल व्याख्या",
+      "ariaLabel": "सरल व्याख्या ब्लॉक"
+    },
+    "real_life": {
+      "title": "वास्तविक जीवन",
+      "ariaLabel": "वास्तविक जीवन ब्लॉक"
+    },
+    "realLife": {
+      "title": "वास्तविक जीवन",
+      "ariaLabel": "वास्तविक जीवन ब्लॉक"
+    },
+    "technical": {
+      "title": "तकनीकी",
+      "ariaLabel": "तकनीकी ब्लॉक"
+    },
+    "code": {
+      "title": "कोड",
+      "ariaLabel": "कोड उदाहरण ब्लॉक"
+    },
+    "ai_tutor": {
+      "title": "AI ट्यूटर",
+      "ariaLabel": "AI ट्यूटर ब्लॉक"
+    },
+    "aiTutor": {
+      "title": "AI ट्यूटर",
+      "ariaLabel": "AI ट्यूटर ब्लॉक"
+    }
+  }
+}

@@ -1,4 +1,7 @@
+"use client";
+
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 
 import type { ContentBlockType } from '@quiz/types';
 
@@ -16,15 +19,6 @@ interface BlockPreviewCardProps {
   topicSlug: string;
 }
 
-const PREVIEW_LABELS: Record<ContentBlockType, string> = {
-  notes: 'Notes',
-  layman: 'Layman',
-  real_life: 'Real-Life',
-  technical: 'Technical',
-  code: 'Code',
-  ai_tutor: 'AI Tutor',
-};
-
 export function BlockPreviewCard({
   blockType,
   blockContent,
@@ -36,6 +30,7 @@ export function BlockPreviewCard({
   subjectSlug,
   topicSlug,
 }: BlockPreviewCardProps) {
+  const t = useTranslations('blocks');
   const href = `/learn/${domainSlug}/${subjectSlug}/${topicSlug}/${subtopicSlug}/${blockType}`;
 
   return (
@@ -46,10 +41,10 @@ export function BlockPreviewCard({
         overflow: 'hidden',
         opacity: isLocked ? 0.72 : 1,
       }}
-      aria-label={`${PREVIEW_LABELS[blockType]} preview`}
+      aria-label={`${t(`${blockType}.title`)} preview`}
     >
       <div style={{ padding: 14, borderBottom: '1px solid var(--tutorial-border)' }}>
-        <div style={{ fontSize: 12.5, fontWeight: 800, color: theme.sidebarAccent }}>{PREVIEW_LABELS[blockType]}</div>
+        <div style={{ fontSize: 12.5, fontWeight: 800, color: theme.sidebarAccent }}>{t(`${blockType}.title`)}</div>
       </div>
       <div style={{ padding: 14, minHeight: 112, background: 'var(--tutorial-surface)' }}>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: 'var(--block-text-secondary)' }}>{blockContent}</p>
@@ -59,6 +54,13 @@ export function BlockPreviewCard({
           </span>
           <Link
             href={href}
+            onClick={() => {
+              try {
+                window.sessionStorage.setItem('rth-last-block', blockType);
+              } catch {
+                // Ignore storage failures.
+              }
+            }}
             style={{
               textDecoration: 'none',
               fontSize: 12.5,
@@ -67,7 +69,7 @@ export function BlockPreviewCard({
             }}
             aria-disabled={isLocked}
           >
-            View →
+            View {'->'}
           </Link>
         </div>
       </div>
@@ -89,4 +91,3 @@ export function BlockPreviewCard({
     </article>
   );
 }
-
