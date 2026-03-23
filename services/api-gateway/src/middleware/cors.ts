@@ -18,7 +18,16 @@ export function createCorsMiddleware(): MiddlewareHandler {
   return cors({
     origin: ALLOWED_ORIGINS,
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowHeaders: ['Content-Type', 'Authorization', 'X-Request-ID', 'X-Gateway-Secret', 'X-User-ID'],
+    allowHeaders: [
+      'Content-Type',
+      'Authorization',
+      'Accept-Version',
+      'X-Portal-Identity',
+      'X-Request-ID',
+      'X-Gateway-Secret',
+      'X-User-ID',
+      'X-CSRF-Token',
+    ],
     exposeHeaders: ['X-Request-ID', 'X-RateLimit-Remaining'],
     credentials: true,
   });
