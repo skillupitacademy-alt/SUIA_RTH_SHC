@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useEffect, useMemo, useState } from 'react';
 
 import { facultyAttendanceRoster } from '@/lib/faculty-demo-data';
@@ -28,6 +29,7 @@ export function AttendanceBoard({ batchId, sessionId }: AttendanceBoardProps) {
   const [status, setStatus] = useState<string>('Ready to submit.');
 
   const presentCount = useMemo(() => Object.values(attendance).filter(Boolean).length, [attendance]);
+  const isLargeRoster = facultyAttendanceRoster.length > 50;
 
   useEffect(() => {
     const cached = localStorage.getItem(getStorageKey(batchId, sessionId));
@@ -137,7 +139,16 @@ export function AttendanceBoard({ batchId, sessionId }: AttendanceBoardProps) {
         </div>
       </div>
 
-      <div className="mt-6 overflow-hidden rounded-[1.75rem] border border-slate-200 bg-slate-50">
+      {!isOnline ? (
+        <div className="mt-4 rounded-3xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900">
+          Offline mode - marks will sync when connected.
+        </div>
+      ) : null}
+
+      <div
+        className="mt-6 overflow-hidden rounded-[1.75rem] border border-slate-200 bg-slate-50"
+        style={isLargeRoster ? { contain: 'layout paint style', contentVisibility: 'auto' } : undefined}
+      >
         <div className="grid grid-cols-[1.1fr_0.5fr_0.5fr] gap-4 border-b border-slate-200 px-5 py-3 text-xs font-black uppercase tracking-[0.3em] text-slate-500">
           <span>Student</span>
           <span>Roll</span>
@@ -147,8 +158,21 @@ export function AttendanceBoard({ batchId, sessionId }: AttendanceBoardProps) {
           {facultyAttendanceRoster.map((student) => (
             <div key={student.id} className="grid grid-cols-[1.1fr_0.5fr_0.5fr] items-center gap-4 px-5 py-4">
               <div>
-                <p className="text-sm font-semibold text-slate-950">{student.name}</p>
-                <p className="text-xs text-slate-500">{student.id}</p>
+                <div className="flex items-center gap-3">
+                  <Image
+                    src={student.avatarUrl}
+                    alt={`${student.name} profile placeholder`}
+                    loading="lazy"
+                    width={40}
+                    height={40}
+                    className="h-10 w-10 rounded-full border border-slate-200 bg-white object-cover"
+                  />
+                  <div>
+                    <p className="text-sm font-semibold text-slate-950">{student.name}</p>
+                    <p className="text-xs text-slate-500">Profile image placeholder</p>
+                  </div>
+                </div>
+                <p className="mt-1 text-xs text-slate-500">{student.id}</p>
               </div>
               <p className="text-sm text-slate-600">{student.rollNumber}</p>
               <div className="inline-flex overflow-hidden rounded-full border border-slate-200 bg-white shadow-sm">

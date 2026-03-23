@@ -51,6 +51,7 @@ export interface AttendanceStudent {
   id: string;
   name: string;
   rollNumber: string;
+  avatarUrl: string;
 }
 
 export const facultyDashboardSummary: FacultyDashboardSummary = {
@@ -204,6 +205,13 @@ export const facultyAttendanceRoster = Array.from({ length: 30 }, (_, index): At
     id: `student-${String(seat).padStart(2, '0')}`,
     name: `Student ${String(seat).padStart(2, '0')}`,
     rollNumber: `SK${String(seat).padStart(3, '0')}`,
+    avatarUrl: `data:image/svg+xml;utf8,${encodeURIComponent(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+        <rect width="64" height="64" rx="32" fill="#E0F2FE"/>
+        <circle cx="32" cy="24" r="10" fill="#0EA5E9"/>
+        <path d="M16 52c0-8.836 7.164-16 16-16s16 7.164 16 16" fill="#38BDF8"/>
+      </svg>`
+    )}`,
   };
 });
 

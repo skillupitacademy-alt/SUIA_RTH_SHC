@@ -3,6 +3,7 @@ import { Inter, Outfit } from 'next/font/google';
 import type { ReactNode } from 'react';
 
 import './globals.css';
+import { FacultyServiceWorker } from '@/components/faculty-service-worker';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -24,7 +25,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={`${inter.variable} ${outfit.variable}`}>
-      <body>{children}</body>
+      <body>
+        <FacultyServiceWorker />
+        {children}
+      </body>
     </html>
   );
 }
