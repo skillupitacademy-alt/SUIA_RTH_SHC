@@ -91,6 +91,18 @@ export interface AdminJobPosting {
   applicants: number;
 }
 
+export interface AdminAuditEntry {
+  id: string;
+  studentId: string;
+  studentName: string;
+  action: 'enrolled' | 'payment' | 'attendance';
+  actor: string;
+  platform: 'skillup-web' | 'skillup-admin' | 'faculty-app' | 'skillhubcore-admin';
+  timestamp: string;
+  before: Record<string, string | number | boolean | null>;
+  after: Record<string, string | number | boolean | null>;
+}
+
 export const adminDashboardSummary = {
   totalStudents: 1284,
   activeBatches: 42,
@@ -449,6 +461,53 @@ export const adminJobPostings: AdminJobPosting[] = [
   },
 ];
 
+export const adminAuditLog: AdminAuditEntry[] = [
+  {
+    id: 'audit-1',
+    studentId: 'student-1',
+    studentName: 'Aarav Shah',
+    action: 'enrolled',
+    actor: 'Priya Nair',
+    platform: 'skillup-admin',
+    timestamp: '2026-03-22T09:40:00+05:30',
+    before: { stage: 'qualified', batchId: null, paymentStatus: 'due' },
+    after: { stage: 'enrolled', batchId: 'batch-react-2026', paymentStatus: 'current' },
+  },
+  {
+    id: 'audit-2',
+    studentId: 'student-2',
+    studentName: 'Meera Iyer',
+    action: 'payment',
+    actor: 'Finance Desk',
+    platform: 'skillup-admin',
+    timestamp: '2026-03-22T10:15:00+05:30',
+    before: { installment: 'inv-2061', status: 'pending', amount: 'INR 20,000' },
+    after: { installment: 'inv-2061', status: 'paid', amount: 'INR 20,000' },
+  },
+  {
+    id: 'audit-3',
+    studentId: 'student-3',
+    studentName: 'Kabir Ahmed',
+    action: 'attendance',
+    actor: 'Neha Kapoor',
+    platform: 'faculty-app',
+    timestamp: '2026-03-22T11:05:00+05:30',
+    before: { attendancePct: 64, sessionId: 'session-14' },
+    after: { attendancePct: 68, sessionId: 'session-14' },
+  },
+  {
+    id: 'audit-4',
+    studentId: 'student-4',
+    studentName: 'Nisha Patel',
+    action: 'attendance',
+    actor: 'Rohit Menon',
+    platform: 'faculty-app',
+    timestamp: '2026-03-22T14:05:00+05:30',
+    before: { attendancePct: 88, sessionId: 'session-16' },
+    after: { attendancePct: 92, sessionId: 'session-16' },
+  },
+];
+
 const paymentReceiptsByReference = new Map<string, AdminPaymentItem>();
 
 export function findAdminStudent(id: string) {
@@ -461,6 +520,62 @@ export function findAdminEnquiry(id: string) {
 
 export function findAdminBatch(id: string) {
   return adminBatchDetails.find((batch) => batch.id === id);
+}
+
+export function filterAdminAuditLog(filters: {
+  student?: string;
+  action?: string;
+  from?: string;
+  to?: string;
+}) {
+  return adminAuditLog.filter((entry) => {
+    if (filters.student !== undefined && filters.student.length > 0) {
+      const term = filters.student.toLowerCase();
+      const matchesStudent = entry.studentName.toLowerCase().includes(term) || entry.studentId.toLowerCase().includes(term);
+      if (!matchesStudent) return false;
+    }
+
+    if (filters.action !== undefined && filters.action.length > 0 && entry.action !== filters.action) {
+      return false;
+    }
+
+    if (filters.from !== undefined && filters.from.length > 0 && new Date(entry.timestamp).getTime() < new Date(filters.from).getTime()) {
+      return false;
+    }
+
+    if (filters.to !== undefined && filters.to.length > 0) {
+      const end = new Date(filters.to);
+      end.setHours(23, 59, 59, 999);
+      if (new Date(entry.timestamp).getTime() > end.getTime()) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+}
+
+export function serializeAdminAuditCsv(entries: AdminAuditEntry[]) {
+  const rows = [
+    'id,studentId,studentName,action,actor,platform,timestamp,before,after',
+    ...entries.map((entry) =>
+      [
+        entry.id,
+        entry.studentId,
+        entry.studentName,
+        entry.action,
+        entry.actor,
+        entry.platform,
+        entry.timestamp,
+        JSON.stringify(entry.before).split('"').join('""'),
+        JSON.stringify(entry.after).split('"').join('""'),
+      ]
+        .map((value) => `"${value}"`)
+        .join(',')
+    ),
+  ];
+
+  return rows;
 }
 
 export function formatCurrency(value: number) {

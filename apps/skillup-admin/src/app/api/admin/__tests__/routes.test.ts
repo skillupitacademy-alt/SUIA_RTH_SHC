@@ -19,6 +19,7 @@ import { PATCH as admitEnquiry } from '../crm/enquiries/[id]/admit/route';
 import { GET as getEnquiries, POST as createEnquiry } from '../crm/enquiries/route';
 import { GET as exportPayments } from '../payments/export/route';
 import { GET as getPayments, POST as recordPayment } from '../payments/route';
+import { GET as exportAuditLog } from '../audit-log/export/route';
 import { POST as enrollStudent } from '../students/[id]/enroll/route';
 import { GET as getStudent } from '../students/[id]/route';
 import { GET as getStudents, POST as createStudent } from '../students/route';
@@ -197,5 +198,16 @@ describe('skillup-admin routes', () => {
     expect(exportResponse.status).toBe(200);
     expect(exportResponse.headers.get('content-type')).toContain('text/csv');
     expect(csv).toContain('studentName,installmentId');
+  });
+
+  it('exports a filtered audit log csv', async () => {
+    const response = await exportAuditLog(makeRequest('/api/admin/audit-log/export?student=Aarav&action=enrolled'));
+    const csv = await response.text();
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toContain('text/csv');
+    expect(csv).toContain('Aarav Shah');
+    expect(csv).not.toContain('Meera Iyer');
+    expect(csv).toContain('action');
   });
 });

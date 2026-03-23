@@ -1,16 +1,27 @@
 import Link from 'next/link';
+import { getSkillUpAdminRole } from '@/lib/admin-session';
 import type { ReactNode } from 'react';
 
-const navItems = [
+const adminNavItems = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/students', label: 'Students' },
   { href: '/crm', label: 'CRM' },
   { href: '/batches', label: 'Batches' },
   { href: '/payments', label: 'Payments' },
   { href: '/placement', label: 'Placement' },
+  { href: '/audit', label: 'Audit Log' },
 ];
 
-export default function AdminSectionLayout({ children }: { children: ReactNode }) {
+const counsellorNavItems = [
+  { href: '/dashboard', label: 'Dashboard' },
+  { href: '/students', label: 'Students' },
+  { href: '/crm', label: 'CRM' },
+];
+
+export default async function AdminSectionLayout({ children }: { children: ReactNode }) {
+  const role = await getSkillUpAdminRole();
+  const navItems = role === 'admin' ? adminNavItems : counsellorNavItems;
+
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(14,165,233,0.11),_transparent_30%),linear-gradient(180deg,#f8fbff_0%,#eef4fb_100%)] text-slate-900">
       <header className="border-b border-slate-200/80 bg-white/88 backdrop-blur-xl">
@@ -22,7 +33,11 @@ export default function AdminSectionLayout({ children }: { children: ReactNode }
               Student ops, CRM, batches, payments, and placement live here in the same locked light shell used across the platform.
             </p>
           </div>
-          <nav className="flex flex-wrap gap-2">
+          <div className="flex flex-col items-start gap-3 lg:items-end">
+            <span className="rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1 text-[11px] font-black uppercase tracking-[0.35em] text-cyan-700">
+              {role === 'admin' ? 'Admin view' : role === 'counsellor' ? 'Counsellor view' : 'Guest view'}
+            </span>
+            <nav className="flex flex-wrap gap-2">
             {navItems.map((item) => (
               <Link
                 key={item.href}
@@ -32,7 +47,8 @@ export default function AdminSectionLayout({ children }: { children: ReactNode }
                 {item.label}
               </Link>
             ))}
-          </nav>
+            </nav>
+          </div>
         </div>
       </header>
       <main>{children}</main>

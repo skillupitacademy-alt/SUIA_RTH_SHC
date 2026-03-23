@@ -1,8 +1,19 @@
 import Link from 'next/link';
 
 import { adminBatches } from '@/lib/admin-demo-data';
+import { getSkillUpAdminRole } from '@/lib/admin-session';
+import { RoleLockedNotice } from '@/components/role-locked-notice';
 
-export default function BatchesPage() {
+export default async function BatchesPage() {
+  if ((await getSkillUpAdminRole()) !== 'admin') {
+    return (
+      <RoleLockedNotice
+        title="Batches are admin-only"
+        description="Batch planning, faculty assignment, and roster management are hidden in counsellor view."
+      />
+    );
+  }
+
   return (
     <section className="mx-auto max-w-7xl space-y-6 px-6 py-8 lg:py-10">
       <div className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">

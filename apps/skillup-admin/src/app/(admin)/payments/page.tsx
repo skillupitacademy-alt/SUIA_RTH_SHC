@@ -1,8 +1,19 @@
 import Link from 'next/link';
 
 import { adminPayments, formatCurrency } from '@/lib/admin-demo-data';
+import { getSkillUpAdminRole } from '@/lib/admin-session';
+import { RoleLockedNotice } from '@/components/role-locked-notice';
 
-export default function PaymentsPage() {
+export default async function PaymentsPage() {
+  if ((await getSkillUpAdminRole()) !== 'admin') {
+    return (
+      <RoleLockedNotice
+        title="Payments are admin-only"
+        description="Finance and receipt handling stay hidden in counsellor view. Please use the CRM or students surface instead."
+      />
+    );
+  }
+
   return (
     <section className="mx-auto max-w-7xl space-y-6 px-6 py-8 lg:py-10">
       <div className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">

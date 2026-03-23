@@ -1,6 +1,17 @@
 import { adminJobPostings, adminPlacementProfiles } from '@/lib/admin-demo-data';
+import { getSkillUpAdminRole } from '@/lib/admin-session';
+import { RoleLockedNotice } from '@/components/role-locked-notice';
 
-export default function PlacementPage() {
+export default async function PlacementPage() {
+  if ((await getSkillUpAdminRole()) !== 'admin') {
+    return (
+      <RoleLockedNotice
+        title="Placement is admin-only"
+        description="Job matching and placement profile management are not shown in counsellor view."
+      />
+    );
+  }
+
   return (
     <section className="mx-auto max-w-7xl space-y-6 px-6 py-8 lg:py-10">
       <div className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">

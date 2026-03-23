@@ -1,15 +1,20 @@
 import Link from 'next/link';
 
 import { adminActivityFeed, adminDashboardSummary, adminStudents, formatCurrency } from '@/lib/admin-demo-data';
+import { canAccessFinance, getSkillUpAdminRole } from '@/lib/admin-session';
 
-const quickActions = [
-  { href: '/students', label: 'Add student' },
-  { href: '/batches/new', label: 'Create batch' },
-  { href: '/payments', label: 'Record payment' },
-  { href: '/crm', label: 'Review enquiries' },
-];
+export default async function AdminDashboardPage() {
+  const role = await getSkillUpAdminRole();
+  const canSeeFinance = canAccessFinance(role);
+  const quickActions = canSeeFinance
+    ? [
+        { href: '/students', label: 'Add student' },
+        { href: '/batches/new', label: 'Create batch' },
+        { href: '/payments', label: 'Record payment' },
+        { href: '/crm', label: 'Review enquiries' },
+      ]
+    : [{ href: '/students', label: 'Add student' }, { href: '/crm', label: 'Review enquiries' }];
 
-export default function AdminDashboardPage() {
   return (
     <section className="mx-auto max-w-7xl space-y-8 px-6 py-8 lg:py-10">
       <div className="grid gap-6 xl:grid-cols-[1.35fr_0.9fr]">
@@ -19,6 +24,11 @@ export default function AdminDashboardPage() {
           <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-600">
             Monitor the core operational surface for the academy: student growth, active batches, revenue, and placement movement, with quick links into the work queues.
           </p>
+          {role === 'counsellor' ? (
+            <div className="mt-5 rounded-3xl border border-cyan-200 bg-cyan-50 px-4 py-3 text-sm text-cyan-900">
+              Counsellor view is focused on students and CRM. Finance, batches, and placement are hidden from navigation.
+            </div>
+          ) : null}
           <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {quickActions.map((action) => (
               <Link
@@ -33,26 +43,51 @@ export default function AdminDashboardPage() {
         </article>
 
         <aside className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
-          <div className="rounded-[1.75rem] border border-cyan-200 bg-cyan-50 p-6">
-            <p className="text-xs font-black uppercase tracking-[0.35em] text-cyan-700">Placement rate</p>
-            <p className="mt-3 text-5xl font-black tracking-tight text-slate-950">{adminDashboardSummary.placementRate}%</p>
-            <p className="mt-2 text-sm text-slate-600">Learners moving into interviews and offers.</p>
-          </div>
-          <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6">
-            <p className="text-xs font-black uppercase tracking-[0.35em] text-slate-500">Monthly revenue</p>
-            <p className="mt-3 text-4xl font-black tracking-tight text-slate-950">{formatCurrency(adminDashboardSummary.monthlyRevenue)}</p>
-            <p className="mt-2 text-sm text-slate-600">Current billing cycle collections and receipts.</p>
-          </div>
+          {canSeeFinance ? (
+            <div className="rounded-[1.75rem] border border-cyan-200 bg-cyan-50 p-6">
+              <p className="text-xs font-black uppercase tracking-[0.35em] text-cyan-700">Placement rate</p>
+              <p className="mt-3 text-5xl font-black tracking-tight text-slate-950">{adminDashboardSummary.placementRate}%</p>
+              <p className="mt-2 text-sm text-slate-600">Learners moving into interviews and offers.</p>
+            </div>
+          ) : (
+            <div className="rounded-[1.75rem] border border-cyan-200 bg-cyan-50 p-6">
+              <p className="text-xs font-black uppercase tracking-[0.35em] text-cyan-700">CRM focus</p>
+              <p className="mt-3 text-5xl font-black tracking-tight text-slate-950">{adminStudents.filter((student) => student.paymentStatus !== 'current').length}</p>
+              <p className="mt-2 text-sm text-slate-600">Students needing follow-up before the next counselling touchpoint.</p>
+            </div>
+          )}
+          {canSeeFinance ? (
+            <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6">
+              <p className="text-xs font-black uppercase tracking-[0.35em] text-slate-500">Monthly revenue</p>
+              <p className="mt-3 text-4xl font-black tracking-tight text-slate-950">{formatCurrency(adminDashboardSummary.monthlyRevenue)}</p>
+              <p className="mt-2 text-sm text-slate-600">Current billing cycle collections and receipts.</p>
+            </div>
+          ) : (
+            <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6">
+              <p className="text-xs font-black uppercase tracking-[0.35em] text-slate-500">Counsellor focus</p>
+              <p className="mt-3 text-4xl font-black tracking-tight text-slate-950">{adminStudents.filter((student) => student.paymentStatus !== 'current').length}</p>
+              <p className="mt-2 text-sm text-slate-600">Students needing follow-up across CRM and admissions.</p>
+            </div>
+          )}
         </aside>
       </div>
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {[
-          { label: 'Total students', value: adminDashboardSummary.totalStudents, accent: 'cyan' },
-          { label: 'Active batches', value: adminDashboardSummary.activeBatches, accent: 'emerald' },
-          { label: 'Monthly revenue', value: formatCurrency(adminDashboardSummary.monthlyRevenue), accent: 'amber' },
-          { label: 'Placement rate', value: `${adminDashboardSummary.placementRate}%`, accent: 'rose' },
-        ].map((stat) => (
+        {(
+          canSeeFinance
+            ? [
+                { label: 'Total students', value: adminDashboardSummary.totalStudents, accent: 'cyan' },
+                { label: 'Active batches', value: adminDashboardSummary.activeBatches, accent: 'emerald' },
+                { label: 'Monthly revenue', value: formatCurrency(adminDashboardSummary.monthlyRevenue), accent: 'amber' },
+                { label: 'Placement rate', value: `${adminDashboardSummary.placementRate}%`, accent: 'rose' },
+              ]
+            : [
+                { label: 'Total students', value: adminDashboardSummary.totalStudents, accent: 'cyan' },
+                { label: 'Active batches', value: adminDashboardSummary.activeBatches, accent: 'emerald' },
+                { label: 'Students needing follow-up', value: adminStudents.filter((student) => student.paymentStatus !== 'current').length, accent: 'amber' },
+                { label: 'Open CRM enquiries', value: 3, accent: 'rose' },
+              ]
+        ).map((stat) => (
           <article key={stat.label} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
             <p className="text-xs font-black uppercase tracking-[0.32em] text-slate-500">{stat.label}</p>
             <p className="mt-3 text-4xl font-black tracking-tight text-slate-950">{stat.value}</p>
@@ -114,11 +149,19 @@ export default function AdminDashboardPage() {
         <article className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
           <p className="text-xs font-black uppercase tracking-[0.35em] text-slate-500">Ops snapshot</p>
           <div className="mt-6 space-y-4">
-            {[
-              { label: 'Students needing follow-up', value: adminStudents.filter((student) => student.paymentStatus !== 'current').length },
-              { label: 'Active admission queues', value: 7 },
-              { label: 'Jobs matched to learners', value: 18 },
-            ].map((item) => (
+            {(
+              canSeeFinance
+                ? [
+                    { label: 'Students needing follow-up', value: adminStudents.filter((student) => student.paymentStatus !== 'current').length },
+                    { label: 'Active admission queues', value: 7 },
+                    { label: 'Jobs matched to learners', value: 18 },
+                  ]
+                : [
+                    { label: 'Students needing follow-up', value: adminStudents.filter((student) => student.paymentStatus !== 'current').length },
+                    { label: 'Open CRM enquiries', value: 3 },
+                    { label: 'Upcoming callbacks', value: 5 },
+                  ]
+            ).map((item) => (
               <div key={item.label} className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-semibold text-slate-800">{item.label}</p>
