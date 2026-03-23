@@ -393,9 +393,9 @@ export default function ContentFactoryPage({ embedded = false }: ContentFactoryP
                             <span className="text-xs font-black uppercase tracking-[0.3em] text-[#FF4B91]">Canonical Content Builder</span>
                         </div>
                         <h1 className="text-4xl md:text-5xl font-black tracking-tighter uppercase text-[#1A1A1A]">Content Factory</h1>
-                        <p className="text-sm font-bold text-slate-500 uppercase tracking-widest mt-2">
-                            Domain â€¢ Subject â€¢ Topic â€¢ Subtopic â€¢ Difficulty
-                        </p>
+              <p className="text-sm font-bold text-slate-500 uppercase tracking-widest mt-2">
+                Domain • Subject • Topic • Subtopic • Difficulty
+              </p>
                     </div>
                     <div className="flex flex-col items-end gap-3 text-right">
                         <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-slate-200 text-[10px] font-black uppercase tracking-widest text-slate-500 shadow-sm">
