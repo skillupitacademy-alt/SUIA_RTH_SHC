@@ -13,6 +13,9 @@ export interface GatewayBindings {
   UPSTASH_REDIS_REST_URL: string;
   UPSTASH_REDIS_REST_TOKEN: string;
   SKILLHUBCORE_URL: string;
+  SKILLUP_WEB_URL: string;
+  SKILLUP_ADMIN_URL: string;
+  FACULTY_URL: string;
   STUDENT_FACULTY_URL: string;
   EXAM_SERVICE_URL: string;
   TUTORIAL_SERVICE_URL: string;
@@ -29,10 +32,14 @@ export interface GatewayVariables {
 }
 
 export type GatewayRoute = {
+  host?: string;
   prefix: string;
   upstreamKey: keyof Pick<
     GatewayBindings,
     | 'SKILLHUBCORE_URL'
+    | 'SKILLUP_WEB_URL'
+    | 'SKILLUP_ADMIN_URL'
+    | 'FACULTY_URL'
     | 'STUDENT_FACULTY_URL'
     | 'EXAM_SERVICE_URL'
     | 'TUTORIAL_SERVICE_URL'

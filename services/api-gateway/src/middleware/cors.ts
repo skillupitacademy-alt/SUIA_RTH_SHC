@@ -6,6 +6,10 @@ export const ALLOWED_ORIGINS = [
   'https://notes.realtutorialhub.com',
   'https://quiz.realtutorialhub.com',
   'https://skillupitacademy.com',
+  'https://admin.skillupitacademy.com',
+  'https://faculty.skillupitacademy.com',
+  'https://api.skillhubcore.in',
+  'https://admin.skillhubcore.in',
   'https://admin.realtutorialhub.com',
   'http://localhost:3000',
 ];

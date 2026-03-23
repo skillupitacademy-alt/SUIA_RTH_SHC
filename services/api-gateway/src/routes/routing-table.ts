@@ -1,6 +1,10 @@
 import type { GatewayRoute } from '@/types';
 
 export const ROUTING_TABLE: GatewayRoute[] = [
+  { host: 'skillupitacademy.com', prefix: '/', upstreamKey: 'SKILLUP_WEB_URL', public: true },
+  { host: 'admin.skillupitacademy.com', prefix: '/', upstreamKey: 'SKILLUP_ADMIN_URL', public: true },
+  { host: 'faculty.skillupitacademy.com', prefix: '/', upstreamKey: 'FACULTY_URL', public: true },
+  { host: 'api.skillhubcore.in', prefix: '/', upstreamKey: 'SKILLHUBCORE_URL', public: true },
   { prefix: '/auth', upstreamKey: 'SKILLHUBCORE_URL', public: true },
   { prefix: '/students', upstreamKey: 'STUDENT_FACULTY_URL', auth: true },
   { prefix: '/faculty', upstreamKey: 'STUDENT_FACULTY_URL', auth: true },
@@ -19,3 +23,26 @@ export const ROUTING_TABLE: GatewayRoute[] = [
   { prefix: '/jobs', upstreamKey: 'PLACEMENT_URL', public: true },
   { prefix: '/admin', upstreamKey: 'ADMIN_URL', auth: true, requireRole: 'admin' },
 ];
+
+function matchesPrefix(pathname: string, prefix: string): boolean {
+  if (prefix === '/') {
+    return true;
+  }
+
+  return pathname === prefix || pathname.startsWith(`${prefix}/`);
+}
+
+export function resolveGatewayRoute(hostname: string, pathname: string): GatewayRoute | undefined {
+  return ROUTING_TABLE
+    .filter((route) => (route.host === undefined || route.host === hostname) && matchesPrefix(pathname, route.prefix))
+    .sort((left, right) => {
+      const leftHostScore = left.host === hostname ? 1 : 0;
+      const rightHostScore = right.host === hostname ? 1 : 0;
+
+      if (leftHostScore !== rightHostScore) {
+        return rightHostScore - leftHostScore;
+      }
+
+      return right.prefix.length - left.prefix.length;
+    })[0];
+}

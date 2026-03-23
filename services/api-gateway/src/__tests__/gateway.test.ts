@@ -49,6 +49,9 @@ const env = {
   UPSTASH_REDIS_REST_URL: 'https://redis.example.com',
   UPSTASH_REDIS_REST_TOKEN: 'redis-token',
   SKILLHUBCORE_URL: 'https://skillhubcore.example.com',
+  SKILLUP_WEB_URL: 'https://skillup-web.example.com',
+  SKILLUP_ADMIN_URL: 'https://skillup-admin.example.com',
+  FACULTY_URL: 'https://faculty.example.com',
   STUDENT_FACULTY_URL: 'https://student-faculty.example.com',
   EXAM_SERVICE_URL: 'https://exam.example.com',
   TUTORIAL_SERVICE_URL: 'https://tutorial.example.com',
@@ -97,6 +100,42 @@ describe('api-gateway', () => {
     const [, init] = fetchSpy.mock.calls[0] ?? [];
     const headers = new Headers((init as RequestInit | undefined)?.headers);
     expect(headers.get('X-Gateway-Secret')).toBe(env.INTERNAL_GATEWAY_SECRET);
+  });
+
+  it('routes skillup web host traffic to the skillup web upstream', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
+    const response = await app.request('https://skillupitacademy.com/programs', undefined, env);
+
+    expect(response.status).toBe(200);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(env.SKILLUP_WEB_URL);
+  });
+
+  it('routes skillup admin host traffic to the skillup admin upstream', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
+    const response = await app.request('https://admin.skillupitacademy.com/dashboard', undefined, env);
+
+    expect(response.status).toBe(200);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(env.SKILLUP_ADMIN_URL);
+  });
+
+  it('routes faculty host traffic to the faculty upstream', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
+    const response = await app.request('https://faculty.skillupitacademy.com/dashboard', undefined, env);
+
+    expect(response.status).toBe(200);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(env.FACULTY_URL);
+  });
+
+  it('routes skillhubcore api host traffic to the skillhubcore upstream', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
+    const response = await app.request('https://api.skillhubcore.in/api/hierarchy/domains', undefined, env);
+
+    expect(response.status).toBe(200);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(env.SKILLHUBCORE_URL);
   });
 
   it('proxies valid jwt with user headers', async () => {
