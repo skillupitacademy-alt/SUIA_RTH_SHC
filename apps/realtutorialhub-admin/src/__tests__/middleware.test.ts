@@ -17,6 +17,12 @@ const makeRequest = (pathname: string, cookie?: string) =>
   });
 
 describe('realtutorialhub-admin proxy', () => {
+  it('allows the public login route without redirect loops', async () => {
+    const response = await proxy(makeRequest('/login'));
+
+    expect(response.status).toBe(200);
+  });
+
   it('redirects the root route to SkillHubCore login when unauthenticated', async () => {
     const response = await proxy(makeRequest('/'));
 

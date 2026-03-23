@@ -95,6 +95,17 @@ export async function proxy(request: NextRequest) {
   const user = await resolveUser(request);
   const redirectPath = `${pathname}${search}`;
 
+  if (isPublicRoute(pathname)) {
+    if (user !== null) {
+      const headers = new Headers(request.headers);
+      headers.set('x-user-id', user.sub);
+      headers.set('x-skillhubcore-user-id', user.sub);
+      return addUserHeaders(NextResponse.next({ request: { headers } }), user);
+    }
+
+    return NextResponse.next();
+  }
+
   if (isProtectedRoute(pathname) && user === null) {
     return NextResponse.redirect(getSkillHubCoreLoginUrl(request, redirectPath));
   }
