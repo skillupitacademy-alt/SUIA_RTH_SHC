@@ -11,6 +11,7 @@ FROM base AS deps
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/skillup-admin/package.json ./apps/skillup-admin/
 COPY packages/auth/package.json ./packages/auth/
+COPY packages/events/package.json ./packages/events/
 COPY packages/types/package.json ./packages/types/
 RUN pnpm install --frozen-lockfile
 
@@ -19,6 +20,7 @@ ENV CLOUD_RUN_BUILD=true
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps/skillup-admin/node_modules ./apps/skillup-admin/node_modules
 COPY --from=deps /app/packages/auth/node_modules ./packages/auth/node_modules
+COPY --from=deps /app/packages/events/node_modules ./packages/events/node_modules
 COPY --from=deps /app/packages/types/node_modules ./packages/types/node_modules
 COPY . .
 RUN pnpm --filter @quiz/skillup-admin build

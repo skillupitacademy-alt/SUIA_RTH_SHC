@@ -1,0 +1,343 @@
+name: Deploy SkillUp Apps
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/skillup-web/**'
+      - 'apps/skillup-admin/**'
+      - 'apps/faculty-app/**'
+      - 'apps/skillhubcore-admin/**'
+      - 'packages/**'
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  PROJECT_ID: project-48af6a2d-e8bb-46dd-a58
+  REGION: asia-south1
+
+jobs:
+  deploy-skillup-web:
+    name: Deploy skillup-web
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker asia-south1-docker.pkg.dev
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            --build-arg NEXT_PUBLIC_API_URL=https://api.realtutorialhub.com/api \
+            -f apps/skillup-web/Dockerfile \
+            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillup-web:$GITHUB_SHA \
+            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillup-web:latest \
+            .
+
+      - name: Push Docker images
+        run: |
+          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillup-web:$GITHUB_SHA
+          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillup-web:latest
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy skillup-web \
+            --image asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillup-web:$GITHUB_SHA \
+            --region $REGION \
+            --platform managed \
+            --allow-unauthenticated \
+            --port 3004 \
+            --memory 512Mi \
+            --min-instances 0 \
+            --max-instances 5 \
+            --set-env-vars "NODE_ENV=production" \
+            --set-secrets "JWT_SECRET=JWT_SECRET:latest,INTERNAL_GATEWAY_SECRET=INTERNAL_GATEWAY_SECRET:latest,NEXT_PUBLIC_API_URL=NEXT_PUBLIC_API_URL:latest"
+
+      - name: Smoke test
+        run: |
+          SERVICE_URL=$(gcloud run services describe skillup-web --region $REGION --project $PROJECT_ID --format 'value(status.url)')
+          curl --fail --silent --show-error "$SERVICE_URL/api/healthz"
+
+  deploy-skillup-admin:
+    name: Deploy skillup-admin
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker asia-south1-docker.pkg.dev
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            -f apps/skillup-admin/Dockerfile \
+            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillup-admin:$GITHUB_SHA \
+            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillup-admin:latest \
+            .
+
+      - name: Push Docker images
+        run: |
+          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillup-admin:$GITHUB_SHA
+          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillup-admin:latest
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy skillup-admin \
+            --image asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillup-admin:$GITHUB_SHA \
+            --region $REGION \
+            --platform managed \
+            --allow-unauthenticated \
+            --port 3005 \
+            --memory 512Mi \
+            --min-instances 0 \
+            --max-instances 5 \
+            --set-env-vars "NODE_ENV=production" \
+            --set-secrets "JWT_SECRET=JWT_SECRET:latest,INTERNAL_GATEWAY_SECRET=INTERNAL_GATEWAY_SECRET:latest"
+
+      - name: Smoke test
+        run: |
+          SERVICE_URL=$(gcloud run services describe skillup-admin --region $REGION --project $PROJECT_ID --format 'value(status.url)')
+          curl --fail --silent --show-error "$SERVICE_URL/api/healthz"
+
+  deploy-faculty-app:
+    name: Deploy faculty-app
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker asia-south1-docker.pkg.dev
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            --build-arg NEXT_PUBLIC_API_URL=https://api.realtutorialhub.com/api \
+            --build-arg NEXT_PUBLIC_APP_URL=https://faculty.skillupitacademy.com \
+            -f apps/faculty-app/Dockerfile \
+            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/faculty-app:$GITHUB_SHA \
+            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/faculty-app:latest \
+            .
+
+      - name: Push Docker images
+        run: |
+          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/faculty-app:$GITHUB_SHA
+          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/faculty-app:latest
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy faculty-app \
+            --image asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/faculty-app:$GITHUB_SHA \
+            --region $REGION \
+            --platform managed \
+            --allow-unauthenticated \
+            --port 3006 \
+            --memory 512Mi \
+            --min-instances 0 \
+            --max-instances 5 \
+            --set-env-vars "NODE_ENV=production" \
+            --set-secrets "JWT_SECRET=JWT_SECRET:latest,INTERNAL_GATEWAY_SECRET=INTERNAL_GATEWAY_SECRET:latest,INTERNAL_API_URL=INTERNAL_API_URL:latest,NEXT_PUBLIC_API_URL=NEXT_PUBLIC_API_URL:latest"
+
+      - name: Smoke test
+        run: |
+          SERVICE_URL=$(gcloud run services describe faculty-app --region $REGION --project $PROJECT_ID --format 'value(status.url)')
+          curl --fail --silent --show-error "$SERVICE_URL/api/healthz"
+
+  deploy-skillhubcore-admin:
+    name: Deploy skillhubcore-admin
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker asia-south1-docker.pkg.dev
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            -f apps/skillhubcore-admin/Dockerfile \
+            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillhubcore-admin:$GITHUB_SHA \
+            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillhubcore-admin:latest \
+            .
+
+      - name: Push Docker images
+        run: |
+          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillhubcore-admin:$GITHUB_SHA
+          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillhubcore-admin:latest
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy skillhubcore-admin \
+            --image asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillhubcore-admin:$GITHUB_SHA \
+            --region $REGION \
+            --platform managed \
+            --allow-unauthenticated \
+            --port 3007 \
+            --memory 512Mi \
+            --min-instances 0 \
+            --max-instances 5 \
+            --set-env-vars "NODE_ENV=production" \
+            --set-secrets "JWT_SECRET=JWT_SECRET:latest,INTERNAL_GATEWAY_SECRET=INTERNAL_GATEWAY_SECRET:latest,DATABASE_URL_PEOPLE=DATABASE_URL_PEOPLE:latest"
+
+      - name: Smoke test
+        run: |
+          SERVICE_URL=$(gcloud run services describe skillhubcore-admin --region $REGION --project $PROJECT_ID --format 'value(status.url)')
+          curl --fail --silent --show-error "$SERVICE_URL/api/healthz"
+
+  health-check:
+    name: Verify all services
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write
+    needs:
+      - deploy-skillup-web
+      - deploy-skillup-admin
+      - deploy-faculty-app
+      - deploy-skillhubcore-admin
+    steps:
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Check all healthy
+        run: |
+          check_service() {
+            local name=$1
+            local service=$2
+            local path=$3
+            local expected=$4
+            local url
+            url=$(gcloud run services describe "$service" --region $REGION --project $PROJECT_ID --format 'value(status.url)')
+            status=$(curl -s -o /dev/null -w "%{http_code}" "$url$path")
+            echo "$name: $status"
+            if [ "$status" != "$expected" ]; then
+              echo "FAILED: $name (expected $expected, got $status)"
+              exit 1
+            fi
+          }
+
+          check_service "skillup-web" "skillup-web" "/api/healthz" "200"
+          check_service "skillup-admin" "skillup-admin" "/api/healthz" "200"
+          check_service "faculty-app" "faculty-app" "/api/healthz" "200"
+          check_service "skillhubcore-admin" "skillhubcore-admin" "/api/healthz" "200"
