@@ -1,11 +1,18 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { skillupPrograms } from '@/lib/skillup-demo-data';
 
-export const metadata = {
-  title: 'Programs',
-  description: 'Explore the active SkillUp IT Academy programs.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: 'Programs | SkillUp IT Academy',
+    description: 'Explore the active SkillUp IT Academy programs.',
+    openGraph: {
+      title: 'Programs | SkillUp IT Academy',
+      description: 'Explore the active SkillUp IT Academy programs.',
+    },
+  };
+}
 
 export default function ProgramsPage() {
   return (
@@ -26,12 +33,12 @@ export default function ProgramsPage() {
 
         <div className="mt-8 grid gap-4 md:grid-cols-3">
           {skillupPrograms.map((program) => (
-            <article key={program.id} className="rounded-3xl border border-slate-200 bg-slate-50 p-6">
+            <Link key={program.id} href={`/programs/${program.slug}`} className="rounded-3xl border border-slate-200 bg-slate-50 p-6 transition hover:-translate-y-0.5 hover:border-emerald-300 hover:bg-white hover:shadow-sm">
               <p className="text-xs font-black uppercase tracking-[0.32em] text-slate-500">{program.duration}</p>
               <h2 className="mt-3 text-xl font-black tracking-tight text-slate-950">{program.name}</h2>
-              <p className="mt-3 text-sm leading-6 text-slate-600">{program.description}</p>
+              <p className="mt-3 text-sm leading-6 text-slate-600">{program.summary}</p>
               <p className="mt-4 text-sm font-semibold text-slate-700">{program.audience}</p>
-            </article>
+            </Link>
           ))}
         </div>
       </section>

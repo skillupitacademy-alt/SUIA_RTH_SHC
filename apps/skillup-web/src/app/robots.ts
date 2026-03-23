@@ -4,7 +4,7 @@ export default function robots() {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/api/', '/student/', '/login', '/register'],
+        disallow: ['/api/', '/student/'],
       },
     ],
     sitemap: 'https://skillupitacademy.com/sitemap.xml',

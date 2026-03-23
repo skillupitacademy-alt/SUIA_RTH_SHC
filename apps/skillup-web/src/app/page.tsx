@@ -1,11 +1,18 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { skillupFacultyShowcase, skillupHeroStats, skillupPrograms } from '@/lib/skillup-demo-data';
 
-export const metadata = {
-  title: 'SkillUp IT Academy',
-  description: 'Learn, practice, and progress through the SkillUp IT Academy student portal.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: 'SkillUp IT Academy — Live Tech Training',
+    description: 'Learn, practice, and progress through the SkillUp IT Academy student portal.',
+    openGraph: {
+      title: 'SkillUp IT Academy — Live Tech Training',
+      description: 'Learn, practice, and progress through the SkillUp IT Academy student portal.',
+    },
+  };
+}
 
 export default function HomePage() {
   return (
@@ -54,14 +61,18 @@ export default function HomePage() {
       </section>
 
       <section className="grid gap-4 md:grid-cols-3">
-        {skillupPrograms.map((program) => (
-          <article key={program.id} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <p className="text-xs font-black uppercase tracking-[0.32em] text-cyan-600">{program.duration}</p>
-            <h2 className="mt-3 text-xl font-black tracking-tight text-slate-950">{program.name}</h2>
-            <p className="mt-3 text-sm leading-6 text-slate-600">{program.description}</p>
-            <p className="mt-4 text-sm font-semibold text-slate-700">{program.audience}</p>
-          </article>
-        ))}
+          {skillupPrograms.map((program) => (
+            <Link
+              key={program.id}
+              href={`/programs/${program.slug}`}
+              className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md"
+            >
+              <p className="text-xs font-black uppercase tracking-[0.32em] text-cyan-600">{program.duration}</p>
+              <h2 className="mt-3 text-xl font-black tracking-tight text-slate-950">{program.name}</h2>
+              <p className="mt-3 text-sm leading-6 text-slate-600">{program.summary}</p>
+              <p className="mt-4 text-sm font-semibold text-slate-700">{program.audience}</p>
+            </Link>
+          ))}
       </section>
 
       <section className="grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">

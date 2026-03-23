@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
+import { StudentRouteTracker } from '@/components/StudentRouteTracker';
+
 const navItems = [
   { href: '/student', label: 'Dashboard' },
   { href: '/student/my-batch', label: 'My Batch' },
@@ -36,6 +38,7 @@ export default function StudentLayout({ children }: { children: ReactNode }) {
           </nav>
         </div>
       </header>
+      <StudentRouteTracker />
       <main>{children}</main>
     </div>
   );

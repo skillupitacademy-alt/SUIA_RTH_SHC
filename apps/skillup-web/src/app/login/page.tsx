@@ -20,14 +20,24 @@ export default function LoginPage() {
         <div className="mt-8 grid gap-4 lg:grid-cols-[1fr_0.8fr]">
           <form className="rounded-3xl border border-slate-200 bg-slate-50 p-6">
             <div className="space-y-4">
-              <label className="block text-sm font-semibold text-slate-700">
+              <label htmlFor="skillup-email" className="block text-sm font-semibold text-slate-700">
                 Email
-                <input className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none ring-0 focus:border-cyan-300" type="email" placeholder="student@example.com" />
               </label>
-              <label className="block text-sm font-semibold text-slate-700">
+              <input
+                id="skillup-email"
+                className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none ring-0 focus:border-cyan-300"
+                type="email"
+                placeholder="student@example.com"
+              />
+              <label htmlFor="skillup-password" className="block text-sm font-semibold text-slate-700">
                 Password
-                <input className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none ring-0 focus:border-cyan-300" type="password" placeholder="Enter your password" />
               </label>
+              <input
+                id="skillup-password"
+                className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none ring-0 focus:border-cyan-300"
+                type="password"
+                placeholder="Enter your password"
+              />
               <a href={loginUrl} className="inline-flex rounded-full bg-cyan-500 px-5 py-3 text-sm font-bold text-white transition hover:bg-cyan-600">
                 Sign in with SkillHubCore
               </a>

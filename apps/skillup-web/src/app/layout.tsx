@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter, Outfit } from 'next/font/google';
 import type { ReactNode } from 'react';
 
@@ -22,6 +22,14 @@ export const metadata: Metadata = {
     template: '%s | SkillUp IT Academy',
   },
   description: 'Student portal for SkillUp IT Academy',
+  metadataBase: new URL('https://skillupitacademy.com'),
+  manifest: '/manifest.json',
+};
+
+export const viewport: Viewport = {
+  themeColor: '#0f6e56',
+  width: 'device-width',
+  initialScale: 1,
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

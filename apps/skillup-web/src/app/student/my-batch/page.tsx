@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { formatDateTime, studentBatchDetails, studentSessions } from '@/lib/skillup-demo-data';
+import { SessionCalendar } from '@/components/SessionCalendar';
 
 export default function MyBatchPage() {
   return (
@@ -47,23 +48,8 @@ export default function MyBatchPage() {
               Attendance
             </Link>
           </div>
-          <div className="mt-6 space-y-4">
-            {studentSessions.map((session) => (
-              <div key={session.id} className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-semibold text-slate-800">{session.title}</p>
-                    <p className="mt-1 text-sm text-slate-600">
-                      {formatDateTime(session.date)} - {session.mode}
-                    </p>
-                  </div>
-                  <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-bold text-slate-700">
-                    {session.status}
-                  </span>
-                </div>
-                {session.recording ? <p className="mt-3 text-sm text-cyan-700">Recording: {session.recording}</p> : null}
-              </div>
-            ))}
+          <div className="mt-6">
+            <SessionCalendar sessions={studentSessions} />
           </div>
         </article>
 

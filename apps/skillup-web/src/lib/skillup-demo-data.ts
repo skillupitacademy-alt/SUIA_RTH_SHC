@@ -1,9 +1,12 @@
 export type SkillupProgram = {
   id: string;
+  slug: string;
   name: string;
   duration: string;
   description: string;
   audience: string;
+  summary: string;
+  highlights: string[];
 };
 
 export type SkillupSession = {
@@ -35,26 +38,39 @@ export type SkillupJobMatch = {
 export const skillupPrograms: SkillupProgram[] = [
   {
     id: 'full-stack-web',
+    slug: 'full-stack-web',
     name: 'Full Stack Developer',
     duration: '6 months',
     description: 'HTML, CSS, TypeScript, React, Next.js, APIs, deployment, and interview prep.',
     audience: 'Students targeting product engineering roles',
+    summary: 'Build production-ready web apps and interview-ready projects.',
+    highlights: ['Frontend foundations', 'Next.js app architecture', 'API integration', 'Deployment readiness'],
   },
   {
     id: 'data-analytics',
+    slug: 'data-analytics',
     name: 'Data Analyst',
     duration: '4 months',
     description: 'SQL, spreadsheets, dashboards, reporting, and business communication.',
     audience: 'Learners building reporting and insight skills',
+    summary: 'Turn datasets into clear business insights and reports.',
+    highlights: ['SQL analysis', 'Dashboard storytelling', 'Spreadsheet workflows', 'Stakeholder reporting'],
   },
   {
     id: 'cloud-ops',
+    slug: 'cloud-ops',
     name: 'Cloud Support',
     duration: '5 months',
     description: 'Linux, networking, monitoring, incident response, and cloud workflows.',
     audience: 'Students preparing for support and operations roles',
+    summary: 'Operate, monitor, and support modern cloud systems confidently.',
+    highlights: ['Linux basics', 'Monitoring and incidents', 'Networking essentials', 'Cloud operations'],
   },
 ];
+
+export function findSkillupProgramBySlug(slug: string) {
+  return skillupPrograms.find((program) => program.slug === slug);
+}
 
 export const skillupHeroStats = [
   { label: 'Programs', value: '12' },

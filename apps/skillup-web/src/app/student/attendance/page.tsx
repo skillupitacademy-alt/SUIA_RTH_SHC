@@ -1,3 +1,5 @@
+import { CheckCircle2, Clock3, XCircle } from 'lucide-react';
+
 import { studentAttendanceHistory } from '@/lib/skillup-demo-data';
 
 export default function AttendancePage() {
@@ -19,6 +21,13 @@ export default function AttendancePage() {
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-sm font-semibold text-slate-800">{entry.date}</p>
                   <span
+                    aria-label={
+                      entry.state === 'present'
+                        ? 'Present'
+                        : entry.state === 'late'
+                          ? 'Late'
+                          : 'Absent'
+                    }
                     className={`rounded-full px-3 py-1 text-[11px] font-bold ${
                       entry.state === 'present'
                         ? 'border border-emerald-200 bg-emerald-50 text-emerald-700'
@@ -27,7 +36,12 @@ export default function AttendancePage() {
                           : 'border border-rose-200 bg-rose-50 text-rose-700'
                     }`}
                   >
-                    {entry.state}
+                    <span className="inline-flex items-center gap-1.5">
+                      {entry.state === 'present' ? <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" /> : null}
+                      {entry.state === 'late' ? <Clock3 className="h-3.5 w-3.5" aria-hidden="true" /> : null}
+                      {entry.state === 'absent' ? <XCircle className="h-3.5 w-3.5" aria-hidden="true" /> : null}
+                      {entry.state}
+                    </span>
                   </span>
                 </div>
                 <p className="mt-2 text-sm leading-6 text-slate-600">{entry.note}</p>
