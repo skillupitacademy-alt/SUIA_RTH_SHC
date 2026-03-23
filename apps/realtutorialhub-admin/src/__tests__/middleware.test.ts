@@ -21,7 +21,7 @@ describe('realtutorialhub-admin proxy', () => {
     const response = await proxy(makeRequest('/'));
 
     expect(response.status).toBe(307);
-    expect(response.headers.get('location')).toContain('skillhubcore');
+    expect(response.headers.get('location')).toContain('/login');
     expect(new URL(response.headers.get('location') ?? '').searchParams.get('redirect')).toBe('/');
   });
 
@@ -29,7 +29,7 @@ describe('realtutorialhub-admin proxy', () => {
     const response = await proxy(makeRequest('/dashboard/users'));
 
     expect(response.status).toBe(307);
-    expect(response.headers.get('location')).toContain('skillhubcore');
+    expect(response.headers.get('location')).toContain('/login');
     expect(new URL(response.headers.get('location') ?? '').searchParams.get('redirect')).toBe('/dashboard/users');
   });
 

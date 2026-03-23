@@ -4,9 +4,9 @@ import { NextRequest, NextResponse } from 'next/server';
 const SKILLHUBCORE_LOGIN_URL =
   process.env.SKILLHUBCORE_LOGIN_URL ??
   process.env.NEXT_PUBLIC_SKILLHUBCORE_LOGIN_URL ??
-  'https://api.skillhubcore.in/login';
+  '/login';
 
-const PUBLIC_PATHS = ['/api/healthz'];
+const PUBLIC_PATHS = ['/api/healthz', '/login'];
 const REQUIRED_ROLES = ['super_admin'];
 
 function getSkillHubCoreToken(request: NextRequest): string | undefined {

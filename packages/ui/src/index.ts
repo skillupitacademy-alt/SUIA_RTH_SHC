@@ -21,3 +21,4 @@ export * from './ZPortalModal';
 export * from './hooks';
 export * from './store/auth-store';
 export * from './theme-store';
+export * from './PortalLoginPage';

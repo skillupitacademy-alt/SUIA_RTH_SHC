@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 const SKILLHUBCORE_LOGIN_URL =
   process.env.SKILLHUBCORE_LOGIN_URL ??
   process.env.NEXT_PUBLIC_SKILLHUBCORE_LOGIN_URL ??
-  'https://api.skillhubcore.in/login';
+  '/login';
 const INTERNAL_GATEWAY_SECRET = process.env.INTERNAL_GATEWAY_SECRET;
 
 const PUBLIC_PATHS = ['/api/healthz', '/login', '/forgot-password', '/reset-password', '/unauthorized'];

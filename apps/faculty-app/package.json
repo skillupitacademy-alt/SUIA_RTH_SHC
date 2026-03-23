@@ -14,6 +14,7 @@
     "@quiz/auth": "workspace:*",
     "@quiz/events": "workspace:*",
     "@upstash/qstash": "^2.8.1",
+    "@quiz/ui": "workspace:*",
     "@quiz/types": "workspace:*",
     "@types/node": "^20",
     "@types/react": "^19.0.0",
