@@ -11,17 +11,5 @@ pattern = "api.realtutorialhub.com/*"
 zone_name = "realtutorialhub.com"
 
 [[env.production.routes]]
-pattern = "skillupitacademy.com/*"
-zone_name = "skillupitacademy.com"
-
-[[env.production.routes]]
-pattern = "admin.skillupitacademy.com/*"
-zone_name = "skillupitacademy.com"
-
-[[env.production.routes]]
-pattern = "faculty.skillupitacademy.com/*"
-zone_name = "skillupitacademy.com"
-
-[[env.production.routes]]
 pattern = "api.skillhubcore.in/*"
 zone_name = "skillhubcore.in"
