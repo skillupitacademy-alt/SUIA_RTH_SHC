@@ -6,8 +6,8 @@ const SKILLHUBCORE_LOGIN_URL =
   process.env.NEXT_PUBLIC_SKILLHUBCORE_LOGIN_URL ??
   'https://api.skillhubcore.in/login';
 
-const PUBLIC_PATHS = ['/', '/api/healthz'];
-const PROTECTED_PREFIXES = ['/dashboard/', '/dashboard', '/exam/', '/exam', '/api/', '/onboarding/', '/onboarding', '/reports/', '/reports', '/quiz/', '/quiz', '/profile/', '/profile'];
+const PUBLIC_PATHS = ['/', '/api/healthz', '/api/auth/login', '/api/auth/refresh', '/api/auth/logout', '/api/auth/me'];
+const PROTECTED_PREFIXES = ['/dashboard/', '/dashboard', '/exam/', '/exam', '/onboarding/', '/onboarding', '/reports/', '/reports', '/quiz/', '/quiz', '/profile/', '/profile'];
 const AUTH_PATHS = ['/login', '/signup', '/forgot-password', '/reset-password'];
 
 function hasPrefix(pathname: string, prefixes: string[]): boolean {

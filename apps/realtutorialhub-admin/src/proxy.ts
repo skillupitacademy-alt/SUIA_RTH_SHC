@@ -7,7 +7,7 @@ const SKILLHUBCORE_LOGIN_URL =
   '/login';
 const INTERNAL_GATEWAY_SECRET = process.env.INTERNAL_GATEWAY_SECRET;
 
-const PUBLIC_PATHS = ['/api/healthz', '/login', '/forgot-password', '/reset-password', '/unauthorized'];
+const PUBLIC_PATHS = ['/api/healthz', '/login', '/forgot-password', '/reset-password', '/unauthorized', '/api/auth/login', '/api/auth/refresh', '/api/auth/logout', '/api/auth/me'];
 const PROTECTED_PREFIXES = [
   '/dashboard/',
   '/dashboard',
@@ -21,7 +21,6 @@ const PROTECTED_PREFIXES = [
   '/governance',
   '/reports/',
   '/reports',
-  '/api/',
   '/',
 ];
 const ADMIN_ROLES = ['admin', 'super_admin'];
