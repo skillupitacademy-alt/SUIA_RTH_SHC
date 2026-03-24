@@ -2,7 +2,7 @@
 
 import { Eye, EyeOff, Lock, Mail, ShieldCheck } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { type FormEvent,useState } from 'react';
+import { type FormEvent, useState } from 'react';
 
 const LOGIN_ENDPOINT = 'https://api.skillhubcore.in/auth/login';
 
@@ -119,14 +119,14 @@ function LoginForm() {
   };
 
   return (
-    <div className="w-full max-w-lg">
+    <div className="w-full max-w-md space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="mb-8">
         <h2 className="text-3xl font-bold tracking-tight mb-2 text-[#1A1A1A]">Welcome Back</h2>
         <p className="text-sm text-muted-foreground">Authenticate to access the governance terminal.</p>
       </div>
 
       {error ? (
-        <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-600 text-sm font-bold flex items-center gap-2">
+        <div className="mb-6 flex items-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm font-bold text-red-600">
           <ShieldCheck size={16} />
           {error}
         </div>
@@ -134,11 +134,14 @@ function LoginForm() {
 
       <form onSubmit={(event) => void handleSubmit(event)} className="space-y-6" autoComplete="off">
         <div className="space-y-2">
-          <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1" htmlFor="admin-login-email">
+          <label
+            className="px-1 text-[10px] font-black uppercase tracking-widest text-slate-400"
+            htmlFor="admin-login-email"
+          >
             Email Address
           </label>
           <div className="relative">
-            <Mail className="absolute left-4 top-4 text-slate-400 h-5 w-5 z-10" />
+            <Mail className="absolute left-4 top-4 z-10 h-5 w-5 text-slate-400" />
             <input
               type="email"
               required
@@ -155,7 +158,10 @@ function LoginForm() {
 
         <div className="space-y-2">
           <div className="flex items-center justify-between px-1">
-            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400" htmlFor="admin-login-password">
+            <label
+              className="text-[10px] font-black uppercase tracking-widest text-slate-400"
+              htmlFor="admin-login-password"
+            >
               Password
             </label>
             <a href="/forgot-password" className="text-sm font-medium text-[#FF4B91] hover:underline">
@@ -163,9 +169,9 @@ function LoginForm() {
             </a>
           </div>
           <div className="relative">
-            <Lock className="absolute left-4 top-4 text-slate-400 h-5 w-5 z-10" />
+            <Lock className="absolute left-4 top-4 z-10 h-5 w-5 text-slate-400" />
             <input
-            type={showPassword ? 'text' : 'password'}
+              type={showPassword ? 'text' : 'password'}
               required
               minLength={1}
               id="admin-login-password"
@@ -190,15 +196,17 @@ function LoginForm() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-7 shadow-lg shadow-primary/25 rounded-2xl inline-flex items-center justify-center bg-primary px-4 text-sm font-bold text-primary-foreground transition-all hover:bg-primary/90"
+          className="w-full inline-flex items-center justify-center rounded-2xl bg-primary px-4 py-7 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:bg-primary/90"
         >
           {loading ? 'AUTHENTICATING...' : 'AUTHENTICATE'}
         </button>
       </form>
 
-      <div className="mt-8 pt-8 border-t text-center">
-        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Restricted Access System v1.0.4</p>
-        <p className="mt-2 text-[10px] font-medium text-slate-400 uppercase tracking-widest">
+      <div className="mt-8 border-t pt-8 text-center">
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+          Restricted Access System v1.0.4
+        </p>
+        <p className="mt-2 text-[10px] font-medium uppercase tracking-widest text-slate-400">
           Unauthorized access attempts are logged and reported.
         </p>
       </div>
@@ -208,45 +216,35 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#F8F9FB] px-6 py-12">
-      <div className="w-full max-w-[1200px] grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-        <div className="hidden lg:flex flex-col justify-center min-h-[720px] rounded-[2rem] border border-slate-200/70 bg-white/80 p-12 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-[20px] relative overflow-hidden">
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:24px_24px]" />
-          <div className="relative z-10 max-w-xl">
-            <div className="flex items-center gap-3 mb-10">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FF4B91] text-white shadow-lg shadow-[#FF4B91]/25">
-                <ShieldCheck size={28} />
-              </div>
-              <div>
-                <p className="text-xs font-black uppercase tracking-[0.3em] text-slate-400">Quiz Platform</p>
-                <h1 className="text-4xl font-extrabold tracking-tight text-[#1A1A1A]">Secure Governance</h1>
-              </div>
+    <div className="min-h-screen grid lg:grid-cols-2 bg-background font-sans">
+      <div className="hidden lg:flex flex-col justify-between p-12 bg-slate-50 border-r border-slate-200 text-[#1A1A1A] relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070')] bg-cover opacity-5 grayscale" />
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="h-10 w-10 rounded-xl bg-[#FF4B91] flex items-center justify-center font-bold text-xl text-white shadow-lg shadow-[#FF4B91]/20">
+              Q
             </div>
-
-            <div className="max-w-xl space-y-6">
-              <p className="text-2xl font-semibold leading-tight text-slate-700">
-                Authorized personnel only. Secure access to the governance terminal is strictly audited.
-              </p>
-              <div className="grid grid-cols-2 gap-4 pt-8">
-                <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                  <p className="text-4xl font-black text-slate-900">100%</p>
-                  <p className="mt-2 text-xs font-bold uppercase tracking-[0.25em] text-slate-400">Audit Coverage</p>
-                </div>
-                <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                  <p className="text-4xl font-black text-slate-900">24/7</p>
-                  <p className="mt-2 text-xs font-bold uppercase tracking-[0.25em] text-slate-400">Monitoring</p>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="relative z-10 mt-auto pt-10">
-            <p className="text-xs font-bold uppercase tracking-[0.35em] text-slate-400">
-              System ID: RH-9011-GC // Secure Layer V1
-            </p>
+            <span className="text-2xl font-bold tracking-tighter text-[#1A1A1A]">QUIZADMIN</span>
           </div>
         </div>
 
-        <div className="flex items-center justify-center">
+        <div className="relative z-10 space-y-6">
+          <h1 className="text-5xl font-extrabold leading-tight tracking-tight text-[#1A1A1A] font-outfit">
+            Secure <br />
+            <span className="text-[#FF4B91]">Governance</span>
+          </h1>
+          <p className="text-xl text-slate-500 max-w-md leading-relaxed">
+            Authorized personnel only. Secure access to the governance terminal is strictly audited.
+          </p>
+        </div>
+
+        <div className="relative z-10 alpha-terminal text-slate-400">
+          System ID: RH-9011-GC // Secure Layer V1
+        </div>
+      </div>
+
+      <div className="flex items-center justify-center p-8 bg-white">
+        <div className="w-full max-w-md">
           <LoginForm />
         </div>
       </div>
