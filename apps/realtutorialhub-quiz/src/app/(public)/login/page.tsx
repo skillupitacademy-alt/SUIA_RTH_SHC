@@ -4,6 +4,7 @@ import { Eye, EyeOff, Loader2, ShieldCheck } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
 import { getApiBase } from '@/utils/apiBase';
+import { clientLogger } from '@/utils/clientLogger';
 
 const LOGIN_ENDPOINT = `${getApiBase()}/auth/login`;
 type LoginResponse = {
@@ -51,6 +52,13 @@ function LoginForm() {
     setError(null);
 
     try {
+      const redirectTarget = searchParams.get('redirect');
+      clientLogger.warn('[AUTH_FLOW][LOGIN_PAGE][SUBMIT]', {
+        step: 'submit',
+        hasRedirect: typeof redirectTarget === 'string',
+        path: window.location.pathname,
+      });
+
       const formData = new FormData(e.currentTarget);
       const email = formData.get('email')?.toString() ?? '';
       const password = formData.get('password')?.toString() ?? '';
@@ -71,6 +79,13 @@ function LoginForm() {
 
       const payload = (await response.json().catch(() => null)) as LoginResponse | null;
 
+      clientLogger.warn('[AUTH_FLOW][LOGIN_PAGE][RESPONSE]', {
+        step: 'response',
+        ok: response.ok,
+        status: response.status,
+        hasAccessToken: typeof payload?.accessToken === 'string' && payload.accessToken.trim().length > 0,
+      });
+
       if (!response.ok) {
         throw new Error(toErrorMessage(response, payload, 'Authentication failed'));
       }
@@ -84,14 +99,23 @@ function LoginForm() {
         throw new Error('Authentication failed: missing access token.');
       }
 
-      const redirectTarget = searchParams.get('redirect');
       const safeRedirect =
         typeof redirectTarget === 'string' && redirectTarget.startsWith('/') && !redirectTarget.startsWith('//')
           ? redirectTarget
           : '/dashboard';
 
+      clientLogger.warn('[AUTH_FLOW][LOGIN_PAGE][REDIRECT]', {
+        step: 'redirect',
+        safeRedirect,
+        rawRedirect: redirectTarget,
+      });
+
       router.replace(safeRedirect);
     } catch (err: unknown) {
+      clientLogger.error('[AUTH_FLOW][LOGIN_PAGE][ERROR]', {
+        step: 'error',
+        message: err instanceof Error ? err.message : 'Authentication failed',
+      });
       setError(err instanceof Error ? err.message : 'Authentication failed');
     } finally {
       setLoading(false);

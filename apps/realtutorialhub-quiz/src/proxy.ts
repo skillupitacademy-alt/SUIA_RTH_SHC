@@ -73,14 +73,40 @@ async function resolveUser(request: NextRequest): Promise<UserPayload | null> {
 
 export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
+  const requestId = request.headers.get('x-request-id') ?? 'no-request-id';
+  const accessToken = getAccessToken(request);
   const user = await resolveUser(request);
   const redirectPath = `${pathname}${search}`;
+  const hasAccessToken = typeof accessToken === 'string' && accessToken.trim().length > 0;
+
+  if (pathname === '/login' || pathname === '/dashboard' || isProtectedRoute(pathname)) {
+    console.log('[AUTH_FLOW][QUIZ_PROXY][CHECK]', JSON.stringify({
+      requestId,
+      path: pathname,
+      search,
+      hasAccessToken,
+      isProtected: isProtectedRoute(pathname),
+      hasUser: user !== null,
+    }));
+  }
 
   if (isProtectedRoute(pathname) && user === null) {
+    console.log('[AUTH_FLOW][QUIZ_PROXY][REDIRECT_TO_LOGIN]', JSON.stringify({
+      requestId,
+      path: pathname,
+      redirectPath,
+      reason: 'missing_or_invalid_access_token',
+      hasAccessToken,
+    }));
     return NextResponse.redirect(getLoginUrl(request, redirectPath));
   }
 
   if (user !== null && isAuthRoute(pathname)) {
+    console.log('[AUTH_FLOW][QUIZ_PROXY][REDIRECT_TO_DASHBOARD]', JSON.stringify({
+      requestId,
+      path: pathname,
+      reason: 'authenticated_on_auth_route',
+    }));
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 

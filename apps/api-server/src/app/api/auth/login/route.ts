@@ -20,10 +20,25 @@ import { withCorrelationId } from '@/lib/correlation-id.middleware';
 async function handler(req: NextRequest) {
   const start = Date.now();
   try {
+    const requestId = req.headers.get('x-request-id') ?? 'no-request-id';
+    const origin = req.headers.get('origin') ?? 'unknown';
+    const host = req.headers.get('host') ?? req.nextUrl.hostname;
+    console.log('[AUTH_FLOW][LOGIN][START]', JSON.stringify({
+      requestId,
+      host,
+      origin,
+      path: req.nextUrl.pathname,
+    }));
+
     const rawBody = await req.json();
     const parsed = loginSchema.safeParse(rawBody);
     if (!parsed.success) {
       recordCounter(METRICS.AUTH.FAILURE, 1, { reason: 'invalid_payload' });
+      console.log('[AUTH_FLOW][LOGIN][FAIL]', JSON.stringify({
+        requestId,
+        stage: 'validation',
+        path: req.nextUrl.pathname,
+      }));
       return ApiResponse.error(validationError(parsed.error.issues));
     }
     const { email, password } = parsed.data;
@@ -55,6 +70,15 @@ async function handler(req: NextRequest) {
     });
 
     const cookieDomain = resolveCookieDomain(process.env.COOKIE_DOMAIN, req.nextUrl.hostname);
+    console.log('[AUTH_FLOW][LOGIN][COOKIES]', JSON.stringify({
+      requestId,
+      host,
+      cookieDomain: cookieDomain ?? 'unset',
+      accessTokenCookieName: isAdmin === true ? 'admin_accessToken' : 'accessToken',
+      refreshTokenCookieName: isAdmin === true ? 'admin_refreshToken' : 'refreshToken',
+      sameSite: 'none',
+      secure: true,
+    }));
 
     const accessTokenCookieName = isAdmin === true ? 'admin_accessToken' : 'accessToken';
     response.cookies.set(accessTokenCookieName, accessToken, {
@@ -82,12 +106,24 @@ async function handler(req: NextRequest) {
     const end = Date.now();
     const durationMs = end - start;
     recordTimer(METRICS.AUTH.LOGIN + '.duration', durationMs);
-    
+
     response.headers.set('X-Duration-Ms', durationMs.toString());
+    console.log('[AUTH_FLOW][LOGIN][SUCCESS]', JSON.stringify({
+      requestId,
+      durationMs,
+      path: req.nextUrl.pathname,
+      role: isAdmin ? 'admin' : 'user',
+      cookieDomain: cookieDomain ?? 'unset',
+    }));
 
     return response;
   } catch (_error) {
     const message = _error instanceof Error ? _error.message : 'Invalid credentials';
+    console.log('[AUTH_FLOW][LOGIN][ERROR]', JSON.stringify({
+      requestId: req.headers.get('x-request-id') ?? 'no-request-id',
+      path: req.nextUrl.pathname,
+      message,
+    }));
     recordCounter(METRICS.AUTH.FAILURE, 1, {
       reason: message === 'Account temporarily locked. Try again later.'
         ? 'account_locked'
