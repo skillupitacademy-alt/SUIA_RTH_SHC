@@ -4,12 +4,21 @@ import { Eye, EyeOff, Loader2, ShieldCheck } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
 import { getApiBase } from '@/utils/apiBase';
+import { useAuthStore } from '@/store/auth-store';
 import { clientLogger } from '@/utils/clientLogger';
 
 const LOGIN_ENDPOINT = `${getApiBase()}/auth/login`;
 type LoginResponse = {
   accessToken?: string;
   refreshToken?: string;
+  user?: {
+    id: string;
+    email: string;
+    name?: string;
+    isAdmin?: boolean;
+    role?: string;
+    onboarded?: boolean;
+  };
   message?: string;
   error?: string;
   _error?: string;
@@ -28,6 +37,7 @@ function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const authLogin = useAuthStore((s) => s.login);
 
   const toErrorMessage = (response: Response | null, payload: LoginResponse | null, fallback: string): string => {
     const candidate = readResponseMessage(payload?.error) ?? readResponseMessage(payload?.message) ?? readResponseMessage(payload?._error);
@@ -97,6 +107,19 @@ function LoginForm() {
 
       if (accessToken.length === 0) {
         throw new Error('Authentication failed: missing access token.');
+      }
+
+      // Store user in auth store BEFORE redirecting — this eliminates the race
+      // condition where AuthGuard calls GET /auth/me before cookies are ready.
+      if (payload?.user) {
+        authLogin({
+          id: payload.user.id,
+          name: payload.user.name ?? '',
+          email: payload.user.email,
+          isAdmin: payload.user.isAdmin ?? false,
+          role: payload.user.role ?? 'user',
+          onboarded: payload.user.onboarded ?? false,
+        });
       }
 
       const safeRedirect =
