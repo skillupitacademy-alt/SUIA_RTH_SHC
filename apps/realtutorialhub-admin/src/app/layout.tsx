@@ -19,8 +19,9 @@ const outfit = Outfit({
     display: "swap",
 });
 
+import { BrowserAuthFetchProvider } from "@quiz/ui";
+
 import { SecurityMuzzle } from "@/components/auth/SecurityMuzzle";
-import { FetchCredentialsProvider } from "@/components/providers/FetchCredentialsProvider";
 import { MonitoringProvider } from "@/components/providers/MonitoringProvider";
 import { QueryProvider } from "@/components/providers/QueryProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
@@ -45,7 +46,7 @@ export default function RootLayout({
                     <ZErrorBoundary appId="admin-app" sessionIdKey="admin_session_id" recoveryMode="both">
                         <ThemeProvider>
                             <QueryProvider>
-                                <FetchCredentialsProvider />
+                                <BrowserAuthFetchProvider />
                                 <SecurityMuzzle />
                                 {children}
                                 {/* <Analytics /> */}

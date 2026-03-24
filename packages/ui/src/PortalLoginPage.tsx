@@ -6,7 +6,7 @@ import { Lock, Mail, ShieldCheck } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
 
-const DEFAULT_LOGIN_ENDPOINT = 'https://api.skillhubcore.in/auth/login';
+const DEFAULT_LOGIN_ENDPOINT = `${(process.env.NEXT_PUBLIC_API_URL ?? 'https://api.realtutorialhub.com/api').replace(/\/+$/, '')}/auth/login`;
 
 export type PortalIdentity = 'admin' | 'faculty' | 'super_admin';
 export type LoginPlatform = 'realtutorialhub' | 'skillup' | 'both';

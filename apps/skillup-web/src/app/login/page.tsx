@@ -5,7 +5,10 @@ export const metadata = {
   description: 'Sign in to the SkillUp IT Academy student portal.',
 };
 
-const loginUrl = process.env.SKILLHUBCORE_LOGIN_URL ?? 'https://api.skillhubcore.in/login';
+const gatewayLoginUrl = (() => {
+  const raw = process.env.NEXT_PUBLIC_API_URL?.trim() ?? 'https://api.realtutorialhub.com/api';
+  return `${raw.replace(/\/api\/?$/, '').replace(/\/+$/, '')}/login`;
+})();
 
 export default function LoginPage() {
   return (
@@ -38,7 +41,7 @@ export default function LoginPage() {
                 type="password"
                 placeholder="Enter your password"
               />
-              <a href={loginUrl} className="inline-flex rounded-full bg-cyan-500 px-5 py-3 text-sm font-bold text-white transition hover:bg-cyan-600">
+              <a href={gatewayLoginUrl} className="inline-flex rounded-full bg-cyan-500 px-5 py-3 text-sm font-bold text-white transition hover:bg-cyan-600">
                 Sign in with SkillHubCore
               </a>
             </div>

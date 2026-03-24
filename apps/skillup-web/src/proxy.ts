@@ -4,7 +4,7 @@ import { TokenService, type SkillHubCoreTokenPayload } from '@quiz/auth';
 const SKILLHUBCORE_LOGIN_URL =
   process.env.SKILLHUBCORE_LOGIN_URL ??
   process.env.NEXT_PUBLIC_SKILLHUBCORE_LOGIN_URL ??
-  'https://api.skillhubcore.in/login';
+  '/login';
 
 const PUBLIC_PATHS = ['/', '/programs', '/api/healthz', '/verify'];
 const STUDENT_PATHS = ['/student'];

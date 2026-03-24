@@ -19,6 +19,7 @@ export * from './PageTitle';
 export * from './Modal';
 export * from './ZPortalModal';
 export * from './hooks';
+export * from './BrowserAuthFetchProvider';
 export * from './store/auth-store';
 export * from './theme-store';
 export * from './PortalLoginPage';

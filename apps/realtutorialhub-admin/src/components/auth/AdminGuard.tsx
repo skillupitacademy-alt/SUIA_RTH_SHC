@@ -61,7 +61,9 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         if (initialized === false) return;
 
-        if ((isAuthenticated === false || user?.isAdmin !== true) && pathname !== '/login') {
+        const hasAdminRole = user?.role === 'admin' || user?.role === 'super_admin';
+
+        if ((isAuthenticated === false || hasAdminRole === false) && pathname !== '/login') {
             router.push('/login');
             return;
         }
@@ -70,7 +72,8 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
         const revalidate = async () => {
             try {
                 const { user: validatedUser, expiresAt: validatedExpiresAt } = await apiClient.auth.getAdminSession();
-                if (validatedUser === null || validatedUser === undefined || (validatedUser as { isAdmin?: boolean }).isAdmin !== true) throw new Error("Revoked");
+                const validatedHasAdminRole = validatedUser?.role === 'admin' || validatedUser?.role === 'super_admin';
+                if (validatedUser === null || validatedUser === undefined || validatedHasAdminRole === false) throw new Error("Revoked");
 
                 // Only update if something actually changed to avoid unnecessary re-renders/loop
                 if (JSON.stringify(validatedUser) !== JSON.stringify(user) || validatedExpiresAt !== expiresAt) {
@@ -100,7 +103,9 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
         return <>{children}</>;
     }
 
-    if (initialized === false || isAuthenticated === false || user?.isAdmin !== true) {
+    const hasAdminRole = user?.role === 'admin' || user?.role === 'super_admin';
+
+    if (initialized === false || isAuthenticated === false || hasAdminRole === false) {
         return (
             <div className="h-screen w-screen bg-background flex flex-col items-center justify-center">
                 <ZLoader size="lg" text="Authenticating Admin Session" />

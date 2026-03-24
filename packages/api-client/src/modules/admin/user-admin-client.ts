@@ -4,6 +4,7 @@ import {
   AdminUserProfile,
   IAdminUserClient,
 } from '@quiz/api-client/types';
+import { normalizeSkillHubUser } from '../../lib/normalize-auth-user';
 
 type UserUpdatePayload = Partial<AdminUserProfile> & Record<string, unknown>;
 
@@ -65,11 +66,16 @@ export class UserAdminClient implements IAdminUserClient {
   }
 
   async login(email: string, password: string) {
-    return this.client.post<{
+    const response = await this.client.post<{
       user: AdminUserProfile;
       accessToken: string;
       expiresAt: string | null;
     }>('/admin/auth/login', { email, password });
+
+    return {
+      ...response,
+      user: normalizeSkillHubUser(response.user ?? {}, email) as AdminUserProfile,
+    };
   }
 }
 

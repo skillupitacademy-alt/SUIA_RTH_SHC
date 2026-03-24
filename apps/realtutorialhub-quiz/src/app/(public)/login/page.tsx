@@ -3,8 +3,9 @@
 import { Eye, EyeOff, Loader2, ShieldCheck } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
+import { getApiBase } from '@/utils/apiBase';
 
-const LOGIN_ENDPOINT = 'https://api.skillhubcore.in/auth/login';
+const LOGIN_ENDPOINT = `${getApiBase()}/auth/login`;
 
 function decodeJwtExpiry(token: string): string | null {
   try {

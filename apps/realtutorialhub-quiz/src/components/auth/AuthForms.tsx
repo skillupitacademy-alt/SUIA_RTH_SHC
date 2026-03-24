@@ -6,10 +6,11 @@ import Link from 'next/link';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useAuthStore } from '@/store/auth-store';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { apiClient } from '@quiz/api-client';
+import { apiClient, normalizeSkillHubUser } from '@quiz/api-client';
 import { recordClientMetric, METRICS } from '@quiz/observability';
+import { getApiBase } from '@/utils/apiBase';
 
-const LOGIN_ENDPOINT = 'https://api.skillhubcore.in/auth/login';
+const LOGIN_ENDPOINT = `${getApiBase()}/auth/login`;
 
 type LoginResponse = {
     accessToken?: string;
@@ -18,9 +19,10 @@ type LoginResponse = {
         id?: string;
         name?: string;
         email?: string;
-        isAdmin?: boolean;
         role?: string;
-        onboarded?: boolean;
+        roles?: string[];
+        platforms?: string[];
+        subscriptions?: string[];
     };
     error?: string;
     message?: string;
@@ -153,14 +155,7 @@ export function LoginForm() {
 
             const user = payload?.user;
             if (user !== undefined) {
-                login({
-                    id: user.id ?? email,
-                    name: user.name ?? email,
-                    email: user.email ?? email,
-                    isAdmin: user.isAdmin ?? false,
-                    role: user.role,
-                    onboarded: user.onboarded ?? false,
-                });
+                login(normalizeSkillHubUser(user, email));
             }
             await recordClientMetric(METRICS.AUTH.LOGIN, 1, { method: 'email', outcome: 'success' });
             router.push(redirectTarget);
@@ -271,7 +266,7 @@ export function SignupForm() {
             const { user } = await apiClient.auth.signup(email, password, name);
             if (!user) throw new Error("Account created but failed to log you in automatically.");
 
-            useAuthStore.getState().login({ ...user, onboarded: user.onboarded ?? false });
+            useAuthStore.getState().login(normalizeSkillHubUser(user, user.email));
             router.push('/dashboard');
         } catch (err: unknown) {
             const message = err instanceof Error ? err.message : "Failed to create account.";

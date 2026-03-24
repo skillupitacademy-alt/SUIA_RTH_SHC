@@ -16,7 +16,7 @@ const outfit = Outfit({
     display: "swap",
 });
 import { SecurityMuzzle } from "@/components/auth/SecurityMuzzle";
-import { ZErrorBoundary } from "@quiz/ui";
+import { BrowserAuthFetchProvider, ZErrorBoundary } from "@quiz/ui";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 // import { Analytics } from "@vercel/analytics/react";
 import { GlobalNavigationLoader } from "@/components/layout/GlobalNavigationLoader";
@@ -65,6 +65,7 @@ export default function RootLayout({
                     <ZErrorBoundary appId="web-app" sessionIdKey="quiz_session_id" recoveryMode="reload">
                         <ThemeProvider>
                             <QueryProvider>
+                                <BrowserAuthFetchProvider />
                                 <SecurityMuzzle />
                                 <GlobalNavigationLoader />
                                 {children}

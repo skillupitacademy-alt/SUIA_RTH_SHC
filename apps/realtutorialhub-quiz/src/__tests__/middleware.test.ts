@@ -17,11 +17,11 @@ const makeRequest = (pathname: string, cookie?: string) =>
   });
 
 describe('realtutorialhub-quiz proxy', () => {
-  it('redirects protected dashboard routes to SkillHubCore login when unauthenticated', async () => {
+  it('redirects protected dashboard routes to the local login route when unauthenticated', async () => {
     const response = await proxy(makeRequest('/dashboard'));
 
     expect(response.status).toBe(307);
-    expect(response.headers.get('location')).toContain('skillhubcore');
+    expect(response.headers.get('location')).toContain('/login');
     expect(new URL(response.headers.get('location') ?? '').searchParams.get('redirect')).toBe('/dashboard');
   });
 

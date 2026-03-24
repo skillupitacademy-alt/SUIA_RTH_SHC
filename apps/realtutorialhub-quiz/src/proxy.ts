@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 const SKILLHUBCORE_LOGIN_URL =
   process.env.SKILLHUBCORE_LOGIN_URL ??
   process.env.NEXT_PUBLIC_SKILLHUBCORE_LOGIN_URL ??
-  'https://api.skillhubcore.in/login';
+  '/login';
 
 const PUBLIC_PATHS = ['/', '/api/healthz', '/api/auth/login', '/api/auth/refresh', '/api/auth/logout', '/api/auth/me'];
 const PROTECTED_PREFIXES = ['/dashboard/', '/dashboard', '/exam/', '/exam', '/onboarding/', '/onboarding', '/reports/', '/reports', '/quiz/', '/quiz', '/profile/', '/profile'];

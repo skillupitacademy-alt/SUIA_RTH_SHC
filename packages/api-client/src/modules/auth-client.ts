@@ -1,5 +1,6 @@
 import { UserProfile } from '@quiz/api-client/types';
 import { FetchClient, TIMEOUTS } from '@quiz/api-client/core/fetch-client';
+import { normalizeSkillHubUser } from '../lib/normalize-auth-user';
 
 export class AuthClient {
   private client: FetchClient;
@@ -9,11 +10,16 @@ export class AuthClient {
   }
 
   async login(email: string, password: string) {
-    return this.client.post<{ user: UserProfile; accessToken: string; refreshToken: string }>(
+    const response = await this.client.post<{ user: UserProfile; accessToken: string; refreshToken: string }>(
       '/auth/login',
       { email, password },
       { timeout: TIMEOUTS.STANDARD }
     );
+
+    return {
+      ...response,
+      user: normalizeSkillHubUser(response.user ?? {}, email),
+    };
   }
 
   async signup(email: string, password: string, name: string) {
@@ -25,11 +31,19 @@ export class AuthClient {
   }
 
   async getSession() {
-    return this.client.get<{ user: UserProfile; expiresAt: string | null }>('/auth/me', { timeout: TIMEOUTS.QUICK });
+    const response = await this.client.get<{ user: UserProfile; expiresAt: string | null }>('/auth/me', { timeout: TIMEOUTS.QUICK });
+    return {
+      ...response,
+      user: normalizeSkillHubUser(response.user ?? {}),
+    };
   }
 
   async getAdminSession() {
-    return this.client.get<{ user: UserProfile; expiresAt: string | null }>('/admin/auth/me', { timeout: TIMEOUTS.QUICK });
+    const response = await this.client.get<{ user: UserProfile; expiresAt: string | null }>('/auth/me', { timeout: TIMEOUTS.QUICK });
+    return {
+      ...response,
+      user: normalizeSkillHubUser(response.user ?? {}),
+    };
   }
 
   async logout() {

@@ -11,6 +11,7 @@ import { ContentAdminClient } from './modules/admin/content-admin-client';
 import { UserAdminClient } from './modules/admin/user-admin-client';
 import { AnalyticsAdminClient } from './modules/admin/analytics-admin-client';
 import { SystemAdminClient } from './modules/admin/system-admin-client';
+export * from './lib/normalize-auth-user';
 
 function getApiUrl(): string {
   if (process.env.NEXT_PUBLIC_API_URL) {
