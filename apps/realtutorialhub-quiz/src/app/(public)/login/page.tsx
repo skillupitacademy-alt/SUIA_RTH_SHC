@@ -6,63 +6,6 @@ import { useState, type FormEvent } from 'react';
 import { getApiBase } from '@/utils/apiBase';
 
 const LOGIN_ENDPOINT = `${getApiBase()}/auth/login`;
-
-function decodeJwtExpiry(token: string): string | null {
-  try {
-    const [, payload] = token.split('.');
-    if (payload === undefined) return null;
-
-    const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
-    const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '=');
-    const parsed = JSON.parse(atob(padded));
-    if (typeof parsed.exp !== 'number') return null;
-
-    return new Date(parsed.exp * 1000).toISOString();
-  } catch {
-    return null;
-  }
-}
-
-function getCookieDomain(): string | undefined {
-  if (typeof window === 'undefined') return undefined;
-
-  const explicit = process.env.NEXT_PUBLIC_COOKIE_DOMAIN?.trim();
-  if (explicit !== undefined && explicit.length > 0) {
-    return explicit.startsWith('.') ? explicit : `.${explicit}`;
-  }
-
-  const { hostname } = window.location;
-  if (hostname === 'localhost' || /^\d{1,3}(?:\.\d{1,3}){3}$/.test(hostname)) {
-    return undefined;
-  }
-
-  const segments = hostname.split('.');
-  if (segments.length < 3) {
-    return undefined;
-  }
-
-  return `.${segments.slice(-2).join('.')}`;
-}
-
-function setClientCookie(name: string, value: string, expiresAt: string | null): void {
-  const parts = [`${name}=${encodeURIComponent(value)}`, 'path=/', 'SameSite=Lax'];
-  const cookieDomain = getCookieDomain();
-
-  if (cookieDomain !== undefined) {
-    parts.push(`Domain=${cookieDomain}`);
-  }
-
-  if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
-    parts.push('Secure');
-  }
-
-  if (expiresAt !== null && expiresAt !== '') {
-    parts.push(`expires=${new Date(expiresAt).toUTCString()}`);
-  }
-
-  document.cookie = parts.join('; ');
-}
-
 type LoginResponse = {
   accessToken?: string;
   refreshToken?: string;

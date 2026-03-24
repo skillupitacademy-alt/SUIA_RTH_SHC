@@ -8,36 +8,6 @@ import { getApiBase } from '@/utils/apiBase';
 
 const LOGIN_ENDPOINT = `${getApiBase()}/auth/login`;
 
-function decodeJwtExpiry(token: string): string | null {
-  try {
-    const [, payload] = token.split('.');
-    if (payload === undefined) return null;
-
-    const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
-    const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '=');
-    const parsed = JSON.parse(atob(padded));
-    if (typeof parsed.exp !== 'number') return null;
-
-    return new Date(parsed.exp * 1000).toISOString();
-  } catch {
-    return null;
-  }
-}
-
-function setClientCookie(name: string, value: string, expiresAt: string | null): void {
-  const parts = [`${name}=${encodeURIComponent(value)}`, 'path=/', 'SameSite=Lax'];
-
-  if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
-    parts.push('Secure');
-  }
-
-  if (expiresAt !== null && expiresAt !== '') {
-    parts.push(`expires=${new Date(expiresAt).toUTCString()}`);
-  }
-
-  document.cookie = parts.join('; ');
-}
-
 type LoginResponse = {
   accessToken?: string;
   refreshToken?: string;

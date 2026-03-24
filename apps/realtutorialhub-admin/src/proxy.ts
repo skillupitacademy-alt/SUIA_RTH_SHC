@@ -61,6 +61,16 @@ function getUnauthorizedUrl(request: NextRequest): URL {
 
 type UserPayload = { sub: string; roles: string[] };
 
+type VerifiedTokenPayload = {
+  sub?: string;
+  userId?: string;
+  roles?: string[];
+};
+
+function getTokenUserId(payload: VerifiedTokenPayload): string | null {
+  return payload.sub ?? payload.userId ?? null;
+}
+
 function addUserHeaders(response: NextResponse, payload: UserPayload): NextResponse {
   response.headers.set('x-user-id', payload.sub);
   return response;
@@ -74,13 +84,19 @@ async function resolveUser(request: NextRequest): Promise<UserPayload | null> {
 
   try {
     const payload = await TokenService.verifyAdminAccessToken(token, { audience: 'admin' });
-    const userId = (payload as any).sub ?? payload.userId;
+    const userId = getTokenUserId(payload);
+    if (userId === null) {
+      return null;
+    }
     return { sub: userId, roles: payload.roles ?? [] };
   } catch {
     // Fallback: try verifying as a user token (admin may use user tokens on some routes)
     try {
       const payload = await TokenService.verifyUserAccessToken(token, { audience: 'user' });
-      const userId = (payload as any).sub ?? payload.userId;
+      const userId = getTokenUserId(payload);
+      if (userId === null) {
+        return null;
+      }
       return { sub: userId, roles: payload.roles ?? [] };
     } catch {
       return null;
