@@ -13,7 +13,7 @@ function getTokenFromHeaders(request: Request): string | undefined {
   }
 
   const cookieHeader = request.headers.get('cookie') ?? '';
-  const cookieMatch = cookieHeader.match(/(?:^|;\s*)skillhubcore_accessToken=([^;]+)/);
+  const cookieMatch = cookieHeader.match(/(?:^|;\s*)accessToken=([^;]+)/);
   if (cookieMatch?.[1] !== undefined) {
     return decodeURIComponent(cookieMatch[1]);
   }
@@ -26,7 +26,7 @@ export function hasRequiredRole(payload: SkillHubCoreTokenPayload, requiredRole:
   return payload.roles.includes(requiredRole) || payload.roles.includes('super_admin');
 }
 
-export async function verifySkillHubCoreJWT(token: string, secret: string): Promise<SkillHubCoreTokenPayload> {
+export async function verifyAccessToken(token: string, secret: string): Promise<SkillHubCoreTokenPayload> {
   const { payload } = await jwtVerify(token, new TextEncoder().encode(secret), {
     issuer: 'skillhubcore.in',
   });
@@ -56,7 +56,7 @@ export async function authenticateRequest(
   }
 
   try {
-    const payload = await verifySkillHubCoreJWT(token, env.JWT_SECRET);
+    const payload = await verifyAccessToken(token, env.JWT_SECRET);
     return { payload };
   } catch {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {

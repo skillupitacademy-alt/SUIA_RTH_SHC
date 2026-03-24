@@ -49,7 +49,7 @@ export default function HomePage() {
                 href={gatewayLoginUrl}
                 className="rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-cyan-300 hover:bg-cyan-50"
               >
-                Sign in with SkillHubCore
+                Sign In
               </a>
             </div>
           </div>

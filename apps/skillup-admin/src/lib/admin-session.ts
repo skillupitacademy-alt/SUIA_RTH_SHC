@@ -7,7 +7,7 @@ const COUNSELLOR_ROLES = new Set(['counsellor']);
 
 export async function getSkillUpAdminRoles() {
   const headerStore = await headers();
-  const rawRoles = headerStore.get('x-user-roles') ?? headerStore.get('x-skillhubcore-roles') ?? '';
+  const rawRoles = headerStore.get('x-user-roles') ?? '';
 
   return rawRoles
     .split(',')

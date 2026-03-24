@@ -12,7 +12,7 @@ export default function RegisterPage() {
         <p className="text-[0.65rem] font-black uppercase tracking-[0.45em] text-cyan-600">SkillUp registration</p>
         <h1 className="mt-3 text-4xl font-black tracking-tight text-slate-950">Create your learner profile</h1>
         <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600">
-          Register here to join a program, then sign in through SkillHubCore for portal access across learning and exam surfaces.
+          Register here to join a program, then sign in for portal access across learning and exam surfaces.
         </p>
 
         <div className="mt-8 grid gap-4 lg:grid-cols-2">
@@ -48,7 +48,7 @@ export default function RegisterPage() {
           <aside className="rounded-3xl border border-slate-200 bg-white p-6">
             <p className="text-xs font-black uppercase tracking-[0.35em] text-slate-500">Next step</p>
             <p className="mt-3 text-sm leading-6 text-slate-600">
-              Registration is followed by SkillHubCore authentication and batch allocation by the operations team.
+              Registration is followed by authentication and batch allocation by the operations team.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Link href="/login" className="rounded-full bg-cyan-500 px-5 py-3 text-sm font-bold text-white transition hover:bg-cyan-600">

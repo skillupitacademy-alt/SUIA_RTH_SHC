@@ -61,7 +61,7 @@ export class AuthClient {
       return '';
     }
 
-    const cookieNames = ['refreshToken', 'skillhubcore_refreshToken'];
+    const cookieNames = ['refreshToken'];
     const cookieMap = new Map(
       document.cookie
         .split(';')

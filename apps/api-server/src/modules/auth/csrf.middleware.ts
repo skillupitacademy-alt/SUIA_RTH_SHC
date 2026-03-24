@@ -48,7 +48,6 @@ export async function csrfProtection(_request: NextRequest) {
     // SELF-HEALING: If session is valid, issue a new _token so the client can retry immediately
     // We only provide this helper if the _user is actually logged in (has an access _token)
     const hasSession =
-      _request.cookies.has('skillhubcore_accessToken') ||
       _request.cookies.has('accessToken') ||
       _request.cookies.has('admin_accessToken');
     

@@ -17,7 +17,7 @@ function readCookie(name: string): string | null {
 }
 
 function getAccessToken(): string | null {
-  return readCookie('skillhubcore_accessToken') ?? readCookie('accessToken');
+  return readCookie('accessToken');
 }
 
 function shouldAttachAuthHeader(requestUrl: string): boolean {

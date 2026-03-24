@@ -1,10 +1,7 @@
-import { TokenService, type SkillHubCoreTokenPayload } from '@quiz/auth';
+import { TokenService } from '@quiz/auth';
 import { NextRequest, NextResponse } from 'next/server';
 
-const SKILLHUBCORE_LOGIN_URL =
-  process.env.SKILLHUBCORE_LOGIN_URL ??
-  process.env.NEXT_PUBLIC_SKILLHUBCORE_LOGIN_URL ??
-  '/login';
+const LOGIN_URL = process.env.NEXT_PUBLIC_LOGIN_URL ?? '/login';
 
 const PUBLIC_PATHS = ['/', '/api/healthz', '/api/auth/login', '/api/auth/refresh', '/api/auth/logout', '/api/auth/me'];
 const PROTECTED_PREFIXES = ['/dashboard/', '/dashboard', '/exam/', '/exam', '/onboarding/', '/onboarding', '/reports/', '/reports', '/quiz/', '/quiz', '/profile/', '/profile'];
@@ -26,33 +23,35 @@ function isAuthRoute(pathname: string): boolean {
   return AUTH_PATHS.includes(pathname);
 }
 
-export function getSkillHubCoreToken(request: NextRequest): string | undefined {
-  return request.cookies.get('skillhubcore_accessToken')?.value ?? request.cookies.get('accessToken')?.value;
+export function getAccessToken(request: NextRequest): string | undefined {
+  return request.cookies.get('accessToken')?.value;
 }
 
-export function getSkillHubCoreLoginUrl(request: NextRequest, redirectPath: string): URL {
+function getLoginUrl(request: NextRequest, redirectPath: string): URL {
   const loginUrl =
-    SKILLHUBCORE_LOGIN_URL.startsWith('http://') || SKILLHUBCORE_LOGIN_URL.startsWith('https://')
-      ? new URL(SKILLHUBCORE_LOGIN_URL)
-      : new URL(SKILLHUBCORE_LOGIN_URL, request.url);
+    LOGIN_URL.startsWith('http://') || LOGIN_URL.startsWith('https://')
+      ? new URL(LOGIN_URL)
+      : new URL(LOGIN_URL, request.url);
   loginUrl.searchParams.set('redirect', redirectPath);
   return loginUrl;
 }
 
-function addUserHeaders(response: NextResponse, payload: SkillHubCoreTokenPayload): NextResponse {
+type UserPayload = { sub: string; roles?: string[] };
+
+function addUserHeaders(response: NextResponse, payload: UserPayload): NextResponse {
   response.headers.set('x-user-id', payload.sub);
-  response.headers.set('x-skillhubcore-user-id', payload.sub);
   return response;
 }
 
-async function resolveUser(request: NextRequest): Promise<SkillHubCoreTokenPayload | null> {
-  const token = getSkillHubCoreToken(request);
+async function resolveUser(request: NextRequest): Promise<UserPayload | null> {
+  const token = getAccessToken(request);
   if (token === undefined || token.trim().length === 0) {
     return null;
   }
 
   try {
-    return await TokenService.verifySkillHubCoreJWT(token);
+    const payload = await TokenService.verifyUserAccessToken(token, { audience: 'user' });
+    return { sub: payload.userId, roles: payload.roles };
   } catch {
     return null;
   }
@@ -64,7 +63,7 @@ export async function proxy(request: NextRequest) {
   const redirectPath = `${pathname}${search}`;
 
   if (isProtectedRoute(pathname) && user === null) {
-    return NextResponse.redirect(getSkillHubCoreLoginUrl(request, redirectPath));
+    return NextResponse.redirect(getLoginUrl(request, redirectPath));
   }
 
   if (user !== null && isAuthRoute(pathname)) {
@@ -74,7 +73,6 @@ export async function proxy(request: NextRequest) {
   if (user !== null) {
     const headers = new Headers(request.headers);
     headers.set('x-user-id', user.sub);
-    headers.set('x-skillhubcore-user-id', user.sub);
     return addUserHeaders(NextResponse.next({ request: { headers } }), user);
   }
 

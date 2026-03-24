@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 const ALLOWED_ROLES = new Set(['admin', 'super_admin']);
 
 export function getRequestRoles(request: NextRequest): string[] {
-  const rawRoles = request.headers.get('x-user-roles') ?? request.headers.get('x-skillhubcore-roles') ?? '';
+  const rawRoles = request.headers.get('x-user-roles') ?? '';
   return rawRoles
     .split(',')
     .map((role) => role.trim())
