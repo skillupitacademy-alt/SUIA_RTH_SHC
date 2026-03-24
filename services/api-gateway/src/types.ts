@@ -49,6 +49,7 @@ export type GatewayRoute = {
     | 'PLACEMENT_URL'
     | 'ADMIN_URL'
   >;
+  upstreamPathPrefix?: string;
   public?: boolean;
   auth?: boolean;
   requireRole?: 'admin';

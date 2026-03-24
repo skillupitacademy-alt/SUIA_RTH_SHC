@@ -8,6 +8,15 @@ import { createRequestIdMiddleware } from '@/middleware/request-id';
 import { resolveGatewayRoute } from '@/routes/routing-table';
 import type { GatewayBindings, GatewayVariables } from '@/types';
 
+function rewritePath(pathname: string, routePrefix: string, upstreamPathPrefix?: string): string | undefined {
+  if (upstreamPathPrefix === undefined) {
+    return undefined;
+  }
+
+  const suffix = pathname.slice(routePrefix.length);
+  return `${upstreamPathPrefix}${suffix}`;
+}
+
 export const createApp = () => {
   const app = new Hono<{ Bindings: GatewayBindings; Variables: GatewayVariables }>();
 
@@ -58,6 +67,7 @@ export const createApp = () => {
       requestId: c.get('requestId'),
       gatewaySecret: c.env.INTERNAL_GATEWAY_SECRET,
       userId,
+      upstreamPath: rewritePath(requestUrl.pathname, route.prefix, route.upstreamPathPrefix),
     });
   });
 

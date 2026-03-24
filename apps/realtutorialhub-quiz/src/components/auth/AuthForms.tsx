@@ -64,7 +64,7 @@ function normalizeRedirectTarget(rawTarget: string | null): string {
         return rawTarget;
     }
 
-    return '/';
+    return '/dashboard';
 }
 
 function getLoginErrorMessage(response: Response | null, payload: LoginResponse | null, fallback: string): string {

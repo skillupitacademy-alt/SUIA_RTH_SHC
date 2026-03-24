@@ -2,11 +2,13 @@ export type ProxyRequestOptions = {
   requestId: string;
   gatewaySecret: string;
   userId?: string;
+  upstreamPath?: string;
 };
 
 export async function proxyRequest(request: Request, upstream: string, options: ProxyRequestOptions): Promise<Response> {
   const url = new URL(request.url);
-  const upstreamUrl = new URL(`${url.pathname}${url.search}`, upstream).toString();
+  const targetPath = options.upstreamPath ?? url.pathname;
+  const upstreamUrl = new URL(`${targetPath}${url.search}`, upstream).toString();
   const headers = new Headers(request.headers);
 
   headers.set('X-Request-ID', options.requestId);

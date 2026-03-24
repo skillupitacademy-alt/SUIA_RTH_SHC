@@ -128,7 +128,7 @@ function LoginForm() {
       const safeRedirect =
         typeof redirectTarget === 'string' && redirectTarget.startsWith('/') && !redirectTarget.startsWith('//')
           ? redirectTarget
-          : '/';
+          : '/dashboard';
 
       router.replace(safeRedirect);
     } catch (err: unknown) {

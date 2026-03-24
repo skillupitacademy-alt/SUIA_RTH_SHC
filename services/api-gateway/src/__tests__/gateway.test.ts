@@ -138,6 +138,38 @@ describe('api-gateway', () => {
     expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(env.SKILLHUBCORE_URL);
   });
 
+  it.each([
+    ['dashboard', 'GET', 'https://api.example.com/dashboard?range=7d&page=1&limit=3', '/api/dashboard?range=7d&page=1&limit=3'],
+    ['dashboard metadata', 'GET', 'https://api.example.com/dashboard/metadata', '/api/dashboard/metadata'],
+    ['dashboard breakdown', 'GET', 'https://api.example.com/dashboard/breakdown?range=28d', '/api/dashboard/breakdown?range=28d'],
+    ['dashboard trend', 'GET', 'https://api.example.com/dashboard/trend?range=7d', '/api/dashboard/trend?range=7d'],
+    ['domains', 'GET', 'https://api.example.com/domains?domainId=d1', '/api/domains?domainId=d1'],
+    ['subjects', 'GET', 'https://api.example.com/subjects?domainId=d1', '/api/subjects?domainId=d1'],
+    ['topics', 'GET', 'https://api.example.com/topics?subjectId=s1', '/api/topics?subjectId=s1'],
+    ['subtopics', 'GET', 'https://api.example.com/subtopics?topicId=t1', '/api/subtopics?topicId=t1'],
+    ['quiz count', 'POST', 'https://api.example.com/quiz/count', '/api/quiz/count'],
+  ] as const)('rewrites quiz hierarchy route: %s', async (_label, method, url, expectedPath) => {
+    const token = await makeToken(['student']);
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
+
+    const response = await app.request(url, {
+      method,
+      headers: {
+        authorization: `Bearer ${token}`,
+        ...(method === 'POST' ? { 'content-type': 'application/json' } : {}),
+      },
+      ...(method === 'POST' ? { body: JSON.stringify({ domainId: 'd1' }) } : {}),
+    }, env);
+
+    expect(response.status).toBe(200);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(`${env.EXAM_SERVICE_URL}${expectedPath}`);
+    const [, init] = fetchSpy.mock.calls[0] ?? [];
+    const headers = new Headers((init as RequestInit | undefined)?.headers);
+    expect(headers.get('X-Gateway-Secret')).toBe(env.INTERNAL_GATEWAY_SECRET);
+    expect(headers.get('X-User-ID')).toBe('user-123');
+  });
+
   it('proxies valid jwt with user headers', async () => {
     const token = await makeToken(['student']);
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));

@@ -47,7 +47,46 @@ export class AuthClient {
   }
 
   async logout() {
-    return this.client.post('/auth/logout', {}, { timeout: TIMEOUTS.STANDARD });
+    return this.client.post(
+      '/auth/logout',
+      {
+        refreshToken: this.getStoredRefreshToken(),
+      },
+      { timeout: TIMEOUTS.STANDARD }
+    );
+  }
+
+  private getStoredRefreshToken(): string {
+    if (typeof document === 'undefined') {
+      return '';
+    }
+
+    const cookieNames = ['refreshToken', 'skillhubcore_refreshToken'];
+    const cookieMap = new Map(
+      document.cookie
+        .split(';')
+        .map((part) => part.trim())
+        .filter(Boolean)
+        .map((entry) => {
+          const separatorIndex = entry.indexOf('=');
+          if (separatorIndex === -1) {
+            return [entry, ''] as const;
+          }
+
+          const key = entry.slice(0, separatorIndex);
+          const value = entry.slice(separatorIndex + 1);
+          return [key, decodeURIComponent(value)] as const;
+        }),
+    );
+
+    for (const name of cookieNames) {
+      const token = cookieMap.get(name);
+      if (typeof token === 'string' && token.trim().length > 0) {
+        return token.trim();
+      }
+    }
+
+    return '';
   }
 
   async refresh(examId?: string) {
