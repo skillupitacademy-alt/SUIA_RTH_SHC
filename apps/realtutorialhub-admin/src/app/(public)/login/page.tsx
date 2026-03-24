@@ -5,12 +5,21 @@ import { useRouter } from 'next/navigation';
 import { type FormEvent, useState } from 'react';
 
 import { getApiBase } from '@/utils/apiBase';
+import { useAuthStore } from '@/store/auth-store';
 
 const LOGIN_ENDPOINT = `${getApiBase()}/auth/login`;
 
 type LoginResponse = {
   accessToken?: string;
   refreshToken?: string;
+  user?: {
+    id: string;
+    email: string;
+    name?: string;
+    isAdmin?: boolean;
+    role?: string;
+    onboarded?: boolean;
+  };
   message?: string;
   error?: string;
   _error?: string;
@@ -32,6 +41,7 @@ function LoginForm() {
     email: '',
     password: '',
   });
+  const authLogin = useAuthStore((s) => s.login);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -70,6 +80,18 @@ function LoginForm() {
 
       if (accessToken.length === 0) {
         throw new Error('Authentication failed: missing access token.');
+      }
+
+      // Store user in auth store before redirect to prevent race condition
+      if (payload?.user) {
+        authLogin({
+          id: payload.user.id,
+          name: payload.user.name ?? '',
+          email: payload.user.email,
+          isAdmin: payload.user.isAdmin ?? false,
+          role: payload.user.role ?? 'admin',
+          onboarded: payload.user.onboarded ?? false,
+        });
       }
 
       router.replace('/dashboard');
