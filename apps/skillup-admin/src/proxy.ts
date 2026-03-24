@@ -6,7 +6,7 @@ const SKILLHUBCORE_LOGIN_URL =
   process.env.NEXT_PUBLIC_SKILLHUBCORE_LOGIN_URL ??
   '/login';
 
-const PUBLIC_PATHS = ['/api/healthz', '/login'];
+const PUBLIC_PATHS = ['/api/healthz', '/login', '/api/auth/login', '/api/auth/refresh', '/api/auth/logout', '/api/auth/me'];
 const REQUIRED_ROLES = ['admin', 'super_admin'];
 
 function getSkillHubCoreToken(request: NextRequest): string | undefined {
