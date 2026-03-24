@@ -5,10 +5,82 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useAuthStore } from '@/store/auth-store';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { apiClient } from '@quiz/api-client';
 import { recordClientMetric, METRICS } from '@quiz/observability';
 
+const LOGIN_ENDPOINT = 'https://api.skillhubcore.in/auth/login';
+
+type LoginResponse = {
+    accessToken?: string;
+    refreshToken?: string;
+    user?: {
+        id?: string;
+        name?: string;
+        email?: string;
+        isAdmin?: boolean;
+        role?: string;
+        onboarded?: boolean;
+    };
+    error?: string;
+    message?: string;
+    _error?: string;
+};
+
+function decodeJwtExpiry(token: string): string | null {
+    try {
+        const [, payload] = token.split('.');
+        if (payload === undefined) return null;
+
+        const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
+        const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '=');
+        const parsed = JSON.parse(atob(padded));
+        if (typeof parsed.exp !== 'number') return null;
+
+        return new Date(parsed.exp * 1000).toISOString();
+    } catch {
+        return null;
+    }
+}
+
+function setClientCookie(name: string, value: string, expiresAt: string | null): void {
+    const parts = [`${name}=${encodeURIComponent(value)}`, 'path=/', 'SameSite=Lax'];
+
+    if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
+        parts.push('Secure');
+    }
+
+    if (expiresAt !== null && expiresAt !== '') {
+        parts.push(`expires=${new Date(expiresAt).toUTCString()}`);
+    }
+
+    document.cookie = parts.join('; ');
+}
+
+function normalizeRedirectTarget(rawTarget: string | null): string {
+    if (typeof rawTarget === 'string' && rawTarget.startsWith('/') && !rawTarget.startsWith('//')) {
+        return rawTarget;
+    }
+
+    return '/';
+}
+
+function getLoginErrorMessage(response: Response | null, payload: LoginResponse | null, fallback: string): string {
+    const candidate = payload?.error ?? payload?.message ?? payload?._error;
+    if (typeof candidate === 'string' && candidate.trim().length > 0) {
+        return candidate.trim();
+    }
+
+    if (response !== null && response.status === 401) {
+        return 'Invalid credentials';
+    }
+
+    if (response !== null && response.status === 403) {
+        return 'Access denied: this account is not permitted for this portal.';
+    }
+
+    return fallback;
+}
 
 export function LoginForm() {
     const [showPassword, setShowPassword] = useState(false);
@@ -16,6 +88,8 @@ export function LoginForm() {
     const [error, setError] = useState<string | null>(null);
     const login = useAuthStore((s) => s.login);
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const redirectTarget = normalizeRedirectTarget(searchParams.get('redirect'));
 
     const toErrorMessage = (err: unknown): string => {
         if (err instanceof TypeError && err.message === 'Failed to fetch') {
@@ -38,13 +112,58 @@ export function LoginForm() {
             const email = formData.get('email')?.toString() ?? '';
             const password = formData.get('password')?.toString() ?? '';
 
-            // Real API Call
-            apiClient.client.setPortalIdentity('user');
-            const { user } = await apiClient.auth.login(email, password);
-            if (!user) throw new Error("Login succeeded but no user data was returned.");
-            login({ ...user, onboarded: user.onboarded ?? false });
+            const response = await fetch(LOGIN_ENDPOINT, {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    accept: 'application/json',
+                    'x-portal-identity': 'user',
+                },
+                body: JSON.stringify({
+                    email,
+                    password,
+                    platform: 'realtutorialhub',
+                }),
+            });
+
+            const payload = (await response.json().catch(() => null)) as LoginResponse | null;
+
+            if (!response.ok) {
+                throw new Error(getLoginErrorMessage(response, payload, 'Authentication failed'));
+            }
+
+            const accessToken = typeof payload?.accessToken === 'string' ? payload.accessToken.trim() : '';
+            const refreshToken = typeof payload?.refreshToken === 'string' ? payload.refreshToken.trim() : '';
+
+            if (accessToken.length === 0) {
+                throw new Error('Authentication failed: missing access token.');
+            }
+
+            const accessExpiry = decodeJwtExpiry(accessToken);
+            const refreshExpiry = refreshToken.length > 0 ? decodeJwtExpiry(refreshToken) : null;
+
+            setClientCookie('skillhubcore_accessToken', accessToken, accessExpiry);
+            setClientCookie('accessToken', accessToken, accessExpiry);
+
+            if (refreshToken.length > 0) {
+                setClientCookie('skillhubcore_refreshToken', refreshToken, refreshExpiry);
+                setClientCookie('refreshToken', refreshToken, refreshExpiry);
+            }
+
+            const user = payload?.user;
+            if (user !== undefined) {
+                login({
+                    id: user.id ?? email,
+                    name: user.name ?? email,
+                    email: user.email ?? email,
+                    isAdmin: user.isAdmin ?? false,
+                    role: user.role,
+                    onboarded: user.onboarded ?? false,
+                });
+            }
             await recordClientMetric(METRICS.AUTH.LOGIN, 1, { method: 'email', outcome: 'success' });
-            router.push('/dashboard');
+            router.push(redirectTarget);
         } catch (err: unknown) {
             setError(toErrorMessage(err));
         } finally {
