@@ -12,7 +12,9 @@ export async function proxyRequest(request: Request, upstream: string, options: 
   const headers = new Headers(request.headers);
 
   headers.set('X-Request-ID', options.requestId);
-  headers.set('X-Gateway-Secret', options.gatewaySecret);
+  if (typeof options.gatewaySecret === 'string' && options.gatewaySecret.length > 0) {
+    headers.set('X-Gateway-Secret', options.gatewaySecret);
+  }
   if (options.userId !== undefined) {
     headers.set('X-User-ID', options.userId);
   }
