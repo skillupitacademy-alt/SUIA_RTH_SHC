@@ -17,9 +17,9 @@ function getApiUrl(): string {
   if (process.env.NEXT_PUBLIC_API_URL) {
     let url = process.env.NEXT_PUBLIC_API_URL.trim();
     url = url.replace(/\/+$/, ''); // strip trailing slash(es)
-    // Ensure the path ends with /api to hit Next routes correctly
-    if (!url.toLowerCase().endsWith('/api')) {
-      url = `${url}/api`;
+    // Normalize gateway base URLs so callers can append `/auth`, `/notifications`, etc.
+    if (url.toLowerCase().endsWith('/api')) {
+      url = url.slice(0, -4);
     }
     return url;
   }

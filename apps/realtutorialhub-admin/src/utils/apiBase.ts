@@ -9,6 +9,6 @@ export function getApiBase(): string {
 
   const withoutTrailingSlash = raw.replace(/\/+$/, "");
   return withoutTrailingSlash.toLowerCase().endsWith("/api")
-    ? withoutTrailingSlash
-    : `${withoutTrailingSlash}/api`;
+    ? withoutTrailingSlash.slice(0, -4)
+    : withoutTrailingSlash;
 }
