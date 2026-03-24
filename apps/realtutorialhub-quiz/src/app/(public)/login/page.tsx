@@ -132,20 +132,13 @@ function LoginForm() {
         throw new Error(toErrorMessage(response, payload, 'Authentication failed'));
       }
 
+      // Verify login succeeded — the API server already set httpOnly cookies
+      // via Set-Cookie header (credentials: 'include' ensures the browser stores them).
+      // We do NOT create client-side cookies to avoid scope conflicts.
       const accessToken = typeof payload?.accessToken === 'string' ? payload.accessToken.trim() : '';
-      const refreshToken = typeof payload?.refreshToken === 'string' ? payload.refreshToken.trim() : '';
 
       if (accessToken.length === 0) {
         throw new Error('Authentication failed: missing access token.');
-      }
-
-      const accessExpiry = decodeJwtExpiry(accessToken);
-      const refreshExpiry = refreshToken.length > 0 ? decodeJwtExpiry(refreshToken) : null;
-
-      setClientCookie('accessToken', accessToken, accessExpiry);
-
-      if (refreshToken.length > 0) {
-        setClientCookie('refreshToken', refreshToken, refreshExpiry);
       }
 
       const redirectTarget = searchParams.get('redirect');

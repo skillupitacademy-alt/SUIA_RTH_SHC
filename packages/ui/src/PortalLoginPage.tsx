@@ -164,8 +164,9 @@ export function PortalLoginPage({
         throw new Error(toErrorMessage(response, payload, 'Authentication failed'));
       }
 
+      // API server already set httpOnly cookies via Set-Cookie header.
+      // We do NOT create client-side cookies to avoid scope conflicts.
       const accessToken = typeof payload?.accessToken === 'string' ? payload.accessToken.trim() : '';
-      const refreshToken = typeof payload?.refreshToken === 'string' ? payload.refreshToken.trim() : '';
       const roles = Array.isArray(payload?.user?.roles) ? payload?.user?.roles ?? [] : [];
 
       if (accessToken.length === 0) {
@@ -174,15 +175,6 @@ export function PortalLoginPage({
 
       if (roles.some((role) => allowedRoles.includes(role)) === false) {
         throw new Error(`Access denied: ${portalName} privileges required.`);
-      }
-
-      const accessExpiry = decodeJwtExpiry(accessToken);
-      const refreshExpiry = refreshToken.length > 0 ? decodeJwtExpiry(refreshToken) : null;
-
-      setClientCookie('accessToken', accessToken, accessExpiry);
-
-      if (refreshToken.length > 0) {
-        setClientCookie('refreshToken', refreshToken, refreshExpiry);
       }
 
       window.location.replace(redirectTarget);
