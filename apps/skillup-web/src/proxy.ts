@@ -47,7 +47,8 @@ async function resolveUser(request: NextRequest): Promise<UserPayload | null> {
 
   try {
     const payload = await TokenService.verifyUserAccessToken(token, { audience: 'user' });
-    return { sub: payload.userId, roles: payload.roles ?? [] };
+    const userId = (payload as any).sub ?? payload.userId;
+    return { sub: userId, roles: payload.roles ?? [] };
   } catch {
     return null;
   }

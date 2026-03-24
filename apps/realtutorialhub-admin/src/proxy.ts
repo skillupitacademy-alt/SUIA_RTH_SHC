@@ -74,12 +74,14 @@ async function resolveUser(request: NextRequest): Promise<UserPayload | null> {
 
   try {
     const payload = await TokenService.verifyAdminAccessToken(token, { audience: 'admin' });
-    return { sub: payload.userId, roles: payload.roles ?? [] };
+    const userId = (payload as any).sub ?? payload.userId;
+    return { sub: userId, roles: payload.roles ?? [] };
   } catch {
     // Fallback: try verifying as a user token (admin may use user tokens on some routes)
     try {
       const payload = await TokenService.verifyUserAccessToken(token, { audience: 'user' });
-      return { sub: payload.userId, roles: payload.roles ?? [] };
+      const userId = (payload as any).sub ?? payload.userId;
+      return { sub: userId, roles: payload.roles ?? [] };
     } catch {
       return null;
     }
