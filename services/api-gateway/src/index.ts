@@ -65,11 +65,14 @@ export const createApp = () => {
       c.set('user', authResult.payload);
     }
 
+    // Normalize pathname — strip /api prefix to match route prefixes
+    const normalizedPath = requestUrl.pathname.startsWith('/api/') ? requestUrl.pathname.slice(4) : requestUrl.pathname;
+
     return proxyRequest(c.req.raw, upstream, {
       requestId: c.get('requestId'),
       gatewaySecret: c.env.INTERNAL_GATEWAY_SECRET,
       userId,
-      upstreamPath: rewritePath(requestUrl.pathname, route.prefix, route.upstreamPathPrefix),
+      upstreamPath: rewritePath(normalizedPath, route.prefix, route.upstreamPathPrefix),
     });
   });
 

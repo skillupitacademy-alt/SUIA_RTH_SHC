@@ -51,8 +51,12 @@ function matchesPrefix(pathname: string, prefix: string): boolean {
 }
 
 export function resolveGatewayRoute(hostname: string, pathname: string): GatewayRoute | undefined {
+  // The FetchClient sends requests with /api prefix (e.g. /api/auth/me, /api/dashboard).
+  // Strip it so routes defined as /auth, /dashboard, etc. still match.
+  const normalizedPath = pathname.startsWith('/api/') ? pathname.slice(4) : pathname;
+
   return ROUTING_TABLE
-    .filter((route) => (route.host === undefined || route.host === hostname) && matchesPrefix(pathname, route.prefix))
+    .filter((route) => (route.host === undefined || route.host === hostname) && matchesPrefix(normalizedPath, route.prefix))
     .sort((left, right) => {
       const leftHostScore = left.host === hostname ? 1 : 0;
       const rightHostScore = right.host === hostname ? 1 : 0;
