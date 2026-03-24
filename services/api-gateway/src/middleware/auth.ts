@@ -27,20 +27,28 @@ export function hasRequiredRole(payload: SkillHubCoreTokenPayload, requiredRole:
 }
 
 export async function verifyAccessToken(token: string, secret: string): Promise<SkillHubCoreTokenPayload> {
-  const { payload } = await jwtVerify(token, new TextEncoder().encode(secret), {
-    issuer: 'skillhubcore.in',
-  });
+  // Do NOT require issuer — quiz-api-server tokens do not set one.
+  // SkillHubCore tokens may have issuer='skillhubcore.in', but that's optional now.
+  const { payload } = await jwtVerify(token, new TextEncoder().encode(secret));
 
-  if (
-    typeof payload.sub !== 'string' ||
-    payload.sub.trim().length === 0 ||
-    !Array.isArray((payload as { roles?: unknown }).roles) ||
-    !Array.isArray((payload as { subscriptions?: unknown }).subscriptions)
-  ) {
-    throw new Error('Invalid SkillHubCore token payload');
+  const sub = typeof payload.sub === 'string' ? payload.sub.trim() : '';
+  // quiz-api-server stores userId in a custom claim; fall back to sub
+  const userId = typeof (payload as any).userId === 'string' ? (payload as any).userId : sub;
+
+  if (userId.length === 0) {
+    throw new Error('Invalid token payload: missing user identifier');
   }
 
-  return payload as unknown as SkillHubCoreTokenPayload;
+  // Build a compatible payload shape — quiz tokens may not have roles/subscriptions
+  const roles = Array.isArray((payload as any).roles) ? (payload as any).roles : ['user'];
+  const subscriptions = Array.isArray((payload as any).subscriptions) ? (payload as any).subscriptions : [];
+
+  return {
+    ...payload,
+    sub: userId,
+    roles,
+    subscriptions,
+  } as unknown as SkillHubCoreTokenPayload;
 }
 
 export async function authenticateRequest(
