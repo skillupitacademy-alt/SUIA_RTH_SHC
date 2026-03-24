@@ -1,3 +1,5 @@
+import { resolveCookieDomain } from '@/lib/cookie-domain';
+
 /**
  * Production Configuration
  * This file is used when NODE_ENV === 'production'
@@ -22,10 +24,7 @@ export const config = {
       httpOnly: false,
       secure: true,
       sameSite: 'none' as const,
-      domain: (() => {
-        const raw = process.env.COOKIE_DOMAIN;
-        return raw === undefined || raw === null || raw === '' ? undefined : raw;
-      })(),
+      domain: resolveCookieDomain(process.env.COOKIE_DOMAIN),
     },
   },
 

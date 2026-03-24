@@ -6,6 +6,7 @@ import { withCorrelationId } from '@/lib/correlation-id.middleware';
 import { recordCounter } from '@/lib/metrics';
 import { AdminAuthService } from '@/modules/auth/admin-auth.service';
 import { getClientIp } from '@/modules/auth/client-ip';
+import { resolveCookieDomain } from '@/lib/cookie-domain';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -26,8 +27,7 @@ async function handler(_req: Request, body: z.infer<typeof loginSchema>) {
   
   const result = await AdminAuthService.login(email, password, ip, audience);
 
-  const rawDomain = process.env.COOKIE_DOMAIN;
-  const cookieDomain = rawDomain === undefined || rawDomain === null || rawDomain === '' ? undefined : rawDomain;
+  const cookieDomain = resolveCookieDomain(process.env.COOKIE_DOMAIN, _req.url ? new URL(_req.url).hostname : undefined);
 
   const user = {
       id: result.user.id,

@@ -11,6 +11,7 @@ import { getClientIp } from '@/modules/auth/client-ip';
 import { setCsrfToken } from '@/modules/auth/csrf.middleware';
 import { container } from '@/modules/core/container';
 import { loginSchema } from '@/schemas/auth.schemas';
+import { resolveCookieDomain } from '@/lib/cookie-domain';
 
 export const dynamic = 'force-dynamic';
 
@@ -53,8 +54,7 @@ async function handler(req: NextRequest) {
       expiresAt: null,
     });
 
-    const rawDomain = process.env.COOKIE_DOMAIN;
-    const cookieDomain = rawDomain === undefined || rawDomain === null || rawDomain === '' ? undefined : rawDomain;
+    const cookieDomain = resolveCookieDomain(process.env.COOKIE_DOMAIN, req.nextUrl.hostname);
 
     const accessTokenCookieName = isAdmin === true ? 'admin_accessToken' : 'accessToken';
     response.cookies.set(accessTokenCookieName, accessToken, {

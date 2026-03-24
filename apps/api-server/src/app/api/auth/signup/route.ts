@@ -11,6 +11,7 @@ import { getClientIp } from '@/modules/auth/client-ip';
 import { setCsrfToken } from '@/modules/auth/csrf.middleware';
 import { container } from '@/modules/core/container';
 import { signupSchema } from '@/schemas/auth.schemas';
+import { resolveCookieDomain } from '@/lib/cookie-domain';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,8 +46,7 @@ async function handler(_req: NextRequest) {
       accessToken
     });
 
-    const rawDomain = process.env.COOKIE_DOMAIN;
-    const cookieDomain = rawDomain === undefined || rawDomain === null || rawDomain === '' ? undefined : rawDomain;
+    const cookieDomain = resolveCookieDomain(process.env.COOKIE_DOMAIN, _req.nextUrl.hostname);
 
     // Set HttpOnly cookies for Access Token
     response.cookies.set('accessToken', accessToken, {

@@ -8,6 +8,7 @@ import { AuthService } from '@/modules/auth/auth.service';
 import { getClientIp } from '@/modules/auth/client-ip';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
+import { resolveCookieDomain } from '@/lib/cookie-domain';
 
 export const dynamic = 'force-dynamic';
 
@@ -58,8 +59,7 @@ async function handler(_req: NextRequest) {
 
     const response = ApiResponse.success({ success: true, expiresAt });
 
-    const rawDomain = process.env.COOKIE_DOMAIN;
-    const cookieDomain = rawDomain === undefined || rawDomain === null || rawDomain === '' ? undefined : rawDomain;
+    const cookieDomain = resolveCookieDomain(process.env.COOKIE_DOMAIN, _req.nextUrl.hostname);
 
     const accessTokenCookieName = portalIdentity === 'infrastructure' ? 'infra_accessToken' : portalIdentity === 'admin' ? 'admin_accessToken' : 'accessToken';
     response.cookies.set(accessTokenCookieName, accessToken, {

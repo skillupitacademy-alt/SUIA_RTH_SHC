@@ -43,4 +43,18 @@ describe('production.config', () => {
     expect(config.csrf.cookieSettings.domain).toBe('example.com');
     process.env = originalEnv;
   });
+
+  it('normalizes api host cookie domains to the shared parent domain', async () => {
+    const originalEnv = { ...process.env };
+    process.env.ALLOWED_ORIGINS = 'https://a.test';
+    process.env.NEXT_PUBLIC_WEB_APP_URL = 'https://web.test';
+    process.env.NEXT_PUBLIC_ADMIN_URL = 'https://admin.test';
+    process.env.COOKIE_DOMAIN = 'https://api.realtutorialhub.com';
+
+    vi.resetModules();
+    const { config } = await import('../production.config');
+
+    expect(config.csrf.cookieSettings.domain).toBe('.realtutorialhub.com');
+    process.env = originalEnv;
+  });
 });
