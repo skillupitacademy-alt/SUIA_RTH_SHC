@@ -48,6 +48,8 @@ async function handler(req: NextRequest) {
 
     const response = ApiResponse.success({
       user: userDto,
+      accessToken,
+      refreshToken,
       expiresAt: null,
     });
 
