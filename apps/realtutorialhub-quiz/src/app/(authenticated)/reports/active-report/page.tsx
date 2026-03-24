@@ -25,7 +25,6 @@ import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ActionPlanItem, apiClient } from "@quiz/api-client";
 import { cn } from "@/lib/utils";
-import { AuthGuard } from "@/components/auth/AuthGuard";
 import { useAuthStore } from "@/store/auth-store";
 import { clientLogger } from '@/utils/clientLogger';
 
@@ -238,7 +237,7 @@ function ReportContent() {
     if (!reportData) return null;
 
     return (
-        <AuthGuard>
+        <>
             <div className="min-h-[calc(100vh-64px)] bg-muted/5 py-12 px-4 md:px-8 lg:px-12">
                 <div className="w-full max-w-[95%] mx-auto space-y-12">
                     {/* Actions Header */}
@@ -440,7 +439,7 @@ function ReportContent() {
                     </div>
                 </div>
             </div>
-        </AuthGuard>
+        </>
     );
 }
 
