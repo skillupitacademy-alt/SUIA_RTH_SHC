@@ -52,8 +52,34 @@ function decodeJwtExpiry(token: string): string | null {
   }
 }
 
+function getCookieDomain(): string | undefined {
+  if (typeof window === 'undefined') return undefined;
+
+  const explicit = process.env.NEXT_PUBLIC_COOKIE_DOMAIN?.trim();
+  if (explicit !== undefined && explicit.length > 0) {
+    return explicit.startsWith('.') ? explicit : `.${explicit}`;
+  }
+
+  const { hostname } = window.location;
+  if (hostname === 'localhost' || /^\d{1,3}(?:\.\d{1,3}){3}$/.test(hostname)) {
+    return undefined;
+  }
+
+  const segments = hostname.split('.');
+  if (segments.length < 3) {
+    return undefined;
+  }
+
+  return `.${segments.slice(-2).join('.')}`;
+}
+
 function setClientCookie(name: string, value: string, expiresAt: string | null): void {
   const parts = [`${name}=${encodeURIComponent(value)}`, 'path=/', 'SameSite=Lax'];
+  const cookieDomain = getCookieDomain();
+
+  if (cookieDomain !== undefined) {
+    parts.push(`Domain=${cookieDomain}`);
+  }
 
   if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
     parts.push('Secure');
@@ -154,11 +180,9 @@ export function PortalLoginPage({
       const refreshExpiry = refreshToken.length > 0 ? decodeJwtExpiry(refreshToken) : null;
 
       setClientCookie('skillhubcore_accessToken', accessToken, accessExpiry);
-      setClientCookie('accessToken', accessToken, accessExpiry);
 
       if (refreshToken.length > 0) {
         setClientCookie('skillhubcore_refreshToken', refreshToken, refreshExpiry);
-        setClientCookie('refreshToken', refreshToken, refreshExpiry);
       }
 
       window.location.replace(redirectTarget);

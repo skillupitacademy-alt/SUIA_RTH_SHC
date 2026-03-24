@@ -105,11 +105,9 @@ function LoginForm() {
       const refreshExpiry = refreshToken.length > 0 ? decodeJwtExpiry(refreshToken) : null;
 
       setClientCookie('skillhubcore_accessToken', accessToken, accessExpiry);
-      setClientCookie('accessToken', accessToken, accessExpiry);
 
       if (refreshToken.length > 0) {
         setClientCookie('skillhubcore_refreshToken', refreshToken, refreshExpiry);
-        setClientCookie('refreshToken', refreshToken, refreshExpiry);
       }
 
       router.replace('/dashboard');

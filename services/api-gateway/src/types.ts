@@ -8,6 +8,7 @@ export interface SkillHubCoreTokenPayload {
 
 export interface GatewayBindings {
   ENVIRONMENT?: string;
+  LAST_VALIDATION_TIMESTAMP?: string;
   JWT_SECRET: string;
   INTERNAL_GATEWAY_SECRET: string;
   UPSTASH_REDIS_REST_URL: string;

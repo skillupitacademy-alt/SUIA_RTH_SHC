@@ -42,6 +42,7 @@ apps/api-server/coverage-final-*.txt
 *.tsbuildinfo
 build_error_cache.log
 coverage/
+validation-report.json
 
 # playwright artifacts/reports
 playwright-report

@@ -1,21 +1,25 @@
 #!/usr/bin/env node
 
-import { readFile, readdir, stat } from 'node:fs/promises';
+import crypto from 'node:crypto';
+import { readFile, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
 
 const ROOT = process.cwd();
 const LIVE = process.argv.includes('--live') || process.env.VALIDATE_GATEWAY_LIVE === '1';
+const GATEWAY_BASE_URL = normalizeBaseUrl(process.env.VALIDATE_GATEWAY_BASE_URL ?? process.env.GATEWAY_BASE_URL);
 
 const ROUTE_TABLE_PATH = path.join(ROOT, 'services/api-gateway/src/routes/routing-table.ts');
 const WRANGLER_PATH = path.join(ROOT, 'services/api-gateway/wrangler.toml');
 const DEPLOY_WORKFLOW_PATH = path.join(ROOT, '.github/workflows/deploy-gateway.yml');
+const GATEWAY_TEST_PATH = path.join(ROOT, 'services/api-gateway/src/__tests__/gateway.test.ts');
 const API_SERVER_ROOT = path.join(ROOT, 'apps/api-server/src/app/api');
+const REPORT_PATH = path.join(ROOT, 'validation-report.json');
 
-const API_SERVER_KEYS = new Set(['EXAM_SERVICE_URL', 'NOTIFICATION_URL']);
-const REQUIRED_SERVICES_FALLBACK = ['EXAM_SERVICE_URL', 'NOTIFICATION_URL', 'SKILLHUBCORE_URL'];
-const OPTIONAL_SERVICES_FALLBACK = ['CRM_SERVICE_URL', 'PAYMENT_SERVICE_URL', 'PLACEMENT_URL'];
-const IS_DEV = (process.env.NODE_ENV ?? 'production') === 'development';
+const WEB_UPSTREAM_KEYS = new Set(['SKILLUP_WEB_URL', 'SKILLUP_ADMIN_URL', 'FACULTY_URL']);
+const LOCAL_API_KEYS = new Set(['EXAM_SERVICE_URL', 'NOTIFICATION_URL']);
+const OPTIONAL_SERVICE_KEYS = new Set(['CRM_SERVICE_URL', 'PAYMENT_SERVICE_URL', 'PLACEMENT_URL']);
+const PLACEHOLDER_ENDPOINT_HOSTS = new Set(['api.example.com', 'localhost', '127.0.0.1', '0.0.0.0']);
 
 const LIVE_PROBES = {
   SKILLHUBCORE_URL: { path: '/healthz/', ok: [200] },
@@ -47,6 +51,16 @@ const FETCH_ENDPOINT_PATTERNS = [
   },
 ];
 
+function normalizeBaseUrl(value) {
+  if (typeof value !== 'string' || value.trim().length === 0) return null;
+  try {
+    const url = new URL(value);
+    return `${url.origin}${url.pathname.replace(/\/+$/, '')}`;
+  } catch {
+    return null;
+  }
+}
+
 function isIgnorableFile(filePath) {
   return (
     filePath.includes(`${path.sep}node_modules${path.sep}`) ||
@@ -71,9 +85,7 @@ async function walkFiles(dir, predicate = () => true) {
       files.push(...await walkFiles(fullPath, predicate));
       continue;
     }
-    if (entry.isFile() && predicate(fullPath)) {
-      files.push(fullPath);
-    }
+    if (entry.isFile() && predicate(fullPath)) files.push(fullPath);
   }
   return files;
 }
@@ -88,61 +100,37 @@ function splitTopLevelComma(source) {
   let depth = 0;
   let quote = null;
   let escaped = false;
-
-  for (let i = 0; i < source.length; i += 1) {
-    const ch = source[i];
-
+  for (const ch of source) {
     if (escaped) {
       current += ch;
       escaped = false;
       continue;
     }
-
     if (ch === '\\') {
       current += ch;
       escaped = true;
       continue;
     }
-
     if (quote !== null) {
       current += ch;
-      if (ch === quote) {
-        quote = null;
-      }
+      if (ch === quote) quote = null;
       continue;
     }
-
     if (ch === '\'' || ch === '"' || ch === '`') {
       quote = ch;
       current += ch;
       continue;
     }
-
-    if (ch === '(' || ch === '[' || ch === '{') {
-      depth += 1;
-      current += ch;
-      continue;
-    }
-
-    if (ch === ')' || ch === ']' || ch === '}') {
-      depth = Math.max(0, depth - 1);
-      current += ch;
-      continue;
-    }
-
+    if (ch === '(' || ch === '[' || ch === '{') depth += 1;
+    if (ch === ')' || ch === ']' || ch === '}') depth = Math.max(0, depth - 1);
     if (ch === ',' && depth === 0) {
       result.push(current.trim());
       current = '';
       continue;
     }
-
     current += ch;
   }
-
-  if (current.trim().length > 0) {
-    result.push(current.trim());
-  }
-
+  if (current.trim()) result.push(current.trim());
   return result;
 }
 
@@ -150,10 +138,8 @@ function normalizeEndpoint(raw) {
   if (typeof raw !== 'string') return null;
   let value = raw.trim();
   if (!value) return null;
-
   value = value.replace(/\$\{[^}]+\}/g, '__DYNAMIC__');
   value = value.replace(/\\`/g, '`').replace(/\\'/g, '\'').replace(/\\"/g, '"');
-
   if (value.startsWith('http://') || value.startsWith('https://')) {
     try {
       const parsed = new URL(value);
@@ -162,53 +148,63 @@ function normalizeEndpoint(raw) {
       return null;
     }
   }
-
   const hashIndex = value.indexOf('#');
-  if (hashIndex !== -1) {
-    value = value.slice(0, hashIndex);
-  }
-
-  value = value.replace(/\/{2,}/g, '/');
-  value = value.replace(/^__DYNAMIC__\/?/, '');
-
+  if (hashIndex !== -1) value = value.slice(0, hashIndex);
+  value = value.replace(/\/{2,}/g, '/').replace(/^__DYNAMIC__\/?/, '');
   const queryIndex = value.indexOf('?');
   const pathname = queryIndex === -1 ? value : value.slice(0, queryIndex);
   if (!pathname.startsWith('/')) return null;
-  if (pathname.startsWith('/api/')) return null;
+  return pathname.replace(/\/+$/, '') || '/';
+}
+
+function normalizeRoutePath(pathname) {
   return pathname.replace(/\/+$/, '') || '/';
 }
 
 function parseRouteTable(source) {
   const routes = [];
-  const routeLinePattern = /\{\s*(?:host:\s*'([^']+)'\s*,\s*)?prefix:\s*'([^']+)'\s*,\s*upstreamKey:\s*'([^']+)'(?:\s*,\s*upstreamPathPrefix:\s*'([^']+)')?(?:\s*,\s*(?:public|auth):\s*true)?(?:\s*,\s*requireRole:\s*'([^']+)')?\s*\}/g;
-  let match;
-  while ((match = routeLinePattern.exec(source)) !== null) {
-    routes.push({
-      host: match[1] || undefined,
-      prefix: match[2],
-      upstreamKey: match[3],
-      upstreamPathPrefix: match[4] || undefined,
-      requireRole: match[5] || undefined,
-    });
+  const match = source.match(/ROUTING_TABLE:\s*GatewayRoute\[\]\s*=\s*\[([\s\S]*?)\n\];/m);
+  if (!match) return routes;
+  for (const objectMatch of match[1].matchAll(/\{([\s\S]*?)\}/g)) {
+    const obj = {};
+    for (const part of splitTopLevelComma(objectMatch[1])) {
+      const idx = part.indexOf(':');
+      if (idx === -1) continue;
+      const key = part.slice(0, idx).trim();
+      const raw = part.slice(idx + 1).trim();
+      if (raw === 'true' || raw === 'false') {
+        obj[key] = raw === 'true';
+        continue;
+      }
+      const str = raw.match(/^'([^']*)'$|^"([^"]*)"$/);
+      if (str) obj[key] = str[1] ?? str[2] ?? '';
+    }
+    if (typeof obj.prefix === 'string' && typeof obj.upstreamKey === 'string') {
+      routes.push({
+        host: obj.host,
+        prefix: obj.prefix,
+        upstreamKey: obj.upstreamKey,
+        upstreamPathPrefix: obj.upstreamPathPrefix,
+        public: obj.public,
+        auth: obj.auth,
+        requireRole: obj.requireRole,
+      });
+    }
   }
   return routes;
 }
 
 function parseTomlVars(source) {
   const result = {};
-  const varsMatch = source.match(/vars\s*=\s*\{([\s\S]*?)\}/m);
-  if (!varsMatch) return result;
-
-  const body = varsMatch[1];
-  for (const part of splitTopLevelComma(body)) {
-    const eq = part.indexOf('=');
-    if (eq === -1) continue;
-    const key = part.slice(0, eq).trim();
-    const valueRaw = part.slice(eq + 1).trim();
-    const value = valueRaw.replace(/^"|"$/g, '');
-    if (key) result[key] = value;
+  const match = source.match(/vars\s*=\s*\{([\s\S]*?)\}/m);
+  if (!match) return result;
+  for (const part of splitTopLevelComma(match[1])) {
+    const idx = part.indexOf('=');
+    if (idx === -1) continue;
+    const key = part.slice(0, idx).trim();
+    const raw = part.slice(idx + 1).trim().replace(/^"|"$/g, '');
+    if (key) result[key] = raw;
   }
-
   return result;
 }
 
@@ -218,9 +214,7 @@ function parseWorkflowEnvKeys(source) {
   let match;
   while ((match = pattern.exec(source)) !== null) {
     const value = match[2].trim();
-    if (value.length === 0) continue;
-    if (value.startsWith('#')) continue;
-    keys.add(match[1]);
+    if (value && !value.startsWith('#')) keys.add(match[1]);
   }
   return keys;
 }
@@ -228,124 +222,96 @@ function parseWorkflowEnvKeys(source) {
 function pathToBackendRoute(filePath) {
   const rel = path.relative(API_SERVER_ROOT, filePath).replaceAll(path.sep, '/');
   if (!rel.endsWith('/route.ts')) return null;
-  const endpoint = rel.slice(0, -'/route.ts'.length);
-  return `/api/${endpoint}`;
-}
-
-function endpointToFileCandidate(endpoint) {
-  const normalized = endpoint.replace(/\/+$/, '') || '/';
-  if (!normalized.startsWith('/api/')) return null;
-  return path.join(API_SERVER_ROOT, `${normalized.slice('/api/'.length)}`, 'route.ts');
-}
-
-function pathMatchesBackendPattern(endpointPath, backendPath) {
-  const endpointSegments = endpointPath.split('/').filter(Boolean);
-  const backendSegments = backendPath.split('/').filter(Boolean);
-  if (endpointSegments.length !== backendSegments.length) return false;
-  for (let i = 0; i < endpointSegments.length; i += 1) {
-    const backendSegment = backendSegments[i];
-    const endpointSegment = endpointSegments[i];
-    if (backendSegment.startsWith('[') && backendSegment.endsWith(']')) continue;
-    if (endpointSegment === '__DYNAMIC__') continue;
-    if (backendSegment !== endpointSegment) return false;
-  }
-  return true;
+  return `/api/${rel.slice(0, -'/route.ts'.length)}`;
 }
 
 function extractBackendMethods(source) {
   const methods = new Set();
-  for (const match of source.matchAll(/export\s+(?:async\s+)?function\s+(GET|POST|PUT|PATCH|DELETE)\b/g)) {
-    methods.add(match[1]);
-  }
-  for (const match of source.matchAll(/export const (GET|POST|PUT|PATCH|DELETE)\b/g)) {
-    methods.add(match[1]);
-  }
+  for (const match of source.matchAll(/export\s+(?:async\s+)?function\s+(GET|POST|PUT|PATCH|DELETE)\b/g)) methods.add(match[1]);
+  for (const match of source.matchAll(/export const (GET|POST|PUT|PATCH|DELETE)\b/g)) methods.add(match[1]);
   return methods;
 }
 
-function findMatchingGatewayRoute(routes, pathname) {
-  const matches = routes
-    .filter((route) => pathname === route.prefix || pathname.startsWith(`${route.prefix}/`))
-    .sort((a, b) => b.prefix.length - a.prefix.length);
-  return matches[0];
+function pathMatchesBackendPattern(endpointPath, backendPath) {
+  const left = endpointPath.split('/').filter(Boolean);
+  const right = backendPath.split('/').filter(Boolean);
+  if (left.length !== right.length) return false;
+  for (let i = 0; i < left.length; i += 1) {
+    if (right[i].startsWith('[') && right[i].endsWith(']')) continue;
+    if (left[i] === '__DYNAMIC__') continue;
+    if (left[i] !== right[i]) return false;
+  }
+  return true;
 }
 
-function normalizeRoutePath(pathname) {
-  return pathname.replace(/\/+$/, '') || '/';
+function combinePaths(base, tail) {
+  const left = base.replace(/\/+$/, '');
+  const right = tail.startsWith('/') ? tail : `/${tail}`;
+  return `${left}${right}`;
 }
 
-function getServiceProbeCandidates(serviceKey, routeFindings) {
-  const serviceRoutes = routeFindings
-    .filter((item) => item.status === 'routed' && item.upstreamKey === serviceKey)
-    .map((item) => ({
-      method: item.method,
-      path: normalizeRoutePath(item.upstreamPath),
-    }));
+function matchesPrefix(pathname, prefix) {
+  return prefix === '/' || pathname === prefix || pathname.startsWith(`${prefix}/`);
+}
 
-  if (serviceRoutes.length > 0) {
-    const preferred = serviceRoutes.find((route) => route.method === 'GET')
-      ?? serviceRoutes[0];
-    const fallback = serviceRoutes[0];
-    return {
-      health: LIVE_PROBES[serviceKey],
-      functional: preferred,
-      fallback,
-    };
-  }
+function hostMatches(route, endpointHost) {
+  if (route.host !== undefined) return endpointHost === route.host;
+  if (endpointHost === undefined) return true;
+  if (PLACEHOLDER_ENDPOINT_HOSTS.has(endpointHost)) return true;
+  return endpointHost.endsWith('.example.com');
+}
 
-  if (serviceKey === 'SKILLHUBCORE_URL') {
-    return {
-      health: LIVE_PROBES[serviceKey],
-      functional: { method: 'POST', path: '/auth/login' },
-      fallback: { method: 'GET', path: '/healthz/' },
-    };
-  }
+function routeKey(route) {
+  return `${route.host ?? '*'}::${route.prefix}::${route.upstreamKey}::${route.upstreamPathPrefix ?? ''}`;
+}
 
-  if (serviceKey === 'ADMIN_URL') {
-    return {
-      health: LIVE_PROBES[serviceKey],
-      functional: { method: 'GET', path: '/' },
-      fallback: { method: 'GET', path: '/' },
-    };
-  }
-
-  return {
-    health: LIVE_PROBES[serviceKey] ?? { path: '/', ok: [200, 301, 302, 307, 308] },
-    functional: { method: 'GET', path: '/' },
-    fallback: { method: 'GET', path: '/' },
-  };
+function findMatchingGatewayRoute(routes, endpoint) {
+  return routes
+    .filter((route) => hostMatches(route, endpoint.host) && matchesPrefix(endpoint.endpoint, route.prefix))
+    .sort((a, b) => (b.host ? 1 : 0) - (a.host ? 1 : 0) || b.prefix.length - a.prefix.length)[0];
 }
 
 function collectEndpointUsagesFromText(source, filePath) {
   const results = [];
-
   for (const pattern of FETCH_ENDPOINT_PATTERNS) {
     let match;
     while ((match = pattern.regex.exec(source)) !== null) {
       const raw = match[pattern.endpointGroup];
-      const normalized = normalizeEndpoint(raw);
-      if (!normalized) continue;
-
+      const endpoint = normalizeEndpoint(raw);
+      if (!endpoint) continue;
       let method = pattern.method;
       if (pattern.methodGroup !== null) {
         method = String(match[pattern.methodGroup]).toUpperCase();
-      } else if (match[0].includes('fetch(')) {
-        const window = source.slice(match.index, Math.min(source.length, match.index + 500));
-        const methodMatch = window.match(/method\s*:\s*['"]([A-Z]+)['"]/i);
-        if (methodMatch) {
-          method = methodMatch[1].toUpperCase();
-        }
       }
-
-      results.push({
-        filePath,
-        method,
-        endpoint: normalized,
-        raw,
-      });
+      results.push({ filePath, method, endpoint, raw });
     }
   }
+  return results;
+}
 
+function collectAbsoluteUrlEndpoints(source, filePath) {
+  const results = [];
+  const pattern = /(['"`])https?:\/\/[^'"`\s)]+?\1/g;
+  let match;
+  while ((match = pattern.exec(source)) !== null) {
+    const raw = match[0].slice(1, -1);
+    let parsed;
+    try {
+      parsed = new URL(raw);
+    } catch {
+      continue;
+    }
+    const endpoint = normalizeRoutePath(`${parsed.pathname}${parsed.search}`);
+    const tail = source.slice(match.index, Math.min(source.length, match.index + 600));
+    const methodMatch = tail.match(/method\s*:\s*['"]([A-Z]+)['"]/i);
+    results.push({
+      filePath,
+      method: methodMatch ? methodMatch[1].toUpperCase() : 'GET',
+      endpoint,
+      host: parsed.hostname,
+      raw,
+    });
+  }
   return results;
 }
 
@@ -359,24 +325,18 @@ async function collectFrontendEndpoints() {
     path.join(ROOT, 'apps/skillup-admin/src'),
     path.join(ROOT, 'apps/faculty-app/src'),
   ];
-
   const files = [];
   for (const dir of roots) {
     try {
       files.push(...await walkFiles(dir, (filePath) => filePath.endsWith('.ts') || filePath.endsWith('.tsx')));
-    } catch {
-      // Directory missing in some environments.
-    }
+    } catch {}
   }
-
   const endpoints = [];
   for (const filePath of files) {
     if (isIgnorableFile(filePath)) continue;
     if (filePath.includes(`${path.sep}src${path.sep}app${path.sep}api${path.sep}`)) continue;
-    const source = await readText(filePath);
-    endpoints.push(...collectEndpointUsagesFromText(source, filePath));
+    endpoints.push(...collectEndpointUsagesFromText(await readText(filePath), filePath));
   }
-
   const seen = new Set();
   return endpoints.filter((item) => {
     const key = `${item.method}:${item.endpoint}:${item.filePath}`;
@@ -386,59 +346,128 @@ async function collectFrontendEndpoints() {
   });
 }
 
+async function collectGatewayEndpoints() {
+  try {
+    const endpoints = collectAbsoluteUrlEndpoints(await readText(GATEWAY_TEST_PATH), GATEWAY_TEST_PATH);
+    const seen = new Set();
+    return endpoints.filter((item) => {
+      const key = `${item.host}:${item.method}:${item.endpoint}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  } catch {
+    return [];
+  }
+}
+
 async function collectApiServerRoutes() {
   const files = await walkFiles(API_SERVER_ROOT, (filePath) => filePath.endsWith('/route.ts') || filePath.endsWith('\\route.ts'));
   const routes = [];
   for (const filePath of files) {
     const backendPath = pathToBackendRoute(filePath);
     if (!backendPath) continue;
-    const source = await readText(filePath);
     routes.push({
       filePath,
       path: backendPath,
-      methods: extractBackendMethods(source),
+      methods: extractBackendMethods(await readText(filePath)),
     });
   }
   return routes;
 }
 
-function isHealthyStatus(status, allowed) {
-  return Array.isArray(allowed) && allowed.includes(status);
+function createSignedJwt(secret, payload) {
+  const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
+  const body = Buffer.from(JSON.stringify(payload)).toString('base64url');
+  const signature = crypto.createHmac('sha256', secret).update(`${header}.${body}`).digest('base64url');
+  return `${header}.${body}.${signature}`;
 }
 
-async function probeUpstream(url, probe) {
+function authHeaders(secret, role = 'student') {
+  if (typeof secret !== 'string' || secret.trim().length === 0) return null;
+  const now = Math.floor(Date.now() / 1000);
+  const token = createSignedJwt(secret, {
+    sub: 'validation-user',
+    roles: role === 'admin' ? ['admin'] : ['student'],
+    subscriptions: ['combo'],
+    iss: 'skillhubcore.in',
+    iat: now,
+    exp: now + 3600,
+  });
+  return {
+    authorization: `Bearer ${token}`,
+    cookie: `skillhubcore_accessToken=${token}; accessToken=${token}`,
+  };
+}
+
+function buildRouteCases(routes, observedEndpoints) {
+  const cases = [];
+  const seen = new Set();
+  for (const endpoint of observedEndpoints) {
+    const route = findMatchingGatewayRoute(routes, endpoint);
+    if (!route) continue;
+    const suffix = route.prefix === '/' ? endpoint.endpoint : endpoint.endpoint.slice(route.prefix.length);
+    const gatewayPath = endpoint.endpoint;
+    const upstreamPath = route.upstreamPathPrefix ? combinePaths(route.upstreamPathPrefix, suffix) : gatewayPath;
+    const key = `${routeKey(route)}::${endpoint.method}::${gatewayPath}::${upstreamPath}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    cases.push({
+      route,
+      method: endpoint.method,
+      gatewayPath,
+      path: upstreamPath,
+      source: endpoint.host ? `${endpoint.host}${endpoint.endpoint}` : endpoint.endpoint,
+      expectedJson: !WEB_UPSTREAM_KEYS.has(route.upstreamKey),
+      authRequired: route.auth === true,
+      adminRequired: route.requireRole === 'admin',
+    });
+  }
+  for (const route of routes) {
+    if (cases.some((entry) => routeKey(entry.route) === routeKey(route))) continue;
+    const gatewayPath = route.prefix;
+    const upstreamPath = route.upstreamPathPrefix ?? route.prefix;
+    cases.push({
+      route,
+      method: 'GET',
+      gatewayPath,
+      path: upstreamPath,
+      source: 'route-table',
+      expectedJson: !WEB_UPSTREAM_KEYS.has(route.upstreamKey),
+      authRequired: route.auth === true,
+      adminRequired: route.requireRole === 'admin',
+    });
+  }
+  return cases;
+}
+
+async function probeOnce(url, probe, timeoutMs = 3000) {
   const target = new URL(probe.path, url).toString();
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 8000);
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const init = {
-      method: probe.method ?? 'GET',
+    const response = await fetch(target, {
+      method: probe.method,
+      headers: probe.headers,
+      body: probe.body,
       redirect: 'follow',
       signal: controller.signal,
-    };
-
-    if (probe.headers !== undefined) {
-      init.headers = probe.headers;
-    }
-    if (probe.body !== undefined) {
-      init.body = probe.body;
-      if ((probe.method ?? 'GET').toUpperCase() !== 'GET' && (probe.method ?? 'GET').toUpperCase() !== 'HEAD') {
-        init.duplex = 'half';
-      }
-    }
-
-    const response = await fetch(target, init);
+      duplex: probe.body !== undefined && probe.method !== 'GET' && probe.method !== 'HEAD' ? 'half' : undefined,
+    });
     return {
       url: target,
+      finalUrl: response.url,
       status: response.status,
-      ok: isHealthyStatus(response.status, probe.ok),
       contentType: response.headers.get('content-type') ?? '',
+      bodyText: await response.text(),
     };
   } catch (error) {
     return {
       url: target,
+      finalUrl: target,
       status: 0,
-      ok: false,
+      contentType: '',
+      bodyText: '',
       error: error instanceof Error ? error.message : String(error),
     };
   } finally {
@@ -446,273 +475,303 @@ async function probeUpstream(url, probe) {
   }
 }
 
+async function probeWithRetries(url, probe, retries = 2, timeoutMs = 3000) {
+  const attempts = [];
+  let last;
+  for (let i = 0; i <= retries; i += 1) {
+    last = await probeOnce(url, probe, timeoutMs);
+    attempts.push(last);
+    const retryable = last.error || last.status === 0 || last.status >= 500;
+    if (!retryable) break;
+    if (i < retries) await new Promise((resolve) => setTimeout(resolve, 150 * (i + 1)));
+  }
+  return { ...last, attempts };
+}
+
+function classifyProbe(probe, result, authRequired) {
+  if (result.error) {
+    return { ok: false, errorType: /abort/i.test(result.error) ? 'TIMEOUT' : 'NETWORK', message: result.error };
+  }
+  if (result.status === 404) return { ok: false, errorType: 'MISSING_ROUTE_OR_REWRITE', message: `404 from ${result.finalUrl}` };
+  if (result.status === 502) return { ok: false, errorType: 'UPSTREAM_502', message: `502 from ${result.finalUrl}` };
+  if (result.status >= 500) return { ok: false, errorType: 'UPSTREAM_FAILURE', message: `${result.status} from ${result.finalUrl}` };
+  if (authRequired && result.status === 401) return { ok: false, errorType: 'AUTH_PROPAGATION', message: `401 from ${result.finalUrl}` };
+
+  const allowed = probe.expectedJson ? [200, 201, 204, 400, 401] : [200, 201, 204, 301, 302, 307, 308, 400, 401];
+  if (!allowed.includes(result.status)) {
+    return { ok: false, errorType: 'UNEXPECTED_STATUS', message: `${result.status} from ${result.finalUrl}` };
+  }
+
+  if (probe.expectedJson && result.status >= 200 && result.status < 300) {
+    const looksJson = result.contentType.includes('json') || result.bodyText.trim().startsWith('{') || result.bodyText.trim().startsWith('[');
+    if (!looksJson) return { ok: false, errorType: 'INVALID_JSON', message: `Expected JSON from ${result.finalUrl}` };
+    try {
+      const json = JSON.parse(result.bodyText);
+      if (json === null || (typeof json !== 'object' && !Array.isArray(json))) {
+        return { ok: false, errorType: 'INVALID_JSON_SHAPE', message: `Unexpected JSON shape from ${result.finalUrl}` };
+      }
+      if (typeof json === 'object' && !Array.isArray(json) && 'error' in json) {
+        return { ok: false, errorType: 'API_ERROR_RESPONSE', message: `Error payload from ${result.finalUrl}` };
+      }
+    } catch {
+      return { ok: false, errorType: 'INVALID_JSON', message: `Unable to parse JSON from ${result.finalUrl}` };
+    }
+  }
+
+  return { ok: true, errorType: null, message: null };
+}
+
+function getBackendCandidate(endpointPath) {
+  const normalized = normalizeRoutePath(endpointPath);
+  if (!normalized.startsWith('/api/')) return null;
+  return path.join(API_SERVER_ROOT, `${normalized.slice('/api/'.length)}`, 'route.ts');
+}
+
+function probeCandidatesForService(serviceKey, routeCases) {
+  const matches = routeCases.filter((item) => item.route.upstreamKey === serviceKey);
+  const firstGet = matches.find((item) => item.method === 'GET');
+  const pick = firstGet ?? matches[0];
+  if (pick) return { health: LIVE_PROBES[serviceKey], functional: { method: pick.method, path: pick.path }, fallback: { method: pick.method, path: pick.path } };
+  return { health: LIVE_PROBES[serviceKey] ?? { path: '/', ok: [200, 301, 302, 307, 308] }, functional: { method: 'GET', path: '/' }, fallback: { method: 'GET', path: '/' } };
+}
+
+function isHealthyStatus(status, allowed) {
+  return Array.isArray(allowed) && allowed.includes(status);
+}
+
 async function main() {
-  const [routeTableSource, wranglerSource, workflowSource] = await Promise.all([
+  const [routeSource, wranglerSource, workflowSource] = await Promise.all([
     readText(ROUTE_TABLE_PATH),
     readText(WRANGLER_PATH),
     readText(DEPLOY_WORKFLOW_PATH),
   ]);
 
-  const routes = parseRouteTable(routeTableSource);
+  const routes = parseRouteTable(routeSource);
   const wranglerVars = parseTomlVars(wranglerSource);
   const workflowEnvKeys = parseWorkflowEnvKeys(workflowSource);
   const frontendEndpoints = await collectFrontendEndpoints();
+  const gatewayEndpoints = await collectGatewayEndpoints();
   const apiServerRoutes = await collectApiServerRoutes();
-  const routeUsageByService = new Map();
+  const routeCases = buildRouteCases(routes, [...frontendEndpoints.map((item) => ({ ...item, host: undefined })), ...gatewayEndpoints]);
 
-  const endpointFindings = [];
-  for (const item of frontendEndpoints) {
-    const gatewayRoute = findMatchingGatewayRoute(routes, item.endpoint);
-    if (!gatewayRoute) {
-      endpointFindings.push({
-        ...item,
-        status: 'missing-gateway-route',
-      });
-      continue;
-    }
+  const routeChecks = [];
+  for (const probe of routeCases) {
+    const backendCandidate = getBackendCandidate(probe.path);
+    const backendRoute = backendCandidate ? apiServerRoutes.find((candidate) => pathMatchesBackendPattern(backendCandidate, candidate.path)) : null;
+    const bindingUrl = wranglerVars[probe.route.upstreamKey];
+    const isLocalApiRoute = LOCAL_API_KEYS.has(probe.route.upstreamKey);
+    const isOptionalService = OPTIONAL_SERVICE_KEYS.has(probe.route.upstreamKey);
+    const auth = probe.authRequired ? authHeaders(process.env.JWT_SECRET, probe.adminRequired ? 'admin' : 'student') : null;
 
-    const suffix = item.endpoint.slice(gatewayRoute.prefix.length);
-    const upstreamPath = gatewayRoute.upstreamPathPrefix ? `${gatewayRoute.upstreamPathPrefix}${suffix}` : item.endpoint;
-    const classified = {
-      ...item,
-      routePrefix: gatewayRoute.prefix,
-      upstreamKey: gatewayRoute.upstreamKey,
-      upstreamPath,
-      status: 'routed',
-    };
-
-    if (API_SERVER_KEYS.has(gatewayRoute.upstreamKey)) {
-      const backendRoute = apiServerRoutes.find((candidate) => pathMatchesBackendPattern(upstreamPath, candidate.path));
-      if (!backendRoute) {
-        endpointFindings.push({
-          ...classified,
-          status: 'missing-backend-endpoint',
-        });
-        continue;
-      }
-
-      if (!backendRoute.methods.has(item.method)) {
-        endpointFindings.push({
-          ...classified,
-          backendFile: path.relative(ROOT, backendRoute.filePath),
-          status: 'method-mismatch',
-          backendMethods: [...backendRoute.methods].sort(),
-        });
-        continue;
+    let liveResult = null;
+    let classification = { ok: true, errorType: null, message: null };
+    if (LIVE) {
+      if (typeof bindingUrl !== 'string' || bindingUrl.trim().length === 0) {
+        classification = {
+          ok: isOptionalService,
+          errorType: isOptionalService ? 'OPTIONAL_MISSING_BINDING' : 'MISSING_BINDING',
+          message: `Missing binding for ${probe.route.upstreamKey}`,
+        };
+      } else {
+        liveResult = await probeWithRetries(bindingUrl, { method: probe.method, path: probe.path, headers: auth ?? undefined }, 2, 3000);
+        classification = classifyProbe(probe, liveResult, probe.authRequired);
+        if (classification.ok && isLocalApiRoute && probe.path.startsWith('/api/') && backendRoute && !backendRoute.methods.has(probe.method)) {
+          classification = { ok: false, errorType: 'METHOD_MISMATCH', message: `Backend does not implement ${probe.method} ${probe.path}` };
+        }
+        if (classification.ok && isLocalApiRoute && probe.path.startsWith('/api/') && backendCandidate && backendRoute === null) {
+          classification = { ok: false, errorType: 'MISSING_BACKEND_ENDPOINT', message: `Missing backend endpoint for ${probe.path}` };
+        }
       }
     }
 
-    endpointFindings.push(classified);
-
-    if (!routeUsageByService.has(gatewayRoute.upstreamKey)) {
-      routeUsageByService.set(gatewayRoute.upstreamKey, []);
-    }
-    routeUsageByService.get(gatewayRoute.upstreamKey).push(classified);
+    routeChecks.push({
+      ...probe,
+      backendFile: backendRoute ? path.relative(ROOT, backendRoute.filePath) : undefined,
+      backendMethods: backendRoute ? [...backendRoute.methods].sort() : undefined,
+      backendRoute: backendRoute ? backendRoute.path : undefined,
+      live: liveResult,
+      status: LIVE ? (classification.ok ? 'PASS' : 'FAIL') : 'SKIPPED',
+      errorType: classification.errorType,
+      error: classification.message,
+    });
   }
 
-  const discoveredUsedServices = [...routeUsageByService.keys()].sort();
-  const usedServices = discoveredUsedServices.length > 0 ? discoveredUsedServices : REQUIRED_SERVICES_FALLBACK;
-  const optionalServices = OPTIONAL_SERVICES_FALLBACK.filter((key) => !usedServices.includes(key));
-  const allRouteServices = [...new Set(routes.map((route) => route.upstreamKey))].sort();
-  const missingWranglerVars = usedServices.filter((key) => !wranglerVars[key]);
-  const missingWorkflowVars = usedServices.filter((key) => !workflowEnvKeys.has(key));
-  const unusedBindings = allRouteServices.filter((key) => !usedServices.includes(key));
+  const gatewayAuthChecks = [];
+  if (LIVE && GATEWAY_BASE_URL !== null && typeof process.env.JWT_SECRET === 'string' && process.env.JWT_SECRET.trim().length > 0) {
+    for (const probe of routeCases.filter((item) => item.authRequired)) {
+      const auth = authHeaders(process.env.JWT_SECRET, probe.adminRequired ? 'admin' : 'student');
+      const result = await probeWithRetries(GATEWAY_BASE_URL, {
+        method: probe.method,
+        path: probe.gatewayPath,
+        headers: auth ?? undefined,
+      }, 2, 3000);
+      const classification = classifyProbe(probe, result, true);
+      gatewayAuthChecks.push({
+        ...probe,
+        live: result,
+        status: classification.ok ? 'PASS' : 'FAIL',
+        errorType: classification.errorType,
+        error: classification.message,
+      });
+    }
+  }
 
-  const requiredMissing = usedServices.filter((key) => !wranglerVars[key]);
-  const warningMissing = optionalServices.filter((key) => !wranglerVars[key]);
+  const routeSummary = routes.map((route) => {
+    const cases = routeChecks.filter((item) => routeKey(item.route) === routeKey(route));
+    const failures = cases.filter((item) => item.status === 'FAIL');
+    return {
+      route,
+      status: failures.length > 0 ? 'FAIL' : 'PASS',
+      cases,
+      errors: failures.map((item) => ({ method: item.method, path: item.path, errorType: item.errorType, message: item.error })),
+    };
+  });
 
-  const liveFindings = [];
+  const usedServices = [...new Set(routes.map((route) => route.upstreamKey))].sort();
+  const missingBindings = usedServices.filter((key) => !wranglerVars[key] && !OPTIONAL_SERVICE_KEYS.has(key));
+  const optionalMissingBindings = usedServices.filter((key) => !wranglerVars[key] && OPTIONAL_SERVICE_KEYS.has(key));
+  const missingWorkflowVars = usedServices.filter((key) => !workflowEnvKeys.has(key) && !OPTIONAL_SERVICE_KEYS.has(key));
+  const optionalWorkflowVars = usedServices.filter((key) => !workflowEnvKeys.has(key) && OPTIONAL_SERVICE_KEYS.has(key));
+
+  const serviceFindings = [];
   if (LIVE) {
     for (const key of usedServices) {
       const url = wranglerVars[key];
-      const candidate = getServiceProbeCandidates(key, endpointFindings);
+      const candidates = probeCandidatesForService(key, routeChecks);
       const probes = [];
-
-      if (candidate.health) {
-        probes.push({ ...candidate.health, label: 'health' });
-      }
-      if (candidate.functional) {
-        probes.push({ ...candidate.functional, label: 'functional' });
-      }
-
+      if (candidates.health) probes.push({ ...candidates.health, label: 'health' });
+      if (candidates.functional) probes.push({ ...candidates.functional, label: 'functional' });
       if (!url) {
-        liveFindings.push({
+        serviceFindings.push({
           key,
-          status: 'missing-binding',
-          ok: false,
+          status: OPTIONAL_SERVICE_KEYS.has(key) ? 'optional-missing-binding' : 'missing-binding',
+          ok: OPTIONAL_SERVICE_KEYS.has(key),
           probes: [],
         });
         continue;
       }
-
-      try {
-        new URL(url);
-      } catch {
-        liveFindings.push({
-          key,
-          status: 'invalid-url',
-          url,
-          ok: false,
-          probes: [],
-        });
-        continue;
-      }
-
+      let healthy = true;
       const results = [];
-      let serviceHealthy = true;
       for (const probe of probes) {
-        const result = await probeUpstream(url, probe);
-        const ok = probe.label === 'health'
-          ? isHealthyStatus(result.status, probe.ok)
-          : (result.status > 0 && result.status < 500 && result.status !== 404);
-        results.push({
-          label: probe.label,
-          ...result,
-          ok,
-        });
-        if (!ok) {
-          serviceHealthy = false;
-        }
+        const auth = probe.label === 'functional' && !WEB_UPSTREAM_KEYS.has(key) ? authHeaders(process.env.JWT_SECRET, 'student') : null;
+        const result = await probeWithRetries(url, { method: probe.method, path: probe.path, headers: auth ?? undefined }, 2, 3000);
+        const ok = probe.label === 'health' ? isHealthyStatus(result.status, probe.ok) : result.status > 0 && result.status < 500 && result.status !== 404;
+        results.push({ label: probe.label, ...result, ok });
+        if (!ok) healthy = false;
       }
-
-      liveFindings.push({
-        key,
-        url,
-        ok: serviceHealthy,
-        status: serviceHealthy ? 'healthy' : 'unhealthy',
-        probes: results,
-      });
+      serviceFindings.push({ key, url, ok: healthy, status: healthy ? 'healthy' : 'unhealthy', probes: results });
     }
   }
 
-  const brokenRoutes = endpointFindings.filter((item) => item.status !== 'routed');
-  const unreachableServices = liveFindings.filter((item) => item.ok === false);
-  const missingBackendEndpoints = endpointFindings.filter((item) => item.status === 'missing-backend-endpoint' || item.status === 'method-mismatch');
-  const missingRequiredBindings = requiredMissing.filter((key) => !wranglerVars[key]);
+  const errors = [
+    ...routeSummary.flatMap((entry) => entry.errors.map((error) => ({
+      type: error.errorType,
+      route: entry.route.prefix,
+      upstreamKey: entry.route.upstreamKey,
+      path: error.path,
+      method: error.method,
+      message: error.message,
+    }))),
+    ...gatewayAuthChecks.filter((item) => item.status === 'FAIL').map((item) => ({
+      type: item.errorType,
+      route: item.route.prefix,
+      upstreamKey: item.route.upstreamKey,
+      path: item.gatewayPath,
+      method: item.method,
+      message: item.error,
+    })),
+    ...serviceFindings.flatMap((service) => (service.probes ?? []).filter((probe) => probe.ok === false).map((probe) => ({
+      type: probe.label === 'health' ? 'SERVICE_HEALTH' : 'SERVICE_FUNCTIONAL',
+      service: service.key,
+      path: probe.path,
+      message: probe.error ?? `status ${probe.status}`,
+    }))),
+    ...missingBindings.map((service) => ({ type: 'MISSING_BINDING', service, message: `Missing binding for ${service}` })),
+    ...missingWorkflowVars.map((service) => ({ type: 'MISSING_WORKFLOW_BINDING', service, message: `Missing workflow env for ${service}` })),
+  ];
 
   const report = {
-    usedServices,
-    unusedBindings,
-    missingEnvVars: missingRequiredBindings,
-    optionalMissingEnvVars: warningMissing,
-    missingWorkflowVars,
-    brokenRoutes: endpointFindings.filter((item) => item.status === 'missing-gateway-route' || item.status === 'missing-backend-endpoint' || item.status === 'method-mismatch'),
-    unreachableServices,
-    missingBackendEndpoints,
-    frontendEndpoints: endpointFindings,
-    liveFindings,
+    status: errors.length === 0 ? 'PASS' : 'FAIL',
+    generatedAt: new Date().toISOString(),
+    services: {
+      used: usedServices,
+      missingBindings,
+      optionalMissingBindings,
+      workflowMissingBindings: missingWorkflowVars,
+      optionalWorkflowMissingBindings: optionalWorkflowVars,
+      live: serviceFindings,
+    },
+    gateway: {
+      baseUrl: GATEWAY_BASE_URL,
+      authChecks: gatewayAuthChecks,
+    },
+    routes: {
+      total: routes.length,
+      planned: routeCases,
+      results: routeChecks,
+      summary: routeSummary,
+    },
+    errors,
   };
+
+  await writeFile(REPORT_PATH, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
 
   console.log('Gateway Validation Report');
   console.log('========================');
   console.log('');
+  console.log(`Report saved to: ${path.relative(ROOT, REPORT_PATH)}`);
+  console.log(`Status: ${report.status}`);
+  console.log('');
 
-  console.log('Used services:');
-  if (usedServices.length === 0) {
-    console.log('  - none');
-  } else {
-    for (const key of usedServices) {
-      console.log(`  - ${key}`);
+  console.log('Route coverage:');
+  for (const entry of routeSummary) {
+    console.log(`  - ${entry.status} ${entry.route.prefix} -> ${entry.route.upstreamKey}${entry.route.upstreamPathPrefix ? ` (${entry.route.upstreamPathPrefix})` : ''}`);
+    for (const failure of entry.errors) {
+      console.log(`    - ${failure.method} ${failure.path}: ${failure.errorType} ${failure.message}`);
     }
   }
   console.log('');
 
   console.log('Missing required env vars in services/api-gateway/wrangler.toml:');
-  if (missingRequiredBindings.length === 0) {
-    console.log('  - none');
-  } else {
-    for (const key of missingRequiredBindings) {
-      console.log(`  - ${key}`);
-    }
-  }
-  console.log('');
-
+  console.log(missingBindings.length === 0 ? '  - none' : missingBindings.map((key) => `  - ${key}`).join('\n'));
   console.log('Missing optional env vars in services/api-gateway/wrangler.toml:');
-  if (warningMissing.length === 0) {
-    console.log('  - none');
-  } else {
-    for (const key of warningMissing) {
-      console.log(`  - ${key}`);
-    }
-  }
+  console.log(optionalMissingBindings.length === 0 ? '  - none' : optionalMissingBindings.map((key) => `  - ${key}`).join('\n'));
   console.log('');
 
   console.log('Missing env vars in .github/workflows/deploy-gateway.yml:');
-  if (missingWorkflowVars.length === 0) {
-    console.log('  - none');
-  } else {
-    for (const key of missingWorkflowVars) {
-      console.log(`  - ${key}`);
-    }
-  }
-  console.log('');
-
-  console.log(`Frontend endpoint coverage (${endpointFindings.length} discovered):`);
-  if (endpointFindings.length === 0) {
-    console.log('  - none found');
-  } else {
-    for (const item of endpointFindings) {
-      const base = `${item.method} ${item.endpoint}`;
-      if (item.status === 'routed') {
-        console.log(`  - ✅ ${base} -> ${item.upstreamKey}${item.upstreamPath ? ` (${item.upstreamPath})` : ''}`);
-      } else if (item.status === 'missing-gateway-route') {
-        console.log(`  - ❌ ${base} -> missing gateway route`);
-      } else if (item.status === 'missing-backend-endpoint') {
-        console.log(`  - ❌ ${base} -> missing backend endpoint (${item.upstreamPath})`);
-      } else if (item.status === 'method-mismatch') {
-        console.log(`  - ❌ ${base} -> method mismatch (${item.upstreamPath}); backend allows: ${(item.backendMethods || []).join(', ')}`);
-      }
-    }
-  }
+  console.log(missingWorkflowVars.length === 0 ? '  - none' : missingWorkflowVars.map((key) => `  - ${key}`).join('\n'));
+  console.log('Missing optional env vars in .github/workflows/deploy-gateway.yml:');
+  console.log(optionalWorkflowVars.length === 0 ? '  - none' : optionalWorkflowVars.map((key) => `  - ${key}`).join('\n'));
   console.log('');
 
   console.log('Live upstream checks:');
   if (!LIVE) {
     console.log('  - skipped (run with --live or VALIDATE_GATEWAY_LIVE=1)');
-  } else if (liveFindings.length === 0) {
-    console.log('  - none run');
   } else {
-    for (const item of liveFindings) {
-      const details = Array.isArray(item.probes)
-        ? item.probes.map((probe) => `${probe.label}:${probe.status}${probe.error ? `(${probe.error})` : ''}`).join(', ')
-        : item.status;
-      if (item.ok) {
-        console.log(`  - ✅ ${item.key} -> ${item.url} [${details}]`);
-      } else {
-        console.log(`  - ❌ ${item.key} -> ${item.url} [${details}${item.error ? `: ${item.error}` : ''}]`);
-      }
+    for (const item of serviceFindings) {
+      const details = (item.probes ?? []).map((probe) => `${probe.label}:${probe.status}${probe.error ? `(${probe.error})` : ''}`).join(', ');
+      console.log(`  - ${item.ok ? 'PASS' : 'FAIL'} ${item.key} -> ${item.url} [${details}]`);
     }
   }
   console.log('');
 
-  console.log('Fix suggestions:');
-  if (missingRequiredBindings.length > 0) {
-    console.log(`  - Add the missing required prod bindings to services/api-gateway/wrangler.toml: ${missingRequiredBindings.join(', ')}`);
+  console.log('Gateway auth propagation:');
+  if (!LIVE || GATEWAY_BASE_URL === null) {
+    console.log('  - skipped (set VALIDATE_GATEWAY_BASE_URL to validate through the Worker)');
+  } else if (gatewayAuthChecks.length === 0) {
+    console.log('  - no protected routes discovered');
   } else {
-    console.log('  - Required wrangler prod bindings are complete.');
+    for (const item of gatewayAuthChecks) {
+      console.log(`  - ${item.status} ${item.gatewayPath} -> ${item.route.upstreamKey}${item.error ? ` (${item.error})` : ''}`);
+    }
   }
-  if (warningMissing.length > 0) {
-    console.log(`  - Optional unused bindings are not present and were ignored: ${warningMissing.join(', ')}`);
-  }
-  if (brokenRoutes.length > 0) {
-    console.log('  - Add or correct gateway routing entries for any missing/mismatched frontend endpoints listed above.');
-  } else {
-    console.log('  - Gateway/frontend/backend route mapping is complete for discovered endpoints.');
-  }
-  if (LIVE && unreachableServices.length > 0) {
-    console.log('  - Investigate the unreachable services before deploy.');
-  }
-
-  const hasFailures = (IS_DEV ? false : missingRequiredBindings.length > 0) || brokenRoutes.length > 0 || (LIVE && unreachableServices.length > 0);
-
-  if (hasFailures) {
-    process.exitCode = 1;
-  }
+  console.log('');
 
   if (process.env.VALIDATE_GATEWAY_JSON === '1') {
-    console.log('');
     console.log(JSON.stringify(report, null, 2));
   }
+
+  if (errors.length > 0) process.exitCode = 1;
 }
 
 main().catch((error) => {

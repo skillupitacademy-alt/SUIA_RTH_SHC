@@ -6,6 +6,7 @@ import { proxyRequest } from '@/lib/proxy';
 import { createRateLimitMiddleware } from '@/middleware/rate-limit';
 import { createRequestIdMiddleware } from '@/middleware/request-id';
 import { resolveGatewayRoute } from '@/routes/routing-table';
+import { buildGatewayHealthSnapshot } from '@/lib/validation';
 import type { GatewayBindings, GatewayVariables } from '@/types';
 
 function rewritePath(pathname: string, routePrefix: string, upstreamPathPrefix?: string): string | undefined {
@@ -35,6 +36,7 @@ export const createApp = () => {
   app.use('*', createRateLimitMiddleware());
 
   app.get('/healthz', (c) => c.json({ status: 'ok', ts: Date.now() }));
+  app.get('/internal/health', (c) => c.json(buildGatewayHealthSnapshot(c.env)));
 
   app.all('*', async (c: Context<{ Bindings: GatewayBindings; Variables: GatewayVariables }>) => {
     const requestUrl = new URL(c.req.url);

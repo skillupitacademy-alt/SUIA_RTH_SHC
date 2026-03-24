@@ -87,6 +87,25 @@ describe('api-gateway', () => {
     await expect(response.json()).resolves.toMatchObject({ status: 'ok' });
   });
 
+  it('returns an internal health snapshot', async () => {
+    const response = await app.request('https://api.example.com/internal/health', undefined, env);
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      status: 'ok',
+      services: expect.objectContaining({
+        EXAM_SERVICE_URL: { status: 'configured', url: env.EXAM_SERVICE_URL },
+      }),
+      routes: expect.arrayContaining([
+        expect.objectContaining({
+          prefix: '/dashboard',
+          upstreamKey: 'EXAM_SERVICE_URL',
+          bindingStatus: 'configured',
+        }),
+      ]),
+    });
+  });
+
   it('rejects missing jwt on protected routes', async () => {
     const response = await app.request('https://api.example.com/tutorial/lesson-1', undefined, env);
     expect(response.status).toBe(401);
@@ -235,6 +254,24 @@ describe('api-gateway', () => {
     expect(headers.get('X-Request-ID')).toBe('request-123');
     expect(headers.get('X-Gateway-Secret')).toBe(env.INTERNAL_GATEWAY_SECRET);
     expect(headers.get('X-User-ID')).toBe('user-123');
+  });
+
+  it('preserves cookie auth headers when proxying protected routes', async () => {
+    const token = await makeToken(['student']);
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
+
+    const response = await app.request('https://api.example.com/tutorial/lessons/1', {
+      headers: {
+        authorization: `Bearer ${token}`,
+        cookie: 'skillhubcore_accessToken=jwt-cookie-token; theme=dark',
+      },
+    }, env);
+
+    expect(response.status).toBe(200);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    const [, init] = fetchSpy.mock.calls[0] ?? [];
+    const headers = new Headers((init as RequestInit | undefined)?.headers);
+    expect(headers.get('cookie')).toContain('skillhubcore_accessToken=jwt-cookie-token');
   });
 
   it('forbids admin route for non-admin roles', async () => {

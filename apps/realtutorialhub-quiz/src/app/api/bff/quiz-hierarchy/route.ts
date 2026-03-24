@@ -28,8 +28,8 @@ async function getAuthHeaders() {
         };
     }
 
-    const accessToken = cookieStore.get('accessToken')?.value;
-    const refreshToken = cookieStore.get('refreshToken')?.value;
+    const accessToken = cookieStore.get('skillhubcore_accessToken')?.value ?? cookieStore.get('accessToken')?.value;
+    const refreshToken = cookieStore.get('skillhubcore_refreshToken')?.value ?? cookieStore.get('refreshToken')?.value;
     const csrfToken = cookieStore.get('csrfToken')?.value;
 
     const cookieParts = [
