@@ -38,6 +38,8 @@
                     "k6:auth":  "k6 run k6/auth-flow.js",
                     "k6:admin":  "k6 run k6/admin-flow.js",
                     "k6:all":  "k6 run k6/exam-flow.js && k6 run k6/auth-flow.js && k6 run k6/admin-flow.js",
+                    "validate:gateway":  "node scripts/validate-gateway.mjs",
+                    "validate:gateway:live":  "node scripts/validate-gateway.mjs --live",
                     "type-check":  "turbo run type-check",
                     "typecheck:all":  "turbo run type-check --filter=@quiz/realtutorialhub-quiz --filter=@quiz/realtutorialhub-admin --filter=@quiz/api-server --filter=@quiz/realtutorialhub-web --filter=@quiz/skillhubcore-service --filter=@quiz/api-gateway --filter=@quiz/db-people --filter=@quiz/skillup-web --filter=@quiz/skillup-admin --filter=@quiz/faculty-app --filter=@quiz/skillhubcore-admin",
                     "ci":  "pnpm lint:all \u0026\u0026 pnpm typecheck:all \u0026\u0026 pnpm build:all",

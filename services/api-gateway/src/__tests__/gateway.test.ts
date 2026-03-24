@@ -130,7 +130,7 @@ describe('api-gateway', () => {
   });
 
   it('routes skillhubcore api host traffic to the skillhubcore upstream', async () => {
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 })); 
     const response = await app.request('https://api.skillhubcore.in/api/hierarchy/domains', undefined, env);
 
     expect(response.status).toBe(200);
@@ -138,14 +138,41 @@ describe('api-gateway', () => {
     expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(env.SKILLHUBCORE_URL);
   });
 
+  it('routes public telemetry without jwt', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
+    const response = await app.request('https://api.example.com/telemetry', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({ event: 'client_event' }),
+    }, env);
+
+    expect(response.status).toBe(200);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(`${env.EXAM_SERVICE_URL}/api/telemetry`);
+  });
+
   it.each([
     ['dashboard', 'GET', 'https://api.example.com/dashboard?range=7d&page=1&limit=3', '/api/dashboard?range=7d&page=1&limit=3'],
     ['dashboard metadata', 'GET', 'https://api.example.com/dashboard/metadata', '/api/dashboard/metadata'],
     ['dashboard breakdown', 'GET', 'https://api.example.com/dashboard/breakdown?range=28d', '/api/dashboard/breakdown?range=28d'],
     ['dashboard trend', 'GET', 'https://api.example.com/dashboard/trend?range=7d', '/api/dashboard/trend?range=7d'],
+    ['telemetry', 'POST', 'https://api.example.com/telemetry', '/api/telemetry'],
+    ['reports list', 'GET', 'https://api.example.com/reports', '/api/reports'],
     ['analytics score history', 'GET', 'https://api.example.com/analytics/user/score-history', '/api/analytics/user/score-history'],
     ['analytics mastery trend', 'GET', 'https://api.example.com/analytics/user/mastery-trend', '/api/analytics/user/mastery-trend'],
     ['recommendations explain', 'GET', 'https://api.example.com/recommendations/explain', '/api/recommendations/explain'],
+    ['search', 'GET', 'https://api.example.com/search?q=algebra&type=all', '/api/search?q=algebra&type=all'],
+    ['export urls', 'GET', 'https://api.example.com/export/urls?examId=exam-1&format=json', '/api/export/urls?examId=exam-1&format=json'],
+    ['export status', 'GET', 'https://api.example.com/export/status/job-1?examId=exam-1&format=json', '/api/export/status/job-1?examId=exam-1&format=json'],
+    ['export trigger', 'POST', 'https://api.example.com/export/trigger', '/api/export/trigger'],
+    ['report status', 'GET', 'https://api.example.com/report-status?attemptId=attempt-1', '/api/report-status?attemptId=attempt-1'],
+    ['queue report', 'POST', 'https://api.example.com/queue-report', '/api/queue-report'],
+    ['notifications unread count', 'GET', 'https://api.example.com/notifications/unread-count', '/api/notifications/unread-count'],
+    ['factory duplicate check', 'POST', 'https://api.example.com/factory/check-duplicates', '/api/factory/check-duplicates'],
+    ['factory save', 'POST', 'https://api.example.com/factory/save', '/api/factory/save'],
+    ['system flags', 'GET', 'https://api.example.com/system/flags', '/api/system/flags'],
     ['tutor help request', 'POST', 'https://api.example.com/tutor/help/request', '/api/tutor/help/request'],
     ['tutor notes request', 'POST', 'https://api.example.com/tutor/notes/request', '/api/tutor/notes/request'],
     ['adaptive exam start', 'POST', 'https://api.example.com/exams/adaptive/start', '/api/exams/adaptive/start'],
@@ -154,8 +181,8 @@ describe('api-gateway', () => {
     ['topics', 'GET', 'https://api.example.com/topics?subjectId=s1', '/api/topics?subjectId=s1'],
     ['subtopics', 'GET', 'https://api.example.com/subtopics?topicId=t1', '/api/subtopics?topicId=t1'],
     ['quiz count', 'POST', 'https://api.example.com/quiz/count', '/api/quiz/count'],
-  ] as const)('rewrites quiz hierarchy route: %s', async (_label, method, url, expectedPath) => {
-    const token = await makeToken(['student']);
+  ] as const)('rewrites quiz hierarchy route: %s', async (label, method, url, expectedPath) => {
+    const token = await makeToken(label.includes('factory') || label.includes('system') ? ['admin'] : ['student']);
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
 
     const response = await app.request(url, {
@@ -169,11 +196,25 @@ describe('api-gateway', () => {
 
     expect(response.status).toBe(200);
     expect(fetchSpy).toHaveBeenCalledTimes(1);
-    expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(`${env.EXAM_SERVICE_URL}${expectedPath}`);
+    const upstreamBase = label === 'notifications unread count' ? env.NOTIFICATION_URL : env.EXAM_SERVICE_URL;
+    expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(`${upstreamBase}${expectedPath}`);
     const [, init] = fetchSpy.mock.calls[0] ?? [];
     const headers = new Headers((init as RequestInit | undefined)?.headers);
     expect(headers.get('X-Gateway-Secret')).toBe(env.INTERNAL_GATEWAY_SECRET);
-    expect(headers.get('X-User-ID')).toBe('user-123');
+    if (label === 'telemetry' || label === 'search') {
+      expect(headers.get('X-User-ID')).toBeNull();
+    } else {
+      expect(headers.get('X-User-ID')).toBe('user-123');
+    }
+  });
+
+  it('routes public search without jwt', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
+    const response = await app.request('https://api.example.com/search?q=algebra&type=all', undefined, env);
+
+    expect(response.status).toBe(200);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(`${env.EXAM_SERVICE_URL}/api/search?q=algebra&type=all`);
   });
 
   it('proxies valid jwt with user headers', async () => {

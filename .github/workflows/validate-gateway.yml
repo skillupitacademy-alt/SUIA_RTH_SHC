@@ -1,0 +1,46 @@
+name: Validate API Gateway
+
+on:
+  pull_request:
+    paths:
+      - 'services/api-gateway/**'
+      - 'apps/api-server/src/app/api/**'
+      - 'packages/api-client/src/**'
+      - 'apps/realtutorialhub-quiz/src/**'
+      - '.github/workflows/validate-gateway.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'services/api-gateway/**'
+      - 'apps/api-server/src/app/api/**'
+      - 'packages/api-client/src/**'
+      - 'apps/realtutorialhub-quiz/src/**'
+      - '.github/workflows/validate-gateway.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate gateway bindings and routes
+        run: pnpm validate:gateway

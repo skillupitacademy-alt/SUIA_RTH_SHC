@@ -21,6 +21,9 @@ jobs:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
       INTERNAL_GATEWAY_SECRET: ${{ secrets.INTERNAL_GATEWAY_SECRET }}
+      SKILLUP_WEB_URL: https://skillup-web-plldp3atca-el.a.run.app
+      SKILLUP_ADMIN_URL: https://skillup-admin-plldp3atca-el.a.run.app
+      FACULTY_URL: https://faculty-app-plldp3atca-el.a.run.app
       SKILLHUBCORE_URL: ${{ secrets.SKILLHUBCORE_URL }}
       STUDENT_FACULTY_URL: ${{ secrets.STUDENT_FACULTY_URL }}
       EXAM_SERVICE_URL: ${{ secrets.EXAM_SERVICE_URL }}

@@ -104,7 +104,7 @@ export async function fetchDrilldownMetadata() {
 
     try {
         const apiUrl = getInternalApiBase();
-        const res = await fetch(`${apiUrl}/dashboard/performance/metadata`, {
+        const res = await fetch(`${apiUrl}/dashboard/metadata`, {
             headers,
             next: { revalidate: 3600 }
         });
@@ -122,7 +122,7 @@ export async function fetchPerformanceBreakdown(range = '28d') {
 
     try {
         const apiUrl = getInternalApiBase();
-        const res = await fetch(`${apiUrl}/dashboard/performance/breakdown?range=${range}`, {
+        const res = await fetch(`${apiUrl}/dashboard/breakdown?range=${range}`, {
             headers,
             next: { revalidate: 300 }
         });
