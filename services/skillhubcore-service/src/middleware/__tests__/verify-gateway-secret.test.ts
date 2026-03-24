@@ -30,6 +30,19 @@ describe('requireGatewaySecret', () => {
     expect(response.status).toBe(200);
   });
 
+  it('allows auth routes without the gateway secret', async () => {
+    const app = new Hono();
+    app.use('*', requireGatewaySecret);
+    app.get('/auth/login', (c) => c.json({ status: 'ok' }));
+    app.get('/auth/me', (c) => c.json({ status: 'ok' }));
+
+    const loginResponse = await app.request('http://localhost/auth/login');
+    const meResponse = await app.request('http://localhost/auth/me');
+
+    expect(loginResponse.status).toBe(200);
+    expect(meResponse.status).toBe(200);
+  });
+
   it('rejects protected requests without the gateway secret', async () => {
     const app = new Hono();
     app.use('*', requireGatewaySecret);

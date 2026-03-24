@@ -4,6 +4,8 @@ export const requireGatewaySecret = createMiddleware(async (c, next) => {
   if (
     c.req.path === '/healthz' ||
     c.req.path === '/healthz/' ||
+    c.req.path === '/auth' ||
+    c.req.path.startsWith('/auth/') ||
     c.req.path.startsWith('/api/hierarchy')
   ) {
     await next();
