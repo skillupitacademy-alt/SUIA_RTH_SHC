@@ -1,6 +1,9 @@
 'use client';
 
+import { apiClient } from '@quiz/api-client';
 import { useLayoutEffect } from 'react';
+
+import { getAuthCookieName, resolvePortalIdentityFromHostname } from './lib/auth-portal';
 
 declare global {
   interface Window {
@@ -16,8 +19,8 @@ function readCookie(name: string): string | null {
   return decodeURIComponent(parts.pop()?.split(';').shift() ?? '');
 }
 
-function getAccessToken(): string | null {
-  return readCookie('accessToken');
+function getAccessToken(portalIdentity: ReturnType<typeof resolvePortalIdentityFromHostname>): string | null {
+  return readCookie(getAuthCookieName(portalIdentity));
 }
 
 function shouldAttachAuthHeader(requestUrl: string): boolean {
@@ -42,6 +45,9 @@ export function BrowserAuthFetchProvider() {
       return;
     }
 
+    const portalIdentity = resolvePortalIdentityFromHostname(window.location.hostname);
+    apiClient.client.setPortalIdentity(portalIdentity);
+
     window.__quizBrowserAuthFetchWrapped__ = true;
     const originalFetch = window.fetch.bind(window);
 
@@ -50,7 +56,7 @@ export function BrowserAuthFetchProvider() {
       const headers = new Headers(
         init.headers ?? (input instanceof Request ? input.headers : undefined)
       );
-      const token = getAccessToken();
+      const token = getAccessToken(portalIdentity);
 
       if (token !== null && token.trim().length > 0 && headers.has('Authorization') === false && shouldAttachAuthHeader(requestUrl)) {
         headers.set('Authorization', `Bearer ${token.trim()}`);
