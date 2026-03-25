@@ -37,6 +37,10 @@ export function SessionExpiryModal() {
     const handleLogin = async () => {
         setSessionExpired(false);
         try {
+            clientLogger.warn('[AUTH_FLOW][ADMIN_SESSION_MODAL][RETURN_TO_LOGIN]', {
+                step: 'return_to_login',
+                path: pathname,
+            });
             await apiClient.auth.logout();
         } catch (err) {
             clientLogger.error("Session expiry server-logout failed", { error: err instanceof Error ? err.message : 'unknown' });
@@ -44,6 +48,11 @@ export function SessionExpiryModal() {
             logout(); // Clear Zustand state
             localStorage.removeItem('quiz-platform-admin-auth'); // Force hard purge
             const redirectUrl = encodeURIComponent(pathname);
+            clientLogger.warn('[AUTH_FLOW][ADMIN_SESSION_MODAL][REDIRECT]', {
+                step: 'redirect',
+                safeRedirect: pathname,
+                rawRedirect: redirectUrl,
+            });
             router.push(`/login?redirect=${redirectUrl}&reason=session_expired`);
         }
     };

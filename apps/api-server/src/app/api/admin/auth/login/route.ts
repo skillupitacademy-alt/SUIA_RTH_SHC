@@ -18,6 +18,15 @@ const loginSchema = z.object({
 
 async function handler(_req: Request, body: z.infer<typeof loginSchema>) {
   const { email, password } = body;
+  const requestId = _req.headers.get('x-request-id') ?? 'no-request-id';
+  const origin = _req.headers.get('origin') ?? 'unknown';
+  const host = _req.headers.get('host') ?? new URL(_req.url).hostname;
+  console.log('[AUTH_FLOW][ADMIN_LOGIN][START]', JSON.stringify({
+    requestId,
+    host,
+    origin,
+    path: new URL(_req.url).pathname,
+  }));
 
   const ip = getClientIp({
     headers: _req.headers,
@@ -28,6 +37,15 @@ async function handler(_req: Request, body: z.infer<typeof loginSchema>) {
   const result = await AdminAuthService.login(email, password, ip, audience);
 
   const cookieDomain = resolveCookieDomain(process.env.COOKIE_DOMAIN, _req.url ? new URL(_req.url).hostname : undefined);
+  console.log('[AUTH_FLOW][ADMIN_LOGIN][COOKIES]', JSON.stringify({
+    requestId,
+    host,
+    cookieDomain: cookieDomain ?? 'unset',
+    accessTokenCookieName: audience === 'infra' ? 'infra_accessToken' : 'admin_accessToken',
+    refreshTokenCookieName: audience === 'infra' ? 'infra_refreshToken' : 'admin_refreshToken',
+    sameSite: 'none',
+    secure: true,
+  }));
 
   const user = {
       id: result.user.id,
@@ -67,6 +85,14 @@ async function handler(_req: Request, body: z.infer<typeof loginSchema>) {
   setCsrfToken(response);
 
   recordCounter('admin.auth.login', 1, { outcome: 'success', audience });
+
+  console.log('[AUTH_FLOW][ADMIN_LOGIN][SUCCESS]', JSON.stringify({
+    requestId,
+    host,
+    audience,
+    path: new URL(_req.url).pathname,
+    cookieDomain: cookieDomain ?? 'unset',
+  }));
 
   return response;
 }

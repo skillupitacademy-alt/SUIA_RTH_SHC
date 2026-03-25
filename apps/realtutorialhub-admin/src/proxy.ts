@@ -111,12 +111,26 @@ function hasAdminRole(payload: UserPayload): boolean {
 
 export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
+  const requestId = request.headers.get('x-request-id') ?? 'no-request-id';
   if (hasValidGatewaySecret(request) === false) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
   const user = await resolveUser(request);
   const redirectPath = `${pathname}${search}`;
+  const accessToken = getAccessToken(request);
+  const hasAccessToken = typeof accessToken === 'string' && accessToken.trim().length > 0;
+
+  if (pathname === '/login' || pathname === '/dashboard' || isProtectedRoute(pathname)) {
+    console.log('[AUTH_FLOW][ADMIN_PROXY][CHECK]', JSON.stringify({
+      requestId,
+      path: pathname,
+      search,
+      hasAccessToken,
+      isProtected: isProtectedRoute(pathname),
+      hasUser: user !== null,
+    }));
+  }
 
   if (isPublicRoute(pathname)) {
     if (user !== null) {
@@ -129,10 +143,24 @@ export async function proxy(request: NextRequest) {
   }
 
   if (isProtectedRoute(pathname) && user === null) {
+    console.log('[AUTH_FLOW][ADMIN_PROXY][REDIRECT_TO_LOGIN]', JSON.stringify({
+      requestId,
+      path: pathname,
+      redirectPath,
+      reason: 'missing_or_invalid_access_token',
+      hasAccessToken,
+    }));
     return NextResponse.redirect(getLoginUrl(request, redirectPath));
   }
 
   if (user !== null && isProtectedRoute(pathname) && hasAdminRole(user) === false) {
+    console.log('[AUTH_FLOW][ADMIN_PROXY][REDIRECT_TO_UNAUTHORIZED]', JSON.stringify({
+      requestId,
+      path: pathname,
+      redirectPath,
+      reason: 'insufficient_role',
+      roles: user.roles,
+    }));
     return NextResponse.redirect(getUnauthorizedUrl(request));
   }
 

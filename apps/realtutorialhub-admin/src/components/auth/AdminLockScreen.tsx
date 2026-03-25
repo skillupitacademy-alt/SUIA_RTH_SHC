@@ -42,8 +42,18 @@ export function AdminLockScreen() {
                 setIsLoading(false);
                 return;
             }
+            clientLogger.warn('[AUTH_FLOW][ADMIN_LOCK_SCREEN][UNLOCK_SUBMIT]', {
+                step: 'submit',
+                emailDomain: email.includes('@') ? email.split('@')[1] : 'unknown',
+            });
             // 1. Verify password & establish fresh cookies
             const { user: refreshedUser, expiresAt } = await apiClient.admin.login(email, password);
+
+            clientLogger.warn('[AUTH_FLOW][ADMIN_LOCK_SCREEN][UNLOCK_RESPONSE]', {
+                step: 'response',
+                hasUser: refreshedUser !== null && refreshedUser !== undefined,
+                expiresAt: expiresAt ?? null,
+            });
 
             // 2. Update local state
             login(refreshedUser, expiresAt);

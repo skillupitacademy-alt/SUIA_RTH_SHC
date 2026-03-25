@@ -6,6 +6,7 @@ import { type FormEvent, useState } from 'react';
 
 import { getApiBase } from '@/utils/apiBase';
 import { useAuthStore } from '@/store/auth-store';
+import { clientLogger } from '@/utils/clientLogger';
 
 const LOGIN_ENDPOINT = `${getApiBase()}/auth/login`;
 
@@ -49,6 +50,13 @@ function LoginForm() {
     setLoading(true);
 
     try {
+      const redirectTarget = new URLSearchParams(window.location.search).get('redirect');
+      clientLogger.warn('[AUTH_FLOW][ADMIN_LOGIN_PAGE][SUBMIT]', {
+        step: 'submit',
+        hasRedirect: typeof redirectTarget === 'string',
+        path: window.location.pathname,
+      });
+
       const response = await fetch(LOGIN_ENDPOINT, {
         method: 'POST',
         credentials: 'include',
@@ -64,6 +72,13 @@ function LoginForm() {
       });
 
       const payload = (await response.json().catch(() => null)) as LoginResponse | null;
+
+      clientLogger.warn('[AUTH_FLOW][ADMIN_LOGIN_PAGE][RESPONSE]', {
+        step: 'response',
+        ok: response.ok,
+        status: response.status,
+        hasAccessToken: typeof payload?.accessToken === 'string' && payload.accessToken.trim().length > 0,
+      });
 
       if (!response.ok) {
         const message =
@@ -94,8 +109,18 @@ function LoginForm() {
         });
       }
 
+      clientLogger.warn('[AUTH_FLOW][ADMIN_LOGIN_PAGE][REDIRECT]', {
+        step: 'redirect',
+        safeRedirect: '/dashboard',
+        rawRedirect: redirectTarget ?? null,
+      });
+
       router.replace('/dashboard');
     } catch (err: unknown) {
+      clientLogger.error('[AUTH_FLOW][ADMIN_LOGIN_PAGE][ERROR]', {
+        step: 'error',
+        message: err instanceof Error ? err.message : 'Authentication failed',
+      });
       setError(err instanceof Error ? err.message : 'Authentication failed');
     } finally {
       setLoading(false);
