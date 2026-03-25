@@ -32,7 +32,6 @@ jobs:
       CRM_SERVICE_URL: ${{ secrets.CRM_SERVICE_URL }}
       NOTIFICATION_URL: ${{ secrets.NOTIFICATION_URL }}
       PLACEMENT_URL: ${{ secrets.PLACEMENT_URL }}
-      ADMIN_URL: ${{ secrets.ADMIN_URL }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
