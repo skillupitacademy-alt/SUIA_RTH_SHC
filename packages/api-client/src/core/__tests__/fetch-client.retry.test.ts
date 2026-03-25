@@ -119,4 +119,19 @@ describe('Core: FetchClient Resilience (Task 101, 102)', () => {
         expect(mockFetch).toHaveBeenCalledTimes(1);
         expect(mockFetch.mock.calls[0]?.[0]).toBe('https://api.example.com/auth/login');
     });
+
+    it('should not auto-refresh admin auth session checks', async () => {
+        const mockFetch = vi.mocked(fetch);
+        mockFetch.mockResolvedValueOnce({
+            ok: false,
+            status: 401,
+            headers: headers(),
+            json: () => Promise.resolve({ error: 'Unauthorized' }),
+        } as Response);
+
+        await expect(client.get('/admin/auth/me')).rejects.toThrow('Unauthorized');
+
+        expect(mockFetch).toHaveBeenCalledTimes(1);
+        expect(mockFetch.mock.calls[0]?.[0]).toBe('https://api.example.com/admin/auth/me');
+    });
 });

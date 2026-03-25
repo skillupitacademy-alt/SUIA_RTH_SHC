@@ -55,6 +55,8 @@ const AUTH_REFRESH_BYPASS_ENDPOINTS = new Set([
   '/auth/forgot-password',
   '/auth/reset-password',
   '/admin/auth/login',
+  '/admin/auth/me',
+  '/admin/auth/heartbeat',
 ]);
 
 // In-memory ETag cache for Task 104

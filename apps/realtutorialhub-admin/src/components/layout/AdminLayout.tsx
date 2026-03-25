@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { type ComponentType, type ReactNode, useState } from 'react';
+import { type ComponentType, type ReactNode, useCallback, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 
 import { AdminGuard } from '@/components/auth/AdminGuard';
@@ -77,8 +77,6 @@ const ADMIN_SECTIONS: SidebarSection[] = [
 
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
-    useStrictNavigation();
-    usePresenceHeartbeat();
     const pathname = usePathname();
     const { logout, expiresAt, user, login, setLoggingOut } = useAuthStore(
         useShallow((s) => ({
@@ -92,8 +90,9 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     const [isRedirecting, setIsRedirecting] = useState(false);
     const [redirectMessage, setRedirectMessage] = useState<string | undefined>(undefined);
     const { showWarning, cancelNavigation } = useStrictNavigation();
+    usePresenceHeartbeat();
 
-    const handleLogout = async (reason?: 'session_expired') => {
+    const handleLogout = useCallback(async (reason?: 'session_expired') => {
         if (isRedirecting) return;
         setLoggingOut(true);
         setIsRedirecting(true);
@@ -114,10 +113,10 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             window.location.href = targetUrl;
             setIsRedirecting(false);
         }, 3000);
-    };
+    }, [isRedirecting, logout, setLoggingOut]);
 
-    const onManualLogout = () => { void handleLogout(); };
-    const onExpiryLogout = () => { void handleLogout('session_expired'); };
+    const onManualLogout = useCallback(() => { void handleLogout(); }, [handleLogout]);
+    const onExpiryLogout = useCallback(() => { void handleLogout('session_expired'); }, [handleLogout]);
 
     const renderNavItem = (item: SidebarItem) => {
         const isLink = item.type === 'link';
