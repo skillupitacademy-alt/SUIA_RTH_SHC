@@ -35,7 +35,8 @@ export function isProtectedRoute(pathname: string): boolean {
 }
 
 export function getAccessToken(request: NextRequest): string | undefined {
-  return request.cookies.get('accessToken')?.value;
+  // Admin portal uses 'admin_accessToken' cookie; fallback to 'accessToken' for compatibility
+  return request.cookies.get('admin_accessToken')?.value ?? request.cookies.get('accessToken')?.value;
 }
 
 function getLoginUrl(request: NextRequest, redirectPath: string): URL {
