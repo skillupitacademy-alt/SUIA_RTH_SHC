@@ -60,6 +60,12 @@ jobs:
       - name: Build gateway
         run: pnpm --filter @quiz/api-gateway build
 
+      - name: Set Worker secrets
+        working-directory: services/api-gateway
+        run: |
+          printf '%s' "$JWT_SECRET" | npx wrangler secret put JWT_SECRET --env production
+          printf '%s' "$INTERNAL_GATEWAY_SECRET" | npx wrangler secret put INTERNAL_GATEWAY_SECRET --env production
+
       - name: Deploy with Wrangler
         run: npx wrangler deploy --env production --var LAST_VALIDATION_TIMESTAMP:$LAST_VALIDATION_TIMESTAMP
         working-directory: services/api-gateway

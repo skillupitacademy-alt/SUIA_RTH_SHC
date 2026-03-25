@@ -10,6 +10,7 @@ import { corsMiddleware } from './modules/auth/cors.middleware';
 import { csrfProtection, setCsrfToken } from './modules/auth/csrf.middleware';
 import { _verifyAdmin } from './modules/auth/rbac.service';
 import { TokenService } from './modules/auth/token.service';
+import crypto from 'crypto';
 
 export async function proxy(request: NextRequest) {
   const requestId = request.headers.get('x-request-id') ?? crypto.randomUUID();
