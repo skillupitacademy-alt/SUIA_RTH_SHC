@@ -22,6 +22,26 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const pathname = usePathname();
 
+    const normalizeRole = (value: string | null | undefined) => (typeof value === 'string' ? value.toLowerCase() : '');
+    const isSameAuthSession = (
+        currentUser: typeof user,
+        nextUser: typeof user,
+        currentExpiresAt: string | null,
+        nextExpiresAt: string | null
+    ) => {
+        if (currentUser === null || currentUser === undefined || nextUser === null || nextUser === undefined) {
+            return false;
+        }
+
+        return (
+            currentUser.id === nextUser.id &&
+            currentUser.email === nextUser.email &&
+            normalizeRole(currentUser.role) === normalizeRole(nextUser.role) &&
+            Boolean(currentUser.isAdmin) === Boolean(nextUser.isAdmin) &&
+            currentExpiresAt === nextExpiresAt
+        );
+    };
+
     // Circuit Breaker: Custom handler for Admin
     const handleUnauthorized = useCallback((e: Event) => {
         // PATIENCE PROTOCOL: If the terminal is locked, the user is still at their desk (or pause-mode)
@@ -75,8 +95,10 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
                 const validatedHasAdminRole = validatedUser?.role === 'admin' || validatedUser?.role === 'super_admin';
                 if (validatedUser === null || validatedUser === undefined || validatedHasAdminRole === false) throw new Error("Revoked");
 
-                // Only update if something actually changed to avoid unnecessary re-renders/loop
-                if (JSON.stringify(validatedUser) !== JSON.stringify(user) || validatedExpiresAt !== expiresAt) {
+                // Only update if the stable session fields actually changed.
+                // The admin /me response intentionally omits some login-only fields, so
+                // comparing the full object creates a render loop when the session is valid.
+                if (isSameAuthSession(user, validatedUser, expiresAt, validatedExpiresAt) === false) {
                     login(validatedUser, validatedExpiresAt);
                 }
             } catch (err: unknown) {
