@@ -106,7 +106,7 @@ async function resolveUser(request: NextRequest): Promise<UserPayload | null> {
 }
 
 function hasAdminRole(payload: UserPayload): boolean {
-  return payload.roles.some((role) => ADMIN_ROLES.includes(role));
+  return payload.roles.some((role) => ADMIN_ROLES.includes(role.toLowerCase()));
 }
 
 export async function proxy(request: NextRequest) {
