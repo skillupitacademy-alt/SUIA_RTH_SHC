@@ -19,6 +19,23 @@ describe('TokenService (unit)', () => {
     expect(decoded.userId).toBe('u1');
   });
 
+  it('signs access tokens with tokenType and brand claims', async () => {
+    const service = container.get(TokenService);
+    const payload = {
+      userId: 'u1',
+      email: 'u@u.com',
+      roles: ['ADMIN'],
+      isAdmin: true,
+      aud: 'admin',
+      tokenType: 'admin',
+      brand: 'realtutorialhub',
+    } as any;
+    const token = await service.generateAccessToken(payload);
+    const decoded = await service.verifyAdminAccessToken(token, { audience: 'admin' });
+    expect(decoded.tokenType).toBe('admin');
+    expect(decoded.brand).toBe('realtutorialhub');
+  });
+
   it('signs refresh token', async () => {
     const service = container.get(TokenService);
     const token = await service.generateRefreshToken('u1', false, 'user');

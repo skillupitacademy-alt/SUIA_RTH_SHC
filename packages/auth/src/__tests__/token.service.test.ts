@@ -78,6 +78,19 @@ describe('TokenService', () => {
       expect(verified.aud).toBe('admin');
     });
 
+    it('includes optional tokenType and brand claims when provided', async () => {
+      const token = await service.generateAccessToken({
+        ...mockPayload,
+        isAdmin: true,
+        tokenType: 'admin',
+        brand: 'realtutorialhub',
+      } as any);
+
+      const verified = await service.verifyAdminAccessToken(token);
+      expect(verified.tokenType).toBe('admin');
+      expect(verified.brand).toBe('realtutorialhub');
+    });
+
     it('fails to verify user token as admin', async () => {
       const token = await service.generateAccessToken({ ...mockPayload, isAdmin: false });
       await expect(service.verifyAdminAccessToken(token)).rejects.toThrow();

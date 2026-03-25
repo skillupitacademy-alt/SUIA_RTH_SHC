@@ -10,6 +10,9 @@ export type TokenPayload = JWTPayload & {
   roles: string[];
   isAdmin?: boolean;
   aud?: string;
+  tokenType?: 'user' | 'admin';
+  brand?: string;
+  role?: string;
 };
 export type UserTokenPayload = TokenPayload;
 export type AdminTokenPayload = TokenPayload & { isAdmin: true; adminScope?: string[] };
@@ -18,6 +21,8 @@ export type RefreshTokenPayload = JWTPayload & {
   isAdmin: boolean;
   tokenFamily?: string;
   aud?: string;
+  tokenType?: 'user' | 'admin';
+  brand?: string;
 };
 
 export class TokenService {
@@ -107,8 +112,12 @@ export class TokenService {
     
     // Explicitly set audience if not provided (default to 'user' or 'admin')
     const audience = _payload.aud ?? (_payload.isAdmin === true ? 'admin' : 'user');
+    const tokenType = _payload.tokenType ?? (_payload.isAdmin === true ? 'admin' : 'user');
+    const brand = typeof _payload.brand === 'string' && _payload.brand.trim().length > 0
+      ? _payload.brand.trim().toLowerCase()
+      : undefined;
     
-    return await new SignJWT({ ..._payload })
+    return await new SignJWT({ ..._payload, tokenType, brand })
       .setProtectedHeader({ alg: 'HS256' })
       .setAudience(audience)
       .setIssuedAt()
@@ -116,9 +125,19 @@ export class TokenService {
       .sign(secret);
   }
 
-  async generateRefreshToken(userId: string, isAdmin: boolean = false, audience: string = 'user'): Promise<string> {
+  async generateRefreshToken(
+    userId: string,
+    isAdmin: boolean = false,
+    audience: string = 'user',
+    metadata?: { tokenType?: 'user' | 'admin'; brand?: string },
+  ): Promise<string> {
     const secret = isAdmin ? this.ADMIN_SECRET : this.REFRESH_SECRET;
-    return await new SignJWT({ userId, isAdmin, aud: audience })
+    const tokenType = metadata?.tokenType ?? (isAdmin === true ? 'admin' : 'user');
+    const brand = typeof metadata?.brand === 'string' && metadata.brand.trim().length > 0
+      ? metadata.brand.trim().toLowerCase()
+      : undefined;
+
+    return await new SignJWT({ userId, isAdmin, aud: audience, tokenType, brand })
       .setProtectedHeader({ alg: 'HS256' })
       .setAudience(audience)
       .setIssuedAt()
@@ -327,8 +346,13 @@ export class TokenService {
     return this.getInstance().generateAccessToken(_payload, customExpiration);
   }
 
-  static generateRefreshToken(userId: string, isAdmin: boolean = false, audience: string = 'user') {
-    return this.getInstance().generateRefreshToken(userId, isAdmin, audience);
+  static generateRefreshToken(
+    userId: string,
+    isAdmin: boolean = false,
+    audience: string = 'user',
+    metadata?: { tokenType?: 'user' | 'admin'; brand?: string },
+  ) {
+    return this.getInstance().generateRefreshToken(userId, isAdmin, audience, metadata);
   }
 
   /** @deprecated Use verifyUserAccessToken */

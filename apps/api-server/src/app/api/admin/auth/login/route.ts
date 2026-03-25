@@ -7,6 +7,7 @@ import { recordCounter } from '@/lib/metrics';
 import { AdminAuthService } from '@/modules/auth/admin-auth.service';
 import { getClientIp } from '@/modules/auth/client-ip';
 import { resolveCookieDomain } from '@/lib/cookie-domain';
+import { resolveRequestBrand } from '@/lib/request-brand';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -33,8 +34,9 @@ async function handler(_req: Request, body: z.infer<typeof loginSchema>) {
   });
   const portalIdentity = _req.headers.get('x-portal-identity') ?? 'admin';
   const audience = portalIdentity === 'infrastructure' ? 'infra' : 'admin';
+  const brand = resolveRequestBrand(new URL(_req.url).hostname);
   
-  const result = await AdminAuthService.login(email, password, ip, audience);
+  const result = await AdminAuthService.login(email, password, ip, audience, brand);
 
   const cookieDomain = resolveCookieDomain(process.env.COOKIE_DOMAIN, _req.url ? new URL(_req.url).hostname : undefined);
   console.log('[AUTH_FLOW][ADMIN_LOGIN][COOKIES]', JSON.stringify({
@@ -92,6 +94,7 @@ async function handler(_req: Request, body: z.infer<typeof loginSchema>) {
     audience,
     path: new URL(_req.url).pathname,
     cookieDomain: cookieDomain ?? 'unset',
+    brand: brand ?? 'unknown',
   }));
 
   return response;

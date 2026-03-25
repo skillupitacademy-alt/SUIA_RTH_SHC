@@ -16,9 +16,12 @@ export class TokenRefreshService {
     private auditService = container.get(AuditService)
   ) {}
 
-  async refresh(token: string, ip?: string, examId?: string, requestedAudience: string = 'user') {
-    const decoded = decodeJwt(token) as { isAdmin?: boolean; [key: string]: unknown };
+  async refresh(token: string, ip?: string, examId?: string, requestedAudience: string = 'user', requestBrand?: string) {
+    const decoded = decodeJwt(token) as { isAdmin?: boolean; brand?: string; tokenType?: string; [key: string]: unknown };
     const isAdmin = decoded.isAdmin === true;
+    const tokenBrand = typeof decoded.brand === 'string' && decoded.brand.trim().length > 0
+      ? decoded.brand.trim().toLowerCase()
+      : requestBrand;
 
     // Support both new (verifyUser/verifyAdmin) and legacy verifyRefreshToken paths for tests/backwards-compat.
     /* c8 ignore start */
@@ -109,10 +112,15 @@ export class TokenRefreshService {
       email: user.email,
       roles: roleNames,
       isAdmin: isAdminNow,
-      aud: requestedAudience
+      aud: requestedAudience,
+      tokenType: isAdminNow ? 'admin' : 'user',
+      brand: tokenBrand,
     }, customExpiration);
     
-    const newRefreshToken = await this.tokenService.generateRefreshToken(user.id, isAdminNow, requestedAudience);
+    const newRefreshToken = await this.tokenService.generateRefreshToken(user.id, isAdminNow, requestedAudience, {
+      tokenType: isAdminNow ? 'admin' : 'user',
+      brand: tokenBrand,
+    });
     const newRefreshTokenHash = await this.tokenService.hashToken(newRefreshToken);
 
     await this.tokenRepo.revokeById(storedToken.id);

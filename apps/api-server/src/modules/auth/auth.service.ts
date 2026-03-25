@@ -44,14 +44,14 @@ export class AuthService {
     return service.signup(email, password, name, ip);
   }
 
-  async login(email: string, password: string, ip: string = 'unknown') {
+  async login(email: string, password: string, ip: string = 'unknown', brand?: string) {
     const service = await this.getLoginService();
-    return service.login(email, password, ip);
+    return service.login(email, password, ip, brand);
   }
 
-  async refresh(token: string, ip?: string, examId?: string, requestedAudience: string = 'user') {
+  async refresh(token: string, ip?: string, examId?: string, requestedAudience: string = 'user', brand?: string) {
     const service = await this.getTokenRefreshService();
-    return service.refresh(token, ip, examId, requestedAudience);
+    return service.refresh(token, ip, examId, requestedAudience, brand);
   }
 
   async logout(token: string, userId?: string, ip?: string) {

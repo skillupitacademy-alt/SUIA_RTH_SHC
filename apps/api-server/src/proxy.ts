@@ -15,6 +15,7 @@ export async function proxy(request: NextRequest) {
   const requestId = request.headers.get('x-request-id') ?? crypto.randomUUID();
   const sessionId = request.headers.get('x-session-id') ?? 'anon-' + crypto.randomUUID().slice(0, 8);
   const pathname = request.nextUrl.pathname;
+  const INTERNAL_GATEWAY_SECRET = process.env.INTERNAL_GATEWAY_SECRET;
   
   // DIAGNOSTIC LOG (User visible in Vercel)
   if (pathname.includes('security/report')) {
@@ -39,13 +40,36 @@ export async function proxy(request: NextRequest) {
     });
   }
 
-  // 4. CSRF Protection for mutations
   const isAuthRoute = request.nextUrl.pathname.startsWith('/api/auth') || 
                       request.nextUrl.pathname.startsWith('/api/admin/auth');
-  
+
+  const isSecurityReport = pathname.toLowerCase().includes('security/report');
+  const isWorkflowRoute = pathname.startsWith('/api/workflows') || pathname.startsWith('/api/api/workflows') || pathname.startsWith('/api/export/workflow') || pathname.startsWith('/api/api/export/workflow');
+  const isHealthRoute =
+    pathname === '/api/health' ||
+    pathname === '/api/health/live' ||
+    pathname === '/api/health/ready';
+  const isGatewayExemptRoute = isHealthRoute || isWorkflowRoute;
+
+  if (isGatewayExemptRoute === false) {
+    if (typeof INTERNAL_GATEWAY_SECRET !== 'string' || INTERNAL_GATEWAY_SECRET.length === 0) {
+      const response = NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      response.headers.set('x-request-id', requestId);
+      response.headers.set('x-session-id', sessionId);
+      return corsMiddleware(request, response);
+    }
+
+    const gatewaySecret = request.headers.get('x-gateway-secret');
+    if (gatewaySecret !== INTERNAL_GATEWAY_SECRET) {
+      const response = NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      response.headers.set('x-request-id', requestId);
+      response.headers.set('x-session-id', sessionId);
+      return corsMiddleware(request, response);
+    }
+  }
+
+  // 4. CSRF Protection for mutations
   if (!isAuthRoute) {
-    const isSecurityReport = pathname.toLowerCase().includes('security/report');
-    const isWorkflowRoute = pathname.startsWith('/api/workflows') || pathname.startsWith('/api/api/workflows') || pathname.startsWith('/api/export/workflow') || pathname.startsWith('/api/api/export/workflow');
     if (!isSecurityReport && !isWorkflowRoute) {
       const csrfResponse = await csrfProtection(request);
       if (csrfResponse !== null && csrfResponse !== undefined) {
@@ -54,16 +78,7 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  // 5. Auth Protection
-  const isSecurityReport = pathname.toLowerCase().includes('security/report');
-  const isWorkflowRoute = pathname.startsWith('/api/workflows') || pathname.startsWith('/api/api/workflows') || pathname.startsWith('/api/export/workflow') || pathname.startsWith('/api/api/export/workflow');
-  const isHealthRoute =
-    pathname === '/api/health' ||
-    pathname === '/api/health/live' ||
-    pathname === '/api/health/ready';
-  const isPublicRoute = isAuthRoute || isSecurityReport || pathname === '/api/status' || isHealthRoute || isWorkflowRoute;
-
-  if (!isPublicRoute) {
+  if (!isAuthRoute && !isGatewayExemptRoute) {
     const pathname = request.nextUrl.pathname;
     const portalIdentity = request.headers.get('x-portal-identity') ?? 'user';
     let scope: 'admin' | 'user' | 'infrastructure' = 'user';

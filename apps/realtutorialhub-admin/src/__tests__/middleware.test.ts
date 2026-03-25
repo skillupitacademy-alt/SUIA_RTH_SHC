@@ -1,11 +1,11 @@
 import { NextRequest } from 'next/server';
 import { describe, expect, it, vi } from 'vitest';
 
-const verifySkillHubCoreJWTMock = vi.hoisted(() => vi.fn());
+const verifyAdminAccessTokenMock = vi.hoisted(() => vi.fn());
 
 vi.mock('@quiz/auth', () => ({
   TokenService: {
-    verifySkillHubCoreJWT: verifySkillHubCoreJWTMock,
+    verifyAdminAccessToken: verifyAdminAccessTokenMock,
   },
 }));
 
@@ -40,7 +40,7 @@ describe('realtutorialhub-admin proxy', () => {
   });
 
   it('redirects student tokens to /unauthorized', async () => {
-    verifySkillHubCoreJWTMock.mockResolvedValueOnce({
+    verifyAdminAccessTokenMock.mockResolvedValueOnce({
       sub: 'student-3',
       roles: ['student'],
       subscriptions: ['notes'],
@@ -49,15 +49,15 @@ describe('realtutorialhub-admin proxy', () => {
       exp: Math.floor(Date.now() / 1000) + 3600,
     });
 
-    const response = await proxy(makeRequest('/dashboard/content', 'accessToken=student-token'));
+    const response = await proxy(makeRequest('/dashboard/content', 'admin_accessToken=student-token'));
 
-    expect(verifySkillHubCoreJWTMock).toHaveBeenCalledWith('student-token');
+    expect(verifyAdminAccessTokenMock).toHaveBeenCalledWith('student-token', { audience: 'admin' });
     expect(response.status).toBe(307);
     expect(response.headers.get('location')).toContain('/unauthorized');
   });
 
   it('allows admin tokens on protected routes', async () => {
-    verifySkillHubCoreJWTMock.mockResolvedValueOnce({
+    verifyAdminAccessTokenMock.mockResolvedValueOnce({
       sub: 'admin-1',
       roles: ['admin'],
       subscriptions: ['notes'],
@@ -66,11 +66,18 @@ describe('realtutorialhub-admin proxy', () => {
       exp: Math.floor(Date.now() / 1000) + 3600,
     });
 
-    const response = await proxy(makeRequest('/dashboard/content', 'skillhubcore_accessToken=admin-token'));
+    const response = await proxy(makeRequest('/dashboard/content', 'admin_accessToken=admin-token'));
 
-    expect(verifySkillHubCoreJWTMock).toHaveBeenCalledWith('admin-token');
+    expect(verifyAdminAccessTokenMock).toHaveBeenCalledWith('admin-token', { audience: 'admin' });
     expect(response.status).toBe(200);
     expect(response.headers.get('x-user-id')).toBe('admin-1');
+  });
+
+  it('redirects to login when admin cookie is missing', async () => {
+    const response = await proxy(makeRequest('/dashboard/content'));
+
+    expect(response.status).toBe(307);
+    expect(response.headers.get('location')).toContain('/login');
   });
 
   it('allows the public health check without a token', async () => {

@@ -35,8 +35,7 @@ export function isProtectedRoute(pathname: string): boolean {
 }
 
 export function getAccessToken(request: NextRequest): string | undefined {
-  // Admin portal uses 'admin_accessToken' cookie; fallback to 'accessToken' for compatibility
-  return request.cookies.get('admin_accessToken')?.value ?? request.cookies.get('accessToken')?.value;
+  return request.cookies.get('admin_accessToken')?.value;
 }
 
 function getLoginUrl(request: NextRequest, redirectPath: string): URL {
@@ -78,30 +77,20 @@ function addUserHeaders(response: NextResponse, payload: UserPayload): NextRespo
 }
 
 async function resolveUser(request: NextRequest): Promise<UserPayload | null> {
-  const token = getAccessToken(request);
-  if (token === undefined || token.trim().length === 0) {
+  const adminAccessToken = getAccessToken(request);
+  if (adminAccessToken === undefined || adminAccessToken.trim().length === 0) {
     return null;
   }
 
   try {
-    const payload = await TokenService.verifyAdminAccessToken(token, { audience: 'admin' });
+    const payload = await TokenService.verifyAdminAccessToken(adminAccessToken, { audience: 'admin' });
     const userId = getTokenUserId(payload);
     if (userId === null) {
       return null;
     }
     return { sub: userId, roles: payload.roles ?? [] };
   } catch {
-    // Fallback: try verifying as a user token (admin may use user tokens on some routes)
-    try {
-      const payload = await TokenService.verifyUserAccessToken(token, { audience: 'user' });
-      const userId = getTokenUserId(payload);
-      if (userId === null) {
-        return null;
-      }
-      return { sub: userId, roles: payload.roles ?? [] };
-    } catch {
-      return null;
-    }
+    return null;
   }
 }
 
@@ -118,15 +107,15 @@ export async function proxy(request: NextRequest) {
 
   const user = await resolveUser(request);
   const redirectPath = `${pathname}${search}`;
-  const accessToken = getAccessToken(request);
-  const hasAccessToken = typeof accessToken === 'string' && accessToken.trim().length > 0;
+  const adminAccessToken = getAccessToken(request);
+  const hasAdminAccessToken = typeof adminAccessToken === 'string' && adminAccessToken.trim().length > 0;
 
   if (pathname === '/login' || pathname === '/dashboard' || isProtectedRoute(pathname)) {
     console.log('[AUTH_FLOW][ADMIN_PROXY][CHECK]', JSON.stringify({
       requestId,
       path: pathname,
       search,
-      hasAccessToken,
+      hasAdminAccessToken,
       isProtected: isProtectedRoute(pathname),
       hasUser: user !== null,
     }));
@@ -147,8 +136,8 @@ export async function proxy(request: NextRequest) {
       requestId,
       path: pathname,
       redirectPath,
-      reason: 'missing_or_invalid_access_token',
-      hasAccessToken,
+      reason: 'missing_or_invalid_admin_access_token',
+      hasAdminAccessToken,
     }));
     return NextResponse.redirect(getLoginUrl(request, redirectPath));
   }

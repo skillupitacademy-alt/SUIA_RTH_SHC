@@ -17,7 +17,6 @@ export type AuthResolution = {
   payload: SkillHubCoreTokenPayload;
   portal: PortalKind;
   tokenSource: AuthTokenSource;
-  usedFallback: boolean;
   requestBrand?: string;
 };
 
@@ -74,12 +73,12 @@ export function detectRequestPortal(request: Request, route?: RouteLike): Portal
   return 'user';
 }
 
-function getTokenFromHeaders(request: Request, portal: PortalKind): { token?: string; source?: AuthTokenSource; usedFallback: boolean } {
+function getTokenFromHeaders(request: Request, portal: PortalKind): { token?: string; source?: AuthTokenSource } {
   const authorization = request.headers.get('authorization') ?? request.headers.get('Authorization');
   if (typeof authorization === 'string' && authorization.startsWith('Bearer ')) {
     const bearerToken = authorization.slice(7).trim();
     if (bearerToken.length > 0) {
-      return { token: bearerToken, source: 'authorization', usedFallback: false };
+      return { token: bearerToken, source: 'authorization' };
     }
   }
 
@@ -89,17 +88,13 @@ function getTokenFromHeaders(request: Request, portal: PortalKind): { token?: st
 
   if (portal === 'admin') {
     if (adminAccessToken !== undefined) {
-      return { token: adminAccessToken, source: 'admin_accessToken', usedFallback: false };
-    }
-
-    if (accessToken !== undefined) {
-      return { token: accessToken, source: 'accessToken', usedFallback: true };
+      return { token: adminAccessToken, source: 'admin_accessToken' };
     }
   } else if (accessToken !== undefined) {
-    return { token: accessToken, source: 'accessToken', usedFallback: false };
+    return { token: accessToken, source: 'accessToken' };
   }
 
-  return { usedFallback: false };
+  return {};
 }
 
 export function hasRequiredRole(payload: SkillHubCoreTokenPayload, requiredRole: 'admin'): boolean {
@@ -183,7 +178,7 @@ export async function authenticateRequest(
 
     const tokenType = normalizeString(payload.tokenType);
     const expectedTokenType = portal === 'admin' ? 'admin' : 'user';
-    if (tokenType !== undefined && tokenType !== expectedTokenType) {
+    if (tokenType === undefined || tokenType !== expectedTokenType) {
       return new Response(JSON.stringify({ error: 'Forbidden' }), {
         status: 403,
         headers: { 'content-type': 'application/json' },
@@ -209,7 +204,6 @@ export async function authenticateRequest(
       payload,
       portal,
       tokenSource: selection.source ?? 'authorization',
-      usedFallback: selection.usedFallback,
       requestBrand,
     };
   } catch {

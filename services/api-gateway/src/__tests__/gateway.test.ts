@@ -63,9 +63,14 @@ const env = {
 } as const;
 
 function makeToken(roles: string[] = ['student']) {
+  const tokenType = roles.some((role) => role.trim().toLowerCase() === 'admin' || role.trim().toLowerCase() === 'super_admin')
+    ? 'admin'
+    : 'user';
+
   return new SignJWT({
     roles,
     subscriptions: ['combo'],
+    tokenType,
   })
     .setProtectedHeader({ alg: 'HS256' })
     .setSubject('user-123')
@@ -290,21 +295,15 @@ describe('api-gateway', () => {
     expect(headers.get('X-User-ID')).toBe('user-123');
   });
 
-  it('keeps backward compatibility by allowing accessToken cookies on admin routes', async () => {
+  it('rejects admin routes without admin_accessToken cookies', async () => {
     const token = await makeToken(['admin']);
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
-
     const response = await app.request('https://api.example.com/admin/users', {
       headers: {
         cookie: `accessToken=${encodeURIComponent(token)}`,
       },
     }, env);
 
-    expect(response.status).toBe(200);
-    expect(fetchSpy).toHaveBeenCalledTimes(1);
-    const [, init] = fetchSpy.mock.calls[0] ?? [];
-    const headers = new Headers((init as RequestInit | undefined)?.headers);
-    expect(headers.get('X-User-ID')).toBe('user-123');
+    expect(response.status).toBe(401);
   });
 
   it('preserves cookie auth headers when proxying protected routes', async () => {

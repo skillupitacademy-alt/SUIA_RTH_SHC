@@ -16,7 +16,7 @@ export class LoginService {
     private tokenService = container.get(TokenService)
   ) {}
 
-  async login(email: string, password: string, ip: string = 'unknown') {
+  async login(email: string, password: string, ip: string = 'unknown', brand?: string) {
     if (await this.securityService.isAccountLocked(email, ip)) {
       await this.auditService.log({ action: 'login_locked', metadata: { email }, ip });
       throw new Error('Account temporarily locked. Try again later.');
@@ -49,9 +49,14 @@ export class LoginService {
       email: user.email,
       roles: roleNames,
       isAdmin,
+      tokenType: isAdmin ? 'admin' : 'user',
+      brand,
     });
 
-    const refreshToken = await this.tokenService.generateRefreshToken(user.id, isAdmin);
+    const refreshToken = await this.tokenService.generateRefreshToken(user.id, isAdmin, isAdmin ? 'admin' : 'user', {
+      tokenType: isAdmin ? 'admin' : 'user',
+      brand,
+    });
     const refreshTokenHash = await this.tokenService.hashToken(refreshToken);
 
     await this.tokenRepo.createRefreshToken({

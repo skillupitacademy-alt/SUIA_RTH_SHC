@@ -9,7 +9,7 @@ import { SecurityService } from './security.service';
 import { TokenService } from './token.service';
 
 export class AdminAuthService {
-  static async login(email: string, password: string, ip: string = 'unknown', requestedAudience: string = 'admin') {
+  static async login(email: string, password: string, ip: string = 'unknown', requestedAudience: string = 'admin', brand?: string) {
     const cleanEmail = email.trim();
 
     // 1. Check Lockout
@@ -73,10 +73,15 @@ export class AdminAuthService {
       email: user.email,
       roles: roleNames,
       isAdmin: true,
-      aud: requestedAudience
+      aud: requestedAudience,
+      tokenType: 'admin',
+      brand,
     });
 
-    const refreshToken = await container.get(TokenService).generateRefreshToken(user.id, true, requestedAudience);
+    const refreshToken = await container.get(TokenService).generateRefreshToken(user.id, true, requestedAudience, {
+      tokenType: 'admin',
+      brand,
+    });
     const refreshTokenHash = await container.get(TokenService).hashToken(refreshToken);
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours absolute limit
 

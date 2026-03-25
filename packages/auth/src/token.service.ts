@@ -9,6 +9,9 @@ export type TokenPayload = JWTPayload & {
   roles: string[];
   isAdmin?: boolean;
   aud?: string;
+  tokenType?: 'user' | 'admin';
+  brand?: string;
+  role?: string;
 };
 
 export type UserTokenPayload = TokenPayload;
@@ -19,6 +22,8 @@ export type RefreshTokenPayload = JWTPayload & {
   isAdmin: boolean;
   tokenFamily?: string;
   aud?: string;
+  tokenType?: 'user' | 'admin';
+  brand?: string;
 };
 
 export type SkillHubCoreTokenPayload = JWTPayload & {
@@ -113,8 +118,10 @@ export class TokenService {
       ? customExpiration
       : ACCESS_TOKEN_EXPIRE;
     const audience = payload.aud ?? (payload.isAdmin === true ? 'admin' : 'user');
+    const tokenType = payload.tokenType ?? (payload.isAdmin === true ? 'admin' : 'user');
+    const brand = typeof payload.brand === 'string' && payload.brand.trim().length > 0 ? payload.brand.trim().toLowerCase() : undefined;
 
-    return new SignJWT({ ...payload })
+    return new SignJWT({ ...payload, tokenType, brand })
       .setProtectedHeader({ alg: 'HS256' })
       .setAudience(audience)
       .setIssuedAt()
@@ -122,9 +129,19 @@ export class TokenService {
       .sign(secret);
   }
 
-  async generateRefreshToken(userId: string, isAdmin: boolean = false, audience: string = 'user'): Promise<string> {
+  async generateRefreshToken(
+    userId: string,
+    isAdmin: boolean = false,
+    audience: string = 'user',
+    metadata?: { tokenType?: 'user' | 'admin'; brand?: string },
+  ): Promise<string> {
     const secret = isAdmin ? this.ADMIN_SECRET : this.REFRESH_SECRET;
-    return new SignJWT({ userId, isAdmin, aud: audience })
+    const tokenType = metadata?.tokenType ?? (isAdmin === true ? 'admin' : 'user');
+    const brand = typeof metadata?.brand === 'string' && metadata.brand.trim().length > 0
+      ? metadata.brand.trim().toLowerCase()
+      : undefined;
+
+    return new SignJWT({ userId, isAdmin, aud: audience, tokenType, brand })
       .setProtectedHeader({ alg: 'HS256' })
       .setAudience(audience)
       .setIssuedAt()
@@ -322,8 +339,13 @@ export class TokenService {
     return this.getInstance().generateAccessToken(payload, customExpiration);
   }
 
-  static generateRefreshToken(userId: string, isAdmin: boolean = false, audience: string = 'user') {
-    return this.getInstance().generateRefreshToken(userId, isAdmin, audience);
+  static generateRefreshToken(
+    userId: string,
+    isAdmin: boolean = false,
+    audience: string = 'user',
+    metadata?: { tokenType?: 'user' | 'admin'; brand?: string },
+  ) {
+    return this.getInstance().generateRefreshToken(userId, isAdmin, audience, metadata);
   }
 
   static verifyUserAccessToken(token: string, options?: { audience?: string }) {

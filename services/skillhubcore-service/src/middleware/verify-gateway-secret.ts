@@ -3,10 +3,7 @@ import { createMiddleware } from 'hono/factory';
 export const requireGatewaySecret = createMiddleware(async (c, next) => {
   if (
     c.req.path === '/healthz' ||
-    c.req.path === '/healthz/' ||
-    c.req.path === '/auth' ||
-    c.req.path.startsWith('/auth/') ||
-    c.req.path.startsWith('/api/hierarchy')
+    c.req.path === '/healthz/'
   ) {
     await next();
     return;
@@ -14,8 +11,7 @@ export const requireGatewaySecret = createMiddleware(async (c, next) => {
 
   const INTERNAL_GATEWAY_SECRET = process.env.INTERNAL_GATEWAY_SECRET;
   if (typeof INTERNAL_GATEWAY_SECRET !== 'string' || INTERNAL_GATEWAY_SECRET.length === 0) {
-    await next();
-    return;
+    return c.json({ error: 'Forbidden', code: 'FORBIDDEN' }, 403);
   }
 
   const gatewaySecret = c.req.header('x-gateway-secret');

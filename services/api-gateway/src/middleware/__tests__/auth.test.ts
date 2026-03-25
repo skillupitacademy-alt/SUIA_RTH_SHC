@@ -64,31 +64,21 @@ describe('auth middleware', () => {
     if ('payload' in result) {
       expect(result.portal).toBe('admin');
       expect(result.tokenSource).toBe('admin_accessToken');
-      expect(result.usedFallback).toBe(false);
       expect(result.payload.sub).toBe('admin-1');
       expect(result.payload.roles).toContain('admin');
     }
   });
 
-  it('falls back to accessToken for admin routes for compatibility', async () => {
+  it('rejects missing admin cookies on admin routes', async () => {
     const secret = 'test-secret';
-    const adminToken = await createToken(secret, 'admin-2', ['admin'], { tokenType: 'admin' });
-    const request = new Request('https://api.realtutorialhub.com/admin/users', {
-      headers: {
-        cookie: `accessToken=${encodeURIComponent(adminToken)}`,
-      },
-    });
+    const request = new Request('https://api.realtutorialhub.com/admin/users');
 
     const result = await authenticateRequest(request, {
       JWT_SECRET: secret,
     } as never, { requireRole: 'admin', upstreamKey: 'ADMIN_URL', prefix: '/admin' });
 
-    expect('payload' in result).toBe(true);
-    if ('payload' in result) {
-      expect(result.portal).toBe('admin');
-      expect(result.tokenSource).toBe('accessToken');
-      expect(result.usedFallback).toBe(true);
-    }
+    expect(result).toBeInstanceOf(Response);
+    expect((result as Response).status).toBe(401);
   });
 
   it('rejects user tokens on admin routes', async () => {
@@ -96,7 +86,24 @@ describe('auth middleware', () => {
     const userToken = await createToken(secret, 'user-2', ['student'], { tokenType: 'user' });
     const request = new Request('https://api.realtutorialhub.com/admin/users', {
       headers: {
-        cookie: `accessToken=${encodeURIComponent(userToken)}`,
+        cookie: `admin_accessToken=${encodeURIComponent(userToken)}`,
+      },
+    });
+
+    const result = await authenticateRequest(request, {
+      JWT_SECRET: secret,
+    } as never, { requireRole: 'admin', upstreamKey: 'ADMIN_URL', prefix: '/admin' });
+
+    expect(result).toBeInstanceOf(Response);
+    expect((result as Response).status).toBe(403);
+  });
+
+  it('rejects admin cookies with mismatched tokenType claims', async () => {
+    const secret = 'test-secret';
+    const token = await createToken(secret, 'admin-4', ['admin'], { tokenType: 'user' });
+    const request = new Request('https://api.realtutorialhub.com/admin/users', {
+      headers: {
+        cookie: `admin_accessToken=${encodeURIComponent(token)}`,
       },
     });
 

@@ -63,19 +63,8 @@ export const createApp = () => {
         path: requestUrl.pathname,
         portal: authResult.portal,
         tokenSource: authResult.tokenSource,
-        usedFallback: authResult.usedFallback,
         requestBrand: authResult.requestBrand ?? null,
       }));
-
-      if (authResult.usedFallback === true) {
-        console.warn('[GATEWAY_AUTH][COOKIE_FALLBACK]', JSON.stringify({
-          requestId: c.get('requestId'),
-          host: requestUrl.hostname,
-          path: requestUrl.pathname,
-          portal: authResult.portal,
-          tokenSource: authResult.tokenSource,
-        }));
-      }
 
       userId = authResult.payload.sub;
       c.set('user', authResult.payload);

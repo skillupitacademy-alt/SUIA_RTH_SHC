@@ -9,6 +9,7 @@ import { getClientIp } from '@/modules/auth/client-ip';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 import { resolveCookieDomain } from '@/lib/cookie-domain';
+import { resolveRequestBrand } from '@/lib/request-brand';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,6 +21,7 @@ async function handler(_req: NextRequest) {
   try {
     const portalIdentity = _req.headers.get('x-portal-identity') ?? 'user';
     const audience = portalIdentity === 'infrastructure' ? 'infra' : portalIdentity === 'admin' ? 'admin' : 'user';
+    const requestBrand = resolveRequestBrand(_req.nextUrl.hostname);
 
     const infraRefresh = _req.cookies.get('infra_refreshToken')?.value;
     const adminRefresh = _req.cookies.get('admin_refreshToken')?.value;
@@ -46,7 +48,7 @@ async function handler(_req: NextRequest) {
     const authService = container.get(AuthService);
     const tokenService = container.get(TokenService);
 
-    const { accessToken, refreshToken: newRefreshToken } = await authService.refresh(tokenToUse, ip, examId, audience);
+    const { accessToken, refreshToken: newRefreshToken } = await authService.refresh(tokenToUse, ip, examId, audience, requestBrand);
     const expiresAt = tokenService.getExpiration(accessToken);
 
     let maxAge = 15 * 60; 

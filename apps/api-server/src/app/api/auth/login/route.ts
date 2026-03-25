@@ -12,6 +12,7 @@ import { setCsrfToken } from '@/modules/auth/csrf.middleware';
 import { container } from '@/modules/core/container';
 import { loginSchema } from '@/schemas/auth.schemas';
 import { resolveCookieDomain } from '@/lib/cookie-domain';
+import { resolveRequestBrand } from '@/lib/request-brand';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,8 +44,9 @@ async function handler(req: NextRequest) {
     }
     const { email, password } = parsed.data;
     const ip = getClientIp(req);
+    const brand = resolveRequestBrand(req.nextUrl.hostname);
 
-    const { _user, accessToken, refreshToken, isAdmin } = await container.get(AuthService).login(email, password, ip);
+    const { _user, accessToken, refreshToken, isAdmin } = await container.get(AuthService).login(email, password, ip, brand);
     const rawProfile = Array.isArray(_user.profile) ? _user.profile[0] ?? {} : (_user.profile ?? {});
     const authUserInput = {
       id: _user.id,
@@ -114,6 +116,7 @@ async function handler(req: NextRequest) {
       path: req.nextUrl.pathname,
       role: isAdmin ? 'admin' : 'user',
       cookieDomain: cookieDomain ?? 'unset',
+      brand: brand ?? 'unknown',
     }));
 
     return response;
