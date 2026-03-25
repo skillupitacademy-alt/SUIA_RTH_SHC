@@ -101,12 +101,24 @@ function hasAdminRole(payload: UserPayload): boolean {
 export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
   const requestId = request.headers.get('x-request-id') ?? 'no-request-id';
+  const redirectPath = `${pathname}${search}`;
+
+  if (isPublicRoute(pathname)) {
+    const user = await resolveUser(request);
+    if (user !== null) {
+      const headers = new Headers(request.headers);
+      headers.set('x-user-id', user.sub);
+      return addUserHeaders(NextResponse.next({ request: { headers } }), user);
+    }
+
+    return NextResponse.next();
+  }
+
   if (hasValidGatewaySecret(request) === false) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
   const user = await resolveUser(request);
-  const redirectPath = `${pathname}${search}`;
   const adminAccessToken = getAccessToken(request);
   const hasAdminAccessToken = typeof adminAccessToken === 'string' && adminAccessToken.trim().length > 0;
 
@@ -119,16 +131,6 @@ export async function proxy(request: NextRequest) {
       isProtected: isProtectedRoute(pathname),
       hasUser: user !== null,
     }));
-  }
-
-  if (isPublicRoute(pathname)) {
-    if (user !== null) {
-      const headers = new Headers(request.headers);
-      headers.set('x-user-id', user.sub);
-      return addUserHeaders(NextResponse.next({ request: { headers } }), user);
-    }
-
-    return NextResponse.next();
   }
 
   if (isProtectedRoute(pathname) && user === null) {
