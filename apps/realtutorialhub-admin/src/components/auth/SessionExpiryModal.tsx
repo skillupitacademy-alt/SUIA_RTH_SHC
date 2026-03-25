@@ -47,10 +47,10 @@ export function SessionExpiryModal() {
         } finally {
             logout(); // Clear Zustand state
             localStorage.removeItem('quiz-platform-admin-auth'); // Force hard purge
-            const redirectUrl = encodeURIComponent(pathname);
+            const redirectUrl = encodeURIComponent('/');
             clientLogger.warn('[AUTH_FLOW][ADMIN_SESSION_MODAL][REDIRECT]', {
                 step: 'redirect',
-                safeRedirect: pathname,
+                safeRedirect: '/',
                 rawRedirect: redirectUrl,
             });
             router.push(`/login?redirect=${redirectUrl}&reason=session_expired`);

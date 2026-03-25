@@ -109,13 +109,18 @@ function LoginForm() {
         });
       }
 
+      const safeRedirect =
+        typeof redirectTarget === 'string' && redirectTarget.startsWith('/') && !redirectTarget.startsWith('//')
+          ? redirectTarget
+          : '/';
+
       clientLogger.warn('[AUTH_FLOW][ADMIN_LOGIN_PAGE][REDIRECT]', {
         step: 'redirect',
-        safeRedirect: '/dashboard',
+        safeRedirect,
         rawRedirect: redirectTarget ?? null,
       });
 
-      router.replace('/dashboard');
+      router.replace(safeRedirect);
     } catch (err: unknown) {
       clientLogger.error('[AUTH_FLOW][ADMIN_LOGIN_PAGE][ERROR]', {
         step: 'error',
