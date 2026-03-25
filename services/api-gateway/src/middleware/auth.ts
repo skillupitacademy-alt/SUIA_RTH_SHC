@@ -174,7 +174,28 @@ export async function authenticateRequest(
   }
 
   try {
-    const payload = await verifyAccessToken(token, env.JWT_SECRET);
+    const verificationSecrets = portal === 'admin'
+      ? Array.from(new Set([
+          env.ADMIN_JWT_SECRET ?? env.JWT_SECRET,
+          env.JWT_SECRET,
+        ].filter((value): value is string => typeof value === 'string' && value.trim().length > 0)))
+      : [env.JWT_SECRET];
+
+    let payload: SkillHubCoreTokenPayload | undefined;
+    let lastError: unknown;
+
+    for (const secret of verificationSecrets) {
+      try {
+        payload = await verifyAccessToken(token, secret);
+        break;
+      } catch (error) {
+        lastError = error;
+      }
+    }
+
+    if (payload === undefined) {
+      throw lastError instanceof Error ? lastError : new Error('Unauthorized');
+    }
 
     const tokenType = normalizeString(payload.tokenType);
     const expectedTokenType = portal === 'admin' ? 'admin' : 'user';

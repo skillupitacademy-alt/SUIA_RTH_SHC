@@ -20,6 +20,7 @@ jobs:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      ADMIN_JWT_SECRET: ${{ secrets.ADMIN_JWT_SECRET }}
       INTERNAL_GATEWAY_SECRET: ${{ secrets.INTERNAL_GATEWAY_SECRET }}
       SKILLUP_WEB_URL: https://skillup-web-plldp3atca-el.a.run.app
       SKILLUP_ADMIN_URL: https://skillup-admin-plldp3atca-el.a.run.app
@@ -63,6 +64,7 @@ jobs:
         working-directory: services/api-gateway
         run: |
           printf '%s' "$JWT_SECRET" | npx wrangler secret put JWT_SECRET --env production
+          printf '%s' "$ADMIN_JWT_SECRET" | npx wrangler secret put ADMIN_JWT_SECRET --env production
           printf '%s' "$INTERNAL_GATEWAY_SECRET" | npx wrangler secret put INTERNAL_GATEWAY_SECRET --env production
 
       - name: Deploy with Wrangler
