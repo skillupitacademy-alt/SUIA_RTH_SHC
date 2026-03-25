@@ -1,6 +1,6 @@
 import { Hono, type Context } from 'hono';
 
-import { authenticateRequest, hasRequiredRole } from '@/middleware/auth';
+import { authenticateRequest } from '@/middleware/auth';
 import { createCorsMiddleware } from '@/middleware/cors';
 import { proxyRequest } from '@/lib/proxy';
 import { createRateLimitMiddleware } from '@/middleware/rate-limit';
@@ -52,13 +52,29 @@ export const createApp = () => {
 
     let userId: string | undefined;
     if (route.auth === true) {
-      const authResult = await authenticateRequest(c.req.raw, c.env);
+      const authResult = await authenticateRequest(c.req.raw, c.env, route);
       if (authResult instanceof Response) {
         return authResult;
       }
 
-      if (route.requireRole === 'admin' && hasRequiredRole(authResult.payload, 'admin') === false) {
-        return c.json({ error: 'Forbidden', requestId: c.get('requestId') }, 403);
+      console.log('[GATEWAY_AUTH][CHECK]', JSON.stringify({
+        requestId: c.get('requestId'),
+        host: requestUrl.hostname,
+        path: requestUrl.pathname,
+        portal: authResult.portal,
+        tokenSource: authResult.tokenSource,
+        usedFallback: authResult.usedFallback,
+        requestBrand: authResult.requestBrand ?? null,
+      }));
+
+      if (authResult.usedFallback === true) {
+        console.warn('[GATEWAY_AUTH][COOKIE_FALLBACK]', JSON.stringify({
+          requestId: c.get('requestId'),
+          host: requestUrl.hostname,
+          path: requestUrl.pathname,
+          portal: authResult.portal,
+          tokenSource: authResult.tokenSource,
+        }));
       }
 
       userId = authResult.payload.sub;

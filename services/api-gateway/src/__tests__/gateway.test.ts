@@ -256,6 +256,57 @@ describe('api-gateway', () => {
     expect(headers.get('X-User-ID')).toBe('user-123');
   });
 
+  it('proxies user routes with accessToken cookies', async () => {
+    const token = await makeToken(['student']);
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
+
+    const response = await app.request('https://api.example.com/dashboard', {
+      headers: {
+        cookie: `accessToken=${encodeURIComponent(token)}`,
+      },
+    }, env);
+
+    expect(response.status).toBe(200);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    const [, init] = fetchSpy.mock.calls[0] ?? [];
+    const headers = new Headers((init as RequestInit | undefined)?.headers);
+    expect(headers.get('X-User-ID')).toBe('user-123');
+  });
+
+  it('proxies admin routes with admin_accessToken cookies', async () => {
+    const token = await makeToken(['admin']);
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
+
+    const response = await app.request('https://api.example.com/admin/users', {
+      headers: {
+        cookie: `admin_accessToken=${encodeURIComponent(token)}`,
+      },
+    }, env);
+
+    expect(response.status).toBe(200);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    const [, init] = fetchSpy.mock.calls[0] ?? [];
+    const headers = new Headers((init as RequestInit | undefined)?.headers);
+    expect(headers.get('X-User-ID')).toBe('user-123');
+  });
+
+  it('keeps backward compatibility by allowing accessToken cookies on admin routes', async () => {
+    const token = await makeToken(['admin']);
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
+
+    const response = await app.request('https://api.example.com/admin/users', {
+      headers: {
+        cookie: `accessToken=${encodeURIComponent(token)}`,
+      },
+    }, env);
+
+    expect(response.status).toBe(200);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    const [, init] = fetchSpy.mock.calls[0] ?? [];
+    const headers = new Headers((init as RequestInit | undefined)?.headers);
+    expect(headers.get('X-User-ID')).toBe('user-123');
+  });
+
   it('preserves cookie auth headers when proxying protected routes', async () => {
     const token = await makeToken(['student']);
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));

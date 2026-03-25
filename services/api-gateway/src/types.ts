@@ -4,6 +4,9 @@ export interface SkillHubCoreTokenPayload {
   subscriptions: string[];
   iss: 'skillhubcore.in';
   exp?: number;
+  role?: string;
+  tokenType?: string;
+  brand?: string;
 }
 
 export interface GatewayBindings {
