@@ -22,7 +22,7 @@ async function createToken(
 describe('auth middleware', () => {
   it('detects admin portal from admin routes', () => {
     const request = new Request('https://api.realtutorialhub.com/admin/users');
-    expect(detectRequestPortal(request, { requireRole: 'admin', upstreamKey: 'ADMIN_URL', prefix: '/admin' })).toBe('admin');
+    expect(detectRequestPortal(request, { requireRole: 'admin', upstreamKey: 'EXAM_SERVICE_URL', prefix: '/admin' })).toBe('admin');
   });
 
   it('accepts accessToken cookies for user routes', async () => {
@@ -58,7 +58,7 @@ describe('auth middleware', () => {
 
     const result = await authenticateRequest(request, {
       JWT_SECRET: secret,
-    } as never, { requireRole: 'admin', upstreamKey: 'ADMIN_URL', prefix: '/admin' });
+    } as never, { requireRole: 'admin', upstreamKey: 'EXAM_SERVICE_URL', prefix: '/admin' });
 
     expect('payload' in result).toBe(true);
     if ('payload' in result) {
@@ -75,7 +75,7 @@ describe('auth middleware', () => {
 
     const result = await authenticateRequest(request, {
       JWT_SECRET: secret,
-    } as never, { requireRole: 'admin', upstreamKey: 'ADMIN_URL', prefix: '/admin' });
+    } as never, { requireRole: 'admin', upstreamKey: 'EXAM_SERVICE_URL', prefix: '/admin' });
 
     expect(result).toBeInstanceOf(Response);
     expect((result as Response).status).toBe(401);
@@ -92,7 +92,7 @@ describe('auth middleware', () => {
 
     const result = await authenticateRequest(request, {
       JWT_SECRET: secret,
-    } as never, { requireRole: 'admin', upstreamKey: 'ADMIN_URL', prefix: '/admin' });
+    } as never, { requireRole: 'admin', upstreamKey: 'EXAM_SERVICE_URL', prefix: '/admin' });
 
     expect(result).toBeInstanceOf(Response);
     expect((result as Response).status).toBe(403);
@@ -109,7 +109,7 @@ describe('auth middleware', () => {
 
     const result = await authenticateRequest(request, {
       JWT_SECRET: secret,
-    } as never, { requireRole: 'admin', upstreamKey: 'ADMIN_URL', prefix: '/admin' });
+    } as never, { requireRole: 'admin', upstreamKey: 'EXAM_SERVICE_URL', prefix: '/admin' });
 
     expect(result).toBeInstanceOf(Response);
     expect((result as Response).status).toBe(403);
@@ -136,7 +136,7 @@ describe('auth middleware', () => {
 
     const result = await authenticateRequest(request, {
       JWT_SECRET: secret,
-    } as never, { requireRole: 'admin', upstreamKey: 'ADMIN_URL', prefix: '/admin' });
+    } as never, { requireRole: 'admin', upstreamKey: 'EXAM_SERVICE_URL', prefix: '/admin' });
 
     expect(result).toBeInstanceOf(Response);
     expect((result as Response).status).toBe(403);

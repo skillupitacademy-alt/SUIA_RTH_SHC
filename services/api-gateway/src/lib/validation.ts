@@ -36,7 +36,6 @@ export function buildGatewayHealthSnapshot(env: Partial<GatewayBindings>): Gatew
       CRM_SERVICE_URL: env.CRM_SERVICE_URL,
       NOTIFICATION_URL: env.NOTIFICATION_URL,
       PLACEMENT_URL: env.PLACEMENT_URL,
-      ADMIN_URL: env.ADMIN_URL,
     }).map(([key, value]) => [key, summarizeBinding(value)]),
   ) as GatewayHealthSnapshot['services'];
 

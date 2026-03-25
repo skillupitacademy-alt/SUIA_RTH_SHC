@@ -27,7 +27,6 @@ export interface GatewayBindings {
   CRM_SERVICE_URL: string;
   NOTIFICATION_URL: string;
   PLACEMENT_URL: string;
-  ADMIN_URL: string;
 }
 
 export interface GatewayVariables {
@@ -51,7 +50,6 @@ export type GatewayRoute = {
     | 'CRM_SERVICE_URL'
     | 'NOTIFICATION_URL'
     | 'PLACEMENT_URL'
-    | 'ADMIN_URL'
   >;
   upstreamPathPrefix?: string;
   public?: boolean;

@@ -58,7 +58,7 @@ export function detectRequestPortal(request: Request, route?: RouteLike): Portal
   const hostname = requestUrl.hostname.toLowerCase();
   const originHost = parseHostname(request.headers.get('origin')) ?? parseHostname(request.headers.get('referer'));
 
-  if (route?.requireRole === 'admin' || route?.upstreamKey === 'ADMIN_URL' || route?.prefix === '/admin') {
+  if (route?.requireRole === 'admin' || route?.prefix === '/admin') {
     return 'admin';
   }
 

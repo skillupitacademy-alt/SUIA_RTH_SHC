@@ -59,7 +59,6 @@ const env = {
   CRM_SERVICE_URL: 'https://crm.example.com',
   NOTIFICATION_URL: 'https://notifications.example.com',
   PLACEMENT_URL: 'https://placement.example.com',
-  ADMIN_URL: 'https://admin.example.com',
 } as const;
 
 function makeToken(roles: string[] = ['student']) {
@@ -151,6 +150,20 @@ describe('api-gateway', () => {
     expect(response.status).toBe(200);
     expect(fetchSpy).toHaveBeenCalledTimes(1);
     expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(env.FACULTY_URL);
+  });
+
+  it('routes admin api traffic to the exam service upstream', async () => {
+    const token = await makeToken(['admin']);
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
+    const response = await app.request('https://api.example.com/admin/auth/me', {
+      headers: {
+        cookie: `admin_accessToken=${encodeURIComponent(token)}`,
+      },
+    }, env);
+
+    expect(response.status).toBe(200);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(`${env.EXAM_SERVICE_URL}/api/admin/auth/me`);
   });
 
   it('routes skillhubcore api host traffic to the skillhubcore upstream', async () => {

@@ -4,7 +4,7 @@ compatibility_date = "2024-01-01"
 
 [env.production]
 workers_dev = true
-vars = { ENVIRONMENT = "production", SKILLUP_WEB_URL = "https://skillup-web-plldp3atca-el.a.run.app", SKILLUP_ADMIN_URL = "https://skillup-admin-plldp3atca-el.a.run.app", FACULTY_URL = "https://faculty-app-plldp3atca-el.a.run.app", ADMIN_URL = "https://quiz-admin-app-plldp3atca-el.a.run.app", STUDENT_FACULTY_URL = "https://faculty-app-plldp3atca-el.a.run.app", TUTORIAL_SERVICE_URL = "https://quiz-web-app-plldp3atca-el.a.run.app", SKILLHUBCORE_URL = "https://skillhubcore-service-plldp3atca-el.a.run.app", EXAM_SERVICE_URL = "https://quiz-api-server-plldp3atca-el.a.run.app", NOTIFICATION_URL = "https://quiz-api-server-plldp3atca-el.a.run.app" }
+vars = { ENVIRONMENT = "production", SKILLUP_WEB_URL = "https://skillup-web-plldp3atca-el.a.run.app", SKILLUP_ADMIN_URL = "https://skillup-admin-plldp3atca-el.a.run.app", FACULTY_URL = "https://faculty-app-plldp3atca-el.a.run.app", STUDENT_FACULTY_URL = "https://faculty-app-plldp3atca-el.a.run.app", TUTORIAL_SERVICE_URL = "https://quiz-web-app-plldp3atca-el.a.run.app", SKILLHUBCORE_URL = "https://skillhubcore-service-plldp3atca-el.a.run.app", EXAM_SERVICE_URL = "https://quiz-api-server-plldp3atca-el.a.run.app", NOTIFICATION_URL = "https://quiz-api-server-plldp3atca-el.a.run.app" }
 
 [[env.production.routes]]
 pattern = "api.realtutorialhub.com/*"

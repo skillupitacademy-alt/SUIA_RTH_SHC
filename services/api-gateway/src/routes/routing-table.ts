@@ -39,7 +39,7 @@ export const ROUTING_TABLE: GatewayRoute[] = [
   { prefix: '/notifications', upstreamKey: 'NOTIFICATION_URL', upstreamPathPrefix: '/api/notifications', auth: true },
   { prefix: '/placement', upstreamKey: 'PLACEMENT_URL', auth: true },
   { prefix: '/jobs', upstreamKey: 'PLACEMENT_URL', public: true },
-  { prefix: '/admin', upstreamKey: 'ADMIN_URL', auth: true, requireRole: 'admin' },
+  { prefix: '/admin', upstreamKey: 'EXAM_SERVICE_URL', upstreamPathPrefix: '/api/admin', auth: true, requireRole: 'admin' },
 ];
 
 function matchesPrefix(pathname: string, prefix: string): boolean {
