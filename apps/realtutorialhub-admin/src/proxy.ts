@@ -2,7 +2,6 @@ import { TokenService } from '@quiz/auth';
 import { NextRequest, NextResponse } from 'next/server';
 
 const LOGIN_URL = process.env.NEXT_PUBLIC_LOGIN_URL ?? '/login';
-const INTERNAL_GATEWAY_SECRET = process.env.INTERNAL_GATEWAY_SECRET;
 
 const PUBLIC_PATHS = ['/api/healthz', '/login', '/forgot-password', '/reset-password', '/unauthorized', '/api/auth/login', '/api/auth/refresh', '/api/auth/logout', '/api/auth/me'];
 const PROTECTED_PREFIXES = [
@@ -45,14 +44,6 @@ function getLoginUrl(request: NextRequest, redirectPath: string): URL {
       : new URL(LOGIN_URL, request.url);
   loginUrl.searchParams.set('redirect', redirectPath);
   return loginUrl;
-}
-
-function hasValidGatewaySecret(request: NextRequest): boolean {
-  if (typeof INTERNAL_GATEWAY_SECRET !== 'string' || INTERNAL_GATEWAY_SECRET.length === 0) {
-    return true;
-  }
-
-  return request.headers.get('x-gateway-secret') === INTERNAL_GATEWAY_SECRET;
 }
 
 function getUnauthorizedUrl(request: NextRequest): URL {
@@ -102,27 +93,11 @@ export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
   const requestId = request.headers.get('x-request-id') ?? 'no-request-id';
   const redirectPath = `${pathname}${search}`;
-
-  if (isPublicRoute(pathname)) {
-    const user = await resolveUser(request);
-    if (user !== null) {
-      const headers = new Headers(request.headers);
-      headers.set('x-user-id', user.sub);
-      return addUserHeaders(NextResponse.next({ request: { headers } }), user);
-    }
-
-    return NextResponse.next();
-  }
-
-  if (hasValidGatewaySecret(request) === false) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
-
-  const user = await resolveUser(request);
   const adminAccessToken = getAccessToken(request);
   const hasAdminAccessToken = typeof adminAccessToken === 'string' && adminAccessToken.trim().length > 0;
+  const user = await resolveUser(request);
 
-  if (pathname === '/login' || pathname === '/dashboard' || isProtectedRoute(pathname)) {
+  if (pathname === '/' || pathname === '/login' || pathname === '/dashboard' || isProtectedRoute(pathname)) {
     console.log('[AUTH_FLOW][ADMIN_PROXY][CHECK]', JSON.stringify({
       requestId,
       path: pathname,
@@ -131,6 +106,30 @@ export async function proxy(request: NextRequest) {
       isProtected: isProtectedRoute(pathname),
       hasUser: user !== null,
     }));
+  }
+
+  if (pathname === '/') {
+    if (user === null) {
+      return NextResponse.redirect(getLoginUrl(request, redirectPath));
+    }
+
+    if (hasAdminRole(user) === false) {
+      return NextResponse.redirect(getUnauthorizedUrl(request));
+    }
+
+    const headers = new Headers(request.headers);
+    headers.set('x-user-id', user.sub);
+    return addUserHeaders(NextResponse.next({ request: { headers } }), user);
+  }
+
+  if (isPublicRoute(pathname)) {
+    if (user !== null) {
+      const headers = new Headers(request.headers);
+      headers.set('x-user-id', user.sub);
+      return addUserHeaders(NextResponse.next({ request: { headers } }), user);
+    }
+
+    return NextResponse.next();
   }
 
   if (isProtectedRoute(pathname) && user === null) {
