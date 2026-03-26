@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { listAdminBatches, listAdminEnquiries, listAdminPlacementProfiles, listAdminStudents } from '@/lib/skillup-admin-data';
+import { listAdminBatches, listAdminEnquiries, listAdminPayments, listAdminPlacementProfiles, listAdminStudents } from '@/lib/skillup-admin-data';
 
 const mocks = vi.hoisted(() => ({
   publishEvent: vi.fn().mockResolvedValue({ messageId: 'msg-1', envelope: {} }),
@@ -21,6 +21,7 @@ import { PATCH as admitEnquiry } from '../crm/enquiries/[id]/admit/route';
 import { GET as getEnquiries, POST as createEnquiry } from '../crm/enquiries/route';
 import { GET as exportPayments } from '../payments/export/route';
 import { GET as getPayments, POST as recordPayment } from '../payments/route';
+import { GET as getPaymentDetail, PATCH as patchPaymentDetail } from '../payments/[id]/route';
 import { GET as exportAuditLog } from '../audit-log/export/route';
 import { POST as enrollStudent } from '../students/[id]/enroll/route';
 import { GET as getStudent } from '../students/[id]/route';
@@ -44,20 +45,23 @@ describe('skillup-admin routes', () => {
   let enquiryId = '';
   let batchId = '';
   let placementId = '';
+  let paymentId = '';
 
   beforeEach(async () => {
     vi.clearAllMocks();
-    const [students, enquiries, batches, placements] = await Promise.all([
+    const [students, enquiries, batches, placements, payments] = await Promise.all([
       listAdminStudents(),
       listAdminEnquiries(),
       listAdminBatches(),
       listAdminPlacementProfiles(),
+      listAdminPayments(),
     ]);
     studentId = students[0]?.id ?? '';
     studentUserId = students[0]?.userId ?? '';
     enquiryId = enquiries[0]?.id ?? '';
     batchId = batches[0]?.id ?? '';
     placementId = placements[0]?.id ?? '';
+    paymentId = payments[0]?.id ?? '';
   });
 
   it('rejects requests without an admin role', async () => {
@@ -267,5 +271,40 @@ describe('skillup-admin routes', () => {
     expect(updatePayload.data.updated).toBe(true);
     expect(updatePayload.data.detail.targetRole).toBe(`Frontend Engineer ${unique}`);
     expect(updatePayload.data.detail.matchScore).toBe(92);
+  });
+
+  it('loads and updates a payment detail', async () => {
+    const detailResponse = await getPaymentDetail(makeRequest(`/api/admin/payments/${paymentId}`), {
+      params: Promise.resolve({ id: paymentId }),
+    });
+    const detailPayload = (await detailResponse.json()) as { data: { id: string; installmentId: string } };
+
+    expect(detailResponse.status).toBe(200);
+    expect(detailPayload.data.id).toBe(paymentId);
+    expect(detailPayload.data.installmentId).toBeTruthy();
+
+    const unique = Date.now().toString(36);
+    const updateResponse = await patchPaymentDetail(
+      makeRequest(
+        `/api/admin/payments/${paymentId}`,
+        'PATCH',
+        {
+          installmentId: `Training fee ${unique}`,
+          amount: 21000,
+          dueDate: '2026-04-10',
+          paymentRef: `PAY-${unique}`,
+          status: 'due',
+        }
+      ),
+      {
+        params: Promise.resolve({ id: paymentId }),
+      }
+    );
+    const updatePayload = (await updateResponse.json()) as { data: { updated: boolean; detail: { installmentId: string; amount: number } } };
+
+    expect(updateResponse.status).toBe(200);
+    expect(updatePayload.data.updated).toBe(true);
+    expect(updatePayload.data.detail.installmentId).toBe(`Training fee ${unique}`);
+    expect(updatePayload.data.detail.amount).toBe(21000);
   });
 });

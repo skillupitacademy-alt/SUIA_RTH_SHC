@@ -33,7 +33,11 @@ export default async function PaymentsPage() {
 
       <div className="grid gap-4 xl:grid-cols-2">
         {payments.map((payment) => (
-          <article key={payment.id} className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+          <Link
+            key={payment.id}
+            href={`/payments/${payment.id}`}
+            className="block rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm transition hover:border-cyan-300 hover:bg-cyan-50"
+          >
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-sm font-semibold text-slate-600">{payment.studentName}</p>
@@ -68,7 +72,7 @@ export default async function PaymentsPage() {
               <p className="text-sm font-semibold text-slate-800">Due date</p>
               <p className="mt-1 text-sm text-slate-600">{payment.dueDate}</p>
             </div>
-          </article>
+          </Link>
         ))}
       </div>
     </section>

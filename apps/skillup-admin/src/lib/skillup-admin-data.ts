@@ -61,7 +61,19 @@ export type AdminPaymentItem = {
   amount: string;
   dueDate: string;
   overdueDays: number;
-  status: 'paid' | 'pending' | 'overdue';
+  status: 'paid' | 'due' | 'overdue';
+  paymentRef: string;
+};
+
+export type AdminPaymentDetail = {
+  id: string;
+  userId: string;
+  studentName: string;
+  installmentId: string;
+  amount: number;
+  dueDate: string;
+  overdueDays: number;
+  status: 'paid' | 'due' | 'overdue';
   paymentRef: string;
 };
 
@@ -233,9 +245,44 @@ export async function listAdminPayments(): Promise<AdminPaymentItem[]> {
     amount: `INR ${row.amount.toLocaleString('en-IN')}`,
     dueDate: toIso(row.dueDate).slice(0, 10),
     overdueDays: row.status === 'overdue' ? 14 : 0,
-    status: row.status === 'paid' ? 'paid' : row.status === 'overdue' ? 'overdue' : 'pending',
+    status: row.status === 'paid' ? 'paid' : row.status === 'overdue' ? 'overdue' : 'due',
     paymentRef: row.paymentRef ?? '-',
   }));
+}
+
+export async function getAdminPaymentDetail(id: string): Promise<AdminPaymentDetail | undefined> {
+  const [row] = await db
+    .select({
+      id: paymentInstallments.id,
+      userId: paymentInstallments.studentUserId,
+      label: paymentInstallments.label,
+      dueDate: paymentInstallments.dueDate,
+      amount: paymentInstallments.amount,
+      status: paymentInstallments.status,
+      paymentRef: paymentInstallments.paymentRef,
+      studentName: userProfiles.name,
+    })
+    .from(paymentInstallments)
+    .innerJoin(users, eq(users.id, paymentInstallments.studentUserId))
+    .leftJoin(userProfiles, eq(userProfiles.userId, users.id))
+    .where(eq(paymentInstallments.id, id))
+    .limit(1);
+
+  if (row === undefined) {
+    return undefined;
+  }
+
+  return {
+    id: row.id,
+    userId: row.userId,
+    studentName: row.studentName ?? 'Unknown student',
+    installmentId: row.label,
+    amount: row.amount,
+    dueDate: toIso(row.dueDate).slice(0, 10),
+    overdueDays: row.status === 'overdue' ? 14 : 0,
+    status: row.status === 'paid' ? 'paid' : row.status === 'overdue' ? 'overdue' : 'due',
+    paymentRef: row.paymentRef ?? '-',
+  };
 }
 
 export async function listAdminPlacementProfiles(): Promise<AdminPlacementProfile[]> {
@@ -342,7 +389,7 @@ export type AdminStudentDetail = AdminStudentSummary & {
   counselor: string;
   enrollmentStage: 'enquired' | 'qualified' | 'admitted' | 'enrolled';
   attendanceHistory: Array<{ label: string; pct: number }>;
-  payments: Array<{ installment: string; status: 'paid' | 'pending' | 'overdue'; amount: string; dueDate: string }>;
+  payments: Array<{ installment: string; status: 'paid' | 'due' | 'overdue'; amount: string; dueDate: string }>;
   batchHistory: Array<{ batchName: string; joinedAt: string; status: string }>;
 };
 
@@ -561,7 +608,7 @@ export async function getAdminStudentDetail(id: string): Promise<AdminStudentDet
     })),
     payments: paymentRows.map((row) => ({
       installment: row.label,
-      status: row.status === 'paid' ? 'paid' : row.status === 'overdue' ? 'overdue' : 'pending',
+      status: row.status === 'paid' ? 'paid' : row.status === 'overdue' ? 'overdue' : 'due',
       amount: formatCurrency(row.amount),
       dueDate: toIso(row.dueDate).slice(0, 10),
     })),
