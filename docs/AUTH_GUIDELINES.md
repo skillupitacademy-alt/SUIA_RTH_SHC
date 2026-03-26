@@ -110,3 +110,169 @@ npx wrangler deploy --env production
 | Client-side `document.cookie` | Conflicts with httpOnly cookies from server |
 | GET `/auth/me` on page load | Adds delay; user is already verified by proxy.ts |
 | Issuer checks | quiz-api-server is the sole auth authority |
+
+
+
+BROWSER          LOGIN PAGE          GATEWAY           API SERVER         DB
+   │                  │                 │                   │              │
+   │  submit form     │                 │                   │              │
+   ├─────────────────►│                 │                   │              │
+   │                  │ POST /auth/login│                   │              │
+   │                  │ credentials:include                 │              │
+   │                  │ x-portal-identity: user             │              │
+   │                  │ body: { email, password, platform } │              │
+   │                  ├────────────────►│                   │              │
+   │                  │                 │ forward to Cloud  │              │
+   │                  │                 ├──────────────────►│              │
+   │                  │                 │                   │ findUser()   │
+   │                  │                 │                   ├─────────────►│
+   │                  │                 │                   │ verifyPwd()  │
+   │                  │                 │                   │ generateTokens()
+   │                  │                 │◄──────────────────┤              │
+   │                  │◄────────────────┤                   │              │
+   │  Set-Cookie: accessToken (httpOnly, secure, sameSite=none, maxAge=15min)
+   │  Set-Cookie: refreshToken (httpOnly, secure, maxAge=7days)
+   │  Body: { user, accessToken, refreshToken }
+   │                  │                 │                   │              │
+   │  cookie stored   │ authLogin(user) │                   │              │
+   │  by browser      │ zustand store   │                   │              │
+   │                  │ router.replace('/dashboard')        │              │
+   ├◄─────────────────┤                 │                   │              │
+   │ navigate to /dashboard             │                   │              │
+   ├─────────────────►│proxy.ts runs    │                   │              │
+   │                  │ getAccessToken()→ reads cookie      │              │
+   │                  │ TokenService.verifyUserAccessToken()│              │
+   │                  │ if valid → sets x-user-id header    │              │
+   │                  │ NextResponse.next() → page renders  │              │
+
+
+Key Code Facts (exact variable names and files)
+Step 1 — Login Fetch (
+
+apps/realtutorialhub-quiz/src/app/(public)/login/page.tsx
+)
+
+typescript
+// endpoint built from:
+const LOGIN_ENDPOINT = `${getApiBase()}/auth/login`;
+// Note: getApiBase() does NOT include /api prefix — gateway handles routing
+fetch(LOGIN_ENDPOINT, {
+  method: 'POST',
+  credentials: 'include',          // ← CRITICAL: tells browser to accept Set-Cookie
+  headers: {
+    'Content-Type': 'application/json',
+    'x-portal-identity': 'user',   // ← portal type header
+  },
+  body: JSON.stringify({
+    email, password,
+    platform: 'realtutorialhub',   // ← brand tag sent to API
+  }),
+});
+Step 2 — API Server Sets Cookies (
+
+apps/api-server/src/app/api/auth/login/route.ts
+)
+
+typescript
+// Resolves brand from hostname (not from body)
+const brand = resolveRequestBrand(req.nextUrl.hostname);
+// Cookie name differs by role:
+const accessTokenCookieName = isAdmin ? 'admin_accessToken' : 'accessToken';
+const refreshCookieName     = isAdmin ? 'admin_refreshToken' : 'refreshToken';
+// Cookie domain is dynamic — scoped to apex domain
+const cookieDomain = resolveCookieDomain(process.env.COOKIE_DOMAIN, req.nextUrl.hostname);
+response.cookies.set('accessToken', accessToken, {
+  httpOnly: true,    // ← JS cannot read it — security
+  secure: true,      // ← HTTPS only
+  sameSite: 'none',  // ← cross-origin (gateway ≠ app domain)
+  maxAge: 15 * 60,   // ← 15 minutes
+  path: '/',
+  domain: cookieDomain,  // ← e.g. .realtutorialhub.com
+});
+response.cookies.set('refreshToken', refreshToken, {
+  httpOnly: true,
+  secure: true,
+  sameSite: 'none',
+  maxAge: 7 * 24 * 60 * 60,  // ← 7 days
+  path: '/',
+  domain: cookieDomain,
+});
+Step 3 — Store User BEFORE Redirect (
+
+login/page.tsx
+)
+
+typescript
+// Must happen BEFORE router.replace() — eliminates race condition
+if (payload?.user) {
+  authLogin({               // ← zustand auth store
+    id: payload.user.id,
+    name: payload.user.name ?? '',
+    email: payload.user.email,
+    isAdmin: payload.user.isAdmin ?? false,
+    role: payload.user.role ?? 'user',
+    onboarded: payload.user.onboarded ?? false,
+  });
+}
+router.replace(safeRedirect);  // ← /dashboard or ?redirect= param
+Step 4 — Auth Store (
+
+packages/ui/src/store/auth-store.ts
+)
+
+typescript
+// Persisted in localStorage under key: 'quiz-platform-auth'
+// Shape:
+AuthUser {
+  id, name, email, isAdmin, role, onboarded
+}
+// Actions: login(), logout(), lock(), unlock(), completeOnboarding()
+// NOT used for auth guard — proxy.ts does that
+// Used for: displaying user name, role checks in UI, logout button
+Step 5 — proxy.ts Guards Dashboard (
+
+apps/realtutorialhub-quiz/src/proxy.ts
+)
+
+typescript
+// Reads cookie — never from JS (httpOnly cookie invisible to JS)
+function getAccessToken(request: NextRequest): string | undefined {
+  return request.cookies.get('accessToken')?.value;
+}
+// Verifies token server-side
+const payload = await TokenService.verifyUserAccessToken(token, { audience: 'user' });
+// If valid: inject x-user-id header, pass request through
+response.headers.set('x-user-id', user.sub);
+return NextResponse.next({ request: { headers } });
+// If invalid: redirect to /login?redirect=/dashboard
+return NextResponse.redirect(getLoginUrl(request, redirectPath));
+// Protected routes:
+['/dashboard', '/exam/', '/reports/', '/quiz/', '/profile/', '/onboarding/']
+Step 6 — Dashboard consumes x-user-id (any dashboard page)
+
+typescript
+// Dashboard server components can read:
+const userId = request.headers.get('x-user-id');
+// No /auth/me call needed — user is already verified by proxy.ts
+For SkillUp — What to Copy Exactly
+Item	RTH Value	SkillUp Value
+Cookie name	accessToken	accessToken (same — same API server)
+platform in body	'realtutorialhub'	'skillup'
+x-portal-identity header	'user'	'user'
+Auth store name	'quiz-platform-auth'	'skillup-auth'
+localStorage key	'quiz-platform-auth'	'skillup-auth'
+Protected routes in proxy.ts	/dashboard/, /exam/ etc.	/student/, /batches/ etc.
+Login redirect after success	/dashboard	/student
+proxy.ts cookie read	accessToken	accessToken (same cookie name)
+The only differences for SkillUp:
+
+platform: 'skillup' in login body
+Different PROTECTED_PREFIXES in proxy.ts (/student, /batches, /faculty)
+Different auth store name (skillup-auth)
+Different login redirect (/student not /dashboard)
+
+createAuthStore({ name: 'skillup-auth' })
+ in apps/skillup-web/src/store/auth-store.ts
+Everything else — cookie flags, httpOnly, sameSite, maxAge, the API endpoint, credentials:include — is identical. Copy the RTH pattern exactly and only change those 5 things.
+
+ 
