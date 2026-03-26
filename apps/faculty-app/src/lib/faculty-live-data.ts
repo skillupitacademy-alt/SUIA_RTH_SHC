@@ -84,6 +84,17 @@ export interface FacultyUpcomingSessionItem {
   studentCount: number;
 }
 
+export interface FacultyAttendanceSummaryItem {
+  batchId: string;
+  batchName: string;
+  sessionId: string;
+  sessionAt: string;
+  sessionTopic: string;
+  studentCount: number;
+  presentCount: number;
+  absentCount: number;
+}
+
 async function getFacultyRow(userId: string) {
   const [row] = await db
     .select({
@@ -364,6 +375,71 @@ export async function listFacultyUpcomingSessions(userId: string): Promise<Facul
     }));
 
   return upcoming;
+}
+
+export async function listFacultyAttendanceOverview(userId: string): Promise<FacultyAttendanceSummaryItem[]> {
+  const facultyRow = await getFacultyRow(userId);
+  if (facultyRow === null) {
+    return [];
+  }
+
+  const batchRows = await db
+    .select({
+      batchId: batches.id,
+      batchName: batches.name,
+    })
+    .from(batches)
+    .where(and(eq(batches.facultyId, facultyRow.id), isNull(batches.deletedAt)))
+    .orderBy(desc(batches.createdAt));
+
+  const summaries: FacultyAttendanceSummaryItem[] = [];
+
+  for (const batch of batchRows) {
+    const [sessionRows, enrollmentRows] = await Promise.all([
+      db
+        .select({
+          id: batchSessions.id,
+          scheduledAt: batchSessions.scheduledAt,
+          sessionNotes: batchSessions.sessionNotes,
+          status: batchSessions.status,
+        })
+        .from(batchSessions)
+        .where(eq(batchSessions.batchId, batch.batchId))
+        .orderBy(desc(batchSessions.scheduledAt))
+        .limit(3),
+      db
+        .select({
+          studentUserId: batchEnrollments.studentUserId,
+          attendanceStatus: attendanceRecords.status,
+          sessionId: attendanceRecords.sessionId,
+        })
+        .from(batchEnrollments)
+        .leftJoin(
+          attendanceRecords,
+          eq(attendanceRecords.studentUserId, batchEnrollments.studentUserId)
+        )
+        .where(and(eq(batchEnrollments.batchId, batch.batchId), isNull(batchEnrollments.deletedAt))),
+    ]);
+
+    for (const session of sessionRows) {
+      const attendanceForSession = enrollmentRows.filter((row) => row.sessionId === session.id);
+      const presentCount = attendanceForSession.filter((row) => row.attendanceStatus === 'present').length;
+      const absentCount = attendanceForSession.filter((row) => row.attendanceStatus === 'absent').length;
+
+      summaries.push({
+        batchId: batch.batchId,
+        batchName: batch.batchName,
+        sessionId: session.id,
+        sessionAt: toIso(session.scheduledAt),
+        sessionTopic: formatSessionTopic(session.sessionNotes),
+        studentCount: enrollmentRows.length,
+        presentCount,
+        absentCount,
+      });
+    }
+  }
+
+  return summaries;
 }
 
 export async function upsertFacultyAttendance(

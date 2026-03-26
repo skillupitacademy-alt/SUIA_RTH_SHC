@@ -5,6 +5,7 @@ const navItems = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/my-batches', label: 'My Batches' },
   { href: '/sessions', label: 'Sessions' },
+  { href: '/attendance', label: 'Attendance' },
   { href: '/assignments/help', label: 'Help Requests' },
   { href: '/assignments/projects', label: 'Project Reviews' },
   { href: '/sessions/requests', label: 'Live Sessions' },
