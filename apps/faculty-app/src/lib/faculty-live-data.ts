@@ -69,7 +69,7 @@ export interface FacultySessionRequestItem {
   studentName: string;
   subtopic: string;
   doubtText: string;
-  status: 'pending' | 'accepted';
+  status: 'pending' | 'accepted' | 'scheduled' | 'completed' | 'cancelled';
   scheduledAt: string;
   batchName: string;
 }

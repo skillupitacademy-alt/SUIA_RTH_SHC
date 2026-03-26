@@ -393,6 +393,41 @@ export async function loadFacultyAssignments(access: FacultyAccess): Promise<Fac
   }));
 }
 
+export async function updateFacultyLiveSession(
+  access: FacultyAccess,
+  requestId: string,
+  data: {
+    status?: 'pending' | 'accepted' | 'scheduled' | 'completed' | 'cancelled';
+    meetingLink?: string | null;
+    scheduledAt?: Date | null;
+    cancelledReason?: string | null;
+  }
+) {
+  const studentIds = await getFacultyStudentIds(access.facultyId);
+  const [row] = await tutorialDb
+    .update(liveSessionRequests)
+    .set({
+      status: data.status,
+      meetingLink: data.meetingLink,
+      scheduledAt: data.scheduledAt,
+      cancelledReason: data.cancelledReason,
+      updatedAt: new Date(),
+    })
+    .where(and(eq(liveSessionRequests.id, requestId), inArray(liveSessionRequests.studentId, studentIds)))
+    .returning({
+      id: liveSessionRequests.id,
+      studentId: liveSessionRequests.studentId,
+      subtopicId: liveSessionRequests.subtopicId,
+      doubtText: liveSessionRequests.doubtText,
+      status: liveSessionRequests.status,
+      meetingLink: liveSessionRequests.meetingLink,
+      scheduledAt: liveSessionRequests.scheduledAt,
+      createdAt: liveSessionRequests.createdAt,
+    });
+
+  return row ?? null;
+}
+
 function buildAttendanceAvatar(seed: string) {
   return `data:image/svg+xml;utf8,${encodeURIComponent(
     `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
