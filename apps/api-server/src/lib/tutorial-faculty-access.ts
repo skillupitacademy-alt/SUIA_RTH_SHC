@@ -3,6 +3,7 @@ import {
   batches,
   db as peopleDb,
   faculty,
+  getOrSetPeopleUserSubCache,
   userProfiles,
   users,
 } from '@quiz/db-people';
@@ -61,26 +62,28 @@ export async function resolveFacultyAccess(request: NextRequest): Promise<Facult
     return null;
   }
 
-  const [row] = await peopleDb
-    .select({
-      userId: users.id,
-      facultyId: faculty.id,
-      role: users.role,
-    })
-    .from(users)
-    .innerJoin(faculty, eq(faculty.userId, users.id))
-    .where(and(eq(users.id, userId), isNull(users.deletedAt), isNull(faculty.deletedAt)))
-    .limit(1);
+  return getOrSetPeopleUserSubCache<FacultyAccess | null>(userId, async () => {
+    const [row] = await peopleDb
+      .select({
+        userId: users.id,
+        facultyId: faculty.id,
+        role: users.role,
+      })
+      .from(users)
+      .innerJoin(faculty, eq(faculty.userId, users.id))
+      .where(and(eq(users.id, userId), isNull(users.deletedAt), isNull(faculty.deletedAt)))
+      .limit(1);
 
-  if (row === undefined) {
-    return null;
-  }
+    if (row === undefined) {
+      return null;
+    }
 
-  if (row.role !== 'faculty' && row.role !== 'admin' && row.role !== 'super_admin') {
-    return null;
-  }
+    if (row.role !== 'faculty' && row.role !== 'admin' && row.role !== 'super_admin') {
+      return null;
+    }
 
-  return { facultyId: row.facultyId, userId: row.userId };
+    return { facultyId: row.facultyId, userId: row.userId };
+  });
 }
 
 async function getFacultyStudentIds(facultyId: string) {
