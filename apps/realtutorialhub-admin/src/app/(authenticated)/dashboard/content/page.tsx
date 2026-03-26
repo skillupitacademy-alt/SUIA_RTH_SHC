@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import { useShallow } from 'zustand/react/shallow';
 
 import { BlockEditor } from '@/components/admin/BlockEditor';
 import { SelectField } from '@/components/entry/SelectionFields';
@@ -154,12 +155,14 @@ type ContentFactoryPageProps = {
 };
 
 export default function ContentFactoryPage({ embedded = false }: ContentFactoryPageProps = {}) {
-    const selection = useTutorialFactoryStore((state) => ({
-        domainId: state.selection.domainId,
-        subjectId: state.selection.subjectId,
-        topicId: state.selection.topicId,
-        subtopicId: state.selection.subtopicId,
-    }));
+    const selection = useTutorialFactoryStore(
+        useShallow((state) => ({
+            domainId: state.selection.domainId,
+            subjectId: state.selection.subjectId,
+            topicId: state.selection.topicId,
+            subtopicId: state.selection.subtopicId,
+        }))
+    );
     const difficulty = useTutorialFactoryStore((state) => state.selection.difficulty);
     const setFactorySelection = useTutorialFactoryStore((state) => state.setSelection);
     const [sourceMaterial, setSourceMaterial] = useState(

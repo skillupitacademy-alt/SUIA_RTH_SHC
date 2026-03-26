@@ -293,7 +293,7 @@ export function useSubtopics(topicId?: string) {
         return res;
     };
 
-    useEffect(() => { void fetch(); }, [fetch]);
+    useEffect(() => { void fetch(); }, [topicId, fetch]);
 
     return { data, loading, error, fetch, create };
 }
