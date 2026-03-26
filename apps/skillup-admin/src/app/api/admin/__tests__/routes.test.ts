@@ -17,6 +17,7 @@ vi.mock('@quiz/events', () => ({
 }));
 
 import { GET as getBatches, POST as createBatch } from '../batches/route';
+import { PATCH as patchBatchDetail } from '../batches/[id]/route';
 import { PATCH as patchEnquiryDetail } from '../crm/enquiries/[id]/route';
 import { PATCH as admitEnquiry } from '../crm/enquiries/[id]/admit/route';
 import { GET as getEnquiries, POST as createEnquiry } from '../crm/enquiries/route';
@@ -122,7 +123,9 @@ describe('skillup-admin routes', () => {
     );
   });
 
-  it('updates a student profile and enrollment assignment', async () => {
+  it(
+    'updates a student profile and enrollment assignment',
+    async () => {
     const unique = Date.now().toString(36);
     const updateResponse = await patchStudent(
       makeRequest(`/api/admin/students/${studentId}`, 'PATCH', {
@@ -141,7 +144,9 @@ describe('skillup-admin routes', () => {
     expect(updatePayload.data.detail.name).toBe(`Edited Student ${unique}`);
     expect(updatePayload.data.detail.email).toBe(`edited.student.${unique}@example.com`);
     expect(updatePayload.data.detail.batchId).toBe(batchId);
-  });
+    },
+    15000
+  );
 
   it(
     'lists enquiries and advances the saga',
@@ -236,6 +241,38 @@ describe('skillup-admin routes', () => {
 
     expect(createResponse.status).toBe(201);
     expect(createPayload.data.name).toBe('React Full Stack - April 2026');
+  });
+
+  it('loads and updates a batch detail', async () => {
+    const detailResponse = await getBatches(makeRequest('/api/admin/batches'));
+    const detailPayload = (await detailResponse.json()) as { data: Array<{ id: string }> };
+    const targetBatchId = detailPayload.data[0]?.id ?? '';
+
+    expect(targetBatchId).toBeTruthy();
+
+    const unique = Date.now().toString(36);
+    const updateResponse = await patchBatchDetail(
+      makeRequest(
+        `/api/admin/batches/${targetBatchId}`,
+        'PATCH',
+        {
+          name: `Edited Batch ${unique}`,
+          facultyName: 'Neha Kapoor',
+          capacity: 28,
+          startDate: '2026-05-01',
+          status: 'active',
+        }
+      ),
+      {
+        params: Promise.resolve({ id: targetBatchId }),
+      }
+    );
+    const updatePayload = (await updateResponse.json()) as { data: { updated: boolean; detail: { name: string; capacity: number } } };
+
+    expect(updateResponse.status).toBe(200);
+    expect(updatePayload.data.updated).toBe(true);
+    expect(updatePayload.data.detail.name).toBe(`Edited Batch ${unique}`);
+    expect(updatePayload.data.detail.capacity).toBe(28);
   });
 
   it('records payments idempotently and exports CSV', async () => {

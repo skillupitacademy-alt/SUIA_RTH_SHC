@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { BatchEditForm } from '@/components/batches/BatchEditForm';
 import { getAdminBatchDetail } from '@/lib/skillup-admin-data';
 
 export default async function BatchDetailPage({ params }: { params: { id: string } }) {
@@ -38,6 +39,20 @@ export default async function BatchDetailPage({ params }: { params: { id: string
               The batch detail page is where staffing decisions are reviewed. The create and assign flow is surfaced here in the same light card style.
             </p>
             <p className="mt-3 text-sm font-semibold text-slate-900">Assigned faculty: {batch.assignedFaculty}</p>
+          </div>
+
+          <div className="mt-6">
+            <BatchEditForm
+              batch={{
+                id: batch.id,
+                name: batch.name,
+                facultyName: batch.facultyName,
+                capacity: batch.capacity,
+                nextSessionAt: batch.nextSessionAt,
+                status: batch.status,
+                assignedFaculty: batch.assignedFaculty,
+              }}
+            />
           </div>
         </article>
 

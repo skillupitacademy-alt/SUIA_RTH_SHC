@@ -404,6 +404,7 @@ export type AdminBatchDetail = AdminBatchSummary & {
   students: Array<{ id: string; name: string; attendancePct: number }>;
   assignedFaculty: string;
   capacity: number;
+  status: 'upcoming' | 'active' | 'paused' | 'completed' | 'cancelled';
 };
 
 export async function getAdminDashboardSummary() {
@@ -697,6 +698,7 @@ export async function getAdminBatchDetail(id: string): Promise<AdminBatchDetail 
       facultyName: userProfiles.name,
       nextSessionAt: batches.startDate,
       capacity: batches.capacity,
+      status: batches.status,
       domainName: domains.name,
       subjectName: subjects.name,
     })
@@ -744,6 +746,7 @@ export async function getAdminBatchDetail(id: string): Promise<AdminBatchDetail 
     facultyName: row.facultyName ?? 'Unassigned',
     nextSessionAt: toIso(sessions[0]?.scheduledAt ?? row.nextSessionAt ?? new Date()),
     sessionTopic: sessions[0]?.sessionNotes ?? 'Upcoming session',
+    status: row.status,
     schedule: sessions.map((session) => ({
       day: session.scheduledAt.toLocaleDateString('en-US', { weekday: 'long' }),
       topic: session.sessionNotes ?? `${session.durationMinutes} minute session`,
