@@ -1,5 +1,7 @@
 import Link from 'next/link';
 
+import { RegisterForm } from '@/components/auth/RegisterForm';
+
 export const metadata = {
   title: 'Register',
   description: 'Create a SkillUp IT Academy student profile.',
@@ -16,33 +18,8 @@ export default function RegisterPage() {
         </p>
 
         <div className="mt-8 grid gap-4 lg:grid-cols-2">
-          <div className="platform-card">
-            <label htmlFor="skillup-full-name" className="block text-sm font-semibold text-slate-700">
-              Full name
-            </label>
-            <input
-              id="skillup-full-name"
-              className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-cyan-300"
-              type="text"
-              placeholder="Aarav Patel"
-            />
-            <label htmlFor="skillup-mobile" className="mt-4 block text-sm font-semibold text-slate-700">
-              Mobile number
-            </label>
-            <input
-              id="skillup-mobile"
-              className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-cyan-300"
-              type="tel"
-              placeholder="+91 90000 00000"
-            />
-            <label htmlFor="skillup-program" className="mt-4 block text-sm font-semibold text-slate-700">
-              Program
-            </label>
-            <select id="skillup-program" className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-cyan-300">
-              <option>Full Stack Developer</option>
-              <option>Data Analyst</option>
-              <option>Cloud Support</option>
-            </select>
+          <div className="rounded-[2rem] border border-slate-200 bg-white/60 p-6 backdrop-blur-sm">
+            <RegisterForm />
           </div>
 
           <aside className="platform-card bg-white/80">

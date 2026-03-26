@@ -15,11 +15,6 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function HomePage() {
-  const gatewayLoginUrl = (() => {
-    const raw = process.env.NEXT_PUBLIC_API_URL?.trim() ?? 'https://api.realtutorialhub.com/api';
-    return `${raw.replace(/\/api\/?$/, '').replace(/\/+$/, '')}/login`;
-  })();
-
   return (
     <main className="mx-auto flex min-h-screen max-w-7xl flex-col gap-10 px-6 py-8 lg:py-10">
       <section className="glass-morphism rounded-[2.5rem] p-8 shadow-[0_24px_120px_rgba(15,23,42,0.08)]">
@@ -45,12 +40,9 @@ export default function HomePage() {
               >
                 Explore programs
               </Link>
-              <a
-                href={gatewayLoginUrl}
-                className="rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-cyan-300 hover:bg-cyan-50"
-              >
+              <Link href="/login" className="rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-cyan-300 hover:bg-cyan-50">
                 Sign In
-              </a>
+              </Link>
             </div>
           </div>
 

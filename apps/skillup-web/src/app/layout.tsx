@@ -3,6 +3,7 @@ import { Inter, Outfit } from 'next/font/google';
 import type { ReactNode } from 'react';
 
 import './globals.css';
+import { SiteShell } from '@/components/layout/SiteShell';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -35,7 +36,9 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={`${inter.variable} ${outfit.variable}`}>
-      <body className="bg-white text-slate-900 antialiased">{children}</body>
+      <body className="bg-white text-slate-900 antialiased">
+        <SiteShell>{children}</SiteShell>
+      </body>
     </html>
   );
 }

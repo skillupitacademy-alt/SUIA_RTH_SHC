@@ -3,8 +3,8 @@ import { TokenService } from '@quiz/auth';
 
 const LOGIN_URL = process.env.NEXT_PUBLIC_LOGIN_URL ?? '/login';
 
-const PUBLIC_PATHS = ['/', '/programs', '/api/healthz', '/verify'];
-const STUDENT_PATHS = ['/student'];
+const PUBLIC_PATHS = ['/', '/programs', '/api/healthz', '/verify', '/login', '/register'];
+const PROTECTED_PATHS = ['/student', '/dashboard', '/profile'];
 const OVERRIDE_ROLES = ['admin', 'super_admin', 'faculty'];
 
 function hasPrefix(pathname: string, prefixes: string[]): boolean {
@@ -15,8 +15,8 @@ function isPublicRoute(pathname: string): boolean {
   return PUBLIC_PATHS.includes(pathname) || hasPrefix(pathname, ['/verify']);
 }
 
-function isStudentRoute(pathname: string): boolean {
-  return hasPrefix(pathname, STUDENT_PATHS);
+function isProtectedRoute(pathname: string): boolean {
+  return hasPrefix(pathname, PROTECTED_PATHS);
 }
 
 function getAccessToken(request: NextRequest): string | undefined {
@@ -28,6 +28,7 @@ function getLoginUrl(request: NextRequest, redirectPath: string): URL {
     LOGIN_URL.startsWith('http://') || LOGIN_URL.startsWith('https://')
       ? new URL(LOGIN_URL)
       : new URL(LOGIN_URL, request.url);
+  loginUrl.searchParams.set('reason', 'session_expired');
   loginUrl.searchParams.set('redirect', redirectPath);
   return loginUrl;
 }
@@ -76,7 +77,7 @@ export async function proxy(request: NextRequest) {
   const user = await resolveUser(request);
   const redirectPath = `${pathname}${search}`;
 
-  if (isStudentRoute(pathname) && user === null) {
+  if (isProtectedRoute(pathname) && user === null) {
     return NextResponse.redirect(getLoginUrl(request, redirectPath));
   }
 
@@ -86,7 +87,7 @@ export async function proxy(request: NextRequest) {
       : NextResponse.next();
   }
 
-  if (isStudentRoute(pathname)) {
+  if (isProtectedRoute(pathname)) {
     if (user !== null && hasRequiredRole(user) === false) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
