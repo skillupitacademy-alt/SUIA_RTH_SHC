@@ -1,15 +1,13 @@
 import {
-  skillupFacultyShowcase,
-  skillupHeroStats,
-  skillupPrograms,
-  studentAttendanceHistory,
-  studentBatchDetails,
-  studentDashboardSummary,
-  studentInstallments,
-  studentJobMatches,
-  studentPlacementProfile,
-  studentSessions,
-} from '@/lib/skillup-demo-data';
+  getSkillupFaculty,
+  getSkillupPrograms,
+  getSkillupAttendance,
+  getSkillupStudentDashboard,
+  getSkillupMyBatch,
+  getSkillupPayments,
+  getSkillupPlacement,
+  getSkillupBatches,
+} from '@/lib/skillup-data';
 import { headers } from 'next/headers';
 
 function resolveSkillupOrigin(): string {
@@ -42,7 +40,7 @@ export async function fetchSkillupApi<T>(path: string): Promise<T> {
     if (portalIdentity) forwardedHeaders.set('x-portal-identity', portalIdentity);
   } catch {
     // Static build paths do not have a request scope. We keep the fetch attempt
-    // for runtime rendering and fall back to local fixtures only when needed.
+    // for runtime rendering and fall back to live DB helpers only when needed.
   }
 
   try {
@@ -58,16 +56,16 @@ export async function fetchSkillupApi<T>(path: string): Promise<T> {
     return (await response.json()) as T;
   } catch {
     if (path === '/api/programs') {
-      return { programs: skillupPrograms } as T;
+      return (await getSkillupPrograms()) as T;
     }
 
-    if (path === '/api/student/dashboard') return { summary: studentDashboardSummary, sessions: studentSessions } as T;
-    if (path === '/api/student/my-batch') return { batch: studentBatchDetails, sessions: studentSessions } as T;
-    if (path === '/api/student/attendance') return { history: studentAttendanceHistory } as T;
-    if (path === '/api/student/payments') return { installments: studentInstallments } as T;
-    if (path === '/api/student/placement') return { profile: studentPlacementProfile, jobs: studentJobMatches } as T;
-    if (path === '/api/batches') return { batch: studentBatchDetails, sessions: studentSessions } as T;
-    if (path === '/api/faculty') return { faculty: skillupFacultyShowcase, heroStats: skillupHeroStats } as T;
+    if (path === '/api/student/dashboard') return (await getSkillupStudentDashboard()) as T;
+    if (path === '/api/student/my-batch') return (await getSkillupMyBatch()) as T;
+    if (path === '/api/student/attendance') return (await getSkillupAttendance()) as T;
+    if (path === '/api/student/payments') return (await getSkillupPayments()) as T;
+    if (path === '/api/student/placement') return (await getSkillupPlacement()) as T;
+    if (path === '/api/batches') return (await getSkillupBatches()) as T;
+    if (path === '/api/faculty') return (await getSkillupFaculty()) as T;
 
     throw new Error(`Failed to load SkillUp data from ${path}`);
   }

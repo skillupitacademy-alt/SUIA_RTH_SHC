@@ -1,11 +1,12 @@
-import { skillupPrograms } from '@/lib/skillup-demo-data';
+import { getSkillupPrograms } from '@/lib/skillup-data';
 
-export default function sitemap() {
+export default async function sitemap() {
   const baseUrl = 'https://skillupitacademy.com';
+  const { programs } = await getSkillupPrograms();
 
   return [
     { url: baseUrl, lastModified: new Date() },
     { url: `${baseUrl}/programs`, lastModified: new Date() },
-    ...skillupPrograms.map((program) => ({ url: `${baseUrl}/programs/${program.slug}`, lastModified: new Date() })),
+    ...programs.map((program) => ({ url: `${baseUrl}/programs/${program.slug}`, lastModified: new Date() })),
   ];
 }

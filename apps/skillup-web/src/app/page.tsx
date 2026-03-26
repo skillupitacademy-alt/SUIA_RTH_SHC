@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowRight, ShieldCheck } from 'lucide-react';
 
-import { skillupFacultyShowcase, skillupHeroStats, skillupPrograms } from '@/lib/skillup-demo-data';
+import { getSkillupFaculty, getSkillupPrograms } from '@/lib/skillup-data';
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
@@ -15,7 +15,9 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function HomePage() {
+export default async function HomePage() {
+  const [{ programs }, { faculty, heroStats }] = await Promise.all([getSkillupPrograms(), getSkillupFaculty()]);
+
   return (
     <main className="mx-auto flex min-h-screen max-w-7xl flex-col gap-10 px-6 py-8 lg:py-10">
       <section className="surface-panel rounded-[3rem] p-8 lg:p-10">
@@ -54,7 +56,7 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
-            {skillupHeroStats.map((stat) => (
+            {heroStats.map((stat) => (
               <div key={stat.label} className="surface-card rounded-[2rem] p-6">
                 <p className="text-xs font-black uppercase tracking-[0.35em] text-slate-500">{stat.label}</p>
                 <p className="mt-3 text-4xl font-black tracking-tight text-slate-950">{stat.value}</p>
@@ -65,7 +67,7 @@ export default function HomePage() {
       </section>
 
       <section className="grid gap-4 md:grid-cols-3">
-        {skillupPrograms.map((program) => (
+        {programs.map((program) => (
           <Link
             key={program.id}
             href={`/programs/${program.slug}`}
@@ -106,7 +108,7 @@ export default function HomePage() {
             </Link>
           </div>
           <div className="mt-6 grid gap-4 md:grid-cols-3">
-            {skillupFacultyShowcase.map((mentor) => (
+            {faculty.map((mentor) => (
               <div key={mentor.name} className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
                 <p className="text-sm font-black text-slate-950">{mentor.name}</p>
                 <p className="mt-1 text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">{mentor.title}</p>

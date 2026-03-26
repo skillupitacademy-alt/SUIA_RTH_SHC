@@ -1,6 +1,6 @@
 import { ImageResponse } from 'next/og';
 
-import { findSkillupProgramBySlug } from '@/lib/skillup-demo-data';
+import { getSkillupProgramBySlug } from '@/lib/skillup-data';
 
 type ProgramImageProps = {
   params: Promise<{ slug: string }>;
@@ -15,7 +15,7 @@ export const contentType = 'image/png';
 
 export default async function OpenGraphImage({ params }: ProgramImageProps) {
   const { slug } = await params;
-  const program = findSkillupProgramBySlug(slug);
+  const program = await getSkillupProgramBySlug(slug);
 
   const title = program?.name ?? 'SkillUp IT Academy';
   const summary = program?.summary ?? 'Live tech training for students who want to build and place faster.';
