@@ -152,6 +152,7 @@ describe('SelectionService (Branch Coverage)', () => {
         const service = container.get(SelectionService);
         const result = await (service as any).resolveBlueprint('u1', 'bp1', {});
         expect(result.id).toBe('bp1');
+        expect(cacheService.set).toHaveBeenCalledWith('blueprint:bp1', expect.objectContaining({ id: 'bp1' }), 1000 * 60 * 60);
     });
   });
 

@@ -4,6 +4,7 @@ import { and, asc, eq, inArray, or, sql } from 'drizzle-orm';
 
 import type { CacheValue } from '../core/cache.service';
 
+const BLUEPRINT_CACHE_TTL_MS = 1000 * 60 * 60;
 const withTimeout = dbWithTimeout ?? (async <T>(promise: Promise<T>) => promise);
 const hashString = (input: string): string => {
   let h = 0;
@@ -238,7 +239,7 @@ export class SelectionService {
 
       if (blueprint) {
         try {
-          await cache.set(blueprintCacheKey, blueprint, 1000 * 60 * 10);
+          await cache.set(blueprintCacheKey, blueprint, BLUEPRINT_CACHE_TTL_MS);
         } catch (e) {
           log.warn(
             { error: e instanceof Error ? e.message : 'unknown error' },
