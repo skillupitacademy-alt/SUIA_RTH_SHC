@@ -7,26 +7,6 @@ import { clientLogger } from '@/utils/clientLogger';
 
 import { Domain, Skill, Status, Subject, Subtopic, Topic } from '../types/domain';
 
-type HierarchyResponse<T> = {
-    data?: T[];
-    error?: string;
-};
-
-async function loadHierarchy<T>(url: string, mapper: (item: Record<string, unknown>) => T, fallbackError: string): Promise<T[]> {
-    const response = await fetch(url);
-    const payload = await response.json().catch(() => null) as HierarchyResponse<Record<string, unknown>> | null;
-
-    if (!response.ok) {
-        throw new Error(payload?.error ?? fallbackError);
-    }
-
-    if (Array.isArray(payload?.data) === false) {
-        return [];
-    }
-
-    return payload.data.map((item) => mapper(item));
-}
-
 export function useDomains() {
     const [data, setData] = useState<Domain[]>([]);
     const [loading, setLoading] = useState(false);
@@ -36,17 +16,19 @@ export function useDomains() {
         setLoading(true);
         setError(null);
         try {
-            const domains = await loadHierarchy('/api/tutorial/hierarchy/domains', (domain) => ({
-                id: String(domain.id ?? ''),
-                name: String(domain.name ?? ''),
-                slug: String(domain.slug ?? ''),
-                description: null,
-                category: null,
-                status: 'active' as Status,
-                createdAt: typeof domain.createdAt === 'string' ? domain.createdAt : undefined,
-                updatedAt: typeof domain.updatedAt === 'string' ? domain.updatedAt : undefined,
-                externalId: String(domain.externalId ?? ''),
-            }), 'Unable to load domains.');
+            const res = await apiClient.admin.getDomains(null, 100);
+            const domains: Domain[] = Array.isArray(res.data)
+                ? res.data.map((domain) => ({
+                    id: String(domain.id),
+                    name: domain.name ?? '',
+                    slug: domain.slug ?? undefined,
+                    description: domain.description ?? null,
+                    category: domain.category ?? null,
+                    status: ((domain as { status?: Status }).status as Status) ?? 'active',
+                    createdAt: domain.createdAt ?? undefined,
+                    updatedAt: domain.updatedAt ?? undefined,
+                }))
+                : [];
             setData(domains);
         } catch (e) {
             clientLogger.error('Fetch domains failed', { error: e instanceof Error ? e.message : 'unknown' });
@@ -137,23 +119,21 @@ export function useSubjects(domainId?: string) {
         setLoading(true);
         setError(null);
         try {
-            const subjects = await loadHierarchy(
-                `/api/tutorial/hierarchy/subjects?domainId=${encodeURIComponent(domainId ?? '')}`,
-                (subject) => ({
-                    id: String(subject.id ?? ''),
-                    name: String(subject.name ?? ''),
-                    slug: String(subject.slug ?? ''),
-                    domainId: String(subject.domainId ?? ''),
-                    description: null,
-                    status: 'active' as Status,
-                    order: undefined,
-                    orderIndex: undefined,
-                    createdAt: typeof subject.createdAt === 'string' ? subject.createdAt : undefined,
-                    updatedAt: typeof subject.updatedAt === 'string' ? subject.updatedAt : undefined,
-                    externalId: String(subject.externalId ?? ''),
-                }),
-                'Unable to load subjects.'
-            );
+            const res = await apiClient.admin.getSubjects(null, 200, domainId);
+            const subjects: Subject[] = Array.isArray(res.data)
+                ? res.data.map((subject) => ({
+                    id: String(subject.id),
+                    name: subject.name ?? '',
+                    slug: subject.slug ?? undefined,
+                    domainId: subject.domainId ?? '',
+                    description: subject.description ?? null,
+                    status: ((subject as { status?: Status }).status as Status) ?? 'active',
+                    order: (subject as { order?: number }).order,
+                    orderIndex: (subject as { orderIndex?: number }).orderIndex,
+                    createdAt: subject.createdAt ?? undefined,
+                    updatedAt: subject.updatedAt ?? undefined,
+                }))
+                : [];
             setData(subjects);
         } catch (e) {
             clientLogger.error('Fetch subjects failed', { error: e instanceof Error ? e.message : 'unknown' });
@@ -194,26 +174,24 @@ export function useTopics(subjectId?: string) {
         setLoading(true);
         setError(null);
         try {
-            const topics = await loadHierarchy(
-                `/api/tutorial/hierarchy/topics?subjectId=${encodeURIComponent(subjectId)}`,
-                (topic) => ({
-                    id: String(topic.id ?? ''),
-                    name: String(topic.name ?? ''),
-                    slug: String(topic.slug ?? ''),
-                    subjectId: String(topic.subjectId ?? ''),
-                    description: null,
-                    status: 'active' as Status,
-                    weight: 0,
-                    complexityLevel: 0,
-                    learningUrl: undefined,
-                    detailedNotesPath: undefined,
-                    subject: undefined,
-                    createdAt: typeof topic.createdAt === 'string' ? topic.createdAt : undefined,
-                    updatedAt: typeof topic.updatedAt === 'string' ? topic.updatedAt : undefined,
-                    externalId: String(topic.externalId ?? ''),
-                }),
-                'Unable to load topics.'
-            );
+            const res = await apiClient.admin.getTopics(null, 500, subjectId);
+            const topics: Topic[] = Array.isArray(res.data)
+                ? res.data.map((topic) => ({
+                    id: String(topic.id),
+                    name: topic.name ?? '',
+                    slug: topic.slug ?? undefined,
+                    subjectId: topic.subjectId ?? '',
+                    description: topic.description ?? null,
+                    status: ((topic as { status?: Status }).status as Status) ?? 'active',
+                    weight: (topic as { weight?: number }).weight ?? 0,
+                    complexityLevel: (topic as { complexityLevel?: number }).complexityLevel ?? (topic as { complexity?: number }).complexity ?? 0,
+                    learningUrl: (topic as { learningUrl?: string | null }).learningUrl,
+                    detailedNotesPath: (topic as { detailedNotesPath?: string | null }).detailedNotesPath,
+                    subject: (topic as { subject?: Topic['subject'] }).subject,
+                    createdAt: topic.createdAt ?? undefined,
+                    updatedAt: topic.updatedAt ?? undefined,
+                }))
+                : [];
             setData(topics);
         } catch (e) {
             clientLogger.error('Fetch topics failed', { error: e instanceof Error ? e.message : 'unknown' });
@@ -254,24 +232,22 @@ export function useSubtopics(topicId?: string) {
         setLoading(true);
         setError(null);
         try {
-            const subtopics = await loadHierarchy(
-                `/api/tutorial/hierarchy/subtopics?topicId=${encodeURIComponent(topicId)}`,
-                (subtopic) => ({
-                    id: String(subtopic.id ?? ''),
-                    name: String(subtopic.name ?? ''),
-                    slug: String(subtopic.slug ?? ''),
-                    topicId: String(subtopic.topicId ?? ''),
-                    description: null,
-                    depthLevel: undefined,
-                    orderIndex: undefined,
-                    status: 'active' as Status,
-                    createdAt: typeof subtopic.createdAt === 'string' ? subtopic.createdAt : undefined,
-                    updatedAt: typeof subtopic.updatedAt === 'string' ? subtopic.updatedAt : undefined,
-                    externalId: String(subtopic.externalId ?? ''),
-                    difficultyLevels: Array.isArray(subtopic.difficultyLevels) ? subtopic.difficultyLevels : [],
-                }),
-                'Unable to load subtopics.'
-            );
+            const res = await apiClient.admin.getSubtopics(null, 1000, topicId);
+            const subtopics: Subtopic[] = Array.isArray(res.data)
+                ? res.data.map((subtopic) => ({
+                    id: String(subtopic.id),
+                    name: subtopic.name ?? '',
+                    slug: subtopic.slug ?? undefined,
+                    topicId: subtopic.topicId ?? '',
+                    description: subtopic.description ?? null,
+                    depthLevel: (subtopic as { depthLevel?: number }).depthLevel,
+                    orderIndex: (subtopic as { orderIndex?: number }).orderIndex,
+                    status: ((subtopic as { status?: Status }).status as Status) ?? 'active',
+                    createdAt: subtopic.createdAt ?? undefined,
+                    updatedAt: subtopic.updatedAt ?? undefined,
+                    difficultyLevels: (subtopic as { difficultyLevels?: string[] }).difficultyLevels ?? [],
+                }))
+                : [];
             setData(subtopics as Subtopic[]);
         } catch (e) {
             clientLogger.error('Fetch subtopics failed', { error: e instanceof Error ? e.message : 'unknown' });
