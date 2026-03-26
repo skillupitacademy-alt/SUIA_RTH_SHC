@@ -167,6 +167,9 @@ importers:
       '@quiz/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@quiz/db-tutorial':
+        specifier: workspace:*
+        version: link:../../packages/db-tutorial
       '@quiz/observability':
         specifier: workspace:*
         version: link:../../packages/observability
