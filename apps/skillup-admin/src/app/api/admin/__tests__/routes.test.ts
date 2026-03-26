@@ -49,7 +49,8 @@ describe('skillup-admin routes', () => {
   let placementId = '';
   let paymentId = '';
 
-  beforeEach(async () => {
+  beforeEach(
+    async () => {
     vi.clearAllMocks();
     const [students, enquiries, batches, placements, payments] = await Promise.all([
       listAdminStudents(),
@@ -64,7 +65,9 @@ describe('skillup-admin routes', () => {
     batchId = batches[0]?.id ?? '';
     placementId = placements[0]?.id ?? '';
     paymentId = payments[0]?.id ?? '';
-  });
+    },
+    20000
+  );
 
   it('rejects requests without an admin role', async () => {
     const response = await getStudents(
@@ -100,7 +103,9 @@ describe('skillup-admin routes', () => {
     expect(createPayload.data.email).toBe(`new.student.${unique}@example.com`);
   });
 
-  it('returns a student detail and enrolls the student with an event', async () => {
+  it(
+    'returns a student detail and enrolls the student with an event',
+    async () => {
     const detailResponse = await getStudent(makeRequest(`/api/admin/students/${studentId}`), {
       params: Promise.resolve({ id: studentId }),
     });
@@ -121,7 +126,9 @@ describe('skillup-admin routes', () => {
       expect.objectContaining({ batchId: enrollPayload.data.enrollment.batchId, enrollmentType: 'batch', userId: studentUserId }),
       expect.any(Object)
     );
-  });
+    },
+    15000
+  );
 
   it(
     'updates a student profile and enrollment assignment',

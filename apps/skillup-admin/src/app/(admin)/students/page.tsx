@@ -1,8 +1,9 @@
 import Link from 'next/link';
 
+import { StudentCreateForm } from '@/components/students/StudentCreateForm';
 import { getSkillUpAdminRole } from '@/lib/admin-session';
 import { RoleLockedNotice } from '@/components/role-locked-notice';
-import { listAdminStudents } from '@/lib/skillup-admin-data';
+import { listAdminBatches, listAdminStudents } from '@/lib/skillup-admin-data';
 
 const statusStyles: Record<string, string> = {
   current: 'border-emerald-200 bg-emerald-50 text-emerald-700',
@@ -30,7 +31,8 @@ export default async function StudentsPage({ searchParams }: StudentsPageProps) 
   const params = (await searchParams) ?? {};
   const query = params.q?.trim().toLowerCase() ?? '';
   const paymentFilter = params.payment?.trim().toLowerCase() ?? 'all';
-  const students = (await listAdminStudents()).filter((student) => {
+  const [students, batches] = await Promise.all([listAdminStudents(), listAdminBatches()]);
+  const filteredStudents = students.filter((student) => {
     const matchesQuery =
       query.length === 0 ||
       [student.name, student.email, student.batchName, student.batchId].some((value) => value.toLowerCase().includes(query));
@@ -80,7 +82,22 @@ export default async function StudentsPage({ searchParams }: StudentsPageProps) 
       </div>
 
       <div className="grid gap-4 xl:grid-cols-2">
-        {students.map((student) => (
+        <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+          <StudentCreateForm batches={batches.map((batch) => ({ id: batch.id, name: batch.name }))} />
+
+          <aside className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+            <p className="text-xs font-black uppercase tracking-[0.35em] text-slate-500">Student onboarding notes</p>
+            <div className="mt-4 space-y-3 text-sm leading-6 text-slate-600">
+              <p>New students are created in the live people database.</p>
+              <p>Batch assignment, profile, and admission rows are created together.</p>
+              <p>The record appears immediately in the filtered student grid below.</p>
+            </div>
+          </aside>
+        </div>
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-2">
+        {filteredStudents.map((student) => (
           <article key={student.id} className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex items-start justify-between gap-4">
               <div>
@@ -109,12 +126,12 @@ export default async function StudentsPage({ searchParams }: StudentsPageProps) 
             </div>
 
             <div className="mt-5 flex items-center justify-between gap-3">
-              <p className="text-sm text-slate-600">Open the profile for attendance history, payments, and enrollment details.</p>
-              <Link
-                href={`/students/${student.id}`}
-                className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-cyan-700 shadow-sm transition hover:border-cyan-300 hover:bg-cyan-50 hover:text-cyan-900"
-              >
-                Open profile
+            <p className="text-sm text-slate-600">Open the profile for attendance history, payments, enrollment details, and edit actions.</p>
+            <Link
+              href={`/students/${student.id}`}
+              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-cyan-700 shadow-sm transition hover:border-cyan-300 hover:bg-cyan-50 hover:text-cyan-900"
+            >
+              Open profile
               </Link>
             </div>
           </article>
