@@ -1,8 +1,9 @@
 import Link from 'next/link';
 
+import { PaymentRecordForm } from '@/components/payment/PaymentRecordForm';
 import { getSkillUpAdminRole } from '@/lib/admin-session';
 import { RoleLockedNotice } from '@/components/role-locked-notice';
-import { listAdminPayments } from '@/lib/skillup-admin-data';
+import { listAdminPayments, listAdminStudents } from '@/lib/skillup-admin-data';
 
 export default async function PaymentsPage() {
   if ((await getSkillUpAdminRole()) !== 'admin') {
@@ -14,7 +15,7 @@ export default async function PaymentsPage() {
     );
   }
 
-  const payments = await listAdminPayments();
+  const [payments, students] = await Promise.all([listAdminPayments(), listAdminStudents()]);
 
   return (
     <section className="mx-auto max-w-7xl space-y-6 px-6 py-8 lg:py-10">
@@ -29,6 +30,25 @@ export default async function PaymentsPage() {
             Export CSV
           </Link>
         </div>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+        <PaymentRecordForm
+          students={students.map((student) => ({
+            id: student.userId,
+            name: student.name,
+            email: student.email,
+          }))}
+        />
+
+        <aside className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+          <p className="text-xs font-black uppercase tracking-[0.35em] text-slate-500">Finance notes</p>
+          <div className="mt-4 space-y-3 text-sm leading-6 text-slate-600">
+            <p>Records are written directly to the live people database.</p>
+            <p>New payments surface immediately in the installment list after refresh.</p>
+            <p>Use the detail editor to change due dates, references, or status later.</p>
+          </div>
+        </aside>
       </div>
 
       <div className="grid gap-4 xl:grid-cols-2">
