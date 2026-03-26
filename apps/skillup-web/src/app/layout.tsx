@@ -27,7 +27,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#0f6e56',
+  themeColor: '#0ea5e9',
   width: 'device-width',
   initialScale: 1,
 };
@@ -35,7 +35,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={`${inter.variable} ${outfit.variable}`}>
-      <body>{children}</body>
+      <body className="bg-white text-slate-900 antialiased">{children}</body>
     </html>
   );
 }

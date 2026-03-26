@@ -5,17 +5,26 @@
 :root {
   --font-inter: 'Inter', system-ui, sans-serif;
   --font-outfit: 'Outfit', system-ui, sans-serif;
+  --primary: 199 89% 48%;
+  --secondary: 201 90% 34%;
+  --background: 0 0% 100%;
+  --foreground: 222 47% 11%;
+  --radius: 0.5rem;
 }
 
 html {
   color-scheme: light;
+  background:
+    radial-gradient(circle at top, rgba(14, 165, 233, 0.08), transparent 28%),
+    linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
 }
 
 body {
   margin: 0;
   font-family: var(--font-inter);
+  min-height: 100vh;
   background:
-    radial-gradient(circle at top, rgba(14, 165, 233, 0.12), transparent 28%),
+    radial-gradient(circle at top, rgba(14, 165, 233, 0.08), transparent 28%),
     linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
   color: #0f172a;
 }
@@ -38,4 +47,23 @@ a {
 ::selection {
   background: rgba(14, 165, 233, 0.18);
   color: #0f172a;
+}
+
+.glass-morphism {
+  @apply border border-white/20 bg-white/70 backdrop-blur-[16px];
+}
+
+.eyebrow-label {
+  font-size: 0.65rem;
+  font-weight: 900;
+  letter-spacing: 0.45em;
+  text-transform: uppercase;
+}
+
+.platform-card {
+  border-radius: 2.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(16px);
+  padding: 1.5rem;
 }
