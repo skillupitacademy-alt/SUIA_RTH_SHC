@@ -79,7 +79,7 @@ export default async function BatchDetailPage({ params }: BatchPageProps) {
                 <p className="mt-2 text-sm text-slate-600">{session.durationMinutes} minutes</p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   <Link
-                    href={`/sessions/${session.id}`}
+                    href={`/my-batches/${batch.id}/sessions/${session.id}`}
                     className="rounded-full border border-cyan-200 bg-cyan-50 px-4 py-2 text-sm font-semibold text-cyan-700 shadow-sm transition hover:border-cyan-300 hover:bg-cyan-100 hover:text-cyan-900"
                   >
                     Edit
