@@ -2,6 +2,7 @@ import { eq } from 'drizzle-orm';
 
 import { db, domains, subjects, subtopics, topics, withTimeout, STANDARD_QUERY_TIMEOUT } from '@quiz/db';
 import { TutorialContentRepository } from '@quiz/db-tutorial';
+import { getTutorialContentBySubtopicId } from './tutorial-content-api';
 
 export interface TutorialHierarchyNode {
   id: string;
@@ -109,9 +110,12 @@ export async function getHierarchyBySlugs(params: {
 }
 
 export async function getPublishedTutorialContent(subtopicId: string, difficulty?: 'simple' | 'mixed' | 'intermediate' | 'expert') {
-  const rows = await repository.getPublished(subtopicId, difficulty);
-  const content = rows[0];
-  if (content === undefined) {
+  const content = await getTutorialContentBySubtopicId(subtopicId);
+  if (content === null) {
+    return null;
+  }
+
+  if (difficulty !== undefined && content.difficulty !== difficulty) {
     return null;
   }
 
@@ -120,7 +124,7 @@ export async function getPublishedTutorialContent(subtopicId: string, difficulty
     subtopicId: content.subtopicId,
     difficulty: content.difficulty,
     content: content.content,
-    updatedAt: content.updatedAt,
+    updatedAt: new Date(content.updatedAt),
   } satisfies PublishedTutorialContent;
 }
 

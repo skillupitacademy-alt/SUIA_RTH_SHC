@@ -23,7 +23,8 @@ export default async function TutorialSubtopicPage({ params, searchParams }: Pag
   const resolved = await params;
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const hierarchy = await getHierarchyBySlugs(resolved);
-  const content = await getSeededTutorialContent();
+  const publishedContent = hierarchy != null ? await getPublishedTutorialContent(hierarchy.subtopic.id) : null;
+  const content = publishedContent?.content ?? (await getSeededTutorialContent());
   const theme = getDomainTheme(resolved.domainSlug);
   const subtopicId = hierarchy?.subtopic.id ?? SEED_SUBTOPIC_ID;
 

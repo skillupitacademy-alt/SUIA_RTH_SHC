@@ -6,6 +6,19 @@ import { DEFAULT_TUTORIAL_CONTENT, SEED_SUBTOPIC_ID } from './tutorial-content';
 import { logger } from './logger';
 
 export const tutorialContentRepository = new TutorialContentRepository();
+const tutorialApiBase = (() => {
+  const internal = process.env.INTERNAL_API_URL?.trim();
+  if (internal && internal.length > 0) {
+    return internal.replace(/\/+$/, '');
+  }
+
+  const publicUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
+  if (publicUrl && publicUrl.length > 0) {
+    return publicUrl.replace(/\/+$/, '');
+  }
+
+  return 'http://localhost:3000/api';
+})();
 
 export type TutorialContentApiDTO = {
   id: string;
@@ -59,6 +72,21 @@ export async function getTutorialContentBySubtopicId(subtopicId: string): Promis
   const parsed = tutorialContentParamSchema.safeParse({ subtopicId });
   if (!parsed.success) {
     return null;
+  }
+
+  try {
+    const response = await fetch(`${tutorialApiBase}/tutorial/content/${parsed.data.subtopicId}`, {
+      cache: 'no-store',
+    });
+
+    if (response.ok) {
+      const payload = (await response.json()) as { data?: TutorialContentApiDTO };
+      if (payload.data != null) {
+        return payload.data;
+      }
+    }
+  } catch (error) {
+    logger.warn({ err: error, subtopicId: parsed.data.subtopicId }, 'Tutorial content api-server lookup failed, falling back to direct DB access');
   }
 
   try {

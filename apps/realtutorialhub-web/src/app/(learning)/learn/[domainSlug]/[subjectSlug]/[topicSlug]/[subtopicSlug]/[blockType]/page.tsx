@@ -4,7 +4,7 @@ import type { ContentBlockType } from '@quiz/types';
 
 import { getDomainTheme } from '@/lib/domain-themes';
 import { SEED_SUBTOPIC_ID, getSeededTutorialContent } from '@/lib/tutorial-content';
-import { getHierarchyBySlugs } from '@/lib/tutorial-hierarchy';
+import { getHierarchyBySlugs, getPublishedTutorialContent } from '@/lib/tutorial-hierarchy';
 
 import { TutorialExperience } from '@/components/content/TutorialExperience';
 
@@ -32,7 +32,8 @@ export default async function TutorialBlockPage({ params, searchParams }: PagePr
   }
 
   const hierarchy = await getHierarchyBySlugs(resolved);
-  const content = await getSeededTutorialContent();
+  const publishedContent = hierarchy != null ? await getPublishedTutorialContent(hierarchy.subtopic.id) : null;
+  const content = publishedContent?.content ?? (await getSeededTutorialContent());
   const theme = getDomainTheme(resolved.domainSlug);
   const subtopicId = hierarchy?.subtopic.id ?? SEED_SUBTOPIC_ID;
 
