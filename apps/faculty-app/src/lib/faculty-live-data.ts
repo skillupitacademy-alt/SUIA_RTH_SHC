@@ -74,6 +74,16 @@ export interface FacultySessionRequestItem {
   batchName: string;
 }
 
+export interface FacultyUpcomingSessionItem {
+  id: string;
+  batchId: string;
+  batchName: string;
+  topic: string;
+  scheduledAt: string;
+  status: 'scheduled' | 'completed' | 'cancelled';
+  studentCount: number;
+}
+
 async function getFacultyRow(userId: string) {
   const [row] = await db
     .select({
@@ -304,6 +314,56 @@ export async function listFacultySessionRequests(userId: string): Promise<Facult
 
   const response = await fetchFacultyTutorialData<{ data: FacultySessionRequestItem[] }>(userId, '/api/tutorial/faculty/live-sessions');
   return response?.data ?? [];
+}
+
+export async function listFacultyUpcomingSessions(userId: string): Promise<FacultyUpcomingSessionItem[]> {
+  const facultyRow = await getFacultyRow(userId);
+  if (facultyRow === null) {
+    return [];
+  }
+
+  const rows = await db
+    .select({
+      id: batchSessions.id,
+      batchId: batchSessions.batchId,
+      batchName: batches.name,
+      scheduledAt: batchSessions.scheduledAt,
+      status: batchSessions.status,
+      sessionNotes: batchSessions.sessionNotes,
+    })
+    .from(batchSessions)
+    .innerJoin(batches, eq(batches.id, batchSessions.batchId))
+    .where(and(eq(batches.facultyId, facultyRow.id), isNull(batches.deletedAt)))
+    .orderBy(asc(batchSessions.scheduledAt));
+
+  const enrollmentCounts = await db
+    .select({
+      batchId: batchEnrollments.batchId,
+      studentUserId: batchEnrollments.studentUserId,
+    })
+    .from(batchEnrollments)
+    .innerJoin(batches, eq(batches.id, batchEnrollments.batchId))
+    .where(and(eq(batches.facultyId, facultyRow.id), isNull(batchEnrollments.deletedAt), isNull(batches.deletedAt)));
+
+  const studentCountMap = new Map<string, number>();
+  for (const row of enrollmentCounts) {
+    studentCountMap.set(row.batchId, (studentCountMap.get(row.batchId) ?? 0) + 1);
+  }
+
+  const upcoming = rows
+    .filter((row) => row.status === 'scheduled' || row.status === 'completed' || row.status === 'cancelled')
+    .slice(0, 12)
+    .map((row) => ({
+      id: row.id,
+      batchId: row.batchId,
+      batchName: row.batchName,
+      topic: formatSessionTopic(row.sessionNotes),
+      scheduledAt: toIso(row.scheduledAt),
+      status: row.status,
+      studentCount: studentCountMap.get(row.batchId) ?? 0,
+    }));
+
+  return upcoming;
 }
 
 export async function upsertFacultyAttendance(
