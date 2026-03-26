@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 
 import type { FacultyReviewQueueItem as ProjectReviewItem } from '@/lib/faculty-live-data';
@@ -27,7 +28,11 @@ export function ProjectReviewsPanel({ submissions }: ProjectReviewsPanelProps) {
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-sm font-semibold text-slate-500">{submission.studentName}</p>
-              <h3 className="mt-1 text-xl font-black tracking-tight text-slate-950">{submission.projectName}</h3>
+              <h3 className="mt-1 text-xl font-black tracking-tight text-slate-950">
+                <Link href={`/assignments/projects/${submission.id}`} className="transition hover:text-cyan-700">
+                  {submission.projectName}
+                </Link>
+              </h3>
             </div>
             <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-black uppercase tracking-[0.25em] text-amber-700">
               {submission.status}

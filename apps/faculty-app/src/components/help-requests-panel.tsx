@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 
 import type { FacultyHelpRequestItem as HelpRequestItem } from '@/lib/faculty-live-data';
@@ -26,7 +27,11 @@ export function HelpRequestsPanel({ requests }: HelpRequestsPanelProps) {
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-sm font-semibold text-slate-500">{request.studentName}</p>
-              <h3 className="mt-1 text-xl font-black tracking-tight text-slate-950">{request.subtopic}</h3>
+              <h3 className="mt-1 text-xl font-black tracking-tight text-slate-950">
+                <Link href={`/assignments/help/${request.id}`} className="transition hover:text-cyan-700">
+                  {request.subtopic}
+                </Link>
+              </h3>
             </div>
             <span className="rounded-full bg-cyan-50 px-3 py-1 text-xs font-black uppercase tracking-[0.25em] text-cyan-700">
               {request.status}
