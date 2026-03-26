@@ -25,6 +25,9 @@ import { POST as requestRevision } from '../project-reviews/[id]/request-revisio
 import { GET as getProjectReviews } from '../project-reviews/route';
 import { POST as acceptSessionRequest } from '../session-requests/[id]/accept/route';
 import { GET as getSessionRequests } from '../session-requests/route';
+import { GET as getFacultyAssignments } from '../../assignments/route';
+import { GET as getFacultyHelpRequests } from '../../help-requests/route';
+import { GET as getFacultyReviewQueue } from '../../review-queue/route';
 
 const makeJsonRequest = (url: string, body?: unknown, method = 'GET') =>
   new NextRequest(`http://localhost${url}`, {
@@ -57,6 +60,43 @@ describe('faculty-app routes', () => {
               status: 'open',
               requestedAt: '2026-03-22T08:10:00+05:30',
               resolvedAt: null,
+            },
+          ],
+        });
+      }
+
+      if (path === '/api/tutorial/faculty/assignments') {
+        return NextResponse.json({
+          data: [
+            {
+              id: 'assignment-1',
+              title: 'Build an async quiz flow',
+              question: 'Implement a quiz builder that preserves answer order.',
+              subtopic: 'Promises and async flow',
+              difficulty: 'medium',
+              questionType: 'coding',
+              points: 10,
+              isPublished: true,
+              helpRequestCount: 2,
+              createdAt: '2026-03-22T07:40:00+05:30',
+              updatedAt: '2026-03-22T08:00:00+05:30',
+            },
+          ],
+        });
+      }
+
+      if (path === '/api/tutorial/faculty/review-queue') {
+        return NextResponse.json({
+          data: [
+            {
+              id: 'review-1',
+              studentId: 'student-1',
+              studentName: 'Aarav Shah',
+              projectName: 'Quiz Builder Dashboard',
+              status: 'needs_review',
+              submittedAt: '2026-03-22T07:50:00+05:30',
+              aiFeedback: 'AI flagged the workflow as promising but needs a manual review for approval.',
+              checklist: [{ label: 'Uses repository pattern', passed: true }],
             },
           ],
         });
@@ -169,6 +209,30 @@ describe('faculty-app routes', () => {
 
     expect(patchResponse.status).toBe(200);
     expect(patchPayload.data.status).toBe('resolved');
+  });
+
+  it('relays faculty help requests through the BFF route', async () => {
+    const response = await getFacultyHelpRequests(makeJsonRequest('/api/help-requests'));
+    const payload = (await response.json()) as { data: Array<{ id: string }> };
+
+    expect(response.status).toBe(200);
+    expect(payload.data).toHaveLength(1);
+  });
+
+  it('relays faculty review queue through the BFF route', async () => {
+    const response = await getFacultyReviewQueue(makeJsonRequest('/api/review-queue'));
+    const payload = (await response.json()) as { data: Array<{ id: string }> };
+
+    expect(response.status).toBe(200);
+    expect(payload.data).toHaveLength(1);
+  });
+
+  it('relays faculty assignments through the BFF route', async () => {
+    const response = await getFacultyAssignments(makeJsonRequest('/api/assignments'));
+    const payload = (await response.json()) as { data: Array<{ id: string }> };
+
+    expect(response.status).toBe(200);
+    expect(payload.data).toHaveLength(1);
   });
 
   it('lists session requests and accepts one with a meeting link', async () => {

@@ -16,6 +16,29 @@ export function getFacultyUpstreamBaseUrl() {
   return null;
 }
 
+export function getFacultyPortalBaseUrl(source?: Headers | HeadersInit) {
+  const sourceHeaders = source === undefined ? null : source instanceof Headers ? source : new Headers(source);
+  const host = sourceHeaders?.get('x-forwarded-host') ?? sourceHeaders?.get('host');
+  if (typeof host === 'string' && host.trim().length > 0) {
+    const protocol = sourceHeaders?.get('x-forwarded-proto') ?? 'http';
+    return `${protocol}://${host.trim().replace(/\/+$/, '')}`;
+  }
+
+  const values = [
+    process.env.NEXT_PUBLIC_FACULTY_APP_URL,
+    process.env.NEXT_PUBLIC_APP_URL,
+    process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
+  ];
+
+  for (const value of values) {
+    if (typeof value === 'string' && value.trim().length > 0) {
+      return value.trim().replace(/\/+$/, '');
+    }
+  }
+
+  return null;
+}
+
 export async function relayJsonResponse(response: Response) {
   const headers = new Headers();
   const contentType = response.headers.get('content-type');
@@ -64,6 +87,29 @@ export async function fetchFacultyUpstreamJson<T>(
   }
 
   const response = await fetch(new URL(path, upstream), {
+    ...init,
+    headers: buildFacultyUpstreamHeaders(source, init?.headers),
+    cache: 'no-store',
+  });
+
+  if (!response.ok) {
+    return null;
+  }
+
+  return (await response.json()) as T;
+}
+
+export async function fetchFacultyPortalJson<T>(
+  source: Headers | HeadersInit,
+  path: string,
+  init?: RequestInit
+): Promise<T | null> {
+  const portal = getFacultyPortalBaseUrl(source);
+  if (portal === null) {
+    return null;
+  }
+
+  const response = await fetch(new URL(path, portal), {
     ...init,
     headers: buildFacultyUpstreamHeaders(source, init?.headers),
     cache: 'no-store',

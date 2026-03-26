@@ -12,7 +12,7 @@ import {
   users,
 } from '@quiz/db-people';
 
-import { fetchFacultyUpstreamJson } from './faculty-api';
+import { fetchFacultyPortalJson } from './faculty-api';
 
 export interface FacultyBatchSummary {
   id: string;
@@ -142,11 +142,13 @@ function buildAvatar(seed: string) {
   )}`;
 }
 
-async function fetchFacultyTutorialData<T>(userId: string, path: string): Promise<T | null> {
-  return fetchFacultyUpstreamJson<T>({ 'x-user-id': userId }, path);
+async function fetchFacultyTutorialData<T>(source: Headers | HeadersInit, userId: string, path: string): Promise<T | null> {
+  const headers = new Headers(source);
+  headers.set('x-user-id', userId);
+  return fetchFacultyPortalJson<T>(headers, path);
 }
 
-export async function getFacultyDashboardSummary(userId: string): Promise<FacultyDashboardSummary> {
+export async function getFacultyDashboardSummary(source: Headers | HeadersInit, userId: string): Promise<FacultyDashboardSummary> {
   const facultyRow = await getFacultyRow(userId);
   if (facultyRow === null) {
     return {
@@ -171,9 +173,9 @@ export async function getFacultyDashboardSummary(userId: string): Promise<Facult
           lt(batchSessions.scheduledAt, new Date(new Date().setHours(24, 0, 0, 0)))
         )
       ),
-    fetchFacultyTutorialData<{ data: FacultyHelpRequestItem[] }>(userId, '/api/tutorial/faculty/help-requests'),
-    fetchFacultyTutorialData<{ data: FacultyReviewQueueItem[] }>(userId, '/api/tutorial/faculty/review-queue'),
-    fetchFacultyTutorialData<{ data: FacultySessionRequestItem[] }>(userId, '/api/tutorial/faculty/live-sessions'),
+    fetchFacultyTutorialData<{ data: FacultyHelpRequestItem[] }>(source, userId, '/api/help-requests'),
+    fetchFacultyTutorialData<{ data: FacultyReviewQueueItem[] }>(source, userId, '/api/review-queue'),
+    fetchFacultyTutorialData<{ data: FacultySessionRequestItem[] }>(source, userId, '/api/faculty/session-requests'),
   ]);
 
   return {
@@ -309,47 +311,47 @@ export async function getFacultyAttendanceRoster(userId: string, batchId: string
   };
 }
 
-export async function listFacultyReviewQueue(userId: string): Promise<FacultyReviewQueueItem[]> {
+export async function listFacultyReviewQueue(source: Headers | HeadersInit, userId: string): Promise<FacultyReviewQueueItem[]> {
   const facultyRow = await getFacultyRow(userId);
   if (facultyRow === null) {
     return [];
   }
 
-  const response = await fetchFacultyTutorialData<{ data: FacultyReviewQueueItem[] }>(userId, '/api/tutorial/faculty/review-queue');
+  const response = await fetchFacultyTutorialData<{ data: FacultyReviewQueueItem[] }>(source, userId, '/api/review-queue');
   return response?.data ?? [];
 }
 
-export async function listFacultyProjectReviews(userId: string): Promise<FacultyReviewQueueItem[]> {
-  return listFacultyReviewQueue(userId);
+export async function listFacultyProjectReviews(source: Headers | HeadersInit, userId: string): Promise<FacultyReviewQueueItem[]> {
+  return listFacultyReviewQueue(source, userId);
 }
 
-export async function listFacultyHelpRequests(userId: string): Promise<FacultyHelpRequestItem[]> {
+export async function listFacultyHelpRequests(source: Headers | HeadersInit, userId: string): Promise<FacultyHelpRequestItem[]> {
   const facultyRow = await getFacultyRow(userId);
   if (facultyRow === null) {
     return [];
   }
 
-  const response = await fetchFacultyTutorialData<{ data: FacultyHelpRequestItem[] }>(userId, '/api/tutorial/faculty/help-requests');
+  const response = await fetchFacultyTutorialData<{ data: FacultyHelpRequestItem[] }>(source, userId, '/api/help-requests');
   return response?.data ?? [];
 }
 
-export async function listFacultySessionRequests(userId: string): Promise<FacultySessionRequestItem[]> {
+export async function listFacultySessionRequests(source: Headers | HeadersInit, userId: string): Promise<FacultySessionRequestItem[]> {
   const facultyRow = await getFacultyRow(userId);
   if (facultyRow === null) {
     return [];
   }
 
-  const response = await fetchFacultyTutorialData<{ data: FacultySessionRequestItem[] }>(userId, '/api/tutorial/faculty/live-sessions');
+  const response = await fetchFacultyTutorialData<{ data: FacultySessionRequestItem[] }>(source, userId, '/api/faculty/session-requests');
   return response?.data ?? [];
 }
 
-export async function listFacultyAssignments(userId: string): Promise<FacultyAssignmentItem[]> {
+export async function listFacultyAssignments(source: Headers | HeadersInit, userId: string): Promise<FacultyAssignmentItem[]> {
   const facultyRow = await getFacultyRow(userId);
   if (facultyRow === null) {
     return [];
   }
 
-  const response = await fetchFacultyTutorialData<{ data: FacultyAssignmentItem[] }>(userId, '/api/tutorial/faculty/assignments');
+  const response = await fetchFacultyTutorialData<{ data: FacultyAssignmentItem[] }>(source, userId, '/api/assignments');
   return response?.data ?? [];
 }
 

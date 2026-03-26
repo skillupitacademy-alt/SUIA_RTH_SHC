@@ -10,7 +10,11 @@ export default async function SessionsPage() {
   const [sessions, requests, batches] =
     userId === null || userId.length === 0
       ? [[], [], []]
-      : await Promise.all([listFacultyUpcomingSessions(userId), listFacultySessionRequests(userId), listFacultyBatches(userId)]);
+      : await Promise.all([
+          listFacultyUpcomingSessions(userId),
+          listFacultySessionRequests(requestHeaders, userId),
+          listFacultyBatches(userId),
+        ]);
 
   return (
     <section className="mx-auto max-w-7xl space-y-6 px-6 py-8 lg:py-10">

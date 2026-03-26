@@ -6,7 +6,7 @@ import { listFacultyAssignments } from '@/lib/faculty-live-data';
 export default async function AssignmentsPage() {
   const requestHeaders = await headers();
   const userId = requestHeaders.get('x-user-id');
-  const assignments = userId === null || userId.length === 0 ? [] : await listFacultyAssignments(userId);
+  const assignments = userId === null || userId.length === 0 ? [] : await listFacultyAssignments(requestHeaders, userId);
 
   const publishedCount = assignments.filter((item) => item.isPublished).length;
   const helpRequestCount = assignments.reduce((sum, item) => sum + item.helpRequestCount, 0);

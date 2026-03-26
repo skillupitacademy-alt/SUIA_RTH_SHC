@@ -6,7 +6,7 @@ import { listFacultyReviewQueue } from '@/lib/faculty-live-data';
 export default async function ProjectReviewsPage() {
   const requestHeaders = await headers();
   const userId = requestHeaders.get('x-user-id');
-  const submissions = userId === null || userId.length === 0 ? [] : await listFacultyReviewQueue(userId);
+  const submissions = userId === null || userId.length === 0 ? [] : await listFacultyReviewQueue(requestHeaders, userId);
 
   return (
     <section className="mx-auto max-w-7xl px-6 py-8 lg:py-10">

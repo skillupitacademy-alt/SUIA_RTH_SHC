@@ -6,7 +6,7 @@ import { listFacultySessionRequests } from '@/lib/faculty-live-data';
 export default async function SessionRequestsPage() {
   const requestHeaders = await headers();
   const userId = requestHeaders.get('x-user-id');
-  const requests = userId === null || userId.length === 0 ? [] : await listFacultySessionRequests(userId);
+  const requests = userId === null || userId.length === 0 ? [] : await listFacultySessionRequests(requestHeaders, userId);
 
   return (
     <section className="mx-auto max-w-7xl px-6 py-8 lg:py-10">

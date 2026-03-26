@@ -13,7 +13,7 @@ export default async function ProjectReviewPage({ params }: ProjectReviewPagePro
   const { id } = await params;
   const requestHeaders = await headers();
   const userId = requestHeaders.get('x-user-id');
-  const submissions = userId === null || userId.length === 0 ? [] : await listFacultyReviewQueue(userId);
+  const submissions = userId === null || userId.length === 0 ? [] : await listFacultyReviewQueue(requestHeaders, userId);
   const submission = submissions.find((item) => item.id === id);
 
   if (submission === undefined) {

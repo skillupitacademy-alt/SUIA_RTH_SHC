@@ -6,7 +6,7 @@ import { listFacultyHelpRequests } from '@/lib/faculty-live-data';
 export default async function HelpRequestsPage() {
   const requestHeaders = await headers();
   const userId = requestHeaders.get('x-user-id');
-  const requests = userId === null || userId.length === 0 ? [] : await listFacultyHelpRequests(userId);
+  const requests = userId === null || userId.length === 0 ? [] : await listFacultyHelpRequests(requestHeaders, userId);
 
   return (
     <section className="mx-auto max-w-7xl px-6 py-8 lg:py-10">

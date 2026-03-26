@@ -13,7 +13,7 @@ export default async function HelpRequestPage({ params }: HelpRequestPageProps) 
   const { id } = await params;
   const requestHeaders = await headers();
   const userId = requestHeaders.get('x-user-id');
-  const requests = userId === null || userId.length === 0 ? [] : await listFacultyHelpRequests(userId);
+  const requests = userId === null || userId.length === 0 ? [] : await listFacultyHelpRequests(requestHeaders, userId);
   const request = requests.find((item) => item.id === id);
 
   if (request === undefined) {

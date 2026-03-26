@@ -51,11 +51,11 @@ export default async function FacultyDashboardPage() {
           [],
         ]
       : await Promise.all([
-          getFacultyDashboardSummary(userId),
+          getFacultyDashboardSummary(requestHeaders, userId),
           listFacultyBatches(userId),
-          listFacultyHelpRequests(userId),
-          listFacultyProjectReviews(userId),
-          listFacultySessionRequests(userId),
+          listFacultyHelpRequests(requestHeaders, userId),
+          listFacultyProjectReviews(requestHeaders, userId),
+          listFacultySessionRequests(requestHeaders, userId),
         ]);
 
   return (
