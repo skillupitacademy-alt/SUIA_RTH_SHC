@@ -17,6 +17,7 @@ import {
 const quickActions = [
   { label: 'Review help requests', href: '/assignments/help', tone: 'cyan' },
   { label: 'Approve project work', href: '/assignments/projects', tone: 'emerald' },
+  { label: 'Open assignments', href: '/assignments', tone: 'violet' },
   { label: 'View sessions', href: '/sessions', tone: 'violet' },
   { label: 'Mark attendance', href: '/attendance', tone: 'rose' },
   { label: 'Handle session requests', href: '/sessions/requests', tone: 'amber' },

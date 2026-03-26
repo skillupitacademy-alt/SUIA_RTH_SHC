@@ -11,11 +11,12 @@ import {
   assignmentHelpRequests,
   db as tutorialDb,
   liveSessionRequests,
+  tutorialAssignments,
   tutorialProjects,
   tutorialProjectSubmissions,
   tutorialSubtopics,
 } from '@quiz/db-tutorial';
-import { and, asc, desc, eq, inArray, isNull } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { NextRequest } from 'next/server';
 
 export type FacultyAccess = {
@@ -54,6 +55,20 @@ export type FacultyLiveSessionItem = {
   status: string;
   scheduledAt: string;
   batchName: string;
+};
+
+export type FacultyAssignmentItem = {
+  id: string;
+  title: string;
+  question: string;
+  subtopic: string;
+  difficulty: string;
+  questionType: string;
+  points: number;
+  isPublished: boolean;
+  helpRequestCount: number;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export async function resolveFacultyAccess(request: NextRequest): Promise<FacultyAccess | null> {
@@ -160,6 +175,23 @@ async function getSubtopicNameMap(subtopicIds: string[]) {
     .where(inArray(tutorialSubtopics.id, subtopicIds));
 
   return new Map(rows.map((row) => [row.id, row.name]));
+}
+
+async function getAssignmentHelpRequestCountMap(studentIds: string[]) {
+  if (studentIds.length === 0) {
+    return new Map<string, number>();
+  }
+
+  const rows = await tutorialDb
+    .select({
+      assignmentId: assignmentHelpRequests.assignmentId,
+      count: sql<number>`count(*)`,
+    })
+    .from(assignmentHelpRequests)
+    .where(and(inArray(assignmentHelpRequests.userId, studentIds), isNull(assignmentHelpRequests.deletedAt)))
+    .groupBy(assignmentHelpRequests.assignmentId);
+
+  return new Map(rows.map((row) => [row.assignmentId, Number(row.count)]));
 }
 
 async function getProjectTitleMap(projectIds: string[]) {
@@ -297,6 +329,50 @@ export async function loadFacultyLiveSessions(access: FacultyAccess): Promise<Fa
       batchName: batchNameMap.get(row.studentId) ?? 'SkillUp Batch',
     };
   });
+}
+
+export async function loadFacultyAssignments(access: FacultyAccess): Promise<FacultyAssignmentItem[]> {
+  const studentIds = await getFacultyStudentIds(access.facultyId);
+  if (studentIds.length === 0) {
+    return [];
+  }
+
+  const [rows, helpRequestCounts] = await Promise.all([
+    tutorialDb
+      .select({
+        id: tutorialAssignments.id,
+        title: tutorialAssignments.title,
+        question: tutorialAssignments.question,
+        subtopicId: tutorialAssignments.subtopicId,
+        difficulty: tutorialAssignments.difficulty,
+        questionType: tutorialAssignments.questionType,
+        points: tutorialAssignments.points,
+        isPublished: tutorialAssignments.isPublished,
+        createdAt: tutorialAssignments.createdAt,
+        updatedAt: tutorialAssignments.updatedAt,
+      })
+      .from(tutorialAssignments)
+      .where(isNull(tutorialAssignments.deletedAt))
+      .orderBy(desc(tutorialAssignments.createdAt))
+      .limit(50),
+    getAssignmentHelpRequestCountMap(studentIds),
+  ]);
+
+  const subtopicMap = await getSubtopicNameMap(rows.map((row) => row.subtopicId));
+
+  return rows.map((row) => ({
+    id: row.id,
+    title: row.title?.trim().length ? row.title : 'Tutorial assignment',
+    question: row.question?.trim().length ? row.question : 'Assignment question',
+    subtopic: subtopicMap.get(row.subtopicId) ?? 'Tutorial subtopic',
+    difficulty: row.difficulty,
+    questionType: row.questionType,
+    points: row.points,
+    isPublished: row.isPublished,
+    helpRequestCount: helpRequestCounts.get(row.id) ?? 0,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+  }));
 }
 
 export async function markFacultyHelpRequest(

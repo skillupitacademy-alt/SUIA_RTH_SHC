@@ -74,6 +74,20 @@ export interface FacultySessionRequestItem {
   batchName: string;
 }
 
+export interface FacultyAssignmentItem {
+  id: string;
+  title: string;
+  question: string;
+  subtopic: string;
+  difficulty: string;
+  questionType: string;
+  points: number;
+  isPublished: boolean;
+  helpRequestCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface FacultyUpcomingSessionItem {
   id: string;
   batchId: string;
@@ -324,6 +338,16 @@ export async function listFacultySessionRequests(userId: string): Promise<Facult
   }
 
   const response = await fetchFacultyTutorialData<{ data: FacultySessionRequestItem[] }>(userId, '/api/tutorial/faculty/live-sessions');
+  return response?.data ?? [];
+}
+
+export async function listFacultyAssignments(userId: string): Promise<FacultyAssignmentItem[]> {
+  const facultyRow = await getFacultyRow(userId);
+  if (facultyRow === null) {
+    return [];
+  }
+
+  const response = await fetchFacultyTutorialData<{ data: FacultyAssignmentItem[] }>(userId, '/api/tutorial/faculty/assignments');
   return response?.data ?? [];
 }
 
