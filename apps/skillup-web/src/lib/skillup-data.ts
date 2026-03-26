@@ -17,6 +17,7 @@ import {
 } from '@quiz/db-people';
 
 import type { SkillupSession } from '@/lib/skillup-types';
+import type { SkillupProgramDetail } from '@/lib/skillup-types';
 
 const DEFAULT_STUDENT_EMAIL = 'student@skillupitacademy.com';
 const FALLBACK_PROGRAMS = [
@@ -583,4 +584,30 @@ export async function getSkillupFaculty() {
 export async function getSkillupProgramBySlug(slug: string) {
   const programs = (await getSkillupPrograms()).programs;
   return programs.find((program) => program.slug === slug) ?? FALLBACK_PROGRAMS.find((program) => program.slug === slug);
+}
+
+export async function getSkillupProgramDetail(slug: string): Promise<SkillupProgramDetail | null> {
+  const program = await getSkillupProgramBySlug(slug);
+  if (program === undefined) {
+    return null;
+  }
+
+  return {
+    ...program,
+    highlights: [...program.highlights],
+    curriculum: [
+      {
+        title: 'Foundation',
+        items: [program.highlights[0] ?? program.description, program.highlights[1] ?? program.summary],
+      },
+      {
+        title: 'Build and ship',
+        items: [program.highlights[2] ?? program.audience, program.highlights[3] ?? 'Live project delivery'],
+      },
+      {
+        title: 'Placement prep',
+        items: ['Interview readiness drills', 'Portfolio and resume review', 'Mentor feedback sessions'],
+      },
+    ],
+  };
 }

@@ -9,6 +9,15 @@ export type SkillupProgram = {
   highlights: string[];
 };
 
+export type SkillupProgramCurriculumSection = {
+  title: string;
+  items: string[];
+};
+
+export type SkillupProgramDetail = SkillupProgram & {
+  curriculum: SkillupProgramCurriculumSection[];
+};
+
 export type SkillupSession = {
   id: string;
   date: string;

@@ -3,10 +3,10 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { fetchSkillupApi } from '@/lib/skillup-api';
-import type { SkillupProgram } from '@/lib/skillup-types';
+import type { SkillupProgramDetail } from '@/lib/skillup-types';
 
-type ProgramsResponse = {
-  programs: SkillupProgram[];
+type ProgramDetailResponse = {
+  program: SkillupProgramDetail | null;
 };
 
 type ProgramPageProps = {
@@ -14,14 +14,14 @@ type ProgramPageProps = {
 };
 
 export async function generateStaticParams() {
-  const { programs } = await fetchSkillupApi<ProgramsResponse>('/api/programs');
+  const { programs } = await fetchSkillupApi<{ programs: Array<{ slug: string }> }>('/api/programs');
   return programs.map((program) => ({ slug: program.slug }));
 }
 
 export async function generateMetadata({ params }: ProgramPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const { programs } = await fetchSkillupApi<ProgramsResponse>('/api/programs');
-  const program = programs.find((item) => item.slug === slug);
+  const detail = await fetchSkillupApi<ProgramDetailResponse>(`/api/programs/${slug}`);
+  const program = detail.program;
 
   if (!program) {
     return {
@@ -42,8 +42,7 @@ export async function generateMetadata({ params }: ProgramPageProps): Promise<Me
 
 export default async function ProgramDetailPage({ params }: ProgramPageProps) {
   const { slug } = await params;
-  const { programs } = await fetchSkillupApi<ProgramsResponse>('/api/programs');
-  const program = programs.find((item) => item.slug === slug);
+  const { program } = await fetchSkillupApi<ProgramDetailResponse>(`/api/programs/${slug}`);
 
   if (!program) {
     notFound();
@@ -60,11 +59,7 @@ export default async function ProgramDetailPage({ params }: ProgramPageProps) {
           <article className="surface-card rounded-[2.5rem] bg-white/80 p-6">
             <p className="section-kicker text-slate-500">Curriculum</p>
             <div className="mt-5 space-y-3">
-              {[
-                { title: 'Foundation', body: program.highlights[0] ?? program.description },
-                { title: 'Build and ship', body: program.highlights[1] ?? program.summary },
-                { title: 'Placement prep', body: program.highlights[2] ?? program.audience },
-              ].map((section) => (
+              {program.curriculum.map((section) => (
                 <details key={section.title} className="group rounded-3xl border border-slate-200 bg-white px-4 py-3">
                   <summary className="cursor-pointer list-none text-sm font-bold text-slate-800">
                     <span className="flex items-center justify-between gap-3">
@@ -72,7 +67,13 @@ export default async function ProgramDetailPage({ params }: ProgramPageProps) {
                       <span className="text-slate-400 transition group-open:rotate-45">+</span>
                     </span>
                   </summary>
-                  <p className="mt-3 text-sm leading-6 text-slate-600">{section.body}</p>
+                  <ul className="mt-3 space-y-2 text-sm leading-6 text-slate-600">
+                    {section.items.map((item) => (
+                      <li key={item} className="rounded-2xl bg-slate-50 px-3 py-2">
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
                 </details>
               ))}
             </div>

@@ -1,5 +1,6 @@
 import {
   getSkillupFaculty,
+  getSkillupProgramDetail,
   getSkillupPrograms,
   getSkillupAttendance,
   getSkillupStudentDashboard,
@@ -57,6 +58,11 @@ export async function fetchSkillupApi<T>(path: string): Promise<T> {
   } catch {
     if (path === '/api/programs') {
       return (await getSkillupPrograms()) as T;
+    }
+
+    if (path.startsWith('/api/programs/')) {
+      const slug = path.replace('/api/programs/', '').split('/')[0];
+      return ({ program: await getSkillupProgramDetail(slug) }) as T;
     }
 
     if (path === '/api/student/dashboard') return (await getSkillupStudentDashboard()) as T;
