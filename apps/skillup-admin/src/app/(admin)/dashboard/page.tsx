@@ -90,7 +90,7 @@ export default async function AdminDashboardPage() {
                 { label: 'Total students', value: summary.totalStudents, accent: 'cyan' },
                 { label: 'Active batches', value: summary.activeBatches, accent: 'emerald' },
                 { label: 'Students needing follow-up', value: students.filter((student) => student.paymentStatus !== 'current').length, accent: 'amber' },
-                { label: 'Open CRM enquiries', value: 3, accent: 'rose' },
+                { label: 'Open CRM enquiries', value: summary.openEnquiries, accent: 'rose' },
               ]
         ).map((stat) => (
           <article key={stat.label} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -156,7 +156,7 @@ export default async function AdminDashboardPage() {
           <div className="mt-6 space-y-4">
             {(
               canSeeFinance
-          ? [
+                ? [
                 { label: 'Students needing follow-up', value: students.filter((student) => student.paymentStatus !== 'current').length },
                 { label: 'Active admission queues', value: summary.activeAdmissionQueues },
                 { label: 'Jobs matched to learners', value: summary.jobsMatched },
