@@ -104,6 +104,24 @@ describe('faculty-app routes', () => {
         });
       }
 
+      if (path.startsWith('/api/attendance') && init?.method === 'GET') {
+        return NextResponse.json({
+          data: {
+            batchId: 'batch-1',
+            batchName: 'React Full Stack - March 2026',
+            sessionId: 'session-1',
+            sessionAt: '2026-03-22T09:30:00.000Z',
+            roster: [
+              { id: 'student-1', name: 'Aarav Shah', rollNumber: 'SK001', avatarUrl: 'avatar', present: true },
+            ],
+          },
+        });
+      }
+
+      if (path.startsWith('/api/attendance') && init?.method === 'POST') {
+        return NextResponse.json({ data: { saved: 1 } });
+      }
+
       if (path.startsWith('/api/tutorial/faculty/live-sessions/') && path.endsWith('/accept')) {
         return NextResponse.json({
           data: {

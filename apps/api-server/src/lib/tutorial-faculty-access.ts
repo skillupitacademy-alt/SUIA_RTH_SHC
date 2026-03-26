@@ -1,6 +1,8 @@
 import {
+  attendanceRecords as peopleAttendanceRecords,
   batchEnrollments,
   batches,
+  batchSessions,
   db as peopleDb,
   faculty,
   getOrSetPeopleUserSubCache,
@@ -69,6 +71,22 @@ export type FacultyAssignmentItem = {
   helpRequestCount: number;
   createdAt: string;
   updatedAt: string;
+};
+
+export type FacultyAttendanceStudent = {
+  id: string;
+  name: string;
+  rollNumber: string;
+  avatarUrl: string;
+  present: boolean;
+};
+
+export type FacultyAttendanceRoster = {
+  batchId: string;
+  batchName: string;
+  sessionId: string;
+  sessionAt: string;
+  roster: FacultyAttendanceStudent[];
 };
 
 export async function resolveFacultyAccess(request: NextRequest): Promise<FacultyAccess | null> {
@@ -373,6 +391,107 @@ export async function loadFacultyAssignments(access: FacultyAccess): Promise<Fac
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   }));
+}
+
+function buildAttendanceAvatar(seed: string) {
+  return `data:image/svg+xml;utf8,${encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+      <rect width="64" height="64" rx="32" fill="#E0F2FE"/>
+      <circle cx="32" cy="24" r="10" fill="#0EA5E9"/>
+      <path d="M16 52c0-8.836 7.164-16 16-16s16 7.164 16 16" fill="#38BDF8"/>
+      <text x="32" y="39" text-anchor="middle" font-size="14" font-family="Arial" fill="#0F172A">${seed.slice(0, 1).toUpperCase()}</text>
+    </svg>`
+  )}`;
+}
+
+export async function getFacultyAttendanceRoster(access: FacultyAccess, batchId: string, sessionId: string) {
+  const [batchRow, sessionRow] = await Promise.all([
+    peopleDb
+      .select({
+        id: batches.id,
+        name: batches.name,
+        facultyId: batches.facultyId,
+      })
+      .from(batches)
+      .where(and(eq(batches.id, batchId), eq(batches.facultyId, access.facultyId), isNull(batches.deletedAt)))
+      .limit(1),
+    peopleDb
+      .select({
+        id: batchSessions.id,
+        scheduledAt: batchSessions.scheduledAt,
+      })
+      .from(batchSessions)
+      .where(and(eq(batchSessions.id, sessionId), eq(batchSessions.batchId, batchId)))
+      .limit(1),
+  ]);
+
+  if (batchRow[0] === undefined || sessionRow[0] === undefined) {
+    return null;
+  }
+
+  const rosterRows = await peopleDb
+    .select({
+      studentUserId: batchEnrollments.studentUserId,
+      studentName: userProfiles.name,
+      attendanceStatus: peopleAttendanceRecords.status,
+    })
+    .from(batchEnrollments)
+    .innerJoin(users, eq(users.id, batchEnrollments.studentUserId))
+    .leftJoin(userProfiles, eq(userProfiles.userId, users.id))
+    .leftJoin(
+      peopleAttendanceRecords,
+      and(eq(peopleAttendanceRecords.studentUserId, batchEnrollments.studentUserId), eq(peopleAttendanceRecords.sessionId, sessionId))
+    )
+    .where(and(eq(batchEnrollments.batchId, batchId), isNull(batchEnrollments.deletedAt)))
+    .orderBy(asc(batchEnrollments.enrolledAt));
+
+  return {
+    batchId: batchRow[0].id,
+    batchName: batchRow[0].name,
+    sessionId: sessionRow[0].id,
+    sessionAt: sessionRow[0].scheduledAt.toISOString(),
+    roster: rosterRows.map((row, index) => ({
+      id: row.studentUserId,
+      name: row.studentName ?? 'SkillUp Student',
+      rollNumber: `SK${String(index + 1).padStart(3, '0')}`,
+      avatarUrl: buildAttendanceAvatar(row.studentName ?? 'S'),
+      present: row.attendanceStatus !== 'absent',
+    })),
+  };
+}
+
+export async function upsertFacultyAttendance(
+  access: FacultyAccess,
+  batchId: string,
+  sessionId: string,
+  attendanceRecordsPayload: Array<{ studentId: string; present: boolean }>
+) {
+  const roster = await getFacultyAttendanceRoster(access, batchId, sessionId);
+  if (roster === null) {
+    return null;
+  }
+
+  for (const record of attendanceRecordsPayload) {
+    await peopleDb
+      .insert(peopleAttendanceRecords)
+      .values({
+        sessionId,
+        studentUserId: record.studentId,
+        status: record.present ? 'present' : 'absent',
+        markedBy: access.facultyId,
+        markedAt: new Date(),
+      })
+      .onConflictDoUpdate({
+        target: [peopleAttendanceRecords.sessionId, peopleAttendanceRecords.studentUserId],
+        set: {
+          status: record.present ? 'present' : 'absent',
+          markedBy: access.facultyId,
+          markedAt: new Date(),
+        },
+      });
+  }
+
+  return roster.roster.length;
 }
 
 export async function markFacultyHelpRequest(
