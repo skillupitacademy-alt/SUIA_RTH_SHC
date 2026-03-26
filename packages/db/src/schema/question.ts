@@ -22,6 +22,7 @@ export const questions = pgTable("questions", {
   codeSnippet: text("code_snippet"),
   metadata: jsonb("metadata"), // For future AI/platform extensions
   status: statusEnum("status").notNull().default("active"),
+  deletedAt: timestamp("deleted_at"),
   tags: text("tags").array(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),

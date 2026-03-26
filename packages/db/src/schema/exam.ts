@@ -39,6 +39,7 @@ export const exams = (pgTable("exams", {
   startedAt: timestamp("started_at").notNull().defaultNow(),
   lastAnsweredAt: timestamp("last_answered_at"),
   completedAt: timestamp("completed_at"),
+  deletedAt: timestamp("deleted_at"),
   reportMaterialized: jsonb("report_materialized"),
   exportUrls: jsonb("export_urls"),
 }, (t) => ({
