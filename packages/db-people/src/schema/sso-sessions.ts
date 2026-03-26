@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { index, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 
 import { users } from './users';
 
@@ -10,4 +10,6 @@ export const ssoSessions = pgTable('sso_sessions', {
   revokedAt: timestamp('revoked_at', { withTimezone: true, mode: 'date' }),
   deletedAt: timestamp('deleted_at', { withTimezone: true, mode: 'date' }),
   createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
-});
+}, (table) => ({
+  idxSsoSessionsFamily: index('idx_sso_sessions_family').on(table.jwtFamily, table.revokedAt),
+}));
