@@ -1,11 +1,13 @@
 import { NextRequest } from 'next/server';
 
-import { adminPayments } from '@/lib/admin-demo-data';
 import { csvResponse, requireAdminOrForbidden } from '@/lib/admin-bff';
+import { listAdminPayments } from '@/lib/skillup-admin-data';
 
 export async function GET(request: NextRequest) {
   const forbidden = await requireAdminOrForbidden(request);
   if (forbidden !== null) return forbidden;
+
+  const adminPayments = await listAdminPayments();
 
   const rows = [
     'id,studentName,installmentId,amount,dueDate,overdueDays,status,paymentRef',

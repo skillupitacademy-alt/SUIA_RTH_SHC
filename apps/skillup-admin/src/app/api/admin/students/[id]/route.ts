@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 
-import { findAdminStudent } from '@/lib/admin-demo-data';
+import { getAdminStudentDetail } from '@/lib/skillup-admin-data';
 import { jsonData, jsonError, requireAdminOrForbidden } from '@/lib/admin-bff';
 
 export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
@@ -8,7 +8,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
   if (forbidden !== null) return forbidden;
 
   const { id } = await context.params;
-  const student = findAdminStudent(id);
+  const student = await getAdminStudentDetail(id);
   if (student === undefined) {
     return jsonError('Student not found', 404);
   }

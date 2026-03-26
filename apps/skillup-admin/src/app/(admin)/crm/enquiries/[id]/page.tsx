@@ -1,10 +1,10 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-import { findAdminEnquiry } from '@/lib/admin-demo-data';
+import { getAdminEnquiryDetail } from '@/lib/skillup-admin-data';
 
-export default function EnquiryDetailPage({ params }: { params: { id: string } }) {
-  const enquiry = findAdminEnquiry(params.id);
+export default async function EnquiryDetailPage({ params }: { params: { id: string } }) {
+  const enquiry = await getAdminEnquiryDetail(params.id);
   if (enquiry === undefined) {
     notFound();
   }

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-import { findAdminStudent, skillupDomainId } from '@/lib/admin-demo-data';
+import { getAdminStudentDetail } from '@/lib/skillup-admin-data';
 
 const badgeStyles: Record<string, string> = {
   enrolled: 'border-cyan-200 bg-cyan-50 text-cyan-700',
@@ -10,8 +10,8 @@ const badgeStyles: Record<string, string> = {
   enquired: 'border-slate-200 bg-slate-50 text-slate-700',
 };
 
-export default function StudentDetailPage({ params }: { params: { id: string } }) {
-  const student = findAdminStudent(params.id);
+export default async function StudentDetailPage({ params }: { params: { id: string } }) {
+  const student = await getAdminStudentDetail(params.id);
   if (student === undefined) {
     notFound();
   }
@@ -47,15 +47,14 @@ export default function StudentDetailPage({ params }: { params: { id: string } }
           <div className="mt-6 rounded-3xl border border-cyan-200 bg-cyan-50 p-5">
             <p className="text-xs font-black uppercase tracking-[0.32em] text-cyan-700">Enroll action</p>
             <p className="mt-2 text-sm leading-6 text-slate-700">
-              Posting to <code className="rounded bg-white px-1 py-0.5 text-xs text-slate-900">/api/admin/students/{student.id}/enroll</code> publishes
-              <code className="ml-1 rounded bg-white px-1 py-0.5 text-xs text-slate-900">student.enrolled</code> with the SkillUp domain and batch context.
+              Posting to <code className="rounded bg-white px-1 py-0.5 text-xs text-slate-900">/api/admin/students/{student.id}/enroll</code> creates the live
+              student enrollment flow and updates the batch assignment.
             </p>
             <form className="mt-4" action={`/api/admin/students/${student.id}/enroll`} method="post">
               <button className="rounded-full bg-cyan-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-cyan-700">
                 Enroll student
               </button>
             </form>
-            <p className="mt-3 text-xs text-slate-500">Domain ID: {skillupDomainId}</p>
           </div>
         </article>
 

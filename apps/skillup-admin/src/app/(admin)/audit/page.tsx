@@ -1,8 +1,8 @@
 import Link from 'next/link';
 
-import { adminAuditLog, filterAdminAuditLog } from '@/lib/admin-demo-data';
 import { getSkillUpAdminRole } from '@/lib/admin-session';
 import { RoleLockedNotice } from '@/components/role-locked-notice';
+import { listAdminAuditLog } from '@/lib/skillup-admin-data';
 
 type SearchParams = {
   student?: string;
@@ -39,7 +39,7 @@ export default async function AuditPage({ searchParams }: { searchParams?: Searc
     to: firstValue(searchParams?.to),
   };
 
-  const rows = filterAdminAuditLog(filters);
+  const rows = await listAdminAuditLog(filters);
   const exportParams = new URLSearchParams();
   if (filters.student.length > 0) exportParams.set('student', filters.student);
   if (filters.action.length > 0) exportParams.set('action', filters.action);
@@ -155,7 +155,7 @@ export default async function AuditPage({ searchParams }: { searchParams?: Searc
       </div>
 
       <div className="rounded-[2rem] border border-slate-200 bg-white p-6 text-sm text-slate-600 shadow-sm">
-        Showing {rows.length} of {adminAuditLog.length} records.
+        Showing {rows.length} live audit records.
       </div>
     </section>
   );

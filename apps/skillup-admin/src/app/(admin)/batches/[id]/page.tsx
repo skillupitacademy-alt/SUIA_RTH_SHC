@@ -1,10 +1,10 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-import { findAdminBatch } from '@/lib/admin-demo-data';
+import { getAdminBatchDetail } from '@/lib/skillup-admin-data';
 
-export default function BatchDetailPage({ params }: { params: { id: string } }) {
-  const batch = findAdminBatch(params.id);
+export default async function BatchDetailPage({ params }: { params: { id: string } }) {
+  const batch = await getAdminBatchDetail(params.id);
   if (batch === undefined) {
     notFound();
   }

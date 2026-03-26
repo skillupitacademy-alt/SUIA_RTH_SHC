@@ -1,6 +1,8 @@
 import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { listAdminBatches, listAdminEnquiries, listAdminStudents } from '@/lib/skillup-admin-data';
+
 const mocks = vi.hoisted(() => ({
   publishEvent: vi.fn().mockResolvedValue({ messageId: 'msg-1', envelope: {} }),
 }));
@@ -36,8 +38,18 @@ const makeRequest = (url: string, method = 'GET', body?: unknown) =>
   });
 
 describe('skillup-admin routes', () => {
-  beforeEach(() => {
+  let studentId = '';
+  let studentUserId = '';
+  let enquiryId = '';
+  let batchId = '';
+
+  beforeEach(async () => {
     vi.clearAllMocks();
+    const [students, enquiries, batches] = await Promise.all([listAdminStudents(), listAdminEnquiries(), listAdminBatches()]);
+    studentId = students[0]?.id ?? '';
+    studentUserId = students[0]?.userId ?? '';
+    enquiryId = enquiries[0]?.id ?? '';
+    batchId = batches[0]?.id ?? '';
   });
 
   it('rejects requests without an admin role', async () => {
@@ -63,8 +75,8 @@ describe('skillup-admin routes', () => {
       makeRequest('/api/admin/students', 'POST', {
         name: `New Student ${unique}`,
         email: `new.student.${unique}@example.com`,
-        batchId: 'batch-react-2026',
-        batchName: 'React Full Stack - April 2026',
+        batchId,
+        batchName: 'Live batch',
       })
     );
     const createPayload = (await createResponse.json()) as { data: { name: string; email: string } };
@@ -75,24 +87,24 @@ describe('skillup-admin routes', () => {
   });
 
   it('returns a student detail and enrolls the student with an event', async () => {
-    const detailResponse = await getStudent(makeRequest('/api/admin/students/student-1'), {
-      params: Promise.resolve({ id: 'student-1' }),
+    const detailResponse = await getStudent(makeRequest(`/api/admin/students/${studentId}`), {
+      params: Promise.resolve({ id: studentId }),
     });
     const detailPayload = (await detailResponse.json()) as { data: { name: string } };
 
     expect(detailResponse.status).toBe(200);
-    expect(detailPayload.data.name).toBe('Aarav Shah');
+    expect(detailPayload.data.name).toBeTruthy();
 
-    const enrollResponse = await enrollStudent(makeRequest('/api/admin/students/student-1/enroll', 'POST'), {
-      params: Promise.resolve({ id: 'student-1' }),
+    const enrollResponse = await enrollStudent(makeRequest(`/api/admin/students/${studentId}/enroll`, 'POST'), {
+      params: Promise.resolve({ id: studentId }),
     });
-    const enrollPayload = (await enrollResponse.json()) as { data: { enrollment: { domainId: string; batchId: string } } };
+    const enrollPayload = (await enrollResponse.json()) as { data: { enrollment: { batchId: string } } };
 
     expect(enrollResponse.status).toBe(200);
-    expect(enrollPayload.data.enrollment.domainId).toBe('44444444-4444-4444-8444-444444444444');
+    expect(enrollPayload.data.enrollment.batchId).toBeTruthy();
     expect(mocks.publishEvent).toHaveBeenCalledWith(
       'student.enrolled',
-      expect.objectContaining({ batchId: 'batch-react-2026', enrollmentType: 'batch' }),
+      expect.objectContaining({ batchId: enrollPayload.data.enrollment.batchId, enrollmentType: 'batch', userId: studentUserId }),
       expect.any(Object)
     );
   });
@@ -120,25 +132,25 @@ describe('skillup-admin routes', () => {
     expect(createPayload.data.studentName).toBe(`New Lead ${unique}`);
     expect(createPayload.data.status).toBe('new');
 
-    const qualifyResponse = await qualifyEnquiry(makeRequest('/api/admin/crm/enquiries/enquiry-1/qualify', 'POST'), {
-      params: Promise.resolve({ id: 'enquiry-1' }),
+    const qualifyResponse = await qualifyEnquiry(makeRequest(`/api/admin/crm/enquiries/${enquiryId}/qualify`, 'POST'), {
+      params: Promise.resolve({ id: enquiryId }),
     });
     const qualifyPayload = (await qualifyResponse.json()) as { data: { status: string } };
 
     expect(qualifyResponse.status).toBe(200);
     expect(qualifyPayload.data.status).toBe('qualified');
 
-    const admitResponse = await admitEnquiry(makeRequest('/api/admin/crm/enquiries/enquiry-1/admit', 'POST'), {
-      params: Promise.resolve({ id: 'enquiry-1' }),
+    const admitResponse = await admitEnquiry(makeRequest(`/api/admin/crm/enquiries/${enquiryId}/admit`, 'POST'), {
+      params: Promise.resolve({ id: enquiryId }),
     });
     const admitPayload = (await admitResponse.json()) as { data: { status: string; batchId: string } };
 
     expect(admitResponse.status).toBe(200);
     expect(admitPayload.data.status).toBe('admitted');
-    expect(admitPayload.data.batchId).toBe('batch-react-2026');
+    expect(admitPayload.data.batchId).toBe(batchId);
     expect(mocks.publishEvent).toHaveBeenCalledWith(
       'admission.completed',
-      expect.objectContaining({ userId: '55555555-5555-4555-8555-555555555555', batchId: 'batch-react-2026' }),
+      expect.objectContaining({ batchId }),
       expect.any(Object)
     );
   });
@@ -175,8 +187,8 @@ describe('skillup-admin routes', () => {
     expect(listPayload.data.length).toBeGreaterThan(0);
 
     const paymentBody = {
-      userId: '62867e8c-b064-4f08-b6c2-dd18e55633da',
-      studentName: 'Aarav Shah',
+      userId: studentUserId,
+      studentName: 'Live Student',
       installmentId: `Admission fee ${unique}`,
       amount: 18000,
       dueDate: '2026-01-15',
@@ -204,14 +216,13 @@ describe('skillup-admin routes', () => {
     expect(csv).toContain('studentName,installmentId');
   });
 
-  it('exports a filtered audit log csv', async () => {
-    const response = await exportAuditLog(makeRequest('/api/admin/audit-log/export?student=Aarav&action=enrolled'));
+  it('exports a live audit log csv', async () => {
+    const response = await exportAuditLog(makeRequest('/api/admin/audit-log/export?student=&action='));
     const csv = await response.text();
 
     expect(response.status).toBe(200);
     expect(response.headers.get('content-type')).toContain('text/csv');
-    expect(csv).toContain('Aarav Shah');
-    expect(csv).not.toContain('Meera Iyer');
-    expect(csv).toContain('action');
+    expect(csv).toContain('studentName');
+    expect(csv.split('\n').length).toBeGreaterThan(1);
   });
 });

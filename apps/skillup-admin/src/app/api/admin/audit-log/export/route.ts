@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 
-import { filterAdminAuditLog, serializeAdminAuditCsv } from '@/lib/admin-demo-data';
 import { csvResponse, requireAdminOrForbidden } from '@/lib/admin-bff';
+import { listAdminAuditLog, serializeAdminAuditCsv } from '@/lib/skillup-admin-data';
 
 export async function GET(request: NextRequest) {
   const forbidden = await requireAdminOrForbidden(request);
@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
 
   const url = new URL(request.url);
   const rows = serializeAdminAuditCsv(
-    filterAdminAuditLog({
+    await listAdminAuditLog({
       student: url.searchParams.get('student') ?? '',
       action: url.searchParams.get('action') ?? '',
       from: url.searchParams.get('from') ?? '',

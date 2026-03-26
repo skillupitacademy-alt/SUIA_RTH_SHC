@@ -1,11 +1,16 @@
 import Link from 'next/link';
 
-import { adminActivityFeed, adminDashboardSummary, adminStudents, formatCurrency } from '@/lib/admin-demo-data';
+import { formatCurrency, getAdminDashboardSummary, listAdminActivityFeed, listAdminStudents } from '@/lib/skillup-admin-data';
 import { canAccessFinance, getSkillUpAdminRole } from '@/lib/admin-session';
 
 export default async function AdminDashboardPage() {
   const role = await getSkillUpAdminRole();
   const canSeeFinance = canAccessFinance(role);
+  const [summary, activityFeed, students] = await Promise.all([
+    getAdminDashboardSummary(),
+    listAdminActivityFeed(),
+    listAdminStudents(),
+  ]);
   const quickActions = canSeeFinance
     ? [
         { href: '/students', label: 'Add student' },
@@ -46,26 +51,26 @@ export default async function AdminDashboardPage() {
           {canSeeFinance ? (
             <div className="rounded-[1.75rem] border border-cyan-200 bg-cyan-50 p-6">
               <p className="text-xs font-black uppercase tracking-[0.35em] text-cyan-700">Placement rate</p>
-              <p className="mt-3 text-5xl font-black tracking-tight text-slate-950">{adminDashboardSummary.placementRate}%</p>
+              <p className="mt-3 text-5xl font-black tracking-tight text-slate-950">{summary.placementRate}%</p>
               <p className="mt-2 text-sm text-slate-600">Learners moving into interviews and offers.</p>
             </div>
           ) : (
             <div className="rounded-[1.75rem] border border-cyan-200 bg-cyan-50 p-6">
               <p className="text-xs font-black uppercase tracking-[0.35em] text-cyan-700">CRM focus</p>
-              <p className="mt-3 text-5xl font-black tracking-tight text-slate-950">{adminStudents.filter((student) => student.paymentStatus !== 'current').length}</p>
+              <p className="mt-3 text-5xl font-black tracking-tight text-slate-950">{students.filter((student) => student.paymentStatus !== 'current').length}</p>
               <p className="mt-2 text-sm text-slate-600">Students needing follow-up before the next counselling touchpoint.</p>
             </div>
           )}
           {canSeeFinance ? (
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6">
               <p className="text-xs font-black uppercase tracking-[0.35em] text-slate-500">Monthly revenue</p>
-              <p className="mt-3 text-4xl font-black tracking-tight text-slate-950">{formatCurrency(adminDashboardSummary.monthlyRevenue)}</p>
+              <p className="mt-3 text-4xl font-black tracking-tight text-slate-950">{formatCurrency(summary.monthlyRevenue)}</p>
               <p className="mt-2 text-sm text-slate-600">Current billing cycle collections and receipts.</p>
             </div>
           ) : (
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6">
               <p className="text-xs font-black uppercase tracking-[0.35em] text-slate-500">Counsellor focus</p>
-              <p className="mt-3 text-4xl font-black tracking-tight text-slate-950">{adminStudents.filter((student) => student.paymentStatus !== 'current').length}</p>
+              <p className="mt-3 text-4xl font-black tracking-tight text-slate-950">{students.filter((student) => student.paymentStatus !== 'current').length}</p>
               <p className="mt-2 text-sm text-slate-600">Students needing follow-up across CRM and admissions.</p>
             </div>
           )}
@@ -75,16 +80,16 @@ export default async function AdminDashboardPage() {
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {(
           canSeeFinance
-            ? [
-                { label: 'Total students', value: adminDashboardSummary.totalStudents, accent: 'cyan' },
-                { label: 'Active batches', value: adminDashboardSummary.activeBatches, accent: 'emerald' },
-                { label: 'Monthly revenue', value: formatCurrency(adminDashboardSummary.monthlyRevenue), accent: 'amber' },
-                { label: 'Placement rate', value: `${adminDashboardSummary.placementRate}%`, accent: 'rose' },
+          ? [
+                { label: 'Total students', value: summary.totalStudents, accent: 'cyan' },
+                { label: 'Active batches', value: summary.activeBatches, accent: 'emerald' },
+                { label: 'Monthly revenue', value: formatCurrency(summary.monthlyRevenue), accent: 'amber' },
+                { label: 'Placement rate', value: `${summary.placementRate}%`, accent: 'rose' },
               ]
             : [
-                { label: 'Total students', value: adminDashboardSummary.totalStudents, accent: 'cyan' },
-                { label: 'Active batches', value: adminDashboardSummary.activeBatches, accent: 'emerald' },
-                { label: 'Students needing follow-up', value: adminStudents.filter((student) => student.paymentStatus !== 'current').length, accent: 'amber' },
+                { label: 'Total students', value: summary.totalStudents, accent: 'cyan' },
+                { label: 'Active batches', value: summary.activeBatches, accent: 'emerald' },
+                { label: 'Students needing follow-up', value: students.filter((student) => student.paymentStatus !== 'current').length, accent: 'amber' },
                 { label: 'Open CRM enquiries', value: 3, accent: 'rose' },
               ]
         ).map((stat) => (
@@ -120,7 +125,7 @@ export default async function AdminDashboardPage() {
             </Link>
           </div>
           <div className="mt-6 space-y-4">
-            {adminActivityFeed.map((item) => (
+            {activityFeed.map((item) => (
               <div key={item.id} className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-sm font-semibold text-slate-800">{item.title}</p>
@@ -151,13 +156,13 @@ export default async function AdminDashboardPage() {
           <div className="mt-6 space-y-4">
             {(
               canSeeFinance
-                ? [
-                    { label: 'Students needing follow-up', value: adminStudents.filter((student) => student.paymentStatus !== 'current').length },
+            ? [
+                    { label: 'Students needing follow-up', value: students.filter((student) => student.paymentStatus !== 'current').length },
                     { label: 'Active admission queues', value: 7 },
                     { label: 'Jobs matched to learners', value: 18 },
                   ]
                 : [
-                    { label: 'Students needing follow-up', value: adminStudents.filter((student) => student.paymentStatus !== 'current').length },
+                    { label: 'Students needing follow-up', value: students.filter((student) => student.paymentStatus !== 'current').length },
                     { label: 'Open CRM enquiries', value: 3 },
                     { label: 'Upcoming callbacks', value: 5 },
                   ]
