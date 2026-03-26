@@ -1,15 +1,16 @@
 import { headers } from 'next/headers';
 import Link from 'next/link';
 
-import { listFacultyUpcomingSessions, listFacultySessionRequests } from '@/lib/faculty-live-data';
+import { SessionCreateForm } from '@/components/session-create-form';
+import { listFacultyBatches, listFacultyUpcomingSessions, listFacultySessionRequests } from '@/lib/faculty-live-data';
 
 export default async function SessionsPage() {
   const requestHeaders = await headers();
   const userId = requestHeaders.get('x-user-id');
-  const [sessions, requests] =
+  const [sessions, requests, batches] =
     userId === null || userId.length === 0
-      ? [[], []]
-      : await Promise.all([listFacultyUpcomingSessions(userId), listFacultySessionRequests(userId)]);
+      ? [[], [], []]
+      : await Promise.all([listFacultyUpcomingSessions(userId), listFacultySessionRequests(userId), listFacultyBatches(userId)]);
 
   return (
     <section className="mx-auto max-w-7xl space-y-6 px-6 py-8 lg:py-10">
@@ -20,6 +21,8 @@ export default async function SessionsPage() {
           This page surfaces the faculty schedule in one place so you can jump into the next class, then follow up on any pending live requests.
         </p>
       </div>
+
+      <SessionCreateForm batches={batches} />
 
       <section className="grid gap-4 lg:grid-cols-3">
         <article className="rounded-[1.75rem] border border-cyan-200 bg-cyan-50 p-6">

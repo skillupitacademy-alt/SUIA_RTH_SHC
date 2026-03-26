@@ -89,6 +89,12 @@ export type FacultyAttendanceRoster = {
   roster: FacultyAttendanceStudent[];
 };
 
+export type FacultyBatchOption = {
+  id: string;
+  name: string;
+  nextSessionAt: string;
+};
+
 export async function resolveFacultyAccess(request: NextRequest): Promise<FacultyAccess | null> {
   const userId = request.headers.get('x-user-id');
   if (userId === null || userId.trim().length === 0) {
@@ -117,6 +123,18 @@ export async function resolveFacultyAccess(request: NextRequest): Promise<Facult
 
     return { facultyId: row.facultyId, userId: row.userId };
   });
+}
+
+async function getFacultyRow(userId: string) {
+  const [row] = await peopleDb
+    .select({
+      id: faculty.id,
+      userId: faculty.userId,
+    })
+    .from(faculty)
+    .where(and(eq(faculty.userId, userId), isNull(faculty.deletedAt)))
+    .limit(1);
+  return row ?? null;
 }
 
 async function getFacultyStudentIds(facultyId: string) {
@@ -391,6 +409,81 @@ export async function loadFacultyAssignments(access: FacultyAccess): Promise<Fac
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   }));
+}
+
+export async function listFacultyBatchOptions(userId: string): Promise<FacultyBatchOption[]> {
+  const facultyRow = await getFacultyRow(userId);
+  if (facultyRow === null) {
+    return [];
+  }
+
+  const rows = await peopleDb
+    .select({
+      id: batches.id,
+      name: batches.name,
+      nextSessionAt: batchSessions.scheduledAt,
+    })
+    .from(batches)
+    .leftJoin(batchSessions, eq(batchSessions.batchId, batches.id))
+    .where(and(eq(batches.facultyId, facultyRow.id), isNull(batches.deletedAt)))
+    .orderBy(asc(batches.name));
+
+  const map = new Map<string, FacultyBatchOption>();
+  for (const row of rows) {
+    if (!map.has(row.id)) {
+      map.set(row.id, {
+        id: row.id,
+        name: row.name,
+        nextSessionAt: row.nextSessionAt?.toISOString() ?? new Date().toISOString(),
+      });
+    }
+  }
+
+  return [...map.values()];
+}
+
+export async function createFacultyBatchSession(
+  access: FacultyAccess,
+  data: {
+    batchId: string;
+    scheduledAt: Date;
+    durationMinutes: number;
+    sessionNotes: string;
+  }
+) {
+  const [batchRow] = await peopleDb
+    .select({
+      id: batches.id,
+    })
+    .from(batches)
+    .where(and(eq(batches.id, data.batchId), eq(batches.facultyId, access.facultyId), isNull(batches.deletedAt)))
+    .limit(1);
+
+  if (batchRow === undefined) {
+    return null;
+  }
+
+  const [row] = await peopleDb
+    .insert(batchSessions)
+    .values({
+      batchId: data.batchId,
+      facultyId: access.facultyId,
+      scheduledAt: data.scheduledAt,
+      durationMinutes: data.durationMinutes,
+      sessionNotes: data.sessionNotes,
+      status: 'scheduled',
+      subtopicsCovered: [],
+    })
+    .returning({
+      id: batchSessions.id,
+      batchId: batchSessions.batchId,
+      scheduledAt: batchSessions.scheduledAt,
+      durationMinutes: batchSessions.durationMinutes,
+      sessionNotes: batchSessions.sessionNotes,
+      status: batchSessions.status,
+    });
+
+  return row ?? null;
 }
 
 export async function updateFacultyLiveSession(
