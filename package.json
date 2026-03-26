@@ -42,6 +42,8 @@
                     "validate:gateway:live":  "node scripts/validate-gateway.mjs --live",
                     "seed:skillup:test-credentials":  "node scripts/seed-skillup-test-credentials.js",
                     "seed:skillup:people":  "pnpm --filter @quiz/db-people db:seed:skillup",
+                    "db-payment:seed:skillup":  "pnpm --filter @quiz/db-payment db:seed:skillup",
+                    "db-payment:migrate":  "pnpm --filter @quiz/db-payment db:migrate",
                     "type-check":  "turbo run type-check",
                     "typecheck:all":  "turbo run type-check --filter=@quiz/realtutorialhub-quiz --filter=@quiz/realtutorialhub-admin --filter=@quiz/api-server --filter=@quiz/realtutorialhub-web --filter=@quiz/skillhubcore-service --filter=@quiz/api-gateway --filter=@quiz/db-people --filter=@quiz/skillup-web --filter=@quiz/skillup-admin --filter=@quiz/faculty-app --filter=@quiz/skillhubcore-admin",
                     "ci":  "pnpm lint:all \u0026\u0026 pnpm typecheck:all \u0026\u0026 pnpm build:all",

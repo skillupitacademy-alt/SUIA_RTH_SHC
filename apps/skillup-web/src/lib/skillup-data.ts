@@ -1,4 +1,5 @@
 import { and, desc, eq, isNull } from 'drizzle-orm';
+import { Pool } from 'pg';
 
 import {
   attendanceRecords,
@@ -20,6 +21,26 @@ import type { SkillupSession } from '@/lib/skillup-types';
 import type { SkillupProgramDetail } from '@/lib/skillup-types';
 
 const DEFAULT_STUDENT_EMAIL = 'student@skillupitacademy.com';
+let authPool: Pool | null | undefined;
+let paymentPool: Pool | null | undefined;
+
+function getAuthPool() {
+  if (authPool === undefined) {
+    const databaseUrl = process.env.DATABASE_DIRECT_URL?.trim() || process.env.DATABASE_URL?.trim() || '';
+    authPool = databaseUrl.length > 0 ? new Pool({ connectionString: databaseUrl }) : null;
+  }
+
+  return authPool;
+}
+
+function getPaymentPool() {
+  if (paymentPool === undefined) {
+    const databaseUrl = process.env.DATABASE_DIRECT_URL_PAYMENT?.trim() || process.env.DATABASE_URL_PAYMENT?.trim() || '';
+    paymentPool = databaseUrl.length > 0 ? new Pool({ connectionString: databaseUrl }) : null;
+  }
+
+  return paymentPool;
+}
 const FALLBACK_PROGRAMS = [
   {
     id: 'skillup-full-stack',
@@ -124,15 +145,6 @@ const FALLBACK_ATTENDANCE = {
   ],
 };
 
-const FALLBACK_PAYMENTS = {
-  installments: [
-    { id: 'inst-1', label: 'Admission fee', dueDate: '2026-01-15', amount: 15000, status: 'paid', paymentRef: 'PAY-1001' },
-    { id: 'inst-2', label: 'Training fee - month 2', dueDate: '2026-02-15', amount: 15000, status: 'paid', paymentRef: 'PAY-1002' },
-    { id: 'inst-3', label: 'Training fee - month 3', dueDate: '2026-03-10', amount: 18000, status: 'overdue' },
-    { id: 'inst-4', label: 'Placement support fee', dueDate: '2026-04-10', amount: 12000, status: 'due' },
-  ],
-};
-
 const FALLBACK_PLACEMENT = {
   profile: {
     roleGoal: 'Frontend Developer',
@@ -178,6 +190,18 @@ async function resolveStudentUserId(request?: RequestLike): Promise<string> {
   const requestUserId = request?.headers?.get('x-user-id');
   if (requestUserId !== null && requestUserId !== undefined && requestUserId.trim() !== '') {
     return requestUserId;
+  }
+
+  const authPoolClient = getAuthPool();
+  if (authPoolClient !== null) {
+    const { rows } = await authPoolClient.query<{ id: string }>(
+      'SELECT id FROM users WHERE email = $1 LIMIT 1',
+      [DEFAULT_STUDENT_EMAIL],
+    );
+
+    if (rows[0] !== undefined) {
+      return rows[0].id;
+    }
   }
 
   const canonical = await db.select({ id: users.id }).from(users).where(eq(users.email, DEFAULT_STUDENT_EMAIL)).limit(1);
@@ -434,27 +458,50 @@ export async function getSkillupAttendance(request?: RequestLike) {
 export async function getSkillupPayments(request?: RequestLike) {
   try {
     const userId = await resolveStudentUserId(request);
-    const installments = await db
-      .select({
-        id: paymentInstallments.id,
-        label: paymentInstallments.label,
-        dueDate: paymentInstallments.dueDate,
-        amount: paymentInstallments.amount,
-        status: paymentInstallments.status,
-        paymentRef: paymentInstallments.paymentRef,
-      })
-      .from(paymentInstallments)
-      .where(eq(paymentInstallments.studentUserId, userId))
-      .orderBy(paymentInstallments.dueDate);
+    const paymentPoolClient = getPaymentPool();
+    if (paymentPoolClient === null) {
+      return { installments: [] };
+    }
+
+    const { rows: installments } = await paymentPoolClient.query<{
+      id: string;
+      installmentNumber: number;
+      dueDate: string | Date;
+      amount: number;
+      status: 'paid' | 'due' | 'overdue';
+      paymentRef: string | null;
+    }>(
+      `
+      SELECT
+        pi.id,
+        pi.installment_number AS "installmentNumber",
+        pi.due_date AS "dueDate",
+        pi.amount,
+        pi.status,
+        pi.payment_ref AS "paymentRef"
+      FROM payment_installments pi
+      INNER JOIN payment_plans pp ON pp.id = pi.plan_id
+      WHERE pp.user_id = $1
+      ORDER BY pi.due_date
+    `,
+      [userId],
+    );
 
     return {
       installments: installments.map((item) => ({
-        ...item,
+        id: item.id,
+        label:
+          item.installmentNumber === 1
+            ? 'Admission fee'
+            : `Training fee - month ${item.installmentNumber}`,
         dueDate: toDate(item.dueDate).toISOString().slice(0, 10),
+        amount: item.amount,
+        status: item.status,
+        paymentRef: item.paymentRef,
       })),
     };
   } catch {
-    return FALLBACK_PAYMENTS;
+    return { installments: [] };
   }
 }
 

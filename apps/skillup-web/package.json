@@ -13,6 +13,7 @@
   "dependencies": {
     "@quiz/auth": "workspace:*",
     "@quiz/db-people": "workspace:*",
+    "@quiz/db-payment": "workspace:*",
     "@serwist/next": "^9.5.7",
     "@types/node": "^20",
     "@types/react": "^19.0.0",
@@ -23,6 +24,7 @@
     "eslint-config-next": "15.2.0",
     "lucide-react": "^0.563.0",
     "next": "16.1.6",
+    "pg": "^8.18.0",
     "postcss": "^8",
     "react": "19.2.4",
     "react-dom": "19.2.4",

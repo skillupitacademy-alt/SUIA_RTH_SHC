@@ -48,6 +48,12 @@
             "@quiz/db-people/*": [
                 "./packages/db-people/src/*"
             ],
+            "@quiz/db-payment": [
+                "./packages/db-payment/src/index.ts"
+            ],
+            "@quiz/db-payment/*": [
+                "./packages/db-payment/src/*"
+            ],
             "@quiz/skillhubcore-service": [
                 "./services/skillhubcore-service/src/index.ts"
             ],
