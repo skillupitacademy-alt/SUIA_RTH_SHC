@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 import { getSkillUpAdminRole } from '@/lib/admin-session';
 import { RoleLockedNotice } from '@/components/role-locked-notice';
 import { listAdminJobPostings, listAdminPlacementProfiles } from '@/lib/skillup-admin-data';
@@ -32,7 +34,11 @@ export default async function PlacementPage() {
           <p className="text-xs font-black uppercase tracking-[0.35em] text-slate-500">Student profiles</p>
           <div className="mt-4 space-y-3">
             {adminPlacementProfiles.map((profile) => (
-              <div key={profile.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <Link
+                key={profile.id}
+                href={`/placement/${profile.id}`}
+                className="block rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:border-cyan-300 hover:bg-cyan-50"
+              >
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="text-sm font-semibold text-slate-800">{profile.studentName}</p>
@@ -43,7 +49,7 @@ export default async function PlacementPage() {
                   <p className="text-sm font-black text-slate-950">{profile.matchScore}%</p>
                 </div>
                 <p className="mt-2 text-sm text-slate-600">Matches: {profile.jobMatches.join(', ')}</p>
-              </div>
+              </Link>
             ))}
           </div>
         </article>

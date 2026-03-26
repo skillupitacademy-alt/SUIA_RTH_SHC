@@ -67,7 +67,9 @@ export type AdminPaymentItem = {
 
 export type AdminPlacementProfile = {
   id: string;
+  userId: string;
   studentName: string;
+  resumeStatus: string;
   targetRole: string;
   location: string;
   matchScore: number;
@@ -240,7 +242,9 @@ export async function listAdminPlacementProfiles(): Promise<AdminPlacementProfil
   const rows = await db
     .select({
       id: studentPlacementProfiles.id,
+      userId: studentPlacementProfiles.userId,
       roleGoal: studentPlacementProfiles.roleGoal,
+      resumeStatus: studentPlacementProfiles.resumeStatus,
       profileCompletion: studentPlacementProfiles.profileCompletion,
       skills: studentPlacementProfiles.skills,
       studentName: userProfiles.name,
@@ -252,13 +256,62 @@ export async function listAdminPlacementProfiles(): Promise<AdminPlacementProfil
 
   return rows.map((row) => ({
     id: row.id,
+    userId: row.userId,
     studentName: row.studentName ?? 'Unknown student',
+    resumeStatus: row.resumeStatus,
     targetRole: row.roleGoal,
     location: 'Remote',
     matchScore: row.profileCompletion,
     status: row.profileCompletion >= 80 ? 'ready' : 'in_review',
     jobMatches: row.skills,
   }));
+}
+
+export type AdminPlacementDetail = AdminPlacementProfile & {
+  interviewCount: number;
+  updatedAt: string;
+  jobs: AdminJobPosting[];
+};
+
+export async function getAdminPlacementDetail(id: string): Promise<AdminPlacementDetail | undefined> {
+  const [row] = await db
+    .select({
+      id: studentPlacementProfiles.id,
+      userId: studentPlacementProfiles.userId,
+      roleGoal: studentPlacementProfiles.roleGoal,
+      resumeStatus: studentPlacementProfiles.resumeStatus,
+      profileCompletion: studentPlacementProfiles.profileCompletion,
+      interviewCount: studentPlacementProfiles.interviewCount,
+      skills: studentPlacementProfiles.skills,
+      updatedAt: studentPlacementProfiles.updatedAt,
+      studentName: userProfiles.name,
+    })
+    .from(studentPlacementProfiles)
+    .innerJoin(users, eq(users.id, studentPlacementProfiles.userId))
+    .leftJoin(userProfiles, eq(userProfiles.userId, users.id))
+    .where(eq(studentPlacementProfiles.id, id))
+    .limit(1);
+
+  if (row === undefined) {
+    return undefined;
+  }
+
+  const jobs = await listAdminJobPostings();
+
+  return {
+    id: row.id,
+    userId: row.userId,
+    studentName: row.studentName ?? 'Unknown student',
+    resumeStatus: row.resumeStatus,
+    targetRole: row.roleGoal,
+    location: 'Remote',
+    matchScore: row.profileCompletion,
+    status: row.profileCompletion >= 80 ? 'ready' : 'in_review',
+    jobMatches: row.skills,
+    interviewCount: row.interviewCount,
+    updatedAt: toIso(row.updatedAt),
+    jobs,
+  };
 }
 
 export async function listAdminJobPostings(): Promise<AdminJobPosting[]> {

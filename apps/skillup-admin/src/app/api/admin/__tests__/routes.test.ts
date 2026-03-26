@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { listAdminBatches, listAdminEnquiries, listAdminStudents } from '@/lib/skillup-admin-data';
+import { listAdminBatches, listAdminEnquiries, listAdminPlacementProfiles, listAdminStudents } from '@/lib/skillup-admin-data';
 
 const mocks = vi.hoisted(() => ({
   publishEvent: vi.fn().mockResolvedValue({ messageId: 'msg-1', envelope: {} }),
@@ -26,6 +26,7 @@ import { POST as enrollStudent } from '../students/[id]/enroll/route';
 import { GET as getStudent } from '../students/[id]/route';
 import { GET as getStudents, POST as createStudent } from '../students/route';
 import { PATCH as qualifyEnquiry } from '../crm/enquiries/[id]/qualify/route';
+import { GET as getPlacementProfile, POST as savePlacementProfile } from '../placement/[id]/route';
 
 const makeRequest = (url: string, method = 'GET', body?: unknown) =>
   new NextRequest(`http://localhost${url}`, {
@@ -42,14 +43,21 @@ describe('skillup-admin routes', () => {
   let studentUserId = '';
   let enquiryId = '';
   let batchId = '';
+  let placementId = '';
 
   beforeEach(async () => {
     vi.clearAllMocks();
-    const [students, enquiries, batches] = await Promise.all([listAdminStudents(), listAdminEnquiries(), listAdminBatches()]);
+    const [students, enquiries, batches, placements] = await Promise.all([
+      listAdminStudents(),
+      listAdminEnquiries(),
+      listAdminBatches(),
+      listAdminPlacementProfiles(),
+    ]);
     studentId = students[0]?.id ?? '';
     studentUserId = students[0]?.userId ?? '';
     enquiryId = enquiries[0]?.id ?? '';
     batchId = batches[0]?.id ?? '';
+    placementId = placements[0]?.id ?? '';
   });
 
   it('rejects requests without an admin role', async () => {
@@ -224,5 +232,40 @@ describe('skillup-admin routes', () => {
     expect(response.headers.get('content-type')).toContain('text/csv');
     expect(csv).toContain('studentName');
     expect(csv.split('\n').length).toBeGreaterThan(1);
+  });
+
+  it('loads and saves a placement profile', async () => {
+    const detailResponse = await getPlacementProfile(makeRequest(`/api/admin/placement/${placementId}`), {
+      params: Promise.resolve({ id: placementId }),
+    });
+    const detailPayload = (await detailResponse.json()) as { data: { id: string; targetRole: string } };
+
+    expect(detailResponse.status).toBe(200);
+    expect(detailPayload.data.id).toBe(placementId);
+    expect(detailPayload.data.targetRole).toBeTruthy();
+
+    const unique = Date.now().toString(36);
+    const updateResponse = await savePlacementProfile(
+      makeRequest(
+        `/api/admin/placement/${placementId}`,
+        'POST',
+        {
+          targetRole: `Frontend Engineer ${unique}`,
+          resumeStatus: 'Ready for review',
+          profileCompletion: 92,
+          interviewCount: 5,
+          skills: 'React, TypeScript, APIs',
+        }
+      ),
+      {
+        params: Promise.resolve({ id: placementId }),
+      }
+    );
+    const updatePayload = (await updateResponse.json()) as { data: { updated: boolean; detail: { targetRole: string; matchScore: number } } };
+
+    expect(updateResponse.status).toBe(200);
+    expect(updatePayload.data.updated).toBe(true);
+    expect(updatePayload.data.detail.targetRole).toBe(`Frontend Engineer ${unique}`);
+    expect(updatePayload.data.detail.matchScore).toBe(92);
   });
 });
