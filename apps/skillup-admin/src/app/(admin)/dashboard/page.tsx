@@ -156,16 +156,16 @@ export default async function AdminDashboardPage() {
           <div className="mt-6 space-y-4">
             {(
               canSeeFinance
-            ? [
-                    { label: 'Students needing follow-up', value: students.filter((student) => student.paymentStatus !== 'current').length },
-                    { label: 'Active admission queues', value: 7 },
-                    { label: 'Jobs matched to learners', value: 18 },
-                  ]
+          ? [
+                { label: 'Students needing follow-up', value: students.filter((student) => student.paymentStatus !== 'current').length },
+                { label: 'Active admission queues', value: summary.activeAdmissionQueues },
+                { label: 'Jobs matched to learners', value: summary.jobsMatched },
+              ]
                 : [
-                    { label: 'Students needing follow-up', value: students.filter((student) => student.paymentStatus !== 'current').length },
-                    { label: 'Open CRM enquiries', value: 3 },
-                    { label: 'Upcoming callbacks', value: 5 },
-                  ]
+                { label: 'Students needing follow-up', value: students.filter((student) => student.paymentStatus !== 'current').length },
+                { label: 'Open CRM enquiries', value: summary.openEnquiries },
+                { label: 'Upcoming callbacks', value: summary.upcomingCallbacks },
+              ]
             ).map((item) => (
               <div key={item.label} className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
                 <div className="flex items-center justify-between">

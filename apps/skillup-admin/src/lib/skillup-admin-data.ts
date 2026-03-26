@@ -408,7 +408,7 @@ export type AdminBatchDetail = AdminBatchSummary & {
 };
 
 export async function getAdminDashboardSummary() {
-  const [students, batchesRows, payments, placements] = await Promise.all([
+  const [students, batchesRows, payments, placements, enquiriesRows, admissionsRows, jobsRows, followUpsRows] = await Promise.all([
     db
       .select({ id: users.id })
       .from(users)
@@ -423,17 +423,39 @@ export async function getAdminDashboardSummary() {
     db
       .select({ completion: studentPlacementProfiles.profileCompletion })
       .from(studentPlacementProfiles),
+    db
+      .select({ status: enquiries.status })
+      .from(enquiries)
+      .where(isNull(enquiries.deletedAt)),
+    db
+      .select({ status: admissions.status })
+      .from(admissions),
+    db
+      .select({ id: placementJobs.id })
+      .from(placementJobs)
+      .where(eq(placementJobs.isActive, true)),
+    db
+      .select({ nextFollowUpAt: enquiryFollowUps.nextFollowUpAt })
+      .from(enquiryFollowUps),
   ]);
 
   const totalRevenue = payments.filter((row) => row.status === 'paid').reduce((sum, row) => sum + row.amount, 0);
   const placementRate =
     placements.length === 0 ? 0 : Math.round((placements.filter((row) => row.completion >= 80).length / placements.length) * 100);
+  const openEnquiries = enquiriesRows.filter((row) => row.status === 'new' || row.status === 'contacted').length;
+  const activeAdmissionQueues = admissionsRows.filter((row) => row.status === 'pending').length;
+  const jobsMatched = jobsRows.length;
+  const upcomingCallbacks = followUpsRows.filter((row) => row.nextFollowUpAt !== null && new Date(row.nextFollowUpAt).getTime() >= Date.now()).length;
 
   return {
     totalStudents: students.length,
     activeBatches: batchesRows.length,
     monthlyRevenue: totalRevenue,
     placementRate,
+    openEnquiries,
+    activeAdmissionQueues,
+    jobsMatched,
+    upcomingCallbacks,
   };
 }
 
