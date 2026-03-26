@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { PlacementJobCreateForm } from '@/components/placement/PlacementJobCreateForm';
 import { getSkillUpAdminRole } from '@/lib/admin-session';
 import { RoleLockedNotice } from '@/components/role-locked-notice';
 import { listAdminJobPostings, listAdminPlacementProfiles } from '@/lib/skillup-admin-data';
@@ -73,6 +74,19 @@ export default async function PlacementPage() {
             ))}
           </div>
         </article>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+        <PlacementJobCreateForm />
+
+        <aside className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+          <p className="text-xs font-black uppercase tracking-[0.35em] text-slate-500">Placement notes</p>
+          <div className="mt-4 space-y-3 text-sm leading-6 text-slate-600">
+            <p>Job postings are now created directly in the live placement jobs table.</p>
+            <p>The posting list updates on refresh and stays tied to the same placement surface.</p>
+            <p>Use the profile cards above to review learner readiness against the active jobs below.</p>
+          </div>
+        </aside>
       </div>
     </section>
   );

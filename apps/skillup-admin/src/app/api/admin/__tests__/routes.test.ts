@@ -30,6 +30,7 @@ import { GET as getStudent, PATCH as patchStudent } from '../students/[id]/route
 import { GET as getStudents, POST as createStudent } from '../students/route';
 import { PATCH as qualifyEnquiry } from '../crm/enquiries/[id]/qualify/route';
 import { GET as getPlacementProfile, POST as savePlacementProfile } from '../placement/[id]/route';
+import { POST as createPlacementJob } from '../placement/jobs/route';
 
 const makeRequest = (url: string, method = 'GET', body?: unknown) =>
   new NextRequest(`http://localhost${url}`, {
@@ -363,6 +364,25 @@ describe('skillup-admin routes', () => {
     expect(updatePayload.data.updated).toBe(true);
     expect(updatePayload.data.detail.targetRole).toBe(`Frontend Engineer ${unique}`);
     expect(updatePayload.data.detail.matchScore).toBe(92);
+  });
+
+  it('publishes a placement job posting', async () => {
+    const unique = Date.now().toString(36);
+    const response = await createPlacementJob(
+      makeRequest('/api/admin/placement/jobs', 'POST', {
+        company: `Company ${unique}`,
+        title: `Backend Engineer ${unique}`,
+        location: 'Remote',
+        matchScore: 89,
+        isActive: true,
+      })
+    );
+    const payload = (await response.json()) as { data: { created: boolean; job: { title: string; company: string } } };
+
+    expect(response.status).toBe(201);
+    expect(payload.data.created).toBe(true);
+    expect(payload.data.job.title).toBe(`Backend Engineer ${unique}`);
+    expect(payload.data.job.company).toBe(`Company ${unique}`);
   });
 
   it('loads and updates a payment detail', async () => {
