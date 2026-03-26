@@ -326,7 +326,7 @@ describe('api-gateway', () => {
     const response = await app.request('https://api.example.com/tutorial/lessons/1', {
       headers: {
         authorization: `Bearer ${token}`,
-        cookie: 'skillhubcore_accessToken=jwt-cookie-token; theme=dark',
+        cookie: 'accessToken=jwt-cookie-token; theme=dark',
       },
     }, env);
 
@@ -334,7 +334,7 @@ describe('api-gateway', () => {
     expect(fetchSpy).toHaveBeenCalledTimes(1);
     const [, init] = fetchSpy.mock.calls[0] ?? [];
     const headers = new Headers((init as RequestInit | undefined)?.headers);
-    expect(headers.get('cookie')).toContain('skillhubcore_accessToken=jwt-cookie-token');
+    expect(headers.get('cookie')).toContain('accessToken=jwt-cookie-token');
   });
 
   it('forbids admin route for non-admin roles', async () => {

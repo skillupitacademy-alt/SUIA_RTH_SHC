@@ -2,14 +2,14 @@ import type { NextRequest } from 'next/server';
 
 import { badRequest } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
+import { resolveCookieDomain } from '@/lib/cookie-domain';
+import { resolveRequestBrand } from '@/lib/request-brand';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
 import { AuthService } from '@/modules/auth/auth.service';
 import { getClientIp } from '@/modules/auth/client-ip';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
-import { resolveCookieDomain } from '@/lib/cookie-domain';
-import { resolveRequestBrand } from '@/lib/request-brand';
 
 export const dynamic = 'force-dynamic';
 

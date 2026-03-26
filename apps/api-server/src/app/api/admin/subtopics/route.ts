@@ -13,6 +13,7 @@ import { AdminSubtopicEngine as AdminSubtopicEngineClass } from '@/modules/admin
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
+import { HierarchySyncService } from '@/modules/hierarchy/hierarchy-sync.service';
 import { subtopicSchema } from '@/schemas/hierarchy.schemas';
 
 type SubtopicInsert = typeof subtopics.$inferInsert;
@@ -95,6 +96,9 @@ async function postHandler(_req: NextRequest) {
 
     const engine = container.get(AdminSubtopicEngineClass);
     const result = await engine.createSubtopic(createBody, _payload.userId);
+    if (result?.id !== undefined) {
+      void HierarchySyncService.sync('subtopic', result.id);
+    }
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.subtopics.create.success', 1);
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.subtopics.create.duration', durationMs, { outcome: 'success' });

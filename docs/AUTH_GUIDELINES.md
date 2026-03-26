@@ -66,7 +66,7 @@ Both read from the same GCP secret. If you change the secret:
 ### 6. Gateway auth middleware must NOT enforce issuer claims
 ```typescript
 // ❌ BAD — quiz-api-server tokens don't have an issuer
-jwt.verify(token, secret, { issuer: 'skillhubcore.in' });
+jwt.verify(token, secret, { issuer: 'legacy.example.com' });
 
 // ✅ GOOD — verify token without issuer requirement
 jwt.verify(token, secret);
@@ -109,4 +109,4 @@ npx wrangler deploy --env production
 | `middleware.ts` | Next.js 16 uses proxy.ts natively |
 | Client-side `document.cookie` | Conflicts with httpOnly cookies from server |
 | GET `/auth/me` on page load | Adds delay; user is already verified by proxy.ts |
-| SkillHubCore issuer checks | quiz-api-server is the sole auth authority |
+| Issuer checks | quiz-api-server is the sole auth authority |

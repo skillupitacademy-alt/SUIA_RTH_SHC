@@ -12,6 +12,7 @@ import { withLogging } from '@/lib/withLogging';
 import { AdminSubjectEngine as AdminSubjectEngineClass } from '@/modules/admin-engine/admin.subject.engine';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
+import { HierarchySyncService } from '@/modules/hierarchy/hierarchy-sync.service';
 import { subjectSchema } from '@/schemas/hierarchy.schemas';
 
 type SubjectInsert = typeof subjects.$inferInsert;
@@ -91,6 +92,9 @@ async function postHandler(_req: NextRequest) {
 
     const engine = container.get(AdminSubjectEngineClass);
     const result = await engine.createSubject(createBody, _payload.userId);
+    if (result?.id !== undefined) {
+      void HierarchySyncService.sync('subject', result.id);
+    }
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.subjects.create.success', 1);
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.subjects.create.duration', durationMs, { outcome: 'success' });

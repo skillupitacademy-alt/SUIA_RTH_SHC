@@ -10,6 +10,7 @@ import { AdminDomainEngine } from "@/modules/admin-engine/admin.engine";
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
+import { HierarchySyncService } from '@/modules/hierarchy/hierarchy-sync.service';
 import { domainSchema } from '@/schemas/hierarchy.schemas';
 
 async function patchHandler(
@@ -42,6 +43,9 @@ async function patchHandler(
     }
     const body = parsed.data;
     const result = await AdminDomainEngine.updateDomain(id, body, _payload.userId);
+    if (result?.id !== undefined) {
+      void HierarchySyncService.sync('domain', result.id);
+    }
     
     return ApiResponse.success(result);
   } catch (_error: unknown) {

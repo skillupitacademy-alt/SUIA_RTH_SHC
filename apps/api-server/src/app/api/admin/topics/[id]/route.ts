@@ -10,6 +10,7 @@ import { AdminTopicEngine } from "@/modules/admin-engine/admin.engine";
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
+import { HierarchySyncService } from '@/modules/hierarchy/hierarchy-sync.service';
 import { topicSchema } from '@/schemas/hierarchy.schemas';
 
 async function patchHandler(
@@ -38,6 +39,9 @@ async function patchHandler(
     }
     const body = parsed.data;
     const result = await AdminTopicEngine.updateTopic(id, body, _payload.userId);
+    if (result?.id !== undefined) {
+      void HierarchySyncService.sync('topic', result.id);
+    }
     
     return ApiResponse.success(result);
   } catch (_error: unknown) {

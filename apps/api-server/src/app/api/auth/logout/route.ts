@@ -1,12 +1,12 @@
 import { type NextRequest } from 'next/server';
 
 import { ApiResponse } from '@/lib/api-response';
+import { resolveCookieDomain } from '@/lib/cookie-domain';
 import { withLogging } from '@/lib/withLogging';
 import { AuthService } from '@/modules/auth/auth.service';
 import { getClientIp } from '@/modules/auth/client-ip';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
-import { resolveCookieDomain } from '@/lib/cookie-domain';
 
 export const dynamic = 'force-dynamic';
 

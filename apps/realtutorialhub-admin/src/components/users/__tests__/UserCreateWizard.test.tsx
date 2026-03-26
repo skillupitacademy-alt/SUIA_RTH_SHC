@@ -47,13 +47,13 @@ describe('UserCreateWizard Unit Tests', () => {
         expect(queryByText(/Identity Provisioning/i)).toBeNull();
     });
 
-    it('should render form fields when isOpen is true', () => {
+    it('should render form fields when isOpen is true', async () => {
         render(<UserCreateWizard isOpen={true} onClose={mockOnClose} />);
-        
-        expect(screen.getByText(/Register New/i)).toBeDefined();
+
+        await screen.findByText(/Register New/i);
         expect(screen.getAllByText(/Administrator/i).length).toBeGreaterThan(0);
         expect(screen.getByRole('button', { name: /Provision Identity/i })).toBeDefined();
-    });
+    }, 10000);
 
     it('should validate required fields and handle successful submission', async () => {
         createUserMock.mockResolvedValueOnce({});

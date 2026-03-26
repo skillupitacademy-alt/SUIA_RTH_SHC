@@ -12,6 +12,7 @@ import { withLogging } from '@/lib/withLogging';
 import { AdminDomainEngine as AdminDomainEngineClass } from '@/modules/admin-engine/admin.domain.engine';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
+import { HierarchySyncService } from '@/modules/hierarchy/hierarchy-sync.service';
 import { domainSchema } from '@/schemas/hierarchy.schemas';
 
 type DomainInsert = typeof domains.$inferInsert;
@@ -88,6 +89,9 @@ async function postHandler(_req: NextRequest) {
 
     const engine = container.get(AdminDomainEngineClass);
     const result = await engine.createDomain(createBody, _payload.userId);
+    if (result?.id !== undefined) {
+      void HierarchySyncService.sync('domain', result.id);
+    }
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.domains.create.success', 1);
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.domains.create.duration', durationMs, { outcome: 'success' });

@@ -1,5 +1,5 @@
 import { pgTable, text, timestamp, uuid, integer, primaryKey, index } from "drizzle-orm/pg-core";
-import { statusEnum, skillCategoryEnum, mappingTypeEnum } from "./enums";
+import { statusEnum, skillCategoryEnum, mappingTypeEnum, tutorialSyncStatusEnum } from "./enums";
 
 // --- EDUCATIONAL HIERARCHY ---
 
@@ -9,6 +9,7 @@ export const domains = pgTable("domains", {
   description: text("description"),
   category: text("category"),
   status: statusEnum("status").notNull().default("active"),
+  tutorialSyncStatus: tutorialSyncStatusEnum("tutorial_sync_status").notNull().default("pending"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -22,6 +23,7 @@ export const subjects = pgTable("subjects", {
   description: text("description"),
   order: integer("order").notNull().default(0),
   status: statusEnum("status").notNull().default("active"),
+  tutorialSyncStatus: tutorialSyncStatusEnum("tutorial_sync_status").notNull().default("pending"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 }, (t) => ({
@@ -41,6 +43,7 @@ export const topics = pgTable("topics", {
   detailedNotesPath: text("detailed_notes_path"),
   notesAssetId: text("notes_asset_id"),
   status: statusEnum("status").notNull().default("active"),
+  tutorialSyncStatus: tutorialSyncStatusEnum("tutorial_sync_status").notNull().default("pending"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 }, (t) => ({
@@ -55,6 +58,7 @@ export const subtopics = pgTable("subtopics", {
   name: text("name").notNull(),
   description: text("description"),
   depthLevel: integer("depth_level").notNull().default(1),
+  tutorialSyncStatus: tutorialSyncStatusEnum("tutorial_sync_status").notNull().default("pending"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 }, (t) => ({
   idx_subtopics_topic_id: index("idx_subtopics_topic_id").on(t.topicId),

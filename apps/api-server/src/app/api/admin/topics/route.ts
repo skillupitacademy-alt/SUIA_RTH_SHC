@@ -13,6 +13,7 @@ import { AdminTopicEngine as AdminTopicEngineClass } from '@/modules/admin-engin
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
+import { HierarchySyncService } from '@/modules/hierarchy/hierarchy-sync.service';
 import { topicSchema } from '@/schemas/hierarchy.schemas';
 
 type TopicInsert = typeof topics.$inferInsert;
@@ -99,6 +100,9 @@ async function postHandler(_req: NextRequest) {
 
     const engine = container.get(AdminTopicEngineClass);
     const result = await engine.createTopic(createBody, _payload.userId);
+    if (result?.id !== undefined) {
+      void HierarchySyncService.sync('topic', result.id);
+    }
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.topics.create.success', 1);
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.topics.create.duration', durationMs, { outcome: 'success' });

@@ -1,6 +1,6 @@
 {
-  "id": "c3547cf5-ec53-482a-8652-51e15329e914",
-  "prevId": "d823d4df-3f8d-4535-afa3-165316f88bdd",
+  "id": "8ce70f5b-8f69-473e-a320-d85ccc3ec047",
+  "prevId": "c3547cf5-ec53-482a-8652-51e15329e914",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -894,6 +894,14 @@
           "notNull": true,
           "default": "'active'"
         },
+        "tutorial_sync_status": {
+          "name": "tutorial_sync_status",
+          "type": "tutorial_sync_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending'"
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp",
@@ -1038,6 +1046,14 @@
           "notNull": true,
           "default": "'active'"
         },
+        "tutorial_sync_status": {
+          "name": "tutorial_sync_status",
+          "type": "tutorial_sync_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending'"
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp",
@@ -1126,6 +1142,14 @@
           "primaryKey": false,
           "notNull": true,
           "default": 1
+        },
+        "tutorial_sync_status": {
+          "name": "tutorial_sync_status",
+          "type": "tutorial_sync_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending'"
         },
         "created_at": {
           "name": "created_at",
@@ -1301,6 +1325,14 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'active'"
+        },
+        "tutorial_sync_status": {
+          "name": "tutorial_sync_status",
+          "type": "tutorial_sync_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending'"
         },
         "created_at": {
           "name": "created_at",
@@ -3342,6 +3374,15 @@
         "active",
         "inactive",
         "draft"
+      ]
+    },
+    "public.tutorial_sync_status": {
+      "name": "tutorial_sync_status",
+      "schema": "public",
+      "values": [
+        "pending",
+        "synced",
+        "failed"
       ]
     },
     "public.exam_status": {

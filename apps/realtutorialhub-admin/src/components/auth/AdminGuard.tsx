@@ -7,6 +7,8 @@ import { useShallow } from 'zustand/react/shallow';
 import { useAuthStore } from '@/store/auth-store';
 import { clientLogger } from '@/utils/clientLogger';
 
+const normalizeRole = (value: string | null | undefined) => (typeof value === 'string' ? value.toLowerCase() : '');
+
 export function AdminGuard({ children }: { children: React.ReactNode }) {
     const { user, isAuthenticated, initialized, login, logout, expiresAt, isLocked } = useAuthStore(
         useShallow((s) => ({
@@ -22,22 +24,21 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const pathname = usePathname();
 
-    const normalizeRole = (value: string | null | undefined) => (typeof value === 'string' ? value.toLowerCase() : '');
-    const isSameAuthSession = (
-        currentUser: typeof user,
-        nextUser: typeof user,
-    ) => {
-        if (currentUser === null || currentUser === undefined || nextUser === null || nextUser === undefined) {
-            return false;
-        }
+    const isSameAuthSession = useCallback(
+        (currentUser: typeof user, nextUser: typeof user) => {
+            if (currentUser === null || currentUser === undefined || nextUser === null || nextUser === undefined) {
+                return false;
+            }
 
-        return (
-            currentUser.id === nextUser.id &&
-            currentUser.email === nextUser.email &&
-            normalizeRole(currentUser.role) === normalizeRole(nextUser.role) &&
-            Boolean(currentUser.isAdmin) === Boolean(nextUser.isAdmin)
-        );
-    };
+            return (
+                currentUser.id === nextUser.id &&
+                currentUser.email === nextUser.email &&
+                normalizeRole(currentUser.role) === normalizeRole(nextUser.role) &&
+                Boolean(currentUser.isAdmin) === Boolean(nextUser.isAdmin)
+            );
+        },
+        [],
+    );
 
     // Circuit Breaker: Custom handler for Admin
     const handleUnauthorized = useCallback((e: Event) => {
@@ -114,7 +115,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
                 void revalidate();
             }
         }
-    }, [expiresAt, initialized, isAuthenticated, isLocked, login, logout, pathname, router, user]);
+    }, [expiresAt, initialized, isAuthenticated, isLocked, isSameAuthSession, login, logout, pathname, router, user]);
 
 
     // Bypass guard for login page

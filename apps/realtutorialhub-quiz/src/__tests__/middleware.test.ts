@@ -1,11 +1,11 @@
 import { NextRequest } from 'next/server';
 import { describe, expect, it, vi } from 'vitest';
 
-const verifySkillHubCoreJWTMock = vi.hoisted(() => vi.fn());
+const verifyUserAccessTokenMock = vi.hoisted(() => vi.fn());
 
 vi.mock('@quiz/auth', () => ({
   TokenService: {
-    verifySkillHubCoreJWT: verifySkillHubCoreJWTMock,
+    verifyUserAccessToken: verifyUserAccessTokenMock,
   },
 }));
 
@@ -31,19 +31,17 @@ describe('realtutorialhub-quiz proxy', () => {
     expect(response.status).toBe(200);
   });
 
-  it('accepts a cross-platform JWT on exam routes', async () => {
-    verifySkillHubCoreJWTMock.mockResolvedValueOnce({
+  it('accepts a user JWT on exam routes', async () => {
+    verifyUserAccessTokenMock.mockResolvedValueOnce({
       sub: 'student-2',
       roles: ['student'],
-      subscriptions: ['notes'],
-      platforms: ['skillup'],
-      iss: 'skillhubcore.in',
-      exp: Math.floor(Date.now() / 1000) + 3600,
+      email: 'student@example.com',
+      aud: 'user',
     });
 
-    const response = await proxy(makeRequest('/exam/abc', 'skillhubcore_accessToken=skillup-token'));
+    const response = await proxy(makeRequest('/exam/abc', 'accessToken=user-token'));
 
-    expect(verifySkillHubCoreJWTMock).toHaveBeenCalledWith('skillup-token');
+    expect(verifyUserAccessTokenMock).toHaveBeenCalledWith('user-token', { audience: 'user' });
     expect(response.status).toBe(200);
     expect(response.headers.get('x-user-id')).toBe('student-2');
   });

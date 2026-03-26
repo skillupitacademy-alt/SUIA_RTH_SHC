@@ -20,6 +20,14 @@ export type AuthResolution = {
   requestBrand?: string;
 };
 
+type JwtPayloadWithLegacyClaims = {
+  userId?: unknown;
+  subscriptions?: unknown;
+  tokenType?: unknown;
+  role?: unknown;
+  brand?: unknown;
+};
+
 function getCookieValue(cookieHeader: string, name: string): string | undefined {
   const pattern = new RegExp(`(?:^|;\\s*)${name}=([^;]+)`);
   const match = cookieHeader.match(pattern);
@@ -128,10 +136,11 @@ export async function verifyAccessToken(token: string, secret: string): Promise<
   // Do NOT require issuer — quiz-api-server tokens do not set one.
   // SkillHubCore tokens may have issuer='skillhubcore.in', but that's optional now.
   const { payload } = await jwtVerify(token, new TextEncoder().encode(secret));
+  const claims = payload as typeof payload & JwtPayloadWithLegacyClaims;
 
   const sub = typeof payload.sub === 'string' ? payload.sub.trim() : '';
   // quiz-api-server stores userId in a custom claim; fall back to sub
-  const userId = typeof (payload as any).userId === 'string' ? (payload as any).userId : sub;
+  const userId = typeof claims.userId === 'string' ? claims.userId : sub;
 
   if (userId.length === 0) {
     throw new Error('Invalid token payload: missing user identifier');
@@ -140,10 +149,10 @@ export async function verifyAccessToken(token: string, secret: string): Promise<
   // Build a compatible payload shape — keep support for legacy tokens that do not carry
   // tokenType/brand while still normalizing role values for strict portal checks.
   const roles = normalizeRoles(payload as Partial<SkillHubCoreTokenPayload> & { role?: unknown });
-  const subscriptions = Array.isArray((payload as any).subscriptions) ? (payload as any).subscriptions : [];
-  const tokenType = normalizeString((payload as any).tokenType);
-  const role = normalizeString((payload as any).role);
-  const brand = normalizeString((payload as any).brand);
+  const subscriptions = Array.isArray(claims.subscriptions) ? claims.subscriptions : [];
+  const tokenType = normalizeString(claims.tokenType);
+  const role = normalizeString(claims.role);
+  const brand = normalizeString(claims.brand);
 
   return {
     ...payload,

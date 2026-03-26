@@ -4,8 +4,8 @@ import { Eye, EyeOff, Lock, Mail, ShieldCheck } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { type FormEvent, useState } from 'react';
 
-import { getApiBase } from '@/utils/apiBase';
 import { useAuthStore } from '@/store/auth-store';
+import { getApiBase } from '@/utils/apiBase';
 import { clientLogger } from '@/utils/clientLogger';
 
 const LOGIN_ENDPOINT = `${getApiBase()}/auth/login`;
