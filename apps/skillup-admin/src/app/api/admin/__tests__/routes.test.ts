@@ -24,7 +24,7 @@ import { GET as getPayments, POST as recordPayment } from '../payments/route';
 import { GET as getPaymentDetail, PATCH as patchPaymentDetail } from '../payments/[id]/route';
 import { GET as exportAuditLog } from '../audit-log/export/route';
 import { POST as enrollStudent } from '../students/[id]/enroll/route';
-import { GET as getStudent } from '../students/[id]/route';
+import { GET as getStudent, PATCH as patchStudent } from '../students/[id]/route';
 import { GET as getStudents, POST as createStudent } from '../students/route';
 import { PATCH as qualifyEnquiry } from '../crm/enquiries/[id]/qualify/route';
 import { GET as getPlacementProfile, POST as savePlacementProfile } from '../placement/[id]/route';
@@ -119,6 +119,27 @@ describe('skillup-admin routes', () => {
       expect.objectContaining({ batchId: enrollPayload.data.enrollment.batchId, enrollmentType: 'batch', userId: studentUserId }),
       expect.any(Object)
     );
+  });
+
+  it('updates a student profile and enrollment assignment', async () => {
+    const unique = Date.now().toString(36);
+    const updateResponse = await patchStudent(
+      makeRequest(`/api/admin/students/${studentId}`, 'PATCH', {
+        name: `Edited Student ${unique}`,
+        email: `edited.student.${unique}@example.com`,
+        batchId,
+      }),
+      {
+        params: Promise.resolve({ id: studentId }),
+      }
+    );
+    const updatePayload = (await updateResponse.json()) as { data: { updated: boolean; detail: { name: string; email: string; batchId: string } } };
+
+    expect(updateResponse.status).toBe(200);
+    expect(updatePayload.data.updated).toBe(true);
+    expect(updatePayload.data.detail.name).toBe(`Edited Student ${unique}`);
+    expect(updatePayload.data.detail.email).toBe(`edited.student.${unique}@example.com`);
+    expect(updatePayload.data.detail.batchId).toBe(batchId);
   });
 
   it('lists enquiries and advances the saga', async () => {

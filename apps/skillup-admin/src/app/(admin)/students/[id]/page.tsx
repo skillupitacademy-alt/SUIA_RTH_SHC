@@ -1,7 +1,10 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-import { getAdminStudentDetail } from '@/lib/skillup-admin-data';
+import { RoleLockedNotice } from '@/components/role-locked-notice';
+import { StudentEditForm } from '@/components/students/StudentEditForm';
+import { getSkillUpAdminRole } from '@/lib/admin-session';
+import { getAdminStudentDetail, listAdminBatches } from '@/lib/skillup-admin-data';
 
 const badgeStyles: Record<string, string> = {
   enrolled: 'border-cyan-200 bg-cyan-50 text-cyan-700',
@@ -11,15 +14,37 @@ const badgeStyles: Record<string, string> = {
 };
 
 export default async function StudentDetailPage({ params }: { params: { id: string } }) {
+  if ((await getSkillUpAdminRole()) !== 'admin') {
+    return (
+      <RoleLockedNotice
+        title="Students are admin-only"
+        description="Student records, attendance triage, and payment review are hidden in counsellor view."
+      />
+    );
+  }
+
   const student = await getAdminStudentDetail(params.id);
   if (student === undefined) {
     notFound();
   }
 
+  const batches = await listAdminBatches();
+  const batchOptions = [
+    ...batches.filter((batch) => batch.id !== student.batchId),
+    ...(student.batchId === 'unassigned'
+      ? []
+      : [
+          {
+            id: student.batchId,
+            name: student.batchName,
+          },
+        ]),
+  ];
+
   return (
     <section className="mx-auto max-w-7xl space-y-6 px-6 py-8 lg:py-10">
       <div className="grid gap-6 xl:grid-cols-[1.4fr_0.9fr]">
-        <article className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
+        <article className="space-y-6 rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="text-[0.65rem] font-black uppercase tracking-[0.45em] text-cyan-600">Student profile</p>
@@ -44,7 +69,30 @@ export default async function StudentDetailPage({ params }: { params: { id: stri
             </div>
           </div>
 
-          <div className="mt-6 rounded-3xl border border-cyan-200 bg-cyan-50 p-5">
+          <div className="rounded-3xl border border-cyan-200 bg-cyan-50 p-5">
+            <p className="text-xs font-black uppercase tracking-[0.32em] text-cyan-700">Edit profile</p>
+            <p className="mt-2 text-sm leading-6 text-slate-700">
+              Update the live name, email, and batch assignment for this student. The form writes to `people_prod` and keeps linked
+              enrollment rows aligned.
+            </p>
+            <div className="mt-4">
+              <StudentEditForm
+                student={{
+                  id: student.id,
+                  name: student.name,
+                  email: student.email,
+                  batchId: student.batchId,
+                  batchName: student.batchName,
+                }}
+                batches={batchOptions.map((batch) => ({
+                  id: batch.id,
+                  name: batch.name,
+                }))}
+              />
+            </div>
+          </div>
+
+          <div className="rounded-3xl border border-cyan-200 bg-cyan-50 p-5">
             <p className="text-xs font-black uppercase tracking-[0.32em] text-cyan-700">Enroll action</p>
             <p className="mt-2 text-sm leading-6 text-slate-700">
               Posting to <code className="rounded bg-white px-1 py-0.5 text-xs text-slate-900">/api/admin/students/{student.id}/enroll</code> creates the live
