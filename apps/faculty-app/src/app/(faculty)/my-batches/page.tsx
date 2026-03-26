@@ -48,12 +48,20 @@ export default async function MyBatchesPage() {
 
             <div className="mt-5 flex items-center justify-between gap-3">
               <p className="text-sm text-slate-600">Open the attendance sheet for the latest session or review this cohort before the next live class.</p>
-              <Link
-                href={`/my-batches/${batch.id}/sessions/${batch.nextSessionId}/attendance`}
-                className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-cyan-700 shadow-sm transition hover:border-cyan-300 hover:bg-cyan-50 hover:text-cyan-900"
-              >
-                Attendance
-              </Link>
+              <div className="flex flex-wrap gap-2">
+                <Link
+                  href={`/my-batches/${batch.id}`}
+                  className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-cyan-300 hover:bg-cyan-50"
+                >
+                  Open batch
+                </Link>
+                <Link
+                  href={`/my-batches/${batch.id}/sessions/${batch.nextSessionId}/attendance`}
+                  className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-cyan-700 shadow-sm transition hover:border-cyan-300 hover:bg-cyan-50 hover:text-cyan-900"
+                >
+                  Attendance
+                </Link>
+              </div>
             </div>
           </article>
         ))}
