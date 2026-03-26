@@ -10,7 +10,14 @@ const statusStyles: Record<string, string> = {
   overdue: 'border-rose-200 bg-rose-50 text-rose-700',
 };
 
-export default async function StudentsPage() {
+type StudentsPageProps = {
+  searchParams?: Promise<{
+    q?: string;
+    payment?: string;
+  }>;
+};
+
+export default async function StudentsPage({ searchParams }: StudentsPageProps) {
   if ((await getSkillUpAdminRole()) !== 'admin') {
     return (
       <RoleLockedNotice
@@ -20,7 +27,18 @@ export default async function StudentsPage() {
     );
   }
 
-  const students = await listAdminStudents();
+  const params = (await searchParams) ?? {};
+  const query = params.q?.trim().toLowerCase() ?? '';
+  const paymentFilter = params.payment?.trim().toLowerCase() ?? 'all';
+  const students = (await listAdminStudents()).filter((student) => {
+    const matchesQuery =
+      query.length === 0 ||
+      [student.name, student.email, student.batchName, student.batchId].some((value) => value.toLowerCase().includes(query));
+
+    const matchesPayment = paymentFilter === 'all' || student.paymentStatus === paymentFilter;
+
+    return matchesQuery && matchesPayment;
+  });
 
   return (
     <section className="mx-auto max-w-7xl space-y-6 px-6 py-8 lg:py-10">
@@ -31,18 +49,34 @@ export default async function StudentsPage() {
           This list supports admissions follow-up, attendance triage, and payment review with the same light card rhythm used across the portal.
         </p>
 
-        <div className="mt-6 grid gap-3 lg:grid-cols-[1.4fr_repeat(3,_1fr)]">
+        <form method="get" className="mt-6 grid gap-3 lg:grid-cols-[1.4fr_repeat(3,_1fr)]">
           <input
             type="search"
+            name="q"
+            defaultValue={params.q ?? ''}
             placeholder="Search student, batch, email..."
             className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-cyan-300 focus:bg-white"
           />
-          {['All statuses', 'Attendance', 'Payments'].map((label) => (
-            <div key={label} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700">
-              {label}
-            </div>
-          ))}
-        </div>
+          <select
+            name="payment"
+            defaultValue={params.payment ?? 'all'}
+            className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-cyan-300 focus:bg-white"
+          >
+            <option value="all">All statuses</option>
+            <option value="current">Current</option>
+            <option value="due">Due</option>
+            <option value="overdue">Overdue</option>
+          </select>
+          <button className="rounded-2xl border border-cyan-200 bg-cyan-50 px-4 py-3 text-sm font-semibold text-cyan-700 transition hover:border-cyan-300 hover:bg-cyan-100">
+            Apply filters
+          </button>
+          <Link
+            href="/students"
+            className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-cyan-300 hover:bg-cyan-50"
+          >
+            Reset
+          </Link>
+        </form>
       </div>
 
       <div className="grid gap-4 xl:grid-cols-2">
