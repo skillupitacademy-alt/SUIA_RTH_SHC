@@ -69,6 +69,12 @@ export default async function SessionsPage() {
                 <p className="mt-2 text-xs uppercase tracking-[0.28em] text-slate-500">{session.studentCount} students</p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   <Link
+                    href={`/sessions/${session.id}`}
+                    className="rounded-full border border-cyan-200 bg-cyan-50 px-4 py-2 text-sm font-semibold text-cyan-700 shadow-sm transition hover:border-cyan-300 hover:bg-cyan-100 hover:text-cyan-900"
+                  >
+                    Edit session
+                  </Link>
+                  <Link
                     href={`/my-batches/${session.batchId}/sessions/${session.id}/attendance`}
                     className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-cyan-700 shadow-sm transition hover:border-cyan-300 hover:bg-cyan-50 hover:text-cyan-900"
                   >

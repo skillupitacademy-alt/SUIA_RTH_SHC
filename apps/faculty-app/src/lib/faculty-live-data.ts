@@ -93,6 +93,8 @@ export interface FacultyUpcomingSessionItem {
   batchId: string;
   batchName: string;
   topic: string;
+  sessionNotes: string;
+  durationMinutes: number;
   scheduledAt: string;
   status: 'scheduled' | 'completed' | 'cancelled';
   studentCount: number;
@@ -363,6 +365,7 @@ export async function listFacultyUpcomingSessions(userId: string): Promise<Facul
       batchId: batchSessions.batchId,
       batchName: batches.name,
       scheduledAt: batchSessions.scheduledAt,
+      durationMinutes: batchSessions.durationMinutes,
       status: batchSessions.status,
       sessionNotes: batchSessions.sessionNotes,
     })
@@ -393,6 +396,8 @@ export async function listFacultyUpcomingSessions(userId: string): Promise<Facul
       batchId: row.batchId,
       batchName: row.batchName,
       topic: formatSessionTopic(row.sessionNotes),
+      sessionNotes: row.sessionNotes ?? '',
+      durationMinutes: row.durationMinutes,
       scheduledAt: toIso(row.scheduledAt),
       status: row.status,
       studentCount: studentCountMap.get(row.batchId) ?? 0,

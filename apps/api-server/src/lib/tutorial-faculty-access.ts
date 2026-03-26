@@ -486,6 +486,37 @@ export async function createFacultyBatchSession(
   return row ?? null;
 }
 
+export async function updateFacultyBatchSession(
+  access: FacultyAccess,
+  sessionId: string,
+  data: {
+    scheduledAt?: Date;
+    durationMinutes?: number;
+    sessionNotes?: string;
+    status?: 'scheduled' | 'completed' | 'cancelled';
+  }
+) {
+  const [row] = await peopleDb
+    .update(batchSessions)
+    .set({
+      scheduledAt: data.scheduledAt,
+      durationMinutes: data.durationMinutes,
+      sessionNotes: data.sessionNotes,
+      status: data.status,
+    })
+    .where(and(eq(batchSessions.id, sessionId), eq(batchSessions.facultyId, access.facultyId)))
+    .returning({
+      id: batchSessions.id,
+      batchId: batchSessions.batchId,
+      scheduledAt: batchSessions.scheduledAt,
+      durationMinutes: batchSessions.durationMinutes,
+      sessionNotes: batchSessions.sessionNotes,
+      status: batchSessions.status,
+    });
+
+  return row ?? null;
+}
+
 export async function updateFacultyLiveSession(
   access: FacultyAccess,
   requestId: string,
