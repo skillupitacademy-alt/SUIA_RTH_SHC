@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { EnquiryEditForm } from '@/components/crm/EnquiryEditForm';
 import { getAdminEnquiryDetail } from '@/lib/skillup-admin-data';
 
 export default async function EnquiryDetailPage({ params }: { params: { id: string } }) {
@@ -19,6 +20,25 @@ export default async function EnquiryDetailPage({ params }: { params: { id: stri
             {enquiry.program} · {enquiry.email} · {enquiry.phone}
           </p>
           <p className="mt-5 text-sm leading-7 text-slate-600">{enquiry.nextStep}</p>
+
+          <div className="mt-6 rounded-3xl border border-cyan-200 bg-cyan-50 p-5">
+            <p className="text-xs font-black uppercase tracking-[0.32em] text-cyan-700">Edit enquiry</p>
+            <p className="mt-2 text-sm leading-6 text-slate-700">
+              Update the lead name, contact details, status, and notes directly in the live people database.
+            </p>
+            <div className="mt-4">
+              <EnquiryEditForm
+                enquiry={{
+                  id: enquiry.id,
+                  studentName: enquiry.studentName,
+                  email: enquiry.email,
+                  phone: enquiry.phone,
+                  status: enquiry.status,
+                  notes: enquiry.notes,
+                }}
+              />
+            </div>
+          </div>
 
           <div className="mt-6 grid gap-4 md:grid-cols-2">
             <form action={`/api/admin/crm/enquiries/${enquiry.id}/qualify`} method="post" className="rounded-3xl border border-slate-200 bg-slate-50 p-5">

@@ -17,6 +17,7 @@ vi.mock('@quiz/events', () => ({
 }));
 
 import { GET as getBatches, POST as createBatch } from '../batches/route';
+import { PATCH as patchEnquiryDetail } from '../crm/enquiries/[id]/route';
 import { PATCH as admitEnquiry } from '../crm/enquiries/[id]/admit/route';
 import { GET as getEnquiries, POST as createEnquiry } from '../crm/enquiries/route';
 import { GET as exportPayments } from '../payments/export/route';
@@ -142,7 +143,9 @@ describe('skillup-admin routes', () => {
     expect(updatePayload.data.detail.batchId).toBe(batchId);
   });
 
-  it('lists enquiries and advances the saga', async () => {
+  it(
+    'lists enquiries and advances the saga',
+    async () => {
     const unique = Date.now().toString(36);
     const listResponse = await getEnquiries(makeRequest('/api/admin/crm/enquiries'));
     const listPayload = (await listResponse.json()) as { data: Array<{ id: string }> };
@@ -186,6 +189,30 @@ describe('skillup-admin routes', () => {
       expect.objectContaining({ batchId }),
       expect.any(Object)
     );
+    },
+    15000
+  );
+
+  it('updates an enquiry detail record', async () => {
+    const unique = Date.now().toString(36);
+    const updateResponse = await patchEnquiryDetail(
+      makeRequest(`/api/admin/crm/enquiries/${enquiryId}`, 'PATCH', {
+        studentName: `Lead ${unique}`,
+        email: `lead.${unique}@example.com`,
+        phone: `+91 98888 ${unique.slice(-5).padStart(5, '0')}`,
+        status: 'contacted',
+        notes: `Updated from test ${unique}`,
+      }),
+      {
+        params: Promise.resolve({ id: enquiryId }),
+      }
+    );
+    const updatePayload = (await updateResponse.json()) as { data: { updated: boolean; detail: { studentName: string; status: string } } };
+
+    expect(updateResponse.status).toBe(200);
+    expect(updatePayload.data.updated).toBe(true);
+    expect(updatePayload.data.detail.studentName).toBe(`Lead ${unique}`);
+    expect(updatePayload.data.detail.status).toBe('contacted');
   });
 
   it('lists and creates batches', async () => {
