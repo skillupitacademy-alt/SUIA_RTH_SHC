@@ -1,6 +1,6 @@
-import { adminJobPostings, adminPlacementProfiles } from '@/lib/admin-demo-data';
 import { getSkillUpAdminRole } from '@/lib/admin-session';
 import { RoleLockedNotice } from '@/components/role-locked-notice';
+import { listAdminJobPostings, listAdminPlacementProfiles } from '@/lib/skillup-admin-data';
 
 export default async function PlacementPage() {
   if ((await getSkillUpAdminRole()) !== 'admin') {
@@ -11,6 +11,11 @@ export default async function PlacementPage() {
       />
     );
   }
+
+  const [adminPlacementProfiles, adminJobPostings] = await Promise.all([
+    listAdminPlacementProfiles(),
+    listAdminJobPostings(),
+  ]);
 
   return (
     <section className="mx-auto max-w-7xl space-y-6 px-6 py-8 lg:py-10">

@@ -1,25 +1,13 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-import { facultySessionRequests } from '@/lib/faculty-demo-data';
-import { getFacultyUpstreamBaseUrl, relayJsonResponse } from '@/lib/faculty-api';
+import { relayFacultyUpstreamResponse } from '@/lib/faculty-api';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
-  const upstream = getFacultyUpstreamBaseUrl();
-  if (upstream !== null) {
-    try {
-      const response = await fetch(new URL('/api/tutorial/sessions/requests', upstream), {
-        headers: { accept: 'application/json' },
-        cache: 'no-store',
-      });
-      if (response.ok) {
-        return relayJsonResponse(response);
-      }
-    } catch {
-      // Demo fallback below.
-    }
+export async function GET(request: NextRequest) {
+  const response = await relayFacultyUpstreamResponse(request.headers, '/api/tutorial/faculty/live-sessions');
+  if (response === null) {
+    return NextResponse.json({ error: 'Upstream unavailable' }, { status: 503 });
   }
-
-  return NextResponse.json({ data: facultySessionRequests }, { status: 200, headers: { 'Cache-Control': 'no-store' } });
+  return response;
 }

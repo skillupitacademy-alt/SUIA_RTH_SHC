@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
 
-import { studentAttendanceHistory } from '@/lib/skillup-demo-data';
+import { getSkillupAttendance } from '@/lib/skillup-data';
 
-export async function GET() {
-  return NextResponse.json({
-    history: studentAttendanceHistory,
-  });
+export async function GET(request?: Request) {
+  return NextResponse.json(await getSkillupAttendance(request));
 }

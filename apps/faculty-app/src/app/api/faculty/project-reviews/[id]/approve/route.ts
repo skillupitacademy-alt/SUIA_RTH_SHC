@@ -1,28 +1,22 @@
-import { Client } from '@upstash/qstash';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
-import { findProjectReviewById } from '@/lib/faculty-demo-data';
+import { relayFacultyUpstreamResponse } from '@/lib/faculty-api';
 
 export const dynamic = 'force-dynamic';
+
+const paramsSchema = z.object({
+  id: z.string().min(1),
+});
 
 const bodySchema = z.object({
   notes: z.string().optional(),
 });
 
-const getQStash = () => {
-  const token = process.env.QSTASH_TOKEN;
-  if (typeof token !== 'string' || token.trim().length === 0) {
-    throw new Error('QSTASH_TOKEN is required');
-  }
-  return new Client({ token });
-};
-
 export async function POST(req: NextRequest, context: { params: Promise<{ id: string }> }) {
-  const { id } = await context.params;
-  const submission = findProjectReviewById(id);
-  if (submission === undefined) {
-    return NextResponse.json({ error: 'Project submission not found' }, { status: 404 });
+  const params = paramsSchema.safeParse(await context.params);
+  if (!params.success) {
+    return NextResponse.json({ error: 'Invalid submission id' }, { status: 400 });
   }
 
   const parsed = bodySchema.safeParse(await req.json().catch(() => ({})));
@@ -30,25 +24,17 @@ export async function POST(req: NextRequest, context: { params: Promise<{ id: st
     return NextResponse.json({ error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
   }
 
-  try {
-    await getQStash().publishJSON({
-      url: `${process.env.INTERNAL_API_URL ?? 'http://localhost:3001'}/api/workers/project-approved`,
-      body: {
-        id: crypto.randomUUID(),
-        type: 'project.approved',
-        correlationId: id,
-        source: 'faculty-app',
-        occurredAt: new Date().toISOString(),
-        version: 1,
-        data: {
-          submissionId: id,
-          notes: parsed.data.notes ?? null,
-        },
-      },
-    });
-  } catch {
-    // Allow local demo use without QStash secrets.
+  const response = await relayFacultyUpstreamResponse(
+    req.headers,
+    `/api/tutorial/faculty/project-reviews/${params.data.id}/approve`,
+    {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ notes: parsed.data.notes ?? null }),
+    }
+  );
+  if (response === null) {
+    return NextResponse.json({ error: 'Upstream unavailable' }, { status: 503 });
   }
-
-  return NextResponse.json({ data: { ...submission, status: 'approved' } }, { status: 200 });
+  return response;
 }

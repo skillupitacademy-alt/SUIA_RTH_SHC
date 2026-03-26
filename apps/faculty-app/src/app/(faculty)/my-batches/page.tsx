@@ -1,8 +1,13 @@
+import { headers } from 'next/headers';
 import Link from 'next/link';
 
-import { facultyBatches } from '@/lib/faculty-demo-data';
+import { listFacultyBatches } from '@/lib/faculty-live-data';
 
-export default function MyBatchesPage() {
+export default async function MyBatchesPage() {
+  const requestHeaders = await headers();
+  const userId = requestHeaders.get('x-user-id');
+  const batches = userId === null || userId.length === 0 ? [] : await listFacultyBatches(userId);
+
   return (
     <section className="mx-auto max-w-7xl px-6 py-8 lg:py-10">
       <div className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
@@ -14,7 +19,7 @@ export default function MyBatchesPage() {
       </div>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
-        {facultyBatches.map((batch) => (
+        {batches.map((batch) => (
           <article key={batch.id} className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex items-start justify-between gap-4">
               <div>
@@ -44,7 +49,7 @@ export default function MyBatchesPage() {
             <div className="mt-5 flex items-center justify-between gap-3">
               <p className="text-sm text-slate-600">Open the attendance sheet for the latest session or review this cohort before the next live class.</p>
               <Link
-                href={`/my-batches/${batch.id}/sessions/${batch.id}-session-01/attendance`}
+                href={`/my-batches/${batch.id}/sessions/${batch.nextSessionId}/attendance`}
                 className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-cyan-700 shadow-sm transition hover:border-cyan-300 hover:bg-cyan-50 hover:text-cyan-900"
               >
                 Attendance

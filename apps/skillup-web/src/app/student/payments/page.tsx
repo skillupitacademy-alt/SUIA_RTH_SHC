@@ -1,21 +1,35 @@
-import { formatCurrency, formatDate, isOverdue, studentInstallments } from '@/lib/skillup-demo-data';
+import { fetchSkillupApi } from '@/lib/skillup-api';
+import { formatCurrency, formatDate, isPastDue } from '@/lib/skillup-format';
 
-export default function PaymentsPage() {
+type PaymentsResponse = {
+  installments: Array<{
+    id: string;
+    label: string;
+    dueDate: string;
+    amount: number;
+    status: 'paid' | 'due' | 'overdue';
+    paymentRef?: string | null;
+  }>;
+};
+
+export default async function PaymentsPage() {
+  const { installments } = await fetchSkillupApi<PaymentsResponse>('/api/student/payments');
+
   return (
     <section className="mx-auto max-w-7xl space-y-8 px-6 py-8 lg:py-10">
-      <article className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
-        <p className="text-[0.65rem] font-black uppercase tracking-[0.45em] text-cyan-600">Payments</p>
-        <h2 className="mt-3 text-4xl font-black tracking-tight text-slate-950">Fee history and upcoming installments</h2>
+      <article className="surface-panel rounded-[3rem] p-8 lg:p-10">
+        <p className="section-kicker text-cyan-600">Payments</p>
+        <h2 className="mt-3 text-4xl font-black tracking-tight text-slate-950 font-outfit">Fee history and upcoming installments</h2>
         <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
           Installments are highlighted when they are overdue so the student can act before a queue builds up.
         </p>
       </article>
 
       <section className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
-        <article className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+        <article className="surface-panel rounded-[2rem] p-6">
           <div className="space-y-4">
-            {studentInstallments.map((installment) => {
-              const overdue = installment.status === 'overdue' || isOverdue(installment.dueDate);
+            {installments.map((installment) => {
+              const overdue = installment.status === 'overdue' || isPastDue(installment.dueDate);
 
               return (
                 <div
@@ -53,8 +67,8 @@ export default function PaymentsPage() {
           </div>
         </article>
 
-        <aside className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
-          <p className="text-xs font-black uppercase tracking-[0.35em] text-slate-500">Actions</p>
+        <aside className="surface-panel rounded-[2rem] p-6">
+          <p className="section-kicker text-slate-500">Actions</p>
           <div className="mt-6 space-y-4">
             <button className="w-full rounded-full bg-cyan-500 px-5 py-3 text-sm font-bold text-white transition hover:bg-cyan-600">
               Pay overdue installment

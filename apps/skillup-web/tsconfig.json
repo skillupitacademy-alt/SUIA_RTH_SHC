@@ -22,6 +22,12 @@
       ],
       "@quiz/types/*": [
         "../../packages/types/src/*"
+      ],
+      "@quiz/db-people": [
+        "../../packages/db-people/src/index.ts"
+      ],
+      "@quiz/db-people/*": [
+        "../../packages/db-people/src/*"
       ]
     },
     "jsx": "preserve",

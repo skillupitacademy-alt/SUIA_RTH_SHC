@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
 
-import { skillupPrograms } from '@/lib/skillup-demo-data';
+import { getSkillupPrograms } from '@/lib/skillup-data';
 
 export async function GET() {
-  return NextResponse.json({
-    programs: skillupPrograms,
-  });
+  return NextResponse.json(await getSkillupPrograms());
 }

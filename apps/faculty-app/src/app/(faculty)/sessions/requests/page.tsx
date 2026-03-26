@@ -1,7 +1,13 @@
-import { SessionRequestsPanel } from '@/components/session-requests-panel';
-import { facultySessionRequests } from '@/lib/faculty-demo-data';
+import { headers } from 'next/headers';
 
-export default function SessionRequestsPage() {
+import { SessionRequestsPanel } from '@/components/session-requests-panel';
+import { listFacultySessionRequests } from '@/lib/faculty-live-data';
+
+export default async function SessionRequestsPage() {
+  const requestHeaders = await headers();
+  const userId = requestHeaders.get('x-user-id');
+  const requests = userId === null || userId.length === 0 ? [] : await listFacultySessionRequests(userId);
+
   return (
     <section className="mx-auto max-w-7xl px-6 py-8 lg:py-10">
       <div className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
@@ -12,7 +18,7 @@ export default function SessionRequestsPage() {
         </p>
       </div>
       <div className="mt-6">
-        <SessionRequestsPanel requests={facultySessionRequests} />
+        <SessionRequestsPanel requests={requests} />
       </div>
     </section>
   );

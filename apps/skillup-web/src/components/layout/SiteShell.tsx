@@ -20,7 +20,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(14,165,233,0.08),_transparent_28%),linear-gradient(180deg,#f8fbff_0%,#eef4fb_100%)] text-slate-900">
+    <div className="surface-shell min-h-screen text-slate-900">
       <Header />
       <main>{children}</main>
       <Footer />

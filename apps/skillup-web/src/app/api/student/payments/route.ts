@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
 
-import { studentInstallments } from '@/lib/skillup-demo-data';
+import { getSkillupPayments } from '@/lib/skillup-data';
 
-export async function GET() {
-  return NextResponse.json({
-    installments: studentInstallments,
-  });
+export async function GET(request?: Request) {
+  return NextResponse.json(await getSkillupPayments(request));
 }

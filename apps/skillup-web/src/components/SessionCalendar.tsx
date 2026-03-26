@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-import { formatDateTime, type SkillupSession } from '@/lib/skillup-demo-data';
+import { formatDateTime } from '@/lib/skillup-format';
+import type { SkillupSession } from '@/lib/skillup-types';
 
 interface SessionCalendarProps {
   sessions: SkillupSession[];
@@ -54,8 +55,8 @@ export function SessionCalendar({ sessions }: SessionCalendarProps) {
                   setActiveIndex(sessions.length - 1);
                 }
               }}
-              className={`rounded-[1.5rem] border p-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 ${
-                selected ? 'border-emerald-300 bg-emerald-50 shadow-sm' : 'border-slate-200 bg-white hover:border-emerald-200 hover:bg-slate-50'
+              className={`rounded-[1.5rem] border p-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 ${
+                selected ? 'border-cyan-300 bg-cyan-50 shadow-sm' : 'border-slate-200 bg-white hover:border-cyan-200 hover:bg-slate-50'
               }`}
             >
               <div className="flex items-center justify-between gap-3">
@@ -80,8 +81,8 @@ export function SessionCalendar({ sessions }: SessionCalendarProps) {
       >
         {sessions[activeIndex] ? (
           <>
-            <p className="text-xs font-black uppercase tracking-[0.35em] text-slate-500">Selected session</p>
-            <h4 className="mt-3 text-2xl font-black tracking-tight text-slate-950">{sessions[activeIndex].title}</h4>
+            <p className="section-kicker text-slate-500">Selected session</p>
+            <h4 className="mt-3 text-2xl font-black tracking-tight text-slate-950 font-outfit">{sessions[activeIndex].title}</h4>
             <p className="mt-3 text-sm leading-7 text-slate-600">
               Use the arrow keys to move between sessions. The current choice is announced through the tab selection state.
             </p>

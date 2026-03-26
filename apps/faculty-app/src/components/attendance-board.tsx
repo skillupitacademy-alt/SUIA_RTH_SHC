@@ -3,9 +3,15 @@
 import Image from 'next/image';
 import { useEffect, useMemo, useState } from 'react';
 
-import { facultyAttendanceRoster } from '@/lib/faculty-demo-data';
-
 type AttendanceMap = Record<string, boolean>;
+
+interface AttendanceStudent {
+  id: string;
+  name: string;
+  rollNumber: string;
+  avatarUrl: string;
+  present: boolean;
+}
 
 interface AttendanceQueueEntry {
   batchId: string;
@@ -22,25 +28,36 @@ const getStorageKey = (batchId: string, sessionId: string) => `faculty-attendanc
 const getQueueKey = (batchId: string, sessionId: string) => `faculty-attendance-queue:${batchId}:${sessionId}`;
 
 export function AttendanceBoard({ batchId, sessionId }: AttendanceBoardProps) {
-  const [attendance, setAttendance] = useState<AttendanceMap>(() =>
-    Object.fromEntries(facultyAttendanceRoster.map((student) => [student.id, true]))
-  );
+  const [roster, setRoster] = useState<AttendanceStudent[]>([]);
+  const [attendance, setAttendance] = useState<AttendanceMap>({});
   const [isOnline, setIsOnline] = useState(true);
-  const [status, setStatus] = useState<string>('Ready to submit.');
+  const [status, setStatus] = useState<string>('Loading roster...');
 
   const presentCount = useMemo(() => Object.values(attendance).filter(Boolean).length, [attendance]);
-  const isLargeRoster = facultyAttendanceRoster.length > 50;
+  const isLargeRoster = roster.length > 50;
 
   useEffect(() => {
-    const cached = localStorage.getItem(getStorageKey(batchId, sessionId));
-    if (cached !== null) {
+    const loadRoster = async () => {
       try {
-        const parsed = JSON.parse(cached) as AttendanceMap;
-        setAttendance((current) => ({ ...current, ...parsed }));
+        const response = await fetch(`/api/faculty/attendance?batchId=${encodeURIComponent(batchId)}&sessionId=${encodeURIComponent(sessionId)}`, {
+          headers: { accept: 'application/json' },
+          cache: 'no-store',
+        });
+        if (!response.ok) {
+          setStatus('Unable to load roster.');
+          return;
+        }
+
+        const payload = (await response.json()) as { data: { roster: AttendanceStudent[] } };
+        setRoster(payload.data.roster);
+        setAttendance(Object.fromEntries(payload.data.roster.map((student) => [student.id, student.present])));
+        setStatus('Ready to submit.');
       } catch {
-        // Ignore bad cache entries and continue with defaults.
+        setStatus('Unable to load roster.');
       }
-    }
+    };
+
+    void loadRoster();
 
     const queue = localStorage.getItem(getQueueKey(batchId, sessionId));
     if (queue !== null) {
@@ -94,7 +111,7 @@ export function AttendanceBoard({ batchId, sessionId }: AttendanceBoardProps) {
   };
 
   const handleSubmit = async () => {
-    const attendanceRecords = facultyAttendanceRoster.map((student) => ({
+    const attendanceRecords = roster.map((student) => ({
       studentId: student.id,
       present: attendance[student.id] ?? false,
     }));
@@ -130,11 +147,13 @@ export function AttendanceBoard({ batchId, sessionId }: AttendanceBoardProps) {
           <p className="text-xs font-black uppercase tracking-[0.35em] text-cyan-600">Attendance sheet</p>
           <h3 className="mt-2 text-3xl font-black tracking-tight text-slate-950">Mark the session in one bulk submit</h3>
           <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
-            The roster stays cached locally so this page can tolerate short offline gaps. A single submit sends all 30 rows together.
+            The roster stays cached locally so this page can tolerate short offline gaps. A single submit sends the current batch roster together.
           </p>
         </div>
         <div className="rounded-3xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm text-slate-700">
-          <p className="font-semibold text-slate-950">{presentCount}/30 marked present</p>
+          <p className="font-semibold text-slate-950">
+            {presentCount}/{roster.length} marked present
+          </p>
           <p className="mt-1 text-slate-500">{isOnline ? 'Online and ready to submit.' : 'Offline mode enabled.'}</p>
         </div>
       </div>
@@ -155,7 +174,7 @@ export function AttendanceBoard({ batchId, sessionId }: AttendanceBoardProps) {
           <span>Status</span>
         </div>
         <div className="divide-y divide-slate-200">
-          {facultyAttendanceRoster.map((student) => (
+          {roster.map((student) => (
             <div key={student.id} className="grid grid-cols-[1.1fr_0.5fr_0.5fr] items-center gap-4 px-5 py-4">
               <div>
                 <div className="flex items-center gap-3">

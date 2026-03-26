@@ -23,6 +23,12 @@
       "@quiz/events/*": [
         "../../packages/events/src/*"
       ],
+      "@quiz/db-people": [
+        "../../packages/db-people/src/index.ts"
+      ],
+      "@quiz/db-people/*": [
+        "../../packages/db-people/src/*"
+      ],
       "@quiz/types": [
         "../../packages/types/src/index.ts"
       ],

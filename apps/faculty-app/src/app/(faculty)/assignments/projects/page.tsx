@@ -1,7 +1,13 @@
-import { ProjectReviewsPanel } from '@/components/project-reviews-panel';
-import { facultyProjectReviews } from '@/lib/faculty-demo-data';
+import { headers } from 'next/headers';
 
-export default function ProjectReviewsPage() {
+import { ProjectReviewsPanel } from '@/components/project-reviews-panel';
+import { listFacultyReviewQueue } from '@/lib/faculty-live-data';
+
+export default async function ProjectReviewsPage() {
+  const requestHeaders = await headers();
+  const userId = requestHeaders.get('x-user-id');
+  const submissions = userId === null || userId.length === 0 ? [] : await listFacultyReviewQueue(userId);
+
   return (
     <section className="mx-auto max-w-7xl px-6 py-8 lg:py-10">
       <div className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
@@ -12,7 +18,7 @@ export default function ProjectReviewsPage() {
         </p>
       </div>
       <div className="mt-6">
-        <ProjectReviewsPanel submissions={facultyProjectReviews} />
+        <ProjectReviewsPanel submissions={submissions} />
       </div>
     </section>
   );

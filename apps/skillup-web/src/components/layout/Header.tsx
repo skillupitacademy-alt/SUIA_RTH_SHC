@@ -8,15 +8,15 @@ const navItems = [
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-100 bg-white/80 backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/85 backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-4">
         <Link href="/" className="flex items-center gap-3">
-          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-cyan-500 text-lg font-black text-white shadow-sm">
+          <span className="flex h-11 w-11 items-center justify-center rounded-[1.1rem] bg-cyan-500 text-lg font-black text-white shadow-[0_14px_30px_rgba(14,165,233,0.24)]">
             S
           </span>
           <span>
             <span className="block text-[0.65rem] font-black uppercase tracking-[0.45em] text-cyan-600">SkillUp</span>
-            <span className="block text-sm font-semibold text-slate-600">IT Academy</span>
+            <span className="block text-sm font-semibold text-slate-500">IT Academy</span>
           </span>
         </Link>
 

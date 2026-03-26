@@ -1,10 +1,10 @@
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
 
-import { PlatformEventTypes, publishEvent } from '@quiz/events';
-
-import { adminPayments, recordPaymentReceipt } from '@/lib/admin-demo-data';
+import { listAdminPayments } from '@/lib/skillup-admin-data';
 import { jsonData, parseJsonOrFormBody, requireAdminOrForbidden } from '@/lib/admin-bff';
+import { paymentInstallments, db } from '@quiz/db-people';
+import { eq } from 'drizzle-orm';
 
 const paymentSchema = z.object({
   userId: z.string().uuid(),
@@ -18,7 +18,7 @@ const paymentSchema = z.object({
 export async function GET(request: NextRequest) {
   const forbidden = await requireAdminOrForbidden(request);
   if (forbidden !== null) return forbidden;
-  return jsonData(adminPayments, 200);
+  return jsonData(await listAdminPayments(), 200);
 }
 
 export async function POST(request: NextRequest) {
@@ -28,32 +28,68 @@ export async function POST(request: NextRequest) {
   const parsed = await parseJsonOrFormBody(request, paymentSchema);
   if (!parsed.ok) return parsed.response;
 
-  const record = recordPaymentReceipt({
-    paymentRef: parsed.data.paymentRef,
-    studentName: parsed.data.studentName,
-    installmentId: parsed.data.installmentId,
-    amount: parsed.data.amount,
-    dueDate: parsed.data.dueDate,
-    paidAt: new Date().toISOString(),
-  });
+  const existing = await db
+    .select({
+      id: paymentInstallments.id,
+      label: paymentInstallments.label,
+      status: paymentInstallments.status,
+      paymentRef: paymentInstallments.paymentRef,
+    })
+    .from(paymentInstallments)
+    .where(eq(paymentInstallments.label, parsed.data.installmentId))
+    .limit(1);
 
-  try {
-    await publishEvent(PlatformEventTypes.PAYMENT_RECEIVED, {
-      userId: parsed.data.userId,
-      installmentId: parsed.data.installmentId,
-      amount: parsed.data.amount,
-      paidAt: record.paidAt ?? new Date().toISOString(),
-    }, {
-      destinationUrl: process.env.SKILLUP_EVENT_URL ?? 'https://placeholder.invalid/events/payment-received',
-    });
-  } catch {
-    // Demo mode should remain usable without QStash secrets.
+  if (existing[0] !== undefined && existing[0].status === 'paid' && existing[0].paymentRef === parsed.data.paymentRef) {
+    return jsonData(
+      {
+        ...existing[0],
+        studentName: parsed.data.studentName,
+        amount: parsed.data.amount,
+        dueDate: parsed.data.dueDate,
+        idempotent: true,
+      },
+      200
+    );
   }
+
+  const updated = existing[0]
+    ? await db
+        .update(paymentInstallments)
+        .set({
+          status: 'paid',
+          paymentRef: parsed.data.paymentRef,
+        })
+        .where(eq(paymentInstallments.id, existing[0].id))
+        .returning({
+          id: paymentInstallments.id,
+          label: paymentInstallments.label,
+          status: paymentInstallments.status,
+          paymentRef: paymentInstallments.paymentRef,
+        })
+    : await db
+        .insert(paymentInstallments)
+        .values({
+          studentUserId: parsed.data.userId,
+          label: parsed.data.installmentId,
+          dueDate: parsed.data.dueDate,
+          amount: Math.trunc(parsed.data.amount),
+          status: 'paid',
+          paymentRef: parsed.data.paymentRef,
+        })
+        .returning({
+          id: paymentInstallments.id,
+          label: paymentInstallments.label,
+          status: paymentInstallments.status,
+          paymentRef: paymentInstallments.paymentRef,
+        });
 
   return jsonData(
     {
-      ...record.record,
-      idempotent: record.idempotent,
+      ...updated[0],
+      studentName: parsed.data.studentName,
+      amount: parsed.data.amount,
+      dueDate: parsed.data.dueDate,
+      idempotent: false,
     },
     200
   );

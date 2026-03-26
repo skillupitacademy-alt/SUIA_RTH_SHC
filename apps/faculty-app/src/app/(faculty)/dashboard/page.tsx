@@ -1,6 +1,18 @@
+import { headers } from 'next/headers';
 import Link from 'next/link';
 
-import { facultyBatches, facultyDashboardSummary, facultyHelpRequests, facultyProjectReviews, facultySessionRequests } from '@/lib/faculty-demo-data';
+import {
+  type FacultyBatchSummary,
+  type FacultyDashboardSummary,
+  type FacultyHelpRequestItem,
+  type FacultyReviewQueueItem,
+  type FacultySessionRequestItem,
+  getFacultyDashboardSummary,
+  listFacultyBatches,
+  listFacultyHelpRequests,
+  listFacultyProjectReviews,
+  listFacultySessionRequests,
+} from '@/lib/faculty-live-data';
 
 const quickActions = [
   { label: 'Review help requests', href: '/assignments/help', tone: 'cyan' },
@@ -9,7 +21,40 @@ const quickActions = [
   { label: 'Open my batches', href: '/my-batches', tone: 'slate' },
 ];
 
-export default function FacultyDashboardPage() {
+export default async function FacultyDashboardPage() {
+  const requestHeaders = await headers();
+  const userId = requestHeaders.get('x-user-id');
+  const emptySummary: FacultyDashboardSummary = {
+    myBatches: 0,
+    sessionsToday: 0,
+    openHelpRequests: 0,
+    pendingProjectReviews: 0,
+    pendingSessionRequests: 0,
+  };
+
+  const [summary, batches, helpRequests, projectReviews, sessionRequests]: [
+    FacultyDashboardSummary,
+    FacultyBatchSummary[],
+    FacultyHelpRequestItem[],
+    FacultyReviewQueueItem[],
+    FacultySessionRequestItem[],
+  ] =
+    userId === null || userId.length === 0
+      ? [
+          emptySummary,
+          [],
+          [],
+          [],
+          [],
+        ]
+      : await Promise.all([
+          getFacultyDashboardSummary(userId),
+          listFacultyBatches(userId),
+          listFacultyHelpRequests(userId),
+          listFacultyProjectReviews(userId),
+          listFacultySessionRequests(userId),
+        ]);
+
   return (
     <section className="mx-auto max-w-7xl space-y-8 px-6 py-8 lg:py-10">
       <div className="grid gap-6 xl:grid-cols-[1.4fr_0.9fr]">
@@ -34,12 +79,14 @@ export default function FacultyDashboardPage() {
         <aside className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
           <div className="rounded-[1.75rem] border border-cyan-200 bg-cyan-50 p-6">
             <p className="text-xs font-black uppercase tracking-[0.35em] text-cyan-700">Open work</p>
-            <p className="mt-3 text-5xl font-black tracking-tight text-slate-950">{facultyHelpRequests.length + facultyProjectReviews.length + facultySessionRequests.length}</p>
+            <p className="mt-3 text-5xl font-black tracking-tight text-slate-950">
+              {summary.openHelpRequests + summary.pendingProjectReviews + summary.pendingSessionRequests}
+            </p>
             <p className="mt-2 text-sm text-slate-600">Combined items awaiting faculty action.</p>
           </div>
           <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6">
             <p className="text-xs font-black uppercase tracking-[0.35em] text-slate-500">My batches</p>
-            <p className="mt-3 text-5xl font-black tracking-tight text-slate-950">{facultyDashboardSummary.myBatches}</p>
+            <p className="mt-3 text-5xl font-black tracking-tight text-slate-950">{summary.myBatches}</p>
             <p className="mt-2 text-sm text-slate-600">Assigned across active tracks and cohorts.</p>
           </div>
         </aside>
@@ -47,11 +94,11 @@ export default function FacultyDashboardPage() {
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
         {[
-          { label: 'My batches', value: facultyDashboardSummary.myBatches, accent: 'cyan' },
-          { label: "Today\u2019s sessions", value: facultyDashboardSummary.sessionsToday, accent: 'emerald' },
-          { label: 'Open help requests', value: facultyDashboardSummary.openHelpRequests, accent: 'amber' },
-          { label: 'Pending project reviews', value: facultyDashboardSummary.pendingProjectReviews, accent: 'violet' },
-          { label: 'Pending session requests', value: facultyDashboardSummary.pendingSessionRequests, accent: 'rose' },
+          { label: 'My batches', value: summary.myBatches, accent: 'cyan' },
+          { label: "Today's sessions", value: summary.sessionsToday, accent: 'emerald' },
+          { label: 'Open help requests', value: helpRequests.filter((item) => item.status !== 'resolved').length, accent: 'amber' },
+          { label: 'Pending project reviews', value: projectReviews.length, accent: 'violet' },
+          { label: 'Pending session requests', value: sessionRequests.length, accent: 'rose' },
         ].map((stat) => (
           <article key={stat.label} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
             <p className="text-xs font-black uppercase tracking-[0.32em] text-slate-500">{stat.label}</p>
@@ -87,7 +134,7 @@ export default function FacultyDashboardPage() {
             </Link>
           </div>
           <div className="mt-6 grid gap-4 md:grid-cols-2">
-            {facultyBatches.slice(0, 4).map((batch) => (
+            {batches.slice(0, 4).map((batch) => (
               <div key={batch.id} className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -109,9 +156,9 @@ export default function FacultyDashboardPage() {
           <p className="text-xs font-black uppercase tracking-[0.35em] text-slate-500">Today&apos;s focus</p>
           <div className="mt-6 space-y-4">
             {[
-              { label: 'Open help requests', value: facultyHelpRequests.length, detail: 'Tutorial assignment questions waiting on faculty review.' },
-              { label: 'Needs-review projects', value: facultyProjectReviews.length, detail: 'Human approval is required before badge awarding.' },
-              { label: 'Live session requests', value: facultySessionRequests.length, detail: 'Accept and schedule student doubt-clearing sessions.' },
+              { label: 'Open help requests', value: helpRequests.filter((item) => item.status !== 'resolved').length, detail: 'Tutorial assignment questions waiting on faculty review.' },
+              { label: 'Needs-review projects', value: projectReviews.length, detail: 'Human approval is required before badge awarding.' },
+              { label: 'Live session requests', value: sessionRequests.length, detail: 'Accept and schedule student doubt-clearing sessions.' },
             ].map((item) => (
               <div key={item.label} className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
                 <div className="flex items-center justify-between">

@@ -1,76 +1,172 @@
-import { NextRequest } from 'next/server';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { eq } from 'drizzle-orm';
+import { NextRequest, NextResponse } from 'next/server';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { db, faculty as facultyTable, users } from '@quiz/db-people';
 
 const mocks = vi.hoisted(() => ({
-  publishJSON: vi.fn(),
+  relayMock: vi.fn(),
 }));
 
-vi.mock('@upstash/qstash', () => ({
-  Client: class Client {
-    publishJSON = mocks.publishJSON;
+vi.mock('@/lib/faculty-api', async () => {
+  const actual = await vi.importActual<typeof import('@/lib/faculty-api')>('@/lib/faculty-api');
+  return {
+    ...actual,
+    relayFacultyUpstreamResponse: mocks.relayMock,
+  };
+});
 
-    constructor() {}
-  },
-}));
-
-import { POST as approveProject } from '../project-reviews/[id]/approve/route';
 import { GET as getBatches } from '../batches/route';
-import { POST as bulkAttendance } from '../attendance/route';
+import { POST as bulkAttendance, GET as getAttendance } from '../attendance/route';
 import { PATCH as patchHelpRequest } from '../help-requests/[id]/route';
 import { GET as getHelpRequests } from '../help-requests/route';
+import { POST as approveProject } from '../project-reviews/[id]/approve/route';
+import { POST as requestRevision } from '../project-reviews/[id]/request-revision/route';
+import { GET as getProjectReviews } from '../project-reviews/route';
 import { POST as acceptSessionRequest } from '../session-requests/[id]/accept/route';
 import { GET as getSessionRequests } from '../session-requests/route';
-
-const helpRequestId = 'help-req-1';
-const sessionRequestId = 'session-req-1';
-const projectSubmissionId = 'project-sub-1';
 
 const makeJsonRequest = (url: string, body?: unknown, method = 'GET') =>
   new NextRequest(`http://localhost${url}`, {
     method,
-    headers: body !== undefined ? { 'content-type': 'application/json' } : undefined,
+    headers: body !== undefined ? { 'content-type': 'application/json', 'x-user-id': facultyUserId } : { 'x-user-id': facultyUserId },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
+
+let facultyUserId = '';
 
 describe('faculty-app routes', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    process.env.QSTASH_TOKEN = 'test-token';
+    mocks.relayMock.mockImplementation(async (_headers: Headers | HeadersInit, path: string, init?: RequestInit) => {
+      if (path.startsWith('/api/tutorial/faculty/help-requests/') && init?.method === 'PATCH') {
+        return NextResponse.json({
+          data: { id: path.split('/').at(-1), status: 'resolved', resolvedAt: new Date().toISOString() },
+        });
+      }
+
+      if (path === '/api/tutorial/faculty/help-requests') {
+        return NextResponse.json({
+          data: [
+            {
+              id: 'help-req-1',
+              studentId: 'student-1',
+              studentName: 'Aarav Shah',
+              subtopic: 'Promises and async flow',
+              question: 'I cannot tell when to use Promise.all vs await in sequence.',
+              status: 'open',
+              requestedAt: '2026-03-22T08:10:00+05:30',
+              resolvedAt: null,
+            },
+          ],
+        });
+      }
+
+      if (path.startsWith('/api/tutorial/faculty/project-reviews/') && path.endsWith('/approve')) {
+        return NextResponse.json({ data: { id: path.split('/').at(-2), status: 'approved' } });
+      }
+
+      if (path.startsWith('/api/tutorial/faculty/project-reviews/') && path.endsWith('/request-revision')) {
+        return NextResponse.json({ data: { id: path.split('/').at(-2), status: 'revision-requested' } });
+      }
+
+      if (path === '/api/tutorial/faculty/project-reviews') {
+        return NextResponse.json({
+          data: [
+            {
+              id: 'project-sub-1',
+              studentId: 'student-1',
+              studentName: 'Aarav Shah',
+              projectName: 'Quiz Builder Dashboard',
+              status: 'needs_review',
+              submittedAt: '2026-03-22T07:50:00+05:30',
+              aiFeedback: 'AI flagged the workflow as promising but needs a manual review for approval.',
+              checklist: [{ label: 'Uses repository pattern', passed: true }],
+            },
+          ],
+        });
+      }
+
+      if (path === '/api/tutorial/faculty/live-sessions') {
+        return NextResponse.json({
+          data: [
+            {
+              id: 'session-req-1',
+              studentId: 'student-1',
+              studentName: 'Aarav Shah',
+              subtopic: 'Promises and async flow',
+              doubtText: 'Can we go over Promise.all error handling in real code?',
+              status: 'pending',
+              scheduledAt: '2026-03-22T17:30:00+05:30',
+              batchName: 'React Full Stack - March 2026',
+            },
+          ],
+        });
+      }
+
+      if (path.startsWith('/api/tutorial/faculty/live-sessions/') && path.endsWith('/accept')) {
+        return NextResponse.json({
+          data: {
+            id: path.split('/').at(-2),
+            studentId: 'student-1',
+            status: 'accepted',
+            meetingLink: 'https://meet.google.com/abc-defg-hij',
+            scheduledAt: '2026-03-22T17:30:00+05:30',
+            doubtText: 'Can we go over Promise.all error handling in real code?',
+            subtopicId: 'subtopic-1',
+          },
+        });
+      }
+
+      return NextResponse.json({ data: [] });
+    });
     process.env.INTERNAL_API_URL = '';
     process.env.NEXT_PUBLIC_API_URL = '';
     process.env.NEXT_PUBLIC_APP_URL = '';
   });
 
-  it('lists demo help requests when no upstream is configured', async () => {
+  beforeAll(async () => {
+    const [row] = await db
+      .select({ id: facultyTable.userId })
+      .from(facultyTable)
+      .innerJoin(users, eq(users.id, facultyTable.userId))
+      .where(eq(users.email, 'faculty@skillupitacademy.com'))
+      .limit(1);
+
+    facultyUserId = row?.id ?? '';
+    expect(facultyUserId).not.toBe('');
+  });
+
+  it('lists help requests and can patch one', async () => {
     const response = await getHelpRequests(makeJsonRequest('/api/faculty/help-requests'));
     const payload = (await response.json()) as { data: Array<{ id: string }> };
 
     expect(response.status).toBe(200);
-    expect(payload.data).toHaveLength(3);
-    expect(payload.data[0]?.id).toBe(helpRequestId);
-  });
+    expect(payload.data).toHaveLength(1);
 
-  it('updates a help request status', async () => {
-    const response = await patchHelpRequest(makeJsonRequest('/api/faculty/help-requests/help-req-1', { status: 'resolved' }, 'PATCH'), {
-      params: Promise.resolve({ id: helpRequestId }),
+    const patchResponse = await patchHelpRequest(makeJsonRequest('/api/faculty/help-requests/help-req-1', { status: 'resolved' }, 'PATCH'), {
+      params: Promise.resolve({ id: 'help-req-1' }),
     });
-    const payload = (await response.json()) as { data: { status: string } };
+    const patchPayload = (await patchResponse.json()) as { data: { status: string } };
 
-    expect(response.status).toBe(200);
-    expect(payload.data.status).toBe('resolved');
+    expect(patchResponse.status).toBe(200);
+    expect(patchPayload.data.status).toBe('resolved');
   });
 
   it('lists session requests and accepts one with a meeting link', async () => {
-    const listResponse = await getSessionRequests();
+    const listResponse = await getSessionRequests(makeJsonRequest('/api/faculty/session-requests'));
     const listPayload = (await listResponse.json()) as { data: Array<{ id: string }> };
 
     expect(listResponse.status).toBe(200);
-    expect(listPayload.data).toHaveLength(2);
+    expect(listPayload.data.length).toBeGreaterThan(0);
+
+    const requestId = listPayload.data[0]?.id;
+    expect(requestId).toBeDefined();
 
     const response = await acceptSessionRequest(
-      makeJsonRequest(`/api/faculty/session-requests/${sessionRequestId}/accept`, { meetingLink: 'https://meet.google.com/abc-defg-hij' }, 'POST'),
+      makeJsonRequest(`/api/faculty/session-requests/${requestId}/accept`, { meetingLink: 'https://meet.google.com/abc-defg-hij' }, 'POST'),
       {
-        params: Promise.resolve({ id: sessionRequestId }),
+        params: Promise.resolve({ id: requestId ?? '' }),
       }
     );
     const payload = (await response.json()) as { data: { status: string; meetingLink: string } };
@@ -78,42 +174,71 @@ describe('faculty-app routes', () => {
     expect(response.status).toBe(200);
     expect(payload.data.status).toBe('accepted');
     expect(payload.data.meetingLink).toBe('https://meet.google.com/abc-defg-hij');
-    expect(mocks.publishJSON).toHaveBeenCalledTimes(1);
   });
 
   it('lists batches and bulk submits attendance in one payload', async () => {
-    const batchResponse = await getBatches();
-    const batchPayload = (await batchResponse.json()) as { data: Array<{ id: string }> };
+    const batchResponse = await getBatches(makeJsonRequest('/api/faculty/batches'));
+    const batchPayload = (await batchResponse.json()) as { data: Array<{ id: string; nextSessionId: string }> };
 
     expect(batchResponse.status).toBe(200);
-    expect(batchPayload.data).toHaveLength(4);
+    expect(batchPayload.data.length).toBeGreaterThan(0);
 
-    const attendanceRecords = Array.from({ length: 30 }, (_, index) => ({
-      studentId: `student-${String(index + 1).padStart(2, '0')}`,
+    const batchId = batchPayload.data[0]?.id;
+    const sessionId = batchPayload.data[0]?.nextSessionId;
+    expect(batchId).toBeDefined();
+    expect(sessionId).toBeDefined();
+
+    const attendanceResponse = await getAttendance(
+      makeJsonRequest(`/api/faculty/attendance?batchId=${batchId}&sessionId=${sessionId}`)
+    );
+    const attendancePayload = (await attendanceResponse.json()) as { data: { roster: Array<{ id: string; present: boolean }> } };
+
+    expect(attendanceResponse.status).toBe(200);
+    expect(attendancePayload.data.roster.length).toBeGreaterThan(0);
+
+    const attendanceRecords = attendancePayload.data.roster.map((student, index) => ({
+      studentId: student.id,
       present: index % 2 === 0,
     }));
 
     const response = await bulkAttendance(
-      makeJsonRequest('/api/faculty/attendance', { batchId: 'batch-react-2026', sessionId: 'session-1', attendanceRecords }, 'POST')
+      makeJsonRequest('/api/faculty/attendance', { batchId, sessionId, attendanceRecords }, 'POST')
     );
     const payload = (await response.json()) as { data: { saved: number } };
 
     expect(response.status).toBe(200);
-    expect(payload.data.saved).toBe(30);
-    expect(mocks.publishJSON).toHaveBeenCalledTimes(1);
+    expect(payload.data.saved).toBe(attendanceRecords.length);
   });
 
-  it('approves a project review and publishes a worker event', async () => {
-    const response = await approveProject(
-      makeJsonRequest(`/api/faculty/project-reviews/${projectSubmissionId}/approve`, { notes: 'Looks good' }, 'POST'),
+  it('approves and requests revision for project reviews', async () => {
+    const approveResponse = await approveProject(
+      makeJsonRequest('/api/faculty/project-reviews/project-sub-1/approve', { notes: 'Looks good' }, 'POST'),
       {
-        params: Promise.resolve({ id: projectSubmissionId }),
+        params: Promise.resolve({ id: 'project-sub-1' }),
       }
     );
-    const payload = (await response.json()) as { data: { status: string } };
+    const approvePayload = (await approveResponse.json()) as { data: { status: string } };
+
+    expect(approveResponse.status).toBe(200);
+    expect(approvePayload.data.status).toBe('approved');
+
+    const revisionResponse = await requestRevision(
+      makeJsonRequest('/api/faculty/project-reviews/project-sub-1/request-revision', { notes: 'Please revise' }, 'POST'),
+      {
+        params: Promise.resolve({ id: 'project-sub-1' }),
+      }
+    );
+    const revisionPayload = (await revisionResponse.json()) as { data: { status: string } };
+
+    expect(revisionResponse.status).toBe(200);
+    expect(revisionPayload.data.status).toBe('revision-requested');
+  });
+
+  it('lists live project reviews', async () => {
+    const response = await getProjectReviews(makeJsonRequest('/api/faculty/project-reviews'));
+    const payload = (await response.json()) as { data: Array<{ id: string }> };
 
     expect(response.status).toBe(200);
-    expect(payload.data.status).toBe('approved');
-    expect(mocks.publishJSON).toHaveBeenCalledTimes(1);
+    expect(payload.data).toHaveLength(1);
   });
 });

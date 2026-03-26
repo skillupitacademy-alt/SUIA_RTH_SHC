@@ -1,10 +1,7 @@
 import { NextResponse } from 'next/server';
 
-import { studentJobMatches, studentPlacementProfile } from '@/lib/skillup-demo-data';
+import { getSkillupPlacement } from '@/lib/skillup-data';
 
-export async function GET() {
-  return NextResponse.json({
-    profile: studentPlacementProfile,
-    jobs: studentJobMatches,
-  });
+export async function GET(request?: Request) {
+  return NextResponse.json(await getSkillupPlacement(request));
 }

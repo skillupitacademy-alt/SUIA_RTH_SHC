@@ -10,6 +10,7 @@
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx src/seed.ts",
+    "db:seed:skillup": "tsx src/seed-skillup.ts",
     "lint": "eslint --no-ignore --max-warnings=0 \"src/**/*.ts\"",
     "test": "vitest --config vitest.config.ts run",
     "test:watch": "vitest --config vitest.config.ts",

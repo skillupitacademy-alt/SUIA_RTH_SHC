@@ -7,10 +7,12 @@
     "build": "next build",
     "start": "next start",
     "lint": "cross-env ESLINT_USE_FLAT_CONFIG=false eslint --ext .ts,.tsx,.js,.jsx .",
-    "type-check": "tsc --noEmit -p tsconfig.json"
+    "type-check": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest --config vitest.config.ts run"
   },
   "dependencies": {
     "@quiz/auth": "workspace:*",
+    "@quiz/db-people": "workspace:*",
     "@serwist/next": "^9.5.7",
     "@types/node": "^20",
     "@types/react": "^19.0.0",
@@ -24,6 +26,7 @@
     "postcss": "^8",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "zustand": "^5.0.0",
     "tailwindcss": "^3.4.1",
     "typescript": "^5",
     "zod": "^3.24.1"

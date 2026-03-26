@@ -1,10 +1,7 @@
 import { NextResponse } from 'next/server';
 
-import { studentDashboardSummary, studentSessions } from '@/lib/skillup-demo-data';
+import { getSkillupStudentDashboard } from '@/lib/skillup-data';
 
-export async function GET() {
-  return NextResponse.json({
-    summary: studentDashboardSummary,
-    sessions: studentSessions,
-  });
+export async function GET(request?: Request) {
+  return NextResponse.json(await getSkillupStudentDashboard(request));
 }

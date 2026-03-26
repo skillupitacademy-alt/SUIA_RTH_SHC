@@ -1,6 +1,8 @@
 import Link from 'next/link';
 
-import { adminEnquiries } from '@/lib/admin-demo-data';
+import { getSkillUpAdminRole } from '@/lib/admin-session';
+import { RoleLockedNotice } from '@/components/role-locked-notice';
+import { listAdminEnquiries } from '@/lib/skillup-admin-data';
 
 const statusStyles: Record<string, string> = {
   new: 'border-cyan-200 bg-cyan-50 text-cyan-700',
@@ -9,7 +11,18 @@ const statusStyles: Record<string, string> = {
   needs_followup: 'border-amber-200 bg-amber-50 text-amber-700',
 };
 
-export default function CrmPage() {
+export default async function CrmPage() {
+  if ((await getSkillUpAdminRole()) !== 'admin') {
+    return (
+      <RoleLockedNotice
+        title="CRM is admin-only"
+        description="Enquiry qualification and admission sprints are hidden in counsellor view."
+      />
+    );
+  }
+
+  const enquiries = await listAdminEnquiries();
+
   return (
     <section className="mx-auto max-w-7xl space-y-6 px-6 py-8 lg:py-10">
       <div className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
@@ -21,7 +34,7 @@ export default function CrmPage() {
       </div>
 
       <div className="grid gap-4 xl:grid-cols-2">
-        {adminEnquiries.map((enquiry) => (
+        {enquiries.map((enquiry) => (
           <article key={enquiry.id} className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex items-start justify-between gap-4">
               <div>

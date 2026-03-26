@@ -1,25 +1,15 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-import { facultyBatches } from '@/lib/faculty-demo-data';
-import { getFacultyUpstreamBaseUrl, relayJsonResponse } from '@/lib/faculty-api';
+import { listFacultyBatches } from '@/lib/faculty-live-data';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
-  const upstream = getFacultyUpstreamBaseUrl();
-  if (upstream !== null) {
-    try {
-      const response = await fetch(new URL('/api/faculty/batches', upstream), {
-        headers: { accept: 'application/json' },
-        cache: 'no-store',
-      });
-      if (response.ok) {
-        return relayJsonResponse(response);
-      }
-    } catch {
-      // Demo fallback below.
-    }
+export async function GET(request: NextRequest) {
+  const userId = request.headers.get('x-user-id');
+  if (userId === null || userId.length === 0) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  return NextResponse.json({ data: facultyBatches }, { status: 200, headers: { 'Cache-Control': 'no-store' } });
+  const data = await listFacultyBatches(userId);
+  return NextResponse.json({ data }, { status: 200, headers: { 'Cache-Control': 'no-store' } });
 }

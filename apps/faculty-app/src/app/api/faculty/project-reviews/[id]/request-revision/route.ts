@@ -1,19 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
-import { findProjectReviewById } from '@/lib/faculty-demo-data';
+import { relayFacultyUpstreamResponse } from '@/lib/faculty-api';
 
 export const dynamic = 'force-dynamic';
+
+const paramsSchema = z.object({
+  id: z.string().min(1),
+});
 
 const bodySchema = z.object({
   notes: z.string().min(1),
 });
 
 export async function POST(req: NextRequest, context: { params: Promise<{ id: string }> }) {
-  const { id } = await context.params;
-  const submission = findProjectReviewById(id);
-  if (submission === undefined) {
-    return NextResponse.json({ error: 'Project submission not found' }, { status: 404 });
+  const params = paramsSchema.safeParse(await context.params);
+  if (!params.success) {
+    return NextResponse.json({ error: 'Invalid submission id' }, { status: 400 });
   }
 
   const parsed = bodySchema.safeParse(await req.json().catch(() => ({})));
@@ -21,5 +24,17 @@ export async function POST(req: NextRequest, context: { params: Promise<{ id: st
     return NextResponse.json({ error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
   }
 
-  return NextResponse.json({ data: { ...submission, status: 'needs_review', reviewerNote: parsed.data.notes } }, { status: 200 });
+  const response = await relayFacultyUpstreamResponse(
+    req.headers,
+    `/api/tutorial/faculty/project-reviews/${params.data.id}/request-revision`,
+    {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ notes: parsed.data.notes }),
+    }
+  );
+  if (response === null) {
+    return NextResponse.json({ error: 'Upstream unavailable' }, { status: 503 });
+  }
+  return response;
 }

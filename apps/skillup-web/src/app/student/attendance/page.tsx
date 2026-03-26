@@ -1,22 +1,38 @@
 import { CheckCircle2, Clock3, XCircle } from 'lucide-react';
 
-import { studentAttendanceHistory } from '@/lib/skillup-demo-data';
+import { fetchSkillupApi } from '@/lib/skillup-api';
 
-export default function AttendancePage() {
+type AttendanceResponse = {
+  history: Array<{
+    date: string;
+    state: 'present' | 'late' | 'absent';
+    note: string;
+  }>;
+};
+
+export default async function AttendancePage() {
+  const { history } = await fetchSkillupApi<AttendanceResponse>('/api/student/attendance');
+  const summary = {
+    presentDays: history.filter((entry) => entry.state === 'present').length,
+    lateDays: history.filter((entry) => entry.state === 'late').length,
+    absentDays: history.filter((entry) => entry.state === 'absent').length,
+    attendancePercent: history.length > 0 ? Math.round((history.filter((entry) => entry.state === 'present').length / history.length) * 100) : 0,
+  };
+
   return (
     <section className="mx-auto max-w-7xl space-y-8 px-6 py-8 lg:py-10">
-      <article className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
-        <p className="text-[0.65rem] font-black uppercase tracking-[0.45em] text-cyan-600">Attendance</p>
-        <h2 className="mt-3 text-4xl font-black tracking-tight text-slate-950">Monthly attendance view</h2>
+      <article className="surface-panel rounded-[3rem] p-8 lg:p-10">
+        <p className="section-kicker text-cyan-600">Attendance</p>
+        <h2 className="mt-3 text-4xl font-black tracking-tight text-slate-950 font-outfit">Monthly attendance view</h2>
         <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
           The student portal surfaces attendance history with clear state chips so color is not the only signal.
         </p>
       </article>
 
       <section className="grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
-        <article className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+        <article className="surface-panel rounded-[2rem] p-6">
           <div className="grid gap-3 sm:grid-cols-2">
-            {studentAttendanceHistory.map((entry) => (
+            {history.map((entry) => (
               <div key={entry.date} className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-sm font-semibold text-slate-800">{entry.date}</p>
@@ -50,14 +66,14 @@ export default function AttendancePage() {
           </div>
         </article>
 
-        <article className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
-          <p className="text-xs font-black uppercase tracking-[0.35em] text-slate-500">Monthly summary</p>
+        <article className="surface-panel rounded-[2rem] p-6">
+          <p className="section-kicker text-slate-500">Monthly summary</p>
           <div className="mt-6 space-y-4">
             {[
-              { label: 'Present days', value: '22' },
-              { label: 'Late arrivals', value: '3' },
-              { label: 'Absent days', value: '1' },
-              { label: 'Attendance percent', value: '86%' },
+              { label: 'Present days', value: summary.presentDays.toString() },
+              { label: 'Late arrivals', value: summary.lateDays.toString() },
+              { label: 'Absent days', value: summary.absentDays.toString() },
+              { label: 'Attendance percent', value: `${summary.attendancePercent}%` },
             ].map((item) => (
               <div key={item.label} className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
                 <div className="flex items-center justify-between gap-4">

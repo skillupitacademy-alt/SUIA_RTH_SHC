@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import type { ProjectReviewItem } from '@/lib/faculty-demo-data';
+import type { FacultyReviewQueueItem as ProjectReviewItem } from '@/lib/faculty-live-data';
 
 interface ProjectReviewsPanelProps {
   submissions: ProjectReviewItem[];

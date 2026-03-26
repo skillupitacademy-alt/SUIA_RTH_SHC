@@ -1,8 +1,8 @@
 import Link from 'next/link';
 
-import { adminBatches } from '@/lib/admin-demo-data';
 import { getSkillUpAdminRole } from '@/lib/admin-session';
 import { RoleLockedNotice } from '@/components/role-locked-notice';
+import { listAdminBatches } from '@/lib/skillup-admin-data';
 
 export default async function BatchesPage() {
   if ((await getSkillUpAdminRole()) !== 'admin') {
@@ -13,6 +13,7 @@ export default async function BatchesPage() {
       />
     );
   }
+  const batches = await listAdminBatches();
 
   return (
     <section className="mx-auto max-w-7xl space-y-6 px-6 py-8 lg:py-10">
@@ -30,7 +31,7 @@ export default async function BatchesPage() {
       </div>
 
       <div className="grid gap-4 xl:grid-cols-2">
-        {adminBatches.map((batch) => (
+        {batches.map((batch) => (
           <article key={batch.id} className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex items-start justify-between gap-4">
               <div>

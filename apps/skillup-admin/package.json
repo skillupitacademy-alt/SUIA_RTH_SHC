@@ -13,6 +13,7 @@
   "dependencies": {
     "@quiz/auth": "workspace:*",
     "@quiz/events": "workspace:*",
+    "@quiz/db-people": "workspace:*",
     "@quiz/ui": "workspace:*",
     "@quiz/types": "workspace:*",
     "@vitejs/plugin-react": "^5.1.4",

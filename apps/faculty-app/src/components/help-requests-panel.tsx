@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import type { HelpRequestItem } from '@/lib/faculty-demo-data';
+import type { FacultyHelpRequestItem as HelpRequestItem } from '@/lib/faculty-live-data';
 
 interface HelpRequestsPanelProps {
   requests: HelpRequestItem[];

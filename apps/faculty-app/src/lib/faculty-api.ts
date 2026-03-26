@@ -28,3 +28,69 @@ export async function relayJsonResponse(response: Response) {
     headers,
   });
 }
+
+function appendHeader(headers: Headers, key: string, value: string | null | undefined) {
+  if (typeof value === 'string' && value.trim().length > 0) {
+    headers.set(key, value);
+  }
+}
+
+export function buildFacultyUpstreamHeaders(source: Headers | HeadersInit, extra?: HeadersInit) {
+  const headers = new Headers();
+  const sourceHeaders = source instanceof Headers ? source : new Headers(source);
+
+  appendHeader(headers, 'accept', 'application/json');
+  appendHeader(headers, 'cookie', sourceHeaders.get('cookie'));
+  appendHeader(headers, 'x-gateway-secret', process.env.INTERNAL_GATEWAY_SECRET);
+  appendHeader(headers, 'x-portal-identity', sourceHeaders.get('x-portal-identity') ?? 'user');
+  appendHeader(headers, 'x-user-id', sourceHeaders.get('x-user-id'));
+
+  if (extra !== undefined) {
+    const extraHeaders = new Headers(extra);
+    extraHeaders.forEach((value, key) => headers.set(key, value));
+  }
+
+  return headers;
+}
+
+export async function fetchFacultyUpstreamJson<T>(
+  source: Headers | HeadersInit,
+  path: string,
+  init?: RequestInit
+): Promise<T | null> {
+  const upstream = getFacultyUpstreamBaseUrl();
+  if (upstream === null) {
+    return null;
+  }
+
+  const response = await fetch(new URL(path, upstream), {
+    ...init,
+    headers: buildFacultyUpstreamHeaders(source, init?.headers),
+    cache: 'no-store',
+  });
+
+  if (!response.ok) {
+    return null;
+  }
+
+  return (await response.json()) as T;
+}
+
+export async function relayFacultyUpstreamResponse(
+  source: Headers | HeadersInit,
+  path: string,
+  init?: RequestInit
+) {
+  const upstream = getFacultyUpstreamBaseUrl();
+  if (upstream === null) {
+    return null;
+  }
+
+  const response = await fetch(new URL(path, upstream), {
+    ...init,
+    headers: buildFacultyUpstreamHeaders(source, init?.headers),
+    cache: 'no-store',
+  });
+
+  return relayJsonResponse(response);
+}

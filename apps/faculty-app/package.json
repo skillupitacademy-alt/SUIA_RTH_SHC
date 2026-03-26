@@ -13,6 +13,7 @@
   "dependencies": {
     "@quiz/auth": "workspace:*",
     "@quiz/events": "workspace:*",
+    "@quiz/db-people": "workspace:*",
     "@upstash/qstash": "^2.8.1",
     "@quiz/ui": "workspace:*",
     "@quiz/types": "workspace:*",

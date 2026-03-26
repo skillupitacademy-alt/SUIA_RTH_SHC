@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
-import { findHelpRequestById } from '@/lib/faculty-demo-data';
-import { getFacultyUpstreamBaseUrl, relayJsonResponse } from '@/lib/faculty-api';
+import { relayFacultyUpstreamResponse } from '@/lib/faculty-api';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,29 +20,6 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
     return NextResponse.json({ error: 'Invalid help request id' }, { status: 400 });
   }
 
-  const upstream = getFacultyUpstreamBaseUrl();
-  if (upstream !== null) {
-    try {
-      const body = await req.json();
-      const parsed = bodySchema.safeParse(body);
-      if (!parsed.success) {
-        return NextResponse.json({ error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
-      }
-
-      const response = await fetch(new URL(`/api/tutorial/assignments/help-requests/${params.data.id}`, upstream), {
-        method: 'PATCH',
-        headers: { 'content-type': 'application/json', accept: 'application/json' },
-        body: JSON.stringify(parsed.data),
-      });
-
-      if (response.ok) {
-        return relayJsonResponse(response);
-      }
-    } catch {
-      // Demo fallback below.
-    }
-  }
-
   let body: unknown;
   try {
     body = await req.json();
@@ -56,19 +32,17 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
     return NextResponse.json({ error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
   }
 
-  const existing = findHelpRequestById(params.data.id);
-  if (existing === undefined) {
-    return NextResponse.json({ error: 'Help request not found' }, { status: 404 });
-  }
-
-  return NextResponse.json(
+  const response = await relayFacultyUpstreamResponse(
+    req.headers,
+    `/api/tutorial/faculty/help-requests/${params.data.id}`,
     {
-      data: {
-        ...existing,
-        status: parsed.data.status ?? existing.status,
-        resolvedAt: parsed.data.resolvedAt ?? existing.resolvedAt,
-      },
-    },
-    { status: 200 }
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(parsed.data),
+    }
   );
+  if (response === null) {
+    return NextResponse.json({ error: 'Upstream unavailable' }, { status: 503 });
+  }
+  return response;
 }

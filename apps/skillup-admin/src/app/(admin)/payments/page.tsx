@@ -1,8 +1,8 @@
 import Link from 'next/link';
 
-import { adminPayments, formatCurrency } from '@/lib/admin-demo-data';
 import { getSkillUpAdminRole } from '@/lib/admin-session';
 import { RoleLockedNotice } from '@/components/role-locked-notice';
+import { listAdminPayments } from '@/lib/skillup-admin-data';
 
 export default async function PaymentsPage() {
   if ((await getSkillUpAdminRole()) !== 'admin') {
@@ -13,6 +13,8 @@ export default async function PaymentsPage() {
       />
     );
   }
+
+  const payments = await listAdminPayments();
 
   return (
     <section className="mx-auto max-w-7xl space-y-6 px-6 py-8 lg:py-10">
@@ -30,7 +32,7 @@ export default async function PaymentsPage() {
       </div>
 
       <div className="grid gap-4 xl:grid-cols-2">
-        {adminPayments.map((payment) => (
+        {payments.map((payment) => (
           <article key={payment.id} className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex items-start justify-between gap-4">
               <div>
@@ -54,7 +56,7 @@ export default async function PaymentsPage() {
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
                 <p className="text-xs font-black uppercase tracking-[0.32em] text-slate-500">Amount</p>
-                <p className="mt-2 text-3xl font-black tracking-tight text-slate-950">{formatCurrency(Number.parseInt(payment.amount.replace(/[^\d]/g, ''), 10))}</p>
+                <p className="mt-2 text-3xl font-black tracking-tight text-slate-950">{payment.amount}</p>
               </div>
               <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
                 <p className="text-xs font-black uppercase tracking-[0.32em] text-slate-500">Overdue days</p>

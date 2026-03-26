@@ -29,7 +29,7 @@ const columns = [
 
 export function Footer() {
   return (
-    <footer className="border-t border-slate-200 bg-white/60">
+    <footer className="border-t border-slate-200/80 bg-white/65 backdrop-blur-sm">
       <div className="mx-auto grid max-w-7xl gap-8 px-6 py-10 md:grid-cols-3">
         {columns.map((column) => (
           <section key={column.title}>

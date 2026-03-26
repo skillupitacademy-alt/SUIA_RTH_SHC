@@ -1,6 +1,8 @@
 import Link from 'next/link';
 
-import { adminStudents } from '@/lib/admin-demo-data';
+import { getSkillUpAdminRole } from '@/lib/admin-session';
+import { RoleLockedNotice } from '@/components/role-locked-notice';
+import { listAdminStudents } from '@/lib/skillup-admin-data';
 
 const statusStyles: Record<string, string> = {
   current: 'border-emerald-200 bg-emerald-50 text-emerald-700',
@@ -8,7 +10,18 @@ const statusStyles: Record<string, string> = {
   overdue: 'border-rose-200 bg-rose-50 text-rose-700',
 };
 
-export default function StudentsPage() {
+export default async function StudentsPage() {
+  if ((await getSkillUpAdminRole()) !== 'admin') {
+    return (
+      <RoleLockedNotice
+        title="Students are admin-only"
+        description="Student records, attendance triage, and payment review are hidden in counsellor view."
+      />
+    );
+  }
+
+  const students = await listAdminStudents();
+
   return (
     <section className="mx-auto max-w-7xl space-y-6 px-6 py-8 lg:py-10">
       <div className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
@@ -33,7 +46,7 @@ export default function StudentsPage() {
       </div>
 
       <div className="grid gap-4 xl:grid-cols-2">
-        {adminStudents.map((student) => (
+        {students.map((student) => (
           <article key={student.id} className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex items-start justify-between gap-4">
               <div>

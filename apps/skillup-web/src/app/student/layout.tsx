@@ -15,12 +15,12 @@ const navItems = [
 
 export default function StudentLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(14,165,233,0.12),_transparent_30%),linear-gradient(180deg,#f8fbff_0%,#eef4fb_100%)] text-slate-900">
-      <header className="border-b border-slate-200/80 bg-white/88 backdrop-blur-xl">
+    <div className="surface-shell min-h-screen text-slate-900">
+      <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/88 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <p className="text-[0.65rem] font-black uppercase tracking-[0.45em] text-cyan-600">SkillUp Student Portal</p>
-            <h1 className="mt-2 text-2xl font-black tracking-tight">Learner workspace</h1>
+            <p className="section-kicker text-cyan-600">SkillUp Student Portal</p>
+            <h1 className="mt-2 text-2xl font-black tracking-tight font-outfit">Learner workspace</h1>
             <p className="mt-1 max-w-2xl text-sm text-slate-600">
               Batch progress, attendance, payments, and placement stay in the same light shell used across the platform.
             </p>

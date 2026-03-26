@@ -8,6 +8,27 @@
       "when": 1774191220131,
       "tag": "0000_perpetual_microbe",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1774536900897,
+      "tag": "0001_abnormal_gamma_corps",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1774537191952,
+      "tag": "0002_low_captain_midlands",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1774538285178,
+      "tag": "0003_massive_kitty_pryde",
+      "breakpoints": true
     }
   ]
 }

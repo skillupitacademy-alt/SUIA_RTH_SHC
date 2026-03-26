@@ -29,6 +29,12 @@
             "@quiz/db-tutorial/*": [
                 "../../packages/db-tutorial/src/*"
             ],
+            "@quiz/db-people": [
+                "../../packages/db-people/src/index.ts"
+            ],
+            "@quiz/db-people/*": [
+                "../../packages/db-people/src/*"
+            ],
             "@quiz/db": [
                 "../../packages/db/src/index.ts"
             ],

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import type { SessionRequestItem } from '@/lib/faculty-demo-data';
+import type { FacultySessionRequestItem as SessionRequestItem } from '@/lib/faculty-live-data';
 
 interface SessionRequestsPanelProps {
   requests: SessionRequestItem[];
