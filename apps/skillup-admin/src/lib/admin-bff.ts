@@ -62,7 +62,7 @@ export function csvResponse(filename: string, rows: string[]) {
     },
   });
 
-  return new NextResponse(stream, {
+  return new Response(stream, {
     headers: {
       'content-type': 'text/csv; charset=utf-8',
       'content-disposition': `attachment; filename="${filename}"`,

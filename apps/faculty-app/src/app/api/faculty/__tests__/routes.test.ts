@@ -1,20 +1,18 @@
-import { eq } from 'drizzle-orm';
-import { NextRequest, NextResponse } from 'next/server';
-import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-
-import { db, faculty as facultyTable, users } from '@quiz/db-people';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { NextRequest } from 'next/server';
 
 const mocks = vi.hoisted(() => ({
   relayMock: vi.fn(),
+  listFacultyBatchesMock: vi.fn(),
 }));
 
-vi.mock('@/lib/faculty-api', async () => {
-  const actual = await vi.importActual<typeof import('@/lib/faculty-api')>('@/lib/faculty-api');
-  return {
-    ...actual,
-    relayFacultyUpstreamResponse: mocks.relayMock,
-  };
-});
+vi.mock('@/lib/faculty-api', () => ({
+  relayFacultyUpstreamResponse: mocks.relayMock,
+}));
+
+vi.mock('@/lib/faculty-live-data', () => ({
+  listFacultyBatches: mocks.listFacultyBatchesMock,
+}));
 
 import { GET as getBatches } from '../batches/route';
 import { POST as bulkAttendance, GET as getAttendance } from '../attendance/route';
@@ -29,27 +27,48 @@ import { GET as getFacultyAssignments } from '../../assignments/route';
 import { GET as getFacultyHelpRequests } from '../../help-requests/route';
 import { GET as getFacultyReviewQueue } from '../../review-queue/route';
 
-const makeJsonRequest = (url: string, body?: unknown, method = 'GET') =>
+const facultyUserId = 'faculty-1';
+
+const makeRequest = (url: string, method = 'GET', body?: unknown) =>
   new NextRequest(`http://localhost${url}`, {
     method,
-    headers: body !== undefined ? { 'content-type': 'application/json', 'x-user-id': facultyUserId } : { 'x-user-id': facultyUserId },
+    headers: body === undefined ? { 'x-user-id': facultyUserId } : { 'content-type': 'application/json', 'x-user-id': facultyUserId },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
 
-let facultyUserId = '';
+function jsonResponse(data: unknown, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { 'content-type': 'application/json' },
+  });
+}
 
 describe('faculty-app routes', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+
+    mocks.listFacultyBatchesMock.mockResolvedValue([
+      {
+        id: 'batch-1',
+        name: 'React Full Stack - March 2026',
+        facultyName: 'Asha Iyer',
+        nextSessionId: 'session-1',
+        nextSessionAt: '2026-03-22T09:30:00.000Z',
+        studentCount: 1,
+        presentCount: 1,
+        attendanceRate: 100,
+      },
+    ]);
+
     mocks.relayMock.mockImplementation(async (_headers: Headers | HeadersInit, path: string, init?: RequestInit) => {
       if (path.startsWith('/api/tutorial/faculty/help-requests/') && init?.method === 'PATCH') {
-        return NextResponse.json({
+        return jsonResponse({
           data: { id: path.split('/').at(-1), status: 'resolved', resolvedAt: new Date().toISOString() },
         });
       }
 
       if (path === '/api/tutorial/faculty/help-requests') {
-        return NextResponse.json({
+        return jsonResponse({
           data: [
             {
               id: 'help-req-1',
@@ -66,7 +85,7 @@ describe('faculty-app routes', () => {
       }
 
       if (path === '/api/tutorial/faculty/assignments') {
-        return NextResponse.json({
+        return jsonResponse({
           data: [
             {
               id: 'assignment-1',
@@ -86,7 +105,7 @@ describe('faculty-app routes', () => {
       }
 
       if (path === '/api/tutorial/faculty/review-queue') {
-        return NextResponse.json({
+        return jsonResponse({
           data: [
             {
               id: 'review-1',
@@ -103,15 +122,15 @@ describe('faculty-app routes', () => {
       }
 
       if (path.startsWith('/api/tutorial/faculty/project-reviews/') && path.endsWith('/approve')) {
-        return NextResponse.json({ data: { id: path.split('/').at(-2), status: 'approved' } });
+        return jsonResponse({ data: { id: path.split('/').at(-2), status: 'approved' } });
       }
 
       if (path.startsWith('/api/tutorial/faculty/project-reviews/') && path.endsWith('/request-revision')) {
-        return NextResponse.json({ data: { id: path.split('/').at(-2), status: 'revision-requested' } });
+        return jsonResponse({ data: { id: path.split('/').at(-2), status: 'revision-requested' } });
       }
 
       if (path === '/api/tutorial/faculty/project-reviews') {
-        return NextResponse.json({
+        return jsonResponse({
           data: [
             {
               id: 'project-sub-1',
@@ -128,7 +147,7 @@ describe('faculty-app routes', () => {
       }
 
       if (path === '/api/tutorial/faculty/live-sessions') {
-        return NextResponse.json({
+        return jsonResponse({
           data: [
             {
               id: 'session-req-1',
@@ -145,7 +164,7 @@ describe('faculty-app routes', () => {
       }
 
       if (path.startsWith('/api/attendance') && init?.method === 'GET') {
-        return NextResponse.json({
+        return jsonResponse({
           data: {
             batchId: 'batch-1',
             batchName: 'React Full Stack - March 2026',
@@ -159,11 +178,11 @@ describe('faculty-app routes', () => {
       }
 
       if (path.startsWith('/api/attendance') && init?.method === 'POST') {
-        return NextResponse.json({ data: { saved: 1 } });
+        return jsonResponse({ data: { saved: 1 } });
       }
 
       if (path.startsWith('/api/tutorial/faculty/live-sessions/') && path.endsWith('/accept')) {
-        return NextResponse.json({
+        return jsonResponse({
           data: {
             id: path.split('/').at(-2),
             studentId: 'student-1',
@@ -176,33 +195,18 @@ describe('faculty-app routes', () => {
         });
       }
 
-      return NextResponse.json({ data: [] });
+      return jsonResponse({ data: [] });
     });
-    process.env.INTERNAL_API_URL = '';
-    process.env.NEXT_PUBLIC_API_URL = '';
-    process.env.NEXT_PUBLIC_APP_URL = '';
-  });
-
-  beforeAll(async () => {
-    const [row] = await db
-      .select({ id: facultyTable.userId })
-      .from(facultyTable)
-      .innerJoin(users, eq(users.id, facultyTable.userId))
-      .where(eq(users.email, 'faculty@skillupitacademy.com'))
-      .limit(1);
-
-    facultyUserId = row?.id ?? '';
-    expect(facultyUserId).not.toBe('');
   });
 
   it('lists help requests and can patch one', async () => {
-    const response = await getHelpRequests(makeJsonRequest('/api/faculty/help-requests'));
+    const response = await getHelpRequests(makeRequest('/api/faculty/help-requests'));
     const payload = (await response.json()) as { data: Array<{ id: string }> };
 
     expect(response.status).toBe(200);
     expect(payload.data).toHaveLength(1);
 
-    const patchResponse = await patchHelpRequest(makeJsonRequest('/api/faculty/help-requests/help-req-1', { status: 'resolved' }, 'PATCH'), {
+    const patchResponse = await patchHelpRequest(makeRequest('/api/faculty/help-requests/help-req-1', 'PATCH', { status: 'resolved' }), {
       params: Promise.resolve({ id: 'help-req-1' }),
     });
     const patchPayload = (await patchResponse.json()) as { data: { status: string } };
@@ -212,7 +216,7 @@ describe('faculty-app routes', () => {
   });
 
   it('relays faculty help requests through the BFF route', async () => {
-    const response = await getFacultyHelpRequests(makeJsonRequest('/api/help-requests'));
+    const response = await getFacultyHelpRequests(makeRequest('/api/help-requests'));
     const payload = (await response.json()) as { data: Array<{ id: string }> };
 
     expect(response.status).toBe(200);
@@ -220,7 +224,7 @@ describe('faculty-app routes', () => {
   });
 
   it('relays faculty review queue through the BFF route', async () => {
-    const response = await getFacultyReviewQueue(makeJsonRequest('/api/review-queue'));
+    const response = await getFacultyReviewQueue(makeRequest('/api/review-queue'));
     const payload = (await response.json()) as { data: Array<{ id: string }> };
 
     expect(response.status).toBe(200);
@@ -228,7 +232,7 @@ describe('faculty-app routes', () => {
   });
 
   it('relays faculty assignments through the BFF route', async () => {
-    const response = await getFacultyAssignments(makeJsonRequest('/api/assignments'));
+    const response = await getFacultyAssignments(makeRequest('/api/assignments'));
     const payload = (await response.json()) as { data: Array<{ id: string }> };
 
     expect(response.status).toBe(200);
@@ -236,7 +240,7 @@ describe('faculty-app routes', () => {
   });
 
   it('lists session requests and accepts one with a meeting link', async () => {
-    const listResponse = await getSessionRequests(makeJsonRequest('/api/faculty/session-requests'));
+    const listResponse = await getSessionRequests(makeRequest('/api/faculty/session-requests'));
     const listPayload = (await listResponse.json()) as { data: Array<{ id: string }> };
 
     expect(listResponse.status).toBe(200);
@@ -246,7 +250,7 @@ describe('faculty-app routes', () => {
     expect(requestId).toBeDefined();
 
     const response = await acceptSessionRequest(
-      makeJsonRequest(`/api/faculty/session-requests/${requestId}/accept`, { meetingLink: 'https://meet.google.com/abc-defg-hij' }, 'POST'),
+      makeRequest(`/api/faculty/session-requests/${requestId}/accept`, 'POST', { meetingLink: 'https://meet.google.com/abc-defg-hij' }),
       {
         params: Promise.resolve({ id: requestId ?? '' }),
       }
@@ -259,7 +263,7 @@ describe('faculty-app routes', () => {
   });
 
   it('lists batches and bulk submits attendance in one payload', async () => {
-    const batchResponse = await getBatches(makeJsonRequest('/api/faculty/batches'));
+    const batchResponse = await getBatches(makeRequest('/api/faculty/batches'));
     const batchPayload = (await batchResponse.json()) as { data: Array<{ id: string; nextSessionId: string }> };
 
     expect(batchResponse.status).toBe(200);
@@ -270,9 +274,7 @@ describe('faculty-app routes', () => {
     expect(batchId).toBeDefined();
     expect(sessionId).toBeDefined();
 
-    const attendanceResponse = await getAttendance(
-      makeJsonRequest(`/api/faculty/attendance?batchId=${batchId}&sessionId=${sessionId}`)
-    );
+    const attendanceResponse = await getAttendance(makeRequest(`/api/faculty/attendance?batchId=${batchId}&sessionId=${sessionId}`));
     const attendancePayload = (await attendanceResponse.json()) as { data: { roster: Array<{ id: string; present: boolean }> } };
 
     expect(attendanceResponse.status).toBe(200);
@@ -284,7 +286,7 @@ describe('faculty-app routes', () => {
     }));
 
     const response = await bulkAttendance(
-      makeJsonRequest('/api/faculty/attendance', { batchId, sessionId, attendanceRecords }, 'POST')
+      makeRequest('/api/faculty/attendance', 'POST', { batchId, sessionId, attendanceRecords })
     );
     const payload = (await response.json()) as { data: { saved: number } };
 
@@ -294,7 +296,7 @@ describe('faculty-app routes', () => {
 
   it('approves and requests revision for project reviews', async () => {
     const approveResponse = await approveProject(
-      makeJsonRequest('/api/faculty/project-reviews/project-sub-1/approve', { notes: 'Looks good' }, 'POST'),
+      makeRequest('/api/faculty/project-reviews/project-sub-1/approve', 'POST', { notes: 'Looks good' }),
       {
         params: Promise.resolve({ id: 'project-sub-1' }),
       }
@@ -305,7 +307,7 @@ describe('faculty-app routes', () => {
     expect(approvePayload.data.status).toBe('approved');
 
     const revisionResponse = await requestRevision(
-      makeJsonRequest('/api/faculty/project-reviews/project-sub-1/request-revision', { notes: 'Please revise' }, 'POST'),
+      makeRequest('/api/faculty/project-reviews/project-sub-1/request-revision', 'POST', { notes: 'Please revise' }),
       {
         params: Promise.resolve({ id: 'project-sub-1' }),
       }
@@ -317,7 +319,7 @@ describe('faculty-app routes', () => {
   });
 
   it('lists live project reviews', async () => {
-    const response = await getProjectReviews(makeJsonRequest('/api/faculty/project-reviews'));
+    const response = await getProjectReviews(makeRequest('/api/faculty/project-reviews'));
     const payload = (await response.json()) as { data: Array<{ id: string }> };
 
     expect(response.status).toBe(200);

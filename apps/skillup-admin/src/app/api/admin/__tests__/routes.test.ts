@@ -1,4 +1,3 @@
-import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { listAdminBatches, listAdminEnquiries, listAdminPayments, listAdminPlacementProfiles, listAdminStudents } from '@/lib/skillup-admin-data';
@@ -14,6 +13,25 @@ vi.mock('@quiz/events', () => ({
     PAYMENT_RECEIVED: 'payment.received',
   },
   publishEvent: mocks.publishEvent,
+}));
+
+vi.mock('next/server', () => ({
+  NextRequest: Request,
+  config: {},
+  NextResponse: {
+    json: (body: unknown, init?: ResponseInit) =>
+      new Response(JSON.stringify(body), {
+        status: init?.status ?? 200,
+        headers: {
+          'content-type': 'application/json',
+          ...(init?.headers ?? {}),
+        },
+      }),
+  },
+}));
+
+vi.mock('next/headers', () => ({
+  headers: async () => new Headers(),
 }));
 
 import { GET as getBatches, POST as createBatch } from '../batches/route';
@@ -33,7 +51,7 @@ import { GET as getPlacementProfile, POST as savePlacementProfile } from '../pla
 import { POST as createPlacementJob } from '../placement/jobs/route';
 
 const makeRequest = (url: string, method = 'GET', body?: unknown) =>
-  new NextRequest(`http://localhost${url}`, {
+  new Request(`http://localhost${url}`, {
     method,
     headers: {
       'content-type': 'application/json',
@@ -72,7 +90,7 @@ describe('skillup-admin routes', () => {
 
   it('rejects requests without an admin role', async () => {
     const response = await getStudents(
-      new NextRequest('http://localhost/api/admin/students', {
+      new Request('http://localhost/api/admin/students', {
         method: 'GET',
         headers: { 'x-user-roles': 'student' },
       })

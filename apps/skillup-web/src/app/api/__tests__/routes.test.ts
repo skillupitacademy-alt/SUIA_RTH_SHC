@@ -24,6 +24,25 @@ vi.mock('@/lib/skillup-data', () => ({
   getSkillupFaculty: mocks.getSkillupFaculty,
 }));
 
+vi.mock('next/server', () => ({
+  NextRequest: Request,
+  config: {},
+  NextResponse: {
+    json: (body: unknown, init?: ResponseInit) =>
+      new Response(JSON.stringify(body), {
+        status: init?.status ?? 200,
+        headers: {
+          'content-type': 'application/json',
+          ...(init?.headers ?? {}),
+        },
+      }),
+  },
+}));
+
+vi.mock('next/headers', () => ({
+  headers: async () => new Headers(),
+}));
+
 import { GET as getPrograms } from '@/app/api/programs/route';
 import { GET as getProgram } from '@/app/api/programs/[slug]/route';
 import { GET as getDashboard } from '@/app/api/student/dashboard/route';
