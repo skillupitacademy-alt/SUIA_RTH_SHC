@@ -35,7 +35,7 @@ describe('TokenService refresh fallback branches', () => {
 
     const service = new TokenService();
     await expect(service.verifyRefreshToken('tok')).rejects.toThrow(
-      'Invalid refresh _token signature or audience mismatch',
+      'Invalid refresh token signature or audience mismatch',
     );
   });
 

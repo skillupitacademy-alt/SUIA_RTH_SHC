@@ -36,7 +36,7 @@ describe('TokenService verification branches', () => {
     vi.mocked(jose.jwtVerify).mockRejectedValue('bad-jwt');
     const service = new TokenService();
     await expect(service.verifyAccessToken('tok')).rejects.toThrow(
-      'Invalid _token signature or audience mismatch',
+      'Invalid token signature or audience mismatch',
     );
   });
 
