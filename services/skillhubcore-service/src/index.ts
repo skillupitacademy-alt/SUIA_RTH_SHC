@@ -14,6 +14,7 @@ import { HierarchyService } from '@/modules/hierarchy/hierarchy.service';
 import { DrizzleUserRepository } from '@/modules/user/user.repository';
 import { cache } from '@/lib/cache';
 import { SubscriptionService } from '@/modules/subscription/subscription.service';
+import { TokenRotationService } from '@/modules/auth/token-rotation.service';
 
 export const createApp = () => {
   const app = new Hono();
@@ -22,7 +23,8 @@ export const createApp = () => {
   const userRepo = new DrizzleUserRepository();
   const subscriptionService = new SubscriptionService();
   const ssoService = new SsoService(userRepo);
-  const authService = new AuthService(userRepo, tokenService, passwordService, subscriptionService, ssoService, cache);
+  const tokenRotationService = new TokenRotationService(userRepo, tokenService, subscriptionService, cache);
+  const authService = new AuthService(userRepo, tokenService, passwordService, subscriptionService, ssoService, tokenRotationService, cache);
   const hierarchyService = new HierarchyService();
 
   app.use('*', requireGatewaySecret);

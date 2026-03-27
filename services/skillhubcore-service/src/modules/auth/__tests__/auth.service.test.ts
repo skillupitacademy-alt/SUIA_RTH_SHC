@@ -7,6 +7,7 @@ import { AuthService } from '../auth.service';
 import { TokenService } from '../token.service';
 import { SubscriptionService } from '../../subscription/subscription.service';
 import { SsoService } from '../sso/sso.service';
+import { TokenRotationService } from '../token-rotation.service';
 import type { PeoplePlatform, PeopleUserRole, IUserRepository, PeopleSubscriptionRecord, PeopleUserRecord } from '@quiz/types';
 
 type SessionRecord = {
@@ -201,15 +202,17 @@ const createService = () => {
   const ssoService = new SsoService(repo as unknown as IUserRepository);
   const tokenService = new TokenService(new TextEncoder().encode('access-secret-1234567890'), new TextEncoder().encode('refresh-secret-1234567890'));
   const passwordService = new PasswordService();
+  const tokenRotationService = new TokenRotationService(repo as unknown as IUserRepository, tokenService, subscriptionService as unknown as SubscriptionService, redis as any);
   const service = new AuthService(
     repo as unknown as IUserRepository as any,
     tokenService,
     passwordService,
     subscriptionService as unknown as SubscriptionService,
     ssoService,
+    tokenRotationService,
     redis as any
   );
-  return { service, repo, redis, tokenService, passwordService, subscriptionService, ssoService };
+  return { service, repo, redis, tokenService, passwordService, subscriptionService, ssoService, tokenRotationService };
 };
 
 describe('AuthService', () => {
