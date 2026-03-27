@@ -35,6 +35,30 @@ export type AdminAuditLog = {
   details: string;
 };
 
+export type AdminEventLog = {
+  id: string;
+  eventType: 'user.registered' | 'payment.received' | 'subscription.upgraded' | 'payment.overdue';
+  source: string;
+  consumer: string;
+  status: 'published' | 'consumed' | 'retrying' | 'failed';
+  createdAt: string;
+  userId: string;
+  userName: string;
+  subscriptionId?: string;
+  details: string;
+  payload: Record<string, unknown>;
+};
+
+export type AdminMetricsSummary = {
+  monthlyActiveUsers: number;
+  monthlyRecurringRevenue: number;
+  churnRate: number;
+  newUsers30d: number;
+  subscriptionConversionRate: number;
+  qstashEvents24h: number;
+  processingLagSeconds: number;
+};
+
 export const adminDashboardSummary: {
   totalUsers: number;
   activeSubscriptions: number;
@@ -56,6 +80,16 @@ export const adminDashboardSummary: {
     { plan: 'combo', count: 5030 },
     { plan: 'training', count: 2670 },
   ],
+};
+
+export const adminMetricsSummary: AdminMetricsSummary = {
+  monthlyActiveUsers: 7412,
+  monthlyRecurringRevenue: 4287000,
+  churnRate: 2.8,
+  newUsers30d: 482,
+  subscriptionConversionRate: 31.7,
+  qstashEvents24h: 184,
+  processingLagSeconds: 18,
 };
 
 export const adminUsers: AdminUser[] = [
@@ -102,6 +136,75 @@ export const adminUsers: AdminUser[] = [
     status: 'suspended',
     createdAt: '2025-12-29T17:05:00+05:30',
     lastActiveAt: '2026-03-20T15:22:00+05:30',
+  },
+];
+
+export const adminEventLog: AdminEventLog[] = [
+  {
+    id: 'evt-1',
+    eventType: 'user.registered',
+    source: 'skillhubcore-service/auth',
+    consumer: 'POST /consumers/user-registered',
+    status: 'consumed',
+    createdAt: '2026-03-23T09:04:00+05:30',
+    userId: 'user-5',
+    userName: 'Meera Nair',
+    details: 'Seeded default SkillHubCore subscription features after a new admin account was created.',
+    payload: {
+      platform: 'skillhubcore',
+      role: 'super_admin',
+      plan: 'training',
+    },
+  },
+  {
+    id: 'evt-2',
+    eventType: 'payment.received',
+    source: 'api-server/payments',
+    consumer: 'POST /consumers/payment-received',
+    status: 'consumed',
+    createdAt: '2026-03-23T08:42:00+05:30',
+    userId: 'user-2',
+    userName: 'Rahul Iyer',
+    subscriptionId: 'sub-2',
+    details: 'Activated a training subscription after the payment webhook cleared.',
+    payload: {
+      amount: 19900,
+      currency: 'INR',
+      provider: 'razorpay',
+    },
+  },
+  {
+    id: 'evt-3',
+    eventType: 'subscription.upgraded',
+    source: 'skillhubcore-service/subscription',
+    consumer: 'POST /consumers/subscription-upgraded',
+    status: 'published',
+    createdAt: '2026-03-22T17:04:00+05:30',
+    userId: 'user-3',
+    userName: 'Neha Sharma',
+    subscriptionId: 'sub-3',
+    details: 'Published the upgrade event for the downstream control plane and notification workers.',
+    payload: {
+      from: 'premium',
+      to: 'combo',
+      features: ['notes', 'exam', 'ai_tutor', 'live_training'],
+    },
+  },
+  {
+    id: 'evt-4',
+    eventType: 'payment.overdue',
+    source: 'api-server/payments',
+    consumer: 'POST /consumers/payment-overdue',
+    status: 'retrying',
+    createdAt: '2026-03-23T07:55:00+05:30',
+    userId: 'user-4',
+    userName: 'Vikram Patel',
+    subscriptionId: 'sub-4',
+    details: 'Overdue reminder queued with a retry policy after the first delivery attempt was throttled.',
+    payload: {
+      dueAmount: 4900,
+      retryCount: 1,
+    },
   },
 ];
 
@@ -204,6 +307,14 @@ export function formatDateTime(value: string): string {
     dateStyle: 'medium',
     timeStyle: 'short',
   }).format(new Date(value));
+}
+
+export function formatCurrency(value: number): string {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    maximumFractionDigits: 0,
+  }).format(value);
 }
 
 export function formatPlatform(platform: AdminPlatform | 'all'): string {

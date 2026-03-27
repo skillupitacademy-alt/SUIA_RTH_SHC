@@ -11,9 +11,9 @@ const quickStats = [
 export default function DashboardPage() {
   return (
     <section className="mx-auto max-w-7xl space-y-8 px-6 py-8 lg:py-10">
-      <article className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-[0_24px_120px_rgba(15,23,42,0.08)]">
+      <article className="rounded-[2rem] border border-slate-200/80 bg-white/70 p-8 shadow-[0_24px_120px_rgba(15,23,42,0.08)] backdrop-blur-[16px]">
         <p className="text-[0.65rem] font-black uppercase tracking-[0.45em] text-cyan-600">SkillHubCore overview</p>
-        <h2 className="mt-3 text-4xl font-black tracking-tight text-slate-950">Users, subscriptions, and sessions at a glance</h2>
+        <h2 className="mt-3 text-4xl font-black tracking-tight font-outfit text-slate-950">Users, subscriptions, and sessions at a glance</h2>
         <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-600">
           This screen surfaces the platform control plane without changing the established light admin styling.
         </p>
@@ -24,6 +24,12 @@ export default function DashboardPage() {
           <Link href="/subscriptions" className="rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-cyan-300 hover:bg-cyan-50">
             Review subscriptions
           </Link>
+          <Link href="/events" className="rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-cyan-300 hover:bg-cyan-50">
+            Open events
+          </Link>
+          <Link href="/metrics" className="rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-cyan-300 hover:bg-cyan-50">
+            View metrics
+          </Link>
           <Link href="/audit" className="rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-cyan-300 hover:bg-cyan-50">
             Open activity log
           </Link>
@@ -32,7 +38,7 @@ export default function DashboardPage() {
 
       <section className="grid gap-4 md:grid-cols-3">
         {quickStats.map((stat) => (
-          <article key={stat.label} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+          <article key={stat.label} className="rounded-3xl border border-slate-200/80 bg-white/70 p-5 shadow-sm backdrop-blur-[16px]">
             <p className="text-xs font-black uppercase tracking-[0.32em] text-slate-500">{stat.label}</p>
             <p className="mt-3 text-4xl font-black tracking-tight text-slate-950">{stat.value.toLocaleString('en-IN')}</p>
           </article>
@@ -40,7 +46,7 @@ export default function DashboardPage() {
       </section>
 
       <section className="grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
-        <article className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+        <article className="rounded-[2rem] border border-slate-200/80 bg-white/70 p-6 shadow-sm backdrop-blur-[16px]">
           <p className="text-xs font-black uppercase tracking-[0.35em] text-slate-500">Platform distribution</p>
           <div className="mt-6 space-y-4">
             {adminDashboardSummary.platformDistribution.map((item) => (
@@ -54,7 +60,7 @@ export default function DashboardPage() {
           </div>
         </article>
 
-        <article className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+        <article className="rounded-[2rem] border border-slate-200/80 bg-white/70 p-6 shadow-sm backdrop-blur-[16px]">
           <p className="text-xs font-black uppercase tracking-[0.35em] text-slate-500">Subscription mix</p>
           <div className="mt-6 space-y-4">
             {adminDashboardSummary.subscriptionDistribution.map((item) => (
@@ -70,7 +76,7 @@ export default function DashboardPage() {
       </section>
 
       <section className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-        <article className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+        <article className="rounded-[2rem] border border-slate-200/80 bg-white/70 p-6 shadow-sm backdrop-blur-[16px]">
           <p className="text-xs font-black uppercase tracking-[0.35em] text-slate-500">Active sessions</p>
           <div className="mt-6 space-y-3">
             {adminSessionSummary.map((item) => (
@@ -86,7 +92,7 @@ export default function DashboardPage() {
           </div>
         </article>
 
-        <article className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+        <article className="rounded-[2rem] border border-slate-200/80 bg-white/70 p-6 shadow-sm backdrop-blur-[16px]">
           <p className="text-xs font-black uppercase tracking-[0.35em] text-slate-500">Security note</p>
           <div className="mt-6 rounded-3xl border border-amber-200 bg-amber-50 p-5">
             <p className="text-sm font-semibold text-amber-800">TOTP re-auth is required for user suspension and role changes.</p>

@@ -21,11 +21,11 @@ export default async function UserDetailPage({ params }: UserDetailPageProps) {
 
   return (
     <section className="mx-auto max-w-7xl space-y-8 px-6 py-8 lg:py-10">
-      <article className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
+      <article className="rounded-[2rem] border border-slate-200/80 bg-white/70 p-8 shadow-sm backdrop-blur-[16px]">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-[0.65rem] font-black uppercase tracking-[0.45em] text-cyan-600">User detail</p>
-            <h2 className="mt-3 text-4xl font-black tracking-tight text-slate-950">{user.name}</h2>
+            <h2 className="mt-3 text-4xl font-black tracking-tight font-outfit text-slate-950">{user.name}</h2>
             <p className="mt-3 text-sm leading-7 text-slate-600">{user.email}</p>
           </div>
           <Link href="/users" className="text-sm font-semibold text-cyan-700 transition hover:text-cyan-900">

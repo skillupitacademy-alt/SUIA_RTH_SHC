@@ -6,16 +6,16 @@ import { adminUsers, formatDateTime } from '@/lib/skillhubcore-admin-data';
 export default function UsersPage() {
   return (
     <section className="mx-auto max-w-7xl space-y-8 px-6 py-8 lg:py-10">
-      <article className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
+      <article className="rounded-[2rem] border border-slate-200/80 bg-white/70 p-8 shadow-sm backdrop-blur-[16px]">
         <p className="text-[0.65rem] font-black uppercase tracking-[0.45em] text-cyan-600">Users</p>
-        <h2 className="mt-3 text-4xl font-black tracking-tight text-slate-950">Identity and platform access</h2>
+        <h2 className="mt-3 text-4xl font-black tracking-tight font-outfit text-slate-950">Identity and platform access</h2>
         <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
           Search users, inspect platform access, and apply sensitive actions behind a TOTP re-auth modal.
         </p>
       </article>
 
       <section className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
-        <article className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+        <article className="rounded-[2rem] border border-slate-200/80 bg-white/70 p-6 shadow-sm backdrop-blur-[16px]">
           <label className="block text-sm font-semibold text-slate-700">
             Search users
             <input
@@ -46,7 +46,7 @@ export default function UsersPage() {
           </div>
         </article>
 
-        <article className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+        <article className="rounded-[2rem] border border-slate-200/80 bg-white/70 p-6 shadow-sm backdrop-blur-[16px]">
           <p className="text-xs font-black uppercase tracking-[0.35em] text-slate-500">User detail</p>
           <div className="mt-6 space-y-4">
             <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
