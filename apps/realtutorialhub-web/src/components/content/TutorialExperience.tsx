@@ -14,6 +14,7 @@ import { TutorialNavbar } from '../layout/TutorialNavbar';
 import { TutorialSidebar } from '../layout/TutorialSidebar';
 import { TutorialKeyboardNav } from './TutorialKeyboardNav';
 import { LearningActivityTracker } from './LearningActivityTracker';
+import { LiveSessionRequestPanel } from '@/components/tutorial';
 
 interface TutorialExperienceProps {
   params: {
@@ -138,24 +139,30 @@ export function TutorialExperience({ params, subtopicId, content, theme, mode, b
           simulateError={simulateError}
         />
       ) : mode === 'learn' ? (
-        <BlockRenderer
-          content={content}
-          theme={theme}
-          subtopicId={subtopicId}
-          subtopicName={subtopicName}
-          simulateSlowLoad={simulateSlowLoad}
-          simulateError={simulateError}
-        />
+        <>
+          <BlockRenderer
+            content={content}
+            theme={theme}
+            subtopicId={subtopicId}
+            subtopicName={subtopicName}
+            simulateSlowLoad={simulateSlowLoad}
+            simulateError={simulateError}
+          />
+          <LiveSessionRequestPanel subtopicId={subtopicId ?? params.subtopicSlug} subtopicName={subtopicName} theme={theme} />
+        </>
       ) : blockType ? (
-        <BlockRenderer
-          content={content}
-          theme={theme}
-          subtopicId={subtopicId}
-          subtopicName={subtopicName}
-          activeBlockType={blockType}
-          simulateSlowLoad={simulateSlowLoad}
-          simulateError={simulateError}
-        />
+        <>
+          <BlockRenderer
+            content={content}
+            theme={theme}
+            subtopicId={subtopicId}
+            subtopicName={subtopicName}
+            activeBlockType={blockType}
+            simulateSlowLoad={simulateSlowLoad}
+            simulateError={simulateError}
+          />
+          <LiveSessionRequestPanel subtopicId={subtopicId ?? params.subtopicSlug} subtopicName={subtopicName} theme={theme} />
+        </>
       ) : null}
     </section>
   );
