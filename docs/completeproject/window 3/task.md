@@ -371,3 +371,11 @@ This file is append-only for future planning and reference.
 - Created `docs/completeproject/window 3/tier3-runbook.md` as the working runbook for the Neon rehearsal and maintenance-window execution.
 - Tier 3 remains deferred for production until rehearsal branch validation and the approved maintenance window are both in place.
 - No production database changes have been made as part of this prep step.
+
+---
+
+### Tier 3 Execution Assets
+
+- Added `docs/completeproject/window 3/tier3-rehearsal.sql` for the Neon branch dry run.
+- Added `docs/completeproject/window 3/tier3-production-checklist.md` for the live maintenance window.
+- These are preparation artifacts only. They do not run or mutate any database by themselves.
