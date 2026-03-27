@@ -16,6 +16,7 @@ import { TutorialKeyboardNav } from './TutorialKeyboardNav';
 import { LearningActivityTracker } from './LearningActivityTracker';
 import { LiveSessionRequestPanel } from '@/components/tutorial';
 import { ProjectSubmissionPanel, type ProjectCard } from './ProjectSubmissionPanel';
+import { AiTutorDrawer } from '@/components/tutorial/AiTutorDrawer';
 
 interface TutorialExperienceProps {
   params: {
@@ -152,6 +153,12 @@ export function TutorialExperience({ params, subtopicId, content, theme, mode, p
           />
           <LiveSessionRequestPanel subtopicId={subtopicId ?? params.subtopicSlug} subtopicName={subtopicName} theme={theme} />
           <ProjectSubmissionPanel subtopicId={subtopicId ?? params.subtopicSlug} subtopicName={subtopicName} theme={theme} projects={projects} />
+          <AiTutorDrawer
+            subtopicId={subtopicId ?? params.subtopicSlug}
+            subtopicName={subtopicName}
+            theme={theme}
+            greeting={content.ai_tutor.greeting}
+          />
         </>
       ) : blockType ? (
         <>
