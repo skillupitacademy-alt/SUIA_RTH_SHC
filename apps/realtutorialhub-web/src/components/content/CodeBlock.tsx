@@ -12,9 +12,10 @@ interface CodeBlockProps {
     blockCode: string;
     blockCodeHeader: string;
   };
+  onCopied?: () => void;
 }
 
-export function CodeBlock({ data, theme }: CodeBlockProps) {
+export function CodeBlock({ data, theme, onCopied }: CodeBlockProps) {
   const t = useTranslations('blocks.code');
   const common = useTranslations('common');
   const safeData = data ?? {
@@ -50,6 +51,25 @@ export function CodeBlock({ data, theme }: CodeBlockProps) {
             {safeData.code}
           </pre>
         </div>
+        <button
+          type="button"
+          onClick={() => {
+            void navigator.clipboard.writeText(safeData.code).catch(() => undefined);
+            onCopied?.();
+          }}
+          style={{
+            marginTop: 12,
+            border: 'none',
+            borderRadius: 10,
+            padding: '9px 12px',
+            background: theme.blockCodeHeader,
+            color: '#fff',
+            fontWeight: 800,
+            cursor: 'pointer',
+          }}
+        >
+          Copy code
+        </button>
         <div style={{ marginTop: 14 }}>
           <div style={{ fontSize: 12.5, fontWeight: 800, marginBottom: 8, color: 'rgba(255,255,255,0.82)' }}>{common('steps')}</div>
           <ol style={{ margin: 0, paddingLeft: 20, lineHeight: 1.65, color: 'rgba(255,255,255,0.82)' }}>

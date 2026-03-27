@@ -5,6 +5,7 @@ import type { AssignmentDifficulty } from '@quiz/types';
 import { useEffect, useState } from 'react';
 
 import type { DomainTheme } from '@/lib/domain-themes';
+import { reportTutorialBlockViewed } from '@/lib/tutorial-progress';
 
 type BlockType = 'notes' | 'layman' | 'real_life' | 'technical' | 'code' | 'ai_tutor';
 
@@ -269,6 +270,7 @@ export function LearnerProgressPanel({ subtopicId, subtopicName, theme, blockOrd
     const markComplete = (blockType: BlockType) => {
       setVisible(true);
       setCompletedBlocks((current) => (current.includes(blockType) ? current : [...current, blockType]));
+      void reportTutorialBlockViewed(subtopicId, blockType).catch(() => undefined);
       clearTimer(blockType);
     };
 
@@ -306,7 +308,7 @@ export function LearnerProgressPanel({ subtopicId, subtopicName, theme, blockOrd
       timers.forEach((timer) => globalThis.clearTimeout(timer));
       observer.disconnect();
     };
-  }, [blockOrder, completedBlocks]);
+  }, [blockOrder, completedBlocks, subtopicId]);
 
   const tierStatus = assignmentQuery.data?.tierStatus;
   const simpleAssignments = assignmentQuery.data?.assignments ?? [];
