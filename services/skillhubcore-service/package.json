@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.18.1",
+    "@quiz/events": "workspace:*",
     "@quiz/db": "workspace:*",
     "@quiz/db-people": "workspace:*",
     "@quiz/types": "workspace:*",

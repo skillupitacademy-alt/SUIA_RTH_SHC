@@ -28,9 +28,9 @@ import { EVENT_CONSUMER_MAP } from '../consumer-map';
 describe('events package', () => {
   const emptyStudentCreatedPayload = {} as unknown as PlatformEventPayloadMap[typeof PlatformEventTypes.STUDENT_CREATED];
 
-  it('exposes schemas for all 16 Sprint 0 events', () => {
-    expect(Object.keys(PlatformEventPayloadSchemas)).toHaveLength(16);
-    expect(Object.keys(PlatformEventEnvelopeSchemas)).toHaveLength(16);
+  it('exposes schemas for all 18 Sprint 0 events', () => {
+    expect(Object.keys(PlatformEventPayloadSchemas)).toHaveLength(18);
+    expect(Object.keys(PlatformEventEnvelopeSchemas)).toHaveLength(18);
   });
 
   it('validates an event envelope through Zod', () => {
@@ -109,7 +109,7 @@ describe('events package', () => {
   });
 
   it('consumer-map.ts: validates all events map to valid URLs', () => {
-    expect(Object.keys(EVENT_CONSUMER_MAP)).toHaveLength(16);
+    expect(Object.keys(EVENT_CONSUMER_MAP)).toHaveLength(18);
     for (const key of Object.values(PlatformEventTypes)) {
       expect(EVENT_CONSUMER_MAP[key]).toEqual(expect.arrayContaining([expect.stringMatching(/^https:\/\/(?:placeholder\.invalid|tutorial-service\.invalid)\/(?:api\/workers\/|consumers\/)/)]));
     }

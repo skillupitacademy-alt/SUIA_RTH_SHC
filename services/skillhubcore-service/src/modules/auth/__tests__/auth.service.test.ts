@@ -2,6 +2,13 @@ import { randomUUID } from 'crypto';
 
 import { describe, expect, it, vi } from 'vitest';
 
+const eventMocks = vi.hoisted(() => ({
+  publishUserRegistered: vi.fn(async () => ({ messageId: 'msg-user-registered', envelope: {} })),
+  publishSubscriptionUpgraded: vi.fn(async () => ({ messageId: 'msg-subscription-upgraded', envelope: {} })),
+}));
+
+vi.mock('@/lib/skillhubcore-events', () => eventMocks);
+
 import { PasswordService } from '../password.service';
 import { AuthService } from '../auth.service';
 import { TokenService } from '../token.service';
@@ -235,6 +242,12 @@ describe('AuthService', () => {
     expect(accessPayload.roles).toEqual(['student']);
     expect(accessPayload.subscriptions).toEqual(['tutorial.preview_only']);
     expect(repo.audits[repo.audits.length - 1]?.action).toBe('register');
+    expect(eventMocks.publishUserRegistered).toHaveBeenCalledWith(expect.objectContaining({
+      userId: result.user.id,
+      email: 'student@example.com',
+      platform: 'realtutorialhub',
+      role: 'student',
+    }));
   });
 
   it('logs in and auto-grants new platform access', async () => {

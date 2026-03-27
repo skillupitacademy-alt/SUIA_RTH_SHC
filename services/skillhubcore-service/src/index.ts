@@ -9,6 +9,7 @@ import { PasswordService } from '@/modules/auth/password.service';
 import { TokenService } from '@/modules/auth/token.service';
 import { createSsoRoutes } from '@/modules/auth/sso/sso.routes';
 import { SsoService } from '@/modules/auth/sso/sso.service';
+import { createSkillhubcoreEventRoutes } from '@/modules/events';
 import { createHierarchyRoutes } from '@/modules/hierarchy/hierarchy.routes';
 import { HierarchyService } from '@/modules/hierarchy/hierarchy.service';
 import { DrizzleUserRepository } from '@/modules/user/user.repository';
@@ -32,6 +33,7 @@ export const createApp = () => {
   app.get('/healthz/', (c) => c.json({ status: 'ok', service: 'skillhubcore', ts: Date.now() }));
   app.route('/auth', createAuthRoutes(authService));
   app.route('/admin/users', createSsoRoutes(ssoService));
+  app.route('/consumers', createSkillhubcoreEventRoutes({ subscriptionService }));
   app.route('/api/hierarchy', createHierarchyRoutes(hierarchyService));
 
   return app;

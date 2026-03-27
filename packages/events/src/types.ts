@@ -3,6 +3,7 @@ import { z } from 'zod';
 export const PlatformEventTypes = {
   STUDENT_ENROLLED: 'student.enrolled',
   STUDENT_CREATED: 'student.created',
+  USER_REGISTERED: 'user.registered',
   EXAM_COMPLETED: 'exam.completed',
   PAYMENT_RECEIVED: 'payment.received',
   PAYMENT_OVERDUE: 'payment.overdue',
@@ -14,6 +15,7 @@ export const PlatformEventTypes = {
   ADMISSION_COMPLETED: 'admission.completed',
   PROJECT_SUBMITTED: 'project.submitted',
   CERTIFICATE_ISSUED: 'certificate.issued',
+  SUBSCRIPTION_UPGRADED: 'subscription.upgraded',
   PLACEMENT_OFFER_ACCEPTED: 'placement.offer_accepted',
   CONTENT_GENERATION_REQUESTED: 'content.generation_requested',
   CONTENT_APPROVED_AND_PUBLISHED: 'content.approved_and_published',
@@ -52,6 +54,13 @@ export const PlatformEventPayloadSchemas = {
     enrolledAt: isoString,
   }),
   [PlatformEventTypes.STUDENT_CREATED]: idPayload({ userId: z.string().uuid(), createdBy: z.string().uuid(), createdAt: isoString }),
+  [PlatformEventTypes.USER_REGISTERED]: idPayload({
+    userId: z.string().uuid(),
+    email: z.string().email(),
+    platform: z.enum(['realtutorialhub', 'skillup']),
+    role: z.enum(['student', 'faculty', 'admin']),
+    registeredAt: isoString,
+  }),
   [PlatformEventTypes.EXAM_COMPLETED]: idPayload({ userId: z.string().uuid(), examId: z.string().uuid(), score: z.number(), completedAt: isoString }),
   [PlatformEventTypes.PAYMENT_RECEIVED]: idPayload({
     userId: z.string().uuid(),
@@ -77,6 +86,12 @@ export const PlatformEventPayloadSchemas = {
   }),
   [PlatformEventTypes.PROJECT_SUBMITTED]: idPayload({ userId: z.string().uuid(), projectId: z.string().uuid(), submittedAt: isoString }),
   [PlatformEventTypes.CERTIFICATE_ISSUED]: idPayload({ certificateId: z.string().uuid(), userId: z.string().uuid(), issuedAt: isoString }),
+  [PlatformEventTypes.SUBSCRIPTION_UPGRADED]: idPayload({
+    userId: z.string().uuid(),
+    planType: z.enum(['free', 'pro', 'enterprise']),
+    features: z.array(z.string().min(1)),
+    upgradedAt: isoString,
+  }),
   [PlatformEventTypes.PLACEMENT_OFFER_ACCEPTED]: idPayload({ userId: z.string().uuid(), offerId: z.string().uuid(), acceptedAt: isoString }),
   [PlatformEventTypes.CONTENT_GENERATION_REQUESTED]: idPayload({ subtopicId: z.string().uuid(), requestedBy: z.string().uuid(), requestedAt: isoString }),
   [PlatformEventTypes.CONTENT_APPROVED_AND_PUBLISHED]: idPayload({ subtopicId: z.string().uuid(), approvedBy: z.string().uuid(), publishedAt: isoString, version: z.number().int().positive() }),
@@ -89,6 +104,7 @@ export type PlatformEventPayloadMap = {
 export const PlatformEventEnvelopeSchemas = {
   [PlatformEventTypes.STUDENT_ENROLLED]: z.object({ ...baseFields, type: z.literal(PlatformEventTypes.STUDENT_ENROLLED), data: PlatformEventPayloadSchemas[PlatformEventTypes.STUDENT_ENROLLED] }),
   [PlatformEventTypes.STUDENT_CREATED]: z.object({ ...baseFields, type: z.literal(PlatformEventTypes.STUDENT_CREATED), data: PlatformEventPayloadSchemas[PlatformEventTypes.STUDENT_CREATED] }),
+  [PlatformEventTypes.USER_REGISTERED]: z.object({ ...baseFields, type: z.literal(PlatformEventTypes.USER_REGISTERED), data: PlatformEventPayloadSchemas[PlatformEventTypes.USER_REGISTERED] }),
   [PlatformEventTypes.EXAM_COMPLETED]: z.object({ ...baseFields, type: z.literal(PlatformEventTypes.EXAM_COMPLETED), data: PlatformEventPayloadSchemas[PlatformEventTypes.EXAM_COMPLETED] }),
   [PlatformEventTypes.PAYMENT_RECEIVED]: z.object({ ...baseFields, type: z.literal(PlatformEventTypes.PAYMENT_RECEIVED), data: PlatformEventPayloadSchemas[PlatformEventTypes.PAYMENT_RECEIVED] }),
   [PlatformEventTypes.PAYMENT_OVERDUE]: z.object({ ...baseFields, type: z.literal(PlatformEventTypes.PAYMENT_OVERDUE), data: PlatformEventPayloadSchemas[PlatformEventTypes.PAYMENT_OVERDUE] }),
@@ -100,6 +116,7 @@ export const PlatformEventEnvelopeSchemas = {
   [PlatformEventTypes.ADMISSION_COMPLETED]: z.object({ ...baseFields, type: z.literal(PlatformEventTypes.ADMISSION_COMPLETED), data: PlatformEventPayloadSchemas[PlatformEventTypes.ADMISSION_COMPLETED] }),
   [PlatformEventTypes.PROJECT_SUBMITTED]: z.object({ ...baseFields, type: z.literal(PlatformEventTypes.PROJECT_SUBMITTED), data: PlatformEventPayloadSchemas[PlatformEventTypes.PROJECT_SUBMITTED] }),
   [PlatformEventTypes.CERTIFICATE_ISSUED]: z.object({ ...baseFields, type: z.literal(PlatformEventTypes.CERTIFICATE_ISSUED), data: PlatformEventPayloadSchemas[PlatformEventTypes.CERTIFICATE_ISSUED] }),
+  [PlatformEventTypes.SUBSCRIPTION_UPGRADED]: z.object({ ...baseFields, type: z.literal(PlatformEventTypes.SUBSCRIPTION_UPGRADED), data: PlatformEventPayloadSchemas[PlatformEventTypes.SUBSCRIPTION_UPGRADED] }),
   [PlatformEventTypes.PLACEMENT_OFFER_ACCEPTED]: z.object({ ...baseFields, type: z.literal(PlatformEventTypes.PLACEMENT_OFFER_ACCEPTED), data: PlatformEventPayloadSchemas[PlatformEventTypes.PLACEMENT_OFFER_ACCEPTED] }),
   [PlatformEventTypes.CONTENT_GENERATION_REQUESTED]: z.object({ ...baseFields, type: z.literal(PlatformEventTypes.CONTENT_GENERATION_REQUESTED), data: PlatformEventPayloadSchemas[PlatformEventTypes.CONTENT_GENERATION_REQUESTED] }),
   [PlatformEventTypes.CONTENT_APPROVED_AND_PUBLISHED]: z.object({ ...baseFields, type: z.literal(PlatformEventTypes.CONTENT_APPROVED_AND_PUBLISHED), data: PlatformEventPayloadSchemas[PlatformEventTypes.CONTENT_APPROVED_AND_PUBLISHED] }),

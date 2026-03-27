@@ -5,6 +5,7 @@ const TUTORIAL_SERVICE_URL = process.env.TUTORIAL_SERVICE_URL ?? 'https://tutori
 export const EVENT_CONSUMER_MAP: Record<PlatformEventType, string[]> = {
   [PlatformEventTypes.STUDENT_ENROLLED]: [`${TUTORIAL_SERVICE_URL}/api/workers/student-enrolled`],
   [PlatformEventTypes.STUDENT_CREATED]: ['https://placeholder.invalid/consumers/student-created'],
+  [PlatformEventTypes.USER_REGISTERED]: ['https://placeholder.invalid/consumers/user-registered'],
   [PlatformEventTypes.EXAM_COMPLETED]: ['https://placeholder.invalid/consumers/exam-completed'],
   [PlatformEventTypes.PAYMENT_RECEIVED]: ['https://placeholder.invalid/consumers/payment-received'],
   [PlatformEventTypes.PAYMENT_OVERDUE]: ['https://placeholder.invalid/consumers/payment-overdue'],
@@ -16,6 +17,7 @@ export const EVENT_CONSUMER_MAP: Record<PlatformEventType, string[]> = {
   [PlatformEventTypes.ADMISSION_COMPLETED]: ['https://placeholder.invalid/consumers/admission-completed'],
   [PlatformEventTypes.PROJECT_SUBMITTED]: ['https://placeholder.invalid/consumers/project-submitted'],
   [PlatformEventTypes.CERTIFICATE_ISSUED]: ['https://placeholder.invalid/consumers/certificate-issued'],
+  [PlatformEventTypes.SUBSCRIPTION_UPGRADED]: ['https://placeholder.invalid/consumers/subscription-upgraded'],
   [PlatformEventTypes.PLACEMENT_OFFER_ACCEPTED]: ['https://placeholder.invalid/consumers/placement-offer-accepted'],
   [PlatformEventTypes.CONTENT_GENERATION_REQUESTED]: ['https://placeholder.invalid/consumers/content-generation-requested'],
   [PlatformEventTypes.CONTENT_APPROVED_AND_PUBLISHED]: ['https://placeholder.invalid/consumers/content-approved-and-published'],

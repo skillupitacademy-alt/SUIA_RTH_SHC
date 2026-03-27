@@ -4,6 +4,7 @@ import { TokenService } from './token.service';
 import { SubscriptionService } from '../subscription/subscription.service';
 import { SsoService } from './sso/sso.service';
 import { TokenRotationService } from './token-rotation.service';
+import { publishUserRegistered } from '@/lib/skillhubcore-events';
 import type { IUserRepository } from '@quiz/types';
 
 export class AuthService {
@@ -45,7 +46,7 @@ export class AuthService {
     const familyId = TokenService.generateFamilyId();
     const freeFeatures = await this.subscriptionService.getPlanFeatures('free');
 
-    return this.userRepo.transaction(async (repo) => {
+    const result = await this.userRepo.transaction(async (repo) => {
       const user = await repo.createUser({
         email: input.email,
         passwordHash,
@@ -86,6 +87,16 @@ export class AuthService {
         user: this.toUserDto(user, platforms, freeFeatures),
       };
     });
+
+    await publishUserRegistered({
+      userId: result.user.id,
+      email: result.user.email,
+      platform: input.platform,
+      role: input.role ?? 'student',
+      registeredAt: new Date().toISOString(),
+    });
+
+    return result;
   }
 
   async login(input: LoginInput): Promise<AuthResult> {

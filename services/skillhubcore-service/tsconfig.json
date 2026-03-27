@@ -7,6 +7,12 @@
       "@/*": [
         "./src/*"
       ],
+      "@quiz/events": [
+        "../../packages/events/src/index.ts"
+      ],
+      "@quiz/events/*": [
+        "../../packages/events/src/*"
+      ],
       "@quiz/db": [
         "../../packages/db/src/index.ts"
       ],
