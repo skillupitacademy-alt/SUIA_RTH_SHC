@@ -7,7 +7,7 @@ import { and, eq, isNull, sql } from 'drizzle-orm';
 
 import { jsonData, jsonError, requireAdminOrForbidden } from '@/lib/admin-bff';
 import { getAdminStudentDetail } from '@/lib/skillup-admin-data';
-import { admissions, batchEnrollments, batches, db, users } from '@quiz/db-people';
+import { admissions, batchCapacityService, batchEnrollments, batches, db, users } from '@quiz/db-people';
 
 const enrollSchema = z.object({
   batchId: z.string().min(1).optional(),
@@ -34,63 +34,85 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
 
   const batchId = parsed.data.batchId ?? student.batchId;
   const passwordHash = await bcrypt.hash('SkillUp@2025', 10);
+  const needsReservation = student.batchId !== batchId;
+  let reservationHeld = false;
+  let insertedEnrollment = false;
 
-  await db.transaction(async (tx) => {
-    const [existingUser] = await tx.select({ id: users.id }).from(users).where(eq(users.id, student.userId)).limit(1);
-    if (existingUser === undefined) {
-      await tx.insert(users).values({
-        id: student.userId,
-        email: student.email,
-        passwordHash,
-        role: 'student',
-        platform: 'skillup',
-        isActive: true,
-        deletedAt: null,
-      });
+  if (needsReservation) {
+    reservationHeld = await batchCapacityService.reserveSlot(batchId);
+    if (!reservationHeld) {
+      return jsonError('Batch is full', 409);
     }
+  }
 
-    if (student.enquiryId !== null) {
-      const [existingAdmission] = await tx.select({ id: admissions.id }).from(admissions).where(eq(admissions.studentUserId, student.userId)).limit(1);
-      if (existingAdmission === undefined) {
-        await tx.insert(admissions).values({
-          enquiryId: student.enquiryId,
-          studentUserId: student.userId,
-          admissionType: 'training',
-          batchId,
-          status: 'approved',
-          documents: {},
+  try {
+    await db.transaction(async (tx) => {
+      const [existingUser] = await tx.select({ id: users.id }).from(users).where(eq(users.id, student.userId)).limit(1);
+      if (existingUser === undefined) {
+        await tx.insert(users).values({
+          id: student.userId,
+          email: student.email,
+          passwordHash,
+          role: 'student',
+          platform: 'skillup',
+          isActive: true,
+          deletedAt: null,
         });
-      } else {
-        await tx
-          .update(admissions)
-          .set({
+      }
+
+      if (student.enquiryId !== null) {
+        const [existingAdmission] = await tx.select({ id: admissions.id }).from(admissions).where(eq(admissions.studentUserId, student.userId)).limit(1);
+        if (existingAdmission === undefined) {
+          await tx.insert(admissions).values({
+            enquiryId: student.enquiryId,
+            studentUserId: student.userId,
+            admissionType: 'training',
             batchId,
             status: 'approved',
-            updatedAt: new Date(),
-          })
-          .where(eq(admissions.studentUserId, student.userId));
+            documents: {},
+          });
+        } else {
+          await tx
+            .update(admissions)
+            .set({
+              batchId,
+              status: 'approved',
+              updatedAt: new Date(),
+            })
+            .where(eq(admissions.studentUserId, student.userId));
+        }
       }
+
+      const [existingEnrollment] = await tx
+        .select({ id: batchEnrollments.id })
+        .from(batchEnrollments)
+        .where(and(eq(batchEnrollments.batchId, batchId), eq(batchEnrollments.studentUserId, student.userId), isNull(batchEnrollments.deletedAt)))
+        .limit(1);
+
+      if (existingEnrollment === undefined) {
+        insertedEnrollment = true;
+        await tx.insert(batchEnrollments).values({
+          batchId,
+          studentUserId: student.userId,
+          status: 'active',
+        });
+
+        await tx
+          .update(batches)
+          .set({ enrolledCount: sql`${batches.enrolledCount} + 1` })
+          .where(eq(batches.id, batchId));
+      }
+    });
+  } catch (error) {
+    if (reservationHeld) {
+      await batchCapacityService.releaseSlot(batchId).catch(() => undefined);
     }
+    return jsonError(error instanceof Error ? error.message : 'Failed to enroll student', 500);
+  }
 
-    const [existingEnrollment] = await tx
-      .select({ id: batchEnrollments.id })
-      .from(batchEnrollments)
-      .where(and(eq(batchEnrollments.batchId, batchId), eq(batchEnrollments.studentUserId, student.userId), isNull(batchEnrollments.deletedAt)))
-      .limit(1);
-
-    if (existingEnrollment === undefined) {
-      await tx.insert(batchEnrollments).values({
-        batchId,
-        studentUserId: student.userId,
-        status: 'active',
-      });
-
-      await tx
-        .update(batches)
-        .set({ enrolledCount: sql`${batches.enrolledCount} + 1` })
-        .where(eq(batches.id, batchId));
-    }
-  });
+  if (reservationHeld && insertedEnrollment === false) {
+    await batchCapacityService.releaseSlot(batchId).catch(() => undefined);
+  }
 
   const payload = {
     userId: student.userId,

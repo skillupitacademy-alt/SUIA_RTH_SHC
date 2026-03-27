@@ -4,7 +4,7 @@ import { and, eq, isNull, sql } from 'drizzle-orm';
 
 import { getAdminStudentDetail } from '@/lib/skillup-admin-data';
 import { jsonData, jsonError, parseJsonOrFormBody, requireAdminOrForbidden } from '@/lib/admin-bff';
-import { admissions, batchEnrollments, batches, db, enquiries, userProfiles, users } from '@quiz/db-people';
+import { admissions, batchCapacityService, batchEnrollments, batches, db, enquiries, userProfiles, users } from '@quiz/db-people';
 
 const updateStudentSchema = z.object({
   name: z.string().min(2),
@@ -43,106 +43,126 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   if (!parsed.ok) return parsed.response;
 
   const nextBatchId = parsed.data.batchId;
+  const currentBatchId = student.batchId;
+  const needsReservation = currentBatchId !== nextBatchId;
+  let reservationHeld = false;
 
-  await db.transaction(async (tx) => {
-    await tx
-      .update(users)
-      .set({
-        email: parsed.data.email,
-        updatedAt: new Date(),
-        version: sql`${users.version} + 1`,
-      })
-      .where(eq(users.id, student.userId));
-
-    const [profile] = await tx.select({ id: userProfiles.id }).from(userProfiles).where(eq(userProfiles.userId, student.userId)).limit(1);
-    if (profile === undefined) {
-      await tx.insert(userProfiles).values({
-        userId: student.userId,
-        name: parsed.data.name,
-      });
-    } else {
-      await tx
-        .update(userProfiles)
-        .set({
-          name: parsed.data.name,
-          updatedAt: new Date(),
-        })
-        .where(eq(userProfiles.userId, student.userId));
+  if (needsReservation) {
+    reservationHeld = await batchCapacityService.reserveSlot(nextBatchId);
+    if (!reservationHeld) {
+      return jsonError('Batch is full', 409);
     }
+  }
 
-    if (student.enquiryId !== null) {
+  try {
+    await db.transaction(async (tx) => {
       await tx
-        .update(enquiries)
+        .update(users)
         .set({
-          fullName: parsed.data.name,
           email: parsed.data.email,
           updatedAt: new Date(),
+          version: sql`${users.version} + 1`,
         })
-        .where(eq(enquiries.id, student.enquiryId));
-    }
+        .where(eq(users.id, student.userId));
 
-    const [existingAdmission] = await tx.select({ id: admissions.id }).from(admissions).where(eq(admissions.studentUserId, student.userId)).limit(1);
-    if (existingAdmission === undefined) {
-      if (student.enquiryId !== null) {
-        await tx.insert(admissions).values({
-          enquiryId: student.enquiryId,
-          studentUserId: student.userId,
-          admissionType: 'training',
-          batchId: nextBatchId,
-          status: 'approved',
-          documents: {},
+      const [profile] = await tx.select({ id: userProfiles.id }).from(userProfiles).where(eq(userProfiles.userId, student.userId)).limit(1);
+      if (profile === undefined) {
+        await tx.insert(userProfiles).values({
+          userId: student.userId,
+          name: parsed.data.name,
         });
+      } else {
+        await tx
+          .update(userProfiles)
+          .set({
+            name: parsed.data.name,
+            updatedAt: new Date(),
+          })
+          .where(eq(userProfiles.userId, student.userId));
       }
-    } else {
-      await tx
-        .update(admissions)
-        .set({
-          batchId: nextBatchId,
-          status: 'approved',
-          updatedAt: new Date(),
-        })
-        .where(eq(admissions.studentUserId, student.userId));
-    }
 
-    const [existingEnrollment] = await tx
-      .select({ id: batchEnrollments.id, batchId: batchEnrollments.batchId })
-      .from(batchEnrollments)
-      .where(and(eq(batchEnrollments.studentUserId, student.userId), isNull(batchEnrollments.deletedAt)))
-      .limit(1);
+      if (student.enquiryId !== null) {
+        await tx
+          .update(enquiries)
+          .set({
+            fullName: parsed.data.name,
+            email: parsed.data.email,
+            updatedAt: new Date(),
+          })
+          .where(eq(enquiries.id, student.enquiryId));
+      }
 
-    if (existingEnrollment === undefined) {
-      await tx.insert(batchEnrollments).values({
-        batchId: nextBatchId,
-        studentUserId: student.userId,
-        status: 'active',
-      });
-      await tx
-        .update(batches)
-        .set({ enrolledCount: sql`${batches.enrolledCount} + 1` })
-        .where(eq(batches.id, nextBatchId));
-    } else if (existingEnrollment.batchId !== nextBatchId) {
-      await tx
-        .update(batchEnrollments)
-        .set({
+      const [existingAdmission] = await tx.select({ id: admissions.id }).from(admissions).where(eq(admissions.studentUserId, student.userId)).limit(1);
+      if (existingAdmission === undefined) {
+        if (student.enquiryId !== null) {
+          await tx.insert(admissions).values({
+            enquiryId: student.enquiryId,
+            studentUserId: student.userId,
+            admissionType: 'training',
+            batchId: nextBatchId,
+            status: 'approved',
+            documents: {},
+          });
+        }
+      } else {
+        await tx
+          .update(admissions)
+          .set({
+            batchId: nextBatchId,
+            status: 'approved',
+            updatedAt: new Date(),
+          })
+          .where(eq(admissions.studentUserId, student.userId));
+      }
+
+      const [existingEnrollment] = await tx
+        .select({ id: batchEnrollments.id, batchId: batchEnrollments.batchId })
+        .from(batchEnrollments)
+        .where(and(eq(batchEnrollments.studentUserId, student.userId), isNull(batchEnrollments.deletedAt)))
+        .limit(1);
+
+      if (existingEnrollment === undefined) {
+        await tx.insert(batchEnrollments).values({
           batchId: nextBatchId,
+          studentUserId: student.userId,
           status: 'active',
-          droppedAt: null,
-          deletedAt: null,
-        })
-        .where(eq(batchEnrollments.id, existingEnrollment.id));
+        });
+        await tx
+          .update(batches)
+          .set({ enrolledCount: sql`${batches.enrolledCount} + 1` })
+          .where(eq(batches.id, nextBatchId));
+      } else if (existingEnrollment.batchId !== nextBatchId) {
+        await tx
+          .update(batchEnrollments)
+          .set({
+            batchId: nextBatchId,
+            status: 'active',
+            droppedAt: null,
+            deletedAt: null,
+          })
+          .where(eq(batchEnrollments.id, existingEnrollment.id));
 
-      await tx
-        .update(batches)
-        .set({ enrolledCount: sql`${batches.enrolledCount} + 1` })
-        .where(eq(batches.id, nextBatchId));
+        await tx
+          .update(batches)
+          .set({ enrolledCount: sql`${batches.enrolledCount} + 1` })
+          .where(eq(batches.id, nextBatchId));
 
-      await tx
-        .update(batches)
-        .set({ enrolledCount: sql`GREATEST(${batches.enrolledCount} - 1, 0)` })
-        .where(eq(batches.id, existingEnrollment.batchId));
+        await tx
+          .update(batches)
+          .set({ enrolledCount: sql`GREATEST(${batches.enrolledCount} - 1, 0)` })
+          .where(eq(batches.id, existingEnrollment.batchId));
+      }
+    });
+  } catch (error) {
+    if (reservationHeld) {
+      await batchCapacityService.releaseSlot(nextBatchId).catch(() => undefined);
     }
+    return jsonError(error instanceof Error ? error.message : 'Failed to update student', 500);
+  }
 
-  });
+  if (reservationHeld && currentBatchId !== null && currentBatchId !== nextBatchId) {
+    await batchCapacityService.releaseSlot(currentBatchId).catch(() => undefined);
+  }
 
   const detail = await getAdminStudentDetail(id);
   if (detail === undefined) {

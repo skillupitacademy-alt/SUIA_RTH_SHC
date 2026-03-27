@@ -4,7 +4,7 @@ import { and, eq, isNull } from 'drizzle-orm';
 
 import { jsonData, parseJsonOrFormBody, requireAdminOrForbidden } from '@/lib/admin-bff';
 import { listAdminBatches } from '@/lib/skillup-admin-data';
-import { batches, faculty, userProfiles, users, db } from '@quiz/db-people';
+import { batchCapacityService, batches, faculty, userProfiles, users, db } from '@quiz/db-people';
 
 const createBatchSchema = z.object({
   name: z.string().min(2),
@@ -49,6 +49,8 @@ export async function POST(request: NextRequest) {
       deletedAt: null,
     })
     .returning({ id: batches.id, name: batches.name });
+
+  void batchCapacityService.seed(created.id, parsed.data.capacity, 0).catch(() => undefined);
 
   return jsonData(
     {

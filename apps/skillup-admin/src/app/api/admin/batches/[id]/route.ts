@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { and, eq, isNull } from 'drizzle-orm';
 
 import { jsonData, jsonError, parseJsonOrFormBody, requireAdminOrForbidden } from '@/lib/admin-bff';
-import { batches, db, faculty, userProfiles, users } from '@quiz/db-people';
+import { batchCapacityService, batches, db, faculty, userProfiles, users } from '@quiz/db-people';
 import { getAdminBatchDetail } from '@/lib/skillup-admin-data';
 
 const batchSchema = z.object({
@@ -67,6 +67,8 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   if (detail === undefined) {
     return jsonError('Batch not found', 404);
   }
+
+  void batchCapacityService.seed(id, detail.capacity, detail.studentCount).catch(() => undefined);
 
   return jsonData({ updated: true, detail }, 200);
 }
