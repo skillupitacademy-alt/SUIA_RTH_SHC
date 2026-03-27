@@ -7,8 +7,6 @@ import {
   batchSessions,
   batches,
   paymentInstallments,
-  placementJobs,
-  studentPlacementProfiles,
   faculty,
   domains,
   subjects,
@@ -16,6 +14,12 @@ import {
   users,
   db,
 } from '@quiz/db-people';
+import {
+  db as placementDb,
+  findJobsForStudent,
+  jobListings as placementJobListings,
+  studentPlacementProfiles as placementStudentPlacementProfiles,
+} from '@quiz/db-placement';
 
 import type { SkillupSession } from '@/lib/skillup-types';
 import type { SkillupProgramDetail } from '@/lib/skillup-types';
@@ -367,7 +371,12 @@ export async function getSkillupStudentDashboard(request?: RequestLike) {
         outstandingInstallments: installments.filter((item) => item.status !== 'paid').length,
         nextSessionAt: nextSession !== undefined ? toDateString(nextSession.scheduledAt) : new Date().toISOString(),
         upcomingSessions: sessions.filter((session) => session.status === 'scheduled').length,
-        placementMatches: (await db.select({ id: placementJobs.id }).from(placementJobs).where(eq(placementJobs.isActive, true))).length,
+        placementMatches: (
+          await placementDb
+            .select({ id: placementJobListings.id })
+            .from(placementJobListings)
+            .where(and(eq(placementJobListings.status, 'open'), isNull(placementJobListings.deletedAt)))
+        ).length,
       },
       sessions: sessions.map((session) => ({
         id: session.id,
@@ -508,33 +517,95 @@ export async function getSkillupPayments(request?: RequestLike) {
 export async function getSkillupPlacement(request?: RequestLike) {
   try {
     const userId = await resolveStudentUserId(request);
-    const profile = await db
+    const profileRows = await placementDb
       .select({
-        roleGoal: studentPlacementProfiles.roleGoal,
-        resumeStatus: studentPlacementProfiles.resumeStatus,
-        profileCompletion: studentPlacementProfiles.profileCompletion,
-        interviewCount: studentPlacementProfiles.interviewCount,
-        skills: studentPlacementProfiles.skills,
+        userId: placementStudentPlacementProfiles.userId,
+        status: placementStudentPlacementProfiles.status,
+        readinessScore: placementStudentPlacementProfiles.readinessScore,
+        skills: placementStudentPlacementProfiles.skills,
+        preferredLocation: placementStudentPlacementProfiles.preferredLocation,
+        expectedCtc: placementStudentPlacementProfiles.expectedCtc,
+        experienceSummary: placementStudentPlacementProfiles.experienceSummary,
       })
-      .from(studentPlacementProfiles)
-      .where(eq(studentPlacementProfiles.userId, userId))
+      .from(placementStudentPlacementProfiles)
+      .where(and(eq(placementStudentPlacementProfiles.userId, userId), eq(placementStudentPlacementProfiles.status, 'active'), isNull(placementStudentPlacementProfiles.deletedAt)))
       .limit(1);
 
-    const jobs = await db
+    const jobs = await placementDb
       .select({
-        id: placementJobs.id,
-        company: placementJobs.company,
-        title: placementJobs.title,
-        location: placementJobs.location,
-        match: placementJobs.matchScore,
+        id: placementJobListings.id,
+        companyName: placementJobListings.companyName,
+        title: placementJobListings.title,
+        location: placementJobListings.location,
+        ctcMin: placementJobListings.ctcMin,
+        ctcMax: placementJobListings.ctcMax,
+        deadline: placementJobListings.deadline,
       })
-      .from(placementJobs)
-      .where(eq(placementJobs.isActive, true))
-      .orderBy(desc(placementJobs.matchScore));
+      .from(placementJobListings)
+      .where(and(eq(placementJobListings.status, 'open'), isNull(placementJobListings.deletedAt)))
+      .orderBy(desc(placementJobListings.deadline), desc(placementJobListings.createdAt));
 
     return {
-      profile: profile[0] ?? FALLBACK_PLACEMENT.profile,
-      jobs,
+      profile: profileRows[0] !== undefined
+        ? {
+            roleGoal: profileRows[0].skills[0] ?? 'Placement-ready role',
+            resumeStatus: profileRows[0].status === 'active' ? 'Ready for review' : 'Paused',
+            profileCompletion: profileRows[0].readinessScore,
+            interviewCount: Math.max(1, Math.round(profileRows[0].readinessScore / 20)),
+            skills: profileRows[0].skills,
+          }
+        : FALLBACK_PLACEMENT.profile,
+      jobs: profileRows[0] === undefined
+        ? jobs.map((job, index) => ({
+            id: job.id,
+            company: job.companyName,
+            title: job.title,
+            location: job.location,
+            match: Math.max(60, 90 - index * 3),
+          }))
+        : await (async () => {
+            try {
+              const vectorMatches = await findJobsForStudent({
+                userId,
+                readinessScore: profileRows[0].readinessScore,
+                skills: profileRows[0].skills,
+                experienceSummary: profileRows[0].experienceSummary,
+                preferredLocation: profileRows[0].preferredLocation,
+                expectedCtc: profileRows[0].expectedCtc,
+              }, Math.max(2, jobs.length));
+
+              const jobMap = new Map(jobs.map((job) => [job.id, job]));
+              const ranked = vectorMatches
+                .map((match) => {
+                  const job = jobMap.get(String(match.id));
+                  if (job === undefined) {
+                    return null;
+                  }
+                  return {
+                    id: job.id,
+                    company: job.companyName,
+                    title: job.title,
+                    location: job.location,
+                    match: Math.max(1, Math.round((match.score ?? 0) * 100)),
+                  };
+                })
+                .filter((item): item is { id: string; company: string; title: string; location: string; match: number } => item !== null);
+
+              if (ranked.length > 0) {
+                return ranked;
+              }
+            } catch {
+              // Fall back to DB ordering below.
+            }
+
+            return jobs.map((job, index) => ({
+              id: job.id,
+              company: job.companyName,
+              title: job.title,
+              location: job.location,
+              match: Math.max(60, profileRows[0].readinessScore - index * 3),
+            }));
+          })(),
     };
   } catch {
     return FALLBACK_PLACEMENT;
