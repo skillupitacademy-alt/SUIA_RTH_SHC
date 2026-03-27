@@ -36,7 +36,7 @@ async function seedSuperAdmin(): Promise<SeedSuperAdminResult> {
       .where(eq(schema.users.email, SUPER_ADMIN_EMAIL))
       .limit(1);
 
-    const desiredPlatform = 'both' as const;
+    const desiredPlatform = 'realtutorialhub' as const;
     const desiredRole = 'super_admin' as const;
 
     if (existingUsers.length > 0) {

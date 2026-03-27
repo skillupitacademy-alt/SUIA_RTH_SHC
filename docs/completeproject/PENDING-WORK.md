@@ -17,6 +17,7 @@
 ## ALREADY DONE (per window 3/task.md Sprints 1–6)
 
 
+# Rule : - Existing UI/UX, Layout , Look and Feel  of RTH should not be altered , addition can be dont. But existing UI/UX to be Locked.
 | Item | Completed In |
 |---|---|
 | Faculty Phase 5 — BFF routes + pages off fallback | Sprint 1 ✅ |
