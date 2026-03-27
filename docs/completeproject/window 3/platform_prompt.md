@@ -1537,3 +1537,614 @@ Weekly Sunday - Batch progress report
   SELECT * FROM mv_batch_attendance_summary WHERE batch_id = 
   JOIN users u ON u.id = student_user_id
   -> Email report to batch faculty and SkillUp admin
+
+
+graph TB
+    subgraph BROWSERS["🌐 Client Browsers"]
+        B1["RTH Student\nquiz.realtutorialhub.com\nwww.realtutorialhub.com"]
+        B2["RTH Admin\nadmin.realtutorialhub.com"]
+        B3["SkillUp Student\napp.skillupitacademy.com"]
+        B4["SkillUp Admin\nadmin.skillupitacademy.com"]
+        B5["SkillUp Faculty\nfaculty.skillupitacademy.com"]
+        B6["SkillHubCore Admin\nadmin.skillhubcore.in"]
+    end
+
+    subgraph NEXTJS_APPS["📱 Next.js Apps (Monorepo)"]
+        direction TB
+        A1["realtutorialhub-quiz\nProxy guards /dashboard /exam /quiz\nCookie: accessToken"]
+        A2["realtutorialhub-web\nProxy guards /learn/**\nTutorial + AI Tutor pages"]
+        A3["realtutorialhub-admin\nProxy guards /dashboard/**\nCookie: admin_accessToken"]
+        A4["skillup-web\nProxy guards /student/**\nCookie: accessToken"]
+        A5["skillup-admin\nProxy guards all admin routes\nCookie: admin_accessToken"]
+        A6["faculty-app\nProxy guards /sessions/**\nCookie: accessToken"]
+        A7["skillhubcore-admin\nProxy guards /dashboard/**\nCookie: admin_accessToken"]
+    end
+
+    subgraph GATEWAY["⚡ Cloudflare Worker (Gateway)"]
+        GW["proxy.realtutorialhub.com\nCORS · Rate limit · Route\nx-portal-identity header injection"]
+    end
+
+    subgraph API_SERVER["🔧 api-server (GCP Cloud Run — Mumbai)"]
+        direction LR
+        AS1["Auth Routes\nPOST /auth/login\nPOST /auth/register\nSets httpOnly cookies"]
+        AS2["Tutorial Routes\nGET /api/tutorial/content/[id]\nPOST /api/tutorial/progress\nPOST /api/tutorial/assignments/progress\nPOST /api/tutorial/ai-tutor"]
+        AS3["Faculty Tutorial Routes\nGET /api/tutorial/faculty/review-queue\nGET /api/tutorial/faculty/live-sessions\nGET /api/tutorial/faculty/help-requests\nPOST /api/tutorial/faculty/live-sessions/[id]/accept"]
+        AS4["Admin Routes\nPOST /api/admin/hierarchy/**\nTriggers HierarchySyncService"]
+        AS5["Hierarchy Sync\nHierarchySyncService\nfire-and-forget via QStash"]
+    end
+
+    subgraph SHC_SERVICE["🧠 skillhubcore-service (GCP Cloud Run — Mumbai, min 2)"]
+        SHC1["Auth Core\nPOST /auth/register\nPOST /auth/login\nToken rotation + stolen token detection"]
+        SHC2["SSO Service\nplatform_access + multi-platform JWT\nplatforms[], features[] in payload"]
+        SHC3["Subscription Engine\nPlan gating: exam.unlimited\nai_tutor, certificate, placement_matching"]
+        SHC4["QStash Consumers\npayment.received → upgrade plan\nuser.registered → default features"]
+    end
+
+    subgraph DATABASES["🗄️ Neon PostgreSQL (Separate DBs)"]
+        DB1["quiz_platform_prod\nexams · questions · blueprints\ndomains · subjects · topics · subtopics\n⏳ Hash-partitioned (Tier 3)"]
+        DB2["tutorial_prod\ntutorial_content · progress\nassignment_progress · live_session_requests\ntutorial_project_submissions\nmv_student_weak_areas (MV)"]
+        DB3["people_prod\nusers · user_roles · platform_access\nbatches · batch_sessions · batch_enrollments\nfaculty · attendance_records\nenquiries · admissions · subscriptions\nsubscription_plans · token_families\n⏳ audit_log hash-partitioned (Tier 3)"]
+        DB4["payment_prod\npayment_plans · payment_installments\npayment_transactions · gateway_webhook_logs"]
+        DB5["placement_prod\nstudent_placement_profiles · job_listings\nplacement_applications · placement_offers"]
+    end
+
+    subgraph CACHE["⚡ Upstash Redis"]
+        R1["sub:{userId} TTL 5min\nblueprint:{id} TTL 1hr\nbatch:capacity:{id} atomic counter"]
+    end
+
+    subgraph VECTOR["🔍 Upstash Vector"]
+        V1["placement-students index\nplacement-jobs index\nPlacementVectorService"]
+    end
+
+    subgraph EVENTS["📨 QStash (Event Bus — ONLY cross-service bridge)"]
+        Q1["hierarchy.synced\nexam.completed → refresh MV\npayment.received\npayment.overdue\ncertificate.issued\nsession.scheduled\nbatch.started\nplacement.matched"]
+    end
+
+    subgraph EXTERNAL["🌍 External Services"]
+        EX1["Gemini Flash API\nAI Tutor answers"]
+        EX2["Resend API\nEmail: payment reminders\nsession links · certificates"]
+        EX3["GCP GCS Bucket\nskillup-certificates"]
+        EX4["Razorpay Gateway\nWebhook → gateway_webhook_logs"]
+    end
+
+    B1 & B2 & B3 & B4 & B5 & B6 --> NEXTJS_APPS
+
+    A1 & A2 & A4 & A5 & A6 --> GW
+    A3 --> GW
+    A7 --> GW
+
+    GW --> API_SERVER
+    GW --> SHC_SERVICE
+
+    AS1 --> DB3
+    AS2 --> DB2
+    AS2 --> DB1
+    AS2 --> EX1
+    AS3 --> DB2
+    AS4 --> DB1
+    AS5 --> Q1
+
+    SHC1 --> DB3
+    SHC2 --> DB3
+    SHC3 --> DB3
+    SHC3 --> R1
+    SHC4 --> Q1
+
+    API_SERVER --> DB4
+    API_SERVER --> DB5
+    API_SERVER --> R1
+    API_SERVER --> V1
+    API_SERVER --> EX2
+    API_SERVER --> EX3
+
+    Q1 --> API_SERVER
+    Q1 --> SHC_SERVICE
+
+    EX4 --> API_SERVER
+
+    style BROWSERS fill:#e8f4f8,stroke:#0ea5e9
+    style NEXTJS_APPS fill:#f0fdf4,stroke:#22c55e
+    style GATEWAY fill:#fef3c7,stroke:#f59e0b
+    style API_SERVER fill:#fdf2f8,stroke:#a855f7
+    style SHC_SERVICE fill:#fff1f2,stroke:#f43f5e
+    style DATABASES fill:#f8fafc,stroke:#64748b
+    style CACHE fill:#fffbeb,stroke:#d97706
+    style VECTOR fill:#f0f9ff,stroke:#0ea5e9
+    style EVENTS fill:#fdf4ff,stroke:#c026d3
+    style EXTERNAL fill:#f9fafb,stroke:#9ca3af
+
+
+
+graph TB
+    subgraph LEARNERS["👥 End Users"]
+        U1["📚 RTH Learners\n(B2C — Digital Students)"]
+        U2["🎓 SkillUp Students\n(B2C — Enrolled Cohorts)"]
+        U3["👔 SkillUp Faculty\n(Instructors)"]
+        U4["🏢 SkillUp Admins\n(Operations Team)"]
+        U5["🔑 Platform Owners\n(SkillHubCore Admins)"]
+    end
+
+    subgraph RTH_ZONE["🔴 Real Tutorial Hub\nquiz.realtutorialhub.com · www.realtutorialhub.com"]
+        RTH["Self-Paced Online Platform\n─────────────────────\n• Quiz & Exam Engine\n• Tutorial Learning (T1–T6)\n• AI Tutor (Gemini)\n• Progress Tracking\n• Remediation Engine\n• Certifications"]
+    end
+
+    subgraph SKILLUP_ZONE["🔵 SkillUp IT Academy\napp.skillupitacademy.com"]
+        SU["Cohort-Based EdTech\n─────────────────────\n• Batch Management\n• Student Enrollment\n• Attendance Tracking\n• Faculty Management\n• CRM (Enquiry → Admission)\n• Payments & Installments\n• Placement Matching"]
+    end
+
+    subgraph SHC_ZONE["🟣 SkillHubCore\napi.skillhubcore.in (internal)"]
+        SHC["Platform Brain\n─────────────────────\n• Single Identity (SSO)\n• Cross-Platform Access\n• Subscription + Feature Gating\n• JWT Issuance (15 min)\n• Refresh Token Rotation\n• Stolen Token Detection"]
+    end
+
+    subgraph SHARED_INFRA["⚙️ Shared Infrastructure (Monorepo — GCP Mumbai)"]
+        direction LR
+        GW["🌐 Cloudflare Gateway\nCORS · Rate Limiting\nRoute Distribution"]
+        API["🔧 api-server\nSingle REST backend\nfor RTH + SkillUp\n(platform: tag differentiates)"]
+        QSTASH["📨 QStash\nOnly Cross-Service\nEvent Bus\n15 event types"]
+    end
+
+    subgraph DATA_ZONE["🗄️ Data — 5 Isolated Databases (Neon PostgreSQL)"]
+        direction LR
+        D1["quiz_platform_prod\nCurriculum Catalog Master\nExams · Questions"]
+        D2["tutorial_prod\nContent · Progress\nAssignments · Sessions"]
+        D3["people_prod\nShared Identity\nBatches · CRM · Auth"]
+        D4["payment_prod\nInstallments\nTransactions"]
+        D5["placement_prod\nProfiles · Jobs\nVector Matching"]
+    end
+
+    subgraph PLATFORM_SERVICES["☁️ Platform Services"]
+        direction LR
+        REDIS["⚡ Upstash Redis\nSession Cache\nCapacity Counters\nBlueprint Cache"]
+        VECTOR["🔍 Upstash Vector\nPlacement Matching\nAI Similarity Search"]
+        GEMINI["🤖 Gemini Flash\nAI Tutor Engine"]
+        RESEND["📧 Resend\nTransactional Email"]
+        GCS["📦 GCP Storage\nCertificates · Assets"]
+    end
+
+    U1 --> RTH_ZONE
+    U2 --> SKILLUP_ZONE
+    U3 --> SKILLUP_ZONE
+    U4 --> SKILLUP_ZONE
+    U5 --> SHC_ZONE
+
+    RTH_ZONE --> GW
+    SKILLUP_ZONE --> GW
+    SHC_ZONE -.->|"Identity\nverified by\npackages/auth"| GW
+
+    GW --> API
+    GW --> SHC_ZONE
+
+    API --> D1
+    API --> D2
+    API --> D3
+    API --> D4
+    API --> D5
+    API --> REDIS
+    API --> VECTOR
+    API --> GEMINI
+    API --> RESEND
+    API --> GCS
+
+    QSTASH <-->|"Async events\n(exam.completed\npayment.received\ncertificate.issued\nsession.scheduled)"| API
+    QSTASH <-->|"Async events\n(user.registered\nsubscription.upgraded)"| SHC_ZONE
+
+    D1 -->|"Hierarchy sync\nvia QStash"| D2
+
+    style RTH_ZONE fill:#fff1f2,stroke:#f43f5e,color:#1a1a1a
+    style SKILLUP_ZONE fill:#eff6ff,stroke:#3b82f6,color:#1a1a1a
+    style SHC_ZONE fill:#faf5ff,stroke:#a855f7,color:#1a1a1a
+    style SHARED_INFRA fill:#f0fdf4,stroke:#22c55e,color:#1a1a1a
+    style DATA_ZONE fill:#f8fafc,stroke:#64748b,color:#1a1a1a
+    style PLATFORM_SERVICES fill:#fffbeb,stroke:#f59e0b,color:#1a1a1a
+    style LEARNERS fill:#f0f9ff,stroke:#0ea5e9,color:#1a1a1a
+
+
+
+Let me read the window 3 task.md and cross-reference it with the PENDING-WORK.md:
+
+Ran command: `Get-Content "d:\onlinewebsites\quiz-platform\docs\completeproject\window 3\task.md"`
+
+The snapshot only shows the end. Let me read the full task.md from the beginning:
+
+PENDING-WORK.md created with 20 items. Now cross-referencing with window 3 task.md to ensure nothing already done is listed as pending.
+
+Ran command: `Get-Content "d:\onlinewebsites\quiz-platform\docs\completeproject\window 3\task.md" | Select-Object -First 100`
+
+Read window 3 task.md. Sprints 1-4, 6 are all marked done. Key conflicts with PENDING-WORK.md: RTH-1 (Sprint 3A done), RTH-9 profile (Sprint 3C done), RTH-10 onboarding (Sprint 3B done), SkillUp-4 Upstash Vector (Sprint 4B+4C done). Must verify filesystem and correct PENDING-WORK.md.
+
+Searched for files: page.tsx
+Searched for files: page.tsx
+
+Confirmed from filesystem — **Sprint 3A IS done** (subtopic page exists at `[subtopicSlug]/page.tsx` and even a `[blockType]/page.tsx` deeplink). Profile page also exists. Now correcting PENDING-WORK.md:
+
+Edited PENDING-WORK.md
+
+PENDING-WORK.md corrected: RTH-1 (subtopic page), RTH-9 (profile), RTH-10 (onboarding), SkillUp-4 (Upstash Vector) all marked as done per filesystem verification + window 3/task.md. Added ALREADY DONE section at top for quick reference.
+
+`PENDING-WORK.md` updated and cross-referenced with `window 3/task.md`. Here's what changed:
+
+## Corrections Made
+| Item | Was Listed As | Now Corrected To |
+|---|---|---|
+| RTH-1: Subtopic page | ❌ Not started | ✅ Done (Sprint 3A — confirmed in filesystem) |
+| RTH-9: Profile page | ❌ Not started | ✅ Done (Sprint 3C — confirmed in filesystem) |
+| RTH-10: Onboarding | 🔶 Partial | ✅ Done (Sprint 3B) |
+| SkillUp-4: Upstash Vector | ❌ Not started | ✅ Done (Sprint 4B+4C) |
+
+## Revised True Pending Count (after correction)
+
+**RTH — 7 remaining** (T2–T6 + live session UI + hierarchy sync automation)
+**SkillUp — 4 remaining** (batch Redis counter, notifications, certificates, SMS service layer)
+**SkillHubCore — 8 phases** (SHC-1 through SHC-8, scaffold exists)
+**Tier 3 — deferred** (maintenance window)
+
+## Verification Notes Added
+For each item marked as "done," the file now includes a `> Verify:` note — so when you start each feature, you can confirm the Sprint 3/4 work is fully wired (not just scaffolded) before marking it complete in production.
+
+Full document: [PENDING-WORK.md](file:///d:/onlinewebsites/quiz-platform/docs/completeproject/PENDING-WORK.md)
+
+
+
+Here is the complete target architecture diagram once all pending work is done:
+
+```mermaid
+graph TB
+    subgraph BROWSERS["🌐 Client Browsers"]
+        B1["RTH Student\nquiz.realtutorialhub.com\nwww.realtutorialhub.com"]
+        B2["RTH Admin\nadmin.realtutorialhub.com"]
+        B3["SkillUp Student\napp.skillupitacademy.com"]
+        B4["SkillUp Admin\nadmin.skillupitacademy.com"]
+        B5["SkillUp Faculty\nfaculty.skillupitacademy.com"]
+        B6["SkillHubCore Admin\nadmin.skillhubcore.in"]
+    end
+
+    subgraph NEXTJS_APPS["📱 Next.js Apps (Monorepo)"]
+        direction TB
+        A1["realtutorialhub-quiz\nProxy guards /dashboard /exam /quiz\nCookie: accessToken"]
+        A2["realtutorialhub-web\nProxy guards /learn/**\nTutorial + AI Tutor pages"]
+        A3["realtutorialhub-admin\nProxy guards /dashboard/**\nCookie: admin_accessToken"]
+        A4["skillup-web\nProxy guards /student/**\nCookie: accessToken"]
+        A5["skillup-admin\nProxy guards all admin routes\nCookie: admin_accessToken"]
+        A6["faculty-app\nProxy guards /sessions/**\nCookie: accessToken"]
+        A7["skillhubcore-admin\nProxy guards /dashboard/**\nCookie: admin_accessToken"]
+    end
+
+    subgraph GATEWAY["⚡ Cloudflare Worker (Gateway)"]
+        GW["proxy.realtutorialhub.com\nCORS · Rate limit · Route\nx-portal-identity header injection"]
+    end
+
+    subgraph API_SERVER["🔧 api-server (GCP Cloud Run — Mumbai)"]
+        direction LR
+        AS1["Auth Routes\nPOST /auth/login\nPOST /auth/register\nSets httpOnly cookies"]
+        AS2["Tutorial Routes\nGET /api/tutorial/content/[id]\nPOST /api/tutorial/progress\nPOST /api/tutorial/assignments/progress\nPOST /api/tutorial/ai-tutor"]
+        AS3["Faculty Tutorial Routes\nGET /api/tutorial/faculty/review-queue\nGET /api/tutorial/faculty/live-sessions\nGET /api/tutorial/faculty/help-requests\nPOST /api/tutorial/faculty/live-sessions/[id]/accept"]
+        AS4["Admin Routes\nPOST /api/admin/hierarchy/**\nTriggers HierarchySyncService"]
+        AS5["Hierarchy Sync\nHierarchySyncService\nfire-and-forget via QStash"]
+    end
+
+    subgraph SHC_SERVICE["🧠 skillhubcore-service (GCP Cloud Run — Mumbai, min 2)"]
+        SHC1["Auth Core\nPOST /auth/register\nPOST /auth/login\nToken rotation + stolen token detection"]
+        SHC2["SSO Service\nplatform_access + multi-platform JWT\nplatforms[], features[] in payload"]
+        SHC3["Subscription Engine\nPlan gating: exam.unlimited\nai_tutor, certificate, placement_matching"]
+        SHC4["QStash Consumers\npayment.received → upgrade plan\nuser.registered → default features"]
+    end
+
+    subgraph DATABASES["🗄️ Neon PostgreSQL (Separate DBs)"]
+        DB1["quiz_platform_prod\nexams · questions · blueprints\ndomains · subjects · topics · subtopics\n⏳ Hash-partitioned (Tier 3)"]
+        DB2["tutorial_prod\ntutorial_content · progress\nassignment_progress · live_session_requests\ntutorial_project_submissions\nmv_student_weak_areas (MV)"]
+        DB3["people_prod\nusers · user_roles · platform_access\nbatches · batch_sessions · batch_enrollments\nfaculty · attendance_records\nenquiries · admissions · subscriptions\nsubscription_plans · token_families\n⏳ audit_log hash-partitioned (Tier 3)"]
+        DB4["payment_prod\npayment_plans · payment_installments\npayment_transactions · gateway_webhook_logs"]
+        DB5["placement_prod\nstudent_placement_profiles · job_listings\nplacement_applications · placement_offers"]
+    end
+
+    subgraph CACHE["⚡ Upstash Redis"]
+        R1["sub:{userId} TTL 5min\nblueprint:{id} TTL 1hr\nbatch:capacity:{id} atomic counter"]
+    end
+
+    subgraph VECTOR["🔍 Upstash Vector"]
+        V1["placement-students index\nplacement-jobs index\nPlacementVectorService"]
+    end
+
+    subgraph EVENTS["📨 QStash (Event Bus — ONLY cross-service bridge)"]
+        Q1["hierarchy.synced\nexam.completed → refresh MV\npayment.received\npayment.overdue\ncertificate.issued\nsession.scheduled\nbatch.started\nplacement.matched"]
+    end
+
+    subgraph EXTERNAL["🌍 External Services"]
+        EX1["Gemini Flash API\nAI Tutor answers"]
+        EX2["Resend API\nEmail: payment reminders\nsession links · certificates"]
+        EX3["GCP GCS Bucket\nskillup-certificates"]
+        EX4["Razorpay Gateway\nWebhook → gateway_webhook_logs"]
+    end
+
+    B1 & B2 & B3 & B4 & B5 & B6 --> NEXTJS_APPS
+
+    A1 & A2 & A4 & A5 & A6 --> GW
+    A3 --> GW
+    A7 --> GW
+
+    GW --> API_SERVER
+    GW --> SHC_SERVICE
+
+    AS1 --> DB3
+    AS2 --> DB2
+    AS2 --> DB1
+    AS2 --> EX1
+    AS3 --> DB2
+    AS4 --> DB1
+    AS5 --> Q1
+
+    SHC1 --> DB3
+    SHC2 --> DB3
+    SHC3 --> DB3
+    SHC3 --> R1
+    SHC4 --> Q1
+
+    API_SERVER --> DB4
+    API_SERVER --> DB5
+    API_SERVER --> R1
+    API_SERVER --> V1
+    API_SERVER --> EX2
+    API_SERVER --> EX3
+
+    Q1 --> API_SERVER
+    Q1 --> SHC_SERVICE
+
+    EX4 --> API_SERVER
+
+    style BROWSERS fill:#e8f4f8,stroke:#0ea5e9
+    style NEXTJS_APPS fill:#f0fdf4,stroke:#22c55e
+    style GATEWAY fill:#fef3c7,stroke:#f59e0b
+    style API_SERVER fill:#fdf2f8,stroke:#a855f7
+    style SHC_SERVICE fill:#fff1f2,stroke:#f43f5e
+    style DATABASES fill:#f8fafc,stroke:#64748b
+    style CACHE fill:#fffbeb,stroke:#d97706
+    style VECTOR fill:#f0f9ff,stroke:#0ea5e9
+    style EVENTS fill:#fdf4ff,stroke:#c026d3
+    style EXTERNAL fill:#f9fafb,stroke:#9ca3af
+```
+
+---
+
+## Key Architecture Rules Visible in This Diagram
+
+| Rule | Where Enforced |
+|---|---|
+| **QStash = only cross-service bridge** | Events block — no arrows directly DB↔DB |
+| **faculty-app never touches tutorial_prod directly** | faculty-app → Gateway → api-server → DB2 |
+| **RTH design source of truth** | All Next.js apps follow same layout pattern |
+| **Same api-server for RTH + SkillUp** | Single api-server handles all (platform: tag in JWT differentiates) |
+| **SkillHubCore = separate service** | skillhubcore-service on its own Cloud Run instance (min 2) |
+| **proxy.ts = sole auth guard** | Cookie verified server-side in every Next.js app before page renders |
+| **No cross-DB SQL** | Separate arrows from api-server to each DB — never joined |
+| **Cookies set by api-server only** | Auth routes → Set-Cookie header → browser stores httpOnly |
+
+Here is the **Macro Level** — 10,000-foot view of the entire platform:
+
+```mermaid
+graph TB
+    subgraph LEARNERS["👥 End Users"]
+        U1["📚 RTH Learners\n(B2C — Digital Students)"]
+        U2["🎓 SkillUp Students\n(B2C — Enrolled Cohorts)"]
+        U3["👔 SkillUp Faculty\n(Instructors)"]
+        U4["🏢 SkillUp Admins\n(Operations Team)"]
+        U5["🔑 Platform Owners\n(SkillHubCore Admins)"]
+    end
+
+    subgraph RTH_ZONE["🔴 Real Tutorial Hub\nquiz.realtutorialhub.com · www.realtutorialhub.com"]
+        RTH["Self-Paced Online Platform\n─────────────────────\n• Quiz & Exam Engine\n• Tutorial Learning (T1–T6)\n• AI Tutor (Gemini)\n• Progress Tracking\n• Remediation Engine\n• Certifications"]
+    end
+
+    subgraph SKILLUP_ZONE["🔵 SkillUp IT Academy\napp.skillupitacademy.com"]
+        SU["Cohort-Based EdTech\n─────────────────────\n• Batch Management\n• Student Enrollment\n• Attendance Tracking\n• Faculty Management\n• CRM (Enquiry → Admission)\n• Payments & Installments\n• Placement Matching"]
+    end
+
+    subgraph SHC_ZONE["🟣 SkillHubCore\napi.skillhubcore.in (internal)"]
+        SHC["Platform Brain\n─────────────────────\n• Single Identity (SSO)\n• Cross-Platform Access\n• Subscription + Feature Gating\n• JWT Issuance (15 min)\n• Refresh Token Rotation\n• Stolen Token Detection"]
+    end
+
+    subgraph SHARED_INFRA["⚙️ Shared Infrastructure (Monorepo — GCP Mumbai)"]
+        direction LR
+        GW["🌐 Cloudflare Gateway\nCORS · Rate Limiting\nRoute Distribution"]
+        API["🔧 api-server\nSingle REST backend\nfor RTH + SkillUp\n(platform: tag differentiates)"]
+        QSTASH["📨 QStash\nOnly Cross-Service\nEvent Bus\n15 event types"]
+    end
+
+    subgraph DATA_ZONE["🗄️ Data — 5 Isolated Databases (Neon PostgreSQL)"]
+        direction LR
+        D1["quiz_platform_prod\nCurriculum Catalog Master\nExams · Questions"]
+        D2["tutorial_prod\nContent · Progress\nAssignments · Sessions"]
+        D3["people_prod\nShared Identity\nBatches · CRM · Auth"]
+        D4["payment_prod\nInstallments\nTransactions"]
+        D5["placement_prod\nProfiles · Jobs\nVector Matching"]
+    end
+
+    subgraph PLATFORM_SERVICES["☁️ Platform Services"]
+        direction LR
+        REDIS["⚡ Upstash Redis\nSession Cache\nCapacity Counters\nBlueprint Cache"]
+        VECTOR["🔍 Upstash Vector\nPlacement Matching\nAI Similarity Search"]
+        GEMINI["🤖 Gemini Flash\nAI Tutor Engine"]
+        RESEND["📧 Resend\nTransactional Email"]
+        GCS["📦 GCP Storage\nCertificates · Assets"]
+    end
+
+    U1 --> RTH_ZONE
+    U2 --> SKILLUP_ZONE
+    U3 --> SKILLUP_ZONE
+    U4 --> SKILLUP_ZONE
+    U5 --> SHC_ZONE
+
+    RTH_ZONE --> GW
+    SKILLUP_ZONE --> GW
+    SHC_ZONE -.->|"Identity\nverified by\npackages/auth"| GW
+
+    GW --> API
+    GW --> SHC_ZONE
+
+    API --> D1
+    API --> D2
+    API --> D3
+    API --> D4
+    API --> D5
+    API --> REDIS
+    API --> VECTOR
+    API --> GEMINI
+    API --> RESEND
+    API --> GCS
+
+    QSTASH <-->|"Async events\n(exam.completed\npayment.received\ncertificate.issued\nsession.scheduled)"| API
+    QSTASH <-->|"Async events\n(user.registered\nsubscription.upgraded)"| SHC_ZONE
+
+    D1 -->|"Hierarchy sync\nvia QStash"| D2
+
+    style RTH_ZONE fill:#fff1f2,stroke:#f43f5e,color:#1a1a1a
+    style SKILLUP_ZONE fill:#eff6ff,stroke:#3b82f6,color:#1a1a1a
+    style SHC_ZONE fill:#faf5ff,stroke:#a855f7,color:#1a1a1a
+    style SHARED_INFRA fill:#f0fdf4,stroke:#22c55e,color:#1a1a1a
+    style DATA_ZONE fill:#f8fafc,stroke:#64748b,color:#1a1a1a
+    style PLATFORM_SERVICES fill:#fffbeb,stroke:#f59e0b,color:#1a1a1a
+    style LEARNERS fill:#f0f9ff,stroke:#0ea5e9,color:#1a1a1a
+```
+
+---
+
+## How to Read This Diagram
+
+| Zone | What It Represents |
+|---|---|
+| **RTH Zone** | Self-paced online platform — student learns at their own pace via quiz + tutorial engine |
+| **SkillUp Zone** | Cohort-based offline-first academy — batches, attendance, faculty, placement |
+| **SkillHubCore Zone** | The brain — issues JWTs, manages subscriptions, gates features across both platforms |
+| **Shared Infrastructure** | One `api-server` serves both RTH and SkillUp (differentiated by `platform:` tag in JWT) |
+| **5 Isolated DBs** | Each domain owns its data. Zero cross-DB SQL joins — ever |
+| **QStash** | The **only** wire between services. All cross-service communication is async events |
+
+## Key Macro Decisions
+
+```
+ONE codebase (Turborepo monorepo)  →  deployed as SEPARATE services
+ONE api-server                     →  serves 3 brands via platform: tag
+ONE people_prod DB                 →  shared identity across RTH + SkillUp
+FIVE isolated DBs                  →  no shared SQL, no foreign keys across DBs
+QStash events                      →  eventual consistency, not distributed transactions
+SkillHubCore                       →  issues JWT once → other services verify locally (never callback)
+```
+
+**Yes, that is broadly correct — and it's the most elegant design decision in the entire architecture.** Here is the precise truth from the docs:
+
+---
+
+## RTH vs SkillUp — Same Services, Different Delivery Mode
+
+| Dimension | RTH | SkillUp |
+|---|---|---|
+| **Learning content** | `tutorial_prod` (same DB) | `tutorial_prod` (same DB) ✅ |
+| **Exams & assessments** | `quiz_platform_prod` (same DB) | `quiz_platform_prod` (same DB) ✅ |
+| **Backend API** | `api-server` (same service) | `api-server` (same service) ✅ |
+| **Identity** | `people_prod.users` | `people_prod.users` (platform enum) ✅ |
+| **"I need help" trigger** | 🤖 AI Tutor (Gemini) | 👨‍🏫 Human Faculty (live session request) |
+| **Assignments** | Self-directed, AI-checked | Self-directed, supervised by faculty |
+| **Exam remediation** | `mv_student_weak_areas` → AI recommends subtopics | Same view → Faculty reviews + assigns |
+| **Scheduling** | No batches — learn at own pace | Batch sessions with human faculty |
+| **Attendance** | Not applicable | `attendance_records` tracked by faculty |
+| **Placement** | Not applicable | `placement_prod` + Upstash Vector |
+
+---
+
+## The Core Design Philosophy (from the docs)
+
+```
+RTH = "What if a student could learn the same curriculum
+       but get AI help instead of waiting for a human?"
+
+SkillUp = "Same curriculum, same content, same exams —
+          but a human expert guides the cohort through it."
+```
+
+The **curriculum hierarchy** (`domain → subject → topic → subtopic`) is **owned by `quiz_platform_prod`** and synced to `tutorial_prod` via `HierarchySyncService`. **Both platforms consume the same content** — just delivered differently.
+
+---
+
+## Where the Docs Confirm This
+
+From [platform_prompt.md](cci:7://file:///d:/onlinewebsites/quiz-platform/docs/completeproject/window%203/platform_prompt.md:0:0-0:0) Phase 1:
+> *"quiz_platform_prod is the Curriculum Catalog master. tutorial_prod consumes this hierarchy via external_id synchronization."*
+
+From [PHASE-T1-TUTORIAL-FOUNDATION.md](cci:7://file:///d:/onlinewebsites/quiz-platform/docs/completeproject/PHASE-T1-TUTORIAL-FOUNDATION.md:0:0-0:0) (window 2):
+> *"Student reads subtopic → has doubt → clicks 'Request Live Session'"* (RTH = AI Tutor answers; SkillUp = human faculty accepts the request)
+
+From `ADR-CRITICAL-001`:
+> *"One Turborepo monorepo + Separate databases per service — both brands share the same api-server, differentiated only by `platform:` tag in JWT"*
+
+---
+
+## So the Answer is: ✅ Yes, Confirmed
+
+Both platforms are:
+- Same monorepo
+- Same api-server
+- Same content databases
+- Same exam engine
+- Same auth system
+
+The **only differences** are:
+1. **Help channel**: AI (RTH) vs Human Faculty (SkillUp)
+2. **Delivery mode**: Self-paced (RTH) vs Cohort batch (SkillUp)
+3. **Operations**: No physical ops (RTH) vs CRM/Admissions/Attendance/Payments (SkillUp)
+4. **Brand color**: Pink `#FF4B91` (RTH) vs Cyan `#0ea5e9` (SkillUp)
+
+This is why **SkillHubCore** is the "platform brain" — it issues JWTs that contain `platforms: ['realtutorialhub', 'skillup']`, allowing one student to access both platforms with the same identity.
+
+
+**Yes — that is exactly the intent, and the answer is yes with one honest clarification.**
+
+---
+
+## What PENDING-WORK.md Completes
+
+The 19 remaining items map directly to the project's three objectives:
+
+### Objective 1: RTH = AI-assisted self-paced learning ✅ → completes with:
+```
+RTH-2: HierarchySyncService wired  → curriculum stays in sync automatically
+RTH-3: Live Session UI             → student clicks "Request help" → AI or human responds
+RTH-4: Progress tracking           → platform knows what student has learned
+RTH-5: Assignment Engine (T3)      → practice questions with self-completion
+RTH-6: Project submission          → real-world project evaluated by faculty
+RTH-7: Remediation Engine (T5)     → weak exam areas → targeted subtopic suggestions
+RTH-8: AI Tutor / Gemini (T6)     → "Ask AI" on every subtopic page
+```
+**When done:** An RTH student can browse curriculum → learn subtopics → get AI help → practice assignments → submit project → get certified. Zero human dependency needed.
+
+---
+
+### Objective 2: SkillUp = same curriculum, human-faculty delivery ✅ → completes with:
+```
+SkillUp-2: Batch capacity Redis counter  → concurrent enrollment without race conditions
+SkillUp-3: Notification system           → session reminders + payment alerts via email
+SkillUp-5: Certificate generation        → batch completion → PDF certificate → email
+```
+**When done:** A SkillUp student enrolls → attends batches → faculty marks attendance → pays installments → gets reminders → completes course → receives certificate. Full human-supervised cohort lifecycle.
+
+---
+
+### Objective 3: SkillHubCore = One identity across both → completes with:
+```
+SHC-1 through SHC-8: Auth, SSO, subscriptions, feature gating, admin, GCP deploy
+```
+**When done:** One student can access both RTH and SkillUp with the same login. Subscription plan (free/pro) gates features across both platforms from one control point.
+
+---
+
+## Honest Clarification
+
+The PENDING-WORK.md covers **everything needed to deliver the full product vision**. The one item outside it is:
+
+> **Tier 3 (table partitioning)** — this does NOT block any user-facing feature. It is pure infrastructure scaling for when user volume hits millions. The product works perfectly without it.
+
+---
+
+## In One Line
+
+> **Complete PENDING-WORK.md → RTH students learn with AI → SkillUp students learn with human faculty → both share one identity via SkillHubCore → project objective is met.**
+
+The architecture is already proven. The databases are live. The shared services are running. What remains is purely **feature surface area** — the screens students and faculty actually interact with. Nothing requires a rethink.

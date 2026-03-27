@@ -16,6 +16,7 @@
     "@quiz/db-people": "workspace:*",
     "@quiz/ui": "workspace:*",
     "@quiz/types": "workspace:*",
+    "bcryptjs": "^3.0.3",
     "@vitejs/plugin-react": "^5.1.4",
     "@types/node": "^20",
     "@types/react": "^19.0.0",

@@ -1,100 +1,61 @@
-# Platform To-Do — Sequenced Next Steps
+ï»¿# SkillUp + RTH Platform â€” Final Status
 
-## SPRINT 1 — Faculty Phase 5 Completion  DONE
-> Unblocks the only remaining  item. 3 api-server routes + wire faculty-app pages.
+> Worktree: clean | Source of truth: platform_prompt.md + AUTH_GUIDELINES.md
 
-- [x] 1A. Create `apps/api-server/src/app/api/tutorial/faculty/review-queue/route.ts`
-       - GET, protected by x-portal-identity: faculty + x-user-id header
-       - Queries tutorial_prod: tutorial_project_submissions WHERE userId IN (batch student IDs)
-       - Returns: { submissions: [ { id, studentName, subtopicId, submittedAt, status } ] }
+## DONE
+- Sprint 1: Faculty Phase 5 (BFF routes, pages off fallback)
+- Sprint 2: payment_prod schema + seed + live wiring
+- Sprint 3: RTH Phase 6 pending pages
+- Sprint 4: placement_prod schema + Upstash Vector + seed + live wiring
+- Sprint 6: packages/auth + packages/events (15 typed events)
+- Tier 1 performance: login composite index, Redis subscription cache
+- Tier 2 performance: soft-delete on exams/questions, blueprint cache, mv_student_weak_areas
+- Tier 3 REHEARSAL: hash-partition plan validated on Neon rehearsal branch
+  - people_prod: auth_audit_log HASH partition - rehearsal passed
+  - quiz_platform_prod: exams HASH partition - rehearsal passed (corrected from RANGE to HASH)
 
-- [x] 1B. Create `apps/api-server/src/app/api/tutorial/faculty/assignments/route.ts`
-       - GET, same auth pattern
-       - Queries tutorial_prod: tutorial_assignments for faculty batch students
-       - Returns: { assignments: [ { id, studentId, subtopicId, dueDate, status } ] }
+## PENDING - ONE ITEM (prod execution only)
 
-- [x] 1C. Create `apps/api-server/src/app/api/tutorial/faculty/help-requests/route.ts`
-       - GET, same auth pattern
-       - Queries tutorial_prod: live_session_requests WHERE facultyId = resolvedFacultyId
-       - Returns: { requests: [ { id, studentId, subtopicId, requestedAt, status } ] }
+Tier 3 Production Window:
+  Status: Blocked by maintenance window requirement (agreed safety rule)
+  Rehearsal: COMPLETE and validated
+  Blocker: Need 2-5 AM IST low-traffic window + team notification
 
-- [x] 1D. Wire faculty-app BFF routes to api-server
-       - apps/faculty-app/src/app/api/assignments/route.ts   calls /api/tutorial/faculty/assignments
-       - apps/faculty-app/src/app/api/help-requests/route.ts  calls /api/tutorial/faculty/help-requests
-       - apps/faculty-app/src/app/api/review-queue/route.ts     calls /api/tutorial/faculty/review-queue
+## Prod Window Checklist (ready to execute when window opens)
 
-- [x] 1E. Remove fallback from faculty-app assignment, help, project-review pages
+PRE-WINDOW (30 min before):
+  [ ] pnpm test - confirm 1138+ green
+  [ ] Log into Neon - note PITR timestamp
+  [ ] Notify team: maintenance window opening
 
-- [x] 1F. Verify: faculty@skillupitacademy.com login  assignments page shows real data
+WINDOW - quiz_platform_prod (exams table, ~20 min):
+  [ ] Run B2: CREATE TABLE exams_partitioned PARTITION BY HASH (id) - 4 buckets
+  [ ] Run B3: INSERT INTO exams_partitioned SELECT * FROM exams - verify row counts match
+  [ ] Run B4: DROP all 5 FK constraints (exam_questions, results_by_dimension, report_jobs, idempotency_keys, reports)
+  [ ] Run B5: RENAME exams -> exams_old, exams_partitioned -> exams
+  [ ] Run B6: Recreate all 5 FK constraints
+  [ ] Run B7: Verify - 4 partitions + 5 FKs + PK still = id only
 
----
+WINDOW - people_prod (auth_audit_log table, ~10 min):
+  [ ] Run C1: CREATE TABLE auth_audit_log_partitioned PARTITION BY HASH (id) - 4 buckets
+  [ ] Run C2: INSERT + verify row counts match
+  [ ] Run C3: RENAME swap
+  [ ] Run C4: DROP auth_audit_log_old
 
-## SPRINT 2 — payment_prod Schema (Unblocks student payments page)
+POST-WINDOW:
+  [ ] pnpm test - must see 1138+ green
+  [ ] Manual exam flow: login -> start exam -> submit -> view report
+  [ ] git commit -m "infra(tier3): hash-partition exams and auth_audit_log tables"
+  [ ] Update this file: Sprint 5 DONE
 
-- [ ] 2A. Create `packages/db-payment/src/schema/`
-       - payment_plans.ts: id, userId, status, planType, totalAmount, createdAt
-       - payment_installments.ts: id, planId, dueDate, status, amount, paymentRef
-       - payment_transactions.ts: id, installmentId, paymentRef UNIQUE, gateway, amount
-       - gateway_webhook_logs.ts: id, paymentRef, gateway, payload JSONB, status
+ROLLBACK (if any step fails):
+  [ ] DO NOT hotfix in prod
+  [ ] Neon dashboard -> Restore -> select PITR timestamp from before window
+  [ ] Schedule next window after root cause fixed on rehearsal branch
 
-- [ ] 2B. Add indexes from Phase 13 spec on all 4 tables (status+dueDate partial, paymentRef UNIQUE)
-
-- [ ] 2C. Run `pnpm db-payment:migrate`
-
-- [ ] 2D. Seed 2 installments for student@skillupitacademy.com (1 paid, 1 pending)
-
-- [ ] 2E. Replace `apps/skillup-web/src/app/api/student/payments/route.ts` demo data with real DB query
-
-- [ ] 2F. Verify: student login  payments page shows real installment data
-
----
-
-## SPRINT 3 — Phase 6: RTH Pending Pages (Additive — RTH only)
-> Zero changes to existing RTH functionality. New pages only.
-
-- [ ] 3A. `realtutorialhub-web`: tutorial learning pages per subtopic
-       - Route: `/learn/[domain]/[subject]/[topic]/[subtopic]`
-       - Fetches from tutorial_prod via api-server
-       - Renders content JSONB blocks (text, code, video, quiz-link)
-
-- [ ] 3B. `realtutorialhub-quiz`: onboarding flow improvements
-       - Existing /onboarding page — check what's incomplete
-       - Must not break existing onboarded users
-
-- [ ] 3C. `realtutorialhub-quiz`: profile page
-       - Route: /profile
-       - Shows user stats, exam history summary, skill tags
-
----
-
-## SPRINT 4 — placement_prod Schema (Future)
-
-- [ ] 4A. Create `packages/db-placement/src/schema/` (5 tables from Phase 13 spec)
-- [ ] 4B. Set up Upstash Vector indexes: placement-students, placement-jobs
-- [ ] 4C. Implement PlacementVectorService.indexStudentProfile() + findStudentsForJob()
-- [ ] 4D. Seed 1 student profile + 2 job listings
-- [ ] 4E. Wire skillup-web /student/placement to real DB
-
----
-
-## SPRINT 5 — Tier 3 Infrastructure (Requires Maintenance Window)
-> Do NOT start until Sprint 1-3 are complete and all RTH tests are green.
-
-- [ ] 5A. Create Neon branch from prod snapshot
-- [ ] 5B. Rehearse exams table partition migration on Neon branch
-       - Shadow table  PARTITION BY RANGE (started_at)
-       - Monthly partitions: 2025, 2026, 2027
-       - Drop + recreate 5 FK constraints
-- [ ] 5C. Rehearse audit_log partition migration on Neon branch
-- [ ] 5D. Confirm Neon PITR backup is current
-- [ ] 5E. Execute migrations in 2-5 AM IST maintenance window on prod
-- [ ] 5F. Verify all RTH tests green post-migration (1138+)
-
----
-
-## SPRINT 6 — packages/auth + packages/events (Future)
-
-- [ ] 6A. Extract JWT verification into packages/auth (shared across services)
-- [ ] 6B. Build packages/events with 15 event types
-- [ ] 6C. Wire QStash consumers in api-server to use typed events
-
+## Architecture Rules (Permanent)
+- QStash = only cross-service bridge. No SQL joins across DBs.
+- faculty-app never queries tutorial_prod directly - always via api-server
+- RTH apps: zero changes at any time
+- Cookie: accessToken (student), admin_accessToken (admin) - api-server sets only
+- deleted_at IS NULL on every hot query after Tier 2 applied
