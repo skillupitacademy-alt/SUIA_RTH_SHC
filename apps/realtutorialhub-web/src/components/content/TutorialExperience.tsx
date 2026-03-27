@@ -15,6 +15,7 @@ import { TutorialSidebar } from '../layout/TutorialSidebar';
 import { TutorialKeyboardNav } from './TutorialKeyboardNav';
 import { LearningActivityTracker } from './LearningActivityTracker';
 import { LiveSessionRequestPanel } from '@/components/tutorial';
+import { ProjectSubmissionPanel, type ProjectCard } from './ProjectSubmissionPanel';
 
 interface TutorialExperienceProps {
   params: {
@@ -27,6 +28,7 @@ interface TutorialExperienceProps {
   content: TutorialContentJSON;
   theme: DomainTheme;
   mode: 'compare' | 'detail' | 'learn';
+  projects?: ProjectCard[];
   blockType?: ContentBlockType;
   simulateSlowLoad?: boolean;
   simulateError?: boolean;
@@ -34,7 +36,7 @@ interface TutorialExperienceProps {
 
 const blockOrder: ContentBlockType[] = ['notes', 'layman', 'real_life', 'technical', 'code', 'ai_tutor'];
 
-export function TutorialExperience({ params, subtopicId, content, theme, mode, blockType, simulateSlowLoad = false, simulateError = false }: TutorialExperienceProps) {
+export function TutorialExperience({ params, subtopicId, content, theme, mode, projects = [], blockType, simulateSlowLoad = false, simulateError = false }: TutorialExperienceProps) {
   const t = useTranslations('subtopic');
   const blockTranslations = useTranslations('blocks');
   const sidebar = useTranslations('sidebar');
@@ -149,6 +151,7 @@ export function TutorialExperience({ params, subtopicId, content, theme, mode, b
             simulateError={simulateError}
           />
           <LiveSessionRequestPanel subtopicId={subtopicId ?? params.subtopicSlug} subtopicName={subtopicName} theme={theme} />
+          <ProjectSubmissionPanel subtopicId={subtopicId ?? params.subtopicSlug} subtopicName={subtopicName} theme={theme} projects={projects} />
         </>
       ) : blockType ? (
         <>

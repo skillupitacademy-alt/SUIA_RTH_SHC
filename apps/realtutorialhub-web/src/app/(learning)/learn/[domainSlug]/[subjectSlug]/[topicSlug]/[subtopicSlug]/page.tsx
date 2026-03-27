@@ -1,10 +1,13 @@
 import type { Metadata } from 'next';
 
+import { ProjectRepository } from '@quiz/db-tutorial';
+
 import { getDomainTheme } from '@/lib/domain-themes';
 import { SEED_SUBTOPIC_ID, getSeededTutorialContent } from '@/lib/tutorial-content';
 import { getHierarchyBySlugs, getPublishedTutorialContent, slugifySegment } from '@/lib/tutorial-hierarchy';
 
 import { TutorialExperience } from '@/components/content/TutorialExperience';
+import type { ProjectCard } from '@/components/content/ProjectSubmissionPanel';
 
 interface PageProps {
   params: Promise<{
@@ -27,6 +30,27 @@ export default async function TutorialSubtopicPage({ params, searchParams }: Pag
   const content = publishedContent?.content ?? (await getSeededTutorialContent());
   const theme = getDomainTheme(resolved.domainSlug);
   const subtopicId = hierarchy?.subtopic.id ?? SEED_SUBTOPIC_ID;
+  const projectRepository = new ProjectRepository();
+
+  const projects: ProjectCard[] = hierarchy == null
+    ? []
+    : (
+      await Promise.all([
+        projectRepository.getProjectsByScope('topic', hierarchy.topic.id),
+        projectRepository.getProjectsByScope('subject', hierarchy.subject.id),
+        projectRepository.getProjectsByScope('domain', hierarchy.domain.id),
+      ])
+    )
+      .flat()
+      .filter((project) => project.isPublished)
+      .map((project) => ({
+        id: project.id,
+        title: project.title,
+        description: project.description,
+        deliverableType: project.deliverableType,
+        level: project.level,
+        scope: project.scope,
+      }));
 
   return (
     <TutorialExperience
@@ -35,6 +59,7 @@ export default async function TutorialSubtopicPage({ params, searchParams }: Pag
       content={content}
       theme={theme}
       mode="learn"
+      projects={projects}
       simulateSlowLoad={resolvedSearchParams.slow === 'true'}
       simulateError={resolvedSearchParams.error === 'true'}
     />
