@@ -1,4 +1,4 @@
-export type PlatformName = 'realtutorialhub' | 'skillup' | 'both';
+export type PlatformName = 'realtutorialhub' | 'skillup';
 export type UserRole = 'student' | 'faculty' | 'admin' | 'super_admin';
 export type SubscriptionPlan = 'free' | 'pro' | 'enterprise';
 

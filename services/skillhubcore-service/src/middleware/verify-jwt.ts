@@ -9,7 +9,7 @@ declare module 'hono' {
       id: string;
       roles: Array<'student' | 'faculty' | 'admin' | 'super_admin'>;
       subscriptions: string[];
-      platforms: Array<'realtutorialhub' | 'skillup' | 'both'>;
+      platforms: Array<'realtutorialhub' | 'skillup'>;
     };
   }
 }

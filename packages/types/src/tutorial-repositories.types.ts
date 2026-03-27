@@ -267,7 +267,7 @@ export interface ILiveSessionRepository {
   updateMeetingLink(id: string, meetingLink: string): Promise<LiveSessionRequestRecord | undefined>;
 }
 
-export type PeoplePlatform = 'realtutorialhub' | 'skillup' | 'both';
+export type PeoplePlatform = 'realtutorialhub' | 'skillup';
 export type PeopleUserRole = 'student' | 'faculty' | 'admin' | 'super_admin';
 
 export interface PeopleDbClientLike {

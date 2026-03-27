@@ -10,14 +10,14 @@ import type { AuthService } from './auth.service';
 const registerSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
-  platform: z.enum(['realtutorialhub', 'skillup', 'both']),
+  platform: z.enum(['realtutorialhub', 'skillup']),
   role: z.enum(['student', 'faculty', 'admin']).optional(),
 });
 
 const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(1),
-  platform: z.enum(['realtutorialhub', 'skillup', 'both']),
+  platform: z.enum(['realtutorialhub', 'skillup']),
 });
 
 const refreshSchema = z.object({

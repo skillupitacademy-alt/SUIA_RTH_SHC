@@ -5,7 +5,7 @@ import { requireAuth, requireRoles } from '@/middleware/verify-jwt';
 import { SsoService } from './sso.service';
 
 const platformSchema = z.object({
-  platform: z.enum(['realtutorialhub', 'skillup', 'both']),
+  platform: z.enum(['realtutorialhub', 'skillup']),
   action: z.enum(['grant', 'revoke']).default('grant'),
 });
 

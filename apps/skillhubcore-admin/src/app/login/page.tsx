@@ -20,7 +20,7 @@ export default function LoginPage() {
             title="Welcome Back"
             description="Authenticate to access the governance terminal."
             portalIdentity="super_admin"
-            platform="both"
+            platform="skillup"
             allowedRoles={['super_admin']}
             portalName="SkillHubCore Admin"
             footerTitle="Restricted Access System v1.0.4"
