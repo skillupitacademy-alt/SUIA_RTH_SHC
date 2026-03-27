@@ -115,7 +115,13 @@ export function TutorialExperience({ params, subtopicId, content, theme, mode, p
       </div>
 
       {mode === 'learn' ? (
-        <LearnerProgressPanel subtopicId={params.subtopicSlug} subtopicName={subtopicName} theme={theme} blockOrder={blockOrder} />
+        <LearnerProgressPanel
+          subtopicId={params.subtopicSlug}
+          subtopicName={subtopicName}
+          theme={theme}
+          blockOrder={blockOrder}
+          assignmentsHref={`/learn/${params.domainSlug}/${params.subjectSlug}/${params.topicSlug}/${params.subtopicSlug}/assignments`}
+        />
       ) : (
         <SubtopicHeader subtopicName={subtopicName} completedBlocks={0} totalBlocks={6} theme={theme} />
       )}

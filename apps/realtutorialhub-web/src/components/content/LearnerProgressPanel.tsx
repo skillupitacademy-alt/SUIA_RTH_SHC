@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { AssignmentDifficulty } from '@quiz/types';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 import type { DomainTheme } from '@/lib/domain-themes';
@@ -35,6 +36,15 @@ type AssignmentStateResponse = {
   progress?: { status: string } | null;
   tierStatus: AssignmentTierStatusMap;
 };
+
+interface LearnerProgressPanelProps {
+  subtopicId: string;
+  subtopicName: string;
+  theme: DomainTheme;
+  blockOrder: BlockType[];
+  assignmentsHref?: string;
+  showContentProgress?: boolean;
+}
 
 const TRACKING_THRESHOLD = 0.8;
 const TRACKING_DELAY_MS = 3000;
@@ -165,12 +175,14 @@ function getTierCopy(
   };
 }
 
-export function LearnerProgressPanel({ subtopicId, subtopicName, theme, blockOrder }: {
-  subtopicId: string;
-  subtopicName: string;
-  theme: DomainTheme;
-  blockOrder: BlockType[];
-}) {
+export function LearnerProgressPanel({
+  subtopicId,
+  subtopicName,
+  theme,
+  blockOrder,
+  assignmentsHref,
+  showContentProgress = true,
+}: LearnerProgressPanelProps) {
   const queryClient = useQueryClient();
   const [completedBlocks, setCompletedBlocks] = useState<BlockType[]>([]);
   const [visible, setVisible] = useState(false);
@@ -178,9 +190,12 @@ export function LearnerProgressPanel({ subtopicId, subtopicName, theme, blockOrd
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [helpMessage, setHelpMessage] = useState<string | null>(null);
 
-  const completedCount = completedBlocks.length;
-  const completionPct = Math.round((completedCount / blockOrder.length) * 100);
-  const allBlocksComplete = completedCount === blockOrder.length;
+  const completedCount = showContentProgress ? completedBlocks.length : 0;
+  const completionPct = showContentProgress && blockOrder.length > 0 ? Math.round((completedCount / blockOrder.length) * 100) : 0;
+  const allBlocksComplete = showContentProgress && completedCount === blockOrder.length && blockOrder.length > 0;
+  const introCopy = showContentProgress
+    ? 'Complete the six blocks in order, track your progress as you scroll, and unlock the Simple assignment path after completion.'
+    : 'Use this compact practice view to work through the tier cards and help flow after you complete the lesson blocks on the main page.';
 
   const assignmentQuery = useQuery({
     queryKey: ['assignment-state', subtopicId],
@@ -254,6 +269,7 @@ export function LearnerProgressPanel({ subtopicId, subtopicName, theme, blockOrd
   }, [completedBlocks, subtopicId]);
 
   useEffect(() => {
+    if (!showContentProgress) return;
     if (typeof window === 'undefined') return;
 
     const timers = new Map<BlockType, ReturnType<typeof globalThis.setTimeout>>();
@@ -308,7 +324,7 @@ export function LearnerProgressPanel({ subtopicId, subtopicName, theme, blockOrd
       timers.forEach((timer) => globalThis.clearTimeout(timer));
       observer.disconnect();
     };
-  }, [blockOrder, completedBlocks, subtopicId]);
+  }, [blockOrder, completedBlocks, showContentProgress, subtopicId]);
 
   const tierStatus = assignmentQuery.data?.tierStatus;
   const simpleAssignments = assignmentQuery.data?.assignments ?? [];
@@ -353,38 +369,63 @@ export function LearnerProgressPanel({ subtopicId, subtopicName, theme, blockOrd
               {subtopicName}
             </h2>
             <p style={{ margin: 0, color: 'var(--design-muted)', fontSize: 14, lineHeight: 1.7 }}>
-              Complete the six blocks in order, track your progress as you scroll, and unlock the Simple assignment path after completion.
+              {introCopy}
             </p>
           </div>
 
-          <div
-            style={{
-              minWidth: 240,
-              padding: '12px 14px',
-              borderRadius: 16,
-              background: 'var(--design-content-surface-soft)',
-              border: 'var(--design-content-border)',
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 8 }}>
-              <span style={{ fontSize: 12.5, fontWeight: 800, color: 'var(--design-ink)' }}>Block progress</span>
-              <span style={{ fontSize: 12.5, fontWeight: 800, color: theme.sidebarAccent }}>
-                {completedCount}/{blockOrder.length}
-              </span>
-            </div>
-            <div style={{ height: 8, borderRadius: 999, overflow: 'hidden', background: 'rgba(148, 163, 184, 0.25)' }}>
+          <div style={{ display: 'grid', gap: 10, justifyItems: 'end' }}>
+            {assignmentsHref ? (
+              <Link
+                href={assignmentsHref}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '10px 14px',
+                  borderRadius: 999,
+                  background: theme.sidebarAccent,
+                  color: '#fff',
+                  textDecoration: 'none',
+                  fontWeight: 800,
+                  fontSize: 12.5,
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                Open assignments page
+              </Link>
+            ) : null}
+
+            {showContentProgress ? (
               <div
                 style={{
-                  width: `${completionPct}%`,
-                  height: '100%',
-                  background: theme.progressFill,
-                  transition: 'width 280ms ease',
+                  minWidth: 240,
+                  padding: '12px 14px',
+                  borderRadius: 16,
+                  background: 'var(--design-content-surface-soft)',
+                  border: 'var(--design-content-border)',
                 }}
-              />
-            </div>
-            <div style={{ marginTop: 8, fontSize: 12.5, color: 'var(--design-muted)' }}>
-              {allBlocksComplete ? 'All blocks complete. Simple assignment unlocked.' : 'Scroll through each block for 3 seconds to mark it complete.'}
-            </div>
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 8 }}>
+                  <span style={{ fontSize: 12.5, fontWeight: 800, color: 'var(--design-ink)' }}>Block progress</span>
+                  <span style={{ fontSize: 12.5, fontWeight: 800, color: theme.sidebarAccent }}>
+                    {completedCount}/{blockOrder.length}
+                  </span>
+                </div>
+                <div style={{ height: 8, borderRadius: 999, overflow: 'hidden', background: 'rgba(148, 163, 184, 0.25)' }}>
+                  <div
+                    style={{
+                      width: `${completionPct}%`,
+                      height: '100%',
+                      background: theme.progressFill,
+                      transition: 'width 280ms ease',
+                    }}
+                  />
+                </div>
+                <div style={{ marginTop: 8, fontSize: 12.5, color: 'var(--design-muted)' }}>
+                  {allBlocksComplete ? 'All blocks complete. Simple assignment unlocked.' : 'Scroll through each block for 3 seconds to mark it complete.'}
+                </div>
+              </div>
+            ) : null}
           </div>
         </div>
 
@@ -647,7 +688,7 @@ export function LearnerProgressPanel({ subtopicId, subtopicName, theme, blockOrd
         )}
       </div>
 
-      {allBlocksComplete ? (
+      {showContentProgress && allBlocksComplete ? (
         <div
           role="dialog"
           aria-live="polite"
