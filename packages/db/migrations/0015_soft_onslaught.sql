@@ -14,5 +14,4 @@
 */
 
 -- ALTER TABLE "exams" DROP CONSTRAINT "<constraint_name>";--> statement-breakpoint
-ALTER TABLE "exams" ADD CONSTRAINT "exams_id_pk" PRIMARY KEY("id");--> statement-breakpoint
 ALTER TABLE "exams" ADD COLUMN "export_urls" jsonb;

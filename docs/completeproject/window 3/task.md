@@ -379,3 +379,58 @@ This file is append-only for future planning and reference.
 - Added `docs/completeproject/window 3/tier3-rehearsal.sql` for the Neon branch dry run.
 - Added `docs/completeproject/window 3/tier3-production-checklist.md` for the live maintenance window.
 - These are preparation artifacts only. They do not run or mutate any database by themselves.
+
+---
+
+### Tier 3 Blocker Note
+
+Rehearsal status as of this update:
+- Rehearsal URLs were added to `.env.local` for `quiz_platform_prod` and `people_prod` branch access.
+- The rehearsal branches are empty and were not full production clones.
+- Hydration of `people_prod` rehearsal migrations succeeded.
+- `quiz_platform_prod` rehearsal migration stopped at a schema mismatch in the current `exams` migration path.
+
+Blocker reason:
+- The current `exams` table shape is not partition-ready for `PARTITION BY RANGE (started_at)` without a schema redesign.
+- The people-side audit table path also needs the same partitionability review before any prod migration.
+
+Decision:
+- Tier 3 remains deferred.
+- Do not run the production window until the partitionable schema design and a real Neon rehearsal clone are both confirmed.
+
+Next required step:
+- Draft the schema redesign needed for partitionable `exams` and the audit table, then rehearse again on a proper Neon clone before any prod change.
+
+---
+
+### Tier 3 Revision - Hash Partition Path
+
+After the rehearsal findings, the working Tier 3 direction is now:
+- Rehearse `exams` with `PARTITION BY HASH (id)` instead of `PARTITION BY RANGE (started_at)`.
+- Keep the existing `id` primary key shape intact.
+- Keep the 5 child-table foreign keys on `exam_questions`, `results_by_dimension`, `report_jobs`, `idempotency_keys`, and `reports` unchanged except for the swap/recreate step during rehearsal and prod.
+- Rehearse the people-side audit table with the same feasibility check against its actual schema before any prod window.
+
+Why this revision:
+- PostgreSQL allows the partition key to satisfy the primary-key requirement when the partition key is `id`.
+- This avoids the composite-key / child-FK redesign that the RANGE plan would require.
+
+Working artifacts for the revised path:
+- `docs/completeproject/window 3/tier3-rehearsal-hash.sql`
+- `docs/completeproject/window 3/tier3-production-checklist-hash.md`
+
+---
+
+### Tier 3 Rehearsal Result
+
+Rehearsal outcomes:
+- `quiz_platform_prod` rehearsal branch now passes the hash-partition `exams` flow.
+- `people_prod` rehearsal branch now passes the hash-partition `auth_audit_log` flow.
+- Both rehearsals were validated on the Neon branch URLs appended in `.env.local`.
+
+Current decision:
+- Keep Tier 3 production deployment deferred until the approved maintenance window is available.
+- The rehearsal blocker is cleared; the remaining dependency is operational timing, not schema viability.
+
+Next action when the window is approved:
+- Run the hash-partition production checklist, not the old RANGE path.

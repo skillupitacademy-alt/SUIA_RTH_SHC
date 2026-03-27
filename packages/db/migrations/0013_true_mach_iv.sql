@@ -1,4 +1,9 @@
--- Type report_job_status already exists in target DB
+DO $$ BEGIN
+  CREATE TYPE "public"."report_job_status" AS ENUM('queued', 'processing', 'completed', 'failed');
+EXCEPTION
+  WHEN duplicate_object THEN null;
+END $$;
+
 CREATE TABLE "report_jobs" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"user_id" uuid NOT NULL,
