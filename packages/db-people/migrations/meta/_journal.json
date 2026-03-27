@@ -43,6 +43,13 @@
       "when": 1774550945793,
       "tag": "0005_people_perf_indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1774591239501,
+      "tag": "0006_skillhubcore_subscription_schema",
+      "breakpoints": true
     }
   ]
 }

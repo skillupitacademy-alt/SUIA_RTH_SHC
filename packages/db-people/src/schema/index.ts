@@ -4,6 +4,7 @@ export * from './users';
 export * from './user-profiles';
 export * from './platform-access';
 export * from './subscriptions';
+export * from './subscription-plans';
 export * from './sso-sessions';
 export * from './token-families';
 export * from './audit-log';
@@ -27,6 +28,7 @@ import * as usersModule from './users';
 import * as userProfilesModule from './user-profiles';
 import * as platformAccessModule from './platform-access';
 import * as subscriptionsModule from './subscriptions';
+import * as subscriptionPlansModule from './subscription-plans';
 import * as ssoSessionsModule from './sso-sessions';
 import * as refreshTokenFamiliesModule from './token-families';
 import * as authAuditLogModule from './audit-log';
@@ -51,6 +53,7 @@ export const schema = {
   ...userProfilesModule,
   ...platformAccessModule,
   ...subscriptionsModule,
+  ...subscriptionPlansModule,
   ...ssoSessionsModule,
   ...refreshTokenFamiliesModule,
   ...authAuditLogModule,
