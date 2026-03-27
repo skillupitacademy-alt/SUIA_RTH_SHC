@@ -1,7 +1,13 @@
 import { SignatureError } from '@upstash/qstash';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const fakeTx = {};
+const fakeTx = {
+  update: vi.fn(() => ({
+    set: vi.fn(() => ({
+      where: vi.fn(async () => undefined),
+    })),
+  })),
+};
 
 const mocks = vi.hoisted(() => ({
   mode: 'ok' as 'ok' | 'signature',
@@ -60,6 +66,15 @@ vi.mock('@quiz/events', () => ({
       return callback(await req.json());
     };
   },
+}));
+
+vi.mock('../../qstash', () => ({
+  verifyQStashRequest: vi.fn(async (request: Request) => {
+    if (mocks.mode === 'signature') {
+      throw new SignatureError('invalid signature');
+    }
+    return request.text();
+  }),
 }));
 
 vi.mock('@quiz/db-tutorial', () => ({

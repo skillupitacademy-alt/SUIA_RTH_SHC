@@ -1,11 +1,11 @@
 import { NextRequest } from 'next/server';
 import { describe, expect, it, vi } from 'vitest';
 
-const verifySkillHubCoreJWTMock = vi.hoisted(() => vi.fn());
+const verifyUserAccessTokenMock = vi.hoisted(() => vi.fn());
 
 vi.mock('@quiz/auth', () => ({
   TokenService: {
-    verifySkillHubCoreJWT: verifySkillHubCoreJWTMock,
+    verifyUserAccessToken: verifyUserAccessTokenMock,
   },
 }));
 
@@ -21,12 +21,12 @@ describe('realtutorialhub-web proxy', () => {
     const response = await proxy(makeRequest('/learn/full-stack/js/promises'));
 
     expect(response.status).toBe(307);
-    expect(response.headers.get('location')).toContain('skillhubcore');
+    expect(response.headers.get('location')).toContain('/login');
     expect(new URL(response.headers.get('location') ?? '').searchParams.get('redirect')).toBe('/learn/full-stack/js/promises');
   });
 
   it('accepts a SkillUp JWT on protected routes', async () => {
-    verifySkillHubCoreJWTMock.mockResolvedValueOnce({
+    verifyUserAccessTokenMock.mockResolvedValueOnce({
       sub: 'student-1',
       roles: ['student'],
       subscriptions: ['notes'],
@@ -36,7 +36,7 @@ describe('realtutorialhub-web proxy', () => {
 
     const response = await proxy(makeRequest('/api/tutorial/content/abc', 'accessToken=skillup-token'));
 
-    expect(verifySkillHubCoreJWTMock).toHaveBeenCalledWith('skillup-token');
+    expect(verifyUserAccessTokenMock).toHaveBeenCalledWith('skillup-token', { audience: 'user' });
     expect(response.status).toBe(200);
     expect(response.headers.get('x-user-id')).toBe('student-1');
   });

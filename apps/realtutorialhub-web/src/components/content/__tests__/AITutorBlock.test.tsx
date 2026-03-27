@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { AITutorBlock } from '../AITutorBlock';
@@ -28,22 +28,24 @@ describe('AITutorBlock', () => {
     );
 
     expect(screen.getByLabelText('AI tutor block')).toBeDefined();
-    expect(screen.getByText('Let us review how promises work in JavaScript.')).toBeDefined();
-    expect(screen.getByText('Q: What problem do promises solve?')).toBeDefined();
-    expect(screen.getByText('Promises let JavaScript handle future results without blocking the rest of the app.')).toBeDefined();
+    expect(screen.getAllByText('Let us review how promises work in JavaScript.')).toHaveLength(2);
+    expect(screen.getByText(/What problem do promises solve\?/)).toBeDefined();
+    expect(screen.getByText(/Promises let JavaScript handle future results without blocking the rest of the app\./)).toBeDefined();
 
     const results = await runAxe(container);
     expect(results.violations).toHaveLength(0);
   });
 
   it('handles null and empty content without crashing', async () => {
-    const { rerender } = renderWithIntl(
+    renderWithIntl(
       <AITutorBlock data={null} theme={theme} subtopicId={subtopicId} subtopicName="Promises" />
     );
 
     expect(screen.getByLabelText('AI tutor block')).toBeDefined();
 
-    rerender(
+    cleanup();
+
+    renderWithIntl(
       <AITutorBlock
         data={{ greeting: '', qa_pairs: [] }}
         theme={theme}
@@ -99,7 +101,7 @@ describe('AITutorBlock', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Send question' }));
 
     expect(await screen.findByText('You have used 10 questions this hour. Upgrade for unlimited AI Tutor access.')).toBeDefined();
-    expect(screen.getByPlaceholderText('Ask a question about Promises...')).toBeDisabled();
+    expect((screen.getByPlaceholderText('Ask a question about Promises...') as HTMLTextAreaElement).disabled).toBe(true);
   });
 
   it('shows a network error and keeps the input enabled', async () => {
@@ -114,7 +116,8 @@ describe('AITutorBlock', () => {
     fireEvent.change(input, { target: { value: 'How do promises chain?' } });
     fireEvent.click(screen.getByRole('button', { name: 'Send question' }));
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('Unable to connect. Try again.');
-    expect(screen.getByPlaceholderText('Ask a question about Promises...')).not.toBeDisabled();
+    const alerts = await screen.findAllByRole('alert');
+    expect(alerts.some((alert) => alert.textContent?.includes('Unable to connect. Try again.'))).toBe(true);
+    expect((screen.getByPlaceholderText('Ask a question about Promises...') as HTMLTextAreaElement).disabled).toBe(false);
   });
 });

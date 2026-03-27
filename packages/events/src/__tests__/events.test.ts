@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import type { Receiver } from '@upstash/qstash';
 
 vi.mock('@upstash/qstash', () => ({
   Client: class {
@@ -15,13 +16,21 @@ vi.mock('@upstash/qstash', () => ({
 
 import { createQStashHandler } from '../consumer';
 import { publishEvent } from '../publisher';
-import { PlatformEventTypes, PlatformEventPayloadSchemas, PlatformEventEnvelopeSchemas, getPlatformEventSchema } from '../types';
+import {
+  PlatformEventTypes,
+  PlatformEventPayloadSchemas,
+  PlatformEventEnvelopeSchemas,
+  getPlatformEventSchema,
+  type PlatformEventPayloadMap,
+} from '../types';
 import { EVENT_CONSUMER_MAP } from '../consumer-map';
 
 describe('events package', () => {
-  it('exposes schemas for all 16 Sprint 0 events', () => {
-    expect(Object.keys(PlatformEventPayloadSchemas)).toHaveLength(16);
-    expect(Object.keys(PlatformEventEnvelopeSchemas)).toHaveLength(16);
+  const emptyStudentCreatedPayload = {} as unknown as PlatformEventPayloadMap[typeof PlatformEventTypes.STUDENT_CREATED];
+
+  it('exposes schemas for all 15 Sprint 0 events', () => {
+    expect(Object.keys(PlatformEventPayloadSchemas)).toHaveLength(15);
+    expect(Object.keys(PlatformEventEnvelopeSchemas)).toHaveLength(15);
   });
 
   it('validates an event envelope through Zod', () => {
@@ -50,7 +59,7 @@ describe('events package', () => {
     };
     const receiver = {
       verify: vi.fn().mockResolvedValue(undefined),
-    } as any;
+    } as unknown as Receiver;
     const handler = createQStashHandler(
       PlatformEventTypes.PAYMENT_RECEIVED,
       vi.fn(),
@@ -100,7 +109,7 @@ describe('events package', () => {
   });
 
   it('consumer-map.ts: validates all events map to valid URLs', () => {
-    expect(Object.keys(EVENT_CONSUMER_MAP)).toHaveLength(16);
+    expect(Object.keys(EVENT_CONSUMER_MAP)).toHaveLength(15);
     for (const key of Object.values(PlatformEventTypes)) {
       expect(EVENT_CONSUMER_MAP[key]).toEqual(expect.arrayContaining([expect.stringMatching(/^https:\/\/(?:placeholder\.invalid|tutorial-service\.invalid)\/(?:api\/workers\/|consumers\/)/)]));
     }
@@ -108,19 +117,19 @@ describe('events package', () => {
 
   it('publisher.ts: throws if QSTASH_TOKEN is missing', async () => {
     vi.stubEnv('QSTASH_TOKEN', '');
-    await expect(publishEvent(PlatformEventTypes.STUDENT_CREATED, {} as any, { destinationUrl: 'url' })).rejects.toThrow('QSTASH_TOKEN is required');
+    await expect(publishEvent(PlatformEventTypes.STUDENT_CREATED, emptyStudentCreatedPayload, { destinationUrl: 'url' })).rejects.toThrow('QSTASH_TOKEN is required');
   });
 
   it('publisher.ts: throws if destinationUrl is missing', async () => {
     vi.stubEnv('QSTASH_TOKEN', 'token');
-    await expect(publishEvent(PlatformEventTypes.STUDENT_CREATED, {} as any)).rejects.toThrow('destinationUrl is required');
+    await expect(publishEvent(PlatformEventTypes.STUDENT_CREATED, emptyStudentCreatedPayload)).rejects.toThrow('destinationUrl is required');
   });
 
   it('publisher.ts: uses all explicit parameters', async () => {
     vi.stubEnv('QSTASH_TOKEN', 'token');
     const result = await publishEvent(
       PlatformEventTypes.STUDENT_CREATED,
-      {} as any,
+      emptyStudentCreatedPayload,
       { destinationUrl: 'url', correlationId: 'cid', source: 'src', occurredAt: 'time', version: 2, headers: { 'x-custom': '1' }, retries: 5 }
     );
     expect(result.envelope.correlationId).toBe('cid');
@@ -152,7 +161,7 @@ describe('events package', () => {
 
   it('consumer.ts: uses idempotency store and returns custom responses', async () => {
     const idempotencyStore = { get: vi.fn().mockResolvedValue(null), set: vi.fn() };
-    const receiver = { verify: vi.fn().mockResolvedValue(undefined) } as any;
+    const receiver = { verify: vi.fn().mockResolvedValue(undefined) } as unknown as Receiver;
     const customHandler = createQStashHandler(
       PlatformEventTypes.PAYMENT_RECEIVED,
       () => new Response('Created', { status: 201 }),
@@ -172,7 +181,7 @@ describe('events package', () => {
   });
 
   it('consumer.ts: returns default 200 response when handler returns void', async () => {
-    const receiver = { verify: vi.fn().mockResolvedValue(undefined) } as any;
+    const receiver = { verify: vi.fn().mockResolvedValue(undefined) } as unknown as Receiver;
     const voidHandler = createQStashHandler(PlatformEventTypes.PAYMENT_RECEIVED, () => {}, { receiver });
     const req = new Request('https://example.com', {
       method: 'POST', headers: { 'upstash-signature': 'sig' },

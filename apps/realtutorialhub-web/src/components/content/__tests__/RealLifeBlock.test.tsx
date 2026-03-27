@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { cleanup, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import { RealLifeBlock } from '../RealLifeBlock';
@@ -21,11 +21,12 @@ describe('RealLifeBlock', () => {
   });
 
   it('handles null and empty content without crashing', () => {
-    const { rerender } = renderWithIntl(<RealLifeBlock data={null} theme={theme} />);
-
+    renderWithIntl(<RealLifeBlock data={null} theme={theme} />);
     expect(screen.getByLabelText('Real life block')).toBeDefined();
 
-    rerender(
+    cleanup();
+
+    renderWithIntl(
       <RealLifeBlock
         data={{ title: '', scenario: '', bullets: [], tip: '', image: null }}
         theme={theme}

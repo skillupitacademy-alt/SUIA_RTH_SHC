@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { cleanup, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import { TechnicalBlock } from '../TechnicalBlock';
@@ -14,18 +14,19 @@ describe('TechnicalBlock', () => {
     const { container } = renderWithIntl(<TechnicalBlock data={mockTutorialContent.technical} theme={theme} />);
 
     expect(screen.getByLabelText('Technical block')).toBeDefined();
-    expect(screen.getByText(/A promise can be pending/)).toBeDefined();
+    expect(screen.getAllByText(/A promise can be pending/)).toHaveLength(1);
 
     const results = await runAxe(container);
     expect(results.violations).toHaveLength(0);
   });
 
   it('handles null and empty content without crashing', () => {
-    const { rerender } = renderWithIntl(<TechnicalBlock data={null} theme={theme} />);
-
+    renderWithIntl(<TechnicalBlock data={null} theme={theme} />);
     expect(screen.getByLabelText('Technical block')).toBeDefined();
 
-    rerender(<TechnicalBlock data={{ markdown: '', bullets: [], tip: '', image: null }} theme={theme} />);
+    cleanup();
+
+    renderWithIntl(<TechnicalBlock data={{ markdown: '', bullets: [], tip: '', image: null }} theme={theme} />);
     expect(screen.getByLabelText('Technical block')).toBeDefined();
   });
 });

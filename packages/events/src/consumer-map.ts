@@ -4,7 +4,6 @@ const TUTORIAL_SERVICE_URL = process.env.TUTORIAL_SERVICE_URL ?? 'https://tutori
 
 export const EVENT_CONSUMER_MAP: Record<PlatformEventType, string[]> = {
   [PlatformEventTypes.STUDENT_ENROLLED]: [`${TUTORIAL_SERVICE_URL}/api/workers/student-enrolled`],
-  [PlatformEventTypes.HIERARCHY_SUBTOPIC_ADDED]: [`${TUTORIAL_SERVICE_URL}/api/workers/sync-hierarchy`],
   [PlatformEventTypes.STUDENT_CREATED]: ['https://placeholder.invalid/consumers/student-created'],
   [PlatformEventTypes.EXAM_COMPLETED]: ['https://placeholder.invalid/consumers/exam-completed'],
   [PlatformEventTypes.PAYMENT_RECEIVED]: ['https://placeholder.invalid/consumers/payment-received'],

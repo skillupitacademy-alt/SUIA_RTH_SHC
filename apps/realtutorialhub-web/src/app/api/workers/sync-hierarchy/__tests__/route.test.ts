@@ -9,7 +9,7 @@ const mocks = vi.hoisted(() => ({
   loggerError: vi.fn(),
 }));
 
-vi.mock('../qstash', () => ({
+vi.mock('../../qstash', () => ({
   verifyQStashRequest: mocks.verifyQStashRequest,
 }));
 

@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { cleanup, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import { NotesBlock } from '../NotesBlock';
@@ -14,18 +14,19 @@ describe('NotesBlock', () => {
     const { container } = renderWithIntl(<NotesBlock data={mockTutorialContent.notes} theme={theme} />);
 
     expect(screen.getByLabelText('Notes block')).toBeDefined();
-    expect(screen.getByText(/Promises are placeholders/)).toBeDefined();
+    expect(screen.getAllByText(/Promises are placeholders/)).toHaveLength(1);
 
     const results = await runAxe(container);
     expect(results.violations).toHaveLength(0);
   });
 
   it('handles null and empty content without crashing', () => {
-    const { rerender } = renderWithIntl(<NotesBlock data={null} theme={theme} />);
-
+    renderWithIntl(<NotesBlock data={null} theme={theme} />);
     expect(screen.getByLabelText('Notes block')).toBeDefined();
 
-    rerender(<NotesBlock data={{ markdown: '', image: null }} theme={theme} />);
+    cleanup();
+
+    renderWithIntl(<NotesBlock data={{ markdown: '', image: null }} theme={theme} />);
     expect(screen.getByLabelText('Notes block')).toBeDefined();
   });
 });

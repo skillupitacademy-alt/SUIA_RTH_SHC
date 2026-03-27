@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { cleanup, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import { LaymanBlock } from '../LaymanBlock';
@@ -14,18 +14,19 @@ describe('LaymanBlock', () => {
     const { container } = renderWithIntl(<LaymanBlock data={mockTutorialContent.layman} theme={theme} />);
 
     expect(screen.getByLabelText('Layman block')).toBeDefined();
-    expect(screen.getByText(/A promise is like placing an order/)).toBeDefined();
+    expect(screen.getByText('A promise is like ordering food online. You get confirmation now and the meal later.')).toBeDefined();
 
     const results = await runAxe(container);
     expect(results.violations).toHaveLength(0);
   });
 
   it('handles null and empty content without crashing', () => {
-    const { rerender } = renderWithIntl(<LaymanBlock data={null} theme={theme} />);
-
+    renderWithIntl(<LaymanBlock data={null} theme={theme} />);
     expect(screen.getByLabelText('Layman block')).toBeDefined();
 
-    rerender(
+    cleanup();
+
+    renderWithIntl(
       <LaymanBlock
         data={{
           simpleExplanation: '',

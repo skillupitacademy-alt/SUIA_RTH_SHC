@@ -1,7 +1,6 @@
 import { Redis } from '@upstash/redis';
 import { z } from 'zod';
 
-import { PlatformEventTypes } from '@quiz/events';
 import {
   db,
   STANDARD_QUERY_TIMEOUT,
@@ -15,6 +14,7 @@ import {
 import { logger } from '@/lib/logger';
 
 const DifficultySchema = z.enum(['simple', 'mixed', 'intermediate', 'expert']);
+const HIERARCHY_SYNC_EVENT_TYPE = 'hierarchy.subtopic_added';
 
 export const HierarchySyncPayloadSchema = z.object({
   subtopicId: z.string().uuid(),
@@ -35,7 +35,7 @@ export const HierarchySyncPayloadSchema = z.object({
 
 export const HierarchySyncEnvelopeSchema = z.object({
   id: z.string().uuid(),
-  type: z.literal(PlatformEventTypes.HIERARCHY_SUBTOPIC_ADDED),
+  type: z.literal(HIERARCHY_SYNC_EVENT_TYPE),
   correlationId: z.string().uuid(),
   source: z.string().min(1),
   occurredAt: z.string().datetime({ offset: true }),

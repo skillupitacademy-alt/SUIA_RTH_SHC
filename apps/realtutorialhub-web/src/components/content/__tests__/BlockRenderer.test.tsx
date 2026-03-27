@@ -17,7 +17,7 @@ describe('BlockRenderer', () => {
 
     expect(container.querySelectorAll('[data-tutorial-block]').length).toBe(6);
     expect(screen.getByLabelText('Notes block')).toBeDefined();
-    expect(screen.getByLabelText('AI tutor block')).toBeDefined();
+    expect(await screen.findByLabelText('AI tutor block')).toBeDefined();
 
     const results = await runAxe(container);
     expect(results.violations).toHaveLength(0);

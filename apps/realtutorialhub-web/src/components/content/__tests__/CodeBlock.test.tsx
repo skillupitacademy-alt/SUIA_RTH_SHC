@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { cleanup, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import { CodeBlock } from '../CodeBlock';
@@ -14,18 +14,19 @@ describe('CodeBlock', () => {
     const { container } = renderWithIntl(<CodeBlock data={mockTutorialContent.code} theme={theme} />);
 
     expect(screen.getByLabelText('Code example block')).toBeDefined();
-    expect(screen.getByText(/This example shows how a promise resolves/)).toBeDefined();
+    expect(screen.getAllByText(/This example shows how a promise resolves/)).toHaveLength(1);
 
     const results = await runAxe(container);
     expect(results.violations).toHaveLength(0);
   });
 
   it('handles null and empty content without crashing', () => {
-    const { rerender } = renderWithIntl(<CodeBlock data={null} theme={theme} />);
-
+    renderWithIntl(<CodeBlock data={null} theme={theme} />);
     expect(screen.getByLabelText('Code example block')).toBeDefined();
 
-    rerender(
+    cleanup();
+
+    renderWithIntl(
       <CodeBlock
         data={{
           language: 'javascript',
