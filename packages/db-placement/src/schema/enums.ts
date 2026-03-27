@@ -10,3 +10,9 @@ export const placementApplicationStatusEnum = pgEnum('placement_application_stat
   'withdrawn',
 ]);
 export const placementOfferStatusEnum = pgEnum('placement_offer_status', ['offered', 'accepted', 'declined', 'expired']);
+export const placementInterviewStatusEnum = pgEnum('placement_interview_status', [
+  'scheduled',
+  'completed',
+  'cancelled',
+  'no_show',
+]);

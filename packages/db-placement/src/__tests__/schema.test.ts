@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   jobListings,
   placementApplications,
+  placementInterviews,
   placementOffers,
   schema,
   studentPlacementProfiles,
@@ -14,6 +15,7 @@ describe('db-placement schema', () => {
     expect(studentPlacementProfiles).toBeDefined();
     expect(placementApplications).toBeDefined();
     expect(placementOffers).toBeDefined();
+    expect(placementInterviews).toBeDefined();
     expect(schema).toBeDefined();
   });
 });

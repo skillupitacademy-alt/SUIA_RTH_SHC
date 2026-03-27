@@ -8,6 +8,13 @@
       "when": 1774571313280,
       "tag": "0000_smart_vermin",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1774572133360,
+      "tag": "0001_plain_gorgon",
+      "breakpoints": true
     }
   ]
 }
