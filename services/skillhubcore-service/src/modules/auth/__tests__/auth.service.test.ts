@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { PasswordService } from '../password.service';
 import { AuthService } from '../auth.service';
 import { TokenService } from '../token.service';
+import { SubscriptionService } from '../../subscription/subscription.service';
 import type { PeoplePlatform, PeopleUserRole, IUserRepository, PeopleSubscriptionRecord, PeopleUserRecord } from '@quiz/types';
 
 type SessionRecord = {
@@ -26,6 +27,20 @@ class FakeRedis {
     this.store.delete(key);
     return 1;
   });
+}
+
+class FakeSubscriptionService {
+  getPlanFeatures = vi.fn(async (planType: 'free' | 'pro' | 'enterprise') => {
+    if (planType === 'free') {
+      return ['tutorial.preview_only'];
+    }
+    return ['tutorial.full_access', 'ai_tutor'];
+  });
+
+  getFeatures = vi.fn(async (_userId: string) => ['tutorial.preview_only']);
+  isFeatureEnabled = vi.fn(async (_userId: string, _feature: string) => false);
+  onPaymentReceived = vi.fn(async () => undefined);
+  invalidateFeaturesCache = vi.fn(async () => undefined);
 }
 
 class FakeRepo implements IUserRepository {
@@ -172,15 +187,16 @@ class FakeRepo implements IUserRepository {
 const createService = () => {
   const repo = new FakeRepo();
   const redis = new FakeRedis();
+  const subscriptionService = new FakeSubscriptionService();
   const tokenService = new TokenService(new TextEncoder().encode('access-secret-1234567890'), new TextEncoder().encode('refresh-secret-1234567890'));
   const passwordService = new PasswordService();
-  const service = new AuthService(repo as unknown as IUserRepository as any, tokenService, passwordService, redis as any);
-  return { service, repo, redis, tokenService, passwordService };
+  const service = new AuthService(repo as unknown as IUserRepository as any, tokenService, passwordService, subscriptionService as unknown as SubscriptionService, redis as any);
+  return { service, repo, redis, tokenService, passwordService, subscriptionService };
 };
 
 describe('AuthService', () => {
   it('registers a user atomically', async () => {
-    const { service, repo, tokenService } = createService();
+    const { service, repo, tokenService, subscriptionService } = createService();
     const result = await service.register({
       email: 'student@example.com',
       password: 'Password123!',
@@ -192,15 +208,16 @@ describe('AuthService', () => {
     expect(repo.users.size).toBe(1);
     expect(repo.subscriptions.size).toBe(1);
     expect(repo.platforms.get(result.user.id)).toContain('realtutorialhub');
+    expect(subscriptionService.getPlanFeatures).toHaveBeenCalledWith('free');
 
     const accessPayload = await tokenService.verifyAccessToken(result.accessToken);
     expect(accessPayload.roles).toEqual(['student']);
-    expect(accessPayload.subscriptions).toEqual(['notes']);
+    expect(accessPayload.subscriptions).toEqual(['tutorial.preview_only']);
     expect(repo.audits[repo.audits.length - 1]?.action).toBe('register');
   });
 
   it('logs in and auto-grants new platform access', async () => {
-    const { service, repo, tokenService, passwordService } = createService();
+    const { service, repo, tokenService, passwordService, subscriptionService } = createService();
     const passwordHash = await passwordService.hash('Password123!');
     const userId = randomUUID();
     repo.users.set(userId, {
@@ -220,7 +237,7 @@ describe('AuthService', () => {
       id: randomUUID(),
       userId,
       planType: 'free',
-      features: ['notes'],
+      features: ['tutorial.preview_only'],
       status: 'active',
       startedAt: new Date(),
       expiresAt: null,
@@ -235,12 +252,13 @@ describe('AuthService', () => {
 
     expect(result.user.platforms).toContain('skillup');
     expect(repo.platforms.get(userId)).toEqual(['realtutorialhub', 'skillup']);
+    expect(subscriptionService.getFeatures).toHaveBeenCalledWith(userId);
     const accessPayload = await tokenService.verifyAccessToken(result.accessToken);
-    expect(accessPayload.subscriptions).toEqual(['notes']);
+    expect(accessPayload.subscriptions).toEqual(['tutorial.preview_only']);
   });
 
   it('refreshes tokens and detects reuse of revoked refresh tokens', async () => {
-    const { service, repo } = createService();
+    const { service, repo, subscriptionService } = createService();
     const passwordHash = await new PasswordService().hash('Password123!');
     const userId = randomUUID();
     repo.users.set(userId, {
@@ -260,7 +278,7 @@ describe('AuthService', () => {
       id: randomUUID(),
       userId,
       planType: 'free',
-      features: ['notes'],
+      features: ['tutorial.preview_only'],
       status: 'active',
       startedAt: new Date(),
       expiresAt: null,
@@ -275,6 +293,7 @@ describe('AuthService', () => {
 
     const rotated = await service.refresh(firstLogin.refreshToken);
     expect(rotated.refreshToken).not.toBe(firstLogin.refreshToken);
+    expect(subscriptionService.getFeatures).toHaveBeenCalledWith(userId);
 
     await expect(service.refresh(firstLogin.refreshToken)).rejects.toThrow('Session compromised');
     expect([...repo.families.values()][0]?.isCompromised).toBe(true);
@@ -301,7 +320,7 @@ describe('AuthService', () => {
       id: randomUUID(),
       userId,
       planType: 'free',
-      features: ['notes'],
+      features: ['tutorial.preview_only'],
       status: 'active',
       startedAt: new Date(),
       expiresAt: null,

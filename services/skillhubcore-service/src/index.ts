@@ -11,13 +11,15 @@ import { createHierarchyRoutes } from '@/modules/hierarchy/hierarchy.routes';
 import { HierarchyService } from '@/modules/hierarchy/hierarchy.service';
 import { DrizzleUserRepository } from '@/modules/user/user.repository';
 import { cache } from '@/lib/cache';
+import { SubscriptionService } from '@/modules/subscription/subscription.service';
 
 export const createApp = () => {
   const app = new Hono();
   const tokenService = new TokenService();
   const passwordService = new PasswordService();
   const userRepo = new DrizzleUserRepository();
-  const authService = new AuthService(userRepo, tokenService, passwordService, cache);
+  const subscriptionService = new SubscriptionService();
+  const authService = new AuthService(userRepo, tokenService, passwordService, subscriptionService, cache);
   const hierarchyService = new HierarchyService();
 
   app.use('*', requireGatewaySecret);

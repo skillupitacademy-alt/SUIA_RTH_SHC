@@ -1,15 +1,15 @@
 import type { AuthResult, AuthUserDTO, LoginInput, RegisterInput } from './auth.types';
 import { PasswordService } from './password.service';
 import { TokenInvalidError, TokenService } from './token.service';
+import { SubscriptionService } from '../subscription/subscription.service';
 import { DrizzleUserRepository } from '../user/user.repository';
-
-const FREE_SUBSCRIPTIONS = ['notes'];
 
 export class AuthService {
   constructor(
     private readonly userRepo: DrizzleUserRepository,
     private readonly tokenService: TokenService,
     private readonly passwordService: PasswordService,
+    private readonly subscriptionService: SubscriptionService,
     private readonly redis: {
       get: (key: string) => Promise<string | null>;
       set: (key: string, value: string, options?: Record<string, unknown>) => Promise<unknown>;
@@ -39,6 +39,7 @@ export class AuthService {
 
     const passwordHash = await this.passwordService.hash(input.password);
     const familyId = TokenService.generateFamilyId();
+    const freeFeatures = await this.subscriptionService.getPlanFeatures('free');
 
     return this.userRepo.transaction(async (repo) => {
       const user = await repo.createUser({
@@ -52,14 +53,13 @@ export class AuthService {
       await repo.createSubscription({
         userId: user.id,
         planType: 'free',
-        features: FREE_SUBSCRIPTIONS,
+        features: freeFeatures,
       });
       await repo.createTokenFamily({ userId: user.id, familyId });
-
-    const [accessToken, refreshToken] = await Promise.all([
-      this.tokenService.signAccessToken(user.id, [user.role], FREE_SUBSCRIPTIONS, [input.platform]),
-      this.tokenService.signRefreshToken(user.id, familyId),
-    ]);
+      const [accessToken, refreshToken] = await Promise.all([
+        this.tokenService.signAccessToken(user.id, [user.role], freeFeatures, [input.platform]),
+        this.tokenService.signRefreshToken(user.id, familyId),
+      ]);
 
       await this.redis.set(this.getRefreshKey(familyId), refreshToken);
       await repo.createSession({
@@ -78,7 +78,7 @@ export class AuthService {
       return {
         accessToken,
         refreshToken,
-        user: this.toUserDto(user, [input.platform], FREE_SUBSCRIPTIONS),
+        user: this.toUserDto(user, [input.platform], freeFeatures),
       };
     });
   }
@@ -110,8 +110,7 @@ export class AuthService {
       await this.userRepo.grantPlatformAccess(user.id, input.platform);
     }
 
-    const subscription = await this.userRepo.getActiveSubscription(user.id);
-    const subscriptions = Array.isArray(subscription?.features) && subscription.features.length > 0 ? subscription.features : FREE_SUBSCRIPTIONS;
+    const subscriptions = await this.subscriptionService.getFeatures(user.id);
     const familyId = TokenService.generateFamilyId();
 
     const [accessToken, refreshToken] = await Promise.all([
@@ -191,8 +190,7 @@ export class AuthService {
     }
 
     const platforms = await this.userRepo.listPlatforms(user.id);
-    const subscription = await this.userRepo.getActiveSubscription(user.id);
-    const subscriptions = Array.isArray(subscription?.features) && subscription.features.length > 0 ? subscription.features : FREE_SUBSCRIPTIONS;
+    const subscriptions = await this.subscriptionService.getFeatures(user.id);
 
     const [accessToken, nextRefreshToken] = await Promise.all([
       this.tokenService.signAccessToken(user.id, [user.role], subscriptions, platforms),
