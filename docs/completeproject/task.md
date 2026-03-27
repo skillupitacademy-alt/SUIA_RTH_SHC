@@ -1,6 +1,6 @@
-# Platform To-Do — Sequenced Next Steps
+# Platform To-Do â€” Sequenced Next Steps
 
-## SPRINT 1 — Faculty Phase 5 Completion (Immediate)
+## SPRINT 1 â€” Faculty Phase 5 Completion (Immediate)
 > Unblocks the only remaining  item. 3 api-server routes + wire faculty-app pages.
 
 - [ ] 1A. Create `apps/api-server/src/app/api/tutorial/faculty/review-queue/route.ts`
@@ -29,7 +29,7 @@
 
 ---
 
-## SPRINT 2 — payment_prod Schema (Unblocks student payments page)
+## SPRINT 2 â€” payment_prod Schema (Unblocks student payments page)
 
 - [ ] 2A. Create `packages/db-payment/src/schema/`
        - payment_plans.ts: id, userId, status, planType, totalAmount, createdAt
@@ -49,7 +49,7 @@
 
 ---
 
-## SPRINT 3 — Phase 6: RTH Pending Pages (Additive — RTH only)
+## SPRINT 3 â€” Phase 6: RTH Pending Pages (Additive â€” RTH only)
 > Zero changes to existing RTH functionality. New pages only.
 
 - [ ] 3A. `realtutorialhub-web`: tutorial learning pages per subtopic
@@ -58,7 +58,7 @@
        - Renders content JSONB blocks (text, code, video, quiz-link)
 
 - [ ] 3B. `realtutorialhub-quiz`: onboarding flow improvements
-       - Existing /onboarding page — check what's incomplete
+       - Existing /onboarding page â€” check what's incomplete
        - Must not break existing onboarded users
 
 - [ ] 3C. `realtutorialhub-quiz`: profile page
@@ -67,7 +67,7 @@
 
 ---
 
-## SPRINT 4 — placement_prod Schema (Future)
+## SPRINT 4 â€” placement_prod Schema (Future)
 
 - [ ] 4A. Create `packages/db-placement/src/schema/` (5 tables from Phase 13 spec)
 - [ ] 4B. Set up Upstash Vector indexes: placement-students, placement-jobs
@@ -77,7 +77,7 @@
 
 ---
 
-## SPRINT 5 — Tier 3 Infrastructure (Requires Maintenance Window)
+## SPRINT 5 â€” Tier 3 Infrastructure (Requires Maintenance Window)
 > Do NOT start until Sprint 1-3 are complete and all RTH tests are green.
 
 - [ ] 5A. Create Neon branch from prod snapshot
@@ -92,7 +92,7 @@
 
 ---
 
-## SPRINT 6 — packages/auth + packages/events (Future)
+## SPRINT 6 â€” packages/auth + packages/events (Future)
 
 - [ ] 6A. Extract JWT verification into packages/auth (shared across services)
 - [ ] 6B. Build packages/events with 15 event types

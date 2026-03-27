@@ -9,20 +9,43 @@ import {
     Settings,
     TrendingUp,
     Award,
-    Mail
+    Mail,
+    Target,
+    CheckSquare,
+    FolderCode,
+    Video
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 import { useDashboardStore } from '@/store/dashboard-store';
 
-const NAV_ITEMS = [
-    { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
-    { name: 'Learning Insights', href: '/dashboard/insights', icon: TrendingUp },
-    { name: 'My Exams', href: '/dashboard/my-exams', icon: BookOpen },
-    { name: 'Inbox', href: '/dashboard/inbox', icon: Mail },
-    { name: 'Certifications', href: '/dashboard/certs', icon: Award },
-    { name: 'Reports', href: '/dashboard/reports', icon: FileText },
-    { name: 'Settings', href: '/dashboard/settings', icon: Settings },
+const NAV_SECTIONS = [
+    {
+        label: 'Assessment',
+        items: [
+            { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
+            { name: 'My Exams', href: '/dashboard/my-exams', icon: BookOpen },
+            { name: 'Reports', href: '/dashboard/reports', icon: FileText },
+            { name: 'Certifications', href: '/dashboard/certs', icon: Award },
+        ]
+    },
+    {
+        label: 'Learning',
+        items: [
+            { name: 'Remediation Plan', href: '/learn/remediation', icon: Target },
+            { name: 'Assignments', href: '/dashboard/assignments', icon: CheckSquare },
+            { name: 'My Projects', href: '/projects', icon: FolderCode },
+            { name: 'Live Sessions', href: '/dashboard/sessions', icon: Video },
+        ]
+    },
+    {
+        label: 'Account',
+        items: [
+            { name: 'Learning Insights', href: '/dashboard/insights', icon: TrendingUp },
+            { name: 'Inbox', href: '/dashboard/inbox', icon: Mail },
+            { name: 'Settings', href: '/dashboard/settings', icon: Settings },
+        ]
+    }
 ];
 
 export function Sidebar() {
@@ -35,41 +58,47 @@ export function Sidebar() {
 
     return (
         <aside className="hidden md:flex flex-col w-64 bg-white border-r border-slate-100 shadow-xl shadow-slate-200/20 fixed inset-y-0 left-0 z-50">
-            <div className="p-6">
-                <div className="flex items-center gap-3 mb-10 pl-2">
+            <div className="flex-1 flex flex-col pt-6 px-6 overflow-hidden">
+                <div className="flex items-center gap-3 mb-10 pl-2 shrink-0">
                     <div className="h-8 w-8 rounded-xl bg-[#FF4B91] flex items-center justify-center text-white font-outfit font-black text-lg shadow-lg shadow-[#FF4B91]/30">Q</div>
                     <span className="font-outfit font-black text-xl tracking-tighter text-[#1A1A1A]">QUIZHUB</span>
                 </div>
 
-                <p className="alpha-terminal text-slate-400 mb-6 px-4 !tracking-[0.4em]">Main Menu</p>
-                <nav className="space-y-2">
-                    {NAV_ITEMS.map((item) => {
-                        const isActive = pathname === item.href;
-                        return (
-                            <Link
-                                key={item.name}
-                                href={item.href}
-                                className={cn(
-                                    "flex items-center gap-3 px-5 py-3.5 rounded-[1.25rem] transition-all duration-300 group",
-                                    isActive
-                                        ? "bg-[#FF4B91] text-white shadow-xl shadow-[#FF4B91]/40 scale-[1.02] z-10"
-                                        : "text-slate-600 hover:bg-slate-50 hover:text-[#1A1A1A]"
-                                )}
-                                aria-label={item.name}
-                                aria-current={isActive ? "page" : undefined}
-                            >
-                                <item.icon
-                                    size={20}
-                                    className={cn(
-                                        "transition-colors duration-300",
-                                        isActive ? "text-white" : "text-[#FF4B91]"
-                                    )}
-                                />
-                                <span className="font-inter font-bold text-[14px] uppercase tracking-wide">{item.name}</span>
-                            </Link>
-                        );
-                    })}
-                </nav>
+                <div className="flex-1 overflow-y-auto scrollbar-hide [mask-image:linear-gradient(to_bottom,transparent,black_2%,black_98%,transparent)] pt-2 pb-6 space-y-6">
+                    {NAV_SECTIONS.map((section) => (
+                        <div key={section.label}>
+                            <p className="alpha-terminal text-slate-400 mb-2 px-4 !tracking-[0.2em]">{section.label}</p>
+                            <nav className="space-y-1">
+                                {section.items.map((item) => {
+                                    const isActive = pathname === item.href;
+                                    return (
+                                        <Link
+                                            key={item.name}
+                                            href={item.href}
+                                            className={cn(
+                                                "flex items-center gap-3 px-5 py-3.5 rounded-[1.25rem] transition-all duration-300 group",
+                                                isActive
+                                                    ? "bg-[#FF4B91] text-white shadow-xl shadow-[#FF4B91]/40 scale-[1.02] z-10"
+                                                    : "text-slate-600 hover:bg-slate-50 hover:text-[#1A1A1A]"
+                                            )}
+                                            aria-label={item.name}
+                                            aria-current={isActive ? "page" : undefined}
+                                        >
+                                            <item.icon
+                                                size={20}
+                                                className={cn(
+                                                    "transition-colors duration-300",
+                                                    isActive ? "text-white" : "text-[#FF4B91]"
+                                                )}
+                                            />
+                                            <span className="font-inter font-bold text-[13px] uppercase tracking-wide">{item.name}</span>
+                                        </Link>
+                                    );
+                                })}
+                            </nav>
+                        </div>
+                    ))}
+                </div>
             </div>
 
             <div className="mt-auto p-6 border-t border-slate-50 bg-slate-50/30">

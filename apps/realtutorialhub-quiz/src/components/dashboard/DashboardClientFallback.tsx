@@ -107,6 +107,13 @@ export default function DashboardClientFallback({ serverUser, serverData }: Dash
                         <Play size={18} className="mr-2" />
                         Start New Exam
                     </Link>
+                    <a
+                        href="/learn/technology/frontend/react/components"
+                        className="inline-flex items-center justify-center rounded-2xl bg-indigo-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 transition-all hover:scale-105"
+                    >
+                        <BookOpen size={18} className="mr-2" />
+                        Resume Tutorial
+                    </a>
                 </div>
             </div>
 
