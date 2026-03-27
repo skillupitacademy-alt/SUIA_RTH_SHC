@@ -21,6 +21,7 @@ import {
 import { and, asc, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { NextRequest } from 'next/server';
 
+import { publishSessionScheduledNotification } from '@/lib/skillup-notifications';
 export type FacultyAccess = {
   facultyId: string;
   userId: string;
@@ -483,6 +484,15 @@ export async function createFacultyBatchSession(
       status: batchSessions.status,
     });
 
+  if (row !== undefined) {
+    void publishSessionScheduledNotification({
+      batchId: row.batchId,
+      sessionId: row.id,
+      scheduledAt: row.scheduledAt?.toISOString() ?? data.scheduledAt.toISOString(),
+      sessionNotes: row.sessionNotes ?? data.sessionNotes,
+    }).catch(() => undefined);
+  }
+
   return row ?? null;
 }
 
@@ -513,6 +523,19 @@ export async function updateFacultyBatchSession(
       sessionNotes: batchSessions.sessionNotes,
       status: batchSessions.status,
     });
+
+  if (
+    row !== undefined &&
+    row.status === 'scheduled' &&
+    (data.scheduledAt !== undefined || data.durationMinutes !== undefined || data.sessionNotes !== undefined || data.status === 'scheduled')
+  ) {
+    void publishSessionScheduledNotification({
+      batchId: row.batchId,
+      sessionId: row.id,
+      scheduledAt: row.scheduledAt?.toISOString() ?? new Date().toISOString(),
+      sessionNotes: row.sessionNotes ?? 'SkillUp batch session',
+    }).catch(() => undefined);
+  }
 
   return row ?? null;
 }

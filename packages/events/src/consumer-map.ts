@@ -8,6 +8,7 @@ export const EVENT_CONSUMER_MAP: Record<PlatformEventType, string[]> = {
   [PlatformEventTypes.EXAM_COMPLETED]: ['https://placeholder.invalid/consumers/exam-completed'],
   [PlatformEventTypes.PAYMENT_RECEIVED]: ['https://placeholder.invalid/consumers/payment-received'],
   [PlatformEventTypes.PAYMENT_OVERDUE]: ['https://placeholder.invalid/consumers/payment-overdue'],
+  [PlatformEventTypes.SESSION_SCHEDULED]: ['https://placeholder.invalid/consumers/session-scheduled'],
   [PlatformEventTypes.TUTORIAL_SUBTOPIC_COMPLETED]: ['https://placeholder.invalid/consumers/tutorial-subtopic-completed'],
   [PlatformEventTypes.BATCH_SESSION_COMPLETED]: ['https://placeholder.invalid/consumers/batch-session-completed'],
   [PlatformEventTypes.BATCH_SUBTOPICS_COVERED]: ['https://placeholder.invalid/consumers/batch-subtopics-covered'],

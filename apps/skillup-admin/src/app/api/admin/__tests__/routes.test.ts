@@ -11,6 +11,7 @@ vi.mock('@quiz/events', () => ({
     STUDENT_ENROLLED: 'student.enrolled',
     ADMISSION_COMPLETED: 'admission.completed',
     PAYMENT_RECEIVED: 'payment.received',
+    PAYMENT_OVERDUE: 'payment.overdue',
   },
   publishEvent: mocks.publishEvent,
 }));
@@ -436,5 +437,38 @@ describe('skillup-admin routes', () => {
     expect(updatePayload.data.updated).toBe(true);
     expect(updatePayload.data.detail.installmentId).toBe(`Training fee ${unique}`);
     expect(updatePayload.data.detail.amount).toBe(21000);
+  });
+
+  it('publishes an overdue payment event when a payment is marked overdue', async () => {
+    const unique = Date.now().toString(36);
+    const response = await patchPaymentDetail(
+      makeRequest(
+        `/api/admin/payments/${paymentId}`,
+        'PATCH',
+        {
+          installmentId: `Training fee ${unique}`,
+          amount: 21000,
+          dueDate: '2025-01-10',
+          paymentRef: `PAY-${unique}`,
+          status: 'overdue',
+        }
+      ),
+      {
+        params: Promise.resolve({ id: paymentId }),
+      }
+    );
+
+    expect(response.status).toBe(200);
+    expect(mocks.publishEvent).toHaveBeenCalledWith(
+      'payment.overdue',
+      expect.objectContaining({
+        installmentId: paymentId,
+        userId: expect.any(String),
+        overdueByDays: expect.any(Number),
+      }),
+      expect.objectContaining({
+        destinationUrl: expect.stringContaining('payment-overdue'),
+      })
+    );
   });
 });

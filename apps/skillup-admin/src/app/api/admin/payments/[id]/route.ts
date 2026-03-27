@@ -2,9 +2,11 @@ import { eq } from 'drizzle-orm';
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
 
+import { PlatformEventTypes, publishEvent } from '@quiz/events';
+import { db, paymentInstallments } from '@quiz/db-people';
+
 import { jsonData, parseJsonOrFormBody, requireAdminOrForbidden } from '@/lib/admin-bff';
 import { getAdminPaymentDetail } from '@/lib/skillup-admin-data';
-import { db, paymentInstallments } from '@quiz/db-people';
 
 const paymentSchema = z.object({
   installmentId: z.string().min(1),
@@ -56,5 +58,24 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
   }
 
   const detail = await getAdminPaymentDetail(id);
+
+  if (parsed.data.status === 'overdue' && detail?.userId !== undefined) {
+    const dueDate = new Date(`${parsed.data.dueDate}T00:00:00.000Z`);
+    const overdueByDays = Math.max(0, Math.floor((Date.now() - dueDate.getTime()) / 86_400_000));
+    void publishEvent(
+      PlatformEventTypes.PAYMENT_OVERDUE,
+      {
+        userId: detail.userId,
+        installmentId: id,
+        overdueByDays,
+        detectedAt: new Date().toISOString(),
+      },
+      {
+        destinationUrl: process.env.SKILLUP_PAYMENT_OVERDUE_URL ?? 'https://placeholder.invalid/consumers/payment-overdue',
+        source: 'skillup-admin',
+      }
+    ).catch(() => undefined);
+  }
+
   return jsonData({ updated: true, detail }, 200);
 }
