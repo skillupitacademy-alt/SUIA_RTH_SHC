@@ -334,6 +334,7 @@ export interface IUserRepository {
     features: string[];
   }): Promise<PeopleSubscriptionRecord>;
   grantPlatformAccess(userId: string, platform: PeoplePlatform): Promise<unknown>;
+  revokePlatformAccess(userId: string, platform: PeoplePlatform): Promise<unknown>;
   listPlatforms(userId: string): Promise<PeoplePlatform[]>;
   getActiveSubscription(userId: string): Promise<PeopleSubscriptionRecord | undefined>;
   createSession(input: {

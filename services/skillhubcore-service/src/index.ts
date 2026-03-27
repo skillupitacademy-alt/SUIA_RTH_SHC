@@ -7,6 +7,8 @@ import { createAuthRoutes } from '@/modules/auth/auth.routes';
 import { AuthService } from '@/modules/auth/auth.service';
 import { PasswordService } from '@/modules/auth/password.service';
 import { TokenService } from '@/modules/auth/token.service';
+import { createSsoRoutes } from '@/modules/auth/sso/sso.routes';
+import { SsoService } from '@/modules/auth/sso/sso.service';
 import { createHierarchyRoutes } from '@/modules/hierarchy/hierarchy.routes';
 import { HierarchyService } from '@/modules/hierarchy/hierarchy.service';
 import { DrizzleUserRepository } from '@/modules/user/user.repository';
@@ -19,13 +21,15 @@ export const createApp = () => {
   const passwordService = new PasswordService();
   const userRepo = new DrizzleUserRepository();
   const subscriptionService = new SubscriptionService();
-  const authService = new AuthService(userRepo, tokenService, passwordService, subscriptionService, cache);
+  const ssoService = new SsoService(userRepo);
+  const authService = new AuthService(userRepo, tokenService, passwordService, subscriptionService, ssoService, cache);
   const hierarchyService = new HierarchyService();
 
   app.use('*', requireGatewaySecret);
   app.get('/healthz', (c) => c.json({ status: 'ok', service: 'skillhubcore', ts: Date.now() }));
   app.get('/healthz/', (c) => c.json({ status: 'ok', service: 'skillhubcore', ts: Date.now() }));
   app.route('/auth', createAuthRoutes(authService));
+  app.route('/admin/users', createSsoRoutes(ssoService));
   app.route('/api/hierarchy', createHierarchyRoutes(hierarchyService));
 
   return app;

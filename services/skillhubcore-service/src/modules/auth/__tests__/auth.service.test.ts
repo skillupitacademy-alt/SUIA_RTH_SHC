@@ -6,6 +6,7 @@ import { PasswordService } from '../password.service';
 import { AuthService } from '../auth.service';
 import { TokenService } from '../token.service';
 import { SubscriptionService } from '../../subscription/subscription.service';
+import { SsoService } from '../sso/sso.service';
 import type { PeoplePlatform, PeopleUserRole, IUserRepository, PeopleSubscriptionRecord, PeopleUserRecord } from '@quiz/types';
 
 type SessionRecord = {
@@ -110,6 +111,15 @@ class FakeRepo implements IUserRepository {
     return { userId, platform };
   }
 
+  async revokePlatformAccess(userId: string, platform: PeoplePlatform) {
+    const current = this.platforms.get(userId) ?? [];
+    this.platforms.set(
+      userId,
+      current.filter((value) => value !== platform)
+    );
+    return { userId, platform };
+  }
+
   async listPlatforms(userId: string) {
     return this.platforms.get(userId) ?? [];
   }
@@ -188,10 +198,18 @@ const createService = () => {
   const repo = new FakeRepo();
   const redis = new FakeRedis();
   const subscriptionService = new FakeSubscriptionService();
+  const ssoService = new SsoService(repo as unknown as IUserRepository);
   const tokenService = new TokenService(new TextEncoder().encode('access-secret-1234567890'), new TextEncoder().encode('refresh-secret-1234567890'));
   const passwordService = new PasswordService();
-  const service = new AuthService(repo as unknown as IUserRepository as any, tokenService, passwordService, subscriptionService as unknown as SubscriptionService, redis as any);
-  return { service, repo, redis, tokenService, passwordService, subscriptionService };
+  const service = new AuthService(
+    repo as unknown as IUserRepository as any,
+    tokenService,
+    passwordService,
+    subscriptionService as unknown as SubscriptionService,
+    ssoService,
+    redis as any
+  );
+  return { service, repo, redis, tokenService, passwordService, subscriptionService, ssoService };
 };
 
 describe('AuthService', () => {

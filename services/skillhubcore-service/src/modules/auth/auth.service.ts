@@ -3,6 +3,7 @@ import { PasswordService } from './password.service';
 import { TokenInvalidError, TokenService } from './token.service';
 import { SubscriptionService } from '../subscription/subscription.service';
 import { DrizzleUserRepository } from '../user/user.repository';
+import { SsoService } from './sso/sso.service';
 
 export class AuthService {
   constructor(
@@ -10,6 +11,7 @@ export class AuthService {
     private readonly tokenService: TokenService,
     private readonly passwordService: PasswordService,
     private readonly subscriptionService: SubscriptionService,
+    private readonly ssoService: SsoService,
     private readonly redis: {
       get: (key: string) => Promise<string | null>;
       set: (key: string, value: string, options?: Record<string, unknown>) => Promise<unknown>;
@@ -49,7 +51,8 @@ export class AuthService {
         platform: input.platform,
       });
 
-      await repo.grantPlatformAccess(user.id, input.platform);
+      const transactionSsoService = this.ssoService.withRepository(repo);
+      const platforms = await transactionSsoService.grantPlatformAccess(user.id, input.platform);
       await repo.createSubscription({
         userId: user.id,
         planType: 'free',
@@ -57,7 +60,7 @@ export class AuthService {
       });
       await repo.createTokenFamily({ userId: user.id, familyId });
       const [accessToken, refreshToken] = await Promise.all([
-        this.tokenService.signAccessToken(user.id, [user.role], freeFeatures, [input.platform]),
+        this.tokenService.signAccessToken(user.id, [user.role], freeFeatures, platforms),
         this.tokenService.signRefreshToken(user.id, familyId),
       ]);
 
@@ -78,7 +81,7 @@ export class AuthService {
       return {
         accessToken,
         refreshToken,
-        user: this.toUserDto(user, [input.platform], freeFeatures),
+        user: this.toUserDto(user, platforms, freeFeatures),
       };
     });
   }
@@ -105,10 +108,7 @@ export class AuthService {
       throw new Error('Invalid credentials');
     }
 
-    const platforms = await this.userRepo.listPlatforms(user.id);
-    if (!platforms.includes(input.platform)) {
-      await this.userRepo.grantPlatformAccess(user.id, input.platform);
-    }
+    const platforms = await this.ssoService.grantPlatformAccess(user.id, input.platform);
 
     const subscriptions = await this.subscriptionService.getFeatures(user.id);
     const familyId = TokenService.generateFamilyId();
@@ -189,7 +189,7 @@ export class AuthService {
       throw new TokenInvalidError('Invalid refresh token');
     }
 
-    const platforms = await this.userRepo.listPlatforms(user.id);
+    const platforms = await this.ssoService.getUserPlatforms(user.id);
     const subscriptions = await this.subscriptionService.getFeatures(user.id);
 
     const [accessToken, nextRefreshToken] = await Promise.all([

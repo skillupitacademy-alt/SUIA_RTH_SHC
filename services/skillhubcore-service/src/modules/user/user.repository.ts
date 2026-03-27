@@ -102,14 +102,26 @@ export class DrizzleUserRepository implements IUserRepository {
       this.dbClient
         .select()
         .from(schema.platformAccess)
-        .where(and(eq(schema.platformAccess.userId, userId), eq(schema.platformAccess.platform, platform), isNull(schema.platformAccess.deletedAt)))
+        .where(and(eq(schema.platformAccess.userId, userId), eq(schema.platformAccess.platform, platform)))
         .limit(1),
       STANDARD_QUERY_TIMEOUT,
       'people.platform_access.find'
     );
 
     if (existing.length > 0) {
-      return existing[0];
+      const [row] = await withTimeout(
+        this.dbClient
+          .update(schema.platformAccess)
+          .set({
+            deletedAt: null,
+            grantedAt: new Date(),
+          })
+          .where(and(eq(schema.platformAccess.userId, userId), eq(schema.platformAccess.platform, platform)))
+          .returning(),
+        STANDARD_QUERY_TIMEOUT,
+        'people.platform_access.restore'
+      );
+      return row ?? existing[0];
     }
 
     const [row] = await withTimeout(
@@ -122,6 +134,19 @@ export class DrizzleUserRepository implements IUserRepository {
         .returning(),
       STANDARD_QUERY_TIMEOUT,
       'people.platform_access.create'
+    );
+    return row;
+  }
+
+  async revokePlatformAccess(userId: string, platform: PeoplePlatform): Promise<unknown> {
+    const [row] = await withTimeout(
+      this.dbClient
+        .update(schema.platformAccess)
+        .set({ deletedAt: new Date() })
+        .where(and(eq(schema.platformAccess.userId, userId), eq(schema.platformAccess.platform, platform), isNull(schema.platformAccess.deletedAt)))
+        .returning(),
+      STANDARD_QUERY_TIMEOUT,
+      'people.platform_access.revoke'
     );
     return row;
   }
