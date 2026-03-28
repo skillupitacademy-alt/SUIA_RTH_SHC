@@ -4,17 +4,22 @@ import { ZSkeleton } from '@quiz/ui';
 import { Brain, MessagesSquare } from "lucide-react";
 import dynamic from 'next/dynamic';
 
-import { DashboardPageHeader } from "@/components/dashboard/DashboardPageHeader";
+import { PageTitle } from '@/components/layout/PageTitle';
 const HelpRequestManager = dynamic(() => import('@/components/tutor/HelpRequestManager').then(mod => ({ default: mod.HelpRequestManager })), { loading: () => <ZSkeleton className="h-64 w-full rounded-2xl" /> });
 
 export default function TutorAnalyticsPage() {
     return (
         <div className="space-y-8 p-8 max-w-[1600px] mx-auto animate-in fade-in duration-500">
-            <DashboardPageHeader
-                title="Smart Tutor Operations"
-                description="Live tactical center for managing student help requests and session interventions."
-                icon={<Brain className="text-orange-500" size={20} />}
-            />
+            <div className="pb-8 border-b border-slate-200/70 mb-8">
+                <div className="flex items-center gap-3 mb-2">
+                    <Brain size={20} className="text-[#FF4B91]" />
+                    <span className="text-xs font-black uppercase tracking-[0.3em] text-[#FF4B91]">AI Operations</span>
+                </div>
+                <PageTitle text="Smart Tutor" />
+                <p className="text-sm font-bold text-slate-500 uppercase tracking-widest mt-2">
+                    Live Tactical Center • Help Requests • Student Interventions
+                </p>
+            </div>
 
             <div className="bg-white border border-slate-200 p-10 rounded-[2.5rem] shadow-sm">
                 <div className="flex items-center justify-between mb-10">

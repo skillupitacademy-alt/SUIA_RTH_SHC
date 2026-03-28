@@ -5,22 +5,50 @@
 
 ## Context
 
+
+      Real Tutorial Hub                          SkillUp IT Academy                        SkillHubCore
+    notes.realtutorialhub.com                 app.skillupitacademy.com                admin.skillhubcore.in
+            │                                          │                                         │
+            │ POST /api/auth/login                     │ POST /api/auth/login                    │ POST /admin/auth
+            │ Header: x-brand: realtutorialhub         │ Header: x-brand: skillup                │ Header: x-brand: core
+            │                                          │                                         │
+            ▼                                          ▼                                         ▼
+       api.realtutorialhub.com                   api.skillupitacademy.com                  api.skillhubcore.in
+            │                                          │                                         │
+    (Proxied to: api-server)                   (Proxied to: api-server)          (Proxied to: skillhubcore-service)
+            │                                          │                                         │
+            │ Set-Cookie: accessToken                  │ Set-Cookie: accessToken                 │ Set-Cookie: admin_token
+            │ domain=.realtutorialhub.com              │ domain=.skillupitacademy.com            │ domain=.skillhubcore.in
+            │                                          │                                         │
+            ▼                                          ▼                                         ▼
+       [ people_prod ] Database                  [ people_prod ] Database                  [ people_prod ] Database
+       (Centralized Identity)                    (Centralized Identity)                    (Global Governance Store)
+            │                                          │                                         │
+            └──────────────┬───────────────────────────┴──────────────┬──────────────────────────┘
+                           │                                          │
+            (Cross-Engine Sync via QStash)             (Cross-Engine Sync via QStash)
+                           │                                          │
+                           ▼                                          ▼
+                [ quiz_platform_prod ]                         [ payment_prod ]
+                (Exams & Question Bank)                      (Global Subscriptions)
+
+
 ## We are following below architecture
 
 Real Tutorial Hub                          SkillUp IT Academy
 quiz.realtutorialhub.com                   app.skillup.com
-        │                                         │
+        │                                          │
         │ POST /api/auth/login                     │ POST /api/auth/login
         │ Header: x-portal-identity: user          │ Header: x-portal-identity: user
         │ Header: x-brand: realtutorialhub         │ Header: x-brand: skillup
-        │                                         │
-        ▼                                         ▼
+        │                                          │
+        ▼                                          ▼
    api.realtutorialhub.com               api.skillup.com  (or same API, different domain)
         │                                         │
-        │ Set-Cookie: accessToken                  │ Set-Cookie: accessToken
-        │ domain=.realtutorialhub.com              │ domain=.skillup.com
+        │ Set-Cookie: accessToken                 │ Set-Cookie: accessToken
+        │ domain=.realtutorialhub.com             │ domain=.skillup.com
         │                                         │
-        │ Queries: realtutorialhub_db              │ Queries: skillup_db
+        │ Queries: realtutorialhub_db             │ Queries: skillup_db
         ▼                                         ▼
    quiz_platform_prod                        skillup_prod
    (RTH's users, exams)                    (SkillUp's users, exams)

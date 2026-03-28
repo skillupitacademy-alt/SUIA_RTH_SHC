@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { apiClient } from "@quiz/api-client";
 import { ZLoader, ZSkeleton } from "@quiz/ui";
@@ -149,9 +149,15 @@ export default function AdminIntelligencePage() {
 
     return (
         <div className="space-y-8 pb-24">
-            <div className="flex items-center gap-3">
-                <LayoutDashboard size={24} className="text-slate-600" />
+            <div className="pb-8 border-b border-slate-200/70">
+                <div className="flex items-center gap-3 mb-2">
+                    <BrainCircuit size={20} className="text-[#FF4B91]" />
+                    <span className="text-xs font-black uppercase tracking-[0.3em] text-[#FF4B91]">Admin Hub</span>
+                </div>
                 <PageTitle text="Intelligence Center" />
+                <p className="text-sm font-bold text-slate-500 uppercase tracking-widest mt-2">
+                    Cohort Analytics • Question Audit • Telemetry
+                </p>
             </div>
 
             {/* Command Deck Tabs */}

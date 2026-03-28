@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 
 import { SelectField } from '@/components/entry/SelectionFields';
 import { FactoryLayout } from '@/components/layout/FactoryLayout';
+import { PageTitle } from '@/components/layout/PageTitle';
 import { useDomains, useSubjects, useSubtopics, useTopics } from '@/hooks/useAdminHierarchy';
 import { AssignmentSchema, type AssignmentSchemaType } from '@/lib/factory/assignment-schema';
 import { TutorialPromptService } from '@/lib/factory/prompt-service';
@@ -249,12 +250,12 @@ export default function AssignmentFactoryPage({ embedded = false }: { embedded?:
           <div className="flex flex-col gap-6 border-b border-slate-200/70 pb-8 md:flex-row md:items-end md:justify-between">
             <div>
               <div className="mb-2 flex items-center gap-3"><Sparkles size={20} className="text-[#FF4B91]" /><span className="text-xs font-black uppercase tracking-[0.3em] text-[#FF4B91]">Practice Builder</span></div>
-              <h1 className="text-4xl font-black uppercase tracking-tighter text-[#1A1A1A] md:text-5xl">Assignment Factory</h1>
+              <PageTitle text="Assignment Factory" />
               <p className="mt-2 text-sm font-bold uppercase tracking-widest text-slate-500">Domain • Subject • Topic • Subtopic • Difficulty</p>
             </div>
             <div className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-[10px] font-black uppercase tracking-widest text-slate-500 shadow-sm">Practice only</div>
           </div>
-        ) : <div className="rounded-[2rem] border border-slate-200 bg-white px-5 py-4 shadow-sm"><p className="text-[10px] font-black uppercase tracking-[0.24em] text-slate-500">Embedded mode</p><p className="mt-1 text-sm text-slate-600">Target context is inherited from the tutorial dashboard header. Direct edits are disabled here.</p></div>}
+        ) : null}
 
         <section className="space-y-6 rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-sm">
           <div className="flex items-center justify-between gap-4"><div className="flex items-center gap-3"><div className="h-6 w-1 rounded-full bg-[#FF4B91]" /><h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">1. Target Context</h3></div><span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">{readOnly ? 'Inherited from tutorial dashboard' : 'Editable'}</span></div>

@@ -25,6 +25,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { BlockEditor } from '@/components/admin/BlockEditor';
 import { SelectField } from '@/components/entry/SelectionFields';
 import { FactoryLayout } from '@/components/layout/FactoryLayout';
+import { PageTitle } from '@/components/layout/PageTitle';
 import { useDomains, useSubjects, useSubtopics, useTopics } from '@/hooks/useAdminHierarchy';
 import { JsonValidator } from '@/lib/factory/json-validator';
 import { TutorialPromptService } from '@/lib/factory/prompt-service';
@@ -489,17 +490,18 @@ export default function ContentFactoryPage({ embedded = false }: ContentFactoryP
         </div>
     );
 
-    return embedded ? body : (
-        <FactoryLayout title="Tutorial Content Factory" subtitle="Question Bank Factory Layout" backPath="/dashboard">
+    return (
+        <FactoryLayout title="Tutorial Content Factory" subtitle="Unified content workspace" backPath="/dashboard">
             <div className="flex-1 overflow-y-auto custom-scrollbar bg-slate-50/50">
                 <div className="max-w-[1600px] mx-auto p-8 space-y-8 pb-32">
-                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-slate-200/70">
+                    {!embedded && (
+                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-slate-200/70">
                         <div>
                             <div className="flex items-center gap-3 mb-2">
                                 <WandSparkles size={20} className="text-[#FF4B91]" />
                                 <span className="text-xs font-black uppercase tracking-[0.3em] text-[#FF4B91]">Canonical Content Builder</span>
                             </div>
-                            <h1 className="text-4xl md:text-5xl font-black tracking-tighter uppercase text-[#1A1A1A]">Content Factory</h1>
+                            <PageTitle text="Content Factory" />
                             <p className="text-sm font-bold text-slate-500 uppercase tracking-widest mt-2">
                                 Domain • Subject • Topic • Subtopic • Difficulty
                             </p>
@@ -515,6 +517,7 @@ export default function ContentFactoryPage({ embedded = false }: ContentFactoryP
                             </div>
                         </div>
                     </div>
+                )}
 
                     <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
                         <section className="bg-white rounded-[2.5rem] p-10 border border-slate-200 shadow-sm flex flex-col gap-6 h-full">
