@@ -1,7 +1,7 @@
 import { TokenService } from '@quiz/auth';
 import { NextRequest, NextResponse } from 'next/server';
 
-const LOGIN_URL = process.env.NEXT_PUBLIC_LOGIN_URL ?? '/login';
+const LOGIN_URL = process.env.NEXT_PUBLIC_LOGIN_URL ?? 'https://quiz.realtutorialhub.com/login';
 const INTERNAL_GATEWAY_SECRET = process.env.INTERNAL_GATEWAY_SECRET;
 
 const PUBLIC_PATHS = ['/', '/api/healthz'];
