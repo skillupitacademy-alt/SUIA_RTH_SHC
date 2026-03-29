@@ -1,5 +1,7 @@
 # SkillHubCore Service
 
+<!-- Deployment trigger: 2026-03-29 -->
+
 Scope:
 - `services/skillhubcore-service/`
 - `packages/db-people/`
