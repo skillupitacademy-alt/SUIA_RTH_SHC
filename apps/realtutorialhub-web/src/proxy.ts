@@ -78,6 +78,12 @@ async function resolveUser(request: NextRequest): Promise<UserPayload | null> {
 
 export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
+  
+  // Allow healthz without gateway secret for smoke tests
+  if (pathname === '/api/healthz') {
+    return NextResponse.next();
+  }
+  
   if (hasValidGatewaySecret(request) === false) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
