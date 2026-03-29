@@ -1,3 +1,0 @@
-# Legacy Vercel rollback workflow.
-# Disabled because rollback for production now needs to follow the Cloud Run deployment process.
-# Keeping the file for reference.

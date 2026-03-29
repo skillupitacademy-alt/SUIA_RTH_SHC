@@ -1,3 +1,0 @@
-# Legacy Vercel production health monitor.
-# Disabled because production health is now handled through the Cloud Run deployment flow.
-# Keeping the file for reference.

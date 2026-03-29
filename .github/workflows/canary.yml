@@ -1,3 +1,0 @@
-# Legacy Vercel canary workflow.
-# Disabled because deployment now runs through Cloud Run/GCP only.
-# Keeping the file for reference.
