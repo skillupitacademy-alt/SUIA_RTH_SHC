@@ -26,18 +26,36 @@ function Build-Image {
   docker build @argList -t "$Tag`:$TagSuffix" -f $Dockerfile .
 }
 
-$commonArgs = @{
-  NEXT_PUBLIC_API_URL    = "https://api.realtutorialhub.com"
+$apiArgs = @{
+  NEXT_PUBLIC_API_URL     = "https://api.realtutorialhub.com/api"
   NEXT_PUBLIC_WEB_APP_URL = "https://quiz.realtutorialhub.com"
-  NEXT_PUBLIC_ADMIN_URL  = "https://admin.realtutorialhub.com"
+  NEXT_PUBLIC_ADMIN_URL   = "https://admin.realtutorialhub.com"
+  NEXT_PUBLIC_SENTRY_DSN  = "https://example.invalid/0"
   INTERNAL_GATEWAY_SECRET = "local-build-placeholder"
-  NEXT_PUBLIC_SENTRY_DSN = "https://example.invalid/0"
 }
 
-Build-Image -Tag "api-server" -Dockerfile "apps/api-server/Dockerfile" -Args $commonArgs
-Build-Image -Tag "realtutorialhub-web" -Dockerfile "apps/realtutorialhub-web/Dockerfile" -Args $commonArgs
-Build-Image -Tag "realtutorialhub-quiz" -Dockerfile "apps/realtutorialhub-quiz/Dockerfile" -Args $commonArgs
-Build-Image -Tag "realtutorialhub-admin" -Dockerfile "apps/realtutorialhub-admin/Dockerfile" -Args $commonArgs
+$rthWebArgs = @{
+  NEXT_PUBLIC_API_URL     = "https://api.realtutorialhub.com/api"
+  NEXT_PUBLIC_WEB_APP_URL = "https://notes.realtutorialhub.com"
+  NEXT_PUBLIC_ADMIN_URL   = "https://admin.realtutorialhub.com"
+  NEXT_PUBLIC_SITE_URL    = "https://notes.realtutorialhub.com"
+  NEXT_PUBLIC_APP_URL     = "https://notes.realtutorialhub.com"
+  INTERNAL_GATEWAY_SECRET = "local-build-placeholder"
+  NEXT_PUBLIC_SENTRY_DSN  = "https://example.invalid/0"
+}
+
+$rthQuizArgs = @{
+  NEXT_PUBLIC_API_URL     = "https://api.realtutorialhub.com/api"
+  NEXT_PUBLIC_WEB_APP_URL = "https://quiz.realtutorialhub.com"
+  NEXT_PUBLIC_ADMIN_URL   = "https://admin.realtutorialhub.com"
+  NEXT_PUBLIC_SENTRY_DSN  = "https://example.invalid/0"
+  INTERNAL_GATEWAY_SECRET = "local-build-placeholder"
+}
+
+Build-Image -Tag "api-server" -Dockerfile "apps/api-server/Dockerfile" -Args $apiArgs
+Build-Image -Tag "realtutorialhub-web" -Dockerfile "apps/realtutorialhub-web/Dockerfile" -Args $rthWebArgs
+Build-Image -Tag "realtutorialhub-quiz" -Dockerfile "apps/realtutorialhub-quiz/Dockerfile" -Args $rthQuizArgs
+Build-Image -Tag "realtutorialhub-admin" -Dockerfile "apps/realtutorialhub-admin/Dockerfile" -Args $rthQuizArgs
 Build-Image -Tag "skillup-web" -Dockerfile "apps/skillup-web/Dockerfile"
 Build-Image -Tag "skillup-admin" -Dockerfile "apps/skillup-admin/Dockerfile"
 Build-Image -Tag "faculty-app" -Dockerfile "apps/faculty-app/Dockerfile"

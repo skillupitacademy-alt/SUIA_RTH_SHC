@@ -1,0 +1,94 @@
+name: Deploy RealTutorialHub Web
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/realtutorialhub-web/**'
+      - 'packages/**'
+      - '.github/workflows/deploy-realtutorialhub-web.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: asia-south1
+
+jobs:
+  deploy-web:
+    name: Deploy RealTutorialHub Web
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker asia-south1-docker.pkg.dev
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            --build-arg NEXT_PUBLIC_API_URL=https://api.realtutorialhub.com/api \
+            --build-arg NEXT_PUBLIC_WEB_APP_URL=https://notes.realtutorialhub.com \
+            --build-arg NEXT_PUBLIC_ADMIN_URL=https://admin.realtutorialhub.com \
+            --build-arg NEXT_PUBLIC_SITE_URL=https://notes.realtutorialhub.com \
+            --build-arg NEXT_PUBLIC_APP_URL=https://notes.realtutorialhub.com \
+            --build-arg INTERNAL_GATEWAY_SECRET=${{ secrets.INTERNAL_GATEWAY_SECRET }} \
+            -f apps/realtutorialhub-web/Dockerfile \
+            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/realtutorialhub-web:$GITHUB_SHA \
+            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/realtutorialhub-web:latest \
+            .
+
+      - name: Push Docker images
+        run: |
+          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/realtutorialhub-web:$GITHUB_SHA
+          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/realtutorialhub-web:latest
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy realtutorialhub-web \
+            --image asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/realtutorialhub-web:$GITHUB_SHA \
+            --region $REGION \
+            --platform managed \
+            --allow-unauthenticated \
+            --port 3003 \
+            --memory 1Gi \
+            --min-instances 0 \
+            --max-instances 10 \
+            --set-env-vars "NODE_ENV=production,CLOUD_RUN_BUILD=true,NEXT_PUBLIC_API_URL=https://api.realtutorialhub.com/api,NEXT_PUBLIC_WEB_APP_URL=https://notes.realtutorialhub.com,NEXT_PUBLIC_ADMIN_URL=https://admin.realtutorialhub.com,NEXT_PUBLIC_SITE_URL=https://notes.realtutorialhub.com,NEXT_PUBLIC_APP_URL=https://notes.realtutorialhub.com" \
+            --set-secrets "NEXT_PUBLIC_SENTRY_DSN=NEXT_PUBLIC_SENTRY_DSN:latest,SENTRY_AUTH_TOKEN=SENTRY_AUTH_TOKEN:latest,JWT_SECRET=JWT_SECRET:latest,JWT_REFRESH_SECRET=JWT_REFRESH_SECRET:latest,COOKIE_DOMAIN=COOKIE_DOMAIN:latest,INTERNAL_API_KEY=INTERNAL_API_KEY:latest,INTERNAL_API_URL=INTERNAL_API_URL:latest,INTERNAL_GATEWAY_SECRET=INTERNAL_GATEWAY_SECRET:latest,UPSTASH_REDIS_REST_URL=UPSTASH_REDIS_REST_URL:latest,UPSTASH_REDIS_REST_TOKEN=UPSTASH_REDIS_REST_TOKEN:latest,QSTASH_TOKEN=QSTASH_TOKEN:latest,QSTASH_CURRENT_SIGNING_KEY=QSTASH_CURRENT_SIGNING_KEY:latest,QSTASH_NEXT_SIGNING_KEY=QSTASH_NEXT_SIGNING_KEY:latest,TUTORIAL_HELP_REQUEST_TOPIC_URL=TUTORIAL_HELP_REQUEST_TOPIC_URL:latest,CERTIFICATE_ISSUED_EVENT_URL=CERTIFICATE_ISSUED_EVENT_URL:latest"
+
+      - name: Smoke test
+        run: |
+          SERVICE_URL=$(gcloud run services describe realtutorialhub-web --region $REGION --project $PROJECT_ID --format 'value(status.url)')
+          curl --fail --silent --show-error "$SERVICE_URL/api/healthz"
