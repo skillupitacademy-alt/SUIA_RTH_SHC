@@ -39,16 +39,21 @@ function normalizeRedirectTarget(rawTarget: string | null): string {
 
 function getLoginErrorMessage(response: Response | null, payload: LoginResponse | null, fallback: string): string {
     const candidate = payload?.error ?? payload?.message ?? payload?._error;
-    if (typeof candidate === 'string' && candidate.trim().length > 0) {
-        return candidate.trim();
-    }
 
     if (response !== null && response.status === 401) {
-        return 'Invalid credentials';
+        const trimmed = typeof candidate === 'string' ? candidate.trim() : '';
+        return trimmed.length > 0 && !/^invalid credentials$/i.test(trimmed) ? trimmed : 'Invalid credentials';
     }
 
     if (response !== null && response.status === 403) {
-        return 'Access denied: this account is not permitted for this portal.';
+        const trimmed = typeof candidate === 'string' ? candidate.trim() : '';
+        return trimmed.length > 0 && !/^forbidden$/i.test(trimmed)
+            ? trimmed
+            : 'Access denied: this account is not permitted for this portal.';
+    }
+
+    if (typeof candidate === 'string' && candidate.trim().length > 0) {
+        return candidate.trim();
     }
 
     return fallback;

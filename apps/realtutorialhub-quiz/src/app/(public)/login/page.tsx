@@ -41,16 +41,19 @@ function LoginForm() {
 
   const toErrorMessage = (response: Response | null, payload: LoginResponse | null, fallback: string): string => {
     const candidate = readResponseMessage(payload?.error) ?? readResponseMessage(payload?.message) ?? readResponseMessage(payload?._error);
-    if (candidate !== null) {
-      return candidate;
-    }
 
     if (response !== null && response.status === 401) {
-      return 'Invalid credentials';
+      return candidate !== null && !/^invalid credentials$/i.test(candidate) ? candidate : 'Invalid credentials';
     }
 
     if (response !== null && response.status === 403) {
-      return 'Access denied: this account is not permitted for this portal.';
+      return candidate !== null && !/^forbidden$/i.test(candidate)
+        ? candidate
+        : 'Access denied: this account is not permitted for this portal.';
+    }
+
+    if (candidate !== null) {
+      return candidate;
     }
 
     return fallback;
