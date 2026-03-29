@@ -79,8 +79,8 @@ async function resolveUser(request: NextRequest): Promise<UserPayload | null> {
 export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
   
-  // Allow healthz without gateway secret for smoke tests
-  if (pathname === '/api/healthz') {
+  // Allow healthz and root path without gateway secret for health checks
+  if (pathname === '/api/healthz' || pathname === '/') {
     return NextResponse.next();
   }
   
