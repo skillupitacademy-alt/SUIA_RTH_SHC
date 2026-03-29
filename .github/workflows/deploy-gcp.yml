@@ -95,6 +95,7 @@ jobs:
           docker build \
             --build-arg NEXT_PUBLIC_API_URL=https://api.realtutorialhub.com/api \
             --build-arg NEXT_PUBLIC_WEB_APP_URL=https://quiz.realtutorialhub.com \
+            --build-arg NEXT_PUBLIC_TUTORIAL_APP_URL=https://notes.realtutorialhub.com \
             --build-arg NEXT_PUBLIC_ADMIN_URL=https://admin.realtutorialhub.com \
             --build-arg INTERNAL_GATEWAY_SECRET=${{ secrets.INTERNAL_GATEWAY_SECRET }} \
             -f apps/realtutorialhub-quiz/Dockerfile \
@@ -110,7 +111,7 @@ jobs:
             --platform managed \
             --allow-unauthenticated \
             --port 3001 \
-            --set-env-vars "NODE_ENV=production,CLOUD_RUN_BUILD=true" \
+            --set-env-vars "NODE_ENV=production,CLOUD_RUN_BUILD=true,NEXT_PUBLIC_TUTORIAL_APP_URL=https://notes.realtutorialhub.com" \
             --set-secrets "NEXT_PUBLIC_API_URL=NEXT_PUBLIC_API_URL:latest,NEXT_PUBLIC_WEB_APP_URL=NEXT_PUBLIC_WEB_APP_URL:latest,NEXT_PUBLIC_SENTRY_DSN=NEXT_PUBLIC_SENTRY_DSN:latest,SENTRY_AUTH_TOKEN=SENTRY_AUTH_TOKEN:latest,JWT_SECRET=JWT_SECRET:latest,JWT_REFRESH_SECRET=JWT_REFRESH_SECRET:latest,COOKIE_DOMAIN=COOKIE_DOMAIN:latest,INTERNAL_API_KEY=INTERNAL_API_KEY:latest,INTERNAL_API_URL=INTERNAL_API_URL:latest,INTERNAL_GATEWAY_SECRET=INTERNAL_GATEWAY_SECRET:latest" \
             --memory 1Gi \
             --cpu 1 \
@@ -142,6 +143,7 @@ jobs:
           docker build \
             --build-arg NEXT_PUBLIC_API_URL=https://api.realtutorialhub.com/api \
             --build-arg NEXT_PUBLIC_WEB_APP_URL=https://quiz.realtutorialhub.com \
+            --build-arg NEXT_PUBLIC_TUTORIAL_APP_URL=https://notes.realtutorialhub.com \
             --build-arg NEXT_PUBLIC_ADMIN_URL=https://admin.realtutorialhub.com \
             --build-arg INTERNAL_GATEWAY_SECRET=${{ secrets.INTERNAL_GATEWAY_SECRET }} \
             -f apps/realtutorialhub-admin/Dockerfile \

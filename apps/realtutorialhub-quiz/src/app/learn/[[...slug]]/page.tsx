@@ -7,7 +7,7 @@ type LearnRedirectPageProps = {
 };
 
 function getTutorialBaseUrl(): string {
-  const base = process.env.NEXT_PUBLIC_WEB_APP_URL?.trim();
+  const base = process.env.NEXT_PUBLIC_TUTORIAL_APP_URL?.trim();
   if (typeof base === 'string' && base.length > 0) {
     return base.replace(/\/+$/, '');
   }
