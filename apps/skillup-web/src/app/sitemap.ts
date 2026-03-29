@@ -1,7 +1,7 @@
 import { getSkillupPrograms } from '@/lib/skillup-data';
 
 export default async function sitemap() {
-  const baseUrl = 'https://skillupitacademy.com';
+  const baseUrl = 'https://app.skillupitacademy.com';
   const { programs } = await getSkillupPrograms();
 
   return [

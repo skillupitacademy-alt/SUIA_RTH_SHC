@@ -767,6 +767,7 @@ The current prompt only covers `skillupitacademy.com` and `admin.skillupitacadem
 | Domain | Purpose | Priority |
 |---|---|---|
 | `skillupitacademy.com` | Marketing landing (SSG) | Phase 3 |
+| `app.skillupitacademy.com` | Student portal | Phase 3 |
 | `admin.skillupitacademy.com` | Admin panel | Phase 4 |
 | `faculty.skillupitacademy.com` | Faculty portal | Phase 5 |
 | `enquiry.skillupitacademy.com` | Enquiry capture + CRM | Future |
@@ -826,7 +827,7 @@ From `docs/AUTH_GUIDELINES.md` â€” these apply to all new SkillUp proxy.ts imple
 
 ---
 
-## Phase 13 — Scalability & Performance (1M+ User Readiness)
+## Phase 13 ï¿½ Scalability & Performance (1M+ User Readiness)
 
 > Full schema audit completed across all 5 databases. Shows existing vs missing.
 

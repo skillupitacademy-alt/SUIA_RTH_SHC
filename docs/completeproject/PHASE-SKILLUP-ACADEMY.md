@@ -24,6 +24,7 @@ SkillUp ADDS: human faculty, batches, physical attendance, placement.
 
 ```
 skillupitacademy.com          → Marketing landing page (SSG, Vercel)
+app.skillupitacademy.com      → SkillUp student portal (Next.js app)
 enquiry.skillupitacademy.com  → Enquiry capture form + CRM (crm-app)
 admission.skillupitacademy.com → Admission processing portal (crm-app)
 schedule.skillupitacademy.com → Batch timetable (student + faculty view)

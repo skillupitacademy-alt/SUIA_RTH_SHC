@@ -146,7 +146,7 @@ Separate databases give you:
 │  ├── realtutorialhub-web/      ← notes.realtutorialhub.com         │
 │  ├── realtutorialhub-quiz/     ← quiz.realtutorialhub.com          │
 │  ├── realtutorialhub-admin/    ← admin.realtutorialhub.com         │
-│  ├── skillup-web/              ← skillupitacademy.com              │
+│  ├── skillup-web/              ← app.skillupitacademy.com          │
 │  ├── skillup-admin/            ← admin.skillupitacademy.com        │
 │  └── skillhubcore-admin/       ← admin.skillhubcore.in             │
 │                                                                     │

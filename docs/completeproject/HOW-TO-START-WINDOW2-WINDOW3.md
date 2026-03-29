@@ -304,7 +304,7 @@ Run each of these and confirm:
   services/student-faculty-service → SkillUp backend (SMS + FMS + batches)
   services/api-gateway          → Hono on Cloudflare Workers
   apps/skillhubcore-admin       → admin.skillhubcore.in
-  apps/skillup-web              → skillupitacademy.com
+  apps/skillup-web              → app.skillupitacademy.com
   apps/skillup-admin            → admin.skillupitacademy.com
   apps/faculty-app              → faculty.skillupitacademy.com
 

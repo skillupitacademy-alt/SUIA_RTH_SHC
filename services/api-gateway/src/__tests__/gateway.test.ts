@@ -127,7 +127,7 @@ describe('api-gateway', () => {
 
   it('routes skillup web host traffic to the skillup web upstream', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
-    const response = await app.request('https://skillupitacademy.com/programs', undefined, env);
+    const response = await app.request('https://app.skillupitacademy.com/programs', undefined, env);
 
     expect(response.status).toBe(200);
     expect(fetchSpy).toHaveBeenCalledTimes(1);

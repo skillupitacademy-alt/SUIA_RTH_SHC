@@ -59,6 +59,7 @@ Layman → Real-Life → Technical → Code → AI Tutor → Assignment
 
 ## 🌐 Domains
 - skillupitacademy.com
+- app.skillupitacademy.com
 - enquiry.skillupitacademy.com
 - admission.skillupitacademy.com
 - schedule.skillupitacademy.com

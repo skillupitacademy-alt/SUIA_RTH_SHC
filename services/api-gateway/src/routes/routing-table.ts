@@ -1,7 +1,7 @@
 import type { GatewayRoute } from '@/types';
 
 export const ROUTING_TABLE: GatewayRoute[] = [
-  { host: 'skillupitacademy.com', prefix: '/', upstreamKey: 'SKILLUP_WEB_URL', public: true },
+  { host: 'app.skillupitacademy.com', prefix: '/', upstreamKey: 'SKILLUP_WEB_URL', public: true },
   { host: 'admin.skillupitacademy.com', prefix: '/', upstreamKey: 'SKILLUP_ADMIN_URL', public: true },
   { host: 'faculty.skillupitacademy.com', prefix: '/', upstreamKey: 'FACULTY_URL', public: true },
   { host: 'api.skillhubcore.in', prefix: '/', upstreamKey: 'SKILLHUBCORE_URL', public: true },

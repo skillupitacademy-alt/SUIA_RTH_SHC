@@ -647,7 +647,7 @@ Write unit tests for PlacementService including eligibility check.
 #### SKU-8-A-01 · `apps/skillup-web` — SkillUp student portal · `FRONTEND` · L ⚠ USER-GATED
 
 - **File path**: `apps/skillup-web/`
-- **Domain**: `skillupitacademy.com` + `learn.skillupitacademy.com`
+- **Domain**: `app.skillupitacademy.com` + `learn.skillupitacademy.com`
 
 **▶ AI PROMPT**
 ```
@@ -880,7 +880,7 @@ Write integration tests for complete certification flow.
 □ exam.completed event → tutorial-service creates remediation plan for SkillUp student
 □ Payment overdue → access suspended after 14 days
 □ Certificate issued only when all 4 requirements met
-□ skillup-web loads at skillupitacademy.com
+□ skillup-web loads at app.skillupitacademy.com
 □ skillup-admin loads at admin.skillupitacademy.com
 □ faculty-app loads at faculty.skillupitacademy.com
 □ cert.skillupitacademy.com/[code] shows certificate without auth

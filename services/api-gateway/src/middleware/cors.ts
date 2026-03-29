@@ -5,6 +5,7 @@ export const ALLOWED_ORIGINS = [
   'https://realtutorialhub.com',
   'https://notes.realtutorialhub.com',
   'https://quiz.realtutorialhub.com',
+  'https://app.skillupitacademy.com',
   'https://skillupitacademy.com',
   'https://admin.skillupitacademy.com',
   'https://faculty.skillupitacademy.com',
