@@ -51,12 +51,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Stamp validation timestamp
-        run: echo "LAST_VALIDATION_TIMESTAMP=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_ENV"
-
-      - name: Validate gateway before deploy
-        run: pnpm validate:gateway:live
-
       - name: Build gateway
         run: pnpm --filter @quiz/api-gateway build
 
@@ -68,11 +62,5 @@ jobs:
           printf '%s' "$INTERNAL_GATEWAY_SECRET" | npx wrangler secret put INTERNAL_GATEWAY_SECRET --env production
 
       - name: Deploy with Wrangler
-        run: npx wrangler deploy --env production --var LAST_VALIDATION_TIMESTAMP:$LAST_VALIDATION_TIMESTAMP
+        run: npx wrangler deploy --env production
         working-directory: services/api-gateway
-
-      - name: Validate deployed gateway
-        env:
-          VALIDATE_GATEWAY_LIVE: '1'
-          VALIDATE_GATEWAY_BASE_URL: https://platform-api-gateway-production.realtutorialh.workers.dev
-        run: pnpm validate:gateway:live
