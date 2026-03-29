@@ -5,6 +5,7 @@ import { AssignmentTierAlreadyCompletedError, AssignmentTierLockedError } from '
 const mocks = vi.hoisted(() => {
   return {
     requireStudent: vi.fn(),
+    requireAssignmentAccess: vi.fn(),
     getAssignmentsForSubtopic: vi.fn(),
     startTier: vi.fn(),
     completeTier: vi.fn(),
@@ -13,6 +14,7 @@ const mocks = vi.hoisted(() => {
 
 vi.mock('@/lib/assignment-auth', () => ({
   requireStudent: mocks.requireStudent,
+  requireAssignmentAccess: mocks.requireAssignmentAccess,
 }));
 
 vi.mock('@/lib/assignment', () => ({
@@ -72,6 +74,7 @@ describe('assignment routes', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.requireStudent.mockResolvedValue({ userId, roles: ['student'] });
+    mocks.requireAssignmentAccess.mockResolvedValue({ userId, roles: ['student'] });
     mocks.getAssignmentsForSubtopic.mockResolvedValue({
       locked: false,
       assignments: [
@@ -99,7 +102,7 @@ describe('assignment routes', () => {
   });
 
   it('returns 401 when student auth is missing', async () => {
-    mocks.requireStudent.mockRejectedValueOnce(new Error('Unauthorized'));
+    mocks.requireAssignmentAccess.mockRejectedValueOnce(new Error('Unauthorized'));
 
     const response = await GET(makeGetRequest(), params);
 

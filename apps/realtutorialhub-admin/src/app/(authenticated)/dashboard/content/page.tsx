@@ -387,7 +387,7 @@ export default function ContentFactoryPage({ embedded = false }: ContentFactoryP
         }
     };
 
-    const body = (
+    const _body = (
         <div className="flex-1 overflow-y-auto custom-scrollbar bg-slate-50/50">
             <div className="max-w-[1600px] mx-auto p-8 space-y-8 pb-32">
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-slate-200/70">

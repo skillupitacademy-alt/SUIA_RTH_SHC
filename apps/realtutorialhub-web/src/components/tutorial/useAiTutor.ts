@@ -45,6 +45,7 @@ export function useAiTutor(initialGreeting: string, subtopicId: string, subtopic
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isRateLimited, setIsRateLimited] = useState(false);
+  const [questionsLeft, setQuestionsLeft] = useState<number | null>(null);
 
   const canSubmit = question.trim().length >= 3 && !isLoading && !isRateLimited;
 
@@ -97,6 +98,10 @@ export function useAiTutor(initialGreeting: string, subtopicId: string, subtopic
       }
 
       const payload = (await response.json()) as AiTutorResponse;
+      if (typeof payload.questionsRemaining === 'number') {
+        setQuestionsLeft(payload.questionsRemaining);
+      }
+
       if (payload.source === 'qa_pairs' && typeof payload.answer === 'string') {
         setMessages((current) => [
           ...current,
@@ -144,6 +149,7 @@ export function useAiTutor(initialGreeting: string, subtopicId: string, subtopic
     isLoading,
     errorMessage,
     isRateLimited,
+    questionsLeft,
     canSubmit,
     submitQuestion,
   };

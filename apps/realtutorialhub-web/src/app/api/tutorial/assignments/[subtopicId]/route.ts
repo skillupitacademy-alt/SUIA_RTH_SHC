@@ -1,22 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { requireStudent } from '@/lib/assignment-auth';
+import { requireAssignmentAccess } from '@/lib/assignment-auth';
 import { assignmentDifficultySchema, assignmentService } from '@/lib/assignment';
 
 export const dynamic = 'force-dynamic';
+
+function getStatusCode(error: unknown): number {
+  if (error && typeof error === 'object' && 'statusCode' in error) {
+    const statusCode = (error as { statusCode?: unknown }).statusCode;
+    if (typeof statusCode === 'number') {
+      return statusCode;
+    }
+  }
+
+  return 401;
+}
 
 export async function GET(
   req: NextRequest,
   context: { params: Promise<{ subtopicId: string }> }
 ) {
+  const params = await context.params;
   let user;
   try {
-    user = await requireStudent(req);
+    user = await requireAssignmentAccess(req, params.subtopicId);
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Unauthorized' }, { status: getStatusCode(error) });
   }
-
-  const params = await context.params;
   const difficulty = assignmentDifficultySchema.safeParse(req.nextUrl.searchParams.get('difficulty'));
   if (!difficulty.success) {
     return NextResponse.json({ error: 'Invalid difficulty' }, { status: 400 });

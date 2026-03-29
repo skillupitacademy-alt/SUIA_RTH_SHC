@@ -47,8 +47,8 @@ function getNotesExcerpt(content: TutorialContentJSON | null | undefined, fallba
 }
 
 export default async function RemediationPage() {
-  const theme = getDomainTheme('full-stack');
   const userId = await getUserId();
+  const defaultTheme = getDomainTheme('full-stack');
 
   if (userId === null) {
     return (
@@ -64,7 +64,7 @@ export default async function RemediationPage() {
             boxShadow: 'var(--design-content-shadow)',
           }}
         >
-          <div style={{ fontSize: 12, fontWeight: 800, color: theme.sidebarAccent, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          <div style={{ fontSize: 12, fontWeight: 800, color: defaultTheme.sidebarAccent, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
             Remediation
           </div>
           <h1 style={{ margin: '6px 0 8px', fontSize: 30, fontWeight: 800, letterSpacing: '-0.04em', color: 'var(--design-ink)', fontFamily: 'var(--design-heading-font)' }}>
@@ -85,6 +85,9 @@ export default async function RemediationPage() {
 
   const pathBySubtopicId = new Map(paths.map((item) => [item.subtopicId, item] as const));
   const latestPlan = history[0] ?? null;
+  const theme = latestPlan && latestPlan.weakSubtopics.length > 0 && pathBySubtopicId.has(latestPlan.weakSubtopics[0].subtopicId)
+    ? getDomainTheme(pathBySubtopicId.get(latestPlan.weakSubtopics[0].subtopicId)!.domainSlug)
+    : defaultTheme;
 
   const currentPlan: RemediationHistoryItem | null = latestPlan == null
     ? null

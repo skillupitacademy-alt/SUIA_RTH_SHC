@@ -1,6 +1,8 @@
 import { TokenService } from '@quiz/auth';
+import { TutorialProgressRepository } from '@quiz/db-tutorial';
 
 const tokenService = new TokenService();
+const progressRepository = new TutorialProgressRepository();
 
 export class AssignmentAuthError extends Error {
   constructor(message: string, public readonly statusCode: 401 | 403 = 401) {
@@ -20,4 +22,15 @@ export async function requireStudent(request: Request) {
   } catch {
     throw new AssignmentAuthError('Unauthorized', 401);
   }
+}
+
+export async function requireAssignmentAccess(request: Request, subtopicId: string) {
+  const user = await requireStudent(request);
+  const isComplete = await progressRepository.isSubtopicComplete(user.userId, subtopicId);
+
+  if (!isComplete) {
+    throw new AssignmentAuthError('Complete the tutorial content (all 6 blocks) to unlock assignments', 403);
+  }
+
+  return user;
 }

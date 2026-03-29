@@ -1,9 +1,9 @@
 'use client';
 
 import { FileText } from 'lucide-react';
-import { PageTitle } from '@/components/layout/PageTitle';
 
 import { ExamActivityBoard } from '@/components/dashboard/ExamActivityBoard';
+import { PageTitle } from '@/components/layout/PageTitle';
 
 export default function ExamActivityPage() {
     return (

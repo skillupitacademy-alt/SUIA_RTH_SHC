@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 import type { DomainTheme } from '@/lib/domain-themes';
-import { reportTutorialBlockViewed } from '@/lib/tutorial-progress';
+import { getTutorialProgress, reportTutorialBlockViewed } from '@/lib/tutorial-progress';
 
 type BlockType = 'notes' | 'layman' | 'real_life' | 'technical' | 'code' | 'ai_tutor';
 
@@ -202,6 +202,12 @@ export function LearnerProgressPanel({
     queryFn: () => fetchAssignmentState(subtopicId),
   });
 
+  const progressQuery = useQuery({
+    queryKey: ['tutorial-progress', subtopicId],
+    queryFn: () => getTutorialProgress(subtopicId),
+    staleTime: 5000,
+  });
+
   const startMutation = useMutation({
     mutationFn: async (difficulty: AssignmentDifficulty) => {
       return postAssignmentJson<{ data: { id: string; status: string } }>(
@@ -262,6 +268,16 @@ export function LearnerProgressPanel({
   useEffect(() => {
     setCompletedBlocks(loadCompletedBlocks(subtopicId));
   }, [subtopicId]);
+
+  useEffect(() => {
+    if (progressQuery.data?.blocksViewed) {
+      setCompletedBlocks((current) => {
+        const merged = new Set([...current, ...progressQuery.data!.blocksViewed]);
+        if (merged.size === current.length) return current;
+        return Array.from(merged) as BlockType[];
+      });
+    }
+  }, [progressQuery.data, subtopicId]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;

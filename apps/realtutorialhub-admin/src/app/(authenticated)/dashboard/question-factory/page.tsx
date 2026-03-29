@@ -2,8 +2,8 @@
 
 import { Cpu } from 'lucide-react';
 
-import { PageTitle } from '@/components/layout/PageTitle';
 import { QuestionFactoryAIPanel } from '@/components/dashboard/QuestionFactoryAIPanel';
+import { PageTitle } from '@/components/layout/PageTitle';
 
 export default function QuestionFactoryAuditPage() {
     return (

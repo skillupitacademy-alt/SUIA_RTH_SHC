@@ -3,7 +3,7 @@
 import { apiClient } from "@quiz/api-client";
 import { ZLoader, ZSkeleton } from "@quiz/ui";
 import type { EChartsOption } from "echarts";
-import { BarChart3, BrainCircuit, Layers, LayoutDashboard, Microscope, PieChart as PieChartIcon, ShieldCheck, TrendingDown } from "lucide-react";
+import { BarChart3, BrainCircuit, Layers, Microscope, PieChart as PieChartIcon, ShieldCheck, TrendingDown } from "lucide-react";
 import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";

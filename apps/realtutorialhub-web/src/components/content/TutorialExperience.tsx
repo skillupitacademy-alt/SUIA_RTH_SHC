@@ -17,6 +17,7 @@ import { LearningActivityTracker } from './LearningActivityTracker';
 import { LiveSessionRequestPanel } from '@/components/tutorial';
 import { ProjectSubmissionPanel, type ProjectCard } from './ProjectSubmissionPanel';
 import { AiTutorDrawer } from '@/components/tutorial/AiTutorDrawer';
+import { useState } from 'react';
 
 interface TutorialExperienceProps {
   params: {
@@ -38,6 +39,7 @@ interface TutorialExperienceProps {
 const blockOrder: ContentBlockType[] = ['notes', 'layman', 'real_life', 'technical', 'code', 'ai_tutor'];
 
 export function TutorialExperience({ params, subtopicId, content, theme, mode, projects = [], blockType, simulateSlowLoad = false, simulateError = false }: TutorialExperienceProps) {
+  const [isAiTutorOpen, setIsAiTutorOpen] = useState(false);
   const t = useTranslations('subtopic');
   const blockTranslations = useTranslations('blocks');
   const sidebar = useTranslations('sidebar');
@@ -115,13 +117,15 @@ export function TutorialExperience({ params, subtopicId, content, theme, mode, p
       </div>
 
       {mode === 'learn' ? (
-        <LearnerProgressPanel
-          subtopicId={params.subtopicSlug}
-          subtopicName={subtopicName}
-          theme={theme}
-          blockOrder={blockOrder}
-          assignmentsHref={`/learn/${params.domainSlug}/${params.subjectSlug}/${params.topicSlug}/${params.subtopicSlug}/assignments`}
-        />
+        <div id="progress-panel">
+          <LearnerProgressPanel
+            subtopicId={params.subtopicSlug}
+            subtopicName={subtopicName}
+            theme={theme}
+            blockOrder={blockOrder}
+            assignmentsHref={`/learn/${params.domainSlug}/${params.subjectSlug}/${params.topicSlug}/${params.subtopicSlug}/assignments`}
+          />
+        </div>
       ) : (
         <SubtopicHeader subtopicName={subtopicName} completedBlocks={0} totalBlocks={6} theme={theme} />
       )}
@@ -157,13 +161,19 @@ export function TutorialExperience({ params, subtopicId, content, theme, mode, p
             simulateSlowLoad={simulateSlowLoad}
             simulateError={simulateError}
           />
-          <LiveSessionRequestPanel subtopicId={subtopicId ?? params.subtopicSlug} subtopicName={subtopicName} theme={theme} />
-          <ProjectSubmissionPanel subtopicId={subtopicId ?? params.subtopicSlug} subtopicName={subtopicName} theme={theme} projects={projects} />
+          <div id="live-session-panel">
+            <LiveSessionRequestPanel subtopicId={subtopicId ?? params.subtopicSlug} subtopicName={subtopicName} theme={theme} />
+          </div>
+          <div id="project-panel">
+            <ProjectSubmissionPanel subtopicId={subtopicId ?? params.subtopicSlug} subtopicName={subtopicName} theme={theme} projects={projects} />
+          </div>
           <AiTutorDrawer
             subtopicId={subtopicId ?? params.subtopicSlug}
             subtopicName={subtopicName}
             theme={theme}
             greeting={content.ai_tutor.greeting}
+            isOpen={isAiTutorOpen}
+            onOpenChange={setIsAiTutorOpen}
           />
         </>
       ) : blockType ? (
@@ -196,6 +206,7 @@ export function TutorialExperience({ params, subtopicId, content, theme, mode, p
           notes={notes}
           theme={theme}
           activeSubtopicSlug={params.subtopicSlug}
+          onOpenAiTutor={() => setIsAiTutorOpen(true)}
         />
         <main style={{ flex: 1, minWidth: 0, padding: 24 }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 18, alignItems: 'start' }}>{renderPanel()}</div>

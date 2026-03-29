@@ -11,6 +11,8 @@ interface AiTutorDrawerProps {
   subtopicName: string;
   theme: DomainTheme;
   greeting: string;
+  isOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 function dotStyle(index: number) {
@@ -25,8 +27,11 @@ function dotStyle(index: number) {
   } as const;
 }
 
-export function AiTutorDrawer({ subtopicId, subtopicName, theme, greeting }: AiTutorDrawerProps) {
-  const [isOpen, setIsOpen] = useState(false);
+export function AiTutorDrawer({ subtopicId, subtopicName, theme, greeting, isOpen: controlledIsOpen, onOpenChange }: AiTutorDrawerProps) {
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
+  const isOpen = controlledIsOpen ?? internalIsOpen;
+  const setIsOpen = onOpenChange ?? setInternalIsOpen;
+
   const tutor = useAiTutor(greeting, subtopicId, subtopicName);
 
   return (
@@ -251,7 +256,7 @@ export function AiTutorDrawer({ subtopicId, subtopicName, theme, greeting }: AiT
 
               <div style={{ marginTop: 12, display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center' }}>
                 <div style={{ fontSize: 12.5, color: 'var(--design-muted)' }}>
-                  {tutor.errorMessage ?? 'Answers use the tutorial notes and related content chunks.'}
+                  {tutor.errorMessage ?? (tutor.questionsLeft !== null ? `${tutor.questionsLeft} questions remaining this hour.` : 'Answers use the tutorial notes and related content chunks.')}
                 </div>
                 <button
                   type="button"
