@@ -167,8 +167,13 @@ describe('api-gateway', () => {
   });
 
   it('routes skillhubcore api host traffic to the skillhubcore upstream', async () => {
+    const token = await makeToken(['student']);
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 })); 
-    const response = await app.request('https://api.skillhubcore.in/api/hierarchy/domains', undefined, env);
+    const response = await app.request('https://api.skillhubcore.in/api/hierarchy/domains', {
+      headers: {
+        authorization: `Bearer ${token}`,
+      },
+    }, env);
 
     expect(response.status).toBe(200);
     expect(fetchSpy).toHaveBeenCalledTimes(1);

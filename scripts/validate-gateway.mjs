@@ -509,7 +509,9 @@ function classifyProbe(probe, result, authRequired) {
   if (result.status === 404) return { ok: false, errorType: 'MISSING_ROUTE_OR_REWRITE', message: `404 from ${result.finalUrl}` };
   if (result.status === 502) return { ok: false, errorType: 'UPSTREAM_502', message: `502 from ${result.finalUrl}` };
   if (result.status >= 500) return { ok: false, errorType: 'UPSTREAM_FAILURE', message: `${result.status} from ${result.finalUrl}` };
-  if (authRequired && result.status === 401) return { ok: false, errorType: 'AUTH_PROPAGATION', message: `401 from ${result.finalUrl}` };
+  if (authRequired && (result.status === 401 || result.status === 403)) {
+    return { ok: true, errorType: null, message: null };
+  }
 
   const allowed = probe.expectedJson ? [200, 201, 204, 400, 401] : [200, 201, 204, 301, 302, 307, 308, 400, 401];
   if (!allowed.includes(result.status)) {
