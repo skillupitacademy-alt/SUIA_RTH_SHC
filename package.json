@@ -43,6 +43,8 @@
                     "seed:skillup:test-credentials":  "node scripts/seed-skillup-test-credentials.js",
                     "seed:skillup:people":  "pnpm --filter @quiz/db-people db:seed:skillup",
                     "seed:rth:looping-demo":  "tsx scripts/seed-rth-looping-demo.ts",
+                    "seed:test-users":  "tsx scripts/check-test-users.ts",
+                    "seed:quiz-test-users":  "node scripts/seed-quiz-test-users-sql.js",
                     "db-payment:seed:skillup":  "pnpm --filter @quiz/db-payment db:seed:skillup",
                     "db-payment:migrate":  "pnpm --filter @quiz/db-payment db:migrate",
                     "db-placement:seed:skillup":  "pnpm --filter @quiz/db-placement db:seed:skillup",
