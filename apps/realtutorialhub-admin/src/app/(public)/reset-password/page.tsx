@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { apiClient } from '@quiz/api-client';
 import { ZLoader } from '@quiz/ui';
@@ -93,7 +93,7 @@ function ResetPasswordForm() {
                 </div>
                 <Link
                     href="/forgot-password"
-                    className="block w-full py-4 rounded-xl border border-primary/20 bg-primary/5 text-primary font-black tracking-wide hover:bg-primary/10 transition-all text-center"
+                    className="block w-full py-4 rounded-xl border border-[#FF4B91]/20 bg-[#FF4B91]/5 text-[#FF4B91] font-black tracking-wide hover:bg-[#FF4B91]/10 transition-all text-center"
                 >
                     REQUEST NEW LINK
                 </Link>
@@ -124,10 +124,10 @@ function ResetPasswordForm() {
         <div className="w-full">
             <div className="mb-10">
                 <div className="flex items-center gap-3 mb-3">
-                    <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
+                    <div className="p-1.5 rounded-lg bg-[#FF4B91]/10 text-[#FF4B91]">
                         <ShieldCheck size={20} />
                     </div>
-                    <span className="text-xs font-black uppercase tracking-[0.2em] text-primary">Governance Protocol #RO-441</span>
+                    <span className="text-xs font-black uppercase tracking-[0.2em] text-[#FF4B91]">Governance Protocol #RO-441</span>
                 </div>
                 <h2 className="text-3xl font-black tracking-tight mb-2">Secure Reset</h2>
                 <p className="text-muted-foreground text-sm font-medium">Define your new administrative access credentials.</p>
@@ -148,7 +148,7 @@ function ResetPasswordForm() {
                             required
                             minLength={8}
                             id="admin-reset-new-password"
-                            className="w-full pl-12 pr-12 py-3 rounded-xl border bg-muted/30 text-foreground focus:bg-background focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all font-medium"
+                            className="w-full pl-12 pr-12 py-3 rounded-xl border bg-muted/30 text-foreground focus:bg-background focus:ring-2 focus:ring-[#FF4B91] focus:border-transparent outline-none transition-all font-medium"
                             placeholder="••••••••••••"
                             value={newPassword}
                             onChange={(e) => setNewPassword(e.target.value)}
@@ -171,7 +171,7 @@ function ResetPasswordForm() {
                             type={showPassword ? "text" : "password"}
                             required
                             id="admin-reset-confirm-password"
-                            className="w-full pl-12 pr-4 py-3 rounded-xl border bg-muted/30 text-foreground focus:bg-background focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all font-medium"
+                            className="w-full pl-12 pr-4 py-3 rounded-xl border bg-muted/30 text-foreground focus:bg-background focus:ring-2 focus:ring-[#FF4B91] focus:border-transparent outline-none transition-all font-medium"
                             placeholder="••••••••••••"
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
@@ -182,7 +182,7 @@ function ResetPasswordForm() {
                 <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full py-4 rounded-xl bg-primary text-primary-foreground font-black tracking-wide shadow-lg shadow-primary/25 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2"
+                    className="w-full py-4 rounded-xl bg-[#FF4B91] text-white font-black tracking-wide shadow-lg shadow-[#FF4B91]/25 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2"
                 >
                     {isLoading ? <ZLoader size="xs" className="text-white" center={false} /> : "FINALIZE RESET"}
                 </button>

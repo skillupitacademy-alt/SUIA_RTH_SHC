@@ -38,7 +38,7 @@ export default function ForgotPasswordPage() {
         <div className="w-full">
             <Link
                 href="/login"
-                className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors mb-8 group"
+                className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-muted-foreground hover:text-[#FF4B91] transition-colors mb-8 group"
             >
                 <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
                 Back to Login
@@ -63,7 +63,7 @@ export default function ForgotPasswordPage() {
                     </div>
                     <Link
                         href="/login"
-                        className="block w-full py-4 rounded-xl bg-primary text-primary-foreground font-black tracking-wide shadow-lg shadow-primary/25 hover:scale-[1.02] active:scale-95 transition-all text-center"
+                        className="block w-full py-4 rounded-xl bg-[#FF4B91] text-white font-black tracking-wide shadow-lg shadow-[#FF4B91]/25 hover:scale-[1.02] active:scale-95 transition-all text-center"
                     >
                         RETURN TO LOGIN
                     </Link>
@@ -83,7 +83,7 @@ export default function ForgotPasswordPage() {
                                 type="email"
                                 required
                                 id="admin-forgot-email"
-                                className="w-full pl-12 pr-4 py-3 rounded-xl border bg-muted/30 text-foreground focus:bg-background focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all font-medium"
+                                className="w-full pl-12 pr-4 py-3 rounded-xl border bg-muted/30 text-foreground focus:bg-background focus:ring-2 focus:ring-[#FF4B91] focus:border-transparent outline-none transition-all font-medium"
                                 placeholder="admin@example.com"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}

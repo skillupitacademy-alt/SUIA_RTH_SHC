@@ -13,7 +13,8 @@ import {
     Target,
     CheckSquare,
     FolderCode,
-    Video
+    Video,
+    Library
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -32,6 +33,7 @@ const NAV_SECTIONS = [
     {
         label: 'Learning',
         items: [
+            { name: 'Knowledge Hub', href: '/learn', icon: Library },
             { name: 'Remediation Plan', href: '/learn/remediation', icon: Target },
             { name: 'Assignments', href: '/dashboard/assignments', icon: CheckSquare },
             { name: 'My Projects', href: '/projects', icon: FolderCode },

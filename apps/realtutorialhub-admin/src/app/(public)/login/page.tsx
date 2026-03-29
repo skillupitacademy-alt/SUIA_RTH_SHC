@@ -210,7 +210,7 @@ function LoginForm() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full inline-flex items-center justify-center rounded-2xl bg-primary px-4 py-7 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:bg-primary/90"
+          className="block w-full py-4 rounded-xl bg-[#FF4B91] text-white font-black tracking-wide shadow-lg shadow-[#FF4B91]/25 hover:scale-[1.02] active:scale-95 transition-all text-center"
         >
           {loading ? 'AUTHENTICATING...' : 'AUTHENTICATE'}
         </button>
