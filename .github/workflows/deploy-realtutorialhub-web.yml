@@ -90,5 +90,5 @@ jobs:
 
       - name: Smoke test
         run: |
-          SERVICE_URL=$(gcloud run services describe realtutorialhub-web --region $REGION --project $PROJECT_ID --format 'value(status.url)')
-          curl --fail --silent --show-error "$SERVICE_URL/api/healthz"
+          curl --fail --silent --show-error --retry 3 --retry-delay 5 \
+            "https://notes.realtutorialhub.com/api/healthz"

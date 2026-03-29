@@ -383,13 +383,17 @@ function createSignedJwt(secret, payload) {
   return `${header}.${body}.${signature}`;
 }
 
-function authHeaders(secret, role = 'student') {
+function authHeaders(secret, role = 'student', gatewaySecret = process.env.INTERNAL_GATEWAY_SECRET) {
   if (typeof secret !== 'string' || secret.trim().length === 0) return null;
   const now = Math.floor(Date.now() / 1000);
+  const isAdmin = role === 'admin';
   const token = createSignedJwt(secret, {
     sub: 'validation-user',
-    roles: role === 'admin' ? ['admin'] : ['student'],
+    roles: isAdmin ? ['admin'] : ['student'],
     subscriptions: ['combo'],
+    aud: isAdmin ? 'admin' : 'user',
+    tokenType: isAdmin ? 'admin' : 'user',
+    brand: 'realtutorialhub',
     iss: 'skillhubcore.in',
     iat: now,
     exp: now + 3600,
@@ -397,7 +401,17 @@ function authHeaders(secret, role = 'student') {
   return {
     authorization: `Bearer ${token}`,
     cookie: `skillhubcore_accessToken=${token}; accessToken=${token}`,
+    ...(typeof gatewaySecret === 'string' && gatewaySecret.trim().length > 0
+      ? { 'x-gateway-secret': gatewaySecret }
+      : {}),
   };
+}
+
+function getValidationSecret(role = 'student') {
+  if (role === 'admin') {
+    return process.env.ADMIN_JWT_SECRET ?? process.env.JWT_SECRET;
+  }
+  return process.env.JWT_SECRET;
 }
 
 function buildRouteCases(routes, observedEndpoints) {
@@ -531,7 +545,13 @@ function probeCandidatesForService(serviceKey, routeCases) {
   const matches = routeCases.filter((item) => item.route.upstreamKey === serviceKey);
   const firstGet = matches.find((item) => item.method === 'GET');
   const pick = firstGet ?? matches[0];
-  if (pick) return { health: LIVE_PROBES[serviceKey], functional: { method: pick.method, path: pick.path }, fallback: { method: pick.method, path: pick.path } };
+  if (pick) {
+    return {
+      health: LIVE_PROBES[serviceKey],
+      functional: { method: pick.method, path: pick.path, adminRequired: pick.adminRequired },
+      fallback: { method: pick.method, path: pick.path, adminRequired: pick.adminRequired },
+    };
+  }
   return { health: LIVE_PROBES[serviceKey] ?? { path: '/', ok: [200, 301, 302, 307, 308] }, functional: { method: 'GET', path: '/' }, fallback: { method: 'GET', path: '/' } };
 }
 
@@ -561,7 +581,9 @@ async function main() {
     const bindingUrl = wranglerVars[probe.route.upstreamKey];
     const isLocalApiRoute = LOCAL_API_KEYS.has(probe.route.upstreamKey);
     const isOptionalService = OPTIONAL_SERVICE_KEYS.has(probe.route.upstreamKey);
-    const auth = probe.authRequired ? authHeaders(process.env.JWT_SECRET, probe.adminRequired ? 'admin' : 'student') : null;
+    const auth = probe.authRequired
+      ? authHeaders(getValidationSecret(probe.adminRequired ? 'admin' : 'student'), probe.adminRequired ? 'admin' : 'student')
+      : null;
 
     let liveResult = null;
     let classification = { ok: true, errorType: null, message: null };
@@ -653,9 +675,16 @@ async function main() {
       let healthy = true;
       const results = [];
       for (const probe of probes) {
-        const auth = probe.label === 'functional' && !WEB_UPSTREAM_KEYS.has(key) ? authHeaders(process.env.JWT_SECRET, 'student') : null;
+        const auth = probe.label === 'functional' && !WEB_UPSTREAM_KEYS.has(key)
+          ? authHeaders(
+              getValidationSecret(probe.adminRequired === true ? 'admin' : 'student'),
+              probe.adminRequired === true ? 'admin' : 'student',
+            )
+          : null;
         const result = await probeWithRetries(url, { method: probe.method, path: probe.path, headers: auth ?? undefined }, 2, 3000);
-        const ok = probe.label === 'health' ? isHealthyStatus(result.status, probe.ok) : result.status > 0 && result.status < 500 && result.status !== 404;
+        const ok = probe.label === 'health'
+          ? isHealthyStatus(result.status, probe.ok)
+          : result.status > 0 && result.status < 500 && result.status !== 404 && result.status !== 502;
         results.push({ label: probe.label, ...result, ok });
         if (!ok) healthy = false;
       }
