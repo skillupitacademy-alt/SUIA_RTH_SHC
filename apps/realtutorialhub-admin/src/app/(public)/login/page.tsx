@@ -26,6 +26,11 @@ type LoginResponse = {
   _error?: string;
 };
 
+function getPortalIdentityFromHostname(hostname: string): 'admin' | 'user' {
+  const normalized = hostname.trim().toLowerCase();
+  return normalized.startsWith('admin.') || normalized.includes('.admin.') ? 'admin' : 'user';
+}
+
 function readResponseMessage(value: unknown): string | null {
   if (typeof value !== 'string') return null;
 
@@ -35,6 +40,8 @@ function readResponseMessage(value: unknown): string | null {
 
 function LoginForm() {
   const router = useRouter();
+  const portalIdentity =
+    typeof window === 'undefined' ? 'admin' : getPortalIdentityFromHostname(window.location.hostname);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -62,7 +69,7 @@ function LoginForm() {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          'x-portal-identity': 'admin',
+          'x-portal-identity': portalIdentity,
         },
         body: JSON.stringify({
           email: formData.email,

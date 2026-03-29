@@ -31,9 +31,16 @@ function readResponseMessage(value: unknown): string | null {
   return trimmed === '' ? null : trimmed;
 }
 
+function getPortalIdentityFromHostname(hostname: string): 'admin' | 'user' {
+  const normalized = hostname.trim().toLowerCase();
+  return normalized.startsWith('admin.') || normalized.includes('.admin.') ? 'admin' : 'user';
+}
+
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const portalIdentity =
+    typeof window === 'undefined' ? 'user' : getPortalIdentityFromHostname(window.location.hostname);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -81,7 +88,7 @@ function LoginForm() {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          'x-portal-identity': 'user',
+          'x-portal-identity': portalIdentity,
         },
         body: JSON.stringify({
           email,
