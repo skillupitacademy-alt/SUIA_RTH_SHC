@@ -1,0 +1,715 @@
+name: Deploy Cloud Run Apps
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/api-server/**'
+      - 'apps/realtutorialhub-web/**'
+      - 'apps/realtutorialhub-quiz/**'
+      - 'apps/realtutorialhub-admin/**'
+      - 'apps/skillup-web/**'
+      - 'apps/skillup-admin/**'
+      - 'apps/faculty-app/**'
+      - 'apps/skillhubcore-admin/**'
+      - 'services/skillhubcore-service/**'
+      - 'packages/**'
+      - '.github/workflows/deploy-cloudrun.yml'
+  workflow_dispatch:
+    inputs:
+      scope:
+        description: 'all/quiz/tutorial/skillup/skillhubcore'
+        default: 'all'
+        type: choice
+        options: [all, quiz, tutorial, skillup, skillhubcore]
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: asia-south1
+
+jobs:
+  plan:
+    name: Plan deploy scope
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      run_quiz: ${{ steps.scope.outputs.run_quiz }}
+      run_tutorial: ${{ steps.scope.outputs.run_tutorial }}
+      run_skillup: ${{ steps.scope.outputs.run_skillup }}
+      run_skillhubcore: ${{ steps.scope.outputs.run_skillhubcore }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve scope
+        id: scope
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            scope="${{ github.event.inputs.scope }}"
+          else
+            scope="push"
+          fi
+
+          run_quiz=false
+          run_tutorial=false
+          run_skillup=false
+          run_skillhubcore=false
+
+          if [ "$scope" = "all" ]; then
+            run_quiz=true
+            run_tutorial=true
+            run_skillup=true
+            run_skillhubcore=true
+          elif [ "$scope" = "quiz" ]; then
+            run_quiz=true
+          elif [ "$scope" = "tutorial" ]; then
+            run_tutorial=true
+          elif [ "$scope" = "skillup" ]; then
+            run_skillup=true
+          elif [ "$scope" = "skillhubcore" ]; then
+            run_skillhubcore=true
+          else
+            changed_files="$(git diff --name-only "${{ github.event.before }}" "${{ github.sha }}" || true)"
+
+            if [ -z "$changed_files" ]; then
+              changed_files="$(git show --name-only --pretty='' "${{ github.sha }}" || true)"
+            fi
+
+            if printf '%s\n' "$changed_files" | grep -Eq '^(packages/|\.github/workflows/)'; then
+              run_quiz=true
+              run_tutorial=true
+              run_skillup=true
+              run_skillhubcore=true
+            else
+              if printf '%s\n' "$changed_files" | grep -Eq '^(apps/api-server/|apps/realtutorialhub-quiz/|apps/realtutorialhub-admin/)'; then
+                run_quiz=true
+              fi
+
+              if printf '%s\n' "$changed_files" | grep -Eq '^apps/realtutorialhub-web/'; then
+                run_tutorial=true
+              fi
+
+              if printf '%s\n' "$changed_files" | grep -Eq '^(apps/skillup-web/|apps/skillup-admin/|apps/faculty-app/|apps/skillhubcore-admin/)'; then
+                run_skillup=true
+              fi
+
+              if printf '%s\n' "$changed_files" | grep -Eq '^(services/skillhubcore-service/|packages/db-people/)'; then
+                run_skillhubcore=true
+              fi
+            fi
+          fi
+
+          echo "run_quiz=$run_quiz" >> "$GITHUB_OUTPUT"
+          echo "run_tutorial=$run_tutorial" >> "$GITHUB_OUTPUT"
+          echo "run_skillup=$run_skillup" >> "$GITHUB_OUTPUT"
+          echo "run_skillhubcore=$run_skillhubcore" >> "$GITHUB_OUTPUT"
+
+  deploy-quiz-api:
+    name: Deploy API Server
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    timeout-minutes: 20
+    needs: plan
+    if: needs.plan.outputs.run_quiz == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - run: gcloud auth configure-docker asia-south1-docker.pkg.dev
+      - name: Build and push API
+        run: |
+          docker build \
+            --build-arg NEXT_PUBLIC_API_URL=https://api.realtutorialhub.com/api \
+            --build-arg NEXT_PUBLIC_WEB_APP_URL=https://quiz.realtutorialhub.com \
+            --build-arg NEXT_PUBLIC_ADMIN_URL=https://admin.realtutorialhub.com \
+            --build-arg NEXT_PUBLIC_SENTRY_DSN=${{ secrets.NEXT_PUBLIC_SENTRY_DSN }} \
+            --build-arg INTERNAL_GATEWAY_SECRET=${{ secrets.INTERNAL_GATEWAY_SECRET }} \
+            -f apps/api-server/Dockerfile \
+            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-api-server:$GITHUB_SHA \
+            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-api-server:latest .
+          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-api-server:$GITHUB_SHA
+          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-api-server:latest
+      - name: Deploy API to Cloud Run
+        run: |
+          gcloud run deploy quiz-api-server \
+            --image asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-api-server:$GITHUB_SHA \
+            --region $REGION \
+            --platform managed \
+            --allow-unauthenticated \
+            --port 3000 \
+            --set-env-vars "NODE_ENV=production,CLOUD_RUN_BUILD=true" \
+            --set-secrets "DATABASE_URL=DATABASE_URL:latest,UPSTASH_REDIS_REST_URL=UPSTASH_REDIS_REST_URL:latest,UPSTASH_REDIS_REST_TOKEN=UPSTASH_REDIS_REST_TOKEN:latest,QSTASH_URL=QSTASH_URL:latest,QSTASH_TOKEN=QSTASH_TOKEN:latest,QSTASH_CURRENT_SIGNING_KEY=QSTASH_CURRENT_SIGNING_KEY:latest,QSTASH_NEXT_SIGNING_KEY=QSTASH_NEXT_SIGNING_KEY:latest,JWT_SECRET=JWT_SECRET:latest,JWT_REFRESH_SECRET=JWT_REFRESH_SECRET:latest,ADMIN_JWT_SECRET=ADMIN_JWT_SECRET:latest,RESEND_API_KEY=RESEND_API_KEY:latest,NEXT_PUBLIC_API_URL=NEXT_PUBLIC_API_URL:latest,NEXT_PUBLIC_WEB_APP_URL=NEXT_PUBLIC_WEB_APP_URL:latest,NEXT_PUBLIC_ADMIN_URL=NEXT_PUBLIC_ADMIN_URL:latest,NEXT_PUBLIC_SENTRY_DSN=NEXT_PUBLIC_SENTRY_DSN:latest,SENTRY_AUTH_TOKEN=SENTRY_AUTH_TOKEN:latest,CSRF_SECRET=CSRF_SECRET:latest,INTERNAL_API_KEY=INTERNAL_API_KEY:latest,INTERNAL_API_URL=INTERNAL_API_URL:latest,INTERNAL_GATEWAY_SECRET=INTERNAL_GATEWAY_SECRET:latest,COOKIE_DOMAIN=COOKIE_DOMAIN:latest,ALLOWED_ORIGINS=ALLOWED_ORIGINS:latest,STORAGE_PROVIDER=STORAGE_PROVIDER:latest,R2_ENDPOINT=R2_ENDPOINT:latest,R2_BUCKET=R2_BUCKET:latest,R2_ACCESS_KEY_ID=R2_ACCESS_KEY_ID:latest,R2_SECRET_ACCESS_KEY=R2_SECRET_ACCESS_KEY:latest,BROWSERLESS_URL=BROWSERLESS_URL:latest,HIGH_LOAD_MODE=HIGH_LOAD_MODE:latest,ALLOW_MOCK_JOBS=ALLOW_MOCK_JOBS:latest,DISABLE_BACKGROUND_WORKERS=DISABLE_BACKGROUND_WORKERS:latest" \
+            --memory 2Gi \
+            --cpu 2 \
+            --concurrency 1000 \
+            --max-instances 10 \
+            --min-instances 0
+
+  deploy-quiz-web:
+    name: Deploy Web App
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    timeout-minutes: 20
+    needs: [plan, deploy-quiz-api]
+    if: needs.plan.outputs.run_quiz == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - run: gcloud auth configure-docker asia-south1-docker.pkg.dev
+      - name: Build and push Web
+        run: |
+          docker build \
+            --build-arg NEXT_PUBLIC_API_URL=https://api.realtutorialhub.com/api \
+            --build-arg NEXT_PUBLIC_WEB_APP_URL=https://quiz.realtutorialhub.com \
+            --build-arg NEXT_PUBLIC_TUTORIAL_APP_URL=https://notes.realtutorialhub.com \
+            --build-arg NEXT_PUBLIC_ADMIN_URL=https://admin.realtutorialhub.com \
+            --build-arg INTERNAL_GATEWAY_SECRET=${{ secrets.INTERNAL_GATEWAY_SECRET }} \
+            -f apps/realtutorialhub-quiz/Dockerfile \
+            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-web-app:$GITHUB_SHA \
+            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-web-app:latest .
+          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-web-app:$GITHUB_SHA
+          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-web-app:latest
+      - name: Deploy Web to Cloud Run
+        run: |
+          gcloud run deploy quiz-web-app \
+            --image asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-web-app:$GITHUB_SHA \
+            --region $REGION \
+            --platform managed \
+            --allow-unauthenticated \
+            --port 3001 \
+            --set-env-vars "NODE_ENV=production,CLOUD_RUN_BUILD=true,NEXT_PUBLIC_TUTORIAL_APP_URL=https://notes.realtutorialhub.com" \
+            --set-secrets "NEXT_PUBLIC_API_URL=NEXT_PUBLIC_API_URL:latest,NEXT_PUBLIC_WEB_APP_URL=NEXT_PUBLIC_WEB_APP_URL:latest,NEXT_PUBLIC_SENTRY_DSN=NEXT_PUBLIC_SENTRY_DSN:latest,SENTRY_AUTH_TOKEN=SENTRY_AUTH_TOKEN:latest,JWT_SECRET=JWT_SECRET:latest,JWT_REFRESH_SECRET=JWT_REFRESH_SECRET:latest,COOKIE_DOMAIN=COOKIE_DOMAIN:latest,INTERNAL_API_KEY=INTERNAL_API_KEY:latest,INTERNAL_API_URL=INTERNAL_API_URL:latest,INTERNAL_GATEWAY_SECRET=INTERNAL_GATEWAY_SECRET:latest" \
+            --memory 1Gi \
+            --cpu 1 \
+            --concurrency 1000 \
+            --max-instances 10
+
+  deploy-quiz-admin:
+    name: Deploy Admin App
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    timeout-minutes: 20
+    needs: [plan, deploy-quiz-api]
+    if: needs.plan.outputs.run_quiz == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - run: gcloud auth configure-docker asia-south1-docker.pkg.dev
+      - name: Build and push Admin
+        run: |
+          docker build \
+            --build-arg NEXT_PUBLIC_API_URL=https://api.realtutorialhub.com/api \
+            --build-arg NEXT_PUBLIC_WEB_APP_URL=https://quiz.realtutorialhub.com \
+            --build-arg NEXT_PUBLIC_TUTORIAL_APP_URL=https://notes.realtutorialhub.com \
+            --build-arg NEXT_PUBLIC_ADMIN_URL=https://admin.realtutorialhub.com \
+            --build-arg INTERNAL_GATEWAY_SECRET=${{ secrets.INTERNAL_GATEWAY_SECRET }} \
+            -f apps/realtutorialhub-admin/Dockerfile \
+            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-admin-app:$GITHUB_SHA \
+            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-admin-app:latest .
+          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-admin-app:$GITHUB_SHA
+          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-admin-app:latest
+      - name: Deploy Admin to Cloud Run
+        run: |
+          gcloud run deploy quiz-admin-app \
+            --image asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-admin-app:$GITHUB_SHA \
+            --region $REGION \
+            --platform managed \
+            --allow-unauthenticated \
+            --port 3002 \
+            --set-env-vars "NODE_ENV=production,CLOUD_RUN_BUILD=true" \
+            --set-secrets "NEXT_PUBLIC_API_URL=NEXT_PUBLIC_API_URL:latest,NEXT_PUBLIC_ADMIN_URL=NEXT_PUBLIC_ADMIN_URL:latest,NEXT_PUBLIC_SENTRY_DSN=NEXT_PUBLIC_SENTRY_DSN:latest,SENTRY_AUTH_TOKEN=SENTRY_AUTH_TOKEN:latest,JWT_SECRET=JWT_SECRET:latest,JWT_REFRESH_SECRET=JWT_REFRESH_SECRET:latest,ADMIN_JWT_SECRET=ADMIN_JWT_SECRET:latest,DATABASE_URL_TUTORIAL=DATABASE_URL_TUTORIAL:latest,DATABASE_DIRECT_URL_TUTORIAL=DATABASE_DIRECT_URL_TUTORIAL:latest,COOKIE_DOMAIN=COOKIE_DOMAIN:latest,CSRF_SECRET=CSRF_SECRET:latest,INTERNAL_API_KEY=INTERNAL_API_KEY:latest,INTERNAL_GATEWAY_SECRET=INTERNAL_GATEWAY_SECRET:latest" \
+            --memory 1Gi \
+            --cpu 1 \
+            --concurrency 1000 \
+            --max-instances 10
+
+  health-check-quiz:
+    name: Verify quiz services
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write
+    needs: [plan, deploy-quiz-api, deploy-quiz-web, deploy-quiz-admin]
+    if: needs.plan.outputs.run_quiz == 'true'
+    steps:
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - name: Check all healthy
+        run: |
+          API_URL=$(gcloud run services describe quiz-api-server --region asia-south1 --format 'value(status.url)')
+          WEB_URL=$(gcloud run services describe quiz-web-app --region asia-south1 --format 'value(status.url)')
+          ADMIN_URL=$(gcloud run services describe quiz-admin-app --region asia-south1 --format 'value(status.url)')
+
+          check_service() {
+            local name=$1
+            local url=$2
+            local expected=$3
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$url")
+            echo "$name: $STATUS"
+            if [ "$STATUS" != "$expected" ]; then
+              echo "FAILED: $name (expected $expected, got $STATUS)"
+              exit 1
+            fi
+          }
+
+          check_service "quiz-api-server" "$API_URL/api/health/live" "200"
+          check_service "quiz-web-app" "$WEB_URL/" "200"
+          check_service "quiz-admin-app" "$ADMIN_URL/" "307"
+
+  deploy-tutorial-web:
+    name: Deploy RealTutorialHub Web
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      id-token: write
+    needs: plan
+    if: needs.plan.outputs.run_tutorial == 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker asia-south1-docker.pkg.dev
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            --build-arg NEXT_PUBLIC_API_URL=https://api.realtutorialhub.com/api \
+            --build-arg NEXT_PUBLIC_WEB_APP_URL=https://notes.realtutorialhub.com \
+            --build-arg NEXT_PUBLIC_ADMIN_URL=https://admin.realtutorialhub.com \
+            --build-arg NEXT_PUBLIC_SITE_URL=https://notes.realtutorialhub.com \
+            --build-arg NEXT_PUBLIC_APP_URL=https://notes.realtutorialhub.com \
+            --build-arg NEXT_PUBLIC_LOGIN_URL=https://quiz.realtutorialhub.com/login \
+            --build-arg INTERNAL_GATEWAY_SECRET=${{ secrets.INTERNAL_GATEWAY_SECRET }} \
+            -f apps/realtutorialhub-web/Dockerfile \
+            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/realtutorialhub-web:$GITHUB_SHA \
+            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/realtutorialhub-web:latest \
+            .
+
+      - name: Push Docker images
+        run: |
+          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/realtutorialhub-web:$GITHUB_SHA
+          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/realtutorialhub-web:latest
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy realtutorialhub-web \
+            --image asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/realtutorialhub-web:$GITHUB_SHA \
+            --region $REGION \
+            --platform managed \
+            --allow-unauthenticated \
+            --port 3003 \
+            --memory 1Gi \
+            --min-instances 0 \
+            --max-instances 10 \
+            --set-env-vars "NODE_ENV=production,CLOUD_RUN_BUILD=true,NEXT_PUBLIC_API_URL=https://api.realtutorialhub.com/api,NEXT_PUBLIC_WEB_APP_URL=https://notes.realtutorialhub.com,NEXT_PUBLIC_ADMIN_URL=https://admin.realtutorialhub.com,NEXT_PUBLIC_SITE_URL=https://notes.realtutorialhub.com,NEXT_PUBLIC_APP_URL=https://notes.realtutorialhub.com,NEXT_PUBLIC_LOGIN_URL=https://quiz.realtutorialhub.com/login" \
+            --set-secrets "NEXT_PUBLIC_SENTRY_DSN=NEXT_PUBLIC_SENTRY_DSN:latest,SENTRY_AUTH_TOKEN=SENTRY_AUTH_TOKEN:latest,JWT_SECRET=JWT_SECRET:latest,JWT_REFRESH_SECRET=JWT_REFRESH_SECRET:latest,COOKIE_DOMAIN=COOKIE_DOMAIN:latest,INTERNAL_API_KEY=INTERNAL_API_KEY:latest,INTERNAL_API_URL=INTERNAL_API_URL:latest,INTERNAL_GATEWAY_SECRET=INTERNAL_GATEWAY_SECRET:latest,UPSTASH_REDIS_REST_URL=UPSTASH_REDIS_REST_URL:latest,UPSTASH_REDIS_REST_TOKEN=UPSTASH_REDIS_REST_TOKEN:latest,QSTASH_TOKEN=QSTASH_TOKEN:latest,QSTASH_CURRENT_SIGNING_KEY=QSTASH_CURRENT_SIGNING_KEY:latest,QSTASH_NEXT_SIGNING_KEY=QSTASH_NEXT_SIGNING_KEY:latest,TUTORIAL_HELP_REQUEST_TOPIC_URL=TUTORIAL_HELP_REQUEST_TOPIC_URL:latest,CERTIFICATE_ISSUED_EVENT_URL=CERTIFICATE_ISSUED_EVENT_URL:latest"
+
+  deploy-skillup-web:
+    name: Deploy skillup-web
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      id-token: write
+    needs: plan
+    if: needs.plan.outputs.run_skillup == 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker asia-south1-docker.pkg.dev
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            --build-arg NEXT_PUBLIC_API_URL=https://api.realtutorialhub.com/api \
+            -f apps/skillup-web/Dockerfile \
+            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillup-web:$GITHUB_SHA \
+            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillup-web:latest \
+            .
+
+      - name: Push Docker images
+        run: |
+          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillup-web:$GITHUB_SHA
+          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillup-web:latest
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy skillup-web \
+            --image asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillup-web:$GITHUB_SHA \
+            --region $REGION \
+            --platform managed \
+            --allow-unauthenticated \
+            --port 3004 \
+            --memory 512Mi \
+            --min-instances 0 \
+            --max-instances 5 \
+            --set-env-vars "NODE_ENV=production" \
+            --set-secrets "JWT_SECRET=JWT_SECRET:latest,INTERNAL_GATEWAY_SECRET=INTERNAL_GATEWAY_SECRET:latest,NEXT_PUBLIC_API_URL=NEXT_PUBLIC_API_URL:latest"
+
+      - name: Smoke test
+        run: |
+          SERVICE_URL=$(gcloud run services describe skillup-web --region $REGION --project $PROJECT_ID --format 'value(status.url)')
+          curl --fail --silent --show-error "$SERVICE_URL/api/healthz"
+
+  deploy-skillup-admin:
+    name: Deploy skillup-admin
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      id-token: write
+    needs: plan
+    if: needs.plan.outputs.run_skillup == 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker asia-south1-docker.pkg.dev
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            -f apps/skillup-admin/Dockerfile \
+            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillup-admin:$GITHUB_SHA \
+            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillup-admin:latest \
+            .
+
+      - name: Push Docker images
+        run: |
+          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillup-admin:$GITHUB_SHA
+          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillup-admin:latest
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy skillup-admin \
+            --image asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillup-admin:$GITHUB_SHA \
+            --region $REGION \
+            --platform managed \
+            --allow-unauthenticated \
+            --port 3005 \
+            --memory 512Mi \
+            --min-instances 0 \
+            --max-instances 5 \
+            --set-env-vars "NODE_ENV=production" \
+            --set-secrets "JWT_SECRET=JWT_SECRET:latest,INTERNAL_GATEWAY_SECRET=INTERNAL_GATEWAY_SECRET:latest"
+
+      - name: Smoke test
+        run: |
+          SERVICE_URL=$(gcloud run services describe skillup-admin --region $REGION --project $PROJECT_ID --format 'value(status.url)')
+          curl --fail --silent --show-error "$SERVICE_URL/api/healthz"
+
+  deploy-faculty-app:
+    name: Deploy faculty-app
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      id-token: write
+    needs: plan
+    if: needs.plan.outputs.run_skillup == 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker asia-south1-docker.pkg.dev
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            --build-arg NEXT_PUBLIC_API_URL=https://api.realtutorialhub.com/api \
+            --build-arg NEXT_PUBLIC_APP_URL=https://faculty.skillupitacademy.com \
+            -f apps/faculty-app/Dockerfile \
+            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/faculty-app:$GITHUB_SHA \
+            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/faculty-app:latest \
+            .
+
+      - name: Push Docker images
+        run: |
+          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/faculty-app:$GITHUB_SHA
+          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/faculty-app:latest
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy faculty-app \
+            --image asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/faculty-app:$GITHUB_SHA \
+            --region $REGION \
+            --platform managed \
+            --allow-unauthenticated \
+            --port 3006 \
+            --memory 512Mi \
+            --min-instances 0 \
+            --max-instances 5 \
+            --set-env-vars "NODE_ENV=production" \
+            --set-secrets "JWT_SECRET=JWT_SECRET:latest,INTERNAL_GATEWAY_SECRET=INTERNAL_GATEWAY_SECRET:latest,INTERNAL_API_URL=INTERNAL_API_URL:latest,NEXT_PUBLIC_API_URL=NEXT_PUBLIC_API_URL:latest"
+
+      - name: Smoke test
+        run: |
+          SERVICE_URL=$(gcloud run services describe faculty-app --region $REGION --project $PROJECT_ID --format 'value(status.url)')
+          curl --fail --silent --show-error "$SERVICE_URL/api/healthz"
+
+  deploy-skillhubcore-admin:
+    name: Deploy skillhubcore-admin
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      id-token: write
+    needs: plan
+    if: needs.plan.outputs.run_skillup == 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker asia-south1-docker.pkg.dev
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            -f apps/skillhubcore-admin/Dockerfile \
+            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillhubcore-admin:$GITHUB_SHA \
+            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillhubcore-admin:latest \
+            .
+
+      - name: Push Docker images
+        run: |
+          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillhubcore-admin:$GITHUB_SHA
+          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillhubcore-admin:latest
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy skillhubcore-admin \
+            --image asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillhubcore-admin:$GITHUB_SHA \
+            --region $REGION \
+            --platform managed \
+            --allow-unauthenticated \
+            --port 3007 \
+            --memory 512Mi \
+            --min-instances 0 \
+            --max-instances 5 \
+            --set-env-vars "NODE_ENV=production" \
+            --set-secrets "JWT_SECRET=JWT_SECRET:latest,INTERNAL_GATEWAY_SECRET=INTERNAL_GATEWAY_SECRET:latest,DATABASE_URL_PEOPLE=DATABASE_URL_PEOPLE:latest"
+
+      - name: Smoke test
+        run: |
+          SERVICE_URL=$(gcloud run services describe skillhubcore-admin --region $REGION --project $PROJECT_ID --format 'value(status.url)')
+          curl --fail --silent --show-error "$SERVICE_URL/api/healthz"
+
+  deploy-skillhubcore-service:
+    name: Deploy SkillHubCore Service
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      id-token: write
+    needs: plan
+    if: needs.plan.outputs.run_skillhubcore == 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker asia-south1-docker.pkg.dev
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillhubcore-service:$GITHUB_SHA \
+            -f services/skillhubcore-service/Dockerfile \
+            .
+
+      - name: Push Docker image
+        run: |
+          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillhubcore-service:$GITHUB_SHA
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy skillhubcore-service \
+            --image asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillhubcore-service:$GITHUB_SHA \
+            --region $REGION \
+            --platform managed \
+            --allow-unauthenticated \
+            --port 3000 \
+            --memory 512Mi \
+            --min-instances 1 \
+            --max-instances 5 \
+            --set-secrets "DATABASE_URL_PEOPLE=DATABASE_URL_PEOPLE:latest,DATABASE_DIRECT_URL_PEOPLE=DATABASE_DIRECT_URL_PEOPLE:latest,JWT_SECRET=JWT_SECRET:latest,UPSTASH_REDIS_REST_URL=UPSTASH_REDIS_REST_URL:latest,UPSTASH_REDIS_REST_TOKEN=UPSTASH_REDIS_REST_TOKEN:latest,QSTASH_TOKEN=QSTASH_TOKEN:latest,INTERNAL_GATEWAY_SECRET=INTERNAL_GATEWAY_SECRET:latest"
+
+      - name: Smoke test
+        run: |
+          SERVICE_URL=$(gcloud run services describe skillhubcore-service --region $REGION --project $PROJECT_ID --format 'value(status.url)')
+          curl --fail --silent --show-error "$SERVICE_URL/healthz/"
