@@ -38,6 +38,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }))
     );
     const [loading, setLoading] = useState(true);
+    const setAccessDenied = useAuthStore((s) => s.setAccessDenied);
+
+    const getErrorStatus = useCallback((error: unknown): number | undefined => {
+        return typeof error === 'object' && error !== null ? (error as { status?: number }).status : undefined;
+    }, []);
 
     const handleLogout = useCallback(async () => {
         try {
@@ -66,7 +71,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     // If session returns successfully but without a user, we are logged out
                     handleLogout();
                 }
-            } catch {
+            } catch (error: unknown) {
+                if (getErrorStatus(error) === 403) {
+                    setAccessDenied(true);
+                    window.dispatchEvent(new CustomEvent('auth:forbidden', { cancelable: true }));
+                    setLoading(false);
+                    return;
+                }
+
                 // If session is invalid, try refresh logic
                 try {
                     const refreshResponse = await apiClient.auth.refresh();
@@ -81,8 +93,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     } else {
                         handleLogout();
                     }
-                } catch {
-                    handleLogout();
+                } catch (refreshError: unknown) {
+                    if (getErrorStatus(refreshError) === 403) {
+                        // Let the 403-specific UI handle the state without converting it into a session-expired logout.
+                        setAccessDenied(true);
+                        window.dispatchEvent(new CustomEvent('auth:forbidden', { cancelable: true }));
+                    } else {
+                        handleLogout();
+                    }
                 }
             } finally {
                 setLoading(false);
@@ -108,7 +126,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 delete window.__E2E_IS_AUTHENTICATED__;
             }
         };
-    }, [handleLogout, login, storeLogout]);
+    }, [getErrorStatus, handleLogout, login, setAccessDenied, storeLogout]);
 
     return (
         <AuthContext.Provider value={{ user, loading, login, logout: handleLogout, isAuthenticated }}>

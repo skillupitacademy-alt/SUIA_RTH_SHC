@@ -10,7 +10,7 @@ import { clientLogger } from '@/utils/clientLogger';
 const normalizeRole = (value: string | null | undefined) => (typeof value === 'string' ? value.toLowerCase() : '');
 
 export function AdminGuard({ children }: { children: React.ReactNode }) {
-    const { user, isAuthenticated, initialized, login, logout, expiresAt, isLocked } = useAuthStore(
+    const { user, isAuthenticated, initialized, login, logout, expiresAt, isLocked, setAccessDenied } = useAuthStore(
         useShallow((s) => ({
             user: s.user,
             isAuthenticated: s.isAuthenticated,
@@ -19,6 +19,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
             logout: s.logout,
             expiresAt: s.expiresAt,
             isLocked: s.isLocked,
+            setAccessDenied: s.setAccessDenied,
         }))
     );
     const router = useRouter();
@@ -67,13 +68,19 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
         })();
     }, [isLocked, logout, router]);
 
+    const handleForbidden = useCallback((e: Event) => {
+        e.preventDefault();
+        setAccessDenied(true);
+    }, [setAccessDenied]);
+
     // Centralized Auth Sync Hook
     useAuthSync({
         portal: 'admin',
         isAuthenticated,
         isLocked,
         logout,
-        onUnauthorized: handleUnauthorized
+        onUnauthorized: handleUnauthorized,
+        onForbidden: handleForbidden,
     });
 
     useEffect(() => {

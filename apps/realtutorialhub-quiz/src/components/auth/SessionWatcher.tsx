@@ -34,7 +34,12 @@ export function SessionWatcher({ expiresAt, onRefresh, onLogout, isRedirecting }
                 await onRefresh();
                 setShowWarning(false);
             }
-        } catch {
+        } catch (err) {
+            const status = typeof err === 'object' && err !== null ? (err as { status?: number }).status : undefined;
+            if (status === 403) {
+                setShowWarning(false);
+                return;
+            }
             onLogout();
         } finally {
             setIsRefreshing(false);

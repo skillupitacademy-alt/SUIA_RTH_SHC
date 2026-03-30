@@ -39,6 +39,13 @@ function getPortalIdentityFromHostname(hostname: string): 'admin' | 'user' {
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const loginReason = searchParams.get('reason');
+  const loginNotice =
+    loginReason === 'access_denied'
+      ? 'Access denied: this account is not permitted for this portal.'
+      : loginReason === 'session_expired'
+        ? 'Your session expired. Please sign in again to continue.'
+        : null;
   const portalIdentity =
     typeof window === 'undefined' ? 'user' : getPortalIdentityFromHostname(window.location.hostname);
   const [showPassword, setShowPassword] = useState(false);
@@ -162,9 +169,9 @@ function LoginForm() {
         <p className="mt-2 text-muted-foreground">Please enter your details to sign in</p>
       </div>
 
-      {error && (
+      {(loginNotice || error) && (
         <div className="p-3 text-sm font-medium bg-red-50 text-red-600 rounded-md border border-red-200">
-          {error}
+          {error ?? loginNotice}
         </div>
       )}
 

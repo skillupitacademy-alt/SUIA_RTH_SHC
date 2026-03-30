@@ -15,6 +15,7 @@ export interface AuthState {
   isAuthenticated: boolean;
   initialized: boolean;
   isSessionExpired: boolean;
+  isAccessDenied: boolean;
   expiresAt: string | null;
   isLocked: boolean;
   isLoggingOut: boolean;
@@ -25,6 +26,7 @@ export interface AuthState {
   unlock: () => void;
   setInitialized: (val: boolean) => void;
   setSessionExpired: (val: boolean) => void;
+  setAccessDenied: (val: boolean) => void;
   setLoggingOut: (val: boolean) => void;
   completeOnboarding: () => void;
 }
@@ -42,22 +44,46 @@ export const createAuthStore = (options: CreateAuthStoreOptions) => {
         isAuthenticated: false,
         initialized: false,
         isSessionExpired: false,
+        isAccessDenied: false,
         isLocked: false,
         isLoggingOut: false,
         expiresAt: null,
         login: (user, expiresAt = null) => {
-          set({ user, isAuthenticated: true, expiresAt, isSessionExpired: false, isLocked: false, isLoggingOut: false });
+          set({
+            user,
+            isAuthenticated: true,
+            expiresAt,
+            isSessionExpired: false,
+            isAccessDenied: false,
+            isLocked: false,
+            isLoggingOut: false,
+          });
         },
         logout: (onLogout) => {
           if (onLogout) onLogout();
           if (options.onLogout) options.onLogout();
           
-          set({ user: null, isAuthenticated: false, expiresAt: null, isLocked: false, isLoggingOut: false });
+          set({
+            user: null,
+            isAuthenticated: false,
+            expiresAt: null,
+            isSessionExpired: false,
+            isAccessDenied: false,
+            isLocked: false,
+            isLoggingOut: false,
+          });
         },
         lock: () => set({ isLocked: true }),
         unlock: () => set({ isLocked: false }),
         setInitialized: (val) => set({ initialized: val }),
-        setSessionExpired: (val) => set({ isSessionExpired: val }),
+        setSessionExpired: (val) => set((state) => ({
+          isSessionExpired: val,
+          isAccessDenied: val ? false : state.isAccessDenied,
+        })),
+        setAccessDenied: (val) => set((state) => ({
+          isAccessDenied: val,
+          isSessionExpired: val ? false : state.isSessionExpired,
+        })),
         setLoggingOut: (val) => set({ isLoggingOut: val }),
         completeOnboarding: () => 
           set((state) => ({

@@ -27,6 +27,16 @@ class RetryableStatusError extends Error {
   }
 }
 
+export class ApiRequestError extends Error {
+  status: number;
+
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = 'ApiRequestError';
+    this.status = status;
+  }
+}
+
 export interface RetryOptions {
   maxRetries?: number;
   delay?: number;
@@ -258,7 +268,7 @@ export class FetchClient {
         const event = new CustomEvent('auth:forbidden', { cancelable: true });
         window.dispatchEvent(event);
       }
-      throw new Error(errorMessage);
+      throw new ApiRequestError(response.status, errorMessage);
     }
 
     // Capture request id and performance metrics for correlation

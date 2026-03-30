@@ -9,6 +9,7 @@ interface AuthSyncOptions {
   isLocked?: boolean;
   logout: () => void;
   onUnauthorized?: (e: Event) => void;
+  onForbidden?: (e: Event) => void;
 }
 
 /**
@@ -18,9 +19,10 @@ interface AuthSyncOptions {
 export function useAuthSync({ 
   portal, 
   isAuthenticated, 
-  isLocked = false, 
+  isLocked = false,
   logout,
-  onUnauthorized 
+  onUnauthorized,
+  onForbidden
 }: AuthSyncOptions) {
   
   useEffect(() => {
@@ -39,10 +41,20 @@ export function useAuthSync({
      logout();
   }, [logout, onUnauthorized]);
 
+  const handleForbidden = useCallback((e: Event) => {
+    if (onForbidden) {
+      onForbidden(e);
+    }
+  }, [onForbidden]);
+
   useEffect(() => {
     window.addEventListener('auth:unauthorized', handleUnauthorized);
-    return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
-  }, [handleUnauthorized]);
+    window.addEventListener('auth:forbidden', handleForbidden);
+    return () => {
+      window.removeEventListener('auth:unauthorized', handleUnauthorized);
+      window.removeEventListener('auth:forbidden', handleForbidden);
+    };
+  }, [handleForbidden, handleUnauthorized]);
 
   return {
     handleUnauthorized

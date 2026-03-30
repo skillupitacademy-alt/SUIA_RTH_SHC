@@ -1,7 +1,7 @@
 'use client';
 
 import { Eye, EyeOff, Lock, Mail, ShieldCheck } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { type FormEvent, useState } from 'react';
 
 import { useAuthStore } from '@/store/auth-store';
@@ -40,6 +40,7 @@ function readResponseMessage(value: unknown): string | null {
 
 function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const portalIdentity =
     typeof window === 'undefined' ? 'admin' : getPortalIdentityFromHostname(window.location.hostname);
   const [showPassword, setShowPassword] = useState(false);
@@ -50,6 +51,13 @@ function LoginForm() {
     password: '',
   });
   const authLogin = useAuthStore((s) => s.login);
+  const loginReason = searchParams.get('reason');
+  const loginNotice =
+    loginReason === 'access_denied'
+      ? 'Access denied: this account is not permitted for this portal.'
+      : loginReason === 'session_expired'
+        ? 'Your session expired. Please sign in again to continue.'
+        : null;
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -146,10 +154,10 @@ function LoginForm() {
         <p className="text-sm text-muted-foreground">Authenticate to access the governance terminal.</p>
       </div>
 
-      {error ? (
+      {error || loginNotice ? (
         <div className="mb-6 flex items-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm font-bold text-red-600">
           <ShieldCheck size={16} />
-          {error}
+          {error || loginNotice}
         </div>
       ) : null}
 
