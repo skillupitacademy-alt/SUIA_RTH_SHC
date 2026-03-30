@@ -1,6 +1,7 @@
 'use client';
 
 import { apiClient } from "@quiz/api-client";
+import { ApiRequestError } from "@quiz/api-client/core/fetch-client";
 import { ZLoader, ZSkeleton } from "@quiz/ui";
 import type { EChartsOption } from "echarts";
 import { BarChart3, BrainCircuit, Layers, Microscope, PieChart as PieChartIcon, ShieldCheck, TrendingDown } from "lucide-react";
@@ -48,8 +49,10 @@ export default function AdminIntelligencePage() {
             setTutorData(json);
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : "Unknown error";
-            if (errorMessage.includes("401") || errorMessage.includes("403")) {
-                toast.error("Session expired or unauthorized. Please re-login.");
+            if (err instanceof ApiRequestError && err.status === 401) {
+                toast.error("Session expired. Please sign in again.");
+            } else if (err instanceof ApiRequestError && err.status === 403) {
+                toast.error("Access denied: this account is not permitted for this portal.");
             } else {
                 toast.error(`Metrics fetch failed (${errorMessage})`);
             }

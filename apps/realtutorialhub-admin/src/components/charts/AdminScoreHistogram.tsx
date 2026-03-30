@@ -1,6 +1,7 @@
 "use client";
 
 import { apiClient, ScoreHistogramResponse } from "@quiz/api-client";
+import { ApiRequestError } from "@quiz/api-client/core/fetch-client";
 import type { EChartsOption } from "echarts";
 import { useEffect, useState } from "react";
 
@@ -26,7 +27,9 @@ export default function AdminScoreHistogram() {
                 setData(res);
             } catch (err: unknown) {
                 clientLogger.error("Failed to load score histogram", { error: err instanceof Error ? err.message : 'unknown' });
-                setForbidden(true);
+                if (err instanceof ApiRequestError && err.status === 403) {
+                    setForbidden(true);
+                }
             } finally {
                 setLoading(false);
             }

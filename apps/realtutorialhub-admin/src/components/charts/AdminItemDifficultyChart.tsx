@@ -1,6 +1,7 @@
 "use client";
 
 import { apiClient, ItemDifficultyResponse } from "@quiz/api-client";
+import { ApiRequestError } from "@quiz/api-client/core/fetch-client";
 import type { EChartsOption } from "echarts";
 import type { CallbackDataParams } from "echarts/types/dist/shared";
 import { useEffect, useState } from "react";
@@ -26,7 +27,9 @@ export default function AdminItemDifficultyChart() {
                 setData(res);
             } catch (err: unknown) {
                 clientLogger.error("Failed to load item difficulty", { error: err instanceof Error ? err.message : "unknown" });
-                setForbidden(true);
+                if (err instanceof ApiRequestError && err.status === 403) {
+                    setForbidden(true);
+                }
             } finally {
                 setLoading(false);
             }
