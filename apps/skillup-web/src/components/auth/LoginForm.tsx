@@ -21,13 +21,25 @@ function getDestination(redirectParam: string | null): string {
   return '/student';
 }
 
+function getReasonBanner(reason: string | null): string | null {
+  if (reason === 'access_denied') {
+    return 'Access denied: this account is not permitted for this portal.';
+  }
+
+  if (reason === 'session_expired') {
+    return 'Your session expired. Sign in again to continue.';
+  }
+
+  return null;
+}
+
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [formState, setFormState] = useState<FormState>({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [message, setMessage] = useState<string | null>(
-    searchParams.get('reason') === 'session_expired' ? 'Your session expired. Sign in again to continue.' : null,
+    getReasonBanner(searchParams.get('reason')),
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const authLogin = useSkillupAuthStore((state) => state.login);
@@ -69,7 +81,11 @@ export function LoginForm() {
       };
 
       if (!response.ok) {
-        throw new Error(payload.error?.message ?? payload.message ?? 'Unable to sign in.');
+        const fallback =
+          response.status === 403
+            ? 'Access denied: this account is not permitted for this portal.'
+            : 'Unable to sign in.';
+        throw new Error(payload.error?.message ?? payload.message ?? fallback);
       }
 
       if (payload.user) {
