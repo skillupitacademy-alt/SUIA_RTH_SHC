@@ -8,6 +8,10 @@ import { useAuthStore } from '@/store/auth-store';
 import { clientLogger } from '@/utils/clientLogger';
 
 const normalizeRole = (value: string | null | undefined) => (typeof value === 'string' ? value.toLowerCase() : '');
+const isAdminEquivalentRole = (value: string | null | undefined) => {
+    const role = normalizeRole(value);
+    return role === 'admin' || role === 'super_admin' || role === 'infrastructure';
+};
 
 export function AdminGuard({ children }: { children: React.ReactNode }) {
     const { user, isAuthenticated, initialized, login, logout, expiresAt, isLocked, setAccessDenied } = useAuthStore(
@@ -86,7 +90,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         if (initialized === false) return;
 
-        const hasAdminRole = user?.role === 'admin' || user?.role === 'super_admin';
+        const hasAdminRole = isAdminEquivalentRole(user?.role);
 
         if (isAuthenticated === false && pathname !== '/login') {
             router.push('/login?reason=session_expired');
@@ -102,7 +106,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
         const revalidate = async () => {
             try {
                 const { user: validatedUser, expiresAt: validatedExpiresAt } = await apiClient.auth.getAdminSession();
-                const validatedHasAdminRole = validatedUser?.role === 'admin' || validatedUser?.role === 'super_admin';
+                const validatedHasAdminRole = isAdminEquivalentRole(validatedUser?.role);
                 if (validatedUser === null || validatedUser === undefined || validatedHasAdminRole === false) throw new Error("Revoked");
 
                 // Only update if the stable session fields actually changed.
@@ -135,7 +139,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
         return <>{children}</>;
     }
 
-    const hasAdminRole = user?.role === 'admin' || user?.role === 'super_admin';
+    const hasAdminRole = isAdminEquivalentRole(user?.role);
 
     if (initialized === false || isAuthenticated === false || hasAdminRole === false) {
         return (
