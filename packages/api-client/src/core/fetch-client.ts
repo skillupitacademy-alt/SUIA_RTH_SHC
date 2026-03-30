@@ -222,10 +222,10 @@ export class FetchClient {
         }
       }
 
-      // 401/403 Auto-Refresh
+      // 401 Auto-Refresh
       const shouldBypassAutoRefresh = AUTH_REFRESH_BYPASS_ENDPOINTS.has(endpoint.split('?')[0]);
 
-      if ((response.status === 401 || response.status === 403) && !options._isRetry && endpoint !== '/auth/refresh' && !shouldBypassAutoRefresh) {
+      if (response.status === 401 && !options._isRetry && endpoint !== '/auth/refresh' && !shouldBypassAutoRefresh) {
         try {
           if (!globalRefreshPromise) {
             globalRefreshPromise = this.performRequest('/auth/refresh', { method: 'POST', _isRetry: true });
@@ -238,7 +238,7 @@ export class FetchClient {
         }
       }
 
-      if (response.status === 401 || response.status === 403) {
+      if (response.status === 401) {
         if (typeof window !== 'undefined') {
           const event = new CustomEvent('auth:unauthorized', { cancelable: true });
           const shouldRedirect = window.dispatchEvent(event);
@@ -251,10 +251,12 @@ export class FetchClient {
           if (shouldRedirect && !isLoginPage && !isAlreadyRedirecting) {
             (window as any).__authRedirecting = true;
             const redirectUrl = encodeURIComponent(currentPath + search);
-            const reason = response.status === 401 ? 'session_expired' : 'unauthorized';
-            window.location.href = `/login?redirect=${redirectUrl}&reason=${reason}`;
+            window.location.href = `/login?redirect=${redirectUrl}&reason=session_expired`;
           }
         }
+      } else if (response.status === 403 && typeof window !== 'undefined') {
+        const event = new CustomEvent('auth:forbidden', { cancelable: true });
+        window.dispatchEvent(event);
       }
       throw new Error(errorMessage);
     }

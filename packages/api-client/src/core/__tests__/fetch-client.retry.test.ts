@@ -134,4 +134,20 @@ describe('Core: FetchClient Resilience (Task 101, 102)', () => {
         expect(mockFetch).toHaveBeenCalledTimes(1);
         expect(mockFetch.mock.calls[0]?.[0]).toBe('https://api.example.com/admin/auth/me');
     });
+
+    it('should not treat 403 as a session-expired condition', async () => {
+        const mockFetch = vi.mocked(fetch);
+
+        mockFetch.mockResolvedValueOnce({
+            ok: false,
+            status: 403,
+            statusText: 'Forbidden',
+            headers: headers(),
+            json: () => Promise.resolve({ error: 'Forbidden' }),
+        } as Response);
+
+        await expect(client.get('/dashboard')).rejects.toThrow('Forbidden');
+
+        expect(mockFetch).toHaveBeenCalledTimes(1);
+    });
 });
