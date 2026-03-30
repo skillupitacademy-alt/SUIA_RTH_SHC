@@ -88,8 +88,13 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
 
         const hasAdminRole = user?.role === 'admin' || user?.role === 'super_admin';
 
-        if ((isAuthenticated === false || hasAdminRole === false) && pathname !== '/login') {
-            router.push('/login');
+        if (isAuthenticated === false && pathname !== '/login') {
+            router.push('/login?reason=session_expired');
+            return;
+        }
+
+        if (hasAdminRole === false && pathname !== '/login') {
+            router.push('/login?reason=access_denied');
             return;
         }
 
@@ -111,7 +116,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
                 if (err instanceof Error && (err.message.includes('Invalid token') || err.message.includes('signature') || err.message.includes('jwt'))) {
                     clientLogger.warn("Detected invalid token, forcing logout...");
                     logout();
-                    router.push('/login');
+                    router.push('/login?reason=session_expired');
                 }
             }
         };

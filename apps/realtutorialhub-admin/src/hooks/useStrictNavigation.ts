@@ -1,4 +1,4 @@
-import { usePathname,useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { useAuthStore } from '@/store/auth-store';
@@ -28,7 +28,7 @@ export function useStrictNavigation() {
 
     const confirmLogout = () => {
         logout();
-        router.push('/login');
+        router.push('/login?reason=session_expired');
     };
 
     const cancelNavigation = () => {
