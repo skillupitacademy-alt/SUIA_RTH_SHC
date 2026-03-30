@@ -148,7 +148,7 @@ As per @[docs/claude-scalable-architecture/PHASE-1-CRITICAL-FOUNDATION.md]please
 
 *Viewed [setup.ts](file:///d:/onlinewebsites/quiz-platform/apps/api-server/src/test/setup.ts) *
 
-*Viewed [ci.yml](file:///d:/onlinewebsites/quiz-platform/.github/workflows/ci.yml) *
+*Viewed [quality.yml](file:///d:/onlinewebsites/quiz-platform/.github/workflows/quality.yml) *
 
 *Viewed [middleware.ts](file:///d:/onlinewebsites/quiz-platform/apps/web-app/src/middleware.ts) *
 
@@ -1281,7 +1281,7 @@ Please check the codebase do above task completed As per  @PHASE-1-CRITICAL-FOUN
 
 *Viewed [mock-redis.ts](file:///d:/onlinewebsites/quiz-platform/apps/api-server/src/__test-utils__/mock-redis.ts) *
 
-*Viewed [ci.yml](file:///d:/onlinewebsites/quiz-platform/.github/workflows/ci.yml) *
+*Viewed [quality.yml](file:///d:/onlinewebsites/quiz-platform/.github/workflows/quality.yml) *
 
 *Searched filesystem*
 
@@ -1619,7 +1619,7 @@ yes please so what is finally decided?
 
 Do priority 4 can be implemented as discussed since my github repo is working on FREE TIER PLAN? WE ARE IN PLAANING PHASE NOT IMPLEMENTATION PHASE SO DONT START CODING 
 
-*Viewed [ci.yml](file:///d:/onlinewebsites/quiz-platform/.github/workflows/ci.yml) *
+*Viewed [quality.yml](file:///d:/onlinewebsites/quiz-platform/.github/workflows/quality.yml) *
 
 *User accepted the command `git remote -v`*
 
@@ -1707,17 +1707,17 @@ Good. Now I need to check the *specific route segments* that the prompts demand 
 
 *Listed directory [.github](file:///d:/onlinewebsites/quiz-platform/.github) *
 
-*Viewed [ci.yml](file:///d:/onlinewebsites/quiz-platform/.github/workflows/ci.yml) *
+*Viewed [quality.yml](file:///d:/onlinewebsites/quiz-platform/.github/workflows/quality.yml) *
 
 ### Planner Response
 
-Now let me check the remaining CI/DevOps files and also verify the [dependabot.yml](cci:7://file:///d:/onlinewebsites/quiz-platform/.github/dependabot.yml:0:0-0:0), [CODEOWNERS](cci:7://file:///d:/onlinewebsites/quiz-platform/.github/CODEOWNERS:0:0-0:0), [security.yml](cci:7://file:///d:/onlinewebsites/quiz-platform/.github/workflows/security.yml:0:0-0:0), and the stray [ci.yml](cci:7://file:///d:/onlinewebsites/quiz-platform/.github/workflows/ci.yml:0:0-0:0) that was written to a space-prefixed `.github` directory:
+Now let me check the remaining CI/DevOps files and also verify the [dependabot.yml](cci:7://file:///d:/onlinewebsites/quiz-platform/.github/dependabot.yml:0:0-0:0), [CODEOWNERS](cci:7://file:///d:/onlinewebsites/quiz-platform/.github/CODEOWNERS:0:0-0:0), [quality.yml](cci:7://file:///d:/onlinewebsites/quiz-platform/.github/workflows/quality.yml:0:0-0:0), and the stray [quality.yml](cci:7://file:///d:/onlinewebsites/quiz-platform/.github/workflows/quality.yml:0:0-0:0) that was written to a space-prefixed `.github` directory:
 
 *Viewed [dependabot.yml](file:///d:/onlinewebsites/quiz-platform/.github/dependabot.yml) *
 
 *Viewed [CODEOWNERS](file:///d:/onlinewebsites/quiz-platform/.github/CODEOWNERS) *
 
-*Viewed [security.yml](file:///d:/onlinewebsites/quiz-platform/.github/workflows/security.yml) *
+*Viewed [quality.yml](file:///d:/onlinewebsites/quiz-platform/.github/workflows/quality.yml) *
 
 *Viewed [pull_request_template.md](file:///d:/onlinewebsites/quiz-platform/.github/pull_request_template.md) *
 
@@ -1915,7 +1915,7 @@ Good — Tasks 1-12 (Testing) verified. Now let me check the remaining service t
 
 *Grep searched codebase*
 
-*Viewed [ci.yml](file:///d:/onlinewebsites/quiz-platform/.github/workflows/ci.yml) *
+*Viewed [quality.yml](file:///d:/onlinewebsites/quiz-platform/.github/workflows/quality.yml) *
 
 ### Planner Response
 
@@ -2216,9 +2216,9 @@ There it is — `.github_temp` exists. Let me check what's inside:
 
 Found it. Here's the explanation:
 
-**`.github_temp`** contains an **old version** of [ci.yml](cci:7://file:///d:/onlinewebsites/quiz-platform/.github/workflows/ci.yml:0:0-0:0) (3,376 bytes). This was likely created by the previous Gemini session as a temporary staging area before writing the final CI workflow to the real `.github/` folder. It was simply never cleaned up.
+**`.github_temp`** contains an **old version** of [quality.yml](cci:7://file:///d:/onlinewebsites/quiz-platform/.github/workflows/quality.yml:0:0-0:0) (3,376 bytes). This was likely created by the previous Gemini session as a temporary staging area before writing the final CI workflow to the real `.github/` folder. It was simply never cleaned up.
 
-Here's the proof: the [ci.yml](cci:7://file:///d:/onlinewebsites/quiz-platform/.github/workflows/ci.yml:0:0-0:0) inside `.github_temp` is **3,376 bytes** — which matches the size of the **old CI file** before I rewrote it today (the current one in [.github/workflows/ci.yml](cci:7://file:///d:/onlinewebsites/quiz-platform/.github/workflows/ci.yml:0:0-0:0) is **4,173 bytes** with all the fixes).
+Here's the proof: the [quality.yml](cci:7://file:///d:/onlinewebsites/quiz-platform/.github/workflows/quality.yml:0:0-0:0) inside `.github_temp` is **3,376 bytes** — which matches the size of the **old CI file** before I rewrote it today (the current one in [.github/workflows/quality.yml](cci:7://file:///d:/onlinewebsites/quiz-platform/.github/workflows/quality.yml:0:0-0:0) is **4,173 bytes** with all the fixes).
 
 **Bottom line:** `.github_temp` is a stale leftover. Only `.github/` matters — that's what GitHub actually reads. The `_temp` folder has **no effect** on anything.
 

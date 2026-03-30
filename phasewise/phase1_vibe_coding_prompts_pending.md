@@ -313,7 +313,7 @@ Write a brief usage comment at the top of the file:
 ### PROMPT 4A — CI Parallelization & Coverage Artifacts (Tasks 15, 18, 19)
 
 ```
-You are working on: .github/workflows/ci.yml
+You are working on: .github/workflows/quality.yml
 
 Read the current file. It runs all steps sequentially in one job called "quality-gates".
 
@@ -439,7 +439,7 @@ updates:
 ### PROMPT 4C — Security Scanning Workflow (Task 22)
 
 ```
-Create a new file: .github/workflows/security.yml
+Create a new file: .github/workflows/quality.yml
 
 name: Security
 

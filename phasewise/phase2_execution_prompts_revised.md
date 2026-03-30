@@ -884,7 +884,7 @@
 
 **CF-2**: Enhance `packages/db/seed-enterprise.ts` with: 5 students, 2 admins, 3 domains, 100 questions, 10 exams with scores.
 
-**CF-3**: Add `bundle-check` job to `.github/workflows/ci.yml` — runs `ANALYZE=true pnpm build:all`, checks size against 500KB budget.
+**CF-3**: Add `bundle-check` job to `.github/workflows/quality.yml` — runs `ANALYZE=true pnpm build:all`, checks size against 500KB budget.
 
 **CF-4**: Add `preview-check` CI job — waits for Vercel preview, runs health check curl, reports on PR.
 

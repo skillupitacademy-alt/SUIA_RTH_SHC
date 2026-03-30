@@ -111,7 +111,7 @@ The audit identified 4 missing indexes. 26 indexes already exist. These 4 are ne
 
 ### Prompt
 
-> Open `.github/workflows/ci.yml`.
+> Open `.github/workflows/quality.yml`.
 >
 > Read the existing job structure to understand the pattern (job names, Node.js version, caching strategy, etc.).
 >
