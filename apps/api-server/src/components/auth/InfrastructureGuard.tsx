@@ -1,6 +1,7 @@
 'use client';
 
 import { apiClient } from '@quiz/api-client';
+import { ApiRequestError } from '@quiz/api-client/core/fetch-client';
 import { ZLoader } from '@quiz/ui';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect } from 'react';
@@ -41,7 +42,7 @@ export function InfrastructureGuard({ children }: { children: React.ReactNode })
             // silent fail
         } finally {
             logout();
-            _router.push('/login');
+            _router.push('/login?reason=session_expired');
             setIsLoggingOut(false);
         }
     }, [isLoggingOut, logout, _router, setIsLoggingOut]);
@@ -50,19 +51,29 @@ export function InfrastructureGuard({ children }: { children: React.ReactNode })
         try {
             const { user: refreshedUser, expiresAt: newExpiry } = await apiClient.auth.getAdminSession();
             login(refreshedUser, newExpiry);
-        } catch {
+        } catch (error) {
+            if (error instanceof ApiRequestError && error.status === 403) {
+                logout();
+                _router.push('/login?reason=access_denied');
+                return;
+            }
             await handleLogout();
         }
-    }, [handleLogout, login]);
+    }, [handleLogout, login, logout, _router]);
 
     useEffect(() => {
         if (initialized === false || isLoggingOut === true) return;
 
         // Strict Check: Only 'infrastructure' role allowed
         const userRole = _user?.role ?? null;
-        if (isAuthenticated === false || userRole !== 'infrastructure') {
+        if (isAuthenticated === false) {
+            console.warn('[InfrastructureGuard] No active session. Redirecting to login.');
+            void _router.push('/login?reason=session_expired');
+            return;
+        }
+        if (userRole !== 'infrastructure') {
             console.warn('[InfrastructureGuard] Unauthorized role attempt. Redirecting to login.', { user: _user?.email });
-            void _router.push('/login');
+            void _router.push('/login?reason=access_denied');
             return;
         }
 
@@ -81,6 +92,11 @@ export function InfrastructureGuard({ children }: { children: React.ReactNode })
                     { error: _err instanceof Error ? _err.message : 'unknown error' },
                     '[InfrastructureGuard] Executive handshake failed',
                 );
+                if (_err instanceof ApiRequestError && _err.status === 403) {
+                    logout();
+                    _router.push('/login?reason=access_denied');
+                    return;
+                }
                 const msg = _err instanceof Error ? _err.message : '';
                 if (msg.includes('Invalid _token') || msg.includes('signature') || msg.includes('jwt') || msg === "REVOKED_ACCESS_PERMIT" || msg.includes('Unauthorized')) {
                     await handleLogout();
@@ -95,9 +111,19 @@ export function InfrastructureGuard({ children }: { children: React.ReactNode })
             void handleLogout();
         };
 
+        const handleForbidden = () => {
+            console.warn('[InfrastructureGuard] Circuit breaker: 403 detected. Access denied.');
+            logout();
+            _router.push('/login?reason=access_denied');
+        };
+
         window.addEventListener('auth:unauthorized', handleUnauthorized);
-        return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
-    }, [handleLogout, isAuthenticated, _user, initialized, _router, login, isLoggingOut]);
+        window.addEventListener('auth:forbidden', handleForbidden);
+        return () => {
+            window.removeEventListener('auth:unauthorized', handleUnauthorized);
+            window.removeEventListener('auth:forbidden', handleForbidden);
+        };
+    }, [handleLogout, isAuthenticated, _user, initialized, _router, login, logout, isLoggingOut]);
 
     const currentRole = _user?.role ?? null;
     if (initialized === false || (isAuthenticated === false && !isLoggingOut) || currentRole !== 'infrastructure') {

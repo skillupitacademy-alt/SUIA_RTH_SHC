@@ -132,13 +132,13 @@ export default function Home() {
                                 <span className="stats-value">08<span className="stats-unit">ms</span></span>
                             </div>
                             <button
-                                type="button"
-                                onClick={() => {
-                                    logout();
-                                    router.push('/login');
-                                }}
-                                className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 text-white hover:bg-black transition-all text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-black/10"
-                            >
+                            type="button"
+                            onClick={() => {
+                                logout();
+                                router.push('/login?reason=session_expired');
+                            }}
+                            className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 text-white hover:bg-black transition-all text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-black/10"
+                        >
                                 <LogOut size={14} />
                                 Terminate Session
                             </button>

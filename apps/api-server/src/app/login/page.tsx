@@ -1,9 +1,10 @@
 'use client';
 
 import { apiClient } from '@quiz/api-client';
+import { ApiRequestError } from '@quiz/api-client/core/fetch-client';
 import { ZLoader } from '@quiz/ui';
 import { ArrowRight, Lock, Shield } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 
 import { GuestInfrastructureLayout } from '@/components/layout/GuestInfrastructureLayout';
@@ -11,7 +12,9 @@ import { useAuthStore } from '@/store/auth-store';
 
 export default function LoginPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const login = useAuthStore((state) => state.login);
+    const reason = searchParams.get('reason');
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -36,7 +39,9 @@ export default function LoginPage() {
             login(user, expiresAt);
             void router.push('/');
         } catch (err: unknown) {
-            if (err instanceof Error) {
+            if (err instanceof ApiRequestError && err.status === 403) {
+                setError('ACCESS_DENIED: This account is not permitted for this portal.');
+            } else if (err instanceof Error) {
                 setError(err.message || 'Handshake failed. Verify passkey.');
             } else {
                 setError('Handshake failed. Verify passkey.');
@@ -45,6 +50,13 @@ export default function LoginPage() {
             setIsLoading(false);
         }
     };
+
+    const banner =
+        reason === 'access_denied'
+            ? 'Access denied: this account is not permitted for this portal.'
+            : reason === 'session_expired'
+                ? 'Session expired: please sign in again.'
+                : null;
 
     return (
         <GuestInfrastructureLayout>
@@ -55,6 +67,13 @@ export default function LoginPage() {
                     </h2>
                     <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Provide cryptographic passkey to initialize session.</p>
                 </div>
+
+                {banner !== null && (
+                    <div className="bg-rose-50 border border-rose-100 rounded-2xl p-4 flex items-center gap-3 animate-shake">
+                        <div className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-rose-600">{banner}</span>
+                    </div>
+                )}
 
                 {error !== null && error !== '' && (
                     <div className="bg-rose-50 border border-rose-100 rounded-2xl p-4 flex items-center gap-3 animate-shake">

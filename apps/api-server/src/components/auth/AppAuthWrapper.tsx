@@ -1,6 +1,7 @@
 "use client";
 
 import { apiClient } from '@quiz/api-client';
+import { ApiRequestError } from '@quiz/api-client/core/fetch-client';
 import { useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 
@@ -25,6 +26,11 @@ export function AppAuthWrapper({ children }: { children: React.ReactNode }) {
             const { user: validatedUser } = await apiClient.auth.getAdminSession();
             login(validatedUser, newExpiry);
         } catch (error) {
+            if (error instanceof ApiRequestError && error.status === 403) {
+                logout();
+                window.location.href = '/login?reason=access_denied';
+                return;
+            }
             void handleLogout();
             throw error;
         }
@@ -50,8 +56,8 @@ export function AppAuthWrapper({ children }: { children: React.ReactNode }) {
     const sessionWatcher = shouldWatchSession ? (
         <SessionWatcher
             expiresAt={expiresAt}
-            onRefresh={handleRefresh}
-            onLogout={handleLogout}
+            onRefresh={() => { void handleRefresh(); }}
+            onLogout={() => { void handleLogout(); }}
             isRedirecting={isRedirecting}
         />
     ) : null;

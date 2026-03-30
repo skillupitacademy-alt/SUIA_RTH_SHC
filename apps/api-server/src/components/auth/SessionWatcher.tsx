@@ -16,8 +16,8 @@ const DEFAULT_FORCED_IDLE_LOGOUT_MS = 60 * 60 * 1000;
 
 interface SessionWatcherProps {
     expiresAt: string | null;
-    onRefresh: () => Promise<void>;
-    onLogout: () => Promise<void>;
+    onRefresh: () => Promise<void> | void;
+    onLogout: () => Promise<void> | void;
     isRedirecting?: boolean;
 }
 

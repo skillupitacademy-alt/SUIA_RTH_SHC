@@ -1,6 +1,7 @@
 'use client';
 
 import { apiClient } from '@quiz/api-client';
+import { ApiRequestError } from '@quiz/api-client/core/fetch-client';
 import { ZLoader } from '@quiz/ui';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
@@ -23,8 +24,13 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         if (initialized === false) return;
 
-        if (isAuthenticated === false || _user?.isAdmin !== true) {
-            _router.push('/login');
+        if (isAuthenticated === false) {
+            _router.push('/login?reason=session_expired');
+            return;
+        }
+
+        if (_user?.isAdmin !== true) {
+            _router.push('/login?reason=access_denied');
             return;
         }
 
@@ -40,9 +46,14 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
                     { error: _err instanceof Error ? _err.message : 'unknown error' },
                     '[AdminGuard] Session revalidation failed',
                 );
+                if (_err instanceof ApiRequestError && _err.status === 403) {
+                    logout();
+                    _router.push('/login?reason=access_denied');
+                    return;
+                }
                 if (_err instanceof Error && (_err.message.includes('Invalid _token') || _err.message.includes('signature') || _err.message.includes('jwt'))) {
                     logout();
-                    _router.push('/login');
+                    _router.push('/login?reason=session_expired');
                 }
             }
         };
@@ -52,11 +63,21 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
         const handleUnauthorized = () => {
             console.warn('[AdminGuard] Circuit breaker: global 401 detected. Logging out.');
             logout();
-            _router.push('/login');
+            _router.push('/login?reason=session_expired');
+        };
+
+        const handleForbidden = () => {
+            console.warn('[AdminGuard] Circuit breaker: global 403 detected. Access denied.');
+            logout();
+            _router.push('/login?reason=access_denied');
         };
 
         window.addEventListener('auth:unauthorized', handleUnauthorized);
-        return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
+        window.addEventListener('auth:forbidden', handleForbidden);
+        return () => {
+            window.removeEventListener('auth:unauthorized', handleUnauthorized);
+            window.removeEventListener('auth:forbidden', handleForbidden);
+        };
     }, [isAuthenticated, _user, initialized, _router, logout, login]);
 
     if (initialized === false || isAuthenticated === false || _user?.isAdmin !== true) {
