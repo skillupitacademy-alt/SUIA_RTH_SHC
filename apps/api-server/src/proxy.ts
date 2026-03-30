@@ -50,7 +50,7 @@ export async function proxy(request: NextRequest) {
     pathname === '/api/health' ||
     pathname === '/api/health/live' ||
     pathname === '/api/health/ready';
-  const isGatewayExemptRoute = isHealthRoute || isWorkflowRoute;
+  const isGatewayExemptRoute = isHealthRoute || isWorkflowRoute || isAuthRoute;
 
   if (isGatewayExemptRoute === false) {
     if (typeof INTERNAL_GATEWAY_SECRET !== 'string' || INTERNAL_GATEWAY_SECRET.length === 0) {

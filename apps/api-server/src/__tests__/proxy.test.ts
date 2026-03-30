@@ -15,30 +15,36 @@ describe('api-server proxy gateway secret enforcement', () => {
     process.env.INTERNAL_GATEWAY_SECRET = originalSecret;
   });
 
-  it('rejects auth routes without the gateway secret', async () => {
+  it('allows auth routes without the gateway secret', async () => {
     process.env.INTERNAL_GATEWAY_SECRET = 'service-gateway-secret';
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
 
     const response = await proxy(new NextRequest('http://localhost/api/auth/login'));
 
-    expect(response.status).toBe(403);
+    expect(response.status).toBe(200);
+    expect(fetchSpy).not.toHaveBeenCalled();
   });
 
-  it('rejects auth routes when the gateway secret is not configured', async () => {
+  it('allows auth routes when the gateway secret is not configured', async () => {
     delete process.env.INTERNAL_GATEWAY_SECRET;
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
 
     const response = await proxy(new NextRequest('http://localhost/api/auth/login'));
 
-    expect(response.status).toBe(403);
+    expect(response.status).toBe(200);
+    expect(fetchSpy).not.toHaveBeenCalled();
   });
 
   it('allows auth routes with the gateway secret', async () => {
     process.env.INTERNAL_GATEWAY_SECRET = 'service-gateway-secret';
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
 
     const response = await proxy(new NextRequest('http://localhost/api/auth/login', {
       headers: { 'x-gateway-secret': 'service-gateway-secret' },
     }));
 
     expect(response.status).toBe(200);
+    expect(fetchSpy).not.toHaveBeenCalled();
   });
 
   it('rejects status routes without the gateway secret', async () => {
