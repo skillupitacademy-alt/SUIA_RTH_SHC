@@ -892,7 +892,7 @@ All traffic routes through gateway.
 
 Step 1 — Deploy SkillHubCore to GCP Cloud Run
 Dockerfile for services/skillhubcore/
-Add to GitHub Actions: deploy-skillhubcore.yml
+Add to GitHub Actions: deploy-cloudrun.yml
 Cloud Run URL: skillhubcore-[hash].asia-south1.run.app
 Update Cloudflare DNS: api.skillhubcore.in → skillhubcore GCP URL
 
@@ -1108,3 +1108,4 @@ Window 3: feat(skillhubcore|skillup): description — Sprint N
 *Based on: ADR-CRITICAL-001, PHASE-T1-T6, PHASE-SKILLHUBCORE, PHASE-INFRA-GATEWAY,*
 *PHASE-SMS, PHASE-FMS, content-json-schema, domain_specific_content_generation_framework,*
 *Universal_Content_Generator_Architecture, PROJECT_STATUS, NEXT_ACTION, GCP_CHUNK7_PROMPT*
+

@@ -1142,7 +1142,7 @@ File: apps/realtutorialhub-web/src/app/api/healthz/route.ts
   GET /api/healthz → { status: 'ok', service: 'realtutorialhub-web', ts: Date.now() }
 
 STEP 3: Create GitHub Actions workflow
-File: .github/workflows/deploy-realtutorialhub-web.yml
+File: .github/workflows/deploy-cloudrun.yml
 
 Trigger:
   push to main
@@ -1308,7 +1308,7 @@ PII: never log password or full token
 ━━━ PART 5: DEPLOY ━━━
 
 Add Dockerfile to apps/skillhubcore-service/
-Create .github/workflows/deploy-skillhubcore.yml
+Create .github/workflows/deploy-cloudrun.yml
 Deploy to GCP Cloud Run asia-south1
 Add DNS: api.skillhubcore.in → Cloud Run URL
 
@@ -1984,3 +1984,4 @@ Architecture checks (review manually):
 
 *Kit version: 1.0 | 16 steps | Window 2 backend → Window 3 backend → UI/UX*
 *Architecture-first — UI polish only after all backend verified*
+

@@ -603,7 +603,7 @@ apps/skillhubcore-admin/src/app/(admin)/
 
 **Missing:**
 ```
-.github/workflows/deploy-skillhubcore.yml
+.github/workflows/deploy-cloudrun.yml
   → on push to main:
     docker build services/skillhubcore-service/
     push to GCP Artifact Registry
@@ -694,3 +694,4 @@ MAINTENANCE WINDOW (infrastructure):
 | SkillHubCore JWT | packages/auth verifies locally — other services NEVER call SkillHubCore to validate |
 | soft-delete | deleted_at IS NULL on every hot query (after Tier 2) |
 | Design | RTH glassmorphism is source of truth. SkillUp = cyan #0ea5e9 swap only. |
+

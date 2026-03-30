@@ -13,7 +13,7 @@
 
 ### Implementation Steps
 
-1. **Create** `.github/workflows/bundle-analysis.yml` (or add job to existing `ci.yml`):
+1. **Create** `.github/workflows/bundle-analysis.yml` (or add job to existing `quality.yml`):
 
    ```yaml
    bundle-check:
@@ -122,3 +122,4 @@ Not applied to any engine queries yet.
 3. **Add comment** per index explaining which query pattern it optimizes
 4. **Generate** migration: `pnpm drizzle-kit generate`
 5. **Do NOT** auto-run the migration — review the generated SQL first
+

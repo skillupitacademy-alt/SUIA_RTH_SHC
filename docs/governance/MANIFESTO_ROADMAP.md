@@ -323,7 +323,7 @@ echo "npx lint-staged" > .husky/pre-commit
 
 ### B2: Upgrade CI Pipeline (Session 2)
 
-**Current State**: GitHub Actions exists at `.github/workflows/ci.yml` with:
+**Current State**: GitHub Actions exists at `.github/workflows/quality.yml` with:
 - ✅ Lint (all apps)
 - ✅ Type-check (all apps)
 - ✅ Build (all apps)
@@ -331,7 +331,7 @@ echo "npx lint-staged" > .husky/pre-commit
 - ❌ No E2E smoke
 - ❌ No coverage reports
 
-**Upgrade `ci.yml`**:
+**Upgrade `quality.yml`**:
 ```yaml
 name: CI
 
@@ -1247,7 +1247,7 @@ Tests are purely additive — they never change production code.
 | 7 | **C1** | Install vitest in all 3 apps. Create `vitest.config.ts`. Add `"test"` scripts. | ⚪ None (dev deps only) | `pnpm test:all` runs (0 tests, 0 failures) |
 | 8 | **C2-T1** | Write 6 Tier-1 critical unit tests (auth, scoring, exam). Tests mock the DB — they don't touch it. | ⚪ None | All 6 tests pass |
 | 9 | **C2-T2** | Write 8 Tier-2 high-priority unit tests (rbac, cache, reports). | ⚪ None | All 14 tests pass |
-| 10 | **B2** | Upgrade `ci.yml` to add the unit test gate. CI now runs: lint → typecheck → **test** → build. | ⚪ None | CI passes on push |
+| 10 | **B2** | Upgrade `quality.yml` to add the unit test gate. CI now runs: lint → typecheck → **test** → build. | ⚪ None | CI passes on push |
 
 > **✅ CHECKPOINT 2**: After Session 10, you have 14 unit tests, pre-commit hooks, and CI runs tests automatically. Production is untouched.
 
@@ -1524,3 +1524,4 @@ But with `349 files`, `175 components`, `78 API routes`, and **real users taking
 ---
 
 *Document last updated: 2026-02-17 18:00 IST*
+

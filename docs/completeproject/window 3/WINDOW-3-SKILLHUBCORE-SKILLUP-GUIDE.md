@@ -278,7 +278,7 @@ Read SHC-8-A-01 from SKILLHUBCORE-EXECUTION-PLAN.md.
 
 Dockerfile: multi-stage Node.js 20 Alpine
 Cloud Run: min 2 instances (auth CANNOT cold-start)
-GitHub Actions: deploy-skillhubcore.yml
+GitHub Actions: deploy-cloudrun.yml
 Smoke test: GET https://api.skillhubcore.in/healthz → 200
 
 After deployment verify:
@@ -572,3 +572,4 @@ Commit: "feat(infra): GW-1 — API Gateway on Cloudflare Workers"
 | SKU-9 certification | `PHASE-SMS-ALL-PHASES.md` + `PHASE-FMS-ALL-PHASES.md` |
 | GW-1 gateway | `GATEWAY-RTH-WEB-EXECUTION-PLAN.md` + `PHASE-INFRA-GATEWAY.md` |
 | Admin security | `biometric_guard_prompt.md` |
+

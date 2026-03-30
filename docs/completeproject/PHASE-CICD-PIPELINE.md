@@ -31,7 +31,7 @@ On every push / PR:
 ## Part 2: Main CI Workflow
 
 ```yaml
-# .github/workflows/ci.yml
+# .github/workflows/quality.yml
 name: CI
 
 on:
@@ -344,3 +344,4 @@ STRIPE_SECRET_KEY
 ---
 
 *Phase: CI/CD | Status: Ready*
+

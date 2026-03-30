@@ -532,7 +532,7 @@ platform-root/                          ← pnpm + Turborepo monorepo
 │
 └── .github/
     └── workflows/
-        ├── ci.yml                     ← Per-service parallel CI
+        ├── quality.yml                     ← Per-service parallel CI
         ├── deploy-gateway.yml
         ├── deploy-student-faculty.yml
         ├── deploy-exam.yml
@@ -933,3 +933,4 @@ SPRINT 8 — Integration + Hardening (Week 27-30)
 
 *Blueprint Version: 1.0 | Status: Architecture Locked | Ready for Sprint 0*
 *All decisions confirmed. No multi-tenancy. B2C direct. BYJU's model. Global.*
+

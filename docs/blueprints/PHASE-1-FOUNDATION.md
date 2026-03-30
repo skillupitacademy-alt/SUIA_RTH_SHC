@@ -398,7 +398,7 @@
 
 > I need a GitHub Actions CI workflow for my Quiz Platform pnpm monorepo. The monorepo uses pnpm@9.15.4, Node 20.x, and Turborepo.
 >
-> Create `.github/workflows/ci.yml` with the following pipeline stages that run on every push and pull request to `main`:
+> Create `.github/workflows/quality.yml` with the following pipeline stages that run on every push and pull request to `main`:
 >
 > **Stage 1 — Setup:**
 > - Checkout code
@@ -487,7 +487,7 @@
 
 **AI Prompt:**
 
-> I need to update the GitHub Actions CI workflow (`.github/workflows/ci.yml` created in Task 15) to include proper test execution with coverage reporting.
+> I need to update the GitHub Actions CI workflow (`.github/workflows/quality.yml` created in Task 15) to include proper test execution with coverage reporting.
 >
 > Update the `test` job in the CI workflow to:
 >
@@ -521,7 +521,7 @@
 
 > I need to update the GitHub Actions CI workflow to ensure the build step properly verifies all 3 apps and 2 packages build successfully.
 >
-> Update the `build` job in `.github/workflows/ci.yml`:
+> Update the `build` job in `.github/workflows/quality.yml`:
 >
 > 1. The build job should depend on lint, type-check, and test jobs all passing
 >
@@ -621,7 +621,7 @@
 
 > I need to add security vulnerability scanning to my Quiz Platform CI pipeline.
 >
-> Create `.github/workflows/security.yml` with these jobs:
+> Create `.github/workflows/quality.yml` with these jobs:
 >
 > **1. Dependency Audit (runs on every PR and weekly schedule):**
 > - Run `pnpm audit --audit-level=high` to check for known vulnerabilities
@@ -1464,3 +1464,4 @@
 ---
 
 *Phase 2 prompts are in `PHASE-2-ARCHITECTURAL-FOUNDATION.md`*
+

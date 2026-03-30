@@ -694,7 +694,7 @@ Run pnpm typecheck:all and pnpm build:all → pass.
 
 #### SHC-8-A-01 · Dockerfile + GCP Cloud Run deployment · `INFRA` · M
 
-- **File path**: `services/skillhubcore-service/Dockerfile` + `.github/workflows/deploy-skillhubcore.yml`
+- **File path**: `services/skillhubcore-service/Dockerfile` + `.github/workflows/deploy-cloudrun.yml`
 
 **▶ AI PROMPT**
 ```
@@ -705,7 +705,7 @@ Create GCP Cloud Run deployment for skillhubcore-service.
    EXPOSE 8080
    Min 2 instances configured in Cloud Run (auth cannot cold-start)
 
-2. .github/workflows/deploy-skillhubcore.yml
+2. .github/workflows/deploy-cloudrun.yml
    Trigger: push to main, paths: services/skillhubcore-service/** or packages/db-people/**
    Steps:
      - Checkout, pnpm install
@@ -749,3 +749,4 @@ GitHub Secrets needed (add to NEXT_ACTION.md):
 □ pnpm test → all 1138+ tests pass
 □ GET /healthz → 200 from GCP URL
 ```
+

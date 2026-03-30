@@ -264,12 +264,9 @@ dig api.skillhubcore.in
 
 | Workflow | Trigger | Status | Notes |
 |----------|---------|--------|-------|
-| `deploy-gcp.yml` | Push to main | ✅ ACTIVE | Deploys RTH apps (api, quiz, admin) |
-| `deploy-skillup.yml` | Push to main | ✅ ACTIVE | Deploys SkillUp apps (web, admin, faculty, shc-admin) |
+| `deploy-cloudrun.yml` | Push to main | ✅ ACTIVE | Deploys the Cloud Run groups: quiz API, quiz web, quiz admin, tutorial web, SkillUp apps, and SkillHubCore service |
 | `deploy-gateway.yml` | Push to main | ✅ ACTIVE | Deploys Cloudflare Worker |
-| `deploy-skillhubcore.yml` | Push to main | ✅ ACTIVE | Deploys SkillHubCore service |
-| `deploy-realtutorialhub-web.yml` | Push to main | ✅ ACTIVE | Deploys RTH tutorial app (Vercel) |
-
+| `quality.yml` | Push / PR | ✅ ACTIVE | Lint, type-check, tests, build, audit, and secret scan |
 ---
 
 ## Action Items
@@ -379,3 +376,4 @@ gcloud run services update-traffic quiz-api-server \
 ---
 
 **END OF DEPLOYMENT CHECKLIST**
+

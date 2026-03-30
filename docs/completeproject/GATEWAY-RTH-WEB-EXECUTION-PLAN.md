@@ -355,7 +355,7 @@ Deploy apps/realtutorialhub-web to GCP Cloud Run.
    Multi-stage Next.js build (same pattern as existing apps/web-app Dockerfile)
    EXPOSE 3000
 
-2. Create .github/workflows/deploy-realtutorialhub-web.yml
+2. Create .github/workflows/deploy-cloudrun.yml
    Trigger: push to main, paths: apps/realtutorialhub-web/** or packages/ui/**
    Steps:
      - Build Docker image
@@ -397,3 +397,4 @@ Verification:
 □ pnpm typecheck:all → zero errors
 □ pnpm test → all 1138+ tests pass
 ```
+

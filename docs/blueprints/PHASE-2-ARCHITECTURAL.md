@@ -2299,7 +2299,7 @@
 
 **AI Prompt:**
 
-> Add a `bundle-check` job to `.github/workflows/ci.yml` that:
+> Add a `bundle-check` job to `.github/workflows/quality.yml` that:
 >
 > 1. Runs `ANALYZE=true pnpm build:all`
 > 2. Checks total JS bundle size against a budget (e.g., 500KB first-load for web-app)
@@ -2316,7 +2316,7 @@
 
 **AI Prompt:**
 
-> Add a `preview-check` job to `.github/workflows/ci.yml` that:
+> Add a `preview-check` job to `.github/workflows/quality.yml` that:
 >
 > 1. Waits for Vercel preview deployment to complete (use `vercel` CLI or webhook)
 > 2. Runs a health check (`curl`) against the preview URL
@@ -2382,3 +2382,4 @@
 ---
 
 *Phase 3 prompts are in `PHASE-3-SCALE-PREPARATION.md`*
+
