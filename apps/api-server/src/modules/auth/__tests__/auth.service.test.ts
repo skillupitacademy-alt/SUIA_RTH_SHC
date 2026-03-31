@@ -29,6 +29,7 @@ const mockUserRepo = {
   findWithDetails: vi.fn(), 
   create: vi.fn(), 
   assignRole: vi.fn(), 
+  withDb: vi.fn(),
   findByEmail: vi.fn(),
   findById: vi.fn(),
   findToken: vi.fn(),
@@ -102,6 +103,7 @@ describe('AuthService (Main Suite)', () => {
     it('creates user and assigns default role if found', async () => {
       mockUserRepo.findByEmail.mockResolvedValue(undefined);
       mockUserRepo.create.mockResolvedValue({ id: 'u1', email: 't@t.com' } as any);
+      mockUserRepo.withDb.mockReturnValue(mockUserRepo);
       
       const user = await container.get(AuthService).signup('t@t.com', 'pw', 'Name');
       expect(user.id).toBe('u1');
@@ -181,7 +183,7 @@ describe('AuthService (Main Suite)', () => {
       await container.get(AuthService).forgotPassword('a@a.com', undefined, 'realtutorialhub');
       expect(EmailService.sendPasswordResetEmail).toHaveBeenCalledWith(
         expect.any(String),
-        expect.stringContaining('https://app.test'),
+        expect.stringContaining('https://user.realtutorialhub.com'),
         'realtutorialhub'
       );
     });

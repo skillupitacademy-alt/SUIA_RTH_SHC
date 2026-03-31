@@ -50,6 +50,20 @@
       "when": 1774591239501,
       "tag": "0006_skillhubcore_subscription_schema",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1774935418558,
+      "tag": "0007_long_sentinels",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1774938098054,
+      "tag": "0008_common_zodiak",
+      "breakpoints": true
     }
   ]
 }

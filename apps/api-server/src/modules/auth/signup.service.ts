@@ -1,3 +1,6 @@
+import { db as realtutorialhubDb, users as realtutorialhubUsers } from '@quiz/db-rth';
+import { db as skillupDb, users as skillupUsers } from '@quiz/db-skillup';
+import { UserIdentityBridgeService } from '@quiz/identity-bridge';
 import crypto from 'crypto';
 
 import { eventBus } from '@/lib/event-bus';
@@ -28,25 +31,50 @@ export class SignupService {
 
     const passwordHash = await this.passwordService.hash(password);
 
-    const { db } = await import('@quiz/db');
-    const newUser = await db.transaction(async (tx) => {
-      const user = await this.userRepo.create({
+    const brandDb = brand === 'skillup' ? skillupDb : realtutorialhubDb;
+    const brandUsers = brand === 'skillup' ? skillupUsers : realtutorialhubUsers;
+    const brandUserRepo = this.userRepo.withDb(brandDb);
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const newUser = await brandDb.transaction(async (tx: any) => {
+      const user = await brandUserRepo.create({
         email,
         passwordHash,
         name,
       }, tx);
 
-      if (this.userRepo.assignRole.length >= 3) {
-        await this.userRepo.assignRole(user.id, 'USER', tx);
+      if (brandUserRepo.assignRole.length >= 3) {
+        await brandUserRepo.assignRole(user.id, 'USER', tx);
       } else {
-        await this.userRepo.assignRole(user.id, 'USER');
+        await brandUserRepo.assignRole(user.id, 'USER');
       }
       return user;
     });
 
     const verificationToken = crypto.randomBytes(32).toString('hex');
     const verificationExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
-    await this.userRepo.createToken(newUser.id, verificationToken, verificationExpiresAt);
+    await brandUserRepo.createToken(newUser.id, verificationToken, verificationExpiresAt);
+
+    try {
+      const bridge = new UserIdentityBridgeService();
+      const result = await bridge.syncUser({
+        externalId: newUser.id,
+        externalBrand: brand,
+        email,
+        platform: brand,
+      });
+
+      await bridge.updateShadowUserId(brandDb, brandUsers, newUser.id, result.shadowUserId);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      await this.auditService.log({
+        userId: newUser.id,
+        action: 'identity_bridge_sync_failed',
+        metadata: { error: message, brand, email },
+        ip,
+      });
+      console.error('Identity bridge sync failed:', message);
+    }
 
     const baseUrl = process.env.APP_URL;
     if (baseUrl === undefined || baseUrl === null || baseUrl.trim() === '') {

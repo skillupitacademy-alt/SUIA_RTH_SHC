@@ -18,6 +18,7 @@ vi.mock('../audit.service', () => ({ AuditService: vi.fn().mockImplementation(()
 describe('Auth phase 2 tests', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.stubEnv('APP_URL', 'https://app.test');
     container.reset();
     container.register(UserRepository, mockUserRepo as any);
     container.register(AuditService, mockAuditService as any);

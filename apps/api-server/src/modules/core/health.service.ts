@@ -1,4 +1,8 @@
 import { db } from '@quiz/db';
+import { db as peopleDb } from '@quiz/db-people';
+import { db as rthDb } from '@quiz/db-rth';
+import { db as skillupDb } from '@quiz/db-skillup';
+import { UserIdentityBridgeService } from '@quiz/identity-bridge';
 import { sql } from 'drizzle-orm';
 
 import { logger } from '@/lib/logger';
@@ -21,6 +25,10 @@ export interface HealthReport {
   components: {
     database: ComponentStatus;
     cache: ComponentStatus;
+    rthDatabase: ComponentStatus;
+    skillupDatabase: ComponentStatus;
+    peopleDatabase: ComponentStatus;
+    identityBridge: ComponentStatus;
   };
 }
 
@@ -45,13 +53,32 @@ export class HealthService {
    */
   static async getReadinessReport(): Promise<HealthReport> {
     // Parallel checks for performance
-    const [dbResult, cacheResult] = await Promise.all([
+    const [
+      dbResult,
+      cacheResult,
+      rthResult,
+      skillupResult,
+      peopleResult,
+      bridgeResult,
+    ] = await Promise.all([
       this.checkDatabase(),
       this.checkCache(),
+      this.checkRthDatabase(),
+      this.checkSkillupDatabase(),
+      this.checkPeopleDatabase(),
+      this.checkIdentityBridge(),
     ]);
 
-    const isHealthy = dbResult.status === 'up' && cacheResult.status === 'up';
-    const hasDegradation = dbResult.status === 'degraded' || cacheResult.status === 'degraded';
+    const allComponents = [
+      dbResult,
+      cacheResult,
+      rthResult,
+      skillupResult,
+      peopleResult,
+      bridgeResult,
+    ];
+    const isHealthy = allComponents.every(c => c.status === 'up');
+    const hasDegradation = allComponents.some(c => c.status === 'degraded');
 
     return {
       status: isHealthy ? 'healthy' : (hasDegradation ? 'degraded' : 'unhealthy'),
@@ -61,6 +88,10 @@ export class HealthService {
       components: {
         database: dbResult,
         cache: cacheResult,
+        rthDatabase: rthResult,
+        skillupDatabase: skillupResult,
+        peopleDatabase: peopleResult,
+        identityBridge: bridgeResult,
       },
     };
   }
@@ -111,6 +142,86 @@ export class HealthService {
       return {
         status: 'down',
         message: error instanceof Error ? error.message : 'Unknown cache error',
+        latencyMs: Date.now() - start,
+      };
+    }
+  }
+
+  private static async checkRthDatabase(): Promise<ComponentStatus> {
+    const start = Date.now();
+    try {
+      await rthDb.execute(sql`SELECT 1`);
+      const latency = Date.now() - start;
+      recordTimer('system.health.rth_database.latency', latency);
+      return {
+        status: 'up',
+        latencyMs: latency,
+      };
+    } catch (error) {
+      this.log.error({ err: error }, 'RTH database health check failed');
+      return {
+        status: 'down',
+        message: error instanceof Error ? error.message : 'Unknown RTH database error',
+        latencyMs: Date.now() - start,
+      };
+    }
+  }
+
+  private static async checkSkillupDatabase(): Promise<ComponentStatus> {
+    const start = Date.now();
+    try {
+      await skillupDb.execute(sql`SELECT 1`);
+      const latency = Date.now() - start;
+      recordTimer('system.health.skillup_database.latency', latency);
+      return {
+        status: 'up',
+        latencyMs: latency,
+      };
+    } catch (error) {
+      this.log.error({ err: error }, 'SkillUp database health check failed');
+      return {
+        status: 'down',
+        message: error instanceof Error ? error.message : 'Unknown SkillUp database error',
+        latencyMs: Date.now() - start,
+      };
+    }
+  }
+
+  private static async checkPeopleDatabase(): Promise<ComponentStatus> {
+    const start = Date.now();
+    try {
+      await peopleDb.execute(sql`SELECT 1`);
+      const latency = Date.now() - start;
+      recordTimer('system.health.people_database.latency', latency);
+      return {
+        status: 'up',
+        latencyMs: latency,
+      };
+    } catch (error) {
+      this.log.error({ err: error }, 'People database health check failed');
+      return {
+        status: 'down',
+        message: error instanceof Error ? error.message : 'Unknown People database error',
+        latencyMs: Date.now() - start,
+      };
+    }
+  }
+
+  private static async checkIdentityBridge(): Promise<ComponentStatus> {
+    const start = Date.now();
+    try {
+      new UserIdentityBridgeService();
+      const latency = Date.now() - start;
+      recordTimer('system.health.identity_bridge.latency', latency);
+      return {
+        status: 'up',
+        latencyMs: latency,
+      };
+    } catch (error) {
+      this.log.error({ err: error }, 'Identity bridge health check failed');
+      return {
+        status: 'down',
+        message: error instanceof Error ? error.message : 'Unknown identity bridge error',
         latencyMs: Date.now() - start,
       };
     }

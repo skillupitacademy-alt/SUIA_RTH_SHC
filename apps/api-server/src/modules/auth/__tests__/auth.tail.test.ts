@@ -21,7 +21,7 @@ const mockTokenService = {
 const mockAuditService = { log: vi.fn() };
 const mockSecurityService = { isAccountLocked: vi.fn(), trackLoginAttempt: vi.fn() };
 const mockPasswordService = { compare: vi.fn(), hash: vi.fn() };
-const mockUserRepo = { findByIdWithDetails: vi.fn(), updateLastActive: vi.fn(), findWithDetails: vi.fn(), create: vi.fn(), assignRole: vi.fn(), findByEmail: vi.fn(), createToken: vi.fn(), findById: vi.fn(), verifyEmail: vi.fn(), deleteToken: vi.fn() };
+const mockUserRepo = { findByIdWithDetails: vi.fn(), updateLastActive: vi.fn(), findWithDetails: vi.fn(), create: vi.fn(), assignRole: vi.fn(), withDb: vi.fn(), findByEmail: vi.fn(), createToken: vi.fn(), findById: vi.fn(), verifyEmail: vi.fn(), deleteToken: vi.fn() };
 const mockTokenRepo = { findByHash: vi.fn(), revokeAll: vi.fn(), revokeById: vi.fn(), createRefreshToken: vi.fn(), revokeToken: vi.fn() };
 const mockExamRepo = { findActiveExam: vi.fn() };
 
@@ -60,6 +60,7 @@ describe('Auth / Audit Tail Coverage', () => {
         container.register(UserRepository, mockUserRepo as any);
         container.register(TokenRepository, mockTokenRepo as any);
         container.register(ExamRepository, mockExamRepo as any);
+        mockUserRepo.withDb.mockReturnValue(mockUserRepo);
 
         mockTokenService.generateAccessToken.mockResolvedValue('access');
         mockTokenService.generateRefreshToken.mockResolvedValue('refresh');

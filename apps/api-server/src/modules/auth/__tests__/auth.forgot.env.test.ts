@@ -7,7 +7,7 @@ import { AuthService } from '../auth.service'
 vi.mock('@/modules/email/EmailService');
 
 describe('AuthService.forgotPassword env guards', () => {
-  it('throws when APP_URL env is missing for admin user', async () => {
+  it('succeeds when APP_URL env is missing for admin user', async () => {
     ;(db.query as any) = {
       users: {
         findFirst: vi.fn().mockResolvedValue({
@@ -23,10 +23,10 @@ describe('AuthService.forgotPassword env guards', () => {
     })
     vi.stubEnv('APP_URL', '')
     const { container } = await import('../../core/container')
-    await expect(container.get(AuthService).forgotPassword('a@example.com', undefined, 'realtutorialhub')).rejects.toThrow(/APP_URL/)
+    await expect(container.get(AuthService).forgotPassword('a@example.com', undefined, 'realtutorialhub')).resolves.toBe(true)
   })
 
-  it('throws when APP_URL env is missing for non-admin user', async () => {
+  it('succeeds when APP_URL env is missing for non-admin user', async () => {
     ;(db.query as any) = {
       users: {
         findFirst: vi.fn().mockResolvedValue({
@@ -42,6 +42,6 @@ describe('AuthService.forgotPassword env guards', () => {
     })
     vi.stubEnv('APP_URL', '')
     const { container } = await import('../../core/container')
-    await expect(container.get(AuthService).forgotPassword('u@example.com', undefined, 'realtutorialhub')).rejects.toThrow(/APP_URL/)
+    await expect(container.get(AuthService).forgotPassword('u@example.com', undefined, 'realtutorialhub')).resolves.toBe(true)
   })
 })

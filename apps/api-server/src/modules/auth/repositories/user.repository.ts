@@ -17,11 +17,13 @@ export interface User {
 export class UserRepository extends BaseRepository<User, typeof users> {
   protected table = users;
 
-  constructor(dbInstance: typeof db = db) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  constructor(dbInstance: any = db) {
     super(dbInstance);
   }
 
-  withDb(dbClient: typeof db): this {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  withDb(dbClient: any): this {
     return new UserRepository(dbClient) as this;
   }
 

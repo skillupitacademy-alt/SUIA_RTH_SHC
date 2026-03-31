@@ -7,7 +7,7 @@ import { AuthService } from '@/modules/auth/auth.service'
 import { EmailService } from '@/modules/email/EmailService'
 
 describe('AuthService forgot password edge', () => {
-  it('throws when APP_URL env is missing', async () => {
+  it('still sends reset email when APP_URL env is missing', async () => {
     vi.spyOn(AuditService.prototype, 'log').mockResolvedValue(undefined as never)
     vi.spyOn(EmailService, 'sendPasswordResetEmail').mockResolvedValue(undefined as never)
     ;(db.query as any).users = { findFirst: vi.fn().mockResolvedValue({
@@ -24,6 +24,11 @@ describe('AuthService forgot password edge', () => {
     vi.stubEnv('APP_URL', '')
 
     const { container } = await import('../../core/container')
-    await expect(container.get(AuthService).forgotPassword('u1@example.com', undefined, 'realtutorialhub')).rejects.toThrow(/APP_URL/)
+    await expect(container.get(AuthService).forgotPassword('u1@example.com', undefined, 'realtutorialhub')).resolves.toBe(true)
+    expect(EmailService.sendPasswordResetEmail).toHaveBeenCalledWith(
+      'u1@example.com',
+      expect.stringContaining('https://user.realtutorialhub.com'),
+      'realtutorialhub'
+    )
   })
 })

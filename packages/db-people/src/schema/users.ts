@@ -1,4 +1,4 @@
-import { boolean, index, integer, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { boolean, index, integer, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
 import { platformEnum, userRoleEnum } from './enums';
@@ -16,10 +16,15 @@ export const users = pgTable(
     version: integer('version').notNull().default(1),
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+    externalId: uuid('external_id'),
+    externalBrand: text('external_brand'),
   },
   (table) => ({
     idxUsersEmailPlatform: index('idx_users_email_platform')
       .on(table.email, table.platform)
       .where(sql`${table.deletedAt} IS NULL`),
+    idxUsersExternalIdPlatform: uniqueIndex('idx_users_external_id_platform')
+      .on(table.externalId, table.platform)
+      .where(sql`${table.externalId} IS NOT NULL`),
   })
 );
