@@ -1,0 +1,325 @@
+openapi: 3.1.0
+info:
+  title: Quiz Platform Auth API
+  version: 1.0.0
+  description: >
+    Brand-aware authentication API for RTH and SkillUp brands.
+    Brand is resolved from the request hostname.
+    All auth tokens include platform claims for brand isolation.
+
+servers:
+  - url: https://api.realtutorialhub.com
+    description: RTH Production
+  - url: https://api.skillupitacademy.com
+    description: SkillUp Production
+  - url: http://localhost:3000
+    description: Local development
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Brand:
+      type: string
+      enum: [realtutorialhub, skillup]
+    PortalIdentity:
+      type: string
+      enum: [user, admin, faculty, super_admin, infrastructure]
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        code:
+          type: string
+
+paths:
+  /api/auth/signup:
+    post:
+      summary: Register a new user
+      description: >
+        Creates a new brand user and syncs a shadow user to people_prod
+        via the Identity Bridge. Brand is resolved from request hostname.
+        Sends a verification email after successful registration.
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password, name]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  minLength: 8
+                name:
+                  type: string
+      responses:
+        '201':
+          description: User created successfully
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Email already exists
+
+  /api/auth/login:
+    post:
+      summary: Login user
+      description: >
+        Authenticates a brand user. Brand resolved from hostname.
+        Returns JWT with platform claims.
+        Sets httpOnly cookies for the brand domain.
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      email:
+                        type: string
+                      name:
+                        type: string
+                  accessToken:
+                    type: string
+        '401':
+          description: Invalid credentials
+        '423':
+          description: Account locked due to too many failed attempts
+
+  /api/auth/logout:
+    post:
+      summary: Logout user
+      description: Revokes the current session and clears brand cookies.
+      tags: [Auth]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Logged out successfully
+        '401':
+          description: Unauthorized
+
+  /api/auth/refresh:
+    post:
+      summary: Refresh access token
+      description: >
+        Issues a new access token using the refresh token cookie.
+        Implements token rotation - old refresh token is revoked.
+        Brand resolved from hostname.
+      tags: [Auth]
+      responses:
+        '200':
+          description: New access token issued
+        '401':
+          description: Refresh token invalid or expired
+
+  /api/auth/me:
+    get:
+      summary: Get current user
+      description: Returns the authenticated user's profile.
+      tags: [Auth]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Current user profile
+        '401':
+          description: Unauthorized
+
+  /api/auth/forgot-password:
+    post:
+      summary: Request password reset
+      description: >
+        Sends a password reset email with a brand-specific reset URL.
+        RTH: user.realtutorialhub.com/reset-password
+        SkillUp: user.skillupitacademy.com/reset-password
+        Token expires in 60 minutes.
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: Reset email sent (always 200 to prevent email enumeration)
+
+  /api/auth/reset-password:
+    post:
+      summary: Reset password using token
+      description: >
+        Resets the user password using a valid reset token.
+        Token is single-use and expires after 60 minutes.
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token, password]
+              properties:
+                token:
+                  type: string
+                password:
+                  type: string
+                  minLength: 8
+      responses:
+        '200':
+          description: Password reset successful
+        '400':
+          description: Invalid or expired token
+
+  /api/auth/resend-verification:
+    post:
+      summary: Resend email verification
+      description: >
+        Resends the verification email for unverified accounts.
+        Brand-specific verification URL is generated.
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId]
+              properties:
+                userId:
+                  type: string
+                  format: uuid
+      responses:
+        '200':
+          description: Verification email sent
+        '400':
+          description: Missing userId
+
+  /api/auth/profile:
+    get:
+      summary: Get user profile
+      tags: [Auth]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User profile data
+        '401':
+          description: Unauthorized
+    patch:
+      summary: Update user profile
+      tags: [Auth]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+      responses:
+        '200':
+          description: Profile updated
+        '401':
+          description: Unauthorized
+
+  /api/auth/heartbeat:
+    get:
+      summary: Auth service heartbeat
+      description: Lightweight check that auth service is responding.
+      tags: [Health]
+      responses:
+        '200':
+          description: Service alive
+
+  /api/admin/auth/login:
+    post:
+      summary: Admin login
+      description: >
+        Authenticates a brand admin user.
+        Requires admin or super_admin role.
+        Brand resolved from hostname.
+      tags: [Admin Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Admin login successful
+        '401':
+          description: Invalid credentials
+        '403':
+          description: Insufficient role
+
+  /api/admin/auth/me:
+    get:
+      summary: Get current admin user
+      tags: [Admin Auth]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Current admin profile
+        '401':
+          description: Unauthorized
+        '403':
+          description: Insufficient role
+
+  /api/admin/auth/heartbeat:
+    get:
+      summary: Admin auth heartbeat
+      tags: [Health]
+      responses:
+        '200':
+          description: Admin auth service alive

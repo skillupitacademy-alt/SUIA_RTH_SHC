@@ -1,0 +1,378 @@
+openapi: 3.1.0
+info:
+  title: SkillHub Core Service API
+  version: 1.0.0
+  description: >
+    Shared authentication and platform access management service.
+    Tokens must include valid platform claims.
+    Routes are either shared admin (cross-brand) or
+    brand-specific (enforced via requirePlatform middleware).
+
+servers:
+  - url: https://api.skillhubcore.in
+    description: SkillHub Production
+  - url: http://localhost:3001
+    description: Local development
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: >
+        JWT must include platforms claim.
+        Tokens missing platforms claim will be rejected with 401.
+  schemas:
+    Platform:
+      type: string
+      enum: [realtutorialhub, skillup]
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        code:
+          type: string
+
+paths:
+  /auth/register:
+    post:
+      summary: Register a new user
+      description: >
+        Creates a new user in the SkillHub Core identity system.
+        Issues a JWT access token with platform claims.
+        Platform access is granted via SSO service.
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password, name, platform]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  minLength: 8
+                name:
+                  type: string
+                platform:
+                  $ref: '#/components/schemas/Platform'
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                    description: JWT with platform claims
+                  refreshToken:
+                    type: string
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Email already exists on this platform
+
+  /auth/login:
+    post:
+      summary: Login user
+      description: >
+        Authenticates a user and returns JWT tokens.
+        The access token includes platform claims.
+        Tokens missing platform claims will be rejected by
+        downstream requireAuth middleware with 401.
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password, platform]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                platform:
+                  $ref: '#/components/schemas/Platform'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                    description: >
+                      JWT containing sub, roles, subscriptions,
+                      platforms claims. Missing platforms claim
+                      will cause 401 on protected routes.
+                  refreshToken:
+                    type: string
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      email:
+                        type: string
+                      roles:
+                        type: array
+                        items:
+                          type: string
+                      platforms:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Platform'
+        '401':
+          description: Invalid credentials
+        '423':
+          description: Account locked
+
+  /auth/refresh:
+    post:
+      summary: Refresh access token
+      description: >
+        Issues a new access token using a valid refresh token.
+        Implements token family rotation - compromised families
+        are revoked immediately.
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken:
+                  type: string
+      responses:
+        '200':
+          description: New access token issued
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                  refreshToken:
+                    type: string
+                    description: Rotated refresh token
+        '401':
+          description: Refresh token invalid, expired, or family compromised
+
+  /auth/logout:
+    post:
+      summary: Logout user
+      description: >
+        Revokes the current session and refresh token family.
+        All tokens in the same family are invalidated.
+      tags: [Auth]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Logged out successfully
+        '401':
+          description: Unauthorized — token missing or invalid platform claim
+
+  /auth/me:
+    get:
+      summary: Get current user
+      description: >
+        Returns the authenticated user's profile.
+        Requires valid JWT with platform claims.
+      tags: [Auth]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Current user profile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  email:
+                    type: string
+                  roles:
+                    type: array
+                    items:
+                      type: string
+                  platforms:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Platform'
+        '401':
+          description: Unauthorized — token missing or invalid platform claim
+
+  /auth/sessions:
+    get:
+      summary: List active sessions
+      description: >
+        Returns all active sessions for the authenticated user.
+        Sessions are filtered to non-expired rows only.
+        Brand scoping enforced at route level via requirePlatform middleware.
+      tags: [Sessions]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Active sessions list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                    ip:
+                      type: string
+                    device:
+                      type: string
+                    familyId:
+                      type: string
+                      nullable: true
+                    expiresAt:
+                      type: string
+                      format: date-time
+                    createdAt:
+                      type: string
+                      format: date-time
+        '401':
+          description: Unauthorized
+    delete:
+      summary: Revoke all sessions
+      description: >
+        Revokes all active sessions for the authenticated user.
+        Uses token family revocation where familyId is available.
+        Falls back to direct session delete for legacy rows.
+      tags: [Sessions]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: All sessions revoked
+        '401':
+          description: Unauthorized
+
+  /auth/sessions/{id}:
+    delete:
+      summary: Revoke a specific session
+      description: >
+        Revokes a single session by ID.
+        User can only revoke their own sessions.
+        Uses token family revocation where familyId is available.
+      tags: [Sessions]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Session revoked
+        '401':
+          description: Unauthorized
+        '404':
+          description: Session not found or does not belong to user
+
+  /admin/users/{userId}/platforms:
+    get:
+      summary: Get user platform access
+      description: >
+        Returns all platforms a user has access to.
+        Shared admin route — intentionally cross-brand.
+        Requires admin or super_admin role.
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: User platform access list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  platforms:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Platform'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Insufficient role
+    post:
+      summary: Grant or revoke platform access
+      description: >
+        Grants or revokes a user's access to a specific platform.
+        Shared admin route — intentionally cross-brand.
+        Requires admin or super_admin role.
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [platform, action]
+              properties:
+                platform:
+                  $ref: '#/components/schemas/Platform'
+                action:
+                  type: string
+                  enum: [grant, revoke]
+      responses:
+        '200':
+          description: Platform access updated
+        '401':
+          description: Unauthorized
+        '403':
+          description: Insufficient role
+        '404':
+          description: User not found
