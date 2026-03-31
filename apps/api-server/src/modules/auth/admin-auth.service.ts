@@ -1,13 +1,13 @@
 import { db, refreshTokens, roles, userProfiles, userRoles, users } from '@quiz/db';
 import { eq } from "drizzle-orm";
 
+import type { RequestBrand } from '@/lib/request-brand';
 import { container } from '@/modules/core/container';
 
 import { AuditService } from './audit.service';
 import { PasswordService } from './password.service';
 import { SecurityService } from './security.service';
 import { TokenService } from './token.service';
-import type { RequestBrand } from '@/lib/request-brand';
 
 export class AdminAuthService {
   static async login(email: string, password: string, ip: string = 'unknown', requestedAudience: string = 'admin', brand: RequestBrand = 'realtutorialhub') {

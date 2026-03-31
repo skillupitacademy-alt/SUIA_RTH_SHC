@@ -1,7 +1,8 @@
+import type { RequestBrand } from '@/lib/request-brand';
+
 import { MockEmailProvider } from './providers/MockEmailProvider';
 import { ResendEmailProvider } from './providers/ResendEmailProvider';
 import type { EmailOptions, IEmailProvider } from './types';
-import type { RequestBrand } from '@/lib/request-brand';
 
 /**
  * EmailService now selects a provider (Mock or Resend) based on env, keeping tests hermetic.

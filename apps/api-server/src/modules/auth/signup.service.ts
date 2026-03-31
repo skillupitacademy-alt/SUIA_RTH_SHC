@@ -2,12 +2,12 @@ import crypto from 'crypto';
 
 import { eventBus } from '@/lib/event-bus';
 import { AppEvents } from '@/lib/events';
-import { EmailService } from '@/modules/email/EmailService';
+import type { RequestBrand } from '@/lib/request-brand';
 import { AuditService } from '@/modules/auth/audit.service';
 import { PasswordService } from '@/modules/auth/password.service';
 import { UserRepository } from '@/modules/auth/repositories/user.repository';
 import { container } from '@/modules/core/container';
-import type { RequestBrand } from '@/lib/request-brand';
+import { EmailService } from '@/modules/email/EmailService';
 
 export class SignupService {
   constructor(
@@ -74,6 +74,7 @@ export class SignupService {
 
   async verifyEmail(token: string, ip?: string, brand: RequestBrand = 'realtutorialhub') {
     // brand reserved for future audit logging
+    void brand;
     let verifiedToken = await this.userRepo.findToken(token);
     const isTestEnv = process.env.NODE_ENV === 'test' || process.env.VITEST === 'true' || process.env.VITEST_WORKER_ID !== undefined;
     if (verifiedToken === undefined && isTestEnv) {

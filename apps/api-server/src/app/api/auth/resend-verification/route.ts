@@ -1,8 +1,8 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { resolveRequestBrand } from '@/lib/request-brand';
 import { withCorrelationId } from '@/lib/correlation-id.middleware';
+import { resolveRequestBrand } from '@/lib/request-brand';
 import { withLogging } from '@/lib/withLogging';
 import { AuthService } from '@/modules/auth/auth.service';
 import { getClientIp } from '@/modules/auth/client-ip';

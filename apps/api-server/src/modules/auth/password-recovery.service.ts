@@ -1,9 +1,9 @@
 import crypto from 'crypto';
 
+import type { RequestBrand } from '@/lib/request-brand';
 import { AuditService } from '@/modules/auth/audit.service';
 import { PasswordService } from '@/modules/auth/password.service';
 import { UserRepository } from '@/modules/auth/repositories/user.repository';
-import type { RequestBrand } from '@/lib/request-brand';
 import { container } from '@/modules/core/container';
 import { EmailService } from '@/modules/email/EmailService';
 
@@ -52,6 +52,7 @@ export class PasswordRecoveryService {
 
   async resetPassword(token: string, newPassword: string, ip?: string, brand: RequestBrand = 'realtutorialhub') {
     // brand reserved for future audit logging
+    void brand;
     const validToken = await this.validateResetToken(token);
 
     if (validToken === null) {

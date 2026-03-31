@@ -1,8 +1,8 @@
+import type { RequestBrand } from '@/lib/request-brand';
 import type { LoginService } from '@/modules/auth/login.service';
 import type { PasswordRecoveryService } from '@/modules/auth/password-recovery.service';
 import type { SignupService } from '@/modules/auth/signup.service';
 import type { TokenRefreshService } from '@/modules/auth/token-refresh.service';
-import type { RequestBrand } from '@/lib/request-brand';
 
 export class AuthService {
   constructor(

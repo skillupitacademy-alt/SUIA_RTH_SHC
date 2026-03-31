@@ -1,3 +1,4 @@
+import type { RequestBrand } from '@/lib/request-brand';
 import { AuditService } from '@/modules/auth/audit.service';
 import { PasswordService } from '@/modules/auth/password.service';
 import { TokenRepository } from '@/modules/auth/repositories/token.repository';
@@ -5,7 +6,6 @@ import { UserRepository } from '@/modules/auth/repositories/user.repository';
 import { SecurityService } from '@/modules/auth/security.service';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
-import type { RequestBrand } from '@/lib/request-brand';
 
 export class LoginService {
   constructor(
