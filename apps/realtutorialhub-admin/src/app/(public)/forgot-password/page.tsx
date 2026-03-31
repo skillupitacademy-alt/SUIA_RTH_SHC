@@ -8,6 +8,8 @@ import { useState } from 'react';
 
 import { clientLogger } from '@/utils/clientLogger';
 
+const PORTAL_BRAND = 'realtutorialhub' as const;
+
 export default function ForgotPasswordPage() {
     const [email, setEmail] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -22,7 +24,7 @@ export default function ForgotPasswordPage() {
         setMessage('');
 
         try {
-            await apiClient.auth.forgotPassword(email);
+            await apiClient.auth.forgotPassword(email, PORTAL_BRAND);
             setIsSuccess(true);
             setMessage('Recovery link sent! Check your inbox (including spam).');
         } catch (err: unknown) {

@@ -1,7 +1,7 @@
-import { and, eq, isNull } from 'drizzle-orm';
+import { and, desc, eq, isNull } from 'drizzle-orm';
 
 import { withTimeout, STANDARD_QUERY_TIMEOUT } from '@quiz/db';
-import type { PeopleDbClientLike, PeoplePlatform, PeopleSubscriptionRecord, PeopleUserRecord, PeopleUserRole, IUserRepository } from '@quiz/types';
+import type { PeopleDbClientLike, PeoplePlatform, PeopleSessionRecord, PeopleSubscriptionRecord, PeopleUserRecord, PeopleUserRole, IUserRepository } from '@quiz/types';
 
 import { db, schema } from '@/lib/db';
 
@@ -26,6 +26,7 @@ export interface CreateSessionInput {
 }
 
 type PeopleDb = typeof db;
+type SessionRow = PeopleSessionRecord;
 
 export class DrizzleUserRepository implements IUserRepository {
   constructor(private readonly dbClient: PeopleDb = db) {}
@@ -190,6 +191,71 @@ export class DrizzleUserRepository implements IUserRepository {
       'people.sso_sessions.create'
     );
     return row;
+  }
+
+  async listActiveSessions(userId: string): Promise<SessionRow[]> {
+    // Brand scoping enforced at route level via requirePlatform middleware.
+    // DB-level brand column on sessions deferred to Week 2 schema work.
+    const rows = await withTimeout(
+      this.dbClient
+        .select({
+          id: schema.ssoSessions.id,
+          userId: schema.ssoSessions.userId,
+          familyId: schema.ssoSessions.jwtFamily,
+          platform: schema.ssoSessions.platform,
+          revokedAt: schema.ssoSessions.revokedAt,
+          deletedAt: schema.ssoSessions.deletedAt,
+          createdAt: schema.ssoSessions.createdAt,
+        })
+        .from(schema.ssoSessions)
+        .where(and(eq(schema.ssoSessions.userId, userId), isNull(schema.ssoSessions.deletedAt), isNull(schema.ssoSessions.revokedAt)))
+        .orderBy(desc(schema.ssoSessions.createdAt)),
+      STANDARD_QUERY_TIMEOUT,
+      'people.sso_sessions.listActive'
+    );
+    return rows as SessionRow[];
+  }
+
+  async findSessionById(userId: string, sessionId: string): Promise<SessionRow | null> {
+    const rows = await withTimeout(
+      this.dbClient
+        .select({
+          id: schema.ssoSessions.id,
+          userId: schema.ssoSessions.userId,
+          familyId: schema.ssoSessions.jwtFamily,
+          platform: schema.ssoSessions.platform,
+          revokedAt: schema.ssoSessions.revokedAt,
+          deletedAt: schema.ssoSessions.deletedAt,
+          createdAt: schema.ssoSessions.createdAt,
+        })
+        .from(schema.ssoSessions)
+        .where(and(eq(schema.ssoSessions.id, sessionId), eq(schema.ssoSessions.userId, userId), isNull(schema.ssoSessions.deletedAt)))
+        .limit(1),
+      STANDARD_QUERY_TIMEOUT,
+      'people.sso_sessions.findById'
+    );
+    return (rows[0] as SessionRow | undefined) ?? null;
+  }
+
+  async revokeSessionById(userId: string, sessionId: string, reason: string): Promise<void> {
+    const session = await this.findSessionById(userId, sessionId);
+
+    if (session === null) {
+      throw new Error('Session not found');
+    }
+
+    if (session.familyId !== null && session.familyId !== '') {
+      await this.revokeSessionByFamily(userId, session.familyId, reason);
+      return;
+    }
+
+    await withTimeout(
+      this.dbClient
+        .delete(schema.ssoSessions)
+        .where(and(eq(schema.ssoSessions.id, sessionId), eq(schema.ssoSessions.userId, userId))),
+      STANDARD_QUERY_TIMEOUT,
+      'people.sso_sessions.deleteLegacy'
+    );
   }
 
   async findSessionByFamily(userId: string, familyId: string): Promise<unknown> {

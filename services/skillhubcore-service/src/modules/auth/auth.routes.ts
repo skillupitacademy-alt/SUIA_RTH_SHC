@@ -124,5 +124,44 @@ export const createAuthRoutes = (authService: AuthService): Hono => {
     return c.json({ user: c.get('authUser') });
   });
 
+  app.get('/sessions', requireAuth, async (c) => {
+    const authUser = c.get('authUser') as { id: string } | undefined;
+    if (authUser === undefined) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+
+    const sessions = await authService.getSessions(authUser.id);
+    return c.json({ sessions });
+  });
+
+  app.delete('/sessions/:id', requireAuth, async (c) => {
+    const authUser = c.get('authUser') as { id: string } | undefined;
+    if (authUser === undefined) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+
+    const sessionId = c.req.param('id');
+    try {
+      await authService.revokeSession(authUser.id, sessionId);
+      return c.json({ success: true });
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Session not found') {
+        return c.json({ error: error.message }, 404);
+      }
+      logger.error({ error, userId: authUser.id, sessionId }, 'revoke session failed');
+      return c.json({ error: 'Failed to revoke session' }, 500);
+    }
+  });
+
+  app.delete('/sessions', requireAuth, async (c) => {
+    const authUser = c.get('authUser') as { id: string } | undefined;
+    if (authUser === undefined) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+
+    await authService.revokeAllUserSessions(authUser.id);
+    return c.json({ success: true });
+  });
+
   return app;
 };

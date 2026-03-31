@@ -68,7 +68,7 @@ describe('AuthService extreme tail 2', () => {
         mockSecurityService.isAccountLocked.mockResolvedValue(false);
 
         const { container } = await import('../../core/container');
-        const result = await container.get(AuthService).login('e', 'p');
+        const result = await container.get(AuthService).login('e', 'p', 'unknown', 'realtutorialhub');
         expect(result.isAdmin).toBe(true);
     });
 
@@ -81,7 +81,7 @@ describe('AuthService extreme tail 2', () => {
         mockSecurityService.isAccountLocked.mockResolvedValue(false);
 
         const { container } = await import('../../core/container');
-        const result = await container.get(AuthService).login('e', 'p');
+        const result = await container.get(AuthService).login('e', 'p', 'unknown', 'realtutorialhub');
         expect(result.isAdmin).toBe(true);
     });
 
@@ -94,7 +94,7 @@ describe('AuthService extreme tail 2', () => {
         mockSecurityService.isAccountLocked.mockResolvedValue(false);
 
         const { container } = await import('../../core/container');
-        const result = await container.get(AuthService).login('e', 'p');
+        const result = await container.get(AuthService).login('e', 'p', 'unknown', 'realtutorialhub');
         expect(result.isAdmin).toBe(true);
     });
 
@@ -103,7 +103,7 @@ describe('AuthService extreme tail 2', () => {
         mockExamRepo.findActiveExam.mockResolvedValue({ durationSeconds: 3600, startedAt } as any);
         
         const { container } = await import('../../core/container');
-        await container.get(AuthService).refresh('token', '1.1.1.1', 'exam-id', 'user');
+        await container.get(AuthService).refresh('token', '1.1.1.1', 'exam-id', 'user', 'realtutorialhub');
         expect(mockExamRepo.findActiveExam).toHaveBeenCalled();
     });
 
@@ -112,7 +112,7 @@ describe('AuthService extreme tail 2', () => {
         mockExamRepo.findActiveExam.mockResolvedValue({ durationSeconds: 600, startedAt } as any);
         
         const { container } = await import('../../core/container');
-        await container.get(AuthService).refresh('token', '1.1.1.1', 'exam-id', 'user');
+        await container.get(AuthService).refresh('token', '1.1.1.1', 'exam-id', 'user', 'realtutorialhub');
         expect(mockExamRepo.findActiveExam).toHaveBeenCalled();
     });
 
@@ -121,7 +121,7 @@ describe('AuthService extreme tail 2', () => {
         mockExamRepo.findActiveExam.mockResolvedValue({ durationSeconds: 7200, startedAt } as any);
         
         const { container } = await import('../../core/container');
-        await container.get(AuthService).refresh('token', '1.1.1.1', 'exam-id', 'user');
+        await container.get(AuthService).refresh('token', '1.1.1.1', 'exam-id', 'user', 'realtutorialhub');
         expect(mockExamRepo.findActiveExam).toHaveBeenCalled();
     });
 });

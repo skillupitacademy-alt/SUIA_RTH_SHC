@@ -2,13 +2,13 @@
 
 import { Button } from './Button';
 import { Input } from './Input';
+import type { PortalIdentity } from '@quiz/types';
 import { Lock, Mail, ShieldCheck } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
 
 const DEFAULT_LOGIN_ENDPOINT = `${(process.env.NEXT_PUBLIC_API_URL ?? 'https://api.realtutorialhub.com').replace(/\/+$/, '').replace(/\/api$/i, '')}/auth/login`;
 
-export type PortalIdentity = 'admin' | 'faculty' | 'super_admin';
 export type LoginPlatform = 'realtutorialhub' | 'skillup';
 
 export interface PortalLoginPageProps {

@@ -35,14 +35,14 @@ describe('SecurityService tail branches', () => {
         vi.mocked(db.query.loginAttempts.findFirst).mockResolvedValue({ id: 'a1', attempts: 5, lockedUntil: null } as any);
         
         const service = container.get(SecurityService);
-        const locked = await service.isAccountLocked('email', 'ip');
+        const locked = await service.isAccountLocked('email', 'ip', 'realtutorialhub');
         expect(locked).toBe(false);
     });
 
     it('trackLoginAttempt: no-op if user not found (Line 14)', async () => {
         vi.mocked(db.query.users.findFirst).mockResolvedValue(undefined);
         const service = container.get(SecurityService);
-        await service.trackLoginAttempt('ip', 'email', false);
+        await service.trackLoginAttempt('ip', 'email', false, 'realtutorialhub');
         expect(db.update).not.toHaveBeenCalled();
     });
 });

@@ -60,6 +60,7 @@ export const sessions = pgTable("sessions", {
   userId: uuid("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
+  familyId: text("family_id"),
   ip: text("ip"),
   device: text("device"),
   expiresAt: timestamp("expires_at").notNull(),
@@ -99,12 +100,14 @@ export const auditLogs = pgTable("audit_logs", {
 export const loginAttempts = pgTable("login_attempts", {
   id: uuid("id").primaryKey().defaultRandom(),
   userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }),
+  brand: text("brand").notNull().default('realtutorialhub'),
   ip: text("ip").notNull(),
   attempts: integer("attempts").notNull().default(0),
   lockedUntil: timestamp("locked_until"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 }, (t) => ({
+  idx_login_attempts_brand_user_ip: index("idx_login_attempts_brand_user_ip").on(t.brand, t.userId, t.ip),
   idx_login_attempts_ip: index("idx_login_attempts_ip").on(t.ip),
   idx_login_attempts_user_id: index("idx_login_attempts_user_id").on(t.userId),
 }));

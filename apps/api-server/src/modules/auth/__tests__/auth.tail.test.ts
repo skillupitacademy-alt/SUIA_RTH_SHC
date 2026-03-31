@@ -21,7 +21,7 @@ const mockTokenService = {
 const mockAuditService = { log: vi.fn() };
 const mockSecurityService = { isAccountLocked: vi.fn(), trackLoginAttempt: vi.fn() };
 const mockPasswordService = { compare: vi.fn(), hash: vi.fn() };
-const mockUserRepo = { findByIdWithDetails: vi.fn(), updateLastActive: vi.fn(), findWithDetails: vi.fn(), create: vi.fn(), assignRole: vi.fn(), findByEmail: vi.fn() };
+const mockUserRepo = { findByIdWithDetails: vi.fn(), updateLastActive: vi.fn(), findWithDetails: vi.fn(), create: vi.fn(), assignRole: vi.fn(), findByEmail: vi.fn(), createToken: vi.fn(), findById: vi.fn(), verifyEmail: vi.fn(), deleteToken: vi.fn() };
 const mockTokenRepo = { findByHash: vi.fn(), revokeAll: vi.fn(), revokeById: vi.fn(), createRefreshToken: vi.fn(), revokeToken: vi.fn() };
 const mockExamRepo = { findActiveExam: vi.fn() };
 
@@ -49,6 +49,7 @@ vi.mock('jose', () => ({
 describe('Auth / Audit Tail Coverage', () => {
     beforeEach(async () => {
         vi.clearAllMocks();
+        vi.stubEnv('APP_URL', 'https://app.test');
         const { container } = await import('../../core/container');
         container.reset();
         
@@ -84,7 +85,7 @@ describe('Auth / Audit Tail Coverage', () => {
         mockUserRepo.create.mockResolvedValue({ id: 'u1', email: 'test@test.com' });
         
         const { container } = await import('../../core/container');
-        const user = await container.get(AuthService).signup('test@test.com', 'pwd', 'Name');
+        const user = await container.get(AuthService).signup('test@test.com', 'pwd', 'Name', undefined, 'realtutorialhub');
         expect(user.id).toBe('u1');
         expect(mockAuditService.log).toHaveBeenCalledWith(expect.objectContaining({ action: 'signup_attempt' }));
     });
@@ -104,7 +105,7 @@ describe('Auth / Audit Tail Coverage', () => {
         mockSecurityService.isAccountLocked.mockResolvedValue(false);
 
         const { container } = await import('../../core/container');
-        const result = await container.get(AuthService).login('admin@test.com', 'pwd');
+        const result = await container.get(AuthService).login('admin@test.com', 'pwd', 'unknown', 'realtutorialhub');
         expect(result.isAdmin).toBe(true);
     });
 
@@ -116,7 +117,7 @@ describe('Auth / Audit Tail Coverage', () => {
         } as any);
 
         const { container } = await import('../../core/container');
-        const result = await container.get(AuthService).refresh('token', '1.1.1.1', 'exam-id', 'user');
+        const result = await container.get(AuthService).refresh('token', '1.1.1.1', 'exam-id', 'user', 'realtutorialhub');
         expect(result.accessToken).toBe('access');
         expect(mockTokenService.generateAccessToken).toHaveBeenCalled();
     });

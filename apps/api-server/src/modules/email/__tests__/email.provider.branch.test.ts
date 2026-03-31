@@ -34,9 +34,13 @@ describe("EmailService provider selection", () => {
     delete process.env.EMAIL_PROVIDER
     const instance = EmailService.getInstance()
     expect(instance).toBeInstanceOf(MockEmailProvider)
-    const spy = vi.spyOn(instance, "sendPasswordReset").mockResolvedValue()
-    await EmailService.sendPasswordResetEmail("user@test.com", "https://reset")
-    expect(spy).toHaveBeenCalledWith("user@test.com", "https://reset")
+    const spy = vi.spyOn(instance, "sendEmail").mockResolvedValue()
+    await EmailService.sendPasswordResetEmail("user@test.com", "https://reset", "skillup")
+    expect(spy).toHaveBeenCalledWith(expect.objectContaining({
+      to: "user@test.com",
+      subject: expect.stringContaining("SkillUp IT Academy"),
+      html: expect.stringContaining("SkillUp IT Academy password reset"),
+    }))
   })
 
   it("falls back to mock when RESEND selected without api key", () => {
@@ -55,7 +59,11 @@ describe("EmailService provider selection", () => {
     expect(instance).toBeInstanceOf(ResendEmailProvider)
 
     const sendSpy = vi.spyOn(instance as any, "sendEmail")
-    await EmailService.sendPasswordResetEmail("user@test.com", "https://reset")
-    expect(sendSpy).toHaveBeenCalled()
+    await EmailService.sendPasswordResetEmail("user@test.com", "https://reset", "realtutorialhub")
+    expect(sendSpy).toHaveBeenCalledWith(expect.objectContaining({
+      to: "user@test.com",
+      subject: expect.stringContaining("Real Tutorial Hub"),
+      html: expect.stringContaining("Real Tutorial Hub password reset"),
+    }))
   })
 })

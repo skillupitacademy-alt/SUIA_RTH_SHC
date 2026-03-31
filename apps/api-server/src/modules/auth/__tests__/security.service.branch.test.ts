@@ -32,7 +32,7 @@ describe('SecurityService branch coverage', () => {
     vi.mocked(db.query.loginAttempts.findFirst).mockResolvedValue({ id: 'la1', attempts: 1 } as any);
     
     const service = container.get(SecurityService);
-    await service.trackLoginAttempt('1.1.1.1', 'a@b.com', false);
+    await service.trackLoginAttempt('1.1.1.1', 'a@b.com', false, 'realtutorialhub');
     expect(db.update).toHaveBeenCalled();
   });
 
@@ -41,7 +41,7 @@ describe('SecurityService branch coverage', () => {
     vi.mocked(db.query.loginAttempts.findFirst).mockResolvedValue({ id: 'la1', lockedUntil: null } as any);
     
     const service = container.get(SecurityService);
-    const result = await service.isAccountLocked('a@b.com', '1.1.1.1');
+    const result = await service.isAccountLocked('a@b.com', '1.1.1.1', 'realtutorialhub');
     expect(result).toBe(false);
   });
 
@@ -50,7 +50,7 @@ describe('SecurityService branch coverage', () => {
     vi.mocked(db.query.loginAttempts.findFirst).mockResolvedValue({ id: 'la1', lockedUntil: new Date(Date.now() + 10000) } as any);
     
     const service = container.get(SecurityService);
-    const result = await service.isAccountLocked('a@b.com', '1.1.1.1');
+    const result = await service.isAccountLocked('a@b.com', '1.1.1.1', 'realtutorialhub');
     expect(result).toBe(true);
   });
 });

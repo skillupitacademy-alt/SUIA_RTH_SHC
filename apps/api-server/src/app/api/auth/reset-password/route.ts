@@ -2,6 +2,7 @@ import type { NextRequest } from 'next/server';
 
 import { badRequest } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
+import { resolveRequestBrand } from '@/lib/request-brand';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
 import { AuthService } from '@/modules/auth/auth.service';
@@ -42,7 +43,8 @@ async function postHandler(_req: NextRequest) {
     const { token, password } = parsed.data;
 
     const ip = getClientIp(_req);
-    await container.get(AuthService).resetPassword(token, password, ip);
+    const brand = resolveRequestBrand(_req.nextUrl.hostname) ?? 'realtutorialhub';
+    await container.get(AuthService).resetPassword(token, password, ip, brand);
 
     return ApiResponse.success({ success: true });
   } catch (_error: unknown) {

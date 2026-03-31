@@ -2,6 +2,8 @@ import { UserProfile } from '@quiz/api-client/types';
 import { FetchClient, TIMEOUTS } from '@quiz/api-client/core/fetch-client';
 import { normalizeSkillHubUser } from '../lib/normalize-auth-user';
 
+type RequestBrand = 'realtutorialhub' | 'skillup';
+
 export class AuthClient {
   private client: FetchClient;
 
@@ -97,16 +99,24 @@ export class AuthClient {
     return this.client.post<UserProfile, Partial<UserProfile>>('/auth/profile', profileData, { timeout: TIMEOUTS.STANDARD });
   }
 
-  async forgotPassword(email: string) {
-    return this.client.post('/auth/forgot-password', { email }, { timeout: TIMEOUTS.STANDARD });
+  async forgotPassword(email: string, brand: RequestBrand = 'realtutorialhub') {
+    return this.client.post(
+      '/auth/forgot-password',
+      { email },
+      { timeout: TIMEOUTS.STANDARD, headers: { 'x-brand': brand } }
+    );
   }
 
   async validateResetToken(token: string) {
     return this.client.get<{ valid: boolean }>(`/auth/reset-password?_token=${token}`, { timeout: TIMEOUTS.STANDARD });
   }
 
-  async resetPassword(token: string, newPassword: string) {
-    return this.client.post('/auth/reset-password', { token, password: newPassword }, { timeout: TIMEOUTS.STANDARD });
+  async resetPassword(token: string, newPassword: string, brand: RequestBrand = 'realtutorialhub') {
+    return this.client.post(
+      '/auth/reset-password',
+      { token, password: newPassword },
+      { timeout: TIMEOUTS.STANDARD, headers: { 'x-brand': brand } }
+    );
   }
 
   async heartbeat() {

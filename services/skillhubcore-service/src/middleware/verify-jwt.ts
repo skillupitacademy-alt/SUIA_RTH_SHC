@@ -1,3 +1,4 @@
+import type { MiddlewareHandler } from 'hono';
 import { createMiddleware } from 'hono/factory';
 
 import { logger } from '@/lib/logger';
@@ -51,3 +52,19 @@ export const requireRoles = (allowedRoles: Array<'student' | 'faculty' | 'admin'
     }
     await next();
   });
+
+export function requirePlatform(platform: 'realtutorialhub' | 'skillup'): MiddlewareHandler {
+  return async (c, next) => {
+    const authUser = c.get('authUser');
+
+    if (authUser === undefined) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+
+    if (!authUser.platforms.includes(platform)) {
+      return c.json({ error: 'Forbidden: platform access denied' }, 403);
+    }
+
+    await next();
+  };
+}

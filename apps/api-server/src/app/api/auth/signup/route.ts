@@ -5,6 +5,7 @@ import { toUserSummaryDTO } from '@/dtos/auth.dto';
 import { badRequest } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { resolveCookieDomain } from '@/lib/cookie-domain';
+import { resolveRequestBrand } from '@/lib/request-brand';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
 import { AuthService } from '@/modules/auth/auth.service';
@@ -26,12 +27,13 @@ async function handler(_req: NextRequest) {
     }
     const { email, password, name } = parsed.data;
     const ip = getClientIp(_req);
+    const brand = resolveRequestBrand(_req.nextUrl.hostname) ?? 'realtutorialhub';
 
     const authService = container.get(AuthService);
-    const _user = await authService.signup(email, password, name);
+    const _user = await authService.signup(email, password, name, ip, brand);
 
     // Auto-login after signup
-    const { accessToken, refreshToken } = await authService.login(email, password, ip);
+    const { accessToken, refreshToken } = await authService.login(email, password, ip, brand);
 
     recordCounter(METRICS.AUTH.SIGNUP, 1, { outcome: 'success' });
     recordTimer(METRICS.AUTH.SIGNUP + '.duration', Date.now() - start, { outcome: 'success' });

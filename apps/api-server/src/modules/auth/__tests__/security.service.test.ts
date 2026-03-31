@@ -35,7 +35,7 @@ describe('SecurityService (Main Suite Refactor)', () => {
     it('trackLoginAttempt: no-op if user not found', async () => {
         vi.mocked(db.query.users.findFirst).mockResolvedValue(undefined);
         const service = container.get(SecurityService);
-        await service.trackLoginAttempt('ip', 'email', false);
+        await service.trackLoginAttempt('ip', 'email', false, 'realtutorialhub');
         expect(db.update).not.toHaveBeenCalled();
     });
 
@@ -43,7 +43,7 @@ describe('SecurityService (Main Suite Refactor)', () => {
         vi.mocked(db.query.users.findFirst).mockResolvedValue({ id: 'u1' } as any);
         vi.mocked(db.query.loginAttempts.findFirst).mockResolvedValue({ lockedUntil: new Date(Date.now() + 100000) } as any);
         const service = container.get(SecurityService);
-        expect(await service.isAccountLocked('e', 'i')).toBe(true);
+        expect(await service.isAccountLocked('e', 'i', 'realtutorialhub')).toBe(true);
     });
 });
 

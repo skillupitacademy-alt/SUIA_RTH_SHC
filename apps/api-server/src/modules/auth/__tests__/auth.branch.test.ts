@@ -70,14 +70,14 @@ describe('Auth & Security branch coverage', () => {
 
     it('AuthService.resetPassword failure audit (Lines 405-406)', async () => {
         vi.mocked(db.query.passwordResetTokens.findFirst).mockResolvedValue(undefined);
-        await expect(container.get(AuthService).resetPassword('invalid', 'pass')).rejects.toThrow('Invalid or expired password reset link');
+        await expect(container.get(AuthService).resetPassword('invalid', 'pass', undefined, 'realtutorialhub')).rejects.toThrow('Invalid or expired password reset link');
     });
 
     it('SecurityService.trackLoginAttempt insertion (Line 45)', async () => {
         vi.mocked(db.query.users.findFirst).mockResolvedValue({ id: 'u1' } as any);
         vi.mocked(db.query.loginAttempts.findFirst).mockResolvedValue(undefined);
         const service = container.get(SecurityService);
-        await service.trackLoginAttempt('1.1.1.1', 'user@example.com', false);
+        await service.trackLoginAttempt('1.1.1.1', 'user@example.com', false, 'realtutorialhub');
         expect(db.insert).toHaveBeenCalled();
     });
 
@@ -85,7 +85,7 @@ describe('Auth & Security branch coverage', () => {
         vi.mocked(db.query.users.findFirst).mockResolvedValue({ id: 'u1' } as any);
         vi.mocked(db.query.loginAttempts.findFirst).mockResolvedValue({ id: 'la1', attempts: 9 } as any);
         const service = container.get(SecurityService);
-        await service.trackLoginAttempt('2.2.2.2', 'user@example.com', false);
+        await service.trackLoginAttempt('2.2.2.2', 'user@example.com', false, 'realtutorialhub');
         expect(db.update).toHaveBeenCalled();
     });
 

@@ -1,5 +1,6 @@
 'use client';
 
+import type { PortalIdentity } from '@quiz/types';
 import { Eye, EyeOff, Lock, Mail, ShieldCheck } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { type FormEvent, useState } from 'react';
@@ -26,11 +27,6 @@ type LoginResponse = {
   _error?: string;
 };
 
-function getPortalIdentityFromHostname(hostname: string): 'admin' | 'user' {
-  const normalized = hostname.trim().toLowerCase();
-  return normalized.startsWith('admin.') || normalized.includes('.admin.') ? 'admin' : 'user';
-}
-
 function readResponseMessage(value: unknown): string | null {
   if (typeof value !== 'string') return null;
 
@@ -41,8 +37,7 @@ function readResponseMessage(value: unknown): string | null {
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const portalIdentity =
-    typeof window === 'undefined' ? 'admin' : getPortalIdentityFromHostname(window.location.hostname);
+  const portalIdentity: PortalIdentity = 'admin';
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');

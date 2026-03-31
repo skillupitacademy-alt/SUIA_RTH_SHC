@@ -159,6 +159,18 @@ export class AuthService {
     return this.tokenRotationService.rotate(refreshToken);
   }
 
+  async getSessions(userId: string) {
+    return this.userRepo.listActiveSessions(userId);
+  }
+
+  async revokeSession(userId: string, sessionId: string): Promise<void> {
+    await this.userRepo.revokeSessionById(userId, sessionId, 'user_revoked');
+  }
+
+  async revokeAllUserSessions(userId: string): Promise<void> {
+    await this.userRepo.revokeAllSessions(userId, 'user_revoked_all');
+  }
+
   async logout(userId: string, familyId: string): Promise<void> {
     await this.userRepo.revokeSessionByFamily(userId, familyId, 'logout');
     await this.redis.del(`skillhubcore:refresh:${familyId}`);

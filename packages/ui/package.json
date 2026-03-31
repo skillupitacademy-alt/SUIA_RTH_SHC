@@ -9,6 +9,7 @@
     "./package.json": "./package.json"
   },
     "dependencies": {
+        "@quiz/types": "workspace:*",
         "@radix-ui/react-alert-dialog": "^1.1.0",
         "dompurify": "^3.3.1",
         "clsx": "^2.1.1",

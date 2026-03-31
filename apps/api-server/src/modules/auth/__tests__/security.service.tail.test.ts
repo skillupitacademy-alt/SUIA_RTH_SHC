@@ -27,7 +27,7 @@ describe('SecurityService Tail Coverage', () => {
     vi.mocked(db.query.users.findFirst).mockResolvedValue(undefined);
     container.reset();
     const service = container.get(SecurityService);
-    await expect(service.isAccountLocked('missing@example.com', '1.1.1.1')).resolves.toBe(false);
+    await expect(service.isAccountLocked('missing@example.com', '1.1.1.1', 'realtutorialhub')).resolves.toBe(false);
   });
 });
 

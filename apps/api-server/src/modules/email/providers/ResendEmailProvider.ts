@@ -18,7 +18,7 @@ export class ResendEmailProvider implements IEmailProvider {
   async sendEmail(options: EmailOptions): Promise<void> {
     try {
       const { data, error } = await this.resend.emails.send({
-        from: this.from,
+        from: options.from ?? this.from,
         to: options.to,
         subject: options.subject,
         html: options.html,

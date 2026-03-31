@@ -7,7 +7,7 @@ import { AuthService } from '../auth.service'
 vi.mock('@/modules/email/EmailService');
 
 describe('AuthService.forgotPassword env guards', () => {
-  it('throws when admin URL env is missing for admin user', async () => {
+  it('throws when APP_URL env is missing for admin user', async () => {
     ;(db.query as any) = {
       users: {
         findFirst: vi.fn().mockResolvedValue({
@@ -21,12 +21,12 @@ describe('AuthService.forgotPassword env guards', () => {
     ;(db.insert as any) = vi.fn().mockReturnValue({
       values: vi.fn().mockReturnThis(),
     })
-    process.env.NEXT_PUBLIC_ADMIN_URL = ''
+    vi.stubEnv('APP_URL', '')
     const { container } = await import('../../core/container')
-    await expect(container.get(AuthService).forgotPassword('a@example.com')).rejects.toThrow(/NEXT_PUBLIC_ADMIN_URL/)
+    await expect(container.get(AuthService).forgotPassword('a@example.com', undefined, 'realtutorialhub')).rejects.toThrow(/APP_URL/)
   })
 
-  it('throws when web URL env is missing for non-admin user', async () => {
+  it('throws when APP_URL env is missing for non-admin user', async () => {
     ;(db.query as any) = {
       users: {
         findFirst: vi.fn().mockResolvedValue({
@@ -40,8 +40,8 @@ describe('AuthService.forgotPassword env guards', () => {
     ;(db.insert as any) = vi.fn().mockReturnValue({
       values: vi.fn().mockReturnThis(),
     })
-    process.env.NEXT_PUBLIC_WEB_APP_URL = ''
+    vi.stubEnv('APP_URL', '')
     const { container } = await import('../../core/container')
-    await expect(container.get(AuthService).forgotPassword('u@example.com')).rejects.toThrow(/NEXT_PUBLIC_WEB_APP_URL/)
+    await expect(container.get(AuthService).forgotPassword('u@example.com', undefined, 'realtutorialhub')).rejects.toThrow(/APP_URL/)
   })
 })

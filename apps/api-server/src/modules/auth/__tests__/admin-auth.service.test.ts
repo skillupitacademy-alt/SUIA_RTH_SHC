@@ -88,13 +88,13 @@ describe('AdminAuthService (unit)', () => {
       },
     ]);
 
-    const response = await AdminAuthService.login(FIXTURE_EMAIL, 'pw', '1.1.1.1');
+    const response = await AdminAuthService.login(FIXTURE_EMAIL, 'pw', '1.1.1.1', 'admin', 'realtutorialhub');
 
     expect(response.user.id).toBe(FIXTURE_ID);
     expect(response.user.name).toBe('Admin');
     expect(response.accessToken).toBe('adm-access-token');
     expect(response.refreshToken).toBe('adm-refresh-token');
-    expect(h.security.trackLoginAttempt).toHaveBeenCalledWith('1.1.1.1', FIXTURE_EMAIL, true);
+    expect(h.security.trackLoginAttempt).toHaveBeenCalledWith('1.1.1.1', FIXTURE_EMAIL, true, 'realtutorialhub');
   });
 
   it('defaults primary role to admin when first role is undefined', async () => {
@@ -121,7 +121,7 @@ describe('AdminAuthService (unit)', () => {
       },
     ]);
 
-    const response = await AdminAuthService.login(FIXTURE_EMAIL, 'pw', '1.1.1.1');
+    const response = await AdminAuthService.login(FIXTURE_EMAIL, 'pw', '1.1.1.1', 'admin', 'realtutorialhub');
 
     expect(response.user.role).toBe('admin');
   });
@@ -130,7 +130,7 @@ describe('AdminAuthService (unit)', () => {
     const { AdminAuthService } = await import('@/modules/auth/admin-auth.service');
     h.security.isAccountLocked.mockResolvedValue(true);
 
-    await expect(AdminAuthService.login(FIXTURE_EMAIL, 'pw', '1.1.1.1')).rejects.toThrow(
+    await expect(AdminAuthService.login(FIXTURE_EMAIL, 'pw', '1.1.1.1', 'admin', 'realtutorialhub')).rejects.toThrow(
       'Account access restricted. Contact Governance.'
     );
     expect(h.audit.log).toHaveBeenCalled();
@@ -141,8 +141,8 @@ describe('AdminAuthService (unit)', () => {
     h.security.isAccountLocked.mockResolvedValue(false);
     h.selectWhereQueue.push([]);
 
-    await expect(AdminAuthService.login(FIXTURE_EMAIL, 'pw', '1.1.1.1')).rejects.toThrow('Access Denied');
-    expect(h.security.trackLoginAttempt).toHaveBeenCalledWith('1.1.1.1', FIXTURE_EMAIL, false);
+    await expect(AdminAuthService.login(FIXTURE_EMAIL, 'pw', '1.1.1.1', 'admin', 'realtutorialhub')).rejects.toThrow('Access Denied');
+    expect(h.security.trackLoginAttempt).toHaveBeenCalledWith('1.1.1.1', FIXTURE_EMAIL, false, 'realtutorialhub');
   });
 
   it('denies access when password does not match', async () => {
@@ -159,7 +159,7 @@ describe('AdminAuthService (unit)', () => {
       },
     ]);
 
-    await expect(AdminAuthService.login(FIXTURE_EMAIL, 'pw', '1.1.1.1')).rejects.toThrow('Access Denied');
+    await expect(AdminAuthService.login(FIXTURE_EMAIL, 'pw', '1.1.1.1', 'admin', 'realtutorialhub')).rejects.toThrow('Access Denied');
     expect(h.audit.log).toHaveBeenCalled();
   });
 
@@ -177,7 +177,7 @@ describe('AdminAuthService (unit)', () => {
       },
     ]);
 
-    await expect(AdminAuthService.login(FIXTURE_EMAIL, 'pw', '1.1.1.1')).rejects.toThrow(
+    await expect(AdminAuthService.login(FIXTURE_EMAIL, 'pw', '1.1.1.1', 'admin', 'realtutorialhub')).rejects.toThrow(
       'Unauthorized: Governance Privileges Required'
     );
     expect(h.audit.log).toHaveBeenCalled();
@@ -197,7 +197,7 @@ describe('AdminAuthService (unit)', () => {
       },
     ]);
 
-    await expect(AdminAuthService.login(FIXTURE_EMAIL, 'pw', '1.1.1.1', 'infra')).rejects.toThrow(
+    await expect(AdminAuthService.login(FIXTURE_EMAIL, 'pw', '1.1.1.1', 'infra', 'realtutorialhub')).rejects.toThrow(
       'Access Denied: Infrastructure privileges required for this portal'
     );
     expect(h.audit.log).toHaveBeenCalled();

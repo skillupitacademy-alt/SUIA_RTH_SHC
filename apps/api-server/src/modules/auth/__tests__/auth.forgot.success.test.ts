@@ -21,11 +21,11 @@ describe('AuthService.forgotPassword success path', () => {
     ;(db.insert as any) = vi.fn().mockReturnValue({
       values: vi.fn().mockReturnThis(),
     })
-    process.env.NEXT_PUBLIC_WEB_APP_URL = 'https://app.test'
+    process.env.APP_URL = 'https://app.test'
 
     const emailSpy = vi.spyOn(EmailService, 'sendPasswordResetEmail').mockResolvedValue(undefined as any);
     const { container } = await import('../../core/container')
-    await expect(container.get(AuthService).forgotPassword('user@example.com')).resolves.toBe(true)
+    await expect(container.get(AuthService).forgotPassword('user@example.com', undefined, 'realtutorialhub')).resolves.toBe(true)
     expect(emailSpy).toHaveBeenCalled()
   })
 })

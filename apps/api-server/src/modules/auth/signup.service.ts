@@ -2,10 +2,12 @@ import crypto from 'crypto';
 
 import { eventBus } from '@/lib/event-bus';
 import { AppEvents } from '@/lib/events';
+import { EmailService } from '@/modules/email/EmailService';
 import { AuditService } from '@/modules/auth/audit.service';
 import { PasswordService } from '@/modules/auth/password.service';
 import { UserRepository } from '@/modules/auth/repositories/user.repository';
 import { container } from '@/modules/core/container';
+import type { RequestBrand } from '@/lib/request-brand';
 
 export class SignupService {
   constructor(
@@ -14,7 +16,7 @@ export class SignupService {
     private passwordService = container.get(PasswordService)
   ) {}
 
-  async signup(email: string, password: string, name: string, ip?: string) {
+  async signup(email: string, password: string, name: string, ip?: string, brand: RequestBrand = 'realtutorialhub') {
     await this.auditService.log({ action: 'signup_attempt', metadata: { email }, ip });
 
     const existingUser = await this.userRepo.findByEmail(email);
@@ -42,6 +44,18 @@ export class SignupService {
       return user;
     });
 
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    await this.userRepo.createToken(newUser.id, verificationToken, verificationExpiresAt);
+
+    const baseUrl = process.env.APP_URL;
+    if (baseUrl === undefined || baseUrl === null || baseUrl.trim() === '') {
+      throw new Error('Environment variable APP_URL is required for email verification');
+    }
+
+    const verificationUrl = `${baseUrl.replace(/\/$/, '')}/verify-email?token=${verificationToken}`;
+    await EmailService.sendVerificationEmail(email, verificationUrl, brand);
+
     if (newUser?.id) {
       await this.auditService.log({ userId: newUser.id, action: 'signup_success', ip });
     }
@@ -58,7 +72,8 @@ export class SignupService {
     return newUser;
   }
 
-  async verifyEmail(token: string, ip?: string) {
+  async verifyEmail(token: string, ip?: string, brand: RequestBrand = 'realtutorialhub') {
+    // brand reserved for future audit logging
     let verifiedToken = await this.userRepo.findToken(token);
     const isTestEnv = process.env.NODE_ENV === 'test' || process.env.VITEST === 'true' || process.env.VITEST_WORKER_ID !== undefined;
     if (verifiedToken === undefined && isTestEnv) {
@@ -93,7 +108,7 @@ export class SignupService {
     return true; 
   }
 
-  async resendVerification(userId: string, ip?: string) {
+  async resendVerification(userId: string, ip?: string, brand: RequestBrand = 'realtutorialhub') {
     const user = await this.userRepo.findById(userId);
 
     if (user === undefined) throw new Error('User not found');
@@ -104,7 +119,14 @@ export class SignupService {
 
     await this.userRepo.createToken(userId, token, expiresAt);
 
-    // In a real app, send email here.
+    const baseUrl = process.env.APP_URL;
+    if (baseUrl === undefined || baseUrl === null || baseUrl.trim() === '') {
+      throw new Error('Environment variable APP_URL is required for email verification');
+    }
+
+    const verificationUrl = `${baseUrl.replace(/\/$/, '')}/verify-email?token=${token}`;
+    await EmailService.sendVerificationEmail(user.email, verificationUrl, brand);
+
     await this.auditService.log({ userId, action: 'email_verification_resend_triggered', ip });
     return true;
   }

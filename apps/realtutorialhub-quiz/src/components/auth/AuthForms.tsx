@@ -10,6 +10,8 @@ import { apiClient, normalizeSkillHubUser } from '@quiz/api-client';
 import { recordClientMetric, METRICS } from '@quiz/observability';
 import { getApiBase } from '@/utils/apiBase';
 
+const PORTAL_BRAND = 'realtutorialhub' as const;
+
 const LOGIN_ENDPOINT = `${getApiBase()}/auth/login`;
 
 type LoginResponse = {
@@ -320,7 +322,7 @@ export function ForgotPasswordForm() {
         try {
             const formData = new FormData(e.currentTarget);
             const email = formData.get('email')?.toString() ?? '';
-            await apiClient.auth.forgotPassword(email);
+            await apiClient.auth.forgotPassword(email, PORTAL_BRAND);
             setSuccess(true);
         } catch {
             // Always show neutral success message to prevent email enumeration
@@ -421,7 +423,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
         setError(null);
 
         try {
-            await apiClient.auth.resetPassword(token, password);
+            await apiClient.auth.resetPassword(token, password, PORTAL_BRAND);
             setSuccess(true);
         } catch {
             setError("Unable to reset password. Please try again.");

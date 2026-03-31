@@ -57,6 +57,6 @@ describe('AuthService login edge branches', () => {
     mockPasswordService.compare.mockResolvedValue(true);
 
     const service = container.get(AuthService);
-    await expect(service.login('t@t.com', 'pw')).rejects.toThrow('Account has been blocked');
+    await expect(service.login('t@t.com', 'pw', 'unknown', 'realtutorialhub')).rejects.toThrow('Account has been blocked');
   });
 });

@@ -90,7 +90,7 @@ export class FetchClient {
     return null;
   }
 
-  public setPortalIdentity(identity: 'infrastructure' | 'admin' | 'user' | null) {
+  public setPortalIdentity(identity: string | null) {
     this.portalIdentity = identity;
   }
 

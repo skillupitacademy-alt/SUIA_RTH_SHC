@@ -7,13 +7,14 @@ import { AuditService } from './audit.service';
 import { PasswordService } from './password.service';
 import { SecurityService } from './security.service';
 import { TokenService } from './token.service';
+import type { RequestBrand } from '@/lib/request-brand';
 
 export class AdminAuthService {
-  static async login(email: string, password: string, ip: string = 'unknown', requestedAudience: string = 'admin', brand?: string) {
+  static async login(email: string, password: string, ip: string = 'unknown', requestedAudience: string = 'admin', brand: RequestBrand = 'realtutorialhub') {
     const cleanEmail = email.trim();
 
     // 1. Check Lockout
-    if (await container.get(SecurityService).isAccountLocked(cleanEmail, ip)) {
+    if (await container.get(SecurityService).isAccountLocked(cleanEmail, ip, brand)) {
       await container.get(AuditService).log({ action: 'admin_login_locked', metadata: { email: cleanEmail }, ip });
       throw new Error('Account access restricted. Contact Governance.');
     }
@@ -33,7 +34,7 @@ export class AdminAuthService {
     .where(eq(users.email, cleanEmail));
     
     if (_usersWithRoles.length === 0) {
-      await container.get(SecurityService).trackLoginAttempt(ip, cleanEmail, false);
+      await container.get(SecurityService).trackLoginAttempt(ip, cleanEmail, false, brand);
       throw new Error('Access Denied');
     }
 
@@ -43,7 +44,7 @@ export class AdminAuthService {
     const isPasswordMatch = await container.get(PasswordService).compare(password, user.passwordHash);
 
     if (isPasswordMatch === false) {
-      await container.get(SecurityService).trackLoginAttempt(ip, cleanEmail, false);
+      await container.get(SecurityService).trackLoginAttempt(ip, cleanEmail, false, brand);
       await container.get(AuditService).log({ action: 'admin_login_failed', metadata: { email: cleanEmail, reason: 'credentials' }, ip });
       throw new Error('Access Denied');
     }
@@ -52,7 +53,7 @@ export class AdminAuthService {
     const isAdmin = roleNames.includes('ADMIN') || roleNames.includes('SUPER_ADMIN') || roleNames.includes('INFRASTRUCTURE');
 
     if (isAdmin === false) {
-      await container.get(SecurityService).trackLoginAttempt(ip, cleanEmail, false);
+      await container.get(SecurityService).trackLoginAttempt(ip, cleanEmail, false, brand);
       await container.get(AuditService).log({ userId: user.id, action: 'admin_access_violation', metadata: { email: cleanEmail, role: roleNames }, ip });
       throw new Error('Unauthorized: Governance Privileges Required');
     }
@@ -64,7 +65,7 @@ export class AdminAuthService {
     }
 
     // 5. Success
-    await container.get(SecurityService).trackLoginAttempt(ip, cleanEmail, true);
+    await container.get(SecurityService).trackLoginAttempt(ip, cleanEmail, true, brand);
     await container.get(AuditService).log({ userId: user.id, action: 'admin_login_success', ip });
 
     // 6. Generate Admin-Scoped Tokens with Portal Identity

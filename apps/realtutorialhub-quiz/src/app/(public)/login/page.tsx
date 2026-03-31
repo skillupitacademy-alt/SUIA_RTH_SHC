@@ -1,5 +1,6 @@
 'use client';
 
+import type { PortalIdentity } from '@quiz/types';
 import { Eye, EyeOff, Loader2, ShieldCheck } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
@@ -31,11 +32,6 @@ function readResponseMessage(value: unknown): string | null {
   return trimmed === '' ? null : trimmed;
 }
 
-function getPortalIdentityFromHostname(hostname: string): 'admin' | 'user' {
-  const normalized = hostname.trim().toLowerCase();
-  return normalized.startsWith('admin.') || normalized.includes('.admin.') ? 'admin' : 'user';
-}
-
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -46,8 +42,7 @@ function LoginForm() {
       : loginReason === 'session_expired'
         ? 'Your session expired. Please sign in again to continue.'
         : null;
-  const portalIdentity =
-    typeof window === 'undefined' ? 'user' : getPortalIdentityFromHostname(window.location.hostname);
+  const portalIdentity: PortalIdentity = 'user';
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

@@ -12,7 +12,7 @@ describe('AuthService.refresh edge cases', () => {
     vi.spyOn(AuditService.prototype, 'log').mockResolvedValue(undefined as any)
 
     const { container } = await import('../../core/container')
-    await expect(container.get(AuthService).refresh('bad-token')).rejects.toThrow()
+    await expect(container.get(AuthService).refresh('bad-token', undefined, undefined, 'user', 'realtutorialhub')).rejects.toThrow()
   })
 
   it('revokes tokens when hash not found', async () => {
@@ -23,6 +23,6 @@ describe('AuthService.refresh edge cases', () => {
     vi.spyOn(AuditService.prototype, 'log').mockResolvedValue(undefined as any)
 
     const { container } = await import('../../core/container')
-    await expect(container.get(AuthService).refresh('tok')).rejects.toThrow()
+    await expect(container.get(AuthService).refresh('tok', undefined, undefined, 'user', 'realtutorialhub')).rejects.toThrow()
   })
 })

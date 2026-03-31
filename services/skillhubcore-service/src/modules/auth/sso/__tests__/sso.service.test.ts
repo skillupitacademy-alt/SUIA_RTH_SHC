@@ -92,6 +92,18 @@ class FakeRepo implements IUserRepository {
     return {};
   }
 
+  async listActiveSessions() {
+    return [];
+  }
+
+  async findSessionById() {
+    return null;
+  }
+
+  async revokeSessionById() {
+    return undefined;
+  }
+
   async findSessionByFamily() {
     return undefined;
   }

@@ -31,7 +31,7 @@ describe('SecurityService Coverage', () => {
   it('trackLoginAttempt: success deletes attempts', async () => {
     vi.mocked(db.query.users.findFirst).mockResolvedValue({ id: 'u1' } as any);
     const service = container.get(SecurityService);
-    await service.trackLoginAttempt('1.1.1.1', 'a@b.com', true);
+    await service.trackLoginAttempt('1.1.1.1', 'a@b.com', true, 'realtutorialhub');
     expect(db.delete).toHaveBeenCalled();
   });
 
@@ -39,7 +39,7 @@ describe('SecurityService Coverage', () => {
     vi.mocked(db.query.users.findFirst).mockResolvedValue({ id: 'u1' } as any);
     vi.mocked(db.query.loginAttempts.findFirst).mockResolvedValue({ id: 'la1', attempts: 9 } as any);
     const service = container.get(SecurityService);
-    await service.trackLoginAttempt('1.1.1.1', 'a@b.com', false); // 10 attempts -> lock
+    await service.trackLoginAttempt('1.1.1.1', 'a@b.com', false, 'realtutorialhub'); // 10 attempts -> lock
     expect(db.update).toHaveBeenCalled();
   });
 
@@ -47,14 +47,14 @@ describe('SecurityService Coverage', () => {
     vi.mocked(db.query.users.findFirst).mockResolvedValue({ id: 'u1' } as any);
     vi.mocked(db.query.loginAttempts.findFirst).mockResolvedValue({ id: 'la1', lockedUntil: new Date(Date.now() + 100000) } as any);
     const service = container.get(SecurityService);
-    const locked = await service.isAccountLocked('a@b.com', '1.1.1.1');
+    const locked = await service.isAccountLocked('a@b.com', '1.1.1.1', 'realtutorialhub');
     expect(locked).toBe(true);
   });
 
   it('isAccountLocked: returns false if user not found', async () => {
       vi.mocked(db.query.users.findFirst).mockResolvedValue(undefined);
       const service = container.get(SecurityService);
-      const result = await service.isAccountLocked('none@b.com', '1.1.1.1');
+      const result = await service.isAccountLocked('none@b.com', '1.1.1.1', 'realtutorialhub');
       expect(result).toBe(false);
   });
 });

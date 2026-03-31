@@ -10,3 +10,4 @@ export * from './project.types';
 export * from './project-errors';
 export * from './tutorial-content.schema';
 export * from './tutorial-repositories.types';
+export * from './portal';

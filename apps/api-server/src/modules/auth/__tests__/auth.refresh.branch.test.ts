@@ -47,7 +47,7 @@ describe('AuthService.refresh generic branches', () => {
         mockTokenService.generateRefreshToken.mockResolvedValue('refresh');
 
         const service = container.get(AuthService);
-        const result = await service.refresh('token');
+        const result = await service.refresh('token', undefined, undefined, 'user', 'realtutorialhub');
         expect(result.accessToken).toBe('access');
         expect(mockTokenRepo.revokeById).toHaveBeenCalledWith('s1');
     });

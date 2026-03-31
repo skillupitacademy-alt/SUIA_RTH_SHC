@@ -6,7 +6,7 @@ import { Loader2, UserPlus2 } from 'lucide-react';
 
 import { useSkillupAuthStore } from '@/store/auth-store';
 
-const API_BASE = (process.env.NEXT_PUBLIC_API_URL?.trim() ?? 'https://api.realtutorialhub.com/api').replace(/\/+$/, '');
+const API_BASE = (process.env.NEXT_PUBLIC_API_URL?.trim() ?? 'https://api.skillupitacademy.com/api').replace(/\/+$/, '');
 
 type FormState = {
   name: string;

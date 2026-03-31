@@ -65,7 +65,7 @@ export default function RootLayout({
                     <ZErrorBoundary appId="web-app" sessionIdKey="quiz_session_id" recoveryMode="reload">
                         <ThemeProvider>
                             <QueryProvider>
-                                <BrowserAuthFetchProvider />
+                                <BrowserAuthFetchProvider portalIdentity="user" />
                                 <SecurityMuzzle />
                                 <GlobalNavigationLoader />
                                 {children}

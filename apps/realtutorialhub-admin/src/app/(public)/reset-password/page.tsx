@@ -9,6 +9,8 @@ import { Suspense, useEffect, useState } from 'react';
 
 import { clientLogger } from '@/utils/clientLogger';
 
+const PORTAL_BRAND = 'realtutorialhub' as const;
+
 function ResetPasswordForm() {
     const searchParams = useSearchParams();
     const router = useRouter();
@@ -61,7 +63,7 @@ function ResetPasswordForm() {
         setError('');
 
         try {
-            await apiClient.auth.resetPassword(token, newPassword);
+            await apiClient.auth.resetPassword(token, newPassword, PORTAL_BRAND);
             setIsSuccess(true);
             setTimeout(() => router.push('/login'), 5000); // Redirect after 5s
         } catch (err: unknown) {

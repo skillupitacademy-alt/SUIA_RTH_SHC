@@ -5,6 +5,7 @@ import { UserRepository } from '@/modules/auth/repositories/user.repository';
 import { SecurityService } from '@/modules/auth/security.service';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
+import type { RequestBrand } from '@/lib/request-brand';
 
 export class LoginService {
   constructor(
@@ -16,8 +17,8 @@ export class LoginService {
     private tokenService = container.get(TokenService)
   ) {}
 
-  async login(email: string, password: string, ip: string = 'unknown', brand?: string) {
-    if (await this.securityService.isAccountLocked(email, ip)) {
+  async login(email: string, password: string, ip: string = 'unknown', brand: RequestBrand = 'realtutorialhub') {
+    if (await this.securityService.isAccountLocked(email, ip, brand)) {
       await this.auditService.log({ action: 'login_locked', metadata: { email }, ip });
       throw new Error('Account temporarily locked. Try again later.');
     }
@@ -25,7 +26,7 @@ export class LoginService {
     const user = await this.userRepo.findWithDetails(email);
 
     if (user === undefined || (await this.passwordService.compare(password, user.passwordHash)) === false) {
-      await this.securityService.trackLoginAttempt(ip, email, false);
+      await this.securityService.trackLoginAttempt(ip, email, false, brand);
       await this.auditService.log({ action: 'login_failed', metadata: { email }, ip });
       throw new Error('Invalid credentials');
     }
@@ -38,7 +39,7 @@ export class LoginService {
     // Update Last Active
     await this.userRepo.updateLastActive(user.id);
 
-    await this.securityService.trackLoginAttempt(ip, email, true);
+    await this.securityService.trackLoginAttempt(ip, email, true, brand);
     await this.auditService.log({ userId: user.id, action: 'login_success', ip });
 
     const roleNames = user.userRoles.map(ur => ur.role.name);

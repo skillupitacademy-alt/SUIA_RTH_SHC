@@ -24,7 +24,7 @@ describe('SecurityService Early Coverage', () => {
     vi.mocked(db.query.users.findFirst).mockResolvedValue(undefined);
     container.reset();
     const service = container.get(SecurityService);
-    const locked = await service.isAccountLocked('missing@example.com', '1.1.1.1');
+    const locked = await service.isAccountLocked('missing@example.com', '1.1.1.1', 'realtutorialhub');
     expect(locked).toBe(false);
   });
 });

@@ -78,6 +78,41 @@ class FakeRepo implements IUserRepository {
     this.sessions.set(input.jwtFamily, { userId: input.userId, jwtFamily: input.jwtFamily, platform: input.platform, revokedAt: null });
     return input;
   }
+  async listActiveSessions(userId: string) {
+    return [...this.sessions.values()]
+      .filter((session) => session.userId === userId && session.revokedAt === null)
+      .map((session) => ({
+        id: session.jwtFamily,
+        userId: session.userId,
+        familyId: session.jwtFamily,
+        platform: session.platform,
+        revokedAt: session.revokedAt,
+        deletedAt: null,
+        createdAt: new Date(),
+      }));
+  }
+  async findSessionById(userId: string, sessionId: string) {
+    const session = this.sessions.get(sessionId);
+    if (session === undefined || session.userId !== userId) {
+      return null;
+    }
+    return {
+      id: sessionId,
+      userId: session.userId,
+      familyId: session.jwtFamily,
+      platform: session.platform,
+      revokedAt: session.revokedAt,
+      deletedAt: null,
+      createdAt: new Date(),
+    };
+  }
+  async revokeSessionById(userId: string, sessionId: string) {
+    const session = this.sessions.get(sessionId);
+    if (session === undefined || session.userId !== userId) {
+      throw new Error('Session not found');
+    }
+    session.revokedAt = new Date();
+  }
   async findSessionByFamily(userId: string, familyId: string) {
     const session = this.sessions.get(familyId);
     return session !== undefined && session.userId === userId ? session : undefined;

@@ -57,7 +57,12 @@ vi.mock('../password.service', () => ({ PasswordService: vi.fn().mockImplementat
 vi.mock('../repositories/user.repository', () => ({ UserRepository: vi.fn().mockImplementation(() => mockUserRepo) }));
 vi.mock('../repositories/token.repository', () => ({ TokenRepository: vi.fn().mockImplementation(() => mockTokenRepo) }));
 vi.mock('../../exam-engine/repositories/exam.repository', () => ({ ExamRepository: vi.fn().mockImplementation(() => mockExamRepo) }));
-vi.mock('../../email/EmailService', () => ({ EmailService: { sendPasswordResetEmail: vi.fn() } }));
+vi.mock('../../email/EmailService', () => ({
+  EmailService: {
+    sendPasswordResetEmail: vi.fn(),
+    sendVerificationEmail: vi.fn(),
+  }
+}));
 
 vi.mock('jose', () => ({
   decodeJwt: vi.fn().mockReturnValue({ isAdmin: false, userId: 'u1' })
@@ -67,6 +72,7 @@ describe('AuthService (Main Suite)', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     container.reset();
+    vi.stubEnv('APP_URL', 'https://app.test');
     
     // Explicit registration
     container.register(TokenService, mockTokenService as any);
@@ -107,13 +113,13 @@ describe('AuthService (Main Suite)', () => {
   describe('login', () => {
     it('throws if account is locked', async () => {
       mockSecurityService.isAccountLocked.mockResolvedValue(true);
-      await expect(container.get(AuthService).login('t@t.com', 'pw')).rejects.toThrow('Account temporarily locked');
+      await expect(container.get(AuthService).login('t@t.com', 'pw', 'unknown', 'realtutorialhub')).rejects.toThrow('Account temporarily locked');
     });
 
     it('throws on invalid credentials', async () => {
       mockUserRepo.findWithDetails.mockResolvedValue({ passwordHash: 'h' } as any);
       mockPasswordService.compare.mockResolvedValue(false);
-      await expect(container.get(AuthService).login('t@t.com', 'pw', '1.1.1.1')).rejects.toThrow('Invalid credentials');
+      await expect(container.get(AuthService).login('t@t.com', 'pw', '1.1.1.1', 'realtutorialhub')).rejects.toThrow('Invalid credentials');
     });
 
     it('returns tokens and detects admin roles', async () => {
@@ -122,7 +128,7 @@ describe('AuthService (Main Suite)', () => {
         userRoles: [{ role: { name: 'ADMIN' } }]
       } as any);
       
-      const result = await container.get(AuthService).login('t@t.com', 'pw', '1.1.1.1');
+      const result = await container.get(AuthService).login('t@t.com', 'pw', '1.1.1.1', 'realtutorialhub');
       expect(result.isAdmin).toBe(true);
       expect(result.accessToken).toBe('access');
     });
@@ -131,12 +137,12 @@ describe('AuthService (Main Suite)', () => {
   describe('refresh', () => {
     it('detects token reuse', async () => {
       mockTokenRepo.findByHash.mockResolvedValue(undefined);
-      await expect(container.get(AuthService).refresh('token')).rejects.toThrow('Security Alert');
+      await expect(container.get(AuthService).refresh('token', undefined, undefined, 'user', 'realtutorialhub')).rejects.toThrow('Security Alert');
     });
 
     it('throws if refresh token is expired according to DB', async () => {
       mockTokenRepo.findByHash.mockResolvedValue({ expiresAt: new Date(Date.now() - 1000) } as any);
-      await expect(container.get(AuthService).refresh('token')).rejects.toThrow('Refresh _token expired');
+      await expect(container.get(AuthService).refresh('token', undefined, undefined, 'user', 'realtutorialhub')).rejects.toThrow('Refresh _token expired');
     });
 
     it('handles exam grace window correctly', async () => {
@@ -148,7 +154,7 @@ describe('AuthService (Main Suite)', () => {
         id: 'e1', userId: 'u1', status: 'started', durationSeconds: 3600, startedAt: new Date(Date.now() - 1000) 
       } as any);
 
-      await container.get(AuthService).refresh('token', 'ip', 'e1');
+      await container.get(AuthService).refresh('token', 'ip', 'e1', 'user', 'realtutorialhub');
       expect(mockTokenService.generateAccessToken).toHaveBeenCalledWith(expect.any(Object), expect.any(Number));
     });
   });
@@ -164,19 +170,19 @@ describe('AuthService (Main Suite)', () => {
   describe('forgotPassword', () => {
     it('prevents enumeration', async () => {
       mockUserRepo.findWithDetails.mockResolvedValue(undefined);
-      expect(await container.get(AuthService).forgotPassword('unknown@test.com')).toBe(true);
+      expect(await container.get(AuthService).forgotPassword('unknown@test.com', undefined, 'realtutorialhub')).toBe(true);
     });
 
     it('chooses correct portal URL for admins', async () => {
-      vi.stubEnv('NEXT_PUBLIC_ADMIN_URL', 'http://admin.com');
       mockUserRepo.findWithDetails.mockResolvedValue({ 
         id: 'u1', email: 'a@a.com', userRoles: [{ role: { name: 'ADMIN' } }] 
       } as any);
 
-      await container.get(AuthService).forgotPassword('a@a.com');
+      await container.get(AuthService).forgotPassword('a@a.com', undefined, 'realtutorialhub');
       expect(EmailService.sendPasswordResetEmail).toHaveBeenCalledWith(
         expect.any(String),
-        expect.stringContaining('http://admin.com')
+        expect.stringContaining('https://app.test'),
+        'realtutorialhub'
       );
     });
   });
@@ -187,6 +193,7 @@ describe('AuthService (Main Suite)', () => {
       const result = await container.get(AuthService).resendVerification('u1');
       expect(result).toBe(true);
       expect(mockUserRepo.createToken).toHaveBeenCalled();
+      expect(EmailService.sendVerificationEmail).toHaveBeenCalled();
     });
   });
 });

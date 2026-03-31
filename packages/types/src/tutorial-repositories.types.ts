@@ -303,6 +303,16 @@ export interface PeopleSubscriptionRecord {
   deletedAt: Date | null;
 }
 
+export interface PeopleSessionRecord {
+  id: string;
+  userId: string;
+  familyId: string | null;
+  platform: PeoplePlatform;
+  revokedAt: Date | null;
+  deletedAt: Date | null;
+  createdAt: Date;
+}
+
 export interface AuthUserDTO {
   id: string;
   email: string;
@@ -343,6 +353,9 @@ export interface IUserRepository {
     platform: PeoplePlatform;
     refreshTokenHash: string;
   }): Promise<unknown>;
+  listActiveSessions(userId: string): Promise<PeopleSessionRecord[]>;
+  findSessionById(userId: string, sessionId: string): Promise<PeopleSessionRecord | null>;
+  revokeSessionById(userId: string, sessionId: string, reason: string): Promise<void>;
   findSessionByFamily(userId: string, familyId: string): Promise<unknown>;
   revokeSessionByFamily(userId: string, familyId: string, reason: string): Promise<unknown>;
   revokeAllSessions(userId: string, reason: string): Promise<unknown>;

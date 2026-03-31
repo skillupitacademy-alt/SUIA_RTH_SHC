@@ -1,12 +1,14 @@
 import { db, loginAttempts, users } from '@quiz/db';
 import { and,eq } from 'drizzle-orm';
 
+import type { RequestBrand } from '@/lib/request-brand';
+
 const MAX_ATTEMPTS = 5;
 
 export class SecurityService {
   constructor(private dbInstance = db) {}
 
-  async trackLoginAttempt(ip: string, email: string, success: boolean) {
+  async trackLoginAttempt(ip: string, email: string, success: boolean, brand: RequestBrand = 'realtutorialhub') {
     const _user = await this.dbInstance.query.users.findFirst({
       where: eq(users.email, email),
     });
@@ -15,12 +17,12 @@ export class SecurityService {
 
     if (success === true) {
       await this.dbInstance.delete(loginAttempts)
-        .where(and(eq(loginAttempts.userId, _user.id), eq(loginAttempts.ip, ip)));
+        .where(and(eq(loginAttempts.userId, _user.id), eq(loginAttempts.ip, ip), eq(loginAttempts.brand, brand)));
       return;
     }
 
     const existing = await this.dbInstance.query.loginAttempts.findFirst({
-      where: and(eq(loginAttempts.userId, _user.id), eq(loginAttempts.ip, ip)),
+      where: and(eq(loginAttempts.userId, _user.id), eq(loginAttempts.ip, ip), eq(loginAttempts.brand, brand)),
     });
 
     if (existing !== undefined) {
@@ -46,13 +48,14 @@ export class SecurityService {
     } else {
       await this.dbInstance.insert(loginAttempts).values({
         userId: _user.id,
+        brand,
         ip,
         attempts: 1,
       });
     }
   }
 
-  async isAccountLocked(email: string, ip: string): Promise<boolean> {
+  async isAccountLocked(email: string, ip: string, brand: RequestBrand = 'realtutorialhub'): Promise<boolean> {
     const _user = await this.dbInstance.query.users.findFirst({
       where: eq(users.email, email),
     });
@@ -62,7 +65,8 @@ export class SecurityService {
     const attempt = await this.dbInstance.query.loginAttempts.findFirst({
       where: and(
         eq(loginAttempts.userId, _user.id),
-        eq(loginAttempts.ip, ip)
+        eq(loginAttempts.ip, ip),
+        eq(loginAttempts.brand, brand)
       ),
     });
 

@@ -46,7 +46,7 @@ export default function RootLayout({
                     <ZErrorBoundary appId="admin-app" sessionIdKey="admin_session_id" recoveryMode="both">
                         <ThemeProvider>
                             <QueryProvider>
-                                <BrowserAuthFetchProvider />
+                                <BrowserAuthFetchProvider portalIdentity="admin" />
                                 <SecurityMuzzle />
                                 {children}
                                 {/* <Analytics /> */}

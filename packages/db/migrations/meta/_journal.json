@@ -148,6 +148,20 @@
       "when": 1774550534604,
       "tag": "0020_soft_delete_exams_questions",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1774928102195,
+      "tag": "0021_loose_juggernaut",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1774929878092,
+      "tag": "0022_deep_pixie",
+      "breakpoints": true
     }
   ]
 }

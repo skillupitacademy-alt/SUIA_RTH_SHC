@@ -2,6 +2,7 @@ import type { LoginService } from '@/modules/auth/login.service';
 import type { PasswordRecoveryService } from '@/modules/auth/password-recovery.service';
 import type { SignupService } from '@/modules/auth/signup.service';
 import type { TokenRefreshService } from '@/modules/auth/token-refresh.service';
+import type { RequestBrand } from '@/lib/request-brand';
 
 export class AuthService {
   constructor(
@@ -39,17 +40,17 @@ export class AuthService {
     return this.passwordRecoveryService;
   }
 
-  async signup(email: string, password: string, name: string, ip?: string) {
+  async signup(email: string, password: string, name: string, ip?: string, brand: RequestBrand = 'realtutorialhub') {
     const service = await this.getSignupService();
-    return service.signup(email, password, name, ip);
+    return service.signup(email, password, name, ip, brand);
   }
 
-  async login(email: string, password: string, ip: string = 'unknown', brand?: string) {
+  async login(email: string, password: string, ip: string = 'unknown', brand: RequestBrand = 'realtutorialhub') {
     const service = await this.getLoginService();
     return service.login(email, password, ip, brand);
   }
 
-  async refresh(token: string, ip?: string, examId?: string, requestedAudience: string = 'user', brand?: string) {
+  async refresh(token: string, ip?: string, examId?: string, requestedAudience: string = 'user', brand: RequestBrand = 'realtutorialhub') {
     const service = await this.getTokenRefreshService();
     return service.refresh(token, ip, examId, requestedAudience, brand);
   }
@@ -69,19 +70,19 @@ export class AuthService {
     return service.touchUserSession(userId);
   }
 
-  async verifyEmail(token: string, ip?: string) {
+  async verifyEmail(token: string, ip?: string, brand: RequestBrand = 'realtutorialhub') {
     const service = await this.getSignupService();
-    return service.verifyEmail(token, ip);
+    return service.verifyEmail(token, ip, brand);
   }
 
-  async resendVerification(userId: string, ip?: string) {
+  async resendVerification(userId: string, ip?: string, brand: RequestBrand = 'realtutorialhub') {
     const service = await this.getSignupService();
-    return service.resendVerification(userId, ip);
+    return service.resendVerification(userId, ip, brand);
   }
 
-  async forgotPassword(email: string, ip?: string) {
+  async forgotPassword(email: string, ip?: string, brand: RequestBrand = 'realtutorialhub') {
     const service = await this.getPasswordRecoveryService();
-    return service.forgotPassword(email, ip);
+    return service.forgotPassword(email, ip, brand);
   }
 
   async validateResetToken(token: string) {
@@ -89,8 +90,8 @@ export class AuthService {
     return service.validateResetToken(token);
   }
 
-  async resetPassword(token: string, newPassword: string, ip?: string) {
+  async resetPassword(token: string, newPassword: string, ip?: string, brand: RequestBrand = 'realtutorialhub') {
     const service = await this.getPasswordRecoveryService();
-    return service.resetPassword(token, newPassword, ip);
+    return service.resetPassword(token, newPassword, ip, brand);
   }
 }
