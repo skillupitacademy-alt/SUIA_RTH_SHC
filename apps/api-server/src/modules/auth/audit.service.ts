@@ -7,7 +7,8 @@ export interface AuditLogEntry {
   action: string;
   ip?: string;
   device?: string;
-  metadata?: Record<string, unknown>;
+  brand?: 'realtutorialhub' | 'skillup';
+  metadata?: Record<string, unknown> | string;
 }
 
 export class AuditService {
@@ -17,12 +18,22 @@ export class AuditService {
 
   async log(entry: AuditLogEntry) {
     try {
+      const metadata = entry.metadata === undefined || entry.metadata === null
+        ? {}
+        : typeof entry.metadata === 'string'
+          ? JSON.parse(entry.metadata)
+          : { ...entry.metadata };
+
+      if (entry.brand !== undefined) {
+        metadata.brand = entry.brand;
+      }
+
       await this.dbInstance.insert(auditLogs).values({
         userId: entry.userId,
         action: entry.action,
         ip: entry.ip,
         device: entry.device,
-        metadata: entry.metadata !== undefined && entry.metadata !== null ? JSON.stringify(entry.metadata) : null,
+        metadata: JSON.stringify(metadata),
       });
     } catch (_error: unknown) {
       // Do not block primary flows if audit logging fails.

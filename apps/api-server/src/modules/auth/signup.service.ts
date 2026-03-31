@@ -85,7 +85,7 @@ export class SignupService {
     await EmailService.sendVerificationEmail(email, verificationUrl, brand);
 
     if (newUser?.id) {
-      await this.auditService.log({ userId: newUser.id, action: 'signup_success', ip });
+      await this.auditService.log({ userId: newUser.id, action: 'signup_success', ip, brand });
     }
 
     // Task 115: Emit event for read model updates

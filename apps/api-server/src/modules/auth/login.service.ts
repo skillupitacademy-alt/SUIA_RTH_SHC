@@ -40,7 +40,7 @@ export class LoginService {
     await this.userRepo.updateLastActive(user.id);
 
     await this.securityService.trackLoginAttempt(ip, email, true, brand);
-    await this.auditService.log({ userId: user.id, action: 'login_success', ip });
+    await this.auditService.log({ userId: user.id, action: 'login_success', ip, brand });
 
     const roleNames = user.userRoles.map(ur => ur.role.name);
     const isAdmin = roleNames.includes('ADMIN') || roleNames.includes('SUPER_ADMIN') || roleNames.includes('INFRASTRUCTURE');

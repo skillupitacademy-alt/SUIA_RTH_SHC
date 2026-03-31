@@ -165,10 +165,20 @@ export class AuthService {
 
   async revokeSession(userId: string, sessionId: string): Promise<void> {
     await this.userRepo.revokeSessionById(userId, sessionId, 'user_revoked');
+    await this.userRepo.createAuditLog({
+      actorId: userId,
+      action: 'session_revoked',
+      metadata: { sessionId, reason: 'user_revoked' },
+    });
   }
 
   async revokeAllUserSessions(userId: string): Promise<void> {
     await this.userRepo.revokeAllSessions(userId, 'user_revoked_all');
+    await this.userRepo.createAuditLog({
+      actorId: userId,
+      action: 'all_sessions_revoked',
+      metadata: { reason: 'user_revoked_all' },
+    });
   }
 
   async logout(userId: string, familyId: string): Promise<void> {

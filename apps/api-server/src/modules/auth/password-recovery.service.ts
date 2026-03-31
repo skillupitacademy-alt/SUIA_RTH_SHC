@@ -67,7 +67,7 @@ export class PasswordRecoveryService {
     // Invalidate token
     await this.userRepo.deleteResetToken(validToken.id);
 
-    await this.auditService.log({ userId: validToken.userId, action: 'auth_password_reset_completed', ip });
+    await this.auditService.log({ userId: validToken.userId, action: 'auth_password_reset_completed', ip, brand });
     
     return true;
   }
