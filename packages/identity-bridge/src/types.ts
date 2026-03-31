@@ -1,4 +1,6 @@
 export interface SyncUserInput {
+  // externalBrand and platform must always be the same value.
+  // They are kept separate for future extensibility only.
   externalId: string;
   externalBrand: 'realtutorialhub' | 'skillup';
   email: string;

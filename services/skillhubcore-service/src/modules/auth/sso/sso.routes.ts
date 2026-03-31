@@ -12,6 +12,9 @@ const platformSchema = z.object({
 export const createSsoRoutes = (ssoService = new SsoService()): Hono => {
   const app = new Hono();
 
+  // These routes are intentionally cross-brand (shared admin surface).
+  // requirePlatform is NOT applied here by design.
+  // Brand isolation is enforced at the data plane level.
   app.get('/:userId/platforms', requireAuth, requireRoles(['admin', 'super_admin']), async (c) => {
     const userId = c.req.param('userId');
     const platforms = await ssoService.getUserPlatforms(userId);

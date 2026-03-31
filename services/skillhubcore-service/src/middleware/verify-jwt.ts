@@ -26,11 +26,14 @@ export const requireAuth = createMiddleware(async (c, next) => {
 
   try {
     const payload = await new TokenService().verifyAccessToken(token);
+    if (payload.platforms === undefined || payload.platforms.length === 0) {
+      return c.json({ error: 'Token missing platform claim', code: 'UNAUTHORIZED' }, 401);
+    }
     c.set('authUser', {
       id: payload.sub,
       roles: payload.roles,
       subscriptions: payload.subscriptions,
-      platforms: payload.platforms ?? ['realtutorialhub'],
+      platforms: payload.platforms,
     });
     await next();
   } catch (error) {

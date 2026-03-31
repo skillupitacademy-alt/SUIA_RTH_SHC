@@ -55,6 +55,7 @@ test-results
 # test logs
 packages/events/test.log
 packages/events/test_utf8.log
+scripts/migration-log.json
 
 tmp/
 

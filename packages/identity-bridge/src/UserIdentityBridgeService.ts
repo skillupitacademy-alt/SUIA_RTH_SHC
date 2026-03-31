@@ -11,6 +11,12 @@ export class UserIdentityBridgeService {
   constructor(private readonly database = db) {}
 
   async syncUser(input: SyncUserInput): Promise<SyncUserResult> {
+    if (input.externalBrand !== input.platform) {
+      throw new Error(
+        `Identity bridge mismatch: externalBrand "${input.externalBrand}" does not match platform "${input.platform}"`
+      );
+    }
+
     const existing = await this.database
       .select({ id: users.id, email: users.email })
       .from(users)

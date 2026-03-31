@@ -75,6 +75,20 @@ describe('UserIdentityBridgeService', () => {
     expect(db.update).toHaveBeenCalledTimes(1);
   });
 
+  it('syncUser rejects mismatched externalBrand and platform', async () => {
+    await expect(
+      service.syncUser({
+        externalId: 'brand-1',
+        externalBrand: 'skillup',
+        email: 'test@example.com',
+        platform: 'realtutorialhub',
+      })
+    ).rejects.toThrow('Identity bridge mismatch');
+    expect(db.select).not.toHaveBeenCalled();
+    expect(db.insert).not.toHaveBeenCalled();
+    expect(db.update).not.toHaveBeenCalled();
+  });
+
   it('getShadowUserId returns an id when found and null when missing', async () => {
     db.__mocks.selectLimit
       .mockResolvedValueOnce([{ id: 'shadow-abc' }])
