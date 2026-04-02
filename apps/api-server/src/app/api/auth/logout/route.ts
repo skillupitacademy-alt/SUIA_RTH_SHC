@@ -2,6 +2,7 @@ import { type NextRequest } from 'next/server';
 
 import { ApiResponse } from '@/lib/api-response';
 import { resolveCookieDomain } from '@/lib/cookie-domain';
+import { resolveRequestHostnameFromHeaders } from '@/lib/request-brand';
 import { withLogging } from '@/lib/withLogging';
 import { AuthService } from '@/modules/auth/auth.service';
 import { getClientIp } from '@/modules/auth/client-ip';
@@ -34,7 +35,8 @@ async function handler(_req: NextRequest) {
   }
 
   const response = ApiResponse.success({ message: 'Logged out' });
-  const cookieDomain = resolveCookieDomain(process.env.COOKIE_DOMAIN, _req.nextUrl.hostname);
+  const requestHostname = resolveRequestHostnameFromHeaders(_req.headers, _req.nextUrl.hostname);
+  const cookieDomain = resolveCookieDomain(undefined, requestHostname);
 
   const portalIdentity = _req.headers.get('x-portal-identity') ?? 'global';
 

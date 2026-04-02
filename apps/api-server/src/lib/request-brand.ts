@@ -14,7 +14,7 @@ type HeaderReader = {
   get(name: string): string | null;
 };
 
-function tryExtractHostname(value?: string | null): string | undefined {
+export function tryExtractHostname(value?: string | null): string | undefined {
   if (typeof value !== 'string') return undefined;
 
   const trimmed = value.trim();
@@ -35,13 +35,7 @@ function tryExtractHostname(value?: string | null): string | undefined {
 }
 
 export function resolveRequestBrandFromHeaders(headers?: HeaderReader | null, fallbackHostname?: string | null): RequestBrand | undefined {
-  const candidates = [
-    tryExtractHostname(headers?.get('x-forwarded-host')),
-    tryExtractHostname(headers?.get('x-original-host')),
-    tryExtractHostname(headers?.get('origin')),
-    tryExtractHostname(headers?.get('host')),
-    tryExtractHostname(fallbackHostname),
-  ];
+  const candidates = resolveRequestHostCandidates(headers, fallbackHostname);
 
   for (const candidate of candidates) {
     const resolved = resolveRequestBrand(candidate);
@@ -51,4 +45,18 @@ export function resolveRequestBrandFromHeaders(headers?: HeaderReader | null, fa
   }
 
   return undefined;
+}
+
+export function resolveRequestHostnameFromHeaders(headers?: HeaderReader | null, fallbackHostname?: string | null): string | undefined {
+  return resolveRequestHostCandidates(headers, fallbackHostname).find((candidate) => candidate !== undefined);
+}
+
+function resolveRequestHostCandidates(headers?: HeaderReader | null, fallbackHostname?: string | null) {
+  return [
+    tryExtractHostname(headers?.get('x-forwarded-host')),
+    tryExtractHostname(headers?.get('x-original-host')),
+    tryExtractHostname(headers?.get('origin')),
+    tryExtractHostname(headers?.get('host')),
+    tryExtractHostname(fallbackHostname),
+  ];
 }

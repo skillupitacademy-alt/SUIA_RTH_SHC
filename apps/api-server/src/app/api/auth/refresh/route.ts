@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { badRequest } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { resolveCookieDomain } from '@/lib/cookie-domain';
-import { resolveRequestBrandFromHeaders } from '@/lib/request-brand';
+import { resolveRequestBrandFromHeaders, resolveRequestHostnameFromHeaders } from '@/lib/request-brand';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
 import { AuthService } from '@/modules/auth/auth.service';
@@ -61,7 +61,8 @@ async function handler(_req: NextRequest) {
 
     const response = ApiResponse.success({ success: true, expiresAt });
 
-    const cookieDomain = resolveCookieDomain(process.env.COOKIE_DOMAIN, _req.nextUrl.hostname);
+    const requestHostname = resolveRequestHostnameFromHeaders(_req.headers, _req.nextUrl.hostname);
+    const cookieDomain = resolveCookieDomain(undefined, requestHostname);
 
     const accessTokenCookieName = portalIdentity === 'infrastructure' ? 'infra_accessToken' : portalIdentity === 'admin' ? 'admin_accessToken' : 'accessToken';
     response.cookies.set(accessTokenCookieName, accessToken, {

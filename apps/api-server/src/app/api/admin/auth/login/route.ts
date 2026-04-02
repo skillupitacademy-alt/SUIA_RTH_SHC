@@ -5,7 +5,7 @@ import { withApiHandler } from '@/lib/api-wrapper';
 import { resolveCookieDomain } from '@/lib/cookie-domain';
 import { withCorrelationId } from '@/lib/correlation-id.middleware';
 import { recordCounter } from '@/lib/metrics';
-import { resolveRequestBrandFromHeaders } from '@/lib/request-brand';
+import { resolveRequestBrandFromHeaders, resolveRequestHostnameFromHeaders } from '@/lib/request-brand';
 import { AdminAuthService } from '@/modules/auth/admin-auth.service';
 import { getClientIp } from '@/modules/auth/client-ip';
 
@@ -38,7 +38,8 @@ async function handler(_req: Request, body: z.infer<typeof loginSchema>) {
   
   const result = await AdminAuthService.login(email, password, ip, audience, brand);
 
-  const cookieDomain = resolveCookieDomain(process.env.COOKIE_DOMAIN, _req.url ? new URL(_req.url).hostname : undefined);
+  const requestHostname = resolveRequestHostnameFromHeaders(_req.headers, _req.url ? new URL(_req.url).hostname : undefined);
+  const cookieDomain = resolveCookieDomain(undefined, requestHostname);
   console.log('[AUTH_FLOW][ADMIN_LOGIN][COOKIES]', JSON.stringify({
     requestId,
     host,

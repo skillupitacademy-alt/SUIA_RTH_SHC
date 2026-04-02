@@ -6,7 +6,7 @@ import { forbidden, locked, unauthorized, validationError } from '@/lib/api-erro
 import { ApiResponse } from '@/lib/api-response';
 import { resolveCookieDomain } from '@/lib/cookie-domain';
 import { recordCounter, recordTimer } from '@/lib/metrics';
-import { resolveRequestBrandFromHeaders } from '@/lib/request-brand';
+import { resolveRequestBrandFromHeaders, resolveRequestHostnameFromHeaders } from '@/lib/request-brand';
 import { withLogging } from '@/lib/withLogging';
 import { AuthService } from '@/modules/auth/auth.service';
 import { getClientIp } from '@/modules/auth/client-ip';
@@ -73,7 +73,8 @@ async function handler(req: NextRequest) {
       expiresAt: null,
     });
 
-    const cookieDomain = resolveCookieDomain(process.env.COOKIE_DOMAIN, req.nextUrl.hostname);
+    const requestHostname = resolveRequestHostnameFromHeaders(req.headers, req.nextUrl.hostname);
+    const cookieDomain = resolveCookieDomain(undefined, requestHostname);
     console.log('[AUTH_FLOW][LOGIN][COOKIES]', JSON.stringify({
       requestId,
       host,
