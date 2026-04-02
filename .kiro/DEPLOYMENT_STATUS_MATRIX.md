@@ -7,9 +7,9 @@ It supersedes older planning assumptions in `.kiro` where those assumptions no l
 
 The repo and production are now materially closer to the intended architecture:
 - RTH and SkillUp public auth flows are live and largely working
-- GitHub deploy and quality automation are green on the latest fixes
+- GitHub deploy automation is green on the latest fixes; the newest placement lint repair is in flight
 - Cloudflare routing for `user.*`, `admin.skillupitacademy.com`, and `faculty.skillupitacademy.com` is live
-- The main remaining live gap is `placement.skillhubcore.in`
+- `placement.skillhubcore.in` now serves the shared placement frontend
 - Full mailbox-backed end-to-end verification is still incomplete because inbox access is not available from this workspace
 
 ## Canonical April 2, 2026 Status
@@ -26,6 +26,9 @@ The repo and production are now materially closer to the intended architecture:
 | `d5dfe51e` | Live | CSRF cookie domain alignment |
 | `52ec2de8` | Live | Restore RTH public login and stabilize quality tests |
 | `c34abef3` | Live | Add SkillUp admin/faculty gateway host routes |
+| `635e2d22` | Live | Add shared SkillHub placement app |
+| `af18625b` | Live | Wire shared apply flow and SkillUp placement redirects |
+| `957aac0d` | Pushed, CI running | Add ESLint config for the new placement app |
 
 ### Latest verified GitHub runs
 
@@ -50,7 +53,8 @@ The repo and production are now materially closer to the intended architecture:
 | SkillUp admin host | Verified live | Fixed, now returns `200` |
 | SkillUp faculty host | Verified live | Fixed, now returns `200` |
 | Cross-brand refresh isolation | Verified live | Working, no cross-brand auth leakage |
-| Placement shared host | Live blocker remains | Returns `403`, architecture still incomplete |
+| Placement shared host | Verified live | Returns `200` and serves shared frontend |
+| Placement first-pass apply persistence | Implemented in repo | Shared apply route writes to `placement_prod`; deeper E2E still pending |
 | Mailbox-backed E2E | Incomplete | Inbox access unavailable here |
 
 ## Canonical Host Map
@@ -68,7 +72,7 @@ This is the host map that currently matches the repo and live production more cl
 | `api.skillupitacademy.com` | SkillUp auth/API edge | Live, verified | Cloudflare Worker route |
 | `quiz.skillhubcore.in` | Shared quiz engine | Live, verified | Worker-backed/shared frontend |
 | `tutorial.skillhubcore.in` | Shared tutorial engine | Live, verified | Worker-backed/shared frontend |
-| `placement.skillhubcore.in` | Shared placement host | Live but failing | Reaches backend contract that returns `403`; not a healthy public app yet |
+| `placement.skillhubcore.in` | Shared placement host | Live, verified | Worker-backed/shared placement frontend on `skillhub-placement` |
 | `api.skillhubcore.in` | Shared SkillHub API edge | Live, partially verified | Worker route present |
 | `admin.skillhubcore.in` | SkillHub super admin | Live, verified | Cloud Run/custom host reachable |
 
@@ -89,8 +93,9 @@ This is the host map that currently matches the repo and live production more cl
 | `https://faculty.skillupitacademy.com/login` | `200` | Verified after `c34abef3` gateway deploy |
 | `https://quiz.skillhubcore.in/` | `200` | Verified |
 | `https://tutorial.skillhubcore.in/` | `200` | Verified |
-| `https://placement.skillhubcore.in/` | Healthy public response | Still `403` |
-| `https://placement.skillhubcore.in/jobs` | Healthy public response | Still `403` |
+| `https://placement.skillhubcore.in/` | `200` | Verified |
+| `https://placement.skillhubcore.in/api/healthz` | `200` | Verified |
+| `https://placement.skillhubcore.in/?brand=realtutorialhub` | `200` | Verified |
 
 ### Authentication behavior confirmed live
 
@@ -119,8 +124,8 @@ This section reconciles `.kiro/AI_PROMPTS_TO_COMPLETE_TASKS.md` with the current
 | 7 | Account lockout brand tracking | Completed in repo | Brand-aware lockout wiring already exists |
 | 8 | Session management endpoints | Completed in repo | Brand-aware session endpoints exist |
 | 9 | Wire identity bridge to signup | Completed in repo and live | Shadow-user sync already wired and observed live |
-| 10 | Verify Cloudflare DNS | Partially completed | Core active hosts verified; route/SSL inventory still limited by token scope |
-| 11 | Deploy all services | Mostly completed | Main app and gateway deploys succeeded; placement architecture still unresolved |
+| 10 | Verify Cloudflare DNS | Mostly completed | Active production hosts verified; old `quiz/notes/app` student hosts no longer resolve |
+| 11 | Deploy all services | Mostly completed | Main app and gateway deploys succeeded; latest placement lint repair is still running through CI |
 | 12 | Full end-to-end auth testing | Partially completed | API/browser checks done; mailbox-dependent checks still incomplete |
 
 ## GCP / Cloud Run Status
@@ -138,6 +143,7 @@ This section reconciles `.kiro/AI_PROMPTS_TO_COMPLETE_TASKS.md` with the current
 | `faculty-app` | Live | Current revision observed |
 | `skillhubcore-admin` | Live | Current revision observed |
 | `skillhubcore-service` | Live | Current revision observed |
+| `skillhub-placement` | Live | Current revision observed; placement host serves through gateway |
 
 ### Cloud Run assessment
 
@@ -146,7 +152,7 @@ This section reconciles `.kiro/AI_PROMPTS_TO_COMPLETE_TASKS.md` with the current
 | Artifact Registry / Cloud Run deploy automation | Verified | Latest deploy workflow succeeded |
 | Cloud Run app health for active auth surfaces | Verified | Public checks passed |
 | Cloud Run custom domain mappings | Not used as the main current pattern | Active setup is Cloudflare proxied CNAME plus worker routing where needed |
-| Placement public surface | Not complete | Existing backend target is not a public placement frontend |
+| Placement public surface | Verified live | Shared frontend now deployed and reachable |
 
 ## Cloudflare / Worker / DNS Status
 
@@ -163,9 +169,11 @@ This section reconciles `.kiro/AI_PROMPTS_TO_COMPLETE_TASKS.md` with the current
 | `admin.skillhubcore.in` DNS | Verified | Proxied CNAME to `skillhubcore-admin-...a.run.app` |
 | `quiz.skillhubcore.in` DNS | Verified | Proxied CNAME present |
 | `tutorial.skillhubcore.in` DNS | Verified | Proxied CNAME present |
-| `placement.skillhubcore.in` DNS | Verified | Proxied CNAME present, but target behavior is still wrong |
+| `placement.skillhubcore.in` DNS | Verified | Proxied CNAME exists; live host now serves the shared placement frontend through the gateway |
 | Worker host routes for SkillUp admin/faculty | Completed | Fixed by `c34abef3` and deploy run `23887839520` |
-| Worker route/SSL full inventory | Not fully verified | Current token cannot fully inspect all worker routes or SSL mode |
+| Cloudflare token validity | Verified | `.env.local` token verifies successfully and can read zone/DNS inventory |
+| SSL mode direct audit | Not fully verified | Current token can read DNS but returned `403` on direct zone SSL setting queries |
+| Worker route full inventory | Not fully verified | Current token is not sufficient for full account-level worker route audit |
 
 ### Active worker route configuration in repo
 
@@ -201,8 +209,8 @@ Current `services/api-gateway/wrangler.toml` production routes cover:
 
 | Gap | Impact |
 |---|---|
-| `placement.skillhubcore.in` points at `skillhubcore-service`, not a real public placement app | Live `403`, still not go-live ready |
 | Mailbox-backed verification cannot be executed from this workspace | Final Prompt 12 cannot be fully closed |
+| Shared placement cross-domain session handoff is still incomplete | Deep authenticated placement workflow is not fully closed |
 | Older `.kiro` and `docs/` references still mention retired or superseded hostnames | Documentation drift remains |
 | Full Cloudflare route and SSL inventory is limited by current token permissions | External cleanup is not fully proven |
 
@@ -227,13 +235,14 @@ Use this file as the normalization layer until the older docs are cleaned up.
 - [x] SkillUp public browser login host is healthy
 - [x] SkillUp admin and faculty hosts are healthy
 - [x] Latest deploy workflows succeeded
-- [x] Latest Quality workflow succeeded
+- [x] Placement public host is serving live
 - [x] Cross-brand refresh isolation was verified
 
 ### Still open
 
-- [ ] `placement.skillhubcore.in` must either be implemented as a real public surface or removed from the live architecture
 - [ ] Mailbox-backed email receipt verification remains incomplete
+- [ ] Placement shared-host authenticated session handoff needs a deeper live smoke
+- [ ] Newest placement CI rerun (`957aac0d`) should finish green
 - [ ] Full Cloudflare stale-route / SSL cleanup still needs higher-permission verification if strict external audit is required
 - [ ] Older stale docs should be normalized to the current host map
 
@@ -252,18 +261,17 @@ What is effectively complete:
 - CI quality gate
 
 What is not fully complete:
-- placement service/public host architecture
 - mailbox-backed final E2E evidence
+- placement shared-host authenticated session handoff and deeper workflow smoke
 - stale-document cleanup across every older `.kiro` and `docs/` reference
 
 ## Next Actions
 
-1. Decide whether `placement.skillhubcore.in` should be:
-   a. a real frontend/service, or
-   b. removed from the active go-live architecture until implemented.
-2. If external audit completeness matters, use a stronger Cloudflare token to verify worker route inventory and SSL mode directly.
-3. Normalize older `.kiro` and `docs/` files so they no longer contradict the active host map.
-4. Close Prompt 12 only after mailbox-backed verification is performed.
+1. Let the `957aac0d` placement CI rerun finish and confirm `Quality` is green again.
+2. Do a deeper authenticated smoke on `placement.skillhubcore.in` beyond anonymous page loads.
+3. If external audit completeness matters, use a stronger Cloudflare token to verify worker route inventory and SSL mode directly.
+4. Normalize older `.kiro` and `docs/` files so they no longer contradict the active host map.
+5. Close Prompt 12 only after mailbox-backed verification is performed.
 
 ## Appendix: Current Repo Delta After April 2 Verification
 
