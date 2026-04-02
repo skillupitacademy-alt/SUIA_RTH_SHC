@@ -29,7 +29,12 @@ vi.mock('@quiz/db', () => ({
     loginAttempts: { tableName: 'login_attempts' },
     refreshTokens: { tableName: 'refresh_tokens' },
     exams: { tableName: 'exams' },
-    users: { tableName: 'users' }
+    users: { tableName: 'users' },
+    userProfiles: { tableName: 'user_profiles' },
+    roles: { tableName: 'roles' },
+    userRoles: { tableName: 'user_roles' },
+    verificationTokens: { tableName: 'verification_tokens' },
+    passwordResetTokens: { tableName: 'password_reset_tokens' }
 }));
 
 describe('AuthService edge branches', () => {

@@ -1,1 +1,1 @@
-export * from '@quiz/db-tutorial/vector.service';
+export * from '@quiz/db-tutorial';

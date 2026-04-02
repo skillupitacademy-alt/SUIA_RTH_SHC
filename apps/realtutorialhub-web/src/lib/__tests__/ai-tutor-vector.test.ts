@@ -11,8 +11,10 @@ vi.mock('@upstash/vector', () => {
   };
 });
 
-vi.mock('@quiz/db-tutorial', () => {
+vi.mock('@quiz/db-tutorial', async () => {
+  const actual = await vi.importActual<typeof import('@quiz/db-tutorial')>('@quiz/db-tutorial');
   return {
+    ...actual,
     STANDARD_QUERY_TIMEOUT: 5000,
     withTimeout: vi.fn((promise) => promise),
   };
