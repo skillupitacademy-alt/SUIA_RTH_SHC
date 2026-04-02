@@ -12,6 +12,7 @@ on:
       - 'apps/skillup-admin/**'
       - 'apps/faculty-app/**'
       - 'apps/skillhubcore-admin/**'
+      - 'apps/skillhub-placement/**'
       - 'services/skillhubcore-service/**'
       - 'packages/**'
       - '.github/workflows/deploy-cloudrun.yml'
@@ -102,7 +103,7 @@ jobs:
                 run_skillup=true
               fi
 
-              if printf '%s\n' "$changed_files" | grep -Eq '^(services/skillhubcore-service/|packages/db-people/)'; then
+              if printf '%s\n' "$changed_files" | grep -Eq '^(services/skillhubcore-service/|packages/db-people/|apps/skillhub-placement/|packages/db-placement/)'; then
                 run_skillhubcore=true
               fi
             fi
@@ -646,6 +647,77 @@ jobs:
           SERVICE_URL=$(gcloud run services describe skillhubcore-admin --region $REGION --project $PROJECT_ID --format 'value(status.url)')
           curl --fail --silent --show-error "$SERVICE_URL/api/healthz"
 
+  deploy-skillhub-placement:
+    name: Deploy skillhub-placement
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      id-token: write
+    needs: plan
+    if: needs.plan.outputs.run_skillhubcore == 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker asia-south1-docker.pkg.dev
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            -f apps/skillhub-placement/Dockerfile \
+            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillhub-placement:$GITHUB_SHA \
+            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillhub-placement:latest \
+            .
+
+      - name: Push Docker image
+        run: |
+          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillhub-placement:$GITHUB_SHA
+          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillhub-placement:latest
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy skillhub-placement \
+            --image asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillhub-placement:$GITHUB_SHA \
+            --region $REGION \
+            --platform managed \
+            --allow-unauthenticated \
+            --port 3008 \
+            --memory 512Mi \
+            --min-instances 0 \
+            --max-instances 5 \
+            --set-env-vars "NODE_ENV=production,CLOUD_RUN_BUILD=true" \
+            --set-secrets "DATABASE_URL_PLACEMENT=DATABASE_URL_PLACEMENT:latest,DATABASE_DIRECT_URL_PLACEMENT=DATABASE_DIRECT_URL_PLACEMENT:latest,JWT_SECRET=JWT_SECRET:latest,UPSTASH_VECTOR_REST_URL=UPSTASH_VECTOR_REST_URL:latest,UPSTASH_VECTOR_REST_TOKEN=UPSTASH_VECTOR_REST_TOKEN:latest"
+
+      - name: Smoke test
+        run: |
+          SERVICE_URL=$(gcloud run services describe skillhub-placement --region $REGION --project $PROJECT_ID --format 'value(status.url)')
+          curl --fail --silent --show-error "$SERVICE_URL/api/healthz"
+
   deploy-skillhubcore-service:
     name: Deploy SkillHubCore Service
     runs-on: ubuntu-latest
@@ -653,7 +725,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
-    needs: plan
+    needs: [plan, deploy-skillhub-placement]
     if: needs.plan.outputs.run_skillhubcore == 'true'
     steps:
       - name: Checkout
