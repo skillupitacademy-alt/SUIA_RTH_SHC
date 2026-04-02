@@ -20,6 +20,30 @@ export function withPlacementBrand(path: string, brand: PlacementBrand): string 
   return `${path}${separator}brand=${brand}`;
 }
 
+export function getPlacementLoginUrl(brand: PlacementBrand, redirectPath: string): string {
+  const baseUrl =
+    brand === 'realtutorialhub'
+      ? 'https://user.realtutorialhub.com/login'
+      : 'https://user.skillupitacademy.com/login';
+
+  return `${baseUrl}?redirect=${encodeURIComponent(redirectPath)}`;
+}
+
+export function getPlacementLaunchUrl(brand: PlacementBrand, redirectPath: string): string {
+  const baseUrl =
+    brand === 'realtutorialhub'
+      ? 'https://user.realtutorialhub.com/placement'
+      : 'https://user.skillupitacademy.com/placement';
+
+  return `${baseUrl}?redirect=${encodeURIComponent(redirectPath)}`;
+}
+
+export function getPlacementRefreshUrl(brand: PlacementBrand): string {
+  return brand === 'realtutorialhub'
+    ? 'https://api.realtutorialhub.com/api/auth/refresh'
+    : 'https://api.skillupitacademy.com/api/auth/refresh';
+}
+
 export function getPlacementTheme(brand: PlacementBrand): PlacementTheme {
   if (brand === 'realtutorialhub') {
     return {

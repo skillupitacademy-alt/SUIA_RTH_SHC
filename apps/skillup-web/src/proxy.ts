@@ -3,7 +3,7 @@ import { TokenService } from '@quiz/auth';
 
 const LOGIN_URL = process.env.NEXT_PUBLIC_LOGIN_URL ?? '/login';
 
-const PUBLIC_PATHS = ['/', '/programs', '/api/healthz', '/verify', '/login', '/register'];
+const PUBLIC_PATHS = ['/', '/programs', '/api/healthz', '/verify', '/login', '/register', '/placement'];
 const PROTECTED_PATHS = ['/student', '/batches', '/faculty'];
 const OVERRIDE_ROLES = ['admin', 'super_admin', 'faculty'];
 

@@ -1,21 +1,36 @@
 import Link from 'next/link';
 
+import { PlacementAuthBridge } from '@/components/PlacementAuthBridge';
 import { getPlacementViewer } from '@/lib/auth';
-import { getPlacementTheme } from '@/lib/brand';
+import { getPlacementTheme, resolvePlacementBrand } from '@/lib/brand';
 import { getPlacementMatches, getPlacementProfile } from '@/lib/placement-data';
 
-export default async function ProfilePage() {
+type ProfilePageProps = {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+};
+
+function firstParam(value?: string | string[]) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+export default async function ProfilePage({ searchParams }: ProfilePageProps) {
+  const resolvedSearchParams = (await (searchParams ?? Promise.resolve({}))) as Record<string, string | string[] | undefined>;
   const viewer = await getPlacementViewer();
+  const brand = viewer?.brand ?? resolvePlacementBrand(firstParam(resolvedSearchParams.brand));
+  const theme = getPlacementTheme(brand);
 
   if (viewer === null) {
     return (
       <main className="mx-auto max-w-3xl px-6 py-8 lg:py-10">
         <section className="surface-panel rounded-[2.5rem] p-8">
           <p className="section-kicker text-slate-500">Placement profile</p>
-          <h1 className="mt-3 text-4xl font-black tracking-tight text-slate-950">Authentication for shared placement is not fully wired yet.</h1>
+          <h1 className="mt-3 text-4xl font-black tracking-tight text-slate-950">Continue with your existing brand session.</h1>
           <p className="mt-4 text-sm leading-7 text-slate-600">
-            The shared placement frontend is live now, but the final cross-domain callback and `.skillhubcore.in` session handoff still need a follow-up pass.
+            If you already have an active {brand === 'realtutorialhub' ? 'Real Tutorial Hub' : 'SkillUp'} session, continue below to mint a shared `.skillhubcore.in` placement cookie.
           </p>
+          <div className="mt-6">
+            <PlacementAuthBridge brand={brand} redirectPath="/profile" buttonClass={theme.buttonClass} />
+          </div>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link href="/" className="rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-black text-slate-700 transition hover:border-slate-300 hover:bg-slate-50">
               Return to job board
@@ -30,8 +45,6 @@ export default async function ProfilePage() {
     getPlacementProfile(viewer.userId),
     getPlacementMatches(viewer.userId),
   ]);
-
-  const theme = getPlacementTheme(viewer.brand);
 
   return (
     <main className="mx-auto max-w-6xl space-y-6 px-6 py-8 lg:py-10">

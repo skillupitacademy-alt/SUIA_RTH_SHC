@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 
+import { PlacementAuthBridge } from '@/components/PlacementAuthBridge';
 import { getPlacementViewer } from '@/lib/auth';
 import { getPlacementTheme, resolvePlacementBrand, withPlacementBrand } from '@/lib/brand';
 import { createPlacementApplication, getPlacementApplication, getPlacementJob } from '@/lib/placement-data';
@@ -38,14 +39,22 @@ export default async function ApplyPage({ params, searchParams }: ApplyPageProps
   const status = firstParam(query.status);
 
   if (viewer === null) {
+    const theme = getPlacementTheme(brand);
     return (
       <main className="mx-auto max-w-3xl px-6 py-8 lg:py-10">
         <section className="surface-panel rounded-[2.5rem] p-8">
           <p className="section-kicker text-slate-500">Apply</p>
-          <h1 className="mt-3 text-4xl font-black tracking-tight text-slate-950">Application handoff is not fully wired yet.</h1>
+          <h1 className="mt-3 text-4xl font-black tracking-tight text-slate-950">Continue with your existing brand session.</h1>
           <p className="mt-4 text-sm leading-7 text-slate-600">
-            The shared placement host is live, but final authenticated application submission still depends on the shared session callback pass.
+            If you already have an active {brand === 'realtutorialhub' ? 'Real Tutorial Hub' : 'SkillUp'} session, continue below to mint a shared `.skillhubcore.in` placement cookie before applying.
           </p>
+          <div className="mt-6">
+            <PlacementAuthBridge
+              brand={brand}
+              redirectPath={withPlacementBrand(`/apply/${job.id}`, brand)}
+              buttonClass={theme.buttonClass}
+            />
+          </div>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link href={withPlacementBrand(`/jobs/${job.id}`, brand)} className="rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-black text-slate-700 transition hover:border-slate-300 hover:bg-slate-50">
               Back to job detail
@@ -118,7 +127,7 @@ export default async function ApplyPage({ params, searchParams }: ApplyPageProps
           <div className="mt-6 rounded-3xl border border-emerald-200 bg-emerald-50 p-5">
             <p className="text-sm font-semibold text-emerald-900">Application already recorded</p>
             <p className="mt-2 text-sm text-emerald-800">
-              Status: {application.status} · Applied: {formatAppliedAt(application.appliedAt)}
+              Status: {application.status} | Applied: {formatAppliedAt(application.appliedAt)}
             </p>
             {application.notes !== null ? (
               <p className="mt-3 text-sm leading-7 text-emerald-900">{application.notes}</p>

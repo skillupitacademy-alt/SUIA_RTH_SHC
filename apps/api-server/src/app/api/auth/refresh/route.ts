@@ -59,7 +59,7 @@ async function handler(_req: NextRequest) {
     }
     if (maxAge < 0) maxAge = 15 * 60; 
 
-    const response = ApiResponse.success({ success: true, expiresAt });
+    const response = ApiResponse.success({ success: true, accessToken, expiresAt });
 
     const requestHostname = resolveRequestHostnameFromHeaders(_req.headers, _req.nextUrl.hostname);
     const cookieDomain = resolveCookieDomain(undefined, requestHostname);

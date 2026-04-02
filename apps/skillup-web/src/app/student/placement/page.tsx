@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
 
 export default function PlacementPage() {
-  redirect('https://placement.skillhubcore.in/?brand=skillup');
+  redirect('/placement?redirect=%2F%3Fbrand%3Dskillup');
 }
