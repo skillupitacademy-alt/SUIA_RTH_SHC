@@ -10,6 +10,7 @@ The repo and production are now materially closer to the intended architecture:
 - GitHub deploy automation is green on the latest fixes; the newest placement lint repair is in flight
 - Cloudflare routing for `user.*`, `admin.skillupitacademy.com`, and `faculty.skillupitacademy.com` is live
 - `placement.skillhubcore.in` now serves the shared placement frontend
+- Cloudflare SSL is now `strict` on all three active zones
 - Full mailbox-backed end-to-end verification is still incomplete because inbox access is not available from this workspace
 
 ## Canonical April 2, 2026 Status
@@ -124,7 +125,7 @@ This section reconciles `.kiro/AI_PROMPTS_TO_COMPLETE_TASKS.md` with the current
 | 7 | Account lockout brand tracking | Completed in repo | Brand-aware lockout wiring already exists |
 | 8 | Session management endpoints | Completed in repo | Brand-aware session endpoints exist |
 | 9 | Wire identity bridge to signup | Completed in repo and live | Shadow-user sync already wired and observed live |
-| 10 | Verify Cloudflare DNS | Mostly completed | Active production hosts verified; old `quiz/notes/app` student hosts no longer resolve |
+| 10 | Verify Cloudflare DNS | Completed | Active production hosts verified; old `quiz/notes/app` student hosts no longer resolve |
 | 11 | Deploy all services | Mostly completed | Main app and gateway deploys succeeded; latest placement lint repair is still running through CI |
 | 12 | Full end-to-end auth testing | Partially completed | API/browser checks done; mailbox-dependent checks still incomplete |
 
@@ -172,8 +173,10 @@ This section reconciles `.kiro/AI_PROMPTS_TO_COMPLETE_TASKS.md` with the current
 | `placement.skillhubcore.in` DNS | Verified | Proxied CNAME exists; live host now serves the shared placement frontend through the gateway |
 | Worker host routes for SkillUp admin/faculty | Completed | Fixed by `c34abef3` and deploy run `23887839520` |
 | Cloudflare token validity | Verified | `.env.local` token verifies successfully and can read zone/DNS inventory |
-| SSL mode direct audit | Not fully verified | Current token can read DNS but returned `403` on direct zone SSL setting queries |
-| Worker route full inventory | Not fully verified | Current token is not sufficient for full account-level worker route audit |
+| SSL mode direct audit | Verified | Global API key in `.env.local` confirms all three zones are now `strict` |
+| Worker route full inventory | Verified | Active worker routes inventoried at account level |
+| Stale wildcard route cleanup | Completed | Removed legacy `quiz-platform-proxy` route `*skillhubcore.in/*` |
+| Stale worker script cleanup | Completed | Deleted legacy `quiz-platform-proxy` script after route removal |
 
 ### Active worker route configuration in repo
 
@@ -212,7 +215,7 @@ Current `services/api-gateway/wrangler.toml` production routes cover:
 | Mailbox-backed verification cannot be executed from this workspace | Final Prompt 12 cannot be fully closed |
 | Shared placement cross-domain session handoff is still incomplete | Deep authenticated placement workflow is not fully closed |
 | Older `.kiro` and `docs/` references still mention retired or superseded hostnames | Documentation drift remains |
-| Full Cloudflare route and SSL inventory is limited by current token permissions | External cleanup is not fully proven |
+| One unattached worker script (`bold-cherry-a137`) still exists | Not deleted because ownership/intent is not yet proven from repo evidence |
 
 ## Stale Architecture and Documentation Drift
 
@@ -237,26 +240,31 @@ Use this file as the normalization layer until the older docs are cleaned up.
 - [x] Latest deploy workflows succeeded
 - [x] Placement public host is serving live
 - [x] Cross-brand refresh isolation was verified
+- [x] Cloudflare SSL is `strict` on all active zones
+- [x] Stale wildcard worker route was removed
 
 ### Still open
 
 - [ ] Mailbox-backed email receipt verification remains incomplete
 - [ ] Placement shared-host authenticated session handoff needs a deeper live smoke
 - [ ] Newest placement CI rerun (`957aac0d`) should finish green
-- [ ] Full Cloudflare stale-route / SSL cleanup still needs higher-permission verification if strict external audit is required
+- [ ] Unattributed unattached worker `bold-cherry-a137` should be reviewed before deletion
 - [ ] Older stale docs should be normalized to the current host map
 
 ## Practical Conclusion
 
-The multi-brand auth pass is no longer in a broad “planning” state.
-It is now in a narrow “final cleanup” state.
+The multi-brand auth pass is no longer in a broad "planning" state.
+It is now in a narrow "final cleanup" state.
 
 What is effectively complete:
 - brand-aware auth
 - brand-aware recovery and verification
 - identity bridge wiring
 - public host fixes
+- shared placement host deployment
 - gateway route fixes
+- Cloudflare SSL hardening to `strict`
+- stale Cloudflare wildcard route cleanup
 - deploy automation
 - CI quality gate
 
@@ -269,7 +277,7 @@ What is not fully complete:
 
 1. Let the `957aac0d` placement CI rerun finish and confirm `Quality` is green again.
 2. Do a deeper authenticated smoke on `placement.skillhubcore.in` beyond anonymous page loads.
-3. If external audit completeness matters, use a stronger Cloudflare token to verify worker route inventory and SSL mode directly.
+3. Review whether unattached worker `bold-cherry-a137` is safe to delete.
 4. Normalize older `.kiro` and `docs/` files so they no longer contradict the active host map.
 5. Close Prompt 12 only after mailbox-backed verification is performed.
 
