@@ -12,6 +12,9 @@ export async function proxyRequest(request: Request, upstream: string, options: 
   const headers = new Headers(request.headers);
 
   headers.set('X-Request-ID', options.requestId);
+  headers.set('X-Forwarded-Host', url.hostname);
+  headers.set('X-Original-Host', url.hostname);
+  headers.set('X-Forwarded-Proto', url.protocol.replace(':', ''));
   if (typeof options.gatewaySecret === 'string' && options.gatewaySecret.length > 0) {
     headers.set('X-Gateway-Secret', options.gatewaySecret);
   }

@@ -2,7 +2,7 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { withCorrelationId } from '@/lib/correlation-id.middleware';
-import { resolveRequestBrand } from '@/lib/request-brand';
+import { resolveRequestBrandFromHeaders } from '@/lib/request-brand';
 import { withLogging } from '@/lib/withLogging';
 import { AuthService } from '@/modules/auth/auth.service';
 import { getClientIp } from '@/modules/auth/client-ip';
@@ -19,7 +19,7 @@ async function handler(req: NextRequest) {
       return NextResponse.json({ error: 'userId is required' }, { status: 400 });
     }
 
-    const brand = resolveRequestBrand(req.nextUrl.hostname) ?? 'realtutorialhub';
+    const brand = resolveRequestBrandFromHeaders(req.headers, req.nextUrl.hostname) ?? 'realtutorialhub';
     const ip = getClientIp(req);
 
     const authService = container.get(AuthService);

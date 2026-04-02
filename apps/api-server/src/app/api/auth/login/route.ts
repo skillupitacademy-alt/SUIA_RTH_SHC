@@ -6,7 +6,7 @@ import { forbidden, locked, unauthorized, validationError } from '@/lib/api-erro
 import { ApiResponse } from '@/lib/api-response';
 import { resolveCookieDomain } from '@/lib/cookie-domain';
 import { recordCounter, recordTimer } from '@/lib/metrics';
-import { resolveRequestBrand } from '@/lib/request-brand';
+import { resolveRequestBrandFromHeaders } from '@/lib/request-brand';
 import { withLogging } from '@/lib/withLogging';
 import { AuthService } from '@/modules/auth/auth.service';
 import { getClientIp } from '@/modules/auth/client-ip';
@@ -44,7 +44,7 @@ async function handler(req: NextRequest) {
     }
     const { email, password } = parsed.data;
     const ip = getClientIp(req);
-    const brand = resolveRequestBrand(req.nextUrl.hostname);
+    const brand = resolveRequestBrandFromHeaders(req.headers, req.nextUrl.hostname);
 
     const { _user, accessToken, refreshToken, isAdmin } = await container.get(AuthService).login(email, password, ip, brand);
     const rawProfile = Array.isArray(_user.profile) ? _user.profile[0] ?? {} : (_user.profile ?? {});

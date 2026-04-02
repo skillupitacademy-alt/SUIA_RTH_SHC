@@ -2,7 +2,7 @@ import type { NextRequest } from 'next/server';
 
 import { badRequest } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
-import { resolveRequestBrand } from '@/lib/request-brand';
+import { resolveRequestBrandFromHeaders } from '@/lib/request-brand';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
 import { AuthService } from '@/modules/auth/auth.service';
@@ -19,7 +19,7 @@ async function getHandler(_req: NextRequest) {
     }
 
     try {
-        const brand = resolveRequestBrand(_req.nextUrl.hostname) ?? 'realtutorialhub';
+        const brand = resolveRequestBrandFromHeaders(_req.headers, _req.nextUrl.hostname) ?? 'realtutorialhub';
         const valid = await container.get(AuthService).validateResetToken(_token, brand);
         return ApiResponse.success({ valid });
     } catch {
@@ -44,7 +44,7 @@ async function postHandler(_req: NextRequest) {
     const { token, password } = parsed.data;
 
     const ip = getClientIp(_req);
-    const brand = resolveRequestBrand(_req.nextUrl.hostname) ?? 'realtutorialhub';
+    const brand = resolveRequestBrandFromHeaders(_req.headers, _req.nextUrl.hostname) ?? 'realtutorialhub';
     await container.get(AuthService).resetPassword(token, password, ip, brand);
 
     return ApiResponse.success({ success: true });

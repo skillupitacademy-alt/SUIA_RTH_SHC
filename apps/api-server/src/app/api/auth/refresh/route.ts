@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { badRequest } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { resolveCookieDomain } from '@/lib/cookie-domain';
-import { resolveRequestBrand } from '@/lib/request-brand';
+import { resolveRequestBrandFromHeaders } from '@/lib/request-brand';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
 import { AuthService } from '@/modules/auth/auth.service';
@@ -21,7 +21,7 @@ async function handler(_req: NextRequest) {
   try {
     const portalIdentity = _req.headers.get('x-portal-identity') ?? 'user';
     const audience = portalIdentity === 'infrastructure' ? 'infra' : portalIdentity === 'admin' ? 'admin' : 'user';
-    const requestBrand = resolveRequestBrand(_req.nextUrl.hostname);
+    const requestBrand = resolveRequestBrandFromHeaders(_req.headers, _req.nextUrl.hostname);
 
     const infraRefresh = _req.cookies.get('infra_refreshToken')?.value;
     const adminRefresh = _req.cookies.get('admin_refreshToken')?.value;

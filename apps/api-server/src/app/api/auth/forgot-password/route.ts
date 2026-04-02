@@ -4,7 +4,7 @@ import type { NextRequest } from 'next/server';
 import { badRequest } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
-import { resolveRequestBrand } from '@/lib/request-brand';
+import { resolveRequestBrandFromHeaders } from '@/lib/request-brand';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
 import { AuthService } from '@/modules/auth/auth.service';
@@ -33,7 +33,7 @@ async function handler(_req: NextRequest) {
     }
 
     const ip = getClientIp(_req);
-    const brand = resolveRequestBrand(_req.nextUrl.hostname) ?? 'realtutorialhub';
+    const brand = resolveRequestBrandFromHeaders(_req.headers, _req.nextUrl.hostname) ?? 'realtutorialhub';
     await container.get(AuthService).forgotPassword(email, ip, brand);
 
     recordCounter(METRICS.AUTH.FAILURE, 1, { operation: 'forgot_password', outcome: 'success' });

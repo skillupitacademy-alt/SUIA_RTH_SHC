@@ -5,7 +5,7 @@ import { withApiHandler } from '@/lib/api-wrapper';
 import { resolveCookieDomain } from '@/lib/cookie-domain';
 import { withCorrelationId } from '@/lib/correlation-id.middleware';
 import { recordCounter } from '@/lib/metrics';
-import { resolveRequestBrand } from '@/lib/request-brand';
+import { resolveRequestBrandFromHeaders } from '@/lib/request-brand';
 import { AdminAuthService } from '@/modules/auth/admin-auth.service';
 import { getClientIp } from '@/modules/auth/client-ip';
 
@@ -34,7 +34,7 @@ async function handler(_req: Request, body: z.infer<typeof loginSchema>) {
   });
   const portalIdentity = _req.headers.get('x-portal-identity') ?? 'admin';
   const audience = portalIdentity === 'infrastructure' ? 'infra' : 'admin';
-  const brand = resolveRequestBrand(new URL(_req.url).hostname);
+  const brand = resolveRequestBrandFromHeaders(_req.headers, new URL(_req.url).hostname);
   
   const result = await AdminAuthService.login(email, password, ip, audience, brand);
 

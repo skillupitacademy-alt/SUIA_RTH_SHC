@@ -6,7 +6,7 @@ import { badRequest } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { resolveCookieDomain } from '@/lib/cookie-domain';
 import { recordCounter, recordTimer } from '@/lib/metrics';
-import { resolveRequestBrand } from '@/lib/request-brand';
+import { resolveRequestBrandFromHeaders } from '@/lib/request-brand';
 import { withLogging } from '@/lib/withLogging';
 import { AuthService } from '@/modules/auth/auth.service';
 import { getClientIp } from '@/modules/auth/client-ip';
@@ -27,7 +27,7 @@ async function handler(_req: NextRequest) {
     }
     const { email, password, name } = parsed.data;
     const ip = getClientIp(_req);
-    const brand = resolveRequestBrand(_req.nextUrl.hostname) ?? 'realtutorialhub';
+    const brand = resolveRequestBrandFromHeaders(_req.headers, _req.nextUrl.hostname) ?? 'realtutorialhub';
 
     const authService = container.get(AuthService);
     const _user = await authService.signup(email, password, name, ip, brand);
