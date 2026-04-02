@@ -4,6 +4,10 @@
 **Status**: APPROVED - Ready to Execute  
 **Confidence**: 95%
 
+> Current note: this file is a planning document from the start of the rollout.
+> For the live truth source after execution, use [DEPLOYMENT_STATUS_MATRIX.md](d:/onlinewebsites/quiz-platform/.kiro/DEPLOYMENT_STATUS_MATRIX.md).
+> Several items here are now already completed in production, including the Cloudflare token fix, placement host deployment, and Cloudflare SSL hardening to `strict`.
+
 ---
 
 ## 🎯 EXECUTIVE DECISION

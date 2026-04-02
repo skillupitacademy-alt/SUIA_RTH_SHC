@@ -177,6 +177,7 @@ This section reconciles `.kiro/AI_PROMPTS_TO_COMPLETE_TASKS.md` with the current
 | Worker route full inventory | Verified | Active worker routes inventoried at account level |
 | Stale wildcard route cleanup | Completed | Removed legacy `quiz-platform-proxy` route `*skillhubcore.in/*` |
 | Stale worker script cleanup | Completed | Deleted legacy `quiz-platform-proxy` script after route removal |
+| Unattached scratch worker cleanup | Completed | Deleted unattached `bold-cherry-a137` worker after verifying it was a route-less generic CRA stub |
 
 ### Active worker route configuration in repo
 
@@ -213,9 +214,8 @@ Current `services/api-gateway/wrangler.toml` production routes cover:
 | Gap | Impact |
 |---|---|
 | Mailbox-backed verification cannot be executed from this workspace | Final Prompt 12 cannot be fully closed |
-| Shared placement cross-domain session handoff is still incomplete | Deep authenticated placement workflow is not fully closed |
+| Shared placement cross-domain session handoff is still incomplete | Live `/profile` and unauthenticated `/apply/...` pages explicitly report the callback/session handoff is not fully wired |
 | Older `.kiro` and `docs/` references still mention retired or superseded hostnames | Documentation drift remains |
-| One unattached worker script (`bold-cherry-a137`) still exists | Not deleted because ownership/intent is not yet proven from repo evidence |
 
 ## Stale Architecture and Documentation Drift
 
@@ -242,13 +242,13 @@ Use this file as the normalization layer until the older docs are cleaned up.
 - [x] Cross-brand refresh isolation was verified
 - [x] Cloudflare SSL is `strict` on all active zones
 - [x] Stale wildcard worker route was removed
+- [x] Unattached stale worker `bold-cherry-a137` was removed
 
 ### Still open
 
 - [ ] Mailbox-backed email receipt verification remains incomplete
 - [ ] Placement shared-host authenticated session handoff needs a deeper live smoke
 - [ ] Newest placement CI rerun (`957aac0d`) should finish green
-- [ ] Unattributed unattached worker `bold-cherry-a137` should be reviewed before deletion
 - [ ] Older stale docs should be normalized to the current host map
 
 ## Practical Conclusion
@@ -277,9 +277,8 @@ What is not fully complete:
 
 1. Let the `957aac0d` placement CI rerun finish and confirm `Quality` is green again.
 2. Do a deeper authenticated smoke on `placement.skillhubcore.in` beyond anonymous page loads.
-3. Review whether unattached worker `bold-cherry-a137` is safe to delete.
-4. Normalize older `.kiro` and `docs/` files so they no longer contradict the active host map.
-5. Close Prompt 12 only after mailbox-backed verification is performed.
+3. Normalize older `.kiro` and `docs/` files so they no longer contradict the active host map.
+4. Close Prompt 12 only after mailbox-backed verification is performed.
 
 ## Appendix: Current Repo Delta After April 2 Verification
 

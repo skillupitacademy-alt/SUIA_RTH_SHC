@@ -4,6 +4,10 @@
 **Purpose**: Step-by-step AI prompts to complete all pending tasks  
 **Estimated Time**: 24-35 hours (3-5 days)
 
+> Current note: this file is now partially historical.
+> For the live execution status and what is still actually open, use [DEPLOYMENT_STATUS_MATRIX.md](d:/onlinewebsites/quiz-platform/.kiro/DEPLOYMENT_STATUS_MATRIX.md).
+> Prompt 1 is obsolete because the Cloudflare token is valid, the active zones are now on SSL `strict`, and the stale wildcard worker route has already been removed.
+
 ---
 
 ## 🎯 HOW TO USE THIS FILE

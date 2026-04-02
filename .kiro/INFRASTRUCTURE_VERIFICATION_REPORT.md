@@ -4,6 +4,10 @@
 **Verification Method**: Direct vendor API calls and database connections  
 **Status**: 85% Infrastructure Ready
 
+> Current note: this file captures the initial infrastructure verification stage.
+> For the current live rollout state, use [DEPLOYMENT_STATUS_MATRIX.md](d:/onlinewebsites/quiz-platform/.kiro/DEPLOYMENT_STATUS_MATRIX.md).
+> Since this report was written, the shared placement host has been deployed, Cloudflare SSL has been hardened to `strict` on all three active zones, and stale wildcard worker routing has been removed.
+
 ---
 
 ## ✅ WHAT EXISTS (Verified by Direct Connection)

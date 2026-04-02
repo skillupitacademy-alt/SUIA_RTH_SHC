@@ -3,6 +3,10 @@
 **Date**: April 2, 2026  
 **Method**: Direct API calls and database connections (not just .env.local file)
 
+> Current note: parts of this file reflect the initial verification pass and are now superseded by later live fixes.
+> For the current vendor truth source, use [DEPLOYMENT_STATUS_MATRIX.md](d:/onlinewebsites/quiz-platform/.kiro/DEPLOYMENT_STATUS_MATRIX.md).
+> Cloudflare status has advanced since this file was first written: the token is valid, active worker routes have been audited, SSL is now `strict` on all three active zones, and the stale wildcard `quiz-platform-proxy` route has been removed.
+
 ---
 
 ## 🔍 VERIFICATION APPROACH
