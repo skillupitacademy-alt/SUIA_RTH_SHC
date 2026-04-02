@@ -25,9 +25,11 @@ async function handler(_req: NextRequest) {
       recordCounter(METRICS.AUTH.FAILURE, 1, { reason: 'invalid_payload', operation: 'signup' });
       return ApiResponse.error(badRequest('Invalid payload', 'BAD_REQUEST', parsed.error.issues));
     }
-    const { email, password, name } = parsed.data;
+    const { email, password, name, platform } = parsed.data;
     const ip = getClientIp(_req);
-    const brand = resolveRequestBrandFromHeaders(_req.headers, _req.nextUrl.hostname) ?? 'realtutorialhub';
+    const brand = (platform === 'skillup' || platform === 'realtutorialhub'
+      ? platform
+      : resolveRequestBrandFromHeaders(_req.headers, _req.nextUrl.hostname)) ?? 'realtutorialhub';
 
     const authService = container.get(AuthService);
     const _user = await authService.signup(email, password, name, ip, brand);

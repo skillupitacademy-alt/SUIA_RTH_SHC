@@ -42,9 +42,14 @@ async function postHandler(_req: NextRequest) {
         return ApiResponse.error(badRequest('Invalid payload', 'BAD_REQUEST', parsed.error.issues));
     }
     const { token, password } = parsed.data;
+    const platform = typeof sanitizedBody === 'object' && sanitizedBody !== null && 'platform' in sanitizedBody
+      ? (sanitizedBody as { platform?: string }).platform
+      : undefined;
 
     const ip = getClientIp(_req);
-    const brand = resolveRequestBrandFromHeaders(_req.headers, _req.nextUrl.hostname) ?? 'realtutorialhub';
+    const brand = (platform === 'skillup' || platform === 'realtutorialhub'
+      ? platform
+      : resolveRequestBrandFromHeaders(_req.headers, _req.nextUrl.hostname)) ?? 'realtutorialhub';
     await container.get(AuthService).resetPassword(token, password, ip, brand);
 
     return ApiResponse.success({ success: true });

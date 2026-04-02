@@ -42,9 +42,11 @@ async function handler(req: NextRequest) {
       }));
       return ApiResponse.error(validationError(parsed.error.issues));
     }
-    const { email, password } = parsed.data;
+    const { email, password, platform } = parsed.data;
     const ip = getClientIp(req);
-    const brand = resolveRequestBrandFromHeaders(req.headers, req.nextUrl.hostname);
+    const brand = (platform === 'skillup' || platform === 'realtutorialhub'
+      ? platform
+      : resolveRequestBrandFromHeaders(req.headers, req.nextUrl.hostname)) ?? 'realtutorialhub';
 
     const { _user, accessToken, refreshToken, isAdmin } = await container.get(AuthService).login(email, password, ip, brand);
     const rawProfile = Array.isArray(_user.profile) ? _user.profile[0] ?? {} : (_user.profile ?? {});
@@ -116,7 +118,7 @@ async function handler(req: NextRequest) {
       path: req.nextUrl.pathname,
       role: isAdmin ? 'admin' : 'user',
       cookieDomain: cookieDomain ?? 'unset',
-      brand: brand ?? 'unknown',
+      brand,
     }));
 
     return response;

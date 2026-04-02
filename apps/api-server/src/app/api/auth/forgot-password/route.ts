@@ -15,6 +15,7 @@ export const dynamic = 'force-dynamic';
 
 interface ForgotPasswordRequest {
   email?: string;
+  platform?: string;
 }
 
 async function handler(_req: NextRequest) {
@@ -26,14 +27,16 @@ async function handler(_req: NextRequest) {
         return ApiResponse.error(badRequest('Payload too deep or large'));
     }
 
-    const { email } = sanitizeJsonField(rawBody) as ForgotPasswordRequest;
+    const { email, platform } = sanitizeJsonField(rawBody) as ForgotPasswordRequest;
     
     if (typeof email !== 'string' || email.trim() === '' || !email.includes('@')) {
         return ApiResponse.success({ success: true });
     }
 
     const ip = getClientIp(_req);
-    const brand = resolveRequestBrandFromHeaders(_req.headers, _req.nextUrl.hostname) ?? 'realtutorialhub';
+    const brand = (platform === 'skillup' || platform === 'realtutorialhub'
+      ? platform
+      : resolveRequestBrandFromHeaders(_req.headers, _req.nextUrl.hostname)) ?? 'realtutorialhub';
     await container.get(AuthService).forgotPassword(email, ip, brand);
 
     recordCounter(METRICS.AUTH.FAILURE, 1, { operation: 'forgot_password', outcome: 'success' });
