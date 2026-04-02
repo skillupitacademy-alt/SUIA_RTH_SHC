@@ -15,6 +15,10 @@ pattern = "app.skillupitacademy.com/*"
 zone_name = "skillupitacademy.com"
 
 [[env.production.routes]]
+pattern = "api.skillupitacademy.com/*"
+zone_name = "skillupitacademy.com"
+
+[[env.production.routes]]
 pattern = "api.realtutorialhub.com/*"
 zone_name = "realtutorialhub.com"
 

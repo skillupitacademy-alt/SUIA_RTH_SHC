@@ -3,8 +3,10 @@ import { db as skillupDb, users as skillupUsers } from '@quiz/db-skillup';
 import { UserIdentityBridgeService } from '@quiz/identity-bridge';
 import crypto from 'crypto';
 
+import { buildBrandVerificationUrl, getBrandConfig } from '@/lib/brand-config';
 import { eventBus } from '@/lib/event-bus';
 import { AppEvents } from '@/lib/events';
+import { logger } from '@/lib/logger';
 import type { RequestBrand } from '@/lib/request-brand';
 import { AuditService } from '@/modules/auth/audit.service';
 import { PasswordService } from '@/modules/auth/password.service';
@@ -65,23 +67,44 @@ export class SignupService {
       });
 
       await bridge.updateShadowUserId(brandDb, brandUsers, newUser.id, result.shadowUserId);
+      await bridge.grantPlatformAccess(result.shadowUserId, brand);
+      logger.info(
+        {
+          action: 'identity.bridge.sync_user',
+          brand,
+          userId: newUser.id,
+          shadowUserId: result.shadowUserId,
+          created: result.created,
+        },
+        'Identity bridge sync completed',
+      );
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       await this.auditService.log({
         userId: newUser.id,
         action: 'identity_bridge_sync_failed',
-        metadata: { error: message, brand, email },
+        metadata: { error: message, brand, email, retryQueued: true },
         ip,
       });
-      console.error('Identity bridge sync failed:', message);
+      logger.error(
+        {
+          action: 'identity.bridge.sync_failed',
+          brand,
+          userId: newUser.id,
+          retryQueued: true,
+          err: error instanceof Error ? error : undefined,
+        },
+        'Identity bridge sync failed',
+      );
+      await eventBus.emit('identity.bridge.retry_requested', {
+        userId: newUser.id,
+        email,
+        brand,
+        requestedAt: new Date(),
+      });
     }
 
-    const baseUrl = process.env.APP_URL;
-    if (baseUrl === undefined || baseUrl === null || baseUrl.trim() === '') {
-      throw new Error('Environment variable APP_URL is required for email verification');
-    }
-
-    const verificationUrl = `${baseUrl.replace(/\/$/, '')}/verify-email?token=${verificationToken}`;
+    const verificationUrl = buildBrandVerificationUrl(verificationToken, brand);
     await EmailService.sendVerificationEmail(email, verificationUrl, brand);
 
     if (newUser?.id) {
@@ -101,8 +124,6 @@ export class SignupService {
   }
 
   async verifyEmail(token: string, ip?: string, brand: RequestBrand = 'realtutorialhub') {
-    // brand reserved for future audit logging
-    void brand;
     let verifiedToken = await this.userRepo.findToken(token);
     const isTestEnv = process.env.NODE_ENV === 'test' || process.env.VITEST === 'true' || process.env.VITEST_WORKER_ID !== undefined;
     if (verifiedToken === undefined && isTestEnv) {
@@ -133,8 +154,14 @@ export class SignupService {
     await this.userRepo.verifyEmail(verifiedToken.userId);
     await this.userRepo.deleteToken(verifiedToken.id);
 
-    await this.auditService.log({ userId: verifiedToken.userId, action: 'email_verification_success', ip });
-    return true; 
+    await this.auditService.log({
+      userId: verifiedToken.userId,
+      action: 'email_verification_success',
+      ip,
+      brand,
+      metadata: { redirectUrl: getBrandConfig(brand).verificationSuccessUrl },
+    });
+    return true;
   }
 
   async resendVerification(userId: string, ip?: string, brand: RequestBrand = 'realtutorialhub') {
@@ -148,15 +175,16 @@ export class SignupService {
 
     await this.userRepo.createToken(userId, token, expiresAt);
 
-    const baseUrl = process.env.APP_URL;
-    if (baseUrl === undefined || baseUrl === null || baseUrl.trim() === '') {
-      throw new Error('Environment variable APP_URL is required for email verification');
-    }
-
-    const verificationUrl = `${baseUrl.replace(/\/$/, '')}/verify-email?token=${token}`;
+    const verificationUrl = buildBrandVerificationUrl(token, brand);
     await EmailService.sendVerificationEmail(user.email, verificationUrl, brand);
 
-    await this.auditService.log({ userId, action: 'email_verification_resend_triggered', ip });
+    await this.auditService.log({
+      userId,
+      action: 'email_verification_resend_triggered',
+      ip,
+      brand,
+      metadata: { redirectUrl: getBrandConfig(brand).verificationSuccessUrl },
+    });
     return true;
   }
 }

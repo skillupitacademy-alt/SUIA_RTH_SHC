@@ -2,6 +2,7 @@ import { db, loginAttempts, users } from '@quiz/db';
 import { and,eq } from 'drizzle-orm';
 
 import type { RequestBrand } from '@/lib/request-brand';
+import { EmailService } from '@/modules/email/EmailService';
 
 const MAX_ATTEMPTS = 5;
 
@@ -45,6 +46,10 @@ export class SecurityService {
           updatedAt: new Date() 
         })
         .where(eq(loginAttempts.id, existing.id));
+
+      if (lockedUntil !== null && (existing.lockedUntil === null || existing.lockedUntil < lockedUntil)) {
+        await EmailService.sendAccountLockout(_user.email, brand);
+      }
     } else {
       await this.dbInstance.insert(loginAttempts).values({
         userId: _user.id,
@@ -74,6 +79,12 @@ export class SecurityService {
 
     if (attempt.lockedUntil < new Date()) {
       // Lock expired
+      await this.dbInstance.delete(loginAttempts)
+        .where(and(
+          eq(loginAttempts.userId, _user.id),
+          eq(loginAttempts.ip, ip),
+          eq(loginAttempts.brand, brand)
+        ));
       return false;
     }
 

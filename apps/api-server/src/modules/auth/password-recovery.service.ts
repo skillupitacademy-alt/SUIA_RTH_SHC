@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 
+import { buildBrandPasswordResetUrl } from '@/lib/brand-config';
 import type { RequestBrand } from '@/lib/request-brand';
 import { AuditService } from '@/modules/auth/audit.service';
 import { PasswordService } from '@/modules/auth/password.service';
@@ -35,12 +36,16 @@ export class PasswordRecoveryService {
     await this.userRepo.createResetToken(user.id, token, expiresAt);
 
     // 5. Determine correct UI URL from deployment config
-    const baseUrl = brand === 'realtutorialhub'
-      ? 'https://user.realtutorialhub.com'
-      : 'https://user.skillupitacademy.com';
-    const resetUrl = `${baseUrl}/reset-password?token=${token}`;
+    const resetUrl = buildBrandPasswordResetUrl(token, brand);
     
     await EmailService.sendPasswordResetEmail(user.email, resetUrl, brand);
+    await this.auditService.log({
+      userId: user.id,
+      action: 'auth_password_reset_email_sent',
+      ip,
+      brand,
+      metadata: { resetUrl },
+    });
 
     return true;
   }
@@ -51,8 +56,6 @@ export class PasswordRecoveryService {
   }
 
   async resetPassword(token: string, newPassword: string, ip?: string, brand: RequestBrand = 'realtutorialhub') {
-    // brand reserved for future audit logging
-    void brand;
     const validToken = await this.validateResetToken(token);
 
     if (validToken === null) {

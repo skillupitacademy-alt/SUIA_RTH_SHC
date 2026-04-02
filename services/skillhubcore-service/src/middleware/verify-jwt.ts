@@ -11,6 +11,7 @@ declare module 'hono' {
       roles: Array<'student' | 'faculty' | 'admin' | 'super_admin'>;
       subscriptions: string[];
       platforms: Array<'realtutorialhub' | 'skillup'>;
+      brand?: 'realtutorialhub' | 'skillup';
     };
   }
 }
@@ -29,11 +30,19 @@ export const requireAuth = createMiddleware(async (c, next) => {
     if (payload.platforms === undefined || payload.platforms.length === 0) {
       return c.json({ error: 'Token missing platform claim', code: 'UNAUTHORIZED' }, 401);
     }
+    const requestedBrandHeader = c.req.header('x-platform') ?? c.req.header('x-brand');
+    const requestedBrand = requestedBrandHeader === 'realtutorialhub' || requestedBrandHeader === 'skillup'
+      ? requestedBrandHeader
+      : undefined;
+    const activeBrand = requestedBrand !== undefined && payload.platforms.includes(requestedBrand)
+      ? requestedBrand
+      : payload.platforms[0];
     c.set('authUser', {
       id: payload.sub,
       roles: payload.roles,
       subscriptions: payload.subscriptions,
       platforms: payload.platforms,
+      brand: activeBrand,
     });
     await next();
   } catch (error) {
@@ -61,11 +70,16 @@ export function requirePlatform(platform: 'realtutorialhub' | 'skillup'): Middle
     const authUser = c.get('authUser');
 
     if (authUser === undefined) {
-      return c.json({ error: 'Unauthorized' }, 401);
+      return c.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, 401);
+    }
+
+    if (authUser.roles.includes('super_admin')) {
+      await next();
+      return;
     }
 
     if (!authUser.platforms.includes(platform)) {
-      return c.json({ error: 'Forbidden: platform access denied' }, 403);
+      return c.json({ error: 'Cross-brand access denied', code: 'FORBIDDEN' }, 403);
     }
 
     await next();

@@ -159,25 +159,34 @@ export class AuthService {
     return this.tokenRotationService.rotate(refreshToken);
   }
 
-  async getSessions(userId: string) {
-    return this.userRepo.listActiveSessions(userId);
+  async getUserSessions(userId: string, platform: 'realtutorialhub' | 'skillup') {
+    const sessions = await this.userRepo.listActiveSessions(userId);
+    return sessions.filter((session) => session.platform === platform);
   }
 
-  async revokeSession(userId: string, sessionId: string): Promise<void> {
-    await this.userRepo.revokeSessionById(userId, sessionId, 'user_revoked');
+  async revokeSession(userId: string, sessionId: string, platform: 'realtutorialhub' | 'skillup'): Promise<void> {
+    const session = await this.userRepo.findSessionById(userId, sessionId);
+    if (session === null || session.platform !== platform) {
+      throw new Error('Session not found');
+    }
+
+    await this.userRepo.revokeSessionById(userId, sessionId, `user_revoked:${platform}`);
     await this.userRepo.createAuditLog({
       actorId: userId,
       action: 'session_revoked',
-      metadata: { sessionId, reason: 'user_revoked' },
+      platform,
+      metadata: { sessionId, reason: 'user_revoked', platform },
     });
   }
 
-  async revokeAllUserSessions(userId: string): Promise<void> {
-    await this.userRepo.revokeAllSessions(userId, 'user_revoked_all');
+  async revokeAllSessions(userId: string, platform: 'realtutorialhub' | 'skillup'): Promise<void> {
+    const sessions = await this.getUserSessions(userId, platform);
+    await Promise.all(sessions.map((session) => this.userRepo.revokeSessionById(userId, session.id, `user_revoked_all:${platform}`)));
     await this.userRepo.createAuditLog({
       actorId: userId,
       action: 'all_sessions_revoked',
-      metadata: { reason: 'user_revoked_all' },
+      platform,
+      metadata: { reason: 'user_revoked_all', platform },
     });
   }
 

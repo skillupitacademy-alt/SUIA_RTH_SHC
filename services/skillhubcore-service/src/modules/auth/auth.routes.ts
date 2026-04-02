@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 import { logger } from '@/lib/logger';
 import { createRateLimiter } from '@/middleware/rate-limit';
-import { requireAuth } from '@/middleware/verify-jwt';
+import { requireAuth, requirePlatform } from '@/middleware/verify-jwt';
 import { TokenService } from './token.service';
 import type { AuthService } from './auth.service';
 
@@ -125,24 +125,26 @@ export const createAuthRoutes = (authService: AuthService): Hono => {
   });
 
   app.get('/sessions', requireAuth, async (c) => {
-    const authUser = c.get('authUser') as { id: string } | undefined;
+    const authUser = c.get('authUser') as { id: string; brand?: 'realtutorialhub' | 'skillup' } | undefined;
     if (authUser === undefined) {
       return c.json({ error: 'Unauthorized' }, 401);
     }
 
-    const sessions = await authService.getSessions(authUser.id);
+    const platform = authUser.brand ?? 'realtutorialhub';
+    const sessions = await authService.getUserSessions(authUser.id, platform);
     return c.json({ sessions });
   });
 
   app.delete('/sessions/:id', requireAuth, async (c) => {
-    const authUser = c.get('authUser') as { id: string } | undefined;
+    const authUser = c.get('authUser') as { id: string; brand?: 'realtutorialhub' | 'skillup' } | undefined;
     if (authUser === undefined) {
       return c.json({ error: 'Unauthorized' }, 401);
     }
 
     const sessionId = c.req.param('id');
+    const platform = authUser.brand ?? 'realtutorialhub';
     try {
-      await authService.revokeSession(authUser.id, sessionId);
+      await authService.revokeSession(authUser.id, sessionId, platform);
       return c.json({ success: true });
     } catch (error) {
       if (error instanceof Error && error.message === 'Session not found') {
@@ -154,14 +156,18 @@ export const createAuthRoutes = (authService: AuthService): Hono => {
   });
 
   app.delete('/sessions', requireAuth, async (c) => {
-    const authUser = c.get('authUser') as { id: string } | undefined;
+    const authUser = c.get('authUser') as { id: string; brand?: 'realtutorialhub' | 'skillup' } | undefined;
     if (authUser === undefined) {
       return c.json({ error: 'Unauthorized' }, 401);
     }
 
-    await authService.revokeAllUserSessions(authUser.id);
+    const platform = authUser.brand ?? 'realtutorialhub';
+    await authService.revokeAllSessions(authUser.id, platform);
     return c.json({ success: true });
   });
+
+  app.use('/rth/*', requireAuth, requirePlatform('realtutorialhub'));
+  app.use('/skillup/*', requireAuth, requirePlatform('skillup'));
 
   return app;
 };
