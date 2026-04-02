@@ -33,6 +33,7 @@ vi.mock('@quiz/db', () => ({
     userProfiles: { tableName: 'user_profiles' },
     roles: { tableName: 'roles' },
     userRoles: { tableName: 'user_roles' },
+    auditLogs: { tableName: 'audit_logs' },
     verificationTokens: { tableName: 'verification_tokens' },
     passwordResetTokens: { tableName: 'password_reset_tokens' }
 }));

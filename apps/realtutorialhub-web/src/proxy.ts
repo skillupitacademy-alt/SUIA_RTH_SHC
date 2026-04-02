@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 const LOGIN_URL = process.env.NEXT_PUBLIC_LOGIN_URL ?? 'https://user.realtutorialhub.com/login';
 const INTERNAL_GATEWAY_SECRET = process.env.INTERNAL_GATEWAY_SECRET;
 
-const PUBLIC_PATHS = ['/', '/api/healthz'];
+const PUBLIC_PATHS = ['/', '/login', '/forgot-password', '/reset-password', '/verify-email', '/verify-success', '/offline', '/api/healthz'];
 const PUBLIC_PREFIXES = ['/api/certificates/verify/'];
 const PROTECTED_PREFIXES = ['/learn/', '/api/tutorial/', '/api/ai-tutor/', '/remediation/'];
 
@@ -84,7 +84,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
   
-  if (hasValidGatewaySecret(request) === false) {
+  if (pathname.startsWith('/api/') && hasValidGatewaySecret(request) === false && isPublicRoute(pathname) === false) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 

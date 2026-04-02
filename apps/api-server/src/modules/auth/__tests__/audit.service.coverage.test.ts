@@ -12,7 +12,15 @@ vi.mock('@quiz/db', () => ({
   db: {
     insert: vi.fn().mockReturnValue({ values: vi.fn() }),
   },
+  users: {},
+  userProfiles: {},
+  roles: {},
+  userRoles: {},
   auditLogs: { userId: 'u', action: 'a' },
+  verificationTokens: {},
+  passwordResetTokens: {},
+  refreshTokens: {},
+  loginAttempts: {},
 }));
 
 describe('AuditService Coverage', () => {

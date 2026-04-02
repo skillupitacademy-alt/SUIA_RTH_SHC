@@ -14,7 +14,15 @@ vi.mock('@quiz/db', () => ({
       values: mockInsert,
     }),
   },
+  users: {},
+  userProfiles: {},
+  roles: {},
+  userRoles: {},
   auditLogs: {},
+  verificationTokens: {},
+  passwordResetTokens: {},
+  refreshTokens: {},
+  loginAttempts: {},
 }));
 
 describe('AuditService catch branch 2', () => {

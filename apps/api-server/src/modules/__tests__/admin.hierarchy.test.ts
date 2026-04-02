@@ -29,6 +29,10 @@ vi.mock('@quiz/db', () => ({
   examQuestions: { id: 'examQuestions.id', isCorrect: 'examQuestions.isCorrect', responseMetadata: 'examQuestions.responseMetadata' },
   exams: { id: 'exams.id', userId: 'exams.userId', status: 'exams.status', startedAt: 'exams.startedAt', completedAt: 'exams.completedAt' },
   auditLogs: { id: 'auditLogs.id', createdAt: 'auditLogs.createdAt' },
+  verificationTokens: { id: 'verificationTokens.id', token: 'verificationTokens.token' },
+  passwordResetTokens: { id: 'passwordResetTokens.id', token: 'passwordResetTokens.token' },
+  refreshTokens: { id: 'refreshTokens.id', token: 'refreshTokens.token' },
+  loginAttempts: { id: 'loginAttempts.id', email: 'loginAttempts.email' },
   resultsByDimension: { id: 'resultsByDimension.id', examId: 'resultsByDimension.examId', name: 'resultsByDimension.name', dimensionType: 'resultsByDimension.dimensionType' },
 }));
 

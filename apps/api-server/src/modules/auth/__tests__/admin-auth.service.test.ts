@@ -45,10 +45,27 @@ vi.mock('@quiz/db', () => ({
     insert: h.insert,
   },
   refreshTokens: { userId: 'userId', token: 'token', expiresAt: 'expiresAt' },
+  auditLogs: { userId: 'userId', action: 'action' },
   users: { id: 'id', email: 'email', passwordHash: 'passwordHash' },
   userProfiles: { userId: 'userId', name: 'name' },
   userRoles: { userId: 'userId', roleId: 'roleId' },
   roles: { id: 'id', name: 'name' },
+}));
+
+vi.mock('@/modules/auth/audit.service', () => ({
+  AuditService: class AuditService {},
+}));
+
+vi.mock('@/modules/auth/password.service', () => ({
+  PasswordService: class PasswordService {},
+}));
+
+vi.mock('@/modules/auth/security.service', () => ({
+  SecurityService: class SecurityService {},
+}));
+
+vi.mock('@/modules/auth/token.service', () => ({
+  TokenService: class TokenService {},
 }));
 
 vi.mock('@/modules/core/container', () => ({

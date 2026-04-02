@@ -17,6 +17,12 @@ const makeRequest = (pathname: string, cookie?: string) =>
   });
 
 describe('realtutorialhub-web proxy', () => {
+  it('allows the public login route without a gateway secret', async () => {
+    const response = await proxy(makeRequest('/login'));
+
+    expect(response.status).toBe(200);
+  });
+
   it('redirects protected routes to SkillHubCore login when unauthenticated', async () => {
     const response = await proxy(makeRequest('/learn/full-stack/js/promises'));
 
