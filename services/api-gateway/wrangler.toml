@@ -15,6 +15,14 @@ pattern = "user.skillupitacademy.com/*"
 zone_name = "skillupitacademy.com"
 
 [[env.production.routes]]
+pattern = "admin.skillupitacademy.com/*"
+zone_name = "skillupitacademy.com"
+
+[[env.production.routes]]
+pattern = "faculty.skillupitacademy.com/*"
+zone_name = "skillupitacademy.com"
+
+[[env.production.routes]]
 pattern = "api.skillupitacademy.com/*"
 zone_name = "skillupitacademy.com"
 
