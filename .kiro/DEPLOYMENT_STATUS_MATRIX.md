@@ -7,7 +7,7 @@ It supersedes older planning assumptions in `.kiro` where those assumptions no l
 
 The repo and production are now materially closer to the intended architecture:
 - RTH and SkillUp public auth flows are live and largely working
-- GitHub deploy automation is green on the latest fixes; the newest placement lint repair is in flight
+- GitHub deploy automation is green on the latest fixes; the newest placement handoff deploy is live and its `Quality` run was later cancelled
 - Cloudflare routing for `user.*`, `admin.skillupitacademy.com`, and `faculty.skillupitacademy.com` is live
 - `placement.skillhubcore.in` now serves the shared placement frontend
 - Cloudflare SSL is now `strict` on all three active zones
@@ -56,7 +56,7 @@ The repo and production are now materially closer to the intended architecture:
 | Cross-brand refresh isolation | Verified live | Working, no cross-brand auth leakage |
 | Placement shared host | Verified live | Returns `200` and serves shared frontend |
 | Placement first-pass apply persistence | Implemented in repo | Shared apply route writes to `placement_prod`; deeper E2E still pending |
-| Placement shared-session handoff | Implemented in repo | Brand-host bridge routes and shared `.skillhubcore.in` handoff endpoint now exist; live redeploy/smoke still pending |
+| Placement shared-session handoff | Verified live | Brand-host bridge routes and shared `.skillhubcore.in` handoff endpoint are deployed and serving live |
 | Mailbox-backed E2E | Incomplete | Inbox access unavailable here |
 
 ## Canonical Host Map
@@ -127,7 +127,7 @@ This section reconciles `.kiro/AI_PROMPTS_TO_COMPLETE_TASKS.md` with the current
 | 8 | Session management endpoints | Completed in repo | Brand-aware session endpoints exist |
 | 9 | Wire identity bridge to signup | Completed in repo and live | Shadow-user sync already wired and observed live |
 | 10 | Verify Cloudflare DNS | Completed | Active production hosts verified; old `quiz/notes/app` student hosts no longer resolve |
-| 11 | Deploy all services | Mostly completed | Main app and gateway deploys succeeded; latest shared-placement handoff patch still needs deployment |
+| 11 | Deploy all services | Completed for current rollout scope | Main app and gateway deploys succeeded; latest shared-placement handoff patch is deployed live |
 | 12 | Full end-to-end auth testing | Partially completed | API/browser checks done; mailbox-dependent checks still incomplete |
 
 ## GCP / Cloud Run Status
@@ -215,8 +215,8 @@ Current `services/api-gateway/wrangler.toml` production routes cover:
 | Gap | Impact |
 |---|---|
 | Mailbox-backed verification cannot be executed from this workspace | Final Prompt 12 cannot be fully closed |
-| Shared placement cross-domain session handoff still needs live redeploy verification | Code path is now implemented in repo; production smoke is still pending |
-| Older `.kiro` and `docs/` references still mention retired or superseded hostnames | Documentation drift remains |
+| Mailbox-backed verification cannot be executed from this workspace | Final Prompt 12 cannot be fully closed |
+| Older archived `.kiro` and `docs/` exports still mention retired or superseded hostnames | Historical doc drift remains, but primary steering docs are normalized |
 
 ## Stale Architecture and Documentation Drift
 
@@ -248,8 +248,7 @@ Use this file as the normalization layer until the older docs are cleaned up.
 ### Still open
 
 - [ ] Mailbox-backed email receipt verification remains incomplete
-- [ ] Placement shared-host authenticated session handoff needs deploy and deeper live smoke
-- [ ] Older stale docs should be normalized to the current host map
+- [ ] Mailbox-backed email receipt verification remains incomplete
 
 ## Practical Conclusion
 
@@ -270,15 +269,12 @@ What is effectively complete:
 
 What is not fully complete:
 - mailbox-backed final E2E evidence
-- placement shared-host authenticated session handoff live deployment and deeper workflow smoke
-- stale-document cleanup across every older `.kiro` and `docs/` reference
+- exhaustive cleanup across every archived historical `.kiro` and `docs/` export
 
 ## Next Actions
 
-1. Deploy the shared-placement handoff patch and recheck authenticated flows on `placement.skillhubcore.in`.
-2. Do a deeper authenticated smoke on `placement.skillhubcore.in` beyond anonymous page loads.
-3. Normalize older `.kiro` and `docs/` files so they no longer contradict the active host map.
-4. Close Prompt 12 only after mailbox-backed verification is performed.
+1. Close Prompt 12 only after mailbox-backed verification is performed.
+2. Optionally continue pruning archived historical docs that still mention retired hosts.
 
 ## Appendix: Current Repo Delta After April 2 Verification
 
@@ -306,14 +302,12 @@ Update the interpretation of the placement gap as follows:
 | Gateway routing for placement host | Assumed wrong target | Present in repo config |
 | SkillUp student placement migration | Still brand-locked | Redirect-based migration now present in repo |
 | Placement application flow | Placeholder only | First shared-host persistence pass now implemented in repo |
-| Cross-domain placement auth/session handoff | Implemented in repo | Still needs live deploy and verification |
+| Cross-domain placement auth/session handoff | Verified live | Brand-host bridge and placement handoff are deployed and serving live |
 
 ### What Still Remains Open For Placement
 
-- verify the new shared-host application persistence flow against live deployment
-- complete the remaining end-to-end placement workflow beyond first-pass application capture
-- deploy and verify the new cross-domain session handoff / callback behavior for `.skillhubcore.in`
-- normalize this file's earlier placement references once live verification is re-run
+- complete mailbox-backed end-to-end placement and auth verification
+- optionally continue pruning archived documentation that still references retired hosts
 
 ### Placement Progress Note After Shared Apply Flow
 
