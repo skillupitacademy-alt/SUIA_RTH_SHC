@@ -1,5 +1,5 @@
 import type { RequestBrand } from '@/lib/request-brand';
-import { bindBrandRepo, getAuthBrandDb } from '@/modules/auth/brand-db';
+import { getAuthBrandContext, shouldUseBrandBinding } from '@/modules/auth/brand-db';
 import { AuditService } from '@/modules/auth/audit.service';
 import { PasswordService } from '@/modules/auth/password.service';
 import { TokenRepository } from '@/modules/auth/repositories/token.repository';
@@ -19,12 +19,20 @@ export class LoginService {
   ) {}
 
   async login(email: string, password: string, ip: string = 'unknown', brand: RequestBrand = 'realtutorialhub') {
-    const brandDb = getAuthBrandDb(brand);
-    const brandSecurityService = typeof this.securityService.withDb === 'function'
-      ? this.securityService.withDb(brandDb)
+    const brandContext = getAuthBrandContext(brand);
+    const useBrandBinding = shouldUseBrandBinding();
+    const brandSecurityService = useBrandBinding && typeof this.securityService.withContext === 'function'
+      ? this.securityService.withContext(brandContext.db, {
+          users: brandContext.tables.users,
+          loginAttempts: brandContext.tables.loginAttempts,
+        })
       : this.securityService;
-    const brandUserRepo = bindBrandRepo(this.userRepo, brandDb);
-    const brandTokenRepo = bindBrandRepo(this.tokenRepo, brandDb);
+    const brandUserRepo = useBrandBinding && typeof this.userRepo.withDb === 'function'
+      ? this.userRepo.withDb(brandContext.db, brandContext.tables)
+      : this.userRepo;
+    const brandTokenRepo = useBrandBinding && typeof this.tokenRepo.withDb === 'function'
+      ? this.tokenRepo.withDb(brandContext.db, { refreshTokens: brandContext.tables.refreshTokens })
+      : this.tokenRepo;
 
     if (await brandSecurityService.isAccountLocked(email, ip, brand)) {
       await this.auditService.log({ action: 'login_locked', metadata: { email }, ip });

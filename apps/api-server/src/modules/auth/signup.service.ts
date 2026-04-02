@@ -9,7 +9,7 @@ import { AppEvents } from '@/lib/events';
 import { logger } from '@/lib/logger';
 import type { RequestBrand } from '@/lib/request-brand';
 import { AuditService } from '@/modules/auth/audit.service';
-import { bindBrandRepo, getAuthBrandDb } from '@/modules/auth/brand-db';
+import { getAuthBrandContext, shouldUseBrandBinding } from '@/modules/auth/brand-db';
 import { PasswordService } from '@/modules/auth/password.service';
 import { UserRepository } from '@/modules/auth/repositories/user.repository';
 import { container } from '@/modules/core/container';
@@ -34,9 +34,12 @@ export class SignupService {
 
     const passwordHash = await this.passwordService.hash(password);
 
-    const brandDb = getAuthBrandDb(brand);
+    const brandContext = getAuthBrandContext(brand);
+    const brandDb = brandContext.db;
     const brandUsers = brand === 'skillup' ? skillupUsers : realtutorialhubUsers;
-    const brandUserRepo = bindBrandRepo(this.userRepo, brandDb);
+    const brandUserRepo = shouldUseBrandBinding()
+      ? this.userRepo.withDb(brandDb, brandContext.tables)
+      : this.userRepo;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const newUser = await brandDb.transaction(async (tx: any) => {
@@ -125,7 +128,10 @@ export class SignupService {
   }
 
   async verifyEmail(token: string, ip?: string, brand: RequestBrand = 'realtutorialhub') {
-    const brandUserRepo = bindBrandRepo(this.userRepo, getAuthBrandDb(brand));
+    const brandContext = getAuthBrandContext(brand);
+    const brandUserRepo = shouldUseBrandBinding()
+      ? this.userRepo.withDb(brandContext.db, brandContext.tables)
+      : this.userRepo;
     let verifiedToken = await brandUserRepo.findToken(token);
     const isTestEnv = process.env.NODE_ENV === 'test' || process.env.VITEST === 'true' || process.env.VITEST_WORKER_ID !== undefined;
     if (verifiedToken === undefined && isTestEnv) {
@@ -167,7 +173,10 @@ export class SignupService {
   }
 
   async resendVerification(userId: string, ip?: string, brand: RequestBrand = 'realtutorialhub') {
-    const brandUserRepo = bindBrandRepo(this.userRepo, getAuthBrandDb(brand));
+    const brandContext = getAuthBrandContext(brand);
+    const brandUserRepo = shouldUseBrandBinding()
+      ? this.userRepo.withDb(brandContext.db, brandContext.tables)
+      : this.userRepo;
     const user = await brandUserRepo.findById(userId);
 
     if (user === undefined) throw new Error('User not found');

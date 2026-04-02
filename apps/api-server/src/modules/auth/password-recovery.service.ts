@@ -3,7 +3,7 @@ import crypto from 'crypto';
 import { buildBrandPasswordResetUrl } from '@/lib/brand-config';
 import type { RequestBrand } from '@/lib/request-brand';
 import { AuditService } from '@/modules/auth/audit.service';
-import { bindBrandRepo, getAuthBrandDb } from '@/modules/auth/brand-db';
+import { getAuthBrandContext, shouldUseBrandBinding } from '@/modules/auth/brand-db';
 import { PasswordService } from '@/modules/auth/password.service';
 import { UserRepository } from '@/modules/auth/repositories/user.repository';
 import { container } from '@/modules/core/container';
@@ -18,7 +18,10 @@ export class PasswordRecoveryService {
 
   async forgotPassword(email: string, ip?: string, brand: RequestBrand = 'realtutorialhub') {
     const cleanEmail = email.toLowerCase().trim();
-    const brandUserRepo = bindBrandRepo(this.userRepo, getAuthBrandDb(brand));
+    const brandContext = getAuthBrandContext(brand);
+    const brandUserRepo = shouldUseBrandBinding()
+      ? this.userRepo.withDb(brandContext.db, brandContext.tables)
+      : this.userRepo;
     
     await this.auditService.log({ action: 'auth_forgot_password_requested', metadata: { email_redacted: '***' }, ip });
 
@@ -53,12 +56,19 @@ export class PasswordRecoveryService {
   }
 
   async validateResetToken(token: string, brand: RequestBrand = 'realtutorialhub') {
-    const resetToken = await bindBrandRepo(this.userRepo, getAuthBrandDb(brand)).findResetToken(token);
+    const brandContext = getAuthBrandContext(brand);
+    const brandUserRepo = shouldUseBrandBinding()
+      ? this.userRepo.withDb(brandContext.db, brandContext.tables)
+      : this.userRepo;
+    const resetToken = await brandUserRepo.findResetToken(token);
     return resetToken || null;
   }
 
   async resetPassword(token: string, newPassword: string, ip?: string, brand: RequestBrand = 'realtutorialhub') {
-    const brandUserRepo = bindBrandRepo(this.userRepo, getAuthBrandDb(brand));
+    const brandContext = getAuthBrandContext(brand);
+    const brandUserRepo = shouldUseBrandBinding()
+      ? this.userRepo.withDb(brandContext.db, brandContext.tables)
+      : this.userRepo;
     const validToken = await this.validateResetToken(token, brand);
 
     if (validToken === null) {

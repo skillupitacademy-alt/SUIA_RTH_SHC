@@ -1,7 +1,7 @@
 import { decodeJwt } from "jose";
 
 import type { RequestBrand } from "@/lib/request-brand";
-import { bindBrandRepo, getAuthBrandDb } from "@/modules/auth/brand-db";
+import { getAuthBrandContext, shouldUseBrandBinding } from "@/modules/auth/brand-db";
 import { AuditService } from "@/modules/auth/audit.service";
 import { TokenRepository } from "@/modules/auth/repositories/token.repository";
 import { UserRepository } from "@/modules/auth/repositories/user.repository";
@@ -53,9 +53,14 @@ export class TokenRefreshService {
     }
 
     const effectiveBrand = (tokenBrand === 'skillup' ? 'skillup' : 'realtutorialhub') satisfies RequestBrand;
-    const brandDb = getAuthBrandDb(effectiveBrand);
-    const brandTokenRepo = bindBrandRepo(this.tokenRepo, brandDb);
-    const brandUserRepo = bindBrandRepo(this.userRepo, brandDb);
+    const brandContext = getAuthBrandContext(effectiveBrand);
+    const useBrandBinding = shouldUseBrandBinding();
+    const brandTokenRepo = useBrandBinding && typeof this.tokenRepo.withDb === 'function'
+      ? this.tokenRepo.withDb(brandContext.db, { refreshTokens: brandContext.tables.refreshTokens })
+      : this.tokenRepo;
+    const brandUserRepo = useBrandBinding && typeof this.userRepo.withDb === 'function'
+      ? this.userRepo.withDb(brandContext.db, brandContext.tables)
+      : this.userRepo;
 
     const tokenHash = await this.tokenService.hashToken(token);
 
