@@ -1,5 +1,10 @@
 # Gap Analysis Verification Summary
 
+> [!IMPORTANT]
+> Historical verification note: this file captures an earlier gap-analysis snapshot.
+> Current production truth lives in `.kiro/DEPLOYMENT_STATUS_MATRIX.md`.
+> Treat `user.realtutorialhub.com`, `user.skillupitacademy.com`, `tutorial.skillhubcore.in`, `quiz.skillhubcore.in`, and `placement.skillhubcore.in` as the active public host map unless this file explicitly says otherwise.
+
 **Date**: March 30, 2026  
 **Status**: ✅ Verification Complete
 

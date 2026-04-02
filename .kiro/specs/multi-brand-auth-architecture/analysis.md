@@ -1,5 +1,10 @@
 # Multi-Brand Authentication Architecture - Current State Analysis
 
+> [!IMPORTANT]
+> Historical architecture note: this file contains older hostnames and rollout assumptions.
+> Current production truth lives in `.kiro/DEPLOYMENT_STATUS_MATRIX.md`.
+> Treat `user.realtutorialhub.com`, `user.skillupitacademy.com`, `tutorial.skillhubcore.in`, `quiz.skillhubcore.in`, and `placement.skillhubcore.in` as the active public host map unless this file explicitly says otherwise.
+
 ## Current Subdomain Structure
 
 ### Real Tutorial Hub (realtutorialhub.com)

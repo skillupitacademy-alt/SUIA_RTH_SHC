@@ -1,4 +1,10 @@
 # Deployment Checklist - Complete Infrastructure Status
+
+> [!IMPORTANT]
+> Historical deployment note: this checklist reflects an older infrastructure snapshot and still references retired student hosts.
+> Current production truth lives in `.kiro/DEPLOYMENT_STATUS_MATRIX.md`.
+> Treat `user.realtutorialhub.com`, `user.skillupitacademy.com`, `tutorial.skillhubcore.in`, `quiz.skillhubcore.in`, and `placement.skillhubcore.in` as the active public host map unless this file explicitly says otherwise.
+
 > Based on actual .env.local, wrangler.toml, GitHub workflows
 > Generated: 2026-03-29
 

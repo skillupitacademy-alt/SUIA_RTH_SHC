@@ -1,4 +1,10 @@
 # Actual Architecture Flow (Verified from Code)
+
+> [!IMPORTANT]
+> Historical architecture note: this file captures an older flow model and still references retired student hosts.
+> Current production truth lives in `.kiro/DEPLOYMENT_STATUS_MATRIX.md`.
+> Treat `user.realtutorialhub.com`, `user.skillupitacademy.com`, `tutorial.skillhubcore.in`, `quiz.skillhubcore.in`, and `placement.skillhubcore.in` as the active public host map unless this file explicitly says otherwise.
+
 > Based on codebase inspection
 > Generated: 2026-03-29
 
