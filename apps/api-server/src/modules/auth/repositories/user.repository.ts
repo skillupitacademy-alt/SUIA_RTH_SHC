@@ -1,5 +1,5 @@
 import { auditLogs, db, passwordResetTokens, roles, userProfiles, userRoles, users, verificationTokens } from '@quiz/db';
-import { and, eq, gt, sql } from 'drizzle-orm';
+import { eq, gt, sql } from 'drizzle-orm';
 
 import type { BrandAuthTables } from '@/modules/auth/brand-db';
 import { BaseRepository } from '@/modules/core/repositories/base.repository';
@@ -51,27 +51,15 @@ export class UserRepository extends BaseRepository<User, typeof users> {
   }
 
   async findWithDetails(email: string) {
-    return await this.dbInstance.query.users.findFirst({
-      where: eq(this.tables.users.email, email),
-      with: {
-        profile: true,
-        userRoles: {
-          with: { role: true }
-        }
-      }
-    });
+    const user = await this.findByEmail(email);
+    if (user === undefined) return undefined;
+    return this.hydrateUserDetails(user);
   }
 
   async findByIdWithDetails(id: string) {
-    return await this.dbInstance.query.users.findFirst({
-      where: eq(this.tables.users.id, id),
-      with: {
-        profile: true,
-        userRoles: {
-          with: { role: true }
-        }
-      }
-    });
+    const user = await this.findById(id);
+    if (user === undefined) return undefined;
+    return this.hydrateUserDetails(user);
   }
 
   async updateLastActive(id: string, date: Date = new Date()) {
@@ -141,10 +129,7 @@ export class UserRepository extends BaseRepository<User, typeof users> {
 
   async findResetToken(token: string) {
     return await this.dbInstance.query.passwordResetTokens.findFirst({
-      where: and(
-        eq(this.tables.passwordResetTokens.token, token),
-        gt(this.tables.passwordResetTokens.expiresAt, new Date())
-      )
+      where: sql`${this.tables.passwordResetTokens.token} = ${token} and ${this.tables.passwordResetTokens.expiresAt} > ${new Date()}`
     });
   }
 
@@ -156,5 +141,38 @@ export class UserRepository extends BaseRepository<User, typeof users> {
     await this.dbInstance.update(this.tables.users)
       .set({ passwordHash })
       .where(eq(this.tables.users.id, id));
+  }
+
+  async findById(id: string): Promise<User | undefined> {
+    return await this.dbInstance.query.users.findFirst({
+      where: eq(this.tables.users.id, id),
+    });
+  }
+
+  private async hydrateUserDetails(user: User) {
+    const profile = await this.dbInstance.query.userProfiles.findFirst({
+      where: eq(this.tables.userProfiles.userId, user.id),
+    });
+
+    const roleRows = await this.dbInstance
+      .select({
+        roleId: this.tables.roles.id,
+        roleName: this.tables.roles.name,
+      })
+      .from(this.tables.userRoles)
+      .innerJoin(this.tables.roles, eq(this.tables.userRoles.roleId, this.tables.roles.id))
+      .where(eq(this.tables.userRoles.userId, user.id));
+
+    return {
+      ...user,
+      profile,
+      userRoles: roleRows.map((roleRow) => ({
+        roleId: roleRow.roleId,
+        role: {
+          id: roleRow.roleId,
+          name: roleRow.roleName,
+        },
+      })),
+    };
   }
 }
