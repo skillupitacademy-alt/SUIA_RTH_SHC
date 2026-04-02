@@ -1,5 +1,7 @@
 import { decodeJwt } from "jose";
 
+import type { RequestBrand } from "@/lib/request-brand";
+import { bindBrandRepo, getAuthBrandDb } from "@/modules/auth/brand-db";
 import { AuditService } from "@/modules/auth/audit.service";
 import { TokenRepository } from "@/modules/auth/repositories/token.repository";
 import { UserRepository } from "@/modules/auth/repositories/user.repository";
@@ -50,12 +52,17 @@ export class TokenRefreshService {
       throw new Error('Invalid refresh _token');
     }
 
+    const effectiveBrand = (tokenBrand === 'skillup' ? 'skillup' : 'realtutorialhub') satisfies RequestBrand;
+    const brandDb = getAuthBrandDb(effectiveBrand);
+    const brandTokenRepo = bindBrandRepo(this.tokenRepo, brandDb);
+    const brandUserRepo = bindBrandRepo(this.userRepo, brandDb);
+
     const tokenHash = await this.tokenService.hashToken(token);
 
-    const storedToken = await this.tokenRepo.findByHash(tokenHash);
+    const storedToken = await brandTokenRepo.findByHash(tokenHash);
 
     if (storedToken === undefined) {
-      await this.tokenRepo.revokeAll(payload.userId);
+      await brandTokenRepo.revokeAll(payload.userId);
       
       await this.auditService.log({ 
         userId: payload.userId, 
@@ -69,7 +76,7 @@ export class TokenRefreshService {
       throw new Error('Refresh _token expired');
     }
 
-    const userWithDetails = await this.userRepo.findByIdWithDetails(payload.userId);
+    const userWithDetails = await brandUserRepo.findByIdWithDetails(payload.userId);
 
     if (userWithDetails === undefined) throw new Error('User not found');
     
@@ -78,7 +85,7 @@ export class TokenRefreshService {
     }
 
     // Update Last Active on Refresh
-    await this.userRepo.updateLastActive(userWithDetails.id);
+    await brandUserRepo.updateLastActive(userWithDetails.id);
 
     const user = userWithDetails;
     const roleNames = user.userRoles.map(ur => ur.role.name);
@@ -123,9 +130,9 @@ export class TokenRefreshService {
     });
     const newRefreshTokenHash = await this.tokenService.hashToken(newRefreshToken);
 
-    await this.tokenRepo.revokeById(storedToken.id);
+    await brandTokenRepo.revokeById(storedToken.id);
 
-    await this.tokenRepo.createRefreshToken({
+    await brandTokenRepo.createRefreshToken({
       userId: user.id,
       token: newRefreshTokenHash,
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),

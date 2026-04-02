@@ -1,4 +1,5 @@
 import type { RequestBrand } from '@/lib/request-brand';
+import { bindBrandRepo, getAuthBrandDb } from '@/modules/auth/brand-db';
 import { AuditService } from '@/modules/auth/audit.service';
 import { PasswordService } from '@/modules/auth/password.service';
 import { TokenRepository } from '@/modules/auth/repositories/token.repository';
@@ -18,15 +19,22 @@ export class LoginService {
   ) {}
 
   async login(email: string, password: string, ip: string = 'unknown', brand: RequestBrand = 'realtutorialhub') {
-    if (await this.securityService.isAccountLocked(email, ip, brand)) {
+    const brandDb = getAuthBrandDb(brand);
+    const brandSecurityService = typeof this.securityService.withDb === 'function'
+      ? this.securityService.withDb(brandDb)
+      : this.securityService;
+    const brandUserRepo = bindBrandRepo(this.userRepo, brandDb);
+    const brandTokenRepo = bindBrandRepo(this.tokenRepo, brandDb);
+
+    if (await brandSecurityService.isAccountLocked(email, ip, brand)) {
       await this.auditService.log({ action: 'login_locked', metadata: { email }, ip });
       throw new Error('Account temporarily locked. Try again later.');
     }
 
-    const user = await this.userRepo.findWithDetails(email);
+    const user = await brandUserRepo.findWithDetails(email);
 
     if (user === undefined || (await this.passwordService.compare(password, user.passwordHash)) === false) {
-      await this.securityService.trackLoginAttempt(ip, email, false, brand);
+      await brandSecurityService.trackLoginAttempt(ip, email, false, brand);
       await this.auditService.log({ action: 'login_failed', metadata: { email }, ip });
       throw new Error('Invalid credentials');
     }
@@ -37,9 +45,9 @@ export class LoginService {
     }
 
     // Update Last Active
-    await this.userRepo.updateLastActive(user.id);
+    await brandUserRepo.updateLastActive(user.id);
 
-    await this.securityService.trackLoginAttempt(ip, email, true, brand);
+    await brandSecurityService.trackLoginAttempt(ip, email, true, brand);
     await this.auditService.log({ userId: user.id, action: 'login_success', ip, brand });
 
     const roleNames = user.userRoles.map(ur => ur.role.name);
@@ -60,7 +68,7 @@ export class LoginService {
     });
     const refreshTokenHash = await this.tokenService.hashToken(refreshToken);
 
-    await this.tokenRepo.createRefreshToken({
+    await brandTokenRepo.createRefreshToken({
       userId: user.id,
       token: refreshTokenHash,
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),

@@ -9,6 +9,7 @@ import { AppEvents } from '@/lib/events';
 import { logger } from '@/lib/logger';
 import type { RequestBrand } from '@/lib/request-brand';
 import { AuditService } from '@/modules/auth/audit.service';
+import { bindBrandRepo, getAuthBrandDb } from '@/modules/auth/brand-db';
 import { PasswordService } from '@/modules/auth/password.service';
 import { UserRepository } from '@/modules/auth/repositories/user.repository';
 import { container } from '@/modules/core/container';
@@ -33,9 +34,9 @@ export class SignupService {
 
     const passwordHash = await this.passwordService.hash(password);
 
-    const brandDb = brand === 'skillup' ? skillupDb : realtutorialhubDb;
+    const brandDb = getAuthBrandDb(brand);
     const brandUsers = brand === 'skillup' ? skillupUsers : realtutorialhubUsers;
-    const brandUserRepo = this.userRepo.withDb(brandDb);
+    const brandUserRepo = bindBrandRepo(this.userRepo, brandDb);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const newUser = await brandDb.transaction(async (tx: any) => {
@@ -124,7 +125,8 @@ export class SignupService {
   }
 
   async verifyEmail(token: string, ip?: string, brand: RequestBrand = 'realtutorialhub') {
-    let verifiedToken = await this.userRepo.findToken(token);
+    const brandUserRepo = bindBrandRepo(this.userRepo, getAuthBrandDb(brand));
+    let verifiedToken = await brandUserRepo.findToken(token);
     const isTestEnv = process.env.NODE_ENV === 'test' || process.env.VITEST === 'true' || process.env.VITEST_WORKER_ID !== undefined;
     if (verifiedToken === undefined && isTestEnv) {
       try {
@@ -151,8 +153,8 @@ export class SignupService {
       throw new Error('Invalid or expired verification _token');
     }
 
-    await this.userRepo.verifyEmail(verifiedToken.userId);
-    await this.userRepo.deleteToken(verifiedToken.id);
+    await brandUserRepo.verifyEmail(verifiedToken.userId);
+    await brandUserRepo.deleteToken(verifiedToken.id);
 
     await this.auditService.log({
       userId: verifiedToken.userId,
@@ -165,7 +167,8 @@ export class SignupService {
   }
 
   async resendVerification(userId: string, ip?: string, brand: RequestBrand = 'realtutorialhub') {
-    const user = await this.userRepo.findById(userId);
+    const brandUserRepo = bindBrandRepo(this.userRepo, getAuthBrandDb(brand));
+    const user = await brandUserRepo.findById(userId);
 
     if (user === undefined) throw new Error('User not found');
     if (user.emailVerified === true) throw new Error('Email already verified');
@@ -173,7 +176,7 @@ export class SignupService {
     const token = crypto.randomBytes(32).toString('hex');
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
-    await this.userRepo.createToken(userId, token, expiresAt);
+    await brandUserRepo.createToken(userId, token, expiresAt);
 
     const verificationUrl = buildBrandVerificationUrl(token, brand);
     await EmailService.sendVerificationEmail(user.email, verificationUrl, brand);

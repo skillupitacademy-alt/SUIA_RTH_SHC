@@ -19,7 +19,8 @@ async function getHandler(_req: NextRequest) {
     }
 
     try {
-        const valid = await container.get(AuthService).validateResetToken(_token);
+        const brand = resolveRequestBrand(_req.nextUrl.hostname) ?? 'realtutorialhub';
+        const valid = await container.get(AuthService).validateResetToken(_token, brand);
         return ApiResponse.success({ valid });
     } catch {
         return ApiResponse.success({ valid: false });

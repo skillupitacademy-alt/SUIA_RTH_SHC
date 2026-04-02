@@ -85,9 +85,9 @@ export class AuthService {
     return service.forgotPassword(email, ip, brand);
   }
 
-  async validateResetToken(token: string) {
+  async validateResetToken(token: string, brand: RequestBrand = 'realtutorialhub') {
     const service = await this.getPasswordRecoveryService();
-    return service.validateResetToken(token);
+    return service.validateResetToken(token, brand);
   }
 
   async resetPassword(token: string, newPassword: string, ip?: string, brand: RequestBrand = 'realtutorialhub') {

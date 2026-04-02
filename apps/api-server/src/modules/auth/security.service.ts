@@ -9,6 +9,10 @@ const MAX_ATTEMPTS = 5;
 export class SecurityService {
   constructor(private dbInstance = db) {}
 
+  withDb(dbClient: typeof db): this {
+    return new SecurityService(dbClient) as this;
+  }
+
   async trackLoginAttempt(ip: string, email: string, success: boolean, brand: RequestBrand = 'realtutorialhub') {
     const _user = await this.dbInstance.query.users.findFirst({
       where: eq(users.email, email),
