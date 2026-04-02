@@ -26,7 +26,7 @@ const nextConfig = {
     },
     async headers() {
         const isDev = process.env.NODE_ENV === 'development';
-        const reportAllowedOrigin = process.env.NEXT_PUBLIC_WEB_APP_URL || "https://quiz.realtutorialhub.com";
+        const reportAllowedOrigin = process.env.NEXT_PUBLIC_WEB_APP_URL || "https://user.realtutorialhub.com";
         const apiUrls = [
             process.env.NEXT_PUBLIC_API_URL,
             process.env.NEXT_PUBLIC_ADMIN_URL,

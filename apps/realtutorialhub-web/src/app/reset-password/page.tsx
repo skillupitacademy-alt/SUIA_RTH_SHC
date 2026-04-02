@@ -38,7 +38,7 @@ export default function ResetPasswordPage() {
       }
 
       setSuccess(true);
-      setTimeout(() => router.replace('https://quiz.realtutorialhub.com/login'), 2200);
+      setTimeout(() => router.replace('https://user.realtutorialhub.com/login'), 2200);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to reset password.');
     } finally {
@@ -61,7 +61,7 @@ export default function ResetPasswordPage() {
         ) : success ? (
           <div className="mt-6">
             <p className="text-base leading-7 text-slate-600">Your password has been updated. Redirecting to login.</p>
-            <Link href="https://quiz.realtutorialhub.com/login" className="mt-6 inline-block rounded-full bg-rose-500 px-5 py-3 text-sm font-bold text-white transition hover:bg-rose-600">
+            <Link href="https://user.realtutorialhub.com/login" className="mt-6 inline-block rounded-full bg-rose-500 px-5 py-3 text-sm font-bold text-white transition hover:bg-rose-600">
               Sign in now
             </Link>
           </div>

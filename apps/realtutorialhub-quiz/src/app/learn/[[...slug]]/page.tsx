@@ -12,7 +12,7 @@ function getTutorialBaseUrl(): string {
     return base.replace(/\/+$/, '');
   }
 
-  return 'https://notes.realtutorialhub.com';
+  return 'https://tutorial.skillhubcore.in';
 }
 
 export default async function LearnRedirectPage({ params }: LearnRedirectPageProps) {

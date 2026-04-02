@@ -38,7 +38,7 @@ export default function ForgotPasswordPage() {
             <button type="button" onClick={() => setSubmitted(false)} className="rounded-full border border-slate-200 px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-rose-200 hover:text-rose-700">
               Send again
             </button>
-            <Link href="https://quiz.realtutorialhub.com/login" className="rounded-full bg-rose-500 px-5 py-3 text-sm font-bold text-white transition hover:bg-rose-600">
+            <Link href="https://user.realtutorialhub.com/login" className="rounded-full bg-rose-500 px-5 py-3 text-sm font-bold text-white transition hover:bg-rose-600">
               Back to login
             </Link>
           </div>

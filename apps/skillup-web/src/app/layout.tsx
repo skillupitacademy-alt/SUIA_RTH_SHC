@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     template: '%s | SkillUp IT Academy',
   },
   description: 'Student portal for SkillUp IT Academy',
-  metadataBase: new URL('https://app.skillupitacademy.com'),
+  metadataBase: new URL('https://user.skillupitacademy.com'),
   manifest: '/manifest.json',
 };
 

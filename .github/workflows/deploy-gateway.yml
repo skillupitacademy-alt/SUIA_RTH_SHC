@@ -22,6 +22,7 @@ jobs:
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
       ADMIN_JWT_SECRET: ${{ secrets.ADMIN_JWT_SECRET }}
       INTERNAL_GATEWAY_SECRET: ${{ secrets.INTERNAL_GATEWAY_SECRET }}
+      QUIZ_WEB_URL: https://quiz-web-app-plldp3atca-el.a.run.app
       SKILLUP_WEB_URL: https://skillup-web-plldp3atca-el.a.run.app
       SKILLUP_ADMIN_URL: https://skillup-admin-plldp3atca-el.a.run.app
       FACULTY_URL: https://faculty-app-plldp3atca-el.a.run.app

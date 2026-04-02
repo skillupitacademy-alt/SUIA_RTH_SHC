@@ -22,12 +22,9 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - name: Read pnpm version
-        id: pnpm_version
-        run: echo "version=$(node -p \"require('./package.json').packageManager.split('@')[1]\")" >> "$GITHUB_OUTPUT"
       - uses: pnpm/action-setup@v4
         with:
-          version: ${{ steps.pnpm_version.outputs.version }}
+          version: 9.15.4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -40,12 +37,9 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - name: Read pnpm version
-        id: pnpm_version
-        run: echo "version=$(node -p \"require('./package.json').packageManager.split('@')[1]\")" >> "$GITHUB_OUTPUT"
       - uses: pnpm/action-setup@v4
         with:
-          version: ${{ steps.pnpm_version.outputs.version }}
+          version: 9.15.4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -58,12 +52,9 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - name: Read pnpm version
-        id: pnpm_version
-        run: echo "version=$(node -p \"require('./package.json').packageManager.split('@')[1]\")" >> "$GITHUB_OUTPUT"
       - uses: pnpm/action-setup@v4
         with:
-          version: ${{ steps.pnpm_version.outputs.version }}
+          version: 9.15.4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -84,12 +75,9 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - name: Read pnpm version
-        id: pnpm_version
-        run: echo "version=$(node -p \"require('./package.json').packageManager.split('@')[1]\")" >> "$GITHUB_OUTPUT"
       - uses: pnpm/action-setup@v4
         with:
-          version: ${{ steps.pnpm_version.outputs.version }}
+          version: 9.15.4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -111,12 +99,9 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - name: Read pnpm version
-        id: pnpm_version
-        run: echo "version=$(node -p \"require('./package.json').packageManager.split('@')[1]\")" >> "$GITHUB_OUTPUT"
       - uses: pnpm/action-setup@v4
         with:
-          version: ${{ steps.pnpm_version.outputs.version }}
+          version: 9.15.4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -134,12 +119,9 @@ jobs:
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
-      - name: Read pnpm version
-        id: pnpm_version
-        run: echo "version=$(node -p \"require('./package.json').packageManager.split('@')[1]\")" >> "$GITHUB_OUTPUT"
       - uses: pnpm/action-setup@v4
         with:
-          version: ${{ steps.pnpm_version.outputs.version }}
+          version: 9.15.4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -168,12 +150,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Read pnpm version
-        id: pnpm_version
-        run: echo "version=$(node -p \"require('./package.json').packageManager.split('@')[1]\")" >> "$GITHUB_OUTPUT"
       - uses: pnpm/action-setup@v4
         with:
-          version: ${{ steps.pnpm_version.outputs.version }}
+          version: 9.15.4
       - uses: actions/setup-node@v4
         with:
           node-version: 20

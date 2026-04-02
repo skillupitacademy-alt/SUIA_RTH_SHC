@@ -43,13 +43,14 @@ vi.mock('@upstash/ratelimit', () => {
   };
 });
 
-const env = {
-  JWT_SECRET: 'gateway-secret',
-  INTERNAL_GATEWAY_SECRET: 'internal-gateway-secret',
-  UPSTASH_REDIS_REST_URL: 'https://redis.example.com',
-  UPSTASH_REDIS_REST_TOKEN: 'redis-token',
-  SKILLHUBCORE_URL: 'https://skillhubcore.example.com',
-  SKILLUP_WEB_URL: 'https://skillup-web.example.com',
+  const env = {
+    JWT_SECRET: 'gateway-secret',
+    INTERNAL_GATEWAY_SECRET: 'internal-gateway-secret',
+    UPSTASH_REDIS_REST_URL: 'https://redis.example.com',
+    UPSTASH_REDIS_REST_TOKEN: 'redis-token',
+    SKILLHUBCORE_URL: 'https://skillhubcore.example.com',
+    QUIZ_WEB_URL: 'https://quiz-web.example.com',
+    SKILLUP_WEB_URL: 'https://skillup-web.example.com',
   SKILLUP_ADMIN_URL: 'https://skillup-admin.example.com',
   FACULTY_URL: 'https://faculty.example.com',
   STUDENT_FACULTY_URL: 'https://student-faculty.example.com',
@@ -125,9 +126,9 @@ describe('api-gateway', () => {
     expect(headers.get('X-Gateway-Secret')).toBe(env.INTERNAL_GATEWAY_SECRET);
   });
 
-  it('routes skillup web host traffic to the skillup web upstream', async () => {
+  it('routes skillup user host traffic to the skillup web upstream', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
-    const response = await app.request('https://app.skillupitacademy.com/programs', undefined, env);
+    const response = await app.request('https://user.skillupitacademy.com/programs', undefined, env);
 
     expect(response.status).toBe(200);
     expect(fetchSpy).toHaveBeenCalledTimes(1);
@@ -152,13 +153,49 @@ describe('api-gateway', () => {
     expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(env.FACULTY_URL);
   });
 
-  it('routes notes host traffic to the tutorial upstream', async () => {
+  it('routes rth user host traffic to the tutorial upstream', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
-    const response = await app.request('https://notes.realtutorialhub.com/learn/remediation', undefined, env);
+    const response = await app.request('https://user.realtutorialhub.com/learn/remediation', undefined, env);
 
     expect(response.status).toBe(200);
     expect(fetchSpy).toHaveBeenCalledTimes(1);
     expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(env.TUTORIAL_SERVICE_URL);
+  });
+
+  it('routes quiz host traffic to the quiz web upstream', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
+    const response = await app.request('https://quiz.skillhubcore.in/dashboard', undefined, env);
+
+    expect(response.status).toBe(200);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(env.QUIZ_WEB_URL);
+  });
+
+  it('routes tutorial host traffic to the tutorial upstream', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
+    const response = await app.request('https://tutorial.skillhubcore.in/learn/remediation', undefined, env);
+
+    expect(response.status).toBe(200);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(env.TUTORIAL_SERVICE_URL);
+  });
+
+  it('routes placement host traffic to the placement upstream', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
+    const response = await app.request('https://placement.skillhubcore.in/jobs', undefined, env);
+
+    expect(response.status).toBe(200);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(env.PLACEMENT_URL);
+  });
+
+  it('routes skillup api health checks to the api upstream', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
+    const response = await app.request('https://api.skillupitacademy.com/api/health/live', undefined, env);
+
+    expect(response.status).toBe(200);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(`${env.EXAM_SERVICE_URL}/api/health/live`);
   });
 
   it('routes admin api traffic to the exam service upstream', async () => {
@@ -409,11 +446,11 @@ describe('api-gateway', () => {
     const response = await app.request('https://api.example.com/healthz', {
       method: 'OPTIONS',
       headers: {
-        Origin: 'https://notes.realtutorialhub.com',
+        Origin: 'https://tutorial.skillhubcore.in',
         'Access-Control-Request-Method': 'GET',
       },
     }, env);
 
-    expect(response.headers.get('Access-Control-Allow-Origin')).toBe('https://notes.realtutorialhub.com');
+    expect(response.headers.get('Access-Control-Allow-Origin')).toBe('https://tutorial.skillhubcore.in');
   });
 });

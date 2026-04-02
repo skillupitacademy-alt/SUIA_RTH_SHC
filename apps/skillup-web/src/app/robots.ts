@@ -7,6 +7,6 @@ export default function robots() {
         disallow: ['/api/', '/student/'],
       },
     ],
-    sitemap: 'https://app.skillupitacademy.com/sitemap.xml',
+    sitemap: 'https://user.skillupitacademy.com/sitemap.xml',
   };
 }

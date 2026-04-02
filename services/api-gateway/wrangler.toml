@@ -4,14 +4,14 @@ compatibility_date = "2024-01-01"
 
 [env.production]
 workers_dev = true
-vars = { ENVIRONMENT = "production", SKILLUP_WEB_URL = "https://skillup-web-plldp3atca-el.a.run.app", SKILLUP_ADMIN_URL = "https://skillup-admin-plldp3atca-el.a.run.app", FACULTY_URL = "https://faculty-app-plldp3atca-el.a.run.app", STUDENT_FACULTY_URL = "https://faculty-app-plldp3atca-el.a.run.app", TUTORIAL_SERVICE_URL = "https://realtutorialhub-web-plldp3atca-el.a.run.app", SKILLHUBCORE_URL = "https://skillhubcore-service-plldp3atca-el.a.run.app", EXAM_SERVICE_URL = "https://quiz-api-server-plldp3atca-el.a.run.app", NOTIFICATION_URL = "https://quiz-api-server-plldp3atca-el.a.run.app" }
+vars = { ENVIRONMENT = "production", QUIZ_WEB_URL = "https://quiz-web-app-plldp3atca-el.a.run.app", SKILLUP_WEB_URL = "https://skillup-web-plldp3atca-el.a.run.app", SKILLUP_ADMIN_URL = "https://skillup-admin-plldp3atca-el.a.run.app", FACULTY_URL = "https://faculty-app-plldp3atca-el.a.run.app", STUDENT_FACULTY_URL = "https://faculty-app-plldp3atca-el.a.run.app", TUTORIAL_SERVICE_URL = "https://realtutorialhub-web-plldp3atca-el.a.run.app", SKILLHUBCORE_URL = "https://skillhubcore-service-plldp3atca-el.a.run.app", EXAM_SERVICE_URL = "https://quiz-api-server-plldp3atca-el.a.run.app", NOTIFICATION_URL = "https://quiz-api-server-plldp3atca-el.a.run.app", PLACEMENT_URL = "https://skillhubcore-service-plldp3atca-el.a.run.app" }
 
 [[env.production.routes]]
-pattern = "notes.realtutorialhub.com/*"
+pattern = "user.realtutorialhub.com/*"
 zone_name = "realtutorialhub.com"
 
 [[env.production.routes]]
-pattern = "app.skillupitacademy.com/*"
+pattern = "user.skillupitacademy.com/*"
 zone_name = "skillupitacademy.com"
 
 [[env.production.routes]]
@@ -24,4 +24,16 @@ zone_name = "realtutorialhub.com"
 
 [[env.production.routes]]
 pattern = "api.skillhubcore.in/*"
+zone_name = "skillhubcore.in"
+
+[[env.production.routes]]
+pattern = "quiz.skillhubcore.in/*"
+zone_name = "skillhubcore.in"
+
+[[env.production.routes]]
+pattern = "tutorial.skillhubcore.in/*"
+zone_name = "skillhubcore.in"
+
+[[env.production.routes]]
+pattern = "placement.skillhubcore.in/*"
 zone_name = "skillhubcore.in"

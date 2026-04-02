@@ -10,7 +10,7 @@ export default function VerifySuccessPage() {
           Your Real Tutorial Hub account is active. Sign in to continue with quizzes, AI tutor sessions, and your learning path.
         </p>
         <div className="mt-8 flex gap-3">
-          <Link href="https://quiz.realtutorialhub.com/login" className="rounded-full bg-rose-500 px-5 py-3 text-sm font-bold text-white transition hover:bg-rose-600">
+          <Link href="https://user.realtutorialhub.com/login" className="rounded-full bg-rose-500 px-5 py-3 text-sm font-bold text-white transition hover:bg-rose-600">
             Continue to login
           </Link>
           <Link href="/" className="rounded-full border border-slate-200 px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-rose-200 hover:text-rose-700">

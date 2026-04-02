@@ -1,10 +1,16 @@
 import type { GatewayRoute } from '@/types';
 
 export const ROUTING_TABLE: GatewayRoute[] = [
-  { host: 'notes.realtutorialhub.com', prefix: '/', upstreamKey: 'TUTORIAL_SERVICE_URL', public: true },
-  { host: 'app.skillupitacademy.com', prefix: '/', upstreamKey: 'SKILLUP_WEB_URL', public: true },
+  { host: 'user.realtutorialhub.com', prefix: '/', upstreamKey: 'TUTORIAL_SERVICE_URL', public: true },
+  { host: 'user.skillupitacademy.com', prefix: '/', upstreamKey: 'SKILLUP_WEB_URL', public: true },
   { host: 'admin.skillupitacademy.com', prefix: '/', upstreamKey: 'SKILLUP_ADMIN_URL', public: true },
   { host: 'faculty.skillupitacademy.com', prefix: '/', upstreamKey: 'FACULTY_URL', public: true },
+  { host: 'quiz.skillhubcore.in', prefix: '/', upstreamKey: 'QUIZ_WEB_URL', public: true },
+  { host: 'tutorial.skillhubcore.in', prefix: '/', upstreamKey: 'TUTORIAL_SERVICE_URL', public: true },
+  { host: 'placement.skillhubcore.in', prefix: '/', upstreamKey: 'PLACEMENT_URL', public: true },
+  { host: 'api.realtutorialhub.com', prefix: '/health/live', upstreamKey: 'EXAM_SERVICE_URL', public: true },
+  { host: 'api.skillupitacademy.com', prefix: '/health/live', upstreamKey: 'EXAM_SERVICE_URL', public: true },
+  { host: 'api.skillhubcore.in', prefix: '/healthz', upstreamKey: 'SKILLHUBCORE_URL', public: true },
   { host: 'api.skillhubcore.in', prefix: '/', upstreamKey: 'SKILLHUBCORE_URL', auth: true },
   { prefix: '/auth', upstreamKey: 'EXAM_SERVICE_URL', upstreamPathPrefix: '/api/auth', public: true },
   { prefix: '/students', upstreamKey: 'STUDENT_FACULTY_URL', auth: true },

@@ -21,7 +21,7 @@ describe('realtutorialhub-web proxy', () => {
     const response = await proxy(makeRequest('/learn/full-stack/js/promises'));
 
     expect(response.status).toBe(307);
-    expect(response.headers.get('location')).toBe('https://quiz.realtutorialhub.com/login?redirect=%2Flearn%2Ffull-stack%2Fjs%2Fpromises');
+    expect(response.headers.get('location')).toBe('https://user.realtutorialhub.com/login?redirect=%2Flearn%2Ffull-stack%2Fjs%2Fpromises');
     expect(new URL(response.headers.get('location') ?? '').searchParams.get('redirect')).toBe('/learn/full-stack/js/promises');
   });
 
