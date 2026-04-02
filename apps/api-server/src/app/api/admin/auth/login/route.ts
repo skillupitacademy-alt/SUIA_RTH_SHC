@@ -85,7 +85,7 @@ async function handler(_req: Request, body: z.infer<typeof loginSchema>) {
   });
 
   const { setCsrfToken } = await import('@/modules/auth/csrf.middleware');
-  setCsrfToken(response);
+  setCsrfToken(response, requestHostname);
 
   recordCounter('admin.auth.login', 1, { outcome: 'success', audience });
 

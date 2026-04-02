@@ -106,7 +106,7 @@ async function handler(req: NextRequest) {
       domain: cookieDomain,
     });
 
-    setCsrfToken(response);
+    setCsrfToken(response, requestHostname);
 
     const end = Date.now();
     const durationMs = end - start;

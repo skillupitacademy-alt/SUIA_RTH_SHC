@@ -3,6 +3,8 @@ import { NextResponse } from 'next/server';
 
  // Keep for compatibility per _user _request
 import { config } from '@/config';
+import { resolveCookieDomain } from '@/lib/cookie-domain';
+import { resolveRequestHostnameFromHeaders } from '@/lib/request-brand';
 
 export async function csrfProtection(_request: NextRequest) {
   const method = _request.method;
@@ -53,7 +55,8 @@ export async function csrfProtection(_request: NextRequest) {
     
     if (hasSession === true) {
       const response = NextResponse.json({ error: 'CSRF validation failed', message: 'Missing or invalid CSRF token' }, { status: 403 });
-      setCsrfToken(response);
+      const requestHostname = resolveRequestHostnameFromHeaders(_request.headers, _request.nextUrl.hostname);
+      setCsrfToken(response, requestHostname);
       return response;
     }
 
@@ -63,15 +66,17 @@ export async function csrfProtection(_request: NextRequest) {
   return null;
 }
 
-export function setCsrfToken(response: NextResponse) {
+export function setCsrfToken(response: NextResponse, requestHostname?: string) {
   // Use Web Crypto API instead of Node crypto for Edge compatibility
   const array = new Uint8Array(32);
   globalThis.crypto.getRandomValues(array);
   const _token = Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+  const cookieDomain = resolveCookieDomain(undefined, requestHostname);
 
   response.cookies.set('csrfToken', _token, {
     ...config.csrf.cookieSettings,
     path: '/',
+    domain: cookieDomain,
   });
   return _token;
 }

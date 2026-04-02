@@ -73,7 +73,7 @@ async function handler(_req: NextRequest) {
       domain: cookieDomain,
     });
 
-    setCsrfToken(response);
+    setCsrfToken(response, requestHostname);
 
     return response;
   } catch (_error: unknown) {
