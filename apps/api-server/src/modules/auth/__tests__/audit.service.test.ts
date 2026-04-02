@@ -13,9 +13,45 @@ vi.mock('@quiz/db', () => ({
     insert: vi.fn().mockImplementation((_table: any) => ({ values: vi.fn() })),
   },
   auditLogs: { tableName: 'audit_logs' },
+  userProfiles: { tableName: 'user_profiles' },
+  roles: { tableName: 'roles' },
+  userRoles: { tableName: 'user_roles' },
+  verificationTokens: { tableName: 'verification_tokens' },
+  passwordResetTokens: { tableName: 'password_reset_tokens' },
+  loginAttempts: { tableName: 'login_attempts' },
   sessions: { tableName: 'sessions' },
   refreshTokens: { tableName: 'refresh_tokens' },
   users: { tableName: 'users' }
+}));
+
+vi.mock('@quiz/db-rth', () => ({
+  db: {
+    insert: vi.fn().mockImplementation((_table: any) => ({ values: vi.fn() })),
+  },
+  auditLogs: { tableName: 'audit_logs' },
+  users: { tableName: 'users' },
+  userProfiles: { tableName: 'user_profiles' },
+  roles: { tableName: 'roles' },
+  userRoles: { tableName: 'user_roles' },
+  verificationTokens: { tableName: 'verification_tokens' },
+  passwordResetTokens: { tableName: 'password_reset_tokens' },
+  refreshTokens: { tableName: 'refresh_tokens' },
+  loginAttempts: { tableName: 'login_attempts' },
+}));
+
+vi.mock('@quiz/db-skillup', () => ({
+  db: {
+    insert: vi.fn().mockImplementation((_table: any) => ({ values: vi.fn() })),
+  },
+  auditLogs: { tableName: 'audit_logs' },
+  users: { tableName: 'users' },
+  userProfiles: { tableName: 'user_profiles' },
+  roles: { tableName: 'roles' },
+  userRoles: { tableName: 'user_roles' },
+  verificationTokens: { tableName: 'verification_tokens' },
+  passwordResetTokens: { tableName: 'password_reset_tokens' },
+  refreshTokens: { tableName: 'refresh_tokens' },
+  loginAttempts: { tableName: 'login_attempts' },
 }));
 
 describe('AuditService (Legacy Suite)', () => {

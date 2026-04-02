@@ -23,12 +23,12 @@ export class SignupService {
   ) {}
 
   async signup(email: string, password: string, name: string, ip?: string, brand: RequestBrand = 'realtutorialhub') {
-    await this.auditService.log({ action: 'signup_attempt', metadata: { email }, ip });
+    await this.auditService.log({ action: 'signup_attempt', metadata: { email }, ip, brand });
 
     const existingUser = await this.userRepo.findByEmail(email);
 
     if (existingUser !== undefined) {
-      await this.auditService.log({ action: 'signup_failed', metadata: { reason: 'user_exists', email }, ip });
+      await this.auditService.log({ action: 'signup_failed', metadata: { reason: 'user_exists', email }, ip, brand });
       throw new Error('User already exists');
     }
 
@@ -89,6 +89,7 @@ export class SignupService {
         action: 'identity_bridge_sync_failed',
         metadata: { error: message, brand, email, retryQueued: true },
         ip,
+        brand,
       });
       logger.error(
         {
@@ -155,7 +156,7 @@ export class SignupService {
     }
 
     if (verifiedToken === undefined || verifiedToken.expiresAt < new Date()) {
-      await this.auditService.log({ action: 'email_verification_failed', metadata: { reason: 'invalid_or_expired' }, ip });
+      await this.auditService.log({ action: 'email_verification_failed', metadata: { reason: 'invalid_or_expired' }, ip, brand });
       throw new Error('Invalid or expired verification _token');
     }
 

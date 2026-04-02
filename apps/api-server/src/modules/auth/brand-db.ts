@@ -1,4 +1,5 @@
 import {
+  auditLogs as defaultAuditLogs,
   db as defaultDb,
   loginAttempts as defaultLoginAttempts,
   passwordResetTokens as defaultPasswordResetTokens,
@@ -10,6 +11,7 @@ import {
   verificationTokens as defaultVerificationTokens,
 } from '@quiz/db';
 import {
+  auditLogs as realtutorialhubAuditLogs,
   db as realtutorialhubDb,
   loginAttempts as realtutorialhubLoginAttempts,
   passwordResetTokens as realtutorialhubPasswordResetTokens,
@@ -21,6 +23,7 @@ import {
   verificationTokens as realtutorialhubVerificationTokens,
 } from '@quiz/db-rth';
 import {
+  auditLogs as skillupAuditLogs,
   db as skillupDb,
   loginAttempts as skillupLoginAttempts,
   passwordResetTokens as skillupPasswordResetTokens,
@@ -39,6 +42,7 @@ const defaultTables = {
   userProfiles: defaultUserProfiles,
   roles: defaultRoles,
   userRoles: defaultUserRoles,
+  auditLogs: defaultAuditLogs,
   verificationTokens: defaultVerificationTokens,
   passwordResetTokens: defaultPasswordResetTokens,
   refreshTokens: defaultRefreshTokens,
@@ -50,6 +54,7 @@ const realtutorialhubTables = {
   userProfiles: realtutorialhubUserProfiles,
   roles: realtutorialhubRoles,
   userRoles: realtutorialhubUserRoles,
+  auditLogs: realtutorialhubAuditLogs,
   verificationTokens: realtutorialhubVerificationTokens,
   passwordResetTokens: realtutorialhubPasswordResetTokens,
   refreshTokens: realtutorialhubRefreshTokens,
@@ -61,6 +66,7 @@ const skillupTables = {
   userProfiles: skillupUserProfiles,
   roles: skillupRoles,
   userRoles: skillupUserRoles,
+  auditLogs: skillupAuditLogs,
   verificationTokens: skillupVerificationTokens,
   passwordResetTokens: skillupPasswordResetTokens,
   refreshTokens: skillupRefreshTokens,

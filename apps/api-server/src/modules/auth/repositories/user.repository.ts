@@ -1,4 +1,4 @@
-import { db, passwordResetTokens, roles, userProfiles, userRoles, users, verificationTokens } from '@quiz/db';
+import { auditLogs, db, passwordResetTokens, roles, userProfiles, userRoles, users, verificationTokens } from '@quiz/db';
 import { and, eq, gt, sql } from 'drizzle-orm';
 
 import type { BrandAuthTables } from '@/modules/auth/brand-db';
@@ -27,6 +27,7 @@ export class UserRepository extends BaseRepository<User, typeof users> {
       userProfiles,
       roles,
       userRoles,
+      auditLogs,
       verificationTokens,
       passwordResetTokens,
       refreshTokens: undefined as never,

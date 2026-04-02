@@ -35,7 +35,7 @@ export class LoginService {
       : this.tokenRepo;
 
     if (await brandSecurityService.isAccountLocked(email, ip, brand)) {
-      await this.auditService.log({ action: 'login_locked', metadata: { email }, ip });
+      await this.auditService.log({ action: 'login_locked', metadata: { email }, ip, brand });
       throw new Error('Account temporarily locked. Try again later.');
     }
 
@@ -43,12 +43,12 @@ export class LoginService {
 
     if (user === undefined || (await this.passwordService.compare(password, user.passwordHash)) === false) {
       await brandSecurityService.trackLoginAttempt(ip, email, false, brand);
-      await this.auditService.log({ action: 'login_failed', metadata: { email }, ip });
+      await this.auditService.log({ action: 'login_failed', metadata: { email }, ip, brand });
       throw new Error('Invalid credentials');
     }
 
     if (user.isBlocked === true) {
-        await this.auditService.log({ action: 'login_blocked_user', metadata: { email }, ip });
+        await this.auditService.log({ action: 'login_blocked_user', metadata: { email }, ip, brand });
         throw new Error('Account has been blocked. Contact administrator.');
     }
 

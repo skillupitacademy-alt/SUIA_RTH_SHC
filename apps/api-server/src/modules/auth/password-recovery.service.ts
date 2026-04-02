@@ -23,7 +23,7 @@ export class PasswordRecoveryService {
       ? this.userRepo.withDb(brandContext.db, brandContext.tables)
       : this.userRepo;
     
-    await this.auditService.log({ action: 'auth_forgot_password_requested', metadata: { email_redacted: '***' }, ip });
+    await this.auditService.log({ action: 'auth_forgot_password_requested', metadata: { email_redacted: '***' }, ip, brand });
 
     // 1. Check if user exists (with roles)
     const user = await brandUserRepo.findWithDetails(cleanEmail);
@@ -72,7 +72,7 @@ export class PasswordRecoveryService {
     const validToken = await this.validateResetToken(token, brand);
 
     if (validToken === null) {
-      await this.auditService.log({ action: 'password_reset_failed', metadata: { reason: 'invalid_or_expired_token' }, ip });
+      await this.auditService.log({ action: 'password_reset_failed', metadata: { reason: 'invalid_or_expired_token' }, ip, brand });
       throw new Error('Invalid or expired password reset link');
     }
 

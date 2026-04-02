@@ -1,6 +1,7 @@
 import { auditLogs, db } from '@quiz/db';
 
 import { logger } from '@/lib/logger';
+import { getAuthBrandContext, shouldUseBrandBinding } from '@/modules/auth/brand-db';
 
 export interface AuditLogEntry {
   userId?: string;
@@ -18,6 +19,11 @@ export class AuditService {
 
   async log(entry: AuditLogEntry) {
     try {
+      const brandContext = entry.brand !== undefined && shouldUseBrandBinding()
+        ? getAuthBrandContext(entry.brand)
+        : null;
+      const dbClient = brandContext?.db ?? this.dbInstance;
+      const auditLogTable = brandContext?.tables.auditLogs ?? auditLogs;
       const metadata = entry.metadata === undefined || entry.metadata === null
         ? {}
         : typeof entry.metadata === 'string'
@@ -28,7 +34,7 @@ export class AuditService {
         metadata.brand = entry.brand;
       }
 
-      await this.dbInstance.insert(auditLogs).values({
+      await dbClient.insert(auditLogTable).values({
         userId: entry.userId,
         action: entry.action,
         ip: entry.ip,

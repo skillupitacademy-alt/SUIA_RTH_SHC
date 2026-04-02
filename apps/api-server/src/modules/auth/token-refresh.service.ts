@@ -24,6 +24,7 @@ export class TokenRefreshService {
     const tokenBrand = typeof decoded.brand === 'string' && decoded.brand.trim().length > 0
       ? decoded.brand.trim().toLowerCase()
       : requestBrand;
+    const effectiveBrand = (tokenBrand === 'skillup' ? 'skillup' : 'realtutorialhub') satisfies RequestBrand;
 
     // Support both new (verifyUser/verifyAdmin) and legacy verifyRefreshToken paths for tests/backwards-compat.
     /* c8 ignore start */
@@ -48,11 +49,10 @@ export class TokenRefreshService {
         ? await verifyAdmin(token, { audience: requestedAudience })
         : await verifyUser(token, { audience: requestedAudience });
     } catch {
-      await this.auditService.log({ action: 'refresh_failed', metadata: { reason: 'invalid_token' }, ip });
+      await this.auditService.log({ action: 'refresh_failed', metadata: { reason: 'invalid_token' }, ip, brand: effectiveBrand });
       throw new Error('Invalid refresh _token');
     }
 
-    const effectiveBrand = (tokenBrand === 'skillup' ? 'skillup' : 'realtutorialhub') satisfies RequestBrand;
     const brandContext = getAuthBrandContext(effectiveBrand);
     const useBrandBinding = shouldUseBrandBinding();
     const brandTokenRepo = useBrandBinding && typeof this.tokenRepo.withDb === 'function'
@@ -72,7 +72,8 @@ export class TokenRefreshService {
       await this.auditService.log({ 
         userId: payload.userId, 
         action: 'security_alert_token_reuse', 
-        metadata: { ip, severity: 'critical' } 
+        metadata: { ip, severity: 'critical' },
+        brand: effectiveBrand,
       });
       throw new Error('Security Alert: Session compromised. All tokens revoked.');
     }
@@ -143,7 +144,7 @@ export class TokenRefreshService {
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
 
-    await this.auditService.log({ userId: user.id, action: 'refresh_success', ip });
+    await this.auditService.log({ userId: user.id, action: 'refresh_success', ip, brand: effectiveBrand });
 
     return { accessToken: newAccessToken, refreshToken: newRefreshToken };
   }

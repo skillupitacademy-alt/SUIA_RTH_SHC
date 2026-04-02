@@ -29,7 +29,7 @@ export class SecurityService {
     if (_user === undefined) return;
 
     if (success === true) {
-      await this.dbInstance.delete(loginAttempts)
+      await this.dbInstance.delete(this.tables.loginAttempts)
         .where(and(eq(this.tables.loginAttempts.userId, _user.id), eq(this.tables.loginAttempts.ip, ip), eq(this.tables.loginAttempts.brand, brand)));
       return;
     }
@@ -81,7 +81,6 @@ export class SecurityService {
 
     const attempt = await this.dbInstance.query.loginAttempts.findFirst({
       where: and(
-        eq(loginAttempts.userId, _user.id),
         eq(this.tables.loginAttempts.userId, _user.id),
         eq(this.tables.loginAttempts.ip, ip),
         eq(this.tables.loginAttempts.brand, brand)
