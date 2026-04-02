@@ -44,7 +44,7 @@ export function getCSPHeader(options) {
     "'wasm-unsafe-eval'", // Pillar 5: Support Cloudflare/Wasm telemetry
     isDev ? "'unsafe-eval'" : "",
     "https://static.cloudflareinsights.com",
-    "https://quiz.realtutorialhub.com", // Allow speculation rules from own domain
+    webAppUrl,
   ].filter(Boolean));
 
   const styleSrc = ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"];

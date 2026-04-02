@@ -1,6 +1,6 @@
-import { describe, it, expect, vi } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 
-import { cacheService } from "../cache.service"
+import { CacheService } from "../cache.service"
 import { logger } from "@/lib/logger"
 
 vi.mock("@/lib/logger", () => ({
@@ -9,17 +9,23 @@ vi.mock("@/lib/logger", () => ({
 
 const mockLogger = logger as unknown as { warn: ReturnType<typeof vi.fn> }
 
+beforeEach(() => {
+  ;(CacheService as unknown as { instance?: CacheService }).instance = undefined
+})
+
 describe("cache.service cooldown and error tails", () => {
   it("returns configured:false when redis client missing", async () => {
-    const result = await cacheService.getUsage()
+    const service = CacheService.getInstance({ redis: null })
+    const result = await service.getUsage()
     expect(result).toEqual({ configured: false })
   })
 
-  it("cooldown path when redis is marked unavailable", async () => {
-    const originalUnavailable = (cacheService as any).isUnavailable
-    ;(cacheService as any).isUnavailable = true
-    const res = await cacheService.get("key")
+  it("cooldown path still falls back to null", async () => {
+    const redisGet = vi.fn()
+    const service = CacheService.getInstance({ redis: { get: redisGet } as any })
+    ;(service as any).redisDeadUntil = Date.now() + 60_000
+    const res = await service.get("key")
     expect(res).toBeNull()
-    ;(cacheService as any).isUnavailable = originalUnavailable
+    expect(redisGet).toHaveBeenCalledWith("key")
   })
 })
