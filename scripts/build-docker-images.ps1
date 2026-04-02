@@ -28,7 +28,7 @@ function Build-Image {
 
 $apiArgs = @{
   NEXT_PUBLIC_API_URL     = "https://api.realtutorialhub.com/api"
-  NEXT_PUBLIC_WEB_APP_URL = "https://quiz.realtutorialhub.com"
+  NEXT_PUBLIC_WEB_APP_URL = "https://user.realtutorialhub.com"
   NEXT_PUBLIC_ADMIN_URL   = "https://admin.realtutorialhub.com"
   NEXT_PUBLIC_SENTRY_DSN  = "https://example.invalid/0"
   INTERNAL_GATEWAY_SECRET = "local-build-placeholder"
@@ -36,17 +36,17 @@ $apiArgs = @{
 
 $rthWebArgs = @{
   NEXT_PUBLIC_API_URL     = "https://api.realtutorialhub.com/api"
-  NEXT_PUBLIC_WEB_APP_URL = "https://notes.realtutorialhub.com"
+  NEXT_PUBLIC_WEB_APP_URL = "https://user.realtutorialhub.com"
   NEXT_PUBLIC_ADMIN_URL   = "https://admin.realtutorialhub.com"
-  NEXT_PUBLIC_SITE_URL    = "https://notes.realtutorialhub.com"
-  NEXT_PUBLIC_APP_URL     = "https://notes.realtutorialhub.com"
+  NEXT_PUBLIC_SITE_URL    = "https://user.realtutorialhub.com"
+  NEXT_PUBLIC_APP_URL     = "https://user.realtutorialhub.com"
   INTERNAL_GATEWAY_SECRET = "local-build-placeholder"
   NEXT_PUBLIC_SENTRY_DSN  = "https://example.invalid/0"
 }
 
 $rthQuizArgs = @{
   NEXT_PUBLIC_API_URL     = "https://api.realtutorialhub.com/api"
-  NEXT_PUBLIC_WEB_APP_URL = "https://quiz.realtutorialhub.com"
+  NEXT_PUBLIC_WEB_APP_URL = "https://quiz.skillhubcore.in"
   NEXT_PUBLIC_ADMIN_URL   = "https://admin.realtutorialhub.com"
   NEXT_PUBLIC_SENTRY_DSN  = "https://example.invalid/0"
   INTERNAL_GATEWAY_SECRET = "local-build-placeholder"

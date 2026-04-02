@@ -78,7 +78,7 @@ You may proceed with:
    - Account:R2:Read
 3. Update `CLOUDFLARE_API_TOKEN` in .env.local
 4. Update GitHub secret `CLOUDFLARE_API_TOKEN`
-5. Test: `curl -X GET "https://api.cloudflare.com/v4/user/tokens/verify" -H "Authorization: Bearer NEW_TOKEN"`
+5. Test: `curl -X GET "https://api.cloudflare.com/client/v4/user/tokens/verify" -H "Authorization: Bearer NEW_TOKEN"`
 
 ### 2. Add Missing Environment Variables (30 minutes)
 
@@ -148,14 +148,11 @@ After fixing token, verify these DNS records exist:
 **RTH Domain (realtutorialhub.com)**:
 - user.realtutorialhub.com → Cloud Run
 - admin.realtutorialhub.com → Cloud Run
-- quiz.realtutorialhub.com → Cloud Run
-- notes.realtutorialhub.com → Cloud Run
 - api.realtutorialhub.com → Cloudflare Worker
 
 **SkillUp Domain (skillupitacademy.com)**:
 - user.skillupitacademy.com → Cloud Run
 - admin.skillupitacademy.com → Cloud Run
-- app.skillupitacademy.com → Cloud Run
 - faculty.skillupitacademy.com → Cloud Run
 - api.skillupitacademy.com → Cloudflare Worker
 
@@ -234,18 +231,20 @@ After fixing token, verify these DNS records exist:
 1. **Health Checks**:
 ```bash
 curl https://api.realtutorialhub.com/api/health/live
-curl https://quiz.realtutorialhub.com/
+curl https://user.realtutorialhub.com/
 curl https://admin.realtutorialhub.com/
-curl https://notes.realtutorialhub.com/
-curl https://app.skillupitacademy.com/
+curl https://user.skillupitacademy.com/
 curl https://admin.skillupitacademy.com/
 curl https://faculty.skillupitacademy.com/
+curl https://quiz.skillhubcore.in/
+curl https://tutorial.skillhubcore.in/
+curl https://placement.skillhubcore.in/
 curl https://admin.skillhubcore.in/
 ```
 
 2. **Authentication Flow**:
-- Test RTH login at quiz.realtutorialhub.com
-- Test SkillUp login at app.skillupitacademy.com
+- Test RTH login at user.realtutorialhub.com
+- Test SkillUp login at user.skillupitacademy.com
 - Verify cookies are set correctly
 - Verify JWT tokens are valid
 

@@ -35,7 +35,7 @@ TASK:
 2. After I provide the new token, update it in .env.local
 
 3. Test the new token by running:
-   curl -X GET "https://api.cloudflare.com/v4/user/tokens/verify" -H "Authorization: Bearer NEW_TOKEN"
+   curl -X GET "https://api.cloudflare.com/client/v4/user/tokens/verify" -H "Authorization: Bearer NEW_TOKEN"
 
 REFERENCE FILES:
 - .env.local (line with CLOUDFLARE_API_TOKEN)
@@ -419,14 +419,11 @@ TASK:
 RTH Domain (realtutorialhub.com):
 - user.realtutorialhub.com → Cloud Run
 - admin.realtutorialhub.com → Cloud Run
-- quiz.realtutorialhub.com → Cloud Run
-- notes.realtutorialhub.com → Cloud Run
 - api.realtutorialhub.com → Cloudflare Worker
 
 SkillUp Domain (skillupitacademy.com):
 - user.skillupitacademy.com → Cloud Run
 - admin.skillupitacademy.com → Cloud Run
-- app.skillupitacademy.com → Cloud Run
 - faculty.skillupitacademy.com → Cloud Run
 - api.skillupitacademy.com → Cloudflare Worker
 
@@ -497,8 +494,9 @@ REFERENCE FILES:
 VERIFICATION:
 Run health checks:
 - curl https://api.realtutorialhub.com/api/health/live
-- curl https://quiz.realtutorialhub.com/
-- curl https://app.skillupitacademy.com/api/healthz
+- curl https://user.realtutorialhub.com/
+- curl https://user.skillupitacademy.com/
+- curl https://quiz.skillhubcore.in/
 ```
 
 **Estimated Time**: 2-3 hours
@@ -519,7 +517,7 @@ TASK:
 Test these flows:
 
 1. RTH User Flow:
-   - Go to https://quiz.realtutorialhub.com/login
+   - Go to https://user.realtutorialhub.com/login
    - Register new user
    - Verify email received with RTH branding
    - Click verification link
@@ -529,7 +527,7 @@ Test these flows:
    - Verify shadow user created in people_prod
 
 2. SkillUp User Flow:
-   - Go to https://app.skillupitacademy.com/login
+   - Go to https://user.skillupitacademy.com/login
    - Register new user
    - Verify email received with SkillUp branding
    - Click verification link

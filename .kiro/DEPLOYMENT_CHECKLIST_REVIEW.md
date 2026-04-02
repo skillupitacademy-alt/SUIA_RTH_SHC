@@ -368,9 +368,13 @@ I verified your `services/api-gateway/wrangler.toml`:
 
 **Routes Configured**:
 ```toml
-✅ notes.realtutorialhub.com/*     → Tutorial service
-✅ app.skillupitacademy.com/*      → SkillUp web
+✅ user.realtutorialhub.com/*      → RTH user portal
+✅ user.skillupitacademy.com/*     → SkillUp user portal
+✅ quiz.skillhubcore.in/*          → Shared quiz engine
+✅ tutorial.skillhubcore.in/*      → Shared tutorial engine
+✅ placement.skillhubcore.in/*     → Shared placement service
 ✅ api.realtutorialhub.com/*       → RTH API
+✅ api.skillupitacademy.com/*      → SkillUp API
 ✅ api.skillhubcore.in/*           → SkillHub API
 ```
 

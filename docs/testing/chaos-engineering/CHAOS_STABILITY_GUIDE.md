@@ -8,7 +8,7 @@ To run chaos/E2E tests against a live or local environment, the following variab
 | Variable | Description | Example |
 | :--- | :--- | :--- |
 | `NEXT_PUBLIC_API_URL` | Base URL for the API server | `https://api.realtutorialhub.com` |
-| `NEXT_PUBLIC_WEB_APP_URL` | Base URL for the User Web App | `https://quiz.realtutorialhub.com` |
+| `NEXT_PUBLIC_WEB_APP_URL` | Base URL for the User Web App | `https://quiz.skillhubcore.in` |
 | `TEST_USER_EMAIL` | Credentials for the test user | `test@example.com` |
 | `TEST_USER_PASSWORD` | Password for the test user | `********` |
 | `COOKIE_DOMAIN` | Scope for auth cookies | `.realtutorialhub.com` |

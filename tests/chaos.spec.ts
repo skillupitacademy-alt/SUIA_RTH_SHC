@@ -13,7 +13,7 @@
  * 
  * Required .env variables:
  *   NEXT_PUBLIC_API_URL       – e.g. https://api.realtutorialhub.com
- *   NEXT_PUBLIC_WEB_APP_URL   – e.g. https://quiz.realtutorialhub.com
+ *   NEXT_PUBLIC_WEB_APP_URL   – e.g. https://quiz.skillhubcore.in
  *   TEST_USER_EMAIL           – test account email
  *   TEST_USER_PASSWORD        – test account password
  *   COOKIE_DOMAIN             – e.g. .realtutorialhub.com  (optional fallback)

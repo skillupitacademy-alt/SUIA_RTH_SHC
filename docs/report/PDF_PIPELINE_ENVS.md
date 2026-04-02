@@ -5,7 +5,7 @@ The following environment variables must be configured in the production environ
 ## Core Infrastructure
 | Variable | Description | Source/Value |
 | :--- | :--- | :--- |
-| `NEXT_PUBLIC_WEB_APP_URL` | Base URL of the Web App for Puppeteer to navigate to (used by both server and client). | e.g., `https://quiz.realtutorialhub.com` |
+| `NEXT_PUBLIC_WEB_APP_URL` | Base URL of the Web App for Puppeteer to navigate to (used by both server and client). | e.g., `https://quiz.skillhubcore.in` |
 | `NEXT_PUBLIC_API_URL` | Public API URL for the Web App to fetch report data. | e.g., `https://api.realtutorialhub.com` |
 | `INTERNAL_API_KEY` | Secret key for service-to-service communication. | Any secure random string. |
 
