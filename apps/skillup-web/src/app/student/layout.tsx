@@ -8,7 +8,7 @@ const navItems = [
   { href: '/student/my-batch', label: 'My Batch' },
   { href: '/student/attendance', label: 'Attendance' },
   { href: '/student/payments', label: 'Payments' },
-  { href: '/student/placement', label: 'Placement' },
+  { href: 'https://placement.skillhubcore.in/?brand=skillup', label: 'Placement' },
   { href: '/student/learn', label: 'Learn' },
   { href: '/student/exams', label: 'Exams' },
 ];

@@ -264,3 +264,99 @@ What is not fully complete:
 2. If external audit completeness matters, use a stronger Cloudflare token to verify worker route inventory and SSL mode directly.
 3. Normalize older `.kiro` and `docs/` files so they no longer contradict the active host map.
 4. Close Prompt 12 only after mailbox-backed verification is performed.
+
+## Appendix: Current Repo Delta After April 2 Verification
+
+This appendix captures repo changes verified after the main body of this file was written.
+Use it to avoid re-opening already-closed placement questions from older sections above.
+
+### Placement Repo Delta
+
+The repo no longer matches the earlier statement that shared placement is entirely missing.
+
+Verified now in code:
+- `apps/skillhub-placement` exists as a real Next.js shared frontend
+- `services/api-gateway/wrangler.toml` includes `PLACEMENT_URL`
+- `services/api-gateway/src/routes/routing-table.ts` routes `placement.skillhubcore.in/*` to `PLACEMENT_URL`
+- `apps/skillhub-placement/src/lib/placement-data.ts` reads from `placement_prod` through `@quiz/db-placement`
+- `apps/skillup-web/src/app/student/placement/page.tsx` now redirects users to `https://placement.skillhubcore.in/?brand=skillup`
+
+### Placement Status Reclassification
+
+Update the interpretation of the placement gap as follows:
+
+| Area | Earlier April 2 assessment | Current repo assessment |
+|---|---|---|
+| Shared placement frontend | Missing / not a real app | Present in repo |
+| Gateway routing for placement host | Assumed wrong target | Present in repo config |
+| SkillUp student placement migration | Still brand-locked | Redirect-based migration now present in repo |
+| Placement application flow | Placeholder only | First shared-host persistence pass now implemented in repo |
+| Cross-domain placement auth/session handoff | Incomplete | Still incomplete |
+
+### What Still Remains Open For Placement
+
+- verify the new shared-host application persistence flow against live deployment
+- complete the remaining end-to-end placement workflow beyond first-pass application capture
+- finish cross-domain session handoff / callback behavior for `.skillhubcore.in`
+- normalize this file's earlier placement references once live verification is re-run
+
+### Placement Progress Note After Shared Apply Flow
+
+The repo now includes a first working shared placement application path:
+- job browsing on `apps/skillhub-placement`
+- brand-aware routing between landing, detail, and apply pages
+- shared-host application insert into `placement_prod`
+- duplicate-application prevention for the same user and listing
+- applied-state rendering back on the shared apply screen
+
+This reduces the remaining placement gap from "missing host/app" to "live verification and deeper workflow completion".
+
+## Appendix: Live Verification Update After Placement Recovery
+
+This appendix records the live recovery work completed after the earlier April 2 matrix was written.
+
+### Cloudflare Token Status
+
+The `.env.local` Cloudflare API token is no longer invalid.
+
+Verified live:
+- token verification succeeded against `https://api.cloudflare.com/client/v4/user/tokens/verify`
+- account worker inventory could be queried successfully
+
+### Placement Recovery Actions Performed
+
+Completed during this pass:
+- built `apps/skillhub-placement`
+- fixed `pnpm-lock.yaml` so the placement app is represented in the workspace lockfile
+- built and pushed the `skillhub-placement` container through Cloud Build
+- deployed Cloud Run service `skillhub-placement`
+- updated GitHub secret `PLACEMENT_URL` to `https://skillhub-placement-plldp3atca-el.a.run.app`
+- redeployed the API gateway from GitHub
+- deployed the current local gateway bundle directly with Wrangler using the valid Cloudflare token
+
+### Live Placement Results
+
+| URL | Earlier status | Current live status |
+|---|---|---|
+| `https://placement.skillhubcore.in/` | `403` | `200` and serves the shared placement frontend |
+| `https://placement.skillhubcore.in/api/healthz` | `403` | `200` |
+| `https://placement.skillhubcore.in/?brand=realtutorialhub` | Not verified | `200` with RTH branding confirmed |
+| `https://placement.skillhubcore.in/jobs` | Expected healthy public response in older docs | `404`; this path is not the canonical landing route in the current app |
+
+### Placement Host Reclassification
+
+Update the placement host classification from:
+- live blocker
+
+to:
+- live and serving the shared frontend
+
+Remaining placement scope is now:
+- authenticated end-to-end placement workflow depth
+- cross-domain callback/session handoff
+- optional cleanup of stale Cloudflare worker artifacts
+
+### Cloudflare Cleanup Note
+
+The Cloudflare account still contains a legacy worker `quiz-platform-proxy` with wildcard route `*skillhubcore.in/*`.
+It is no longer the active blocker for placement after the current gateway deployment, but it remains stale infrastructure and should be removed when route-management permissions are available.

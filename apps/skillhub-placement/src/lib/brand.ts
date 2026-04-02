@@ -15,6 +15,11 @@ export function resolvePlacementBrand(value?: string | null): PlacementBrand {
   return value === 'realtutorialhub' ? 'realtutorialhub' : 'skillup';
 }
 
+export function withPlacementBrand(path: string, brand: PlacementBrand): string {
+  const separator = path.includes('?') ? '&' : '?';
+  return `${path}${separator}brand=${brand}`;
+}
+
 export function getPlacementTheme(brand: PlacementBrand): PlacementTheme {
   if (brand === 'realtutorialhub') {
     return {

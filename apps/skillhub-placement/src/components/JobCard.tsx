@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-import type { PlacementTheme } from '@/lib/brand';
+import { withPlacementBrand, type PlacementTheme } from '@/lib/brand';
 import type { PlacementJobSummary } from '@/lib/placement-data';
 
 export function JobCard({ job, theme }: { job: PlacementJobSummary; theme: PlacementTheme }) {
@@ -30,10 +30,13 @@ export function JobCard({ job, theme }: { job: PlacementJobSummary; theme: Place
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm font-semibold text-slate-700">{job.salary}</p>
         <div className="flex flex-wrap gap-3">
-          <Link href={`/jobs/${job.id}`} className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50">
+          <Link
+            href={withPlacementBrand(`/jobs/${job.id}`, theme.brand)}
+            className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+          >
             View details
           </Link>
-          <Link href={`/apply/${job.id}`} className={`rounded-full px-4 py-2 text-sm font-bold transition ${theme.buttonClass}`}>
+          <Link href={withPlacementBrand(`/apply/${job.id}`, theme.brand)} className={`rounded-full px-4 py-2 text-sm font-bold transition ${theme.buttonClass}`}>
             Apply
           </Link>
         </div>

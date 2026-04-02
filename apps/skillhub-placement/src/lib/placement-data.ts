@@ -4,6 +4,7 @@ import {
   db,
   findJobsForStudent,
   jobListings,
+  placementApplications,
   studentPlacementProfiles,
 } from '@quiz/db-placement';
 
@@ -26,6 +27,13 @@ export type PlacementProfileSummary = {
   skills: string[];
   preferredLocation: string | null;
   expectedCtc: number | null;
+};
+
+export type PlacementApplicationSummary = {
+  id: string;
+  status: string;
+  appliedAt: string;
+  notes: string | null;
 };
 
 const FALLBACK_JOBS: PlacementJobSummary[] = [
@@ -220,4 +228,88 @@ export async function getPlacementMatches(userId: string): Promise<PlacementJobS
   }
 
   return jobs;
+}
+
+export async function getPlacementApplication(
+  userId: string,
+  listingId: string,
+): Promise<PlacementApplicationSummary | null> {
+  try {
+    const rows = await db
+      .select({
+        id: placementApplications.id,
+        status: placementApplications.status,
+        appliedAt: placementApplications.appliedAt,
+        notes: placementApplications.notes,
+      })
+      .from(placementApplications)
+      .where(
+        and(
+          eq(placementApplications.studentId, userId),
+          eq(placementApplications.listingId, listingId),
+          isNull(placementApplications.deletedAt),
+        ),
+      )
+      .limit(1);
+
+    const row = rows[0];
+    if (row === undefined) {
+      return null;
+    }
+
+    return {
+      id: row.id,
+      status: row.status,
+      appliedAt: row.appliedAt.toISOString(),
+      notes: row.notes ?? null,
+    };
+  } catch {
+    return null;
+  }
+}
+
+export async function createPlacementApplication(
+  userId: string,
+  listingId: string,
+  notes: string | null,
+): Promise<{ created: boolean; application: PlacementApplicationSummary | null }> {
+  const existing = await getPlacementApplication(userId, listingId);
+  if (existing !== null) {
+    return { created: false, application: existing };
+  }
+
+  try {
+    const inserted = await db
+      .insert(placementApplications)
+      .values({
+        studentId: userId,
+        listingId,
+        notes,
+      })
+      .returning({
+        id: placementApplications.id,
+        status: placementApplications.status,
+        appliedAt: placementApplications.appliedAt,
+        notes: placementApplications.notes,
+      });
+
+    const row = inserted[0];
+    if (row === undefined) {
+      const fallback = await getPlacementApplication(userId, listingId);
+      return { created: fallback !== null, application: fallback };
+    }
+
+    return {
+      created: true,
+      application: {
+        id: row.id,
+        status: row.status,
+        appliedAt: row.appliedAt.toISOString(),
+        notes: row.notes ?? null,
+      },
+    };
+  } catch {
+    const fallback = await getPlacementApplication(userId, listingId);
+    return { created: false, application: fallback };
+  }
 }

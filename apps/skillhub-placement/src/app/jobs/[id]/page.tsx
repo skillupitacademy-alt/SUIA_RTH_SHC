@@ -2,22 +2,33 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { getPlacementViewer } from '@/lib/auth';
-import { getPlacementTheme } from '@/lib/brand';
+import { getPlacementTheme, resolvePlacementBrand, withPlacementBrand } from '@/lib/brand';
 import { getPlacementJob } from '@/lib/placement-data';
 
 type JobDetailPageProps = {
   params: Promise<{ id: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export default async function JobDetailPage({ params }: JobDetailPageProps) {
-  const [{ id }, viewer] = await Promise.all([params, getPlacementViewer()]);
+function firstParam(value?: string | string[]) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+export default async function JobDetailPage({ params, searchParams }: JobDetailPageProps) {
+  const [{ id }, viewer, resolvedSearchParams] = await Promise.all([
+    params,
+    getPlacementViewer(),
+    searchParams ?? Promise.resolve({}),
+  ]);
+  const query = resolvedSearchParams as Record<string, string | string[] | undefined>;
   const job = await getPlacementJob(id);
 
   if (job === null) {
     notFound();
   }
 
-  const theme = getPlacementTheme(viewer?.brand ?? 'skillup');
+  const brand = viewer?.brand ?? resolvePlacementBrand(firstParam(query.brand));
+  const theme = getPlacementTheme(brand);
 
   return (
     <main className="mx-auto max-w-4xl space-y-6 px-6 py-8 lg:py-10">
@@ -39,7 +50,7 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
         <p className="mt-6 text-base leading-8 text-slate-700">{job.description}</p>
         <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm font-bold text-slate-900">{job.salary}</p>
-          <Link href={`/apply/${job.id}`} className={`rounded-full px-5 py-3 text-sm font-black transition ${theme.buttonClass}`}>
+          <Link href={withPlacementBrand(`/apply/${job.id}`, brand)} className={`rounded-full px-5 py-3 text-sm font-black transition ${theme.buttonClass}`}>
             Continue to apply
           </Link>
         </div>

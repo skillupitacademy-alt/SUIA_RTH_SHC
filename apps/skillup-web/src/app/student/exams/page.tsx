@@ -40,7 +40,7 @@ export default function ExamsPage() {
               <p className="section-kicker text-slate-500">Exam list</p>
               <h3 className="mt-2 text-2xl font-black tracking-tight text-slate-950 font-outfit">Available assessment tracks</h3>
             </div>
-            <Link href="/student/placement" className="text-sm font-semibold text-cyan-700 transition hover:text-cyan-900">
+            <Link href="https://placement.skillhubcore.in/?brand=skillup" className="text-sm font-semibold text-cyan-700 transition hover:text-cyan-900">
               Placement view
             </Link>
           </div>

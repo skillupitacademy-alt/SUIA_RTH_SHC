@@ -1,0 +1,14 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -f
+      - apps/skillhub-placement/Dockerfile
+      - -t
+      - asia-south1-docker.pkg.dev/project-48af6a2d-e8bb-46dd-a58/quiz-platform/skillhub-placement:635e2d22
+      - -t
+      - asia-south1-docker.pkg.dev/project-48af6a2d-e8bb-46dd-a58/quiz-platform/skillhub-placement:latest
+      - .
+images:
+  - asia-south1-docker.pkg.dev/project-48af6a2d-e8bb-46dd-a58/quiz-platform/skillhub-placement:635e2d22
+  - asia-south1-docker.pkg.dev/project-48af6a2d-e8bb-46dd-a58/quiz-platform/skillhub-placement:latest

@@ -24,7 +24,7 @@ const quickLinks = [
   { href: '/student/my-batch', label: 'My batch' },
   { href: '/student/attendance', label: 'Attendance' },
   { href: '/student/payments', label: 'Payments' },
-  { href: '/student/placement', label: 'Placement' },
+  { href: 'https://placement.skillhubcore.in/?brand=skillup', label: 'Placement' },
 ];
 
 export default async function StudentDashboardPage() {
