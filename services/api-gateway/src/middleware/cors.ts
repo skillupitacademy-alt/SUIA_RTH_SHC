@@ -25,6 +25,7 @@ export function createCorsMiddleware(): MiddlewareHandler {
       'Content-Type',
       'Authorization',
       'Accept-Version',
+      'X-Brand',
       'X-Portal-Identity',
       'X-Request-ID',
       'X-Gateway-Secret',

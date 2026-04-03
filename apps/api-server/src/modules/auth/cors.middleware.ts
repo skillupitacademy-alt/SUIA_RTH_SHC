@@ -1,5 +1,16 @@
 import type { NextRequest, NextResponse } from 'next/server';
 
+const ALLOWED_HEADERS = [
+  'Content-Type',
+  'Authorization',
+  'x-csrf-token',
+  'Idempotency-Key',
+  'x-portal-identity',
+  'x-request-id',
+  'accept-version',
+  'x-brand',
+].join(', ');
+
 export function corsMiddleware(_request: NextRequest, response: NextResponse) {
   const origin = _request.headers.get('origin');
   const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',').map((o) => o.trim()).filter(Boolean) ?? [];
@@ -9,7 +20,7 @@ export function corsMiddleware(_request: NextRequest, response: NextResponse) {
   }
 
   response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-csrf-token, Idempotency-Key, x-portal-identity, x-request-id, accept-version');
+  response.headers.set('Access-Control-Allow-Headers', ALLOWED_HEADERS);
   response.headers.set('Access-Control-Allow-Credentials', 'true');
   response.headers.set('Access-Control-Max-Age', '86400');
 

@@ -461,4 +461,19 @@ describe('api-gateway', () => {
 
     expect(response.headers.get('Access-Control-Allow-Origin')).toBe('https://tutorial.skillhubcore.in');
   });
+
+  it('allows X-Brand in gateway preflight responses', async () => {
+    const response = await app.request('https://api.example.com/auth/login', {
+      method: 'OPTIONS',
+      headers: {
+        Origin: 'https://admin.skillupitacademy.com',
+        'Access-Control-Request-Method': 'POST',
+        'Access-Control-Request-Headers': 'content-type,x-brand,x-portal-identity',
+      },
+    }, env);
+
+    expect(response.headers.get('Access-Control-Allow-Origin')).toBe('https://admin.skillupitacademy.com');
+    expect(response.headers.get('Access-Control-Allow-Headers')).toContain('X-Brand');
+    expect(response.headers.get('Access-Control-Allow-Headers')).toContain('X-Portal-Identity');
+  });
 });
