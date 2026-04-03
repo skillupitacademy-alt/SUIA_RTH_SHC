@@ -10,6 +10,7 @@ const h = vi.hoisted(() => ({
   security: {
     isAccountLocked: vi.fn(),
     trackLoginAttempt: vi.fn(),
+    withContext: vi.fn(),
   },
   audit: {
     log: vi.fn(),
@@ -24,7 +25,7 @@ const h = vi.hoisted(() => ({
   },
 }));
 
-vi.mock('@quiz/db', () => ({
+const mockDbModule = vi.hoisted(() => () => ({
   STANDARD_QUERY_TIMEOUT: 15000,
   QUICK_QUERY_TIMEOUT: 5000,
   REPORT_QUERY_TIMEOUT: 30000,
@@ -50,7 +51,14 @@ vi.mock('@quiz/db', () => ({
   userProfiles: { userId: 'userId', name: 'name' },
   userRoles: { userId: 'userId', roleId: 'roleId' },
   roles: { id: 'id', name: 'name' },
+  verificationTokens: { id: 'id', token: 'token', expiresAt: 'expiresAt' },
+  passwordResetTokens: { id: 'id', token: 'token', expiresAt: 'expiresAt' },
+  loginAttempts: { id: 'id', userId: 'userId', ip: 'ip', brand: 'brand', attempts: 'attempts' },
 }));
+
+vi.mock('@quiz/db', mockDbModule);
+vi.mock('@quiz/db-rth', mockDbModule);
+vi.mock('@quiz/db-skillup', mockDbModule);
 
 vi.mock('@/modules/auth/audit.service', () => ({
   AuditService: class AuditService {},
@@ -86,6 +94,7 @@ describe('AdminAuthService (unit)', () => {
     h.selectWhereQueue.length = 0;
     h.insertValues.mockResolvedValue(undefined);
     h.insert.mockReturnValue({ values: h.insertValues });
+    h.security.withContext.mockReturnValue(h.security);
   });
 
   it('issues tokens and returns admin identity for valid admin', async () => {
