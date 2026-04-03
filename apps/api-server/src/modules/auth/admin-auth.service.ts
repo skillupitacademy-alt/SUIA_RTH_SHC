@@ -57,7 +57,9 @@ export class AdminAuthService {
       throw new Error('Access Denied');
     }
 
-    const roleNames = _usersWithRoles.map(r => r.roleName).filter((name): name is string => name !== null);
+    const roleNames = _usersWithRoles
+      .map((row: { roleName: string | null }) => row.roleName)
+      .filter((name: string | null): name is string => name !== null);
     const isAdmin = roleNames.includes('ADMIN') || roleNames.includes('SUPER_ADMIN') || roleNames.includes('INFRASTRUCTURE');
 
     if (isAdmin === false) {
