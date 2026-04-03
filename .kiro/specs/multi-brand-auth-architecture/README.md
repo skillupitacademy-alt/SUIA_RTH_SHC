@@ -16,11 +16,12 @@ This is your main entry point with step-by-step navigation for the entire implem
 
 ### Navigation & Entry Points
 1. **START_HERE.md** - 🚀 MAIN ENTRY POINT FOR AI MODELS (Read this first!)
-2. **IMPLEMENTATION_STATUS_APRIL_2026.md** - ✅ CURRENT STATUS (April 3, 2026 verification)
-3. **AI_READING_ORDER.md** - 🤖 Simple numbered reading order for AI models
-4. **NAVIGATION_MAP.md** - 🗺️ Visual navigation guide and reading flow
-5. **DOCUMENT_AUDIT.md** - 📋 Complete file inventory and verification
-6. **README.md** - This file (document index)
+2. **AI_ACTION_PLAN_APRIL_2026.md** - 🤖 WHAT TO DO & WHAT NOT TO DO (AI model guide)
+3. **IMPLEMENTATION_STATUS_APRIL_2026.md** - ✅ CURRENT STATUS (April 3, 2026 verification)
+4. **AI_READING_ORDER.md** - 🤖 Simple numbered reading order for AI models
+5. **NAVIGATION_MAP.md** - 🗺️ Visual navigation guide and reading flow
+6. **DOCUMENT_AUDIT.md** - 📋 Complete file inventory and verification
+7. **README.md** - This file (document index)
 
 ### Core Specification Documents
 3. **ARCHITECTURE_SUMMARY.md** - High-level architecture overview
