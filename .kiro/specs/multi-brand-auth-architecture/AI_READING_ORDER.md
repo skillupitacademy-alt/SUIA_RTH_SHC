@@ -18,22 +18,29 @@ This document provides a **simple, numbered list** of exactly which files to rea
 
 ```
 1. START_HERE.md (10 minutes)
-   Purpose: Main entry point, understand the navigation
-   
-2. VERIFICATION_SUMMARY.md (5 minutes)
-   Purpose: See what already exists (47% done!)
-   
+   Purpose: Main entry point and navigation
+
+2. NAVIGATION_MAP.md (10 minutes)
+   Purpose: Visual document structure
+
 3. ARCHITECTURE_SUMMARY.md (15 minutes)
-   Purpose: Understand the overall architecture
-   
-4. EXISTING_SERVICES_VERIFIED.md (20 minutes)
-   Purpose: Know what code already exists and where
-   
-5. IMPLEMENTATION_PRIORITY.md (15 minutes)
-   Purpose: Get your day-by-day implementation plan
+   Purpose: Understand the target architecture
+
+4. requirements.md (20 minutes)
+   Purpose: Review the technical contract
+
+5. GAP_ANALYSIS.md (30 minutes)
+   Purpose: Review the code-vs-guideline comparison
+   Important: Scroll to "CODE VS GUIDELINE GAP ANALYSIS (April 3, 2026)"
+
+6. VERIFICATION_SUMMARY.md (5 minutes)
+   Purpose: See what already exists and what is still missing
+
+7. IMPLEMENTATION_PRIORITY.md (15 minutes)
+   Purpose: Get the day-by-day execution plan
 ```
 
-**After reading these 5 files, you're ready to start Day 1!**
+**After reading these 7 files, you're ready to start Day 1.**
 
 ---
 
@@ -372,11 +379,13 @@ IMPLEMENTATION_PRIORITY.md
 
 1. Read this file (AI_READING_ORDER.md) - You're doing it! ✅
 2. Read START_HERE.md (10 min)
-3. Read VERIFICATION_SUMMARY.md (5 min)
+3. Read NAVIGATION_MAP.md (10 min)
 4. Read ARCHITECTURE_SUMMARY.md (15 min)
-5. Read EXISTING_SERVICES_VERIFIED.md (20 min)
-6. Read IMPLEMENTATION_PRIORITY.md (15 min)
-7. Start Day 1 implementation
+5. Read requirements.md (20 min)
+6. Read GAP_ANALYSIS.md and the April 3, 2026 section (30 min)
+7. Read VERIFICATION_SUMMARY.md (5 min)
+8. Read IMPLEMENTATION_PRIORITY.md (15 min)
+9. Start Day 1 implementation
 
 **That's it! Simple and linear.**
 

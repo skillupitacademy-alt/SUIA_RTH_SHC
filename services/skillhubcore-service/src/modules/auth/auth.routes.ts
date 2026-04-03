@@ -24,11 +24,16 @@ const refreshSchema = z.object({
   refreshToken: z.string().min(1),
 });
 
+const callbackValidationSchema = z.object({
+  accessToken: z.string().min(1),
+});
+
 export const createAuthRoutes = (authService: AuthService): Hono => {
   const app = new Hono();
   const registerLimiter = createRateLimiter('register', 10, 60 * 60);
   const loginLimiter = createRateLimiter('login', 5, 60);
   const refreshLimiter = createRateLimiter('refresh', 30, 60);
+  const callbackLimiter = createRateLimiter('cross_domain_callback', 30, 60);
 
   app.post('/register', async (c) => {
     const parsed = registerSchema.safeParse(await c.req.json());
@@ -108,6 +113,30 @@ export const createAuthRoutes = (authService: AuthService): Hono => {
     }
   });
 
+  app.post('/callback/validate', async (c) => {
+    const parsed = callbackValidationSchema.safeParse(await c.req.json());
+    if (!parsed.success) {
+      return c.json({ error: 'Invalid request', code: 'BAD_REQUEST', issues: parsed.error.flatten() }, 400);
+    }
+
+    const ip = c.req.header('x-forwarded-for') ?? c.req.header('x-real-ip') ?? 'unknown';
+    const limited = await callbackLimiter.check(ip);
+    if (!limited.allowed) {
+      return c.json({ error: 'Too many callback attempts', code: 'RATE_LIMITED' }, 429, {
+        'Retry-After': String(limited.retryAfterSeconds),
+      });
+    }
+
+    try {
+      const validator = authService.createTokenValidatorService();
+      const result = await validator.validateBrandAccessToken(parsed.data.accessToken);
+      return c.json(result);
+    } catch (error) {
+      logger.warn({ error, ip }, 'cross-domain callback validation failed');
+      return c.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, 401);
+    }
+  });
+
   app.post('/logout', async (c) => {
     const parsed = refreshSchema.safeParse(await c.req.json());
     if (!parsed.success) {
@@ -125,18 +154,18 @@ export const createAuthRoutes = (authService: AuthService): Hono => {
   });
 
   app.get('/sessions', requireAuth, async (c) => {
-    const authUser = c.get('authUser') as { id: string; brand?: 'realtutorialhub' | 'skillup' } | undefined;
+    const authUser = c.get('authUser') as { shadowUserId: string; brand?: 'realtutorialhub' | 'skillup' } | undefined;
     if (authUser === undefined) {
       return c.json({ error: 'Unauthorized' }, 401);
     }
 
     const platform = authUser.brand ?? 'realtutorialhub';
-    const sessions = await authService.getUserSessions(authUser.id, platform);
+    const sessions = await authService.getUserSessions(authUser.shadowUserId, platform);
     return c.json({ sessions });
   });
 
   app.delete('/sessions/:id', requireAuth, async (c) => {
-    const authUser = c.get('authUser') as { id: string; brand?: 'realtutorialhub' | 'skillup' } | undefined;
+    const authUser = c.get('authUser') as { shadowUserId: string; brand?: 'realtutorialhub' | 'skillup' } | undefined;
     if (authUser === undefined) {
       return c.json({ error: 'Unauthorized' }, 401);
     }
@@ -144,25 +173,25 @@ export const createAuthRoutes = (authService: AuthService): Hono => {
     const sessionId = c.req.param('id');
     const platform = authUser.brand ?? 'realtutorialhub';
     try {
-      await authService.revokeSession(authUser.id, sessionId, platform);
+      await authService.revokeSession(authUser.shadowUserId, sessionId, platform);
       return c.json({ success: true });
     } catch (error) {
       if (error instanceof Error && error.message === 'Session not found') {
         return c.json({ error: error.message }, 404);
       }
-      logger.error({ error, userId: authUser.id, sessionId }, 'revoke session failed');
+      logger.error({ error, userId: authUser.shadowUserId, sessionId }, 'revoke session failed');
       return c.json({ error: 'Failed to revoke session' }, 500);
     }
   });
 
   app.delete('/sessions', requireAuth, async (c) => {
-    const authUser = c.get('authUser') as { id: string; brand?: 'realtutorialhub' | 'skillup' } | undefined;
+    const authUser = c.get('authUser') as { shadowUserId: string; brand?: 'realtutorialhub' | 'skillup' } | undefined;
     if (authUser === undefined) {
       return c.json({ error: 'Unauthorized' }, 401);
     }
 
     const platform = authUser.brand ?? 'realtutorialhub';
-    await authService.revokeAllSessions(authUser.id, platform);
+    await authService.revokeAllSessions(authUser.shadowUserId, platform);
     return c.json({ success: true });
   });
 

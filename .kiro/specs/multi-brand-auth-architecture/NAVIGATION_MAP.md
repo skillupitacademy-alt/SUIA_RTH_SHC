@@ -37,19 +37,29 @@ START_HERE.md (10 min)
      ├─→ Tells you to read these in order:
      │
      ↓
-VERIFICATION_SUMMARY.md (5 min)
+NAVIGATION_MAP.md (10 min)
      │
-     ├─→ Shows: 47% already done!
+     ├─→ Shows: Document structure
      │
      ↓
 ARCHITECTURE_SUMMARY.md (15 min)
      │
-     ├─→ Shows: Overall architecture
+     ├─→ Shows: Target architecture
      │
      ↓
-EXISTING_SERVICES_VERIFIED.md (20 min)
+requirements.md (20 min)
      │
-     ├─→ Shows: What code already exists
+     ├─→ Shows: Technical contract
+     │
+     ↓
+GAP_ANALYSIS.md (30 min)
+     │
+     ├─→ Read: "CODE VS GUIDELINE GAP ANALYSIS (April 3, 2026)"
+     │
+     ↓
+VERIFICATION_SUMMARY.md (5 min)
+     │
+     ├─→ Shows: Verified implementation status
      │
      ↓
 IMPLEMENTATION_PRIORITY.md (15 min)

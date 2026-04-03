@@ -21,6 +21,7 @@ import {
 import { and, asc, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { NextRequest } from 'next/server';
 
+import { getEffectiveUserId } from '@/lib/request-auth';
 import { publishSessionScheduledNotification } from '@/lib/skillup-notifications';
 export type FacultyAccess = {
   facultyId: string;
@@ -97,7 +98,7 @@ export type FacultyBatchOption = {
 };
 
 export async function resolveFacultyAccess(request: NextRequest): Promise<FacultyAccess | null> {
-  const userId = request.headers.get('x-user-id');
+  const userId = getEffectiveUserId(request.headers);
   if (userId === null || userId.trim().length === 0) {
     return null;
   }

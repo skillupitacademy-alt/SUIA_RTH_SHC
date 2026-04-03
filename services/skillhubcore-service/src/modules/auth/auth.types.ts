@@ -4,6 +4,9 @@ export type SubscriptionPlan = 'free' | 'pro' | 'enterprise';
 
 export interface AccessTokenPayload {
   sub: string;
+  shadowUserId?: string;
+  originalUserId?: string;
+  brand?: PlatformName;
   roles: UserRole[];
   subscriptions: string[];
   platforms?: PlatformName[];
@@ -36,6 +39,9 @@ export interface LoginInput {
 
 export interface AuthUserDTO {
   id: string;
+  shadowUserId?: string;
+  originalUserId?: string;
+  brand?: PlatformName;
   email: string;
   roles: UserRole[];
   platforms: PlatformName[];
@@ -46,4 +52,15 @@ export interface AuthResult {
   accessToken: string;
   refreshToken: string;
   user: AuthUserDTO;
+}
+
+export interface SkillhubCallbackValidationResult {
+  skillhubToken: string;
+  refreshToken: string;
+  shadowUserId: string;
+  originalUserId: string;
+  brand: PlatformName;
+  roles: UserRole[];
+  platforms: PlatformName[];
+  subscriptions: string[];
 }

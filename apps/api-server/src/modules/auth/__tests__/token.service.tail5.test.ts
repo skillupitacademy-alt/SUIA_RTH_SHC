@@ -15,7 +15,7 @@ describe('TokenService Tail 5', () => {
         expect(service.getAccessToken(mockReq)).toBeUndefined();
     });
 
-    it('getAccessToken: handles scope-less fallback with mixed cookies', () => {
+    it('getAccessToken: does not scan mixed cookies without an explicit scope', () => {
         container.reset();
         const service = container.get(TokenService);
         const mockReq = { 
@@ -27,6 +27,6 @@ describe('TokenService Tail 5', () => {
             headers: { get: () => null }
         } as unknown as NextRequest;
         
-        expect(service.getAccessToken(mockReq)).toBe('admin-val');
+        expect(service.getAccessToken(mockReq)).toBeUndefined();
     });
 });

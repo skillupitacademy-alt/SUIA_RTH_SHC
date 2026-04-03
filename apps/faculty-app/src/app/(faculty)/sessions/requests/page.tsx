@@ -2,10 +2,11 @@ import { headers } from 'next/headers';
 
 import { SessionRequestsPanel } from '@/components/session-requests-panel';
 import { listFacultySessionRequests } from '@/lib/faculty-live-data';
+import { getEffectiveUserId } from '@/lib/request-auth';
 
 export default async function SessionRequestsPage() {
   const requestHeaders = await headers();
-  const userId = requestHeaders.get('x-user-id');
+  const userId = getEffectiveUserId(requestHeaders);
   const requests = userId === null || userId.length === 0 ? [] : await listFacultySessionRequests(requestHeaders, userId);
 
   return (

@@ -15,7 +15,17 @@ export interface BrandEmailConfig {
 
 const ensureUrl = (value: string | undefined, fallback: string): string => {
   const trimmed = value?.trim();
-  return trimmed && trimmed.length > 0 ? trimmed.replace(/\/+$/, '') : fallback;
+  return typeof trimmed === 'string' && trimmed.length > 0 ? trimmed.replace(/\/+$/, '') : fallback;
+};
+
+const resolveSender = (preferred?: string, fallback?: string): string | undefined => {
+  const preferredTrimmed = preferred?.trim();
+  if (typeof preferredTrimmed === 'string' && preferredTrimmed.length > 0) {
+    return preferredTrimmed;
+  }
+
+  const fallbackTrimmed = fallback?.trim();
+  return typeof fallbackTrimmed === 'string' && fallbackTrimmed.length > 0 ? fallbackTrimmed : undefined;
 };
 
 export const getBrandConfig = (brand: RequestBrand): BrandEmailConfig => {
@@ -29,7 +39,7 @@ export const getBrandConfig = (brand: RequestBrand): BrandEmailConfig => {
       verificationMessage: 'Verify your email to activate your classroom access, session updates, and faculty support.',
       passwordResetMessage: 'Use the secure link below to reset your SkillUp password and regain access to your courses.',
       lockoutMessage: 'Too many failed login attempts temporarily locked your SkillUp account. Wait for the lock to expire or contact faculty support.',
-      sender: process.env.EMAIL_FROM_SKILLUP?.trim() || process.env.EMAIL_FROM,
+      sender: resolveSender(process.env.EMAIL_FROM_SKILLUP, process.env.EMAIL_FROM),
       userPortalUrl,
       verificationSuccessUrl: `${userPortalUrl}/verify-success`,
     };
@@ -44,7 +54,7 @@ export const getBrandConfig = (brand: RequestBrand): BrandEmailConfig => {
     verificationMessage: 'Verify your email to unlock your AI tutor workspace, quiz history, and personalized learning paths.',
     passwordResetMessage: 'Use the secure link below to reset your Real Tutorial Hub password and get back to your AI tutor dashboard.',
     lockoutMessage: 'Too many failed login attempts temporarily locked your Real Tutorial Hub account. Wait for the lock to expire or contact support.',
-    sender: process.env.EMAIL_FROM_RTH?.trim() || process.env.EMAIL_FROM,
+    sender: resolveSender(process.env.EMAIL_FROM_RTH, process.env.EMAIL_FROM),
     userPortalUrl,
     verificationSuccessUrl: `${userPortalUrl}/verify-success`,
   };

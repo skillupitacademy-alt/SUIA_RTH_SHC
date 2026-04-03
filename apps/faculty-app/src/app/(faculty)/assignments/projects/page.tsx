@@ -2,10 +2,11 @@ import { headers } from 'next/headers';
 
 import { ProjectReviewsPanel } from '@/components/project-reviews-panel';
 import { listFacultyReviewQueue } from '@/lib/faculty-live-data';
+import { getEffectiveUserId } from '@/lib/request-auth';
 
 export default async function ProjectReviewsPage() {
   const requestHeaders = await headers();
-  const userId = requestHeaders.get('x-user-id');
+  const userId = getEffectiveUserId(requestHeaders);
   const submissions = userId === null || userId.length === 0 ? [] : await listFacultyReviewQueue(requestHeaders, userId);
 
   return (

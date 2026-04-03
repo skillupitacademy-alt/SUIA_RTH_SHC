@@ -1,5 +1,7 @@
 export interface SkillHubCoreTokenPayload {
   sub: string;
+  shadowUserId?: string;
+  originalUserId?: string;
   roles: string[];
   subscriptions: string[];
   iss: 'skillhubcore.in';
@@ -7,6 +9,7 @@ export interface SkillHubCoreTokenPayload {
   role?: string;
   tokenType?: string;
   brand?: string;
+  platforms?: string[];
 }
 
 export interface GatewayBindings {

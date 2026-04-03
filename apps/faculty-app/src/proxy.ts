@@ -19,20 +19,33 @@ function getLoginUrl(request: NextRequest, redirectPath: string): URL {
   return loginUrl;
 }
 
-type UserPayload = { sub: string; roles: string[] };
+type UserPayload = { sub: string; roles: string[]; shadowUserId: string; originalUserId: string };
 
 type VerifiedTokenPayload = {
   sub?: string;
   userId?: string;
+  originalUserId?: string;
+  shadowUserId?: string;
   roles?: string[];
 };
 
-function getTokenUserId(payload: VerifiedTokenPayload): string | null {
-  return payload.sub ?? payload.userId ?? null;
+function getTokenIds(payload: VerifiedTokenPayload): { originalUserId: string; shadowUserId: string } | null {
+  const originalUserId = payload.originalUserId ?? null;
+  if (originalUserId === null || originalUserId.trim().length === 0) {
+    return null;
+  }
+
+  const shadowUserId = payload.shadowUserId ?? null;
+  if (shadowUserId === null || shadowUserId.trim().length === 0) {
+    return null;
+  }
+  return { originalUserId, shadowUserId };
 }
 
 function addUserHeaders(response: NextResponse, payload: UserPayload): NextResponse {
-  response.headers.set('x-user-id', payload.sub);
+  response.headers.set('x-user-id', payload.shadowUserId);
+  response.headers.set('x-shadow-user-id', payload.shadowUserId);
+  response.headers.set('x-original-user-id', payload.originalUserId);
   return response;
 }
 
@@ -44,11 +57,11 @@ async function resolveUser(request: NextRequest): Promise<UserPayload | null> {
 
   try {
     const payload = await TokenService.verifyUserAccessToken(token, { audience: 'user' });
-    const userId = getTokenUserId(payload);
-    if (userId === null) {
+    const userIds = getTokenIds(payload);
+    if (userIds === null) {
       return null;
     }
-    return { sub: userId, roles: payload.roles ?? [] };
+    return { sub: userIds.shadowUserId, roles: payload.roles ?? [], shadowUserId: userIds.shadowUserId, originalUserId: userIds.originalUserId };
   } catch {
     return null;
   }
@@ -78,7 +91,9 @@ export async function proxy(request: NextRequest) {
   }
 
   const headers = new Headers(request.headers);
-  headers.set('x-user-id', user.sub);
+  headers.set('x-user-id', user.shadowUserId);
+  headers.set('x-shadow-user-id', user.shadowUserId);
+  headers.set('x-original-user-id', user.originalUserId);
   return addUserHeaders(NextResponse.next({ request: { headers } }), user);
 }
 

@@ -13,9 +13,7 @@ export function getTokenFromRequest(request: Request): string | undefined {
   if (match?.[1] !== undefined) {
     return decodeURIComponent(match[1]);
   }
-
-  const accessTokenMatch = cookie.match(/(?:^|;\s*)accessToken=([^;]+)/);
-  return accessTokenMatch?.[1] !== undefined ? decodeURIComponent(accessTokenMatch[1]) : undefined;
+  return undefined;
 }
 
 function getTotpSessionSecret(): string {

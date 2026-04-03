@@ -1,8 +1,8 @@
 import { db, loginAttempts, users } from '@quiz/db';
 import { and,eq } from 'drizzle-orm';
 
-import type { BrandAuthTables } from '@/modules/auth/brand-db';
 import type { RequestBrand } from '@/lib/request-brand';
+import type { BrandAuthTables } from '@/modules/auth/brand-db';
 import { EmailService } from '@/modules/email/EmailService';
 
 const MAX_ATTEMPTS = 5;

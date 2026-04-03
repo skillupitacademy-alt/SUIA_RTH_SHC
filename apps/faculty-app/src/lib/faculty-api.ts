@@ -65,8 +65,10 @@ export function buildFacultyUpstreamHeaders(source: Headers | HeadersInit, extra
   appendHeader(headers, 'accept', 'application/json');
   appendHeader(headers, 'cookie', sourceHeaders.get('cookie'));
   appendHeader(headers, 'x-gateway-secret', process.env.INTERNAL_GATEWAY_SECRET);
-  appendHeader(headers, 'x-portal-identity', sourceHeaders.get('x-portal-identity') ?? 'user');
+  appendHeader(headers, 'x-portal-identity', sourceHeaders.get('x-portal-identity') ?? 'faculty');
   appendHeader(headers, 'x-user-id', sourceHeaders.get('x-user-id'));
+  appendHeader(headers, 'x-shadow-user-id', sourceHeaders.get('x-shadow-user-id'));
+  appendHeader(headers, 'x-original-user-id', sourceHeaders.get('x-original-user-id'));
 
   if (extra !== undefined) {
     const extraHeaders = new Headers(extra);

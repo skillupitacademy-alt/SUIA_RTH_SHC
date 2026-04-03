@@ -51,6 +51,8 @@ export const createApp = () => {
     }
 
     let userId: string | undefined;
+    let shadowUserId: string | undefined;
+    let originalUserId: string | undefined;
     if (route.auth === true) {
       const authResult = await authenticateRequest(c.req.raw, c.env, route);
       if (authResult instanceof Response) {
@@ -66,7 +68,9 @@ export const createApp = () => {
         requestBrand: authResult.requestBrand ?? null,
       }));
 
-      userId = authResult.payload.sub;
+      shadowUserId = authResult.payload.shadowUserId;
+      originalUserId = authResult.payload.originalUserId;
+      userId = shadowUserId;
       c.set('user', authResult.payload);
     }
 
@@ -77,6 +81,8 @@ export const createApp = () => {
       requestId: c.get('requestId'),
       gatewaySecret: c.env.INTERNAL_GATEWAY_SECRET,
       userId,
+      shadowUserId,
+      originalUserId,
       upstreamPath: rewritePath(normalizedPath, route.prefix, route.upstreamPathPrefix),
     });
   });

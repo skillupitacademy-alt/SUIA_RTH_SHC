@@ -22,7 +22,7 @@ const createAuthService = () => ({
     user: { id: 'user-1', email: 'student@example.com', roles: ['student'], platforms: ['realtutorialhub'], subscriptions: ['notes'] },
   })),
   logout: vi.fn(async () => undefined),
-  getSessions: vi.fn(async (userId: string) => ([{
+  getUserSessions: vi.fn(async (userId: string) => ([{
     id: 'session-1',
     userId,
     familyId: 'family-1',
@@ -32,7 +32,19 @@ const createAuthService = () => ({
     createdAt: new Date(),
   }])),
   revokeSession: vi.fn(async () => undefined),
-  revokeAllUserSessions: vi.fn(async () => undefined),
+  revokeAllSessions: vi.fn(async () => undefined),
+  createTokenValidatorService: vi.fn(() => ({
+    validateBrandAccessToken: vi.fn(async () => ({
+      skillhubToken: 'skillhub-token',
+      refreshToken: 'skillhub-refresh-token',
+      shadowUserId: 'shadow-user-1',
+      originalUserId: 'brand-user-1',
+      brand: 'realtutorialhub',
+      roles: ['student'],
+      platforms: ['realtutorialhub'],
+      subscriptions: ['notes'],
+    })),
+  })),
 });
 
 describe('auth routes', () => {
@@ -63,6 +75,13 @@ describe('auth routes', () => {
       headers: { 'content-type': 'application/json', 'x-forwarded-for': '127.0.0.1' },
     });
     expect(refreshResponse.status).toBe(200);
+
+    const callbackResponse = await app.request('/auth/callback/validate', {
+      method: 'POST',
+      body: JSON.stringify({ accessToken: 'brand-access-token' }),
+      headers: { 'content-type': 'application/json', 'x-forwarded-for': '127.0.0.1' },
+    });
+    expect(callbackResponse.status).toBe(200);
 
     const logoutResponse = await app.request('/auth/logout', {
       method: 'POST',
@@ -107,10 +126,11 @@ describe('auth routes', () => {
     expect(authService.register).toHaveBeenCalledTimes(1);
     expect(authService.login).toHaveBeenCalledTimes(1);
     expect(authService.refresh).toHaveBeenCalledTimes(1);
+    expect(authService.createTokenValidatorService).toHaveBeenCalledTimes(1);
     expect(authService.logout).toHaveBeenCalledWith('user-1', 'family-1');
-    expect(authService.getSessions).toHaveBeenCalledWith('user-1');
-    expect(authService.revokeSession).toHaveBeenCalledWith('user-1', 'session-1');
-    expect(authService.revokeAllUserSessions).toHaveBeenCalledWith('user-1');
+    expect(authService.getUserSessions).toHaveBeenCalledWith('user-1', 'realtutorialhub');
+    expect(authService.revokeSession).toHaveBeenCalledWith('user-1', 'session-1', 'realtutorialhub');
+    expect(authService.revokeAllSessions).toHaveBeenCalledWith('user-1', 'realtutorialhub');
   });
 
   it('applies login rate limiting on the 6th attempt', async () => {

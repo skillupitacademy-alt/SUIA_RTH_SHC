@@ -2,6 +2,8 @@ export type ProxyRequestOptions = {
   requestId: string;
   gatewaySecret: string;
   userId?: string;
+  shadowUserId?: string;
+  originalUserId?: string;
   upstreamPath?: string;
 };
 
@@ -20,6 +22,12 @@ export async function proxyRequest(request: Request, upstream: string, options: 
   }
   if (options.userId !== undefined) {
     headers.set('X-User-ID', options.userId);
+  }
+  if (options.shadowUserId !== undefined) {
+    headers.set('X-Shadow-User-ID', options.shadowUserId);
+  }
+  if (options.originalUserId !== undefined) {
+    headers.set('X-Original-User-ID', options.originalUserId);
   }
 
   headers.delete('CF-Connecting-IP');

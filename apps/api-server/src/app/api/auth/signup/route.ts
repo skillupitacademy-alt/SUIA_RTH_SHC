@@ -27,15 +27,19 @@ async function handler(_req: NextRequest) {
     }
     const { email, password, name, platform } = parsed.data;
     const ip = getClientIp(_req);
-    const brand = (platform === 'skillup' || platform === 'realtutorialhub'
+    const brand = platform === 'skillup' || platform === 'realtutorialhub'
       ? platform
-      : resolveRequestBrandFromHeaders(_req.headers, _req.nextUrl.hostname)) ?? 'realtutorialhub';
+      : resolveRequestBrandFromHeaders(_req.headers, _req.nextUrl.hostname);
+
+    if (brand !== 'skillup' && brand !== 'realtutorialhub') {
+      return ApiResponse.error(badRequest('Brand is required'));
+    }
 
     const authService = container.get(AuthService);
     const _user = await authService.signup(email, password, name, ip, brand);
 
     // Auto-login after signup
-    const { accessToken, refreshToken } = await authService.login(email, password, ip, brand);
+    const { accessToken, refreshToken, shadowUserId } = await authService.login(email, password, ip, brand);
 
     recordCounter(METRICS.AUTH.SIGNUP, 1, { outcome: 'success' });
     recordTimer(METRICS.AUTH.SIGNUP + '.duration', Date.now() - start, { outcome: 'success' });
@@ -47,7 +51,8 @@ async function handler(_req: NextRequest) {
     const response = ApiResponse.success({
       message: 'User created',
       user: userDto,
-      accessToken
+      accessToken,
+      shadowUserId,
     });
 
     const requestHostname = resolveRequestHostnameFromHeaders(_req.headers, _req.nextUrl.hostname);

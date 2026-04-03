@@ -33,6 +33,7 @@ export function RegisterForm() {
         headers: {
           'Content-Type': 'application/json',
           'x-portal-identity': 'user',
+          'x-brand': 'skillup',
         },
         body: JSON.stringify({
           name: formState.name,

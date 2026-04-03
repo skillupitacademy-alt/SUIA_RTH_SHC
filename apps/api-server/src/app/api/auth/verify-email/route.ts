@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { badRequest } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { getBrandConfig } from '@/lib/brand-config';
-import { resolveRequestBrandFromHeaders, type RequestBrand } from '@/lib/request-brand';
+import { type RequestBrand,resolveRequestBrandFromHeaders } from '@/lib/request-brand';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
 import { AuthService } from '@/modules/auth/auth.service';
@@ -33,7 +33,10 @@ async function handler(req: NextRequest) {
       return ApiResponse.error(badRequest('Token is required'));
     }
 
-    const brand = body.brand ?? body.platform ?? resolveRequestBrandFromHeaders(req.headers, req.nextUrl.hostname) ?? 'realtutorialhub';
+    const brand = body.brand ?? body.platform ?? resolveRequestBrandFromHeaders(req.headers, req.nextUrl.hostname);
+    if (brand !== 'skillup' && brand !== 'realtutorialhub') {
+      return ApiResponse.error(badRequest('Brand is required'));
+    }
     const ip = getClientIp(req);
     await container.get(AuthService).verifyEmail(token, ip, brand);
 

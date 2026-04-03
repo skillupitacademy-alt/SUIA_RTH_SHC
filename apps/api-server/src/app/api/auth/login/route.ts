@@ -2,7 +2,7 @@ import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
 
 import { toUserSummaryDTO } from '@/dtos/auth.dto';
-import { forbidden, locked, unauthorized, validationError } from '@/lib/api-error';
+import { badRequest, forbidden, locked, unauthorized, validationError } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { resolveCookieDomain } from '@/lib/cookie-domain';
 import { recordCounter, recordTimer } from '@/lib/metrics';
@@ -44,11 +44,15 @@ async function handler(req: NextRequest) {
     }
     const { email, password, platform } = parsed.data;
     const ip = getClientIp(req);
-    const brand = (platform === 'skillup' || platform === 'realtutorialhub'
+    const brand = platform === 'skillup' || platform === 'realtutorialhub'
       ? platform
-      : resolveRequestBrandFromHeaders(req.headers, req.nextUrl.hostname)) ?? 'realtutorialhub';
+      : resolveRequestBrandFromHeaders(req.headers, req.nextUrl.hostname);
 
-    const { _user, accessToken, refreshToken, isAdmin } = await container.get(AuthService).login(email, password, ip, brand);
+    if (brand !== 'skillup' && brand !== 'realtutorialhub') {
+      return ApiResponse.error(badRequest('Brand is required'));
+    }
+
+    const { _user, accessToken, refreshToken, isAdmin, shadowUserId } = await container.get(AuthService).login(email, password, ip, brand);
     const rawProfile = Array.isArray(_user.profile) ? _user.profile[0] ?? {} : (_user.profile ?? {});
     const authUserInput = {
       id: _user.id,
@@ -70,6 +74,7 @@ async function handler(req: NextRequest) {
       user: userDto,
       accessToken,
       refreshToken,
+      shadowUserId,
       expiresAt: null,
     });
 

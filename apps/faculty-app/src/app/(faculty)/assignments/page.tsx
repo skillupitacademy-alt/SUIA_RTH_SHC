@@ -2,10 +2,11 @@ import { headers } from 'next/headers';
 import Link from 'next/link';
 
 import { listFacultyAssignments } from '@/lib/faculty-live-data';
+import { getEffectiveUserId } from '@/lib/request-auth';
 
 export default async function AssignmentsPage() {
   const requestHeaders = await headers();
-  const userId = requestHeaders.get('x-user-id');
+  const userId = getEffectiveUserId(requestHeaders);
   const assignments = userId === null || userId.length === 0 ? [] : await listFacultyAssignments(requestHeaders, userId);
 
   const publishedCount = assignments.filter((item) => item.isPublished).length;

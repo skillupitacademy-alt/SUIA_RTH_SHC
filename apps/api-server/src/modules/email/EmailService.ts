@@ -1,5 +1,5 @@
-import type { RequestBrand } from '@/lib/request-brand';
 import { getBrandConfig } from '@/lib/brand-config';
+import type { RequestBrand } from '@/lib/request-brand';
 
 import { MockEmailProvider } from './providers/MockEmailProvider';
 import { ResendEmailProvider } from './providers/ResendEmailProvider';

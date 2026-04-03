@@ -19,7 +19,10 @@ async function getHandler(_req: NextRequest) {
     }
 
     try {
-        const brand = resolveRequestBrandFromHeaders(_req.headers, _req.nextUrl.hostname) ?? 'realtutorialhub';
+        const brand = resolveRequestBrandFromHeaders(_req.headers, _req.nextUrl.hostname);
+        if (brand !== 'skillup' && brand !== 'realtutorialhub') {
+            return ApiResponse.error(badRequest('Brand is required'));
+        }
         const valid = await container.get(AuthService).validateResetToken(_token, brand);
         return ApiResponse.success({ valid });
     } catch {
@@ -47,9 +50,12 @@ async function postHandler(_req: NextRequest) {
       : undefined;
 
     const ip = getClientIp(_req);
-    const brand = (platform === 'skillup' || platform === 'realtutorialhub'
+    const brand = platform === 'skillup' || platform === 'realtutorialhub'
       ? platform
-      : resolveRequestBrandFromHeaders(_req.headers, _req.nextUrl.hostname)) ?? 'realtutorialhub';
+      : resolveRequestBrandFromHeaders(_req.headers, _req.nextUrl.hostname);
+    if (brand !== 'skillup' && brand !== 'realtutorialhub') {
+      return ApiResponse.error(badRequest('Brand is required'));
+    }
     await container.get(AuthService).resetPassword(token, password, ip, brand);
 
     return ApiResponse.success({ success: true });

@@ -34,9 +34,12 @@ async function handler(_req: NextRequest) {
     }
 
     const ip = getClientIp(_req);
-    const brand = (platform === 'skillup' || platform === 'realtutorialhub'
+    const brand = platform === 'skillup' || platform === 'realtutorialhub'
       ? platform
-      : resolveRequestBrandFromHeaders(_req.headers, _req.nextUrl.hostname)) ?? 'realtutorialhub';
+      : resolveRequestBrandFromHeaders(_req.headers, _req.nextUrl.hostname);
+    if (brand !== 'skillup' && brand !== 'realtutorialhub') {
+      return ApiResponse.error(badRequest('Brand is required'));
+    }
     await container.get(AuthService).forgotPassword(email, ip, brand);
 
     recordCounter(METRICS.AUTH.FAILURE, 1, { operation: 'forgot_password', outcome: 'success' });

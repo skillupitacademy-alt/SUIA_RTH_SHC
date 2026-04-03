@@ -806,3 +806,398 @@ The multi-brand auth architecture is **well-designed** and **most core features 
 4. Brand-specific templates
 
 **Recommendation**: Focus on brand isolation and Identity Bridge implementation. The heavy lifting (auth, security, health checks) is already done!
+
+
+---
+
+## 🔍 CODE VS GUIDELINE GAP ANALYSIS (April 3, 2026)
+
+**Purpose**: Detailed comparison between the target architecture (guideline) and actual implemented code
+
+**Method**: Direct code inspection, not based on .md file claims
+
+**Status**: ⚠️ MIXED IMPLEMENTATION - Some parts follow guideline, some contradict it
+
+---
+
+### 📊 Gap Analysis Table
+
+| # | Component | Guideline Requirement | Current Implementation | Gap Status | Action Needed |
+|---|-----------|----------------------|------------------------|------------|---------------|
+| 1 | **Portal Identity** | Fixed portal identity, never hostname-derived | ✅ Fixed at login (`x-portal-identity: 'user'`)<br>❌ Host-derived in gateway (`detectRequestPortal()`) | 🟡 PARTIAL | Remove hostname detection from gateway, use only fixed identity from token |
+| 2 | **Admin Auth Cookies** | Uniform admin auth across brands | ✅ RTH: `admin_accessToken`<br>❌ SkillUp: `accessToken` (user token)<br>❌ Faculty: `accessToken` (user token) | 🔴 INCONSISTENT | Standardize: RTH admin pattern for all brands, or normalize to single pattern |
+| 3 | **Faculty Portal** | Separate portal type like admin/user | ❌ Role-based user token with `REQUIRED_ROLES = ['faculty']` | 🔴 DIFFERENT | Decide: Keep role-based OR create separate faculty token type |
+| 4 | **Shared Service Cookies** | `skillhub_accessToken` / `skillhub_refreshToken` | ❌ `skillhubcore_accessToken`<br>❌ Bearer-first, not cookie-first | 🔴 DIFFERENT | Rename cookies OR update guideline to match implementation |
+| 5 | **Token Shape** | `{ shadowUserId, brand, originalUserId, roles }` | ❌ `{ sub, roles, subscriptions, platforms, brand? }` | 🔴 DIFFERENT | Align token contract: either update code to use shadowUserId OR update guideline |
+| 6 | **DB Operations** | Always use `shadowUserId` for shared services | ❌ Uses `authUser.id = payload.sub`<br>❌ No first-class `shadowUserId` field | 🔴 NOT ENFORCED | Add `shadowUserId` to auth context, enforce in all shared services |
+| 7 | **Cross-Domain Auth** | Formal `/auth/callback?token=...&brand=...` flow | ❌ No uniform callback endpoint found | 🔴 NOT IMPLEMENTED | Implement callback flow OR document actual handoff mechanism |
+| 8 | **Brand Cookies** | Brand-scoped domains (`.realtutorialhub.com`, `.skillupitacademy.com`) | ✅ Implemented via `resolveCookieDomain()` | 🟢 MATCHES | None - working correctly |
+| 9 | **Fixed Portal at Login** | Fixed `x-portal-identity` header | ✅ RTH: `'x-portal-identity': 'user'`<br>✅ SkillUp: `'x-portal-identity': 'user'` | 🟢 MATCHES | None - working correctly |
+
+---
+
+### 📝 Detailed Gap Descriptions
+
+#### Gap 1: Portal Identity (PARTIAL MATCH)
+
+**Guideline Says**:
+```typescript
+// Fixed portal identity, never hostname-derived
+const portalIdentity = 'user'; // or 'admin' or 'faculty'
+```
+
+**Current Code**:
+
+✅ **Brand Portals DO Use Fixed Identity**:
+```typescript
+// apps/realtutorialhub-web/src/app/login/LoginClient.tsx
+headers: {
+  'x-portal-identity': 'user',  // ✅ FIXED
+}
+
+// apps/skillup-web/src/components/auth/LoginForm.tsx
+headers: {
+  'x-portal-identity': 'user',  // ✅ FIXED
+}
+```
+
+❌ **BUT Gateway STILL Derives from Hostname**:
+```typescript
+// services/api-gateway/src/middleware/auth.ts
+export function detectRequestPortal(request: Request, route?: RouteLike): PortalKind {
+  const hostname = requestUrl.hostname.toLowerCase();
+  const originHost = parseHostname(request.headers.get('origin'));
+  
+  if (route?.requireRole === 'admin' || route?.prefix === '/admin') {
+    return 'admin';  // ❌ ROUTE-BASED
+  }
+  
+  if (originHost?.startsWith('admin.') === true) {
+    return 'admin';  // ❌ HOSTNAME-BASED
+  }
+  
+  if (hostname.startsWith('admin.') === true) {
+    return 'admin';  // ❌ HOSTNAME-BASED
+  }
+  
+  return 'user';
+}
+```
+
+**Action Needed**:
+1. Remove hostname detection from gateway
+2. Extract portal identity from JWT token (add to token payload)
+3. Use only token-based portal detection
+
+---
+
+#### Gap 2: Admin Auth Inconsistency (INCONSISTENT)
+
+**Guideline Says**: Uniform admin authentication across all brands
+
+**Current Code**:
+
+**RTH Admin** (`apps/realtutorialhub-admin/src/proxy.ts`):
+```typescript
+function getAccessToken(request: NextRequest): string | undefined {
+  return request.cookies.get('admin_accessToken')?.value;  // ✅ Admin-specific cookie
+}
+// No JWT verification, just cookie presence check
+```
+
+**SkillUp Admin** (`apps/skillup-admin/src/proxy.ts`):
+```typescript
+function getAccessToken(request: NextRequest): string | undefined {
+  return request.cookies.get('accessToken')?.value;  // ❌ User cookie
+}
+
+async function resolveUser(request: NextRequest): Promise<UserPayload | null> {
+  const token = getAccessToken(request);
+  const payload = await TokenService.verifyUserAccessToken(token, { audience: 'user' });  // ❌ User token
+  return { sub: userId, roles: payload.roles ?? [] };
+}
+
+function hasRequiredRole(payload: UserPayload): boolean {
+  return payload.roles.some((role) => REQUIRED_ROLES.includes(role));  // ❌ Role check
+}
+```
+
+**Faculty App** (`apps/faculty-app/src/proxy.ts`):
+```typescript
+// Same as SkillUp Admin - uses accessToken + role check
+const REQUIRED_ROLES = ['faculty', 'super_admin'];
+```
+
+**Action Needed**:
+1. **Option A**: Standardize all to RTH pattern (admin_accessToken everywhere)
+2. **Option B**: Standardize all to SkillUp pattern (accessToken + role check everywhere)
+3. **Option C**: Keep different patterns but document why
+
+---
+
+#### Gap 3: Faculty Portal Type (DIFFERENT)
+
+**Guideline Says**: Faculty should be a separate portal type like admin/user
+
+**Current Code**:
+```typescript
+// apps/faculty-app/src/proxy.ts
+const REQUIRED_ROLES = ['faculty', 'super_admin'];
+
+async function resolveUser(request: NextRequest): Promise<UserPayload | null> {
+  const payload = await TokenService.verifyUserAccessToken(token, { audience: 'user' });
+  // ❌ Verifies as USER token, not separate faculty token
+}
+```
+
+**Action Needed**:
+1. **Option A**: Create separate faculty token type (like admin)
+2. **Option B**: Keep role-based approach, update guideline
+3. Document the chosen approach
+
+---
+
+#### Gap 4: Shared Service Cookie Names (DIFFERENT)
+
+**Guideline Says**: `skillhub_accessToken` / `skillhub_refreshToken`
+
+**Current Code**:
+```typescript
+// apps/skillhubcore-admin/src/proxy.ts
+function getSkillHubCoreToken(request: NextRequest): string | undefined {
+  return request.cookies.get('skillhubcore_accessToken')?.value ??  // ❌ Different name
+         request.cookies.get('accessToken')?.value;
+}
+
+// services/skillhubcore-service/src/middleware/verify-jwt.ts
+const token = c.req.header('authorization')?.replace('Bearer ', '');
+// ❌ Bearer-first, not cookie-first
+```
+
+**Action Needed**:
+1. **Option A**: Rename to `skillhub_accessToken` (match guideline)
+2. **Option B**: Update guideline to `skillhubcore_accessToken` (match code)
+3. Decide on cookie-first vs bearer-first strategy
+
+---
+
+#### Gap 5: Token Shape (DIFFERENT)
+
+**Guideline Says**:
+```typescript
+{
+  shadowUserId: string,
+  brand: 'realtutorialhub' | 'skillup',
+  originalUserId: string,
+  roles: string[]
+}
+```
+
+**Current Code**:
+```typescript
+// services/skillhubcore-service/src/middleware/verify-jwt.ts
+c.set('authUser', {
+  id: payload.sub,                    // ❌ NOT shadowUserId
+  roles: payload.roles,               // ✅ MATCHES
+  subscriptions: payload.subscriptions,  // ❌ NOT in guideline
+  platforms: payload.platforms,       // ❌ NOT in guideline
+  brand?: activeBrand,                // ✅ MATCHES (optional)
+});
+```
+
+**Action Needed**:
+1. Add `shadowUserId` to token payload
+2. Update middleware to expose `authUser.shadowUserId`
+3. Deprecate `authUser.id` in favor of `authUser.shadowUserId`
+4. OR update guideline to match current contract
+
+---
+
+#### Gap 6: shadowUserId Not Enforced (NOT ENFORCED)
+
+**Guideline Says**: "Always use shadowUserId for database operations in shared services"
+
+**Current Code**:
+```typescript
+// services/skillhubcore-service/src/middleware/verify-jwt.ts
+c.set('authUser', {
+  id: payload.sub,  // ❌ Sets 'id', not 'shadowUserId'
+  // ...
+});
+
+// Shared services then use:
+const userId = c.get('authUser').id;  // ❌ No guarantee this is shadowUserId
+```
+
+**Action Needed**:
+1. Add `shadowUserId` field to auth context
+2. Update all shared services to use `authUser.shadowUserId`
+3. Add TypeScript types to enforce this pattern
+4. Add runtime validation to ensure shadowUserId is present
+
+---
+
+#### Gap 7: No Uniform Callback Flow (NOT IMPLEMENTED)
+
+**Guideline Says**:
+```typescript
+// Step 1: Brand portal redirects with token
+window.location.href = `https://quiz.skillhubcore.in/auth/callback?token=${accessToken}&brand=realtutorialhub`;
+
+// Step 2: SkillHub validates token
+POST https://api.skillhubcore.in/auth/validate
+Headers: {
+  'Authorization': 'Bearer jwt-token',
+  'x-brand': 'realtutorialhub'
+}
+
+// Step 3: SkillHub sets cookies
+Cookies: {
+  skillhub_accessToken: { domain: '.skillhubcore.in' }
+}
+```
+
+**Current Code**: No such uniform callback endpoint found
+
+**Action Needed**:
+1. **Option A**: Implement the callback flow as described
+2. **Option B**: Document the actual cross-domain handoff mechanism
+3. **Option C**: Use a different approach (e.g., shared session store)
+
+---
+
+### 🎯 Priority Matrix
+
+| Priority | Gap # | Component | Impact | Effort | Risk |
+|----------|-------|-----------|--------|--------|------|
+| 🔴 P0 | 6 | shadowUserId enforcement | HIGH | HIGH | HIGH |
+| 🔴 P0 | 5 | Token shape alignment | HIGH | MEDIUM | HIGH |
+| 🔴 P1 | 7 | Cross-domain auth flow | HIGH | HIGH | MEDIUM |
+| 🟡 P2 | 2 | Admin auth consistency | MEDIUM | MEDIUM | LOW |
+| 🟡 P2 | 1 | Portal identity detection | MEDIUM | LOW | LOW |
+| 🟢 P3 | 4 | Cookie naming | LOW | LOW | LOW |
+| 🟢 P3 | 3 | Faculty portal type | LOW | LOW | LOW |
+
+---
+
+### 📋 Recommended Action Plan
+
+#### Phase 1: Critical Alignment (Week 1)
+
+**Day 1-2: Token Shape & shadowUserId**
+```typescript
+// 1. Update token generation to include shadowUserId
+const accessToken = jwt.sign({
+  sub: shadowUserId,           // ← Use shadowUserId as subject
+  userId: brandUserId,         // ← Keep original for reference
+  shadowUserId,                // ← Explicit field
+  brand: 'realtutorialhub',
+  roles: ['user'],
+  platforms: ['realtutorialhub']
+}, JWT_SECRET);
+
+// 2. Update middleware to expose shadowUserId
+c.set('authUser', {
+  id: payload.sub,              // ← Keep for backward compat
+  shadowUserId: payload.shadowUserId,  // ← Add explicit field
+  originalUserId: payload.userId,
+  roles: payload.roles,
+  platforms: payload.platforms,
+  brand: activeBrand,
+});
+
+// 3. Update all shared services
+const userId = c.get('authUser').shadowUserId;  // ← Use shadowUserId
+```
+
+**Day 3-4: Cross-Domain Auth Flow**
+```typescript
+// 1. Create callback endpoint
+// services/skillhubcore-service/src/modules/auth/auth.routes.ts
+app.get('/auth/callback', async (c) => {
+  const token = c.req.query('token');
+  const brand = c.req.query('brand');
+  
+  // Validate token
+  const payload = await validateBrandToken(token, brand);
+  
+  // Generate SkillHub token
+  const skillhubToken = await generateSkillHubToken(payload);
+  
+  // Set cookies
+  setCookie(c, 'skillhub_accessToken', skillhubToken, {
+    domain: '.skillhubcore.in'
+  });
+  
+  // Redirect to requested service
+  return c.redirect('/dashboard');
+});
+```
+
+**Day 5: Portal Identity from Token**
+```typescript
+// Remove hostname detection, use token
+export function detectRequestPortal(payload: TokenPayload): PortalKind {
+  return payload.portalIdentity ?? 'user';  // From token, not hostname
+}
+```
+
+#### Phase 2: Consistency Improvements (Week 2)
+
+**Day 1-2: Admin Auth Standardization**
+- Decide on pattern (admin_accessToken vs accessToken + roles)
+- Update all admin portals to use same pattern
+- Update documentation
+
+**Day 3: Cookie Naming**
+- Decide on `skillhub_` vs `skillhubcore_`
+- Update all references
+- Update documentation
+
+**Day 4: Faculty Portal Type**
+- Decide on separate token vs role-based
+- Implement chosen approach
+- Update documentation
+
+#### Phase 3: Documentation (Week 3)
+
+**Day 1-2: Update Guideline Documents**
+- Update ARCHITECTURE_SUMMARY.md with actual implementation
+- Update requirements.md with current patterns
+- Create IMPLEMENTATION_REALITY.md documenting actual vs ideal
+
+**Day 3: Create Migration Guide**
+- Document how to migrate from current to ideal
+- Provide backward compatibility strategy
+- Create deprecation timeline
+
+---
+
+### ✅ Success Criteria
+
+**Phase 1 Complete When**:
+- [ ] All tokens include `shadowUserId` field
+- [ ] All shared services use `shadowUserId` for DB operations
+- [ ] Cross-domain auth callback flow implemented
+- [ ] Portal identity comes from token, not hostname
+- [ ] All tests passing
+
+**Phase 2 Complete When**:
+- [ ] Admin auth consistent across all brands
+- [ ] Cookie naming standardized
+- [ ] Faculty portal type decided and implemented
+- [ ] All tests passing
+
+**Phase 3 Complete When**:
+- [ ] All documentation updated
+- [ ] Migration guide published
+- [ ] Team trained on new patterns
+- [ ] Backward compatibility verified
+
+---
+
+**Last Updated**: April 3, 2026  
+**Method**: Direct code inspection  
+**Status**: Gap analysis complete, action plan defined  
+**Next Review**: After Phase 1 completion  
+**Owner**: Development Team

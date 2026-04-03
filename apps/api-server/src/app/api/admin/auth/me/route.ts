@@ -1,13 +1,14 @@
-import { db, users } from '@quiz/db';
 import { METRICS } from '@quiz/observability';
-import { eq } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 
 import { forbidden, notFound, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { withCorrelationId } from '@/lib/correlation-id.middleware';
 import { recordCounter, recordTimer } from '@/lib/metrics';
+import { type RequestBrand,resolveRequestBrandFromHeaders } from '@/lib/request-brand';
 import { withLogging } from '@/lib/withLogging';
+import { getAuthBrandContext, shouldUseBrandBinding } from '@/modules/auth/brand-db';
+import { UserRepository } from '@/modules/auth/repositories/user.repository';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 
@@ -26,17 +27,23 @@ async function handler(_req: NextRequest) {
     }
 
     const _payload = await container.get(TokenService).verifyAdminAccessToken(_token);
-    const _user = await db.query.users.findFirst({
-      where: eq(users.id, _payload.userId),
-      with: {
-        profile: true,
-        userRoles: {
-          with: { role: true }
-        }
-      }
-    });
+    const brand = ((_payload.brand === 'skillup' ? 'skillup' : _payload.brand === 'realtutorialhub' ? 'realtutorialhub' : undefined)
+      ?? resolveRequestBrandFromHeaders(_req.headers, new URL(_req.url).hostname)
+      ?? 'realtutorialhub') satisfies RequestBrand;
+    const brandContext = getAuthBrandContext(brand);
+    const userRepo = shouldUseBrandBinding() && typeof container.get(UserRepository).withDb === 'function'
+      ? container.get(UserRepository).withDb(brandContext.db, brandContext.tables)
+      : container.get(UserRepository);
+    const originalUserId =
+      typeof _payload.originalUserId === 'string' && _payload.originalUserId.trim().length > 0
+        ? _payload.originalUserId
+        : null;
+    if (originalUserId === null) {
+      return ApiResponse.error(unauthorized('Unauthorized', 'UNAUTHORIZED'));
+    }
+    const _user = await userRepo.findByIdWithDetails(originalUserId);
 
-    if (_user === null || _user === undefined) return ApiResponse.error(notFound('User', _payload.userId));
+    if (_user === null || _user === undefined) return ApiResponse.error(notFound('User', originalUserId));
 
     const profile = Array.isArray(_user.profile) ? _user.profile[0] ?? {} : (_user.profile ?? {});
     const typedProfile = profile as { name?: string | null };
@@ -55,6 +62,12 @@ async function handler(_req: NextRequest) {
     return ApiResponse.success({
       user: {
         id: _user.id,
+        originalUserId: _user.id,
+        shadowUserId:
+          typeof _payload.shadowUserId === 'string' && _payload.shadowUserId.trim().length > 0
+            ? _payload.shadowUserId
+            : _user.id,
+        brand,
         email: _user.email,
         name: typedProfile.name ?? 'Administrator',
         role,

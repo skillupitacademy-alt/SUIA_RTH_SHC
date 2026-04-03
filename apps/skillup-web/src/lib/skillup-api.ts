@@ -32,11 +32,14 @@ export async function fetchSkillupApi<T>(path: string): Promise<T> {
   const forwardedHeaders = new Headers();
   try {
     const requestHeaders = await headers();
-    const xUserId = requestHeaders.get('x-user-id');
+    const xShadowUserId = requestHeaders.get('x-shadow-user-id');
+    const xOriginalUserId = requestHeaders.get('x-original-user-id');
     const cookie = requestHeaders.get('cookie');
     const portalIdentity = requestHeaders.get('x-portal-identity');
 
-    if (xUserId) forwardedHeaders.set('x-user-id', xUserId);
+    if (xShadowUserId) forwardedHeaders.set('x-user-id', xShadowUserId);
+    if (xShadowUserId) forwardedHeaders.set('x-shadow-user-id', xShadowUserId);
+    if (xOriginalUserId) forwardedHeaders.set('x-original-user-id', xOriginalUserId);
     if (cookie) forwardedHeaders.set('cookie', cookie);
     if (portalIdentity) forwardedHeaders.set('x-portal-identity', portalIdentity);
   } catch {

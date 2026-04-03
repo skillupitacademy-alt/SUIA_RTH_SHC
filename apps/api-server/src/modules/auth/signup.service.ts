@@ -1,5 +1,5 @@
-import { db as realtutorialhubDb, users as realtutorialhubUsers } from '@quiz/db-rth';
-import { db as skillupDb, users as skillupUsers } from '@quiz/db-skillup';
+import { users as realtutorialhubUsers } from '@quiz/db-rth';
+import { users as skillupUsers } from '@quiz/db-skillup';
 import { UserIdentityBridgeService } from '@quiz/identity-bridge';
 import crypto from 'crypto';
 
@@ -112,12 +112,17 @@ export class SignupService {
     const verificationUrl = buildBrandVerificationUrl(verificationToken, brand);
     await EmailService.sendVerificationEmail(email, verificationUrl, brand);
 
-    if (newUser?.id) {
+    if (typeof newUser.id === 'string' && newUser.id.length > 0) {
       await this.auditService.log({ userId: newUser.id, action: 'signup_success', ip, brand });
     }
 
     // Task 115: Emit event for read model updates
-    if (newUser?.id && newUser?.email) {
+    if (
+      typeof newUser.id === 'string' &&
+      newUser.id.length > 0 &&
+      typeof newUser.email === 'string' &&
+      newUser.email.length > 0
+    ) {
       void eventBus.emitEvent(AppEvents.USER_SIGNED_UP, {
         userId: newUser.id,
         email: newUser.email,

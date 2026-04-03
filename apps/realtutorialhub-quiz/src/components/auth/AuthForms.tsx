@@ -98,6 +98,7 @@ export function LoginForm() {
                     'Content-Type': 'application/json',
                     accept: 'application/json',
                     'x-portal-identity': 'user',
+                    'x-brand': 'realtutorialhub',
                 },
                 body: JSON.stringify({
                     email,
@@ -230,7 +231,7 @@ export function SignupForm() {
             const name = formData.get('name')?.toString() ?? '';
 
             apiClient.client.setPortalIdentity('user');
-            const { user } = await apiClient.auth.signup(email, password, name);
+            const { user } = await apiClient.auth.signup(email, password, name, PORTAL_BRAND);
             if (!user) throw new Error("Account created but failed to log you in automatically.");
 
             useAuthStore.getState().login(normalizeSkillHubUser(user, user.email));
@@ -392,7 +393,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
     useEffect(() => {
         const validate = async () => {
             try {
-                const { valid } = await apiClient.auth.validateResetToken(token);
+                const { valid } = await apiClient.auth.validateResetToken(token, PORTAL_BRAND);
                 setIsValid(valid);
             } catch {
                 setIsValid(false);

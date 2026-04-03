@@ -76,6 +76,16 @@ vi.mock('@/modules/auth/token.service', () => ({
   TokenService: class TokenService {},
 }));
 
+vi.mock('@quiz/identity-bridge', () => ({
+  UserIdentityBridgeService: class UserIdentityBridgeService {
+    async syncUser() {
+      return { shadowUserId: 'shadow-admin-1', created: false };
+    }
+    async updateShadowUserId() {}
+    async grantPlatformAccess() {}
+  },
+}));
+
 vi.mock('@/modules/core/container', () => ({
   container: {
     get: vi.fn((svc: unknown) => {
@@ -108,6 +118,7 @@ describe('AdminAuthService (unit)', () => {
       {
         id: FIXTURE_ID,
         email: FIXTURE_EMAIL,
+        shadowUserId: 'shadow-admin-1',
         passwordHash: 'hash',
         name: null,
         roleName: 'ADMIN',
@@ -134,6 +145,7 @@ describe('AdminAuthService (unit)', () => {
       {
         id: FIXTURE_ID,
         email: FIXTURE_EMAIL,
+        shadowUserId: 'shadow-admin-1',
         passwordHash: 'hash',
         name: 'Admin',
         roleName: undefined,
@@ -141,6 +153,7 @@ describe('AdminAuthService (unit)', () => {
       {
         id: FIXTURE_ID,
         email: FIXTURE_EMAIL,
+        shadowUserId: 'shadow-admin-1',
         passwordHash: 'hash',
         name: 'Admin',
         roleName: 'ADMIN',
@@ -179,6 +192,7 @@ describe('AdminAuthService (unit)', () => {
       {
         id: FIXTURE_ID,
         email: FIXTURE_EMAIL,
+        shadowUserId: 'shadow-admin-1',
         passwordHash: 'hash',
         name: 'Admin',
         roleName: 'ADMIN',
@@ -197,6 +211,7 @@ describe('AdminAuthService (unit)', () => {
       {
         id: FIXTURE_ID,
         email: FIXTURE_EMAIL,
+        shadowUserId: 'shadow-admin-1',
         passwordHash: 'hash',
         name: 'Admin',
         roleName: 'STUDENT',
@@ -217,6 +232,7 @@ describe('AdminAuthService (unit)', () => {
       {
         id: FIXTURE_ID,
         email: FIXTURE_EMAIL,
+        shadowUserId: 'shadow-admin-1',
         passwordHash: 'hash',
         name: 'Admin',
         roleName: 'ADMIN',

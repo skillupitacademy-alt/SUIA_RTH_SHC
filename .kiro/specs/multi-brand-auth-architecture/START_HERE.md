@@ -2,7 +2,7 @@
 
 **This is the MAIN ENTRY POINT for AI models implementing the multi-brand authentication architecture.**
 
-**Last Updated**: March 30, 2026  
+**Last Updated**: April 3, 2026  
 **Status**: Ready to implement  
 **Timeline**: 2-3 weeks
 
@@ -14,10 +14,71 @@ This document provides a **step-by-step navigation path** for AI models to follo
 
 ---
 
-## 🎯 STEP 1: Understand the Current State (15 minutes)
+## 🎯 STEP 1: Understand the Current State (10 minutes)
 
-### Read First: VERIFICATION_SUMMARY.md
-**Purpose**: Understand what already exists vs what needs to be built
+### Read First: START_HERE.md
+**Purpose**: Orient yourself before opening deeper specs
+
+**Key Takeaways**:
+- This document is the entry point
+- The architecture docs describe the target state
+- `GAP_ANALYSIS.md` now includes a code-vs-guideline section added on April 3, 2026
+- Use the reading order below before changing code
+
+**Next Step**: After reading, proceed to STEP 2
+
+---
+
+## 🏛️ STEP 2: Understand the Target Architecture (15 minutes)
+
+### Read Second: ARCHITECTURE_SUMMARY.md
+**Purpose**: Understand the intended multi-brand design
+
+**Key Takeaways**:
+- RTH users authenticate on `user.realtutorialhub.com`
+- SkillUp users authenticate on `user.skillupitacademy.com`
+- Both brands share services on `skillhubcore.in`
+- User Identity Bridge pattern: brand users → shadow users
+- Separate databases: `rth_prod`, `skillup_prod`, `people_prod`
+
+**Next Step**: After reading, proceed to STEP 3
+
+---
+
+## 📐 STEP 3: Understand the Technical Contract (20 minutes)
+
+### Read Third: requirements.md
+**Purpose**: Review the detailed technical requirements the implementation is supposed to satisfy
+
+**Key Takeaways**:
+- Fixed portal identity should be the standard
+- Brand cookies must stay scoped per brand
+- Shared services should use shadow identity consistently
+- Cross-domain auth and shared-service access are first-class requirements
+
+**Next Step**: After reading, proceed to STEP 4
+
+---
+
+## 🔍 STEP 4: Compare Spec vs Real Code (30 minutes)
+
+### Read Fourth: GAP_ANALYSIS.md
+**Purpose**: See what the code currently does versus what the guideline says it should do
+
+**Read This Section Carefully**:
+- Scroll to `CODE VS GUIDELINE GAP ANALYSIS (April 3, 2026)`
+- Review the 9-row comparison table
+- Review the 7 detailed gaps
+- Review the priority matrix and action plan
+
+**Next Step**: After reading, proceed to STEP 5
+
+---
+
+## ✅ STEP 5: Review Verified Implementation Status (15 minutes)
+
+### Read Fifth: VERIFICATION_SUMMARY.md
+**Purpose**: Understand what already exists vs what still needs work
 
 **Key Takeaways**:
 - ✅ 7 out of 15 services already implemented (47% done!)
@@ -25,30 +86,14 @@ This document provides a **step-by-step navigation path** for AI models to follo
 - 🔴 Need to build: Identity Bridge, data migration, brand detection
 - Timeline reduced from 3-4 weeks to 2-3 weeks
 
-**Next Step**: After reading, proceed to STEP 2
+**Next Step**: After reading, proceed to STEP 6
 
 ---
 
-## 🏗️ STEP 2: Understand the Architecture (30 minutes)
+## 🧩 STEP 6: Review Existing Code Locations (20 minutes)
 
-### Read Second: ARCHITECTURE_SUMMARY.md
-**Purpose**: Understand the overall architecture and design decisions
-
-**Key Takeaways**:
-- RTH users authenticate on user.realtutorialhub.com
-- SkillUp users authenticate on user.skillupitacademy.com
-- Both brands share services on skillhubcore.in
-- User Identity Bridge pattern: brand users → shadow users
-- Separate databases: rth_prod, skillup_prod, people_prod
-
-**Next Step**: After reading, proceed to STEP 3
-
----
-
-## 🔍 STEP 3: Review Existing Code (30 minutes)
-
-### Read Third: EXISTING_SERVICES_VERIFIED.md
-**Purpose**: Understand what code already exists and where it's located
+### Read Sixth: EXISTING_SERVICES_VERIFIED.md
+**Purpose**: Understand what code already exists and where it lives
 
 **Key Takeaways**:
 - Email service: `apps/api-server/src/modules/email/EmailService.ts`
@@ -57,13 +102,13 @@ This document provides a **step-by-step navigation path** for AI models to follo
 - Session management: `services/skillhubcore-service/src/modules/user/user.repository.ts`
 - Health checks: `apps/api-server/src/modules/core/health.service.ts`
 
-**Next Step**: After reading, proceed to STEP 4
+**Next Step**: After reading, proceed to STEP 7
 
 ---
 
-## 📋 STEP 4: Get Your Implementation Plan (15 minutes)
+## 📋 STEP 7: Get Your Implementation Plan (15 minutes)
 
-### Read Fourth: IMPLEMENTATION_PRIORITY.md
+### Read Seventh: IMPLEMENTATION_PRIORITY.md
 **Purpose**: Get day-by-day tasks for the next 2-3 weeks
 
 **Key Takeaways**:
@@ -76,7 +121,7 @@ This document provides a **step-by-step navigation path** for AI models to follo
 
 ---
 
-## 🎬 STEP 5: Start Implementation (Ongoing)
+## 🎬 STEP 8: Start Implementation (Ongoing)
 
 ### Implementation Flow
 

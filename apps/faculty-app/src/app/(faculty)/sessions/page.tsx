@@ -3,10 +3,11 @@ import Link from 'next/link';
 
 import { SessionCreateForm } from '@/components/session-create-form';
 import { listFacultyBatches, listFacultyUpcomingSessions, listFacultySessionRequests } from '@/lib/faculty-live-data';
+import { getEffectiveUserId } from '@/lib/request-auth';
 
 export default async function SessionsPage() {
   const requestHeaders = await headers();
-  const userId = requestHeaders.get('x-user-id');
+  const userId = getEffectiveUserId(requestHeaders);
   const [sessions, requests, batches] =
     userId === null || userId.length === 0
       ? [[], [], []]

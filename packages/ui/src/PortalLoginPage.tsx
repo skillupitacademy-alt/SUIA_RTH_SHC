@@ -150,6 +150,7 @@ export function PortalLoginPage({
           'content-type': 'application/json',
           accept: 'application/json',
           'x-portal-identity': portalIdentity,
+          'x-brand': platform,
         },
         body: JSON.stringify({
           email: formData.email,

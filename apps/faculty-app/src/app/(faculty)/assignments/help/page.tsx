@@ -2,10 +2,11 @@ import { headers } from 'next/headers';
 
 import { HelpRequestsPanel } from '@/components/help-requests-panel';
 import { listFacultyHelpRequests } from '@/lib/faculty-live-data';
+import { getEffectiveUserId } from '@/lib/request-auth';
 
 export default async function HelpRequestsPage() {
   const requestHeaders = await headers();
-  const userId = requestHeaders.get('x-user-id');
+  const userId = getEffectiveUserId(requestHeaders);
   const requests = userId === null || userId.length === 0 ? [] : await listFacultyHelpRequests(requestHeaders, userId);
 
   return (

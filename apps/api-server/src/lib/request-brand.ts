@@ -34,10 +34,15 @@ export function tryExtractHostname(value?: string | null): string | undefined {
   return first.replace(/:\d+$/, '').toLowerCase();
 }
 
-export function resolveRequestBrandFromHeaders(headers?: HeaderReader | null, fallbackHostname?: string | null): RequestBrand | undefined {
-  const candidates = resolveRequestHostCandidates(headers, fallbackHostname);
+export function resolveRequestBrandFromHeaders(headers?: HeaderReader | null, _fallbackHostname?: string | null): RequestBrand | undefined {
+  const explicitBrandCandidates = [
+    tryExtractHostname(headers?.get('x-brand')),
+    tryExtractHostname(headers?.get('x-platform')),
+    typeof headers?.get('x-brand') === 'string' ? headers?.get('x-brand')?.trim().toLowerCase() : undefined,
+    typeof headers?.get('x-platform') === 'string' ? headers?.get('x-platform')?.trim().toLowerCase() : undefined,
+  ];
 
-  for (const candidate of candidates) {
+  for (const candidate of explicitBrandCandidates) {
     const resolved = resolveRequestBrand(candidate);
     if (resolved !== undefined) {
       return resolved;

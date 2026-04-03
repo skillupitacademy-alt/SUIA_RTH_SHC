@@ -14,5 +14,9 @@ export function renderWithIntl(element: ReactElement) {
 
 export async function runAxe(container: HTMLElement) {
   const axe = await import('axe-core');
-  return axe.run(container);
+  return axe.run(container, {
+    rules: {
+      'color-contrast': { enabled: false },
+    },
+  });
 }

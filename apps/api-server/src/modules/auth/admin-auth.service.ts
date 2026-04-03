@@ -1,4 +1,5 @@
-import { eq } from "drizzle-orm";
+import { UserIdentityBridgeService } from '@quiz/identity-bridge';
+import { eq } from 'drizzle-orm';
 
 import type { RequestBrand } from '@/lib/request-brand';
 import { getAuthBrandContext, shouldUseBrandBinding } from '@/modules/auth/brand-db';
@@ -8,6 +9,15 @@ import { AuditService } from './audit.service';
 import { PasswordService } from './password.service';
 import { SecurityService } from './security.service';
 import { TokenService } from './token.service';
+
+type AdminUserRow = {
+  id: string;
+  email: string;
+  shadowUserId: unknown;
+  passwordHash: string;
+  name: string | null;
+  roleName: string | null;
+};
 
 export class AdminAuthService {
   static async login(email: string, password: string, ip: string = 'unknown', requestedAudience: string = 'admin', brand: RequestBrand = 'realtutorialhub') {
@@ -28,9 +38,11 @@ export class AdminAuthService {
     }
 
     // 2. Find User with Roles
-    const _usersWithRoles = await brandContext.db.select({
+    const usersWithRoles = await brandContext.db.select({
         id: brandContext.tables.users.id,
         email: brandContext.tables.users.email,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        shadowUserId: (brandContext.tables.users as any).shadowUserId,
         passwordHash: brandContext.tables.users.passwordHash,
         name: brandContext.tables.userProfiles.name,
         roleName: brandContext.tables.roles.name
@@ -41,12 +53,13 @@ export class AdminAuthService {
     .leftJoin(brandContext.tables.roles, eq(brandContext.tables.userRoles.roleId, brandContext.tables.roles.id))
     .where(eq(brandContext.tables.users.email, cleanEmail));
     
-    if (_usersWithRoles.length === 0) {
+    if (usersWithRoles.length === 0) {
       await securityService.trackLoginAttempt(ip, cleanEmail, false, brand);
       throw new Error('Access Denied');
     }
 
-    const user = _usersWithRoles[0];
+    const typedUsersWithRoles = usersWithRoles as AdminUserRow[];
+    const user = typedUsersWithRoles[0];
 
     // 3. Validate Credentials
     const isPasswordMatch = await container.get(PasswordService).compare(password, user.passwordHash);
@@ -57,8 +70,8 @@ export class AdminAuthService {
       throw new Error('Access Denied');
     }
 
-    const roleNames = _usersWithRoles
-      .map((row: { roleName: string | null }) => row.roleName)
+    const roleNames = typedUsersWithRoles
+      .map((row) => row.roleName)
       .filter((name: string | null): name is string => name !== null);
     const isAdmin = roleNames.includes('ADMIN') || roleNames.includes('SUPER_ADMIN') || roleNames.includes('INFRASTRUCTURE');
 
@@ -69,7 +82,7 @@ export class AdminAuthService {
     }
 
     // Portal Defense: Ensure 'infra' audience is only granted to users with the INFRASTRUCTURE role
-    if (requestedAudience === 'infra' && !roleNames.includes('INFRASTRUCTURE')) {
+    if (requestedAudience === 'infra' && roleNames.includes('INFRASTRUCTURE') === false) {
         await container.get(AuditService).log({ userId: user.id, action: 'admin_audience_violation', metadata: { email: cleanEmail, requestedAud: requestedAudience }, ip, brand });
         throw new Error('Access Denied: Infrastructure privileges required for this portal');
     }
@@ -77,10 +90,26 @@ export class AdminAuthService {
     // 5. Success
     await securityService.trackLoginAttempt(ip, cleanEmail, true, brand);
     await container.get(AuditService).log({ userId: user.id, action: 'admin_login_success', ip, brand });
+    let shadowUserId = typeof user.shadowUserId === 'string' && user.shadowUserId.trim().length > 0 ? user.shadowUserId : undefined;
+    if (shadowUserId === undefined) {
+      const bridge = new UserIdentityBridgeService();
+      const result = await bridge.syncUser({
+        externalId: user.id,
+        externalBrand: brand,
+        email: user.email,
+        platform: brand,
+        role: roleNames.includes('SUPER_ADMIN') ? 'super_admin' : roleNames.includes('ADMIN') ? 'admin' : 'student',
+      });
+      await bridge.updateShadowUserId(brandContext.db, brandContext.tables.users, user.id, result.shadowUserId);
+      await bridge.grantPlatformAccess(result.shadowUserId, brand);
+      shadowUserId = result.shadowUserId;
+    }
 
     // 6. Generate Admin-Scoped Tokens with Portal Identity
     const accessToken = await container.get(TokenService).generateAccessToken({
       userId: user.id,
+      originalUserId: user.id,
+      shadowUserId,
       email: user.email,
       roles: roleNames,
       isAdmin: true,
@@ -92,6 +121,8 @@ export class AdminAuthService {
     const refreshToken = await container.get(TokenService).generateRefreshToken(user.id, true, requestedAudience, {
       tokenType: 'admin',
       brand,
+      originalUserId: user.id,
+      shadowUserId,
     });
     const refreshTokenHash = await container.get(TokenService).hashToken(refreshToken);
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours absolute limit
@@ -110,7 +141,8 @@ export class AdminAuthService {
         email: user.email, 
         name: user.name ?? 'Admin', 
         isAdmin: true,
-        role: primaryRole
+        role: primaryRole,
+        shadowUserId,
       }, 
       accessToken, 
       refreshToken,

@@ -40,7 +40,7 @@ describe('TokenService', () => {
   const service = new TokenService();
   const mockPayload = { userId: 'u1', email: 'test@example.com', roles: ['USER'] };
   
-  it('extracts access tokens from cookies before authorization header', () => {
+  it('extracts scoped access tokens from cookies before authorization header', () => {
     const token1 = service.getAccessToken({ cookies: { get: (name: string) => name === 'accessToken' ? { value: 'cookie-user' } : undefined } }, { scope: 'user' });
     expect(token1).toBe('cookie-user');
     
@@ -51,7 +51,7 @@ describe('TokenService', () => {
     expect(token3).toBe('cookie-infra');
 
     const token4 = service.getAccessToken({ cookies: { get: (name: string) => name === 'accessToken' ? { value: 'cookie-any' } : undefined } });
-    expect(token4).toBe('cookie-any');
+    expect(token4).toBeUndefined();
 
     const token5 = service.getAccessToken({ headers: { get: () => 'Bearer header-token' } });
     expect(token5).toBe('header-token');
@@ -154,9 +154,12 @@ describe('TokenService', () => {
     it('verifies SkillHubCore JWTs with required claims and ignores extra claims', async () => {
       const token = await new SignJWT({
         sub: 'u1',
+        shadowUserId: 'shadow-u1',
+        originalUserId: 'brand-u1',
         roles: ['student'],
         subscriptions: ['notes'],
         platforms: ['skillup'],
+        brand: 'skillup',
       })
         .setProtectedHeader({ alg: 'HS256' })
         .setIssuer('skillhubcore.in')
@@ -165,10 +168,13 @@ describe('TokenService', () => {
         .sign(TokenService.ACCESS_SECRET);
 
       const payload = await service.verifySkillHubCoreJWT(token);
-      expect(payload.sub).toBe('u1');
+      expect(payload.sub).toBe('shadow-u1');
+      expect(payload.shadowUserId).toBe('shadow-u1');
+      expect(payload.originalUserId).toBe('brand-u1');
       expect(payload.roles).toEqual(['student']);
       expect(payload.subscriptions).toEqual(['notes']);
       expect((payload as unknown as { platforms?: string[] }).platforms).toEqual(['skillup']);
+      expect(payload.brand).toBe('skillup');
     });
 
     it('rejects expired SkillHubCore JWTs', async () => {

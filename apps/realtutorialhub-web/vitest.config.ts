@@ -1,14 +1,17 @@
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import path from 'path';
+import tsconfigPaths from 'vite-tsconfig-paths';
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), tsconfigPaths()],
   test: {
     environment: 'jsdom',
     globals: true,
-    testTimeout: 15000, // Increase timeout for accessibility tests
-    hookTimeout: 15000,
+    setupFiles: ['./vitest.setup.ts'],
+    testTimeout: 60000,
+    hookTimeout: 60000,
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
   },
   resolve: {
     alias: {

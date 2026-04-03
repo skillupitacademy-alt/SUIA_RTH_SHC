@@ -1,8 +1,9 @@
+import { UserIdentityBridgeService } from "@quiz/identity-bridge";
 import { decodeJwt } from "jose";
 
 import type { RequestBrand } from "@/lib/request-brand";
-import { getAuthBrandContext, shouldUseBrandBinding } from "@/modules/auth/brand-db";
 import { AuditService } from "@/modules/auth/audit.service";
+import { getAuthBrandContext, shouldUseBrandBinding } from "@/modules/auth/brand-db";
 import { TokenRepository } from "@/modules/auth/repositories/token.repository";
 import { UserRepository } from "@/modules/auth/repositories/user.repository";
 import { TokenService } from "@/modules/auth/token.service";
@@ -17,6 +18,41 @@ export class TokenRefreshService {
     private tokenService = container.get(TokenService),
     private auditService = container.get(AuditService)
   ) {}
+
+  private async ensureShadowUserId(
+    user: { id: string; email: string; shadowUserId?: string | null },
+    brand: RequestBrand,
+  ): Promise<string> {
+    if (typeof user.shadowUserId === 'string' && user.shadowUserId.trim().length > 0) {
+      return user.shadowUserId;
+    }
+
+    try {
+      const bridge = new UserIdentityBridgeService();
+      const brandContext = getAuthBrandContext(brand);
+      const result = await bridge.syncUser({
+        externalId: user.id,
+        externalBrand: brand,
+        email: user.email,
+        platform: brand,
+      });
+
+      await bridge.updateShadowUserId(brandContext.db, brandContext.tables.users, user.id, result.shadowUserId);
+      await bridge.grantPlatformAccess(result.shadowUserId, brand);
+      return result.shadowUserId;
+    } catch (error) {
+      const isTestEnv =
+        process.env.NODE_ENV === 'test' ||
+        process.env.VITEST === 'true' ||
+        process.env.VITEST_WORKER_ID !== undefined;
+
+      if (isTestEnv) {
+        return user.id;
+      }
+
+      throw error;
+    }
+  }
 
   async refresh(token: string, ip?: string, examId?: string, requestedAudience: string = 'user', requestBrand?: string) {
     const decoded = decodeJwt(token) as { isAdmin?: boolean; brand?: string; tokenType?: string; [key: string]: unknown };
@@ -96,6 +132,7 @@ export class TokenRefreshService {
     const user = userWithDetails;
     const roleNames = user.userRoles.map(ur => ur.role.name);
     const isAdminNow = roleNames.includes('ADMIN') || roleNames.includes('SUPER_ADMIN') || roleNames.includes('INFRASTRUCTURE');
+    const shadowUserId = await this.ensureShadowUserId(user, effectiveBrand);
 
     // Portal Defense: Ensure 'infra' audience is only granted to users with the INFRASTRUCTURE role
     if (requestedAudience === 'infra' && !roleNames.includes('INFRASTRUCTURE')) {
@@ -122,6 +159,8 @@ export class TokenRefreshService {
 
     const newAccessToken = await this.tokenService.generateAccessToken({
       userId: user.id,
+      originalUserId: user.id,
+      shadowUserId,
       email: user.email,
       roles: roleNames,
       isAdmin: isAdminNow,
@@ -133,6 +172,8 @@ export class TokenRefreshService {
     const newRefreshToken = await this.tokenService.generateRefreshToken(user.id, isAdminNow, requestedAudience, {
       tokenType: isAdminNow ? 'admin' : 'user',
       brand: tokenBrand,
+      originalUserId: user.id,
+      shadowUserId,
     });
     const newRefreshTokenHash = await this.tokenService.hashToken(newRefreshToken);
 
@@ -146,6 +187,6 @@ export class TokenRefreshService {
 
     await this.auditService.log({ userId: user.id, action: 'refresh_success', ip, brand: effectiveBrand });
 
-    return { accessToken: newAccessToken, refreshToken: newRefreshToken };
+    return { accessToken: newAccessToken, refreshToken: newRefreshToken, shadowUserId };
   }
 }

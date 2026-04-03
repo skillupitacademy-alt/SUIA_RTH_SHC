@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 
 import { AttendanceBoard } from '@/components/attendance-board';
 import { listFacultyBatches, listFacultyUpcomingSessions } from '@/lib/faculty-live-data';
+import { getEffectiveUserId } from '@/lib/request-auth';
 
 export default async function AttendancePage({
   params,
@@ -12,7 +13,7 @@ export default async function AttendancePage({
 }) {
   const { batchId, sessionId } = await params;
   const requestHeaders = await headers();
-  const userId = requestHeaders.get('x-user-id');
+  const userId = getEffectiveUserId(requestHeaders);
 
   if (userId === null || userId.length === 0) {
     notFound();

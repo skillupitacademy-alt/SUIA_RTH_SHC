@@ -6,10 +6,17 @@ import { TokenExpiredError, TokenInvalidError, TokenService } from '../token.ser
 describe('TokenService', () => {
   it('signs and verifies access tokens', async () => {
     const service = new TokenService(new TextEncoder().encode('access-secret-1234567890'), new TextEncoder().encode('refresh-secret-1234567890'));
-    const token = await service.signAccessToken('user-1', ['student'], ['notes'], ['realtutorialhub']);
+    const token = await service.signAccessToken('user-1', ['student'], ['notes'], ['realtutorialhub'], {
+      originalUserId: 'brand-user-1',
+      shadowUserId: 'shadow-user-1',
+      brand: 'realtutorialhub',
+    });
     const payload = await service.verifyAccessToken(token);
 
     expect(payload.sub).toBe('user-1');
+    expect(payload.shadowUserId).toBe('shadow-user-1');
+    expect(payload.originalUserId).toBe('brand-user-1');
+    expect(payload.brand).toBe('realtutorialhub');
     expect(payload.roles).toEqual(['student']);
     expect(payload.subscriptions).toEqual(['notes']);
   });

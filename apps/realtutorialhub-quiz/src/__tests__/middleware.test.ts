@@ -34,6 +34,8 @@ describe('realtutorialhub-quiz proxy', () => {
   it('accepts a user JWT on exam routes', async () => {
     verifyUserAccessTokenMock.mockResolvedValueOnce({
       sub: 'student-2',
+      shadowUserId: 'shadow-student-2',
+      originalUserId: 'brand-student-2',
       roles: ['student'],
       email: 'student@example.com',
       aud: 'user',
@@ -43,6 +45,8 @@ describe('realtutorialhub-quiz proxy', () => {
 
     expect(verifyUserAccessTokenMock).toHaveBeenCalledWith('user-token', { audience: 'user' });
     expect(response.status).toBe(200);
-    expect(response.headers.get('x-user-id')).toBe('student-2');
+    expect(response.headers.get('x-user-id')).toBe('shadow-student-2');
+    expect(response.headers.get('x-shadow-user-id')).toBe('shadow-student-2');
+    expect(response.headers.get('x-original-user-id')).toBe('brand-student-2');
   });
 });

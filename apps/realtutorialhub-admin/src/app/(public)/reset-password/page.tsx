@@ -34,7 +34,7 @@ function ResetPasswordForm() {
             }
 
             try {
-                const { valid } = await apiClient.auth.validateResetToken(token);
+                const { valid } = await apiClient.auth.validateResetToken(token, PORTAL_BRAND);
                 const isValid = valid === true;
                 setIsTokenValid(isValid);
                 if (isValid === false) setError('This link has expired or is invalid.');

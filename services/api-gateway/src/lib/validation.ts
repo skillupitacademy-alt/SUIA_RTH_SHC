@@ -28,6 +28,7 @@ export function buildGatewayHealthSnapshot(env: Partial<GatewayBindings>): Gatew
       SKILLHUBCORE_URL: env.SKILLHUBCORE_URL,
       QUIZ_WEB_URL: env.QUIZ_WEB_URL,
       SKILLUP_WEB_URL: env.SKILLUP_WEB_URL,
+      RTH_ADMIN_URL: env.RTH_ADMIN_URL,
       SKILLUP_ADMIN_URL: env.SKILLUP_ADMIN_URL,
       FACULTY_URL: env.FACULTY_URL,
       STUDENT_FACULTY_URL: env.STUDENT_FACULTY_URL,

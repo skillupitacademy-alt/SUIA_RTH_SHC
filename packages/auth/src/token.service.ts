@@ -5,6 +5,8 @@ const REFRESH_TOKEN_EXPIRE = '7d';
 
 export type TokenPayload = JWTPayload & {
   userId: string;
+  originalUserId?: string;
+  shadowUserId?: string;
   email: string;
   roles: string[];
   isAdmin?: boolean;
@@ -12,6 +14,9 @@ export type TokenPayload = JWTPayload & {
   tokenType?: 'user' | 'admin';
   brand?: string;
   role?: string;
+  platforms?: Array<'realtutorialhub' | 'skillup'>;
+  subscriptions?: string[];
+  portalIdentity?: 'admin' | 'user' | 'faculty' | 'super_admin' | 'infrastructure';
 };
 
 export type UserTokenPayload = TokenPayload;
@@ -19,6 +24,8 @@ export type AdminTokenPayload = TokenPayload & { isAdmin: true; adminScope?: str
 
 export type RefreshTokenPayload = JWTPayload & {
   userId: string;
+  originalUserId?: string;
+  shadowUserId?: string;
   isAdmin: boolean;
   tokenFamily?: string;
   aud?: string;
@@ -28,9 +35,13 @@ export type RefreshTokenPayload = JWTPayload & {
 
 export type SkillHubCoreTokenPayload = JWTPayload & {
   sub: string;
+  shadowUserId?: string;
+  originalUserId?: string;
   roles: string[];
   subscriptions: string[];
+  platforms?: Array<'realtutorialhub' | 'skillup'>;
   iss: 'skillhubcore.in';
+  brand?: 'realtutorialhub' | 'skillup';
 };
 
 export type AccessTokenRequestLike = {
@@ -88,17 +99,6 @@ export class TokenService {
     } else if (scope === 'infrastructure') {
       const infraToken = req.cookies?.get('infra_accessToken')?.value;
       if (typeof infraToken === 'string' && infraToken.length > 0) return infraToken;
-    } else {
-      const accessToken = req.cookies?.get('accessToken')?.value;
-      const adminToken = req.cookies?.get('admin_accessToken')?.value;
-      const infraToken = req.cookies?.get('infra_accessToken')?.value;
-
-      let cookieToken: string | undefined;
-      if (typeof accessToken === 'string' && accessToken.length > 0) cookieToken = accessToken;
-      else if (typeof adminToken === 'string' && adminToken.length > 0) cookieToken = adminToken;
-      else if (typeof infraToken === 'string' && infraToken.length > 0) cookieToken = infraToken;
-
-      if (typeof cookieToken === 'string' && cookieToken.length > 0) return cookieToken;
     }
 
     const headerToken = req.headers?.get('authorization')?.replace('Bearer ', '');
@@ -121,7 +121,14 @@ export class TokenService {
     const tokenType = payload.tokenType ?? (payload.isAdmin === true ? 'admin' : 'user');
     const brand = typeof payload.brand === 'string' && payload.brand.trim().length > 0 ? payload.brand.trim().toLowerCase() : undefined;
 
-    return new SignJWT({ ...payload, tokenType, brand })
+    const originalUserId = typeof payload.originalUserId === 'string' && payload.originalUserId.trim().length > 0
+      ? payload.originalUserId.trim()
+      : payload.userId;
+    const shadowUserId = typeof payload.shadowUserId === 'string' && payload.shadowUserId.trim().length > 0
+      ? payload.shadowUserId.trim()
+      : undefined;
+
+    return new SignJWT({ ...payload, originalUserId, shadowUserId, tokenType, brand })
       .setProtectedHeader({ alg: 'HS256' })
       .setAudience(audience)
       .setIssuedAt()
@@ -133,7 +140,7 @@ export class TokenService {
     userId: string,
     isAdmin: boolean = false,
     audience: string = 'user',
-    metadata?: { tokenType?: 'user' | 'admin'; brand?: string },
+    metadata?: { tokenType?: 'user' | 'admin'; brand?: string; originalUserId?: string; shadowUserId?: string },
   ): Promise<string> {
     const secret = isAdmin ? this.ADMIN_SECRET : this.REFRESH_SECRET;
     const tokenType = metadata?.tokenType ?? (isAdmin === true ? 'admin' : 'user');
@@ -141,7 +148,14 @@ export class TokenService {
       ? metadata.brand.trim().toLowerCase()
       : undefined;
 
-    return new SignJWT({ userId, isAdmin, aud: audience, tokenType, brand })
+    const originalUserId = typeof metadata?.originalUserId === 'string' && metadata.originalUserId.trim().length > 0
+      ? metadata.originalUserId.trim()
+      : userId;
+    const shadowUserId = typeof metadata?.shadowUserId === 'string' && metadata.shadowUserId.trim().length > 0
+      ? metadata.shadowUserId.trim()
+      : undefined;
+
+    return new SignJWT({ userId, originalUserId, shadowUserId, isAdmin, aud: audience, tokenType, brand })
       .setProtectedHeader({ alg: 'HS256' })
       .setAudience(audience)
       .setIssuedAt()
@@ -239,16 +253,30 @@ export class TokenService {
     try {
       const { payload } = await jwtVerify(token, this.ACCESS_SECRET, { issuer: 'skillhubcore.in' });
 
+      const shadowUserId =
+        typeof payload.shadowUserId === 'string' && payload.shadowUserId.trim().length > 0
+          ? payload.shadowUserId.trim()
+          : undefined;
+      const originalUserId =
+        typeof payload.originalUserId === 'string' && payload.originalUserId.trim().length > 0
+          ? payload.originalUserId.trim()
+          : undefined;
+
       if (
-        typeof payload.sub !== 'string' ||
-        payload.sub.trim().length === 0 ||
+        shadowUserId === undefined ||
+        originalUserId === undefined ||
         !Array.isArray((payload as { roles?: unknown }).roles) ||
         !Array.isArray((payload as { subscriptions?: unknown }).subscriptions)
       ) {
         throw new Error('Invalid SkillHubCore token payload');
       }
 
-      return payload as SkillHubCoreTokenPayload;
+      return {
+        ...(payload as SkillHubCoreTokenPayload),
+        sub: shadowUserId,
+        shadowUserId,
+        originalUserId,
+      };
     } catch (error) {
       if (error instanceof Error && error.name === 'JWTExpired') {
         throw new Error('Token expired');
@@ -343,7 +371,7 @@ export class TokenService {
     userId: string,
     isAdmin: boolean = false,
     audience: string = 'user',
-    metadata?: { tokenType?: 'user' | 'admin'; brand?: string },
+    metadata?: { tokenType?: 'user' | 'admin'; brand?: string; originalUserId?: string; shadowUserId?: string },
   ) {
     return this.getInstance().generateRefreshToken(userId, isAdmin, audience, metadata);
   }

@@ -1,5 +1,13 @@
 import { NextRequest } from 'next/server';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+const verifyAdminAccessTokenMock = vi.hoisted(() => vi.fn());
+
+vi.mock('@quiz/auth', () => ({
+  TokenService: {
+    verifyAdminAccessToken: verifyAdminAccessTokenMock,
+  },
+}));
 
 import { proxy } from '../proxy';
 
@@ -32,9 +40,19 @@ describe('realtutorialhub-admin proxy', () => {
   });
 
   it('allows protected routes when an admin cookie is present', async () => {
+    verifyAdminAccessTokenMock.mockResolvedValueOnce({
+      sub: 'shadow-admin-1',
+      shadowUserId: 'shadow-admin-1',
+      originalUserId: 'brand-admin-1',
+      roles: ['admin'],
+    });
+
     const response = await proxy(makeRequest('/dashboard/content', 'admin_accessToken=admin-token'));
 
     expect(response.status).toBe(200);
+    expect(verifyAdminAccessTokenMock).toHaveBeenCalledWith('admin-token', { audience: 'admin' });
+    expect(response.headers.get('x-shadow-user-id')).toBe('shadow-admin-1');
+    expect(response.headers.get('x-original-user-id')).toBe('brand-admin-1');
   });
 
   it('redirects to login when admin cookie is missing', async () => {
@@ -48,5 +66,18 @@ describe('realtutorialhub-admin proxy', () => {
     const response = await proxy(makeRequest('/api/healthz'));
 
     expect(response.status).toBe(200);
+  });
+
+  it('rejects authenticated users without an admin role', async () => {
+    verifyAdminAccessTokenMock.mockResolvedValueOnce({
+      sub: 'shadow-user-1',
+      shadowUserId: 'shadow-user-1',
+      originalUserId: 'brand-user-1',
+      roles: ['student'],
+    });
+
+    const response = await proxy(makeRequest('/dashboard/content', 'admin_accessToken=student-scope-token'));
+
+    expect(response.status).toBe(403);
   });
 });

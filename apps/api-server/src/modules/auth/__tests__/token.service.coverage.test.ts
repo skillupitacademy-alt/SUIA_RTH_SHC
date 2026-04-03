@@ -22,7 +22,6 @@ describe('TokenService.getAccessToken', () => {
     expect(service.getAccessToken(req as any, { scope: 'admin' })).toBe('adminTok')
     expect(service.getAccessToken(req as any, { scope: 'user' })).toBe('userTok')
     expect(service.getAccessToken(req as any, { scope: 'infrastructure' })).toBe('infraTok')
-    // fallback no scope -> first cookie found (adminTok), not header
-    expect(service.getAccessToken(req as any)).toBe('userTok')
+    expect(service.getAccessToken(req as any)).toBe('headerTok')
   })
 })

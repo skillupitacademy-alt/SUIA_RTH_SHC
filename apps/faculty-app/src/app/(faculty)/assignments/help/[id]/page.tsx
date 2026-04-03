@@ -4,6 +4,7 @@ import { headers } from 'next/headers';
 
 import { HelpRequestDetailForm } from '@/components/help-request-detail-form';
 import { listFacultyHelpRequests } from '@/lib/faculty-live-data';
+import { getEffectiveUserId } from '@/lib/request-auth';
 
 type HelpRequestPageProps = {
   params: Promise<{ id: string }>;
@@ -12,7 +13,7 @@ type HelpRequestPageProps = {
 export default async function HelpRequestPage({ params }: HelpRequestPageProps) {
   const { id } = await params;
   const requestHeaders = await headers();
-  const userId = requestHeaders.get('x-user-id');
+  const userId = getEffectiveUserId(requestHeaders);
   const requests = userId === null || userId.length === 0 ? [] : await listFacultyHelpRequests(requestHeaders, userId);
   const request = requests.find((item) => item.id === id);
 

@@ -40,11 +40,16 @@ export class TokenService {
     userId: string,
     roles: UserRole[],
     subscriptions: string[],
-    platforms: PlatformName[] = ['realtutorialhub']
+    platforms: PlatformName[] = ['realtutorialhub'],
+    metadata?: { originalUserId?: string; shadowUserId?: string; brand?: PlatformName },
   ): Promise<string> {
     this.ensureDifferentSecrets();
+    const shadowUserId = metadata?.shadowUserId ?? userId;
     return new SignJWT({
       sub: userId,
+      shadowUserId,
+      originalUserId: metadata?.originalUserId ?? userId,
+      brand: metadata?.brand ?? platforms[0] ?? 'realtutorialhub',
       roles,
       subscriptions,
       platforms,

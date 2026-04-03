@@ -24,11 +24,11 @@ export class AuthClient {
     };
   }
 
-  async signup(email: string, password: string, name: string) {
+  async signup(email: string, password: string, name: string, brand: RequestBrand = 'realtutorialhub') {
     return this.client.post<{ user: UserProfile; accessToken: string }>(
       '/auth/signup',
       { email, password, name },
-      { timeout: TIMEOUTS.STANDARD }
+      { timeout: TIMEOUTS.STANDARD, headers: { 'x-brand': brand } }
     );
   }
 
@@ -107,8 +107,8 @@ export class AuthClient {
     );
   }
 
-  async validateResetToken(token: string) {
-    return this.client.get<{ valid: boolean }>(`/auth/reset-password?_token=${token}`, { timeout: TIMEOUTS.STANDARD });
+  async validateResetToken(token: string, brand: RequestBrand = 'realtutorialhub') {
+    return this.client.get<{ valid: boolean }>(`/auth/reset-password?_token=${token}`, { timeout: TIMEOUTS.STANDARD, headers: { 'x-brand': brand } });
   }
 
   async resetPassword(token: string, newPassword: string, brand: RequestBrand = 'realtutorialhub') {

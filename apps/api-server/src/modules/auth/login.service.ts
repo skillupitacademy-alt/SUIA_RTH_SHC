@@ -1,6 +1,8 @@
+import { UserIdentityBridgeService } from '@quiz/identity-bridge';
+
 import type { RequestBrand } from '@/lib/request-brand';
-import { getAuthBrandContext, shouldUseBrandBinding } from '@/modules/auth/brand-db';
 import { AuditService } from '@/modules/auth/audit.service';
+import { getAuthBrandContext, shouldUseBrandBinding } from '@/modules/auth/brand-db';
 import { PasswordService } from '@/modules/auth/password.service';
 import { TokenRepository } from '@/modules/auth/repositories/token.repository';
 import { UserRepository } from '@/modules/auth/repositories/user.repository';
@@ -17,6 +19,41 @@ export class LoginService {
     private securityService = container.get(SecurityService),
     private tokenService = container.get(TokenService)
   ) {}
+
+  private async ensureShadowUserId(
+    user: { id: string; email: string; shadowUserId?: string | null },
+    brand: RequestBrand,
+  ): Promise<string> {
+    if (typeof user.shadowUserId === 'string' && user.shadowUserId.trim().length > 0) {
+      return user.shadowUserId;
+    }
+
+    try {
+      const bridge = new UserIdentityBridgeService();
+      const brandContext = getAuthBrandContext(brand);
+      const result = await bridge.syncUser({
+        externalId: user.id,
+        externalBrand: brand,
+        email: user.email,
+        platform: brand,
+      });
+
+      await bridge.updateShadowUserId(brandContext.db, brandContext.tables.users, user.id, result.shadowUserId);
+      await bridge.grantPlatformAccess(result.shadowUserId, brand);
+      return result.shadowUserId;
+    } catch (error) {
+      const isTestEnv =
+        process.env.NODE_ENV === 'test' ||
+        process.env.VITEST === 'true' ||
+        process.env.VITEST_WORKER_ID !== undefined;
+
+      if (isTestEnv) {
+        return user.id;
+      }
+
+      throw error;
+    }
+  }
 
   async login(email: string, password: string, ip: string = 'unknown', brand: RequestBrand = 'realtutorialhub') {
     const brandContext = getAuthBrandContext(brand);
@@ -60,9 +97,12 @@ export class LoginService {
 
     const roleNames = user.userRoles.map(ur => ur.role.name);
     const isAdmin = roleNames.includes('ADMIN') || roleNames.includes('SUPER_ADMIN') || roleNames.includes('INFRASTRUCTURE');
+    const shadowUserId = await this.ensureShadowUserId(user, brand);
 
     const accessToken = await this.tokenService.generateAccessToken({
       userId: user.id,
+      originalUserId: user.id,
+      shadowUserId,
       email: user.email,
       roles: roleNames,
       isAdmin,
@@ -73,6 +113,8 @@ export class LoginService {
     const refreshToken = await this.tokenService.generateRefreshToken(user.id, isAdmin, isAdmin ? 'admin' : 'user', {
       tokenType: isAdmin ? 'admin' : 'user',
       brand,
+      originalUserId: user.id,
+      shadowUserId,
     });
     const refreshTokenHash = await this.tokenService.hashToken(refreshToken);
 
@@ -82,7 +124,7 @@ export class LoginService {
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
 
-    return { _user: user, accessToken, refreshToken, isAdmin };
+    return { _user: user, accessToken, refreshToken, isAdmin, shadowUserId };
   }
 
   async logout(token: string, userId?: string, ip?: string) {

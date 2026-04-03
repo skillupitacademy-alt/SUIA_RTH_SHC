@@ -47,7 +47,7 @@ const defaultTables = {
   passwordResetTokens: defaultPasswordResetTokens,
   refreshTokens: defaultRefreshTokens,
   loginAttempts: defaultLoginAttempts,
-};
+} as const;
 
 const realtutorialhubTables = {
   users: realtutorialhubUsers,
@@ -59,7 +59,7 @@ const realtutorialhubTables = {
   passwordResetTokens: realtutorialhubPasswordResetTokens,
   refreshTokens: realtutorialhubRefreshTokens,
   loginAttempts: realtutorialhubLoginAttempts,
-};
+} as const;
 
 const skillupTables = {
   users: skillupUsers,
@@ -71,19 +71,32 @@ const skillupTables = {
   passwordResetTokens: skillupPasswordResetTokens,
   refreshTokens: skillupRefreshTokens,
   loginAttempts: skillupLoginAttempts,
+} as const;
+
+export type BrandAuthTables = {
+  users: typeof realtutorialhubUsers | typeof skillupUsers | typeof defaultUsers;
+  userProfiles: typeof realtutorialhubUserProfiles | typeof skillupUserProfiles | typeof defaultUserProfiles;
+  roles: typeof realtutorialhubRoles | typeof skillupRoles | typeof defaultRoles;
+  userRoles: typeof realtutorialhubUserRoles | typeof skillupUserRoles | typeof defaultUserRoles;
+  auditLogs: typeof realtutorialhubAuditLogs | typeof skillupAuditLogs | typeof defaultAuditLogs;
+  verificationTokens: typeof realtutorialhubVerificationTokens | typeof skillupVerificationTokens | typeof defaultVerificationTokens;
+  passwordResetTokens: typeof realtutorialhubPasswordResetTokens | typeof skillupPasswordResetTokens | typeof defaultPasswordResetTokens;
+  refreshTokens: typeof realtutorialhubRefreshTokens | typeof skillupRefreshTokens | typeof defaultRefreshTokens;
+  loginAttempts: typeof realtutorialhubLoginAttempts | typeof skillupLoginAttempts | typeof defaultLoginAttempts;
 };
 
-export type BrandAuthTables = typeof defaultTables;
-
 export function getDefaultAuthContext() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return { db: defaultDb as any, tables: defaultTables as BrandAuthTables };
 }
 
 export function getAuthBrandContext(brand: RequestBrand = 'realtutorialhub') {
   if (brand === 'skillup') {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return { db: skillupDb as any, tables: skillupTables as BrandAuthTables };
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return { db: realtutorialhubDb as any, tables: realtutorialhubTables as BrandAuthTables };
 }
 

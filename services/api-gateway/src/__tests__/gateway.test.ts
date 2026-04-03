@@ -66,14 +66,20 @@ function makeToken(roles: string[] = ['student']) {
   const tokenType = roles.some((role) => role.trim().toLowerCase() === 'admin' || role.trim().toLowerCase() === 'super_admin')
     ? 'admin'
     : 'user';
+  const shadowUserId = tokenType === 'admin' ? 'shadow-admin-123' : 'shadow-user-123';
+  const originalUserId = tokenType === 'admin' ? 'brand-admin-123' : 'brand-user-123';
+  const brand = tokenType === 'admin' ? 'realtutorialhub' : 'skillup';
 
   return new SignJWT({
     roles,
     subscriptions: ['combo'],
     tokenType,
+    shadowUserId,
+    originalUserId,
+    brand,
   })
     .setProtectedHeader({ alg: 'HS256' })
-    .setSubject('user-123')
+    .setSubject(shadowUserId)
     .setIssuer('skillhubcore.in')
     .setIssuedAt()
     .setExpirationTime('1h')
@@ -291,8 +297,10 @@ describe('api-gateway', () => {
     expect(headers.get('X-Gateway-Secret')).toBe(env.INTERNAL_GATEWAY_SECRET);
     if (label === 'telemetry' || label === 'search') {
       expect(headers.get('X-User-ID')).toBeNull();
+    } else if (label.includes('factory') || label === 'system flags') {
+      expect(headers.get('X-User-ID')).toBe('shadow-admin-123');
     } else {
-      expect(headers.get('X-User-ID')).toBe('user-123');
+      expect(headers.get('X-User-ID')).toBe('shadow-user-123');
     }
   });
 
@@ -322,7 +330,7 @@ describe('api-gateway', () => {
     const headers = new Headers((init as RequestInit | undefined)?.headers);
     expect(headers.get('X-Request-ID')).toBe('request-123');
     expect(headers.get('X-Gateway-Secret')).toBe(env.INTERNAL_GATEWAY_SECRET);
-    expect(headers.get('X-User-ID')).toBe('user-123');
+    expect(headers.get('X-User-ID')).toBe('shadow-user-123');
   });
 
   it('proxies user routes with accessToken cookies', async () => {
@@ -339,7 +347,7 @@ describe('api-gateway', () => {
     expect(fetchSpy).toHaveBeenCalledTimes(1);
     const [, init] = fetchSpy.mock.calls[0] ?? [];
     const headers = new Headers((init as RequestInit | undefined)?.headers);
-    expect(headers.get('X-User-ID')).toBe('user-123');
+    expect(headers.get('X-User-ID')).toBe('shadow-user-123');
   });
 
   it('proxies admin routes with admin_accessToken cookies', async () => {
@@ -356,7 +364,7 @@ describe('api-gateway', () => {
     expect(fetchSpy).toHaveBeenCalledTimes(1);
     const [, init] = fetchSpy.mock.calls[0] ?? [];
     const headers = new Headers((init as RequestInit | undefined)?.headers);
-    expect(headers.get('X-User-ID')).toBe('user-123');
+    expect(headers.get('X-User-ID')).toBe('shadow-admin-123');
   });
 
   it('rejects admin routes without admin_accessToken cookies', async () => {

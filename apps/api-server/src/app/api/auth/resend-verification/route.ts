@@ -14,12 +14,18 @@ async function handler(req: NextRequest) {
   try {
     const body = await req.json();
     const userId = typeof body?.userId === 'string' ? body.userId.trim() : '';
+    const requestBrand = typeof body?.brand === 'string' ? body.brand.trim().toLowerCase() : typeof body?.platform === 'string' ? body.platform.trim().toLowerCase() : undefined;
 
     if (userId === '') {
       return NextResponse.json({ error: 'userId is required' }, { status: 400 });
     }
 
-    const brand = resolveRequestBrandFromHeaders(req.headers, req.nextUrl.hostname) ?? 'realtutorialhub';
+    const brand = requestBrand === 'skillup' || requestBrand === 'realtutorialhub'
+      ? requestBrand
+      : resolveRequestBrandFromHeaders(req.headers, req.nextUrl.hostname);
+    if (brand !== 'skillup' && brand !== 'realtutorialhub') {
+      return NextResponse.json({ error: 'Brand is required' }, { status: 400 });
+    }
     const ip = getClientIp(req);
 
     const authService = container.get(AuthService);

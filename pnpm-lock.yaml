@@ -1536,6 +1536,9 @@ importers:
       '@hono/node-server':
         specifier: ^1.18.1
         version: 1.19.11(hono@4.12.8)
+      '@quiz/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
       '@quiz/db':
         specifier: workspace:*
         version: link:../../packages/db

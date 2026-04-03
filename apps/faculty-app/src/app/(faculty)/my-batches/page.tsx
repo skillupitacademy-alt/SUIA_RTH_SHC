@@ -2,10 +2,11 @@ import { headers } from 'next/headers';
 import Link from 'next/link';
 
 import { listFacultyBatches } from '@/lib/faculty-live-data';
+import { getEffectiveUserId } from '@/lib/request-auth';
 
 export default async function MyBatchesPage() {
   const requestHeaders = await headers();
-  const userId = requestHeaders.get('x-user-id');
+  const userId = getEffectiveUserId(requestHeaders);
   const batches = userId === null || userId.length === 0 ? [] : await listFacultyBatches(userId);
 
   return (

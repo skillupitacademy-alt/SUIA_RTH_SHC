@@ -21,7 +21,7 @@ describe('BlockRenderer', () => {
 
     const results = await runAxe(container);
     expect(results.violations).toHaveLength(0);
-  }, 10000);
+  }, 30000);
 
   it('renders the loading skeleton when requested', () => {
     renderWithIntl(

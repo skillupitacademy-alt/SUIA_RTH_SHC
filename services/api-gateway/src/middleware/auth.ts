@@ -34,47 +34,26 @@ function getCookieValue(cookieHeader: string, name: string): string | undefined 
   return match?.[1] !== undefined ? decodeURIComponent(match[1]) : undefined;
 }
 
-function parseHostname(value: string | null): string | null {
-  if (typeof value !== 'string' || value.trim().length === 0) return null;
+export function detectRequestBrand(request: Request): string | undefined {
+  const explicitBrand =
+    normalizeString(request.headers.get('x-brand')) ??
+    normalizeString(request.headers.get('x-platform'));
 
-  try {
-    return new URL(value).hostname.toLowerCase();
-  } catch {
-    return null;
+  if (explicitBrand === 'realtutorialhub' || explicitBrand === 'skillup') {
+    return explicitBrand;
   }
-}
 
-function detectBrandFromHost(hostname: string | null): string | undefined {
-  if (typeof hostname !== 'string' || hostname.length === 0) return undefined;
-  if (hostname.includes('realtutorialhub')) return 'realtutorialhub';
-  if (hostname.includes('skillup')) return 'skillup';
   return undefined;
 }
 
-export function detectRequestBrand(request: Request, route?: RouteLike): string | undefined {
-  const requestUrl = new URL(request.url);
-  const originHost = parseHostname(request.headers.get('origin')) ?? parseHostname(request.headers.get('referer'));
-  return (
-    detectBrandFromHost(originHost) ??
-    detectBrandFromHost(requestUrl.hostname.toLowerCase()) ??
-    detectBrandFromHost(route?.host?.toLowerCase() ?? null)
-  );
-}
-
 export function detectRequestPortal(request: Request, route?: RouteLike): PortalKind {
-  const requestUrl = new URL(request.url);
-  const hostname = requestUrl.hostname.toLowerCase();
-  const originHost = parseHostname(request.headers.get('origin')) ?? parseHostname(request.headers.get('referer'));
+  const requestedPortal = normalizeString(request.headers.get('x-portal-identity'));
 
   if (route?.requireRole === 'admin' || route?.prefix === '/admin') {
     return 'admin';
   }
 
-  if (originHost?.startsWith('admin.') === true) {
-    return 'admin';
-  }
-
-  if (hostname.startsWith('admin.') === true) {
+  if (requestedPortal === 'admin') {
     return 'admin';
   }
 
@@ -139,11 +118,8 @@ export async function verifyAccessToken(token: string, secret: string): Promise<
   const claims = payload as typeof payload & JwtPayloadWithLegacyClaims;
 
   const sub = typeof payload.sub === 'string' ? payload.sub.trim() : '';
-  // quiz-api-server stores userId in a custom claim; fall back to sub
-  const userId = typeof claims.userId === 'string' ? claims.userId : sub;
-
-  if (userId.length === 0) {
-    throw new Error('Invalid token payload: missing user identifier');
+  if (sub.length === 0) {
+    throw new Error('Invalid token payload: missing subject');
   }
 
   // Build a compatible payload shape — keep support for legacy tokens that do not carry
@@ -153,10 +129,22 @@ export async function verifyAccessToken(token: string, secret: string): Promise<
   const tokenType = normalizeString(claims.tokenType);
   const role = normalizeString(claims.role);
   const brand = normalizeString(claims.brand);
+  const shadowUserId = normalizeString((claims as { shadowUserId?: unknown }).shadowUserId);
+  const originalUserId = normalizeString((claims as { originalUserId?: unknown }).originalUserId);
+  const platforms = Array.isArray((claims as { platforms?: unknown }).platforms)
+    ? (claims as { platforms: string[] }).platforms
+    : undefined;
+
+  if (shadowUserId === undefined || originalUserId === undefined) {
+    throw new Error('Invalid token payload: missing shadow or original user id');
+  }
 
   return {
     ...payload,
-    sub: userId,
+    sub: shadowUserId,
+    shadowUserId,
+    originalUserId,
+    ...(platforms !== undefined ? { platforms } : {}),
     roles,
     subscriptions,
     tokenType,
@@ -171,7 +159,7 @@ export async function authenticateRequest(
   route?: RouteLike,
 ): Promise<AuthResolution | Response> {
   const portal = detectRequestPortal(request, route);
-  const requestBrand = detectRequestBrand(request, route);
+  const requestBrand = detectRequestBrand(request);
   const selection = getTokenFromHeaders(request, portal);
   const token = selection.token;
 

@@ -8,7 +8,7 @@ describe('TokenService Audience Cleanup', () => {
     container.reset();
   });
 
-  it('getAccessToken: skips empty strings in cookies', () => {
+  it('getAccessToken: skips empty strings in scoped cookies', () => {
     const service = container.get(TokenService);
     const mockReq = { 
         cookies: { get: (name: string) => {
@@ -19,10 +19,10 @@ describe('TokenService Audience Cleanup', () => {
         headers: { get: () => null }
     } as unknown as NextRequest;
     
-    expect(service.getAccessToken(mockReq)).toBe('real-admin-token');
+    expect(service.getAccessToken(mockReq, { scope: 'admin' })).toBe('real-admin-token');
   });
 
-  it('getAccessToken: prioritizes accessToken cookie over others when no scope', () => {
+  it('getAccessToken: reads the user cookie only when user scope is explicit', () => {
       const service = container.get(TokenService);
       const mockReq = { 
           cookies: { get: (name: string) => {
@@ -33,6 +33,6 @@ describe('TokenService Audience Cleanup', () => {
           headers: { get: () => null }
       } as unknown as NextRequest;
       
-      expect(service.getAccessToken(mockReq)).toBe('user-token');
+      expect(service.getAccessToken(mockReq, { scope: 'user' })).toBe('user-token');
   });
 });

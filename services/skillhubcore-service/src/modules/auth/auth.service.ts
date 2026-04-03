@@ -1,6 +1,7 @@
 import type { AuthResult, AuthUserDTO, LoginInput, RegisterInput } from './auth.types';
 import { PasswordService } from './password.service';
 import { TokenService } from './token.service';
+import { TokenValidatorService } from './token-validator.service';
 import { SubscriptionService } from '../subscription/subscription.service';
 import { SsoService } from './sso/sso.service';
 import { TokenRotationService } from './token-rotation.service';
@@ -198,5 +199,9 @@ export class AuthService {
       action: 'logout',
       success: true,
     });
+  }
+
+  createTokenValidatorService(): TokenValidatorService {
+    return new TokenValidatorService(this.userRepo, this.tokenService, this.redis);
   }
 }

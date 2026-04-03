@@ -14,7 +14,7 @@ async function handler(_req: NextRequest) {
     const tokenService = container.get(TokenService);
     const authService = container.get(AuthService);
 
-    const _token = tokenService.getAccessToken(_req);
+    const _token = tokenService.getAccessToken(_req, { scope: 'user' });
     if (typeof _token !== 'string' || _token.trim() === '') {
       return ApiResponse.error(unauthorized('Unauthorized', 'UNAUTHORIZED'));
     }

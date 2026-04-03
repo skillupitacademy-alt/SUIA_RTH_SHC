@@ -145,6 +145,7 @@ function buildAvatar(seed: string) {
 async function fetchFacultyTutorialData<T>(source: Headers | HeadersInit, userId: string, path: string): Promise<T | null> {
   const headers = new Headers(source);
   headers.set('x-user-id', userId);
+  headers.set('x-shadow-user-id', userId);
   return fetchFacultyPortalJson<T>(headers, path);
 }
 

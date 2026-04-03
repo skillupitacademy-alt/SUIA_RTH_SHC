@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { badRequest } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { withApiHandler } from '@/lib/api-wrapper';
 import { resolveCookieDomain } from '@/lib/cookie-domain';
@@ -34,7 +35,15 @@ async function handler(_req: Request, body: z.infer<typeof loginSchema>) {
   });
   const portalIdentity = _req.headers.get('x-portal-identity') ?? 'admin';
   const audience = portalIdentity === 'infrastructure' ? 'infra' : 'admin';
-  const brand = resolveRequestBrandFromHeaders(_req.headers, new URL(_req.url).hostname);
+  const bodyBrand = typeof (body as { platform?: string }).platform === 'string'
+    ? (body as { platform?: string }).platform?.trim().toLowerCase()
+    : undefined;
+  const brand = bodyBrand === 'skillup' || bodyBrand === 'realtutorialhub'
+    ? bodyBrand
+    : resolveRequestBrandFromHeaders(_req.headers, new URL(_req.url).hostname);
+  if (brand !== 'skillup' && brand !== 'realtutorialhub') {
+    throw badRequest('Brand is required');
+  }
   
   const result = await AdminAuthService.login(email, password, ip, audience, brand);
 
@@ -60,6 +69,7 @@ async function handler(_req: Request, body: z.infer<typeof loginSchema>) {
 
   const response = ApiResponse.success({
       user,
+      shadowUserId: result.user.shadowUserId,
       expiresAt: result.expiresAt,
   });
 

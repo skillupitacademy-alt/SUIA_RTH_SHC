@@ -12,22 +12,18 @@ export type PlacementViewer = {
 
 export async function getPlacementViewer(): Promise<PlacementViewer | null> {
   const cookieStore = await cookies();
-  const token =
-    cookieStore.get('skillhubcore_accessToken')?.value ??
-    cookieStore.get('accessToken')?.value;
+  const token = cookieStore.get('skillhubcore_accessToken')?.value;
 
   if (typeof token !== 'string' || token.trim().length === 0) {
     return null;
   }
 
   try {
-    const payload = await TokenService.verifyUserAccessToken(token, { audience: 'user' });
+    const payload = await TokenService.verifySkillHubCoreJWT(token);
     const userId =
-      typeof payload.sub === 'string' && payload.sub.trim().length > 0
-        ? payload.sub
-        : typeof payload.userId === 'string' && payload.userId.trim().length > 0
-          ? payload.userId
-          : null;
+      typeof payload.shadowUserId === 'string' && payload.shadowUserId.trim().length > 0
+        ? payload.shadowUserId
+        : null;
 
     if (userId === null) {
       return null;

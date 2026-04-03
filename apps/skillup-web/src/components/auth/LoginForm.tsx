@@ -58,6 +58,7 @@ export function LoginForm() {
         headers: {
           'Content-Type': 'application/json',
           'x-portal-identity': 'user',
+          'x-brand': 'skillup',
         },
         body: JSON.stringify({
           email: formState.email,

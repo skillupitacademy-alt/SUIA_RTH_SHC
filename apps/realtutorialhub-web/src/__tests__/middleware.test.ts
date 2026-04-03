@@ -34,6 +34,8 @@ describe('realtutorialhub-web proxy', () => {
   it('accepts a SkillUp JWT on protected routes', async () => {
     verifyUserAccessTokenMock.mockResolvedValueOnce({
       sub: 'student-1',
+      shadowUserId: 'shadow-student-1',
+      originalUserId: 'brand-student-1',
       roles: ['student'],
       subscriptions: ['notes'],
       iss: 'skillhubcore.in',
@@ -44,7 +46,9 @@ describe('realtutorialhub-web proxy', () => {
 
     expect(verifyUserAccessTokenMock).toHaveBeenCalledWith('skillup-token', { audience: 'user' });
     expect(response.status).toBe(200);
-    expect(response.headers.get('x-user-id')).toBe('student-1');
+    expect(response.headers.get('x-user-id')).toBe('shadow-student-1');
+    expect(response.headers.get('x-shadow-user-id')).toBe('shadow-student-1');
+    expect(response.headers.get('x-original-user-id')).toBe('brand-student-1');
   });
 
   it('allows public certificate verification without a token', async () => {

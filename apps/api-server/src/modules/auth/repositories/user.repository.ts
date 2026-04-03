@@ -1,5 +1,5 @@
 import { auditLogs, db, passwordResetTokens, roles, userProfiles, userRoles, users, verificationTokens } from '@quiz/db';
-import { eq, gt, sql } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 
 import type { BrandAuthTables } from '@/modules/auth/brand-db';
 import { BaseRepository } from '@/modules/core/repositories/base.repository';
@@ -13,14 +13,15 @@ export interface User {
   deletedAt: Date | null;
   createdAt: Date;
   lastActiveAt: Date | null;
+  shadowUserId?: string | null;
 }
 
 export class UserRepository extends BaseRepository<User, typeof users> {
   protected table = users;
   protected tables: BrandAuthTables;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     dbInstance: any = db,
     tables: BrandAuthTables = {
       users,

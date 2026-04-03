@@ -15,7 +15,7 @@ const makeReq = (cookies: Record<string, string | undefined>, authHeader?: strin
 };
 
 describe('TokenService branch edges', () => {
-  it('returns infra cookie when scope is default and only infra token is set', () => {
+  it('returns infra cookie only when infrastructure scope is explicit', () => {
     const req = makeReq({
       infra_accessToken: 'INFRA123',
       accessToken: undefined,
@@ -23,7 +23,7 @@ describe('TokenService branch edges', () => {
     });
 
     const service = new TokenService();
-    const token = service.getAccessToken(req);
+    const token = service.getAccessToken(req, { scope: 'infrastructure' });
 
     expect(token).toBe('INFRA123');
   });

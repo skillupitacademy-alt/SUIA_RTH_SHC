@@ -32,7 +32,9 @@ const facultyUserId = 'faculty-1';
 const makeRequest = (url: string, method = 'GET', body?: unknown) =>
   new NextRequest(`http://localhost${url}`, {
     method,
-    headers: body === undefined ? { 'x-user-id': facultyUserId } : { 'content-type': 'application/json', 'x-user-id': facultyUserId },
+    headers: body === undefined
+      ? { 'x-shadow-user-id': facultyUserId, 'x-user-id': facultyUserId }
+      : { 'content-type': 'application/json', 'x-shadow-user-id': facultyUserId, 'x-user-id': facultyUserId },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
 

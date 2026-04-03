@@ -53,7 +53,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             <div className="mt-4 space-y-4 text-sm leading-7 text-slate-700">
               <p>This host is now backed by a real shared frontend instead of the protected SkillHub core service.</p>
               <p>Placement data is already coming from `placement_prod` via `@quiz/db-placement`.</p>
-              <p>Shadow-user normalization and full cross-domain callback flow remain a follow-up pass.</p>
+              <p>Cross-domain callback exchange now issues shared SkillHub tokens scoped to `.skillhubcore.in`.</p>
             </div>
           </aside>
         </div>

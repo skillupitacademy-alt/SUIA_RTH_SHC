@@ -4,6 +4,7 @@ import { headers } from 'next/headers';
 
 import { ProjectReviewDetailForm } from '@/components/project-review-detail-form';
 import { listFacultyReviewQueue } from '@/lib/faculty-live-data';
+import { getEffectiveUserId } from '@/lib/request-auth';
 
 type ProjectReviewPageProps = {
   params: Promise<{ id: string }>;
@@ -12,7 +13,7 @@ type ProjectReviewPageProps = {
 export default async function ProjectReviewPage({ params }: ProjectReviewPageProps) {
   const { id } = await params;
   const requestHeaders = await headers();
-  const userId = requestHeaders.get('x-user-id');
+  const userId = getEffectiveUserId(requestHeaders);
   const submissions = userId === null || userId.length === 0 ? [] : await listFacultyReviewQueue(requestHeaders, userId);
   const submission = submissions.find((item) => item.id === id);
 

@@ -10,7 +10,7 @@ const PUBLIC_PATHS = ['/api/healthz', '/login', '/api/auth/login', '/api/auth/re
 const REQUIRED_ROLES = ['super_admin'];
 
 function getSkillHubCoreToken(request: NextRequest): string | undefined {
-  return request.cookies.get('skillhubcore_accessToken')?.value ?? request.cookies.get('accessToken')?.value;
+  return request.cookies.get('skillhubcore_accessToken')?.value;
 }
 
 function getSkillHubCoreLoginUrl(request: NextRequest, redirectPath: string): URL {
@@ -22,26 +22,43 @@ function getSkillHubCoreLoginUrl(request: NextRequest, redirectPath: string): UR
   return loginUrl;
 }
 
-function addUserHeaders(response: NextResponse, payload: SkillHubCoreTokenPayload): NextResponse {
-  response.headers.set('x-user-id', payload.sub);
-  response.headers.set('x-skillhubcore-user-id', payload.sub);
+type VerifiedSkillHubCoreUser = SkillHubCoreTokenPayload & {
+  shadowUserId: string;
+  originalUserId: string;
+};
+
+function addUserHeaders(response: NextResponse, payload: VerifiedSkillHubCoreUser): NextResponse {
+  response.headers.set('x-user-id', payload.shadowUserId);
+  response.headers.set('x-skillhubcore-user-id', payload.shadowUserId);
+  response.headers.set('x-shadow-user-id', payload.shadowUserId);
+  response.headers.set('x-original-user-id', payload.originalUserId);
   return response;
 }
 
-async function resolveUser(request: NextRequest): Promise<SkillHubCoreTokenPayload | null> {
+async function resolveUser(request: NextRequest): Promise<VerifiedSkillHubCoreUser | null> {
   const token = getSkillHubCoreToken(request);
   if (token === undefined || token.trim().length === 0) {
     return null;
   }
 
   try {
-    return await TokenService.verifySkillHubCoreJWT(token);
+    const payload = await TokenService.verifySkillHubCoreJWT(token);
+    if (
+      typeof payload.shadowUserId !== 'string' ||
+      payload.shadowUserId.trim().length === 0 ||
+      typeof payload.originalUserId !== 'string' ||
+      payload.originalUserId.trim().length === 0
+    ) {
+      return null;
+    }
+
+    return payload as VerifiedSkillHubCoreUser;
   } catch {
     return null;
   }
 }
 
-function hasRequiredRole(payload: SkillHubCoreTokenPayload): boolean {
+function hasRequiredRole(payload: VerifiedSkillHubCoreUser): boolean {
   return payload.roles.some((role) => REQUIRED_ROLES.includes(role));
 }
 
@@ -65,8 +82,10 @@ export async function proxy(request: NextRequest) {
   }
 
   const headers = new Headers(request.headers);
-  headers.set('x-user-id', user.sub);
-  headers.set('x-skillhubcore-user-id', user.sub);
+  headers.set('x-user-id', user.shadowUserId);
+  headers.set('x-skillhubcore-user-id', user.shadowUserId);
+  headers.set('x-shadow-user-id', user.shadowUserId);
+  headers.set('x-original-user-id', user.originalUserId);
   return addUserHeaders(NextResponse.next({ request: { headers } }), user);
 }
 

@@ -16,7 +16,7 @@ async function handler(_req: NextRequest) {
   const tokenService = container.get(TokenService);
   const authService = container.get(AuthService);
 
-  const _token = tokenService.getAccessToken(_req);
+  const _token = tokenService.getAccessToken(_req, { scope: 'user' });
   const adminToken = _req.cookies.get('admin_accessToken')?.value;
   const infraToken = _req.cookies.get('infra_accessToken')?.value;
 

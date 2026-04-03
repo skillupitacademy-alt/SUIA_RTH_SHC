@@ -2,10 +2,11 @@ import { headers } from 'next/headers';
 import Link from 'next/link';
 
 import { listFacultyAttendanceOverview } from '@/lib/faculty-live-data';
+import { getEffectiveUserId } from '@/lib/request-auth';
 
 export default async function AttendancePage() {
   const requestHeaders = await headers();
-  const userId = requestHeaders.get('x-user-id');
+  const userId = getEffectiveUserId(requestHeaders);
   const sessions = userId === null || userId.length === 0 ? [] : await listFacultyAttendanceOverview(userId);
 
   return (

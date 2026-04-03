@@ -13,6 +13,7 @@ import {
   listFacultyProjectReviews,
   listFacultySessionRequests,
 } from '@/lib/faculty-live-data';
+import { getEffectiveUserId } from '@/lib/request-auth';
 
 const quickActions = [
   { label: 'Review help requests', href: '/assignments/help', tone: 'cyan' },
@@ -26,7 +27,7 @@ const quickActions = [
 
 export default async function FacultyDashboardPage() {
   const requestHeaders = await headers();
-  const userId = requestHeaders.get('x-user-id');
+  const userId = getEffectiveUserId(requestHeaders);
   const emptySummary: FacultyDashboardSummary = {
     myBatches: 0,
     sessionsToday: 0,

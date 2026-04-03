@@ -8,6 +8,8 @@ declare module 'hono' {
   interface ContextVariableMap {
     authUser: {
       id: string;
+      shadowUserId: string;
+      originalUserId: string;
       roles: Array<'student' | 'faculty' | 'admin' | 'super_admin'>;
       subscriptions: string[];
       platforms: Array<'realtutorialhub' | 'skillup'>;
@@ -37,8 +39,21 @@ export const requireAuth = createMiddleware(async (c, next) => {
     const activeBrand = requestedBrand !== undefined && payload.platforms.includes(requestedBrand)
       ? requestedBrand
       : payload.platforms[0];
+    const shadowUserId =
+      typeof payload.shadowUserId === 'string' && payload.shadowUserId.trim().length > 0
+        ? payload.shadowUserId
+        : undefined;
+    const originalUserId =
+      typeof payload.originalUserId === 'string' && payload.originalUserId.trim().length > 0
+        ? payload.originalUserId
+        : undefined;
+    if (shadowUserId === undefined || originalUserId === undefined) {
+      return c.json({ error: 'Token missing identity bridge claims', code: 'UNAUTHORIZED' }, 401);
+    }
     c.set('authUser', {
-      id: payload.sub,
+      id: shadowUserId,
+      shadowUserId,
+      originalUserId,
       roles: payload.roles,
       subscriptions: payload.subscriptions,
       platforms: payload.platforms,

@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 
 import { SessionRequestDetailForm } from '@/components/session-request-detail-form';
 import { listFacultySessionRequests } from '@/lib/faculty-live-data';
+import { getEffectiveUserId } from '@/lib/request-auth';
 
 type SessionRequestPageProps = {
   params: Promise<{ id: string }>;
@@ -12,7 +13,7 @@ type SessionRequestPageProps = {
 export default async function SessionRequestPage({ params }: SessionRequestPageProps) {
   const { id } = await params;
   const requestHeaders = await headers();
-  const userId = requestHeaders.get('x-user-id');
+  const userId = getEffectiveUserId(requestHeaders);
   const requests = userId === null || userId.length === 0 ? [] : await listFacultySessionRequests(requestHeaders, userId);
   const request = requests.find((item) => item.id === id);
 

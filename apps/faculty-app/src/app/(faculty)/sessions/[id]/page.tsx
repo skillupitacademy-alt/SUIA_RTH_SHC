@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 
 import { SessionEditForm } from '@/components/session-edit-form';
 import { listFacultyUpcomingSessions } from '@/lib/faculty-live-data';
+import { getEffectiveUserId } from '@/lib/request-auth';
 
 type SessionPageProps = {
   params: Promise<{ id: string }>;
@@ -12,7 +13,7 @@ type SessionPageProps = {
 export default async function FacultySessionPage({ params }: SessionPageProps) {
   const { id } = await params;
   const requestHeaders = await headers();
-  const userId = requestHeaders.get('x-user-id');
+  const userId = getEffectiveUserId(requestHeaders);
   const sessions = userId === null || userId.length === 0 ? [] : await listFacultyUpcomingSessions(userId);
   const session = sessions.find((item) => item.id === id);
 

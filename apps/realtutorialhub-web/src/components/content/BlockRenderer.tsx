@@ -1,6 +1,5 @@
 'use client';
 
-import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 import { useEffect, useMemo } from 'react';
 import type { ReactNode } from 'react';
@@ -16,12 +15,7 @@ import { LaymanBlock } from './LaymanBlock';
 import { RealLifeBlock } from './RealLifeBlock';
 import { TechnicalBlock } from './TechnicalBlock';
 import { CodeBlock } from './CodeBlock';
-
-const DynamicCodeBlock = dynamic(() => Promise.resolve(CodeBlock), { ssr: true, loading: () => <div /> });
-const DynamicAITutorBlock = dynamic(() => import('./AITutorBlock').then((mod) => mod.AITutorBlock), {
-  ssr: true,
-  loading: () => <div />,
-});
+import { AITutorBlock } from './AITutorBlock';
 
 interface BlockRendererProps {
   content: TutorialContentJSON;
@@ -87,9 +81,9 @@ export function BlockRenderer({
       case 'technical':
         return <TechnicalBlock data={content.technical} theme={theme} />;
       case 'code':
-        return <DynamicCodeBlock data={content.code} theme={theme} />;
+        return <CodeBlock data={content.code} theme={theme} />;
       case 'ai_tutor':
-        return <DynamicAITutorBlock data={content.ai_tutor} theme={theme} subtopicId={subtopicId} subtopicName={subtopicName} />;
+        return <AITutorBlock data={content.ai_tutor} theme={theme} subtopicId={subtopicId} subtopicName={subtopicName} />;
       default:
         return null;
     }

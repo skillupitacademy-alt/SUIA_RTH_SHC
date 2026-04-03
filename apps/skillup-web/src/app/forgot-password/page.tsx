@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, CheckCircle, Loader2, Mail, ShieldCheck } from 'lucide-react';
+import { CheckCircle, Loader2, Mail, ShieldCheck } from 'lucide-react';
 
 const API_BASE = (process.env.NEXT_PUBLIC_API_URL?.trim() ?? 'https://api.skillupitacademy.com/api').replace(/\/+$/, '');
 
@@ -22,6 +22,7 @@ export default function ForgotPasswordPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-brand': 'skillup',
         },
         body: JSON.stringify({
           email,

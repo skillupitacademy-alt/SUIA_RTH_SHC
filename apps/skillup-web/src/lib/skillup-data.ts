@@ -191,7 +191,7 @@ function formatSessionMode(mode: string): SkillupSession['mode'] {
 }
 
 async function resolveStudentUserId(request?: RequestLike): Promise<string> {
-  const requestUserId = request?.headers?.get('x-user-id');
+  const requestUserId = request?.headers?.get('x-shadow-user-id');
   if (requestUserId !== null && requestUserId !== undefined && requestUserId.trim() !== '') {
     return requestUserId;
   }

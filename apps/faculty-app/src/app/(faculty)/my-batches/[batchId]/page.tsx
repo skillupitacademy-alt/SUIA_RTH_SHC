@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { listFacultyBatches, listFacultyUpcomingSessions } from '@/lib/faculty-live-data';
+import { getEffectiveUserId } from '@/lib/request-auth';
 
 type BatchPageProps = {
   params: Promise<{ batchId: string }>;
@@ -11,7 +12,7 @@ type BatchPageProps = {
 export default async function BatchDetailPage({ params }: BatchPageProps) {
   const { batchId } = await params;
   const requestHeaders = await headers();
-  const userId = requestHeaders.get('x-user-id');
+  const userId = getEffectiveUserId(requestHeaders);
 
   if (userId === null || userId.length === 0) {
     notFound();
