@@ -402,7 +402,7 @@ jobs:
       - name: Build Docker image
         run: |
           docker build \
-            --build-arg NEXT_PUBLIC_API_URL=https://api.realtutorialhub.com/api \
+            --build-arg NEXT_PUBLIC_API_URL=https://api.skillupitacademy.com/api \
             -f apps/skillup-web/Dockerfile \
             -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillup-web:$GITHUB_SHA \
             -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillup-web:latest \
@@ -545,7 +545,7 @@ jobs:
       - name: Build Docker image
         run: |
           docker build \
-            --build-arg NEXT_PUBLIC_API_URL=https://api.realtutorialhub.com/api \
+            --build-arg NEXT_PUBLIC_API_URL=https://api.skillupitacademy.com/api \
             --build-arg NEXT_PUBLIC_APP_URL=https://faculty.skillupitacademy.com \
             -f apps/faculty-app/Dockerfile \
             -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/faculty-app:$GITHUB_SHA \

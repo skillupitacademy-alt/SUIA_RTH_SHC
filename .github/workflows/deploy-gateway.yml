@@ -56,6 +56,9 @@ jobs:
       - name: Build gateway
         run: pnpm --filter @quiz/api-gateway build
 
+      - name: Validate gateway config
+        run: node scripts/validate-gateway.mjs
+
       - name: Set Worker secrets
         working-directory: services/api-gateway
         run: |
