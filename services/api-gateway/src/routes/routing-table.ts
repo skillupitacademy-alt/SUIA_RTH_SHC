@@ -2,6 +2,7 @@ import type { GatewayRoute } from '@/types';
 
 export const ROUTING_TABLE: GatewayRoute[] = [
   { host: 'user.realtutorialhub.com', prefix: '/', upstreamKey: 'TUTORIAL_SERVICE_URL', public: true },
+  { host: 'admin.realtutorialhub.com', prefix: '/', upstreamKey: 'RTH_ADMIN_URL', public: true },
   { host: 'user.skillupitacademy.com', prefix: '/', upstreamKey: 'SKILLUP_WEB_URL', public: true },
   { host: 'admin.skillupitacademy.com', prefix: '/', upstreamKey: 'SKILLUP_ADMIN_URL', public: true },
   { host: 'faculty.skillupitacademy.com', prefix: '/', upstreamKey: 'FACULTY_URL', public: true },
