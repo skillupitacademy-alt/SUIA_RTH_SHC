@@ -1,36 +1,24 @@
 import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
 
-import { badRequest, forbidden, internalError } from '@/lib/api-error';
+import { badRequest } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
 import { AdminTopicEngine } from "@/modules/admin-engine/admin.engine";
-import { TokenService } from '@/modules/auth/token.service';
-import { container } from '@/modules/core/container';
+import { requireAdminRouteAccess } from '@/modules/auth/admin-audience.util';
 import { validateTopicSchema } from '@/schemas/admin.schemas';
 
 export const dynamic = 'force-dynamic';
 
 type ValidateBody = { topicId: string };
 
-async function _verifyAdmin(_req: NextRequest) {
-  const _token = container.get(TokenService).getAccessToken(_req, { scope: 'admin' });
-  if (_token === null || _token === undefined || _token.trim() === '') return null;
-  try {
-     const _payload = await container.get(TokenService).verifyAdminAccessToken(_token);
-     return _payload;
-  } catch {
-     return null;
-  }
-}
-
 async function handler(_req: NextRequest) {
-    const start = Date.now();
-  const admin = await _verifyAdmin(_req);
-  if (admin === null || admin === undefined) return ApiResponse.error(forbidden('Admin access required'), 403);
-
+  const start = Date.now();
+  
   try {
+    await requireAdminRouteAccess(_req);
+
     const rawBody = await _req.json() as ValidateBody;
     const parsed = validateTopicSchema.safeParse(rawBody);
     if (!parsed.success) {
@@ -45,11 +33,10 @@ async function handler(_req: NextRequest) {
     
     return ApiResponse.success(result, 200, { 'X-Duration-Ms': durationMs.toString() });
   } catch (_error: unknown) {
-    const message = _error instanceof Error ? _error.message : 'Internal Server Error';
     const durationMs = Date.now() - start;
-    recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.validate.failure', 1, { reason: 'internal_error' });
+    recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.validate.failure', 1, { reason: 'error' });
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.validate.duration', durationMs, { outcome: 'failure' });
-    return ApiResponse.error(internalError(message), 500);
+    return ApiResponse.error(_error);
   }
 }
 

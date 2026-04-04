@@ -1,27 +1,18 @@
 import type { NextRequest } from 'next/server';
 
-import { badRequest, internalError, unauthorized } from '@/lib/api-error';
+import { badRequest } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
 import { AdminQuestionEngine } from "@/modules/admin-engine/admin.engine";
-import { TokenService } from '@/modules/auth/token.service';
-import { container } from '@/modules/core/container';
+import { requireAdminRouteAccess } from '@/modules/auth/admin-audience.util';
 import { idArraySchema } from '@/schemas/admin.schemas';
 
 export const dynamic = 'force-dynamic';
 
-async function _verifyAdmin(_req: NextRequest) {
-    const _token = container.get(TokenService).getAccessToken(_req, { scope: 'admin' });
-    if (_token === null || _token === undefined || _token.trim() === '') {
-        throw unauthorized('Unauthorized');
-    }
-    return await container.get(TokenService).verifyAdminAccessToken(_token);
-}
-
 async function handler(_req: NextRequest) {
     try {
-        const auth = await _verifyAdmin(_req);
+        const payload = await requireAdminRouteAccess(_req);
         const rawBody = await _req.json().catch(() => null);
         if (rawBody === null || !validateJsonDepth(rawBody) || !validateJsonSize(rawBody)) {
             return ApiResponse.error(badRequest('Payload too deep or large'), 400);
@@ -32,11 +23,10 @@ async function handler(_req: NextRequest) {
     }
     const { ids } = parsed.data;
 
-        const result = await AdminQuestionEngine.deleteQuestionsBatch(ids, auth.userId!);
+        const result = await AdminQuestionEngine.deleteQuestionsBatch(ids, payload.userId);
         return ApiResponse.success(result);
     } catch (_error: unknown) {
-        const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-        return ApiResponse.error(internalError(message), 500);
+        return ApiResponse.error(_error);
     }
 }
 
