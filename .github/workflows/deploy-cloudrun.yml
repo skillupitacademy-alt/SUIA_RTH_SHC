@@ -180,14 +180,13 @@ jobs:
       - name: Build and push Web
         run: |
           docker build \
-            --build-arg NEXT_PUBLIC_API_URL=https://api.realtutorialhub.com/api \
-            --build-arg NEXT_PUBLIC_WEB_APP_URL=https://quiz.skillhubcore.in \
-            --build-arg NEXT_PUBLIC_TUTORIAL_APP_URL=https://tutorial.skillhubcore.in \
-            --build-arg NEXT_PUBLIC_ADMIN_URL=https://admin.realtutorialhub.com \
-            --build-arg INTERNAL_GATEWAY_SECRET=${{ secrets.INTERNAL_GATEWAY_SECRET }} \
-            -f apps/realtutorialhub-quiz/Dockerfile \
-            -t asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-web-app:$GITHUB_SHA \
-            -t asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-web-app:latest .
+              --build-arg NEXT_PUBLIC_API_URL=https://api.realtutorialhub.com/api \
+              --build-arg NEXT_PUBLIC_WEB_APP_URL=https://quiz.skillhubcore.in \
+              --build-arg NEXT_PUBLIC_TUTORIAL_APP_URL=https://tutorial.skillhubcore.in \
+              --build-arg NEXT_PUBLIC_ADMIN_URL=https://admin.realtutorialhub.com \
+              -f apps/realtutorialhub-quiz/Dockerfile \
+              -t asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-web-app:$GITHUB_SHA \
+              -t asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-web-app:latest .
           docker push asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-web-app:$GITHUB_SHA
           docker push asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-web-app:latest
       - name: Deploy Web to Cloud Run
@@ -196,13 +195,13 @@ jobs:
             --image asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-web-app:$GITHUB_SHA \
             --region $REGION \
             --platform managed \
-            --allow-unauthenticated \
-            --port 3001 \
-            --set-env-vars "NODE_ENV=production,CLOUD_RUN_BUILD=true,NEXT_PUBLIC_TUTORIAL_APP_URL=https://tutorial.skillhubcore.in" \
-            --set-secrets "NEXT_PUBLIC_API_URL=NEXT_PUBLIC_API_URL:latest,NEXT_PUBLIC_WEB_APP_URL=NEXT_PUBLIC_WEB_APP_URL:latest,NEXT_PUBLIC_SENTRY_DSN=NEXT_PUBLIC_SENTRY_DSN:latest,SENTRY_AUTH_TOKEN=SENTRY_AUTH_TOKEN:latest,JWT_SECRET=JWT_SECRET:latest,JWT_REFRESH_SECRET=JWT_REFRESH_SECRET:latest,COOKIE_DOMAIN=COOKIE_DOMAIN:latest,INTERNAL_API_KEY=INTERNAL_API_KEY:latest,INTERNAL_API_URL=INTERNAL_API_URL:latest,INTERNAL_GATEWAY_SECRET=INTERNAL_GATEWAY_SECRET:latest" \
-            --memory 1Gi \
-            --cpu 1 \
-            --concurrency 1000 \
+              --allow-unauthenticated \
+              --port 3001 \
+              --set-env-vars "NODE_ENV=production,CLOUD_RUN_BUILD=true,NEXT_PUBLIC_TUTORIAL_APP_URL=https://tutorial.skillhubcore.in" \
+              --set-secrets "NEXT_PUBLIC_API_URL=NEXT_PUBLIC_API_URL:latest,NEXT_PUBLIC_WEB_APP_URL=NEXT_PUBLIC_WEB_APP_URL:latest,NEXT_PUBLIC_SENTRY_DSN=NEXT_PUBLIC_SENTRY_DSN:latest,SENTRY_AUTH_TOKEN=SENTRY_AUTH_TOKEN:latest,JWT_SECRET=JWT_SECRET:latest,JWT_REFRESH_SECRET=JWT_REFRESH_SECRET:latest,COOKIE_DOMAIN=COOKIE_DOMAIN:latest,INTERNAL_API_URL=INTERNAL_API_URL:latest" \
+              --memory 1Gi \
+              --cpu 1 \
+              --concurrency 1000 \
             --max-instances 10
 
   deploy-quiz-admin:
@@ -226,13 +225,12 @@ jobs:
         run: |
           docker build \
             --build-arg NEXT_PUBLIC_API_URL=https://api.realtutorialhub.com/api \
-            --build-arg NEXT_PUBLIC_WEB_APP_URL=https://quiz.skillhubcore.in \
-            --build-arg NEXT_PUBLIC_TUTORIAL_APP_URL=https://tutorial.skillhubcore.in \
-            --build-arg NEXT_PUBLIC_ADMIN_URL=https://admin.realtutorialhub.com \
-            --build-arg INTERNAL_GATEWAY_SECRET=${{ secrets.INTERNAL_GATEWAY_SECRET }} \
-            -f apps/realtutorialhub-admin/Dockerfile \
-            -t asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-admin-app:$GITHUB_SHA \
-            -t asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-admin-app:latest .
+              --build-arg NEXT_PUBLIC_WEB_APP_URL=https://quiz.skillhubcore.in \
+              --build-arg NEXT_PUBLIC_TUTORIAL_APP_URL=https://tutorial.skillhubcore.in \
+              --build-arg NEXT_PUBLIC_ADMIN_URL=https://admin.realtutorialhub.com \
+              -f apps/realtutorialhub-admin/Dockerfile \
+              -t asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-admin-app:$GITHUB_SHA \
+              -t asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-admin-app:latest .
           docker push asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-admin-app:$GITHUB_SHA
           docker push asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-admin-app:latest
       - name: Deploy Admin to Cloud Run
@@ -241,13 +239,13 @@ jobs:
             --image asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-admin-app:$GITHUB_SHA \
             --region $REGION \
             --platform managed \
-            --allow-unauthenticated \
-            --port 3002 \
-            --set-env-vars "NODE_ENV=production,CLOUD_RUN_BUILD=true" \
-            --set-secrets "NEXT_PUBLIC_API_URL=NEXT_PUBLIC_API_URL:latest,NEXT_PUBLIC_ADMIN_URL=NEXT_PUBLIC_ADMIN_URL:latest,NEXT_PUBLIC_SENTRY_DSN=NEXT_PUBLIC_SENTRY_DSN:latest,SENTRY_AUTH_TOKEN=SENTRY_AUTH_TOKEN:latest,JWT_SECRET=JWT_SECRET:latest,JWT_REFRESH_SECRET=JWT_REFRESH_SECRET:latest,ADMIN_JWT_SECRET=ADMIN_JWT_SECRET:latest,DATABASE_URL_TUTORIAL=DATABASE_URL_TUTORIAL:latest,DATABASE_DIRECT_URL_TUTORIAL=DATABASE_DIRECT_URL_TUTORIAL:latest,COOKIE_DOMAIN=COOKIE_DOMAIN:latest,CSRF_SECRET=CSRF_SECRET:latest,INTERNAL_API_KEY=INTERNAL_API_KEY:latest,INTERNAL_GATEWAY_SECRET=INTERNAL_GATEWAY_SECRET:latest" \
-            --memory 1Gi \
-            --cpu 1 \
-            --concurrency 1000 \
+              --allow-unauthenticated \
+              --port 3002 \
+              --set-env-vars "NODE_ENV=production,CLOUD_RUN_BUILD=true" \
+              --set-secrets "NEXT_PUBLIC_API_URL=NEXT_PUBLIC_API_URL:latest,NEXT_PUBLIC_ADMIN_URL=NEXT_PUBLIC_ADMIN_URL:latest,NEXT_PUBLIC_SENTRY_DSN=NEXT_PUBLIC_SENTRY_DSN:latest,SENTRY_AUTH_TOKEN=SENTRY_AUTH_TOKEN:latest,JWT_SECRET=JWT_SECRET:latest,JWT_REFRESH_SECRET=JWT_REFRESH_SECRET:latest,ADMIN_JWT_SECRET=ADMIN_JWT_SECRET:latest,DATABASE_URL_TUTORIAL=DATABASE_URL_TUTORIAL:latest,DATABASE_DIRECT_URL_TUTORIAL=DATABASE_DIRECT_URL_TUTORIAL:latest,COOKIE_DOMAIN=COOKIE_DOMAIN:latest,CSRF_SECRET=CSRF_SECRET:latest,INTERNAL_API_URL=INTERNAL_API_URL:latest" \
+              --memory 1Gi \
+              --cpu 1 \
+              --concurrency 1000 \
             --max-instances 10
 
   health-check-quiz:
