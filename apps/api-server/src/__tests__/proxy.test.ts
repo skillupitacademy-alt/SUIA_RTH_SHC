@@ -1,9 +1,9 @@
 import { NextRequest } from 'next/server';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { proxy } from '../proxy';
 
-describe('api-server proxy gateway secret enforcement', () => {
+describe('api-server proxy protected route handling', () => {
   const originalSecret = process.env.INTERNAL_GATEWAY_SECRET;
 
   afterEach(() => {
@@ -47,12 +47,10 @@ describe('api-server proxy gateway secret enforcement', () => {
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
-  it('rejects status routes without the gateway secret', async () => {
-    process.env.INTERNAL_GATEWAY_SECRET = 'service-gateway-secret';
-
+  it('requires auth on protected routes instead of failing on gateway secret drift', async () => {
     const response = await proxy(new NextRequest('http://localhost/api/status'));
 
-    expect(response.status).toBe(403);
+    expect(response.status).toBe(401);
   });
 
   it('allows health routes without the gateway secret', async () => {

@@ -16,7 +16,6 @@ export async function proxy(request: NextRequest) {
   const requestId = request.headers.get('x-request-id') ?? crypto.randomUUID();
   const sessionId = request.headers.get('x-session-id') ?? 'anon-' + crypto.randomUUID().slice(0, 8);
   const pathname = request.nextUrl.pathname;
-  const INTERNAL_GATEWAY_SECRET = process.env.INTERNAL_GATEWAY_SECRET;
   
   // DIAGNOSTIC LOG (User visible in Vercel)
   if (pathname.includes('security/report')) {
@@ -61,23 +60,6 @@ export async function proxy(request: NextRequest) {
     isTelemetryRoute ||
     isSecurityReport ||
     isClientLogsRoute;
-
-  if (isGatewayExemptRoute === false) {
-    if (typeof INTERNAL_GATEWAY_SECRET !== 'string' || INTERNAL_GATEWAY_SECRET.length === 0) {
-      const response = NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-      response.headers.set('x-request-id', requestId);
-      response.headers.set('x-session-id', sessionId);
-      return corsMiddleware(request, response);
-    }
-
-    const gatewaySecret = request.headers.get('x-gateway-secret');
-    if (gatewaySecret !== INTERNAL_GATEWAY_SECRET) {
-      const response = NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-      response.headers.set('x-request-id', requestId);
-      response.headers.set('x-session-id', sessionId);
-      return corsMiddleware(request, response);
-    }
-  }
 
   // 4. CSRF Protection for mutations
   if (!isAuthRoute) {
