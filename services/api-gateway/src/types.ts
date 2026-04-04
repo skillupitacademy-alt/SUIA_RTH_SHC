@@ -18,8 +18,6 @@ export interface GatewayBindings {
   JWT_SECRET: string;
   ADMIN_JWT_SECRET?: string;
   INTERNAL_GATEWAY_SECRET: string;
-  UPSTASH_REDIS_REST_URL: string;
-  UPSTASH_REDIS_REST_TOKEN: string;
   SKILLHUBCORE_URL: string;
   QUIZ_WEB_URL: string;
   SKILLUP_WEB_URL: string;

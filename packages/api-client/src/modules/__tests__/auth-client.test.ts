@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { AuthClient } from '../auth-client';
+import { TIMEOUTS } from '../../core/fetch-client';
 
 vi.mock('../../lib/normalize-auth-user', () => ({
   normalizeSkillHubUser: vi.fn((user: Record<string, unknown>) => user),
@@ -31,7 +32,7 @@ describe('AuthClient', () => {
 
     await authClient.getAdminSession();
 
-    expect(client.get).toHaveBeenCalledWith('/admin/auth/me', { timeout: expect.any(Number) });
+    expect(client.get).toHaveBeenCalledWith('/admin/auth/me', { timeout: TIMEOUTS.STANDARD });
   });
 
   it('sends explicit brand metadata during login', async () => {

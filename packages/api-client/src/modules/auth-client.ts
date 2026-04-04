@@ -41,7 +41,7 @@ export class AuthClient {
   }
 
   async getAdminSession() {
-    const response = await this.client.get<{ user: UserProfile; expiresAt: string | null }>('/admin/auth/me', { timeout: TIMEOUTS.QUICK });
+    const response = await this.client.get<{ user: UserProfile; expiresAt: string | null }>('/admin/auth/me', { timeout: TIMEOUTS.STANDARD });
     return {
       ...response,
       user: normalizeSkillHubUser(response.user ?? {}),

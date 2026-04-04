@@ -3,52 +3,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import app from '../index';
 
-const rateLimitState = new Map<string, number>();
-
-vi.mock('@upstash/redis', () => {
-  return {
-    Redis: class Redis {
-      constructor(_: unknown) {}
-    },
-  };
-});
-
-vi.mock('@upstash/ratelimit', () => {
-  return {
-    Ratelimit: class Ratelimit {
-      static slidingWindow(limit: number, window: string) {
-        return { limit, window };
-      }
-
-      constructor(_: unknown) {}
-
-      async limit(key: string) {
-        const count = (rateLimitState.get(key) ?? 0) + 1;
-        rateLimitState.set(key, count);
-        if (count > 100) {
-          return {
-            success: false,
-            remaining: 0,
-            reset: Date.now() + 60_000,
-          };
-        }
-
-        return {
-          success: true,
-          remaining: Math.max(0, 100 - count),
-          reset: Date.now() + 60_000,
-        };
-      }
-    },
-  };
-});
-
   const env = {
     JWT_SECRET: 'gateway-secret',
     ADMIN_JWT_SECRET: 'gateway-secret',
     INTERNAL_GATEWAY_SECRET: 'internal-gateway-secret',
-    UPSTASH_REDIS_REST_URL: 'https://redis.example.com',
-    UPSTASH_REDIS_REST_TOKEN: 'redis-token',
     SKILLHUBCORE_URL: 'https://skillhubcore.example.com',
     QUIZ_WEB_URL: 'https://quiz-web.example.com',
     SKILLUP_WEB_URL: 'https://skillup-web.example.com',
@@ -89,7 +47,6 @@ function makeToken(roles: string[] = ['student']) {
 }
 
 beforeEach(() => {
-  rateLimitState.clear();
   vi.restoreAllMocks();
 });
 
@@ -98,7 +55,6 @@ describe('api-gateway', () => {
     const response = await app.request('https://api.example.com/healthz', undefined, env);
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toMatchObject({ status: 'ok' });
-    expect(rateLimitState.size).toBe(0);
   });
 
   it('returns an internal health snapshot', async () => {
@@ -130,7 +86,6 @@ describe('api-gateway', () => {
     const response = await app.request('https://api.example.com/auth/login', undefined, env);
     expect(response.status).toBe(200);
     expect(fetchSpy).toHaveBeenCalledTimes(1);
-    expect(rateLimitState.size).toBe(0);
     const [, init] = fetchSpy.mock.calls[0] ?? [];
     const headers = new Headers((init as RequestInit | undefined)?.headers);
     expect(headers.get('X-Gateway-Secret')).toBe(env.INTERNAL_GATEWAY_SECRET);
@@ -148,7 +103,6 @@ describe('api-gateway', () => {
 
     expect(response.status).toBe(200);
     expect(fetchSpy).toHaveBeenCalledTimes(1);
-    expect(rateLimitState.size).toBe(0);
     expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(`${env.EXAM_SERVICE_URL}/api/admin/auth/login`);
     const [, init] = fetchSpy.mock.calls[0] ?? [];
     const headers = new Headers((init as RequestInit | undefined)?.headers);
@@ -171,7 +125,6 @@ describe('api-gateway', () => {
 
     expect(response.status).toBe(200);
     expect(fetchSpy).toHaveBeenCalledTimes(1);
-    expect(rateLimitState.size).toBe(0);
     expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(env.SKILLUP_ADMIN_URL);
   });
 
@@ -190,7 +143,6 @@ describe('api-gateway', () => {
 
     expect(response.status).toBe(200);
     expect(fetchSpy).toHaveBeenCalledTimes(1);
-    expect(rateLimitState.size).toBe(0);
     expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(env.TUTORIAL_SERVICE_URL);
   });
 
@@ -244,6 +196,22 @@ describe('api-gateway', () => {
     expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(`${env.EXAM_SERVICE_URL}/api/admin/auth/me`);
   });
 
+  it('bypasses rate limiting for admin auth heartbeat routes', async () => {
+    const token = await makeToken(['admin']);
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
+    const response = await app.request('https://api.example.com/admin/auth/heartbeat', {
+      method: 'POST',
+      headers: {
+        cookie: `admin_accessToken=${encodeURIComponent(token)}`,
+      },
+      body: JSON.stringify({}),
+    }, env);
+
+    expect(response.status).toBe(200);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(`${env.EXAM_SERVICE_URL}/api/admin/auth/heartbeat`);
+  });
+
   it('routes skillhubcore api host traffic to the skillhubcore upstream', async () => {
     const token = await makeToken(['student']);
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 })); 
@@ -275,7 +243,6 @@ describe('api-gateway', () => {
 
     expect(response.status).toBe(200);
     expect(fetchSpy).toHaveBeenCalledTimes(1);
-    expect(rateLimitState.size).toBe(0);
     expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(`${env.EXAM_SERVICE_URL}/api/telemetry`);
   });
 
@@ -342,7 +309,6 @@ describe('api-gateway', () => {
 
     expect(response.status).toBe(200);
     expect(fetchSpy).toHaveBeenCalledTimes(1);
-    expect(rateLimitState.size).toBe(0);
     expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(`${env.EXAM_SERVICE_URL}/api/search?q=algebra&type=all`);
   });
 
@@ -440,20 +406,7 @@ describe('api-gateway', () => {
     expect(response.status).toBe(403);
   });
 
-  it('rate limits the 101st request', async () => {
-    const token = await makeToken(['student']);
-    rateLimitState.set('203.0.113.1', 100);
-
-    const blocked = await app.request('https://api.example.com/tutorial/lessons/1', {
-      headers: {
-        authorization: `Bearer ${token}`,
-        'cf-connecting-ip': '203.0.113.1',
-      },
-    }, env);
-    expect(blocked.status).toBe(429);
-  });
-
-  it('skips rate limiting when redis config is missing', async () => {
+  it('keeps protected routes available without gateway rate limiting', async () => {
     const token = await makeToken(['student']);
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
 
@@ -461,11 +414,7 @@ describe('api-gateway', () => {
       headers: {
         authorization: `Bearer ${token}`,
       },
-    }, {
-      ...env,
-      UPSTASH_REDIS_REST_URL: undefined,
-      UPSTASH_REDIS_REST_TOKEN: undefined,
-    } as unknown as typeof env);
+    }, env);
 
     expect(response.status).toBe(200);
     expect(fetchSpy).toHaveBeenCalledTimes(1);
