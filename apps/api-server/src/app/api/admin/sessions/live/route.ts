@@ -1,28 +1,19 @@
 import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
 
-import { internalError, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
+import { withCorrelationId } from '@/lib/correlation-id.middleware';
 import { bootstrapCQRS,GetLiveSessionsQuery, queryBus } from '@/lib/cqrs';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
-import { TokenService } from '@/modules/auth/token.service';
-import { container } from '@/modules/core/container';
+import { requireAdminRouteAccess } from '@/modules/auth/admin-audience.util';
 
 export const dynamic = 'force-dynamic';
-
-async function _verifyAdmin(_req: NextRequest) {
-    const _token = container.get(TokenService).getAccessToken(_req, { scope: 'admin' });
-    if (_token === null || _token === undefined || _token.trim() === '') {
-        throw unauthorized('Unauthorized');
-    }
-    return await container.get(TokenService).verifyAdminAccessToken(_token);
-}
 
 async function handler(_req: NextRequest) {
     const start = Date.now();
     try {
-        await _verifyAdmin(_req);
+        await requireAdminRouteAccess(_req);
         
         const searchParams = _req.nextUrl.searchParams;
         const page = parseInt(searchParams.get('page') ?? '1', 10);
@@ -39,14 +30,11 @@ async function handler(_req: NextRequest) {
         
         return ApiResponse.success(data, 200, { 'X-Duration-Ms': durationMs.toString() });
     } catch (_error: unknown) {
-        const message = _error instanceof Error ? _error.message : 'Internal Server Error';
         const durationMs = Date.now() - start;
         recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.sessions.live.failure', 1);
         recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.sessions.live.duration', durationMs, { outcome: 'failure' });
-        return ApiResponse.error(internalError(message), 500);
+        return ApiResponse.error(_error);
     }
 }
-
-import { withCorrelationId } from '@/lib/correlation-id.middleware';
 
 export const GET = withCorrelationId(withLogging(handler, { component: 'admin', operation: 'get_live_sessions' }));

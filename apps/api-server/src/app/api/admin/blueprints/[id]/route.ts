@@ -1,27 +1,18 @@
 import type { NextRequest } from "next/server";
 
-import { badRequest, internalError, unauthorized } from "@/lib/api-error";
+import { badRequest } from "@/lib/api-error";
 import { ApiResponse } from "@/lib/api-response";
 import { withLogging } from "@/lib/withLogging";
 import { AdminBlueprintEngine } from "@/modules/admin-engine/admin.engine";
-import { TokenService } from "@/modules/auth/token.service";
-import { container } from "@/modules/core/container";
+import { requireAdminRouteAccess } from "@/modules/auth/admin-audience.util";
 import { blueprintSchema } from "@/schemas/admin.schemas";
 
 export const dynamic = 'force-dynamic';
 
-async function _verifyAdmin(_req: NextRequest) {
-    const _token = container.get(TokenService).getAccessToken(_req, { scope: 'admin' });
-    if (_token === null || _token === undefined || _token.trim() === '') {
-        throw unauthorized('Unauthorized');
-    }
-    return await container.get(TokenService).verifyAdminAccessToken(_token);
-}
-
 async function patchHandler(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
     try {
-        await _verifyAdmin(_req);
+        await requireAdminRouteAccess(_req);
         const rawBody = await _req.json().catch(() => null);
         
         const parsed = blueprintSchema.partial().safeParse(rawBody ?? {});
@@ -32,20 +23,18 @@ async function patchHandler(_req: NextRequest, { params }: { params: Promise<{ i
         const result = await AdminBlueprintEngine.updateBlueprint(id, parsed.data);
         return ApiResponse.success(result);
     } catch (_error: unknown) {
-        const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-        return ApiResponse.error(internalError(message), 500);
+        return ApiResponse.error(_error);
     }
 }
 
 async function deleteHandler(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
     try {
-        await _verifyAdmin(_req);
+        await requireAdminRouteAccess(_req);
         const result = await AdminBlueprintEngine.deleteBlueprint(id);
         return ApiResponse.success(result);
     } catch (_error: unknown) {
-        const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-        return ApiResponse.error(internalError(message), 500);
+        return ApiResponse.error(_error);
     }
 }
 

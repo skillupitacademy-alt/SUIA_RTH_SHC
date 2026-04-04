@@ -1,15 +1,15 @@
 import type { NextRequest } from 'next/server';
 
 import type { AdminUserInput } from '@/dtos/admin.dto';
-import { badRequest, unauthorized } from '@/lib/api-error';
+import { badRequest } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
+import { withCorrelationId } from '@/lib/correlation-id.middleware';
 import { bootstrapCQRS, GetAdminUsersQuery, queryBus } from '@/lib/cqrs';
 import { selectFields } from '@/lib/field-selector';
 import { logger } from '@/lib/logger';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
-import { TokenService } from '@/modules/auth/token.service';
-import { container } from '@/modules/core/container';
+import { requireAdminRouteAccess } from '@/modules/auth/admin-audience.util';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,11 +28,7 @@ type AdminUsersQueryResult = {
 async function getHandler(_req: NextRequest) {
     const start = Date.now();
   try {
-    const _token = container.get(TokenService).getAccessToken(_req, { scope: 'admin' });
-    if (_token === undefined || _token === null || _token === '') {
-      throw unauthorized('Unauthorized', 'UNAUTHORIZED');
-    }
-    await container.get(TokenService).verifyAdminAccessToken(_token);
+    await requireAdminRouteAccess(_req);
     
     const searchParams = _req.nextUrl.searchParams;
     const cursor = searchParams.get('cursor');
@@ -81,9 +77,7 @@ async function getHandler(_req: NextRequest) {
 async function postHandler(_req: NextRequest) {
   const start = Date.now();
   try {
-    const auth = await container.get(TokenService).verifyAdminAccessToken(
-      container.get(TokenService).getAccessToken(_req, { scope: 'admin' })!
-    );
+    const auth = await requireAdminRouteAccess(_req);
 
     const body = await _req.json();
     const { createUserSchema } = await import('@/schemas/admin.schemas');
@@ -107,8 +101,6 @@ async function postHandler(_req: NextRequest) {
     return ApiResponse.error(_error);
   }
 }
-
-import { withCorrelationId } from '@/lib/correlation-id.middleware';
 
 export const GET = withCorrelationId(withLogging(getHandler, { component: 'admin', operation: 'get_users' }));
 export const POST = withCorrelationId(withLogging(postHandler, { component: 'admin', operation: 'create_user' }));

@@ -3,12 +3,11 @@ import { type NextRequest } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-import { unauthorized } from "@/lib/api-error";
 import { ApiResponse } from "@/lib/api-response";
+import { withCorrelationId } from '@/lib/correlation-id.middleware';
 import { recordCounter, recordTimer } from "@/lib/metrics";
 import { withLogging } from "@/lib/withLogging";
-import { TokenService } from "@/modules/auth/token.service";
-import { container } from "@/modules/core/container";
+import { requireAdminRouteAccess } from '@/modules/auth/admin-audience.util';
 import { ReportRepository } from "@/modules/report-engine/report-repository";
 
 export const runtime = "nodejs";
@@ -20,20 +19,7 @@ export const runtime = "nodejs";
 async function handler(req: NextRequest) {
   const start = Date.now();
   try {
-    // Auth: allow either internal key or admin token
-    const internalKeyHeader = req.headers.get("x-internal-key") ?? "";
-    const internalSecret = process.env.INTERNAL_API_KEY;
-    const hasInternalSecret = typeof internalSecret === "string" && internalSecret.length > 0;
-    const internalAuthorized = hasInternalSecret && internalKeyHeader === internalSecret;
-
-    if (!internalAuthorized) {
-      const tokenService = container.get(TokenService);
-      const accessToken = tokenService.getAccessToken(req, { scope: "admin" });
-      if (accessToken === undefined || accessToken === null || accessToken === "") {
-        throw unauthorized("Unauthorized");
-      }
-      await tokenService.verifyAdminAccessToken(accessToken);
-    }
+    await requireAdminRouteAccess(req);
 
     const { searchParams } = new URL(req.url);
     const status = searchParams.get("status") ?? undefined;
@@ -66,7 +52,5 @@ async function handler(req: NextRequest) {
     return ApiResponse.error(error);
   }
 }
-
-import { withCorrelationId } from '@/lib/correlation-id.middleware';
 
 export const GET = withCorrelationId(withLogging(handler, { component: 'admin', operation: 'list_reports' }));

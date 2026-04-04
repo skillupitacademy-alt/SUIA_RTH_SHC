@@ -2,12 +2,10 @@ import { db } from "@quiz/db";
 import { sql } from "drizzle-orm";
 import type { NextRequest } from "next/server";
 
-import { internalError, unauthorized } from "@/lib/api-error";
 import { ApiResponse } from "@/lib/api-response";
 import { recordCounter, recordTimer } from "@/lib/metrics";
 import { withLogging } from "@/lib/withLogging";
-import { TokenService } from "@/modules/auth/token.service";
-import { container } from '@/modules/core/container';
+import { requireAdminRouteAccess } from "@/modules/auth/admin-audience.util";
 
 export const dynamic = "force-dynamic";
 
@@ -33,19 +31,7 @@ type BrokenRow = {
 async function handler(req: NextRequest) {
   const start = Date.now();
   try {
-    const token = container.get(TokenService).getAccessToken(req, { scope: "admin" });
-    if (token === null || token === undefined || token.length === 0) {
-      return ApiResponse.error(unauthorized("Unauthorized"), 401);
-    }
-    const payload = await container.get(TokenService).verifyAdminAccessToken(token);
-    
-    const hasAdminRole = Array.isArray(payload.roles) && payload.roles.some(
-      (role: string) => role === "admin" || role === "super_admin"
-    );
-    
-    if (!hasAdminRole && payload.isAdmin !== true) {
-      return ApiResponse.error(unauthorized("Insufficient permissions"), 403);
-    }
+    await requireAdminRouteAccess(req);
 
     const { searchParams } = new URL(req.url);
     const limit = parseInt(searchParams.get("limit") ?? "10", 10);
@@ -140,9 +126,8 @@ async function handler(req: NextRequest) {
 
     return ApiResponse.success(scored.slice(0, limit), 200, { 'X-Duration-Ms': durationMs.toString() });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal Server Error";
     recordCounter('admin.api.metrics.broken_questions.count', 1, { outcome: 'failure' });
-    return ApiResponse.error(internalError(message), 500);
+    return ApiResponse.error(error);
   }
 }
 

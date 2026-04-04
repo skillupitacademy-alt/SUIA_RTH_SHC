@@ -2,7 +2,7 @@ import { subjects } from '@quiz/db';
 import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
 
-import { badRequest, unauthorized } from '@/lib/api-error';
+import { badRequest } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { withCorrelationId } from '@/lib/correlation-id.middleware';
 import { bootstrapCQRS, GetSubjectsQuery, queryBus } from '@/lib/cqrs';
@@ -10,7 +10,7 @@ import { recordCounter, recordTimer } from '@/lib/metrics';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
 import { AdminSubjectEngine as AdminSubjectEngineClass } from '@/modules/admin-engine/admin.subject.engine';
-import { TokenService } from '@/modules/auth/token.service';
+import { requireAdminRouteAccess } from '@/modules/auth/admin-audience.util';
 import { container } from '@/modules/core/container';
 import { HierarchySyncService } from '@/modules/hierarchy/hierarchy-sync.service';
 import { subjectSchema } from '@/schemas/hierarchy.schemas';
@@ -25,18 +25,10 @@ type SubjectsQueryResult = {
 
 export const dynamic = 'force-dynamic';
 
-async function verifyAdmin(_req: NextRequest) {
-  const _token = container.get(TokenService).getAccessToken(_req, { scope: 'admin' });
-  if (_token === null || _token === undefined || _token.trim() === '') {
-    throw unauthorized('Unauthorized', 'UNAUTHORIZED');
-  }
-  return await container.get(TokenService).verifyAdminAccessToken(_token);
-}
-
 async function getHandler(_req: NextRequest) {
   const start = Date.now();
   try {
-    await verifyAdmin(_req);
+    await requireAdminRouteAccess(_req);
 
     const searchParams = _req.nextUrl.searchParams;
     const cursor = searchParams.get('cursor');
@@ -67,7 +59,7 @@ async function getHandler(_req: NextRequest) {
 async function postHandler(_req: NextRequest) {
   const start = Date.now();
   try {
-    const _payload = await verifyAdmin(_req);
+    const _payload = await requireAdminRouteAccess(_req);
 
     const rawBody = await _req.json();
     if (!validateJsonDepth(rawBody) || !validateJsonSize(rawBody)) {

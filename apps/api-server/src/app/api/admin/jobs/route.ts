@@ -2,14 +2,13 @@ import { METRICS } from '@quiz/observability';
 import { JobStatus, JobType } from '@quiz/types';
 import type { NextRequest } from 'next/server';
 
-import { badRequest, internalError, unauthorized } from '@/lib/api-error';
+import { badRequest } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { withCorrelationId } from '@/lib/correlation-id.middleware';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
-import { TokenService } from '@/modules/auth/token.service';
-import { container } from '@/modules/core/container';
+import { requireAdminRouteAccess } from '@/modules/auth/admin-audience.util';
 import { JobOrchestrator } from '@/modules/system/job-orchestrator';
 import { JobsService } from '@/modules/system/jobs.service';
 import { jobSchema } from '@/schemas/admin.schemas';
@@ -19,12 +18,7 @@ export const dynamic = 'force-dynamic';
 async function getHandler(_req: NextRequest) {
   const start = Date.now();
   try {
-    const _token = container.get(TokenService).getAccessToken(_req, { scope: 'admin' });
-    if (_token === null || _token === undefined || _token.trim() === '') {
-        return ApiResponse.error(unauthorized('Unauthorized'), 401);
-    }
-
-    await container.get(TokenService).verifyAdminAccessToken(_token);
+    await requireAdminRouteAccess(_req);
     
     const { searchParams } = new URL(_req.url);
     const status = searchParams.get('status') as JobStatus | undefined;
@@ -58,22 +52,16 @@ async function getHandler(_req: NextRequest) {
     }, 200, { 'X-Duration-Ms': durationMs.toString() });
   } catch (_error: unknown) {
     const durationMs = Date.now() - start;
-    const _message = _error instanceof Error ? _error.message : 'Internal Server Error';
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.jobs.list.failure', 1);
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.jobs.list.duration', durationMs, { outcome: 'failure' });
-    return ApiResponse.error(internalError(_message), 500);
+    return ApiResponse.error(_error);
   }
 }
 
 async function postHandler(_req: NextRequest) {
   const start = Date.now();
   try {
-    const _token = container.get(TokenService).getAccessToken(_req, { scope: 'admin' });
-    if (_token === null || _token === undefined || _token.trim() === '') {
-        return ApiResponse.error(unauthorized('Unauthorized'), 401);
-    }
-
-    const _payload = await container.get(TokenService).verifyAdminAccessToken(_token);
+    const _payload = await requireAdminRouteAccess(_req);
     const rawBody = await _req.json().catch(() => null);
     if (rawBody === null || !validateJsonDepth(rawBody) || !validateJsonSize(rawBody)) {
       return ApiResponse.error(badRequest('Payload too deep or large'), 400);
@@ -122,10 +110,9 @@ async function postHandler(_req: NextRequest) {
     return ApiResponse.success({ job: _job }, 200, { 'X-Duration-Ms': durationMs.toString() });
   } catch (_error: unknown) {
     const durationMs = Date.now() - start;
-    const _message = _error instanceof Error ? _error.message : 'Internal Server Error';
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.jobs.create.failure', 1);
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.jobs.create.duration', durationMs, { outcome: 'failure' });
-    return ApiResponse.error(internalError(_message), 500);
+    return ApiResponse.error(_error);
   }
 }
 

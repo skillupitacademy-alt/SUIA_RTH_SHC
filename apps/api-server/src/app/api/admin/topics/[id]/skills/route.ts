@@ -1,22 +1,11 @@
 import type { NextRequest } from 'next/server';
 
-import { forbidden, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { withLogging } from '@/lib/withLogging';
 import { AdminSkillEngine } from "@/modules/admin-engine/admin.engine";
-import { _verifyAdmin } from '@/modules/auth/rbac.service';
-import { TokenService } from '@/modules/auth/token.service';
-import { container } from '@/modules/core/container';
+import { requireAdminRouteAccess } from '@/modules/auth/admin-audience.util';
 
 export const dynamic = 'force-dynamic';
-
-async function verifyAdmin(_req: NextRequest) {
-    const _token = container.get(TokenService).getAccessToken(_req, { scope: 'admin' });
-    if (_token === null || _token === undefined || _token.trim() === '') {
-        throw unauthorized('Unauthorized', 'UNAUTHORIZED');
-    }
-    return await container.get(TokenService).verifyAdminAccessToken(_token);
-}
 
 async function getHandler(
     _req: NextRequest,
@@ -24,11 +13,7 @@ async function getHandler(
 ) {
     try {
         const { id } = await params;
-        const _payload = await verifyAdmin(_req);
-
-        if (!(await _verifyAdmin(_payload))) {
-            return ApiResponse.error(forbidden());
-        }
+        await requireAdminRouteAccess(_req);
 
         const data = await AdminSkillEngine.getSkillsByTopic(id);
         return ApiResponse.success(data);
@@ -43,11 +28,7 @@ async function postHandler(
 ) {
     try {
         const { id } = await params;
-        const _payload = await verifyAdmin(_req);
-
-        if (!(await _verifyAdmin(_payload))) {
-            return ApiResponse.error(forbidden());
-        }
+        const _payload = await requireAdminRouteAccess(_req);
 
         const body = await _req.json(); 
         const result = await AdminSkillEngine.mapTopicToSkills(id, body.skillIds, _payload.userId);

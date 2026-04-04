@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
 
-import { forbidden } from '@/lib/api-error';
+import { forbidden, unauthorized } from '@/lib/api-error';
 import { container } from '@/modules/core/container';
 
 import { _verifyAdmin } from './rbac.service';
@@ -26,7 +26,7 @@ export async function verifyAdminOrInfraToken(_req: NextRequest, token?: string)
   const scopedToken = token ?? container.get(TokenService).getAccessToken(_req, { scope: 'admin' });
 
   if (scopedToken === undefined || scopedToken === null || scopedToken.trim() === '') {
-    throw new Error('Unauthorized');
+    throw unauthorized('Unauthorized');
   }
 
   const payload = await container.get(TokenService).verifyAdminAccessToken(scopedToken, { audience: expectedAud });

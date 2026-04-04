@@ -2,29 +2,21 @@ import { db, questions } from '@quiz/db';
 import { eq } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 
-import { badRequest, notFound, unauthorized } from '@/lib/api-error';
+import { badRequest, notFound } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
+import { withCorrelationId } from '@/lib/correlation-id.middleware';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
 import { AdminQuestionEngine } from "@/modules/admin-engine/admin.engine";
-import { TokenService } from '@/modules/auth/token.service';
-import { container } from '@/modules/core/container';
+import { requireAdminRouteAccess } from '@/modules/auth/admin-audience.util';
 import { questionSchema } from '@/schemas/admin.schemas';
 
 export const dynamic = 'force-dynamic';
 
-async function _verifyAdmin(_req: NextRequest) {
-    const _token = container.get(TokenService).getAccessToken(_req, { scope: 'admin' });
-    if (_token === undefined || _token === null || _token.trim() === '') {
-        throw unauthorized('Unauthorized', 'UNAUTHORIZED');
-    }
-    return await container.get(TokenService).verifyAdminAccessToken(_token);
-}
-
 async function getHandler(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
     try {
-        await _verifyAdmin(_req);
+        await requireAdminRouteAccess(_req);
         const question = await db.query.questions.findFirst({
             where: eq(questions.id, id),
             with: {
@@ -54,7 +46,7 @@ async function getHandler(_req: NextRequest, { params }: { params: Promise<{ id:
 async function patchHandler(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
     try {
-        const auth = await _verifyAdmin(_req);
+        const auth = await requireAdminRouteAccess(_req);
         const rawBody = await _req.json();
         
         if (!validateJsonDepth(rawBody) || !validateJsonSize(rawBody)) {
@@ -78,15 +70,13 @@ async function patchHandler(_req: NextRequest, { params }: { params: Promise<{ i
 async function deleteHandler(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
     try {
-        const auth = await _verifyAdmin(_req);
+        const auth = await requireAdminRouteAccess(_req);
         const result = await AdminQuestionEngine.deleteQuestion(id, auth.userId!);
         return ApiResponse.success(result);
     } catch (_error: unknown) {
         return ApiResponse.error(_error);
     }
 }
-
-import { withCorrelationId } from '@/lib/correlation-id.middleware';
 
 export const GET = withCorrelationId(withLogging(getHandler, { component: 'admin', operation: 'get_question' }));
 export const PATCH = withCorrelationId(withLogging(patchHandler, { component: 'admin', operation: 'update_question' }));

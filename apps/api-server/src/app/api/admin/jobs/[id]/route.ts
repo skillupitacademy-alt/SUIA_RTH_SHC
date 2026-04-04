@@ -1,11 +1,10 @@
 import type { NextRequest } from 'next/server';
 
-import { internalError, notFound, unauthorized } from '@/lib/api-error';
+import { notFound } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
-import { TokenService } from '@/modules/auth/token.service';
-import { container } from '@/modules/core/container';
+import { requireAdminRouteAccess } from '@/modules/auth/admin-audience.util';
 import { JobsService } from '@/modules/system/jobs.service';
 
 export const dynamic = 'force-dynamic';
@@ -17,12 +16,7 @@ interface RouteParams {
 async function handler(_req: NextRequest, { params }: RouteParams) {
     const start = Date.now();
   try {
-    const _token = container.get(TokenService).getAccessToken(_req, { scope: 'admin' });
-    if (_token === null || _token === undefined || _token.trim() === '') {
-        return ApiResponse.error(unauthorized('Unauthorized'), 401);
-    }
-
-    const _payload = await container.get(TokenService).verifyAdminAccessToken(_token);
+    const _payload = await requireAdminRouteAccess(_req);
     const { id } = await params;
 
     const _job = await JobsService.getJob(id, _payload.userId);
@@ -35,9 +29,8 @@ async function handler(_req: NextRequest, { params }: RouteParams) {
     recordTimer('admin.api.jobs.get.duration', Date.now() - start, { outcome: 'success' });
     return ApiResponse.success({ job: _job });
   } catch (_error: unknown) {
-    const _message = _error instanceof Error ? _error.message : 'Internal Server Error';
     recordCounter('admin.api.jobs.get.failure', 1, { reason: 'internal_error' });
-    return ApiResponse.error(internalError(_message), 500);
+    return ApiResponse.error(_error);
   }
 }
 

@@ -1,14 +1,12 @@
 import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
 
-import { forbidden, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { withCorrelationId } from '@/lib/correlation-id.middleware';
 import { bootstrapCQRS, GetPlatformMetricsQuery, queryBus } from '@/lib/cqrs';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
-import { TokenService } from '@/modules/auth/token.service';
-import { container } from '@/modules/core/container';
+import { requireAdminRouteAccess } from '@/modules/auth/admin-audience.util';
 
 bootstrapCQRS(); // Ensure handlers are registered
 
@@ -17,10 +15,7 @@ export const dynamic = 'force-dynamic';
 async function handler(_req: NextRequest) {
   const startTime = Date.now();
   try {
-    const _token = container.get(TokenService).getAccessToken(_req, { scope: 'admin' });
-    if (_token === null || _token === undefined || _token.trim() === '') return ApiResponse.error(unauthorized('Unauthorized'), 401);
-
-    await container.get(TokenService).verifyAdminAccessToken(_token); // true for isAdmin check
+    await requireAdminRouteAccess(_req);
     
     const metrics = await queryBus.dispatch(new GetPlatformMetricsQuery());
     
@@ -32,8 +27,7 @@ async function handler(_req: NextRequest) {
   } catch (_error: unknown) {
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD, 1, { outcome: 'failure' });
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.duration', Date.now() - startTime, { outcome: 'failure' });
-    const message = _error instanceof Error ? _error.message : 'Unauthorized';
-    return ApiResponse.error(forbidden(message), 403);
+    return ApiResponse.error(_error);
   }
 }
 

@@ -1,12 +1,9 @@
 import type { NextRequest } from 'next/server';
 
-import { forbidden, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { withCorrelationId } from '@/lib/correlation-id.middleware';
 import { withLogging } from '@/lib/withLogging';
-import { _verifyAdmin } from '@/modules/auth/rbac.service';
-import { TokenService } from '@/modules/auth/token.service';
-import { container } from '@/modules/core/container';
+import { requireAdminRouteAccess } from '@/modules/auth/admin-audience.util';
 import { HierarchySyncService } from '@/modules/hierarchy/hierarchy-sync.service';
 
 export const dynamic = 'force-dynamic';
@@ -22,17 +19,7 @@ async function authorizeBulkSync(req: NextRequest): Promise<BulkSyncAuthSource> 
     return 'internal';
   }
 
-  const tokenService = container.get(TokenService);
-  const accessToken = tokenService.getAccessToken(req, { scope: 'admin' });
-  if (accessToken === null || accessToken === undefined || accessToken.trim() === '') {
-    throw unauthorized('Unauthorized');
-  }
-
-  const payload = await tokenService.verifyAdminAccessToken(accessToken);
-  const isAdmin = await _verifyAdmin(payload);
-  if (!isAdmin) {
-    throw forbidden('Admin access required');
-  }
+  await requireAdminRouteAccess(req);
 
   return 'admin';
 }
@@ -56,7 +43,7 @@ async function handler(req: NextRequest) {
       },
     );
   } catch (error: unknown) {
-    return ApiResponse.error(error, 500);
+    return ApiResponse.error(error);
   }
 }
 

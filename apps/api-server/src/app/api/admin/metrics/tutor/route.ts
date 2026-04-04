@@ -3,23 +3,17 @@ import { METRICS } from "@quiz/observability";
 import { sql } from "drizzle-orm";
 import type { NextRequest } from "next/server";
 
-import { internalError, unauthorized } from "@/lib/api-error";
 import { ApiResponse } from "@/lib/api-response";
 import { recordCounter, recordTimer } from "@/lib/metrics";
 import { withLogging } from "@/lib/withLogging";
-import { TokenService } from "@/modules/auth/token.service";
-import { container } from '@/modules/core/container';
+import { requireAdminRouteAccess } from "@/modules/auth/admin-audience.util";
 
 export const dynamic = "force-dynamic";
 
 async function handler(req: NextRequest) {
   const start = Date.now();
   try {
-    const token = container.get(TokenService).getAccessToken(req, { scope: "admin" });
-    if (typeof token !== "string" || token.trim().length === 0) {
-      return ApiResponse.error(unauthorized("Unauthorized"), 401);
-    }
-    await container.get(TokenService).verifyAdminAccessToken(token);
+    await requireAdminRouteAccess(req);
 
     const [notesDemand, emailHealth, weakTopics, helpRequests] = await Promise.all([
       db.execute(sql`
@@ -63,10 +57,9 @@ async function handler(req: NextRequest) {
     }, 200, { 'X-Duration-Ms': durationMs.toString() });
   } catch (error: unknown) {
     const durationMs = Date.now() - start;
-    const message = error instanceof Error ? error.message : "Internal Server Error";
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.tutor', 1, { outcome: 'failure' });
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.tutor.duration', durationMs, { outcome: 'failure' });
-    return ApiResponse.error(internalError(message), 500);
+    return ApiResponse.error(error);
   }
 }
 

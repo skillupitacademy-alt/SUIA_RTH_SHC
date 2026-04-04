@@ -81,7 +81,7 @@ describe('POST /api/admin/hierarchy/sync', () => {
 
     expect(res.status).toBe(200);
     expect(mocks.getAccessToken).toHaveBeenCalledTimes(1);
-    expect(mocks.verifyAdminAccessToken).toHaveBeenCalledWith('admin-token');
+    expect(mocks.verifyAdminAccessToken).toHaveBeenCalledWith('admin-token', { audience: 'admin' });
     expect(mocks.verifyAdmin).toHaveBeenCalledWith({ userId: 'admin-1' });
     expect(mocks.syncAll).toHaveBeenCalledTimes(1);
   });

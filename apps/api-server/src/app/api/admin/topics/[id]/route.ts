@@ -2,14 +2,13 @@ import type { NextRequest } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-import { badRequest, forbidden, unauthorized } from '@/lib/api-error';
+import { badRequest } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
+import { withCorrelationId } from '@/lib/correlation-id.middleware';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
 import { AdminTopicEngine } from "@/modules/admin-engine/admin.engine";
-import { _verifyAdmin } from '@/modules/auth/rbac.service';
-import { TokenService } from '@/modules/auth/token.service';
-import { container } from '@/modules/core/container';
+import { requireAdminRouteAccess } from '@/modules/auth/admin-audience.util';
 import { HierarchySyncService } from '@/modules/hierarchy/hierarchy-sync.service';
 import { topicSchema } from '@/schemas/hierarchy.schemas';
 
@@ -19,12 +18,7 @@ async function patchHandler(
 ) {
   try {
     const { id } = await params;
-    const _token = container.get(TokenService).getAccessToken(_req, { scope: 'admin' });
-    if (_token === undefined || _token === null || _token === '') {
-      return ApiResponse.error(unauthorized('Unauthorized', 'UNAUTHORIZED'));
-    }
-    
-    const _payload = await container.get(TokenService).verifyAdminAccessToken(_token);
+    const _payload = await requireAdminRouteAccess(_req);
 
     const rawBody = await _req.json();
     if (!validateJsonDepth(rawBody) || !validateJsonSize(rawBody)) {
@@ -55,16 +49,7 @@ async function deleteHandler(
 ) {
   try {
     const { id } = await params;
-    const _token = container.get(TokenService).getAccessToken(_req, { scope: 'admin' });
-    if (_token === undefined || _token === null || _token === '') {
-      return ApiResponse.error(unauthorized('Unauthorized', 'UNAUTHORIZED'));
-    }
-    
-    const _payload = await container.get(TokenService).verifyAdminAccessToken(_token);
-
-    if (!(await _verifyAdmin(_payload))) {
-      return ApiResponse.error(forbidden());
-    }
+    const _payload = await requireAdminRouteAccess(_req);
 
     const result = await AdminTopicEngine.deleteTopic(id, _payload.userId);
     return ApiResponse.success(result);
@@ -72,8 +57,6 @@ async function deleteHandler(
     return ApiResponse.error(_error);
   }
 }
-
-import { withCorrelationId } from '@/lib/correlation-id.middleware';
 
 export const PATCH = withCorrelationId(withLogging(patchHandler, { component: 'admin', operation: 'update_topic' }));
 export const DELETE = withCorrelationId(withLogging(deleteHandler, { component: 'admin', operation: 'delete_topic' }));

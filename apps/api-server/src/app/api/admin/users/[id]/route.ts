@@ -1,34 +1,25 @@
 import { db } from '@quiz/db';
 import type { NextRequest } from 'next/server';
 
-import { badRequest, notFound, unauthorized } from '@/lib/api-error';
+import { badRequest, notFound } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { logger } from '@/lib/logger';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
 import { AdminUserEngine } from "@/modules/admin-engine/admin.engine";
-import { TokenService } from '@/modules/auth/token.service';
-import { container } from '@/modules/core/container';
+import { requireAdminRouteAccess } from '@/modules/auth/admin-audience.util';
 import { updateUserSchema } from '@/schemas/admin.schemas';
 
 const log = logger.child({ module: 'admin:users:id' });
 
 export const dynamic = 'force-dynamic';
 
-async function verifyAdmin(_req: NextRequest) {
-    const _token = container.get(TokenService).getAccessToken(_req, { scope: 'admin' });
-    if (_token === undefined || _token === null || _token === '') {
-        throw unauthorized('Unauthorized', 'UNAUTHORIZED');
-    }
-    return await container.get(TokenService).verifyAdminAccessToken(_token);
-}
-
 async function getHandler(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const start = Date.now();
     try {
         const { id } = await params;
-        await verifyAdmin(_req);
+        await requireAdminRouteAccess(_req);
         const user = await db.query.users.findFirst({
             where: (u, { eq }) => eq(u.id, id),
             with: {
@@ -64,7 +55,7 @@ async function patchHandler(
     const start = Date.now();
   try {
     const { id } = await params;
-    const _payload = await verifyAdmin(_req);
+    const _payload = await requireAdminRouteAccess(_req);
 
     const rawBody = await _req.json();
     
@@ -104,7 +95,7 @@ async function deleteHandler(
   const start = Date.now();
   try {
     const { id } = await params;
-    const auth = await verifyAdmin(_req);
+    const auth = await requireAdminRouteAccess(_req);
 
     const result = await AdminUserEngine.deleteUser(id, auth.userId!);
     recordCounter('admin.api.users.delete.success', 1, { targetUserId: id });

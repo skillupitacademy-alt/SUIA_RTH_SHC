@@ -10,8 +10,7 @@ import { recordCounter, recordTimer } from '@/lib/metrics';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
 import { AdminQuestionEngine as AdminQuestionEngineClass, type CreateQuestionInput } from "@/modules/admin-engine/admin.question.engine";
-import { _verifyAdmin } from '@/modules/auth/rbac.service';
-import { TokenService } from '@/modules/auth/token.service';
+import { requireAdminRouteAccess } from '@/modules/auth/admin-audience.util';
 import { container } from '@/modules/core/container';
 import { questionSchema } from '@/schemas/admin.schemas';
 
@@ -28,17 +27,7 @@ type QuestionsQueryResult = {
 async function getHandler(_req: NextRequest) {
     const start = Date.now();
   try {
-    const _token = container.get(TokenService).getAccessToken(_req, { scope: 'admin' });
-    if (_token === null || _token === undefined || _token.trim() === '') {
-      return ApiResponse.error(badRequest('Unauthorized', 'UNAUTHORIZED'));
-    }
-
-    const _payload = await container.get(TokenService).verifyAdminAccessToken(_token);
-
-    if (!(await _verifyAdmin(_payload))) {
-        log.warn({ userId: _payload.userId }, 'ADMIN_QUESTIONS forbidden (missing admin role)');
-        return ApiResponse.error(badRequest('Forbidden', 'FORBIDDEN'));
-    }
+    await requireAdminRouteAccess(_req);
     
     const searchParams = _req.nextUrl.searchParams;
     const cursor = searchParams.get('cursor');
@@ -69,23 +58,18 @@ async function getHandler(_req: NextRequest) {
       limit: result.limit
     });
   } catch (_error: unknown) {
-    const message = _error instanceof Error ? _error.message : 'Internal Server Error';
     const durationMs = Date.now() - start;
-    log.error({ error: message }, 'ADMIN_QUESTIONS failed');
+    log.error({ error: _error }, 'ADMIN_QUESTIONS failed');
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.questions.get.failure', 1, { reason: 'internal_error' });
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.questions.get.duration', durationMs, { outcome: 'failure' });
-    return ApiResponse.error(message, 500);
+    return ApiResponse.error(_error);
   }
 }
 
 async function postHandler(_req: NextRequest) {
-    const start = Date.now();
+  const start = Date.now();
   try {
-    const _token = container.get(TokenService).getAccessToken(_req, { scope: 'admin' });
-    if (_token === null || _token === undefined || _token.trim() === '') {
-      return ApiResponse.error(badRequest('Unauthorized', 'UNAUTHORIZED'));
-    }
-    const _payload = await container.get(TokenService).verifyAdminAccessToken(_token);
+    const _payload = await requireAdminRouteAccess(_req);
 
     const rawBody = await _req.json();
 
@@ -108,10 +92,9 @@ async function postHandler(_req: NextRequest) {
     
     return ApiResponse.success(result, 200, { 'X-Duration-Ms': durationMs.toString() });
   } catch (_error: unknown) {
-    const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-    log.error({ error: message }, 'ADMIN_QUESTIONS_POST failed');
+    log.error({ error: _error }, 'ADMIN_QUESTIONS_POST failed');
     recordCounter(METRICS.ADMIN.PUBLISH, 1, { action: 'create', outcome: 'failure' });
-    return ApiResponse.error(message, 500);
+    return ApiResponse.error(_error);
   }
 }
 

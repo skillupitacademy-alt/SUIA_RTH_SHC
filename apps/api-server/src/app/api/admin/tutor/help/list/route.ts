@@ -3,27 +3,19 @@ import { METRICS } from "@quiz/observability";
 import { eq, sql } from "drizzle-orm";
 import { type NextRequest } from "next/server";
 
-import { badRequest, unauthorized } from "@/lib/api-error";
+import { badRequest } from "@/lib/api-error";
 import { ApiResponse } from "@/lib/api-response";
 import { recordCounter, recordTimer } from "@/lib/metrics";
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from "@/lib/sanitize";
 import { withLogging } from "@/lib/withLogging";
-import { TokenService } from "@/modules/auth/token.service";
-import { container } from '@/modules/core/container';
+import { requireAdminRouteAccess } from '@/modules/auth/admin-audience.util';
 
 export const dynamic = "force-dynamic";
 
 async function getHandler(req: NextRequest) {
   const start = Date.now();
   try {
-    const token = container.get(TokenService).getAccessToken(req, { scope: "admin" });
-    if (token === null || token === undefined || token === "") {
-      throw unauthorized("Unauthorized");
-    }
-    const payload = await container.get(TokenService).verifyAdminAccessToken(token);
-    if (payload === null || payload === undefined) {
-      throw unauthorized("Authentication required");
-    }
+    await requireAdminRouteAccess(req);
 
     const { searchParams } = new URL(req.url);
     const statusParam = searchParams.get("status");
@@ -82,14 +74,7 @@ async function getHandler(req: NextRequest) {
 async function patchHandler(req: NextRequest) {
   const start = Date.now();
   try {
-    const token = container.get(TokenService).getAccessToken(req, { scope: "admin" });
-    if (token === null || token === undefined || token === "") {
-      throw unauthorized("Unauthorized");
-    }
-    const payload = await container.get(TokenService).verifyAdminAccessToken(token);
-    if (payload === null || payload === undefined) {
-      throw unauthorized("Authentication required");
-    }
+    await requireAdminRouteAccess(req);
 
     // Ingest and sanitize JSON body
     let raw;
