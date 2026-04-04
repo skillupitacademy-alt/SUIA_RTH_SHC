@@ -3,6 +3,17 @@ import { decodeJwt, jwtVerify, SignJWT, type JWTPayload } from 'jose';
 const ACCESS_TOKEN_EXPIRE = '15m';
 const REFRESH_TOKEN_EXPIRE = '7d';
 
+function readEnv(name: string): string | undefined {
+  if (typeof process !== 'undefined' && process.env !== undefined) {
+    const value = process.env[name];
+    if (typeof value === 'string' && value !== '') {
+      return value;
+    }
+  }
+
+  return undefined;
+}
+
 export class TokenExpiredError extends Error {
   constructor(message = 'Token expired') {
     super(message);
@@ -67,23 +78,17 @@ export class TokenService {
   private static singleton: TokenService | null = null;
 
   static ACCESS_SECRET = new TextEncoder().encode(
-    process.env.JWT_SECRET !== undefined && process.env.JWT_SECRET !== ''
-      ? process.env.JWT_SECRET
-      : 'test-access-secret'
+    readEnv('JWT_SECRET') ?? 'test-access-secret'
   );
 
   static REFRESH_SECRET = new TextEncoder().encode(
-    process.env.JWT_REFRESH_SECRET !== undefined && process.env.JWT_REFRESH_SECRET !== ''
-      ? process.env.JWT_REFRESH_SECRET
-      : 'test-refresh-secret'
+    readEnv('JWT_REFRESH_SECRET') ?? 'test-refresh-secret'
   );
 
   static ADMIN_SECRET = new TextEncoder().encode(
-    process.env.ADMIN_JWT_SECRET !== undefined && process.env.ADMIN_JWT_SECRET !== ''
-      ? process.env.ADMIN_JWT_SECRET
-      : process.env.JWT_SECRET !== undefined && process.env.JWT_SECRET !== ''
-        ? process.env.JWT_SECRET
-        : 'test-admin-secret'
+    readEnv('ADMIN_JWT_SECRET')
+      ?? readEnv('JWT_SECRET')
+      ?? 'test-admin-secret'
   );
 
   private static getInstance(): TokenService {
