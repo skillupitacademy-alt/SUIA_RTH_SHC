@@ -31,7 +31,7 @@ async function getHandler(req: NextRequest) {
     }
 
     const hasAdminRole = Array.isArray(payload.roles) && payload.roles.some(
-        (role: string) => role === "ADMIN" || role === "SUPER_ADMIN"
+        (role: string) => role === "admin" || role === "super_admin"
     );
 
     if (!hasAdminRole && payload.isAdmin !== true) {

@@ -38,7 +38,7 @@ async function getHandler(req: NextRequest) {
 
     const payload = await container.get(TokenService).verifyAdminAccessToken(token);
     const isAdmin = Array.isArray(payload.roles) && payload.roles.some(
-      (role: string) => role === "ADMIN" || role === "SUPER_ADMIN"
+      (role: string) => role === "admin" || role === "super_admin"
     );
 
     if (!isAdmin && payload.isAdmin !== true) {

@@ -127,7 +127,7 @@ export async function proxy(request: NextRequest) {
 
         if (isInfraRoute) {
             const roles = Array.isArray(_payload.roles) ? (_payload.roles as string[]) : [];
-            if (!roles.includes('INFRASTRUCTURE')) {
+            if (!roles.includes('infrastructure')) {
               const res = NextResponse.json({ error: 'Forbidden: Infrastructure privileges required' }, { status: 403 });
               res.headers.set('x-request-id', requestId);
               return corsMiddleware(request, res);

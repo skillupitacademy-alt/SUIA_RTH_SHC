@@ -39,7 +39,7 @@ export const userProfiles = pgTable("user_profiles", {
 
 export const roles = pgTable("roles", {
   id: uuid("id").primaryKey().defaultRandom(),
-  name: text("name").notNull().unique(), // USER, ADMIN, SUPER_ADMIN
+  name: text("name").notNull().unique(), // user, admin, super_admin, infrastructure
 });
 
 export const userRoles = pgTable("user_roles", {

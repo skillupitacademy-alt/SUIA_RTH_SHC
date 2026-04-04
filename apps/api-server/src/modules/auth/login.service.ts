@@ -10,6 +10,15 @@ import { SecurityService } from '@/modules/auth/security.service';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 
+function normalizeRoleName(role: string | null | undefined): string | null {
+  if (typeof role !== 'string') {
+    return null;
+  }
+
+  const normalized = role.trim().toLowerCase();
+  return normalized.length > 0 ? normalized : null;
+}
+
 export class LoginService {
   constructor(
     private userRepo = container.get(UserRepository),
@@ -95,8 +104,10 @@ export class LoginService {
     await brandSecurityService.trackLoginAttempt(ip, email, true, brand);
     await this.auditService.log({ userId: user.id, action: 'login_success', ip, brand });
 
-    const roleNames = user.userRoles.map(ur => ur.role.name);
-    const isAdmin = roleNames.includes('ADMIN') || roleNames.includes('SUPER_ADMIN') || roleNames.includes('INFRASTRUCTURE');
+    const roleNames = user.userRoles
+      .map((ur) => normalizeRoleName(ur.role.name))
+      .filter((role): role is string => role !== null);
+    const isAdmin = roleNames.includes('admin') || roleNames.includes('super_admin') || roleNames.includes('infrastructure');
     const shadowUserId = await this.ensureShadowUserId(user, brand);
 
     const accessToken = await this.tokenService.generateAccessToken({

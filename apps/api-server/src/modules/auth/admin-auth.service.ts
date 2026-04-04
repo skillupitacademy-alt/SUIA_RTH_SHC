@@ -19,6 +19,15 @@ type AdminUserRow = {
   roleName: string | null;
 };
 
+function normalizeRoleName(role: string | null | undefined): string | null {
+  if (typeof role !== 'string') {
+    return null;
+  }
+
+  const normalized = role.trim().toLowerCase();
+  return normalized.length > 0 ? normalized : null;
+}
+
 export class AdminAuthService {
   static async login(email: string, password: string, ip: string = 'unknown', requestedAudience: string = 'admin', brand: RequestBrand = 'realtutorialhub') {
     const cleanEmail = email.trim();
@@ -71,9 +80,9 @@ export class AdminAuthService {
     }
 
     const roleNames = typedUsersWithRoles
-      .map((row) => row.roleName)
+      .map((row) => normalizeRoleName(row.roleName))
       .filter((name: string | null): name is string => name !== null);
-    const isAdmin = roleNames.includes('ADMIN') || roleNames.includes('SUPER_ADMIN') || roleNames.includes('INFRASTRUCTURE');
+    const isAdmin = roleNames.includes('admin') || roleNames.includes('super_admin') || roleNames.includes('infrastructure');
 
     if (isAdmin === false) {
       await securityService.trackLoginAttempt(ip, cleanEmail, false, brand);
@@ -82,7 +91,7 @@ export class AdminAuthService {
     }
 
     // Portal Defense: Ensure 'infra' audience is only granted to users with the INFRASTRUCTURE role
-    if (requestedAudience === 'infra' && roleNames.includes('INFRASTRUCTURE') === false) {
+    if (requestedAudience === 'infra' && roleNames.includes('infrastructure') === false) {
         await container.get(AuditService).log({ userId: user.id, action: 'admin_audience_violation', metadata: { email: cleanEmail, requestedAud: requestedAudience }, ip, brand });
         throw new Error('Access Denied: Infrastructure privileges required for this portal');
     }
@@ -98,7 +107,7 @@ export class AdminAuthService {
         externalBrand: brand,
         email: user.email,
         platform: brand,
-        role: roleNames.includes('SUPER_ADMIN') ? 'super_admin' : roleNames.includes('ADMIN') ? 'admin' : 'student',
+        role: roleNames.includes('super_admin') ? 'super_admin' : roleNames.includes('admin') ? 'admin' : 'student',
       });
       await bridge.updateShadowUserId(brandContext.db, brandContext.tables.users, user.id, result.shadowUserId);
       await bridge.grantPlatformAccess(result.shadowUserId, brand);
@@ -133,7 +142,7 @@ export class AdminAuthService {
       expiresAt,
     });
 
-    const primaryRole = roleNames[0]?.toLowerCase() ?? 'admin';
+    const primaryRole = roleNames[0] ?? 'admin';
 
     return { 
       user: { 

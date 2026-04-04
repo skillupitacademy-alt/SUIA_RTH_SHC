@@ -17,12 +17,18 @@ import { JobsService } from '@/modules/system/jobs.service';
 const qstashUrl = typeof process.env.QSTASH_URL === 'string' && process.env.QSTASH_URL.trim() !== ''
   ? process.env.QSTASH_URL
   : 'https://qstash.upstash.io';
-const qstashToken = typeof process.env.QSTASH_TOKEN === 'string' ? process.env.QSTASH_TOKEN : '';
 
-const workflowClient = new Client({
-    baseUrl: qstashUrl,
-    token: qstashToken,
-});
+function getWorkflowClient() {
+    const qstashToken = typeof process.env.QSTASH_TOKEN === 'string' ? process.env.QSTASH_TOKEN.trim() : '';
+    if (qstashToken === '') {
+        return null;
+    }
+
+    return new Client({
+        baseUrl: qstashUrl,
+        token: qstashToken,
+    });
+}
 
 export interface ExamSagaData {
     examId: string;
@@ -73,6 +79,10 @@ export class ExamSaga {
             logger.info({ examId, jobId: job.id, workflowUrl }, '[ExamSaga] Triggering Upstash Workflow');
             
             try {
+                const workflowClient = getWorkflowClient();
+                if (workflowClient === null) {
+                    throw new Error('QSTASH_TOKEN is required for exam workflows');
+                }
                 await workflowClient.trigger({
                     url: workflowUrl,
                     body: {

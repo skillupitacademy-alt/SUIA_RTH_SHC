@@ -1,6 +1,5 @@
 import { db, exams } from '@quiz/db';
 import { JobStatus } from '@quiz/types';
-import { serve } from '@upstash/workflow/nextjs';
 import { eq } from 'drizzle-orm';
 
 import { eventBus } from '@/lib/event-bus';
@@ -17,19 +16,28 @@ import { JobsService } from '@/modules/system/jobs.service';
 
 const log = logger.child({ module: 'export-workflow' });
 
-export const { POST } = serve<{
-  examId: string;
-  userId: string;
-  format: ExportFormat;
-  jobId: string;
-}>(async (context) => {
-  const { examId, userId, format, jobId } = context.requestPayload;
-  const stateKey = `export:workflow:${jobId}`;
-  const queryBuilder = new ExportQueryBuilder();
-  const aggregator = new ExportAggregator();
-  const jsonFormatter = new JsonFormatter();
-  const csvFormatter = new CsvFormatter();
-  const cacheKey = `export:${examId}:${userId}:${format}`;
+let workflowHandlerPromise: Promise<(req: Request) => Promise<Response>> | null = null;
+
+async function getWorkflowHandler() {
+  if (workflowHandlerPromise !== null) {
+    return workflowHandlerPromise;
+  }
+
+  workflowHandlerPromise = (async () => {
+    const { serve } = await import('@upstash/workflow/nextjs');
+    const { POST } = serve<{
+      examId: string;
+      userId: string;
+      format: ExportFormat;
+      jobId: string;
+    }>(async (context) => {
+      const { examId, userId, format, jobId } = context.requestPayload;
+      const stateKey = `export:workflow:${jobId}`;
+      const queryBuilder = new ExportQueryBuilder();
+      const aggregator = new ExportAggregator();
+      const jsonFormatter = new JsonFormatter();
+      const csvFormatter = new CsvFormatter();
+      const cacheKey = `export:${examId}:${userId}:${format}`;
 
   const persistState = async (state: Record<string, unknown>) => {
     try {
@@ -236,4 +244,15 @@ export const { POST } = serve<{
       log.warn({ err: error, jobId }, 'Failed to cleanup workflow state');
     }
   });
-});
+    });
+
+    return POST;
+  })();
+
+  return workflowHandlerPromise;
+}
+
+export async function POST(request: Request) {
+  const workflowHandler = await getWorkflowHandler();
+  return workflowHandler(request);
+}

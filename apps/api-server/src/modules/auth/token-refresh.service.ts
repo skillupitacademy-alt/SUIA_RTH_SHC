@@ -10,6 +10,15 @@ import { TokenService } from "@/modules/auth/token.service";
 import { container } from "@/modules/core/container";
 import { ExamRepository } from "@/modules/exam-engine/repositories/exam.repository";
 
+function normalizeRoleName(role: string | null | undefined): string | null {
+  if (typeof role !== 'string') {
+    return null;
+  }
+
+  const normalized = role.trim().toLowerCase();
+  return normalized.length > 0 ? normalized : null;
+}
+
 export class TokenRefreshService {
   constructor(
     private tokenRepo = container.get(TokenRepository),
@@ -133,12 +142,14 @@ export class TokenRefreshService {
     await brandUserRepo.updateLastActive(userWithDetails.id);
 
     const user = userWithDetails;
-    const roleNames = user.userRoles.map(ur => ur.role.name);
-    const isAdminNow = roleNames.includes('ADMIN') || roleNames.includes('SUPER_ADMIN') || roleNames.includes('INFRASTRUCTURE');
+    const roleNames = user.userRoles
+      .map((ur) => normalizeRoleName(ur.role.name))
+      .filter((role): role is string => role !== null);
+    const isAdminNow = roleNames.includes('admin') || roleNames.includes('super_admin') || roleNames.includes('infrastructure');
     const shadowUserId = await this.ensureShadowUserId(user, effectiveBrand);
 
     // Portal Defense: Ensure 'infra' audience is only granted to users with the INFRASTRUCTURE role
-    if (requestedAudience === 'infra' && !roleNames.includes('INFRASTRUCTURE')) {
+    if (requestedAudience === 'infra' && !roleNames.includes('infrastructure')) {
         throw new Error('Access Denied: Infrastructure privileges required for this portal session');
     }
 

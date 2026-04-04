@@ -17,11 +17,11 @@ async function run() {
         console.log('Starting transaction...');
         await client.query('BEGIN');
 
-        // 1. Ensure INFRASTRUCTURE role exists
-        console.log('Ensuring INFRASTRUCTURE role exists...');
+        // 1. Ensure infrastructure role exists
+        console.log('Ensuring infrastructure role exists...');
         await client.query(`
       INSERT INTO roles (name) 
-      VALUES ('INFRASTRUCTURE') 
+      VALUES ('infrastructure') 
       ON CONFLICT (name) DO NOTHING
     `);
 
@@ -42,15 +42,15 @@ async function run() {
     `, [userId, profileId]);
 
         // 4. Assign Role
-        console.log('Assigning INFRASTRUCTURE role to user...');
+        console.log('Assigning infrastructure role to user...');
         await client.query(`
       INSERT INTO user_roles (user_id, role_id)
       SELECT $1, id FROM roles 
-      WHERE name = 'INFRASTRUCTURE'
+      WHERE name = 'infrastructure'
       AND NOT EXISTS (
         SELECT 1 FROM user_roles 
         WHERE user_id = $1 
-        AND role_id = (SELECT id FROM roles WHERE name = 'INFRASTRUCTURE')
+        AND role_id = (SELECT id FROM roles WHERE name = 'infrastructure')
       )
     `, [userId]);
 

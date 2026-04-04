@@ -24,10 +24,10 @@ function assertConnectionString(value, label) {
 }
 
 function normalizeRoleName(roleName) {
-  const value = typeof roleName === 'string' ? roleName.trim().toUpperCase() : '';
-  if (value === 'SUPER_ADMIN' || value === 'INFRASTRUCTURE') return 'super_admin';
-  if (value === 'ADMIN') return 'admin';
-  if (value === 'FACULTY') return 'faculty';
+  const value = typeof roleName === 'string' ? roleName.trim().toLowerCase() : '';
+  if (value === 'super_admin' || value === 'infrastructure') return 'super_admin';
+  if (value === 'admin') return 'admin';
+  if (value === 'faculty') return 'faculty';
   return 'student';
 }
 

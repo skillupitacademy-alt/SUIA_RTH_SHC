@@ -4,13 +4,13 @@
 
 -- First, ensure roles exist
 INSERT INTO roles (id, name) VALUES
-('00000000-0000-0000-0000-000000000001', 'USER'),
-('00000000-0000-0000-0000-000000000002', 'ADMIN'),
-('00000000-0000-0000-0000-000000000003', 'SUPER_ADMIN')
+('00000000-0000-0000-0000-000000000001', 'user'),
+('00000000-0000-0000-0000-000000000002', 'admin'),
+('00000000-0000-0000-0000-000000000003', 'super_admin')
 ON CONFLICT (id) DO NOTHING;
 
 -- =====================================================
--- ADMIN USER
+-- admin user
 -- Email: admin@test.com
 -- Password: admin123
 -- =====================================================
@@ -32,7 +32,7 @@ INSERT INTO user_roles (user_id, role_id) VALUES
 ON CONFLICT DO NOTHING;
 
 -- =====================================================
--- SUPER ADMIN
+-- super_admin
 -- Email: superadmin@test.com
 -- Password: super123
 -- =====================================================

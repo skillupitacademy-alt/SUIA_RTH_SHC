@@ -40,7 +40,7 @@ async function handler(req: NextRequest) {
     const payload = await container.get(TokenService).verifyAdminAccessToken(token);
     
     const hasAdminRole = Array.isArray(payload.roles) && payload.roles.some(
-      (role: string) => role.toUpperCase() === "ADMIN" || role.toUpperCase() === "SUPER_ADMIN"
+      (role: string) => role === "admin" || role === "super_admin"
     );
     
     if (!hasAdminRole && payload.isAdmin !== true) {

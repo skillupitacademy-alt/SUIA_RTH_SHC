@@ -33,7 +33,7 @@ export function UserCreateWizard({ isOpen, onClose, onSuccess }: UserCreateWizar
         name: '',
         email: '',
         password: '',
-        role: 'USER'
+        role: 'user'
     });
     const [isProcessing, setIsProcessing] = useState(false);
     const [executionStep, setExecutionStep] = useState<ExecutionStep>('idle');
@@ -50,7 +50,7 @@ export function UserCreateWizard({ isOpen, onClose, onSuccess }: UserCreateWizar
         } else {
             document.body.style.overflow = 'unset';
             // Reset state on close
-            setFormData({ name: '', email: '', password: '', role: 'USER' });
+            setFormData({ name: '', email: '', password: '', role: 'user' });
             setExecutionStep('idle');
             setError(null);
         }
@@ -200,10 +200,10 @@ export function UserCreateWizard({ isOpen, onClose, onSuccess }: UserCreateWizar
                                     <div id="role-selector" className="grid grid-cols-2 gap-4 p-2 bg-[#FAFAFA] rounded-[2rem] border-2 border-primary/5">
                                         <button
                                             type="button"
-                                            onClick={() => setFormData({ ...formData, role: 'USER' })}
+                                            onClick={() => setFormData({ ...formData, role: 'user' })}
                                             className={cn(
                                                 "py-4 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest transition-all",
-                                                formData.role === 'USER' 
+                                                formData.role === 'user' 
                                                     ? "bg-white text-[#1A1A1A] shadow-md shadow-black/5" 
                                                     : "text-muted-foreground hover:text-[#1A1A1A]"
                                             )}
@@ -212,10 +212,10 @@ export function UserCreateWizard({ isOpen, onClose, onSuccess }: UserCreateWizar
                                         </button>
                                         <button
                                             type="button"
-                                            onClick={() => setFormData({ ...formData, role: 'ADMIN' })}
+                                            onClick={() => setFormData({ ...formData, role: 'admin' })}
                                             className={cn(
                                                 "py-4 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest transition-all",
-                                                formData.role === 'ADMIN' 
+                                                formData.role === 'admin' 
                                                     ? "bg-[#1A1A1A] text-white shadow-xl shadow-black/20" 
                                                     : "text-muted-foreground hover:text-[#1A1A1A]"
                                             )}

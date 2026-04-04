@@ -147,18 +147,18 @@ export function UserTable() {
     const toggleAdminRole = (isAdmin: boolean) => {
         if (editingUser === null) return;
         const currentRoles = editingUser.userRoles ?? [];
-        const hasAdmin = currentRoles.some(r => r.role.name === 'ADMIN');
+        const hasAdmin = currentRoles.some(r => r.role.name === 'admin');
         if (isAdmin && !hasAdmin) {
-            recordCounter('admin.ui.users.role_change', 1, { userId: editingUser.id, role: 'ADMIN', action: 'add' });
+            recordCounter('admin.ui.users.role_change', 1, { userId: editingUser.id, role: 'admin', action: 'add' });
             setEditingUser({
                 ...editingUser,
-                userRoles: [...currentRoles, { role: { name: 'ADMIN' } }]
+                userRoles: [...currentRoles, { role: { name: 'admin' } }]
             });
         } else if (!isAdmin && hasAdmin) {
-            recordCounter('admin.ui.users.role_change', 1, { userId: editingUser.id, role: 'ADMIN', action: 'remove' });
+            recordCounter('admin.ui.users.role_change', 1, { userId: editingUser.id, role: 'admin', action: 'remove' });
             setEditingUser({
                 ...editingUser,
-                userRoles: currentRoles.filter(r => r.role.name !== 'ADMIN')
+                userRoles: currentRoles.filter(r => r.role.name !== 'admin')
             });
         }
     };
@@ -213,8 +213,8 @@ export function UserTable() {
                             className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl text-xs font-black uppercase tracking-widest text-slate-600 focus:ring-2 focus:ring-[#FF4B91]/20 appearance-none cursor-pointer"
                         >
                             <option value="ALL">All Access Levels</option>
-                            <option value="ADMIN">Administrator</option>
-                            <option value="USER">Standard User</option>
+                            <option value="admin">Administrator</option>
+                            <option value="user">Standard User</option>
                         </select>
                     </div>
 
@@ -443,7 +443,7 @@ export function UserTable() {
                                         type="checkbox"
                                         id="user-admin-toggle"
                                         className="h-5 w-5 rounded border-gray-300 text-[#FF4B91] focus:ring-[#FF4B91]"
-                                        checked={(editingUser.userRoles ?? []).some(r => r.role.name === 'ADMIN')}
+                                        checked={(editingUser.userRoles ?? []).some(r => r.role.name === 'admin')}
                                         onChange={(e) => toggleAdminRole(e.target.checked)}
                                     />
                                 </div>

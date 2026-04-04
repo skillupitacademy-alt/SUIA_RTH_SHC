@@ -37,7 +37,7 @@ export async function _verifyAdmin(_payload: TokenPayload): Promise<boolean> {
 
     // 1. JWT Payload Check (Fast Payout)
     const isAdminInToken = _payload.isAdmin === true || (_payload.roles !== undefined && _payload.roles.some(r => 
-        ['admin', 'ADMIN', 'super_admin', 'SUPER_ADMIN'].includes(r)
+        ['admin', 'super_admin', 'infrastructure'].includes(r)
     ));
 
     if (isAdminInToken === true) {

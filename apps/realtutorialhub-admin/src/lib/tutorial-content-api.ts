@@ -23,7 +23,7 @@ export const logger = pino({
 
 export const tutorialContentRepository = new TutorialContentRepository();
 const tokenService = new TokenService();
-const ADMIN_ROLE_NAMES = new Set(['ADMIN', 'SUPER_ADMIN', 'INFRASTRUCTURE']);
+const ADMIN_ROLE_NAMES = new Set(['admin', 'super_admin', 'infrastructure']);
 
 const optionalNullableString = z.union([z.string(), z.null()]).optional();
 
@@ -135,7 +135,7 @@ export async function requireAdmin(req: NextRequest) {
   }
 
   const roles = Array.isArray(payload.roles) ? payload.roles : [];
-  const hasAdminRole = roles.some((role) => ADMIN_ROLE_NAMES.has(role.toUpperCase()));
+  const hasAdminRole = roles.some((role) => ADMIN_ROLE_NAMES.has(role));
   if (payload.isAdmin !== true || hasAdminRole === false) {
     throw new TutorialAuthError('Forbidden', 403);
   }

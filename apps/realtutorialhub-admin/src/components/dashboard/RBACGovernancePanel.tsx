@@ -59,7 +59,7 @@ export function RBACGovernancePanel() {
                 {roles.map((r) => (
                     <div key={r.role} className="flex items-center justify-between p-4 rounded-2xl bg-background border border-muted/50 group hover:border-primary/20 transition-all">
                         <div className="flex items-center gap-4">
-                            <div className={`p-2 rounded-xl ${r.role === 'SUPER_ADMIN' ? 'bg-red-500/10 text-red-500' : 'bg-blue-500/10 text-blue-500'}`}>
+                            <div className={`p-2 rounded-xl ${r.role === 'super_admin' ? 'bg-red-500/10 text-red-500' : 'bg-blue-500/10 text-blue-500'}`}>
                                 <UserCog size={18} />
                             </div>
                             <span className="text-sm font-black uppercase tracking-widest text-[#1A1A1A]">{r.role.replace('_', ' ')}</span>

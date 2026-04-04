@@ -39,7 +39,7 @@ async function getHandler(req: NextRequest) {
     const isAdmin = payload?.isAdmin === true;
     const roles = Array.isArray(payload?.roles) ? payload.roles : [];
 
-    if (!isAdmin && !roles.includes('ADMIN')) {
+    if (!isAdmin && !roles.includes('admin')) {
       throw forbidden("Forbidden");
     }
 

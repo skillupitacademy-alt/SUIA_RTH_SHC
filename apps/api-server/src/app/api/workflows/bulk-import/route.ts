@@ -1,4 +1,3 @@
-import { serve } from "@upstash/workflow/nextjs";
 import { NextResponse } from "next/server";
 
 import { acquireJobLock, releaseJobLock } from "@/lib/job-lock";
@@ -14,43 +13,55 @@ export const dynamic = "force-dynamic";
  * Processes questions in small batches to avoid function timeouts.
  * Replaces the brittle synchronous loop in the API route.
  */
-const { POST: workflowHandler } = serve<{
-    questions: Record<string, unknown>[];
-    context: {
-        topicId: string;
-        subtopicId?: string;
-        skillId?: string;
-        skillIds?: string[];
-    };
-    adminId: string;
-    jobId: string;
-}>(
-    async (context) => {
-        const { questions, context: contextMeta, adminId } = context.requestPayload;
+let workflowHandlerPromise: Promise<(req: Request) => Promise<Response>> | null = null;
 
-        logger.info({ count: questions.length, adminId }, "[Workflow] Starting Bulk Import Workflow");
-
-        // Cloud Run supports long-running requests - batch size
-        // can be increased after load testing if needed.
-        const batchSize = 10;
-        const totalBatches = Math.ceil(questions.length / batchSize);
-
-        for (let i = 0; i < questions.length; i += batchSize) {
-            const batch = questions.slice(i, i + batchSize);
-            const batchNum = Math.floor(i / batchSize) + 1;
-
-            await context.run(`process-batch-${batchNum}`, async () => {
-                logger.info({ batch: batchNum, total: totalBatches, size: batch.length }, "[Workflow] Processing batch");
-
-                // AdminQuestionEngine is a container-managed singleton exported from admin.engine
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                await AdminQuestionEngine.bulkCreateQuestionsWithContext(batch as any, contextMeta, adminId);
-            });
-        }
-
-        logger.info({ count: questions.length }, "[Workflow] Bulk Import Workflow completed successfully");
+async function getWorkflowHandler() {
+    if (workflowHandlerPromise !== null) {
+        return workflowHandlerPromise;
     }
-);
+
+    workflowHandlerPromise = (async () => {
+        const { serve } = await import("@upstash/workflow/nextjs");
+        const { POST } = serve<{
+            questions: Record<string, unknown>[];
+            context: {
+                topicId: string;
+                subtopicId?: string;
+                skillId?: string;
+                skillIds?: string[];
+            };
+            adminId: string;
+            jobId: string;
+        }>(
+            async (context) => {
+                const { questions, context: contextMeta, adminId } = context.requestPayload;
+
+                logger.info({ count: questions.length, adminId }, "[Workflow] Starting Bulk Import Workflow");
+
+                const batchSize = 10;
+                const totalBatches = Math.ceil(questions.length / batchSize);
+
+                for (let i = 0; i < questions.length; i += batchSize) {
+                    const batch = questions.slice(i, i + batchSize);
+                    const batchNum = Math.floor(i / batchSize) + 1;
+
+                    await context.run(`process-batch-${batchNum}`, async () => {
+                        logger.info({ batch: batchNum, total: totalBatches, size: batch.length }, "[Workflow] Processing batch");
+
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        await AdminQuestionEngine.bulkCreateQuestionsWithContext(batch as any, contextMeta, adminId);
+                    });
+                }
+
+                logger.info({ count: questions.length }, "[Workflow] Bulk Import Workflow completed successfully");
+            }
+        );
+
+        return POST;
+    })();
+
+    return workflowHandlerPromise;
+}
 
 const securedHandler = async (req: Request) => {
     const { valid, body } = await verifyQStashSignature(req);
@@ -77,6 +88,7 @@ const securedHandler = async (req: Request) => {
 
     try {
         const nextReq = new Request(req.url, { method: 'POST', headers: req.headers, body });
+        const workflowHandler = await getWorkflowHandler();
         return await workflowHandler(nextReq);
     } finally {
         await releaseJobLock(jobId);

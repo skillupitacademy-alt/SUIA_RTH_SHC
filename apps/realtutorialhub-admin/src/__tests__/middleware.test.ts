@@ -55,6 +55,19 @@ describe('realtutorialhub-admin proxy', () => {
     expect(response.headers.get('x-original-user-id')).toBe('brand-admin-1');
   });
 
+  it('rejects protected routes when token roles are uppercase values', async () => {
+    verifyAdminAccessTokenMock.mockResolvedValueOnce({
+      sub: 'shadow-admin-2',
+      shadowUserId: 'shadow-admin-2',
+      originalUserId: 'brand-admin-2',
+      roles: ['ADMIN'],
+    });
+
+    const response = await proxy(makeRequest('/dashboard/content', 'admin_accessToken=admin-token'));
+
+    expect(response.status).toBe(403);
+  });
+
   it('redirects to login when admin cookie is missing', async () => {
     const response = await proxy(makeRequest('/dashboard/content'));
 

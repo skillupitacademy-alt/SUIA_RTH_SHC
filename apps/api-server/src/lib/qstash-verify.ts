@@ -1,9 +1,31 @@
 import { Receiver } from '@upstash/qstash';
 
-const receiver = new Receiver({
-  currentSigningKey: process.env.QSTASH_CURRENT_SIGNING_KEY!,
-  nextSigningKey: process.env.QSTASH_NEXT_SIGNING_KEY!,
-});
+let receiver: Receiver | null | undefined;
+
+function getReceiver() {
+  if (receiver !== undefined) {
+    return receiver;
+  }
+
+  const currentSigningKey = process.env.QSTASH_CURRENT_SIGNING_KEY;
+  const nextSigningKey = process.env.QSTASH_NEXT_SIGNING_KEY;
+
+  if (
+    typeof currentSigningKey !== 'string' ||
+    currentSigningKey.trim() === '' ||
+    typeof nextSigningKey !== 'string' ||
+    nextSigningKey.trim() === ''
+  ) {
+    receiver = null;
+    return receiver;
+  }
+
+  receiver = new Receiver({
+    currentSigningKey,
+    nextSigningKey,
+  });
+  return receiver;
+}
 
 export async function verifyQStashSignature(
   req: Request
@@ -12,9 +34,13 @@ export async function verifyQStashSignature(
   if (signature === null || signature.trim() === '') {
     return { valid: false, body: '' };
   }
+  const qstashReceiver = getReceiver();
+  if (qstashReceiver === null) {
+    return { valid: false, body: '' };
+  }
   const body = await req.text();
   try {
-    await receiver.verify({ signature: signature.trim(), body, clockTolerance: 60 });
+    await qstashReceiver.verify({ signature: signature.trim(), body, clockTolerance: 60 });
     return { valid: true, body };
   } catch {
     return { valid: false, body: '' };
