@@ -2,12 +2,6 @@ import {
   getSkillupFaculty,
   getSkillupProgramDetail,
   getSkillupPrograms,
-  getSkillupAttendance,
-  getSkillupStudentDashboard,
-  getSkillupMyBatch,
-  getSkillupPayments,
-  getSkillupPlacement,
-  getSkillupBatches,
 } from '@/lib/skillup-data';
 import { headers } from 'next/headers';
 
@@ -73,12 +67,16 @@ export async function fetchSkillupApi<T>(path: string): Promise<T> {
       return ({ program: await getSkillupProgramDetail(slug) }) as T;
     }
 
-    if (path === '/api/student/dashboard') return (await getSkillupStudentDashboard()) as T;
-    if (path === '/api/student/my-batch') return (await getSkillupMyBatch()) as T;
-    if (path === '/api/student/attendance') return (await getSkillupAttendance()) as T;
-    if (path === '/api/student/payments') return (await getSkillupPayments()) as T;
-    if (path === '/api/student/placement') return (await getSkillupPlacement()) as T;
-    if (path === '/api/batches') return (await getSkillupBatches()) as T;
+    if (
+      path === '/api/student/dashboard' ||
+      path === '/api/student/my-batch' ||
+      path === '/api/student/attendance' ||
+      path === '/api/student/payments' ||
+      path === '/api/student/placement' ||
+      path === '/api/batches'
+    ) {
+      throw new Error(`Protected SkillUp data fetch failed for ${path}`);
+    }
     if (path === '/api/faculty') return (await getSkillupFaculty()) as T;
 
     throw new Error(`Failed to load SkillUp data from ${path}`);

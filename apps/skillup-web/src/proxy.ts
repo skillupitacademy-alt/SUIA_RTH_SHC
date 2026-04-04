@@ -4,7 +4,7 @@ import { TokenService } from '@quiz/auth';
 const LOGIN_URL = process.env.NEXT_PUBLIC_LOGIN_URL ?? '/login';
 
 const PUBLIC_PATHS = ['/', '/programs', '/api/healthz', '/verify', '/login', '/register', '/placement'];
-const PROTECTED_PATHS = ['/student', '/batches', '/faculty'];
+const PROTECTED_PATHS = ['/student', '/batches', '/faculty', '/api/student', '/api/batches'];
 const OVERRIDE_ROLES = ['admin', 'super_admin', 'faculty'];
 
 function hasPrefix(pathname: string, prefixes: string[]): boolean {
@@ -89,9 +89,12 @@ export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
   const user = await resolveUser(request);
   const redirectPath = `${pathname}${search}`;
+  const isApiRoute = pathname.startsWith('/api/');
 
   if (isProtectedRoute(pathname) && user === null) {
-    return NextResponse.redirect(getLoginUrl(request, redirectPath));
+    return isApiRoute
+      ? NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+      : NextResponse.redirect(getLoginUrl(request, redirectPath));
   }
 
   if (isPublicRoute(pathname)) {

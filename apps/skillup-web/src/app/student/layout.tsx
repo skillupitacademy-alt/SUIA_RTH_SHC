@@ -3,6 +3,8 @@ import type { ReactNode } from 'react';
 
 import { StudentRouteTracker } from '@/components/StudentRouteTracker';
 
+export const dynamic = 'force-dynamic';
+
 const navItems = [
   { href: '/student', label: 'Dashboard' },
   { href: '/student/my-batch', label: 'My Batch' },

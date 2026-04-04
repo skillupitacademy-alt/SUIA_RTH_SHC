@@ -5,6 +5,8 @@ import { fetchSkillupApi } from '@/lib/skillup-api';
 import { formatDateTime } from '@/lib/skillup-format';
 import type { SkillupSession } from '@/lib/skillup-types';
 
+export const dynamic = 'force-dynamic';
+
 type BatchesResponse = {
   batch: {
     name: string;

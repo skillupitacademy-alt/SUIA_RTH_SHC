@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
   getSkillupPlacement: vi.fn(),
   getSkillupBatches: vi.fn(),
   getSkillupFaculty: vi.fn(),
+  requireStudentAuth: vi.fn(),
 }));
 
 vi.mock('@/lib/skillup-data', () => ({
@@ -22,6 +23,10 @@ vi.mock('@/lib/skillup-data', () => ({
   getSkillupPlacement: mocks.getSkillupPlacement,
   getSkillupBatches: mocks.getSkillupBatches,
   getSkillupFaculty: mocks.getSkillupFaculty,
+}));
+
+vi.mock('@/lib/student-auth', () => ({
+  requireStudentAuth: mocks.requireStudentAuth,
 }));
 
 vi.mock('next/server', () => ({
@@ -60,6 +65,11 @@ async function readJson<T>(response: Response): Promise<T> {
 describe('SkillUp BFF routes', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.requireStudentAuth.mockResolvedValue({
+      ok: true,
+      userId: 'student-1',
+      payload: { userId: 'student-1', shadowUserId: 'student-1', brand: 'skillup', roles: ['student'] },
+    });
 
     mocks.getSkillupPrograms.mockResolvedValue({
       programs: [
@@ -183,51 +193,74 @@ describe('SkillUp BFF routes', () => {
   });
 
   it('returns dashboard data', async () => {
-    const response = await getDashboard();
+    const response = await getDashboard(new Request('http://localhost/api/student/dashboard') as Request);
     const payload = await readJson<{ summary: { batchName: string }; sessions: unknown[] }>(response);
     expect(response.status).toBe(200);
     expect(payload.summary.batchName).toBeTruthy();
     expect(payload.sessions.length).toBeGreaterThan(0);
+    expect(mocks.getSkillupStudentDashboard).toHaveBeenCalledWith('student-1');
   });
 
   it('returns batch data', async () => {
-    const response = await getBatch();
+    const response = await getBatch(new Request('http://localhost/api/student/my-batch') as Request);
     const payload = await readJson<{ batch: { name: string }; sessions: unknown[] }>(response);
     expect(response.status).toBe(200);
     expect(payload.batch.name).toBeTruthy();
     expect(payload.sessions.length).toBeGreaterThan(0);
+    expect(mocks.getSkillupMyBatch).toHaveBeenCalledWith('student-1');
   });
 
   it('returns attendance data', async () => {
-    const response = await getAttendance();
+    const response = await getAttendance(new Request('http://localhost/api/student/attendance') as Request);
     const payload = await readJson<{ history: Array<{ state: string }> }>(response);
     expect(response.status).toBe(200);
     expect(payload.history.length).toBeGreaterThan(0);
     expect(payload.history[0].state).toBeTruthy();
+    expect(mocks.getSkillupAttendance).toHaveBeenCalledWith('student-1');
   });
 
   it('returns payments data', async () => {
-    const response = await getPayments();
+    const response = await getPayments(new Request('http://localhost/api/student/payments') as Request);
     const payload = await readJson<{ installments: Array<{ status: string }> }>(response);
     expect(response.status).toBe(200);
     expect(payload.installments.length).toBeGreaterThan(0);
     expect(payload.installments[0].status).toBeTruthy();
+    expect(mocks.getSkillupPayments).toHaveBeenCalledWith('student-1');
   });
 
   it('returns placement data', async () => {
-    const response = await getPlacement();
+    const response = await getPlacement(new Request('http://localhost/api/student/placement') as Request);
     const payload = await readJson<{ profile: { roleGoal: string }; jobs: unknown[] }>(response);
     expect(response.status).toBe(200);
     expect(payload.profile.roleGoal).toBeTruthy();
     expect(payload.jobs.length).toBeGreaterThan(0);
+    expect(mocks.getSkillupPlacement).toHaveBeenCalledWith('student-1');
   });
 
   it('returns parent batch data', async () => {
-    const response = await getBatches();
+    const response = await getBatches(new Request('http://localhost/api/batches') as Request);
     const payload = await readJson<{ batch: { faculty: string }; sessions: unknown[] }>(response);
     expect(response.status).toBe(200);
     expect(payload.batch.faculty).toBeTruthy();
     expect(payload.sessions.length).toBeGreaterThan(0);
+    expect(mocks.getSkillupBatches).toHaveBeenCalledWith('student-1');
+  });
+
+  it('rejects student routes without authentication', async () => {
+    mocks.requireStudentAuth.mockResolvedValueOnce({
+      ok: false,
+      response: new Response(JSON.stringify({ error: 'Authentication required' }), {
+        status: 401,
+        headers: { 'content-type': 'application/json' },
+      }),
+    });
+
+    const response = await getDashboard(new Request('http://localhost/api/student/dashboard') as Request);
+    const payload = await readJson<{ error: string }>(response);
+
+    expect(response.status).toBe(401);
+    expect(payload.error).toBe('Authentication required');
+    expect(mocks.getSkillupStudentDashboard).not.toHaveBeenCalled();
   });
 
   it('returns faculty data', async () => {

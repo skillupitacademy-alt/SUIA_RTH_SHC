@@ -24,18 +24,7 @@ import {
 import type { SkillupSession } from '@/lib/skillup-types';
 import type { SkillupProgramDetail } from '@/lib/skillup-types';
 
-const DEFAULT_STUDENT_EMAIL = 'student@skillupitacademy.com';
-let authPool: Pool | null | undefined;
 let paymentPool: Pool | null | undefined;
-
-function getAuthPool() {
-  if (authPool === undefined) {
-    const databaseUrl = process.env.DATABASE_DIRECT_URL?.trim() || process.env.DATABASE_URL?.trim() || '';
-    authPool = databaseUrl.length > 0 ? new Pool({ connectionString: databaseUrl }) : null;
-  }
-
-  return authPool;
-}
 
 function getPaymentPool() {
   if (paymentPool === undefined) {
@@ -96,27 +85,6 @@ const FALLBACK_FACULTY = [
   },
 ] as const;
 
-const FALLBACK_STUDENT_DASHBOARD = {
-  summary: {
-    name: 'Aarav Patel',
-    batchName: 'SkillUp FS-24 Morning',
-    facultyName: 'Asha Iyer',
-    currentTopic: 'React state patterns',
-    attendancePercent: 86,
-    progressPercent: 68,
-    paymentDue: 18000,
-    outstandingInstallments: 1,
-    nextSessionAt: '2026-03-24T09:30:00+05:30',
-    upcomingSessions: 3,
-    placementMatches: 6,
-  },
-  sessions: [
-    { id: 'session-1', date: '2026-03-24T09:30:00+05:30', title: 'React state patterns and component design', mode: 'offline', status: 'upcoming' },
-    { id: 'session-2', date: '2026-03-22T09:30:00+05:30', title: 'REST API integration and error handling', mode: 'online', status: 'completed', recording: 'https://learn.skillupitacademy.com/recordings/rest-api-integration' },
-    { id: 'session-3', date: '2026-03-20T09:30:00+05:30', title: 'Project review and feedback clinic', mode: 'hybrid', status: 'completed', recording: 'https://learn.skillupitacademy.com/recordings/project-review' },
-  ],
-};
-
 const FALLBACK_BATCH = {
   batch: {
     name: 'SkillUp FS-24 Morning',
@@ -138,17 +106,6 @@ const FALLBACK_BATCH = {
   ],
 };
 
-const FALLBACK_ATTENDANCE = {
-  history: [
-    { date: 'Mon 18 Mar', state: 'present', note: 'On time for class' },
-    { date: 'Tue 19 Mar', state: 'present', note: 'Completed in-class task' },
-    { date: 'Wed 20 Mar', state: 'late', note: 'Joined after 10 minutes' },
-    { date: 'Thu 21 Mar', state: 'present', note: 'Pair-programming session' },
-    { date: 'Fri 22 Mar', state: 'present', note: 'Reviewed assignment feedback' },
-    { date: 'Sat 23 Mar', state: 'absent', note: 'Planned leave' },
-  ],
-};
-
 const FALLBACK_PLACEMENT = {
   profile: {
     roleGoal: 'Frontend Developer',
@@ -162,10 +119,6 @@ const FALLBACK_PLACEMENT = {
     { id: 'job-2', company: 'Northwind Labs', title: 'Product Engineer Intern', location: 'Remote', match: 89 },
     { id: 'job-3', company: 'BlueOrbit', title: 'Web Developer Associate', location: 'Pune', match: 87 },
   ],
-};
-
-type RequestLike = {
-  headers?: Headers;
 };
 
 const attendanceDateFormatter = new Intl.DateTimeFormat('en-IN', { weekday: 'short', day: '2-digit', month: 'short' });
@@ -188,37 +141,6 @@ function formatSessionStatus(status: string): SkillupSession['status'] {
 function formatSessionMode(mode: string): SkillupSession['mode'] {
   if (mode === 'offline' || mode === 'online' || mode === 'hybrid') return mode;
   return 'hybrid';
-}
-
-async function resolveStudentUserId(request?: RequestLike): Promise<string> {
-  const requestUserId = request?.headers?.get('x-shadow-user-id');
-  if (requestUserId !== null && requestUserId !== undefined && requestUserId.trim() !== '') {
-    return requestUserId;
-  }
-
-  const authPoolClient = getAuthPool();
-  if (authPoolClient !== null) {
-    const { rows } = await authPoolClient.query<{ id: string }>(
-      'SELECT id FROM users WHERE email = $1 LIMIT 1',
-      [DEFAULT_STUDENT_EMAIL],
-    );
-
-    if (rows[0] !== undefined) {
-      return rows[0].id;
-    }
-  }
-
-  const canonical = await db.select({ id: users.id }).from(users).where(eq(users.email, DEFAULT_STUDENT_EMAIL)).limit(1);
-  if (canonical.length > 0) {
-    return canonical[0].id;
-  }
-
-  const fallback = await db.select({ id: users.id }).from(users).where(eq(users.platform, 'skillup')).limit(1);
-  if (fallback.length > 0) {
-    return fallback[0].id;
-  }
-
-  throw new Error('SkillUp student user not found');
 }
 
 async function getStudentProfile(userId: string) {
@@ -323,9 +245,7 @@ export async function getSkillupPrograms() {
   }
 }
 
-export async function getSkillupStudentDashboard(request?: RequestLike) {
-  try {
-    const userId = await resolveStudentUserId(request);
+export async function getSkillupStudentDashboard(userId: string) {
     const profile = await getStudentProfile(userId);
     const batchContext = await getStudentBatchContext(userId);
 
@@ -387,14 +307,9 @@ export async function getSkillupStudentDashboard(request?: RequestLike) {
         recording: session.status === 'completed' ? `https://learn.skillupitacademy.com/recordings/${session.id}` : undefined,
       })),
     };
-  } catch {
-    return FALLBACK_STUDENT_DASHBOARD;
-  }
 }
 
-export async function getSkillupMyBatch(request?: RequestLike) {
-  try {
-    const userId = await resolveStudentUserId(request);
+export async function getSkillupMyBatch(userId: string) {
     const batchContext = await getStudentBatchContext(userId);
     const profile = await getStudentProfile(userId);
 
@@ -430,14 +345,9 @@ export async function getSkillupMyBatch(request?: RequestLike) {
         recording: session.status === 'completed' ? `https://learn.skillupitacademy.com/recordings/${session.id}` : undefined,
       })),
     };
-  } catch {
-    return FALLBACK_BATCH;
-  }
 }
 
-export async function getSkillupAttendance(request?: RequestLike) {
-  try {
-    const userId = await resolveStudentUserId(request);
+export async function getSkillupAttendance(userId: string) {
     const rows = await db
       .select({
         status: attendanceRecords.status,
@@ -459,14 +369,9 @@ export async function getSkillupAttendance(request?: RequestLike) {
               : 'Planned leave',
       })),
     };
-  } catch {
-    return FALLBACK_ATTENDANCE;
-  }
 }
 
-export async function getSkillupPayments(request?: RequestLike) {
-  try {
-    const userId = await resolveStudentUserId(request);
+export async function getSkillupPayments(userId: string) {
     const paymentPoolClient = getPaymentPool();
     if (paymentPoolClient === null) {
       return { installments: [] };
@@ -509,14 +414,9 @@ export async function getSkillupPayments(request?: RequestLike) {
         paymentRef: item.paymentRef,
       })),
     };
-  } catch {
-    return { installments: [] };
-  }
 }
 
-export async function getSkillupPlacement(request?: RequestLike) {
-  try {
-    const userId = await resolveStudentUserId(request);
+export async function getSkillupPlacement(userId: string) {
     const profileRows = await placementDb
       .select({
         userId: placementStudentPlacementProfiles.userId,
@@ -607,14 +507,9 @@ export async function getSkillupPlacement(request?: RequestLike) {
             }));
           })(),
     };
-  } catch {
-    return FALLBACK_PLACEMENT;
-  }
 }
 
-export async function getSkillupBatches(request?: RequestLike) {
-  try {
-    const userId = await resolveStudentUserId(request);
+export async function getSkillupBatches(userId: string) {
     const batchContext = await getStudentBatchContext(userId);
 
     if (batchContext === null) {
@@ -648,9 +543,6 @@ export async function getSkillupBatches(request?: RequestLike) {
         recording: session.status === 'completed' ? `https://learn.skillupitacademy.com/recordings/${session.id}` : undefined,
       })),
     };
-  } catch {
-    return FALLBACK_BATCH;
-  }
 }
 
 export async function getSkillupFaculty() {

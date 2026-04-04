@@ -2,27 +2,20 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';
 
 import { GET } from '../route';
-import { container } from '@/modules/core/container';
+import { unauthorized } from '@/lib/api-error';
+import { requireAdminRouteAccess } from '@/modules/auth/admin-audience.util';
 
-vi.mock('@/modules/core/container', () => ({
-  container: {
-    get: vi.fn(),
-  },
+vi.mock('@/modules/auth/admin-audience.util', () => ({
+  requireAdminRouteAccess: vi.fn(),
 }));
 
 describe('GET /api/admin/feature-flags', () => {
-  const mockTokenService = {
-    getAccessToken: vi.fn(),
-    verifyAdminAccessToken: vi.fn(),
-  };
-
   beforeEach(() => {
     vi.clearAllMocks();
-    (container.get as unknown as vi.Mock).mockReturnValue(mockTokenService);
   });
 
   it('returns 401 when no admin token is present', async () => {
-    mockTokenService.getAccessToken.mockReturnValueOnce(undefined);
+    (requireAdminRouteAccess as unknown as vi.Mock).mockRejectedValueOnce(unauthorized('Unauthorized'));
 
     const req = new NextRequest('http://localhost/api/admin/feature-flags');
     const res = await GET(req, {} as unknown as never);
@@ -31,8 +24,10 @@ describe('GET /api/admin/feature-flags', () => {
   });
 
   it('returns flags with session cache headers when authorized', async () => {
-    mockTokenService.getAccessToken.mockReturnValueOnce('token');
-    mockTokenService.verifyAdminAccessToken.mockResolvedValueOnce(undefined);
+    (requireAdminRouteAccess as unknown as vi.Mock).mockResolvedValueOnce({
+      userId: 'admin-1',
+      roles: ['admin'],
+    });
 
     const req = new NextRequest('http://localhost/api/admin/feature-flags');
     const res = await GET(req, {} as unknown as never);
