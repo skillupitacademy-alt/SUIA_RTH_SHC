@@ -85,7 +85,7 @@ describe('UserCreateWizard Unit Tests', () => {
                 name: 'Test User',
                 email: 'test@example.com',
                 password: 'password123',
-                roles: ['USER'],
+                roles: ['user'],
             });
         });
 

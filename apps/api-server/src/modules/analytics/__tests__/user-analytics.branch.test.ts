@@ -1,13 +1,19 @@
 import { describe, it, expect, vi } from 'vitest';
-import { redis } from '@/lib/redis';
-import { sql } from '@/lib/db';
-import { UserAnalyticsService } from '../user-analytics.service';
 
-vi.mock('@/lib/redis');
 vi.mock('@/lib/db', () => {
   const mockSql: any = vi.fn();
   return { sql: mockSql };
 });
+vi.mock('@/lib/redis', () => ({
+  redis: {
+    get: vi.fn(),
+    set: vi.fn(),
+  },
+}));
+
+import { redis } from '@/lib/redis';
+import { sql } from '@/lib/db';
+import { UserAnalyticsService } from '../user-analytics.service';
 
 describe('UserAnalyticsService branch coverage', () => {
   it('ignores cache get/set errors and still returns snapshot', async () => {

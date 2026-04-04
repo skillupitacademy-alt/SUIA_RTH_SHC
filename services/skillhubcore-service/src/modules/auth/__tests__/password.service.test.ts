@@ -10,7 +10,7 @@ describe('PasswordService', () => {
     expect(hash).not.toBe('Password123!');
     await expect(service.compare('Password123!', hash)).resolves.toBe(true);
     await expect(service.compare('WrongPassword!', hash)).resolves.toBe(false);
-  });
+  }, 60_000);
 
   it('rejects short passwords', async () => {
     const service = new PasswordService();

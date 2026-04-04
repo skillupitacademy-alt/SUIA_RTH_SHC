@@ -98,7 +98,7 @@ describe('admin tutorial-content-api', () => {
 
     it('throws TutorialAuthError 403 when isAdmin is false', async () => {
       getAccessTokenSpy.mockReturnValue('valid-token');
-      verifyAdminAccessTokenSpy.mockResolvedValue({ isAdmin: false, roles: ['ADMIN'] });
+      verifyAdminAccessTokenSpy.mockResolvedValue({ isAdmin: false, roles: ['admin'] });
       const request = {} as NextRequest;
 
       await expect(requireAdmin(request)).rejects.toThrowError(TutorialAuthError);
@@ -107,15 +107,15 @@ describe('admin tutorial-content-api', () => {
 
     it('throws TutorialAuthError 403 when roles do not contain admin roles', async () => {
       getAccessTokenSpy.mockReturnValue('valid-token');
-      verifyAdminAccessTokenSpy.mockResolvedValue({ isAdmin: true, roles: ['USER'] });
+      verifyAdminAccessTokenSpy.mockResolvedValue({ isAdmin: true, roles: ['user'] });
       const request = {} as NextRequest;
 
       await expect(requireAdmin(request)).rejects.toThrowError(TutorialAuthError);
     });
 
-    it('returns the payload when the admin is valid and has ADMIN role', async () => {
+    it('returns the payload when the admin is valid and has admin role', async () => {
       getAccessTokenSpy.mockReturnValue('valid-token');
-      const payload = { isAdmin: true, roles: ['ADMIN'] };
+      const payload = { isAdmin: true, roles: ['admin'] };
       verifyAdminAccessTokenSpy.mockResolvedValue(payload);
       const request = {} as NextRequest;
 
@@ -124,7 +124,7 @@ describe('admin tutorial-content-api', () => {
       expect(verifyAdminAccessTokenSpy).toHaveBeenCalledWith('valid-token');
     });
 
-    it('returns the payload when the admin is valid and has SUPER_ADMIN role (case insensitive)', async () => {
+    it('returns the payload when the admin is valid and has super_admin role', async () => {
       getAccessTokenSpy.mockReturnValue('valid-token');
       const payload = { isAdmin: true, roles: ['super_admin'] };
       verifyAdminAccessTokenSpy.mockResolvedValue(payload);

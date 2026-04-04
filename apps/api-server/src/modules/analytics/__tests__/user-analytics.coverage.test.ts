@@ -1,12 +1,23 @@
-import { describe, it, expect, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+vi.mock('@/lib/redis', () => ({
+  redis: {
+    get: vi.fn(),
+    set: vi.fn(),
+  },
+}))
 
 import { redis } from '@/lib/redis'
 import { UserAnalyticsService } from '../user-analytics.service'
 
 describe('UserAnalyticsService.getAdaptiveSnapshot', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('returns cached snapshot when present', async () => {
     const cached = { topics: [], difficulty: { simple: 1, intermediate: 2, expert: 3 }, pacing: null }
-    ;(redis.get as any) = vi.fn().mockResolvedValue(cached)
+    vi.mocked(redis.get).mockResolvedValue(cached)
 
     const result = await UserAnalyticsService.getAdaptiveSnapshot('u1')
     expect(result).toEqual(cached)
@@ -14,8 +25,8 @@ describe('UserAnalyticsService.getAdaptiveSnapshot', () => {
   })
 
   it('builds snapshot and sets cache on miss', async () => {
-    ;(redis.get as any) = vi.fn().mockResolvedValue(null)
-    ;(redis.set as any) = vi.fn().mockResolvedValue('ok')
+    vi.mocked(redis.get).mockResolvedValue(null)
+    vi.mocked(redis.set).mockResolvedValue('ok')
 
     vi.spyOn(UserAnalyticsService, 'getTopicPerformance').mockResolvedValue([
       { topicId: 't1', topicName: 'Topic 1', accuracy: 50 },
