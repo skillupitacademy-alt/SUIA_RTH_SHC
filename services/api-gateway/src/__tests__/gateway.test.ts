@@ -134,6 +134,25 @@ describe('api-gateway', () => {
     expect(headers.get('X-Gateway-Secret')).toBe(env.INTERNAL_GATEWAY_SECRET);
   });
 
+  it('proxies public admin login routes without jwt', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
+    const response = await app.request('https://api.example.com/admin/auth/login', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({ email: 'admin@test.com', password: 'admin123' }),
+    }, env);
+
+    expect(response.status).toBe(200);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(`${env.EXAM_SERVICE_URL}/api/admin/auth/login`);
+    const [, init] = fetchSpy.mock.calls[0] ?? [];
+    const headers = new Headers((init as RequestInit | undefined)?.headers);
+    expect(headers.get('X-Gateway-Secret')).toBe(env.INTERNAL_GATEWAY_SECRET);
+    expect(headers.get('X-User-ID')).toBeNull();
+  });
+
   it('routes skillup user host traffic to the skillup web upstream', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
     const response = await app.request('https://user.skillupitacademy.com/programs', undefined, env);

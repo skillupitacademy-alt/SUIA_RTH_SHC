@@ -14,6 +14,7 @@ export const ROUTING_TABLE: GatewayRoute[] = [
   { host: 'api.skillhubcore.in', prefix: '/healthz', upstreamKey: 'SKILLHUBCORE_URL', public: true },
   { host: 'api.skillhubcore.in', prefix: '/', upstreamKey: 'SKILLHUBCORE_URL', auth: true },
   { prefix: '/auth', upstreamKey: 'EXAM_SERVICE_URL', upstreamPathPrefix: '/api/auth', public: true },
+  { prefix: '/admin/auth/login', upstreamKey: 'EXAM_SERVICE_URL', upstreamPathPrefix: '/api/admin/auth/login', public: true },
   { prefix: '/students', upstreamKey: 'STUDENT_FACULTY_URL', auth: true },
   { prefix: '/faculty', upstreamKey: 'STUDENT_FACULTY_URL', auth: true },
   { prefix: '/batches', upstreamKey: 'STUDENT_FACULTY_URL', auth: true },
