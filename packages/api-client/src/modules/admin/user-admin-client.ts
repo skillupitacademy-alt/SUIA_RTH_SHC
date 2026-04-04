@@ -1,4 +1,4 @@
-import { FetchClient } from '@quiz/api-client/core/fetch-client';
+import { FetchClient, TIMEOUTS } from '@quiz/api-client/core/fetch-client';
 import {
   AdminSuccessResponse,
   AdminUserProfile,
@@ -71,7 +71,10 @@ export class UserAdminClient implements IAdminUserClient {
       user: AdminUserProfile;
       accessToken: string;
       expiresAt: string | null;
-    }>('/admin/auth/login', { email, password, platform: brand }, { headers: { 'x-brand': brand } });
+    }>('/admin/auth/login', { email, password, platform: brand }, {
+      timeout: TIMEOUTS.LONG,
+      headers: { 'x-brand': brand },
+    });
 
     return {
       ...response,

@@ -3,6 +3,7 @@ import { AdminClient } from '../../admin-client';
 import { FetchClient } from '../../../core/fetch-client';
 import { QuestionAdminClient } from '../question-admin-client';
 import { UserAdminClient } from '../user-admin-client';
+import { TIMEOUTS } from '../../../core/fetch-client';
 
 // Mock FetchClient
 vi.mock('../../../core/fetch-client', () => {
@@ -15,7 +16,15 @@ vi.mock('../../../core/fetch-client', () => {
     this.request = vi.fn();
     this.setPortalIdentity = vi.fn();
   });
-  return { FetchClient };
+  return {
+    FetchClient,
+    TIMEOUTS: {
+      QUICK: 5000,
+      STANDARD: 15000,
+      LONG: 30000,
+      UPLOAD: 60000,
+    },
+  };
 });
 
 describe('AdminClient & Specialized Sub-Clients', () => {
@@ -96,6 +105,7 @@ describe('AdminClient & Specialized Sub-Clients', () => {
         password: 'pw',
         platform: 'realtutorialhub',
       }, {
+        timeout: TIMEOUTS.LONG,
         headers: { 'x-brand': 'realtutorialhub' },
       });
     });
