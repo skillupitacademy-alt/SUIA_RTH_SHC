@@ -49,6 +49,8 @@ vi.mock('@quiz/db', () => ({
   },
   auditLogs: { createdAt: 'auditLogs.createdAt', id: 'auditLogs.id' },
   users: { id: 'users.id', email: 'users.email', lastActiveAt: 'users.lastActiveAt' },
+  exams: { userId: 'exams.userId', startedAt: 'exams.startedAt' },
+  domains: { id: 'domains.id' },
   userProfiles: { userId: 'userProfiles.userId', name: 'userProfiles.name' },
   sessions: { id: 'sessions.id', userId: 'sessions.userId', createdAt: 'sessions.createdAt' },
   roles: { id: 'roles.id', name: 'roles.name' },
@@ -101,6 +103,18 @@ describe('DrizzleAdminAnalyticsRepository', () => {
       expect(res.totalUsers).toBe(100);
       expect(res.totalExams).toBe(50);
       expect(executeMock).toHaveBeenCalledTimes(2);
+    });
+
+    it('falls back to base tables when materialized views are unavailable', async () => {
+      executeMock.mockRejectedValueOnce(new Error('relation "mv_user_stats" does not exist'));
+
+      const res = await repo.getPlatformMetrics();
+
+      expect(res.totalUsers).toBe(1);
+      expect(res.totalExams).toBe(1);
+      expect(res.totalDomains).toBe(1);
+      expect(res.activeUsers24h).toBe(1);
+      expect(selectMock).toHaveBeenCalled();
     });
 
     it('falls back to select when execute is NOT a function', async () => {

@@ -1,4 +1,4 @@
-import { auditLogs, db, questions, roles, sessions, userProfiles, userRoles, users } from '@quiz/db';
+import { auditLogs, db, domains, exams, questions, roles, sessions, userProfiles, userRoles, users } from '@quiz/db';
 import { and, desc, eq, ilike, lt, or, sql } from 'drizzle-orm';
 
 import { getDrizzleFields } from '@/lib/field-selector';
@@ -17,6 +17,33 @@ export class DrizzleAdminAnalyticsRepository implements IAdminAnalyticsRepositor
   }
   private set dbInstance(dbClient: typeof db) {
     this._db = dbClient;
+  }
+
+  private async getPlatformMetricsFromBaseTables() {
+    const countQuery = sql<number>`count(*)`.mapWith(Number);
+    const distinctUserCountQuery = sql<number>`count(distinct ${exams.userId})`.mapWith(Number);
+
+    const [
+      [{ count: totalUsers }],
+      [{ count: totalExams }],
+      [{ count: totalDomains }],
+      [{ count: activeUsers24h }],
+    ] = await Promise.all([
+      this.dbInstance.select({ count: countQuery }).from(users),
+      this.dbInstance.select({ count: countQuery }).from(exams),
+      this.dbInstance.select({ count: countQuery }).from(domains),
+      this.dbInstance
+        .select({ count: distinctUserCountQuery })
+        .from(exams)
+        .where(sql`${exams.startedAt} >= NOW() - INTERVAL '1 day'`),
+    ]);
+
+    return {
+      totalUsers: Number(totalUsers ?? 0),
+      totalExams: Number(totalExams ?? 0),
+      totalDomains: Number(totalDomains ?? 0),
+      activeUsers24h: Number(activeUsers24h ?? 0),
+    };
   }
 
   async getPlatformMetrics() {
@@ -38,18 +65,22 @@ export class DrizzleAdminAnalyticsRepository implements IAdminAnalyticsRepositor
       return { totalUsers, totalExams, totalDomains, activeUsers24h };
     }
 
-    const { rows: userStats } = await this.dbInstance.execute('SELECT * FROM mv_user_stats LIMIT 1');
-    const { rows: examStats } = await this.dbInstance.execute('SELECT * FROM mv_exam_stats LIMIT 1');
+    try {
+      const { rows: userStats } = await this.dbInstance.execute('SELECT * FROM mv_user_stats LIMIT 1');
+      const { rows: examStats } = await this.dbInstance.execute('SELECT * FROM mv_exam_stats LIMIT 1');
 
-    const u = userStats[0] as Record<string, unknown> | undefined;
-    const e = examStats[0] as Record<string, unknown> | undefined;
+      const u = userStats[0] as Record<string, unknown> | undefined;
+      const e = examStats[0] as Record<string, unknown> | undefined;
 
-    return {
-      totalUsers: Number((u?.total_users as number | string | undefined) ?? 0),
-      totalExams: Number((e?.total_exams as number | string | undefined) ?? 0),
-      totalDomains: Number((u?.total_domains as number | string | undefined) ?? 0),
-      activeUsers24h: Number((u?.active_users_24h as number | string | undefined) ?? 0)
-    };
+      return {
+        totalUsers: Number((u?.total_users as number | string | undefined) ?? 0),
+        totalExams: Number((e?.total_exams as number | string | undefined) ?? 0),
+        totalDomains: Number((u?.total_domains as number | string | undefined) ?? 0),
+        activeUsers24h: Number((u?.active_users_24h as number | string | undefined) ?? 0)
+      };
+    } catch (_error) {
+      return await this.getPlatformMetricsFromBaseTables();
+    }
   }
 
   async getExamActivity() {
