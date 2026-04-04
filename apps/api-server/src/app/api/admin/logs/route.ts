@@ -1,25 +1,15 @@
 import type { NextRequest } from 'next/server';
 
-import { internalError, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { bootstrapCQRS,GetAuditLogsQuery, queryBus } from '@/lib/cqrs';
 import { withLogging } from '@/lib/withLogging';
-import { TokenService } from '@/modules/auth/token.service';
-import { container } from '@/modules/core/container';
+import { requireAdminRouteAccess } from '@/modules/auth/admin-audience.util';
 
 export const dynamic = 'force-dynamic';
 
-async function _verifyAdmin(_req: NextRequest) {
-    const _token = container.get(TokenService).getAccessToken(_req, { scope: 'admin' });
-    if (_token === null || _token === undefined || _token.trim() === '') {
-        throw unauthorized('Unauthorized');
-    }
-    return await container.get(TokenService).verifyAdminAccessToken(_token);
-}
-
 async function handler(_req: NextRequest) {
     try {
-        await _verifyAdmin(_req);
+        await requireAdminRouteAccess(_req);
         const searchParams = _req.nextUrl.searchParams;
         const cursor = searchParams.get('cursor');
         const limit = parseInt(searchParams.get('limit') ?? '50');
@@ -29,8 +19,7 @@ async function handler(_req: NextRequest) {
         const data = await queryBus.dispatch(new GetAuditLogsQuery(cursor, limit, fields));
         return ApiResponse.success(data);
     } catch (_error: unknown) {
-        const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-        return ApiResponse.error(internalError(message), 500);
+        return ApiResponse.error(_error);
     }
 }
 

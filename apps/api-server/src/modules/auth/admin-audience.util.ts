@@ -1,7 +1,9 @@
 import type { NextRequest } from 'next/server';
 
+import { forbidden } from '@/lib/api-error';
 import { container } from '@/modules/core/container';
 
+import { _verifyAdmin } from './rbac.service';
 import { TokenService } from './token.service';
 
 type Audience = 'admin' | 'infra';
@@ -29,4 +31,17 @@ export async function verifyAdminOrInfraToken(_req: NextRequest, token?: string)
 
   const payload = await container.get(TokenService).verifyAdminAccessToken(scopedToken, { audience: expectedAud });
   return { payload, audience: expectedAud };
+}
+
+export async function requireAdminRouteAccess(_req: NextRequest) {
+  const { payload, audience } = await verifyAdminOrInfraToken(_req);
+
+  if (audience !== 'infra') {
+    const hasAdminAccess = await _verifyAdmin(payload);
+    if (!hasAdminAccess) {
+      throw forbidden('Admin access only');
+    }
+  }
+
+  return payload;
 }

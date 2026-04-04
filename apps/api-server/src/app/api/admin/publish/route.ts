@@ -1,30 +1,22 @@
 import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
 
-import { badRequest, unauthorized } from '@/lib/api-error';
+import { badRequest } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
+import { withCorrelationId } from '@/lib/correlation-id.middleware';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
-import { AdminQuestionEngine } from "@/modules/admin-engine/admin.engine";
-import { TokenService } from '@/modules/auth/token.service';
-import { container } from '@/modules/core/container';
+import { AdminQuestionEngine } from '@/modules/admin-engine/admin.engine';
+import { requireAdminRouteAccess } from '@/modules/auth/admin-audience.util';
 import { publishSchema } from '@/schemas/admin.schemas';
 
 export const dynamic = 'force-dynamic';
 
-async function verifyAdmin(_req: NextRequest) {
-    const _token = container.get(TokenService).getAccessToken(_req, { scope: 'admin' });
-    if (_token === undefined || _token === null || _token.trim() === '') {
-        throw unauthorized('Unauthorized', 'UNAUTHORIZED');
-    }
-    return await container.get(TokenService).verifyAdminAccessToken(_token);
-}
-
 async function postHandler(_req: NextRequest) {
     const start = Date.now();
     try {
-        const auth = await verifyAdmin(_req);
+        const auth = await requireAdminRouteAccess(_req);
         const rawBody = await _req.json();
 
         if (!validateJsonDepth(rawBody) || !validateJsonSize(rawBody)) {
@@ -52,7 +44,5 @@ async function postHandler(_req: NextRequest) {
         return ApiResponse.error(_error);
     }
 }
-
-import { withCorrelationId } from '@/lib/correlation-id.middleware';
 
 export const POST = withCorrelationId(withLogging(postHandler, { component: 'admin', operation: 'publish_question' }));
