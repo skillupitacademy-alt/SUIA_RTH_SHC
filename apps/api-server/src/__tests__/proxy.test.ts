@@ -60,4 +60,28 @@ describe('api-server proxy gateway secret enforcement', () => {
 
     expect(response.status).toBe(200);
   });
+
+  it('allows public search routes without the gateway secret', async () => {
+    process.env.INTERNAL_GATEWAY_SECRET = 'service-gateway-secret';
+
+    const response = await proxy(new NextRequest('http://localhost/api/search?q=react&type=all'));
+
+    expect(response.status).toBe(200);
+  });
+
+  it('allows public telemetry routes without the gateway secret', async () => {
+    process.env.INTERNAL_GATEWAY_SECRET = 'service-gateway-secret';
+
+    const response = await proxy(new NextRequest('http://localhost/api/telemetry'));
+
+    expect(response.status).toBe(200);
+  });
+
+  it('allows public security report routes without the gateway secret', async () => {
+    process.env.INTERNAL_GATEWAY_SECRET = 'service-gateway-secret';
+
+    const response = await proxy(new NextRequest('http://localhost/api/security/report'));
+
+    expect(response.status).toBe(200);
+  });
 });

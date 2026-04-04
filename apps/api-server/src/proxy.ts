@@ -45,12 +45,22 @@ export async function proxy(request: NextRequest) {
                       request.nextUrl.pathname.startsWith('/api/admin/auth');
 
   const isSecurityReport = pathname.toLowerCase().includes('security/report');
+  const isClientLogsRoute = pathname === '/api/logs/client';
   const isWorkflowRoute = pathname.startsWith('/api/workflows') || pathname.startsWith('/api/api/workflows') || pathname.startsWith('/api/export/workflow') || pathname.startsWith('/api/api/export/workflow');
   const isHealthRoute =
     pathname === '/api/health' ||
     pathname === '/api/health/live' ||
     pathname === '/api/health/ready';
-  const isGatewayExemptRoute = isHealthRoute || isWorkflowRoute || isAuthRoute;
+  const isSearchRoute = pathname === '/api/search';
+  const isTelemetryRoute = pathname === '/api/telemetry';
+  const isGatewayExemptRoute =
+    isHealthRoute ||
+    isWorkflowRoute ||
+    isAuthRoute ||
+    isSearchRoute ||
+    isTelemetryRoute ||
+    isSecurityReport ||
+    isClientLogsRoute;
 
   if (isGatewayExemptRoute === false) {
     if (typeof INTERNAL_GATEWAY_SECRET !== 'string' || INTERNAL_GATEWAY_SECRET.length === 0) {
@@ -162,7 +172,9 @@ export async function proxy(request: NextRequest) {
   }
   
   applyApiVersion(request, response);
-  setCsrfToken(response);
+  if (!isHealthRoute) {
+    setCsrfToken(response);
+  }
   response.headers.set('x-request-id', requestId);
   response.headers.set('x-session-id', sessionId);
   
