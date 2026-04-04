@@ -10,6 +10,16 @@ type RatelimitEntry = {
 
 const limiterCache = new Map<string, RatelimitEntry>();
 
+function shouldBypassRateLimit(pathname: string): boolean {
+  return pathname === '/healthz'
+    || pathname === '/internal/health'
+    || pathname === '/api/health/live'
+    || pathname === '/auth/login'
+    || pathname === '/admin/auth/login'
+    || pathname === '/api/auth/login'
+    || pathname === '/api/admin/auth/login';
+}
+
 function getLimiter(env: GatewayBindings): Ratelimit {
   const cacheKey = `${env.UPSTASH_REDIS_REST_URL}:${env.UPSTASH_REDIS_REST_TOKEN}`;
   const existing = limiterCache.get(cacheKey);
@@ -31,6 +41,11 @@ export function createRateLimitMiddleware(): MiddlewareHandler {
   return async (c, next) => {
     try {
       if (c.req.method === 'OPTIONS') {
+        await next();
+        return;
+      }
+
+      if (shouldBypassRateLimit(new URL(c.req.url).pathname)) {
         await next();
         return;
       }
