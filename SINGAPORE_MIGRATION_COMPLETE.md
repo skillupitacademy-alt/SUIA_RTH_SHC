@@ -78,7 +78,7 @@ Reduce database query latency by moving GCP Cloud Run from Mumbai (`asia-south1`
 
 ---
 
-## 📝 COMMITS
+## 📝 COMMITS & CI/CD STATUS
 
 ### Migration Implementation:
 ```
@@ -87,6 +87,7 @@ c96a7538 - feat: migrate Cloud Run from Mumbai to Singapore for 50-70ms latency 
   - Updated Artifact Registry references to Singapore region
   - Enabled Cloudflare Smart Placement for gateway Worker
   - Added comprehensive migration guide with rollback plan
+  - CI Status: ✅ Deploy Cloud Run Apps - SUCCESS
 ```
 
 ### Gateway Cutover:
@@ -95,6 +96,7 @@ c96a7538 - feat: migrate Cloud Run from Mumbai to Singapore for 50-70ms latency 
   - Updated wrangler.toml with new Singapore Cloud Run URLs
   - Gateway config validated: PASS
   - Gateway tests: 55 passed
+  - CI Status: ✅ Deploy API Gateway - SUCCESS
 ```
 
 ### Documentation:
@@ -103,6 +105,10 @@ c96a7538 - feat: migrate Cloud Run from Mumbai to Singapore for 50-70ms latency 
   - Added verification script
   - Documented migration status
   - Recorded post-cutover results
+  - CI Status: ✅ Quality - SUCCESS (https://github.com/realtutorialhub/quiz-platform/actions/runs/23982548630)
+
+9793d3b1 - docs(infra): singapore migration complete - all services live
+  - Final migration summary and completion documentation
 ```
 
 ---
@@ -177,7 +183,13 @@ All success criteria met:
 - ✅ Admin login works
 - ✅ User sessions persist
 - ✅ No increase in error rates
+- ✅ All CI/CD checks passing (Quality, Deploy Cloud Run, Deploy Gateway)
 - ⏳ Latency reduction (to be measured from production metrics)
+
+**CI/CD Status**: All green ✅
+- Deploy Cloud Run Apps: SUCCESS
+- Deploy API Gateway: SUCCESS  
+- Quality: SUCCESS
 
 ---
 
