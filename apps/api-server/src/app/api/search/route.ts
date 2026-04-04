@@ -4,6 +4,7 @@ import { type NextRequest } from 'next/server';
 
 import { ApiResponse } from '@/lib/api-response';
 import { withLogging } from '@/lib/withLogging';
+import { withRateLimit } from '@/middleware/rate-limit.middleware';
 
 export const dynamic = 'force-dynamic';
 
@@ -93,4 +94,7 @@ async function getHandler(req: NextRequest) {
   return ApiResponse.success({ results: results.slice(0, 20) });
 }
 
-export const GET = withLogging(getHandler, { component: 'search', operation: 'search_global' });
+export const GET = withRateLimit(
+  withLogging(getHandler, { component: 'search', operation: 'search_global' }),
+  { limit: 60, windowMs: 60 * 1000, keyPrefix: 'ratelimit:search' }
+);

@@ -171,6 +171,7 @@ describe('api-gateway', () => {
 
     expect(response.status).toBe(200);
     expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(rateLimitState.size).toBe(0);
     expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(env.SKILLUP_ADMIN_URL);
   });
 
@@ -189,6 +190,7 @@ describe('api-gateway', () => {
 
     expect(response.status).toBe(200);
     expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(rateLimitState.size).toBe(0);
     expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(env.TUTORIAL_SERVICE_URL);
   });
 
@@ -273,6 +275,7 @@ describe('api-gateway', () => {
 
     expect(response.status).toBe(200);
     expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(rateLimitState.size).toBe(0);
     expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(`${env.EXAM_SERVICE_URL}/api/telemetry`);
   });
 
@@ -339,6 +342,7 @@ describe('api-gateway', () => {
 
     expect(response.status).toBe(200);
     expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(rateLimitState.size).toBe(0);
     expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(`${env.EXAM_SERVICE_URL}/api/search?q=algebra&type=all`);
   });
 

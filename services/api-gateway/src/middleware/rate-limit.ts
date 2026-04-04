@@ -10,14 +10,41 @@ type RatelimitEntry = {
 
 const limiterCache = new Map<string, RatelimitEntry>();
 
-function shouldBypassRateLimit(pathname: string): boolean {
-  return pathname === '/healthz'
-    || pathname === '/internal/health'
-    || pathname === '/api/health/live'
-    || pathname === '/auth/login'
-    || pathname === '/admin/auth/login'
-    || pathname === '/api/auth/login'
-    || pathname === '/api/admin/auth/login';
+const PUBLIC_SITE_HOSTS = new Set([
+  'user.realtutorialhub.com',
+  'admin.realtutorialhub.com',
+  'user.skillupitacademy.com',
+  'admin.skillupitacademy.com',
+  'faculty.skillupitacademy.com',
+  'quiz.skillhubcore.in',
+  'tutorial.skillhubcore.in',
+  'placement.skillhubcore.in',
+]);
+
+function shouldBypassRateLimit(url: URL): boolean {
+  if (PUBLIC_SITE_HOSTS.has(url.hostname)) {
+    return true;
+  }
+
+  return url.pathname === '/healthz'
+    || url.pathname === '/internal/health'
+    || url.pathname === '/api/health/live'
+    || url.pathname === '/auth/login'
+    || url.pathname === '/auth/signup'
+    || url.pathname === '/auth/forgot-password'
+    || url.pathname === '/auth/reset-password'
+    || url.pathname === '/auth/resend-verification'
+    || url.pathname === '/admin/auth/login'
+    || url.pathname === '/search'
+    || url.pathname === '/telemetry'
+    || url.pathname === '/api/auth/login'
+    || url.pathname === '/api/auth/signup'
+    || url.pathname === '/api/auth/forgot-password'
+    || url.pathname === '/api/auth/reset-password'
+    || url.pathname === '/api/auth/resend-verification'
+    || url.pathname === '/api/admin/auth/login'
+    || url.pathname === '/api/search'
+    || url.pathname === '/api/telemetry';
 }
 
 function getLimiter(env: GatewayBindings): Ratelimit {
@@ -45,7 +72,7 @@ export function createRateLimitMiddleware(): MiddlewareHandler {
         return;
       }
 
-      if (shouldBypassRateLimit(new URL(c.req.url).pathname)) {
+      if (shouldBypassRateLimit(new URL(c.req.url))) {
         await next();
         return;
       }

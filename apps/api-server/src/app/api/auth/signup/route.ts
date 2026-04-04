@@ -5,9 +5,11 @@ import { toUserSummaryDTO } from '@/dtos/auth.dto';
 import { badRequest } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { resolveCookieDomain } from '@/lib/cookie-domain';
+import { withCorrelationId } from '@/lib/correlation-id.middleware';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { resolveRequestBrand, resolveRequestBrandFromHeaders, resolveRequestHostnameFromHeaders } from '@/lib/request-brand';
 import { withLogging } from '@/lib/withLogging';
+import { withRateLimit } from '@/middleware/rate-limit.middleware';
 import { AuthService } from '@/modules/auth/auth.service';
 import { getClientIp } from '@/modules/auth/client-ip';
 import { setCsrfToken } from '@/modules/auth/csrf.middleware';
@@ -87,6 +89,7 @@ async function handler(_req: NextRequest) {
   }
 }
 
-import { withCorrelationId } from '@/lib/correlation-id.middleware';
-
-export const POST = withCorrelationId(withLogging(handler, { component: 'auth', operation: 'signup' }));
+export const POST = withRateLimit(
+  withCorrelationId(withLogging(handler, { component: 'auth', operation: 'signup' })),
+  { limit: 10, windowMs: 60 * 60 * 1000, keyPrefix: 'ratelimit:auth:signup' }
+);

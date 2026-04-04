@@ -6,6 +6,7 @@ import { logger } from "@/lib/logger";
 import { recordCounter, recordTimer } from "@/lib/metrics";
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from "@/lib/sanitize";
 import { withLogging } from "@/lib/withLogging";
+import { withRateLimit } from "@/middleware/rate-limit.middleware";
 
 export const dynamic = 'force-dynamic';
 
@@ -79,4 +80,7 @@ async function handler(req: NextRequest) {
   }
 }
 
-export const POST = withLogging(handler, { component: "telemetry", operation: "capture" });
+export const POST = withRateLimit(
+  withLogging(handler, { component: "telemetry", operation: "capture" }),
+  { limit: 120, windowMs: 60 * 1000, keyPrefix: 'ratelimit:telemetry' }
+);

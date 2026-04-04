@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import { withCorrelationId } from '@/lib/correlation-id.middleware';
 import { resolveRequestBrand, resolveRequestBrandFromHeaders } from '@/lib/request-brand';
 import { withLogging } from '@/lib/withLogging';
+import { withRateLimit } from '@/middleware/rate-limit.middleware';
 import { AuthService } from '@/modules/auth/auth.service';
 import { getClientIp } from '@/modules/auth/client-ip';
 import { container } from '@/modules/core/container';
@@ -35,4 +36,7 @@ async function handler(req: NextRequest) {
   }
 }
 
-export const POST = withCorrelationId(withLogging(handler, { component: 'auth', operation: 'resend_verification' }));
+export const POST = withRateLimit(
+  withCorrelationId(withLogging(handler, { component: 'auth', operation: 'resend_verification' })),
+  { limit: 10, windowMs: 60 * 60 * 1000, keyPrefix: 'ratelimit:auth:resend-verification' }
+);

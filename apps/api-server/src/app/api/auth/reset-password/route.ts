@@ -5,6 +5,7 @@ import { ApiResponse } from '@/lib/api-response';
 import { resolveRequestBrand, resolveRequestBrandFromHeaders } from '@/lib/request-brand';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
+import { withRateLimit } from '@/middleware/rate-limit.middleware';
 import { AuthService } from '@/modules/auth/auth.service';
 import { getClientIp } from '@/modules/auth/client-ip';
 import { container } from '@/modules/core/container';
@@ -62,5 +63,11 @@ async function postHandler(_req: NextRequest) {
   }
 }
 
-export const GET = withLogging(getHandler, { component: 'auth', operation: 'validate_reset_token' });
-export const POST = withLogging(postHandler, { component: 'auth', operation: 'reset_password' });
+export const GET = withRateLimit(
+  withLogging(getHandler, { component: 'auth', operation: 'validate_reset_token' }),
+  { limit: 30, windowMs: 60 * 1000, keyPrefix: 'ratelimit:auth:reset-password-validate' }
+);
+export const POST = withRateLimit(
+  withLogging(postHandler, { component: 'auth', operation: 'reset_password' }),
+  { limit: 10, windowMs: 60 * 60 * 1000, keyPrefix: 'ratelimit:auth:reset-password' }
+);

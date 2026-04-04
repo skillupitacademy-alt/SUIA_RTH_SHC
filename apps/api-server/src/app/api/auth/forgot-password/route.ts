@@ -7,6 +7,7 @@ import { recordCounter, recordTimer } from '@/lib/metrics';
 import { resolveRequestBrand, resolveRequestBrandFromHeaders } from '@/lib/request-brand';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
+import { withRateLimit } from '@/middleware/rate-limit.middleware';
 import { AuthService } from '@/modules/auth/auth.service';
 import { getClientIp } from '@/modules/auth/client-ip';
 import { container } from '@/modules/core/container';
@@ -50,4 +51,7 @@ async function handler(_req: NextRequest) {
   }
 }
 
-export const POST = withLogging(handler, { component: 'auth', operation: 'forgot_password' });
+export const POST = withRateLimit(
+  withLogging(handler, { component: 'auth', operation: 'forgot_password' }),
+  { limit: 5, windowMs: 60 * 60 * 1000, keyPrefix: 'ratelimit:auth:forgot-password' }
+);
