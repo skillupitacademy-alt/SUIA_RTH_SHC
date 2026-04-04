@@ -61,7 +61,6 @@ export function SessionExpiryModal() {
             clientLogger.error("Session expiry server-logout failed", { error: err instanceof Error ? err.message : 'unknown' });
         } finally {
             logout(); // Clear Zustand state
-            localStorage.removeItem('quiz-platform-admin-auth'); // Force hard purge
             const redirectUrl = encodeURIComponent('/');
             clientLogger.warn('[AUTH_FLOW][ADMIN_SESSION_MODAL][REDIRECT]', {
                 step: 'redirect',

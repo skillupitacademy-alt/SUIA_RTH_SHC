@@ -1,11 +1,11 @@
 import { randomUUID } from 'crypto';
 
 import { describe, expect, it, vi } from 'vitest';
+import { TokenService } from '@quiz/auth';
 
 import { SubscriptionService } from '../../subscription/subscription.service';
 import { TokenRotationService } from '../token-rotation.service';
 import { PasswordService } from '../password.service';
-import { TokenService } from '../token.service';
 import type { PeoplePlatform, PeopleSubscriptionRecord, PeopleUserRecord, PeopleUserRole, IUserRepository } from '@quiz/types';
 import { SsoService } from '../sso/sso.service';
 
@@ -143,7 +143,7 @@ class FakeRepo implements IUserRepository {
 }
 
 describe('TokenRotationService', () => {
-  const tokenService = new TokenService(new TextEncoder().encode('access-secret-1234567890'), new TextEncoder().encode('refresh-secret-1234567890'));
+  const tokenService = new TokenService();
 
   it('rotates a refresh token and returns a fresh pair', async () => {
     const repo = new FakeRepo();
@@ -167,7 +167,7 @@ describe('TokenRotationService', () => {
     });
     repo.platforms.set(userId, ['realtutorialhub', 'skillup']);
     await repo.createTokenFamily({ userId, familyId });
-    const refreshToken = await tokenService.signRefreshToken(userId, familyId);
+    const refreshToken = await tokenService.signSkillHubCoreRefreshToken(userId, familyId);
     await redis.set(`skillhubcore:refresh:${familyId}`, refreshToken);
     await repo.createSession({ userId, jwtFamily: familyId, platform: 'realtutorialhub', refreshTokenHash: refreshToken });
 
@@ -199,7 +199,7 @@ describe('TokenRotationService', () => {
     });
     repo.platforms.set(userId, ['realtutorialhub']);
     await repo.createTokenFamily({ userId, familyId });
-    const refreshToken = await tokenService.signRefreshToken(userId, familyId);
+    const refreshToken = await tokenService.signSkillHubCoreRefreshToken(userId, familyId);
     await redis.set(`skillhubcore:refresh:${familyId}`, 'other-token');
     await repo.createSession({ userId, jwtFamily: familyId, platform: 'realtutorialhub', refreshTokenHash: refreshToken });
 

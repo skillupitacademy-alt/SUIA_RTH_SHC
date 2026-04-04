@@ -42,6 +42,9 @@ describe('Login page', () => {
       vi.fn().mockResolvedValue({
         ok: false,
         status: 403,
+        headers: {
+          get: vi.fn().mockReturnValue(null),
+        },
         json: async () => ({ error: 'Forbidden' }),
       } as Response)
     );

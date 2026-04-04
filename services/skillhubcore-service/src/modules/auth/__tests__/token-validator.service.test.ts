@@ -3,8 +3,8 @@ import { randomUUID } from 'crypto';
 import { describe, expect, it, vi } from 'vitest';
 
 import { TokenService as BrandTokenService } from '@quiz/auth';
+import { TokenService } from '@quiz/auth';
 
-import { TokenService } from '../token.service';
 import { TokenValidatorService } from '../token-validator.service';
 import type { IUserRepository } from '@quiz/types';
 
@@ -68,10 +68,7 @@ describe('TokenValidatorService', () => {
   it('validates a brand token and issues a shared skillhub token', async () => {
     const repo = new FakeRepo();
     const redis = new FakeRedis();
-    const tokenService = new TokenService(
-      new TextEncoder().encode('shared-access-secret-1234567890'),
-      new TextEncoder().encode('shared-refresh-secret-1234567890'),
-    );
+    const tokenService = new TokenService();
     const validator = new TokenValidatorService(repo as unknown as IUserRepository, tokenService, redis);
     const brandTokenService = new BrandTokenService();
     const brandToken = await brandTokenService.generateAccessToken({
@@ -85,8 +82,8 @@ describe('TokenValidatorService', () => {
       subscriptions: ['tutorial.preview_only'],
     });
 
-    const result = await validator.validateBrandAccessToken(brandToken);
-    const payload = await tokenService.verifyAccessToken(result.skillhubToken);
+    const result = await validator.validateBrandAccessToken(brandToken, 'skillup');
+    const payload = await tokenService.verifySkillHubCoreJWT(result.skillhubToken);
 
     expect(result.shadowUserId).toBe('shadow-user-1');
     expect(result.originalUserId).toBe('brand-user-1');
@@ -103,10 +100,7 @@ describe('TokenValidatorService', () => {
   it('falls back to the original user id when older brand tokens omit shadowUserId', async () => {
     const repo = new FakeRepo();
     const redis = new FakeRedis();
-    const tokenService = new TokenService(
-      new TextEncoder().encode('shared-access-secret-abcdef123456'),
-      new TextEncoder().encode('shared-refresh-secret-abcdef123456'),
-    );
+    const tokenService = new TokenService();
     const validator = new TokenValidatorService(repo as unknown as IUserRepository, tokenService, redis);
     const brandTokenService = new BrandTokenService();
     const brandToken = await brandTokenService.generateAccessToken({
@@ -117,7 +111,7 @@ describe('TokenValidatorService', () => {
       isAdmin: false,
     });
 
-    const result = await validator.validateBrandAccessToken(brandToken);
+    const result = await validator.validateBrandAccessToken(brandToken, 'realtutorialhub');
     expect(result.shadowUserId).toBe(result.originalUserId);
   });
 });

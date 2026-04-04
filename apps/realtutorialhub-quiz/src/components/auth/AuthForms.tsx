@@ -1,5 +1,4 @@
 'use client';
-'use client';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -8,15 +7,11 @@ import { useAuthStore } from '@/store/auth-store';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { apiClient, normalizeSkillHubUser } from '@quiz/api-client';
 import { recordClientMetric, METRICS } from '@quiz/observability';
-import { getApiBase } from '@/utils/apiBase';
 
 const PORTAL_BRAND = 'realtutorialhub' as const;
 
-const LOGIN_ENDPOINT = `${getApiBase()}/auth/login`;
-
 type LoginResponse = {
-    accessToken?: string;
-    refreshToken?: string;
+  accessToken?: string;
     user?: {
         id?: string;
         name?: string;
@@ -37,28 +32,6 @@ function normalizeRedirectTarget(rawTarget: string | null): string {
     }
 
     return '/dashboard';
-}
-
-function getLoginErrorMessage(response: Response | null, payload: LoginResponse | null, fallback: string): string {
-    const candidate = payload?.error ?? payload?.message ?? payload?._error;
-
-    if (response !== null && response.status === 401) {
-        const trimmed = typeof candidate === 'string' ? candidate.trim() : '';
-        return trimmed.length > 0 && !/^invalid credentials$/i.test(trimmed) ? trimmed : 'Invalid credentials';
-    }
-
-    if (response !== null && response.status === 403) {
-        const trimmed = typeof candidate === 'string' ? candidate.trim() : '';
-        return trimmed.length > 0 && !/^forbidden$/i.test(trimmed)
-            ? trimmed
-            : 'Access denied: this account is not permitted for this portal.';
-    }
-
-    if (typeof candidate === 'string' && candidate.trim().length > 0) {
-        return candidate.trim();
-    }
-
-    return fallback;
 }
 
 export function LoginForm() {
@@ -91,27 +64,8 @@ export function LoginForm() {
             const email = formData.get('email')?.toString() ?? '';
             const password = formData.get('password')?.toString() ?? '';
 
-            const response = await fetch(LOGIN_ENDPOINT, {
-                method: 'POST',
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                    accept: 'application/json',
-                    'x-portal-identity': 'user',
-                    'x-brand': 'realtutorialhub',
-                },
-                body: JSON.stringify({
-                    email,
-                    password,
-                    platform: 'realtutorialhub',
-                }),
-            });
-
-            const payload = (await response.json().catch(() => null)) as LoginResponse | null;
-
-            if (!response.ok) {
-                throw new Error(getLoginErrorMessage(response, payload, 'Authentication failed'));
-            }
+            apiClient.client.setPortalIdentity('user');
+            const payload = await apiClient.auth.login(email, password, PORTAL_BRAND) as LoginResponse;
 
             // API server already set httpOnly cookies via Set-Cookie header.
             // We do NOT create client-side cookies to avoid scope conflicts.
@@ -123,7 +77,7 @@ export function LoginForm() {
 
             const user = payload?.user;
             if (user !== undefined) {
-                login(normalizeSkillHubUser(user, email));
+                login(normalizeSkillHubUser(user, email), null);
             }
             await recordClientMetric(METRICS.AUTH.LOGIN, 1, { method: 'email', outcome: 'success' });
             router.push(redirectTarget);

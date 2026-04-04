@@ -3,6 +3,20 @@ import { decodeJwt, jwtVerify, SignJWT, type JWTPayload } from 'jose';
 const ACCESS_TOKEN_EXPIRE = '15m';
 const REFRESH_TOKEN_EXPIRE = '7d';
 
+export class TokenExpiredError extends Error {
+  constructor(message = 'Token expired') {
+    super(message);
+    this.name = 'TokenExpiredError';
+  }
+}
+
+export class TokenInvalidError extends Error {
+  constructor(message = 'Token invalid') {
+    super(message);
+    this.name = 'TokenInvalidError';
+  }
+}
+
 export type TokenPayload = JWTPayload & {
   userId: string;
   originalUserId?: string;
@@ -83,9 +97,25 @@ export class TokenService {
     this.singleton = mock;
   }
 
-  private readonly ACCESS_SECRET = TokenService.ACCESS_SECRET;
-  private readonly REFRESH_SECRET = TokenService.REFRESH_SECRET;
-  private readonly ADMIN_SECRET = TokenService.ADMIN_SECRET;
+  private readonly ACCESS_SECRET: Uint8Array;
+  private readonly REFRESH_SECRET: Uint8Array;
+  private readonly ADMIN_SECRET: Uint8Array;
+
+  constructor(accessSecret?: Uint8Array, refreshSecret?: Uint8Array, adminSecret?: Uint8Array) {
+    this.ACCESS_SECRET = accessSecret ?? TokenService.ACCESS_SECRET;
+    this.REFRESH_SECRET = refreshSecret ?? TokenService.REFRESH_SECRET;
+    this.ADMIN_SECRET = adminSecret ?? TokenService.ADMIN_SECRET;
+  }
+
+  private assertIdentityClaims(payload: Partial<TokenPayload>): asserts payload is TokenPayload {
+    if (typeof payload.shadowUserId !== 'string' || payload.shadowUserId.trim().length === 0) {
+      throw new TokenInvalidError('Missing shadowUserId claim');
+    }
+
+    if (typeof payload.originalUserId !== 'string' || payload.originalUserId.trim().length === 0) {
+      throw new TokenInvalidError('Missing originalUserId claim');
+    }
+  }
 
   getAccessToken(req: AccessTokenRequestLike, options?: { scope?: 'admin' | 'user' | 'infrastructure' }): string | undefined {
     const scope = options?.scope;
@@ -126,7 +156,7 @@ export class TokenService {
       : payload.userId;
     const shadowUserId = typeof payload.shadowUserId === 'string' && payload.shadowUserId.trim().length > 0
       ? payload.shadowUserId.trim()
-      : undefined;
+      : payload.userId;
 
     return new SignJWT({ ...payload, originalUserId, shadowUserId, tokenType, brand })
       .setProtectedHeader({ alg: 'HS256' })
@@ -153,7 +183,7 @@ export class TokenService {
       : userId;
     const shadowUserId = typeof metadata?.shadowUserId === 'string' && metadata.shadowUserId.trim().length > 0
       ? metadata.shadowUserId.trim()
-      : undefined;
+      : userId;
 
     return new SignJWT({ userId, originalUserId, shadowUserId, isAdmin, aud: audience, tokenType, brand })
       .setProtectedHeader({ alg: 'HS256' })
@@ -161,6 +191,51 @@ export class TokenService {
       .setIssuedAt()
       .setExpirationTime(REFRESH_TOKEN_EXPIRE)
       .sign(secret);
+  }
+
+  async signSkillHubCoreAccessToken(
+    userId: string,
+    roles: string[],
+    subscriptions: string[],
+    platforms: Array<'realtutorialhub' | 'skillup'> = ['realtutorialhub'],
+    metadata?: { originalUserId?: string; shadowUserId?: string; brand?: 'realtutorialhub' | 'skillup' },
+  ): Promise<string> {
+    const shadowUserId = typeof metadata?.shadowUserId === 'string' && metadata.shadowUserId.trim().length > 0
+      ? metadata.shadowUserId.trim()
+      : userId;
+    const originalUserId = typeof metadata?.originalUserId === 'string' && metadata.originalUserId.trim().length > 0
+      ? metadata.originalUserId.trim()
+      : userId;
+    const brand = metadata?.brand ?? platforms[0] ?? 'realtutorialhub';
+
+    return new SignJWT({
+      sub: userId,
+      shadowUserId,
+      originalUserId,
+      brand,
+      roles,
+      subscriptions,
+      platforms,
+    } as Omit<SkillHubCoreTokenPayload, 'iat' | 'exp' | 'iss'>)
+      .setProtectedHeader({ alg: 'HS256' })
+      .setIssuer('skillhubcore.in')
+      .setIssuedAt()
+      .setJti(globalThis.crypto.randomUUID())
+      .setExpirationTime(ACCESS_TOKEN_EXPIRE)
+      .sign(this.ACCESS_SECRET);
+  }
+
+  async signSkillHubCoreRefreshToken(userId: string, familyId: string): Promise<string> {
+    return new SignJWT({
+      sub: userId,
+      family: familyId,
+    })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setIssuer('skillhubcore.in')
+      .setIssuedAt()
+      .setJti(globalThis.crypto.randomUUID())
+      .setExpirationTime(REFRESH_TOKEN_EXPIRE)
+      .sign(this.REFRESH_SECRET);
   }
 
   async verifyUserAccessToken(token: string, options?: { audience?: string }): Promise<UserTokenPayload> {
@@ -183,7 +258,12 @@ export class TokenService {
       throw new Error(`Audience mismatch: expected ${requestedAudience}, got ${String(tokenAud)}`);
     }
 
-    return payload as unknown as UserTokenPayload;
+    const typedPayload = payload as unknown as UserTokenPayload;
+    this.assertIdentityClaims(typedPayload);
+    if (typedPayload.tokenType !== 'user') {
+      throw new TokenInvalidError('Invalid user token type');
+    }
+    return typedPayload;
   }
 
   async verifyAdminAccessToken(token: string, options?: { audience?: string }): Promise<AdminTokenPayload> {
@@ -207,7 +287,12 @@ export class TokenService {
       throw new Error(`Audience violation: admin scope received unexpected aud ${String(tokenAud)}`);
     }
 
-    return payload as unknown as AdminTokenPayload;
+    const typedPayload = payload as unknown as AdminTokenPayload;
+    this.assertIdentityClaims(typedPayload);
+    if (typedPayload.tokenType !== 'admin') {
+      throw new TokenInvalidError('Invalid admin token type');
+    }
+    return typedPayload;
   }
 
   async verifyAccessToken(token: string, options?: { audience?: string; isAdmin?: boolean }): Promise<TokenPayload> {
@@ -234,7 +319,12 @@ export class TokenService {
 
     try {
       const { payload } = await jwtVerify(token, this.ACCESS_SECRET);
-      return validateAudience(payload);
+      const typedPayload = validateAudience(payload);
+      this.assertIdentityClaims(typedPayload);
+      if (typedPayload.tokenType !== 'user') {
+        throw new TokenInvalidError('Invalid user token type');
+      }
+      return typedPayload;
     } catch (err) {
       if (options?.isAdmin === false) {
         throw normalizeError(err);
@@ -242,8 +332,13 @@ export class TokenService {
     }
 
     try {
-      const { payload } = await jwtVerify(token, this.ADMIN_SECRET);
-      return validateAudience(payload);
+        const { payload } = await jwtVerify(token, this.ADMIN_SECRET);
+        const typedPayload = validateAudience(payload);
+        this.assertIdentityClaims(typedPayload);
+        if (typedPayload.tokenType !== 'admin') {
+          throw new TokenInvalidError('Invalid admin token type');
+        }
+        return typedPayload;
     } catch (err) {
       throw normalizeError(err);
     }
@@ -261,10 +356,15 @@ export class TokenService {
         typeof payload.originalUserId === 'string' && payload.originalUserId.trim().length > 0
           ? payload.originalUserId.trim()
           : undefined;
+      const platforms = Array.isArray((payload as { platforms?: unknown }).platforms)
+        ? (payload as { platforms: Array<'realtutorialhub' | 'skillup'> }).platforms
+        : undefined;
 
       if (
         shadowUserId === undefined ||
         originalUserId === undefined ||
+        platforms === undefined ||
+        platforms.length === 0 ||
         !Array.isArray((payload as { roles?: unknown }).roles) ||
         !Array.isArray((payload as { subscriptions?: unknown }).subscriptions)
       ) {
@@ -279,10 +379,36 @@ export class TokenService {
       };
     } catch (error) {
       if (error instanceof Error && error.name === 'JWTExpired') {
-        throw new Error('Token expired');
+        throw new TokenExpiredError('Token expired');
       }
 
-      throw new Error('Invalid SkillHubCore token');
+      throw new TokenInvalidError('Invalid SkillHubCore token');
+    }
+  }
+
+  async verifySkillHubCoreRefreshToken(token: string): Promise<JWTPayload & { sub: string; family: string; iss: 'skillhubcore.in' }> {
+    try {
+      const { payload } = await jwtVerify(token, this.REFRESH_SECRET, { issuer: 'skillhubcore.in' });
+      const sub = typeof payload.sub === 'string' ? payload.sub.trim() : '';
+      const family = typeof (payload as { family?: unknown }).family === 'string'
+        ? (payload as { family: string }).family.trim()
+        : '';
+
+      if (sub.length === 0 || family.length === 0) {
+        throw new TokenInvalidError('Invalid SkillHubCore refresh token payload');
+      }
+
+      return payload as JWTPayload & { sub: string; family: string; iss: 'skillhubcore.in' };
+    } catch (error) {
+      if (error instanceof Error && error.name === 'JWTExpired') {
+        throw new TokenExpiredError(error.message);
+      }
+
+      if (error instanceof TokenInvalidError) {
+        throw error;
+      }
+
+      throw new TokenInvalidError(error instanceof Error ? error.message : 'Invalid SkillHubCore refresh token');
     }
   }
 
@@ -367,6 +493,10 @@ export class TokenService {
     return this.getInstance().generateAccessToken(payload, customExpiration);
   }
 
+  static generateFamilyId(): string {
+    return globalThis.crypto.randomUUID();
+  }
+
   static generateRefreshToken(
     userId: string,
     isAdmin: boolean = false,
@@ -386,6 +516,24 @@ export class TokenService {
 
   static verifySkillHubCoreJWT(token: string) {
     return this.getInstance().verifySkillHubCoreJWT(token);
+  }
+
+  static signSkillHubCoreAccessToken(
+    userId: string,
+    roles: string[],
+    subscriptions: string[],
+    platforms?: Array<'realtutorialhub' | 'skillup'>,
+    metadata?: { originalUserId?: string; shadowUserId?: string; brand?: 'realtutorialhub' | 'skillup' },
+  ) {
+    return this.getInstance().signSkillHubCoreAccessToken(userId, roles, subscriptions, platforms, metadata);
+  }
+
+  static signSkillHubCoreRefreshToken(userId: string, familyId: string) {
+    return this.getInstance().signSkillHubCoreRefreshToken(userId, familyId);
+  }
+
+  static verifySkillHubCoreRefreshToken(token: string) {
+    return this.getInstance().verifySkillHubCoreRefreshToken(token);
   }
 
   static async verifyAdminAccessToken(token: string, options?: { audience?: string }) {

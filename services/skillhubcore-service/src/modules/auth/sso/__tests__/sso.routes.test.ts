@@ -1,8 +1,8 @@
 import { Hono } from 'hono';
 import { describe, expect, it, vi } from 'vitest';
+import { TokenService } from '@quiz/auth';
 
 import { createSsoRoutes } from '../sso.routes';
-import { TokenService } from '../../token.service';
 
 const createSsoService = () => ({
   getUserPlatforms: vi.fn(async () => ['realtutorialhub']),
@@ -15,7 +15,7 @@ describe('sso routes', () => {
     const ssoService = createSsoService();
     const app = new Hono().route('/admin/users', createSsoRoutes(ssoService as any));
     const tokenService = new TokenService();
-    const accessToken = await tokenService.signAccessToken('admin-1', ['admin'], ['tutorial.preview_only'], ['realtutorialhub']);
+    const accessToken = await tokenService.signSkillHubCoreAccessToken('admin-1', ['admin'], ['tutorial.preview_only'], ['realtutorialhub']);
 
     const listResponse = await app.request('/admin/users/user-1/platforms', {
       headers: { authorization: `Bearer ${accessToken}` },

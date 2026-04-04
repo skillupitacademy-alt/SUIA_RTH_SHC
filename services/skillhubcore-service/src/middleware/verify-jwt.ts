@@ -1,8 +1,8 @@
 import type { MiddlewareHandler } from 'hono';
 import { createMiddleware } from 'hono/factory';
+import { TokenService } from '@quiz/auth';
 
 import { logger } from '@/lib/logger';
-import { TokenService } from '../modules/auth/token.service';
 
 declare module 'hono' {
   interface ContextVariableMap {
@@ -28,7 +28,7 @@ export const requireAuth = createMiddleware(async (c, next) => {
   }
 
   try {
-    const payload = await new TokenService().verifyAccessToken(token);
+    const payload = await TokenService.verifySkillHubCoreJWT(token);
     if (payload.platforms === undefined || payload.platforms.length === 0) {
       return c.json({ error: 'Token missing platform claim', code: 'UNAUTHORIZED' }, 401);
     }
@@ -54,7 +54,7 @@ export const requireAuth = createMiddleware(async (c, next) => {
       id: shadowUserId,
       shadowUserId,
       originalUserId,
-      roles: payload.roles,
+      roles: payload.roles as Array<'student' | 'faculty' | 'admin' | 'super_admin'>,
       subscriptions: payload.subscriptions,
       platforms: payload.platforms,
       brand: activeBrand,

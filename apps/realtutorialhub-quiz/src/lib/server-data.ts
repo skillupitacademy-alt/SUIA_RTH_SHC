@@ -26,38 +26,27 @@ async function getAuthHeaders() {
         cookieStore = await cookies();
     } catch {
         return {
-            accessToken: undefined,
             headers: {
-                Authorization: '',
                 Cookie: '',
             },
         };
     }
 
-    const accessToken = cookieStore.get('accessToken')?.value;
-    const refreshToken = cookieStore.get('refreshToken')?.value;
-    const csrfToken = cookieStore.get('csrfToken')?.value;
-
-    // Manually build Cookie header (cookieStore.toString() is unreliable)
-    const cookieParts = [
-        accessToken ? `accessToken=${accessToken}` : '',
-        refreshToken ? `refreshToken=${refreshToken}` : '',
-        csrfToken ? `csrfToken=${csrfToken}` : '',
-    ].filter(Boolean).join('; ');
+    const cookieParts = cookieStore
+        .getAll()
+        .map(({ name, value }) => `${name}=${value}`)
+        .join('; ');
 
     return {
-        accessToken,
         headers: {
-            'Authorization': accessToken ? `Bearer ${accessToken}` : '',
             'Cookie': cookieParts,
         },
     };
 }
 
 export async function getServerSession() {
-    const { accessToken, headers } = await getAuthHeaders();
-
-    if (!accessToken) {
+    const { headers } = await getAuthHeaders();
+    if (!headers.Cookie) {
         return null;
     }
 

@@ -4,6 +4,8 @@ export type ProxyRequestOptions = {
   userId?: string;
   shadowUserId?: string;
   originalUserId?: string;
+  portal?: 'admin' | 'user';
+  brand?: string;
   upstreamPath?: string;
 };
 
@@ -28,6 +30,13 @@ export async function proxyRequest(request: Request, upstream: string, options: 
   }
   if (options.originalUserId !== undefined) {
     headers.set('X-Original-User-ID', options.originalUserId);
+  }
+  if (options.portal !== undefined) {
+    headers.set('X-Portal-Identity', options.portal);
+  }
+  if (typeof options.brand === 'string' && options.brand.length > 0) {
+    headers.set('X-Brand', options.brand);
+    headers.set('X-Platform', options.brand);
   }
 
   headers.delete('CF-Connecting-IP');

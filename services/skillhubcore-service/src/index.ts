@@ -1,3 +1,4 @@
+import { TokenService } from '@quiz/auth';
 import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
 
@@ -6,7 +7,6 @@ import { requireGatewaySecret } from '@/middleware/verify-gateway-secret';
 import { createAuthRoutes } from '@/modules/auth/auth.routes';
 import { AuthService } from '@/modules/auth/auth.service';
 import { PasswordService } from '@/modules/auth/password.service';
-import { TokenService } from '@/modules/auth/token.service';
 import { createSsoRoutes } from '@/modules/auth/sso/sso.routes';
 import { SsoService } from '@/modules/auth/sso/sso.service';
 import { createSkillhubcoreEventRoutes } from '@/modules/events';

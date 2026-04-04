@@ -183,7 +183,7 @@ export interface IAdminUserClient {
   updateUser(id: string, data: Partial<AdminUserProfile> & Record<string, unknown>): Promise<AdminUserProfile>;
   createUser(data: { email: string; name: string; password?: string; roles: string[] }): Promise<AdminUserProfile>;
   deleteUser(id: string): Promise<AdminSuccessResponse>;
-  login(email: string, password: string): Promise<{
+  login(email: string, password: string, brand?: 'realtutorialhub' | 'skillup'): Promise<{
     user: AdminUserProfile;
     accessToken: string;
     expiresAt: string | null;

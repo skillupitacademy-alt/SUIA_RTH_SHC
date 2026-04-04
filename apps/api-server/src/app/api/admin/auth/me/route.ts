@@ -5,7 +5,7 @@ import { forbidden, notFound, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { withCorrelationId } from '@/lib/correlation-id.middleware';
 import { recordCounter, recordTimer } from '@/lib/metrics';
-import { type RequestBrand,resolveRequestBrandFromHeaders } from '@/lib/request-brand';
+import { type RequestBrand } from '@/lib/request-brand';
 import { withLogging } from '@/lib/withLogging';
 import { getAuthBrandContext, shouldUseBrandBinding } from '@/modules/auth/brand-db';
 import { UserRepository } from '@/modules/auth/repositories/user.repository';
@@ -28,8 +28,10 @@ async function handler(_req: NextRequest) {
 
     const _payload = await container.get(TokenService).verifyAdminAccessToken(_token);
     const brand = ((_payload.brand === 'skillup' ? 'skillup' : _payload.brand === 'realtutorialhub' ? 'realtutorialhub' : undefined)
-      ?? resolveRequestBrandFromHeaders(_req.headers, new URL(_req.url).hostname)
-      ?? 'realtutorialhub') satisfies RequestBrand;
+      ?? null) satisfies RequestBrand | null;
+    if (brand === null) {
+      return ApiResponse.error(unauthorized('Brand claim missing', 'UNAUTHORIZED'));
+    }
     const brandContext = getAuthBrandContext(brand);
     const userRepo = shouldUseBrandBinding() && typeof container.get(UserRepository).withDb === 'function'
       ? container.get(UserRepository).withDb(brandContext.db, brandContext.tables)

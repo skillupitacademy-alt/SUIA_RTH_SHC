@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { createJSONStorage, persist } from 'zustand/middleware';
 
 export interface AuthUser {
   id: string;
@@ -28,46 +27,29 @@ export interface AuthState {
   completeOnboarding: () => void;
 }
 
-export const useSkillupAuthStore = create<AuthState>()(
-  persist(
-    (set) => ({
-      user: null,
-      isAuthenticated: false,
-      initialized: false,
-      isSessionExpired: false,
-      expiresAt: null,
-      isLocked: false,
-      isLoggingOut: false,
-      login: (user, expiresAt = null) => {
-        set({ user, isAuthenticated: true, expiresAt, isSessionExpired: false, isLocked: false, isLoggingOut: false });
-      },
-      logout: (onLogout) => {
-        if (onLogout) onLogout();
+export const useSkillupAuthStore = create<AuthState>()((set) => ({
+  user: null,
+  isAuthenticated: false,
+  initialized: true,
+  isSessionExpired: false,
+  expiresAt: null,
+  isLocked: false,
+  isLoggingOut: false,
+  login: (user, expiresAt = null) => {
+    set({ user, isAuthenticated: true, expiresAt, isSessionExpired: false, isLocked: false, isLoggingOut: false });
+  },
+  logout: (onLogout) => {
+    if (onLogout) onLogout();
 
-        set({ user: null, isAuthenticated: false, expiresAt: null, isLocked: false, isLoggingOut: false });
-      },
-      lock: () => set({ isLocked: true }),
-      unlock: () => set({ isLocked: false }),
-      setInitialized: (val) => set({ initialized: val }),
-      setSessionExpired: (val) => set({ isSessionExpired: val }),
-      setLoggingOut: (val) => set({ isLoggingOut: val }),
-      completeOnboarding: () =>
-        set((state) => ({
-          user: state.user ? { ...state.user, onboarded: true } : null,
-        })),
-    }),
-    {
-      name: 'skillup-auth',
-      storage: createJSONStorage(() => localStorage),
-      onRehydrateStorage: () => (state) => {
-        if (state) {
-          state.setInitialized(true);
-
-          if (state.user && !state.isAuthenticated) {
-            state.login(state.user, state.expiresAt);
-          }
-        }
-      },
-    },
-  ),
-);
+    set({ user: null, isAuthenticated: false, expiresAt: null, isLocked: false, isLoggingOut: false });
+  },
+  lock: () => set({ isLocked: true }),
+  unlock: () => set({ isLocked: false }),
+  setInitialized: (val) => set({ initialized: val }),
+  setSessionExpired: (val) => set({ isSessionExpired: val }),
+  setLoggingOut: (val) => set({ isLoggingOut: val }),
+  completeOnboarding: () =>
+    set((state) => ({
+      user: state.user ? { ...state.user, onboarded: true } : null,
+    })),
+}));

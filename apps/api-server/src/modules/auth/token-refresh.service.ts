@@ -60,7 +60,10 @@ export class TokenRefreshService {
     const tokenBrand = typeof decoded.brand === 'string' && decoded.brand.trim().length > 0
       ? decoded.brand.trim().toLowerCase()
       : requestBrand;
-    const effectiveBrand = (tokenBrand === 'skillup' ? 'skillup' : 'realtutorialhub') satisfies RequestBrand;
+    if (tokenBrand !== 'skillup' && tokenBrand !== 'realtutorialhub') {
+      throw new Error('Brand is required for token refresh');
+    }
+    const effectiveBrand = tokenBrand satisfies RequestBrand;
 
     // Support both new (verifyUser/verifyAdmin) and legacy verifyRefreshToken paths for tests/backwards-compat.
     /* c8 ignore start */

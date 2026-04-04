@@ -1,11 +1,11 @@
 export type RequestBrand = 'realtutorialhub' | 'skillup';
 
-export function resolveRequestBrand(hostname?: string | null): RequestBrand | undefined {
-  if (typeof hostname !== 'string' || hostname.trim().length === 0) return undefined;
+export function resolveRequestBrand(value?: string | null): RequestBrand | undefined {
+  if (typeof value !== 'string' || value.trim().length === 0) return undefined;
 
-  const lowerHost = hostname.trim().toLowerCase();
-  if (lowerHost.includes('skillup')) return 'skillup';
-  if (lowerHost.includes('realtutorialhub')) return 'realtutorialhub';
+  const normalized = value.trim().toLowerCase();
+  if (normalized === 'skillup') return 'skillup';
+  if (normalized === 'realtutorialhub') return 'realtutorialhub';
 
   return undefined;
 }
@@ -36,8 +36,6 @@ export function tryExtractHostname(value?: string | null): string | undefined {
 
 export function resolveRequestBrandFromHeaders(headers?: HeaderReader | null, _fallbackHostname?: string | null): RequestBrand | undefined {
   const explicitBrandCandidates = [
-    tryExtractHostname(headers?.get('x-brand')),
-    tryExtractHostname(headers?.get('x-platform')),
     typeof headers?.get('x-brand') === 'string' ? headers?.get('x-brand')?.trim().toLowerCase() : undefined,
     typeof headers?.get('x-platform') === 'string' ? headers?.get('x-platform')?.trim().toLowerCase() : undefined,
   ];

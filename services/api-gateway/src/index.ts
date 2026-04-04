@@ -53,6 +53,8 @@ export const createApp = () => {
     let userId: string | undefined;
     let shadowUserId: string | undefined;
     let originalUserId: string | undefined;
+    let portal: 'admin' | 'user' | undefined;
+    let brand: string | undefined;
     if (route.auth === true) {
       const authResult = await authenticateRequest(c.req.raw, c.env, route);
       if (authResult instanceof Response) {
@@ -71,6 +73,8 @@ export const createApp = () => {
       shadowUserId = authResult.payload.shadowUserId;
       originalUserId = authResult.payload.originalUserId;
       userId = shadowUserId;
+      portal = authResult.portal;
+      brand = authResult.requestBrand ?? authResult.payload.brand;
       c.set('user', authResult.payload);
     }
 
@@ -83,6 +87,8 @@ export const createApp = () => {
       userId,
       shadowUserId,
       originalUserId,
+      portal,
+      brand,
       upstreamPath: rewritePath(normalizedPath, route.prefix, route.upstreamPathPrefix),
     });
   });

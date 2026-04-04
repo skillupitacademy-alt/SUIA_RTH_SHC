@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
 
 export interface AuthUser {
   id: string;
@@ -37,72 +36,55 @@ interface CreateAuthStoreOptions {
 }
 
 export const createAuthStore = (options: CreateAuthStoreOptions) => {
-  return create<AuthState>()(
-    persist(
-      (set, get) => ({
-        user: null,
-        isAuthenticated: false,
-        initialized: false,
+  return create<AuthState>()((set) => ({
+    user: null,
+    isAuthenticated: false,
+    initialized: true,
+    isSessionExpired: false,
+    isAccessDenied: false,
+    isLocked: false,
+    isLoggingOut: false,
+    expiresAt: null,
+    login: (user, expiresAt = null) => {
+      set({
+        user,
+        isAuthenticated: true,
+        expiresAt,
         isSessionExpired: false,
         isAccessDenied: false,
         isLocked: false,
         isLoggingOut: false,
+      });
+    },
+    logout: (onLogout) => {
+      if (onLogout) onLogout();
+      if (options.onLogout) options.onLogout();
+
+      set({
+        user: null,
+        isAuthenticated: false,
         expiresAt: null,
-        login: (user, expiresAt = null) => {
-          set({
-            user,
-            isAuthenticated: true,
-            expiresAt,
-            isSessionExpired: false,
-            isAccessDenied: false,
-            isLocked: false,
-            isLoggingOut: false,
-          });
-        },
-        logout: (onLogout) => {
-          if (onLogout) onLogout();
-          if (options.onLogout) options.onLogout();
-          
-          set({
-            user: null,
-            isAuthenticated: false,
-            expiresAt: null,
-            isSessionExpired: false,
-            isAccessDenied: false,
-            isLocked: false,
-            isLoggingOut: false,
-          });
-        },
-        lock: () => set({ isLocked: true }),
-        unlock: () => set({ isLocked: false }),
-        setInitialized: (val) => set({ initialized: val }),
-        setSessionExpired: (val) => set((state) => ({
-          isSessionExpired: val,
-          isAccessDenied: val ? false : state.isAccessDenied,
-        })),
-        setAccessDenied: (val) => set((state) => ({
-          isAccessDenied: val,
-          isSessionExpired: val ? false : state.isSessionExpired,
-        })),
-        setLoggingOut: (val) => set({ isLoggingOut: val }),
-        completeOnboarding: () => 
-          set((state) => ({
-            user: state.user ? { ...state.user, onboarded: true } : null
-          })),
-      }),
-      {
-        name: options.name,
-        storage: createJSONStorage(() => localStorage),
-        onRehydrateStorage: () => (state) => {
-            if (state) {
-                state.setInitialized(true);
-                // Sync isAuthenticated with user presence
-                if (state.user && !state.isAuthenticated) {
-                    state.login(state.user, state.expiresAt);
-                }
-            }
-        },
-      }
-    )
-  );
+        isSessionExpired: false,
+        isAccessDenied: false,
+        isLocked: false,
+        isLoggingOut: false,
+      });
+    },
+    lock: () => set({ isLocked: true }),
+    unlock: () => set({ isLocked: false }),
+    setInitialized: (val) => set({ initialized: val }),
+    setSessionExpired: (val) => set((state) => ({
+      isSessionExpired: val,
+      isAccessDenied: val ? false : state.isAccessDenied,
+    })),
+    setAccessDenied: (val) => set((state) => ({
+      isAccessDenied: val,
+      isSessionExpired: val ? false : state.isSessionExpired,
+    })),
+    setLoggingOut: (val) => set({ isLoggingOut: val }),
+    completeOnboarding: () =>
+      set((state) => ({
+        user: state.user ? { ...state.user, onboarded: true } : null,
+      })),
+  }));
 };

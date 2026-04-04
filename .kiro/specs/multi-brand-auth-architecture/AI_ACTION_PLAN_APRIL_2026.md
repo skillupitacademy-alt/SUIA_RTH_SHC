@@ -174,6 +174,10 @@ allowedHeaders: ['x-brand', 'x-portal-identity', 'x-csrf-token', ...]
 - **Option B**: Update spec to match code (documentation only)
 - **Recommendation**: Option B (update spec) - less risky
 
+**Status Update (April 3, 2026)**:
+- Completed via documentation alignment.
+- Spec references now use `skillhubcore_accessToken` to match the implemented contract.
+
 **Files to Update if Option B**:
 ```bash
 # Update these files to say "skillhubcore_accessToken" instead of "skillhub_accessToken"
@@ -195,6 +199,10 @@ NEXT_PUBLIC_SKILLUP_WEB_APP_URL="https://user.skillupitacademy.com"
 
 **Files to Update**:
 - `.env.local` (line 57)
+
+**Status Update (April 3, 2026)**:
+- Completed in local configuration.
+- `.env.local` now uses `NEXT_PUBLIC_WEB_APP_URL=\"https://user.realtutorialhub.com\"`.
 
 ---
 

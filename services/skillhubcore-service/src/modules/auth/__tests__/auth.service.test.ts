@@ -1,6 +1,7 @@
 import { randomUUID } from 'crypto';
 
 import { describe, expect, it, vi } from 'vitest';
+import { TokenService } from '@quiz/auth';
 
 const eventMocks = vi.hoisted(() => ({
   publishUserRegistered: vi.fn(async () => ({ messageId: 'msg-user-registered', envelope: {} })),
@@ -11,7 +12,6 @@ vi.mock('@/lib/skillhubcore-events', () => eventMocks);
 
 import { PasswordService } from '../password.service';
 import { AuthService } from '../auth.service';
-import { TokenService } from '../token.service';
 import { SubscriptionService } from '../../subscription/subscription.service';
 import { SsoService } from '../sso/sso.service';
 import { TokenRotationService } from '../token-rotation.service';
@@ -245,7 +245,7 @@ const createService = () => {
   const redis = new FakeRedis();
   const subscriptionService = new FakeSubscriptionService();
   const ssoService = new SsoService(repo as unknown as IUserRepository);
-  const tokenService = new TokenService(new TextEncoder().encode('access-secret-1234567890'), new TextEncoder().encode('refresh-secret-1234567890'));
+  const tokenService = new TokenService();
   const passwordService = new PasswordService();
   const tokenRotationService = new TokenRotationService(repo as unknown as IUserRepository, tokenService, subscriptionService as unknown as SubscriptionService, redis as any);
   const service = new AuthService(
@@ -276,7 +276,7 @@ describe('AuthService', () => {
     expect(repo.platforms.get(result.user.id)).toContain('realtutorialhub');
     expect(subscriptionService.getPlanFeatures).toHaveBeenCalledWith('free');
 
-    const accessPayload = await tokenService.verifyAccessToken(result.accessToken);
+    const accessPayload = await tokenService.verifySkillHubCoreJWT(result.accessToken);
     expect(accessPayload.roles).toEqual(['student']);
     expect(accessPayload.subscriptions).toEqual(['tutorial.preview_only']);
     expect(repo.audits[repo.audits.length - 1]?.action).toBe('register');
@@ -325,8 +325,44 @@ describe('AuthService', () => {
     expect(result.user.platforms).toContain('skillup');
     expect(repo.platforms.get(userId)).toEqual(['realtutorialhub', 'skillup']);
     expect(subscriptionService.getFeatures).toHaveBeenCalledWith(userId);
-    const accessPayload = await tokenService.verifyAccessToken(result.accessToken);
+    const accessPayload = await tokenService.verifySkillHubCoreJWT(result.accessToken);
     expect(accessPayload.subscriptions).toEqual(['tutorial.preview_only']);
+  });
+
+  it('logs in a shared-services admin without brand-specific portal coupling', async () => {
+    const { service, repo, tokenService, passwordService } = createService();
+    const passwordHash = await passwordService.hash('Password123!');
+    const userId = randomUUID();
+    repo.users.set(userId, {
+      id: userId,
+      email: 'admin@example.com',
+      passwordHash,
+      role: 'super_admin',
+      platform: 'realtutorialhub',
+      isActive: true,
+      deletedAt: null,
+      version: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    repo.platforms.set(userId, ['realtutorialhub', 'skillup']);
+    repo.subscriptions.set(userId, {
+      id: randomUUID(),
+      userId,
+      planType: 'free',
+      features: ['tutorial.preview_only'],
+      status: 'active',
+      startedAt: new Date(),
+      expiresAt: null,
+      deletedAt: null,
+    });
+
+    const result = await service.loginAdmin('admin@example.com', 'Password123!');
+    const accessPayload = await tokenService.verifySkillHubCoreJWT(result.accessToken);
+
+    expect(result.user.roles).toContain('super_admin');
+    expect(accessPayload.roles).toContain('super_admin');
+    expect(accessPayload.platforms).toEqual(expect.arrayContaining(['realtutorialhub', 'skillup']));
   });
 
   it('refreshes tokens and detects reuse of revoked refresh tokens', async () => {

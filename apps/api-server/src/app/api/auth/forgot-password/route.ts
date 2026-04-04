@@ -4,7 +4,7 @@ import type { NextRequest } from 'next/server';
 import { badRequest } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
-import { resolveRequestBrandFromHeaders } from '@/lib/request-brand';
+import { resolveRequestBrand, resolveRequestBrandFromHeaders } from '@/lib/request-brand';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
 import { AuthService } from '@/modules/auth/auth.service';
@@ -34,9 +34,7 @@ async function handler(_req: NextRequest) {
     }
 
     const ip = getClientIp(_req);
-    const brand = platform === 'skillup' || platform === 'realtutorialhub'
-      ? platform
-      : resolveRequestBrandFromHeaders(_req.headers, _req.nextUrl.hostname);
+    const brand = resolveRequestBrand(platform) ?? resolveRequestBrandFromHeaders(_req.headers);
     if (brand !== 'skillup' && brand !== 'realtutorialhub') {
       return ApiResponse.error(badRequest('Brand is required'));
     }

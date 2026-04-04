@@ -1,4 +1,4 @@
-import { jwtVerify } from 'jose';
+import { TokenService } from '@quiz/auth';
 
 import type { GatewayBindings } from '@/types';
 import type { SkillHubCoreTokenPayload } from '@/types';
@@ -18,14 +18,6 @@ export type AuthResolution = {
   portal: PortalKind;
   tokenSource: AuthTokenSource;
   requestBrand?: string;
-};
-
-type JwtPayloadWithLegacyClaims = {
-  userId?: unknown;
-  subscriptions?: unknown;
-  tokenType?: unknown;
-  role?: unknown;
-  brand?: unknown;
 };
 
 function getCookieValue(cookieHeader: string, name: string): string | undefined {
@@ -111,48 +103,6 @@ function normalizeRoles(payload: Partial<SkillHubCoreTokenPayload> & { role?: un
   return Array.from(new Set(roles));
 }
 
-export async function verifyAccessToken(token: string, secret: string): Promise<SkillHubCoreTokenPayload> {
-  // Do NOT require issuer — quiz-api-server tokens do not set one.
-  // SkillHubCore tokens may have issuer='skillhubcore.in', but that's optional now.
-  const { payload } = await jwtVerify(token, new TextEncoder().encode(secret));
-  const claims = payload as typeof payload & JwtPayloadWithLegacyClaims;
-
-  const sub = typeof payload.sub === 'string' ? payload.sub.trim() : '';
-  if (sub.length === 0) {
-    throw new Error('Invalid token payload: missing subject');
-  }
-
-  // Build a compatible payload shape — keep support for legacy tokens that do not carry
-  // tokenType/brand while still normalizing role values for strict portal checks.
-  const roles = normalizeRoles(payload as Partial<SkillHubCoreTokenPayload> & { role?: unknown });
-  const subscriptions = Array.isArray(claims.subscriptions) ? claims.subscriptions : [];
-  const tokenType = normalizeString(claims.tokenType);
-  const role = normalizeString(claims.role);
-  const brand = normalizeString(claims.brand);
-  const shadowUserId = normalizeString((claims as { shadowUserId?: unknown }).shadowUserId);
-  const originalUserId = normalizeString((claims as { originalUserId?: unknown }).originalUserId);
-  const platforms = Array.isArray((claims as { platforms?: unknown }).platforms)
-    ? (claims as { platforms: string[] }).platforms
-    : undefined;
-
-  if (shadowUserId === undefined || originalUserId === undefined) {
-    throw new Error('Invalid token payload: missing shadow or original user id');
-  }
-
-  return {
-    ...payload,
-    sub: shadowUserId,
-    shadowUserId,
-    originalUserId,
-    ...(platforms !== undefined ? { platforms } : {}),
-    roles,
-    subscriptions,
-    tokenType,
-    role,
-    brand,
-  } as unknown as SkillHubCoreTokenPayload;
-}
-
 export async function authenticateRequest(
   request: Request,
   env: GatewayBindings,
@@ -171,28 +121,29 @@ export async function authenticateRequest(
   }
 
   try {
-    const verificationSecrets = portal === 'admin'
-      ? Array.from(new Set([
-          env.ADMIN_JWT_SECRET ?? env.JWT_SECRET,
-          env.JWT_SECRET,
-        ].filter((value): value is string => typeof value === 'string' && value.trim().length > 0)))
-      : [env.JWT_SECRET];
+    const tokenService = new TokenService(
+      new TextEncoder().encode(env.JWT_SECRET),
+      new TextEncoder().encode(env.JWT_SECRET),
+      new TextEncoder().encode(env.ADMIN_JWT_SECRET ?? env.JWT_SECRET),
+    );
+    const verifiedPayload = portal === 'admin'
+      ? await tokenService.verifyAccessToken(token)
+      : await tokenService.verifyUserAccessToken(token, { audience: 'user' });
 
-    let payload: SkillHubCoreTokenPayload | undefined;
-    let lastError: unknown;
+    const shadowUserId = normalizeString(verifiedPayload.shadowUserId);
+    const originalUserId = normalizeString(verifiedPayload.originalUserId);
 
-    for (const secret of verificationSecrets) {
-      try {
-        payload = await verifyAccessToken(token, secret);
-        break;
-      } catch (error) {
-        lastError = error;
-      }
+    if (shadowUserId === undefined || originalUserId === undefined) {
+      throw new Error('Invalid token payload: missing shadow or original user id');
     }
 
-    if (payload === undefined) {
-      throw lastError instanceof Error ? lastError : new Error('Unauthorized');
-    }
+    const payload = {
+      ...(verifiedPayload as unknown as SkillHubCoreTokenPayload),
+      sub: shadowUserId,
+      shadowUserId,
+      originalUserId,
+      roles: normalizeRoles(verifiedPayload as Partial<SkillHubCoreTokenPayload> & { role?: unknown }),
+    } satisfies SkillHubCoreTokenPayload;
 
     const tokenType = normalizeString(payload.tokenType);
     const expectedTokenType = portal === 'admin' ? 'admin' : 'user';

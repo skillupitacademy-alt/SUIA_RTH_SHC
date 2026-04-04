@@ -1,6 +1,20 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook, waitFor } from '@testing-library/react';
 
+const { postMock, setPortalIdentityMock } = vi.hoisted(() => ({
+  postMock: vi.fn(),
+  setPortalIdentityMock: vi.fn(),
+}));
+
+vi.mock('@quiz/api-client', () => ({
+  apiClient: {
+    client: {
+      post: postMock,
+      setPortalIdentity: setPortalIdentityMock,
+    },
+  },
+}));
+
 import { useExportJob } from '../../hooks/useExportJob';
 
 type FetchCall = [RequestInfo | URL, RequestInit | undefined];
@@ -35,8 +49,8 @@ describe('useExportJob hook', () => {
     });
     const clearSpy = vi.spyOn(global, 'clearInterval').mockImplementation(() => {});
 
+    postMock.mockResolvedValueOnce({ jobId: 'job-1', status: 'processing' }); // export/trigger
     mockFetch
-      .mockResolvedValueOnce(jsonResponse({ jobId: 'job-1', status: 'processing' })) // export/trigger
       .mockResolvedValueOnce(jsonResponse({}, false, 404)) // export/status
       .mockResolvedValueOnce(jsonResponse({ url: 'http://download.url' })); // export/urls fallback
 
@@ -52,8 +66,14 @@ describe('useExportJob hook', () => {
       expect(result.current.error).toBeNull();
     });
 
-    expect(String(mockFetch.mock.calls[1]?.[0])).toContain('/export/status/job-1?examId=exam-1&format=json');
-    expect(String(mockFetch.mock.calls[2]?.[0])).toContain('/export/urls?examId=exam-1&format=json');
+    expect(setPortalIdentityMock).toHaveBeenCalledWith('user');
+    expect(postMock).toHaveBeenCalledWith('/export/trigger', {
+      examId,
+      userId,
+      format: 'json',
+    });
+    expect(String(mockFetch.mock.calls[0]?.[0])).toContain('/export/status/job-1?examId=exam-1&format=json');
+    expect(String(mockFetch.mock.calls[1]?.[0])).toContain('/export/urls?examId=exam-1&format=json');
 
     intervalSpy.mockRestore();
     clearSpy.mockRestore();

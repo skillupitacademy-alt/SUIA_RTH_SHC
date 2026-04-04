@@ -8,6 +8,8 @@ import { useShallow } from 'zustand/react/shallow';
 
 import { useAuthStore } from '@/store/auth-store';
 
+const PORTAL_BRAND = 'realtutorialhub' as const;
+
 export function InfrastructureLockScreen() {
     const { unlock, logout, isLocked, login } = useAuthStore(
         useShallow((s) => ({
@@ -48,7 +50,7 @@ export function InfrastructureLockScreen() {
 
             // 1. Re-authenticate with Portal Identity Hint
             apiClient.client.setPortalIdentity('infrastructure');
-            const { user: refreshedUser, expiresAt } = await apiClient.admin.login(email, password);
+            const { user: refreshedUser, expiresAt } = await apiClient.admin.login(email, password, PORTAL_BRAND);
 
             // 2. Validate Infrastructure Role Persistence
             if (refreshedUser.role !== 'infrastructure') {

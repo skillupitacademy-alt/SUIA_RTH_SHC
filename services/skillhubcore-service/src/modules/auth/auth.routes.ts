@@ -1,10 +1,10 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
+import { TokenService } from '@quiz/auth';
 
 import { logger } from '@/lib/logger';
 import { createRateLimiter } from '@/middleware/rate-limit';
 import { requireAuth, requirePlatform } from '@/middleware/verify-jwt';
-import { TokenService } from './token.service';
 import type { AuthService } from './auth.service';
 
 const registerSchema = z.object({
@@ -20,18 +20,26 @@ const loginSchema = z.object({
   platform: z.enum(['realtutorialhub', 'skillup']),
 });
 
+const adminLoginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(1),
+  portalIdentity: z.enum(['admin', 'super_admin']).default('super_admin'),
+});
+
 const refreshSchema = z.object({
   refreshToken: z.string().min(1),
 });
 
 const callbackValidationSchema = z.object({
   accessToken: z.string().min(1),
+  brand: z.enum(['realtutorialhub', 'skillup']),
 });
 
 export const createAuthRoutes = (authService: AuthService): Hono => {
   const app = new Hono();
   const registerLimiter = createRateLimiter('register', 10, 60 * 60);
   const loginLimiter = createRateLimiter('login', 5, 60);
+  const adminLoginLimiter = createRateLimiter('admin_login', 5, 60);
   const refreshLimiter = createRateLimiter('refresh', 30, 60);
   const callbackLimiter = createRateLimiter('cross_domain_callback', 30, 60);
 
@@ -83,6 +91,32 @@ export const createAuthRoutes = (authService: AuthService): Hono => {
     }
   });
 
+  app.post('/admin/login', async (c) => {
+    const parsed = adminLoginSchema.safeParse(await c.req.json());
+    if (!parsed.success) {
+      return c.json({ error: 'Invalid request', code: 'BAD_REQUEST', issues: parsed.error.flatten() }, 400);
+    }
+
+    const ip = c.req.header('x-forwarded-for') ?? c.req.header('x-real-ip') ?? 'unknown';
+    const limited = await adminLoginLimiter.check(ip);
+    if (!limited.allowed) {
+      return c.json({ error: 'Too many login attempts', code: 'RATE_LIMITED' }, 429, {
+        'Retry-After': String(limited.retryAfterSeconds),
+      });
+    }
+
+    try {
+      const result = await authService.loginAdmin(parsed.data.email, parsed.data.password);
+      return c.json(result);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Login failed';
+      const normalized = message.toLowerCase();
+      const status = normalized.includes('suspended') || normalized.includes('forbidden') ? 403 : 401;
+      logger.warn({ error, ip }, 'admin login failed');
+      return c.json({ error: message, code: status === 403 ? 'FORBIDDEN' : 'UNAUTHORIZED' }, status);
+    }
+  });
+
   app.post('/refresh', async (c) => {
     const parsed = refreshSchema.safeParse(await c.req.json());
     if (!parsed.success) {
@@ -129,7 +163,7 @@ export const createAuthRoutes = (authService: AuthService): Hono => {
 
     try {
       const validator = authService.createTokenValidatorService();
-      const result = await validator.validateBrandAccessToken(parsed.data.accessToken);
+      const result = await validator.validateBrandAccessToken(parsed.data.accessToken, parsed.data.brand);
       return c.json(result);
     } catch (error) {
       logger.warn({ error, ip }, 'cross-domain callback validation failed');
@@ -143,8 +177,7 @@ export const createAuthRoutes = (authService: AuthService): Hono => {
       return c.json({ error: 'Invalid request', code: 'BAD_REQUEST', issues: parsed.error.flatten() }, 400);
     }
 
-    const tokenService = new TokenService();
-    const payload = await tokenService.verifyRefreshToken(parsed.data.refreshToken);
+    const payload = await TokenService.verifySkillHubCoreRefreshToken(parsed.data.refreshToken);
     await authService.logout(payload.sub, payload.family);
     return c.json({ success: true });
   });

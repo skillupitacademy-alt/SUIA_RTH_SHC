@@ -45,6 +45,7 @@ vi.mock('@upstash/ratelimit', () => {
 
   const env = {
     JWT_SECRET: 'gateway-secret',
+    ADMIN_JWT_SECRET: 'gateway-secret',
     INTERNAL_GATEWAY_SECRET: 'internal-gateway-secret',
     UPSTASH_REDIS_REST_URL: 'https://redis.example.com',
     UPSTASH_REDIS_REST_TOKEN: 'redis-token',
@@ -80,6 +81,7 @@ function makeToken(roles: string[] = ['student']) {
   })
     .setProtectedHeader({ alg: 'HS256' })
     .setSubject(shadowUserId)
+    .setAudience(tokenType === 'admin' ? 'admin' : 'user')
     .setIssuer('skillhubcore.in')
     .setIssuedAt()
     .setExpirationTime('1h')
@@ -230,6 +232,11 @@ describe('api-gateway', () => {
     expect(response.status).toBe(200);
     expect(fetchSpy).toHaveBeenCalledTimes(1);
     expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(env.SKILLHUBCORE_URL);
+    const [, init] = fetchSpy.mock.calls[0] ?? [];
+    const headers = new Headers((init as RequestInit | undefined)?.headers);
+    expect(headers.get('X-Brand')).toBe('skillup');
+    expect(headers.get('X-Platform')).toBe('skillup');
+    expect(headers.get('X-Portal-Identity')).toBe('user');
   });
 
   it('routes public telemetry without jwt', async () => {

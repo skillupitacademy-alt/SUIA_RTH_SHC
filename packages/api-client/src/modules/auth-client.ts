@@ -11,11 +11,11 @@ export class AuthClient {
     this.client = client;
   }
 
-  async login(email: string, password: string) {
+  async login(email: string, password: string, brand: RequestBrand = 'realtutorialhub') {
     const response = await this.client.post<{ user: UserProfile; accessToken: string; refreshToken: string }>(
       '/auth/login',
-      { email, password },
-      { timeout: TIMEOUTS.STANDARD }
+      { email, password, platform: brand },
+      { timeout: TIMEOUTS.STANDARD, headers: { 'x-brand': brand } }
     );
 
     return {
@@ -27,7 +27,7 @@ export class AuthClient {
   async signup(email: string, password: string, name: string, brand: RequestBrand = 'realtutorialhub') {
     return this.client.post<{ user: UserProfile; accessToken: string }>(
       '/auth/signup',
-      { email, password, name },
+      { email, password, name, platform: brand },
       { timeout: TIMEOUTS.STANDARD, headers: { 'x-brand': brand } }
     );
   }
@@ -49,46 +49,7 @@ export class AuthClient {
   }
 
   async logout() {
-    return this.client.post(
-      '/auth/logout',
-      {
-        refreshToken: this.getStoredRefreshToken(),
-      },
-      { timeout: TIMEOUTS.STANDARD }
-    );
-  }
-
-  private getStoredRefreshToken(): string {
-    if (typeof document === 'undefined') {
-      return '';
-    }
-
-    const cookieNames = ['refreshToken'];
-    const cookieMap = new Map(
-      document.cookie
-        .split(';')
-        .map((part) => part.trim())
-        .filter(Boolean)
-        .map((entry) => {
-          const separatorIndex = entry.indexOf('=');
-          if (separatorIndex === -1) {
-            return [entry, ''] as const;
-          }
-
-          const key = entry.slice(0, separatorIndex);
-          const value = entry.slice(separatorIndex + 1);
-          return [key, decodeURIComponent(value)] as const;
-        }),
-    );
-
-    for (const name of cookieNames) {
-      const token = cookieMap.get(name);
-      if (typeof token === 'string' && token.trim().length > 0) {
-        return token.trim();
-      }
-    }
-
-    return '';
+    return this.client.post('/auth/logout', {}, { timeout: TIMEOUTS.STANDARD });
   }
 
   async refresh(examId?: string) {
@@ -102,19 +63,22 @@ export class AuthClient {
   async forgotPassword(email: string, brand: RequestBrand = 'realtutorialhub') {
     return this.client.post(
       '/auth/forgot-password',
-      { email },
+      { email, platform: brand },
       { timeout: TIMEOUTS.STANDARD, headers: { 'x-brand': brand } }
     );
   }
 
   async validateResetToken(token: string, brand: RequestBrand = 'realtutorialhub') {
-    return this.client.get<{ valid: boolean }>(`/auth/reset-password?_token=${token}`, { timeout: TIMEOUTS.STANDARD, headers: { 'x-brand': brand } });
+    return this.client.get<{ valid: boolean }>(`/auth/reset-password?_token=${token}`, {
+      timeout: TIMEOUTS.STANDARD,
+      headers: { 'x-brand': brand, 'x-platform': brand },
+    });
   }
 
   async resetPassword(token: string, newPassword: string, brand: RequestBrand = 'realtutorialhub') {
     return this.client.post(
       '/auth/reset-password',
-      { token, password: newPassword },
+      { token, password: newPassword, platform: brand },
       { timeout: TIMEOUTS.STANDARD, headers: { 'x-brand': brand } }
     );
   }

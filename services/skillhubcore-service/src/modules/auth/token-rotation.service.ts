@@ -1,5 +1,5 @@
+import { TokenService } from '@quiz/auth';
 import type { AuthResult } from './auth.types';
-import { TokenService } from './token.service';
 import { SubscriptionService } from '../subscription/subscription.service';
 import type { IUserRepository } from '@quiz/types';
 
@@ -30,7 +30,7 @@ export class TokenRotationService {
   }
 
   async rotate(refreshToken: string): Promise<AuthResult> {
-    const payload = await this.tokenService.verifyRefreshToken(refreshToken);
+    const payload = await this.tokenService.verifySkillHubCoreRefreshToken(refreshToken);
     const family = await this.userRepo.findTokenFamilyByFamilyId(payload.family);
     if (family === undefined) {
       throw new Error('Invalid refresh token');
@@ -80,8 +80,8 @@ export class TokenRotationService {
     const subscriptions = await this.subscriptionService.getFeatures(user.id);
 
     const [accessToken, nextRefreshToken] = await Promise.all([
-      this.tokenService.signAccessToken(user.id, [user.role], subscriptions, platforms),
-      this.tokenService.signRefreshToken(user.id, payload.family),
+      this.tokenService.signSkillHubCoreAccessToken(user.id, [user.role], subscriptions, platforms),
+      this.tokenService.signSkillHubCoreRefreshToken(user.id, payload.family),
     ]);
 
     await this.userRepo.transaction(async (repo) => {

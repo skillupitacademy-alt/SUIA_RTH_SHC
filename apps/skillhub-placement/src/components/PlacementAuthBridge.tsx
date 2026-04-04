@@ -34,6 +34,7 @@ export function PlacementAuthBridge({ brand, redirectPath, buttonClass }: Placem
           headers: {
             'content-type': 'application/json',
             'x-portal-identity': 'user',
+            'x-brand': brand,
           },
           body: JSON.stringify({}),
         });
@@ -50,10 +51,12 @@ export function PlacementAuthBridge({ brand, redirectPath, buttonClass }: Placem
           credentials: 'include',
           headers: {
             'content-type': 'application/json',
+            'x-brand': brand,
           },
           body: JSON.stringify({
             accessToken: refreshPayload.accessToken,
             redirectTo: redirectPath,
+            brand,
           }),
         });
 

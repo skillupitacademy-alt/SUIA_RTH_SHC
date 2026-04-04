@@ -54,7 +54,6 @@ export function WebSessionWatcherContainer() {
         // 1. Clear state IMMEDIATELY so E2E and UI react
         setSessionExpired(true);
         logout();
-        localStorage.removeItem('quiz-platform-auth');
 
         // 2. Brief delay to allow the user to see the notice/toast before redirection
         setTimeout(() => {

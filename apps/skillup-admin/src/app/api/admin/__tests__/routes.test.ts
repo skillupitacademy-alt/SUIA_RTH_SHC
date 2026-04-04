@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { listAdminBatches, listAdminEnquiries, listAdminPayments, listAdminPlacementProfiles, listAdminStudents } from '@/lib/skillup-admin-data';
 
@@ -69,8 +69,7 @@ describe('skillup-admin routes', () => {
   let placementId = '';
   let paymentId = '';
 
-  beforeEach(
-    async () => {
+  const loadFixtures = async () => {
     vi.clearAllMocks();
     const [students, enquiries, batches, placements, payments] = await Promise.all([
       listAdminStudents(),
@@ -85,9 +84,7 @@ describe('skillup-admin routes', () => {
     batchId = batches[0]?.id ?? '';
     placementId = placements[0]?.id ?? '';
     paymentId = payments[0]?.id ?? '';
-    },
-    20000
-  );
+  };
 
   it('rejects requests without an admin role', async () => {
     const response = await getStudents(
@@ -101,6 +98,7 @@ describe('skillup-admin routes', () => {
   });
 
   it('lists and creates students', async () => {
+    await loadFixtures();
     const unique = Date.now().toString(36);
     const listResponse = await getStudents(makeRequest('/api/admin/students'));
     const listPayload = (await listResponse.json()) as { data: Array<{ id: string }> };
@@ -126,6 +124,7 @@ describe('skillup-admin routes', () => {
   it(
     'returns a student detail and enrolls the student with an event',
     async () => {
+    await loadFixtures();
     const detailResponse = await getStudent(makeRequest(`/api/admin/students/${studentId}`), {
       params: Promise.resolve({ id: studentId }),
     });
@@ -134,9 +133,12 @@ describe('skillup-admin routes', () => {
     expect(detailResponse.status).toBe(200);
     expect(detailPayload.data.name).toBeTruthy();
 
-    const enrollResponse = await enrollStudent(makeRequest(`/api/admin/students/${studentId}/enroll`, 'POST'), {
-      params: Promise.resolve({ id: studentId }),
-    });
+    const enrollResponse = await enrollStudent(
+      makeRequest(`/api/admin/students/${studentId}/enroll`, 'POST', { batchId }),
+      {
+        params: Promise.resolve({ id: studentId }),
+      }
+    );
     const enrollPayload = (await enrollResponse.json()) as { data: { enrollment: { batchId: string } } };
 
     expect(enrollResponse.status).toBe(200);
@@ -153,15 +155,29 @@ describe('skillup-admin routes', () => {
   it(
     'updates a student profile and enrollment assignment',
     async () => {
+    await loadFixtures();
     const unique = Date.now().toString(36);
+    const createResponse = await createStudent(
+      makeRequest('/api/admin/students', 'POST', {
+        name: `Mutable Student ${unique}`,
+        email: `mutable.student.${unique}@example.com`,
+        batchId,
+        batchName: 'Live batch',
+      })
+    );
+    const createPayload = (await createResponse.json()) as { data: { id: string } };
+    const targetStudentId = createPayload.data.id;
+
+    expect(createResponse.status).toBe(201);
+
     const updateResponse = await patchStudent(
-      makeRequest(`/api/admin/students/${studentId}`, 'PATCH', {
+      makeRequest(`/api/admin/students/${targetStudentId}`, 'PATCH', {
         name: `Edited Student ${unique}`,
         email: `edited.student.${unique}@example.com`,
         batchId,
       }),
       {
-        params: Promise.resolve({ id: studentId }),
+        params: Promise.resolve({ id: targetStudentId }),
       }
     );
     const updatePayload = (await updateResponse.json()) as { data: { updated: boolean; detail: { name: string; email: string; batchId: string } } };
@@ -178,6 +194,7 @@ describe('skillup-admin routes', () => {
   it(
     'lists enquiries and advances the saga',
     async () => {
+    await loadFixtures();
     const unique = Date.now().toString(36);
     const listResponse = await getEnquiries(makeRequest('/api/admin/crm/enquiries'));
     const listPayload = (await listResponse.json()) as { data: Array<{ id: string }> };
@@ -226,6 +243,7 @@ describe('skillup-admin routes', () => {
   );
 
   it('updates an enquiry detail record', async () => {
+    await loadFixtures();
     const unique = Date.now().toString(36);
     const updateResponse = await patchEnquiryDetail(
       makeRequest(`/api/admin/crm/enquiries/${enquiryId}`, 'PATCH', {
@@ -248,6 +266,7 @@ describe('skillup-admin routes', () => {
   });
 
   it('lists and creates batches', async () => {
+    await loadFixtures();
     const listResponse = await getBatches(makeRequest('/api/admin/batches'));
     const listPayload = (await listResponse.json()) as { data: Array<{ id: string }> };
 
@@ -271,6 +290,7 @@ describe('skillup-admin routes', () => {
   });
 
   it('loads and updates a batch detail', async () => {
+    await loadFixtures();
     const detailResponse = await getBatches(makeRequest('/api/admin/batches'));
     const detailPayload = (await detailResponse.json()) as { data: Array<{ id: string }> };
     const targetBatchId = detailPayload.data[0]?.id ?? '';
@@ -303,6 +323,7 @@ describe('skillup-admin routes', () => {
   });
 
   it('records payments idempotently and exports CSV', async () => {
+    await loadFixtures();
     const unique = Date.now().toString(36);
     const listResponse = await getPayments(makeRequest('/api/admin/payments'));
     const listPayload = (await listResponse.json()) as { data: Array<{ id: string }> };
@@ -341,6 +362,7 @@ describe('skillup-admin routes', () => {
   });
 
   it('exports a live audit log csv', async () => {
+    await loadFixtures();
     const response = await exportAuditLog(makeRequest('/api/admin/audit-log/export?student=&action='));
     const csv = await response.text();
 
@@ -351,6 +373,7 @@ describe('skillup-admin routes', () => {
   });
 
   it('loads and saves a placement profile', async () => {
+    await loadFixtures();
     const detailResponse = await getPlacementProfile(makeRequest(`/api/admin/placement/${placementId}`), {
       params: Promise.resolve({ id: placementId }),
     });
@@ -386,6 +409,7 @@ describe('skillup-admin routes', () => {
   });
 
   it('publishes a placement job posting', async () => {
+    await loadFixtures();
     const unique = Date.now().toString(36);
     const response = await createPlacementJob(
       makeRequest('/api/admin/placement/jobs', 'POST', {
@@ -405,6 +429,7 @@ describe('skillup-admin routes', () => {
   });
 
   it('loads and updates a payment detail', async () => {
+    await loadFixtures();
     const detailResponse = await getPaymentDetail(makeRequest(`/api/admin/payments/${paymentId}`), {
       params: Promise.resolve({ id: paymentId }),
     });
@@ -440,6 +465,7 @@ describe('skillup-admin routes', () => {
   });
 
   it('publishes an overdue payment event when a payment is marked overdue', async () => {
+    await loadFixtures();
     const unique = Date.now().toString(36);
     const response = await patchPaymentDetail(
       makeRequest(

@@ -1,7 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 vi.mock('jose', () => ({
-  jwtVerify: vi.fn(async (_t, _s) => ({ payload: { aud: ['user'], userId: 'u1' } })),
+  jwtVerify: vi.fn(async (_t, _s) => ({
+    payload: {
+      aud: ['user'],
+      userId: 'u1',
+      originalUserId: 'u1',
+      shadowUserId: 'shadow-u1',
+      tokenType: 'user',
+    },
+  })),
 }));
 
 import { jwtVerify } from 'jose';
@@ -22,7 +30,16 @@ describe('TokenService audience array coverage', () => {
   });
 
   it('handles array audience for admin token', async () => {
-    (jwtVerify as any).mockResolvedValueOnce({ payload: { aud: ['admin', 'infra'], isAdmin: true } });
+    (jwtVerify as any).mockResolvedValueOnce({
+      payload: {
+        aud: ['admin', 'infra'],
+        isAdmin: true,
+        userId: 'a1',
+        originalUserId: 'a1',
+        shadowUserId: 'shadow-a1',
+        tokenType: 'admin',
+      },
+    });
     const payload = await service.verifyAdminAccessToken('tok');
     expect(payload.isAdmin).toBe(true);
   });

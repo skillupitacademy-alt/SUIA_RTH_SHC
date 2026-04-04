@@ -51,7 +51,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             clientLogger.error('Server-side logout failed', { error: err instanceof Error ? err.message : 'unknown' });
         } finally {
             storeLogout();
-            localStorage.removeItem('quiz-platform-auth');
         }
     }, [storeLogout]);
 

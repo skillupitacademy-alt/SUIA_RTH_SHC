@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import { TokenService } from '@quiz/auth';
 
 import { Hono } from 'hono';
 
 import { createHierarchyRoutes } from '../hierarchy.routes';
-import { TokenService } from '../../auth/token.service';
 
 const hierarchyService = {
   getDomains: async () => [{ id: 'd1', name: 'Full Stack', slug: 'full-stack', description: 'desc' }],
@@ -24,7 +24,7 @@ describe('hierarchy routes', () => {
 
   it('creates a subtopic for admin users', async () => {
     const app = new Hono().route('/api/hierarchy', createHierarchyRoutes(hierarchyService as any));
-    const token = await new TokenService().signAccessToken('admin-1', ['admin'], ['notes']);
+    const token = await new TokenService().signSkillHubCoreAccessToken('admin-1', ['admin'], ['notes']);
 
     const response = await app.request('/api/hierarchy/subtopics', {
       method: 'POST',

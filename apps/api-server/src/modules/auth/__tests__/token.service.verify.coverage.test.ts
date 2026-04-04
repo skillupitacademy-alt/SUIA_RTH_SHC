@@ -25,7 +25,9 @@ describe('TokenService verification branches', () => {
   });
 
   it('hits admin-scope audience violation branch for unknown audience', async () => {
-    vi.mocked(jose.jwtVerify).mockResolvedValue({ payload: { aud: ['partner'] } } as any);
+    vi.mocked(jose.jwtVerify).mockResolvedValue({
+      payload: { aud: ['partner'], userId: 'a1', originalUserId: 'a1', shadowUserId: 'shadow-a1', tokenType: 'admin', isAdmin: true },
+    } as any);
     const service = new TokenService();
     await expect(service.verifyAdminAccessToken('tok')).rejects.toThrow(
       'Audience violation: admin scope received unexpected aud partner',
@@ -41,22 +43,32 @@ describe('TokenService verification branches', () => {
   });
 
   it('covers no-audience payload path and refresh verify error propagation', async () => {
-    vi.mocked(jose.jwtVerify).mockResolvedValueOnce({ payload: {} } as any);
+    vi.mocked(jose.jwtVerify).mockResolvedValueOnce({
+      payload: { userId: 'u1', originalUserId: 'u1', shadowUserId: 'shadow-u1', tokenType: 'user' },
+    } as any);
     const service = new TokenService();
-    await expect(service.verifyAccessToken('tok', { audience: '' as any })).resolves.toEqual({});
+    await expect(service.verifyAccessToken('tok', { audience: '' as any })).resolves.toMatchObject({
+      userId: 'u1',
+      shadowUserId: 'shadow-u1',
+      originalUserId: 'u1',
+    });
 
     vi.mocked(jose.jwtVerify).mockRejectedValueOnce(new Error('Invalid Compact JWS'));
     await expect(service.verifyRefreshToken('tok')).rejects.toThrow('Invalid Compact JWS');
   });
 
   it('rejects explicit audience when token has no aud claim', async () => {
-    vi.mocked(jose.jwtVerify).mockResolvedValue({ payload: {} } as any);
+    vi.mocked(jose.jwtVerify).mockResolvedValue({
+      payload: { userId: 'u1', originalUserId: 'u1', shadowUserId: 'shadow-u1', tokenType: 'user' },
+    } as any);
     const service = new TokenService();
     await expect(service.verifyUserAccessToken('tok')).rejects.toThrow('Audience mismatch');
   });
 
   it('accepts admin verification when no audience exists and enforcement is off', async () => {
-    vi.mocked(jose.jwtVerify).mockResolvedValue({ payload: { userId: 'admin1' } } as any);
+    vi.mocked(jose.jwtVerify).mockResolvedValue({
+      payload: { userId: 'admin1', originalUserId: 'admin1', shadowUserId: 'shadow-admin1', tokenType: 'admin', isAdmin: true },
+    } as any);
     const service = new TokenService();
     await expect(service.verifyAdminAccessToken('tok')).resolves.toMatchObject({ userId: 'admin1' });
   });

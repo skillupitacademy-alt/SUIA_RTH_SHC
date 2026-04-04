@@ -61,7 +61,7 @@ function getTokenIds(payload: VerifiedTokenPayload): { originalUserId: string; s
 }
 
 function addUserHeaders(response: NextResponse, payload: UserPayload): NextResponse {
-  response.headers.set('x-user-id', payload.originalUserId);
+  response.headers.set('x-user-id', payload.shadowUserId);
   response.headers.set('x-shadow-user-id', payload.shadowUserId);
   response.headers.set('x-original-user-id', payload.originalUserId);
   response.headers.set('x-user-roles', payload.roles.join(','));
@@ -128,7 +128,7 @@ export async function proxy(request: NextRequest) {
       return NextResponse.redirect(getLoginUrl(request, redirectPath));
     }
     const headers = new Headers(request.headers);
-    headers.set('x-user-id', user.originalUserId);
+    headers.set('x-user-id', user.shadowUserId);
     headers.set('x-shadow-user-id', user.shadowUserId);
     headers.set('x-original-user-id', user.originalUserId);
     headers.set('x-user-roles', user.roles.join(','));
@@ -162,7 +162,7 @@ export async function proxy(request: NextRequest) {
   }
 
   const headers = new Headers(request.headers);
-  headers.set('x-user-id', user.originalUserId);
+  headers.set('x-user-id', user.shadowUserId);
   headers.set('x-shadow-user-id', user.shadowUserId);
   headers.set('x-original-user-id', user.originalUserId);
   headers.set('x-user-roles', user.roles.join(','));

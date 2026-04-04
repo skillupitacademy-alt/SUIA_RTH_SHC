@@ -6,7 +6,7 @@ import { withApiHandler } from '@/lib/api-wrapper';
 import { resolveCookieDomain } from '@/lib/cookie-domain';
 import { withCorrelationId } from '@/lib/correlation-id.middleware';
 import { recordCounter } from '@/lib/metrics';
-import { resolveRequestBrandFromHeaders, resolveRequestHostnameFromHeaders } from '@/lib/request-brand';
+import { resolveRequestBrand, resolveRequestBrandFromHeaders, resolveRequestHostnameFromHeaders } from '@/lib/request-brand';
 import { AdminAuthService } from '@/modules/auth/admin-auth.service';
 import { getClientIp } from '@/modules/auth/client-ip';
 
@@ -38,9 +38,7 @@ async function handler(_req: Request, body: z.infer<typeof loginSchema>) {
   const bodyBrand = typeof (body as { platform?: string }).platform === 'string'
     ? (body as { platform?: string }).platform?.trim().toLowerCase()
     : undefined;
-  const brand = bodyBrand === 'skillup' || bodyBrand === 'realtutorialhub'
-    ? bodyBrand
-    : resolveRequestBrandFromHeaders(_req.headers, new URL(_req.url).hostname);
+  const brand = resolveRequestBrand(bodyBrand) ?? resolveRequestBrandFromHeaders(_req.headers);
   if (brand !== 'skillup' && brand !== 'realtutorialhub') {
     throw badRequest('Brand is required');
   }
@@ -69,6 +67,7 @@ async function handler(_req: Request, body: z.infer<typeof loginSchema>) {
 
   const response = ApiResponse.success({
       user,
+      accessToken: result.accessToken,
       shadowUserId: result.user.shadowUserId,
       expiresAt: result.expiresAt,
   });

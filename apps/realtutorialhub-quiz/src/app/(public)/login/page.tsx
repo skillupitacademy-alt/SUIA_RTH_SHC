@@ -1,17 +1,15 @@
 'use client';
 
-import type { PortalIdentity } from '@quiz/types';
+import { apiClient } from '@quiz/api-client';
 import { Eye, EyeOff, Loader2, ShieldCheck } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
-import { getApiBase } from '@/utils/apiBase';
 import { useAuthStore } from '@/store/auth-store';
 import { clientLogger } from '@/utils/clientLogger';
 
-const LOGIN_ENDPOINT = `${getApiBase()}/auth/login`;
+const PORTAL_BRAND = 'realtutorialhub' as const;
 type LoginResponse = {
   accessToken?: string;
-  refreshToken?: string;
   user?: {
     id: string;
     email: string;
@@ -25,13 +23,6 @@ type LoginResponse = {
   _error?: string;
 };
 
-function readResponseMessage(value: unknown): string | null {
-  if (typeof value !== 'string') return null;
-
-  const trimmed = value.trim();
-  return trimmed === '' ? null : trimmed;
-}
-
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -42,31 +33,10 @@ function LoginForm() {
       : loginReason === 'session_expired'
         ? 'Your session expired. Please sign in again to continue.'
         : null;
-  const portalIdentity: PortalIdentity = 'user';
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const authLogin = useAuthStore((s) => s.login);
-
-  const toErrorMessage = (response: Response | null, payload: LoginResponse | null, fallback: string): string => {
-    const candidate = readResponseMessage(payload?.error) ?? readResponseMessage(payload?.message) ?? readResponseMessage(payload?._error);
-
-    if (response !== null && response.status === 401) {
-      return candidate !== null && !/^invalid credentials$/i.test(candidate) ? candidate : 'Invalid credentials';
-    }
-
-    if (response !== null && response.status === 403) {
-      return candidate !== null && !/^forbidden$/i.test(candidate)
-        ? candidate
-        : 'Access denied: this account is not permitted for this portal.';
-    }
-
-    if (candidate !== null) {
-      return candidate;
-    }
-
-    return fallback;
-  };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -85,32 +55,15 @@ function LoginForm() {
       const email = formData.get('email')?.toString() ?? '';
       const password = formData.get('password')?.toString() ?? '';
 
-      const response = await fetch(LOGIN_ENDPOINT, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-portal-identity': portalIdentity,
-        },
-        body: JSON.stringify({
-          email,
-          password,
-          platform: 'realtutorialhub',
-        }),
-      });
-
-      const payload = (await response.json().catch(() => null)) as LoginResponse | null;
+      apiClient.client.setPortalIdentity('user');
+      const payload = await apiClient.auth.login(email, password, PORTAL_BRAND) as LoginResponse;
 
       clientLogger.warn('[AUTH_FLOW][LOGIN_PAGE][RESPONSE]', {
         step: 'response',
-        ok: response.ok,
-        status: response.status,
+        ok: true,
+        status: 200,
         hasAccessToken: typeof payload?.accessToken === 'string' && payload.accessToken.trim().length > 0,
       });
-
-      if (!response.ok) {
-        throw new Error(toErrorMessage(response, payload, 'Authentication failed'));
-      }
 
       // Verify login succeeded — the API server already set httpOnly cookies
       // via Set-Cookie header (credentials: 'include' ensures the browser stores them).
@@ -131,7 +84,7 @@ function LoginForm() {
           isAdmin: payload.user.isAdmin ?? false,
           role: payload.user.role ?? 'user',
           onboarded: payload.user.onboarded ?? false,
-        });
+        }, null);
       }
 
       const safeRedirect =
@@ -147,11 +100,17 @@ function LoginForm() {
 
       router.replace(safeRedirect);
     } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Authentication failed';
+      const normalizedMessage =
+        message === 'Forbidden'
+          ? 'Access denied: this account is not permitted for this portal.'
+          : message;
+
       clientLogger.error('[AUTH_FLOW][LOGIN_PAGE][ERROR]', {
         step: 'error',
-        message: err instanceof Error ? err.message : 'Authentication failed',
+        message: normalizedMessage,
       });
-      setError(err instanceof Error ? err.message : 'Authentication failed');
+      setError(normalizedMessage);
     } finally {
       setLoading(false);
     }

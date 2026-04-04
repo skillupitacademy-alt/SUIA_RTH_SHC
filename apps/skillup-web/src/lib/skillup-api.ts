@@ -36,12 +36,17 @@ export async function fetchSkillupApi<T>(path: string): Promise<T> {
     const xOriginalUserId = requestHeaders.get('x-original-user-id');
     const cookie = requestHeaders.get('cookie');
     const portalIdentity = requestHeaders.get('x-portal-identity');
+    const brand = requestHeaders.get('x-brand');
 
     if (xShadowUserId) forwardedHeaders.set('x-user-id', xShadowUserId);
     if (xShadowUserId) forwardedHeaders.set('x-shadow-user-id', xShadowUserId);
     if (xOriginalUserId) forwardedHeaders.set('x-original-user-id', xOriginalUserId);
     if (cookie) forwardedHeaders.set('cookie', cookie);
     if (portalIdentity) forwardedHeaders.set('x-portal-identity', portalIdentity);
+    if (brand) {
+      forwardedHeaders.set('x-brand', brand);
+      forwardedHeaders.set('x-platform', brand);
+    }
   } catch {
     // Static build paths do not have a request scope. We keep the fetch attempt
     // for runtime rendering and fall back to live DB helpers only when needed.

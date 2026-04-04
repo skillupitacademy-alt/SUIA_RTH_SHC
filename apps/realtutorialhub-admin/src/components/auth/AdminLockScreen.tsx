@@ -10,6 +10,8 @@ import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { useAuthStore } from '@/store/auth-store';
 import { clientLogger } from '@/utils/clientLogger';
 
+const PORTAL_BRAND = 'realtutorialhub' as const;
+
 export function AdminLockScreen() {
     const { user, unlock, logout, isLocked, login } = useAuthStore(
         useShallow((s) => ({
@@ -47,7 +49,7 @@ export function AdminLockScreen() {
                 emailDomain: email.includes('@') ? email.split('@')[1] : 'unknown',
             });
             // 1. Verify password & establish fresh cookies
-            const { user: refreshedUser, expiresAt } = await apiClient.admin.login(email, password);
+            const { user: refreshedUser, expiresAt } = await apiClient.admin.login(email, password, PORTAL_BRAND);
 
             clientLogger.warn('[AUTH_FLOW][ADMIN_LOCK_SCREEN][UNLOCK_RESPONSE]', {
                 step: 'response',
@@ -77,7 +79,7 @@ export function AdminLockScreen() {
         <div className="fixed inset-0 z-[100000] bg-[#1A1A1A]/95 backdrop-blur-xl flex items-center justify-center animate-in fade-in duration-500">
             <div className="w-full max-w-sm px-6 py-12 flex flex-col items-center space-y-8 animate-in zoom-in-95 duration-500">
 
-                {/* Branding & Status */}
+                {/* Branding and status */}
                 <div className="flex flex-col items-center space-y-4">
                     <div className="relative">
                         <div className="w-24 h-24 rounded-[2.5rem] bg-gradient-to-br from-[#FF4B91] to-[#FF8E9E] flex items-center justify-center shadow-2xl shadow-pink-500/20">
@@ -99,7 +101,7 @@ export function AdminLockScreen() {
                     </div>
                 </div>
 
-                {/* User Info */}
+                {/* User info */}
                 <div className="w-full p-4 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-4">
                     <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center text-slate-400">
                         <UserIcon size={24} />

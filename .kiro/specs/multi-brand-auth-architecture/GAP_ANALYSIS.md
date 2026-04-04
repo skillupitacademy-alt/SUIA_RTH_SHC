@@ -4,6 +4,12 @@
 
 This document identifies potential gaps and missing components in the multi-brand authentication architecture implementation plan.
 
+## Optional Gap Closure Update (April 3, 2026)
+
+- Shared-service cookie documentation is now aligned to the implemented `skillhubcore_accessToken` contract.
+- Local RTH public app configuration now uses `user.realtutorialhub.com`.
+- The historical analysis below still records the original mismatch that existed before these documentation/config updates.
+
 ---
 
 ## ✅ What's Already Covered

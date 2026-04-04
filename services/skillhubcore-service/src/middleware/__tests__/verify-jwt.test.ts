@@ -26,9 +26,6 @@ describe('requireAuth', () => {
     });
 
     expect(response.status).toBe(401);
-    await expect(response.json()).resolves.toEqual({
-      error: 'Token missing platform claim',
-      code: 'UNAUTHORIZED',
-    });
+    await expect(response.json()).resolves.toEqual({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
   });
 });

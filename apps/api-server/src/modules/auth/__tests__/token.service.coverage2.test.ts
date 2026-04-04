@@ -24,37 +24,52 @@ vi.mock("jose", () => {
 
 describe("TokenService coverage additions", () => {
   const service = new TokenService();
+  const userPayload = (overrides: Record<string, unknown> = {}) => ({
+    userId: 'u1',
+    originalUserId: 'u1',
+    shadowUserId: 'shadow-u1',
+    tokenType: 'user',
+    ...overrides,
+  });
+  const adminPayload = (overrides: Record<string, unknown> = {}) => ({
+    userId: 'a1',
+    originalUserId: 'a1',
+    shadowUserId: 'shadow-a1',
+    isAdmin: true,
+    tokenType: 'admin',
+    ...overrides,
+  });
 
   afterEach(() => {
     mocks.jwtVerify.mockReset();
   });
 
   it("verifyUserAccessToken enforces audience", async () => {
-    mocks.jwtVerify.mockResolvedValue({ payload: { aud: ["user"], userId: "u1" } });
+    mocks.jwtVerify.mockResolvedValue({ payload: userPayload({ aud: ["user"] }) });
     await expect(service.verifyUserAccessToken("t", { audience: "user" })).resolves.toMatchObject({ userId: "u1" });
 
-    mocks.jwtVerify.mockResolvedValue({ payload: { aud: ["admin"] } });
+    mocks.jwtVerify.mockResolvedValue({ payload: userPayload({ aud: ["admin"] }) });
     await expect(service.verifyUserAccessToken("t", { audience: "user" })).rejects.toThrow(/Audience mismatch/);
   });
 
   it("verifyAdminAccessToken rejects unexpected audience", async () => {
-    mocks.jwtVerify.mockResolvedValue({ payload: { aud: ["user"] } });
+    mocks.jwtVerify.mockResolvedValue({ payload: adminPayload({ aud: ["user"] }) });
     await expect(service.verifyAdminAccessToken("t")).rejects.toThrow(/Audience violation/);
 
-    mocks.jwtVerify.mockResolvedValue({ payload: { aud: ["infra"], userId: "u1" } });
+    mocks.jwtVerify.mockResolvedValue({ payload: adminPayload({ aud: ["infra"], userId: "u1", originalUserId: 'u1', shadowUserId: 'shadow-u1' }) });
     await expect(service.verifyAdminAccessToken("t", { audience: "infra" })).resolves.toMatchObject({ aud: ["infra"] });
 
-    mocks.jwtVerify.mockResolvedValue({ payload: { aud: ["admin"] } });
+    mocks.jwtVerify.mockResolvedValue({ payload: adminPayload({ aud: ["admin"] }) });
     await expect(service.verifyAdminAccessToken("t", { audience: "infra" })).rejects.toThrow(/Audience mismatch/);
   });
 
   it("verifyAccessToken handles enforced audience and admin fallback", async () => {
-    mocks.jwtVerify.mockResolvedValue({ payload: { aud: ["user"], userId: "u1" } });
+    mocks.jwtVerify.mockResolvedValue({ payload: userPayload({ aud: ["user"] }) });
     await expect(service.verifyAccessToken("t", { audience: "user" })).resolves.toMatchObject({ userId: "u1" });
 
     mocks.jwtVerify
-      .mockResolvedValueOnce({ payload: { aud: ["admin"], userId: "u1" } })
-      .mockResolvedValueOnce({ payload: { aud: ["infra"], userId: "u2" } });
+      .mockResolvedValueOnce({ payload: adminPayload({ aud: ["admin"], userId: "u1", originalUserId: 'u1', shadowUserId: 'shadow-u1' }) })
+      .mockResolvedValueOnce({ payload: adminPayload({ aud: ["infra"], userId: "u2", originalUserId: 'u2', shadowUserId: 'shadow-u2' }) });
     await expect(service.verifyAdminAccessToken("t")).resolves.toMatchObject({ aud: ["admin"] });
   });
 

@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { TokenRefreshService } from "../token-refresh.service";
 
 const hoist = vi.hoisted(() => ({
-  decodeJwt: vi.fn().mockReturnValue({ isAdmin: false }),
+  decodeJwt: vi.fn().mockReturnValue({ isAdmin: false, brand: "realtutorialhub" }),
 }));
 
 vi.mock("jose", () => ({
@@ -45,14 +45,14 @@ describe("TokenRefreshService coverage", () => {
       auditService as any
     );
 
-    const result = await svc.refresh("tok", "1.1.1.1", undefined, "user");
+    const result = await svc.refresh("tok", "1.1.1.1", undefined, "user", "realtutorialhub");
     expect(result.accessToken).toBe("access");
     expect(tokenService.verifyUserRefreshToken).toHaveBeenCalled();
     expect(tokenService.verifyAdminRefreshToken).not.toHaveBeenCalled();
   });
 
   it("routes admin refresh through admin verifier when decodeJwt indicates admin", async () => {
-    hoist.decodeJwt.mockReturnValueOnce({ isAdmin: true });
+    hoist.decodeJwt.mockReturnValueOnce({ isAdmin: true, brand: "realtutorialhub" });
 
     const tokenRepo = {
       findByHash: vi.fn().mockResolvedValue({ id: "t2", expiresAt: new Date(Date.now() + 10000) }),
@@ -86,7 +86,7 @@ describe("TokenRefreshService coverage", () => {
       auditService as any
     );
 
-    const result = await svc.refresh("tok", undefined, undefined, "admin");
+    const result = await svc.refresh("tok", undefined, undefined, "admin", "realtutorialhub");
     expect(result.refreshToken).toBe("refresh2");
     expect(tokenService.verifyAdminRefreshToken).toHaveBeenCalled();
     expect(tokenService.verifyUserRefreshToken).not.toHaveBeenCalled();

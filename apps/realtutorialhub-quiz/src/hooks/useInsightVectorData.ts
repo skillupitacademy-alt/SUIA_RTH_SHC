@@ -1,3 +1,4 @@
+import { apiClient } from "@quiz/api-client";
 import { useState, useEffect, useCallback, useRef } from "react";
 
 export interface GuidanceSignalRow {
@@ -217,29 +218,11 @@ export function useInsightVectorData(examId?: string, userId?: string) {
         return;
       }
 
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
-      
-      // Read CSRF token from cookie
-      const csrfToken = typeof document !== 'undefined'
-        ? document.cookie
-          .split('; ')
-          .find(row => row.startsWith('csrfToken='))
-          ?.split('=')[1] ?? ''
-        : '';
-
-      const res = await fetch(`${apiUrl}/export/trigger`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'x-csrf-token': csrfToken,
-        },
-        body: JSON.stringify({ examId, userId, format: "json" }),
-        credentials: "include",
-      });
-
-      if (!res.ok) throw new Error("Failed to trigger insight synthesis");
-
-      const triggerData = (await res.json()) as ExportJobResponse;
+      apiClient.client.setPortalIdentity("user");
+      const triggerData = await apiClient.client.post<ExportJobResponse, { examId: string; userId: string; format: "json" }>(
+        "/export/trigger",
+        { examId, userId, format: "json" },
+      );
       
       if (triggerData.status === "completed" && triggerData.downloadUrl) {
         await fetchPayload(triggerData.downloadUrl);

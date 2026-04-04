@@ -30,6 +30,24 @@ jobs:
           node-version: 20
           cache: "pnpm"
       - run: pnpm install --frozen-lockfile
+      - name: Auth Architecture Guards
+        run: |
+          if rg -n "document\.cookie|readCookie" apps/realtutorialhub-* apps/skillup-* apps/faculty-app apps/skillhub-placement apps/skillhubcore-admin packages/ui --glob '!**/tests/**' --glob '!**/__tests__/**' --glob '!**/TutorialNavbar.tsx'; then
+            echo "Frontend auth cookie parsing is forbidden in app/ui source."
+            exit 1
+          fi
+          if rg -n "localStorage.*(accessToken|refreshToken|admin_accessToken|quiz-platform-auth|quiz-platform-admin-auth)|persist\(" apps/realtutorialhub-* apps/skillup-* apps/faculty-app apps/skillhub-placement apps/skillhubcore-admin packages/ui --glob '!**/tests/**' --glob '!**/__tests__/**' --glob '**/store/auth-store.ts'; then
+            echo "Auth persistence in localStorage is forbidden."
+            exit 1
+          fi
+          if rg -n "Authorization['\"]?\s*:|Bearer " apps/realtutorialhub-* apps/skillup-* apps/faculty-app apps/skillhub-placement apps/skillhubcore-admin packages/ui --glob '!**/tests/**' --glob '!**/__tests__/**'; then
+            echo "Manual Authorization headers are forbidden in app/ui source."
+            exit 1
+          fi
+          if rg -n "jwtVerify" services --glob '!**/tests/**' --glob '!**/__tests__/**'; then
+            echo "Duplicate JWT verification outside packages/auth is forbidden."
+            exit 1
+          fi
       - run: pnpm lint:all
 
   type-check:

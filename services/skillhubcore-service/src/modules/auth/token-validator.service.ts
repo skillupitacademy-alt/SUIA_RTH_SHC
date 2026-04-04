@@ -1,17 +1,20 @@
-import { TokenService as BrandTokenService, type TokenPayload as BrandTokenPayload } from '@quiz/auth';
+import { TokenService, type TokenPayload as BrandTokenPayload } from '@quiz/auth';
 import type { IUserRepository } from '@quiz/types';
 
 import type { SkillhubCallbackValidationResult, PlatformName, UserRole } from './auth.types';
-import { TokenService } from './token.service';
 
 type RedisLike = {
   set: (key: string, value: string, options?: Record<string, unknown>) => Promise<unknown>;
 };
 
-const brandTokenService = new BrandTokenService();
+const brandTokenService = new TokenService();
 
-function normalizeBrand(value: unknown): PlatformName {
-  return value === 'skillup' ? 'skillup' : 'realtutorialhub';
+function normalizeBrand(value: unknown): PlatformName | undefined {
+  if (value === 'realtutorialhub' || value === 'skillup') {
+    return value;
+  }
+
+  return undefined;
 }
 
 function normalizeRoles(roles: unknown): UserRole[] {
@@ -74,25 +77,37 @@ export class TokenValidatorService {
     return `skillhubcore:refresh:${familyId}`;
   }
 
-  async validateBrandAccessToken(accessToken: string): Promise<SkillhubCallbackValidationResult> {
+  async validateBrandAccessToken(accessToken: string, expectedBrand: PlatformName): Promise<SkillhubCallbackValidationResult> {
     const payload = await brandTokenService.verifyUserAccessToken(accessToken, { audience: 'user' });
     const originalUserId = resolveOriginalUserId(payload);
     const shadowUserId = resolveShadowUserId(payload, originalUserId);
-    const brand = normalizeBrand(payload.brand);
+    const tokenBrand = normalizeBrand(payload.brand);
+    if (tokenBrand === undefined) {
+      throw new Error('Brand token missing brand claim');
+    }
+    if (tokenBrand !== expectedBrand) {
+      throw new Error('Brand token does not match requested platform');
+    }
+
+    const brand = tokenBrand;
     const roles = normalizeRoles(payload.roles);
     const subscriptions = normalizeSubscriptions(payload.subscriptions);
     const platforms = Array.from(
-      new Set<PlatformName>([brand, ...(Array.isArray(payload.platforms) ? payload.platforms : [])].map(normalizeBrand))
+      new Set<PlatformName>(
+        [brand, ...(Array.isArray(payload.platforms) ? payload.platforms : [])]
+          .map(normalizeBrand)
+          .filter((platform): platform is PlatformName => platform !== undefined)
+      )
     );
     const familyId = TokenService.generateFamilyId();
 
     const [skillhubToken, refreshToken] = await Promise.all([
-      this.tokenService.signAccessToken(shadowUserId, roles, subscriptions, platforms, {
+      this.tokenService.signSkillHubCoreAccessToken(shadowUserId, roles, subscriptions, platforms, {
         originalUserId,
         shadowUserId,
         brand,
       }),
-      this.tokenService.signRefreshToken(shadowUserId, familyId),
+      this.tokenService.signSkillHubCoreRefreshToken(shadowUserId, familyId),
     ]);
 
     await this.redis.set(this.getRefreshKey(familyId), refreshToken);

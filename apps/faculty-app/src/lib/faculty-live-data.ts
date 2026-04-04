@@ -146,6 +146,9 @@ async function fetchFacultyTutorialData<T>(source: Headers | HeadersInit, userId
   const headers = new Headers(source);
   headers.set('x-user-id', userId);
   headers.set('x-shadow-user-id', userId);
+  if (headers.get('x-portal-identity') === null) {
+    headers.set('x-portal-identity', 'faculty');
+  }
   return fetchFacultyPortalJson<T>(headers, path);
 }
 

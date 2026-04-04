@@ -10,6 +10,8 @@ import { useState } from 'react';
 import { GuestInfrastructureLayout } from '@/components/layout/GuestInfrastructureLayout';
 import { useAuthStore } from '@/store/auth-store';
 
+const PORTAL_BRAND = 'realtutorialhub' as const;
+
 export default function LoginPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -29,7 +31,7 @@ export default function LoginPage() {
         try {
             // Executive Handshake Protocol
             apiClient.client.setPortalIdentity('infrastructure');
-            const { user, expiresAt } = await apiClient.admin.login(email, password);
+            const { user, expiresAt } = await apiClient.admin.login(email, password, PORTAL_BRAND);
 
             // Critical Role Check: Only 'infrastructure' users can pass this gateway
             if (user.role !== 'infrastructure') {

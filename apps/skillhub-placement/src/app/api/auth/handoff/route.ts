@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 type HandoffBody = {
   accessToken?: string;
   redirectTo?: string;
+  brand?: 'realtutorialhub' | 'skillup';
 };
 
 type CallbackValidationResponse = {
@@ -26,9 +27,14 @@ function normalizeRedirectTo(rawValue: unknown): string {
 export async function POST(request: Request) {
   const body = (await request.json().catch(() => ({}))) as HandoffBody;
   const accessToken = typeof body.accessToken === 'string' ? body.accessToken.trim() : '';
+  const brand = body.brand === 'realtutorialhub' || body.brand === 'skillup' ? body.brand : undefined;
 
   if (accessToken.length === 0) {
     return NextResponse.json({ error: 'Missing access token' }, { status: 400 });
+  }
+
+  if (brand === undefined) {
+    return NextResponse.json({ error: 'Missing brand' }, { status: 400 });
   }
 
   const validationResponse = await fetch(SKILLHUBCORE_CALLBACK_URL, {
@@ -36,8 +42,11 @@ export async function POST(request: Request) {
     headers: {
       'content-type': 'application/json',
       'x-gateway-secret': process.env.INTERNAL_GATEWAY_SECRET ?? '',
+      'x-brand': brand,
+      'x-platform': brand,
+      'x-portal-identity': 'user',
     },
-    body: JSON.stringify({ accessToken }),
+    body: JSON.stringify({ accessToken, brand }),
     cache: 'no-store',
   });
 

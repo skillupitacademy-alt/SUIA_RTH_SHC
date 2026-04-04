@@ -9,6 +9,13 @@ async function createToken(
   roles: string[],
   extra: Record<string, unknown> = {},
 ) {
+  const audience =
+    typeof extra.aud === 'string'
+      ? extra.aud
+      : extra.tokenType === 'admin'
+        ? 'admin'
+        : 'user';
+
   return new SignJWT({
     roles,
     subscriptions: [],
@@ -16,6 +23,7 @@ async function createToken(
   })
     .setProtectedHeader({ alg: 'HS256' })
     .setSubject(sub)
+    .setAudience(audience)
     .sign(new TextEncoder().encode(secret));
 }
 
@@ -50,6 +58,7 @@ describe('auth middleware', () => {
 
     const result = await authenticateRequest(request, {
       JWT_SECRET: secret,
+      ADMIN_JWT_SECRET: secret,
     } as never, { prefix: '/dashboard' });
 
     expect('payload' in result).toBe(true);
@@ -78,6 +87,7 @@ describe('auth middleware', () => {
 
     const result = await authenticateRequest(request, {
       JWT_SECRET: secret,
+      ADMIN_JWT_SECRET: secret,
     } as never, { requireRole: 'admin', upstreamKey: 'EXAM_SERVICE_URL', prefix: '/admin' });
 
     expect('payload' in result).toBe(true);
@@ -97,6 +107,7 @@ describe('auth middleware', () => {
 
     const result = await authenticateRequest(request, {
       JWT_SECRET: secret,
+      ADMIN_JWT_SECRET: secret,
     } as never, { requireRole: 'admin', upstreamKey: 'EXAM_SERVICE_URL', prefix: '/admin' });
 
     expect(result).toBeInstanceOf(Response);
@@ -118,6 +129,7 @@ describe('auth middleware', () => {
 
     const result = await authenticateRequest(request, {
       JWT_SECRET: secret,
+      ADMIN_JWT_SECRET: secret,
     } as never, { requireRole: 'admin', upstreamKey: 'EXAM_SERVICE_URL', prefix: '/admin' });
 
     expect(result).toBeInstanceOf(Response);
@@ -139,6 +151,7 @@ describe('auth middleware', () => {
 
     const result = await authenticateRequest(request, {
       JWT_SECRET: secret,
+      ADMIN_JWT_SECRET: secret,
     } as never, { requireRole: 'admin', upstreamKey: 'EXAM_SERVICE_URL', prefix: '/admin' });
 
     expect(result).toBeInstanceOf(Response);
@@ -149,6 +162,7 @@ describe('auth middleware', () => {
     const request = new Request('https://api.realtutorialhub.com/tutorial/lessons/1');
     const result = await authenticateRequest(request, {
       JWT_SECRET: 'test-secret',
+      ADMIN_JWT_SECRET: 'test-secret',
     } as never, { prefix: '/tutorial' });
 
     expect(result).toBeInstanceOf(Response);
@@ -170,6 +184,7 @@ describe('auth middleware', () => {
 
     const result = await authenticateRequest(request, {
       JWT_SECRET: secret,
+      ADMIN_JWT_SECRET: secret,
     } as never, { requireRole: 'admin', upstreamKey: 'EXAM_SERVICE_URL', prefix: '/admin' });
 
     expect(result).toBeInstanceOf(Response);

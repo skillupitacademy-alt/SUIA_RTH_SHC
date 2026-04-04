@@ -1,3 +1,4 @@
+import { apiClient } from "@quiz/api-client";
 import { useState, useEffect, useCallback, useRef } from "react";
 
 export type ReportStatus = "pending" | "generating" | "ready" | "failed" | "not_found";
@@ -111,35 +112,15 @@ export function useReportStatus(attemptId: string) {
     if (!attemptId || cooldown > 0) return;
     
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
-      // Read CSRF token from cookie for POST authentication
-      const csrfToken = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('csrfToken='))
-        ?.split('=')[1] ?? '';
-
-      const res = await fetch(`${apiUrl}/queue-report`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'x-csrf-token': csrfToken,
-        },
-        body: JSON.stringify({ 
-          attemptId, 
+      apiClient.client.setPortalIdentity("user");
+      await apiClient.client.post<{ ok?: boolean }, { attemptId: string; force?: boolean; theme?: string }>(
+        "/queue-report",
+        {
+          attemptId,
           force: options?.force,
-          theme: options?.theme 
-        }),
-        credentials: "include",
-      });
-
-      if (!res.ok) {
-        if (res.status === 429) {
-          const data = await res.json();
-          setCooldown(data.retryAfter || 60);
-          return;
-        }
-        throw new Error("Failed to queue report generation");
-      }
+          theme: options?.theme,
+        },
+      );
       
       setStatus("generating");
       setStage("queued");

@@ -1,43 +1,18 @@
 'use client';
 
-import type { PortalIdentity } from '@quiz/types';
+import { apiClient } from '@quiz/api-client';
 import { Eye, EyeOff, Lock, Mail, ShieldCheck } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { type FormEvent, useState } from 'react';
 
 import { useAuthStore } from '@/store/auth-store';
-import { getApiBase } from '@/utils/apiBase';
 import { clientLogger } from '@/utils/clientLogger';
 
-const LOGIN_ENDPOINT = `${getApiBase()}/auth/login`;
-
-type LoginResponse = {
-  accessToken?: string;
-  refreshToken?: string;
-  user?: {
-    id: string;
-    email: string;
-    name?: string;
-    isAdmin?: boolean;
-    role?: string;
-    onboarded?: boolean;
-  };
-  message?: string;
-  error?: string;
-  _error?: string;
-};
-
-function readResponseMessage(value: unknown): string | null {
-  if (typeof value !== 'string') return null;
-
-  const trimmed = value.trim();
-  return trimmed === '' ? null : trimmed;
-}
+const PORTAL_BRAND = 'realtutorialhub' as const;
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const portalIdentity: PortalIdentity = 'admin';
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -67,49 +42,21 @@ function LoginForm() {
         path: window.location.pathname,
       });
 
-      const response = await fetch(LOGIN_ENDPOINT, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-portal-identity': portalIdentity,
-          'x-brand': 'realtutorialhub',
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-          platform: 'realtutorialhub',
-        }),
-      });
-
-      const payload = (await response.json().catch(() => null)) as LoginResponse | null;
+      const payload = await apiClient.admin.login(formData.email, formData.password, PORTAL_BRAND);
 
       clientLogger.warn('[AUTH_FLOW][ADMIN_LOGIN_PAGE][RESPONSE]', {
         step: 'response',
-        ok: response.ok,
-        status: response.status,
+        ok: true,
+        status: 200,
         hasAccessToken: typeof payload?.accessToken === 'string' && payload.accessToken.trim().length > 0,
       });
-
-      if (!response.ok) {
-        const message =
-          readResponseMessage(payload?.error) ??
-          readResponseMessage(payload?.message) ??
-          readResponseMessage(payload?._error) ??
-          'Authentication failed';
-        throw new Error(message);
-      }
-
-      // API server already set httpOnly cookies via Set-Cookie header.
-      // We do NOT create client-side cookies to avoid scope conflicts.
       const accessToken = typeof payload?.accessToken === 'string' ? payload.accessToken.trim() : '';
 
       if (accessToken.length === 0) {
         throw new Error('Authentication failed: missing access token.');
       }
 
-      // Store user in auth store before redirect to prevent race condition
-      if (payload?.user) {
+      if (payload.user !== null && payload.user !== undefined) {
         authLogin({
           id: payload.user.id,
           name: payload.user.name ?? '',
@@ -117,7 +64,7 @@ function LoginForm() {
           isAdmin: payload.user.isAdmin ?? false,
           role: payload.user.role ?? 'admin',
           onboarded: payload.user.onboarded ?? false,
-        });
+        }, payload.expiresAt ?? null);
       }
 
       const safeRedirect =

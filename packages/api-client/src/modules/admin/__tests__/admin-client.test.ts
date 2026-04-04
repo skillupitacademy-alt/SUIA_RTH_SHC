@@ -82,6 +82,24 @@ describe('AdminClient & Specialized Sub-Clients', () => {
       );
     });
 
+    it('should call the admin login endpoint for admin sign-in', async () => {
+      fetchClient.post.mockResolvedValue({
+        user: { id: 'admin-1', email: 'admin@test.com', role: 'admin', isAdmin: true },
+        accessToken: 'admin-access-token',
+        expiresAt: null,
+      });
+
+      await adminClient.users.login('admin@test.com', 'pw', 'realtutorialhub');
+
+      expect(fetchClient.post).toHaveBeenCalledWith('/admin/auth/login', {
+        email: 'admin@test.com',
+        password: 'pw',
+        platform: 'realtutorialhub',
+      }, {
+        headers: { 'x-brand': 'realtutorialhub' },
+      });
+    });
+
     it('should support updating user details', async () => {
       fetchClient.patch.mockResolvedValue({ id: 'u1', name: 'New Name' });
       await adminClient.users.updateUser('u1', { name: 'New Name' });

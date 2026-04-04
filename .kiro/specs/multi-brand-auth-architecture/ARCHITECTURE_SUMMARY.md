@@ -141,8 +141,8 @@ Response: {
 }
 
 Cookies Set:
-  - skillhub_accessToken (domain: .skillhubcore.in)
-  - skillhub_refreshToken (domain: .skillhubcore.in)
+  - skillhubcore_accessToken (domain: .skillhubcore.in)
+  - skillhubcore_refreshToken (domain: .skillhubcore.in)
 ```
 
 #### Step 4: Access Shared Services
@@ -154,7 +154,7 @@ GET https://api.skillhubcore.in/quiz/my-exams
 Headers: {
   'x-brand': 'realtutorialhub'
 }
-Cookies: skillhub_accessToken
+Cookies: skillhubcore_accessToken
 
 // API extracts shadowUserId from token
 // Queries quiz_platform_prod with shadowUserId

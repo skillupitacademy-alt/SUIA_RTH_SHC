@@ -13,7 +13,16 @@ const loadService = async () => {
 describe('TokenService branch coverage', () => {
   it('falls back from user secret to admin secret when isAdmin not specified', async () => {
     const tokenService = await loadService();
-    const adminSigned = await new SignJWT({ userId: 'u1', email: 'a@b.com', roles: [], isAdmin: true, aud: 'admin' })
+    const adminSigned = await new SignJWT({
+      userId: 'u1',
+      originalUserId: 'u1',
+      shadowUserId: 'shadow-u1',
+      email: 'a@b.com',
+      roles: [],
+      isAdmin: true,
+      tokenType: 'admin',
+      aud: 'admin',
+    })
       .setProtectedHeader({ alg: 'HS256' })
       .setIssuedAt()
       .setExpirationTime('5m')
@@ -25,7 +34,16 @@ describe('TokenService branch coverage', () => {
 
   it('rejects admin scope when audience is unexpected', async () => {
     const tokenService = await loadService();
-    const badAud = await new SignJWT({ userId: 'u1', email: 'x@y.com', roles: [], isAdmin: true, aud: 'weird' })
+    const badAud = await new SignJWT({
+      userId: 'u1',
+      originalUserId: 'u1',
+      shadowUserId: 'shadow-u1',
+      email: 'x@y.com',
+      roles: [],
+      isAdmin: true,
+      tokenType: 'admin',
+      aud: 'weird',
+    })
       .setProtectedHeader({ alg: 'HS256' })
       .setIssuedAt()
       .setExpirationTime('5m')
@@ -37,7 +55,7 @@ describe('TokenService branch coverage', () => {
   it('enforces audience when provided explicitly', async () => {
     const tokenService = await loadService();
     const token = await tokenService.generateAccessToken(
-      { userId: 'u1', email: 'u@u.com', roles: [], aud: 'admin' } as any,
+      { userId: 'u1', originalUserId: 'u1', shadowUserId: 'shadow-u1', email: 'u@u.com', roles: [], aud: 'admin', tokenType: 'user' } as any,
       '5m'
     );
 
@@ -47,7 +65,7 @@ describe('TokenService branch coverage', () => {
   it('accepts a normal user token when no audience is enforced (legacy default)', async () => {
     const tokenService = await loadService();
     const token = await tokenService.generateAccessToken(
-      { userId: 'u1', email: 'u@u.com', roles: [], aud: 'user' } as any,
+      { userId: 'u1', originalUserId: 'u1', shadowUserId: 'shadow-u1', email: 'u@u.com', roles: [], aud: 'user', tokenType: 'user' } as any,
       '5m'
     );
     await expect(tokenService.verifyAccessToken(token)).resolves.toMatchObject({ aud: 'user' });

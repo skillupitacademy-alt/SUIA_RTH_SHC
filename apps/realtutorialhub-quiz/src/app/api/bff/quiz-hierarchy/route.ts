@@ -20,28 +20,19 @@ async function getAuthHeaders() {
         cookieStore = await cookies();
     } catch {
         return {
-            accessToken: undefined,
             headers: {
-                Authorization: '',
                 Cookie: '',
             },
         };
     }
 
-    const accessToken = cookieStore.get('accessToken')?.value;
-    const refreshToken = cookieStore.get('refreshToken')?.value;
-    const csrfToken = cookieStore.get('csrfToken')?.value;
-
-    const cookieParts = [
-        accessToken ? `accessToken=${accessToken}` : '',
-        refreshToken ? `refreshToken=${refreshToken}` : '',
-        csrfToken ? `csrfToken=${csrfToken}` : '',
-    ].filter(Boolean).join('; ');
+    const cookieParts = cookieStore
+        .getAll()
+        .map(({ name, value }) => `${name}=${value}`)
+        .join('; ');
 
     return {
-        accessToken,
         headers: {
-            Authorization: accessToken ? `Bearer ${accessToken}` : '',
             Cookie: cookieParts,
         },
     };

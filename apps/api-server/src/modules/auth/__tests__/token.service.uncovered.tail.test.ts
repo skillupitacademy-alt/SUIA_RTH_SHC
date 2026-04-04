@@ -48,9 +48,12 @@ describe('TokenService remaining branch tails', () => {
 
     const token = await service.generateAccessToken({
       userId: 'u1',
+      originalUserId: 'u1',
+      shadowUserId: 'shadow-u1',
       email: 'u@example.com',
       roles: ['ADMIN'],
       isAdmin: true,
+      tokenType: 'admin',
       aud: 'other',
     });
 
@@ -64,9 +67,12 @@ describe('TokenService remaining branch tails', () => {
 
     const token = await new SignJWT({
       userId: 'u2',
+      originalUserId: 'u2',
+      shadowUserId: 'shadow-u2',
       email: 'u2@example.com',
       roles: ['ADMIN'],
       isAdmin: true,
+      tokenType: 'admin',
     } as any)
       .setProtectedHeader({ alg: 'HS256' })
       .setAudience(['admin', 'infra'])

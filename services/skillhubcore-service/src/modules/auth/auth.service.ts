@@ -1,6 +1,6 @@
-import type { AuthResult, AuthUserDTO, LoginInput, RegisterInput } from './auth.types';
+import { TokenService } from '@quiz/auth';
+import type { AuthResult, AuthUserDTO, LoginInput, RegisterInput, PlatformName } from './auth.types';
 import { PasswordService } from './password.service';
-import { TokenService } from './token.service';
 import { TokenValidatorService } from './token-validator.service';
 import { SubscriptionService } from '../subscription/subscription.service';
 import { SsoService } from './sso/sso.service';
@@ -64,8 +64,8 @@ export class AuthService {
       });
       await repo.createTokenFamily({ userId: user.id, familyId });
       const [accessToken, refreshToken] = await Promise.all([
-        this.tokenService.signAccessToken(user.id, [user.role], freeFeatures, platforms),
-        this.tokenService.signRefreshToken(user.id, familyId),
+        this.tokenService.signSkillHubCoreAccessToken(user.id, [user.role], freeFeatures, platforms),
+        this.tokenService.signSkillHubCoreRefreshToken(user.id, familyId),
       ]);
 
       await this.redis.set(this.getRefreshKey(familyId), refreshToken);
@@ -128,8 +128,8 @@ export class AuthService {
     const familyId = TokenService.generateFamilyId();
 
     const [accessToken, refreshToken] = await Promise.all([
-      this.tokenService.signAccessToken(user.id, [user.role], subscriptions, platforms),
-      this.tokenService.signRefreshToken(user.id, familyId),
+      this.tokenService.signSkillHubCoreAccessToken(user.id, [user.role], subscriptions, platforms),
+      this.tokenService.signSkillHubCoreRefreshToken(user.id, familyId),
     ]);
 
     await this.redis.set(this.getRefreshKey(familyId), refreshToken);
@@ -158,6 +158,70 @@ export class AuthService {
 
   async refresh(refreshToken: string): Promise<AuthResult> {
     return this.tokenRotationService.rotate(refreshToken);
+  }
+
+  async loginAdmin(email: string, password: string): Promise<AuthResult> {
+    const user = await this.userRepo.findByEmail(email);
+    if (user === undefined) {
+      throw new Error('Invalid credentials');
+    }
+
+    if (user.isActive !== true || user.deletedAt !== null) {
+      throw new Error('User suspended');
+    }
+
+    const validPassword = await this.passwordService.compare(password, user.passwordHash);
+    if (!validPassword) {
+      await this.userRepo.createAuditLog({
+        actorId: user.id,
+        action: 'admin_login',
+        success: false,
+        metadata: { reason: 'invalid_password' },
+      });
+      throw new Error('Invalid credentials');
+    }
+
+    if (user.role !== 'admin' && user.role !== 'super_admin') {
+      throw new Error('Forbidden');
+    }
+
+    const subscriptions = await this.subscriptionService.getFeatures(user.id);
+    const configuredPlatforms = await this.userRepo.listPlatforms(user.id);
+    const platforms: PlatformName[] = configuredPlatforms.length > 0
+      ? configuredPlatforms
+      : ['realtutorialhub', 'skillup'];
+    const familyId = TokenService.generateFamilyId();
+
+    const [accessToken, refreshToken] = await Promise.all([
+      this.tokenService.signSkillHubCoreAccessToken(user.id, [user.role], subscriptions, platforms, {
+        originalUserId: user.id,
+        shadowUserId: user.id,
+        brand: platforms[0] ?? 'realtutorialhub',
+      }),
+      this.tokenService.signSkillHubCoreRefreshToken(user.id, familyId),
+    ]);
+
+    await this.redis.set(this.getRefreshKey(familyId), refreshToken);
+    await this.userRepo.transaction(async (repo) => {
+      await repo.createTokenFamily({ userId: user.id, familyId });
+      await repo.createSession({
+        userId: user.id,
+        jwtFamily: familyId,
+        platform: (platforms[0] ?? 'realtutorialhub') as PlatformName,
+        refreshTokenHash: refreshToken,
+      });
+      await repo.createAuditLog({
+        actorId: user.id,
+        action: 'admin_login',
+        success: true,
+      });
+    });
+
+    return {
+      accessToken,
+      refreshToken,
+      user: this.toUserDto(user, platforms, subscriptions),
+    };
   }
 
   async getUserSessions(userId: string, platform: 'realtutorialhub' | 'skillup') {

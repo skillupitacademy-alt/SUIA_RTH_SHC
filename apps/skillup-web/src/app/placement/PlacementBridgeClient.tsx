@@ -30,6 +30,7 @@ export function PlacementBridgeClient({ redirectTarget }: PlacementBridgeClientP
           headers: {
             'content-type': 'application/json',
             'x-portal-identity': 'user',
+            'x-brand': 'skillup',
           },
           body: JSON.stringify({}),
         });
@@ -47,10 +48,12 @@ export function PlacementBridgeClient({ redirectTarget }: PlacementBridgeClientP
           credentials: 'include',
           headers: {
             'content-type': 'application/json',
+            'x-brand': 'skillup',
           },
           body: JSON.stringify({
             accessToken,
             redirectTo: redirectTarget,
+            brand: 'skillup',
           }),
         });
 

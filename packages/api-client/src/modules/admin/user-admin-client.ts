@@ -7,6 +7,7 @@ import {
 import { normalizeSkillHubUser } from '../../lib/normalize-auth-user';
 
 type UserUpdatePayload = Partial<AdminUserProfile> & Record<string, unknown>;
+type RequestBrand = 'realtutorialhub' | 'skillup';
 
 export class UserAdminClient implements IAdminUserClient {
   constructor(private client: FetchClient) {}
@@ -65,12 +66,12 @@ export class UserAdminClient implements IAdminUserClient {
     return this.client.post<AdminUserProfile, any>('/admin/users', data);
   }
 
-  async login(email: string, password: string) {
+  async login(email: string, password: string, brand: RequestBrand = 'realtutorialhub') {
     const response = await this.client.post<{
       user: AdminUserProfile;
       accessToken: string;
       expiresAt: string | null;
-    }>('/admin/auth/login', { email, password });
+    }>('/admin/auth/login', { email, password, platform: brand }, { headers: { 'x-brand': brand } });
 
     return {
       ...response,

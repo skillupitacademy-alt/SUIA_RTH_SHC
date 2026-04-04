@@ -54,7 +54,6 @@ export function SessionExpiryModal() {
             clientLogger.error('Session expiry server-logout failed', { error: err instanceof Error ? err.message : 'unknown' });
         } finally {
             logout(); // Clear Zustand state
-            localStorage.removeItem('quiz-platform-auth'); // Force hard purge
             const redirectUrl = encodeURIComponent(pathname);
             router.push(`/login?redirect=${redirectUrl}&reason=${isAccessDenied ? 'access_denied' : 'session_expired'}`);
         }

@@ -1496,9 +1496,15 @@ importers:
       tailwindcss:
         specifier: 3.4.19
         version: 3.4.19(tsx@4.21.0)(yaml@2.8.2)
+      typescript:
+        specifier: ^5
+        version: 5.9.3
 
   services/api-gateway:
     dependencies:
+      '@quiz/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
       '@upstash/ratelimit':
         specifier: ^2.0.6
         version: 2.0.8(@upstash/redis@1.37.0)

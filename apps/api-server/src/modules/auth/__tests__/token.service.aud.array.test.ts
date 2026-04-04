@@ -15,6 +15,27 @@ vi.mock('jose', async (importOriginal) => {
 });
 
 describe('TokenService Array aud branch coverage', () => {
+  const userPayload = (overrides: Record<string, unknown> = {}) => ({
+    userId: 'u1',
+    originalUserId: 'u1',
+    shadowUserId: 'shadow-u1',
+    email: 'a@b.com',
+    roles: ['USER'],
+    tokenType: 'user',
+    ...overrides,
+  });
+
+  const adminPayload = (overrides: Record<string, unknown> = {}) => ({
+    userId: 'a1',
+    originalUserId: 'a1',
+    shadowUserId: 'shadow-a1',
+    email: 'a@b.com',
+    roles: ['ADMIN'],
+    isAdmin: true,
+    tokenType: 'admin',
+    ...overrides,
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -23,7 +44,7 @@ describe('TokenService Array aud branch coverage', () => {
 
   it('verifyUserAccessToken with array aud matching requested audience', async () => {
     h.jwtVerify.mockResolvedValueOnce({
-      payload: { userId: 'u1', email: 'a@b.com', roles: ['USER'], aud: ['user', 'exam'] },
+      payload: userPayload({ aud: ['user', 'exam'] }),
     });
 
     const { TokenService } = await import('../token.service');
@@ -34,7 +55,7 @@ describe('TokenService Array aud branch coverage', () => {
 
   it('verifyUserAccessToken with array aud NOT matching requested audience', async () => {
     h.jwtVerify.mockResolvedValueOnce({
-      payload: { userId: 'u2', email: 'a@b.com', roles: ['USER'], aud: ['exam', 'quiz'] },
+      payload: userPayload({ userId: 'u2', originalUserId: 'u2', shadowUserId: 'shadow-u2', aud: ['exam', 'quiz'] }),
     });
 
     const { TokenService } = await import('../token.service');
@@ -46,7 +67,7 @@ describe('TokenService Array aud branch coverage', () => {
 
   it('verifyUserAccessToken with array aud and no enforcement', async () => {
     h.jwtVerify.mockResolvedValueOnce({
-      payload: { userId: 'u3', email: 'a@b.com', roles: ['USER'], aud: ['user'] },
+      payload: userPayload({ userId: 'u3', originalUserId: 'u3', shadowUserId: 'shadow-u3', aud: ['user'] }),
     });
 
     const { TokenService } = await import('../token.service');
@@ -59,7 +80,7 @@ describe('TokenService Array aud branch coverage', () => {
 
   it('verifyAdminAccessToken with array aud matching requested audience', async () => {
     h.jwtVerify.mockResolvedValueOnce({
-      payload: { userId: 'a1', email: 'a@b.com', roles: ['ADMIN'], isAdmin: true, aud: ['admin', 'infra'] },
+      payload: adminPayload({ aud: ['admin', 'infra'] }),
     });
 
     const { TokenService } = await import('../token.service');
@@ -70,7 +91,7 @@ describe('TokenService Array aud branch coverage', () => {
 
   it('verifyAdminAccessToken with array aud containing non-admin values (L169)', async () => {
     h.jwtVerify.mockResolvedValueOnce({
-      payload: { userId: 'a2', email: 'a@b.com', roles: ['ADMIN'], isAdmin: true, aud: ['user', 'exam'] },
+      payload: adminPayload({ userId: 'a2', originalUserId: 'a2', shadowUserId: 'shadow-a2', aud: ['user', 'exam'] }),
     });
 
     const { TokenService } = await import('../token.service');
@@ -82,7 +103,7 @@ describe('TokenService Array aud branch coverage', () => {
 
   it('verifyAdminAccessToken with array aud [admin, infra] without enforcement passes', async () => {
     h.jwtVerify.mockResolvedValueOnce({
-      payload: { userId: 'a3', email: 'a@b.com', roles: ['ADMIN'], isAdmin: true, aud: ['admin', 'infra'] },
+      payload: adminPayload({ userId: 'a3', originalUserId: 'a3', shadowUserId: 'shadow-a3', aud: ['admin', 'infra'] }),
     });
 
     const { TokenService } = await import('../token.service');

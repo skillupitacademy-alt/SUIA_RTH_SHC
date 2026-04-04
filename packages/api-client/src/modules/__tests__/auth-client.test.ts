@@ -33,4 +33,16 @@ describe('AuthClient', () => {
 
     expect(client.get).toHaveBeenCalledWith('/admin/auth/me', { timeout: expect.any(Number) });
   });
+
+  it('sends explicit brand metadata during login', async () => {
+    client.post.mockResolvedValue({ user: { id: 'u1' }, accessToken: 'tok', refreshToken: 'ref' });
+
+    await authClient.login('u@test.com', 'pw', 'realtutorialhub');
+
+    expect(client.post).toHaveBeenCalledWith(
+      '/auth/login',
+      { email: 'u@test.com', password: 'pw', platform: 'realtutorialhub' },
+      { timeout: expect.any(Number), headers: { 'x-brand': 'realtutorialhub' } }
+    );
+  });
 });

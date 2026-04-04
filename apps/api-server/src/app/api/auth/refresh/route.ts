@@ -21,7 +21,7 @@ async function handler(_req: NextRequest) {
   try {
     const portalIdentity = _req.headers.get('x-portal-identity') ?? 'user';
     const audience = portalIdentity === 'infrastructure' ? 'infra' : portalIdentity === 'admin' ? 'admin' : 'user';
-    const requestBrand = resolveRequestBrandFromHeaders(_req.headers, _req.nextUrl.hostname);
+    const requestBrand = resolveRequestBrandFromHeaders(_req.headers);
 
     const infraRefresh = _req.cookies.get('infra_refreshToken')?.value;
     const adminRefresh = _req.cookies.get('admin_refreshToken')?.value;

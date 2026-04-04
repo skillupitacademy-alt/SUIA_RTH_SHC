@@ -569,7 +569,7 @@ class SkillHubAuthValidator {
 ```typescript
 // apps/skillhub-quiz/src/middleware/auth.ts
 export async function extractUserContext(req: NextRequest): Promise<UserContext> {
-  const skillhubToken = req.cookies.get('skillhub_accessToken')?.value;
+  const skillhubToken = req.cookies.get('skillhubcore_accessToken')?.value;
   const brand = req.headers.get('x-brand') || 'realtutorialhub';
 
   if (!skillhubToken) {

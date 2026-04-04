@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
+import { TokenService } from '@quiz/auth';
 
 import { Hono } from 'hono';
 
 import { createAuthRoutes } from '../auth.routes';
-import { TokenService } from '../token.service';
 
 const createAuthService = () => ({
   register: vi.fn(async (input: any) => ({
@@ -15,6 +15,11 @@ const createAuthService = () => ({
     accessToken: `access-${input.email}`,
     refreshToken: `refresh-${input.email}`,
     user: { id: 'user-1', email: input.email, roles: ['student'], platforms: [input.platform], subscriptions: ['notes'] },
+  })),
+  loginAdmin: vi.fn(async (email: string) => ({
+    accessToken: `access-admin-${email}`,
+    refreshToken: `refresh-admin-${email}`,
+    user: { id: 'admin-1', email, roles: ['super_admin'], platforms: ['realtutorialhub', 'skillup'], subscriptions: ['notes'] },
   })),
   refresh: vi.fn(async (refreshToken: string) => ({
     accessToken: `access-${refreshToken}`,
@@ -52,8 +57,8 @@ describe('auth routes', () => {
     const authService = createAuthService();
     const app = new Hono().route('/auth', createAuthRoutes(authService as any));
     const tokenService = new TokenService();
-    const accessToken = await tokenService.signAccessToken('user-1', ['student'], ['notes']);
-    const refreshToken = await tokenService.signRefreshToken('user-1', 'family-1');
+    const accessToken = await tokenService.signSkillHubCoreAccessToken('user-1', ['student'], ['notes']);
+    const refreshToken = await tokenService.signSkillHubCoreRefreshToken('user-1', 'family-1');
 
     const registerResponse = await app.request('/auth/register', {
       method: 'POST',
@@ -69,6 +74,13 @@ describe('auth routes', () => {
     });
     expect(loginResponse.status).toBe(200);
 
+    const adminLoginResponse = await app.request('/auth/admin/login', {
+      method: 'POST',
+      body: JSON.stringify({ email: 'admin@example.com', password: 'Password123!', portalIdentity: 'super_admin' }),
+      headers: { 'content-type': 'application/json', 'x-forwarded-for': '127.0.0.1' },
+    });
+    expect(adminLoginResponse.status).toBe(200);
+
     const refreshResponse = await app.request('/auth/refresh', {
       method: 'POST',
       body: JSON.stringify({ refreshToken: 'refresh-token' }),
@@ -78,7 +90,7 @@ describe('auth routes', () => {
 
     const callbackResponse = await app.request('/auth/callback/validate', {
       method: 'POST',
-      body: JSON.stringify({ accessToken: 'brand-access-token' }),
+      body: JSON.stringify({ accessToken: 'brand-access-token', brand: 'realtutorialhub' }),
       headers: { 'content-type': 'application/json', 'x-forwarded-for': '127.0.0.1' },
     });
     expect(callbackResponse.status).toBe(200);
@@ -125,6 +137,7 @@ describe('auth routes', () => {
 
     expect(authService.register).toHaveBeenCalledTimes(1);
     expect(authService.login).toHaveBeenCalledTimes(1);
+    expect(authService.loginAdmin).toHaveBeenCalledTimes(1);
     expect(authService.refresh).toHaveBeenCalledTimes(1);
     expect(authService.createTokenValidatorService).toHaveBeenCalledTimes(1);
     expect(authService.logout).toHaveBeenCalledWith('user-1', 'family-1');

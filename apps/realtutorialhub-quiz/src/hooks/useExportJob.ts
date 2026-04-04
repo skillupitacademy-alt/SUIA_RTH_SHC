@@ -1,3 +1,4 @@
+import { apiClient } from "@quiz/api-client";
 import { useState, useEffect, useCallback, useRef } from "react";
 
 export type ExportStatus = "idle" | "processing" | "ready" | "failed";
@@ -147,30 +148,12 @@ export function useExportJob() {
     exportContextRef.current = { examId, userId, format };
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
-      
-      // Read CSRF token from cookie for POST authentication
-      const csrfToken = typeof document !== 'undefined'
-        ? document.cookie
-          .split('; ')
-          .find(row => row.startsWith('csrfToken='))
-          ?.split('=')[1] ?? ''
-        : '';
-
-      const res = await fetch(`${apiUrl}/export/trigger`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'x-csrf-token': csrfToken,
-        },
-        body: JSON.stringify({ examId, userId, format }),
-        credentials: "include",
+      apiClient.client.setPortalIdentity("user");
+      const data = await apiClient.client.post<ExportJobResponse, ExportRequestContext>("/export/trigger", {
+        examId,
+        userId,
+        format,
       });
-
-      if (res.status === 401) throw new Error("Session expired. Please refresh and log in again.");
-      if (!res.ok) throw new Error("Failed to trigger export");
-
-      const data = (await res.json()) as ExportJobResponse;
       if (data.jobId) setJobId(data.jobId);
       if (data.stage !== undefined) setStage(data.stage ?? "queued");
 
