@@ -30,7 +30,7 @@ permissions:
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-  REGION: asia-south1
+  REGION: asia-southeast1
 
 jobs:
   plan:
@@ -130,7 +130,7 @@ jobs:
           workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
           service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
       - uses: google-github-actions/setup-gcloud@v2
-      - run: gcloud auth configure-docker asia-south1-docker.pkg.dev
+      - run: gcloud auth configure-docker asia-southeast1-docker.pkg.dev
       - name: Build and push API
         run: |
           docker build \
@@ -140,14 +140,14 @@ jobs:
             --build-arg NEXT_PUBLIC_SENTRY_DSN=${{ secrets.NEXT_PUBLIC_SENTRY_DSN }} \
             --build-arg INTERNAL_GATEWAY_SECRET=${{ secrets.INTERNAL_GATEWAY_SECRET }} \
             -f apps/api-server/Dockerfile \
-            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-api-server:$GITHUB_SHA \
-            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-api-server:latest .
-          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-api-server:$GITHUB_SHA
-          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-api-server:latest
+            -t asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-api-server:$GITHUB_SHA \
+            -t asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-api-server:latest .
+          docker push asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-api-server:$GITHUB_SHA
+          docker push asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-api-server:latest
       - name: Deploy API to Cloud Run
         run: |
           gcloud run deploy quiz-api-server \
-            --image asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-api-server:$GITHUB_SHA \
+            --image asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-api-server:$GITHUB_SHA \
             --region $REGION \
             --platform managed \
             --allow-unauthenticated \
@@ -176,7 +176,7 @@ jobs:
           workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
           service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
       - uses: google-github-actions/setup-gcloud@v2
-      - run: gcloud auth configure-docker asia-south1-docker.pkg.dev
+      - run: gcloud auth configure-docker asia-southeast1-docker.pkg.dev
       - name: Build and push Web
         run: |
           docker build \
@@ -186,14 +186,14 @@ jobs:
             --build-arg NEXT_PUBLIC_ADMIN_URL=https://admin.realtutorialhub.com \
             --build-arg INTERNAL_GATEWAY_SECRET=${{ secrets.INTERNAL_GATEWAY_SECRET }} \
             -f apps/realtutorialhub-quiz/Dockerfile \
-            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-web-app:$GITHUB_SHA \
-            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-web-app:latest .
-          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-web-app:$GITHUB_SHA
-          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-web-app:latest
+            -t asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-web-app:$GITHUB_SHA \
+            -t asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-web-app:latest .
+          docker push asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-web-app:$GITHUB_SHA
+          docker push asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-web-app:latest
       - name: Deploy Web to Cloud Run
         run: |
           gcloud run deploy quiz-web-app \
-            --image asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-web-app:$GITHUB_SHA \
+            --image asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-web-app:$GITHUB_SHA \
             --region $REGION \
             --platform managed \
             --allow-unauthenticated \
@@ -221,7 +221,7 @@ jobs:
           workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
           service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
       - uses: google-github-actions/setup-gcloud@v2
-      - run: gcloud auth configure-docker asia-south1-docker.pkg.dev
+      - run: gcloud auth configure-docker asia-southeast1-docker.pkg.dev
       - name: Build and push Admin
         run: |
           docker build \
@@ -231,14 +231,14 @@ jobs:
             --build-arg NEXT_PUBLIC_ADMIN_URL=https://admin.realtutorialhub.com \
             --build-arg INTERNAL_GATEWAY_SECRET=${{ secrets.INTERNAL_GATEWAY_SECRET }} \
             -f apps/realtutorialhub-admin/Dockerfile \
-            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-admin-app:$GITHUB_SHA \
-            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-admin-app:latest .
-          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-admin-app:$GITHUB_SHA
-          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-admin-app:latest
+            -t asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-admin-app:$GITHUB_SHA \
+            -t asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-admin-app:latest .
+          docker push asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-admin-app:$GITHUB_SHA
+          docker push asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-admin-app:latest
       - name: Deploy Admin to Cloud Run
         run: |
           gcloud run deploy quiz-admin-app \
-            --image asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-admin-app:$GITHUB_SHA \
+            --image asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/quiz-admin-app:$GITHUB_SHA \
             --region $REGION \
             --platform managed \
             --allow-unauthenticated \
@@ -267,9 +267,9 @@ jobs:
       - uses: google-github-actions/setup-gcloud@v2
       - name: Check all healthy
         run: |
-          API_URL=$(gcloud run services describe quiz-api-server --region asia-south1 --format 'value(status.url)')
-          WEB_URL=$(gcloud run services describe quiz-web-app --region asia-south1 --format 'value(status.url)')
-          ADMIN_URL=$(gcloud run services describe quiz-admin-app --region asia-south1 --format 'value(status.url)')
+          API_URL=$(gcloud run services describe quiz-api-server --region asia-southeast1 --format 'value(status.url)')
+          WEB_URL=$(gcloud run services describe quiz-web-app --region asia-southeast1 --format 'value(status.url)')
+          ADMIN_URL=$(gcloud run services describe quiz-admin-app --region asia-southeast1 --format 'value(status.url)')
 
           check_service() {
             local name=$1
@@ -324,7 +324,7 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Configure Docker for Artifact Registry
-        run: gcloud auth configure-docker asia-south1-docker.pkg.dev
+        run: gcloud auth configure-docker asia-southeast1-docker.pkg.dev
 
       - name: Build Docker image
         run: |
@@ -337,19 +337,19 @@ jobs:
             --build-arg NEXT_PUBLIC_LOGIN_URL=https://user.realtutorialhub.com/login \
             --build-arg INTERNAL_GATEWAY_SECRET=${{ secrets.INTERNAL_GATEWAY_SECRET }} \
             -f apps/realtutorialhub-web/Dockerfile \
-            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/realtutorialhub-web:$GITHUB_SHA \
-            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/realtutorialhub-web:latest \
+            -t asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/realtutorialhub-web:$GITHUB_SHA \
+            -t asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/realtutorialhub-web:latest \
             .
 
       - name: Push Docker images
         run: |
-          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/realtutorialhub-web:$GITHUB_SHA
-          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/realtutorialhub-web:latest
+          docker push asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/realtutorialhub-web:$GITHUB_SHA
+          docker push asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/realtutorialhub-web:latest
 
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy realtutorialhub-web \
-            --image asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/realtutorialhub-web:$GITHUB_SHA \
+            --image asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/realtutorialhub-web:$GITHUB_SHA \
             --region $REGION \
             --platform managed \
             --allow-unauthenticated \
@@ -397,26 +397,26 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Configure Docker for Artifact Registry
-        run: gcloud auth configure-docker asia-south1-docker.pkg.dev
+        run: gcloud auth configure-docker asia-southeast1-docker.pkg.dev
 
       - name: Build Docker image
         run: |
           docker build \
             --build-arg NEXT_PUBLIC_API_URL=https://api.skillupitacademy.com/api \
             -f apps/skillup-web/Dockerfile \
-            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillup-web:$GITHUB_SHA \
-            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillup-web:latest \
+            -t asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillup-web:$GITHUB_SHA \
+            -t asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillup-web:latest \
             .
 
       - name: Push Docker images
         run: |
-          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillup-web:$GITHUB_SHA
-          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillup-web:latest
+          docker push asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillup-web:$GITHUB_SHA
+          docker push asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillup-web:latest
 
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy skillup-web \
-            --image asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillup-web:$GITHUB_SHA \
+            --image asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillup-web:$GITHUB_SHA \
             --region $REGION \
             --platform managed \
             --allow-unauthenticated \
@@ -469,25 +469,25 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Configure Docker for Artifact Registry
-        run: gcloud auth configure-docker asia-south1-docker.pkg.dev
+        run: gcloud auth configure-docker asia-southeast1-docker.pkg.dev
 
       - name: Build Docker image
         run: |
           docker build \
             -f apps/skillup-admin/Dockerfile \
-            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillup-admin:$GITHUB_SHA \
-            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillup-admin:latest \
+            -t asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillup-admin:$GITHUB_SHA \
+            -t asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillup-admin:latest \
             .
 
       - name: Push Docker images
         run: |
-          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillup-admin:$GITHUB_SHA
-          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillup-admin:latest
+          docker push asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillup-admin:$GITHUB_SHA
+          docker push asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillup-admin:latest
 
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy skillup-admin \
-            --image asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillup-admin:$GITHUB_SHA \
+            --image asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillup-admin:$GITHUB_SHA \
             --region $REGION \
             --platform managed \
             --allow-unauthenticated \
@@ -540,7 +540,7 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Configure Docker for Artifact Registry
-        run: gcloud auth configure-docker asia-south1-docker.pkg.dev
+        run: gcloud auth configure-docker asia-southeast1-docker.pkg.dev
 
       - name: Build Docker image
         run: |
@@ -548,19 +548,19 @@ jobs:
             --build-arg NEXT_PUBLIC_API_URL=https://api.skillupitacademy.com/api \
             --build-arg NEXT_PUBLIC_APP_URL=https://faculty.skillupitacademy.com \
             -f apps/faculty-app/Dockerfile \
-            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/faculty-app:$GITHUB_SHA \
-            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/faculty-app:latest \
+            -t asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/faculty-app:$GITHUB_SHA \
+            -t asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/faculty-app:latest \
             .
 
       - name: Push Docker images
         run: |
-          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/faculty-app:$GITHUB_SHA
-          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/faculty-app:latest
+          docker push asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/faculty-app:$GITHUB_SHA
+          docker push asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/faculty-app:latest
 
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy faculty-app \
-            --image asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/faculty-app:$GITHUB_SHA \
+            --image asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/faculty-app:$GITHUB_SHA \
             --region $REGION \
             --platform managed \
             --allow-unauthenticated \
@@ -613,25 +613,25 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Configure Docker for Artifact Registry
-        run: gcloud auth configure-docker asia-south1-docker.pkg.dev
+        run: gcloud auth configure-docker asia-southeast1-docker.pkg.dev
 
       - name: Build Docker image
         run: |
           docker build \
             -f apps/skillhubcore-admin/Dockerfile \
-            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillhubcore-admin:$GITHUB_SHA \
-            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillhubcore-admin:latest \
+            -t asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillhubcore-admin:$GITHUB_SHA \
+            -t asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillhubcore-admin:latest \
             .
 
       - name: Push Docker images
         run: |
-          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillhubcore-admin:$GITHUB_SHA
-          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillhubcore-admin:latest
+          docker push asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillhubcore-admin:$GITHUB_SHA
+          docker push asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillhubcore-admin:latest
 
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy skillhubcore-admin \
-            --image asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillhubcore-admin:$GITHUB_SHA \
+            --image asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillhubcore-admin:$GITHUB_SHA \
             --region $REGION \
             --platform managed \
             --allow-unauthenticated \
@@ -684,25 +684,25 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Configure Docker for Artifact Registry
-        run: gcloud auth configure-docker asia-south1-docker.pkg.dev
+        run: gcloud auth configure-docker asia-southeast1-docker.pkg.dev
 
       - name: Build Docker image
         run: |
           docker build \
             -f apps/skillhub-placement/Dockerfile \
-            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillhub-placement:$GITHUB_SHA \
-            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillhub-placement:latest \
+            -t asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillhub-placement:$GITHUB_SHA \
+            -t asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillhub-placement:latest \
             .
 
       - name: Push Docker image
         run: |
-          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillhub-placement:$GITHUB_SHA
-          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillhub-placement:latest
+          docker push asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillhub-placement:$GITHUB_SHA
+          docker push asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillhub-placement:latest
 
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy skillhub-placement \
-            --image asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillhub-placement:$GITHUB_SHA \
+            --image asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillhub-placement:$GITHUB_SHA \
             --region $REGION \
             --platform managed \
             --allow-unauthenticated \
@@ -755,23 +755,23 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Configure Docker for Artifact Registry
-        run: gcloud auth configure-docker asia-south1-docker.pkg.dev
+        run: gcloud auth configure-docker asia-southeast1-docker.pkg.dev
 
       - name: Build Docker image
         run: |
           docker build \
-            -t asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillhubcore-service:$GITHUB_SHA \
+            -t asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillhubcore-service:$GITHUB_SHA \
             -f services/skillhubcore-service/Dockerfile \
             .
 
       - name: Push Docker image
         run: |
-          docker push asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillhubcore-service:$GITHUB_SHA
+          docker push asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillhubcore-service:$GITHUB_SHA
 
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy skillhubcore-service \
-            --image asia-south1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillhubcore-service:$GITHUB_SHA \
+            --image asia-southeast1-docker.pkg.dev/$PROJECT_ID/quiz-platform/skillhubcore-service:$GITHUB_SHA \
             --region $REGION \
             --platform managed \
             --allow-unauthenticated \
