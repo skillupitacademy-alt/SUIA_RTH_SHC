@@ -4,6 +4,10 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { type FormEvent, useState } from 'react';
 
+import { resolveSharedLoginBrand } from '@quiz/config/src/brands';
+
+import { getTutorialPortalBrandDefinition, withTutorialPortalBrand } from '@/lib/portal-brand';
+
 type LoginResponse = {
   accessToken?: string;
   user?: {
@@ -39,11 +43,14 @@ function toErrorMessage(response: Response, payload: LoginResponse | null): stri
 
 export function LoginClient() {
   const searchParams = useSearchParams();
+  const portalBrand = resolveSharedLoginBrand(searchParams.get('brand'));
+  const brandDefinition = getTutorialPortalBrandDefinition(portalBrand);
   const redirectTarget = normalizeRedirectTarget(searchParams.get('redirect'));
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const accentColor = portalBrand === 'skillup' ? '#f54a8d' : '#fb4b91';
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -58,12 +65,12 @@ export function LoginClient() {
           'content-type': 'application/json',
           accept: 'application/json',
           'x-portal-identity': 'user',
-          'x-brand': 'realtutorialhub',
+          'x-brand': portalBrand,
         },
         body: JSON.stringify({
           email,
           password,
-          platform: 'realtutorialhub',
+          platform: portalBrand,
         }),
       });
 
@@ -97,23 +104,27 @@ export function LoginClient() {
       <div className="mx-auto grid min-h-[calc(100vh-5rem)] max-w-6xl gap-8 lg:grid-cols-[1.05fr_0.95fr]">
         <section className="hidden rounded-[36px] border border-rose-100 bg-[linear-gradient(160deg,rgba(255,255,255,0.92),rgba(255,241,247,0.84))] p-10 shadow-[0_30px_80px_rgba(255,75,145,0.12)] lg:flex lg:flex-col lg:justify-between">
           <div>
-            <p className="text-sm font-bold uppercase tracking-[0.35em] text-rose-500">RealTutorialHub Access</p>
+            <p className="text-sm font-bold uppercase tracking-[0.35em]" style={{ color: accentColor }}>{brandDefinition.brandName} Access</p>
             <h1 className="mt-5 max-w-xl text-5xl font-black tracking-tight text-slate-950">
-              Continue learning with your tutorial workspace, notes, and remediation flows.
+              {portalBrand === 'skillup'
+                ? 'Continue learning with SkillUp identity on the shared tutorial engine.'
+                : 'Continue learning with your tutorial workspace, notes, and remediation flows.'}
             </h1>
             <p className="mt-5 max-w-lg text-lg leading-8 text-slate-600">
-              Sign in on the public learner host for guided practice, progress tracking, and account recovery on the same brand domain.
+              {portalBrand === 'skillup'
+                ? 'The shared tutorial surface keeps SkillUp users on the correct brand path while using the common engine infrastructure.'
+                : 'Sign in on the public learner host for guided practice, progress tracking, and account recovery on the same brand domain.'}
             </p>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="rounded-[28px] border border-rose-100 bg-white/80 p-6">
-              <p className="text-3xl font-black text-slate-950">Brand-bound</p>
-              <p className="mt-2 text-xs font-bold uppercase tracking-[0.3em] text-slate-400">Cookies and redirects stay on RTH</p>
+              <p className="text-3xl font-black text-slate-950">{portalBrand === 'skillup' ? 'Brand-aware' : 'Brand-bound'}</p>
+              <p className="mt-2 text-xs font-bold uppercase tracking-[0.3em] text-slate-400">{portalBrand === 'skillup' ? 'Shared engine with SkillUp identity' : 'Cookies and redirects stay on RTH'}</p>
             </div>
             <div className="rounded-[28px] border border-rose-100 bg-white/80 p-6">
-              <p className="text-3xl font-black text-slate-950">Secure</p>
-              <p className="mt-2 text-xs font-bold uppercase tracking-[0.3em] text-slate-400">HttpOnly auth with same-brand refresh</p>
+              <p className="text-3xl font-black text-slate-950">{portalBrand === 'skillup' ? 'Shared' : 'Secure'}</p>
+              <p className="mt-2 text-xs font-bold uppercase tracking-[0.3em] text-slate-400">{portalBrand === 'skillup' ? 'Tutorial engine continuity' : 'HttpOnly auth with same-brand refresh'}</p>
             </div>
           </div>
         </section>
@@ -121,10 +132,12 @@ export function LoginClient() {
         <section className="flex items-center">
           <div className="w-full rounded-[36px] border border-rose-100 bg-white p-8 shadow-[0_30px_80px_rgba(255,75,145,0.12)] sm:p-10">
             <div className="mb-8">
-              <p className="text-sm font-bold uppercase tracking-[0.35em] text-rose-500">Learner Portal</p>
+              <p className="text-sm font-bold uppercase tracking-[0.35em]" style={{ color: accentColor }}>{brandDefinition.brandName}</p>
               <h2 className="mt-4 text-4xl font-black tracking-tight text-slate-950">Welcome Back</h2>
               <p className="mt-3 text-sm leading-7 text-slate-600">
-                Authenticate to access your RealTutorialHub learner portal.
+                {portalBrand === 'skillup'
+                  ? 'Authenticate to access the shared tutorial engine with your SkillUp learner identity.'
+                  : 'Authenticate to access your RealTutorialHub learner portal.'}
               </p>
             </div>
 
@@ -156,7 +169,7 @@ export function LoginClient() {
                   <label htmlFor="rth-login-password" className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">
                     Password
                   </label>
-                  <Link href="/forgot-password" className="text-sm font-bold text-rose-600 transition hover:text-rose-700">
+                  <Link href={withTutorialPortalBrand('/forgot-password', portalBrand)} className="text-sm font-bold text-rose-600 transition hover:text-rose-700">
                     Forgot password?
                   </Link>
                 </div>
@@ -184,7 +197,7 @@ export function LoginClient() {
             <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-[24px] border border-slate-200 bg-rose-50/60 px-5 py-4 text-sm text-slate-700">
               <span>Need to recover access?</span>
               <div className="flex flex-wrap gap-3">
-                <Link href="/forgot-password" className="font-bold text-rose-600 transition hover:text-rose-700">
+                <Link href={withTutorialPortalBrand('/forgot-password', portalBrand)} className="font-bold text-rose-600 transition hover:text-rose-700">
                   Forgot password
                 </Link>
                 <Link href="/" className="font-bold text-slate-700 transition hover:text-slate-950">

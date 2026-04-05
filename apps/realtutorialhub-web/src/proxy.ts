@@ -25,11 +25,19 @@ export function getAccessToken(request: NextRequest): string | undefined {
 }
 
 function getLoginUrl(request: NextRequest, redirectPath: string): URL {
+  const host = request.headers.get('host') ?? request.nextUrl.hostname;
+  const useLocalLogin = typeof host === 'string' && host.toLowerCase().includes('skillhubcore.in');
   const loginUrl =
-    LOGIN_URL.startsWith('http://') || LOGIN_URL.startsWith('https://')
+    useLocalLogin
+      ? new URL('/login', request.url)
+      : LOGIN_URL.startsWith('http://') || LOGIN_URL.startsWith('https://')
       ? new URL(LOGIN_URL)
       : new URL(LOGIN_URL, request.url);
   loginUrl.searchParams.set('redirect', redirectPath);
+  const brand = request.nextUrl.searchParams.get('brand');
+  if (typeof brand === 'string' && brand.trim().length > 0) {
+    loginUrl.searchParams.set('brand', brand.trim().toLowerCase());
+  }
   return loginUrl;
 }
 

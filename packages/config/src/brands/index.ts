@@ -1,4 +1,5 @@
 export type SharedBrandId = 'realtutorialhub' | 'skillup' | 'skillhubcore';
+export type SharedLoginBrand = Exclude<SharedBrandId, 'skillhubcore'>;
 
 export type EngineTarget = 'exam' | 'tutorial';
 
@@ -344,3 +345,25 @@ export const sharedBrandRegistry: Record<SharedBrandId, SharedBrandDefinition> =
   skillup: skillupBrand,
   skillhubcore: skillhubcoreBrand,
 };
+
+export function resolveSharedLoginBrand(value?: string | null, fallback: SharedLoginBrand = 'realtutorialhub'): SharedLoginBrand {
+  if (typeof value !== 'string') {
+    return fallback;
+  }
+
+  const normalized = value.trim().toLowerCase();
+  if (normalized === 'skillup') {
+    return 'skillup';
+  }
+
+  if (normalized === 'realtutorialhub') {
+    return 'realtutorialhub';
+  }
+
+  return fallback;
+}
+
+export function buildBrandAwarePath(pathname: string, brand: SharedLoginBrand): string {
+  const separator = pathname.includes('?') ? '&' : '?';
+  return `${pathname}${separator}brand=${brand}`;
+}

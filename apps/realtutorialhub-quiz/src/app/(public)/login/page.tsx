@@ -1,13 +1,15 @@
 'use client';
 
 import { apiClient } from '@quiz/api-client';
+import { resolveSharedLoginBrand } from '@quiz/config/src/brands';
 import { Eye, EyeOff, Loader2, ShieldCheck } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
+
 import { useAuthStore } from '@/store/auth-store';
 import { clientLogger } from '@/utils/clientLogger';
+import { getQuizPortalBrandDefinition, withQuizPortalBrand } from '@/lib/portal-brand';
 
-const PORTAL_BRAND = 'realtutorialhub' as const;
 type LoginResponse = {
   accessToken?: string;
   user?: {
@@ -26,6 +28,7 @@ type LoginResponse = {
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const portalBrand = resolveSharedLoginBrand(searchParams.get('brand'));
   const loginReason = searchParams.get('reason');
   const loginNotice =
     loginReason === 'access_denied'
@@ -49,6 +52,7 @@ function LoginForm() {
         step: 'submit',
         hasRedirect: typeof redirectTarget === 'string',
         path: window.location.pathname,
+        brand: portalBrand,
       });
 
       const formData = new FormData(e.currentTarget);
@@ -56,26 +60,22 @@ function LoginForm() {
       const password = formData.get('password')?.toString() ?? '';
 
       apiClient.client.setPortalIdentity('user');
-      const payload = await apiClient.auth.login(email, password, PORTAL_BRAND) as LoginResponse;
+      const payload = await apiClient.auth.login(email, password, portalBrand) as LoginResponse;
 
       clientLogger.warn('[AUTH_FLOW][LOGIN_PAGE][RESPONSE]', {
         step: 'response',
         ok: true,
         status: 200,
         hasAccessToken: typeof payload?.accessToken === 'string' && payload.accessToken.trim().length > 0,
+        brand: portalBrand,
       });
 
-      // Verify login succeeded — the API server already set httpOnly cookies
-      // via Set-Cookie header (credentials: 'include' ensures the browser stores them).
-      // We do NOT create client-side cookies to avoid scope conflicts.
       const accessToken = typeof payload?.accessToken === 'string' ? payload.accessToken.trim() : '';
 
       if (accessToken.length === 0) {
         throw new Error('Authentication failed: missing access token.');
       }
 
-      // Store user in auth store BEFORE redirecting — this eliminates the race
-      // condition where AuthGuard calls GET /auth/me before cookies are ready.
       if (payload?.user) {
         authLogin({
           id: payload.user.id,
@@ -96,6 +96,7 @@ function LoginForm() {
         step: 'redirect',
         safeRedirect,
         rawRedirect: redirectTarget,
+        brand: portalBrand,
       });
 
       router.replace(safeRedirect);
@@ -109,6 +110,7 @@ function LoginForm() {
       clientLogger.error('[AUTH_FLOW][LOGIN_PAGE][ERROR]', {
         step: 'error',
         message: normalizedMessage,
+        brand: portalBrand,
       });
       setError(normalizedMessage);
     } finally {
@@ -117,14 +119,14 @@ function LoginForm() {
   };
 
   return (
-    <div className="w-full max-w-md space-y-8 p-8 bg-background border rounded-2xl shadow-sm">
+    <div className="w-full max-w-md space-y-8 rounded-2xl border bg-background p-8 shadow-sm">
       <div className="text-center">
         <h2 className="text-3xl font-bold tracking-tight">Welcome back</h2>
         <p className="mt-2 text-muted-foreground">Please enter your details to sign in</p>
       </div>
 
       {(loginNotice || error) && (
-        <div className="p-3 text-sm font-medium bg-red-50 text-red-600 rounded-md border border-red-200">
+        <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-600">
           {error ?? loginNotice}
         </div>
       )}
@@ -141,7 +143,7 @@ function LoginForm() {
               type="email"
               placeholder="name@example.com"
               autoComplete="username"
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm mt-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               required
             />
           </div>
@@ -180,7 +182,7 @@ function LoginForm() {
               Remember me
             </label>
           </div>
-          <a href="/forgot-password" className="text-sm font-medium text-primary hover:underline">
+          <a href={withQuizPortalBrand('/forgot-password', portalBrand)} className="text-sm font-medium text-primary hover:underline">
             Forgot password?
           </a>
         </div>
@@ -188,44 +190,60 @@ function LoginForm() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow hover:bg-primary/90 h-11 transition-all"
+          className="inline-flex h-11 w-full items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow transition-all hover:bg-primary/90"
         >
           {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Sign In'}
         </button>
       </form>
+
+      <div className="text-center text-sm">
+        <span className="text-muted-foreground">Don&apos;t have an account? </span>
+        <a href={withQuizPortalBrand('/signup', portalBrand)} className="font-bold text-primary hover:underline">
+          Create an account
+        </a>
+      </div>
     </div>
   );
 }
 
 export default function LoginPage() {
+  const searchParams = useSearchParams();
+  const portalBrand = resolveSharedLoginBrand(searchParams.get('brand'));
+  const brandDefinition = getQuizPortalBrandDefinition(portalBrand);
+  const accentColor = portalBrand === 'skillup' ? '#f54a8d' : '#FF2D55';
+
   return (
     <div className="flex min-h-[calc(100vh-64px)] overflow-hidden bg-white">
-      <div className="hidden lg:flex flex-1 bg-slate-50 relative items-center justify-center text-[#1A1A1A] p-12 border-r border-slate-100">
+      <div className="relative hidden flex-1 items-center justify-center border-r border-slate-100 bg-slate-50 p-12 text-[#1A1A1A] lg:flex">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:24px_24px]" />
         <div className="relative z-10 max-w-lg">
-          <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-[#FF2D55]/10 text-[#FF2D55] mb-8">
+          <div className="mb-8 flex h-16 w-16 items-center justify-center rounded-2xl" style={{ backgroundColor: `${accentColor}1A`, color: accentColor }}>
             <ShieldCheck size={32} />
           </div>
-          <h1 className="text-5xl font-extrabold mb-6 tracking-tight text-[#1A1A1A] font-outfit">
-            Securing Your <span className="text-[#FF2D55]">Future</span>
+          <p className="text-sm font-bold uppercase tracking-[0.35em]" style={{ color: accentColor }}>{brandDefinition.brandName}</p>
+          <h1 className="mb-6 mt-4 text-5xl font-extrabold tracking-tight text-[#1A1A1A] font-outfit">
+            {portalBrand === 'skillup' ? 'Continue into the shared exam engine.' : 'Securing Your '}
+            <span style={{ color: accentColor }}>{portalBrand === 'skillup' ? 'SkillUp Flow' : 'Future'}</span>
           </h1>
-          <p className="text-xl text-slate-500 leading-relaxed font-inter">
-            Access our enterprise-grade assessments and tracking tools. Your path to professional mastery starts here.
+          <p className="font-inter text-xl leading-relaxed text-slate-500">
+            {portalBrand === 'skillup'
+              ? 'Authenticate with your SkillUp identity to enter the common exam surface while preserving the correct brand context for the rest of the journey.'
+              : 'Access our enterprise-grade assessments and tracking tools. Your path to professional mastery starts here.'}
           </p>
           <div className="mt-12 grid grid-cols-2 gap-6">
-            <div className="p-6 rounded-2xl bg-white border border-slate-100 shadow-sm">
-              <p className="text-3xl font-black text-[#1A1A1A]">100%</p>
-              <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mt-1">Secure Platform</p>
+            <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
+              <p className="text-3xl font-black text-[#1A1A1A]">{portalBrand === 'skillup' ? 'Brand' : '100%'}</p>
+              <p className="mt-1 text-xs font-bold uppercase tracking-widest text-slate-400">{portalBrand === 'skillup' ? 'SkillUp context' : 'Secure Platform'}</p>
             </div>
-            <div className="p-6 rounded-2xl bg-white border border-slate-100 shadow-sm">
-              <p className="text-3xl font-black text-[#1A1A1A]">50k+</p>
-              <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mt-1">Active Learners</p>
+            <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
+              <p className="text-3xl font-black text-[#1A1A1A]">{portalBrand === 'skillup' ? 'Shared' : '50k+'}</p>
+              <p className="mt-1 text-xs font-bold uppercase tracking-widest text-slate-400">{portalBrand === 'skillup' ? 'Exam engine' : 'Active Learners'}</p>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="flex-1 flex items-center justify-center p-6 bg-white">
+      <div className="flex flex-1 items-center justify-center bg-white p-6">
         <div className="w-full max-w-md">
           <LoginForm />
         </div>

@@ -3,12 +3,12 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { resolveSharedLoginBrand } from '@quiz/config/src/brands';
 import { useAuthStore } from '@/store/auth-store';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { apiClient, normalizeSkillHubUser } from '@quiz/api-client';
 import { recordClientMetric, METRICS } from '@quiz/observability';
-
-const PORTAL_BRAND = 'realtutorialhub' as const;
+import { withQuizPortalBrand } from '@/lib/portal-brand';
 
 type LoginResponse = {
   accessToken?: string;
@@ -41,6 +41,7 @@ export function LoginForm() {
     const login = useAuthStore((s) => s.login);
     const router = useRouter();
     const searchParams = useSearchParams();
+    const portalBrand = resolveSharedLoginBrand(searchParams.get('brand'));
     const redirectTarget = normalizeRedirectTarget(searchParams.get('redirect'));
 
     const toErrorMessage = (err: unknown): string => {
@@ -65,7 +66,7 @@ export function LoginForm() {
             const password = formData.get('password')?.toString() ?? '';
 
             apiClient.client.setPortalIdentity('user');
-            const payload = await apiClient.auth.login(email, password, PORTAL_BRAND) as LoginResponse;
+            const payload = await apiClient.auth.login(email, password, portalBrand) as LoginResponse;
 
             // API server already set httpOnly cookies via Set-Cookie header.
             // We do NOT create client-side cookies to avoid scope conflicts.
@@ -149,7 +150,7 @@ export function LoginForm() {
                         <input type="checkbox" id="remember" className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary" />
                         <label htmlFor="remember" className="text-sm font-medium leading-none">Remember me</label>
                     </div>
-                    <Link href="/forgot-password" className="text-sm font-medium text-primary hover:underline">Forgot password?</Link>
+                    <Link href={withQuizPortalBrand('/forgot-password', portalBrand)} className="text-sm font-medium text-primary hover:underline">Forgot password?</Link>
                 </div>
 
                 <button
@@ -163,7 +164,7 @@ export function LoginForm() {
 
             <div className="text-center text-sm">
                 <span className="text-muted-foreground">Don&apos;t have an account? </span>
-                <Link href="/signup" className="font-bold text-primary hover:underline">Create an account</Link>
+                <Link href={withQuizPortalBrand('/signup', portalBrand)} className="font-bold text-primary hover:underline">Create an account</Link>
             </div>
         </div>
     );
@@ -173,6 +174,8 @@ export function SignupForm() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const portalBrand = resolveSharedLoginBrand(searchParams.get('brand'));
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -185,7 +188,7 @@ export function SignupForm() {
             const name = formData.get('name')?.toString() ?? '';
 
             apiClient.client.setPortalIdentity('user');
-            const { user } = await apiClient.auth.signup(email, password, name, PORTAL_BRAND);
+            const { user } = await apiClient.auth.signup(email, password, name, portalBrand);
             if (!user) throw new Error("Account created but failed to log you in automatically.");
 
             useAuthStore.getState().login(normalizeSkillHubUser(user, user.email));
@@ -260,7 +263,7 @@ export function SignupForm() {
 
             <div className="text-center text-sm">
                 <span className="text-muted-foreground">Already have an account? </span>
-                <Link href="/login" className="font-bold text-primary hover:underline">Sign in</Link>
+                <Link href={withQuizPortalBrand('/login', portalBrand)} className="font-bold text-primary hover:underline">Sign in</Link>
             </div>
         </div>
     );
@@ -269,6 +272,8 @@ export function SignupForm() {
 export function ForgotPasswordForm() {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
+    const searchParams = useSearchParams();
+    const portalBrand = resolveSharedLoginBrand(searchParams.get('brand'));
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -277,7 +282,7 @@ export function ForgotPasswordForm() {
         try {
             const formData = new FormData(e.currentTarget);
             const email = formData.get('email')?.toString() ?? '';
-            await apiClient.auth.forgotPassword(email, PORTAL_BRAND);
+            await apiClient.auth.forgotPassword(email, portalBrand);
             setSuccess(true);
         } catch {
             // Always show neutral success message to prevent email enumeration
@@ -293,7 +298,7 @@ export function ForgotPasswordForm() {
                 <div className="p-4 rounded-2xl bg-green-50 text-green-700 font-medium">
                     If an account exists for this email, a password reset link has been sent.
                 </div>
-                <Link href="/login" className="inline-block mt-4 text-sm font-bold text-primary hover:underline">
+                <Link href={withQuizPortalBrand('/login', portalBrand)} className="inline-block mt-4 text-sm font-bold text-primary hover:underline">
                     Back to login
                 </Link>
             </div>
@@ -330,7 +335,7 @@ export function ForgotPasswordForm() {
             </form>
 
             <div className="text-center text-sm">
-                <Link href="/login" className="font-bold text-primary hover:underline">Back to login</Link>
+                <Link href={withQuizPortalBrand('/login', portalBrand)} className="font-bold text-primary hover:underline">Back to login</Link>
             </div>
         </div>
     );
@@ -343,11 +348,13 @@ export function ResetPasswordForm({ token }: { token: string }) {
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
+    const searchParams = useSearchParams();
+    const portalBrand = resolveSharedLoginBrand(searchParams.get('brand'));
 
     useEffect(() => {
         const validate = async () => {
             try {
-                const { valid } = await apiClient.auth.validateResetToken(token, PORTAL_BRAND);
+                const { valid } = await apiClient.auth.validateResetToken(token, portalBrand);
                 setIsValid(valid);
             } catch {
                 setIsValid(false);
@@ -356,7 +363,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
             }
         };
         validate();
-    }, [token]);
+    }, [portalBrand, token]);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -378,7 +385,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
         setError(null);
 
         try {
-            await apiClient.auth.resetPassword(token, password, PORTAL_BRAND);
+            await apiClient.auth.resetPassword(token, password, portalBrand);
             setSuccess(true);
         } catch {
             setError("Unable to reset password. Please try again.");
@@ -403,10 +410,10 @@ export function ResetPasswordForm({ token }: { token: string }) {
                     This password reset link is invalid or has expired.
                 </div>
                 <div className="mt-8 space-y-4">
-                    <Link href="/forgot-password" className="inline-flex w-full items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground shadow hover:bg-primary/90 transition-all">
+                    <Link href={withQuizPortalBrand('/forgot-password', portalBrand)} className="inline-flex w-full items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground shadow hover:bg-primary/90 transition-all">
                         Request a new reset link
                     </Link>
-                    <Link href="/login" className="block text-sm font-bold text-muted-foreground hover:text-foreground">
+                    <Link href={withQuizPortalBrand('/login', portalBrand)} className="block text-sm font-bold text-muted-foreground hover:text-foreground">
                         Back to login
                     </Link>
                 </div>
@@ -420,7 +427,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
                 <div className="p-4 rounded-2xl bg-green-50 text-green-700 font-medium">
                     Your password has been reset successfully. You can now sign in.
                 </div>
-                <Link href="/login" className="inline-flex w-full mt-8 items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground shadow hover:bg-primary/90 transition-all">
+                <Link href={withQuizPortalBrand('/login', portalBrand)} className="inline-flex w-full mt-8 items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground shadow hover:bg-primary/90 transition-all">
                     Go to login
                 </Link>
             </div>
@@ -488,7 +495,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
             </form>
 
             <div className="text-center text-sm">
-                <Link href="/login" className="font-bold text-primary hover:underline">Back to login</Link>
+                <Link href={withQuizPortalBrand('/login', portalBrand)} className="font-bold text-primary hover:underline">Back to login</Link>
             </div>
         </div>
     );

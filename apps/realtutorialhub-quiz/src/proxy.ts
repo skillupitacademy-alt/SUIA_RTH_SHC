@@ -33,6 +33,10 @@ function getLoginUrl(request: NextRequest, redirectPath: string): URL {
       ? new URL(LOGIN_URL)
       : new URL(LOGIN_URL, request.url);
   loginUrl.searchParams.set('redirect', redirectPath);
+  const brand = request.nextUrl.searchParams.get('brand');
+  if (typeof brand === 'string' && brand.trim().length > 0) {
+    loginUrl.searchParams.set('brand', brand.trim().toLowerCase());
+  }
   return loginUrl;
 }
 
