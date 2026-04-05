@@ -1,8 +1,9 @@
-'use client';
+﻿'use client';
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { ArrowRight, Briefcase, FileCheck, Check, X, BookOpen, Code, Brain, FileEdit, Lightbulb, GraduationCap, AlertCircle, Target, TrendingUp, Rocket, Award, MessageSquare, Zap, FolderKanban, Users, Star, Menu } from 'lucide-react';
 import { BrandConfig } from './brandConfig';
+import Link from 'next/link';
 
 export default function LandingPage({ config }: { config: BrandConfig }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -28,13 +29,11 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
           </div>
 
           <div className="hidden min-[801px]:flex items-center gap-4">
-            <button className="text-gray-700 hover:text-gray-900 transition font-bold duration-300 hover:-translate-y-1">Log In</button>
-            <button className="text-white px-6 py-2 rounded-full font-bold shadow-xl hover:shadow-[0_15px_30px_rgba(0,0,0,0.3)] transition-all duration-300 hover:-translate-y-1" style={{ backgroundColor: config.primaryColor }}>
-              Start Learning
-            </button>
+            <Link href="/login" className="text-gray-700 hover:text-gray-900 transition font-bold duration-300 hover:-translate-y-1">Log In</Link>
+            <Link href="/start-learning" className="text-white px-6 py-2 rounded-full font-bold shadow-xl hover:shadow-[0_15px_30px_rgba(0,0,0,0.3)] transition-all duration-300 hover:-translate-y-1" style={{ backgroundColor: config.primaryColor }}>Start Learning</Link>
           </div>
 
-          <button className="min-[801px]:hidden p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+          <button aria-label="Toggle Navigation Menu" className="min-[801px]:hidden p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition" onClick={() => setIsMenuOpen(!isMenuOpen)}>
             {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
@@ -48,10 +47,8 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
             <a href="#pricing" className="font-bold text-gray-800 p-3 hover:bg-gray-50 rounded-lg">Pricing</a>
             <a href="#contact" className="font-bold text-gray-800 p-3 hover:bg-gray-50 rounded-lg">Contact</a>
             <div className="h-px bg-gray-100 my-1"></div>
-            <button className="text-left font-bold text-gray-800 p-3 hover:bg-gray-50 rounded-lg duration-300 hover:-translate-y-1">Log In</button>
-            <button className="text-white px-6 py-3 rounded-xl font-bold shadow-md w-full mt-2 shadow-xl hover:shadow-[0_15px_30px_rgba(0,0,0,0.3)] transition-all duration-300 hover:-translate-y-1" style={{ backgroundColor: config.primaryColor }}>
-              Start Learning
-            </button>
+            <Link href="/login" className="text-left font-bold text-gray-800 p-3 hover:bg-gray-50 rounded-lg duration-300 hover:-translate-y-1">Log In</Link>
+            <Link href="/start-learning" className="text-white px-6 py-3 rounded-xl font-bold shadow-md w-full mt-2 shadow-xl hover:shadow-[0_15px_30px_rgba(0,0,0,0.3)] transition-all duration-300 hover:-translate-y-1" style={{ backgroundColor: config.primaryColor }}>Start Learning</Link>
           </div>
         )}
       </nav>
@@ -131,8 +128,8 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 30 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
+            initial={{ scale: 0.95, y: 30 }}
+            animate={{ scale: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="relative z-10 w-full flex flex-col items-center"
           >
@@ -157,18 +154,14 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center mb-16 w-full px-4 sm:px-0">
-              <button className="text-white px-6 py-4 sm:px-10 sm:py-4 rounded-full text-base sm:text-lg w-full sm:w-auto transition-all font-bold duration-300 hover:-translate-y-1" style={{ backgroundColor: config.primaryColor, boxShadow: `0 15px 30px rgba(${config.primaryRgb},0.4)` }}>
-                Start Learning
-              </button>
-              <button className="bg-white text-gray-800 px-6 py-4 sm:px-10 sm:py-4 rounded-full text-base sm:text-lg w-full sm:w-auto shadow-xl -translate-y-1 hover:-translate-y-2 duration-300 border-2 border-gray-200 font-bold shadow-lg hover:shadow-[0_15px_30px_rgba(0,0,0,0.15)] transition-all">
-                Explore Courses
-              </button>
+              <Link href="/start-learning" className="text-white px-6 py-4 sm:px-10 sm:py-4 rounded-full text-base sm:text-lg w-full sm:w-auto transition-all font-bold duration-300 hover:-translate-y-1" style={{ backgroundColor: config.primaryColor, boxShadow: `0 15px 30px rgba(${config.primaryRgb},0.4)` }}>Start Learning</Link>
+              <Link href="/programs" className="bg-white text-gray-800 px-6 py-4 sm:px-10 sm:py-4 rounded-full text-base sm:text-lg w-full sm:w-auto shadow-xl -translate-y-1 hover:-translate-y-2 duration-300 border-2 border-gray-200 font-bold shadow-lg hover:shadow-[0_15px_30px_rgba(0,0,0,0.15)] transition-all">Explore Courses</Link>
             </div>
 
             {/* Internship, Experience Letter, Placement 3D Block */}
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ y: 30 }}
+              animate={{ y: 0 }}
               transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
               className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6 bg-white/80 backdrop-blur-xl border-t border-white px-5 py-4 sm:px-8 sm:py-5 rounded-3xl shadow-[0_20px_40px_rgba(0,0,0,0.1)] w-full md:w-auto"
             >
@@ -211,14 +204,14 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
 
         {/* Problem Statement Section */}
         <section id="solutions" className="max-w-7xl mx-auto px-4 md:px-6 py-12 md:py-20">
-          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="text-center mb-12">
+          <motion.div initial={{ y: 30 }} whileInView={{ y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-6 font-poppins">Learning Online Feels Confusing and Directionless</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Traditional online learning platforms leave you overwhelmed and unsure of your progress
             </p>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-6">
+          <motion.div initial={{ y: 30 }} whileInView={{ y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-6">
             <div className="bg-white/80 backdrop-blur rounded-2xl p-6 text-center shadow-2xl border-t border-white/60 -translate-y-1 hover:-translate-y-3 transition-transform cursor-pointer">
               <AlertCircle className="w-12 h-12 text-red-800 mx-auto mb-4" />
               <h3 className="font-bold text-lg mb-2">Too Many Random Tutorials</h3>
@@ -244,7 +237,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
 
         {/* Solution Flow Section */}
         <section id="journey" className="max-w-7xl mx-auto px-4 md:px-6 py-12 md:py-20">
-          <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="bg-white rounded-3xl p-6 lg:p-12 shadow-2xl">
+          <motion.div initial={{ y: 40 }} whileInView={{ y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="bg-white rounded-3xl p-6 lg:p-12 shadow-2xl">
             <h2 className="text-3xl md:text-4xl font-bold text-center mb-6 font-poppins">Your Complete Learning Journey</h2>
             <p className="text-center text-xl text-gray-600 mb-12">
               A structured system that guides you from beginner to job-ready professional
@@ -277,9 +270,9 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
         {/* How Learning Works */}
         <section id="process" className="max-w-7xl mx-auto px-4 md:px-6 py-12 md:py-20">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-poppins">How Learning Works</h2>
-          <p className="text-center text-xl text-gray-600 mb-16">Our 6-Block Learning System — Your Core Differentiation</p>
+          <p className="text-center text-xl text-gray-600 mb-16">Our 6-Block Learning System â€” Your Core Differentiation</p>
 
-          <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="grid md:grid-cols-2 lg:grid-cols-3 gap-10 lg:gap-6">
+          <motion.div initial={{ y: 40 }} whileInView={{ y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="grid md:grid-cols-2 lg:grid-cols-3 gap-10 lg:gap-6">
             {/* Layman Card */}
             <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-2xl border-t border-gray-100 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] transition-all duration-300 relative group cursor-pointer">
               <div className="w-12 h-12 bg-pink-100 rounded-xl flex items-center justify-center mb-4">
@@ -291,7 +284,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
                 Start with simple, everyday language that makes complex concepts crystal clear and relatable.
               </p>
               <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition" style={{ color: config.primaryColor }}>
-                →
+                â†’
               </div>
             </div>
 
@@ -306,7 +299,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
                 See concepts in action through practical examples from real-world scenarios you can relate to.
               </p>
               <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition" style={{ color: config.primaryColor }}>
-                →
+                â†’
               </div>
             </div>
 
@@ -321,7 +314,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
                 Deep dive into the theory, formulas, and technical details with structured explanations.
               </p>
               <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition" style={{ color: config.primaryColor }}>
-                →
+                â†’
               </div>
             </div>
 
@@ -336,7 +329,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
                 Apply what you learned with hands-on coding exercises and real implementation examples.
               </p>
               <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition" style={{ color: config.primaryColor }}>
-                →
+                â†’
               </div>
             </div>
 
@@ -351,7 +344,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
                 Get instant, context-aware help from our {config.tutorLabel.toLowerCase()} that understands exactly what you're learning.
               </p>
               <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition" style={{ color: config.primaryColor }}>
-                →
+                â†’
               </div>
             </div>
 
@@ -366,7 +359,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
                 Test your knowledge with difficulty-based assignments and real-world projects that solidify your understanding.
               </p>
               <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition" style={{ color: config.primaryColor }}>
-                →
+                â†’
               </div>
             </div>
           </motion.div>
@@ -376,8 +369,8 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
         <section className="max-w-7xl mx-auto px-4 md:px-6 py-12 md:py-20 font-poppins">
           <div className="bg-gradient-to-br from-blue-600 to-purple-700 rounded-3xl p-6 lg:p-12 text-white shadow-2xl">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-12 items-center">
-              <motion.div initial={{ opacity: 0, x: -50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }}>
-                <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur px-4 py-2 rounded-full mb-6">
+              <motion.div initial={{ x: -50 }} whileInView={{ x: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }}>
+                <div className="inline-flex items-center gap-2 bg-black/10 backdrop-blur px-4 py-2 rounded-full mb-6">
                   <Zap className="w-5 h-5" />
                   <span className="font-semibold">{config.tutorBadgeText}</span>
                 </div>
@@ -397,11 +390,11 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
                 </button>
               </motion.div>
 
-              <motion.div initial={{ opacity: 0, x: 50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="bg-white/10 backdrop-blur rounded-2xl p-8">
+              <motion.div initial={{ x: 50 }} whileInView={{ x: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="bg-white/10 backdrop-blur rounded-2xl p-8">
                 <div className="bg-white rounded-xl p-6 mb-4">
                   <div className="flex items-start gap-3 mb-4">
-                    <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 text-xs">
-                      👤
+                    <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 text-xs text-purple-900">
+                      ðŸ‘¤
                     </div>
                     <div className="flex-1">
                       <p className="text-gray-800 text-sm font-bold">Can you explain how recursion works in this context?</p>
@@ -428,7 +421,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
         <section className="max-w-7xl mx-auto px-4 md:px-6 py-12 md:py-20">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-12">
             {/* Assignment System */}
-            <motion.div initial={{ opacity: 0, x: -50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }}>
+            <motion.div initial={{ x: -50 }} whileInView={{ x: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }}>
               <h2 className="text-3xl md:text-4xl font-bold mb-6 font-poppins">Assignment System</h2>
               <p className="text-xl text-gray-600 mb-4 font-bold">Practice Like Real Exams</p>
               <p className="text-gray-600 mb-8 font-medium">
@@ -445,25 +438,25 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
                 <div className="grid grid-cols-2 md:flex md:justify-between items-end gap-6 md:gap-0">
                   <div className="text-center">
                     <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-pink-400 to-pink-600 rounded-2xl flex items-center justify-center mb-3 mx-auto shadow-2xl -translate-y-1 hover:scale-110 hover:-translate-y-2 hover:shadow-[0_30px_60px_rgba(0,0,0,0.2)] transition-all duration-300 cursor-pointer">
-                      <span className="text-2xl sm:text-3xl">🎯</span>
+                      <span className="text-2xl sm:text-3xl">ðŸŽ¯</span>
                     </div>
                     <p className="text-xs sm:text-sm font-bold">Expert</p>
                   </div>
                   <div className="text-center">
                     <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl flex items-center justify-center mb-3 mx-auto shadow-2xl -translate-y-1 hover:scale-110 hover:-translate-y-2 hover:shadow-[0_30px_60px_rgba(0,0,0,0.2)] transition-all duration-300 cursor-pointer">
-                      <span className="text-2xl sm:text-3xl">⚡</span>
+                      <span className="text-2xl sm:text-3xl">âš¡</span>
                     </div>
                     <p className="text-xs sm:text-sm font-bold">Intermediate</p>
                   </div>
                   <div className="text-center">
                     <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-2xl flex items-center justify-center mb-3 mx-auto shadow-2xl -translate-y-1 hover:scale-110 hover:-translate-y-2 hover:shadow-[0_30px_60px_rgba(0,0,0,0.2)] transition-all duration-300 cursor-pointer">
-                      <span className="text-2xl sm:text-3xl">⭐</span>
+                      <span className="text-2xl sm:text-3xl">â­</span>
                     </div>
                     <p className="text-xs sm:text-sm font-bold">Mixed</p>
                   </div>
                   <div className="text-center">
                     <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-gray-400 to-gray-600 rounded-2xl flex items-center justify-center mb-3 mx-auto shadow-2xl -translate-y-1 hover:scale-110 hover:-translate-y-2 hover:shadow-[0_30px_60px_rgba(0,0,0,0.2)] transition-all duration-300 cursor-pointer">
-                      <span className="text-2xl sm:text-3xl">🎖️</span>
+                      <span className="text-2xl sm:text-3xl">ðŸŽ–ï¸</span>
                     </div>
                     <p className="text-xs sm:text-sm font-bold">Simple</p>
                   </div>
@@ -472,7 +465,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
             </motion.div>
 
             {/* Right Column with Smart Remediation and Why We Are Different */}
-            <motion.div initial={{ opacity: 0, x: 50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="space-y-12">
+            <motion.div initial={{ x: 50 }} whileInView={{ x: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="space-y-12">
               {/* Smart Remediation */}
               <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-2xl border-t border-gray-100 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] transition-all duration-300">
                 <h2 className="text-3xl font-bold mb-4 font-poppins">Smart Remediation</h2>
@@ -498,7 +491,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
               <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-2xl border-t border-gray-100 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] transition-all duration-300">
                 <h2 className="text-3xl font-bold mb-4 font-poppins">Why We Are Different</h2>
                 <p className="text-gray-600 mb-6 font-medium">
-                  We guide you step-by-step like a real teacher — not random videos or passive courses.
+                  We guide you step-by-step like a real teacher â€” not random videos or passive courses.
                 </p>
 
                 <div className="space-y-3">
@@ -511,10 +504,10 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
                     </div>
                     <div className="flex gap-3 sm:gap-8 shrink-0">
                       <div className="w-10 sm:w-16 h-8 bg-red-50 rounded flex items-center justify-center shrink-0">
-                        <span className="text-lg">📺</span>
+                        <span className="text-lg">ðŸ“º</span>
                       </div>
                       <div className="w-10 sm:w-16 h-8 bg-orange-50 rounded flex items-center justify-center shrink-0">
-                        <span className="text-lg">🎓</span>
+                        <span className="text-lg">ðŸŽ“</span>
                       </div>
                     </div>
                   </div>
@@ -532,8 +525,8 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
 
         {/* Real Projects Section */}
         <section id="projects" className="max-w-7xl mx-auto px-4 md:px-6 py-12 md:py-20 font-poppins">
-          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">Build Real-World Projects — Not Just Theory</h2>
+          <motion.div initial={{ y: 30 }} whileInView={{ y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold mb-6">Build Real-World Projects â€” Not Just Theory</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto font-medium">
               Apply your knowledge to actual projects that employers value
             </p>
@@ -560,11 +553,11 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
 
         {/* 4.1 Experience Pro Journey */}
         <section id="experience" className="max-w-7xl mx-auto px-4 md:px-6 py-12 md:py-20">
-          <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="bg-white rounded-3xl p-6 lg:p-12 shadow-2xl mb-12 border-t border-gray-100">
+          <motion.div initial={{ y: 40 }} whileInView={{ y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="bg-white rounded-3xl p-6 lg:p-12 shadow-2xl mb-12 border-t border-gray-100">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-5xl font-bold mb-6 font-poppins text-gray-900">The Experience Pro Journey</h2>
               <p className="text-xl text-gray-600 max-w-3xl mx-auto font-medium">
-                You don't just study concepts — you work like a developer
+                You don't just study concepts â€” you work like a developer
               </p>
             </div>
 
@@ -616,9 +609,9 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
         <section className="max-w-7xl mx-auto px-4 md:px-6 py-0 mb-12 md:mb-20 font-poppins">
 
           {/* Phase A: Real Work Experience UI Grid */}
-          <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="mb-12">
+          <motion.div initial={{ y: 40 }} whileInView={{ y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="mb-12">
             <div className="text-center mb-10">
-              <h3 className="text-3xl md:text-4xl font-bold mb-4 text-gray-900 leading-snug">Work on Real Systems — Not Just Practice</h3>
+              <h3 className="text-3xl md:text-4xl font-bold mb-4 text-gray-900 leading-snug">Work on Real Systems â€” Not Just Practice</h3>
               <p className="text-gray-600 text-xl font-medium">Learning is based on real-world simulation, not passive content.</p>
             </div>
 
@@ -664,17 +657,17 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
 
         {/* 4.3 & 4.4 Experience Letter & Outcome */}
         <section className="max-w-7xl mx-auto px-4 md:px-6 py-0 md:py-0 mb-12 md:mb-20 font-poppins">
-          <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="rounded-3xl p-8 lg:p-16 shadow-2xl shadow-orange-950/20 border border-white/20 relative overflow-hidden" style={{ backgroundColor: config.primaryColor }}>
+          <motion.div initial={{ y: 40 }} whileInView={{ y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="rounded-3xl p-8 lg:p-16 shadow-2xl shadow-orange-950/20 border border-white/20 relative overflow-hidden" style={{ backgroundColor: config.primaryColor }}>
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4"></div>
 
             <div className="grid lg:grid-cols-2 gap-12 items-center relative z-10">
               <div>
-                <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 px-4 py-2 rounded-full mb-6 text-white">
+                <div className="inline-flex items-center gap-2 bg-black/20 border border-white/20 px-4 py-2 rounded-full mb-6 text-white">
                   <Award className="w-5 h-5" />
                   <span className="font-bold text-sm tracking-widest uppercase">Verified Experience</span>
                 </div>
                 <h2 className="text-3xl md:text-4xl font-bold mb-6 leading-tight text-white">Graduate as a Pro, Not a Fresher.</h2>
-                <p className="text-lg text-orange-50/90 mb-8 font-medium leading-relaxed">
+                <p className="text-lg text-white mb-8 font-medium leading-relaxed">
                   Real project-based experience yields a verifiable credential that bypasses entry-level filters.
                 </p>
 
@@ -701,14 +694,12 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
                   <button className="bg-white px-8 py-3 sm:px-10 sm:py-4 rounded-full text-base font-bold shadow-xl hover:shadow-white/20 transition-all duration-300 hover:-translate-y-1" style={{ color: config.primaryColor }}>
                     Start Your Experience Journey
                   </button>
-                  <button className="bg-transparent text-white border-2 border-white/20 px-8 py-3 sm:px-10 sm:py-4 rounded-full text-base font-bold shadow-sm hover:bg-white/5 transition-all duration-300 hover:-translate-y-1">
-                    Explore Courses
-                  </button>
+                  <Link href="/programs" className="bg-transparent text-white border-2 border-white/20 px-8 py-3 sm:px-10 sm:py-4 rounded-full text-base font-bold shadow-sm hover:bg-white/5 transition-all duration-300 hover:-translate-y-1">Explore Courses</Link>
                 </div>
               </div>
 
               {/* 4.4 Official Experience Letter Mock */}
-              <motion.div initial={{ opacity: 0, x: 50, rotate: 5 }} whileInView={{ opacity: 1, x: 0, rotate: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.8, ease: "easeOut" }} className="bg-white text-gray-800 rounded-2xl p-8 shadow-[0_30px_60px_rgba(0,0,0,0.15)] transform -rotate-2 border border-gray-100 border-l-8 relative max-w-lg mx-auto" style={{ borderLeftColor: config.secondaryColor }}>
+              <motion.div initial={{ x: 50, rotate: 5 }} whileInView={{ x: 0, rotate: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.8, ease: "easeOut" }} className="bg-white text-gray-800 rounded-2xl p-8 shadow-[0_30px_60px_rgba(0,0,0,0.15)] transform -rotate-2 border border-gray-100 border-l-8 relative max-w-lg mx-auto" style={{ borderLeftColor: config.secondaryColor }}>
                 <div className="absolute top-4 right-4">
                   <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center shadow-inner text-yellow-600">
                     <FileCheck className="w-6 h-6 mx-auto" />
@@ -725,7 +716,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
 
                 <div className="bg-blue-50 text-blue-800 text-xs font-bold px-4 py-3 rounded-lg mb-6 flex items-center gap-2 border border-blue-100">
                   <Target className="w-4 h-4" />
-                  Not just a certificate — proof of real experience.
+                  Not just a certificate â€” proof of real experience.
                 </div>
 
                 <div className="flex justify-between items-end pt-6 border-t border-gray-100">
@@ -743,7 +734,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
         </section>
 
         <section id="mastery" className="max-w-7xl mx-auto px-4 md:px-6 py-12 md:py-20 font-poppins">
-          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="text-center mb-12">
+          <motion.div initial={{ y: 30 }} whileInView={{ y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-6">The Most Effective Path to Mastery</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Understand how our experience-first model bridges the gap between theory and industry excellence.
@@ -751,7 +742,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
           </motion.div>
 
           {/* Phase B: Why This Matters Comparison Grid (Assignment Template) */}
-          <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="bg-white rounded-[2.5rem] p-8 lg:p-12 shadow-2xl border-t border-gray-100 mb-12 relative overflow-hidden group">
+          <motion.div initial={{ y: 40 }} whileInView={{ y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="bg-white rounded-[2.5rem] p-8 lg:p-12 shadow-2xl border-t border-gray-100 mb-12 relative overflow-hidden group">
             <div className="flex items-center gap-4 mb-10 justify-center">
               <span className="text-xl sm:text-2xl font-bold text-gray-900 font-poppins underline decoration-4 underline-offset-8" style={{ textDecorationColor: config.primaryColor }}>Theory vs. Experience</span>
             </div>
@@ -827,24 +818,24 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
             </div>
 
             <div className="mt-12 pt-6 border-t border-gray-100 text-center font-bold text-base sm:text-lg text-gray-800">
-              <span className="text-[#d03f00]">"</span>You don't start your career as a fresher — you start with experience.<span className="text-[#d03f00]">"</span>
+              <span className="text-[#d03f00]">"</span>You don't start your career as a fresher â€” you start with experience.<span className="text-[#d03f00]">"</span>
             </div>
           </motion.div>
         </section>
 
         {/* Pricing Section */}
         <section id="pricing" className="max-w-7xl mx-auto px-4 md:px-6 py-12 md:py-20 font-poppins">
-          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="text-center mb-12">
+          <motion.div initial={{ y: 30 }} whileInView={{ y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-6">Choose Your Learning Path</h2>
             <p className="text-xl text-gray-600">Start free, upgrade when you're ready</p>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <motion.div initial={{ y: 40 }} whileInView={{ y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {/* Free Plan */}
             <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-2xl border-2 border-gray-200 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.2)] transition-all duration-300 relative">
               <h3 className="text-2xl font-bold mb-2">Free</h3>
               <p className="text-gray-600 mb-6">Get started with basic features</p>
-              <div className="text-5xl font-bold mb-6">₹ 0<span className="text-lg text-gray-600">/mo</span></div>
+              <div className="text-5xl font-bold mb-6">â‚¹ 0<span className="text-lg text-gray-600">/mo</span></div>
 
               <ul className="space-y-3 mb-8">
                 <PricingFeature text="Access to basic tutorials" included={true} />
@@ -867,7 +858,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
               </div>
               <h3 className="text-2xl font-bold mb-2">Premium</h3>
               <p className="text-purple-100 mb-6 font-medium">Full access to all features</p>
-              <div className="text-5xl font-bold mb-6 font-poppins">₹ 1000<span className="text-lg text-purple-100">/mo</span></div>
+              <div className="text-5xl font-bold mb-6 font-poppins">â‚¹ 1000<span className="text-lg text-purple-100">/mo</span></div>
 
               <ul className="space-y-3 mb-8">
                 <PricingFeature text="Unlimited tutorial access" included={true} white={true} />
@@ -878,16 +869,14 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
                 <PricingFeature text="Smart remediation" included={true} white={true} />
               </ul>
 
-              <button className="w-full bg-white text-purple-800 py-4 rounded-full font-bold shadow-lg hover:shadow-[0_15px_30px_rgba(0,0,0,0.15)] transition-all duration-300 hover:-translate-y-1">
-                Start Learning Now
-              </button>
+              <Link href="/start-learning" className="w-full bg-white text-purple-800 py-4 rounded-full font-bold shadow-lg hover:shadow-[0_15px_30px_rgba(0,0,0,0.15)] transition-all duration-300 hover:-translate-y-1">Start Learning Now</Link>
             </div>
           </motion.div>
         </section>
 
         {/* Testimonials Section */}
         <section id="stories" className="max-w-7xl mx-auto px-4 md:px-6 py-12 md:py-20 font-poppins">
-          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="text-center mb-12">
+          <motion.div initial={{ y: 30 }} whileInView={{ y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-6">Student Success Stories</h2>
             <p className="text-xl text-gray-600 font-medium">Real results from real learners</p>
           </motion.div>
@@ -895,19 +884,19 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10 lg:gap-8">
             <TestimonialCard
               direction="left" name="Sarah J." role="Software Engineer @ Google"
-              image="👩‍💻"
+              image="ðŸ‘©â€ðŸ’»"
               text="RealTutorialHub's structured approach helped me land my dream job. The AI tutor was like having a personal mentor 24/7."
               rating={5}
             />
             <TestimonialCard
               direction="up" name="David K." role="Data Scientist"
-              image="👨‍💼"
+              image="ðŸ‘¨â€ðŸ’¼"
               text="The remediation system identified my weak areas and created a perfect study plan. I improved faster than ever before."
               rating={5}
             />
             <TestimonialCard
               direction="right" name="Elena R." role="Full Stack Developer"
-              image="👩‍🎓"
+              image="ðŸ‘©â€ðŸŽ“"
               text="Real-world projects made all the difference. I built a portfolio that impressed every interviewer I met."
               rating={5}
             />
@@ -916,15 +905,13 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
 
         {/* Final CTA Section */}
         <section id="contact" className="max-w-7xl mx-auto px-4 md:px-6 py-12 md:py-20 font-poppins">
-          <motion.div initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="bg-[#124fd6] rounded-3xl p-8 lg:p-16 text-center text-white shadow-2xl">
+          <motion.div initial={{ y: 50 }} whileInView={{ y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="bg-[#124fd6] rounded-3xl p-8 lg:p-16 text-center text-white shadow-2xl">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6">Start Your Structured Learning Journey Today</h2>
             <p className="text-xl md:text-2xl mb-10 text-purple-100 font-medium opacity-90">Join thousands of learners achieving their goals with RealTutorialHub</p>
 
             <div className="flex gap-4 justify-center flex-wrap">
-              <button className="bg-white text-[#d03f00] px-6 py-3 sm:px-10 sm:py-4 rounded-full text-base sm:text-lg w-full sm:w-auto font-bold shadow-lg hover:shadow-[0_15px_30px_rgba(0,0,0,0.15)] transition-all duration-300 hover:-translate-y-1">
-                Start Learning Now
-              </button>
-              <button className="bg-white/20 backdrop-blur-md text-white px-6 py-3 sm:px-10 sm:py-4 rounded-full text-base sm:text-lg w-full sm:w-auto hover:bg-white/30 transition border-2 border-white font-bold duration-300 hover:-translate-y-1">
+              <Link href="/start-learning" className="bg-white text-[#d03f00] px-6 py-3 sm:px-10 sm:py-4 rounded-full text-base sm:text-lg w-full sm:w-auto font-bold shadow-lg hover:shadow-[0_15px_30px_rgba(0,0,0,0.15)] transition-all duration-300 hover:-translate-y-1">Start Learning Now</Link>
+              <button className="bg-black/10 backdrop-blur-md text-white px-6 py-3 sm:px-10 sm:py-4 rounded-full text-base sm:text-lg w-full sm:w-auto hover:bg-white/30 transition border-2 border-white font-bold duration-300 hover:-translate-y-1">
                 View All Courses
               </button>
             </div>
@@ -947,7 +934,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
         </section>
 
         {/* Footer */}
-        <motion.footer initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: false }} transition={{ duration: 0.8 }} className="bg-white/80 backdrop-blur-md border-t border-gray-200 font-sans">
+        <motion.footer initial={{ }} whileInView={{ }} viewport={{ once: false }} transition={{ duration: 0.8 }} className="bg-white/80 backdrop-blur-md border-t border-gray-200 font-sans">
           <div className="max-w-7xl mx-auto px-6 py-16">
             <div className="grid md:grid-cols-4 gap-12">
               <div>
@@ -1013,8 +1000,8 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
 
 // Helper Components
 function FlowCard({ icon, title, color, colorStyle, direction = 'up' }: { icon: React.ReactNode; title: string; color?: string; colorStyle?: React.CSSProperties; direction?: 'up' | 'down' | 'left' | 'right' }) {
-  const initial = direction === 'left' ? { opacity: 0, x: -50 } : direction === 'right' ? { opacity: 0, x: 50 } : direction === 'down' ? { opacity: 0, y: -50 } : { opacity: 0, y: 50 };
-  const animate = { opacity: 1, x: 0, y: 0 };
+  const initial = direction === 'left' ? { x: -50 } : direction === 'right' ? { x: 50 } : direction === 'down' ? { y: -50 } : { y: 50 };
+  const animate = { x: 0, y: 0 };
   return (
     <motion.div
       initial={initial}
@@ -1031,7 +1018,7 @@ function FlowCard({ icon, title, color, colorStyle, direction = 'up' }: { icon: 
 }
 
 function Arrow({ className }: { className?: string }) {
-  return <div className={className || "text-4xl text-purple-300 hidden lg:block opacity-50"}>→</div>;
+  return <div className={className || "text-4xl text-purple-300 hidden lg:block opacity-50"}>â†’</div>;
 }
 
 function FeatureItem({ icon, text }: { icon: React.ReactNode; text: string }) {
@@ -1052,8 +1039,8 @@ function ProjectCard({ icon, title, description, color, colorStyle, linkColor, d
   linkColor?: string;
   direction?: 'up' | 'down' | 'left' | 'right';
 }) {
-  const initial = direction === 'left' ? { opacity: 0, x: -50 } : direction === 'right' ? { opacity: 0, x: 50 } : direction === 'down' ? { opacity: 0, y: -50 } : { opacity: 0, y: 50 };
-  const animate = { opacity: 1, x: 0, y: 0 };
+  const initial = direction === 'left' ? { x: -50 } : direction === 'right' ? { x: 50 } : direction === 'down' ? { y: -50 } : { y: 50 };
+  const animate = { x: 0, y: 0 };
   return (
     <motion.div
       initial={initial}
@@ -1099,8 +1086,8 @@ function TestimonialCard({ name, role, image, text, rating, direction = 'up' }: 
   rating: number;
   direction?: 'up' | 'down' | 'left' | 'right';
 }) {
-  const initial = direction === 'left' ? { opacity: 0, x: -50 } : direction === 'right' ? { opacity: 0, x: 50 } : direction === 'down' ? { opacity: 0, y: -50 } : { opacity: 0, y: 50 };
-  const animate = { opacity: 1, x: 0, y: 0 };
+  const initial = direction === 'left' ? { x: -50 } : direction === 'right' ? { x: 50 } : direction === 'down' ? { y: -50 } : { y: 50 };
+  const animate = { x: 0, y: 0 };
   return (
     <motion.div
       initial={initial}
@@ -1152,5 +1139,10 @@ function ComparisonRow({ label, us, competitor1, competitor2 }: {
     </div>
   );
 }
+
+
+
+
+
 
 

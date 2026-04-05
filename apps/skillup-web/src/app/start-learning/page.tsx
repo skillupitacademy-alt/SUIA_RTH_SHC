@@ -1,12 +1,11 @@
-import { skillupBrand } from '@quiz/config/src/brands';
-
-import { StartLearningPage } from '../../../../../src/share-branding/StartLearningPage';
+import { skillUpConfig } from '../../../../../src/share-branding/brandConfig';
+import StartLearningGateway from '../../../../../src/share-branding/StartLearningGateway';
 
 export const metadata = {
-  title: 'Start Learning',
+  title: 'Start Learning - SkillUp IT Academy',
   description: 'Choose between the exam engine and tutorial engine for SkillUp IT Academy.',
 };
 
 export default function SkillUpStartLearningPage() {
-  return <StartLearningPage brand={skillupBrand} backHref="/" />;
+  return <StartLearningGateway config={skillUpConfig} />;
 }
