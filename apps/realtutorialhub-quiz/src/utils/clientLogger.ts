@@ -10,7 +10,8 @@ import { getApiBase } from "./apiBase";
 const isProd = process.env.NODE_ENV === 'production';
 const levelOrder: Record<LogLevel, number> = { debug: 10, info: 20, warn: 30, error: 40 };
 const minLevel: LogLevel = isProd ? 'warn' : 'debug';
-const LOG_ENDPOINT = `${getApiBase()}/api/logs/client`;
+const apiBase = getApiBase();
+const LOG_ENDPOINT = apiBase === '/api' ? '/api/logs/client' : `${apiBase}/api/logs/client`;
 
 function shouldLog(level: LogLevel) {
   return levelOrder[level] >= levelOrder[minLevel];
