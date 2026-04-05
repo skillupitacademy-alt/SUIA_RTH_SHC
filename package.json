@@ -118,5 +118,8 @@
             "@typescript-eslint/parser": "^8.0.0",
             "@typescript-eslint/utils": "^8.0.0"
         }
+    },
+    "dependencies": {
+        "motion": "12.23.24"
     }
 }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { ArrowRight, Briefcase, FileCheck, Check, X, BookOpen, Code, Brain, FileEdit, Lightbulb, GraduationCap, AlertCircle, Target, TrendingUp, Rocket, Award, MessageSquare, Zap, FolderKanban, Users, Star, Menu } from 'lucide-react';
 import { BrandConfig } from './brandConfig';
 

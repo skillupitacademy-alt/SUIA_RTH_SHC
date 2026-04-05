@@ -2,6 +2,36 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Landing Page Theme Variables */
+:root {
+  --font-size: 16px;
+  --background: #ffffff;
+  --foreground: oklch(0.145 0 0);
+  --card: #ffffff;
+  --card-foreground: oklch(0.145 0 0);
+  --primary: #030213;
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.95 0.0058 264.53);
+  --secondary-foreground: #030213;
+  --muted: #ececf0;
+  --muted-foreground: #717182;
+  --accent: #e9ebef;
+  --accent-foreground: #030213;
+  --border: rgba(0, 0, 0, 0.1);
+  --radius: 0.625rem;
+}
+
+@layer base {
+  body {
+    font-family: 'Roboto', 'Inter', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6, .font-bold, .font-extrabold {
+    font-family: 'Poppins', sans-serif;
+  }
+}
+
+/* Tutorial Theme Variables */
 :root,
 [data-tutorial-theme="classic"] {
   --tutorial-page-bg: #f5f6fa;
