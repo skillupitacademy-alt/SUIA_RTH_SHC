@@ -9,15 +9,43 @@ export type ProxyRequestOptions = {
   upstreamPath?: string;
 };
 
+function tryExtractHostname(value?: string | null): string | undefined {
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+
+  const trimmed = value.trim();
+  if (trimmed.length === 0) {
+    return undefined;
+  }
+
+  const first = trimmed.split(',')[0]?.trim();
+  if (first === undefined || first.length === 0) {
+    return undefined;
+  }
+
+  try {
+    if (first.includes('://')) {
+      return new URL(first).hostname.toLowerCase();
+    }
+  } catch {
+    // fall through to hostname normalization
+  }
+
+  return first.replace(/:\d+$/, '').toLowerCase();
+}
+
 export async function proxyRequest(request: Request, upstream: string, options: ProxyRequestOptions): Promise<Response> {
   const url = new URL(request.url);
   const targetPath = options.upstreamPath ?? url.pathname;
   const upstreamUrl = new URL(`${targetPath}${url.search}`, upstream).toString();
   const headers = new Headers(request.headers);
+  const originHostname = tryExtractHostname(headers.get('origin'));
+  const originalHostname = originHostname ?? url.hostname;
 
   headers.set('X-Request-ID', options.requestId);
   headers.set('X-Forwarded-Host', url.hostname);
-  headers.set('X-Original-Host', url.hostname);
+  headers.set('X-Original-Host', originalHostname);
   headers.set('X-Forwarded-Proto', url.protocol.replace(':', ''));
   if (typeof options.gatewaySecret === 'string' && options.gatewaySecret.length > 0) {
     headers.set('X-Gateway-Secret', options.gatewaySecret);

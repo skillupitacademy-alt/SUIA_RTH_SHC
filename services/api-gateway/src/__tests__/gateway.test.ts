@@ -83,12 +83,18 @@ describe('api-gateway', () => {
 
   it('proxies public auth routes without jwt', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
-    const response = await app.request('https://api.example.com/auth/login', undefined, env);
+    const response = await app.request('https://api.example.com/auth/login', {
+      headers: {
+        Origin: 'https://quiz.skillhubcore.in',
+      },
+    }, env);
     expect(response.status).toBe(200);
     expect(fetchSpy).toHaveBeenCalledTimes(1);
     const [, init] = fetchSpy.mock.calls[0] ?? [];
     const headers = new Headers((init as RequestInit | undefined)?.headers);
     expect(headers.get('X-Gateway-Secret')).toBe(env.INTERNAL_GATEWAY_SECRET);
+    expect(headers.get('X-Original-Host')).toBe('quiz.skillhubcore.in');
+    expect(headers.get('X-Forwarded-Host')).toBe('api.example.com');
   });
 
   it('proxies public admin login routes without jwt', async () => {
@@ -457,5 +463,22 @@ describe('api-gateway', () => {
     expect(response.headers.get('Access-Control-Allow-Origin')).toBe('https://admin.skillupitacademy.com');
     expect(response.headers.get('Access-Control-Allow-Headers')).toContain('X-Brand');
     expect(response.headers.get('Access-Control-Allow-Headers')).toContain('X-Portal-Identity');
+  });
+
+  it('falls back to the request host for original host when origin is absent', async () => {
+    const token = await makeToken(['student']);
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
+
+    const response = await app.request('https://api.example.com/dashboard', {
+      headers: {
+        authorization: `Bearer ${token}`,
+      },
+    }, env);
+
+    expect(response.status).toBe(200);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    const [, init] = fetchSpy.mock.calls[0] ?? [];
+    const headers = new Headers((init as RequestInit | undefined)?.headers);
+    expect(headers.get('X-Original-Host')).toBe('api.example.com');
   });
 });
