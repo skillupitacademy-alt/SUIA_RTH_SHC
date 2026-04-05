@@ -5,6 +5,7 @@ import { NextResponse } from 'next/server';
 
 import { container } from '@/modules/core/container';
 
+import { resolveRequestHostnameFromHeaders } from './lib/request-brand';
 import { applyApiVersion } from './middleware/api-version.middleware';
 import { withEtags } from './middleware/etag.middleware';
 import { corsMiddleware } from './modules/auth/cors.middleware';
@@ -155,7 +156,8 @@ export async function proxy(request: NextRequest) {
   
   applyApiVersion(request, response);
   if (!isHealthRoute) {
-    setCsrfToken(response);
+    const requestHostname = resolveRequestHostnameFromHeaders(request.headers, request.nextUrl.hostname);
+    setCsrfToken(response, requestHostname);
   }
   response.headers.set('x-request-id', requestId);
   response.headers.set('x-session-id', sessionId);

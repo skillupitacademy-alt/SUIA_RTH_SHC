@@ -82,4 +82,18 @@ describe('api-server proxy protected route handling', () => {
 
     expect(response.status).toBe(200);
   });
+
+  it('reissues csrf cookies on the shared parent domain for api hosts', async () => {
+    const response = await proxy(new NextRequest('https://api.realtutorialhub.com/api/search?q=react', {
+      headers: {
+        host: 'api.realtutorialhub.com',
+      },
+    }));
+
+    const setCookie = response.headers.get('set-cookie');
+
+    expect(response.status).toBe(200);
+    expect(setCookie).toContain('csrfToken=');
+    expect(setCookie).toContain('Domain=.realtutorialhub.com');
+  });
 });

@@ -150,4 +150,61 @@ describe('Core: FetchClient Resilience (Task 101, 102)', () => {
 
         expect(mockFetch).toHaveBeenCalledTimes(1);
     });
+
+    it('should retry once on csrf validation failure for mutations', async () => {
+        const mockFetch = vi.mocked(fetch);
+
+        Object.defineProperty(globalThis, 'document', {
+            value: { cookie: 'csrfToken=first-token' },
+            configurable: true,
+        });
+
+        mockFetch
+            .mockResolvedValueOnce({
+                ok: false,
+                status: 403,
+                headers: headers(),
+                json: () => Promise.resolve({ error: 'CSRF validation failed', message: 'Missing or invalid CSRF token' }),
+            } as Response)
+            .mockResolvedValueOnce({
+                ok: true,
+                status: 200,
+                headers: headers(),
+                json: () => Promise.resolve({ success: true }),
+            } as Response);
+
+        const promise = client.patch('/domains/1', { name: 'Updated' });
+
+        vi.useRealTimers();
+
+        await expect(promise).resolves.toEqual({ success: true });
+        expect(mockFetch).toHaveBeenCalledTimes(2);
+    });
+
+    it('should not dispatch auth:forbidden for csrf validation failures', async () => {
+        const mockFetch = vi.mocked(fetch);
+        const dispatchEvent = vi.fn();
+
+        Object.defineProperty(globalThis, 'document', {
+            value: { cookie: 'csrfToken=first-token' },
+            configurable: true,
+        });
+        Object.defineProperty(globalThis, 'window', {
+            value: { dispatchEvent, location: { pathname: '/questions', search: '' } },
+            configurable: true,
+        });
+
+        mockFetch.mockResolvedValue({
+            ok: false,
+            status: 403,
+            headers: headers(),
+            json: () => Promise.resolve({ error: 'CSRF validation failed', message: 'Missing or invalid CSRF token' }),
+        } as Response);
+
+        vi.useRealTimers();
+
+        await expect(client.patch('/domains/1', { name: 'Updated' })).rejects.toThrow('Missing or invalid CSRF token');
+        expect(dispatchEvent).not.toHaveBeenCalled();
+        expect(mockFetch).toHaveBeenCalledTimes(2);
+    });
 });

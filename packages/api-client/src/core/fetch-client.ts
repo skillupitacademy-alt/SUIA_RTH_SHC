@@ -72,6 +72,18 @@ const AUTH_REFRESH_BYPASS_ENDPOINTS = new Set([
 // In-memory ETag cache for Task 104
 const ETAG_CACHE = new Map<string, { etag: string; data: any }>();
 
+function isCsrfValidationError(status: number, errorBody: any, errorMessage: string): boolean {
+  if (status !== 403) return false;
+
+  const messageCandidates = [
+    errorMessage,
+    typeof errorBody?.message === 'string' ? errorBody.message : '',
+    typeof errorBody?.error === 'string' ? errorBody.error : '',
+  ];
+
+  return messageCandidates.some((value) => value.toLowerCase().includes('csrf'));
+}
+
 export class FetchClient {
   private baseUrl: string;
   private apiVersion: string;
@@ -92,6 +104,18 @@ export class FetchClient {
 
   public setPortalIdentity(identity: string | null) {
     this.portalIdentity = identity;
+  }
+
+  private async retryWithFreshCsrfToken<TResponse>(
+    endpoint: string,
+    options: FetchOptions,
+  ): Promise<TResponse> {
+    if (typeof document === 'undefined' || options._isRetry) {
+      throw new ApiRequestError(403, 'Missing or invalid CSRF token');
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    return this.performRequest<TResponse>(endpoint, { ...options, _isRetry: true });
   }
 
   public async request<TResponse>(
@@ -220,6 +244,7 @@ export class FetchClient {
                           errorBody._error || 
                           (errorBody.issues && errorBody.issues.length > 0 ? errorBody.issues[0].message : null) || 
                           `API Error: ${response.status}`;
+      const isCsrfError = isCsrfValidationError(response.status, errorBody, errorMessage);
 
       // Retry only for safe/idempotent requests, but keep the backend message.
       if (RETRYABLE_STATUSES.includes(response.status) && !options._isRetry) {
@@ -248,6 +273,14 @@ export class FetchClient {
         }
       }
 
+      if (isCsrfError && !options._isRetry) {
+        try {
+          return await this.retryWithFreshCsrfToken<TResponse>(endpoint, options);
+        } catch {
+          // Fall through to the normal error handling below using the original response details.
+        }
+      }
+
       if (response.status === 401) {
         if (typeof window !== 'undefined') {
           const event = new CustomEvent('auth:unauthorized', { cancelable: true });
@@ -264,7 +297,7 @@ export class FetchClient {
             window.location.href = `/login?redirect=${redirectUrl}&reason=session_expired`;
           }
         }
-      } else if (response.status === 403 && typeof window !== 'undefined') {
+      } else if (response.status === 403 && !isCsrfError && typeof window !== 'undefined') {
         const event = new CustomEvent('auth:forbidden', { cancelable: true });
         window.dispatchEvent(event);
       }
