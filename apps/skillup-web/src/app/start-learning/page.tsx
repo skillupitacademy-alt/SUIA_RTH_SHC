@@ -1,5 +1,4 @@
-import { skillUpConfig } from '../../../../../src/share-branding/brandConfig';
-import StartLearningGateway from '../../../../../src/share-branding/StartLearningGateway';
+import { LandingPage as PostLandingPage } from '../../../../../src/share-branding/PostLandingPage/app/pages/LandingPage';
 
 export const metadata = {
   title: 'Start Learning - SkillUp IT Academy',
@@ -7,5 +6,5 @@ export const metadata = {
 };
 
 export default function SkillUpStartLearningPage() {
-  return <StartLearningGateway config={skillUpConfig} />;
+  return <PostLandingPage brand="skillup" />;
 }

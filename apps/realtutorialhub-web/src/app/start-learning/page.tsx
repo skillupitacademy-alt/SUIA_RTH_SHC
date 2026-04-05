@@ -1,5 +1,4 @@
-import { rthConfig } from '../../../../../src/share-branding/brandConfig';
-import StartLearningGateway from '../../../../../src/share-branding/StartLearningGateway';
+import { LandingPage as PostLandingPage } from '../../../../../src/share-branding/PostLandingPage/app/pages/LandingPage';
 
 export const metadata = {
   title: 'Start Learning - RealTutorialHub',
@@ -7,5 +6,5 @@ export const metadata = {
 };
 
 export default function RealTutorialHubStartLearningPage() {
-  return <StartLearningGateway config={rthConfig} />;
+  return <PostLandingPage brand="rth" />;
 }
