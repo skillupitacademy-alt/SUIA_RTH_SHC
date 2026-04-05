@@ -40,6 +40,7 @@
         "k6:all": "k6 run k6/exam-flow.js && k6 run k6/auth-flow.js && k6 run k6/admin-flow.js",
         "validate:gateway": "node scripts/validate-gateway.mjs",
         "validate:gateway:live": "node scripts/validate-gateway.mjs --live",
+        "verify:css-isolation": "node scripts/verify-css-isolation.mjs",
         "seed:skillup:test-credentials": "node scripts/seed-skillup-test-credentials.js",
         "seed:skillup:people": "pnpm --filter @quiz/db-people db:seed:skillup",
         "seed:rth:looping-demo": "tsx scripts/seed-rth-looping-demo.ts",
