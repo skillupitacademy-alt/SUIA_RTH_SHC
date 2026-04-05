@@ -2,6 +2,7 @@
 'use client';
 
 import { apiClient } from '@quiz/api-client';
+import { recordCounter } from '@quiz/observability';
 import { LogOut, ShieldAlert } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
@@ -29,6 +30,7 @@ export function SessionExpiryModal() {
             if (isLoggingOut === true) return;
             // Prevent auto-redirect logic in FetchClient
             event.preventDefault();
+            recordCounter('admin.ui.auth.modal_open', 1, { reason: 'session_expired', route: pathname });
             setAccessDenied(false);
             setSessionExpired(true);
         };
@@ -36,6 +38,7 @@ export function SessionExpiryModal() {
         const handleForbidden = (event: Event) => {
             if (isLoggingOut === true) return;
             event.preventDefault();
+            recordCounter('admin.ui.auth.modal_open', 1, { reason: 'access_denied', route: pathname });
             setSessionExpired(false);
             setAccessDenied(true);
         };
@@ -46,12 +49,17 @@ export function SessionExpiryModal() {
             window.removeEventListener('auth:unauthorized', handleUnauthorized);
             window.removeEventListener('auth:forbidden', handleForbidden);
         };
-    }, [setAccessDenied, setSessionExpired, isLoggingOut]);
+    }, [isLoggingOut, pathname, setAccessDenied, setSessionExpired]);
 
     const handleLogin = async () => {
         setSessionExpired(false);
         setAccessDenied(false);
         try {
+            recordCounter('admin.ui.auth.modal_confirm', 1, {
+                action: 'return_to_login',
+                reason: isAccessDenied ? 'access_denied' : 'session_expired',
+                route: pathname,
+            });
             clientLogger.warn('[AUTH_FLOW][ADMIN_SESSION_MODAL][RETURN_TO_LOGIN]', {
                 step: isAccessDenied ? 'return_to_login_access_denied' : 'return_to_login_session_expired',
                 path: pathname,

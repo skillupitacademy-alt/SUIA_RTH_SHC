@@ -1,13 +1,9 @@
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import { useAuthStore } from '@/store/auth-store';
-
 export function useStrictNavigation() {
-    const router = useRouter();
     const pathname = usePathname();
-    const logout = useAuthStore((s) => s.logout);
-    const [showWarning, setShowWarning] = useState(false);
+  const [showWarning, setShowWarning] = useState(false);
 
     useEffect(() => {
         // Only enforce on protected routes (not login)
@@ -26,14 +22,9 @@ export function useStrictNavigation() {
         return () => window.removeEventListener('popstate', handlePopState);
     }, [pathname]);
 
-    const confirmLogout = () => {
-        logout();
-        router.push('/login?reason=session_expired');
-    };
-
     const cancelNavigation = () => {
         setShowWarning(false);
     };
 
-    return { showWarning, confirmLogout, cancelNavigation };
+    return { showWarning, cancelNavigation };
 }

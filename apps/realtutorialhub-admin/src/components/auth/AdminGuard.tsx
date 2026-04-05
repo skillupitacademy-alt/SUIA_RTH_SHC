@@ -1,6 +1,7 @@
 import { apiClient } from '@quiz/api-client';
+import { recordCounter } from '@quiz/observability';
 import { useAuthSync,ZLoader } from '@quiz/ui';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 
@@ -14,7 +15,7 @@ const isAdminEquivalentRole = (value: string | null | undefined) => {
 };
 
 export function AdminGuard({ children }: { children: React.ReactNode }) {
-  const { user, isAuthenticated, login, logout, isLocked, setAccessDenied } = useAuthStore(
+  const { user, isAuthenticated, login, logout, isLocked, setAccessDenied, setSessionExpired } = useAuthStore(
     useShallow((s) => ({
       user: s.user,
       isAuthenticated: s.isAuthenticated,
@@ -22,9 +23,9 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
       logout: s.logout,
       isLocked: s.isLocked,
       setAccessDenied: s.setAccessDenied,
+      setSessionExpired: s.setSessionExpired,
     })),
   );
-  const router = useRouter();
   const pathname = usePathname();
   const [isCheckingSession, setIsCheckingSession] = useState(pathname !== '/login');
 
@@ -48,31 +49,28 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
     // The AdminLockScreen will handle re-authentication when the user attempts to unlock.
     if (isLocked === true) {
       clientLogger.warn('Circuit Breaker: 401 detected while LOCKED. Deferring to Lock Protocol.');
+      recordCounter('admin.ui.auth.unauthorized_locked', 1, { route: pathname });
       e.preventDefault();
       return;
     }
 
-    void (async () => {
-      clientLogger.warn('Circuit Breaker: Global 401 detected. Logging out.');
-      try {
-        await apiClient.auth.logout();
-      } catch (err) {
-        clientLogger.error('Server-side logout failed during unauthorized event', {
-          error: err instanceof Error ? err.message : 'unknown',
-        });
-      } finally {
-        logout();
-        router.push('/login?reason=session_expired');
-      }
-    })();
-  }, [isLocked, logout, router]);
+    e.preventDefault();
+    clientLogger.warn('Circuit Breaker: Global 401 detected. Transitioning to session-expired modal.');
+    recordCounter('admin.ui.auth.unauthorized', 1, { route: pathname });
+    setAccessDenied(false);
+    setSessionExpired(true);
+    setIsCheckingSession(false);
+  }, [isLocked, pathname, setAccessDenied, setSessionExpired]);
 
   const handleForbidden = useCallback(
     (e: Event) => {
       e.preventDefault();
+      clientLogger.warn('Circuit Breaker: Global 403 detected. Transitioning to access-denied modal.');
+      recordCounter('admin.ui.auth.forbidden', 1, { route: pathname });
+      setSessionExpired(false);
       setAccessDenied(true);
     },
-    [setAccessDenied],
+    [pathname, setAccessDenied, setSessionExpired],
   );
 
   // Centralized Auth Sync Hook
@@ -103,8 +101,10 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
         }
 
         if (validatedHasAdminRole === false) {
+          recordCounter('admin.ui.auth.revalidate_forbidden', 1, { route: pathname });
           setAccessDenied(true);
-          router.push('/login?reason=access_denied');
+          setSessionExpired(false);
+          setIsCheckingSession(false);
           return;
         }
 
@@ -113,8 +113,12 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
         }
       } catch (err: unknown) {
         clientLogger.error('Session revalidation failed', { error: err instanceof Error ? err.message : 'unknown' });
-        logout();
-        router.push('/login?reason=session_expired');
+        recordCounter('admin.ui.auth.revalidate_failed', 1, {
+          route: pathname,
+          reason: err instanceof Error ? err.message : 'unknown',
+        });
+        setAccessDenied(false);
+        setSessionExpired(true);
       } finally {
         setIsCheckingSession(false);
       }
@@ -126,7 +130,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
     }
 
     void revalidate();
-  }, [isAuthenticated, isLocked, isSameAuthSession, login, logout, pathname, router, setAccessDenied, user]);
+  }, [isAuthenticated, isLocked, isSameAuthSession, login, pathname, setAccessDenied, setSessionExpired, user]);
 
   // Bypass guard for login page
   if (pathname === '/login') {

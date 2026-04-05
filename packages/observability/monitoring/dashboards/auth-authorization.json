@@ -1,0 +1,41 @@
+{
+  "title": "Auth & Authorization Health",
+  "panels": [
+    {
+      "title": "Admin Auth Failures By Route",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "sum(rate(auth_failure{scope=\"admin\"}[5m])) by (route)"
+        }
+      ]
+    },
+    {
+      "title": "Admin Token Verification Success",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "sum(rate(auth_login_verify{scope=\"admin\",outcome=\"success\"}[5m])) by (route)"
+        }
+      ]
+    },
+    {
+      "title": "Admin Route Access Success",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "sum(rate(auth_login_route_access{scope=\"admin\",outcome=\"success\"}[5m])) by (route)"
+        }
+      ]
+    },
+    {
+      "title": "Admin Auth Latency p95",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(auth_login_route_access_duration_ms_bucket{scope=\"admin\"}[5m])) by (le, route))"
+        }
+      ]
+    }
+  ]
+}

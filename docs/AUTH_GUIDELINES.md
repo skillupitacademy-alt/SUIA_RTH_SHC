@@ -28,7 +28,7 @@ document.cookie = `accessToken=${token}; domain=.realtutorialhub.com`;
 await fetch('/auth/login', { credentials: 'include' });
 ```
 
-### 2. Never add client-side auth guards (AuthGuard, session checks)
+### 2. Do not add redundant client-side auth guards to user portals
 ```typescript
 // ❌ BAD — adds "Verifying session..." delay, creates race conditions
 const session = await apiClient.auth.getSession(); // GET /auth/me from browser
@@ -36,6 +36,8 @@ const session = await apiClient.auth.getSession(); // GET /auth/me from browser
 // ✅ GOOD — proxy.ts checks cookie server-side before page renders
 // No spinner, no extra network call, no race condition
 ```
+
+Admin portals are the intentional exception. They may use a thin client-side guard only to revalidate an already authenticated admin session, show a session-expired or access-denied modal, and coordinate lock-screen behavior. That guard must not become a second source of truth for authorization. Server-side `proxy.ts` and API RBAC remain authoritative.
 
 ### 3. Store user in auth store BEFORE redirecting after login
 ```typescript
@@ -105,7 +107,7 @@ npx wrangler deploy --env production
 
 | Don't Add | Why |
 |-----------|-----|
-| `AuthGuard` component | proxy.ts already guards routes server-side |
+| User-portal `AuthGuard` component | proxy.ts already guards routes server-side |
 | `middleware.ts` | Next.js 16 uses proxy.ts natively |
 | Client-side `document.cookie` | Conflicts with httpOnly cookies from server |
 | GET `/auth/me` on page load | Adds delay; user is already verified by proxy.ts |

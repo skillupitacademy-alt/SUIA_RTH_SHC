@@ -48,6 +48,7 @@ Alert and dashboard definitions are stored as code in `packages/observability/mo
 
 - **Alerts**: [alerts.yml](file:///d:/onlinewebsites/quiz-platform/packages/observability/monitoring/alerts.yml)
 - **Dashboards**: [golden-transactions.json](file:///d:/onlinewebsites/quiz-platform/packages/observability/monitoring/dashboards/golden-transactions.json)
+- **Auth Dashboard**: [auth-authorization.json](file:///d:/onlinewebsites/quiz-platform/packages/observability/monitoring/dashboards/auth-authorization.json)
 
 ## 4. Operation & Verification
 
@@ -62,6 +63,27 @@ Metrics reported via `recordCounter` or `recordTimer` are batched (2s or 10 item
 
 ### Security & Privacy
 Production logs are muzzled to prevent PII leaks. `console.log/info/debug` are suppressed while `warn/error` are preserved. No PII (emails, raw tokens) should ever be emitted in metrics or logs.
+
+## 4.1 Authorization Metrics
+
+The platform now records shared authorization metrics for admin route access in `quiz-api-server`:
+
+- `auth.login.verify` for successful admin token verification
+- `auth.login.route_access` for successful route authorization
+- `auth.failure` for missing token, token verification, and RBAC denial failures
+
+Recommended tags:
+
+- `scope`: `admin` or `infra`
+- `route`: request pathname
+- `reason`: `missing_token`, `rbac_denied`, or token verification failure message
+- `outcome`: `success` where applicable
+
+These metrics are intended to drive:
+
+- auth failure alerts for sudden spikes
+- route-specific dashboards for repeated 401/403 patterns
+- rollout verification after auth refactors
 
 ## 5. How to Verify
 

@@ -67,6 +67,24 @@ groups:
           summary: "API Error Rate High (>1%)"
           description: "Operation {{ $labels.operation }} has an error rate > 1% over the last 5 minutes."
 
+      - alert: AdminAuthFailuresHigh
+        expr: sum(rate(auth_failure{scope="admin"}[5m])) by (route) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Admin auth failures elevated"
+          description: "Admin auth failures are elevated for route {{ $labels.route }} over the last 5 minutes."
+
+      - alert: AdminRbacDeniedSpike
+        expr: sum(rate(auth_failure{scope="admin",reason="rbac_denied"}[10m])) by (route) > 0.05
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Admin RBAC denials spiking"
+          description: "RBAC denials are elevated for admin route {{ $labels.route }} over the last 10 minutes."
+
       - alert: AutosaveFailureRateHigh
         expr: |
           sum(rate(quiz_api_answer_total{outcome="failure"}[5m]))
