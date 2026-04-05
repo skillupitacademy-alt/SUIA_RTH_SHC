@@ -14,6 +14,13 @@ import { SystemAdminClient } from './modules/admin/system-admin-client';
 export * from './lib/normalize-auth-user';
 
 function getApiUrl(): string {
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname.toLowerCase();
+    if (hostname === 'quiz.skillhubcore.in' || hostname === 'tutorial.skillhubcore.in') {
+      return '/api';
+    }
+  }
+
   if (process.env.NEXT_PUBLIC_API_URL) {
     let url = process.env.NEXT_PUBLIC_API_URL.trim();
     url = url.replace(/\/+$/, ''); // strip trailing slash(es)
