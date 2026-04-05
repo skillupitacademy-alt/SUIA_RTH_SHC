@@ -1,18 +1,13 @@
-import { getDomainTheme } from '@/lib/domain-themes';
-import { getSeededTutorialContent } from '@/lib/tutorial-content';
+import { realtutorialhubBrand } from '@quiz/config/src/brands';
 
-import { TutorialExperience } from '@/components/content/TutorialExperience';
+import { SharedLandingPage } from '../../../../src/share-branding/SharedLandingPage';
 
-const rootParams = {
-  domainSlug: 'full-stack',
-  subjectSlug: 'javascript',
-  topicSlug: 'asynchronous-programming',
-  subtopicSlug: 'promises',
-};
-
-export default async function HomePage() {
-  const content = await getSeededTutorialContent();
-  const theme = getDomainTheme(rootParams.domainSlug);
-
-  return <TutorialExperience params={rootParams} content={content} theme={theme} mode="learn" />;
+export default function HomePage() {
+  return (
+    <SharedLandingPage
+      brand={realtutorialhubBrand}
+      startLearningHref="/start-learning"
+      loginHref="/login"
+    />
+  );
 }

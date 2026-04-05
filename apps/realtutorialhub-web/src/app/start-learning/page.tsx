@@ -1,0 +1,12 @@
+import { realtutorialhubBrand } from '@quiz/config/src/brands';
+
+import { StartLearningPage } from '../../../../../src/share-branding/StartLearningPage';
+
+export const metadata = {
+  title: 'Start Learning',
+  description: 'Choose between the exam engine and tutorial engine for RealTutorialHub.',
+};
+
+export default function RealTutorialHubStartLearningPage() {
+  return <StartLearningPage brand={realtutorialhubBrand} backHref="/" />;
+}

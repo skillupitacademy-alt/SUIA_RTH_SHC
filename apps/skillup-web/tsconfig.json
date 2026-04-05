@@ -17,6 +17,12 @@
       "@quiz/auth/*": [
         "../../packages/auth/src/*"
       ],
+      "@quiz/config": [
+        "../../packages/config/envPaths.ts"
+      ],
+      "@quiz/config/*": [
+        "../../packages/config/*"
+      ],
       "@quiz/types": [
         "../../packages/types/src/index.ts"
       ],
@@ -52,6 +58,8 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
+    "../../src/**/*.ts",
+    "../../src/**/*.tsx",
     "../../packages/types/src/globals/**/*.d.ts"
   ],
   "exclude": [
