@@ -25,6 +25,17 @@ type LoginResponse = {
   _error?: string;
 };
 
+function InvalidBrandPanel() {
+  return (
+    <div className="w-full max-w-md rounded-2xl border border-red-200 bg-white p-8 shadow-sm">
+      <h2 className="text-2xl font-bold tracking-tight text-slate-950">Unsupported access link</h2>
+      <p className="mt-3 text-sm leading-7 text-slate-600">
+        This shared engine requires an explicit supported brand. Use the Start Learning page from RealTutorialHub or SkillUp IT Academy so the correct brand context is passed in.
+      </p>
+    </div>
+  );
+}
+
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -40,6 +51,10 @@ function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const authLogin = useAuthStore((s) => s.login);
+
+  if (portalBrand === undefined) {
+    return <InvalidBrandPanel />;
+  }
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -209,6 +224,13 @@ function LoginForm() {
 export default function LoginPage() {
   const searchParams = useSearchParams();
   const portalBrand = resolveSharedLoginBrand(searchParams.get('brand'));
+  if (portalBrand === undefined) {
+    return (
+      <div className="flex min-h-[calc(100vh-64px)] items-center justify-center bg-white p-6">
+        <InvalidBrandPanel />
+      </div>
+    );
+  }
   const brandDefinition = getQuizPortalBrandDefinition(portalBrand);
   const accentColor = portalBrand === 'skillup' ? '#f54a8d' : '#FF2D55';
 

@@ -14,14 +14,27 @@ export default function ResetPasswordPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const portalBrand = resolveSharedLoginBrand(searchParams.get('brand'));
-  const brandDefinition = getTutorialPortalBrandDefinition(portalBrand);
-  const accentColor = portalBrand === 'skillup' ? '#f54a8d' : '#fb4b91';
   const token = searchParams.get('token') ?? '';
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+  const invalidBrand = portalBrand === undefined;
+  if (invalidBrand) {
+    return (
+      <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(255,75,145,0.16),transparent_30%),linear-gradient(180deg,#fff7fb_0%,#ffffff_58%)] px-6 py-16">
+        <div className="mx-auto max-w-2xl rounded-[32px] border border-red-200 bg-white p-10 shadow-[0_30px_80px_rgba(15,23,42,0.08)]">
+          <h1 className="text-4xl font-black tracking-tight text-slate-950">Unsupported access link</h1>
+          <p className="mt-4 text-base leading-7 text-slate-600">
+            This shared tutorial engine requires an explicit supported brand. Open it from the RealTutorialHub or SkillUp Start Learning page.
+          </p>
+        </div>
+      </main>
+    );
+  }
+  const brandDefinition = getTutorialPortalBrandDefinition(portalBrand);
+  const accentColor = portalBrand === 'skillup' ? '#f54a8d' : '#fb4b91';
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -45,7 +58,7 @@ export default function ResetPasswordPage() {
       }
 
       setSuccess(true);
-      setTimeout(() => router.replace(withTutorialPortalBrand('/login', portalBrand)), 2200);
+      setTimeout(() => router.replace(withTutorialPortalBrand('/login', portalBrand!)), 2200);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to reset password.');
     } finally {

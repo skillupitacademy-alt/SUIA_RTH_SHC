@@ -346,9 +346,9 @@ export const sharedBrandRegistry: Record<SharedBrandId, SharedBrandDefinition> =
   skillhubcore: skillhubcoreBrand,
 };
 
-export function resolveSharedLoginBrand(value?: string | null, fallback: SharedLoginBrand = 'realtutorialhub'): SharedLoginBrand {
+export function resolveSharedLoginBrand(value?: string | null): SharedLoginBrand | undefined {
   if (typeof value !== 'string') {
-    return fallback;
+    return undefined;
   }
 
   const normalized = value.trim().toLowerCase();
@@ -360,7 +360,7 @@ export function resolveSharedLoginBrand(value?: string | null, fallback: SharedL
     return 'realtutorialhub';
   }
 
-  return fallback;
+  return undefined;
 }
 
 export function buildBrandAwarePath(pathname: string, brand: SharedLoginBrand): string {

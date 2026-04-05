@@ -26,6 +26,17 @@ type LoginResponse = {
     _error?: string;
 };
 
+function InvalidBrandFormState() {
+    return (
+        <div className="w-full max-w-md space-y-4 rounded-2xl border border-red-200 bg-white p-8 shadow-sm">
+            <h2 className="text-2xl font-bold tracking-tight text-slate-950">Unsupported access link</h2>
+            <p className="text-sm leading-7 text-slate-600">
+                This shared engine only accepts an explicit supported brand. Open it from the RealTutorialHub or SkillUp Start Learning page.
+            </p>
+        </div>
+    );
+}
+
 function normalizeRedirectTarget(rawTarget: string | null): string {
     if (typeof rawTarget === 'string' && rawTarget.startsWith('/') && !rawTarget.startsWith('//')) {
         return rawTarget;
@@ -42,6 +53,9 @@ export function LoginForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const portalBrand = resolveSharedLoginBrand(searchParams.get('brand'));
+    if (portalBrand === undefined) {
+        return <InvalidBrandFormState />;
+    }
     const redirectTarget = normalizeRedirectTarget(searchParams.get('redirect'));
 
     const toErrorMessage = (err: unknown): string => {
@@ -176,8 +190,12 @@ export function SignupForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const portalBrand = resolveSharedLoginBrand(searchParams.get('brand'));
+    const invalidBrand = portalBrand === undefined;
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        if (portalBrand === undefined) {
+            return;
+        }
         e.preventDefault();
         setLoading(true);
         setError(null);
@@ -200,6 +218,10 @@ export function SignupForm() {
             setLoading(false);
         }
     };
+
+    if (invalidBrand) {
+        return <InvalidBrandFormState />;
+    }
 
     return (
         <div className="w-full max-w-md space-y-8 p-8 bg-background border rounded-2xl shadow-sm">
@@ -274,8 +296,12 @@ export function ForgotPasswordForm() {
     const [success, setSuccess] = useState(false);
     const searchParams = useSearchParams();
     const portalBrand = resolveSharedLoginBrand(searchParams.get('brand'));
+    const invalidBrand = portalBrand === undefined;
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        if (portalBrand === undefined) {
+            return;
+        }
         e.preventDefault();
         setLoading(true);
 
@@ -291,6 +317,10 @@ export function ForgotPasswordForm() {
             setLoading(false);
         }
     };
+
+    if (invalidBrand) {
+        return <InvalidBrandFormState />;
+    }
 
     if (success) {
         return (
@@ -350,8 +380,14 @@ export function ResetPasswordForm({ token }: { token: string }) {
     const [showPassword, setShowPassword] = useState(false);
     const searchParams = useSearchParams();
     const portalBrand = resolveSharedLoginBrand(searchParams.get('brand'));
+    const invalidBrand = portalBrand === undefined;
 
     useEffect(() => {
+        if (portalBrand === undefined) {
+            setValidating(false);
+            setIsValid(false);
+            return;
+        }
         const validate = async () => {
             try {
                 const { valid } = await apiClient.auth.validateResetToken(token, portalBrand);
@@ -366,6 +402,9 @@ export function ResetPasswordForm({ token }: { token: string }) {
     }, [portalBrand, token]);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        if (portalBrand === undefined) {
+            return;
+        }
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
         const password = formData.get('password')?.toString() ?? '';
@@ -393,6 +432,10 @@ export function ResetPasswordForm({ token }: { token: string }) {
             setLoading(false);
         }
     };
+
+    if (invalidBrand) {
+        return <InvalidBrandFormState />;
+    }
 
     if (validating) {
         return (

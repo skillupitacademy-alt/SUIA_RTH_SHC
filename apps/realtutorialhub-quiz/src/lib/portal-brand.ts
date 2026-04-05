@@ -8,7 +8,7 @@ import {
 
 export type QuizPortalBrand = SharedLoginBrand;
 
-export function resolveQuizPortalBrand(value?: string | null): QuizPortalBrand {
+export function resolveQuizPortalBrand(value?: string | null): QuizPortalBrand | undefined {
   return resolveSharedLoginBrand(value);
 }
 

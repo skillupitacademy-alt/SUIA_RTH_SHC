@@ -13,13 +13,18 @@ const API_BASE = (process.env.NEXT_PUBLIC_API_URL_RTH?.trim() ?? 'https://api.re
 export default function VerifyEmailPage() {
   const searchParams = useSearchParams();
   const portalBrand = resolveSharedLoginBrand(searchParams.get('brand'));
-  const brandDefinition = getTutorialPortalBrandDefinition(portalBrand);
-  const accentColor = portalBrand === 'skillup' ? '#f54a8d' : '#fb4b91';
   const token = searchParams.get('token') ?? '';
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [error, setError] = useState<string | null>(null);
+  const invalidBrand = portalBrand === undefined;
 
   useEffect(() => {
+    if (portalBrand === undefined) {
+      setStatus('error');
+      setError('Unsupported access link.');
+      return;
+    }
+
     if (token.length === 0) {
       setStatus('error');
       setError('Verification token is missing.');
@@ -53,6 +58,22 @@ export default function VerifyEmailPage() {
     void verify();
   }, [portalBrand, token]);
 
+  if (invalidBrand) {
+    return (
+      <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(255,75,145,0.16),transparent_30%),linear-gradient(180deg,#fff7fb_0%,#ffffff_58%)] px-6 py-16">
+        <div className="mx-auto max-w-2xl rounded-[32px] border border-red-200 bg-white p-10 shadow-[0_30px_80px_rgba(15,23,42,0.08)]">
+          <h1 className="text-4xl font-black tracking-tight text-slate-950">Unsupported access link</h1>
+          <p className="mt-4 text-base leading-7 text-slate-600">
+            This shared tutorial engine requires an explicit supported brand. Open it from the RealTutorialHub or SkillUp Start Learning page.
+          </p>
+        </div>
+      </main>
+    );
+  }
+  const activeBrand = portalBrand;
+  const brandDefinition = getTutorialPortalBrandDefinition(activeBrand);
+  const accentColor = activeBrand === 'skillup' ? '#f54a8d' : '#fb4b91';
+
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(255,75,145,0.16),transparent_30%),linear-gradient(180deg,#fff7fb_0%,#ffffff_58%)] px-6 py-16">
       <div className="mx-auto max-w-2xl rounded-[32px] border border-rose-100 bg-white p-10 shadow-[0_30px_80px_rgba(255,75,145,0.12)]">
@@ -62,10 +83,10 @@ export default function VerifyEmailPage() {
           {status === 'loading' ? 'We are confirming your email now.' : status === 'success' ? 'Your email is verified. Redirecting you now.' : error ?? 'Verification failed.'}
         </p>
         <div className="mt-8 flex gap-3">
-          <Link href={withTutorialPortalBrand('/login', portalBrand)} className="rounded-full bg-rose-500 px-5 py-3 text-sm font-bold text-white transition hover:bg-rose-600">
+          <Link href={withTutorialPortalBrand('/login', activeBrand)} className="rounded-full bg-rose-500 px-5 py-3 text-sm font-bold text-white transition hover:bg-rose-600">
             Go to login
           </Link>
-          <Link href={withTutorialPortalBrand('/forgot-password', portalBrand)} className="rounded-full border border-slate-200 px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-rose-200 hover:text-rose-700">
+          <Link href={withTutorialPortalBrand('/forgot-password', activeBrand)} className="rounded-full border border-slate-200 px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-rose-200 hover:text-rose-700">
             Need a new link
           </Link>
         </div>

@@ -8,7 +8,7 @@ import {
 
 export type TutorialPortalBrand = SharedLoginBrand;
 
-export function resolveTutorialPortalBrand(value?: string | null): TutorialPortalBrand {
+export function resolveTutorialPortalBrand(value?: string | null): TutorialPortalBrand | undefined {
   return resolveSharedLoginBrand(value);
 }
 
