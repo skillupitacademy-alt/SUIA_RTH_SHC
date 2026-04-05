@@ -5,7 +5,13 @@ const config: Config = {
     './src/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
+        outfit: ['var(--font-outfit)', 'system-ui', 'sans-serif'],
+        poppins: ['var(--font-poppins)', 'system-ui', 'sans-serif'],
+      },
+    },
   },
   plugins: [],
 };

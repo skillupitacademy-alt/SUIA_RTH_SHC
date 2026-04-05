@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter, Outfit } from 'next/font/google';
+import { Inter, Outfit, Poppins } from 'next/font/google';
 import type { ReactNode } from 'react';
 
 import './globals.css';
@@ -14,6 +14,13 @@ const inter = Inter({
 const outfit = Outfit({
   subsets: ['latin'],
   variable: '--font-outfit',
+  display: 'swap',
+});
+
+const poppins = Poppins({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800', '900'],
+  variable: '--font-poppins',
   display: 'swap',
 });
 
@@ -35,7 +42,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${outfit.variable}`}>
+    <html lang="en" className={`${inter.variable} ${outfit.variable} ${poppins.variable}`}>
       <body className="bg-white text-slate-900 antialiased">
         <SiteShell>{children}</SiteShell>
       </body>

@@ -1,13 +1,18 @@
-import { realtutorialhubBrand } from '@quiz/config/src/brands';
+import type { Metadata } from 'next';
 
-import { SharedLandingPage } from '../../../../src/share-branding/SharedLandingPage';
+import RTHLanding from '../../../../src/share-branding/RTHLanding';
+
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: 'RealTutorialHub - Learn Smarter. Not Harder.',
+    description: 'The most advanced structured learning engine designed for modern developers and tech professionals.',
+    openGraph: {
+      title: 'RealTutorialHub - Learn Smarter. Not Harder.',
+      description: 'The most advanced structured learning engine designed for modern developers and tech professionals.',
+    },
+  };
+}
 
 export default function HomePage() {
-  return (
-    <SharedLandingPage
-      brand={realtutorialhubBrand}
-      startLearningHref="/start-learning"
-      loginHref="/login"
-    />
-  );
+  return <RTHLanding />;
 }

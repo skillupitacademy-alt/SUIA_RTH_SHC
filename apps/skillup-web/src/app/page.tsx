@@ -1,26 +1,18 @@
 import type { Metadata } from 'next';
 
-import { skillupBrand } from '@quiz/config/src/brands';
-
-import { SharedLandingPage } from '../../../../src/share-branding/SharedLandingPage';
+import SkillUpLanding from '../../../../src/share-branding/SkillUpLanding';
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: 'SkillUp IT Academy - Home',
-    description: 'Brand-aware student landing page for SkillUp IT Academy.',
+    title: 'SkillUp IT Academy - Skill Up. Stand Out.',
+    description: 'Industry-ready IT training powered by expert mentors and hands-on practice.',
     openGraph: {
-      title: 'SkillUp IT Academy - Home',
-      description: 'Brand-aware student landing page for SkillUp IT Academy.',
+      title: 'SkillUp IT Academy - Skill Up. Stand Out.',
+      description: 'Industry-ready IT training powered by expert mentors and hands-on practice.',
     },
   };
 }
 
 export default function HomePage() {
-  return (
-    <SharedLandingPage
-      brand={skillupBrand}
-      startLearningHref="/start-learning"
-      loginHref="/login"
-    />
-  );
+  return <SkillUpLanding />;
 }
