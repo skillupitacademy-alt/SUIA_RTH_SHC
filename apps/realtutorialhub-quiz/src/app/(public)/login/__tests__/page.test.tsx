@@ -5,12 +5,14 @@ import React from 'react';
 const replaceMock = vi.fn();
 const loginMock = vi.fn();
 
+const searchParamGetMock = vi.fn((key: string) => (key === 'redirect' ? '/dashboard' : key === 'brand' ? 'realtutorialhub' : null));
+
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
     replace: replaceMock,
   }),
   useSearchParams: () => ({
-    get: (key: string) => (key === 'redirect' ? '/dashboard' : null),
+    get: searchParamGetMock,
   }),
 }));
 
@@ -33,6 +35,7 @@ describe('Login page', () => {
   afterEach(() => {
     replaceMock.mockReset();
     loginMock.mockReset();
+    searchParamGetMock.mockImplementation((key: string) => (key === 'redirect' ? '/dashboard' : key === 'brand' ? 'realtutorialhub' : null));
     vi.restoreAllMocks();
   });
 
@@ -66,5 +69,17 @@ describe('Login page', () => {
     });
     expect(screen.queryByText('Forbidden')).not.toBeInTheDocument();
     expect(replaceMock).not.toHaveBeenCalled();
+  });
+
+  it('shows unsupported access when brand is missing', async () => {
+    searchParamGetMock.mockImplementation((key: string) => (key === 'redirect' ? '/dashboard' : null));
+
+    const { default: LoginPage } = await import('../page');
+
+    render(React.createElement(LoginPage));
+
+    expect(screen.getByText('Unsupported access link')).toBeInTheDocument();
+    expect(screen.getByText(/requires an explicit supported brand/i)).toBeInTheDocument();
+    expect(screen.queryByLabelText('Email Address')).not.toBeInTheDocument();
   });
 });
