@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { resolveRequestBrand, resolveRequestBrandFromHeaders } from '../request-brand';
+import { resolveRequestBrand, resolveRequestBrandFromHeaders, resolveRequestHostnameFromHeaders } from '../request-brand';
 
 describe('resolveRequestBrandFromHeaders', () => {
   it('prefers the explicit x-brand header when present', () => {
@@ -35,5 +35,20 @@ describe('resolveRequestBrand', () => {
   it('rejects hostname-like values', () => {
     expect(resolveRequestBrand('api.realtutorialhub.com')).toBeUndefined();
     expect(resolveRequestBrand('api.skillupitacademy.com')).toBeUndefined();
+  });
+});
+
+describe('resolveRequestHostnameFromHeaders', () => {
+  it('prefers the original portal host over the forwarded api host', () => {
+    const headers = {
+      get(name: string) {
+        if (name === 'x-forwarded-host') return 'api.realtutorialhub.com';
+        if (name === 'x-original-host') return 'quiz.skillhubcore.in';
+        if (name === 'origin') return 'https://quiz.skillhubcore.in';
+        return null;
+      },
+    };
+
+    expect(resolveRequestHostnameFromHeaders(headers, 'api.realtutorialhub.com')).toBe('quiz.skillhubcore.in');
   });
 });

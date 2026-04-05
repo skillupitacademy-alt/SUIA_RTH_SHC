@@ -88,6 +88,7 @@ export function LoginClient() {
           accept: 'application/json',
           'x-portal-identity': 'user',
           'x-brand': activeBrand,
+          'x-original-host': window.location.host,
         },
         body: JSON.stringify({
           email,
@@ -113,7 +114,7 @@ export function LoginClient() {
         throw new Error('Access denied: RealTutorialHub learner privileges required.');
       }
 
-      window.location.replace(redirectTarget);
+      window.location.replace(withTutorialPortalBrand(redirectTarget, activeBrand));
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Authentication failed');
     } finally {

@@ -56,9 +56,9 @@ export function resolveRequestHostnameFromHeaders(headers?: HeaderReader | null,
 
 function resolveRequestHostCandidates(headers?: HeaderReader | null, fallbackHostname?: string | null) {
   return [
-    tryExtractHostname(headers?.get('x-forwarded-host')),
     tryExtractHostname(headers?.get('x-original-host')),
     tryExtractHostname(headers?.get('origin')),
+    tryExtractHostname(headers?.get('x-forwarded-host')),
     tryExtractHostname(headers?.get('host')),
     tryExtractHostname(fallbackHostname),
   ];

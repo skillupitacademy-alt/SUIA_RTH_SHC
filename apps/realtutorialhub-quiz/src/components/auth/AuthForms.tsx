@@ -95,7 +95,7 @@ export function LoginForm() {
                 login(normalizeSkillHubUser(user, email), null);
             }
             await recordClientMetric(METRICS.AUTH.LOGIN, 1, { method: 'email', outcome: 'success' });
-            router.push(redirectTarget);
+            router.push(withQuizPortalBrand(redirectTarget, portalBrand));
         } catch (err: unknown) {
             setError(toErrorMessage(err));
         } finally {
@@ -210,7 +210,7 @@ export function SignupForm() {
             if (!user) throw new Error("Account created but failed to log you in automatically.");
 
             useAuthStore.getState().login(normalizeSkillHubUser(user, user.email));
-            router.push('/dashboard');
+            router.push(withQuizPortalBrand('/dashboard', portalBrand));
         } catch (err: unknown) {
             const message = err instanceof Error ? err.message : "Failed to create account.";
             setError(message);
