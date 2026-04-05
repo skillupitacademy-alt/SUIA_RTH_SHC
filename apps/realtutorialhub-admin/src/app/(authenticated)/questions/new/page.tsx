@@ -22,6 +22,19 @@ export default function QuestionEntryPage() {
     const [submitting, setSubmitting] = useState(false);
     const [formKey, setFormKey] = useState(0);
 
+    const deriveCorrectAnswer = (formData: QuestionFormData) => {
+        const selectedOptions = formData.options
+            .filter((option) => option.isCorrect === true)
+            .map((option) => option.text.trim())
+            .filter((option) => option !== '');
+
+        if (selectedOptions.length === 0) {
+            throw new Error('Select at least one correct answer before saving.');
+        }
+
+        return formData.type === 'multiple' ? selectedOptions.join(',') : selectedOptions[0];
+    };
+
     const handleSelectionChange = (sel: Selection) => {
         setSelection(sel);
         if (status?.type === 'error') { setStatus(null); }
@@ -38,8 +51,18 @@ export default function QuestionEntryPage() {
 
         try {
             await apiClient.admin.createQuestion({
-                ...formData,
                 questionText: formData.text,
+                type: 'mcq',
+                options: formData.options.map((option) => ({
+                    id: option.id,
+                    text: option.text.trim(),
+                    isCorrect: option.isCorrect,
+                })),
+                correctAnswer: deriveCorrectAnswer(formData),
+                explanation: formData.explanation,
+                difficulty: formData.difficulty,
+                mappingType: formData.mappingType,
+                estimatedTime: formData.estimatedTime,
                 topicId: selection.topicId,
                 subtopicId: (selection.subtopicId != null && selection.subtopicId !== '') ? selection.subtopicId : undefined,
                 skillIds: (selection.skillIds != null && selection.skillIds.length > 0) ? selection.skillIds : [],

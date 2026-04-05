@@ -11,6 +11,9 @@ interface Question {
     id: string;
     questionText?: string;
     question_text?: string;
+    correctAnswer?: string;
+    correct_answer?: string;
+    mappingType?: 'conceptual' | 'technical' | 'practical';
     type?: string;
     topicId?: string;
     topic_id?: string;
@@ -72,6 +75,19 @@ export default function EditQuestionPage() {
         skillIds: [],
     });
 
+    const deriveCorrectAnswer = (formData: QuestionFormData) => {
+        const selectedOptions = formData.options
+            .filter((option) => option.isCorrect === true)
+            .map((option) => option.text.trim())
+            .filter((option) => option !== '');
+
+        if (selectedOptions.length === 0) {
+            throw new Error('Select at least one correct answer before saving.');
+        }
+
+        return formData.type === 'multiple' ? selectedOptions.join(',') : selectedOptions[0];
+    };
+
     useEffect(() => {
         const fetchQuestion = async () => {
             try {
@@ -120,7 +136,18 @@ export default function EditQuestionPage() {
         setStatus(null);
         try {
             const payload = {
-                ...formData,
+                questionText: formData.text,
+                type: 'mcq',
+                options: formData.options.map((option) => ({
+                    id: option.id,
+                    text: option.text.trim(),
+                    isCorrect: option.isCorrect,
+                })),
+                correctAnswer: deriveCorrectAnswer(formData),
+                explanation: formData.explanation,
+                difficulty: formData.difficulty,
+                mappingType: formData.mappingType,
+                estimatedTime: formData.estimatedTime,
                 topicId: selection.topicId,
                 subtopicId: (selection.subtopicId != null && selection.subtopicId !== '') ? selection.subtopicId : undefined,
                 skillIds: (selection.skillIds != null && selection.skillIds.length > 0) ? selection.skillIds : [],
@@ -252,11 +279,28 @@ export default function EditQuestionPage() {
                                             };
                                         });
 
-                                        return mapped.length > 0 ? mapped : undefined;
+                                        const correctAnswerRaw =
+                                            (question?.correctAnswer != null && question.correctAnswer !== '')
+                                                ? question.correctAnswer
+                                                : (question?.correct_answer ?? '');
+                                        const normalizedCorrectAnswers = correctAnswerRaw
+                                            .split(',')
+                                            .map((value) => value.trim())
+                                            .filter((value) => value !== '');
+
+                                        const hydrated = mapped.map((option) => ({
+                                            ...option,
+                                            isCorrect:
+                                                option.isCorrect === true ||
+                                                normalizedCorrectAnswers.includes(option.text.trim()),
+                                        }));
+
+                                        return hydrated.length > 0 ? hydrated : undefined;
                                     })(),
                                     explanation: question?.explanation ?? '',
                                     difficulty: (question?.difficulty as 'simple' | 'intermediate' | 'expert' | undefined) ?? 'simple',
                                     estimatedTime: (question?.metadata?.estimatedTime != null) ? question.metadata.estimatedTime : (question?.metadata?.estimated_time ?? 60),
+                                    mappingType: question?.mappingType === 'technical' || question?.mappingType === 'practical' ? question.mappingType : 'conceptual',
                                 }}
                             />
                         </div>

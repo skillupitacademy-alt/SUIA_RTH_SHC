@@ -3,7 +3,7 @@
 import { apiClient } from '@quiz/api-client';
 import { Eye, EyeOff, Lock, Mail, ShieldCheck } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { type FormEvent, useState } from 'react';
+import { type FormEvent, useEffect, useState } from 'react';
 
 import { useAuthStore } from '@/store/auth-store';
 import { clientLogger } from '@/utils/clientLogger';
@@ -21,6 +21,8 @@ function LoginForm() {
     password: '',
   });
   const authLogin = useAuthStore((s) => s.login);
+  const setSessionExpired = useAuthStore((s) => s.setSessionExpired);
+  const setAccessDenied = useAuthStore((s) => s.setAccessDenied);
   const loginReason = searchParams.get('reason');
   const loginNotice =
     loginReason === 'access_denied'
@@ -28,6 +30,14 @@ function LoginForm() {
       : loginReason === 'session_expired'
         ? 'Your session expired. Please sign in again to continue.'
         : null;
+
+  useEffect(() => {
+    setSessionExpired(false);
+    setAccessDenied(false);
+    if (typeof window !== 'undefined') {
+      delete (window as Window & { __authRedirecting?: boolean }).__authRedirecting;
+    }
+  }, [setAccessDenied, setSessionExpired]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
