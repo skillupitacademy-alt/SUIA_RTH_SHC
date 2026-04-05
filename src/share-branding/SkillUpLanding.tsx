@@ -1,5 +1,4 @@
 'use client';
-
 import LandingPage from './LandingPage';
 import { skillUpConfig } from './brandConfig';
 

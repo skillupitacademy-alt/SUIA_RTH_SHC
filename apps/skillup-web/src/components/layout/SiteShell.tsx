@@ -6,7 +6,7 @@ import type { ReactNode } from 'react';
 import { Footer } from './Footer';
 import { Header } from './Header';
 
-const PUBLIC_CHROME_ROUTES = ['/', '/programs'];
+const PUBLIC_CHROME_ROUTES = ['/programs'];
 
 function shouldShowChrome(pathname: string): boolean {
   return PUBLIC_CHROME_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));

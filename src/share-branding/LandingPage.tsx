@@ -1,3 +1,4 @@
+'use client';
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { ArrowRight, Briefcase, FileCheck, Check, X, BookOpen, Code, Brain, FileEdit, Lightbulb, GraduationCap, AlertCircle, Target, TrendingUp, Rocket, Award, MessageSquare, Zap, FolderKanban, Users, Star, Menu } from 'lucide-react';
@@ -7,7 +8,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-slate-50">
       {/* Navigation */}
       <nav className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 flex items-center justify-between">
@@ -67,8 +68,8 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
             className="absolute left-[2%] top-[12%] w-28 h-28 bg-white/95 backdrop-blur-md rounded-2xl shadow-[0_0_40px_rgba(0,0,0,0.1)] flex items-center justify-center border-t border-white/60 z-0 hidden lg:flex"
           >
             <div className="text-center px-2">
-              <Code className="w-8 h-8 mx-auto text-purple-500 mb-1" />
-              <span className="font-bold text-[11px] leading-tight block">Full Stack<br />+ AI</span>
+              <Code className="w-8 h-8 mx-auto text-purple-700 mb-1" />
+              <span className="font-bold text-[11px] leading-tight block text-gray-900">Full Stack<br />+ AI</span>
             </div>
           </motion.div>
 
@@ -90,8 +91,8 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
             className="absolute left-[4%] bottom-[20%] w-28 h-28 bg-white/95 backdrop-blur-md rounded-2xl shadow-[0_0_40px_rgba(0,0,0,0.1)] flex items-center justify-center border-t border-white/60 z-0 hidden lg:flex"
           >
             <div className="text-center px-2">
-              <TrendingUp className="w-8 h-8 mx-auto text-blue-500 mb-1" />
-              <span className="font-bold text-[11px] leading-tight block">Data<br />Analyst</span>
+              <TrendingUp className="w-8 h-8 mx-auto text-blue-700 mb-1" />
+              <span className="font-bold text-[11px] leading-tight block text-gray-900">Data<br />Analyst</span>
             </div>
           </motion.div>
 
@@ -102,8 +103,8 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
             className="absolute right-[2%] top-[12%] w-28 h-28 bg-white/95 backdrop-blur-md rounded-2xl shadow-[0_0_40_rgba(0,0,0,0.1)] flex items-center justify-center border-t border-white/60 z-0 hidden lg:flex"
           >
             <div className="text-center px-2">
-              <Brain className="w-8 h-8 mx-auto text-orange-500 mb-1" />
-              <span className="font-bold text-[11px] leading-tight block">Data<br />Scientist</span>
+              <Brain className="w-8 h-8 mx-auto text-orange-800 mb-1" />
+              <span className="font-bold text-[11px] leading-tight block text-gray-900">Data<br />Scientist</span>
             </div>
           </motion.div>
 
@@ -113,8 +114,8 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
             className="absolute right-[10%] top-[38%] w-28 h-28 bg-white/95 backdrop-blur-md rounded-2xl shadow-[0_0_40px_rgba(0,0,0,0.1)] flex items-center justify-center border-t border-white/60 z-0 hidden xl:flex"
           >
             <div className="text-center px-2">
-              <Target className="w-8 h-8 mx-auto text-indigo-600 mb-1" />
-              <span className="font-bold text-[11px] leading-tight block">System<br />Architect</span>
+              <Target className="w-8 h-8 mx-auto text-indigo-800 mb-1" />
+              <span className="font-bold text-[11px] leading-tight block text-gray-900">System<br />Architect</span>
             </div>
           </motion.div>
 
@@ -124,8 +125,8 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
             className="absolute right-[4%] bottom-[20%] w-28 h-28 bg-white/95 backdrop-blur-md rounded-2xl shadow-[0_0_40px_rgba(0,0,0,0.1)] flex items-center justify-center border-t border-white/60 z-0 hidden lg:flex"
           >
             <div className="text-center px-2">
-              <FolderKanban className="w-8 h-8 mx-auto text-green-600 mb-1" />
-              <span className="font-bold text-[11px] leading-tight block">Data<br />Engineer</span>
+              <FolderKanban className="w-8 h-8 mx-auto text-green-800 mb-1" />
+              <span className="font-bold text-[11px] leading-tight block text-gray-900">Data<br />Engineer</span>
             </div>
           </motion.div>
 
@@ -148,8 +149,8 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
 
             <div className="flex flex-wrap justify-center gap-2 mb-16 max-w-2xl">
               <span className="text-white px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider shadow-lg" style={{ backgroundColor: config.primaryColor }}>Vibe Coding</span>
-              <span className="bg-purple-50 text-purple-700 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider border border-purple-100">Full Stack + AI</span>
-              <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider border border-blue-100">Data Analyst</span>
+              <span className="bg-purple-50 text-purple-800 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider border border-purple-100">Full Stack + AI</span>
+              <span className="bg-blue-50 text-blue-800 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider border border-blue-100">Data Analyst</span>
               <span className="bg-orange-50 text-orange-700 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider border border-orange-100">Data Scientist</span>
               <span className="bg-green-50 text-green-700 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider border border-green-100">Data Engineer</span>
               <span className="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider border border-indigo-100">System Architect</span>
@@ -177,7 +178,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
                   transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
                   className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center shadow-inner"
                 >
-                  <Briefcase className="w-5 h-5 text-blue-600" />
+                  <Briefcase className="w-5 h-5 text-blue-800" />
                 </motion.div>
                 <span className="font-bold text-gray-800">Internship</span>
               </div>
@@ -188,7 +189,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
                   transition={{ duration: 4, repeat: Infinity, ease: "linear", delay: 1.3 }}
                   className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center shadow-inner"
                 >
-                  <FileCheck className="w-5 h-5 text-green-600" />
+                  <FileCheck className="w-5 h-5 text-green-800" />
                 </motion.div>
                 <span className="font-bold text-gray-800">Experience Letter</span>
               </div>
@@ -199,7 +200,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
                   transition={{ duration: 4, repeat: Infinity, ease: "linear", delay: 2.6 }}
                   className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center shadow-inner"
                 >
-                  <Rocket className="w-5 h-5 text-purple-600" />
+                  <Rocket className="w-5 h-5 text-purple-800" />
                 </motion.div>
                 <span className="font-bold text-gray-800">Placement</span>
               </div>
@@ -219,22 +220,22 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
 
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-6">
             <div className="bg-white/80 backdrop-blur rounded-2xl p-6 text-center shadow-2xl border-t border-white/60 -translate-y-1 hover:-translate-y-3 transition-transform cursor-pointer">
-              <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+              <AlertCircle className="w-12 h-12 text-red-800 mx-auto mb-4" />
               <h3 className="font-bold text-lg mb-2">Too Many Random Tutorials</h3>
               <p className="text-gray-600 text-sm">Scattered content without clear path forward</p>
             </div>
             <div className="bg-white/80 backdrop-blur rounded-2xl p-6 text-center shadow-2xl border-t border-white/60 -translate-y-1 hover:-translate-y-3 transition-transform cursor-pointer">
-              <Target className="w-12 h-12 text-orange-500 mx-auto mb-4" />
+              <Target className="w-12 h-12 text-orange-800 mx-auto mb-4" />
               <h3 className="font-bold text-lg mb-2">No Structured Learning</h3>
               <p className="text-gray-600 text-sm">Jump between topics with no progression</p>
             </div>
             <div className="bg-white/80 backdrop-blur rounded-2xl p-6 text-center shadow-2xl border-t border-white/60 -translate-y-1 hover:-translate-y-3 transition-transform cursor-pointer">
-              <MessageSquare className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
+              <MessageSquare className="w-12 h-12 text-yellow-800 mx-auto mb-4" />
               <h3 className="font-bold text-lg mb-2">No Guidance</h3>
               <p className="text-gray-600 text-sm">Learn alone without expert support</p>
             </div>
             <div className="bg-white/80 backdrop-blur rounded-2xl p-6 text-center shadow-2xl border-t border-white/60 -translate-y-1 hover:-translate-y-3 transition-transform cursor-pointer">
-              <TrendingUp className="w-12 h-12 text-blue-500 mx-auto mb-4" />
+              <TrendingUp className="w-12 h-12 text-blue-700 mx-auto mb-4" />
               <h3 className="font-bold text-lg mb-2">No Feedback</h3>
               <p className="text-gray-600 text-sm">Can't measure progress or identify gaps</p>
             </div>
@@ -265,8 +266,8 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
               <p className="text-gray-600 mb-6">Backed by our Adaptive Learning Engine:</p>
               <div className="flex flex-wrap justify-center gap-4 text-sm font-bold">
                 <span className="bg-pink-50 text-pink-700 px-4 py-2 rounded-full">6-Block Content System</span>
-                <span className="bg-purple-50 text-purple-700 px-4 py-2 rounded-full">Difficulty Progression</span>
-                <span className="bg-blue-50 text-blue-700 px-4 py-2 rounded-full">{config.tutorLabel} Integration</span>
+                <span className="bg-purple-50 text-purple-800 px-4 py-2 rounded-full">Difficulty Progression</span>
+                <span className="bg-blue-50 text-blue-800 px-4 py-2 rounded-full">{config.tutorLabel} Integration</span>
                 <span className="bg-indigo-50 text-indigo-700 px-4 py-2 rounded-full">Smart Remediation</span>
               </div>
             </div>
@@ -282,7 +283,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
             {/* Layman Card */}
             <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-2xl border-t border-gray-100 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] transition-all duration-300 relative group cursor-pointer">
               <div className="w-12 h-12 bg-pink-100 rounded-xl flex items-center justify-center mb-4">
-                <BookOpen className="w-6 h-6 text-pink-600" />
+                <BookOpen className="w-6 h-6 text-pink-800" />
               </div>
               <div className="absolute top-8 right-8 w-8 h-8 rounded-full flex items-center justify-center text-white font-bold" style={{ backgroundColor: config.primaryColor }}>1</div>
               <h3 className="text-xl font-bold mb-3">Concept Explanation</h3>
@@ -297,7 +298,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
             {/* Example Card */}
             <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-2xl border-t border-gray-100 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] transition-all duration-300 relative group cursor-pointer">
               <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
-                <Lightbulb className="w-6 h-6 text-purple-600" />
+                <Lightbulb className="w-6 h-6 text-purple-800" />
               </div>
               <div className="absolute top-8 right-8 w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold">2</div>
               <h3 className="text-xl font-bold mb-3">Real-life Example</h3>
@@ -312,7 +313,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
             {/* Concept Card */}
             <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-2xl border-t border-gray-100 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] transition-all duration-300 relative group cursor-pointer">
               <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
-                <Brain className="w-6 h-6 text-blue-600" />
+                <Brain className="w-6 h-6 text-blue-800" />
               </div>
               <div className="absolute top-8 right-8 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">3</div>
               <h3 className="text-xl font-bold mb-3">Technical Concept</h3>
@@ -327,7 +328,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
             {/* Code Card */}
             <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-2xl border-t border-gray-100 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] transition-all duration-300 relative group cursor-pointer">
               <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center mb-4">
-                <Code className="w-6 h-6 text-indigo-600" />
+                <Code className="w-6 h-6 text-indigo-800" />
               </div>
               <div className="absolute top-8 right-8 w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center text-white font-bold">4</div>
               <h3 className="text-xl font-bold mb-3">Code Implementation</h3>
@@ -342,7 +343,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
             {/* AI Card */}
             <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-2xl border-t border-gray-100 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] transition-all duration-300 relative group cursor-pointer">
               <div className="w-12 h-12 bg-cyan-100 rounded-xl flex items-center justify-center mb-4">
-                <MessageSquare className="w-6 h-6 text-cyan-600" />
+                <MessageSquare className="w-6 h-6 text-cyan-800" />
               </div>
               <div className="absolute top-8 right-8 w-8 h-8 bg-cyan-500 rounded-full flex items-center justify-center text-white font-bold">5</div>
               <h3 className="text-xl font-bold mb-3">{config.tutorLabel}</h3>
@@ -357,7 +358,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
             {/* Assignment Card */}
             <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-2xl border-t border-gray-100 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] transition-all duration-300 relative group cursor-pointer">
               <div className="w-12 h-12 bg-pink-100 rounded-xl flex items-center justify-center mb-4">
-                <FileEdit className="w-6 h-6 text-pink-600" />
+                <FileEdit className="w-6 h-6 text-pink-800" />
               </div>
               <div className="absolute top-8 right-8 w-8 h-8 bg-[#d03f00] rounded-full flex items-center justify-center text-white font-bold">6</div>
               <h3 className="text-xl font-bold mb-3">Assignments & Projects</h3>
@@ -391,7 +392,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
                   <FeatureItem icon={<Zap />} text="Real-time help whenever you need it" />
                 </div>
 
-                <button className="bg-white text-purple-700 px-8 py-3 rounded-full mt-8 font-bold shadow-lg hover:shadow-[0_15px_30px_rgba(0,0,0,0.15)] transition-all duration-300 hover:-translate-y-1">
+                <button className="bg-white text-purple-800 px-8 py-3 rounded-full mt-8 font-bold shadow-lg hover:shadow-[0_15px_30px_rgba(0,0,0,0.15)] transition-all duration-300 hover:-translate-y-1">
                   {config.tutorButtonText}
                 </button>
               </motion.div>
@@ -439,7 +440,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
 
               <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-2xl border-t border-gray-100 -translate-y-1 hover:-translate-y-2 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] transition-all duration-300">
                 <div className="flex items-center gap-4 mb-6">
-                  <span className="text-sm font-bold text-gray-500 uppercase tracking-widest">Assignment Difficulty Levels</span>
+                  <span className="text-sm font-bold text-gray-700 uppercase tracking-widest">Assignment Difficulty Levels</span>
                 </div>
                 <div className="grid grid-cols-2 md:flex md:justify-between items-end gap-6 md:gap-0">
                   <div className="text-center">
@@ -479,7 +480,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
                   Weak in something? We fix it automatically. Detect weak topics, generate personalized study plans, and get direct links to focused learning.
                 </p>
                 <div className="bg-gray-50 rounded-xl p-6">
-                  <div className="text-sm text-gray-500 mb-4 font-bold uppercase tracking-wider">Dashboard Preview</div>
+                  <div className="text-sm text-gray-700 mb-4 font-bold uppercase tracking-wider">Dashboard Preview</div>
                   <div className="space-y-3">
                     <div className="flex items-center justify-between p-3 bg-white rounded-lg shadow-sm">
                       <span className="text-sm font-bold">Recommended recovery plan</span>
@@ -572,7 +573,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
               <div className="flex flex-col items-center max-w-sm flex-1">
                 <FlowCard direction="up" icon={<Brain className="w-8 h-8" />} title="Analytical Design" color="bg-gradient-to-br from-indigo-500 to-indigo-700" />
                 <div className="mt-6 lg:mt-8 text-center px-4">
-                  <h4 className="font-bold text-gray-900 mb-3 text-lg">1. Analytical Design</h4>
+                  <h3 className="font-bold text-gray-900 mb-3 text-lg">1. Analytical Design</h3>
                   <p className="text-sm text-gray-600 leading-relaxed">Design for both scale and insight.<br />Learn to structure systems and data architectures.</p>
                 </div>
               </div>
@@ -586,7 +587,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
               <div className="flex flex-col items-center max-w-sm flex-1">
                 <FlowCard direction="up" icon={<Code className="w-8 h-8" />} title="Production Engineering" colorStyle={{ background: `linear-gradient(to bottom right, ${config.secondaryColor}, #1d4ed8)` }} />
                 <div className="mt-6 lg:mt-8 text-center px-4">
-                  <h4 className="font-bold text-gray-900 mb-3 text-lg">2. Production Engineering</h4>
+                  <h3 className="font-bold text-gray-900 mb-3 text-lg">2. Production Engineering</h3>
                   <p className="text-sm text-gray-600 leading-relaxed">Build robust, industry-standard solutions.<br />Develop Scalable APIs to high-performance data pipelines.</p>
                 </div>
               </div>
@@ -600,7 +601,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
               <div className="flex flex-col items-center max-w-sm flex-1">
                 <FlowCard direction="up" icon={<FolderKanban className="w-8 h-8" />} title="Strategic Delivery" colorStyle={{ background: `linear-gradient(to bottom right, ${config.primaryColor}, #c2410c)` }} />
                 <div className="mt-6 lg:mt-8 text-center px-4">
-                  <h4 className="font-bold text-gray-900 mb-3 text-lg">3. Strategic Delivery</h4>
+                  <h3 className="font-bold text-gray-900 mb-3 text-lg">3. Strategic Delivery</h3>
                   <p className="text-sm text-gray-600 leading-relaxed">Ship high-impact results.<br />Deliver production-ready features or AI-driven insights.</p>
                 </div>
               </div>
@@ -623,7 +624,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
 
             <div className="bg-white rounded-3xl p-8 lg:p-12 shadow-2xl border-t border-gray-100 transition-all duration-300">
               <div className="flex items-center gap-4 mb-10 justify-center md:justify-start">
-                <span className="text-sm font-bold text-gray-500 uppercase tracking-widest pl-2 border-l-4" style={{ borderLeftColor: config.secondaryColor }}>Real World Simulation Pillars</span>
+                <span className="text-sm font-bold text-gray-700 uppercase tracking-widest pl-2 border-l-4" style={{ borderLeftColor: config.secondaryColor }}>Real World Simulation Pillars</span>
               </div>
 
               <div className="grid grid-cols-2 md:flex md:justify-between items-start gap-8 md:gap-4">
@@ -713,7 +714,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
                     <FileCheck className="w-6 h-6 mx-auto" />
                   </div>
                 </div>
-                <h4 className="font-black tracking-widest uppercase text-xs mb-2" style={{ color: config.secondaryColor }}>Official Document</h4>
+                <h3 className="font-black tracking-widest uppercase text-xs mb-2" style={{ color: config.secondaryColor }}>Official Document</h3>
                 <h3 className="text-2xl font-bold mb-6 font-poppins border-b border-gray-100 pb-4">Letter of Experience</h3>
 
                 <ul className="space-y-4 mb-8 text-sm font-medium text-gray-600">
@@ -730,7 +731,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
                 <div className="flex justify-between items-end pt-6 border-t border-gray-100">
                   <div>
                     <div className="w-24 h-1 bg-gray-200 mb-2"></div>
-                    <span className="text-xs font-bold text-gray-400 uppercase">Authorized Signatory</span>
+                    <span className="text-xs font-bold text-gray-600 uppercase">Authorized Signatory</span>
                   </div>
                   <div className="text-right">
                     <span className="text-xs font-bold text-green-700 bg-green-50 px-2 py-1 rounded border border-green-200">VERIFIABLE CREDENTIAL</span>
@@ -758,27 +759,27 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
             <div className="grid lg:grid-cols-[1fr_auto_1.5fr] gap-8 lg:gap-12 items-center">
               {/* Typical Learner Path */}
               <div className="opacity-60 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-500">
-                <h4 className="text-center font-bold text-gray-500 mb-6 border-b border-gray-200 pb-3 uppercase tracking-widest text-[10px]">The Traditional Cycle</h4>
+                <h3 className="text-center font-bold text-gray-700 mb-6 border-b border-gray-200 pb-3 uppercase tracking-widest text-[10px]">The Traditional Cycle</h3>
                 <div className="flex justify-between items-center gap-2">
                   <div className="text-center flex-1">
                     <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-50 rounded-xl flex items-center justify-center mb-3 mx-auto border border-gray-100 shadow-sm">
-                      <BookOpen className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400" />
+                      <BookOpen className="w-6 h-6 sm:w-8 sm:h-8 text-gray-600" />
                     </div>
-                    <p className="text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-tighter">Learn Theory</p>
+                    <p className="text-[10px] sm:text-xs font-bold text-gray-700 uppercase tracking-tighter">Learn Theory</p>
                   </div>
                   <ArrowRight className="w-4 h-4 text-gray-300 hidden sm:block" />
                   <div className="text-center flex-1">
                     <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-50 rounded-xl flex items-center justify-center mb-3 mx-auto border border-gray-100 shadow-sm">
-                      <FileEdit className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400" />
+                      <FileEdit className="w-6 h-6 sm:w-8 sm:h-8 text-gray-600" />
                     </div>
-                    <p className="text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-tighter">Complete Courses</p>
+                    <p className="text-[10px] sm:text-xs font-bold text-gray-700 uppercase tracking-tighter">Complete Courses</p>
                   </div>
                   <ArrowRight className="w-4 h-4 text-gray-300 hidden sm:block" />
                   <div className="text-center flex-1">
                     <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-50 rounded-xl flex items-center justify-center mb-3 mx-auto border border-gray-100 shadow-sm">
-                      <GraduationCap className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400" />
+                      <GraduationCap className="w-6 h-6 sm:w-8 sm:h-8 text-gray-600" />
                     </div>
-                    <p className="text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-tighter">Apply as Fresher</p>
+                    <p className="text-[10px] sm:text-xs font-bold text-gray-700 uppercase tracking-tighter">Apply as Fresher</p>
                   </div>
                 </div>
               </div>
@@ -787,19 +788,19 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
               <div className="hidden lg:flex flex-col items-center justify-center h-full py-4">
                 <div className="w-px h-full bg-gray-100"></div>
                 <div className="w-12 h-12 rounded-full bg-white border border-gray-100 flex items-center justify-center shadow-lg my-4 z-10 flex-shrink-0">
-                  <span className="text-gray-400 text-[10px] font-black tracking-tighter uppercase font-poppins">VS</span>
+                  <span className="text-gray-600 text-[10px] font-black tracking-tighter uppercase font-poppins">VS</span>
                 </div>
                 <div className="w-px h-full bg-gray-100"></div>
               </div>
               <div className="flex lg:hidden items-center justify-center py-6">
                 <div className="h-px w-full bg-gray-100"></div>
-                <span className="absolute bg-white px-4 text-gray-400 text-[10px] font-black tracking-widest leading-none uppercase font-poppins">VS</span>
+                <span className="absolute bg-white px-4 text-gray-600 text-[10px] font-black tracking-widest leading-none uppercase font-poppins">VS</span>
               </div>
 
               {/* Our Users Path */}
               <div className="bg-gradient-to-br from-blue-50/50 to-indigo-50/10 p-6 sm:p-10 rounded-3xl border border-blue-100 shadow-sm relative group overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50/50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-1000"></div>
-                <h4 className="text-center font-bold text-[#124fd6] mb-10 mt-2 border-b border-blue-100 pb-3 uppercase tracking-widest text-[10px]">RealTutorialHub Ecosystem</h4>
+                <h3 className="text-center font-bold text-[#124fd6] mb-10 mt-2 border-b border-blue-100 pb-3 uppercase tracking-widest text-[10px]">RealTutorialHub Ecosystem</h3>
                 <div className="flex justify-between items-center gap-2 relative z-10">
                   <div className="text-center flex-1 group/item">
                     <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-2xl flex items-center justify-center mb-3 mx-auto shadow-2xl group-hover/item:scale-105 transition-all duration-300">
@@ -843,7 +844,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
             <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-2xl border-2 border-gray-200 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.2)] transition-all duration-300 relative">
               <h3 className="text-2xl font-bold mb-2">Free</h3>
               <p className="text-gray-600 mb-6">Get started with basic features</p>
-              <div className="text-5xl font-bold mb-6">₹ 0<span className="text-lg text-gray-400">/mo</span></div>
+              <div className="text-5xl font-bold mb-6">₹ 0<span className="text-lg text-gray-600">/mo</span></div>
 
               <ul className="space-y-3 mb-8">
                 <PricingFeature text="Access to basic tutorials" included={true} />
@@ -877,7 +878,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
                 <PricingFeature text="Smart remediation" included={true} white={true} />
               </ul>
 
-              <button className="w-full bg-white text-purple-700 py-4 rounded-full font-bold shadow-lg hover:shadow-[0_15px_30px_rgba(0,0,0,0.15)] transition-all duration-300 hover:-translate-y-1">
+              <button className="w-full bg-white text-purple-800 py-4 rounded-full font-bold shadow-lg hover:shadow-[0_15px_30px_rgba(0,0,0,0.15)] transition-all duration-300 hover:-translate-y-1">
                 Start Learning Now
               </button>
             </div>
@@ -956,13 +957,13 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
                   </div>
                   <span className="font-bold text-2xl tracking-tight font-poppins">{config.brandName}</span>
                 </div>
-                <p className="text-gray-500 text-sm leading-relaxed font-bold">
+                <p className="text-gray-700 text-sm leading-relaxed font-bold">
                   {config.footerDescription}
                 </p>
               </div>
 
               <div>
-                <h4 className="font-bold text-gray-900 mb-6 uppercase tracking-widest text-xs">Product</h4>
+                <h3 className="font-bold text-gray-900 mb-6 uppercase tracking-widest text-xs">Product</h3>
                 <ul className="space-y-3 text-gray-600 text-sm font-bold">
                   <li><a href="#solutions" className="hover:opacity-80 transition" style={{ color: 'inherit' }} onMouseEnter={e => e.currentTarget.style.color = config.secondaryColor} onMouseLeave={e => e.currentTarget.style.color = 'inherit'}>Solutions</a></li>
                   <li><a href="#journey" className="hover:opacity-80 transition" style={{ color: 'inherit' }} onMouseEnter={e => e.currentTarget.style.color = config.secondaryColor} onMouseLeave={e => e.currentTarget.style.color = 'inherit'}>Journey</a></li>
@@ -975,7 +976,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
               </div>
 
               <div>
-                <h4 className="font-bold text-gray-900 mb-6 uppercase tracking-widest text-xs">Company</h4>
+                <h3 className="font-bold text-gray-900 mb-6 uppercase tracking-widest text-xs">Company</h3>
                 <ul className="space-y-3 text-gray-600 text-sm font-bold">
                   <li><a href="#" className="hover:opacity-80 transition" style={{ color: 'inherit' }} onMouseEnter={e => e.currentTarget.style.color = config.secondaryColor} onMouseLeave={e => e.currentTarget.style.color = 'inherit'}>About Us</a></li>
                   <li><a href="#" className="hover:opacity-80 transition" style={{ color: 'inherit' }} onMouseEnter={e => e.currentTarget.style.color = config.secondaryColor} onMouseLeave={e => e.currentTarget.style.color = 'inherit'}>Blog</a></li>
@@ -985,7 +986,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
               </div>
 
               <div>
-                <h4 className="font-bold text-gray-900 mb-6 uppercase tracking-widest text-xs">Legal</h4>
+                <h3 className="font-bold text-gray-900 mb-6 uppercase tracking-widest text-xs">Legal</h3>
                 <ul className="space-y-3 text-gray-600 text-sm font-bold">
                   <li><a href="#" className="hover:opacity-80 transition" style={{ color: 'inherit' }} onMouseEnter={e => e.currentTarget.style.color = config.secondaryColor} onMouseLeave={e => e.currentTarget.style.color = 'inherit'}>Privacy Policy</a></li>
                   <li><a href="#" className="hover:opacity-80 transition" style={{ color: 'inherit' }} onMouseEnter={e => e.currentTarget.style.color = config.secondaryColor} onMouseLeave={e => e.currentTarget.style.color = 'inherit'}>Terms of Service</a></li>
@@ -996,7 +997,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
             </div>
 
             <div className="border-t border-gray-100 mt-12 pt-12 flex flex-col md:flex-row justify-between items-center gap-6">
-              <p className="text-gray-400 text-sm font-bold">{config.footerCopyright}</p>
+              <p className="text-gray-600 text-sm font-bold">{config.footerCopyright}</p>
               <div className="flex gap-6">
                 <div className="w-6 h-6 bg-gray-100 rounded-full"></div>
                 <div className="w-6 h-6 bg-gray-100 rounded-full"></div>
@@ -1078,11 +1079,11 @@ function PricingFeature({ text, included, white }: { text: string; included: boo
     <li className="flex items-center gap-4 text-lg font-bold tracking-tight">
       {included ? (
         <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${white ? 'bg-white/20' : 'bg-green-100'}`}>
-          <Check className={`w-3.5 h-3.5 ${white ? 'text-white' : 'text-green-600'}`} />
+          <Check className={`w-3.5 h-3.5 ${white ? 'text-white' : 'text-green-800'}`} />
         </div>
       ) : (
         <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${white ? 'bg-purple-300/30' : 'bg-gray-100'}`}>
-          <X className={`w-3.5 h-3.5 ${white ? 'text-purple-200' : 'text-gray-400'}`} />
+          <X className={`w-3.5 h-3.5 ${white ? 'text-purple-200' : 'text-gray-600'}`} />
         </div>
       )}
       <span className={white ? 'text-white' : 'text-gray-700'}>{text}</span>
@@ -1113,7 +1114,7 @@ function TestimonialCard({ name, role, image, text, rating, direction = 'up' }: 
           {image}
         </div>
         <div>
-          <h4 className="font-bold text-xl">{name}</h4>
+          <h3 className="font-bold text-xl">{name}</h3>
           <p className="text-sm font-bold text-[#124fd6] uppercase tracking-widest">{role}</p>
         </div>
       </div>
@@ -1139,15 +1140,17 @@ function ComparisonRow({ label, us, competitor1, competitor2 }: {
       <span className="text-xs sm:text-sm font-bold text-gray-600 group-hover:text-gray-900 transition flex-1 leading-tight pr-2">{label}</span>
       <div className="flex gap-3 sm:gap-8 shrink-0">
         <div className="w-10 sm:w-16 flex justify-center shrink-0">
-          {us ? <div className="w-5 h-5 sm:w-6 h-6 sm:h-6 bg-green-100 rounded-full flex items-center justify-center"><Check className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" /></div> : <X className="w-4 h-4 sm:w-5 sm:h-5 text-red-100" />}
+          {us ? <div className="w-5 h-5 sm:w-6 h-6 sm:h-6 bg-green-100 rounded-full flex items-center justify-center"><Check className="w-3 h-3 sm:w-4 sm:h-4 text-green-800" /></div> : <X className="w-4 h-4 sm:w-5 sm:h-5 text-red-100" />}
         </div>
         <div className="w-10 sm:w-16 flex justify-center shrink-0">
-          {competitor1 ? <Check className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 opacity-50" /> : <X className="w-4 h-4 sm:w-5 sm:h-5 text-gray-300" />}
+          {competitor1 ? <Check className="w-4 h-4 sm:w-5 sm:h-5 text-green-800 opacity-50" /> : <X className="w-4 h-4 sm:w-5 sm:h-5 text-gray-300" />}
         </div>
         <div className="w-10 sm:w-16 flex justify-center shrink-0">
-          {competitor2 ? <Check className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 opacity-50" /> : <X className="w-4 h-4 sm:w-5 sm:h-5 text-gray-300" />}
+          {competitor2 ? <Check className="w-4 h-4 sm:w-5 sm:h-5 text-green-800 opacity-50" /> : <X className="w-4 h-4 sm:w-5 sm:h-5 text-gray-300" />}
         </div>
       </div>
     </div>
   );
 }
+
+

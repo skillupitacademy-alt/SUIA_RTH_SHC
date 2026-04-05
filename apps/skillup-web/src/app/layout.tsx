@@ -42,7 +42,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${outfit.variable} ${poppins.variable}`}>
+    <html lang="en" className={`${inter.variable} ${outfit.variable} ${poppins.variable}`} suppressHydrationWarning>
       <body className="bg-white text-slate-900 antialiased">
         <SiteShell>{children}</SiteShell>
       </body>

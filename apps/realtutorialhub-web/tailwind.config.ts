@@ -3,6 +3,7 @@ import type { Config } from 'tailwindcss';
 const config: Config = {
   content: [
     './src/**/*.{js,ts,jsx,tsx,mdx}',
+    '../../src/share-branding/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
     extend: {
