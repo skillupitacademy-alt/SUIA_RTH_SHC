@@ -88,7 +88,6 @@ export function LoginClient() {
           accept: 'application/json',
           'x-portal-identity': 'user',
           'x-brand': activeBrand,
-          'x-original-host': window.location.host,
         },
         body: JSON.stringify({
           email,

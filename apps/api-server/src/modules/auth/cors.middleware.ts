@@ -7,7 +7,6 @@ const ALLOWED_HEADERS = [
   'Idempotency-Key',
   'x-portal-identity',
   'x-request-id',
-  'x-original-host',
   'accept-version',
   'x-brand',
 ].join(', ');

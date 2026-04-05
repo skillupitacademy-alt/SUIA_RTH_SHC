@@ -208,25 +208,4 @@ describe('Core: FetchClient Resilience (Task 101, 102)', () => {
         expect(mockFetch).toHaveBeenCalledTimes(2);
     });
 
-    it('should forward the current browser host to the api for cookie scoping', async () => {
-        const mockFetch = vi.mocked(fetch);
-
-        Object.defineProperty(globalThis, 'window', {
-            value: { location: { host: 'quiz.skillhubcore.in' } },
-            configurable: true,
-        });
-
-        mockFetch.mockResolvedValueOnce({
-            ok: true,
-            status: 200,
-            headers: headers(),
-            json: () => Promise.resolve({ success: true }),
-        } as Response);
-
-        await expect(client.post('/auth/signup', { email: 'x@y.com' })).resolves.toEqual({ success: true });
-
-        const init = mockFetch.mock.calls[0]?.[1] as RequestInit | undefined;
-        const sentHeaders = init?.headers as Record<string, string> | undefined;
-        expect(sentHeaders?.['x-original-host']).toBe('quiz.skillhubcore.in');
-    });
 });

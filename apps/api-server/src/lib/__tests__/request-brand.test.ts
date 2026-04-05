@@ -39,11 +39,10 @@ describe('resolveRequestBrand', () => {
 });
 
 describe('resolveRequestHostnameFromHeaders', () => {
-  it('prefers the original portal host over the forwarded api host', () => {
+  it('prefers the browser origin over the forwarded api host', () => {
     const headers = {
       get(name: string) {
         if (name === 'x-forwarded-host') return 'api.realtutorialhub.com';
-        if (name === 'x-original-host') return 'quiz.skillhubcore.in';
         if (name === 'origin') return 'https://quiz.skillhubcore.in';
         return null;
       },

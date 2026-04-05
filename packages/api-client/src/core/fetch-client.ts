@@ -106,12 +106,6 @@ export class FetchClient {
     this.portalIdentity = identity;
   }
 
-  private getBrowserHost(): string | null {
-    if (typeof window === 'undefined') return null;
-    const value = window.location.host?.trim();
-    return value ? value : null;
-  }
-
   private async retryWithFreshCsrfToken<TResponse>(
     endpoint: string,
     options: FetchOptions,
@@ -181,11 +175,6 @@ export class FetchClient {
       ...(this.portalIdentity ? { 'x-portal-identity': this.portalIdentity } : {}),
       ...(options.headers as Record<string, string>),
     };
-
-    const browserHost = this.getBrowserHost();
-    if (browserHost !== null && headers['x-original-host'] === undefined) {
-      headers['x-original-host'] = browserHost;
-    }
 
     // 104: Send ETag for conditional GET
     const isGet = (options.method || 'GET') === 'GET';
