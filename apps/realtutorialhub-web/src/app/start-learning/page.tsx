@@ -1,4 +1,6 @@
-import { LandingPage as PostLandingPage } from '../../../../../src/share-branding/PostLandingPage/app/pages/LandingPage';
+import { realtutorialhubBrand } from '@quiz/config/src/brands';
+
+import { StartLearningPage } from '../../../../../src/share-branding/StartLearningPage';
 
 export const metadata = {
   title: 'Start Learning - RealTutorialHub',
@@ -6,5 +8,5 @@ export const metadata = {
 };
 
 export default function RealTutorialHubStartLearningPage() {
-  return <PostLandingPage brand="rth" />;
+  return <StartLearningPage backHref="/" brand={realtutorialhubBrand} />;
 }
