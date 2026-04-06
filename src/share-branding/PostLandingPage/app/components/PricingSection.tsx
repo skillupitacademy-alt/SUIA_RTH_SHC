@@ -66,9 +66,9 @@ export function PricingSection() {
     <section id="pricing" className="py-24 bg-gradient-to-br from-gray-50 to-white">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-orange-100 rounded-full mb-6">
-            <Star className="w-4 h-4 text-orange-600" />
-            <span className="text-sm text-orange-700">Simple, Transparent Pricing</span>
+          <div className={`inline-flex items-center gap-2 px-4 py-2 bg-${accentClass}-100 rounded-full mb-6`}>
+            <Star className={`w-4 h-4 text-${accentClass}-600`} />
+            <span className={`text-sm text-${accentClass}-700`}>Simple, Transparent Pricing</span>
           </div>
           <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4 md:mb-6 leading-tight">
             Choose Your Plan
@@ -86,12 +86,12 @@ export function PricingSection() {
                 key={idx} 
                 className={`relative bg-white rounded-3xl p-8 border-2 ${
                   plan.popular 
-                    ? 'border-orange-400 shadow-[0_30px_60px_rgba(0,0,0,0.2)] scale-105 hover:scale-[1.08]' 
+                    ? `border-${accentClass}-400 shadow-[0_30px_60px_rgba(0,0,0,0.2)] scale-105 hover:scale-[1.08]` 
                     : 'border-gray-200 shadow-2xl scale-[1.02] hover:scale-105'
                 } hover:-translate-y-1 transition-all duration-300`}
               >
                 {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-sm font-bold rounded-full">
+                  <div className={`absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-2 bg-gradient-to-r ${brand.gradientFrom} ${brand.gradientFrom} text-white text-sm font-bold rounded-full`}>
                     MOST POPULAR
                   </div>
                 )}
@@ -124,7 +124,7 @@ export function PricingSection() {
                 <button 
                   className={`w-full py-4 rounded-xl font-semibold transition-all ${
                     plan.popular
-                      ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:shadow-lg hover:scale-105'
+                      ? `bg-gradient-to-r ${brand.gradientFrom} ${brand.gradientFrom} text-white hover:shadow-lg hover:scale-105`
                       : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
                   }`}
                 >

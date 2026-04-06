@@ -9,7 +9,7 @@ export function Navigation() {
   const brand = useBrand();
   const accentClass = brand.accentColor === 'orange' ? 'orange' : 'pink';
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
+
   return (
     <nav className="sticky top-0 z-50 backdrop-blur-lg bg-white/80 border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-6 py-4">
@@ -43,7 +43,7 @@ export function Navigation() {
           </div>
 
           {/* Mobile Menu Button */}
-          <button 
+          <button
             className="md:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label="Toggle Navigation Menu"

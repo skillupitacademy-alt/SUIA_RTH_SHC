@@ -4,7 +4,7 @@ import { useBrand } from '../context/BrandContext';
 export function FinalCTA() {
   const brand = useBrand();
   const accentClass = brand.accentColor === 'orange' ? 'orange' : 'pink';
-  
+
   const stats = [
     { number: "10,000+", label: "Active Learners" },
     { number: "500+", label: "Tutorial Modules" },
@@ -37,7 +37,7 @@ export function FinalCTA() {
         {/* Decorative Elements */}
         <div className="absolute top-20 right-20 w-64 h-64 bg-orange-500/20 rounded-full blur-3xl"></div>
         <div className="absolute bottom-20 left-20 w-64 h-64 bg-blue-500/20 rounded-full blur-3xl"></div>
-        
+
         <div className="max-w-5xl mx-auto px-6 text-center relative z-10">
           <div className={`inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full mb-6`}>
             <Sparkles className={`w-4 h-4 text-${accentClass}-400`} />
@@ -47,9 +47,9 @@ export function FinalCTA() {
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 leading-tight">
             Ready to Master Your Skills?
           </h2>
-          
+
           <p className="text-base md:text-xl text-gray-300 mb-8 md:mb-12 max-w-3xl mx-auto leading-relaxed px-4">
-            Stop struggling with one-size-fits-all courses. Experience personalized, AI-powered learning 
+            Stop struggling with one-size-fits-all courses. Experience personalized, AI-powered learning
             that adapts to your unique needs and accelerates your journey to mastery.
           </p>
 
@@ -59,7 +59,7 @@ export function FinalCTA() {
               <span className="text-base sm:text-lg font-semibold">Start with Exam Engine</span>
               <ArrowRight className="w-4 sm:w-5 h-4 sm:h-5 group-hover:translate-x-1 transition-transform" />
             </button>
-            
+
             <button className="group px-6 sm:px-8 py-4 sm:py-5 bg-white text-gray-900 rounded-xl shadow-2xl scale-[1.02] hover:scale-105 hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-3 w-full sm:w-auto">
               <Brain className="w-5 sm:w-6 h-5 sm:h-6" />
               <span className="text-base sm:text-lg font-semibold">Explore Tutorial Engine</span>

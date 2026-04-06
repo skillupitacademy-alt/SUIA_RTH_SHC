@@ -824,54 +824,108 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
         </section>
 
         {/* Pricing Section */}
-        <section id="pricing" className="max-w-7xl mx-auto px-4 md:px-6 py-12 md:py-20 font-poppins">
-          <motion.div initial={{ y: 30 }} whileInView={{ y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">Choose Your Learning Path</h2>
-            <p className="text-xl text-gray-600">Start free, upgrade when you're ready</p>
-          </motion.div>
-
-          <motion.div initial={{ y: 40 }} whileInView={{ y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {/* Free Plan */}
-            <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-2xl border-2 border-gray-200 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.2)] transition-all duration-300 relative">
-              <h3 className="text-2xl font-bold mb-2">Free</h3>
-              <p className="text-gray-600 mb-6">Get started with basic features</p>
-              <div className="text-5xl font-bold mb-6">₹ 0<span className="text-lg text-gray-600">/mo</span></div>
-
-              <ul className="space-y-3 mb-8">
-                <PricingFeature text="Access to basic tutorials" included={true} />
-                <PricingFeature text="Limited AI Tutor queries" included={true} />
-                <PricingFeature text="Basic assignments" included={true} />
-                <PricingFeature text="Community support" included={true} />
-                <PricingFeature text="Real-world projects" included={false} />
-                <PricingFeature text="Smart remediation" included={false} />
-              </ul>
-
-              <button className="w-full bg-gray-100 text-gray-800 py-3 rounded-full hover:bg-gray-200 transition font-bold duration-300 hover:-translate-y-1">
-                Get Started Free
-              </button>
-            </div>
-
-            {/* Premium Plan */}
-            <div className="bg-[#124fd6] rounded-2xl p-6 sm:p-8 shadow-2xl border border-[#124fd6] -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(18,79,214,0.4)] transition-all duration-300 text-white relative overflow-hidden">
-              <div className="absolute top-4 right-4 bg-yellow-400 text-purple-900 px-4 py-1.5 rounded-full text-xs font-black tracking-widest">
-                POPULAR
+        <section id="pricing" className="py-24 bg-gradient-to-br from-gray-50 to-white font-poppins">
+          <div className="max-w-7xl mx-auto px-4 md:px-6">
+            <motion.div initial={{ y: 30 }} whileInView={{ y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="text-center mb-16">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6" style={{ backgroundColor: `${config.primaryColor}15` }}>
+                <Star className="w-4 h-4" style={{ color: config.primaryColor }} />
+                <span className="text-sm font-bold" style={{ color: config.primaryColor }}>Simple, Transparent Pricing</span>
               </div>
-              <h3 className="text-2xl font-bold mb-2">Premium</h3>
-              <p className="text-purple-100 mb-6 font-medium">Full access to all features</p>
-              <div className="text-5xl font-bold mb-6 font-poppins">₹ 1000<span className="text-lg text-purple-100">/mo</span></div>
+              <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4 md:mb-6 leading-tight">Choose Your Plan</h2>
+              <p className="text-base md:text-xl text-gray-600 max-w-3xl mx-auto px-4">
+                Start free and upgrade when you're ready. No hidden fees, cancel anytime.
+              </p>
+            </motion.div>
 
-              <ul className="space-y-3 mb-8">
-                <PricingFeature text="Unlimited tutorial access" included={true} white={true} />
-                <PricingFeature text="Unlimited AI Tutor" included={true} white={true} />
-                <PricingFeature text="All difficulty assignments" included={true} white={true} />
-                <PricingFeature text="Priority support" included={true} white={true} />
-                <PricingFeature text="Real-world projects" included={true} white={true} />
-                <PricingFeature text="Smart remediation" included={true} white={true} />
-              </ul>
+            <motion.div initial={{ y: 40 }} whileInView={{ y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto px-4 md:px-0">
+              {/* Free Plan */}
+              <div className="relative bg-white rounded-3xl p-8 border-2 border-gray-200 shadow-2xl scale-[1.02] hover:scale-105 hover:-translate-y-1 transition-all duration-300">
+                <div className="text-center mb-6">
+                  <div className="inline-flex w-16 h-16 bg-gradient-to-br from-gray-500 to-gray-600 rounded-2xl items-center justify-center mb-4">
+                    <Star className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Free</h3>
+                  <p className="text-gray-600 text-sm mb-4">Perfect for exploring the platform</p>
+                  <div className="flex items-baseline justify-center gap-2">
+                    <span className="text-4xl md:text-5xl font-bold bg-gradient-to-br from-gray-500 to-gray-600 bg-clip-text text-transparent">$0</span>
+                    <span className="text-gray-500 text-sm">/forever</span>
+                  </div>
+                </div>
+                <ul className="space-y-4 mb-8">
+                  {["Access to 3 tutorial modules", `Basic ${config.pricingTutorLabel?.split(' ').slice(1).join(' ') || 'AI Tutor'} responses`, "2 exam attempts per month", "Community support", "Level 1.0 assignments only"].map((f, i) => (
+                    <li key={i} className="flex items-start gap-3">
+                      <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Check className="w-3 h-3 text-green-600" strokeWidth={3} />
+                      </div>
+                      <span className="text-gray-700 text-sm">{f}</span>
+                    </li>
+                  ))}
+                </ul>
+                <button className="w-full py-4 rounded-xl font-semibold bg-gray-100 text-gray-900 hover:bg-gray-200 transition-all">Get Started</button>
+              </div>
 
-              <Link href="/start-learning" className="w-full bg-white text-purple-800 py-4 rounded-full font-bold shadow-lg hover:shadow-[0_15px_30px_rgba(0,0,0,0.15)] transition-all duration-300 hover:-translate-y-1">Start Learning Now</Link>
+              {/* Pro Plan */}
+              <div className="relative bg-white rounded-3xl p-8 border-2 shadow-[0_30px_60px_rgba(0,0,0,0.2)] scale-105 hover:scale-[1.08] hover:-translate-y-1 transition-all duration-300" style={{ borderColor: config.primaryColor }}>
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-2 text-white text-sm font-bold rounded-full" style={{ backgroundColor: config.primaryColor }}>
+                  MOST POPULAR
+                </div>
+                <div className="text-center mb-6">
+                  <div className="inline-flex w-16 h-16 rounded-2xl items-center justify-center mb-4" style={{ backgroundColor: config.primaryColor }}>
+                    <Zap className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Pro</h3>
+                  <p className="text-gray-600 text-sm mb-4">For serious learners committed to mastery</p>
+                  <div className="flex items-baseline justify-center gap-2">
+                    <span className="text-4xl md:text-5xl font-bold" style={{ color: config.primaryColor }}>$29</span>
+                    <span className="text-gray-500 text-sm">/per month</span>
+                  </div>
+                </div>
+                <ul className="space-y-4 mb-8">
+                  {["Unlimited tutorial access", `Advanced ${config.pricingTutorUnlimited || 'AI Tutor'} with code debugging`, "Unlimited exam attempts", "All difficulty levels unlocked", "Real-world project templates", "Priority support", "Progress analytics dashboard", "Certificate of completion"].map((f, i) => (
+                    <li key={i} className="flex items-start gap-3">
+                      <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Check className="w-3 h-3 text-green-600" strokeWidth={3} />
+                      </div>
+                      <span className="text-gray-700 text-sm">{f}</span>
+                    </li>
+                  ))}
+                </ul>
+                <button className="w-full py-4 rounded-xl font-semibold text-white hover:shadow-lg hover:scale-105 transition-all" style={{ backgroundColor: config.primaryColor }}>Get Started</button>
+              </div>
+
+              {/* Enterprise Plan */}
+              <div className="relative bg-white rounded-3xl p-8 border-2 border-gray-200 shadow-2xl scale-[1.02] hover:scale-105 hover:-translate-y-1 transition-all duration-300">
+                <div className="text-center mb-6">
+                  <div className="inline-flex w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl items-center justify-center mb-4">
+                    <Award className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Enterprise</h3>
+                  <p className="text-gray-600 text-sm mb-4">For teams and organizations</p>
+                  <div className="flex items-baseline justify-center gap-2">
+                    <span className="text-4xl md:text-5xl font-bold bg-gradient-to-br from-purple-500 to-purple-600 bg-clip-text text-transparent">Custom</span>
+                    <span className="text-gray-500 text-sm">/contact sales</span>
+                  </div>
+                </div>
+                <ul className="space-y-4 mb-8">
+                  {["Everything in Pro", "Custom learning paths", "Team performance analytics", "Dedicated account manager", "API access", "Custom integrations", "Advanced reporting", "SLA guarantee"].map((f, i) => (
+                    <li key={i} className="flex items-start gap-3">
+                      <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Check className="w-3 h-3 text-green-600" strokeWidth={3} />
+                      </div>
+                      <span className="text-gray-700 text-sm">{f}</span>
+                    </li>
+                  ))}
+                </ul>
+                <button className="w-full py-4 rounded-xl font-semibold bg-gray-100 text-gray-900 hover:bg-gray-200 transition-all">Contact Sales</button>
+              </div>
+            </motion.div>
+
+            <div className="mt-12 text-center">
+              <p className="text-gray-600">
+                All plans include a <span className="font-semibold text-gray-900">14-day money-back guarantee</span>
+              </p>
             </div>
-          </motion.div>
+          </div>
         </section>
 
         {/* Testimonials Section */}
@@ -1058,23 +1112,6 @@ function ProjectCard({ icon, title, description, color, colorStyle, linkColor, d
         View Projects <ArrowRight className="ml-3 w-6 h-6" />
       </div>
     </motion.div>
-  );
-}
-
-function PricingFeature({ text, included, white }: { text: string; included: boolean; white?: boolean }) {
-  return (
-    <li className="flex items-center gap-4 text-lg font-bold tracking-tight">
-      {included ? (
-        <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${white ? 'bg-white/20' : 'bg-green-100'}`}>
-          <Check className={`w-3.5 h-3.5 ${white ? 'text-white' : 'text-green-800'}`} />
-        </div>
-      ) : (
-        <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${white ? 'bg-purple-300/30' : 'bg-gray-100'}`}>
-          <X className={`w-3.5 h-3.5 ${white ? 'text-purple-200' : 'text-gray-600'}`} />
-        </div>
-      )}
-      <span className={white ? 'text-white' : 'text-gray-700'}>{text}</span>
-    </li>
   );
 }
 
