@@ -63,7 +63,7 @@ export function PricingSection() {
   ];
 
   return (
-    <section className="py-24 bg-gradient-to-br from-gray-50 to-white">
+    <section id="pricing" className="py-24 bg-gradient-to-br from-gray-50 to-white">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-orange-100 rounded-full mb-6">

@@ -28,11 +28,11 @@ export function HeroSection() {
             
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight">
               <span className="bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-                MASTERY
+                Select Your
               </span>
               <br />
               <span className="bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-                BEGINS HERE
+                Engine
               </span>
             </h1>
             

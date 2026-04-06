@@ -29,7 +29,7 @@ export function AITutorSection() {
   ];
 
   return (
-    <section className={`py-24 bg-gradient-to-br from-purple-50 via-${accentClass}-50 to-${accentClass}-50`}>
+    <section id="mentorship" className={`py-24 bg-gradient-to-br from-purple-50 via-${accentClass}-50 to-${accentClass}-50`}>
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center px-4 md:px-0">
           {/* Left: Content */}
