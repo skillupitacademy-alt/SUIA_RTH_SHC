@@ -1,3 +1,5 @@
+"use client";
+
 import { BrandProvider } from '../context/BrandContext';
 import { brands } from '../config/brands';
 import { Navigation } from '../components/Navigation';
@@ -24,16 +26,18 @@ export function LandingPage({ brand }: LandingPageProps) {
     <BrandProvider brand={brandConfig}>
       <div className="min-h-screen bg-white overflow-x-hidden">
         <Navigation />
-        <HeroSection />
-        <ProblemStatement />
-        <SolutionSection />
-        <AdaptiveLoop />
-        <AITutorSection />
-        <AssignmentSystem />
-        <RealProjects />
-        <SmartRemediation />
-        <ComparisonTable />
-        <PricingSection />
+        <main>
+          <HeroSection />
+          <ProblemStatement />
+          <SolutionSection />
+          <AdaptiveLoop />
+          <AITutorSection />
+          <AssignmentSystem />
+          <RealProjects />
+          <SmartRemediation />
+          <ComparisonTable />
+          <PricingSection />
+        </main>
         <FinalCTA />
       </div>
     </BrandProvider>

@@ -1,6 +1,7 @@
 import { ArrowRight, Target, Brain } from 'lucide-react';
 import { useBrand } from '../context/BrandContext';
-import dashboardImage from 'figma:asset/c4f1a4d51a48d5b5d3c8d47174d5e5571a3d1273.png';
+import dashboardImage from '../../assets/c4f1a4d51a48d5b5d3c8d47174d5e5571a3d1273.png';
+import skillupDashboardImage from '../../assets/skillup_dashboard.png';
 
 export function HeroSection() {
   const brand = useBrand();
@@ -62,7 +63,7 @@ export function HeroSection() {
           {/* Right Dashboard Mockup */}
           <div className="relative">
             <img 
-              src={dashboardImage} 
+              src={brand.accentColor === 'pink' ? skillupDashboardImage.src : dashboardImage.src} 
               alt={`${brand.name} Dashboard`}
               className="w-full h-auto drop-shadow-2xl"
             />

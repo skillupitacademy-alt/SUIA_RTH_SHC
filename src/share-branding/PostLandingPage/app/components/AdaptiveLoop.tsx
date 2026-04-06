@@ -37,7 +37,7 @@ export function AdaptiveLoop() {
       subtitle: "Achieve learning goals",
       description: "Validate your newly fortified knowledge against fresh, dynamically generated tests",
       color: "bg-blue-50 border-blue-200",
-      iconBg: "bg-blue-500"
+      iconBg: "bg-blue-600"
     }
   ];
 
@@ -85,7 +85,7 @@ export function AdaptiveLoop() {
                 </div>
                 <h3 className="text-lg font-bold text-gray-900 mb-1">{step.title}</h3>
                 <p className="text-sm text-gray-600 mb-3">{step.subtitle}</p>
-                <p className="text-sm text-gray-500 leading-relaxed">{step.description}</p>
+                <p className="text-sm text-gray-600 leading-relaxed">{step.description}</p>
               </div>
             );
           })}

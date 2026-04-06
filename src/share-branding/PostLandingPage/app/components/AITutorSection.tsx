@@ -72,7 +72,7 @@ export function AITutorSection() {
           <div className="bg-white rounded-3xl p-8 shadow-2xl border border-gray-200">
             <div className="space-y-4">
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
                   <span className="text-white font-semibold">You</span>
                 </div>
                 <div className="bg-blue-50 rounded-2xl rounded-tl-none p-4 flex-1">
@@ -106,8 +106,8 @@ export function AITutorSection() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-center gap-2 text-sm text-gray-500 pt-2">
-                <CheckCircle className="w-4 h-4 text-green-500" />
+              <div className="flex items-center justify-center gap-2 text-sm text-gray-600 pt-2">
+                <CheckCircle className="w-4 h-4 text-green-600" />
                 <span>Response generated in 0.8s</span>
               </div>
             </div>

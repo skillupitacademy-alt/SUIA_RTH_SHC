@@ -7,7 +7,7 @@ export function SmartRemediation() {
       status: "failed",
       score: 45,
       badge: "FAILED EXAM",
-      badgeColor: "bg-red-500",
+      badgeColor: "bg-red-100 text-red-700",
       action: "Start Tutorial"
     },
     {
@@ -15,7 +15,7 @@ export function SmartRemediation() {
       status: "weak",
       score: 68,
       badge: "WEAK DIAGNOSTIC",
-      badgeColor: "bg-amber-500",
+      badgeColor: "bg-amber-100 text-amber-800",
       action: "Review Concepts"
     },
     {
@@ -23,7 +23,7 @@ export function SmartRemediation() {
       status: "mastered",
       score: 94,
       badge: "FULLY MASTERED",
-      badgeColor: "bg-emerald-500",
+      badgeColor: "bg-emerald-100 text-emerald-700",
       action: "Advanced Level"
     }
   ];
@@ -51,7 +51,7 @@ export function SmartRemediation() {
                     <div className="flex-1">
                       <h4 className="font-semibold text-gray-900 mb-2">{item.topic}</h4>
                       <div className="flex items-center gap-3">
-                        <span className={`px-3 py-1 ${item.badgeColor} text-white text-xs font-bold rounded-full`}>
+                        <span className={`px-3 py-1 ${item.badgeColor} text-xs font-bold rounded-full`}>
                           {item.badge}
                         </span>
                         <span className="text-sm text-gray-600">Score: {item.score}%</span>
