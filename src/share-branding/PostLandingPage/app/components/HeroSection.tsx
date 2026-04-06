@@ -28,11 +28,11 @@ export function HeroSection() {
             
             <h1 className="text-6xl font-bold leading-tight">
               <span className="bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-                MASTERY
+                {brand.accentColor === 'orange' ? 'ELEVATE' : 'MASTERY'}
               </span>
               <br />
               <span className="bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-                BEGINS HERE
+                {brand.accentColor === 'orange' ? 'YOUR SKILLS' : 'BEGINS HERE'}
               </span>
             </h1>
             

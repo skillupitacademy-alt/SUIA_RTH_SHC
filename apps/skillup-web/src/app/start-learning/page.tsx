@@ -1,6 +1,4 @@
-import { skillupBrand } from '@quiz/config/src/brands';
-
-import { StartLearningPage } from '../../../../../src/share-branding/StartLearningPage';
+import { LandingPage as PostLandingPage } from '../../../../../src/share-branding/PostLandingPage/app/pages/LandingPage';
 
 export const metadata = {
   title: 'Start Learning - SkillUp IT Academy',
@@ -8,5 +6,5 @@ export const metadata = {
 };
 
 export default function SkillUpStartLearningPage() {
-  return <StartLearningPage backHref="/" brand={skillupBrand} />;
+  return <PostLandingPage brand="skillup" />;
 }

@@ -934,7 +934,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
         </section>
 
         {/* Footer */}
-        <motion.footer initial={{ }} whileInView={{ }} viewport={{ once: false }} transition={{ duration: 0.8 }} className="bg-white/80 backdrop-blur-md border-t border-gray-200 font-sans">
+        <motion.footer initial={{}} whileInView={{}} viewport={{ once: false }} transition={{ duration: 0.8 }} className="bg-white/80 backdrop-blur-md border-t border-gray-200 font-sans">
           <div className="max-w-7xl mx-auto px-6 py-16">
             <div className="grid md:grid-cols-4 gap-12">
               <div>
