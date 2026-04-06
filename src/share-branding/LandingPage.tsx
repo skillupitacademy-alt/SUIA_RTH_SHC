@@ -53,7 +53,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
         )}
       </nav>
 
-      <main className="overflow-hidden max-w-[100vw]">
+      <main className="overflow-x-hidden">
 
         {/* Hero Section */}
         <section id="home" className="max-w-7xl mx-auto px-4 sm:px-6 py-12 lg:py-0 min-h-[calc(100vh-80px)] flex flex-col items-center justify-center text-center relative z-10 overflow-hidden">
@@ -133,7 +133,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="relative z-10 w-full flex flex-col items-center"
           >
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl md:leading-tight font-bold mb-16 font-poppins">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl md:leading-tight font-bold mb-16 font-poppins">
               <span style={{ color: config.primaryColor }}>
                 {config.heroHeadingLine1}
               </span>
@@ -205,7 +205,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
         {/* Problem Statement Section */}
         <section id="solutions" className="max-w-7xl mx-auto px-4 md:px-6 py-12 md:py-20">
           <motion.div initial={{ y: 30 }} whileInView={{ y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 font-poppins">Learning Online Feels Confusing and Directionless</h2>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-6 font-poppins">Learning Online Feels Confusing and Directionless</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Traditional online learning platforms leave you overwhelmed and unsure of your progress
             </p>
@@ -238,8 +238,8 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
         {/* Solution Flow Section */}
         <section id="journey" className="max-w-7xl mx-auto px-4 md:px-6 py-12 md:py-20">
           <motion.div initial={{ y: 40 }} whileInView={{ y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="bg-white rounded-3xl p-6 lg:p-12 shadow-2xl">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-6 font-poppins">Your Complete Learning Journey</h2>
-            <p className="text-center text-xl text-gray-600 mb-12">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-6 font-poppins">Your Complete Learning Journey</h2>
+            <p className="text-center text-base sm:text-lg md:text-xl text-gray-600 mb-12">
               A structured system that guides you from beginner to job-ready professional
             </p>
 
@@ -269,7 +269,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
 
         {/* How Learning Works */}
         <section id="process" className="max-w-7xl mx-auto px-4 md:px-6 py-12 md:py-20">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-poppins">How Learning Works</h2>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-4 font-poppins">How Learning Works</h2>
           <p className="text-center text-xl text-gray-600 mb-16">Our 6-Block Learning System — Your Core Differentiation</p>
 
           <motion.div initial={{ y: 40 }} whileInView={{ y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="grid md:grid-cols-2 lg:grid-cols-3 gap-10 lg:gap-6">
@@ -422,7 +422,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-12">
             {/* Assignment System */}
             <motion.div initial={{ x: -50 }} whileInView={{ x: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }}>
-              <h2 className="text-3xl md:text-4xl font-bold mb-6 font-poppins">Assignment System</h2>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-6 font-poppins">Assignment System</h2>
               <p className="text-xl text-gray-600 mb-4 font-bold">Practice Like Real Exams</p>
               <p className="text-gray-600 mb-8 font-medium">
                 Progress from Simple to Expert levels with auto and AI evaluation. Unlock new challenges as you improve.
@@ -526,7 +526,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
         {/* Real Projects Section */}
         <section id="projects" className="max-w-7xl mx-auto px-4 md:px-6 py-12 md:py-20 font-poppins">
           <motion.div initial={{ y: 30 }} whileInView={{ y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">Build Real-World Projects — Not Just Theory</h2>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-6">Build Real-World Projects — Not Just Theory</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto font-medium">
               Apply your knowledge to actual projects that employers value
             </p>
@@ -611,7 +611,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
           {/* Phase A: Real Work Experience UI Grid */}
           <motion.div initial={{ y: 40 }} whileInView={{ y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="mb-12">
             <div className="text-center mb-10">
-              <h3 className="text-3xl md:text-4xl font-bold mb-4 text-gray-900 leading-snug">Work on Real Systems — Not Just Practice</h3>
+              <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 text-gray-900 leading-snug">Work on Real Systems — Not Just Practice</h3>
               <p className="text-gray-600 text-xl font-medium">Learning is based on real-world simulation, not passive content.</p>
             </div>
 
@@ -666,7 +666,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
                   <Award className="w-5 h-5" />
                   <span className="font-bold text-sm tracking-widest uppercase">Verified Experience</span>
                 </div>
-                <h2 className="text-3xl md:text-4xl font-bold mb-6 leading-tight text-white">Graduate as a Pro, Not a Fresher.</h2>
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-6 leading-tight text-white">Graduate as a Pro, Not a Fresher.</h2>
                 <p className="text-lg text-white mb-8 font-medium leading-relaxed">
                   Real project-based experience yields a verifiable credential that bypasses entry-level filters.
                 </p>
@@ -735,7 +735,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
 
         <section id="mastery" className="max-w-7xl mx-auto px-4 md:px-6 py-12 md:py-20 font-poppins">
           <motion.div initial={{ y: 30 }} whileInView={{ y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">The Most Effective Path to Mastery</h2>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-6">The Most Effective Path to Mastery</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Understand how our experience-first model bridges the gap between theory and industry excellence.
             </p>
@@ -751,23 +751,23 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
               {/* Typical Learner Path */}
               <div className="opacity-60 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-500">
                 <h3 className="text-center font-bold text-gray-700 mb-6 border-b border-gray-200 pb-3 uppercase tracking-widest text-[10px]">The Traditional Cycle</h3>
-                <div className="flex justify-between items-center gap-2">
+                <div className="flex justify-between items-center gap-1 sm:gap-2">
                   <div className="text-center flex-1">
-                    <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-50 rounded-xl flex items-center justify-center mb-3 mx-auto border border-gray-100 shadow-sm">
+                    <div className="w-10 h-10 sm:w-16 sm:h-16 bg-gray-50 rounded-xl flex items-center justify-center mb-3 mx-auto border border-gray-100 shadow-sm">
                       <BookOpen className="w-6 h-6 sm:w-8 sm:h-8 text-gray-600" />
                     </div>
                     <p className="text-[10px] sm:text-xs font-bold text-gray-700 uppercase tracking-tighter">Learn Theory</p>
                   </div>
                   <ArrowRight className="w-4 h-4 text-gray-300 hidden sm:block" />
                   <div className="text-center flex-1">
-                    <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-50 rounded-xl flex items-center justify-center mb-3 mx-auto border border-gray-100 shadow-sm">
+                    <div className="w-10 h-10 sm:w-16 sm:h-16 bg-gray-50 rounded-xl flex items-center justify-center mb-3 mx-auto border border-gray-100 shadow-sm">
                       <FileEdit className="w-6 h-6 sm:w-8 sm:h-8 text-gray-600" />
                     </div>
                     <p className="text-[10px] sm:text-xs font-bold text-gray-700 uppercase tracking-tighter">Complete Courses</p>
                   </div>
                   <ArrowRight className="w-4 h-4 text-gray-300 hidden sm:block" />
                   <div className="text-center flex-1">
-                    <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-50 rounded-xl flex items-center justify-center mb-3 mx-auto border border-gray-100 shadow-sm">
+                    <div className="w-10 h-10 sm:w-16 sm:h-16 bg-gray-50 rounded-xl flex items-center justify-center mb-3 mx-auto border border-gray-100 shadow-sm">
                       <GraduationCap className="w-6 h-6 sm:w-8 sm:h-8 text-gray-600" />
                     </div>
                     <p className="text-[10px] sm:text-xs font-bold text-gray-700 uppercase tracking-tighter">Apply as Fresher</p>
@@ -837,9 +837,9 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
               </p>
             </motion.div>
 
-            <motion.div initial={{ y: 40 }} whileInView={{ y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto px-4 md:px-0">
+            <motion.div initial={{ y: 40 }} whileInView={{ y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="grid sm:grid-cols-2 lg:grid-cols-3 gap-10 sm:gap-8 max-w-6xl mx-auto px-4 md:px-0 pt-6">
               {/* Free Plan */}
-              <div className="relative bg-white rounded-3xl p-8 border-2 border-gray-200 shadow-2xl scale-[1.02] hover:scale-105 hover:-translate-y-1 transition-all duration-300">
+              <div className="relative bg-white rounded-3xl p-8 border-2 border-gray-200 shadow-2xl sm:scale-[1.02] hover:scale-105 hover:-translate-y-1 transition-all duration-300">
                 <div className="text-center mb-6">
                   <div className="inline-flex w-16 h-16 bg-gradient-to-br from-gray-500 to-gray-600 rounded-2xl items-center justify-center mb-4">
                     <Star className="w-8 h-8 text-white" />
@@ -865,7 +865,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
               </div>
 
               {/* Pro Plan */}
-              <div className="relative bg-white rounded-3xl p-8 border-2 shadow-[0_30px_60px_rgba(0,0,0,0.2)] scale-105 hover:scale-[1.08] hover:-translate-y-1 transition-all duration-300" style={{ borderColor: config.primaryColor }}>
+              <div className="relative bg-white rounded-3xl p-8 border-2 shadow-[0_30px_60px_rgba(0,0,0,0.2)] sm:scale-105 hover:sm:scale-[1.08] hover:-translate-y-1 transition-all duration-300" style={{ borderColor: config.primaryColor }}>
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-2 text-white text-sm font-bold rounded-full" style={{ backgroundColor: config.primaryColor }}>
                   MOST POPULAR
                 </div>
@@ -894,7 +894,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
               </div>
 
               {/* Enterprise Plan */}
-              <div className="relative bg-white rounded-3xl p-8 border-2 border-gray-200 shadow-2xl scale-[1.02] hover:scale-105 hover:-translate-y-1 transition-all duration-300">
+              <div className="relative bg-white rounded-3xl p-8 border-2 border-gray-200 shadow-2xl sm:scale-[1.02] hover:scale-105 hover:-translate-y-1 transition-all duration-300">
                 <div className="text-center mb-6">
                   <div className="inline-flex w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl items-center justify-center mb-4">
                     <Award className="w-8 h-8 text-white" />
@@ -931,7 +931,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
         {/* Testimonials Section */}
         <section id="stories" className="max-w-7xl mx-auto px-4 md:px-6 py-12 md:py-20 font-poppins">
           <motion.div initial={{ y: 30 }} whileInView={{ y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">Student Success Stories</h2>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-6">Student Success Stories</h2>
             <p className="text-xl text-gray-600 font-medium">Real results from real learners</p>
           </motion.div>
 

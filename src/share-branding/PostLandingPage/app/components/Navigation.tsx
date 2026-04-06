@@ -24,7 +24,7 @@ export function Navigation() {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden lg:flex items-center gap-8">
             <a href="#paths" className={`text-gray-600 hover:text-${accentClass}-600 transition-colors font-medium`}>
               Paths
             </a>
@@ -44,7 +44,7 @@ export function Navigation() {
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+            className="lg:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label="Toggle Navigation Menu"
           >
@@ -54,7 +54,7 @@ export function Navigation() {
 
         {/* Mobile Navigation Dropdown */}
         {isMobileMenuOpen && (
-          <div className="md:hidden pt-4 pb-2 border-t border-gray-200 mt-4 flex flex-col gap-4 animate-in slide-in-from-top-2 duration-200">
+          <div className="lg:hidden pt-4 pb-2 border-t border-gray-200 mt-4 flex flex-col gap-4 animate-in slide-in-from-top-2 duration-200">
             <a href="#paths" onClick={() => setIsMobileMenuOpen(false)} className={`text-gray-600 hover:text-${accentClass}-600 font-medium px-2 py-1`}>
               Paths
             </a>

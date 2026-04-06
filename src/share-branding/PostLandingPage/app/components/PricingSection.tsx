@@ -78,7 +78,7 @@ export function PricingSection() {
           </p>
         </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto px-4 md:px-0">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-10 sm:gap-8 max-w-6xl mx-auto px-4 md:px-0 pt-6">
           {plans.map((plan, idx) => {
             const Icon = plan.icon;
             return (
@@ -86,12 +86,12 @@ export function PricingSection() {
                 key={idx} 
                 className={`relative bg-white rounded-3xl p-8 border-2 ${
                   plan.popular 
-                    ? `border-${accentClass}-400 shadow-[0_30px_60px_rgba(0,0,0,0.2)] scale-105 hover:scale-[1.08]` 
-                    : 'border-gray-200 shadow-2xl scale-[1.02] hover:scale-105'
+                    ? `border-${accentClass}-400 shadow-[0_30px_60px_rgba(0,0,0,0.2)] sm:scale-105 hover:sm:scale-[1.08]` 
+                    : 'border-gray-200 shadow-2xl sm:scale-[1.02] hover:scale-105'
                 } hover:-translate-y-1 transition-all duration-300`}
               >
                 {plan.popular && (
-                  <div className={`absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-2 bg-gradient-to-r ${brand.gradientFrom} ${brand.gradientFrom} text-white text-sm font-bold rounded-full`}>
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-2 text-white text-sm font-bold rounded-full" style={{ backgroundColor: brand.primaryColor }}>
                     MOST POPULAR
                   </div>
                 )}
@@ -124,9 +124,10 @@ export function PricingSection() {
                 <button 
                   className={`w-full py-4 rounded-xl font-semibold transition-all ${
                     plan.popular
-                      ? `bg-gradient-to-r ${brand.gradientFrom} ${brand.gradientFrom} text-white hover:shadow-lg hover:scale-105`
+                      ? 'text-white hover:shadow-lg hover:scale-105'
                       : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
                   }`}
+                  style={plan.popular ? { backgroundColor: brand.primaryColor } : undefined}
                 >
                   {plan.price === "Custom" ? "Contact Sales" : "Get Started"}
                 </button>

@@ -113,7 +113,7 @@ export function ComparisonTable() {
                   <th className="py-6 px-6 text-center">
                     <div className="flex flex-col items-center gap-2">
                       <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
-                        <span className="text-red-600 font-bold text-xs">YT</span>
+                        <span className="text-red-800 font-bold text-xs">YT</span>
                       </div>
                       <span className="font-bold text-gray-700">YouTube</span>
                     </div>
@@ -129,7 +129,7 @@ export function ComparisonTable() {
                   <th className="py-6 px-6 text-center">
                     <div className="flex flex-col items-center gap-2">
                       <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                        <span className="text-blue-600 font-bold text-xs">CR</span>
+                        <span className="text-blue-800 font-bold text-xs">CR</span>
                       </div>
                       <span className="font-bold text-gray-700">Coursera</span>
                     </div>
@@ -155,7 +155,7 @@ export function ComparisonTable() {
                       ) : (
                         <div className="flex justify-center">
                           <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                            <X className="w-5 h-5 text-gray-500" strokeWidth={2} />
+                            <X className="w-5 h-5 text-gray-700" strokeWidth={2} />
                           </div>
                         </div>
                       )}
@@ -170,7 +170,7 @@ export function ComparisonTable() {
                       ) : (
                         <div className="flex justify-center">
                           <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                            <X className="w-5 h-5 text-gray-500" strokeWidth={2} />
+                            <X className="w-5 h-5 text-gray-700" strokeWidth={2} />
                           </div>
                         </div>
                       )}
@@ -185,7 +185,7 @@ export function ComparisonTable() {
                       ) : (
                         <div className="flex justify-center">
                           <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                            <X className="w-5 h-5 text-gray-500" strokeWidth={2} />
+                            <X className="w-5 h-5 text-gray-700" strokeWidth={2} />
                           </div>
                         </div>
                       )}
@@ -200,7 +200,7 @@ export function ComparisonTable() {
                       ) : (
                         <div className="flex justify-center">
                           <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                            <X className="w-5 h-5 text-gray-500" strokeWidth={2} />
+                            <X className="w-5 h-5 text-gray-700" strokeWidth={2} />
                           </div>
                         </div>
                       )}
