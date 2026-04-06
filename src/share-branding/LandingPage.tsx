@@ -270,7 +270,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
         {/* How Learning Works */}
         <section id="process" className="max-w-7xl mx-auto px-4 md:px-6 py-12 md:py-20">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-poppins">How Learning Works</h2>
-          <p className="text-center text-xl text-gray-600 mb-16">Our 6-Block Learning System â€” Your Core Differentiation</p>
+          <p className="text-center text-xl text-gray-600 mb-16">Our 6-Block Learning System — Your Core Differentiation</p>
 
           <motion.div initial={{ y: 40 }} whileInView={{ y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="grid md:grid-cols-2 lg:grid-cols-3 gap-10 lg:gap-6">
             {/* Layman Card */}
@@ -284,7 +284,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
                 Start with simple, everyday language that makes complex concepts crystal clear and relatable.
               </p>
               <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition" style={{ color: config.primaryColor }}>
-                â†’
+                →
               </div>
             </div>
 
@@ -299,7 +299,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
                 See concepts in action through practical examples from real-world scenarios you can relate to.
               </p>
               <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition" style={{ color: config.primaryColor }}>
-                â†’
+                →
               </div>
             </div>
 
@@ -314,7 +314,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
                 Deep dive into the theory, formulas, and technical details with structured explanations.
               </p>
               <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition" style={{ color: config.primaryColor }}>
-                â†’
+                →
               </div>
             </div>
 
@@ -329,7 +329,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
                 Apply what you learned with hands-on coding exercises and real implementation examples.
               </p>
               <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition" style={{ color: config.primaryColor }}>
-                â†’
+                →
               </div>
             </div>
 
@@ -344,7 +344,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
                 Get instant, context-aware help from our {config.tutorLabel.toLowerCase()} that understands exactly what you're learning.
               </p>
               <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition" style={{ color: config.primaryColor }}>
-                â†’
+                →
               </div>
             </div>
 
@@ -359,7 +359,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
                 Test your knowledge with difficulty-based assignments and real-world projects that solidify your understanding.
               </p>
               <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition" style={{ color: config.primaryColor }}>
-                â†’
+                →
               </div>
             </div>
           </motion.div>
@@ -394,7 +394,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
                 <div className="bg-white rounded-xl p-6 mb-4">
                   <div className="flex items-start gap-3 mb-4">
                     <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 text-xs text-purple-900">
-                      ðŸ‘¤
+                      👤
                     </div>
                     <div className="flex-1">
                       <p className="text-gray-800 text-sm font-bold">Can you explain how recursion works in this context?</p>
@@ -438,25 +438,25 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
                 <div className="grid grid-cols-2 md:flex md:justify-between items-end gap-6 md:gap-0">
                   <div className="text-center">
                     <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-pink-400 to-pink-600 rounded-2xl flex items-center justify-center mb-3 mx-auto shadow-2xl -translate-y-1 hover:scale-110 hover:-translate-y-2 hover:shadow-[0_30px_60px_rgba(0,0,0,0.2)] transition-all duration-300 cursor-pointer">
-                      <span className="text-2xl sm:text-3xl">ðŸŽ¯</span>
+                      <span className="text-2xl sm:text-3xl">🎯</span>
                     </div>
                     <p className="text-xs sm:text-sm font-bold">Expert</p>
                   </div>
                   <div className="text-center">
                     <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl flex items-center justify-center mb-3 mx-auto shadow-2xl -translate-y-1 hover:scale-110 hover:-translate-y-2 hover:shadow-[0_30px_60px_rgba(0,0,0,0.2)] transition-all duration-300 cursor-pointer">
-                      <span className="text-2xl sm:text-3xl">âš¡</span>
+                      <span className="text-2xl sm:text-3xl">⚡</span>
                     </div>
                     <p className="text-xs sm:text-sm font-bold">Intermediate</p>
                   </div>
                   <div className="text-center">
                     <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-2xl flex items-center justify-center mb-3 mx-auto shadow-2xl -translate-y-1 hover:scale-110 hover:-translate-y-2 hover:shadow-[0_30px_60px_rgba(0,0,0,0.2)] transition-all duration-300 cursor-pointer">
-                      <span className="text-2xl sm:text-3xl">â­</span>
+                      <span className="text-2xl sm:text-3xl">⭐</span>
                     </div>
                     <p className="text-xs sm:text-sm font-bold">Mixed</p>
                   </div>
                   <div className="text-center">
                     <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-gray-400 to-gray-600 rounded-2xl flex items-center justify-center mb-3 mx-auto shadow-2xl -translate-y-1 hover:scale-110 hover:-translate-y-2 hover:shadow-[0_30px_60px_rgba(0,0,0,0.2)] transition-all duration-300 cursor-pointer">
-                      <span className="text-2xl sm:text-3xl">ðŸŽ–ï¸</span>
+                      <span className="text-2xl sm:text-3xl">🎖️</span>
                     </div>
                     <p className="text-xs sm:text-sm font-bold">Simple</p>
                   </div>
@@ -491,7 +491,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
               <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-2xl border-t border-gray-100 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] transition-all duration-300">
                 <h2 className="text-3xl font-bold mb-4 font-poppins">Why We Are Different</h2>
                 <p className="text-gray-600 mb-6 font-medium">
-                  We guide you step-by-step like a real teacher â€” not random videos or passive courses.
+                  We guide you step-by-step like a real teacher — not random videos or passive courses.
                 </p>
 
                 <div className="space-y-3">
@@ -504,10 +504,10 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
                     </div>
                     <div className="flex gap-3 sm:gap-8 shrink-0">
                       <div className="w-10 sm:w-16 h-8 bg-red-50 rounded flex items-center justify-center shrink-0">
-                        <span className="text-lg">ðŸ“º</span>
+                        <span className="text-lg">📺</span>
                       </div>
                       <div className="w-10 sm:w-16 h-8 bg-orange-50 rounded flex items-center justify-center shrink-0">
-                        <span className="text-lg">ðŸŽ“</span>
+                        <span className="text-lg">🎓</span>
                       </div>
                     </div>
                   </div>
@@ -526,7 +526,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
         {/* Real Projects Section */}
         <section id="projects" className="max-w-7xl mx-auto px-4 md:px-6 py-12 md:py-20 font-poppins">
           <motion.div initial={{ y: 30 }} whileInView={{ y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">Build Real-World Projects â€” Not Just Theory</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-6">Build Real-World Projects — Not Just Theory</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto font-medium">
               Apply your knowledge to actual projects that employers value
             </p>
@@ -557,7 +557,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-5xl font-bold mb-6 font-poppins text-gray-900">The Experience Pro Journey</h2>
               <p className="text-xl text-gray-600 max-w-3xl mx-auto font-medium">
-                You don't just study concepts â€” you work like a developer
+                You don't just study concepts — you work like a developer
               </p>
             </div>
 
@@ -611,7 +611,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
           {/* Phase A: Real Work Experience UI Grid */}
           <motion.div initial={{ y: 40 }} whileInView={{ y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="mb-12">
             <div className="text-center mb-10">
-              <h3 className="text-3xl md:text-4xl font-bold mb-4 text-gray-900 leading-snug">Work on Real Systems â€” Not Just Practice</h3>
+              <h3 className="text-3xl md:text-4xl font-bold mb-4 text-gray-900 leading-snug">Work on Real Systems — Not Just Practice</h3>
               <p className="text-gray-600 text-xl font-medium">Learning is based on real-world simulation, not passive content.</p>
             </div>
 
@@ -716,7 +716,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
 
                 <div className="bg-blue-50 text-blue-800 text-xs font-bold px-4 py-3 rounded-lg mb-6 flex items-center gap-2 border border-blue-100">
                   <Target className="w-4 h-4" />
-                  Not just a certificate â€” proof of real experience.
+                  Not just a certificate — proof of real experience.
                 </div>
 
                 <div className="flex justify-between items-end pt-6 border-t border-gray-100">
@@ -818,7 +818,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
             </div>
 
             <div className="mt-12 pt-6 border-t border-gray-100 text-center font-bold text-base sm:text-lg text-gray-800">
-              <span className="text-[#d03f00]">"</span>You don't start your career as a fresher â€” you start with experience.<span className="text-[#d03f00]">"</span>
+              <span className="text-[#d03f00]">"</span>You don't start your career as a fresher — you start with experience.<span className="text-[#d03f00]">"</span>
             </div>
           </motion.div>
         </section>
@@ -835,7 +835,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
             <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-2xl border-2 border-gray-200 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.2)] transition-all duration-300 relative">
               <h3 className="text-2xl font-bold mb-2">Free</h3>
               <p className="text-gray-600 mb-6">Get started with basic features</p>
-              <div className="text-5xl font-bold mb-6">â‚¹ 0<span className="text-lg text-gray-600">/mo</span></div>
+              <div className="text-5xl font-bold mb-6">₹ 0<span className="text-lg text-gray-600">/mo</span></div>
 
               <ul className="space-y-3 mb-8">
                 <PricingFeature text="Access to basic tutorials" included={true} />
@@ -858,7 +858,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
               </div>
               <h3 className="text-2xl font-bold mb-2">Premium</h3>
               <p className="text-purple-100 mb-6 font-medium">Full access to all features</p>
-              <div className="text-5xl font-bold mb-6 font-poppins">â‚¹ 1000<span className="text-lg text-purple-100">/mo</span></div>
+              <div className="text-5xl font-bold mb-6 font-poppins">₹ 1000<span className="text-lg text-purple-100">/mo</span></div>
 
               <ul className="space-y-3 mb-8">
                 <PricingFeature text="Unlimited tutorial access" included={true} white={true} />
@@ -884,19 +884,19 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10 lg:gap-8">
             <TestimonialCard
               direction="left" name="Sarah J." role="Software Engineer @ Google"
-              image="ðŸ‘©â€ðŸ’»"
+              image="👩‍💻"
               text="RealTutorialHub's structured approach helped me land my dream job. The AI tutor was like having a personal mentor 24/7."
               rating={5}
             />
             <TestimonialCard
               direction="up" name="David K." role="Data Scientist"
-              image="ðŸ‘¨â€ðŸ’¼"
+              image="👨‍💼"
               text="The remediation system identified my weak areas and created a perfect study plan. I improved faster than ever before."
               rating={5}
             />
             <TestimonialCard
               direction="right" name="Elena R." role="Full Stack Developer"
-              image="ðŸ‘©â€ðŸŽ“"
+              image="👩‍🎓"
               text="Real-world projects made all the difference. I built a portfolio that impressed every interviewer I met."
               rating={5}
             />
@@ -1018,7 +1018,7 @@ function FlowCard({ icon, title, color, colorStyle, direction = 'up' }: { icon: 
 }
 
 function Arrow({ className }: { className?: string }) {
-  return <div aria-hidden="true" className={className || "text-4xl text-purple-600 hidden lg:block opacity-80"}>â†’</div>;
+  return <div aria-hidden="true" className={className || "text-4xl text-purple-600 hidden lg:block opacity-80"}>→</div>;
 }
 
 function FeatureItem({ icon, text }: { icon: React.ReactNode; text: string }) {

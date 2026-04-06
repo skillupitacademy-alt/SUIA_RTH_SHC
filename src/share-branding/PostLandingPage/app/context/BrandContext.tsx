@@ -1,5 +1,3 @@
-"use client";
-
 import { createContext, useContext, ReactNode } from 'react';
 import { BrandConfig } from '../config/brands';
 

@@ -39,7 +39,7 @@ export function ProblemStatement() {
           <h2 className="text-5xl font-bold text-gray-900 mb-6">
             One-Size-Fits-All Learning Doesn't Work
           </h2>
-          <p className="text-xl text-gray-800 max-w-3xl mx-auto">
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Traditional platforms treat every learner the same, ignoring individual knowledge gaps and learning pace
           </p>
         </div>
@@ -55,7 +55,7 @@ export function ProblemStatement() {
               </div>
               <ul className="space-y-3">
                 {problem.issues.map((issue, i) => (
-                  <li key={i} className="flex items-start gap-3 text-gray-800">
+                  <li key={i} className="flex items-start gap-3 text-gray-600">
                     <X className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
                     <span>{issue}</span>
                   </li>

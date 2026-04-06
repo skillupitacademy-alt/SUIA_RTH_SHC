@@ -1,5 +1,3 @@
-"use client";
-
 import { BrandProvider } from '../context/BrandContext';
 import { brands } from '../config/brands';
 import { Navigation } from '../components/Navigation';
@@ -26,7 +24,6 @@ export function LandingPage({ brand }: LandingPageProps) {
     <BrandProvider brand={brandConfig}>
       <div className="min-h-screen bg-white overflow-x-hidden">
         <Navigation />
-        <main>
         <HeroSection />
         <ProblemStatement />
         <SolutionSection />
@@ -37,7 +34,6 @@ export function LandingPage({ brand }: LandingPageProps) {
         <SmartRemediation />
         <ComparisonTable />
         <PricingSection />
-        </main>
         <FinalCTA />
       </div>
     </BrandProvider>

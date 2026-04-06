@@ -73,7 +73,7 @@ export function PricingSection() {
           <h2 className="text-5xl font-bold text-gray-900 mb-6">
             Choose Your Plan
           </h2>
-          <p className="text-xl text-gray-800 max-w-3xl mx-auto">
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Start free and upgrade when you're ready. No hidden fees, cancel anytime.
           </p>
         </div>
@@ -101,12 +101,12 @@ export function PricingSection() {
                     <Icon className="w-8 h-8 text-white" />
                   </div>
                   <h3 className="text-2xl font-bold text-gray-900 mb-2">{plan.name}</h3>
-                  <p className="text-gray-800 text-sm mb-4">{plan.description}</p>
+                  <p className="text-gray-600 text-sm mb-4">{plan.description}</p>
                   <div className="flex items-baseline justify-center gap-2">
                     <span className={`text-5xl font-bold bg-gradient-to-br ${plan.gradient} bg-clip-text text-transparent`}>
                       {plan.price}
                     </span>
-                    <span className="text-gray-800 text-sm">/{plan.period}</span>
+                    <span className="text-gray-500 text-sm">/{plan.period}</span>
                   </div>
                 </div>
 
@@ -114,7 +114,7 @@ export function PricingSection() {
                   {plan.features.map((feature, i) => (
                     <li key={i} className="flex items-start gap-3">
                       <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <Check className="w-3 h-3 text-green-700" strokeWidth={3} />
+                        <Check className="w-3 h-3 text-green-600" strokeWidth={3} />
                       </div>
                       <span className="text-gray-700 text-sm">{feature}</span>
                     </li>
@@ -136,7 +136,7 @@ export function PricingSection() {
         </div>
 
         <div className="mt-12 text-center">
-          <p className="text-gray-800">
+          <p className="text-gray-600">
             All plans include a <span className="font-semibold text-gray-900">14-day money-back guarantee</span>
           </p>
         </div>

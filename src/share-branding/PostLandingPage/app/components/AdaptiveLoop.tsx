@@ -13,7 +13,7 @@ export function AdaptiveLoop() {
       subtitle: "Analyze knowledge gaps",
       description: "Take rigorous timed assessments to map your exact bounds in the Exam Engine",
       color: `bg-${accentClass}-50 border-${accentClass}-200`,
-      iconBg: `bg-${accentClass}-600`
+      iconBg: `bg-${accentClass}-500`
     },
     {
       icon: TrendingUp,
@@ -21,7 +21,7 @@ export function AdaptiveLoop() {
       subtitle: "Identify strengths & weaknesses",
       description: "Internal algorithms instantly compute and isolate the specific topics you failed",
       color: "bg-green-50 border-green-200",
-      iconBg: "bg-green-600"
+      iconBg: "bg-green-500"
     },
     {
       icon: MessageSquare,
@@ -29,7 +29,7 @@ export function AdaptiveLoop() {
       subtitle: "Personalized AI guidance",
       description: "Transition natively into the Tutorial Engine focused explicitly on those weak topics",
       color: "bg-purple-50 border-purple-200",
-      iconBg: "bg-purple-600"
+      iconBg: "bg-purple-500"
     },
     {
       icon: Shield,
@@ -37,7 +37,7 @@ export function AdaptiveLoop() {
       subtitle: "Achieve learning goals",
       description: "Validate your newly fortified knowledge against fresh, dynamically generated tests",
       color: "bg-blue-50 border-blue-200",
-      iconBg: "bg-blue-600"
+      iconBg: "bg-blue-500"
     }
   ];
 
@@ -69,7 +69,7 @@ export function AdaptiveLoop() {
           <h2 className="text-5xl font-bold text-gray-900 mb-6">
             THE ADAPTIVE LOOP
           </h2>
-          <p className="text-xl text-gray-800 max-w-3xl mx-auto">
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             A continuous cycle of assessment, learning, and mastery powered by AI
           </p>
         </div>
@@ -84,8 +84,8 @@ export function AdaptiveLoop() {
                   <Icon className="w-8 h-8 text-white" />
                 </div>
                 <h3 className="text-lg font-bold text-gray-900 mb-1">{step.title}</h3>
-                <p className="text-sm text-gray-800 mb-3">{step.subtitle}</p>
-                <p className="text-sm text-gray-700 leading-relaxed">{step.description}</p>
+                <p className="text-sm text-gray-600 mb-3">{step.subtitle}</p>
+                <p className="text-sm text-gray-500 leading-relaxed">{step.description}</p>
               </div>
             );
           })}

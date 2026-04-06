@@ -15,7 +15,7 @@ export function FinalCTA() {
   return (
     <>
       {/* Stats Section */}
-      <section aria-label="Platform Statistics" className={`py-16 bg-gradient-to-r ${brand.gradientFrom} ${brand.gradientTo}`}>
+      <section className={`py-16 bg-gradient-to-r ${brand.gradientFrom} ${brand.gradientTo}`}>
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {stats.map((stat, idx) => (
@@ -33,7 +33,7 @@ export function FinalCTA() {
       </section>
 
       {/* Final CTA */}
-      <section aria-label="Call to Action" className="py-24 bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 text-white relative overflow-hidden">
+      <section className="py-24 bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 text-white relative overflow-hidden">
         {/* Decorative Elements */}
         <div className="absolute top-20 right-20 w-64 h-64 bg-orange-500/20 rounded-full blur-3xl"></div>
         <div className="absolute bottom-20 left-20 w-64 h-64 bg-blue-500/20 rounded-full blur-3xl"></div>
@@ -101,7 +101,7 @@ export function FinalCTA() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
-              <h3 className="text-white font-bold mb-4">Product</h3>
+              <h4 className="text-white font-bold mb-4">Product</h4>
               <ul className="space-y-2 text-gray-400 text-sm">
                 <li><a href="#" className="hover:text-orange-400 transition-colors">Features</a></li>
                 <li><a href="#" className="hover:text-orange-400 transition-colors">Pricing</a></li>
@@ -109,7 +109,7 @@ export function FinalCTA() {
               </ul>
             </div>
             <div>
-              <h3 className="text-white font-bold mb-4">Learning</h3>
+              <h4 className="text-white font-bold mb-4">Learning</h4>
               <ul className="space-y-2 text-gray-400 text-sm">
                 <li><a href="#" className="hover:text-orange-400 transition-colors">Exam Engine</a></li>
                 <li><a href="#" className="hover:text-orange-400 transition-colors">Tutorial Engine</a></li>
@@ -117,7 +117,7 @@ export function FinalCTA() {
               </ul>
             </div>
             <div>
-              <h3 className="text-white font-bold mb-4">Company</h3>
+              <h4 className="text-white font-bold mb-4">Company</h4>
               <ul className="space-y-2 text-gray-400 text-sm">
                 <li><a href="#" className="hover:text-orange-400 transition-colors">About</a></li>
                 <li><a href="#" className="hover:text-orange-400 transition-colors">Blog</a></li>
@@ -125,7 +125,7 @@ export function FinalCTA() {
               </ul>
             </div>
             <div>
-              <h3 className="text-white font-bold mb-4">Support</h3>
+              <h4 className="text-white font-bold mb-4">Support</h4>
               <ul className="space-y-2 text-gray-400 text-sm">
                 <li><a href="#" className="hover:text-orange-400 transition-colors">Help Center</a></li>
                 <li><a href="#" className="hover:text-orange-400 transition-colors">Contact</a></li>

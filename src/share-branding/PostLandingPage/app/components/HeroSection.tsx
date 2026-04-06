@@ -1,7 +1,6 @@
 import { ArrowRight, Target, Brain } from 'lucide-react';
 import { useBrand } from '../context/BrandContext';
-import dashboardImage from '../../assets/c4f1a4d51a48d5b5d3c8d47174d5e5571a3d1273.png';
-import skillupDashboardImage from '../../assets/skillup_dashboard.png';
+import dashboardImage from 'figma:asset/c4f1a4d51a48d5b5d3c8d47174d5e5571a3d1273.png';
 
 export function HeroSection() {
   const brand = useBrand();
@@ -28,19 +27,19 @@ export function HeroSection() {
             
             <h1 className="text-6xl font-bold leading-tight">
               <span className="bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-                {brand.accentColor === 'orange' ? 'ELEVATE' : 'MASTERY'}
+                MASTERY
               </span>
               <br />
               <span className="bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-                {brand.accentColor === 'orange' ? 'YOUR SKILLS' : 'BEGINS HERE'}
+                BEGINS HERE
               </span>
             </h1>
             
-            <p className="text-xl text-gray-800 leading-relaxed">
+            <p className="text-xl text-gray-600 leading-relaxed">
               Choose Your Learning Engine: Exam or Tutorial?
             </p>
             
-            <p className="text-lg text-gray-800 leading-relaxed">
+            <p className="text-lg text-gray-500 leading-relaxed">
               Take strict diagnostic assessments in the Exam Engine to identify your exact knowledge bounds, 
               then jump into guided tutorial sessions with your {brand.tutorLabel}.
             </p>
@@ -63,7 +62,7 @@ export function HeroSection() {
           {/* Right Dashboard Mockup */}
           <div className="relative">
             <img 
-              src={brand.accentColor === 'pink' ? skillupDashboardImage.src : dashboardImage.src} 
+              src={dashboardImage} 
               alt={`${brand.name} Dashboard`}
               className="w-full h-auto drop-shadow-2xl"
             />

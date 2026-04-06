@@ -55,7 +55,7 @@ export function SolutionSection() {
           <h2 className="text-5xl font-bold text-gray-900 mb-6">
             The 6-Block Learning System
           </h2>
-          <p className="text-xl text-gray-800 max-w-3xl mx-auto">
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Every topic is taught through a comprehensive, structured approach designed for deep understanding and lasting retention
           </p>
         </div>
@@ -77,7 +77,7 @@ export function SolutionSection() {
                 <h3 className="text-xl font-bold text-gray-900 mb-3">
                   {block.title}
                 </h3>
-                <p className="text-gray-800 leading-relaxed">
+                <p className="text-gray-600 leading-relaxed">
                   {block.description}
                 </p>
               </div>
