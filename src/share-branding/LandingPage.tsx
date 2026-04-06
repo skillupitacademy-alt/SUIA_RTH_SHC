@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { ArrowRight, Briefcase, FileCheck, Check, X, BookOpen, Code, Brain, FileEdit, Lightbulb, GraduationCap, AlertCircle, Target, TrendingUp, Rocket, Award, MessageSquare, Zap, FolderKanban, Users, Star, Menu } from 'lucide-react';
@@ -1018,7 +1018,7 @@ function FlowCard({ icon, title, color, colorStyle, direction = 'up' }: { icon: 
 }
 
 function Arrow({ className }: { className?: string }) {
-  return <div className={className || "text-4xl text-purple-300 hidden lg:block opacity-50"}>â†’</div>;
+  return <div aria-hidden="true" className={className || "text-4xl text-purple-600 hidden lg:block opacity-80"}>â†’</div>;
 }
 
 function FeatureItem({ icon, text }: { icon: React.ReactNode; text: string }) {
