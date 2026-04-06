@@ -67,22 +67,22 @@ export function RealProjects() {
             <Briefcase className={`w-4 h-4 text-${accentClass}-400`} />
             <span className={`text-sm text-${accentClass}-300`}>Real-World Experience</span>
           </div>
-          <h2 className="text-5xl font-bold mb-6">
+          <h2 className="text-3xl md:text-5xl font-bold mb-4 md:mb-6 leading-tight">
             Build Portfolio-Ready Projects
           </h2>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+          <p className="text-base md:text-xl text-gray-300 max-w-3xl mx-auto px-4">
             Move beyond toy examples. Create production-quality applications that demonstrate 
             your skills to employers and clients.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto px-4 md:px-0">
           {projects.map((project, idx) => {
             const Icon = project.icon;
             return (
               <div 
                 key={idx} 
-                className="group bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:bg-white/10 hover:border-orange-400/50 transition-all"
+                className="group bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 shadow-[0_15px_30px_rgba(0,0,0,0.3)] scale-[1.01] hover:shadow-2xl hover:bg-white/10 hover:border-orange-400/50 hover:scale-105 hover:-translate-y-2 transition-all duration-300"
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className={`w-14 h-14 bg-gradient-to-br ${brand.gradientFrom} ${brand.gradientTo} rounded-xl flex items-center justify-center`}>
@@ -117,7 +117,7 @@ export function RealProjects() {
         </div>
 
         <div className="mt-12 text-center">
-          <button className={`px-8 py-4 bg-gradient-to-r ${brand.gradientFrom} ${brand.gradientTo} text-white rounded-xl font-semibold hover:shadow-2xl hover:scale-105 transition-all`}>
+          <button className={`px-6 sm:px-8 py-4 bg-gradient-to-r ${brand.gradientFrom} ${brand.gradientTo} text-white rounded-xl font-semibold shadow-2xl scale-[1.01] hover:scale-105 hover:-translate-y-1 transition-all duration-300`}>
             Explore All Projects
           </button>
         </div>

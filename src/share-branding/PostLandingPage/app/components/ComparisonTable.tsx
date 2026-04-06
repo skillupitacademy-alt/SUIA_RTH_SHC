@@ -86,10 +86,10 @@ export function ComparisonTable() {
             <span className="w-2 h-2 bg-purple-500 rounded-full"></span>
             <span className="text-sm text-purple-700">Platform Comparison</span>
           </div>
-          <h2 className="text-5xl font-bold text-gray-900 mb-6">
+          <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4 md:mb-6 leading-tight">
             Why {brand.name} Stands Apart
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-base md:text-xl text-gray-600 max-w-3xl mx-auto px-4">
             See how our AI-powered, adaptive learning platform compares to traditional online learning solutions
           </p>
         </div>
@@ -155,7 +155,7 @@ export function ComparisonTable() {
                       ) : (
                         <div className="flex justify-center">
                           <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                            <X className="w-5 h-5 text-gray-400" strokeWidth={2} />
+                            <X className="w-5 h-5 text-gray-500" strokeWidth={2} />
                           </div>
                         </div>
                       )}
@@ -170,7 +170,7 @@ export function ComparisonTable() {
                       ) : (
                         <div className="flex justify-center">
                           <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                            <X className="w-5 h-5 text-gray-400" strokeWidth={2} />
+                            <X className="w-5 h-5 text-gray-500" strokeWidth={2} />
                           </div>
                         </div>
                       )}
@@ -185,7 +185,7 @@ export function ComparisonTable() {
                       ) : (
                         <div className="flex justify-center">
                           <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                            <X className="w-5 h-5 text-gray-400" strokeWidth={2} />
+                            <X className="w-5 h-5 text-gray-500" strokeWidth={2} />
                           </div>
                         </div>
                       )}
@@ -200,7 +200,7 @@ export function ComparisonTable() {
                       ) : (
                         <div className="flex justify-center">
                           <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                            <X className="w-5 h-5 text-gray-400" strokeWidth={2} />
+                            <X className="w-5 h-5 text-gray-500" strokeWidth={2} />
                           </div>
                         </div>
                       )}
@@ -213,7 +213,7 @@ export function ComparisonTable() {
         </div>
 
         <div className="mt-12 text-center">
-          <button className="px-8 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-semibold hover:shadow-2xl hover:scale-105 transition-all">
+          <button className={`px-6 sm:px-8 py-4 bg-gradient-to-r ${brand.gradientFrom} ${brand.gradientTo} text-white rounded-xl font-semibold shadow-2xl scale-[1.01] hover:scale-105 hover:-translate-y-1 transition-all duration-300`}>
             Start Your Journey Today
           </button>
         </div>

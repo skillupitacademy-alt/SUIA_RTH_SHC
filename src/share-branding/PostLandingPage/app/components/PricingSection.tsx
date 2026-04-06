@@ -70,15 +70,15 @@ export function PricingSection() {
             <Star className="w-4 h-4 text-orange-600" />
             <span className="text-sm text-orange-700">Simple, Transparent Pricing</span>
           </div>
-          <h2 className="text-5xl font-bold text-gray-900 mb-6">
+          <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4 md:mb-6 leading-tight">
             Choose Your Plan
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-base md:text-xl text-gray-600 max-w-3xl mx-auto px-4">
             Start free and upgrade when you're ready. No hidden fees, cancel anytime.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto px-4 md:px-0">
           {plans.map((plan, idx) => {
             const Icon = plan.icon;
             return (
@@ -86,9 +86,9 @@ export function PricingSection() {
                 key={idx} 
                 className={`relative bg-white rounded-3xl p-8 border-2 ${
                   plan.popular 
-                    ? 'border-orange-400 shadow-2xl scale-105' 
-                    : 'border-gray-200 shadow-lg'
-                } hover:shadow-2xl transition-all`}
+                    ? 'border-orange-400 shadow-[0_30px_60px_rgba(0,0,0,0.2)] scale-105 hover:scale-[1.08]' 
+                    : 'border-gray-200 shadow-2xl scale-[1.02] hover:scale-105'
+                } hover:-translate-y-1 transition-all duration-300`}
               >
                 {plan.popular && (
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-sm font-bold rounded-full">
@@ -103,7 +103,7 @@ export function PricingSection() {
                   <h3 className="text-2xl font-bold text-gray-900 mb-2">{plan.name}</h3>
                   <p className="text-gray-600 text-sm mb-4">{plan.description}</p>
                   <div className="flex items-baseline justify-center gap-2">
-                    <span className={`text-5xl font-bold bg-gradient-to-br ${plan.gradient} bg-clip-text text-transparent`}>
+                    <span className={`text-4xl md:text-5xl font-bold bg-gradient-to-br ${plan.gradient} bg-clip-text text-transparent`}>
                       {plan.price}
                     </span>
                     <span className="text-gray-500 text-sm">/{plan.period}</span>

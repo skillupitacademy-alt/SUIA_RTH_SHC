@@ -31,7 +31,7 @@ export function AITutorSection() {
   return (
     <section className={`py-24 bg-gradient-to-br from-purple-50 via-${accentClass}-50 to-${accentClass}-50`}>
       <div className="max-w-7xl mx-auto px-6">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center px-4 md:px-0">
           {/* Left: Content */}
           <div>
             <div className={`inline-flex items-center gap-2 px-4 py-2 bg-purple-100 rounded-full mb-6`}>
@@ -41,11 +41,11 @@ export function AITutorSection() {
               </span>
             </div>
             
-            <h2 className="text-5xl font-bold text-gray-900 mb-6">
+            <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4 md:mb-6 leading-tight">
               Your Personal {brand.tutorLabel}
             </h2>
             
-            <p className="text-xl text-gray-600 mb-8 leading-relaxed">
+            <p className="text-base md:text-xl text-gray-600 mb-8 leading-relaxed">
               Unlike traditional platforms where you're stuck when confused, our {brand.tutorLabel} provides instant, 
               personalized guidance exactly when you need it.
             </p>
@@ -69,7 +69,7 @@ export function AITutorSection() {
           </div>
 
           {/* Right: Interactive Demo Card */}
-          <div className="bg-white rounded-3xl p-8 shadow-2xl border border-gray-200">
+          <div className="bg-white rounded-3xl p-6 md:p-8 border border-gray-200 shadow-xl hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] hover:-translate-y-2 hover:scale-[1.02] transition-all duration-500 cursor-default">
             <div className="space-y-4">
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">

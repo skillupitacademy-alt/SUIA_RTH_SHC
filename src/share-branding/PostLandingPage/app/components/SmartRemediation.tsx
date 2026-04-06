@@ -33,23 +33,23 @@ export function SmartRemediation() {
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           {/* Left: Sync Widget */}
-          <div className="bg-white rounded-3xl p-8 shadow-2xl border border-gray-200">
+          <div className="bg-white rounded-3xl p-8 shadow-2xl scale-[1.01] border border-gray-200">
             <div className="flex items-center gap-3 mb-8">
               <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center">
                 <TrendingUp className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900">Engine Synchronization</h3>
+              <h2 className="text-2xl font-bold text-gray-900">Engine Synchronization</h2>
             </div>
 
             <div className="space-y-4">
               {weaknesses.map((item, idx) => (
                 <div 
                   key={idx} 
-                  className="bg-gray-50 rounded-xl p-5 hover:bg-gray-100 transition-colors"
+                  className="bg-gray-50 rounded-xl p-5 shadow-lg scale-[1.01] hover:shadow-2xl hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
-                      <h4 className="font-semibold text-gray-900 mb-2">{item.topic}</h4>
+                      <h3 className="font-semibold text-gray-900 mb-2">{item.topic}</h3>
                       <div className="flex items-center gap-3">
                         <span className={`px-3 py-1 ${item.badgeColor} text-xs font-bold rounded-full`}>
                           {item.badge}
@@ -116,7 +116,7 @@ export function SmartRemediation() {
                   <span className="text-white font-bold">1</span>
                 </div>
                 <div>
-                  <h4 className="font-bold text-gray-900 mb-1">Instant Analysis</h4>
+                  <h3 className="font-bold text-gray-900 mb-1">Instant Analysis</h3>
                   <p className="text-gray-600">Algorithms detect weak topics within seconds of completing an exam</p>
                 </div>
               </div>
@@ -126,7 +126,7 @@ export function SmartRemediation() {
                   <span className="text-white font-bold">2</span>
                 </div>
                 <div>
-                  <h4 className="font-bold text-gray-900 mb-1">Prioritized Learning</h4>
+                  <h3 className="font-bold text-gray-900 mb-1">Prioritized Learning</h3>
                   <p className="text-gray-600">Critical gaps are addressed first, optimizing your study time</p>
                 </div>
               </div>
@@ -136,7 +136,7 @@ export function SmartRemediation() {
                   <span className="text-white font-bold">3</span>
                 </div>
                 <div>
-                  <h4 className="font-bold text-gray-900 mb-1">Automated Tutorial Deployment</h4>
+                  <h3 className="font-bold text-gray-900 mb-1">Automated Tutorial Deployment</h3>
                   <p className="text-gray-600">One-click transfer to Tutorial Engine with targeted lessons</p>
                 </div>
               </div>

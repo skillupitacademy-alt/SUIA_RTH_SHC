@@ -52,21 +52,21 @@ export function SolutionSection() {
             <span className={`w-2 h-2 bg-${accentClass}-500 rounded-full`}></span>
             <span className={`text-sm text-${accentClass}-700`}>Our Solution</span>
           </div>
-          <h2 className="text-5xl font-bold text-gray-900 mb-6">
+          <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4 md:mb-6 leading-tight">
             The 6-Block Learning System
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-base md:text-xl text-gray-600 max-w-3xl mx-auto px-4">
             Every topic is taught through a comprehensive, structured approach designed for deep understanding and lasting retention
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto px-4 md:px-0">
           {blocks.map((block, idx) => {
             const Icon = block.icon;
             return (
               <div 
                 key={idx} 
-                className={`group relative bg-white rounded-2xl p-8 border border-gray-200 hover:border-${accentClass}-300 hover:shadow-xl transition-all`}
+                className={`group relative bg-white rounded-2xl p-6 md:p-8 border border-gray-200 shadow-[0_15px_30px_rgba(0,0,0,0.1)] scale-[1.02] hover:border-${accentClass}-300 hover:shadow-2xl hover:scale-[1.04] hover:-translate-y-1 transition-all duration-300`}
               >
                 <div className="absolute top-4 right-4 text-3xl font-bold text-gray-100">
                   {idx + 1}

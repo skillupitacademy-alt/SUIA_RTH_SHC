@@ -79,7 +79,7 @@ export function AdaptiveLoop() {
           {steps.map((step, idx) => {
             const Icon = step.icon;
             return (
-              <div key={idx} className={`${step.color} rounded-2xl p-6 border-2 hover:shadow-lg transition-all`}>
+              <div key={idx} className={`${step.color} rounded-2xl p-6 border-2 shadow-2xl hover:scale-105 hover:-translate-y-1 transition-all duration-300 cursor-default`}>
                 <div className={`w-16 h-16 ${step.iconBg} rounded-xl flex items-center justify-center mb-4`}>
                   <Icon className="w-8 h-8 text-white" />
                 </div>
@@ -98,7 +98,7 @@ export function AdaptiveLoop() {
             return (
               <div 
                 key={idx} 
-                className={`bg-gradient-to-br ${card.gradient} rounded-2xl p-8 text-white hover:scale-105 transition-transform cursor-pointer group`}
+                className={`bg-gradient-to-br ${card.gradient} rounded-2xl p-8 text-white shadow-2xl hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 cursor-pointer group`}
               >
                 <div className="flex flex-col items-center text-center space-y-4">
                   <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">

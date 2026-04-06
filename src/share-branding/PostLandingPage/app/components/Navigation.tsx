@@ -28,7 +28,7 @@ export function Navigation() {
             <a href="#" className={`text-gray-600 hover:text-${accentClass}-600 transition-colors`}>
               Support
             </a>
-            <button className={`px-6 py-2.5 bg-gradient-to-r ${brand.gradientFrom} ${brand.gradientTo} text-white rounded-lg hover:shadow-lg transition-all`}>
+            <button className={`px-6 py-2.5 bg-gradient-to-r ${brand.gradientFrom} ${brand.gradientTo} text-white rounded-lg shadow-md hover:shadow-xl hover:scale-105 hover:-translate-y-1 transition-all duration-300`}>
               Get Started
             </button>
           </div>
