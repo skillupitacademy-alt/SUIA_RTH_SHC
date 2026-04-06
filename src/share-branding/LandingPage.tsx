@@ -791,7 +791,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
               {/* Our Users Path */}
               <div className="bg-gradient-to-br from-blue-50/50 to-indigo-50/10 p-6 sm:p-10 rounded-3xl border border-blue-100 shadow-sm relative group overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50/50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-1000"></div>
-                <h3 className="text-center font-bold text-[#124fd6] mb-10 mt-2 border-b border-blue-100 pb-3 uppercase tracking-widest text-[10px]">RealTutorialHub Ecosystem</h3>
+                <h3 className="text-center font-bold text-[#124fd6] mb-10 mt-2 border-b border-blue-100 pb-3 uppercase tracking-widest text-[10px]">{config.brandName} Ecosystem</h3>
                 <div className="flex justify-between items-center gap-2 relative z-10">
                   <div className="text-center flex-1 group/item">
                     <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-2xl flex items-center justify-center mb-3 mx-auto shadow-2xl group-hover/item:scale-105 transition-all duration-300">
