@@ -1,45 +1,67 @@
+/**
+ * UNIFIED BRAND CONFIG — Single Source of Truth
+ * Used by both root LandingPage (/) and gateway pages (/start-learning)
+ * for RealTutorialHub and SkillUp IT Academy.
+ */
 export interface BrandConfig {
-  // Identity
-  brandName: string;
+  // ── Identity ────────────────────────────────────────
+  name: string;               // e.g. "RealTutorialHub" | "SkillUp IT Academy"
 
-  // Colors
-  primaryColor: string;     // RTH: #d03f00, SkillUp: #f54a8d
-  secondaryColor: string;   // RTH: #124fd6, SkillUp: #133382
-  primaryRgb: string;       // For shadow rgba values
+  // ── Colors ──────────────────────────────────────────
+  primaryColor: string;       // RTH: #d03f00  |  SkillUp: #f54a8d
+  primaryColorDark: string;   // RTH: #b63600  |  SkillUp: #d63d7a
+  secondaryColor: string;     // RTH: #124fd6  |  SkillUp: #133382
+  primaryRgb: string;         // For shadow rgba() — e.g. "208,63,0"
 
-  // Hero Section
+  // ── Tailwind Gradient Classes (used by gateway) ─────
+  gradientFrom: string;       // e.g. "from-orange-500" | "from-pink-500"
+  gradientTo: string;         // e.g. "to-orange-600"   | "to-pink-600"
+  accentColor: string;        // e.g. "orange" | "pink"
+
+  // ── Hero Section ────────────────────────────────────
   heroHeadingLine1: string;
   heroHeadingLine2: string;
 
-  // Tutor Section
-  tutorLabel: string;          // "AI Tutor" | "Live Mentor"
-  tutorBadgeText: string;      // "AI-Powered Learning" | "Expert-Led Training"
+  // ── Tutor / Mentor Section ──────────────────────────
+  tutorLabel: string;         // "AI Tutor" | "Live Mentor"
+  tutorBadgeText: string;     // "AI-Powered Learning" | "Expert-Led Training"
   tutorHeading: string;
   tutorDescription: string;
   tutorButtonText: string;
   tutorChatResponse: string;
   tutorContextLabel: string;
 
-  // Comparison & Testimonials
-  ecosystemLabel: string;      // "RealTutorialHub Ecosystem" | "SkillUp Ecosystem"
-  tutorComparisonLabel: string; // "AI Tutor Support" | "Live Mentor Support"
-  testimonialMention: string;  // Brand name used in testimonials
+  // ── Comparison & Testimonials ───────────────────────
+  ecosystemLabel: string;         // "RealTutorialHub Ecosystem" | "SkillUp Ecosystem"
+  tutorComparisonLabel: string;   // "AI Tutor Support" | "Live Mentor Support"
+  testimonialMention: string;
 
-  // Pricing
-  pricingTutorLabel: string;   // "Limited AI Tutor queries" | "Limited Live Mentor sessions"
-  pricingTutorUnlimited: string; // "Unlimited AI Tutor" | "Unlimited Live Mentor"
+  // ── Pricing ─────────────────────────────────────────
+  pricingTutorLabel: string;      // "Limited AI Tutor queries" | "Limited Live Mentor sessions"
+  pricingTutorUnlimited: string;  // "Unlimited AI Tutor"       | "Unlimited Live Mentor"
 
-  // Footer
+  // ── Auth Section ────────────────────────────────────
+  authWelcomeHeading: string;     // e.g. "Learn Smarter. Not Harder."
+  authWelcomeSubtext: string;     // e.g. "Join 10k+ developers mastering real-world skills."
+  authShowcaseIcon: 'tutor' | 'mentor';
+
+  // ── Footer ──────────────────────────────────────────
   footerDescription: string;
   footerCopyright: string;
 }
 
+// ── RTH Brand Config ──────────────────────────────────
 export const rthConfig: BrandConfig = {
-  brandName: 'RealTutorialHub',
+  name: 'RealTutorialHub',
 
   primaryColor: '#d03f00',
+  primaryColorDark: '#b63600',
   secondaryColor: '#124fd6',
   primaryRgb: '208,63,0',
+
+  gradientFrom: 'from-orange-500',
+  gradientTo: 'to-orange-600',
+  accentColor: 'orange',
 
   heroHeadingLine1: 'Learn Smarter.',
   heroHeadingLine2: 'Not Harder.',
@@ -59,16 +81,26 @@ export const rthConfig: BrandConfig = {
   pricingTutorLabel: 'Limited AI Tutor queries',
   pricingTutorUnlimited: 'Unlimited AI Tutor',
 
+  authWelcomeHeading: 'Learn Smarter. Not Harder.',
+  authWelcomeSubtext: 'Join 10k+ developers and tech professionals mastering real-world skills with AI-powered guidance.',
+  authShowcaseIcon: 'tutor',
+
   footerDescription: 'The most advanced structured learning engine designed for modern developers and tech professionals.',
   footerCopyright: '© 2026 RealTutorialHub. All rights reserved.',
 };
 
+// ── SkillUp Brand Config ──────────────────────────────
 export const skillUpConfig: BrandConfig = {
-  brandName: 'SkillUp IT Academy',
+  name: 'SkillUp IT Academy',
 
   primaryColor: '#f54a8d',
+  primaryColorDark: '#d63d7a',
   secondaryColor: '#133382',
   primaryRgb: '245,74,141',
+
+  gradientFrom: 'from-pink-500',
+  gradientTo: 'to-pink-600',
+  accentColor: 'pink',
 
   heroHeadingLine1: 'Skill Up.',
   heroHeadingLine2: 'Stand Out.',
@@ -88,6 +120,16 @@ export const skillUpConfig: BrandConfig = {
   pricingTutorLabel: 'Limited Live Mentor sessions',
   pricingTutorUnlimited: 'Unlimited Live Mentor',
 
+  authWelcomeHeading: 'Skill Up. Stand Out.',
+  authWelcomeSubtext: 'Industry-ready IT training powered by expert mentors and hands-on practice. Your career starts here.',
+  authShowcaseIcon: 'mentor',
+
   footerDescription: 'Industry-ready IT training powered by expert mentors and hands-on practice.',
   footerCopyright: '© 2026 SkillUp IT Academy. All rights reserved.',
+};
+
+// ── Legacy gateway export (brands record) re-exported for compatibility ──
+export const brands: Record<'rth' | 'skillup', BrandConfig> = {
+  rth: rthConfig,
+  skillup: skillUpConfig,
 };

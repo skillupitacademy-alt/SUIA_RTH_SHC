@@ -1,9 +1,11 @@
+import AuthPage from '../../../../../src/share-branding/AuthPage';
+import { rthConfig } from '../../../../../src/share-branding/brandConfig';
+
 export const metadata = {
-  title: 'Login',
+  title: 'Login | RealTutorialHub',
   description: 'Sign in to the RealTutorialHub learner portal.',
 };
-import { LoginClient } from './LoginClient';
 
 export default function LoginPage() {
-  return <LoginClient />;
+  return <AuthPage config={rthConfig} initialMode="login" />;
 }

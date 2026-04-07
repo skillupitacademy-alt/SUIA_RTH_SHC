@@ -17,7 +17,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
             <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: config.secondaryColor }}>
               <GraduationCap className="w-5 h-5 text-white" />
             </div>
-            <span className="font-bold text-xl">{config.brandName}</span>
+            <span className="font-bold text-xl">{config.name}</span>
           </div>
 
           <div className="hidden min-[801px]:flex items-center gap-6">
@@ -791,7 +791,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
               {/* Our Users Path */}
               <div className="bg-gradient-to-br from-blue-50/50 to-indigo-50/10 p-6 sm:p-10 rounded-3xl border border-blue-100 shadow-sm relative group overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50/50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-1000"></div>
-                <h3 className="text-center font-bold text-[#124fd6] mb-10 mt-2 border-b border-blue-100 pb-3 uppercase tracking-widest text-[10px]">{config.brandName} Ecosystem</h3>
+                <h3 className="text-center font-bold text-[#124fd6] mb-10 mt-2 border-b border-blue-100 pb-3 uppercase tracking-widest text-[10px]">{config.name} Ecosystem</h3>
                 <div className="flex justify-between items-center gap-2 relative z-10">
                   <div className="text-center flex-1 group/item">
                     <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-2xl flex items-center justify-center mb-3 mx-auto shadow-2xl group-hover/item:scale-105 transition-all duration-300">
@@ -865,7 +865,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
               </div>
 
               {/* Pro Plan */}
-              <div className="relative bg-white rounded-3xl p-8 border-2 shadow-[0_30px_60px_rgba(0,0,0,0.2)] sm:scale-105 hover:sm:scale-[1.08] hover:-translate-y-1 transition-all duration-300" style={{ borderColor: config.primaryColor }}>
+              <div className="relative bg-white rounded-3xl p-8 border-2 shadow-[0_30px_60px_rgba(0,0,0,0.2)] sm:scale-105 sm:hover:scale-[1.08] hover:-translate-y-1 transition-all duration-300" style={{ borderColor: config.primaryColor }}>
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-2 text-white text-sm font-bold rounded-full" style={{ backgroundColor: config.primaryColor }}>
                   MOST POPULAR
                 </div>
@@ -996,7 +996,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: config.secondaryColor }}>
                     <GraduationCap className="w-6 h-6 text-white" />
                   </div>
-                  <span className="font-bold text-2xl tracking-tight font-poppins">{config.brandName}</span>
+                  <span className="font-bold text-2xl tracking-tight font-poppins">{config.name}</span>
                 </div>
                 <p className="text-gray-700 text-sm leading-relaxed font-bold">
                   {config.footerDescription}
