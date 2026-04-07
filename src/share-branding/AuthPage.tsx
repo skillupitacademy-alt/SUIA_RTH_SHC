@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   GraduationCap, 
@@ -29,6 +30,7 @@ export default function AuthPage({ config, initialMode = 'login' }: AuthPageProp
   const [mode, setMode] = useState<'login' | 'signup' | 'forgot_password'>(initialMode);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const router = useRouter();
 
   const setLoginMode = () => setMode('login');
   const setSignupMode = () => setMode('signup');
@@ -170,7 +172,7 @@ export default function AuthPage({ config, initialMode = 'login' }: AuthPageProp
               </div>
 
               <div className="flex-1 flex flex-col justify-between">
-                <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); setIsLoading(true); setTimeout(() => setIsLoading(false), 2000); }}>
+                <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); setIsLoading(true); setTimeout(() => { setIsLoading(false); if (mode === 'login' || mode === 'signup') { router.push('/dashboard'); } }, 1500); }}>
                   {mode === 'signup' && (
                     <div className="space-y-2">
                       <label className="text-sm font-black text-slate-950 ml-1">Full Name</label>
