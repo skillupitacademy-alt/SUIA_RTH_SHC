@@ -26,7 +26,7 @@ export function Navigator({ primaryAccent, currentQuestion, onClose }: Navigator
       case 'current':
         return { bg: 'white', border: primaryAccent, text: '#0f172a' };
       default:
-        return { bg: 'white', border: '#cbd5e1', text: '#64748b' };
+        return { bg: 'white', border: '#cbd5e1', text: '#475569' };
     }
   };
 

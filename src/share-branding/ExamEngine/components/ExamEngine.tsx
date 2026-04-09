@@ -185,7 +185,7 @@ class ConcreteObserver extends Subject {
       <Header brand={brand} />
       
       {/* 50/50 Split Workspace */}
-      <div className="flex h-full pt-[60px] pb-[64px]">
+      <main className="flex h-full pt-[60px] pb-[64px]">
         {/* Left Pane: Expert Inquiry */}
         <div className="w-1/2 border-r border-slate-200">
           <QuestionPane
@@ -205,7 +205,7 @@ class ConcreteObserver extends Subject {
             multiSelect={currentScenario.multiSelect}
           />
         </div>
-      </div>
+      </main>
 
       <ActionBar 
         primaryAccent={brand.primaryColor} 

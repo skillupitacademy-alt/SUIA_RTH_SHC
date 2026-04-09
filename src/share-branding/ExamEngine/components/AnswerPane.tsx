@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { CodeEditor } from './CodeEditor';
 import { AccordionCodeOption } from './AccordionCodeOption';
@@ -18,6 +20,7 @@ interface AnswerPaneProps {
 
 export function AnswerPane({ options, primaryAccent, primaryTint, multiSelect = false }: AnswerPaneProps) {
   const [selected, setSelected] = useState<string[]>([]);
+  // All code options start collapsed — user deliberately expands to read
   const [expandedOption, setExpandedOption] = useState<string | null>(null);
 
   const handleSelect = (id: string) => {
@@ -35,20 +38,15 @@ export function AnswerPane({ options, primaryAccent, primaryTint, multiSelect = 
     setExpandedOption(prev => prev === id ? null : id);
   };
 
-  // Check if we should use accordion mode
-  // Use accordion if: options have code AND at least one code block has > 7 lines
-  const useAccordionMode = options.some(opt => {
-    if (!opt.code) return false;
-    const lineCount = opt.code.split('\n').length;
-    return lineCount > 7;
-  });
+  // Use accordion layout whenever any answer option contains code
+  const useAccordionMode = options.some(opt => !!opt.code);
 
   // If using accordion mode for code-heavy options
   if (useAccordionMode) {
     return (
       <div className="bg-[#fdfdfe] p-8 h-full overflow-auto">
         <div className="max-w-3xl">
-          <div className="text-xs uppercase tracking-wider text-slate-400 mb-6 font-semibold">
+          <div className="text-xs uppercase tracking-wider text-slate-600 mb-6 font-semibold">
             {multiSelect ? 'SELECT ALL THAT APPLY' : 'DECISION SPACE'}
           </div>
           <div className="space-y-4">
@@ -77,7 +75,7 @@ export function AnswerPane({ options, primaryAccent, primaryTint, multiSelect = 
   return (
     <div className="bg-[#fdfdfe] p-8 h-full overflow-auto">
       <div className="max-w-3xl">
-        <div className="text-xs uppercase tracking-wider text-slate-400 mb-6 font-semibold">
+        <div className="text-xs uppercase tracking-wider text-slate-600 mb-6 font-semibold">
           {multiSelect ? 'SELECT ALL THAT APPLY' : 'DECISION SPACE'}
         </div>
         <div className="space-y-4">

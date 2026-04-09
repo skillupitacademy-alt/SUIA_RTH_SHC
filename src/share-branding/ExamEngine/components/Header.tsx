@@ -38,7 +38,7 @@ export function Header({ brand }: HeaderProps) {
         </div>
         <div className="text-sm">
           <div className="font-semibold text-slate-900">John Doe</div>
-          <div className="text-xs text-slate-500">Student ID: 12345</div>
+          <div className="text-xs text-slate-600">Student ID: 12345</div>
         </div>
       </div>
     </header>

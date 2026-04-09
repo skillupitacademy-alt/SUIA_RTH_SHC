@@ -12,7 +12,7 @@ interface ActionBarProps {
 
 export function ActionBar({ primaryAccent, onNavigatorToggle, onNext, onPrevious }: ActionBarProps) {
   return (
-    <div 
+    <footer 
       className="h-[64px] px-8 flex items-center justify-between fixed bottom-0 left-0 right-0 z-40"
       style={{ backgroundColor: ELITE_BAR_BG }}
     >
@@ -59,6 +59,6 @@ export function ActionBar({ primaryAccent, onNavigatorToggle, onNext, onPrevious
           Submit Assessment
         </button>
       </div>
-    </div>
+    </footer>
   );
 }
