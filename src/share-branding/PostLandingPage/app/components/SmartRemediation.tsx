@@ -107,7 +107,7 @@ export function SmartRemediation() {
 
             <h2
               className="font-bold text-gray-900 mb-5"
-              style={{ fontSize: 'clamp(2rem, 4.8vw, 3.6rem)', lineHeight: 1.08 }}
+              style={{ fontSize: 'clamp(1.8rem, 4vw, 3rem)', lineHeight: 1.08 }}
             >
               Smart Weakness Detection & Auto-Remediation
             </h2>

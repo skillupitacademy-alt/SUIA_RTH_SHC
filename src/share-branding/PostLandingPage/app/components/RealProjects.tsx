@@ -73,7 +73,7 @@ export function RealProjects() {
           </div>
           <h2
             className="font-bold mb-4 md:mb-6 leading-tight"
-            style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)' }}
+            style={{ fontSize: 'clamp(1.8rem, 4vw, 3rem)' }}
           >
             Build Portfolio-Ready Projects
           </h2>

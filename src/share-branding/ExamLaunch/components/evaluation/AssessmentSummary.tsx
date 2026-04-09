@@ -1,4 +1,5 @@
 import { useBrand } from '../../../PostLandingPage/app/context/BrandContext';
+import { useRouter } from 'next/navigation';
 import { Award, BookOpen, Target, Clock, Zap, Check } from 'lucide-react';
 
 
@@ -9,6 +10,7 @@ interface AssessmentSummaryProps {
 
 export function AssessmentSummary({ config, currentStep }: AssessmentSummaryProps) {
   const brandConfig = useBrand();
+  const router = useRouter();
 
   const calculatePoints = () => {
     const basePoints = config.questionCount * 10;
@@ -141,6 +143,7 @@ export function AssessmentSummary({ config, currentStep }: AssessmentSummaryProp
         {/* Launch CTA */}
         {isComplete && (
           <button
+            onClick={() => router.push('/exam')}
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#d81b60] py-4 text-center font-medium text-white shadow-xl transition-all hover:opacity-90"
             style={{ backgroundColor: brandConfig.primaryColor }}
           >

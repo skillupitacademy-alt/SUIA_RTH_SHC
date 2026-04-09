@@ -54,7 +54,7 @@ export function SolutionSection() {
           </div>
           <h2
             className="font-bold text-gray-900 mb-4 md:mb-6 leading-tight"
-            style={{ fontSize: 'clamp(1.8rem, 5vw, 3.5rem)' }}
+            style={{ fontSize: 'clamp(1.8rem, 4vw, 3rem)' }}
           >
             The 6-Block Learning System
           </h2>

@@ -28,7 +28,7 @@ export function HeroSection() {
 
             <h1 
               className="font-bold leading-tight"
-              style={{ fontSize: 'clamp(2.5rem, 8vw + 1rem, 5.5rem)' }}
+              style={{ fontSize: 'clamp(2.5rem, 5vw + 1rem, 4.5rem)' }}
             >
               <span className="bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent uppercase tracking-tight">
                 ELEVATE YOUR

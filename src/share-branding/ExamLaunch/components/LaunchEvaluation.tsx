@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight, X, AlertCircle, Clock, Zap, ArrowLeft } from 'lucide-react';
 import { useBrand } from '../../PostLandingPage/app/context/BrandContext';
@@ -11,6 +12,7 @@ import { AssessmentSummary } from './evaluation/AssessmentSummary';
 
 export function LaunchEvaluation() {
   const brandConfig = useBrand();
+  const router = useRouter();
 
   const [currentStep, setCurrentStep] = useState(1);
   const [expertMode, setExpertMode] = useState(false);
@@ -53,6 +55,8 @@ export function LaunchEvaluation() {
   const handleAdvance = () => {
     if (currentStep < 5) {
       setCurrentStep(currentStep + 1);
+    } else {
+      router.push('/exam');
     }
   };
 

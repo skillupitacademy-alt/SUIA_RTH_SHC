@@ -22,7 +22,7 @@ export function FinalCTA() {
               <div key={idx} className="text-center">
                 <div 
                   className="font-bold text-white mb-2"
-                  style={{ fontSize: 'clamp(2rem, 4vw, 3rem)' }}
+                  style={{ fontSize: 'clamp(1.8rem, 3.5vw, 2.5rem)' }}
                 >
                   {stat.number}
                 </div>
@@ -49,7 +49,7 @@ export function FinalCTA() {
 
           <h2 
             className="font-bold mb-4 md:mb-5 leading-tight"
-            style={{ fontSize: 'clamp(2rem, 4.8vw, 3.5rem)', lineHeight: 1.08 }}
+            style={{ fontSize: 'clamp(1.8rem, 4vw, 3rem)', lineHeight: 1.08 }}
           >
             Ready to Master Your Skills?
           </h2>

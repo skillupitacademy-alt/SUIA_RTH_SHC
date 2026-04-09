@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>V3.11 Elite Console Refinement | Final Box</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #d03f00;
+            --blue-dark: #0d2561;
+            --border: #e2e8f0;
+            --text: #1e293b;
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="skillup"] { --primary: #133382; }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8fafc;
+            color: var(--text);
+            height: 100vh;
+            display: grid;
+            grid-template-rows: 60px 1fr 64px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 1. Header structural anchoring */
+        header {
+            background: white; border-bottom: 2px solid var(--border);
+            padding: 0 32px; display: flex; align-items: center; justify-content: space-between; z-index: 1001;
+        }
+        .brand { font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1rem; color: #0f172a; display: flex; align-items: center; gap: 12px; }
+        .timer-node { font-family: 'Outfit', sans-serif; font-size: 1.4rem; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+        .pulse { width: 8px; height: 8px; border-radius: 50%; background: #ef4444; box-shadow: 0 0 10px #ef4444; }
+
+        /* 2. Workspace Mastery (Code-is-KING) */
+        .stage { display: grid; grid-template-columns: 1fr 1fr; background: white; overflow: hidden; }
+        .pane { padding: 32px; overflow-y: auto; display: flex; flex-direction: column; }
+        .inquiry-pane { border-right: 1px solid var(--border); }
+        .decision-pane { background: #fdfdfe; }
+
+        .label { font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 8px; }
+        .q-text { font-family: 'Outfit', sans-serif; font-size: 1.4rem; font-weight: 800; color: #0f172a; line-height: 1.4; margin-bottom: 24px; }
+
+        .code-zenith {
+            font-family: 'Fira Code', monospace; font-size: 0.9rem; line-height: 1.6;
+            color: #334155; padding: 24px; background: #f8fafc; border: 1px solid var(--border);
+            border-left: 4px solid var(--primary); border-radius: 8px; white-space: pre; margin: 24px 0;
+            overflow-x: auto;
+        }
+
+        /* 3. Decision Components */
+        .stack { display: flex; flex-direction: column; gap: 12px; }
+        .card { 
+            background: white; border: 2px solid var(--border); border-radius: 12px; padding: 18px; 
+            display: flex; gap: 16px; cursor: pointer; transition: var(--transition);
+        }
+        .card:hover { border-color: var(--primary); transform: translateY(-2px); }
+        .card.active { border-color: var(--primary); background: #fdf2ed; }
+        [data-theme="skillup"] .card.active { background: #f0f4ff; }
+
+        .indicator { width: 22px; height: 22px; border: 2.5px solid #cbd5e1; flex-shrink: 0; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+        .radio-dot { border-radius: 50%; }
+        .active .radio-dot::after { content: ''; width: 10px; height: 10px; background: var(--primary); border-radius: 50%; }
+        
+        .check-box { border-radius: 4px; }
+        .active .check-box { background: var(--primary); border-color: var(--primary); }
+        .active .check-box::after { content: '✓'; color: white; font-weight: 900; font-size: 14px; display: block; margin-top: -2px;}
+
+        .card-body { font-size: 0.95rem; font-weight: 600; color: #475569; }
+        .active .card-body { color: #0f172a; }
+        .code-block-opt { font-family: 'Fira Code', monospace; font-size: 0.8rem; line-height: 1.6; white-space: pre; }
+
+        /* 4. Elite Dark-Blue Action Bar (#0d2561) */
+        footer {
+            background: var(--blue-dark); padding: 0 32px;
+            display: flex; align-items: center; justify-content: space-between;
+            position: relative;
+            z-index: 1002;
+        }
+
+        .action-node { display: flex; gap: 12px; align-items: center; }
+        .btn {
+            height: 44px; padding: 0 20px; border-radius: 8px;
+            font-weight: 700; font-size: 0.85rem; cursor: pointer;
+            display: flex; align-items: center; gap: 10px;
+            border: 2px solid transparent; transition: var(--transition);
+            color: white;
+            user-select: none;
+        }
+
+        .btn-ghost { background: rgba(255,255,255,0.08); border-color: transparent; }
+        .btn-ghost:hover { background: rgba(255,255,255,0.15); }
+
+        .btn-white { background: white; color: var(--blue-dark); border-color: white; }
+        .btn-white:hover { background: #f1f5f9; }
+
+        .btn-primary { background: var(--primary); color: white; border-color: var(--primary); }
+        .btn-primary:hover { filter: brightness(1.1); }
+
+        /* 5. Mac-Style Window Dots UI */
+        .mac-dots { display: flex; gap: 6px; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; }
+        .dot-red { background: #ff5f56; cursor: pointer;}
+        .dot-yellow { background: #ffbd2e; cursor: pointer;}
+        .dot-green { background: #27c93f; cursor: pointer;}
+
+        /* 6. High-Reliability Popover (The Fix) */
+        .popover-container {
+            position: absolute; bottom: 80px; left: 32px; /* Bottom-left alignment */
+            width: 340px; background: white; border-radius: 12px; border: 1px solid var(--border);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+            z-index: 5000; visibility: hidden; opacity: 0; transform: translateY(20px); transition: var(--transition);
+            pointer-events: none;
+        }
+        .popover-container.open { visibility: visible; opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+        .pop-header {
+            padding: 12px 16px; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+            background: #f8fafc; border-top-left-radius: 12px; border-top-right-radius: 12px;
+        }
+
+        .pop-content { padding: 24px; }
+        .nav-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 24px; }
+        .cell { aspect-ratio: 1.1; border-radius: 6px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; color: #64748b; cursor: pointer; }
+        .cell.done { background: #10b981; color: white; }
+        .cell.review { background: #f59e0b; color: white; }
+        .cell.active { border: 2.5px solid var(--primary); color: var(--primary); background: transparent; }
+
+        .legend { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding-top: 16px; border-top: 1px solid var(--border); }
+        .leg-item { display: flex; align-items: center; gap: 8px; font-size: 0.65rem; font-weight: 700; color: #64748b; }
+        .leg-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+        @media (max-width: 1024px) {
+            .stage { grid-template-columns: 1fr; }
+            .inquiry-pane { border-right: none; border-bottom: 1px solid var(--border); }
+            .popover-container { left: 50%; transform: translate(-50%, 20px); }
+            .popover-container.open { transform: translate(-50%, 0); }
+        }
+    </style>
+</head>
+<body data-theme="rth">
+    <header>
+        <div class="brand">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="var(--primary)"><rect x="2" y="2" width="20" height="20" rx="4"/></svg>
+            REALTUTORIALHUB
+        </div>
+        <div class="timer-node">
+            <div class="pulse"></div>
+            <span id="timer">24:11</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="text-align: right; line-height: 1.1;">
+                <div style="font-size: 0.8rem; font-weight: 800;">Aryan Sharma</div>
+                <div style="font-size: 0.6rem; opacity: 0.5;">ID: #XC-99</div>
+            </div>
+            <div style="width: 32px; height: 32px; background: #e2e8f0; border-radius: 50%;"></div>
+        </div>
+    </header>
+
+    <main class="stage" id="stage">
+        <div class="pane inquiry-pane">
+            <div class="label" id="qLabel">Expert inquiry 01</div>
+            <h2 class="q-text" id="qBody">Refactor the sharding logic for financial transaction idempotency?</h2>
+            <div class="code-zenith" id="qCode"></div>
+        </div>
+        <div class="pane decision-pane">
+            <div class="label" id="instLabel">Decision Workspace</div>
+            <h1 style="font-family:'Outfit'; font-size: 1.1rem; margin-bottom: 24px;" id="modeInst">Choose Technical Implementation</h1>
+            <div class="stack" id="stack"></div>
+        </div>
+    </main>
+
+    <!-- ROOL-LEVEL POPOVER (The Fix) -->
+    <div class="popover-container" id="popover">
+        <div class="pop-header">
+            <div class="mac-dots" id="closePopBtn">
+                <div class="dot dot-red"></div>
+                <div class="dot dot-yellow"></div>
+                <div class="dot dot-green"></div>
+            </div>
+            <div class="label" style="margin-bottom:0;">Assessment Navigator</div>
+        </div>
+        <div class="pop-content">
+            <div class="nav-grid" id="grid"></div>
+            <div class="legend">
+                <div class="leg-item"><div class="leg-dot" style="background:#10b981;"></div> Answered</div>
+                <div class="leg-item"><div class="leg-dot" style="background:#f59e0b;"></div> Marked</div>
+                <div class="leg-item"><div class="leg-dot" style="background:#f1f5f9;"></div> Not Visited</div>
+                <div class="leg-item"><div class="leg-dot" style="border:1.5px solid var(--primary);"></div> Current</div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="action-node">
+            <!-- Mac-Style Legend Button -->
+            <div class="btn btn-ghost" id="legendBtn">
+                <div class="mac-dots">
+                    <div class="dot dot-red"></div>
+                    <div class="dot dot-yellow"></div>
+                    <div class="dot dot-green"></div>
+                </div>
+                Legend & Navigator
+            </div>
+            <div class="btn btn-ghost" style="border: 2px solid rgba(255,255,255,0.2);" id="markBtn">Mark for Review</div>
+        </div>
+
+        <div class="action-node">
+            <div class="btn btn-ghost" id="prevBtn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m15 18-6-6 6-6"/></svg>
+                Previous
+            </div>
+            <div class="btn btn-primary" id="nextBtn">
+                Save & Next
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m9 18 6-6-6-6"/></svg>
+            </div>
+        </div>
+        
+        <div class="action-node">
+            <div class="btn btn-white" style="font-weight: 800; border-radius: 8px;">
+                Submit Assessment
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const formatString = function(str) {
+            return str.replace(/\\n/g, '<br>');
+        };
+
+        const codeQ2 = "async function push(txId) {\n  const row = await db.lookup(txId);\n  if (row) return row.status;\n  for(let i=0; i<100; i++) {\n     await shard(i).atomicSync(txId);\n     if(shard.isSaturated()) break;\n  }\n  return await db.write(txId);\n}";
+        const codeQ4 = "class CircuitBreaker {\n  async call(req) {\n    if(this.state === 'OPEN') return fallback();\n    try {\n      const res = await api(req);\n      this.recordPass();\n      return res;\n    } catch(e) {\n      this.recordFail();\n      throw e;\n    }\n  }\n}";
+        
+        // ALL PERMUTATIONS ADDED using safe object structures
+        const perms = [
+            { type: 'Radio', isCode: false, qCode: false, q: "Identify the primary advantage of indexing in a relational database?", code: "", inst: "Single Choice (Text -> Text)", options: ["Accelerates data retrieval operations", "Reduces storage space requirements", "Automatically encrypts data at rest", "Prevents SQL injection attacks"] },
+            { type: 'Radio', isCode: false, qCode: true, q: "Identify the critical race condition in this sharded balance-update loop?", code: codeQ2, inst: "Single Choice (Code -> Text)", options: ["Implicit race condition on read", "Linear latency aggregation", "Sequential lock starvation", "Memory heap buffer overflow"] },
+            { type: 'Checkbox', isCode: true, qCode: false, q: "Which of the following implementations correctly add a fallback mechanism?", code: "", inst: "Multiple Choice Checkbox (Text -> Code)", options: ["// Option A\nreturn await fallback(req);", "// Option B\ntry {\n  return await api();\n} catch {\n  return base;\n}", "// Option C\nreturn cache.get(id) || api.fetch(id);", "// Option D\nif(fail) throw Error(); else return data;"] },
+            { type: 'Radio', isCode: true, qCode: true, q: "Refactor for high-concurrency resilience. Which circuit breaker ensures zero cascading failures?", code: codeQ4, inst: "Single Choice (Code -> Code)", options: ["// Option A: Stateful Jitter\nreturn sleep(pow(2, r) + j());", "// Option B: Sharded Fallback\nreturn await shard.fallback(req);", "// Option C: Adaptive Context Buffer\nreturn await buffer.process(req);", "// Option D: External Queue Orchestration\nreturn await queue.enqueue(req);"] }
+        ];
+
+        let idx = 0;
+        let qStats = new Array(15).fill('skip');
+        qStats[0] = 'done';
+        qStats[1] = 'done';
+
+        const popover = document.getElementById('popover');
+        
+        function getLabel(index) {
+            let num = index + 1;
+            return "EXPERT INQUIRY 0" + num;
+        }
+
+        function render() {
+            const data = perms[idx % perms.length];
+            document.getElementById('qLabel').innerText = getLabel(idx);
+            document.getElementById('qBody').innerText = data.q;
+            
+            const qCodeEl = document.getElementById('qCode');
+            if (data.qCode) {
+                qCodeEl.style.display = 'block';
+                qCodeEl.innerText = data.code;
+            } else {
+                qCodeEl.style.display = 'none';
+            }
+            
+            document.getElementById('instLabel').innerText = "DECISION WORKSPACE";
+            document.getElementById('modeInst').innerText = data.inst;
+            
+            const cont = document.getElementById('stack');
+            cont.innerHTML = '';
+            data.options.forEach((opt, i) => {
+                const w = document.createElement('div');
+                w.className = 'card';
+                
+                const typeClass = data.type === 'Radio' ? 'radio-dot' : 'check-box';
+                const bodyClass = data.isCode ? 'code-block-opt' : 'card-body';
+                
+                w.innerHTML = '<div class="indicator ' + typeClass + '"></div><div class="' + bodyClass + '">' + formatString(opt) + '</div>';
+                
+                w.onclick = () => {
+                    if (data.type === 'Radio') {
+                        document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+                    }
+                    w.classList.toggle('active');
+                };
+                if(data.type === 'Radio' && i === 1) w.classList.add('active');
+                cont.appendChild(w);
+            });
+
+            // Navigator Grid
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+            for(let i=0; i<15; i++) {
+                const c = document.createElement('div');
+                c.className = 'cell ' + qStats[i] + (i === idx ? ' active' : '');
+                c.innerText = (i+1 < 10 ? '0' : '') + (i+1);
+                c.onclick = (e) => { 
+                    e.stopPropagation();
+                    idx = i; 
+                    render(); 
+                    popover.classList.remove('open');
+                };
+                grid.appendChild(c);
+            }
+        }
+        
+        // Setup initial state and event listeners robustly without inline functions
+        document.addEventListener('DOMContentLoaded', () => {
+            render();
+
+            const legendBtn = document.getElementById('legendBtn');
+            const closePopBtn = document.getElementById('closePopBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const prevBtn = document.getElementById('prevBtn');
+            const markBtn = document.getElementById('markBtn');
+
+            legendBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                popover.classList.toggle('open');
+            });
+
+            closePopBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                popover.classList.remove('open');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (popover.classList.contains('open') && !popover.contains(e.target)) {
+                    popover.classList.remove('open');
+                }
+            });
+            
+            popover.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+
+            function move(dir) { 
+                if(dir >0 && qStats[idx] === 'skip') qStats[idx] = 'done';
+                idx = (idx + dir + perms.length) % perms.length; 
+                popover.classList.remove('open');
+                render(); 
+            }
+
+            nextBtn.addEventListener('click', () => { move(1); });
+            prevBtn.addEventListener('click', () => { move(-1); });
+            markBtn.addEventListener('click', () => { 
+                qStats[idx] = (qStats[idx] === 'review' ? 'skip' : 'review'); 
+                render(); 
+            });
+        });
+    </script>
+</body>
+</html>
