@@ -19,6 +19,7 @@ Checklist sources:
 - Pass: `document.body.scrollWidth <= window.innerWidth` at every audited breakpoint.
 - Pass: `125%` zoom validation is clean at `320`, `768`, `1280`, and `1920`.
 - Pass: desktop footer is flush to the viewport bottom at `1280`, `1440`, and `1920`.
+- Pass: desktop footer CTA area is no longer clipped at `1280`, `1440`, and `1920`.
 
 ## Current layout behavior
 
@@ -34,6 +35,8 @@ Checklist sources:
   - bottom-right `Progress Overview`
 - Desktop row proportions are now visually aligned to the requested composition, with the top row occupying roughly `65%` of the workspace and the bottom row occupying the remaining `35%`.
 - Desktop footer is pinned to the bottom edge of the viewport, while the exam workspace consumes the middle height between header and footer.
+- Desktop footer spacing has been rebalanced so the action buttons fit cleanly, including safe right-side space for the `Submit Assessment` CTA.
+- Desktop footer center controls were tightened so `Hide Tracker`, `Hide Overview`, and `Mark for Review` stay within their parent cells at the narrowest desktop breakpoint.
 - Footer controls now include both `Hide Tracker` and `Hide Overview`; hiding either card expands the remaining bottom-row card, and hiding both collapses the desktop layout back to the top row only.
 
 ## Validation summary
@@ -46,6 +49,11 @@ Checklist sources:
 - Mobile and tablet layouts avoid the cramped partial-desktop state by remaining stacked until `1280`.
 - Desktop visual ordering now matches the intended layout instead of placing `Progress Overview` above `Decision Space`.
 - Desktop footer pinning remains correct during zoom validation at `1280` and `1920`.
+- Desktop footer CTA spacing is verified at the desktop checkpoints:
+  - `1280px`: `Submit Assessment` right gap `90px`
+  - `1440px`: `Submit Assessment` right gap `96.02px`
+  - `1920px`: `Submit Assessment` right gap `96.02px`
+- Recheck at `1280px`: footer child overflow flags are cleared.
 
 ## Remaining notes
 

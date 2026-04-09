@@ -10,8 +10,8 @@ export function ProgressDashboard({ current, total, primaryAccent }: ProgressDas
   const percentage = Math.round((current / total) * 100);
   
   return (
-    <div className="flex min-w-0 flex-1 flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-      <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+    <div className="flex min-w-0 flex-1 flex-col gap-3 sm:flex-row sm:items-center sm:gap-4 xl:max-w-[270px] xl:gap-2.5">
+      <div className="flex min-w-0 flex-1 flex-col gap-1.5 xl:min-w-[162px]">
         <div className="flex items-center justify-between text-[10px] font-bold text-slate-200 uppercase tracking-tighter">
           <span>Current Progress</span>
           <span className="text-white">{percentage}% COMPLETE</span>
@@ -28,9 +28,9 @@ export function ProgressDashboard({ current, total, primaryAccent }: ProgressDas
         </div>
       </div>
       
-      <div className="flex-shrink-0 text-left sm:text-right">
+      <div className="flex-shrink-0 text-left sm:text-right xl:min-w-[60px]">
         <div className="text-[10px] font-bold text-slate-200 uppercase tracking-tighter">Question</div>
-        <div className="text-lg font-black text-white leading-none">
+        <div className="text-lg font-black leading-none text-white xl:text-[1.5rem]">
           {String(current).padStart(2, '0')}<span className="text-slate-300 text-sm font-medium ml-1">/ {total}</span>
         </div>
       </div>

@@ -4,12 +4,16 @@ interface ProgressOverviewCardProps {
   current: number;
   total: number;
   primaryAccent: string;
+  sectionLabel: string;
+  metadataSummary: string;
 }
 
 export function ProgressOverviewCard({
   current,
   total,
   primaryAccent,
+  sectionLabel,
+  metadataSummary,
 }: ProgressOverviewCardProps) {
   const answered = current;
   const marked = Math.min(2, total);
@@ -59,10 +63,8 @@ export function ProgressOverviewCard({
             />
           </div>
           <div className="flex items-center justify-between gap-3 text-xs font-semibold text-slate-600 sm:text-sm">
-            <span>Section: Web Foundations</span>
-            <span>
-              Question {answered} of {total}
-            </span>
+            <span className="truncate">Section: {sectionLabel}</span>
+            <span className="shrink-0">{metadataSummary}</span>
           </div>
         </div>
       </div>

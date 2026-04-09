@@ -173,6 +173,10 @@ class ConcreteObserver extends Subject {
   ];
 
   const currentScenario = questions[currentIndex];
+  const breadcrumb = 'Full Stack Development / Front End Development / React';
+  const difficulty = currentScenario.multiSelect ? 'Advanced' : currentScenario.question.code ? 'Mixed Mode' : 'Fundamentals';
+  const progressSectionLabel = 'Front End Development / React';
+  const progressMetadataSummary = `${difficulty} • ${questions.length} Questions`;
 
   const handleNext = () => {
     setCurrentIndex((prev) => (prev + 1) % questions.length);
@@ -184,17 +188,20 @@ class ConcreteObserver extends Subject {
 
   const showBottomRow = showTracker || showOverview;
   const desktopMainClassName = showBottomRow
-    ? 'xl:h-[calc(100vh-9.5rem)] xl:grid-cols-[minmax(0,0.45fr)_minmax(0,0.55fr)] xl:grid-rows-[minmax(0,0.65fr)_minmax(0,0.35fr)]'
-    : 'xl:h-[calc(100vh-9.5rem)] xl:grid-cols-[minmax(0,0.45fr)_minmax(0,0.55fr)] xl:grid-rows-[minmax(0,1fr)]';
+    ? 'xl:h-[calc(100vh-139px)] xl:grid-cols-[minmax(0,0.45fr)_minmax(0,0.55fr)] xl:grid-rows-[minmax(0,0.65fr)_minmax(0,0.35fr)]'
+    : 'xl:h-[calc(100vh-139px)] xl:grid-cols-[minmax(0,0.45fr)_minmax(0,0.55fr)] xl:grid-rows-[minmax(0,1fr)]';
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-slate-100 xl:overflow-hidden">
-      <Header brand={brand} />
+      <Header
+        brand={brand}
+        breadcrumb={breadcrumb}
+      />
       
-      <main className={`grid gap-4 px-3 py-3 pb-24 sm:px-4 sm:py-4 sm:pb-24 xl:gap-4 xl:px-4 xl:py-4 xl:pb-[5.5rem] ${desktopMainClassName}`}>
+      <main className={`grid gap-4 px-3 py-3 pb-24 sm:px-4 sm:py-4 sm:pb-24 xl:gap-4 xl:px-4 xl:py-4 xl:pb-[4vh] ${desktopMainClassName}`}>
         <div
           className={`order-1 min-h-[320px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl xl:col-start-1 xl:row-start-1 xl:h-full xl:min-h-0 ${
-            !showBottomRow ? 'xl:row-span-1' : ''
+            !showTracker && showBottomRow ? 'xl:row-span-2' : ''
           }`}
         >
           <QuestionPane
@@ -206,7 +213,11 @@ class ConcreteObserver extends Subject {
           />
         </div>
 
-        <div className="order-2 min-h-[420px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl xl:col-start-2 xl:row-start-1 xl:h-full xl:min-h-0">
+        <div
+          className={`order-2 min-h-[420px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl xl:col-start-2 xl:row-start-1 xl:h-full xl:min-h-0 ${
+            !showOverview && showBottomRow ? 'xl:row-span-2' : ''
+          }`}
+        >
           <AnswerPane
             options={currentScenario.answers}
             primaryAccent={brand.primaryColorDark}
@@ -217,27 +228,21 @@ class ConcreteObserver extends Subject {
 
         {showOverview && (
           <div
-            className={`order-3 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl xl:h-full xl:min-h-0 ${
-              showTracker
-                ? 'xl:col-start-2 xl:row-start-2'
-                : 'xl:col-span-2 xl:row-start-2'
-            }`}
+            className="order-3 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl xl:col-start-2 xl:row-start-2 xl:h-full xl:min-h-0"
           >
             <ProgressOverviewCard
               current={currentIndex + 1}
               total={questions.length}
               primaryAccent={brand.primaryColor}
+              sectionLabel={progressSectionLabel}
+              metadataSummary={progressMetadataSummary}
             />
           </div>
         )}
 
         {showTracker && (
           <div
-            className={`order-4 min-h-[240px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl xl:h-full xl:min-h-0 ${
-              showOverview
-                ? 'xl:col-start-1 xl:row-start-2'
-                : 'xl:col-span-2 xl:row-start-2'
-            }`}
+            className="order-4 min-h-[240px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl xl:col-start-1 xl:row-start-2 xl:h-full xl:min-h-0"
           >
             <LegendCard 
               primaryAccent={brand.primaryColor} 
@@ -250,8 +255,6 @@ class ConcreteObserver extends Subject {
 
       <ActionBar 
         primaryAccent={brand.primaryColorDark} 
-        current={currentIndex + 1}
-        total={questions.length}
         onNext={handleNext}
         onPrevious={handlePrev}
         showTracker={showTracker}

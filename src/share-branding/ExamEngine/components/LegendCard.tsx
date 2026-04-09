@@ -33,10 +33,23 @@ export function LegendCard({ primaryAccent, currentQuestion, totalQuestions }: L
 
   return (
     <div className="h-full bg-white flex flex-col">
-      {/* Navigator Style Header (from Image 2) */}
-      <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+      <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 grid grid-cols-[auto_1fr_auto] items-center gap-3">
         <MacOSDots />
-        <div className="text-[10px] uppercase tracking-widest font-black text-slate-600">
+        <div className="flex items-center justify-center gap-4 text-[10px] text-slate-600 font-bold uppercase tracking-tight">
+          <div className="flex items-center gap-2">
+            <div className="w-3.5 h-3.5 rounded-sm bg-[#10b981] shadow-sm"></div>
+            <span>Completed</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3.5 h-3.5 rounded-sm bg-[#f59e0b] shadow-sm"></div>
+            <span>Marked</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3.5 h-3.5 rounded-sm border-2" style={{ borderColor: primaryAccent }}></div>
+            <span>Current</span>
+          </div>
+        </div>
+        <div className="text-[10px] uppercase tracking-widest font-black text-slate-600 text-right">
           Live Tracker
         </div>
       </div>
@@ -70,20 +83,6 @@ export function LegendCard({ primaryAccent, currentQuestion, totalQuestions }: L
         </div>
 
         {/* Legend Key - Horizontal Layout */}
-        <div className="mt-6 pt-4 border-t border-slate-100 flex flex-wrap gap-x-5 gap-y-3">
-          <div className="flex items-center gap-2 text-[10px] text-slate-600 font-bold uppercase tracking-tight">
-            <div className="w-3.5 h-3.5 rounded-sm bg-[#10b981] shadow-sm"></div>
-            <span>Completed</span>
-          </div>
-          <div className="flex items-center gap-2 text-[10px] text-slate-600 font-bold uppercase tracking-tight">
-            <div className="w-3.5 h-3.5 rounded-sm bg-[#f59e0b] shadow-sm"></div>
-            <span>Marked</span>
-          </div>
-          <div className="flex items-center gap-2 text-[10px] text-slate-600 font-bold uppercase tracking-tight">
-            <div className="w-3.5 h-3.5 rounded-sm border-2" style={{ borderColor: primaryAccent }}></div>
-            <span>Current</span>
-          </div>
-        </div>
       </div>
     </div>
   );

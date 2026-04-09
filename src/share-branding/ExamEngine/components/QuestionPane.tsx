@@ -9,7 +9,13 @@ interface QuestionPaneProps {
   secondaryAccent: string;
 }
 
-export function QuestionPane({ questionNumber, questionText, code, primaryAccent, secondaryAccent }: QuestionPaneProps) {
+export function QuestionPane({
+  questionNumber,
+  questionText,
+  code,
+  primaryAccent,
+  secondaryAccent,
+}: QuestionPaneProps) {
   const questionId = String(questionNumber).padStart(2, '0');
   
   return (
