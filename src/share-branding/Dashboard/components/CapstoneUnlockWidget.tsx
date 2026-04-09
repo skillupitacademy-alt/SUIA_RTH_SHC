@@ -62,15 +62,15 @@ export function CapstoneUnlockWidget() {
         <div className="w-full space-y-2">
           <div className="flex items-center justify-between p-3 rounded-xl bg-green-50 border border-green-200">
             <span className="text-sm font-semibold text-gray-700">Advanced Python</span>
-            <span className="text-xs font-bold text-green-600">Completed</span>
+            <span className="text-xs font-bold text-green-700">Completed</span>
           </div>
           <div className="flex items-center justify-between p-3 rounded-xl bg-blue-50 border border-blue-200">
             <span className="text-sm font-semibold text-gray-700">React Hooks</span>
-            <span className="text-xs font-bold text-blue-600">Completed</span>
+            <span className="text-xs font-bold text-blue-700">Completed</span>
           </div>
-          <div className="flex items-center justify-between p-3 rounded-xl bg-white border border-gray-200">
+          <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 p-3">
             <span className="text-sm font-semibold text-gray-700">Data Structures</span>
-            <span className="text-xs font-bold text-gray-400">Pending</span>
+            <span className="text-xs font-bold text-gray-700">Pending</span>
           </div>
         </div>
       </div>

@@ -12,12 +12,13 @@ import { CurriculumSection } from './TutorialEngine/components/CurriculumSection
 import { FacultySupport } from './TutorialEngine/components/FacultySupport';
 
 function TutorialEngineContent() {
-  const brandConfig = useBrand(); // dynamically loaded
+  const brandConfig = useBrand();
   const [isAITutorOpen, setIsAITutorOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [completedSections, setCompletedSections] = useState(0);
   const totalSections = 6;
 
-  const handleSectionView = (id: string, viewed: boolean) => {
+  const handleSectionView = (_id: string, viewed: boolean) => {
     if (viewed) {
       setCompletedSections((prev) => Math.min(prev + 1, totalSections));
     }
@@ -31,46 +32,49 @@ function TutorialEngineContent() {
   };
 
   return (
-    <div className="min-h-screen relative bg-slate-50 font-sans">
-      {/* Navbar */}
-      <nav className="fixed top-0 left-0 right-0 h-[98px] z-30 flex items-center justify-between px-8 bg-white border-b border-gray-200 shadow-sm">
-        <div className="flex items-center gap-3">
+    <div className="relative min-h-screen w-full max-w-full overflow-x-hidden bg-slate-50 font-sans">
+      <nav className="fixed left-0 right-0 top-0 z-40 flex h-[80px] w-full max-w-full items-center justify-between gap-3 overflow-x-hidden border-b border-gray-200 bg-white px-4 shadow-sm sm:h-[98px] sm:px-6" aria-label="Tutorial navigation">
+        <div className="flex min-w-0 items-center gap-3">
+          <button
+            onClick={() => setIsMobileMenuOpen(true)}
+            aria-label="Open tutorial menu"
+            className="rounded-lg p-2 transition-colors hover:bg-gray-100 lg:hidden"
+          >
+            <Bot className="h-6 w-6" style={{ color: brandConfig.primaryColor }} />
+          </button>
           <div
-            className="w-12 h-12 rounded-xl flex items-center justify-center font-bold text-white text-xl"
+            className="flex h-10 w-10 items-center justify-center rounded-xl text-lg font-bold text-white sm:h-12 sm:w-12 sm:text-xl"
             style={{ background: brandConfig.primaryColor }}
           >
             {brandConfig.name.substring(0, 1) || 'A'}
           </div>
-          <div>
-            <h1 className="text-xl font-bold text-gray-800 tracking-tight">
+          <div className="hidden min-w-0 sm:block">
+            <h1 className="break-words text-lg font-bold tracking-tight text-gray-800 sm:text-xl">
               {brandConfig.name}
             </h1>
-            <div className="flex items-center gap-2 text-xs text-gray-600 font-medium">
+            <div className="flex min-w-0 flex-wrap items-center gap-2 text-[10px] font-medium text-gray-700 sm:text-xs">
               <span>Full-Stack Development</span>
-              <span className="text-gray-400">→</span>
-              <span>React Fundamentals</span>
-              <span className="text-gray-400">→</span>
-              <span style={{ color: brandConfig.primaryColor }} className="font-bold">
-                Component Architecture
-              </span>
+              <span className="text-gray-600">-</span>
+              <span className="font-bold text-gray-900">Component Architecture</span>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex min-w-0 shrink-0 items-center gap-2 sm:gap-4">
           <Link
             href="/dashboard"
-            className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+            aria-label="Return to dashboard"
+            className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900 sm:px-4 sm:py-2 sm:text-sm"
           >
-            <ChevronLeft className="w-4 h-4" />
-            Dashboard
+            <ChevronLeft className="h-4 w-4" />
+            <span className="hidden xs:block">Dashboard</span>
           </Link>
-          <div className="text-right">
-            <p className="text-xs text-gray-600 font-medium">Welcome back,</p>
-            <p className="font-bold text-gray-800">Alex Johnson</p>
+          <div className="hidden text-right xs:block">
+            <p className="text-[10px] font-medium text-gray-700">Welcome,</p>
+            <p className="text-sm font-bold text-gray-800">Alex J.</p>
           </div>
           <div
-            className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold text-white sm:h-10 sm:w-10"
             style={{ background: brandConfig.primaryColor }}
           >
             AJ
@@ -78,43 +82,40 @@ function TutorialEngineContent() {
         </div>
       </nav>
 
-      <Sidebar 
-        onAITutorClick={() => setIsAITutorOpen(true)} 
-        onSectionScroll={scrollToSection}
+      <Sidebar
+        onAITutorClick={() => setIsAITutorOpen(true)}
+        onSectionScroll={(id) => {
+          scrollToSection(id);
+          setIsMobileMenuOpen(false);
+        }}
+        isOpen={isMobileMenuOpen}
+        onClose={() => setIsMobileMenuOpen(false)}
       />
 
-      {/* Main Content Pillar (60/40 Split applies conceptually across components) */}
-      <main className="ml-[260px] pt-[98px] min-h-screen transition-all">
-        <div className="max-w-[1200px] mx-auto p-8 space-y-8">
+      <main className="min-h-screen w-full max-w-full overflow-x-hidden pt-[80px] transition-all sm:pt-[98px] lg:pl-[280px]">
+        <div className="mx-auto w-full max-w-[1200px] min-w-0 space-y-6 p-4 sm:space-y-8 sm:p-6">
           <div id="learner-flow">
-            <LearnerFlowDashboard 
-              completedCount={completedSections} 
-              totalCount={totalSections}
-            />
+            <LearnerFlowDashboard completedCount={completedSections} totalCount={totalSections} />
           </div>
 
-          <CurriculumSection 
-            onViewChange={handleSectionView}
-          />
+          <CurriculumSection onViewChange={handleSectionView} />
 
           <FacultySupport />
         </div>
       </main>
 
-      {/* Floating Action Button */}
-      <button
-        onClick={() => setIsAITutorOpen(true)}
-        className="fixed bottom-8 right-8 w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-105 z-30 opacity-90 hover:opacity-100"
-        style={{ background: brandConfig.primaryColor }}
-      >
-        <Bot className="w-6 h-6 text-white" />
-      </button>
+      <div className="w-full max-w-full overflow-x-hidden">
+        <button
+          onClick={() => setIsAITutorOpen(true)}
+          aria-label={`Open ${brandConfig.tutorLabel}`}
+          className="fixed bottom-4 right-4 z-30 flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-all hover:opacity-100 sm:bottom-8 sm:right-8 sm:hover:scale-110 active:scale-95"
+          style={{ background: brandConfig.primaryColor }}
+        >
+          <Bot className="h-6 w-6 text-white" />
+        </button>
 
-      {/* Slide-out Drawer */}
-      <AITutorDrawer 
-        isOpen={isAITutorOpen} 
-        onClose={() => setIsAITutorOpen(false)}
-      />
+        <AITutorDrawer isOpen={isAITutorOpen} onClose={() => setIsAITutorOpen(false)} />
+      </div>
 
       <style>{`
         .hide-scrollbar::-webkit-scrollbar { display: none; }
@@ -129,7 +130,6 @@ function TutorialEngineContent() {
 }
 
 export default function TutorialEnginePage({ config }: { config: BrandConfig }) {
-  // Binds the heavily modular component tree natively to our Brand Provider hook scope
   return (
     <BrandProvider brand={config}>
       <TutorialEngineContent />

@@ -57,13 +57,13 @@ export function SubtopicSelection({ topics, selected, onSelect }: SubtopicSelect
   };
 
   return (
-    <div className="h-full flex flex-col overflow-y-auto">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-slate-800 mb-2">Select Subtopics</h2>
-        <p className="text-slate-600">Refine your focus by selecting specific subtopics</p>
+    <div className="flex h-full w-full min-w-0 max-w-full flex-col overflow-x-hidden overflow-y-auto">
+      <div className="mb-6 min-w-0">
+        <h2 className="mb-2 break-words text-2xl font-bold text-slate-800">Select Subtopics</h2>
+        <p className="break-words text-slate-600">Refine your focus by selecting specific subtopics</p>
       </div>
 
-      <div className="space-y-6">
+      <div className="w-full min-w-0 space-y-6">
         {topics.map((topic) => {
           const subtopics = subtopicsByTopic[topic.id] || [];
           if (subtopics.length === 0) return null;
@@ -71,15 +71,15 @@ export function SubtopicSelection({ topics, selected, onSelect }: SubtopicSelect
           const selectedInTopic = selected.filter((s) => s.parentTopicId === topic.id).length;
 
           return (
-            <div key={topic.id} className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-lg text-slate-900">{topic.title}</h3>
+            <div key={topic.id} className="w-full min-w-0 overflow-hidden rounded-2xl border border-gray-200 bg-white p-4 shadow-[0_10px_30px_rgba(0,0,0,0.05)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_45px_rgba(0,0,0,0.12)] sm:p-6">
+              <div className="mb-4 flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <h3 className="break-words text-lg font-bold text-slate-900">{topic.title}</h3>
                 <span className="text-sm text-slate-500">
                   {selectedInTopic} of {subtopics.length} selected
                 </span>
               </div>
 
-              <div className="flex flex-wrap gap-3">
+              <div className="flex w-full min-w-0 flex-wrap gap-3">
                 {subtopics.map((subtopic) => {
                   const isSelected = selected.some((s) => s.id === subtopic.id);
 
@@ -87,10 +87,10 @@ export function SubtopicSelection({ topics, selected, onSelect }: SubtopicSelect
                     <button
                       key={subtopic.id}
                       onClick={() => toggleSubtopic(subtopic)}
-                      className={`rounded-full px-4 py-2 border font-bold transition-all hover:shadow-md ${
+                      className={`max-w-full min-w-0 rounded-full border px-4 py-2 font-bold transition-all shadow-[0_4px_12px_rgba(0,0,0,0.05)] hover:-translate-y-1 hover:shadow-[0_12px_24px_rgba(0,0,0,0.12)] ${
                         isSelected
-                          ? 'bg-[#d81b60] text-white border-[#d81b60]'
-                          : 'bg-gray-50 border-gray-200 text-slate-700'
+                          ? 'border-[#d81b60] bg-[#d81b60] text-white'
+                          : 'border-gray-200 bg-white text-slate-700'
                       }`}
                       style={
                         isSelected
@@ -102,10 +102,10 @@ export function SubtopicSelection({ topics, selected, onSelect }: SubtopicSelect
                           : {}
                       }
                     >
-                      <div className="flex items-center gap-2">
-                        <span>{subtopic.title}</span>
-                        {isSelected && <Check className="w-3 h-3" />}
-                        <span className="text-xs opacity-75">({subtopic.questionCount})</span>
+                      <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2">
+                        <span className="max-w-full break-words text-left">{subtopic.title}</span>
+                        {isSelected && <Check className="h-3 w-3 shrink-0" />}
+                        <span className="shrink-0 text-xs opacity-75">({subtopic.questionCount})</span>
                       </div>
                     </button>
                   );
@@ -117,7 +117,7 @@ export function SubtopicSelection({ topics, selected, onSelect }: SubtopicSelect
       </div>
 
       {selected.length > 0 && (
-        <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+        <div className="mt-6 rounded-xl border border-blue-200 bg-blue-50 p-4">
           <p className="text-sm text-blue-900">
             <span className="font-medium">
               {selected.length} subtopic{selected.length > 1 ? 's' : ''} selected

@@ -1,6 +1,6 @@
-import { useBrand } from '../../PostLandingPage/app/context/BrandContext';
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ChevronDown, ChevronUp, Play, Bot, BarChart, AlertCircle, Calendar, Folder, CheckCircle, Lock, Circle } from 'lucide-react';
+import { useBrand } from '../../PostLandingPage/app/context/BrandContext';
 
 interface Topic {
   id: string;
@@ -12,12 +12,12 @@ interface Topic {
 interface SidebarProps {
   onAITutorClick: () => void;
   onSectionScroll: (sectionId: string) => void;
-  
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ onAITutorClick, onSectionScroll }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ onAITutorClick, onSectionScroll, isOpen, onClose }) => {
   const brandConfig = useBrand();
-
   const [expandedTopics, setExpandedTopics] = useState<Set<string>>(new Set(['topic-1']));
   const [showScrollUp, setShowScrollUp] = useState(false);
   const [showScrollDown, setShowScrollDown] = useState(false);
@@ -65,159 +65,177 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAITutorClick, onSectionScrol
 
   const toggleTopic = (topicId: string) => {
     setExpandedTopics((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(topicId)) {
-        newSet.delete(topicId);
+      const next = new Set(prev);
+      if (next.has(topicId)) {
+        next.delete(topicId);
       } else {
-        newSet.add(topicId);
+        next.add(topicId);
       }
-      return newSet;
+      return next;
     });
   };
 
   const checkScroll = () => {
-    if (scrollRef.current) {
-      const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
-      setShowScrollUp(scrollTop > 10);
-      setShowScrollDown(scrollTop < scrollHeight - clientHeight - 10);
+    if (!scrollRef.current) {
+      return;
     }
+    const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
+    setShowScrollUp(scrollTop > 10);
+    setShowScrollDown(scrollTop < scrollHeight - clientHeight - 10);
   };
 
   const scrollTo = (direction: 'up' | 'down') => {
-    if (scrollRef.current) {
-      const scrollAmount = 300;
-      scrollRef.current.scrollBy({
-        top: direction === 'down' ? scrollAmount : -scrollAmount,
-        behavior: 'smooth',
-      });
+    if (!scrollRef.current) {
+      return;
     }
+    scrollRef.current.scrollBy({
+      top: direction === 'down' ? 300 : -300,
+      behavior: 'smooth',
+    });
   };
 
   useEffect(() => {
     checkScroll();
     const ref = scrollRef.current;
-    if (ref) {
-      ref.addEventListener('scroll', checkScroll);
-      return () => ref.removeEventListener('scroll', checkScroll);
+    if (!ref) {
+      return;
     }
+    ref.addEventListener('scroll', checkScroll);
+    return () => ref.removeEventListener('scroll', checkScroll);
   }, []);
 
   const getStatusIcon = (status: Topic['status']) => {
     switch (status) {
       case 'completed':
-        return <CheckCircle className="w-4 h-4 text-emerald-500" />;
+        return <CheckCircle className="h-4 w-4 text-emerald-600" />;
       case 'active':
-        return <Circle className="w-4 h-4 fill-current" style={{ color: brandConfig.primaryColor }} />;
+        return <Circle className="h-4 w-4 fill-current" style={{ color: brandConfig.primaryColor }} />;
       case 'locked':
-        return <Lock className="w-4 h-4 text-slate-400" />;
+        return <Lock className="h-4 w-4 text-slate-500" />;
     }
   };
 
   return (
-    <div className="fixed left-0 top-[98px] bottom-0 w-[260px] p-4 overflow-hidden flex flex-col">
-      <div
-        className="rounded-lg p-5 flex-1 flex flex-col overflow-hidden bg-white border border-gray-200 shadow-sm"
-      >
-        {/* Quick Actions Grid */}
-        <div className="mb-6">
-          <h3 className="text-sm font-semibold mb-3 text-gray-700" style={{ fontFamily: 'Outfit, sans-serif' }}>
-            Quick Actions
-          </h3>
-          <div className="grid grid-cols-2 gap-2">
-            {quickActions.map((action) => (
-              <button
-                key={action.label}
-                onClick={action.action}
-                className="p-3 rounded-lg flex flex-col items-center justify-center gap-1 transition-all hover:bg-gray-50 bg-white border border-gray-200"
-              >
-                <action.icon className="w-5 h-5" style={{ color: brandConfig.primaryColor }} />
-                <span className="text-xs text-gray-700" style={{ fontFamily: 'Inter, sans-serif' }}>
-                  {action.label}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
+    <>
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-[45] bg-black/40 backdrop-blur-sm lg:hidden"
+          onClick={onClose}
+        />
+      )}
 
-        {/* Curriculum Explorer */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-gray-700" style={{ fontFamily: 'Outfit, sans-serif' }}>
-              Curriculum
-            </h3>
-            <div className="flex gap-1">
-              {showScrollUp && (
-                <button
-                  onClick={() => scrollTo('up')}
-                  className="p-1 rounded hover:bg-gray-100 transition-colors"
-                >
-                  <ChevronUp className="w-4 h-4 text-gray-600" />
-                </button>
-              )}
-              {showScrollDown && (
-                <button
-                  onClick={() => scrollTo('down')}
-                  className="p-1 rounded hover:bg-gray-100 transition-colors"
-                >
-                  <ChevronDown className="w-4 h-4 text-gray-600" />
-                </button>
-              )}
-            </div>
+      <aside aria-label="Tutorial curriculum menu" className={`fixed bottom-0 left-0 top-[80px] z-[50] flex w-[calc(100vw-1rem)] max-w-[280px] min-w-0 flex-col overflow-hidden p-2 sm:p-4 transition-transform duration-300 sm:top-[98px] lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-gray-200 bg-white p-4 shadow-xl sm:p-5 lg:shadow-sm">
+          <div className="mb-4 flex items-center justify-between border-b border-gray-100 pb-4 lg:hidden">
+            <span className="font-bold text-gray-900">Tutorial Menu</span>
+            <button
+              onClick={onClose}
+              aria-label="Close tutorial menu"
+              className="group rounded-lg p-2 transition-all hover:bg-gray-100"
+            >
+              <Circle className="h-5 w-5 rotate-45 text-gray-600 group-hover:text-gray-800" />
+            </button>
           </div>
 
-          <div ref={scrollRef} className="flex-1 overflow-y-auto hide-scrollbar">
-            <div className="space-y-1">
-              {curriculumTopics.map((topic) => (
-                <div key={topic.id}>
-                  <button
-                    onClick={() => toggleTopic(topic.id)}
-                    className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 transition-colors text-left"
-                  >
-                    {getStatusIcon(topic.status)}
-                    <span className="flex-1 text-sm text-gray-800" style={{ fontFamily: 'Inter, sans-serif' }}>
-                      {topic.name}
-                    </span>
-                    {topic.subtopics && (
-                      <ChevronDown
-                        className={`w-4 h-4 text-gray-600 transition-transform ${
-                          expandedTopics.has(topic.id) ? 'rotate-180' : ''
-                        }`}
-                      />
-                    )}
-                  </button>
-
-                  {topic.subtopics && expandedTopics.has(topic.id) && (
-                    <div className="ml-6 mt-1 space-y-1">
-                      {topic.subtopics.map((subtopic) => (
-                        <div key={subtopic.id} className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                          {getStatusIcon(subtopic.status)}
-                          <span className="text-xs text-gray-700" style={{ fontFamily: 'Inter, sans-serif' }}>
-                            {subtopic.name}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+          <div className="mb-6 min-w-0">
+            <p className="mb-3 text-sm font-semibold text-gray-700" style={{ fontFamily: 'Outfit, sans-serif' }}>
+              Quick Actions
+            </p>
+            <div className="grid min-w-0 grid-cols-2 gap-2">
+              {quickActions.map((action) => (
+                <button
+                  key={action.label}
+                  onClick={action.action}
+                  aria-label={`Quick Action: ${action.label}`}
+                  className="flex min-w-0 w-full flex-col items-center justify-center gap-1 overflow-hidden rounded-lg border border-gray-200 bg-white p-3 transition-all hover:bg-gray-50"
+                >
+                  <action.icon className="h-5 w-5" style={{ color: brandConfig.primaryColor }} />
+                  <span className="max-w-full break-words text-center text-xs text-gray-700" style={{ fontFamily: 'Inter, sans-serif' }}>
+                    {action.label}
+                  </span>
+                </button>
               ))}
             </div>
           </div>
-        </div>
 
-        {/* Glossary Card */}
-        <div
-          className="mt-4 p-4 rounded-lg bg-amber-50 border border-amber-200"
-        >
-          <h4 className="text-sm font-semibold mb-2 text-gray-800" style={{ fontFamily: 'Outfit, sans-serif' }}>
-            📝 Key Terms
-          </h4>
-          <p className="text-xs text-gray-700" style={{ fontFamily: 'Inter, sans-serif', lineHeight: '1.6' }}>
-            <strong>JSX:</strong> JavaScript XML syntax extension
-            <br />
-            <strong>Props:</strong> Data passed to components
-          </p>
+          <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+            <div className="mb-3 flex items-center justify-between">
+              <p className="text-sm font-semibold text-gray-700" style={{ fontFamily: 'Outfit, sans-serif' }}>
+                Curriculum
+              </p>
+              <div className="flex gap-1">
+                {showScrollUp && (
+                  <button
+                    onClick={() => scrollTo('up')}
+                    aria-label="Scroll menu up"
+                    className="rounded p-1 transition-colors hover:bg-gray-100"
+                  >
+                    <ChevronUp className="h-4 w-4 text-gray-700" />
+                  </button>
+                )}
+                {showScrollDown && (
+                  <button
+                    onClick={() => scrollTo('down')}
+                    aria-label="Scroll menu down"
+                    className="rounded p-1 transition-colors hover:bg-gray-100"
+                  >
+                    <ChevronDown className="h-4 w-4 text-gray-700" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div ref={scrollRef} tabIndex={0} aria-label="Curriculum topics" className="hide-scrollbar min-w-0 flex-1 overflow-y-auto focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-2">
+              <div className="space-y-1">
+                {curriculumTopics.map((topic) => (
+                  <div key={topic.id}>
+                    <button
+                      onClick={() => toggleTopic(topic.id)}
+                      aria-expanded={expandedTopics.has(topic.id)}
+                      aria-label={`Toggle topic: ${topic.name}`}
+                      className="flex w-full min-w-0 items-center gap-2 rounded-lg p-2 text-left transition-colors hover:bg-gray-50"
+                    >
+                      {getStatusIcon(topic.status)}
+                      <span className="min-w-0 flex-1 break-words text-sm text-gray-800" style={{ fontFamily: 'Inter, sans-serif' }}>
+                        {topic.name}
+                      </span>
+                      {topic.subtopics && (
+                        <ChevronDown
+                          className={`h-4 w-4 text-gray-700 transition-transform ${expandedTopics.has(topic.id) ? 'rotate-180' : ''}`}
+                        />
+                      )}
+                    </button>
+
+                    {topic.subtopics && expandedTopics.has(topic.id) && (
+                      <div className="ml-4 mt-1 min-w-0 space-y-1 sm:ml-6">
+                        {topic.subtopics.map((subtopic) => (
+                          <div key={subtopic.id} className="flex min-w-0 items-center gap-2 rounded-lg p-2 transition-colors hover:bg-gray-50">
+                            {getStatusIcon(subtopic.status)}
+                            <span className="min-w-0 break-words text-xs text-gray-700" style={{ fontFamily: 'Inter, sans-serif' }}>
+                              {subtopic.name}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <section className="mt-4 min-w-0 overflow-hidden rounded-lg border border-amber-200 bg-amber-50 p-4">
+            <h2 className="mb-2 text-sm font-semibold text-gray-800" style={{ fontFamily: 'Outfit, sans-serif' }}>
+              Key Terms
+            </h2>
+            <p className="break-words text-xs text-gray-700" style={{ fontFamily: 'Inter, sans-serif', lineHeight: '1.6' }}>
+              <strong>JSX:</strong> JavaScript XML syntax extension
+              <br />
+              <strong>Props:</strong> Data passed to components
+            </p>
+          </section>
         </div>
-      </div>
-    </div>
+      </aside>
+    </>
   );
 };

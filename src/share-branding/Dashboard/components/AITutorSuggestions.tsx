@@ -40,21 +40,21 @@ export function AITutorSuggestions() {
           return (
             <div
               key={index}
-              className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 hover:bg-gray-100 transition-all border border-gray-200 group cursor-pointer"
+              className="flex flex-col gap-4 p-4 rounded-2xl bg-gray-50 hover:bg-gray-100 transition-all border border-gray-200 group cursor-pointer sm:flex-row sm:items-center sm:justify-between"
             >
-              <div className="flex items-start gap-3 flex-1">
+              <div className="flex items-start gap-3 flex-1 min-w-0">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: suggestion.bg }}>
                   <Icon style={{ color: suggestion.color }} size={18} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-semibold text-gray-900 mb-1 text-sm">
+                  <h4 className="font-semibold text-gray-900 mb-1 text-sm break-words">
                     {suggestion.title}
                   </h4>
-                  <p className="text-xs text-gray-600">{suggestion.description}</p>
+                  <p className="text-xs text-gray-600 break-words">{suggestion.description}</p>
                 </div>
               </div>
               <button
-                className="px-4 h-9 rounded-xl font-semibold text-sm text-white flex items-center gap-2 shadow-md hover:shadow-lg transition-all flex-shrink-0 ml-3"
+                className="h-9 w-full rounded-xl px-4 font-semibold text-sm text-white flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all flex-shrink-0 sm:ml-3 sm:w-auto"
                 style={{ backgroundColor: brand.primaryColor }}
               >
                 Start

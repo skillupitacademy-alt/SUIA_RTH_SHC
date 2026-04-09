@@ -137,15 +137,15 @@ export const CurriculumSection: React.FC<CurriculumSectionProps> = ({ onViewChan
   }, [onViewChange]);
 
   return (
-    <div className="space-y-4">
+    <div className="w-full min-w-0 space-y-4">
       <h2
-        className="text-2xl font-bold text-gray-800 mb-6"
+        className="mb-6 break-words text-2xl font-bold text-gray-800"
         style={{ fontFamily: 'Outfit, sans-serif', letterSpacing: '-0.04em' }}
       >
         Curriculum Sections
       </h2>
 
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid w-full min-w-0 grid-cols-1 gap-4">
         {blocks.map((block) => {
           const Icon = block.icon;
           return (
@@ -153,23 +153,23 @@ export const CurriculumSection: React.FC<CurriculumSectionProps> = ({ onViewChan
               key={block.id}
               ref={(el) => { blockRefs.current[block.id] = el; }}
               data-block-id={block.id}
-              className={`rounded-lg p-6 relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(0,0,0,0.10)] ${block.bgColor} border ${block.borderColor}`}
+              className={`relative w-full min-w-0 overflow-hidden rounded-lg border p-4 transition-all duration-300 shadow-[0_10px_30px_rgba(0,0,0,0.08)] hover:-translate-y-1 hover:shadow-[0_20px_45px_rgba(0,0,0,0.12)] sm:p-6 ${block.bgColor} ${block.borderColor}`}
             >
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3">
+              <div className="mb-4 flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="flex min-w-0 items-center gap-3">
                   <div
-                    className="w-10 h-10 rounded-lg flex items-center justify-center bg-white border border-gray-200"
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white"
                   >
-                    <Icon className="w-5 h-5 text-gray-700" />
+                    <Icon className="h-5 w-5 text-gray-700" />
                   </div>
-                  <h3 className="font-bold text-gray-800" style={{ fontFamily: 'Outfit, sans-serif' }}>
+                  <h3 className="min-w-0 break-words font-bold text-gray-800" style={{ fontFamily: 'Outfit, sans-serif' }}>
                     {block.title}
                   </h3>
                 </div>
                 {block.viewed && (
-                  <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-white border border-gray-200">
-                    <CheckCircle className="w-4 h-4 text-emerald-600" />
-                    <span className="text-xs font-semibold text-emerald-600" style={{ fontFamily: 'Inter, sans-serif' }}>
+                  <div className="flex max-w-full shrink-0 items-center gap-1 rounded-full border border-gray-200 bg-white px-3 py-1">
+                    <CheckCircle className="h-4 w-4 text-emerald-600" />
+                    <span className="text-xs font-semibold text-emerald-700" style={{ fontFamily: 'Inter, sans-serif' }}>
                       Viewed
                     </span>
                   </div>
@@ -177,11 +177,11 @@ export const CurriculumSection: React.FC<CurriculumSectionProps> = ({ onViewChan
               </div>
 
               <div
-                className="text-sm text-gray-700 leading-relaxed"
+                className="min-w-0 break-words text-sm leading-relaxed text-gray-700"
                 style={{ fontFamily: 'Inter, sans-serif', lineHeight: '1.7' }}
               >
                 {block.id === 'code' ? (
-                  <pre className="bg-gray-800 text-green-400 p-4 rounded-lg overflow-x-auto text-xs">
+                  <pre tabIndex={0} aria-label="Code example" className="max-w-full overflow-x-auto rounded-lg bg-gray-800 p-4 text-xs text-green-400 focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-2">
                     <code>{block.content}</code>
                   </pre>
                 ) : (

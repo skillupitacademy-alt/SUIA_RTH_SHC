@@ -20,24 +20,24 @@ export const LearnerFlowDashboard: React.FC<LearnerFlowDashboardProps> = ({ comp
   ];
 
   return (
-    <div className="rounded-lg p-6 bg-white border border-gray-200 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(0,0,0,0.10)]">
-      <div className="flex items-start justify-between mb-6">
-        <div>
+    <div className="w-full min-w-0 overflow-hidden rounded-lg border border-gray-200 bg-white p-4 shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_40px_rgba(0,0,0,0.12)] sm:p-6">
+      <div className="mb-6 flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 flex-1">
           <h2
-            className="text-2xl font-bold text-gray-800 mb-2"
+            className="mb-2 break-words text-2xl font-bold text-gray-800"
             style={{ fontFamily: 'Outfit, sans-serif', letterSpacing: '-0.04em' }}
           >
             Your Learning Progress
           </h2>
-          <p className="text-sm text-gray-600" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <p className="break-words text-sm text-gray-700" style={{ fontFamily: 'Inter, sans-serif' }}>
             Complete all sections to unlock assignments
           </p>
         </div>
-        <div className="text-right">
-          <div className="text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: brandConfig.primaryColor }}>
+        <div className="shrink-0 text-left sm:text-right">
+          <div className="text-2xl font-bold sm:text-3xl" style={{ fontFamily: 'Outfit, sans-serif', color: brandConfig.primaryColor }}>
             {completedCount}/{totalCount}
           </div>
-          <div className="text-xs text-gray-600" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <div className="text-xs text-gray-700" style={{ fontFamily: 'Inter, sans-serif' }}>
             sections
           </div>
         </div>
@@ -61,27 +61,27 @@ export const LearnerFlowDashboard: React.FC<LearnerFlowDashboardProps> = ({ comp
         <h3 className="text-sm font-semibold text-gray-700 mb-3" style={{ fontFamily: 'Outfit, sans-serif' }}>
           Assignment Paths
         </h3>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid w-full min-w-0 grid-cols-1 gap-3 sm:grid-cols-3">
           {tiers.map((tier) => (
             <button
               key={tier.name}
               disabled={tier.status === 'locked'}
-              className={`p-4 rounded-lg text-center transition-all duration-300 border ${
+              className={`w-full min-w-0 overflow-hidden rounded-lg border p-4 text-center transition-all duration-300 ${
                 tier.status === 'unlocked' 
-                  ? 'hover:scale-105 hover:-translate-y-1 hover:shadow-[0_12px_24px_rgba(0,0,0,0.10)] cursor-pointer bg-white border-gray-200 shadow-sm' 
-                  : 'opacity-60 cursor-not-allowed bg-gray-50 border-gray-200'
+                  ? 'cursor-pointer border-gray-200 bg-white shadow-[0_8px_20px_rgba(0,0,0,0.06)] hover:-translate-y-1 hover:shadow-[0_15px_30px_rgba(0,0,0,0.10)]' 
+                  : 'cursor-not-allowed border-gray-200 bg-gray-50'
               }`}
             >
-              <div className="flex items-center justify-center gap-2">
+              <div className="flex min-w-0 flex-wrap items-center justify-center gap-2">
                 <span
-                  className={`text-sm font-semibold ${
-                    tier.status === 'unlocked' ? 'text-gray-800' : 'text-gray-500'
+                  className={`break-words text-sm font-semibold ${
+                    tier.status === 'unlocked' ? 'text-gray-800' : 'text-gray-700'
                   }`}
                   style={{ fontFamily: 'Outfit, sans-serif', color: tier.status === 'unlocked' ? brandConfig.primaryColor : undefined }}
                 >
                   {tier.name}
                 </span>
-                {tier.status === 'unlocked' && <ChevronRight className="w-4 h-4" style={{ color: brandConfig.primaryColor }} />}
+                {tier.status === 'unlocked' && <ChevronRight className="h-4 w-4 shrink-0" style={{ color: brandConfig.primaryColor }} />}
               </div>
             </button>
           ))}

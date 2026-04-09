@@ -1,14 +1,15 @@
 import React from 'react';
-import { useBrand } from '../../PostLandingPage/app/context/BrandContext';
 import { Search, Flame, ChevronDown } from 'lucide-react';
+import { useBrand } from '../../PostLandingPage/app/context/BrandContext';
 
-export function TopBar() {
+export function TopBar({ mobileMenuButton }: { mobileMenuButton?: React.ReactNode }) {
   const brand = useBrand();
 
   return (
-    <header className="fixed top-0 left-20 right-0 h-20 bg-white border-b border-gray-200 flex items-center px-8 gap-6 z-40">
-      {/* Universal Search Bar */}
-      <div className="flex-1 max-w-xl relative">
+    <header className="fixed left-0 right-0 top-0 z-40 flex h-20 items-center gap-3 border-b border-gray-200 bg-white px-4 sm:gap-4 sm:px-6 md:left-20 md:gap-6 md:px-8">
+      {mobileMenuButton}
+
+      <div className="relative hidden min-w-0 flex-1 max-w-xl sm:block">
         <Search
           className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
           size={20}
@@ -16,36 +17,34 @@ export function TopBar() {
         <input
           type="text"
           placeholder="Search courses, topics, or mentors..."
-          className="w-full h-12 pl-12 pr-4 rounded-2xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-0 focus:bg-white transition-all"
+          className="h-12 w-full rounded-2xl border border-gray-200 bg-gray-50 pl-12 pr-4 transition-all focus:bg-white focus:outline-none focus:ring-2 focus:ring-offset-0"
           style={{ '--tw-ring-color': brand.primaryColor } as React.CSSProperties}
         />
       </div>
 
-      {/* Day Streak Counter */}
-      <div className="flex items-center gap-3 px-5 h-12 rounded-2xl bg-white border border-gray-200 shadow-sm">
+      <div className="hidden h-12 shrink-0 items-center gap-3 rounded-2xl border border-gray-200 bg-white px-4 shadow-sm xs:flex sm:px-5">
         <div
-          className="w-8 h-8 rounded-lg flex items-center justify-center"
+          className="flex h-8 w-8 items-center justify-center rounded-lg"
           style={{ backgroundColor: brand.primaryColor }}
         >
           <Flame className="text-white" size={18} />
         </div>
         <div className="flex flex-col">
-          <span className="text-xs text-gray-500 leading-none">Streak</span>
-          <span className="text-lg font-black leading-none mt-0.5" style={{ color: brand.primaryColor }}>
+          <span className="text-xs leading-none text-gray-500">Streak</span>
+          <span className="mt-0.5 text-lg font-black leading-none" style={{ color: brand.primaryColor }}>
             14
           </span>
         </div>
       </div>
 
-      {/* User Avatar Dropdown */}
-      <button className="flex items-center gap-3 px-4 h-12 rounded-2xl bg-white border border-gray-200 hover:border-gray-300 transition-all">
+      <button className="ml-auto flex h-12 shrink-0 items-center gap-2 rounded-2xl border border-gray-200 bg-white px-3 transition-all hover:border-gray-300 sm:ml-0 sm:gap-3 sm:px-4">
         <div
-          className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold text-sm"
+          className="flex h-9 w-9 items-center justify-center rounded-xl text-sm font-bold text-white"
           style={{ backgroundColor: brand.primaryColor }}
         >
           AK
         </div>
-        <div className="flex flex-col items-start">
+        <div className="hidden min-[420px]:flex flex-col items-start">
           <span className="text-sm font-semibold text-gray-900">Alex K.</span>
           <span className="text-xs text-gray-500">Premium</span>
         </div>

@@ -1,14 +1,13 @@
-import { useBrand } from '../../PostLandingPage/app/context/BrandContext';
 import Link from 'next/link';
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, X, AlertCircle, Clock, Award, Zap, ArrowLeft } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, AlertCircle, Clock, Zap, ArrowLeft } from 'lucide-react';
+import { useBrand } from '../../PostLandingPage/app/context/BrandContext';
 import { DomainSelection } from './evaluation/DomainSelection';
 import { SubjectSelection } from './evaluation/SubjectSelection';
 import { TopicSelection } from './evaluation/TopicSelection';
 import { SubtopicSelection } from './evaluation/SubtopicSelection';
 import { EngineCalibration } from './evaluation/EngineCalibration';
 import { AssessmentSummary } from './evaluation/AssessmentSummary';
-
 
 export function LaunchEvaluation() {
   const brandConfig = useBrand();
@@ -64,219 +63,235 @@ export function LaunchEvaluation() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
-      {/* Active Session Banner */}
-      {showActiveSession && (
-        <div className="bg-orange-500 text-white px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Clock className="w-5 h-5" />
-            <div>
-              <p className="font-medium">Active Session In Progress</p>
-              <p className="text-sm text-white/90">You have an ongoing exam: "Algebra Fundamentals"</p>
+    <div className="flex min-h-screen w-full max-w-full flex-col overflow-x-hidden bg-slate-50">
+      <header role="banner" className="flex-none">
+        {showActiveSession && (
+          <div className="flex flex-col items-center justify-between gap-3 bg-orange-700 px-4 py-2.5 text-center text-white transition-colors duration-300 sm:flex-row sm:py-3 sm:text-left">
+            <div className="flex items-center gap-3">
+              <Clock className="h-5 w-5 flex-shrink-0" />
+              <div>
+                <p className="text-sm font-bold sm:text-base sm:font-medium">Active Session In Progress</p>
+                <p className="text-[10px] text-white sm:text-sm">"Algebra Fundamentals" is currently active</p>
+              </div>
             </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <button className="px-4 py-2 bg-white text-orange-600 rounded-lg hover:bg-gray-100 transition-colors font-medium">
-              Resume Exam
-            </button>
-            <button
-              onClick={() => setShowActiveSession(false)}
-              className="p-1 hover:bg-white/20 rounded transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* HUD Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4 shadow-sm">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-2xl font-bold text-slate-800">{brandConfig.name}</h1>
-              <p className="text-sm text-slate-400 font-semibold mt-1">
-                {getBreadcrumb().split(' / ').map((part, index, arr) => (
-                  <span key={index}>
-                    <span
-                      className={index === arr.length - 1 ? 'text-[#d81b60]' : ''}
-                      style={index === arr.length - 1 ? { color: brandConfig.primaryColor } : {}}
-                    >
-                      {part}
-                    </span>
-                    {index < arr.length - 1 && ' / '}
-                  </span>
-                ))}
-              </p>
-            </div>
-            <div className="flex items-center gap-4">
-              <Link
-                href="/dashboard"
-                className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+            <div className="flex items-center gap-2">
+              <button
+                aria-label="Resume active session"
+                className="rounded-lg bg-white px-3 py-1.5 text-xs font-bold text-orange-800 shadow-md transition-colors hover:bg-gray-100 hover:shadow-lg sm:px-4 sm:py-2 sm:text-sm"
               >
-                <ArrowLeft className="w-4 h-4" />
-                Dashboard
-              </Link>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">Basic</span>
-                <button
-                  onClick={() => setExpertMode(!expertMode)}
-                  className={`relative w-12 h-6 rounded-full transition-colors ${
-                    expertMode ? 'bg-[#d81b60]' : 'bg-gray-200'
-                  }`}
-                  style={expertMode ? { backgroundColor: brandConfig.primaryColor } : {}}
+                Resume
+              </button>
+              <button
+                onClick={() => setShowActiveSession(false)}
+                aria-label="Dismiss banner"
+                className="rounded-full p-1 transition-all hover:scale-110 hover:bg-white/20"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div className="border-b border-gray-200 bg-white px-4 py-4 shadow-sm sm:px-6">
+          <div className="mx-auto max-w-7xl">
+            <div className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div className="min-w-0 max-w-full">
+                <h1 className="text-2xl font-bold text-slate-800">{brandConfig.name}</h1>
+                <p className="mt-1 break-words text-sm font-semibold text-slate-500">
+                  {getBreadcrumb().split(' / ').map((part, index, arr) => (
+                    <span key={index}>
+                      <span
+                        className={index === arr.length - 1 ? 'text-[#d81b60]' : ''}
+                        style={index === arr.length - 1 ? { color: brandConfig.primaryColor } : {}}
+                      >
+                        {part}
+                      </span>
+                      {index < arr.length - 1 && ' / '}
+                    </span>
+                  ))}
+                </p>
+              </div>
+
+              <div className="flex min-w-0 flex-wrap items-center justify-between gap-3 sm:gap-4">
+                <Link
+                  href="/dashboard"
+                  aria-label="Return to dashboard"
+                  className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900 sm:px-4 sm:py-2 sm:text-sm"
                 >
-                  <div
-                    className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
-                      expertMode ? 'transform translate-x-6' : ''
+                  <ArrowLeft className="h-4 w-4" />
+                  <span className="hidden xs:block">Dashboard</span>
+                </Link>
+                <div className="ml-auto flex items-center gap-2 sm:ml-0">
+                  <span className="text-[10px] text-gray-600 sm:text-sm">Basic</span>
+                  <button
+                    aria-label="Toggle Expert Mode"
+                    onClick={() => setExpertMode(!expertMode)}
+                    className={`relative h-5 w-10 rounded-full transition-colors sm:h-6 sm:w-12 ${
+                      expertMode ? 'bg-[#d81b60]' : 'bg-gray-200'
                     }`}
-                  />
-                </button>
-                <span className="text-sm text-gray-600">Expert</span>
+                    style={expertMode ? { backgroundColor: brandConfig.primaryColor } : {}}
+                  >
+                    <div
+                      className={`absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white transition-transform sm:left-1 sm:top-1 ${
+                        expertMode ? 'translate-x-5 sm:translate-x-6' : ''
+                      }`}
+                    />
+                  </button>
+                  <span className="text-[10px] text-gray-600 sm:text-sm">Expert</span>
+                </div>
+              </div>
+            </div>
+
+            <div 
+              className="-mx-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-lg"
+              tabIndex={0}
+              role="region"
+              aria-label="Assessment Steps Navigation"
+            >
+              <div className="flex min-w-max items-center gap-1.5 sm:gap-2">
+                {steps.map((step, index) => {
+                  const isActive = currentStep === step.number;
+                  const isPast = currentStep > step.number;
+
+                  return (
+                    <div key={step.number} className="flex items-center">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-black transition-all duration-300 sm:h-8 sm:w-8 sm:text-sm ${
+                            isActive
+                              ? 'bg-[#d81b60] text-white shadow-lg'
+                              : isPast
+                              ? 'bg-green-600 text-white'
+                              : 'bg-gray-100 text-gray-400'
+                          }`}
+                          style={isActive ? { backgroundColor: brandConfig.primaryColor } : {}}
+                          title={step.subtitle}
+                        >
+                          {step.number}
+                        </div>
+                        <div className="hidden min-[860px]:block">
+                          <p className="whitespace-nowrap text-sm font-bold text-gray-900">{step.title}</p>
+                          <p className="whitespace-nowrap text-xs font-semibold text-gray-500">{step.subtitle}</p>
+                        </div>
+                      </div>
+                      {index < steps.length - 1 && (
+                        <div className={`mx-1 h-1 w-4 rounded-full transition-colors duration-300 sm:mx-2 sm:w-8 md:w-12 ${isPast ? 'bg-green-600/30' : 'bg-gray-200'}`} />
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
+        </div>
+      </header>
 
-          {/* Step Indicator */}
-          <div className="flex items-center gap-2">
-            {steps.map((step, index) => (
-              <div key={step.number} className="flex items-center">
-                <div className="flex items-center gap-2">
-                  <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${
-                      currentStep === step.number
-                        ? 'bg-[#d81b60] text-white'
-                        : currentStep > step.number
-                        ? 'bg-green-500 text-white'
-                        : 'bg-gray-200 text-gray-600'
-                    }`}
-                    style={
-                      currentStep === step.number
-                        ? { backgroundColor: brandConfig.primaryColor }
-                        : {}
-                    }
-                  >
-                    {step.number}
-                  </div>
-                  <div className="hidden md:block">
-                    <p className="text-sm font-medium text-gray-900">{step.title}</p>
-                    <p className="text-xs text-gray-500">{step.subtitle}</p>
-                  </div>
-                </div>
-                {index < steps.length - 1 && (
-                  <div className="w-12 h-px bg-gray-300 mx-2" />
+      <main className="relative flex min-w-0 w-full max-w-full flex-1 flex-col overflow-hidden" role="main">
+        <div className="mx-auto flex w-full max-w-7xl min-w-0 flex-1 flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
+          <div className="min-w-0 flex-1 p-4 pb-28 sm:p-6 sm:pb-24 lg:pb-6">
+            <div className="mx-auto w-full max-w-5xl min-w-0">
+              <div className="w-full min-w-0 lg:h-[530px] lg:overflow-hidden lg:pb-0">
+                {currentStep === 1 && (
+                  <DomainSelection
+                    selected={config.domain}
+                    onSelect={(domain) => setConfig({ ...config, domain })}
+                  />
+                )}
+                {currentStep === 2 && (
+                  <SubjectSelection
+                    domain={config.domain}
+                    selected={config.subjects}
+                    onSelect={(subjects) => setConfig({ ...config, subjects })}
+                  />
+                )}
+                {currentStep === 3 && (
+                  <TopicSelection
+                    selected={config.topics}
+                    onSelect={(topics) => setConfig({ ...config, topics })}
+                    subjects={config.subjects}
+                    maxSelections={4}
+                  />
+                )}
+                {currentStep === 4 && (
+                  <SubtopicSelection
+                    topics={config.topics}
+                    selected={config.subtopics}
+                    onSelect={(subtopics) => setConfig({ ...config, subtopics })}
+                  />
+                )}
+                {currentStep === 5 && (
+                  <EngineCalibration
+                    difficulty={config.difficulty}
+                    questionCount={config.questionCount}
+                    onDifficultyChange={(difficulty) => setConfig({ ...config, difficulty })}
+                    onQuestionCountChange={(questionCount) => setConfig({ ...config, questionCount })}
+                  />
                 )}
               </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content - Split Pillar Architecture */}
-      <div className="flex-1 flex">
-        {/* Left Column (65%) - Configuration Frame */}
-        <div className="flex-1 p-6">
-          <div className="max-w-5xl mx-auto">
-            {/* h-530 Frame - Strict height, no scrolling */}
-            <div className="h-[530px] overflow-hidden">
-              {currentStep === 1 && (
-                <DomainSelection
-                  selected={config.domain}
-                  onSelect={(domain) => setConfig({ ...config, domain })}
-                />
-              )}
-              {currentStep === 2 && (
-                <SubjectSelection
-                  domain={config.domain}
-                  selected={config.subjects}
-                  onSelect={(subjects) => setConfig({ ...config, subjects })}
-                />
-              )}
-              {currentStep === 3 && (
-                <TopicSelection
-                  selected={config.topics}
-                  onSelect={(topics) => setConfig({ ...config, topics })}
-                  subjects={config.subjects}
-                  maxSelections={4}
-                />
-              )}
-              {currentStep === 4 && (
-                <SubtopicSelection
-                  topics={config.topics}
-                  selected={config.subtopics}
-                  onSelect={(subtopics) => setConfig({ ...config, subtopics })}
-                />
-              )}
-              {currentStep === 5 && (
-                <EngineCalibration
-                  difficulty={config.difficulty}
-                  questionCount={config.questionCount}
-                  onDifficultyChange={(difficulty) => setConfig({ ...config, difficulty })}
-                  onQuestionCountChange={(questionCount) => setConfig({ ...config, questionCount })}
-                />
-              )}
             </div>
           </div>
-        </div>
 
-        {/* Right Column (35%) - Assessment Summary Pillar */}
-        <AssessmentSummary config={config} currentStep={currentStep} />
-      </div>
-
-      {/* Navigation Footer - Bottom Anchored */}
-      <div className="bg-white border-t border-gray-200 px-6 py-4 shadow-sm">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <button
-            onClick={handleBack}
-            disabled={currentStep === 1}
-            className="flex items-center gap-2 px-6 py-2.5 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
-          >
-            <ChevronLeft className="w-5 h-5" />
-            Back
-          </button>
-
-          <div className="text-sm text-gray-600 font-medium">
-            Step {currentStep} of {steps.length}
+          <div className="hidden shrink-0 lg:block">
+            <AssessmentSummary config={config} currentStep={currentStep} />
           </div>
-
-          <button
-            onClick={handleAdvance}
-            disabled={!canAdvance()}
-            className="flex items-center gap-2 px-6 py-2.5 bg-[#d81b60] text-white rounded-lg hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold shadow-lg"
-            style={{ backgroundColor: brandConfig.primaryColor }}
-          >
-            {currentStep === 5 ? 'Launch Exam' : 'Continue'}
-            {currentStep < 5 && <ChevronRight className="w-5 h-5" />}
-            {currentStep === 5 && <Zap className="w-5 h-5" />}
-          </button>
         </div>
-      </div>
 
-      {/* Exit Guard Dialog */}
+        <div className="fixed bottom-0 left-0 right-0 z-30 w-full max-w-full overflow-x-hidden border-t border-gray-200 bg-white px-4 py-4 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] sm:px-6 lg:relative lg:shadow-sm">
+          <div className="mx-auto flex w-full max-w-7xl min-w-0 flex-wrap items-center justify-between gap-3">
+            <button
+              onClick={handleBack}
+              disabled={currentStep === 1}
+              aria-label="Go to previous step"
+              className="flex min-w-0 items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50 sm:px-6 sm:py-2.5 sm:text-sm"
+            >
+              <ChevronLeft className="h-5 w-5" />
+              Back
+            </button>
+
+            <div className="order-3 w-full text-center text-xs font-medium text-gray-600 sm:order-none sm:w-auto sm:text-sm">
+              Step {currentStep} of {steps.length}
+            </div>
+
+            <button
+              onClick={handleAdvance}
+              disabled={!canAdvance()}
+              aria-label={currentStep === 5 ? 'Launch Evaluation' : 'Continue to next step'}
+              className="flex min-w-0 items-center gap-2 rounded-lg bg-[#d81b60] px-4 py-2 text-xs font-semibold text-white shadow-lg transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:px-6 sm:py-2.5 sm:text-sm"
+              style={{ backgroundColor: brandConfig.primaryColor }}
+            >
+              {currentStep === 5 ? 'Launch Evaluation' : 'Continue'}
+              {currentStep < 5 && <ChevronRight className="h-5 w-5" />}
+              {currentStep === 5 && <Zap className="h-5 w-5" />}
+            </button>
+          </div>
+        </div>
+      </main>
+
       {showExitDialog && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-gray-200">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center">
-                <AlertCircle className="w-6 h-6 text-amber-600" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-md">
+          <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-6 shadow-xl">
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-100">
+                <AlertCircle className="h-6 w-6 text-amber-600" />
               </div>
               <div>
-                <h3 className="font-bold text-lg text-slate-800">Unsaved Configuration</h3>
+                <h3 className="text-lg font-bold text-slate-800">Unsaved Configuration</h3>
                 <p className="text-sm text-gray-600">Your progress will be lost</p>
               </div>
             </div>
-            <p className="text-gray-700 mb-6">
+            <p className="mb-6 text-gray-700">
               Are you sure you want to exit? Your current configuration will not be saved.
             </p>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowExitDialog(false)}
-                className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                className="flex-1 rounded-lg border border-gray-300 px-4 py-2.5 font-medium text-gray-700 transition-colors hover:bg-gray-50"
               >
                 Continue Editing
               </button>
               <button
-                className="flex-1 px-4 py-2.5 bg-[#d81b60] text-white rounded-lg hover:opacity-90 transition-all font-medium shadow-lg"
+                aria-label="Confirm exit and discard progress"
+                className="flex-1 rounded-lg bg-[#d81b60] px-4 py-2.5 font-medium text-white shadow-lg transition-all hover:opacity-90"
                 style={{ backgroundColor: brandConfig.primaryColor }}
               >
                 Exit Anyway

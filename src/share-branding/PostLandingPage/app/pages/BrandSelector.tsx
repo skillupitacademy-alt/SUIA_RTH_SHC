@@ -1,8 +1,8 @@
 import { GraduationCap, ArrowRight } from 'lucide-react';
-import { useNavigate } from 'react-router';
+import { useRouter } from 'next/navigation';
 
 export function BrandSelector() {
-  const navigate = useNavigate();
+  const router = useRouter();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 flex items-center justify-center p-6">
@@ -22,10 +22,11 @@ export function BrandSelector() {
         <div className="grid md:grid-cols-2 gap-8">
           {/* RealTutorialHub */}
           <button
-            onClick={() => navigate('/rth')}
-            className="group bg-white/10 backdrop-blur-lg rounded-3xl p-8 border-2 border-white/20 hover:border-orange-400 hover:bg-white/20 transition-all text-left"
+            onClick={() => router.push('/rth')}
+            aria-label="Select RealTutorialHub learning platform"
+            className="group bg-white/10 backdrop-blur-lg rounded-3xl p-8 border-2 border-white/20 hover:border-orange-600 hover:bg-white/20 transition-all text-left focus:ring-2 focus:ring-orange-500 outline-none"
           >
-            <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mb-6">
+            <div className="w-16 h-16 bg-gradient-to-br from-orange-700 to-orange-800 rounded-2xl flex items-center justify-center mb-6 shadow-xl">
               <GraduationCap className="w-8 h-8 text-white" />
             </div>
             <h2 className="text-3xl font-bold text-white mb-3">
@@ -56,10 +57,11 @@ export function BrandSelector() {
 
           {/* SkillUp IT Academy */}
           <button
-            onClick={() => navigate('/skillup')}
-            className="group bg-white/10 backdrop-blur-lg rounded-3xl p-8 border-2 border-white/20 hover:border-pink-400 hover:bg-white/20 transition-all text-left"
+            onClick={() => router.push('/skillup')}
+            aria-label="Select SkillUp IT Academy learning platform"
+            className="group bg-white/10 backdrop-blur-lg rounded-3xl p-8 border-2 border-white/20 hover:border-pink-600 hover:bg-white/20 transition-all text-left focus:ring-2 focus:ring-pink-500 outline-none"
           >
-            <div className="w-16 h-16 bg-gradient-to-br from-pink-500 to-pink-600 rounded-2xl flex items-center justify-center mb-6">
+            <div className="w-16 h-16 bg-gradient-to-br from-pink-700 to-pink-800 rounded-2xl flex items-center justify-center mb-6 shadow-xl">
               <GraduationCap className="w-8 h-8 text-white" />
             </div>
             <h2 className="text-3xl font-bold text-white mb-3">

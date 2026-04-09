@@ -60,7 +60,7 @@ export function ActivityLog() {
                   {activity.title}
                 </h4>
                 <p className="text-sm text-gray-600 mb-1">{activity.description}</p>
-                <span className="text-xs text-gray-400">{activity.time}</span>
+                <span className="text-xs text-gray-500">{activity.time}</span>
               </div>
             </div>
           );

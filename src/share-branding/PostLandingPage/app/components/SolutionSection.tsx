@@ -4,7 +4,7 @@ import { useBrand } from '../context/BrandContext';
 export function SolutionSection() {
   const brand = useBrand();
   const accentClass = brand.accentColor === 'orange' ? 'orange' : 'pink';
-  
+
   const blocks = [
     {
       icon: BookOpen,
@@ -52,7 +52,10 @@ export function SolutionSection() {
             <span className={`w-2 h-2 bg-${accentClass}-500 rounded-full`}></span>
             <span className={`text-sm text-${accentClass}-700`}>Our Solution</span>
           </div>
-          <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4 md:mb-6 leading-tight">
+          <h2
+            className="font-bold text-gray-900 mb-4 md:mb-6 leading-tight"
+            style={{ fontSize: 'clamp(1.8rem, 5vw, 3.5rem)' }}
+          >
             The 6-Block Learning System
           </h2>
           <p className="text-base md:text-xl text-gray-600 max-w-3xl mx-auto px-4">
@@ -60,24 +63,24 @@ export function SolutionSection() {
           </p>
         </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto px-4 md:px-0">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto px-4 md:px-0">
           {blocks.map((block, idx) => {
             const Icon = block.icon;
             return (
-              <div 
-                key={idx} 
-                className={`group relative bg-white rounded-2xl p-6 md:p-8 border border-gray-200 shadow-[0_15px_30px_rgba(0,0,0,0.1)] scale-[1.02] hover:border-${accentClass}-300 hover:shadow-2xl hover:scale-[1.04] hover:-translate-y-1 transition-all duration-300`}
+              <div
+                key={idx}
+                className={`group relative min-w-0 w-full overflow-hidden bg-white rounded-2xl p-6 md:p-8 border border-gray-200 shadow-[0_15px_30px_rgba(0,0,0,0.1)] hover:border-${accentClass}-300 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300`}
               >
-                <div className="absolute top-4 right-4 text-3xl font-bold text-gray-100">
+                <div className="absolute top-4 right-4 text-3xl font-bold text-gray-100 pointer-events-none">
                   {idx + 1}
                 </div>
-                <div className={`w-14 h-14 bg-gradient-to-br ${block.gradient} rounded-xl flex items-center justify-center mb-4`}>
+                <div className={`w-14 h-14 bg-gradient-to-br ${block.gradient} rounded-xl flex items-center justify-center mb-4 flex-shrink-0`}>
                   <Icon className="w-7 h-7 text-white" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">
+                <h3 className="text-xl font-bold text-gray-900 mb-3 min-w-0 break-words">
                   {block.title}
                 </h3>
-                <p className="text-gray-600 leading-relaxed">
+                <p className="text-gray-600 leading-relaxed min-w-0 break-words">
                   {block.description}
                 </p>
               </div>

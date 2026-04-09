@@ -44,16 +44,16 @@ export function EngineCalibration({
   const brandConfig = useBrand();
 
   return (
-    <div className="h-full flex flex-col overflow-y-auto">
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold text-slate-800 mb-2">Configure Your Assessment</h2>
-        <p className="text-slate-600">Customize difficulty level and question count</p>
+    <div className="flex h-full w-full min-w-0 max-w-full flex-col overflow-x-hidden overflow-y-auto">
+      <div className="mb-8 min-w-0">
+        <h2 className="mb-2 break-words text-2xl font-bold text-slate-800">Configure Your Assessment</h2>
+        <p className="break-words text-slate-600">Customize difficulty level and question count</p>
       </div>
 
       {/* Difficulty Tier Selector - Bento Style Cards */}
       <div className="mb-8">
-        <h3 className="text-lg font-bold text-slate-900 mb-4">Difficulty Level</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <h3 className="mb-4 break-words text-lg font-bold text-slate-900">Difficulty Level</h3>
+        <div className="grid w-full min-w-0 grid-cols-1 gap-4 md:grid-cols-3">
           {difficultyTiers.map((tier) => {
             const Icon = tier.icon;
             const isSelected = difficulty === tier.id;
@@ -62,9 +62,9 @@ export function EngineCalibration({
               <button
                 key={tier.id}
                 onClick={() => onDifficultyChange(tier.id)}
-                className={`p-6 rounded-2xl border transition-all text-left hover:shadow-lg relative ${
+                className={`relative w-full min-w-0 overflow-hidden rounded-2xl border p-6 text-left transition-all shadow-[0_10px_25px_rgba(0,0,0,0.05)] hover:-translate-y-1 hover:shadow-[0_20px_45px_rgba(0,0,0,0.12)] ${
                   isSelected
-                    ? 'border-2 shadow-sm'
+                    ? 'border-2'
                     : 'border border-gray-200 bg-white'
                 }`}
                 style={
@@ -85,12 +85,12 @@ export function EngineCalibration({
                   </div>
                 )}
 
-                <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-4 ${tier.iconBg}`}>
+                <div className={`mb-4 flex h-14 w-14 shrink-0 items-center justify-center rounded-xl ${tier.iconBg}`}>
                   <Icon className="w-7 h-7 text-white" />
                 </div>
 
-                <h4 className="font-bold text-lg text-slate-900 mb-2">{tier.title}</h4>
-                <p className="text-sm text-slate-600">{tier.description}</p>
+                <h4 className="mb-2 break-words text-lg font-bold text-slate-900">{tier.title}</h4>
+                <p className="break-words text-sm text-slate-600">{tier.description}</p>
               </button>
             );
           })}
@@ -99,8 +99,8 @@ export function EngineCalibration({
 
       {/* Question Count Selector - Density Dials */}
       <div>
-        <h3 className="text-lg font-bold text-slate-900 mb-4">Number of Questions</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <h3 className="mb-4 break-words text-lg font-bold text-slate-900">Number of Questions</h3>
+        <div className="grid w-full min-w-0 grid-cols-2 gap-4 md:grid-cols-4">
           {questionCounts.map((count) => {
             const isSelected = questionCount === count;
             const estimatedTime = count * 1.5; // 1.5 minutes per question
@@ -109,9 +109,9 @@ export function EngineCalibration({
               <button
                 key={count}
                 onClick={() => onQuestionCountChange(count)}
-                className={`p-6 rounded-xl border-2 transition-all hover:shadow-md ${
+                className={`w-full min-w-0 overflow-hidden rounded-xl border-2 p-4 transition-all shadow-[0_4px_12px_rgba(0,0,0,0.04)] hover:-translate-y-1 hover:shadow-[0_15px_30px_rgba(0,0,0,0.10)] sm:p-6 ${
                   isSelected
-                    ? 'border-[#d81b60] bg-[#d81b60]/5 shadow-sm'
+                    ? 'border-[#d81b60] bg-[#d81b60]/5'
                     : 'border-gray-200 bg-white'
                 }`}
                 style={
@@ -125,7 +125,7 @@ export function EngineCalibration({
               >
                 <div className="text-center">
                   <div
-                    className={`text-4xl font-bold mb-2 ${
+                    className={`mb-2 text-3xl font-bold sm:text-4xl ${
                       isSelected ? 'text-[#d81b60]' : 'text-slate-900'
                     }`}
                     style={isSelected ? { color: brandConfig.primaryColor } : {}}
@@ -142,9 +142,9 @@ export function EngineCalibration({
       </div>
 
       {/* Configuration Summary */}
-      <div className="mt-8 p-6 bg-white border-2 border-gray-200 rounded-2xl shadow-sm">
-        <h4 className="font-bold text-slate-900 mb-3">Assessment Preview</h4>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="mt-8 w-full min-w-0 overflow-hidden rounded-2xl border-2 border-gray-200 bg-white p-6 shadow-[0_10px_25px_rgba(0,0,0,0.05)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_45px_rgba(0,0,0,0.12)]">
+        <h4 className="mb-3 break-words font-bold text-slate-900">Assessment Preview</h4>
+        <div className="grid w-full min-w-0 grid-cols-1 gap-4 md:grid-cols-3">
           <div>
             <p className="text-sm text-slate-600 mb-1">Difficulty</p>
             <p className="font-bold text-slate-900">{difficulty} Mode</p>

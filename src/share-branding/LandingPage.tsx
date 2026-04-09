@@ -369,7 +369,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
         <section className="max-w-7xl mx-auto px-4 md:px-6 py-12 md:py-20 font-poppins">
           <div className="bg-gradient-to-br from-blue-600 to-purple-700 rounded-3xl p-6 lg:p-12 text-white shadow-2xl">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-12 items-center">
-              <motion.div initial={{ x: -50 }} whileInView={{ x: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }}>
+              <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }}>
                 <div className="inline-flex items-center gap-2 bg-black/10 backdrop-blur px-4 py-2 rounded-full mb-6">
                   <Zap className="w-5 h-5" />
                   <span className="font-semibold">{config.tutorBadgeText}</span>
@@ -390,7 +390,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
                 </button>
               </motion.div>
 
-              <motion.div initial={{ x: 50 }} whileInView={{ x: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="bg-white/10 backdrop-blur rounded-2xl p-8">
+              <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="bg-white/10 backdrop-blur rounded-2xl p-8">
                 <div className="bg-white rounded-xl p-6 mb-4">
                   <div className="flex items-start gap-3 mb-4">
                     <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 text-xs text-purple-900">
@@ -421,7 +421,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
         <section className="max-w-7xl mx-auto px-4 md:px-6 py-12 md:py-20">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-12">
             {/* Assignment System */}
-            <motion.div initial={{ x: -50 }} whileInView={{ x: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }}>
+            <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }}>
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-6 font-poppins">Assignment System</h2>
               <p className="text-xl text-gray-600 mb-4 font-bold">Practice Like Real Exams</p>
               <p className="text-gray-600 mb-8 font-medium">
@@ -465,7 +465,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
             </motion.div>
 
             {/* Right Column with Smart Remediation and Why We Are Different */}
-            <motion.div initial={{ x: 50 }} whileInView={{ x: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="space-y-12">
+            <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="space-y-12">
               {/* Smart Remediation */}
               <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-2xl border-t border-gray-100 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] transition-all duration-300">
                 <h2 className="text-3xl font-bold mb-4 font-poppins">Smart Remediation</h2>
@@ -699,7 +699,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
               </div>
 
               {/* 4.4 Official Experience Letter Mock */}
-              <motion.div initial={{ x: 50, rotate: 5 }} whileInView={{ x: 0, rotate: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.8, ease: "easeOut" }} className="bg-white text-gray-800 rounded-2xl p-8 shadow-[0_30px_60px_rgba(0,0,0,0.15)] transform -rotate-2 border border-gray-100 border-l-8 relative max-w-lg mx-auto" style={{ borderLeftColor: config.secondaryColor }}>
+              <motion.div initial={{ opacity: 0, y: 28, rotate: 0 }} whileInView={{ opacity: 1, y: 0, rotate: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.8, ease: "easeOut" }} className="bg-white text-gray-800 rounded-2xl p-8 shadow-[0_30px_60px_rgba(0,0,0,0.15)] rotate-0 sm:-rotate-2 border border-gray-100 border-l-8 relative w-full max-w-lg mx-auto" style={{ borderLeftColor: config.secondaryColor }}>
                 <div className="absolute top-4 right-4">
                   <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center shadow-inner text-yellow-600">
                     <FileCheck className="w-6 h-6 mx-auto" />
@@ -837,7 +837,7 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
               </p>
             </motion.div>
 
-            <motion.div initial={{ y: 40 }} whileInView={{ y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="grid sm:grid-cols-2 lg:grid-cols-3 gap-10 sm:gap-8 max-w-6xl mx-auto px-4 md:px-0 pt-6">
+            <motion.div initial={{ y: 40 }} whileInView={{ y: 0 }} viewport={{ once: false, margin: "-50px" }} transition={{ duration: 0.6, ease: "easeOut" }} className="grid sm:grid-cols-2 lg:grid-cols-3 gap-10 sm:gap-8 max-w-6xl mx-auto pt-6">
               {/* Free Plan */}
               <div className="relative bg-white rounded-3xl p-8 border-2 border-gray-200 shadow-2xl sm:scale-[1.02] hover:scale-105 hover:-translate-y-1 transition-all duration-300">
                 <div className="text-center mb-6">
@@ -1054,8 +1054,8 @@ export default function LandingPage({ config }: { config: BrandConfig }) {
 
 // Helper Components
 function FlowCard({ icon, title, color, colorStyle, direction = 'up' }: { icon: React.ReactNode; title: string; color?: string; colorStyle?: React.CSSProperties; direction?: 'up' | 'down' | 'left' | 'right' }) {
-  const initial = direction === 'left' ? { x: -50 } : direction === 'right' ? { x: 50 } : direction === 'down' ? { y: -50 } : { y: 50 };
-  const animate = { x: 0, y: 0 };
+  const initial = direction === 'down' ? { opacity: 0, y: -24 } : { opacity: 0, y: 24 };
+  const animate = { opacity: 1, x: 0, y: 0 };
   return (
     <motion.div
       initial={initial}
@@ -1093,8 +1093,8 @@ function ProjectCard({ icon, title, description, color, colorStyle, linkColor, d
   linkColor?: string;
   direction?: 'up' | 'down' | 'left' | 'right';
 }) {
-  const initial = direction === 'left' ? { x: -50 } : direction === 'right' ? { x: 50 } : direction === 'down' ? { y: -50 } : { y: 50 };
-  const animate = { x: 0, y: 0 };
+  const initial = direction === 'down' ? { opacity: 0, y: -24 } : { opacity: 0, y: 24 };
+  const animate = { opacity: 1, x: 0, y: 0 };
   return (
     <motion.div
       initial={initial}
@@ -1123,8 +1123,8 @@ function TestimonialCard({ name, role, image, text, rating, direction = 'up' }: 
   rating: number;
   direction?: 'up' | 'down' | 'left' | 'right';
 }) {
-  const initial = direction === 'left' ? { x: -50 } : direction === 'right' ? { x: 50 } : direction === 'down' ? { y: -50 } : { y: 50 };
-  const animate = { x: 0, y: 0 };
+  const initial = direction === 'down' ? { opacity: 0, y: -24 } : { opacity: 0, y: 24 };
+  const animate = { opacity: 1, x: 0, y: 0 };
   return (
     <motion.div
       initial={initial}

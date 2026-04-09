@@ -48,6 +48,10 @@ export interface BrandConfig {
   // ── Footer ──────────────────────────────────────────
   footerDescription: string;
   footerCopyright: string;
+
+  // ── Dashboard ───────────────────────────────────────
+  dashboardGreeting: string;
+  dashboardSubtext: string;
 }
 
 // ── RTH Brand Config ──────────────────────────────────
@@ -59,8 +63,8 @@ export const rthConfig: BrandConfig = {
   secondaryColor: '#124fd6',
   primaryRgb: '208,63,0',
 
-  gradientFrom: 'from-orange-500',
-  gradientTo: 'to-orange-600',
+  gradientFrom: 'from-orange-700',
+  gradientTo: 'to-orange-800',
   accentColor: 'orange',
 
   heroHeadingLine1: 'Learn Smarter.',
@@ -87,6 +91,9 @@ export const rthConfig: BrandConfig = {
 
   footerDescription: 'The most advanced structured learning engine designed for modern developers and tech professionals.',
   footerCopyright: '© 2026 RealTutorialHub. All rights reserved.',
+
+  dashboardGreeting: 'Ready to Level Up?',
+  dashboardSubtext: 'Your personalized learning path is waiting.',
 };
 
 // ── SkillUp Brand Config ──────────────────────────────
@@ -126,6 +133,9 @@ export const skillUpConfig: BrandConfig = {
 
   footerDescription: 'Industry-ready IT training powered by expert mentors and hands-on practice.',
   footerCopyright: '© 2026 SkillUp IT Academy. All rights reserved.',
+
+  dashboardGreeting: 'Master Your Craft',
+  dashboardSubtext: 'Connect with a mentor and start building today.',
 };
 
 // ── Legacy gateway export (brands record) re-exported for compatibility ──

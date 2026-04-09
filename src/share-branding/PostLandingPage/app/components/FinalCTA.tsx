@@ -16,11 +16,14 @@ export function FinalCTA() {
     <>
       {/* Stats Section */}
       <section aria-label="Performance Statistics" className={`py-16 bg-gradient-to-r ${brand.gradientFrom} ${brand.gradientTo}`}>
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div className="mx-auto w-full max-w-7xl px-6">
+          <div className="grid grid-cols-2 gap-6 sm:gap-8 md:grid-cols-4">
             {stats.map((stat, idx) => (
               <div key={idx} className="text-center">
-                <div className="text-4xl md:text-5xl font-bold text-white mb-2">
+                <div 
+                  className="font-bold text-white mb-2"
+                  style={{ fontSize: 'clamp(2rem, 4vw, 3rem)' }}
+                >
                   {stat.number}
                 </div>
                 <div className="text-orange-100 text-sm md:text-base">
@@ -33,18 +36,21 @@ export function FinalCTA() {
       </section>
 
       {/* Final CTA */}
-      <section aria-label="Final Call to Action" className="py-24 bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 text-white relative overflow-hidden">
+      <section aria-label="Final Call to Action" className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 py-24 text-white">
         {/* Decorative Elements */}
-        <div className="absolute top-20 right-20 w-64 h-64 bg-orange-500/20 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 left-20 w-64 h-64 bg-blue-500/20 rounded-full blur-3xl"></div>
+        <div className="pointer-events-none absolute right-0 top-20 h-64 w-64 max-w-full rounded-full bg-orange-500/20 blur-3xl"></div>
+        <div className="pointer-events-none absolute bottom-20 left-0 h-64 w-64 max-w-full rounded-full bg-blue-500/20 blur-3xl"></div>
 
-        <div className="max-w-5xl mx-auto px-6 text-center relative z-10">
+        <div className="relative z-10 mx-auto w-full max-w-5xl px-6 text-center">
           <div className={`inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full mb-6`}>
             <Sparkles className={`w-4 h-4 text-${accentClass}-400`} />
-            <span className={`text-sm text-${accentClass}-300`}>Join Thousands of Successful Learners</span>
+            <span className={`text-xs sm:text-sm text-${accentClass}-300`}>Join Thousands of Successful Learners</span>
           </div>
 
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 leading-tight">
+          <h2 
+            className="font-bold mb-4 md:mb-5 leading-tight"
+            style={{ fontSize: 'clamp(2rem, 4.8vw, 3.5rem)', lineHeight: 1.08 }}
+          >
             Ready to Master Your Skills?
           </h2>
 
@@ -53,14 +59,20 @@ export function FinalCTA() {
             that adapts to your unique needs and accelerates your journey to mastery.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <button className={`group px-6 sm:px-8 py-4 sm:py-5 bg-gradient-to-r ${brand.gradientFrom} ${brand.gradientTo} text-white rounded-xl shadow-[0_15px_30px_rgba(0,0,0,0.3)] scale-[1.02] hover:shadow-2xl hover:scale-105 hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-3 w-full sm:w-auto`}>
+          <div className="mb-12 flex flex-col justify-center gap-4 sm:flex-row">
+            <button 
+              aria-label="Start your journey with the Exam Engine"
+              className={`group flex w-full items-center justify-center gap-3 rounded-xl bg-gradient-to-r px-6 py-4 text-white shadow-[0_15px_30px_rgba(0,0,0,0.3)] transition-transform duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:shadow-2xl sm:w-auto sm:px-8 sm:py-5 ${brand.gradientFrom} ${brand.gradientTo}`}
+            >
               <Target className="w-5 sm:w-6 h-5 sm:h-6" />
               <span className="text-base sm:text-lg font-semibold">Start with Exam Engine</span>
               <ArrowRight className="w-4 sm:w-5 h-4 sm:h-5 group-hover:translate-x-1 transition-transform" />
             </button>
 
-            <button className="group px-6 sm:px-8 py-4 sm:py-5 bg-white text-gray-900 rounded-xl shadow-2xl scale-[1.02] hover:scale-105 hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-3 w-full sm:w-auto">
+            <button 
+              aria-label="Explore the Tutorial Engine for personalized learning"
+              className="group flex w-full items-center justify-center gap-3 rounded-xl bg-white px-6 py-4 text-gray-900 shadow-2xl transition-transform duration-300 hover:-translate-y-1 hover:scale-[1.02] sm:w-auto sm:px-8 sm:py-5"
+            >
               <Brain className="w-5 sm:w-6 h-5 sm:h-6" />
               <span className="text-base sm:text-lg font-semibold">Explore Tutorial Engine</span>
               <ArrowRight className="w-4 sm:w-5 h-4 sm:h-5 group-hover:translate-x-1 transition-transform" />
@@ -97,43 +109,43 @@ export function FinalCTA() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 bg-gray-900 border-t border-gray-800">
+      <footer role="contentinfo" className="py-12 bg-gray-900 border-t border-gray-800">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
               <h3 className="text-white font-bold mb-4">Product</h3>
               <ul className="space-y-2 text-gray-400 text-sm">
-                <li><a href="#" className="hover:text-orange-400 transition-colors">Features</a></li>
-                <li><a href="#" className="hover:text-orange-400 transition-colors">Pricing</a></li>
-                <li><a href="#" className="hover:text-orange-400 transition-colors">Roadmap</a></li>
+                <li><a href="#" aria-label="Product Features" className="hover:text-orange-400 transition-colors">Features</a></li>
+                <li><a href="#" aria-label="Pricing and Plans" className="hover:text-orange-400 transition-colors">Pricing</a></li>
+                <li><a href="#" aria-label="Development Roadmap" className="hover:text-orange-400 transition-colors">Roadmap</a></li>
               </ul>
             </div>
             <div>
               <h3 className="text-white font-bold mb-4">Learning</h3>
               <ul className="space-y-2 text-gray-400 text-sm">
-                <li><a href="#" className="hover:text-orange-400 transition-colors">Exam Engine</a></li>
-                <li><a href="#" className="hover:text-orange-400 transition-colors">Tutorial Engine</a></li>
-                <li><a href="#" className="hover:text-orange-400 transition-colors">Projects</a></li>
+                <li><a href="#" aria-label="Exam Engine Overview" className="hover:text-orange-400 transition-colors">Exam Engine</a></li>
+                <li><a href="#" aria-label="Tutorial Engine Overview" className="hover:text-orange-400 transition-colors">Tutorial Engine</a></li>
+                <li><a href="#" aria-label="Our Projects" className="hover:text-orange-400 transition-colors">Projects</a></li>
               </ul>
             </div>
             <div>
               <h3 className="text-white font-bold mb-4">Company</h3>
               <ul className="space-y-2 text-gray-400 text-sm">
-                <li><a href="#" className="hover:text-orange-400 transition-colors">About</a></li>
-                <li><a href="#" className="hover:text-orange-400 transition-colors">Blog</a></li>
-                <li><a href="#" className="hover:text-orange-400 transition-colors">Careers</a></li>
+                <li><a href="#" aria-label="About Us" className="hover:text-orange-400 transition-colors">About</a></li>
+                <li><a href="#" aria-label="Our Blog" className="hover:text-orange-400 transition-colors">Blog</a></li>
+                <li><a href="#" aria-label="Careers at our company" className="hover:text-orange-400 transition-colors">Careers</a></li>
               </ul>
             </div>
             <div>
               <h3 className="text-white font-bold mb-4">Support</h3>
               <ul className="space-y-2 text-gray-400 text-sm">
-                <li><a href="#" className="hover:text-orange-400 transition-colors">Help Center</a></li>
-                <li><a href="#" className="hover:text-orange-400 transition-colors">Contact</a></li>
-                <li><a href="#" className="hover:text-orange-400 transition-colors">Terms</a></li>
+                <li><a href="#" aria-label="Help Center" className="hover:text-orange-400 transition-colors">Help Center</a></li>
+                <li><a href="#" aria-label="Contact Us" className="hover:text-orange-400 transition-colors">Contact</a></li>
+                <li><a href="#" aria-label="Terms of Service" className="hover:text-orange-400 transition-colors">Terms</a></li>
               </ul>
             </div>
           </div>
-          <div className="border-t border-gray-800 pt-8 text-center text-gray-400 text-sm">
+          <div className="border-t border-gray-800 pt-8 text-center text-sm text-gray-400">
             <p>© 2026 {brand.name}. All rights reserved.</p>
           </div>
         </div>

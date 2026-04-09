@@ -87,14 +87,14 @@ export function SharedLandingPage({
             </div>
           </Link>
 
-          <div className="hidden items-center gap-6 min-[901px]:flex">
+          <div className="hidden items-center gap-6 lg:flex">
             <a href="#solutions" className="text-sm font-bold text-slate-600 transition hover:text-slate-950">Solutions</a>
             <a href="#journey" className="text-sm font-bold text-slate-600 transition hover:text-slate-950">Journey</a>
             <a href="#pricing" className="text-sm font-bold text-slate-600 transition hover:text-slate-950">Pricing</a>
             <a href="#stories" className="text-sm font-bold text-slate-600 transition hover:text-slate-950">Stories</a>
           </div>
 
-          <div className="hidden items-center gap-3 min-[901px]:flex">
+          <div className="hidden items-center gap-3 lg:flex">
             <Link href={loginHref} className="rounded-full px-5 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-100">
               Log In
             </Link>
@@ -109,7 +109,7 @@ export function SharedLandingPage({
 
           <button
             type="button"
-            className="rounded-xl p-2 text-slate-700 transition hover:bg-slate-100 min-[901px]:hidden"
+            className="rounded-xl p-2 text-slate-700 transition hover:bg-slate-100 lg:hidden"
             onClick={() => setIsMenuOpen((value) => !value)}
             aria-label="Toggle navigation"
           >
@@ -118,7 +118,7 @@ export function SharedLandingPage({
         </div>
 
         {isMenuOpen ? (
-          <div className="border-t border-slate-200 bg-white px-4 py-4 min-[901px]:hidden">
+          <div className="border-t border-slate-200 bg-white px-4 py-4 lg:hidden">
             <div className="flex flex-col gap-2">
               <a href="#solutions" className="rounded-xl px-3 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50">Solutions</a>
               <a href="#journey" className="rounded-xl px-3 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50">Journey</a>
@@ -141,13 +141,20 @@ export function SharedLandingPage({
         ) : null}
       </nav>
 
-      <main className="overflow-hidden">
+      <main>
         <section className="mx-auto flex min-h-[calc(100vh-80px)] max-w-7xl flex-col items-center justify-center px-4 py-14 text-center md:px-6 lg:py-20">
           <div className="max-w-5xl">
             <p className="text-xs font-black uppercase tracking-[0.45em]" style={{ color: brand.primaryColor }}>
               {brand.brandName}
             </p>
-            <h1 className="mt-6 text-5xl font-black tracking-[-0.06em] text-slate-950 sm:text-6xl lg:text-7xl" style={sectionHeadingStyle()}>
+            <h1 
+              className="mt-6 font-black tracking-[-0.06em] text-slate-950" 
+              style={{ 
+                ...sectionHeadingStyle(),
+                fontSize: 'clamp(2.25rem, 8vw + 1rem, 4.5rem)',
+                lineHeight: '1.1'
+              }}
+            >
               <span style={{ color: brand.primaryColor }}>{brand.heroHeadingLine1}</span>
               <br />
               <span style={{ color: brand.secondaryColor }}>{brand.heroHeadingLine2}</span>
@@ -157,7 +164,7 @@ export function SharedLandingPage({
             </p>
 
             <div className="mt-8 flex flex-wrap justify-center gap-2">
-              {heroPills.map((pill, index) => (
+              {heroPills.map((pill: string, index: number) => (
                 <span
                   key={pill}
                   className="rounded-full border px-4 py-2 text-xs font-black uppercase tracking-[0.28em]"
@@ -197,11 +204,17 @@ export function SharedLandingPage({
             <MetaBadge icon={<Rocket className="h-5 w-5 text-violet-600" />} text="Placement" />
           </div>
 
-          <div className="mt-12 grid w-full gap-4 md:grid-cols-3">
-            {brand.heroStats.map((stat) => (
-              <div key={stat.label} className="rounded-[2rem] border border-white/70 bg-white/80 p-6 text-left shadow-[0_18px_44px_rgba(15,23,42,0.08)] backdrop-blur-xl">
+          <div className="mt-12 flex w-full flex-wrap justify-center gap-4">
+            {brand.heroStats.map((stat: any) => (
+              <div 
+                key={stat.label} 
+                className="w-full min-w-[280px] flex-1 rounded-[2rem] border border-white/70 bg-white/80 p-6 text-left shadow-[0_18px_44px_rgba(15,23,42,0.08)] backdrop-blur-xl md:max-w-xs"
+              >
                 <p className="text-xs font-black uppercase tracking-[0.35em] text-slate-400">{stat.label}</p>
-                <p className="mt-4 text-4xl font-black tracking-tight text-slate-950" style={sectionHeadingStyle()}>
+                <p 
+                  className="mt-4 font-black tracking-tight text-slate-950" 
+                  style={{...sectionHeadingStyle(), fontSize: 'clamp(1.5rem, 5vw, 2.5rem)'}}
+                >
                   {stat.value}
                 </p>
               </div>
@@ -211,7 +224,7 @@ export function SharedLandingPage({
 
         <SectionShell id="solutions" title="Learning online often feels confusing and directionless." copy="The shared UX stays identical, but the content emphasis adapts to the brand so learners always see the right message in the same visual system.">
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-            {brand.featureCards.map((card, index) => (
+            {brand.featureCards.map((card: any, index: number) => (
               <FeatureCard
                 key={card.title}
                 title={card.title}
@@ -225,7 +238,7 @@ export function SharedLandingPage({
         <SectionShell id="journey" title="Your complete learning journey." copy="One shared experience takes the learner from understanding to improvement without changing the page language between brands.">
           <div className="rounded-[2.5rem] border border-slate-200 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.08)] lg:p-10">
             <div className="grid gap-4 md:grid-cols-5">
-              {brand.journeySteps.map((step) => (
+              {brand.journeySteps.map((step: any) => (
                 <JourneyStepCard key={step.title} step={step} />
               ))}
             </div>
@@ -234,7 +247,7 @@ export function SharedLandingPage({
 
         <SectionShell title="How the structured system works." copy="The imported design language stays intact here, while each brand injects only its own approved content and emphasis.">
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {brand.methodCards.map((card) => (
+            {brand.methodCards.map((card: any) => (
               <MethodCard key={card.title} card={card} brand={brand} />
             ))}
           </div>
@@ -284,24 +297,35 @@ export function SharedLandingPage({
         </SectionShell>
 
         <SectionShell title={brand.comparisonTitle} copy={brand.comparisonCopy}>
-          <div className="rounded-[2.5rem] border border-slate-200 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.08)] lg:p-8">
-            <div className="grid grid-cols-[1.6fr_repeat(3,0.55fr)] items-center gap-3 border-b border-slate-100 pb-4 text-center text-xs font-black uppercase tracking-[0.3em] text-slate-400">
-              <span className="text-left">Capability</span>
-              <span className="rounded-full px-3 py-2 text-white" style={{ backgroundColor: brand.secondaryColor }}>Us</span>
-              <span>Generic 1</span>
-              <span>Generic 2</span>
-            </div>
-            <div className="mt-3">
-              {brand.comparisonRows.map((row) => (
-                <ComparisonRow key={row.label} row={row} />
-              ))}
+          <div 
+            className="rounded-[2.5rem] border border-slate-200 bg-white p-4 shadow-[0_24px_70px_rgba(15,23,42,0.08)] sm:p-6 lg:p-8 overflow-hidden"
+          >
+            <div 
+              className="overflow-x-auto pb-4 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-xl"
+              tabIndex={0}
+              role="region"
+              aria-label="Platform Comparison Table"
+            >
+              <div className="min-w-[600px]">
+                <div className="grid grid-cols-[1.6fr_repeat(3,0.55fr)] items-center gap-3 border-b border-slate-100 pb-4 text-center text-xs font-black uppercase tracking-[0.3em] text-slate-400">
+                  <span className="text-left">Capability</span>
+                  <span className="rounded-full px-3 py-2 text-white" style={{ backgroundColor: brand.secondaryColor }}>Us</span>
+                  <span>Generic 1</span>
+                  <span>Generic 2</span>
+                </div>
+                <div className="mt-3">
+                  {brand.comparisonRows.map((row: any) => (
+                    <ComparisonRow key={row.label} row={row} />
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </SectionShell>
 
         <SectionShell title="Shared engine, brand-specific outcomes." copy="The overall experience remains the same, while the examples and emphasis stay aligned to the brand identity configured in the shared definition layer.">
           <div className="grid gap-6 lg:grid-cols-3">
-            {brand.projectCards.map((project, index) => (
+            {brand.projectCards.map((project: any, index: number) => (
               <ProjectCard key={project.title} project={project} brand={brand} index={index} />
             ))}
           </div>
@@ -309,7 +333,7 @@ export function SharedLandingPage({
 
         <SectionShell id="pricing" title="Pricing and progression." copy="The framework remains shared, while plan language and callouts stay controlled through brand definitions.">
           <div className="grid gap-6 lg:grid-cols-2">
-            {brand.pricingPlans.map((plan) => (
+            {brand.pricingPlans.map((plan: any) => (
               <PricingCard key={plan.name} plan={plan} brand={brand} startLearningHref={startLearningHref} />
             ))}
           </div>
@@ -317,7 +341,7 @@ export function SharedLandingPage({
 
         <SectionShell id="stories" title="Learner stories." copy="The typography, spacing, and surface treatment stay fixed while testimonials and role labels remain brand-specific.">
           <div className="grid gap-6 lg:grid-cols-3">
-            {brand.testimonials.map((testimonial) => (
+            {brand.testimonials.map((testimonial: any) => (
               <TestimonialCard key={testimonial.name} testimonial={testimonial} />
             ))}
           </div>
@@ -394,10 +418,13 @@ function SectionShell({
   return (
     <section id={id} className="mx-auto max-w-7xl px-4 py-16 md:px-6 lg:py-20">
       <div className="mx-auto mb-12 max-w-3xl text-center">
-        <h2 className="text-4xl font-black tracking-tight text-slate-950 sm:text-5xl" style={sectionHeadingStyle()}>
+        <h2 
+          className="font-black tracking-tight text-slate-950" 
+          style={{...sectionHeadingStyle(), fontSize: 'clamp(1.8rem, 6vw, 3.5rem)', lineHeight: '1.2'}}
+        >
           {title}
         </h2>
-        <p className="mt-5 text-lg leading-8 text-slate-600" style={bodyStyle()}>
+        <p className="mt-5 text-base leading-8 text-slate-600 sm:text-lg" style={bodyStyle()}>
           {copy}
         </p>
       </div>
@@ -422,7 +449,7 @@ function MetaDivider() {
 function featureIconAt(index: number) {
   const icons = [
     <Lightbulb key="light" className="h-8 w-8 text-rose-500" />,
-    <Target key="target" className="h-8 w-8 text-orange-500" />,
+    <Target key="target" className="h-8 w-8 text-orange-700" />,
     <MessageSquare key="message" className="h-8 w-8 text-amber-500" />,
     <TrendingUp key="trend" className="h-8 w-8 text-sky-500" />,
   ];
@@ -510,7 +537,7 @@ function ComparisonMark({ active }: { active: boolean }) {
   return (
     <div className="flex justify-center">
       <div className={`flex h-7 w-7 items-center justify-center rounded-full ${active ? 'bg-emerald-100' : 'bg-slate-100'}`}>
-        <Icon className={`h-4 w-4 ${active ? 'text-emerald-600' : 'text-slate-400'}`} />
+        <Icon className={`h-4 w-4 ${active ? 'text-emerald-800' : 'text-slate-400'}`} />
       </div>
     </div>
   );
@@ -575,7 +602,7 @@ function PricingCard({
         {plan.summary}
       </p>
       <ul className="mt-8 space-y-4">
-        {plan.features.map((feature) => (
+        {plan.features.map((feature: string) => (
           <li key={feature} className="flex items-start gap-3 text-sm font-bold leading-6">
             <span className={`mt-0.5 flex h-6 w-6 items-center justify-center rounded-full ${highlighted ? 'bg-white/16' : 'bg-emerald-100'}`}>
               <Check className={`h-4 w-4 ${highlighted ? 'text-white' : 'text-emerald-600'}`} />

@@ -12,16 +12,16 @@ export function HeroActionCard() {
     >
       <div className="relative z-10">
         <div className="flex items-center gap-2 mb-3">
-          <Sparkles className="text-white/90" size={20} />
-          <span className="text-sm font-semibold text-white/90 uppercase tracking-wider">
+          <Sparkles className="text-white" size={20} />
+          <span className="text-sm font-semibold text-white uppercase tracking-wider">
             {brand.dashboardGreeting}
           </span>
         </div>
 
-        <h2 className="text-3xl font-black text-white mb-2">
+        <h2 className="mb-2 text-3xl font-black text-white sm:text-4xl">
           Resume {brand.tutorLabel} Session
         </h2>
-        <p className="text-white/90 text-lg mb-6">
+        <p className="mb-6 text-lg text-white">
           Continue your remediation for <span className="font-bold">Linked Lists & Trees</span>
         </p>
 

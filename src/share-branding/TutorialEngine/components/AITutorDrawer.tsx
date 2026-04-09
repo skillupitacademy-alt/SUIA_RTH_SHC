@@ -1,11 +1,10 @@
-import { useBrand } from '../../PostLandingPage/app/context/BrandContext';
 import React, { useState } from 'react';
 import { X, Send, Bot } from 'lucide-react';
+import { useBrand } from '../../PostLandingPage/app/context/BrandContext';
 
 interface AITutorDrawerProps {
   isOpen: boolean;
   onClose: () => void;
-  
 }
 
 interface Message {
@@ -17,7 +16,6 @@ interface Message {
 
 export const AITutorDrawer: React.FC<AITutorDrawerProps> = ({ isOpen, onClose }) => {
   const brandConfig = useBrand();
-
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -29,7 +27,9 @@ export const AITutorDrawer: React.FC<AITutorDrawerProps> = ({ isOpen, onClose })
   const [inputValue, setInputValue] = useState('');
 
   const handleSend = () => {
-    if (!inputValue.trim()) return;
+    if (!inputValue.trim()) {
+      return;
+    }
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -41,7 +41,6 @@ export const AITutorDrawer: React.FC<AITutorDrawerProps> = ({ isOpen, onClose })
     setMessages((prev) => [...prev, userMessage]);
     setInputValue('');
 
-    // Simulate AI response
     setTimeout(() => {
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -55,69 +54,59 @@ export const AITutorDrawer: React.FC<AITutorDrawerProps> = ({ isOpen, onClose })
 
   return (
     <>
-      {/* Backdrop */}
       <div
-        className={`fixed inset-0 bg-black/20 transition-opacity z-40 ${
-          isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`}
+        className={`fixed inset-0 z-40 bg-black/20 transition-opacity ${isOpen ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
         onClick={onClose}
       />
 
-      {/* Drawer */}
-      <div
-        className={`fixed right-0 top-0 bottom-0 w-[400px] z-50 transition-transform duration-300 flex flex-col bg-white border-l border-gray-200 shadow-lg ${
-          isOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}
+      <aside
+        aria-label={`${brandConfig.tutorLabel} drawer`}
+        className={`fixed bottom-0 right-0 top-0 z-50 flex w-full max-w-[400px] min-w-0 flex-col border-l border-gray-200 bg-white shadow-lg transition-transform duration-300 ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
       >
-        {/* Header */}
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+        <div className="border-b border-gray-200 p-4 sm:p-6">
+          <div className="flex min-w-0 items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-3">
               <div
-                className="w-10 h-10 rounded-full flex items-center justify-center"
-                style={{
-                  background: brandConfig.primaryColor,
-                }}
+                className="flex h-10 w-10 items-center justify-center rounded-full"
+                style={{ background: brandConfig.primaryColor }}
               >
-                <Bot className="w-5 h-5 text-white" />
+                <Bot className="h-5 w-5 text-white" />
               </div>
-              <div>
-                <h2 className="font-bold text-gray-800" style={{ fontFamily: 'Outfit, sans-serif' }}>
+              <div className="min-w-0">
+                <h2 className="break-words font-bold text-gray-800" style={{ fontFamily: 'Outfit, sans-serif' }}>
                   {brandConfig.tutorLabel}
                 </h2>
-                <p className="text-xs text-gray-600" style={{ fontFamily: 'Inter, sans-serif' }}>
+                <p className="break-words text-xs text-gray-700" style={{ fontFamily: 'Inter, sans-serif' }}>
                   Always here to help
                 </p>
               </div>
             </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              aria-label={`Close ${brandConfig.tutorLabel} drawer`}
+              className="rounded-lg p-2 transition-colors hover:bg-gray-100"
             >
-              <X className="w-5 h-5 text-gray-600" />
+              <X className="h-5 w-5 text-gray-700" />
             </button>
           </div>
         </div>
 
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50">
+        <div tabIndex={0} aria-label="Tutor conversation history" className="min-w-0 flex-1 space-y-4 overflow-y-auto bg-slate-50 p-4 focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-inset sm:p-6">
           {messages.map((message) => (
             <div
               key={message.id}
               className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div
-                className={`max-w-[80%] p-3 rounded-lg border ${
+                className={`max-w-[80%] min-w-0 rounded-lg border p-3 ${
                   message.sender === 'user'
                     ? 'rounded-tr-none border-transparent'
-                    : 'rounded-tl-none bg-white border-gray-200'
+                    : 'rounded-tl-none border-gray-200 bg-white'
                 }`}
-                style={{
-                  background: message.sender === 'user' ? brandConfig.primaryColor : undefined,
-                }}
+                style={{ background: message.sender === 'user' ? brandConfig.primaryColor : undefined }}
               >
                 <p
-                  className={`text-sm ${message.sender === 'user' ? 'text-white' : 'text-gray-800'}`}
+                  className={`break-words text-sm ${message.sender === 'user' ? 'text-white' : 'text-gray-800'}`}
                   style={{ fontFamily: 'Inter, sans-serif', lineHeight: '1.6' }}
                 >
                   {message.text}
@@ -127,32 +116,29 @@ export const AITutorDrawer: React.FC<AITutorDrawerProps> = ({ isOpen, onClose })
           ))}
         </div>
 
-        {/* Input */}
-        <div className="p-6 border-t border-gray-200 bg-white">
-          <div
-            className="flex gap-2 p-2 rounded-lg bg-white border border-gray-200"
-          >
+        <div className="border-t border-gray-200 bg-white p-4 sm:p-6">
+          <div className="flex min-w-0 gap-2 rounded-lg border border-gray-200 bg-white p-2">
             <input
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+              onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+              aria-label={`Ask ${brandConfig.tutorLabel} a question`}
               placeholder="Ask a question..."
-              className="flex-1 bg-transparent outline-none text-sm px-2"
+              className="min-w-0 flex-1 bg-transparent px-2 text-sm outline-none"
               style={{ fontFamily: 'Inter, sans-serif' }}
             />
             <button
               onClick={handleSend}
-              className="p-2 rounded-lg transition-all hover:opacity-90"
-              style={{
-                background: brandConfig.primaryColor,
-              }}
+              aria-label="Send tutorial question"
+              className="rounded-lg p-2 transition-all hover:opacity-90"
+              style={{ background: brandConfig.primaryColor }}
             >
-              <Send className="w-4 h-4 text-white" />
+              <Send className="h-4 w-4 text-white" />
             </button>
           </div>
         </div>
-      </div>
+      </aside>
     </>
   );
 };

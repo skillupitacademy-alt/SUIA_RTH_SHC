@@ -1,0 +1,1789 @@
+[
+  {
+    "width": 320,
+    "height": 900,
+    "title": "RealTutorialHub - Learn Smarter. Not Harder.",
+    "bodyScrollWidth": 320,
+    "windowInnerWidth": 320,
+    "hasHorizontalOverflow": false,
+    "documentScrollWidth": 320,
+    "documentHasHorizontalOverflow": false,
+    "visibleOverflowing": [
+      {
+        "tag": "span",
+        "className": "",
+        "text": "Not Harder.",
+        "overflowRight": -26.06,
+        "overflowLeft": -26.04,
+        "overflowBottom": 2.98
+      },
+      {
+        "tag": "div",
+        "className": "flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6 bg-white/80 backdrop-blur-xl border-t border-white px-5 py-4 sm:px-8 sm:py-5 rounded-3xl sh",
+        "text": "InternshipExperience LetterPlacement",
+        "overflowRight": 0,
+        "overflowLeft": 0,
+        "overflowBottom": 16.42
+      },
+      {
+        "tag": "div",
+        "className": "bg-gradient-to-br from-cyan-500 to-cyan-600 text-white rounded-[2rem] p-8 w-40 text-center shadow-2xl hover:scale-105 -translate-y-1 hover:-translate-y-3 transi",
+        "text": "Improve",
+        "overflowRight": -40,
+        "overflowLeft": -40,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "bg-white/10 backdrop-blur rounded-2xl p-8",
+        "text": "👤Can you explain how recursion works in this context?Based on the lesson you just completed on functions, let me guide you through recursio",
+        "overflowRight": 0,
+        "overflowLeft": 0,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "space-y-12",
+        "text": "Smart RemediationWeak in something? We fix it automatically. Detect weak topics, generate personalized study plans, and get direct links to ",
+        "overflowRight": 0,
+        "overflowLeft": 0,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "bg-white rounded-[2.5rem] p-6 sm:p-10 shadow-2xl -translate-y-1 hover:-translate-y-3 transition-transform group cursor-pointer border-t border-white/60",
+        "text": "Domain CapstoneIndustry-standard projects for your portfolioView Projects",
+        "overflowRight": 0,
+        "overflowLeft": 0,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "mb-12",
+        "text": "Work on Real Systems — Not Just PracticeLearning is based on real-world simulation, not passive content.Real World Simulation PillarsBuild R",
+        "overflowRight": -16,
+        "overflowLeft": -16,
+        "overflowBottom": 40
+      },
+      {
+        "tag": "div",
+        "className": "rounded-3xl p-8 lg:p-16 shadow-2xl shadow-orange-950/20 border border-white/20 relative overflow-hidden",
+        "text": "Verified ExperienceGraduate as a Pro, Not a Fresher.Real project-based experience yields a verifiable credential that bypasses entry-level f",
+        "overflowRight": -16,
+        "overflowLeft": -16,
+        "overflowBottom": 40
+      },
+      {
+        "tag": "div",
+        "className": "absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4",
+        "text": "",
+        "overflowRight": 63,
+        "overflowLeft": -95,
+        "overflowBottom": -1214
+      },
+      {
+        "tag": "div",
+        "className": "",
+        "text": "Verified ExperienceGraduate as a Pro, Not a Fresher.Real project-based experience yields a verifiable credential that bypasses entry-level f",
+        "overflowRight": 28.91,
+        "overflowLeft": 0,
+        "overflowBottom": -610
+      },
+      {
+        "tag": "div",
+        "className": "bg-white text-gray-800 rounded-2xl p-8 shadow-[0_30px_60px_rgba(0,0,0,0.15)] rotate-0 sm:-rotate-2 border border-gray-100 border-l-8 relative w-full max-w-lg mx",
+        "text": "Official DocumentLetter of Experience Based on actual work modules Reflects real-world experience Includes measurable contributionsNot just ",
+        "overflowRight": 28.91,
+        "overflowLeft": 0,
+        "overflowBottom": 28
+      },
+      {
+        "tag": "span",
+        "className": "text-xs font-bold text-green-700 bg-green-50 px-2 py-1 rounded border border-green-200",
+        "text": "VERIFIABLE CREDENTIAL",
+        "overflowRight": 0,
+        "overflowLeft": 0,
+        "overflowBottom": 2
+      },
+      {
+        "tag": "div",
+        "className": "absolute top-0 right-0 w-32 h-32 bg-blue-50/50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-1000",
+        "text": "",
+        "overflowRight": 63,
+        "overflowLeft": -159,
+        "overflowBottom": -179.5
+      },
+      {
+        "tag": "div",
+        "className": "text-center flex-1 group/item",
+        "text": "Job-ReadyPortfolio",
+        "overflowRight": 41.39,
+        "overflowLeft": -151.39,
+        "overflowBottom": 0
+      },
+      {
+        "tag": "div",
+        "className": "absolute -bottom-10 -right-10 w-32 h-32 bg-purple-50 rounded-full opacity-30",
+        "text": "",
+        "overflowRight": 40,
+        "overflowLeft": -200,
+        "overflowBottom": 40
+      },
+      {
+        "tag": "div",
+        "className": "absolute -bottom-10 -right-10 w-32 h-32 bg-purple-50 rounded-full opacity-30",
+        "text": "",
+        "overflowRight": 40,
+        "overflowLeft": -200,
+        "overflowBottom": 40
+      },
+      {
+        "tag": "div",
+        "className": "bg-white rounded-[2.5rem] p-6 sm:p-10 shadow-2xl border-t border-white/60 -translate-y-1 hover:-translate-y-3 transition-transform relative overflow-hidden grou",
+        "text": "👩‍🎓Elena R.Full Stack Developer\"Real-world projects made all the difference. I built a portfolio that impressed every interviewer I met.\"",
+        "overflowRight": 0,
+        "overflowLeft": 0,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "absolute -bottom-10 -right-10 w-32 h-32 bg-purple-50 rounded-full opacity-30",
+        "text": "",
+        "overflowRight": 40,
+        "overflowLeft": -200,
+        "overflowBottom": 40
+      },
+      {
+        "tag": "div",
+        "className": "bg-[#124fd6] rounded-3xl p-8 lg:p-16 text-center text-white shadow-2xl",
+        "text": "Start Your Structured Learning Journey TodayJoin thousands of learners achieving their goals with RealTutorialHubStart Learning NowView All ",
+        "overflowRight": -16,
+        "overflowLeft": -16,
+        "overflowBottom": 2
+      },
+      {
+        "tag": "div",
+        "className": "",
+        "text": "",
+        "overflowRight": 8,
+        "overflowLeft": 8,
+        "overflowBottom": 8
+      }
+    ],
+    "navInfo": {
+      "exists": true,
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "ratio": 1,
+      "mobileToggleVisible": true
+    }
+  },
+  {
+    "width": 375,
+    "height": 900,
+    "title": "RealTutorialHub - Learn Smarter. Not Harder.",
+    "bodyScrollWidth": 375,
+    "windowInnerWidth": 375,
+    "hasHorizontalOverflow": false,
+    "documentScrollWidth": 375,
+    "documentHasHorizontalOverflow": false,
+    "visibleOverflowing": [
+      {
+        "tag": "span",
+        "className": "",
+        "text": "Not Harder.",
+        "overflowRight": -26.25,
+        "overflowLeft": -26.23,
+        "overflowBottom": 3
+      },
+      {
+        "tag": "div",
+        "className": "flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6 bg-white/80 backdrop-blur-xl border-t border-white px-5 py-4 sm:px-8 sm:py-5 rounded-3xl sh",
+        "text": "InternshipExperience LetterPlacement",
+        "overflowRight": 0,
+        "overflowLeft": 0,
+        "overflowBottom": 2.02
+      },
+      {
+        "tag": "div",
+        "className": "bg-gradient-to-br from-cyan-500 to-cyan-600 text-white rounded-[2rem] p-8 w-40 text-center shadow-2xl hover:scale-105 -translate-y-1 hover:-translate-y-3 transi",
+        "text": "Improve",
+        "overflowRight": -67.5,
+        "overflowLeft": -67.5,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "bg-white/10 backdrop-blur rounded-2xl p-8",
+        "text": "👤Can you explain how recursion works in this context?Based on the lesson you just completed on functions, let me guide you through recursio",
+        "overflowRight": 0,
+        "overflowLeft": 0,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "space-y-12",
+        "text": "Smart RemediationWeak in something? We fix it automatically. Detect weak topics, generate personalized study plans, and get direct links to ",
+        "overflowRight": 0,
+        "overflowLeft": 0,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "bg-white rounded-[2.5rem] p-6 sm:p-10 shadow-2xl -translate-y-1 hover:-translate-y-3 transition-transform group cursor-pointer border-t border-white/60",
+        "text": "Domain CapstoneIndustry-standard projects for your portfolioView Projects",
+        "overflowRight": 0,
+        "overflowLeft": 0,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "mb-12",
+        "text": "Work on Real Systems — Not Just PracticeLearning is based on real-world simulation, not passive content.Real World Simulation PillarsBuild R",
+        "overflowRight": -16,
+        "overflowLeft": -16,
+        "overflowBottom": 40
+      },
+      {
+        "tag": "div",
+        "className": "rounded-3xl p-8 lg:p-16 shadow-2xl shadow-orange-950/20 border border-white/20 relative overflow-hidden",
+        "text": "Verified ExperienceGraduate as a Pro, Not a Fresher.Real project-based experience yields a verifiable credential that bypasses entry-level f",
+        "overflowRight": -16,
+        "overflowLeft": -16,
+        "overflowBottom": 40
+      },
+      {
+        "tag": "div",
+        "className": "absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4",
+        "text": "",
+        "overflowRight": 63,
+        "overflowLeft": -150,
+        "overflowBottom": -1198
+      },
+      {
+        "tag": "div",
+        "className": "bg-white text-gray-800 rounded-2xl p-8 shadow-[0_30px_60px_rgba(0,0,0,0.15)] rotate-0 sm:-rotate-2 border border-gray-100 border-l-8 relative w-full max-w-lg mx",
+        "text": "Official DocumentLetter of Experience Based on actual work modules Reflects real-world experience Includes measurable contributionsNot just ",
+        "overflowRight": 0,
+        "overflowLeft": 0,
+        "overflowBottom": 28
+      },
+      {
+        "tag": "span",
+        "className": "text-xs font-bold text-green-700 bg-green-50 px-2 py-1 rounded border border-green-200",
+        "text": "VERIFIABLE CREDENTIAL",
+        "overflowRight": 0,
+        "overflowLeft": -23.38,
+        "overflowBottom": 2
+      },
+      {
+        "tag": "div",
+        "className": "absolute top-0 right-0 w-32 h-32 bg-blue-50/50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-1000",
+        "text": "",
+        "overflowRight": 63,
+        "overflowLeft": -214,
+        "overflowBottom": -164.5
+      },
+      {
+        "tag": "div",
+        "className": "absolute -bottom-10 -right-10 w-32 h-32 bg-purple-50 rounded-full opacity-30",
+        "text": "",
+        "overflowRight": 40,
+        "overflowLeft": -255,
+        "overflowBottom": 40
+      },
+      {
+        "tag": "div",
+        "className": "absolute -bottom-10 -right-10 w-32 h-32 bg-purple-50 rounded-full opacity-30",
+        "text": "",
+        "overflowRight": 40,
+        "overflowLeft": -255,
+        "overflowBottom": 40
+      },
+      {
+        "tag": "div",
+        "className": "bg-white rounded-[2.5rem] p-6 sm:p-10 shadow-2xl border-t border-white/60 -translate-y-1 hover:-translate-y-3 transition-transform relative overflow-hidden grou",
+        "text": "👩‍🎓Elena R.Full Stack Developer\"Real-world projects made all the difference. I built a portfolio that impressed every interviewer I met.\"",
+        "overflowRight": 0,
+        "overflowLeft": 0,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "absolute -bottom-10 -right-10 w-32 h-32 bg-purple-50 rounded-full opacity-30",
+        "text": "",
+        "overflowRight": 40,
+        "overflowLeft": -255,
+        "overflowBottom": 40
+      },
+      {
+        "tag": "div",
+        "className": "bg-[#124fd6] rounded-3xl p-8 lg:p-16 text-center text-white shadow-2xl",
+        "text": "Start Your Structured Learning Journey TodayJoin thousands of learners achieving their goals with RealTutorialHubStart Learning NowView All ",
+        "overflowRight": -16,
+        "overflowLeft": -16,
+        "overflowBottom": 2
+      },
+      {
+        "tag": "div",
+        "className": "",
+        "text": "",
+        "overflowRight": 8,
+        "overflowLeft": 8,
+        "overflowBottom": 8
+      }
+    ],
+    "navInfo": {
+      "exists": true,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "ratio": 1,
+      "mobileToggleVisible": true
+    }
+  },
+  {
+    "width": 480,
+    "height": 900,
+    "title": "RealTutorialHub - Learn Smarter. Not Harder.",
+    "bodyScrollWidth": 480,
+    "windowInnerWidth": 480,
+    "hasHorizontalOverflow": false,
+    "documentScrollWidth": 480,
+    "documentHasHorizontalOverflow": false,
+    "visibleOverflowing": [
+      {
+        "tag": "span",
+        "className": "",
+        "text": "Not Harder.",
+        "overflowRight": -26.23,
+        "overflowLeft": -26.22,
+        "overflowBottom": 3
+      },
+      {
+        "tag": "div",
+        "className": "flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6 bg-white/80 backdrop-blur-xl border-t border-white px-5 py-4 sm:px-8 sm:py-5 rounded-3xl sh",
+        "text": "InternshipExperience LetterPlacement",
+        "overflowRight": 0,
+        "overflowLeft": 0,
+        "overflowBottom": 8.24
+      },
+      {
+        "tag": "div",
+        "className": "bg-gradient-to-br from-cyan-500 to-cyan-600 text-white rounded-[2rem] p-8 w-40 text-center shadow-2xl hover:scale-105 -translate-y-1 hover:-translate-y-3 transi",
+        "text": "Improve",
+        "overflowRight": -120,
+        "overflowLeft": -120,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "bg-white/10 backdrop-blur rounded-2xl p-8",
+        "text": "👤Can you explain how recursion works in this context?Based on the lesson you just completed on functions, let me guide you through recursio",
+        "overflowRight": 0,
+        "overflowLeft": 0,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "space-y-12",
+        "text": "Smart RemediationWeak in something? We fix it automatically. Detect weak topics, generate personalized study plans, and get direct links to ",
+        "overflowRight": 0,
+        "overflowLeft": 0,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "bg-white rounded-[2.5rem] p-6 sm:p-10 shadow-2xl -translate-y-1 hover:-translate-y-3 transition-transform group cursor-pointer border-t border-white/60",
+        "text": "Domain CapstoneIndustry-standard projects for your portfolioView Projects",
+        "overflowRight": 0,
+        "overflowLeft": 0,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "mb-12",
+        "text": "Work on Real Systems — Not Just PracticeLearning is based on real-world simulation, not passive content.Real World Simulation PillarsBuild R",
+        "overflowRight": -16,
+        "overflowLeft": -16,
+        "overflowBottom": 40
+      },
+      {
+        "tag": "div",
+        "className": "rounded-3xl p-8 lg:p-16 shadow-2xl shadow-orange-950/20 border border-white/20 relative overflow-hidden",
+        "text": "Verified ExperienceGraduate as a Pro, Not a Fresher.Real project-based experience yields a verifiable credential that bypasses entry-level f",
+        "overflowRight": -16,
+        "overflowLeft": -16,
+        "overflowBottom": 40
+      },
+      {
+        "tag": "div",
+        "className": "absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4",
+        "text": "",
+        "overflowRight": 63,
+        "overflowLeft": -255,
+        "overflowBottom": -980.75
+      },
+      {
+        "tag": "div",
+        "className": "bg-white text-gray-800 rounded-2xl p-8 shadow-[0_30px_60px_rgba(0,0,0,0.15)] rotate-0 sm:-rotate-2 border border-gray-100 border-l-8 relative w-full max-w-lg mx",
+        "text": "Official DocumentLetter of Experience Based on actual work modules Reflects real-world experience Includes measurable contributionsNot just ",
+        "overflowRight": 0,
+        "overflowLeft": 0,
+        "overflowBottom": 28
+      },
+      {
+        "tag": "span",
+        "className": "text-xs font-bold text-green-700 bg-green-50 px-2 py-1 rounded border border-green-200",
+        "text": "VERIFIABLE CREDENTIAL",
+        "overflowRight": 0,
+        "overflowLeft": 0,
+        "overflowBottom": 2
+      },
+      {
+        "tag": "div",
+        "className": "absolute top-0 right-0 w-32 h-32 bg-blue-50/50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-1000",
+        "text": "",
+        "overflowRight": 63,
+        "overflowLeft": -319,
+        "overflowBottom": -164.5
+      },
+      {
+        "tag": "div",
+        "className": "absolute -bottom-10 -right-10 w-32 h-32 bg-purple-50 rounded-full opacity-30",
+        "text": "",
+        "overflowRight": 40,
+        "overflowLeft": -360,
+        "overflowBottom": 40
+      },
+      {
+        "tag": "div",
+        "className": "absolute -bottom-10 -right-10 w-32 h-32 bg-purple-50 rounded-full opacity-30",
+        "text": "",
+        "overflowRight": 40,
+        "overflowLeft": -360,
+        "overflowBottom": 40
+      },
+      {
+        "tag": "div",
+        "className": "bg-white rounded-[2.5rem] p-6 sm:p-10 shadow-2xl border-t border-white/60 -translate-y-1 hover:-translate-y-3 transition-transform relative overflow-hidden grou",
+        "text": "👩‍🎓Elena R.Full Stack Developer\"Real-world projects made all the difference. I built a portfolio that impressed every interviewer I met.\"",
+        "overflowRight": 0,
+        "overflowLeft": 0,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "absolute -bottom-10 -right-10 w-32 h-32 bg-purple-50 rounded-full opacity-30",
+        "text": "",
+        "overflowRight": 40,
+        "overflowLeft": -360,
+        "overflowBottom": 40
+      },
+      {
+        "tag": "div",
+        "className": "bg-[#124fd6] rounded-3xl p-8 lg:p-16 text-center text-white shadow-2xl",
+        "text": "Start Your Structured Learning Journey TodayJoin thousands of learners achieving their goals with RealTutorialHubStart Learning NowView All ",
+        "overflowRight": -16,
+        "overflowLeft": -16,
+        "overflowBottom": 2
+      },
+      {
+        "tag": "div",
+        "className": "",
+        "text": "",
+        "overflowRight": 8,
+        "overflowLeft": 8,
+        "overflowBottom": 8
+      }
+    ],
+    "navInfo": {
+      "exists": true,
+      "scrollWidth": 480,
+      "clientWidth": 480,
+      "ratio": 1,
+      "mobileToggleVisible": true
+    }
+  },
+  {
+    "width": 640,
+    "height": 1024,
+    "title": "RealTutorialHub - Learn Smarter. Not Harder.",
+    "bodyScrollWidth": 640,
+    "windowInnerWidth": 640,
+    "hasHorizontalOverflow": false,
+    "documentScrollWidth": 640,
+    "documentHasHorizontalOverflow": false,
+    "visibleOverflowing": [
+      {
+        "tag": "span",
+        "className": "",
+        "text": "Not Harder.",
+        "overflowRight": -31.47,
+        "overflowLeft": -31.47,
+        "overflowBottom": 5
+      },
+      {
+        "tag": "div",
+        "className": "flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6 bg-white/80 backdrop-blur-xl border-t border-white px-5 py-4 sm:px-8 sm:py-5 rounded-3xl sh",
+        "text": "InternshipExperience LetterPlacement",
+        "overflowRight": 0,
+        "overflowLeft": 0,
+        "overflowBottom": 7.83
+      },
+      {
+        "tag": "div",
+        "className": "bg-gradient-to-br from-cyan-500 to-cyan-600 text-white rounded-[2rem] p-8 w-40 text-center shadow-2xl hover:scale-105 -translate-y-1 hover:-translate-y-3 transi",
+        "text": "Improve",
+        "overflowRight": -200,
+        "overflowLeft": -200,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "bg-white/10 backdrop-blur rounded-2xl p-8",
+        "text": "👤Can you explain how recursion works in this context?Based on the lesson you just completed on functions, let me guide you through recursio",
+        "overflowRight": 0,
+        "overflowLeft": 0,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "space-y-12",
+        "text": "Smart RemediationWeak in something? We fix it automatically. Detect weak topics, generate personalized study plans, and get direct links to ",
+        "overflowRight": 0,
+        "overflowLeft": 0,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "bg-white rounded-[2.5rem] p-6 sm:p-10 shadow-2xl -translate-y-1 hover:-translate-y-3 transition-transform group cursor-pointer border-t border-white/60",
+        "text": "Domain CapstoneIndustry-standard projects for your portfolioView Projects",
+        "overflowRight": 0,
+        "overflowLeft": 0,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "mb-12",
+        "text": "Work on Real Systems — Not Just PracticeLearning is based on real-world simulation, not passive content.Real World Simulation PillarsBuild R",
+        "overflowRight": -16,
+        "overflowLeft": -16,
+        "overflowBottom": 40
+      },
+      {
+        "tag": "div",
+        "className": "rounded-3xl p-8 lg:p-16 shadow-2xl shadow-orange-950/20 border border-white/20 relative overflow-hidden",
+        "text": "Verified ExperienceGraduate as a Pro, Not a Fresher.Real project-based experience yields a verifiable credential that bypasses entry-level f",
+        "overflowRight": -16,
+        "overflowLeft": -16,
+        "overflowBottom": 40
+      },
+      {
+        "tag": "div",
+        "className": "absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4",
+        "text": "",
+        "overflowRight": 63,
+        "overflowLeft": -415,
+        "overflowBottom": -879.5
+      },
+      {
+        "tag": "div",
+        "className": "bg-white text-gray-800 rounded-2xl p-8 shadow-[0_30px_60px_rgba(0,0,0,0.15)] rotate-0 sm:-rotate-2 border border-gray-100 border-l-8 relative w-full max-w-lg mx",
+        "text": "Official DocumentLetter of Experience Based on actual work modules Reflects real-world experience Includes measurable contributionsNot just ",
+        "overflowRight": -15,
+        "overflowLeft": -15,
+        "overflowBottom": 28
+      },
+      {
+        "tag": "span",
+        "className": "text-xs font-bold text-green-700 bg-green-50 px-2 py-1 rounded border border-green-200",
+        "text": "VERIFIABLE CREDENTIAL",
+        "overflowRight": 0,
+        "overflowLeft": 0,
+        "overflowBottom": 2
+      },
+      {
+        "tag": "div",
+        "className": "absolute top-0 right-0 w-32 h-32 bg-blue-50/50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-1000",
+        "text": "",
+        "overflowRight": 63,
+        "overflowLeft": -479,
+        "overflowBottom": -225
+      },
+      {
+        "tag": "div",
+        "className": "relative bg-white rounded-3xl p-8 border-2 border-gray-200 shadow-2xl sm:scale-[1.02] hover:scale-105 hover:-translate-y-1 transition-all duration-300",
+        "text": "FreePerfect for exploring the platform$0/foreverAccess to 3 tutorial modulesBasic AI Tutor queries responses2 exam attempts per monthCommuni",
+        "overflowRight": -317.12,
+        "overflowLeft": 2.88,
+        "overflowBottom": -741.24
+      },
+      {
+        "tag": "div",
+        "className": "relative bg-white rounded-3xl p-8 border-2 shadow-[0_30px_60px_rgba(0,0,0,0.2)] sm:scale-105 sm:hover:scale-[1.08] hover:-translate-y-1 transition-all duration-",
+        "text": "MOST POPULARProFor serious learners committed to mastery$29/per monthUnlimited tutorial accessAdvanced Unlimited AI Tutor with code debuggin",
+        "overflowRight": 7.2,
+        "overflowLeft": -312.8,
+        "overflowBottom": -729.6
+      },
+      {
+        "tag": "div",
+        "className": "relative bg-white rounded-3xl p-8 border-2 border-gray-200 shadow-2xl sm:scale-[1.02] hover:scale-105 hover:-translate-y-1 transition-all duration-300",
+        "text": "EnterpriseFor teams and organizationsCustom/contact salesEverything in ProCustom learning pathsTeam performance analyticsDedicated account m",
+        "overflowRight": -317.12,
+        "overflowLeft": 2.88,
+        "overflowBottom": 7.17
+      },
+      {
+        "tag": "div",
+        "className": "absolute -bottom-10 -right-10 w-32 h-32 bg-purple-50 rounded-full opacity-30",
+        "text": "",
+        "overflowRight": 40,
+        "overflowLeft": -520,
+        "overflowBottom": 40
+      },
+      {
+        "tag": "div",
+        "className": "absolute -bottom-10 -right-10 w-32 h-32 bg-purple-50 rounded-full opacity-30",
+        "text": "",
+        "overflowRight": 40,
+        "overflowLeft": -520,
+        "overflowBottom": 40
+      },
+      {
+        "tag": "div",
+        "className": "bg-white rounded-[2.5rem] p-6 sm:p-10 shadow-2xl border-t border-white/60 -translate-y-1 hover:-translate-y-3 transition-transform relative overflow-hidden grou",
+        "text": "👩‍🎓Elena R.Full Stack Developer\"Real-world projects made all the difference. I built a portfolio that impressed every interviewer I met.\"",
+        "overflowRight": 0,
+        "overflowLeft": 0,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "absolute -bottom-10 -right-10 w-32 h-32 bg-purple-50 rounded-full opacity-30",
+        "text": "",
+        "overflowRight": 40,
+        "overflowLeft": -520,
+        "overflowBottom": 40
+      },
+      {
+        "tag": "div",
+        "className": "bg-[#124fd6] rounded-3xl p-8 lg:p-16 text-center text-white shadow-2xl",
+        "text": "Start Your Structured Learning Journey TodayJoin thousands of learners achieving their goals with RealTutorialHubStart Learning NowView All ",
+        "overflowRight": -16,
+        "overflowLeft": -16,
+        "overflowBottom": 2
+      },
+      {
+        "tag": "div",
+        "className": "",
+        "text": "",
+        "overflowRight": 8,
+        "overflowLeft": 8,
+        "overflowBottom": 8
+      }
+    ],
+    "navInfo": {
+      "exists": true,
+      "scrollWidth": 640,
+      "clientWidth": 640,
+      "ratio": 1,
+      "mobileToggleVisible": true
+    }
+  },
+  {
+    "width": 768,
+    "height": 1024,
+    "title": "RealTutorialHub - Learn Smarter. Not Harder.",
+    "bodyScrollWidth": 768,
+    "windowInnerWidth": 768,
+    "hasHorizontalOverflow": false,
+    "documentScrollWidth": 768,
+    "documentHasHorizontalOverflow": false,
+    "visibleOverflowing": [
+      {
+        "tag": "span",
+        "className": "",
+        "text": "Not Harder.",
+        "overflowRight": -41.95,
+        "overflowLeft": -41.93,
+        "overflowBottom": 3
+      },
+      {
+        "tag": "div",
+        "className": "flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6 bg-white/80 backdrop-blur-xl border-t border-white px-5 py-4 sm:px-8 sm:py-5 rounded-3xl sh",
+        "text": "InternshipExperience LetterPlacement",
+        "overflowRight": -43.41,
+        "overflowLeft": -43.41,
+        "overflowBottom": 8.74
+      },
+      {
+        "tag": "div",
+        "className": "bg-gradient-to-br from-cyan-500 to-cyan-600 text-white rounded-[2rem] p-8 w-40 text-center shadow-2xl hover:scale-105 -translate-y-1 hover:-translate-y-3 transi",
+        "text": "Improve",
+        "overflowRight": -164,
+        "overflowLeft": -348,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "bg-white/10 backdrop-blur rounded-2xl p-8",
+        "text": "👤Can you explain how recursion works in this context?Based on the lesson you just completed on functions, let me guide you through recursio",
+        "overflowRight": 0,
+        "overflowLeft": 0,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "space-y-12",
+        "text": "Smart RemediationWeak in something? We fix it automatically. Detect weak topics, generate personalized study plans, and get direct links to ",
+        "overflowRight": 0,
+        "overflowLeft": 0,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "bg-white rounded-[2.5rem] p-6 sm:p-10 shadow-2xl -translate-y-1 hover:-translate-y-3 transition-transform group cursor-pointer border-t border-white/60",
+        "text": "Topic-Level ProjectsSmall, focused projects for each topic you learnView Projects",
+        "overflowRight": -506.67,
+        "overflowLeft": 0,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "bg-white rounded-[2.5rem] p-6 sm:p-10 shadow-2xl -translate-y-1 hover:-translate-y-3 transition-transform group cursor-pointer border-t border-white/60",
+        "text": "Subject-Level ProjectsComprehensive projects combining multiple topicsView Projects",
+        "overflowRight": -253.34,
+        "overflowLeft": -253.33,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "bg-white rounded-[2.5rem] p-6 sm:p-10 shadow-2xl -translate-y-1 hover:-translate-y-3 transition-transform group cursor-pointer border-t border-white/60",
+        "text": "Domain CapstoneIndustry-standard projects for your portfolioView Projects",
+        "overflowRight": -0.02,
+        "overflowLeft": -506.66,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "mb-12",
+        "text": "Work on Real Systems — Not Just PracticeLearning is based on real-world simulation, not passive content.Real World Simulation PillarsBuild R",
+        "overflowRight": -24,
+        "overflowLeft": -24,
+        "overflowBottom": 40
+      },
+      {
+        "tag": "div",
+        "className": "rounded-3xl p-8 lg:p-16 shadow-2xl shadow-orange-950/20 border border-white/20 relative overflow-hidden",
+        "text": "Verified ExperienceGraduate as a Pro, Not a Fresher.Real project-based experience yields a verifiable credential that bypasses entry-level f",
+        "overflowRight": -24,
+        "overflowLeft": -24,
+        "overflowBottom": 40
+      },
+      {
+        "tag": "div",
+        "className": "absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4",
+        "text": "",
+        "overflowRight": 63,
+        "overflowLeft": -527,
+        "overflowBottom": -859.5
+      },
+      {
+        "tag": "div",
+        "className": "bg-white text-gray-800 rounded-2xl p-8 shadow-[0_30px_60px_rgba(0,0,0,0.15)] rotate-0 sm:-rotate-2 border border-gray-100 border-l-8 relative w-full max-w-lg mx",
+        "text": "Official DocumentLetter of Experience Based on actual work modules Reflects real-world experience Includes measurable contributionsNot just ",
+        "overflowRight": -71,
+        "overflowLeft": -71,
+        "overflowBottom": 28
+      },
+      {
+        "tag": "span",
+        "className": "text-xs font-bold text-green-700 bg-green-50 px-2 py-1 rounded border border-green-200",
+        "text": "VERIFIABLE CREDENTIAL",
+        "overflowRight": 0,
+        "overflowLeft": 0,
+        "overflowBottom": 2
+      },
+      {
+        "tag": "div",
+        "className": "absolute top-0 right-0 w-32 h-32 bg-blue-50/50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-1000",
+        "text": "",
+        "overflowRight": 63,
+        "overflowLeft": -591,
+        "overflowBottom": -225
+      },
+      {
+        "tag": "div",
+        "className": "relative bg-white rounded-3xl p-8 border-2 border-gray-200 shadow-2xl sm:scale-[1.02] hover:scale-105 hover:-translate-y-1 transition-all duration-300",
+        "text": "FreePerfect for exploring the platform$0/foreverAccess to 3 tutorial modulesBasic AI Tutor queries responses2 exam attempts per monthCommuni",
+        "overflowRight": -372.56,
+        "overflowLeft": 3.44,
+        "overflowBottom": -713.9
+      },
+      {
+        "tag": "div",
+        "className": "relative bg-white rounded-3xl p-8 border-2 shadow-[0_30px_60px_rgba(0,0,0,0.2)] sm:scale-105 sm:hover:scale-[1.08] hover:-translate-y-1 transition-all duration-",
+        "text": "MOST POPULARProFor serious learners committed to mastery$29/per monthUnlimited tutorial accessAdvanced Unlimited AI Tutor with code debuggin",
+        "overflowRight": 8.6,
+        "overflowLeft": -367.4,
+        "overflowBottom": -703.25
+      },
+      {
+        "tag": "div",
+        "className": "relative bg-white rounded-3xl p-8 border-2 border-gray-200 shadow-2xl sm:scale-[1.02] hover:scale-105 hover:-translate-y-1 transition-all duration-300",
+        "text": "EnterpriseFor teams and organizationsCustom/contact salesEverything in ProCustom learning pathsTeam performance analyticsDedicated account m",
+        "overflowRight": -372.56,
+        "overflowLeft": 3.44,
+        "overflowBottom": 6.89
+      },
+      {
+        "tag": "div",
+        "className": "bg-white rounded-[2.5rem] p-6 sm:p-10 shadow-2xl border-t border-white/60 -translate-y-1 hover:-translate-y-3 transition-transform relative overflow-hidden grou",
+        "text": "👩‍💻Sarah J.Software Engineer @ Google\"RealTutorialHub's structured approach helped me land my dream job. The AI tutor was like having a pe",
+        "overflowRight": -506.67,
+        "overflowLeft": 0,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "",
+        "text": "Sarah J.Software Engineer @ Google",
+        "overflowRight": 24.61,
+        "overflowLeft": -69.44,
+        "overflowBottom": 0
+      },
+      {
+        "tag": "div",
+        "className": "absolute -bottom-10 -right-10 w-32 h-32 bg-purple-50 rounded-full opacity-30",
+        "text": "",
+        "overflowRight": 40,
+        "overflowLeft": -125.33,
+        "overflowBottom": 40
+      },
+      {
+        "tag": "div",
+        "className": "bg-white rounded-[2.5rem] p-6 sm:p-10 shadow-2xl border-t border-white/60 -translate-y-1 hover:-translate-y-3 transition-transform relative overflow-hidden grou",
+        "text": "👨‍💼David K.Data Scientist\"The remediation system identified my weak areas and created a perfect study plan. I improved faster than ever be",
+        "overflowRight": -253.34,
+        "overflowLeft": -253.33,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "",
+        "text": "David K.Data Scientist",
+        "overflowRight": 19.52,
+        "overflowLeft": -69.44,
+        "overflowBottom": 0
+      },
+      {
+        "tag": "div",
+        "className": "absolute -bottom-10 -right-10 w-32 h-32 bg-purple-50 rounded-full opacity-30",
+        "text": "",
+        "overflowRight": 40,
+        "overflowLeft": -125.33,
+        "overflowBottom": 40
+      },
+      {
+        "tag": "div",
+        "className": "bg-white rounded-[2.5rem] p-6 sm:p-10 shadow-2xl border-t border-white/60 -translate-y-1 hover:-translate-y-3 transition-transform relative overflow-hidden grou",
+        "text": "👩‍🎓Elena R.Full Stack Developer\"Real-world projects made all the difference. I built a portfolio that impressed every interviewer I met.\"",
+        "overflowRight": -0.02,
+        "overflowLeft": -506.66,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "",
+        "text": "Elena R.Full Stack Developer",
+        "overflowRight": 27.38,
+        "overflowLeft": -69.44,
+        "overflowBottom": 0
+      }
+    ],
+    "navInfo": {
+      "exists": true,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "ratio": 1,
+      "mobileToggleVisible": true
+    }
+  },
+  {
+    "width": 1024,
+    "height": 1200,
+    "title": "RealTutorialHub - Learn Smarter. Not Harder.",
+    "bodyScrollWidth": 1024,
+    "windowInnerWidth": 1024,
+    "hasHorizontalOverflow": false,
+    "documentScrollWidth": 1024,
+    "documentHasHorizontalOverflow": false,
+    "visibleOverflowing": [
+      {
+        "tag": "span",
+        "className": "",
+        "text": "Not Harder.",
+        "overflowRight": -52.46,
+        "overflowLeft": -52.44,
+        "overflowBottom": 11.99
+      },
+      {
+        "tag": "div",
+        "className": "flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6 bg-white/80 backdrop-blur-xl border-t border-white px-5 py-4 sm:px-8 sm:py-5 rounded-3xl sh",
+        "text": "InternshipExperience LetterPlacement",
+        "overflowRight": -171.37,
+        "overflowLeft": -171.37,
+        "overflowBottom": 7.89
+      },
+      {
+        "tag": "div",
+        "className": "bg-gradient-to-br from-cyan-500 to-cyan-600 text-white rounded-[2rem] p-8 w-40 text-center shadow-2xl hover:scale-105 -translate-y-1 hover:-translate-y-3 transi",
+        "text": "Improve",
+        "overflowRight": -238,
+        "overflowLeft": -482,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "",
+        "text": "AI-Powered LearningStuck? Ask AI — Get Answers Based on Your Exact TopicOur AI Tutor is context-aware and provides guidance without spoon-fe",
+        "overflowRight": -464,
+        "overflowLeft": 0,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "",
+        "text": "Assignment SystemPractice Like Real ExamsProgress from Simple to Expert levels with auto and AI evaluation. Unlock new challenges as you imp",
+        "overflowRight": -512,
+        "overflowLeft": 0,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "space-y-12",
+        "text": "Smart RemediationWeak in something? We fix it automatically. Detect weak topics, generate personalized study plans, and get direct links to ",
+        "overflowRight": 0,
+        "overflowLeft": -512,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "bg-white rounded-[2.5rem] p-6 sm:p-10 shadow-2xl -translate-y-1 hover:-translate-y-3 transition-transform group cursor-pointer border-t border-white/60",
+        "text": "Topic-Level ProjectsSmall, focused projects for each topic you learnView Projects",
+        "overflowRight": -672,
+        "overflowLeft": 0,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "bg-white rounded-[2.5rem] p-6 sm:p-10 shadow-2xl -translate-y-1 hover:-translate-y-3 transition-transform group cursor-pointer border-t border-white/60",
+        "text": "Subject-Level ProjectsComprehensive projects combining multiple topicsView Projects",
+        "overflowRight": -336,
+        "overflowLeft": -336,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "bg-white rounded-[2.5rem] p-6 sm:p-10 shadow-2xl -translate-y-1 hover:-translate-y-3 transition-transform group cursor-pointer border-t border-white/60",
+        "text": "Domain CapstoneIndustry-standard projects for your portfolioView Projects",
+        "overflowRight": 0,
+        "overflowLeft": -672,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "mb-12",
+        "text": "Work on Real Systems — Not Just PracticeLearning is based on real-world simulation, not passive content.Real World Simulation PillarsBuild R",
+        "overflowRight": -24,
+        "overflowLeft": -24,
+        "overflowBottom": 40
+      },
+      {
+        "tag": "div",
+        "className": "rounded-3xl p-8 lg:p-16 shadow-2xl shadow-orange-950/20 border border-white/20 relative overflow-hidden",
+        "text": "Verified ExperienceGraduate as a Pro, Not a Fresher.Real project-based experience yields a verifiable credential that bypasses entry-level f",
+        "overflowRight": -24,
+        "overflowLeft": -24,
+        "overflowBottom": 40
+      },
+      {
+        "tag": "div",
+        "className": "absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4",
+        "text": "",
+        "overflowRight": 63,
+        "overflowLeft": -783,
+        "overflowBottom": -574.75
+      },
+      {
+        "tag": "span",
+        "className": "text-xs font-bold text-green-700 bg-green-50 px-2 py-1 rounded border border-green-200",
+        "text": "VERIFIABLE CREDENTIAL",
+        "overflowRight": 0,
+        "overflowLeft": 0,
+        "overflowBottom": 2
+      },
+      {
+        "tag": "div",
+        "className": "absolute top-0 right-0 w-32 h-32 bg-blue-50/50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-1000",
+        "text": "",
+        "overflowRight": 63,
+        "overflowLeft": -376.59,
+        "overflowBottom": -225
+      },
+      {
+        "tag": "div",
+        "className": "relative bg-white rounded-3xl p-8 border-2 border-gray-200 shadow-2xl sm:scale-[1.02] hover:scale-105 hover:-translate-y-1 transition-all duration-300",
+        "text": "FreePerfect for exploring the platform$0/foreverAccess to 3 tutorial modulesBasic AI Tutor queries responses2 exam attempts per monthCommuni",
+        "overflowRight": -668.96,
+        "overflowLeft": 3.04,
+        "overflowBottom": 7.46
+      },
+      {
+        "tag": "div",
+        "className": "relative bg-white rounded-3xl p-8 border-2 shadow-[0_30px_60px_rgba(0,0,0,0.2)] sm:scale-105 sm:hover:scale-[1.08] hover:-translate-y-1 transition-all duration-",
+        "text": "MOST POPULARProFor serious learners committed to mastery$29/per monthUnlimited tutorial accessAdvanced Unlimited AI Tutor with code debuggin",
+        "overflowRight": -328.4,
+        "overflowLeft": -328.4,
+        "overflowBottom": 18.65
+      },
+      {
+        "tag": "div",
+        "className": "relative bg-white rounded-3xl p-8 border-2 border-gray-200 shadow-2xl sm:scale-[1.02] hover:scale-105 hover:-translate-y-1 transition-all duration-300",
+        "text": "EnterpriseFor teams and organizationsCustom/contact salesEverything in ProCustom learning pathsTeam performance analyticsDedicated account m",
+        "overflowRight": 3.04,
+        "overflowLeft": -668.96,
+        "overflowBottom": 7.46
+      },
+      {
+        "tag": "span",
+        "className": "text-4xl md:text-5xl font-bold bg-gradient-to-br from-purple-500 to-purple-600 bg-clip-text text-transparent",
+        "text": "Custom",
+        "overflowRight": -55.4,
+        "overflowLeft": 15.22,
+        "overflowBottom": -17.34
+      },
+      {
+        "tag": "span",
+        "className": "text-gray-500 text-sm",
+        "text": "/contact sales",
+        "overflowRight": 15.24,
+        "overflowLeft": -193.48,
+        "overflowBottom": 0
+      },
+      {
+        "tag": "div",
+        "className": "bg-white rounded-[2.5rem] p-6 sm:p-10 shadow-2xl border-t border-white/60 -translate-y-1 hover:-translate-y-3 transition-transform relative overflow-hidden grou",
+        "text": "👩‍💻Sarah J.Software Engineer @ Google\"RealTutorialHub's structured approach helped me land my dream job. The AI tutor was like having a pe",
+        "overflowRight": -672,
+        "overflowLeft": 0,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "absolute -bottom-10 -right-10 w-32 h-32 bg-purple-50 rounded-full opacity-30",
+        "text": "",
+        "overflowRight": 40,
+        "overflowLeft": -216,
+        "overflowBottom": 40
+      },
+      {
+        "tag": "div",
+        "className": "bg-white rounded-[2.5rem] p-6 sm:p-10 shadow-2xl border-t border-white/60 -translate-y-1 hover:-translate-y-3 transition-transform relative overflow-hidden grou",
+        "text": "👨‍💼David K.Data Scientist\"The remediation system identified my weak areas and created a perfect study plan. I improved faster than ever be",
+        "overflowRight": -336,
+        "overflowLeft": -336,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "absolute -bottom-10 -right-10 w-32 h-32 bg-purple-50 rounded-full opacity-30",
+        "text": "",
+        "overflowRight": 40,
+        "overflowLeft": -216,
+        "overflowBottom": 40
+      },
+      {
+        "tag": "div",
+        "className": "bg-white rounded-[2.5rem] p-6 sm:p-10 shadow-2xl border-t border-white/60 -translate-y-1 hover:-translate-y-3 transition-transform relative overflow-hidden grou",
+        "text": "👩‍🎓Elena R.Full Stack Developer\"Real-world projects made all the difference. I built a portfolio that impressed every interviewer I met.\"",
+        "overflowRight": 0,
+        "overflowLeft": -672,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "absolute -bottom-10 -right-10 w-32 h-32 bg-purple-50 rounded-full opacity-30",
+        "text": "",
+        "overflowRight": 40,
+        "overflowLeft": -216,
+        "overflowBottom": 40
+      }
+    ],
+    "navInfo": {
+      "exists": true,
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "ratio": 1,
+      "mobileToggleVisible": false
+    }
+  },
+  {
+    "width": 1280,
+    "height": 1200,
+    "title": "RealTutorialHub - Learn Smarter. Not Harder.",
+    "bodyScrollWidth": 1280,
+    "windowInnerWidth": 1280,
+    "hasHorizontalOverflow": false,
+    "documentScrollWidth": 1280,
+    "documentHasHorizontalOverflow": false,
+    "visibleOverflowing": [
+      {
+        "tag": "span",
+        "className": "",
+        "text": "Not Harder.",
+        "overflowRight": -62.91,
+        "overflowLeft": -62.91,
+        "overflowBottom": 13.99
+      },
+      {
+        "tag": "div",
+        "className": "flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6 bg-white/80 backdrop-blur-xl border-t border-white px-5 py-4 sm:px-8 sm:py-5 rounded-3xl sh",
+        "text": "InternshipExperience LetterPlacement",
+        "overflowRight": -299.17,
+        "overflowLeft": -299.17,
+        "overflowBottom": 8.82
+      },
+      {
+        "tag": "div",
+        "className": " text-white rounded-[2rem] p-8 w-40 text-center shadow-2xl hover:scale-105 -translate-y-1 hover:-translate-y-3 transition-transform cursor-pointer border-t bord",
+        "text": "Learn",
+        "overflowRight": -976,
+        "overflowLeft": 0,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-[2rem] p-8 w-40 text-center shadow-2xl hover:scale-105 -translate-y-1 hover:-translate-y-3 transi",
+        "text": "AI Help",
+        "overflowRight": -488,
+        "overflowLeft": -488,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "bg-gradient-to-br from-cyan-500 to-cyan-600 text-white rounded-[2rem] p-8 w-40 text-center shadow-2xl hover:scale-105 -translate-y-1 hover:-translate-y-3 transi",
+        "text": "Improve",
+        "overflowRight": 0,
+        "overflowLeft": -976,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "",
+        "text": "AI-Powered LearningStuck? Ask AI — Get Answers Based on Your Exact TopicOur AI Tutor is context-aware and provides guidance without spoon-fe",
+        "overflowRight": -592,
+        "overflowLeft": 0,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "",
+        "text": "Assignment SystemPractice Like Real ExamsProgress from Simple to Expert levels with auto and AI evaluation. Unlock new challenges as you imp",
+        "overflowRight": -640,
+        "overflowLeft": 0,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "space-y-12",
+        "text": "Smart RemediationWeak in something? We fix it automatically. Detect weak topics, generate personalized study plans, and get direct links to ",
+        "overflowRight": 0,
+        "overflowLeft": -640,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "bg-white rounded-[2.5rem] p-6 sm:p-10 shadow-2xl -translate-y-1 hover:-translate-y-3 transition-transform group cursor-pointer border-t border-white/60",
+        "text": "Topic-Level ProjectsSmall, focused projects for each topic you learnView Projects",
+        "overflowRight": -842.67,
+        "overflowLeft": 0,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "bg-white rounded-[2.5rem] p-6 sm:p-10 shadow-2xl -translate-y-1 hover:-translate-y-3 transition-transform group cursor-pointer border-t border-white/60",
+        "text": "Subject-Level ProjectsComprehensive projects combining multiple topicsView Projects",
+        "overflowRight": -421.34,
+        "overflowLeft": -421.33,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "bg-white rounded-[2.5rem] p-6 sm:p-10 shadow-2xl -translate-y-1 hover:-translate-y-3 transition-transform group cursor-pointer border-t border-white/60",
+        "text": "Domain CapstoneIndustry-standard projects for your portfolioView Projects",
+        "overflowRight": 0,
+        "overflowLeft": -842.66,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "mb-12",
+        "text": "Work on Real Systems — Not Just PracticeLearning is based on real-world simulation, not passive content.Real World Simulation PillarsBuild R",
+        "overflowRight": -24,
+        "overflowLeft": -24,
+        "overflowBottom": 40
+      },
+      {
+        "tag": "div",
+        "className": "rounded-3xl p-8 lg:p-16 shadow-2xl shadow-orange-950/20 border border-white/20 relative overflow-hidden",
+        "text": "Verified ExperienceGraduate as a Pro, Not a Fresher.Real project-based experience yields a verifiable credential that bypasses entry-level f",
+        "overflowRight": -24,
+        "overflowLeft": -24,
+        "overflowBottom": 40
+      },
+      {
+        "tag": "div",
+        "className": "absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4",
+        "text": "",
+        "overflowRight": 63,
+        "overflowLeft": -1039,
+        "overflowBottom": -525.5
+      },
+      {
+        "tag": "span",
+        "className": "text-xs font-bold text-green-700 bg-green-50 px-2 py-1 rounded border border-green-200",
+        "text": "VERIFIABLE CREDENTIAL",
+        "overflowRight": 0,
+        "overflowLeft": 0,
+        "overflowBottom": 2
+      },
+      {
+        "tag": "div",
+        "className": "absolute top-0 right-0 w-32 h-32 bg-blue-50/50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-1000",
+        "text": "",
+        "overflowRight": 63,
+        "overflowLeft": -530.19,
+        "overflowBottom": -225
+      },
+      {
+        "tag": "div",
+        "className": "relative bg-white rounded-3xl p-8 border-2 border-gray-200 shadow-2xl sm:scale-[1.02] hover:scale-105 hover:-translate-y-1 transition-all duration-300",
+        "text": "FreePerfect for exploring the platform$0/foreverAccess to 3 tutorial modulesBasic AI Tutor queries responses2 exam attempts per monthCommuni",
+        "overflowRight": -785.72,
+        "overflowLeft": 3.63,
+        "overflowBottom": 7.1
+      },
+      {
+        "tag": "div",
+        "className": "relative bg-white rounded-3xl p-8 border-2 shadow-[0_30px_60px_rgba(0,0,0,0.2)] sm:scale-105 sm:hover:scale-[1.08] hover:-translate-y-1 transition-all duration-",
+        "text": "MOST POPULARProFor serious learners committed to mastery$29/per monthUnlimited tutorial accessAdvanced Unlimited AI Tutor with code debuggin",
+        "overflowRight": -385.61,
+        "overflowLeft": -385.59,
+        "overflowBottom": 17.75
+      },
+      {
+        "tag": "div",
+        "className": "relative bg-white rounded-3xl p-8 border-2 border-gray-200 shadow-2xl sm:scale-[1.02] hover:scale-105 hover:-translate-y-1 transition-all duration-300",
+        "text": "EnterpriseFor teams and organizationsCustom/contact salesEverything in ProCustom learning pathsTeam performance analyticsDedicated account m",
+        "overflowRight": 3.61,
+        "overflowLeft": -785.7,
+        "overflowBottom": 7.1
+      },
+      {
+        "tag": "div",
+        "className": "bg-white rounded-[2.5rem] p-6 sm:p-10 shadow-2xl border-t border-white/60 -translate-y-1 hover:-translate-y-3 transition-transform relative overflow-hidden grou",
+        "text": "👩‍💻Sarah J.Software Engineer @ Google\"RealTutorialHub's structured approach helped me land my dream job. The AI tutor was like having a pe",
+        "overflowRight": -842.67,
+        "overflowLeft": 0,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "absolute -bottom-10 -right-10 w-32 h-32 bg-purple-50 rounded-full opacity-30",
+        "text": "",
+        "overflowRight": 40,
+        "overflowLeft": -301.33,
+        "overflowBottom": 40
+      },
+      {
+        "tag": "div",
+        "className": "bg-white rounded-[2.5rem] p-6 sm:p-10 shadow-2xl border-t border-white/60 -translate-y-1 hover:-translate-y-3 transition-transform relative overflow-hidden grou",
+        "text": "👨‍💼David K.Data Scientist\"The remediation system identified my weak areas and created a perfect study plan. I improved faster than ever be",
+        "overflowRight": -421.34,
+        "overflowLeft": -421.33,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "absolute -bottom-10 -right-10 w-32 h-32 bg-purple-50 rounded-full opacity-30",
+        "text": "",
+        "overflowRight": 40,
+        "overflowLeft": -301.33,
+        "overflowBottom": 40
+      },
+      {
+        "tag": "div",
+        "className": "bg-white rounded-[2.5rem] p-6 sm:p-10 shadow-2xl border-t border-white/60 -translate-y-1 hover:-translate-y-3 transition-transform relative overflow-hidden grou",
+        "text": "👩‍🎓Elena R.Full Stack Developer\"Real-world projects made all the difference. I built a portfolio that impressed every interviewer I met.\"",
+        "overflowRight": 0,
+        "overflowLeft": -842.66,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "absolute -bottom-10 -right-10 w-32 h-32 bg-purple-50 rounded-full opacity-30",
+        "text": "",
+        "overflowRight": 40,
+        "overflowLeft": -301.34,
+        "overflowBottom": 40
+      }
+    ],
+    "navInfo": {
+      "exists": true,
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "ratio": 1,
+      "mobileToggleVisible": false
+    }
+  },
+  {
+    "width": 1440,
+    "height": 1200,
+    "title": "RealTutorialHub - Learn Smarter. Not Harder.",
+    "bodyScrollWidth": 1440,
+    "windowInnerWidth": 1440,
+    "hasHorizontalOverflow": false,
+    "documentScrollWidth": 1440,
+    "documentHasHorizontalOverflow": false,
+    "visibleOverflowing": [
+      {
+        "tag": "span",
+        "className": "",
+        "text": "Not Harder.",
+        "overflowRight": -62.89,
+        "overflowLeft": -62.89,
+        "overflowBottom": 13.98
+      },
+      {
+        "tag": "div",
+        "className": "flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6 bg-white/80 backdrop-blur-xl border-t border-white px-5 py-4 sm:px-8 sm:py-5 rounded-3xl sh",
+        "text": "InternshipExperience LetterPlacement",
+        "overflowRight": -299.08,
+        "overflowLeft": -299.08,
+        "overflowBottom": 9.37
+      },
+      {
+        "tag": "div",
+        "className": " text-white rounded-[2rem] p-8 w-40 text-center shadow-2xl hover:scale-105 -translate-y-1 hover:-translate-y-3 transition-transform cursor-pointer border-t bord",
+        "text": "Learn",
+        "overflowRight": -976,
+        "overflowLeft": 0,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-[2rem] p-8 w-40 text-center shadow-2xl hover:scale-105 -translate-y-1 hover:-translate-y-3 transi",
+        "text": "AI Help",
+        "overflowRight": -488,
+        "overflowLeft": -488,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "bg-gradient-to-br from-cyan-500 to-cyan-600 text-white rounded-[2rem] p-8 w-40 text-center shadow-2xl hover:scale-105 -translate-y-1 hover:-translate-y-3 transi",
+        "text": "Improve",
+        "overflowRight": 0,
+        "overflowLeft": -976,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "",
+        "text": "AI-Powered LearningStuck? Ask AI — Get Answers Based on Your Exact TopicOur AI Tutor is context-aware and provides guidance without spoon-fe",
+        "overflowRight": -592,
+        "overflowLeft": 0,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "",
+        "text": "Assignment SystemPractice Like Real ExamsProgress from Simple to Expert levels with auto and AI evaluation. Unlock new challenges as you imp",
+        "overflowRight": -640,
+        "overflowLeft": 0,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "space-y-12",
+        "text": "Smart RemediationWeak in something? We fix it automatically. Detect weak topics, generate personalized study plans, and get direct links to ",
+        "overflowRight": 0,
+        "overflowLeft": -640,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "bg-white rounded-[2.5rem] p-6 sm:p-10 shadow-2xl -translate-y-1 hover:-translate-y-3 transition-transform group cursor-pointer border-t border-white/60",
+        "text": "Topic-Level ProjectsSmall, focused projects for each topic you learnView Projects",
+        "overflowRight": -842.67,
+        "overflowLeft": 0,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "bg-white rounded-[2.5rem] p-6 sm:p-10 shadow-2xl -translate-y-1 hover:-translate-y-3 transition-transform group cursor-pointer border-t border-white/60",
+        "text": "Subject-Level ProjectsComprehensive projects combining multiple topicsView Projects",
+        "overflowRight": -421.34,
+        "overflowLeft": -421.33,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "bg-white rounded-[2.5rem] p-6 sm:p-10 shadow-2xl -translate-y-1 hover:-translate-y-3 transition-transform group cursor-pointer border-t border-white/60",
+        "text": "Domain CapstoneIndustry-standard projects for your portfolioView Projects",
+        "overflowRight": 0,
+        "overflowLeft": -842.66,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "mb-12",
+        "text": "Work on Real Systems — Not Just PracticeLearning is based on real-world simulation, not passive content.Real World Simulation PillarsBuild R",
+        "overflowRight": -24,
+        "overflowLeft": -24,
+        "overflowBottom": 40
+      },
+      {
+        "tag": "div",
+        "className": "rounded-3xl p-8 lg:p-16 shadow-2xl shadow-orange-950/20 border border-white/20 relative overflow-hidden",
+        "text": "Verified ExperienceGraduate as a Pro, Not a Fresher.Real project-based experience yields a verifiable credential that bypasses entry-level f",
+        "overflowRight": -24,
+        "overflowLeft": -24,
+        "overflowBottom": 40
+      },
+      {
+        "tag": "div",
+        "className": "absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4",
+        "text": "",
+        "overflowRight": 63,
+        "overflowLeft": -1039,
+        "overflowBottom": -525.5
+      },
+      {
+        "tag": "span",
+        "className": "text-xs font-bold text-green-700 bg-green-50 px-2 py-1 rounded border border-green-200",
+        "text": "VERIFIABLE CREDENTIAL",
+        "overflowRight": 0,
+        "overflowLeft": 0,
+        "overflowBottom": 2
+      },
+      {
+        "tag": "div",
+        "className": "absolute top-0 right-0 w-32 h-32 bg-blue-50/50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-1000",
+        "text": "",
+        "overflowRight": 63,
+        "overflowLeft": -530.19,
+        "overflowBottom": -225
+      },
+      {
+        "tag": "div",
+        "className": "relative bg-white rounded-3xl p-8 border-2 border-gray-200 shadow-2xl sm:scale-[1.02] hover:scale-105 hover:-translate-y-1 transition-all duration-300",
+        "text": "FreePerfect for exploring the platform$0/foreverAccess to 3 tutorial modulesBasic AI Tutor queries responses2 exam attempts per monthCommuni",
+        "overflowRight": -785.72,
+        "overflowLeft": 3.63,
+        "overflowBottom": 7.1
+      },
+      {
+        "tag": "div",
+        "className": "relative bg-white rounded-3xl p-8 border-2 shadow-[0_30px_60px_rgba(0,0,0,0.2)] sm:scale-105 sm:hover:scale-[1.08] hover:-translate-y-1 transition-all duration-",
+        "text": "MOST POPULARProFor serious learners committed to mastery$29/per monthUnlimited tutorial accessAdvanced Unlimited AI Tutor with code debuggin",
+        "overflowRight": -385.61,
+        "overflowLeft": -385.59,
+        "overflowBottom": 17.75
+      },
+      {
+        "tag": "div",
+        "className": "relative bg-white rounded-3xl p-8 border-2 border-gray-200 shadow-2xl sm:scale-[1.02] hover:scale-105 hover:-translate-y-1 transition-all duration-300",
+        "text": "EnterpriseFor teams and organizationsCustom/contact salesEverything in ProCustom learning pathsTeam performance analyticsDedicated account m",
+        "overflowRight": 3.61,
+        "overflowLeft": -785.7,
+        "overflowBottom": 7.1
+      },
+      {
+        "tag": "div",
+        "className": "bg-white rounded-[2.5rem] p-6 sm:p-10 shadow-2xl border-t border-white/60 -translate-y-1 hover:-translate-y-3 transition-transform relative overflow-hidden grou",
+        "text": "👩‍💻Sarah J.Software Engineer @ Google\"RealTutorialHub's structured approach helped me land my dream job. The AI tutor was like having a pe",
+        "overflowRight": -842.67,
+        "overflowLeft": 0,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "absolute -bottom-10 -right-10 w-32 h-32 bg-purple-50 rounded-full opacity-30",
+        "text": "",
+        "overflowRight": 40,
+        "overflowLeft": -301.33,
+        "overflowBottom": 40
+      },
+      {
+        "tag": "div",
+        "className": "bg-white rounded-[2.5rem] p-6 sm:p-10 shadow-2xl border-t border-white/60 -translate-y-1 hover:-translate-y-3 transition-transform relative overflow-hidden grou",
+        "text": "👨‍💼David K.Data Scientist\"The remediation system identified my weak areas and created a perfect study plan. I improved faster than ever be",
+        "overflowRight": -421.34,
+        "overflowLeft": -421.33,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "absolute -bottom-10 -right-10 w-32 h-32 bg-purple-50 rounded-full opacity-30",
+        "text": "",
+        "overflowRight": 40,
+        "overflowLeft": -301.33,
+        "overflowBottom": 40
+      },
+      {
+        "tag": "div",
+        "className": "bg-white rounded-[2.5rem] p-6 sm:p-10 shadow-2xl border-t border-white/60 -translate-y-1 hover:-translate-y-3 transition-transform relative overflow-hidden grou",
+        "text": "👩‍🎓Elena R.Full Stack Developer\"Real-world projects made all the difference. I built a portfolio that impressed every interviewer I met.\"",
+        "overflowRight": 0,
+        "overflowLeft": -842.66,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "absolute -bottom-10 -right-10 w-32 h-32 bg-purple-50 rounded-full opacity-30",
+        "text": "",
+        "overflowRight": 40,
+        "overflowLeft": -301.34,
+        "overflowBottom": 40
+      }
+    ],
+    "navInfo": {
+      "exists": true,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "ratio": 1,
+      "mobileToggleVisible": false
+    }
+  },
+  {
+    "width": 1920,
+    "height": 1200,
+    "title": "RealTutorialHub - Learn Smarter. Not Harder.",
+    "bodyScrollWidth": 1920,
+    "windowInnerWidth": 1920,
+    "hasHorizontalOverflow": false,
+    "documentScrollWidth": 1920,
+    "documentHasHorizontalOverflow": false,
+    "visibleOverflowing": [
+      {
+        "tag": "span",
+        "className": "",
+        "text": "Not Harder.",
+        "overflowRight": -62.91,
+        "overflowLeft": -62.91,
+        "overflowBottom": 13.99
+      },
+      {
+        "tag": "div",
+        "className": "flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6 bg-white/80 backdrop-blur-xl border-t border-white px-5 py-4 sm:px-8 sm:py-5 rounded-3xl sh",
+        "text": "InternshipExperience LetterPlacement",
+        "overflowRight": -299.17,
+        "overflowLeft": -299.17,
+        "overflowBottom": 8.86
+      },
+      {
+        "tag": "div",
+        "className": " text-white rounded-[2rem] p-8 w-40 text-center shadow-2xl hover:scale-105 -translate-y-1 hover:-translate-y-3 transition-transform cursor-pointer border-t bord",
+        "text": "Learn",
+        "overflowRight": -976,
+        "overflowLeft": 0,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-[2rem] p-8 w-40 text-center shadow-2xl hover:scale-105 -translate-y-1 hover:-translate-y-3 transi",
+        "text": "AI Help",
+        "overflowRight": -488,
+        "overflowLeft": -488,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "bg-gradient-to-br from-cyan-500 to-cyan-600 text-white rounded-[2rem] p-8 w-40 text-center shadow-2xl hover:scale-105 -translate-y-1 hover:-translate-y-3 transi",
+        "text": "Improve",
+        "overflowRight": 0,
+        "overflowLeft": -976,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "",
+        "text": "AI-Powered LearningStuck? Ask AI — Get Answers Based on Your Exact TopicOur AI Tutor is context-aware and provides guidance without spoon-fe",
+        "overflowRight": -592,
+        "overflowLeft": 0,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "",
+        "text": "Assignment SystemPractice Like Real ExamsProgress from Simple to Expert levels with auto and AI evaluation. Unlock new challenges as you imp",
+        "overflowRight": -640,
+        "overflowLeft": 0,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "space-y-12",
+        "text": "Smart RemediationWeak in something? We fix it automatically. Detect weak topics, generate personalized study plans, and get direct links to ",
+        "overflowRight": 0,
+        "overflowLeft": -640,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "bg-white rounded-[2.5rem] p-6 sm:p-10 shadow-2xl -translate-y-1 hover:-translate-y-3 transition-transform group cursor-pointer border-t border-white/60",
+        "text": "Topic-Level ProjectsSmall, focused projects for each topic you learnView Projects",
+        "overflowRight": -842.67,
+        "overflowLeft": 0,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "bg-white rounded-[2.5rem] p-6 sm:p-10 shadow-2xl -translate-y-1 hover:-translate-y-3 transition-transform group cursor-pointer border-t border-white/60",
+        "text": "Subject-Level ProjectsComprehensive projects combining multiple topicsView Projects",
+        "overflowRight": -421.34,
+        "overflowLeft": -421.33,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "bg-white rounded-[2.5rem] p-6 sm:p-10 shadow-2xl -translate-y-1 hover:-translate-y-3 transition-transform group cursor-pointer border-t border-white/60",
+        "text": "Domain CapstoneIndustry-standard projects for your portfolioView Projects",
+        "overflowRight": 0,
+        "overflowLeft": -842.66,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "mb-12",
+        "text": "Work on Real Systems — Not Just PracticeLearning is based on real-world simulation, not passive content.Real World Simulation PillarsBuild R",
+        "overflowRight": -24,
+        "overflowLeft": -24,
+        "overflowBottom": 40
+      },
+      {
+        "tag": "div",
+        "className": "rounded-3xl p-8 lg:p-16 shadow-2xl shadow-orange-950/20 border border-white/20 relative overflow-hidden",
+        "text": "Verified ExperienceGraduate as a Pro, Not a Fresher.Real project-based experience yields a verifiable credential that bypasses entry-level f",
+        "overflowRight": -24,
+        "overflowLeft": -24,
+        "overflowBottom": 40
+      },
+      {
+        "tag": "div",
+        "className": "absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4",
+        "text": "",
+        "overflowRight": 63,
+        "overflowLeft": -1039,
+        "overflowBottom": -525.5
+      },
+      {
+        "tag": "span",
+        "className": "text-xs font-bold text-green-700 bg-green-50 px-2 py-1 rounded border border-green-200",
+        "text": "VERIFIABLE CREDENTIAL",
+        "overflowRight": 0,
+        "overflowLeft": 0,
+        "overflowBottom": 2
+      },
+      {
+        "tag": "div",
+        "className": "absolute top-0 right-0 w-32 h-32 bg-blue-50/50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-1000",
+        "text": "",
+        "overflowRight": 63,
+        "overflowLeft": -530.19,
+        "overflowBottom": -225
+      },
+      {
+        "tag": "div",
+        "className": "relative bg-white rounded-3xl p-8 border-2 border-gray-200 shadow-2xl sm:scale-[1.02] hover:scale-105 hover:-translate-y-1 transition-all duration-300",
+        "text": "FreePerfect for exploring the platform$0/foreverAccess to 3 tutorial modulesBasic AI Tutor queries responses2 exam attempts per monthCommuni",
+        "overflowRight": -785.72,
+        "overflowLeft": 3.63,
+        "overflowBottom": 7.1
+      },
+      {
+        "tag": "div",
+        "className": "relative bg-white rounded-3xl p-8 border-2 shadow-[0_30px_60px_rgba(0,0,0,0.2)] sm:scale-105 sm:hover:scale-[1.08] hover:-translate-y-1 transition-all duration-",
+        "text": "MOST POPULARProFor serious learners committed to mastery$29/per monthUnlimited tutorial accessAdvanced Unlimited AI Tutor with code debuggin",
+        "overflowRight": -385.61,
+        "overflowLeft": -385.59,
+        "overflowBottom": 17.75
+      },
+      {
+        "tag": "div",
+        "className": "relative bg-white rounded-3xl p-8 border-2 border-gray-200 shadow-2xl sm:scale-[1.02] hover:scale-105 hover:-translate-y-1 transition-all duration-300",
+        "text": "EnterpriseFor teams and organizationsCustom/contact salesEverything in ProCustom learning pathsTeam performance analyticsDedicated account m",
+        "overflowRight": 3.61,
+        "overflowLeft": -785.7,
+        "overflowBottom": 7.1
+      },
+      {
+        "tag": "div",
+        "className": "bg-white rounded-[2.5rem] p-6 sm:p-10 shadow-2xl border-t border-white/60 -translate-y-1 hover:-translate-y-3 transition-transform relative overflow-hidden grou",
+        "text": "👩‍💻Sarah J.Software Engineer @ Google\"RealTutorialHub's structured approach helped me land my dream job. The AI tutor was like having a pe",
+        "overflowRight": -842.67,
+        "overflowLeft": 0,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "absolute -bottom-10 -right-10 w-32 h-32 bg-purple-50 rounded-full opacity-30",
+        "text": "",
+        "overflowRight": 40,
+        "overflowLeft": -301.33,
+        "overflowBottom": 40
+      },
+      {
+        "tag": "div",
+        "className": "bg-white rounded-[2.5rem] p-6 sm:p-10 shadow-2xl border-t border-white/60 -translate-y-1 hover:-translate-y-3 transition-transform relative overflow-hidden grou",
+        "text": "👨‍💼David K.Data Scientist\"The remediation system identified my weak areas and created a perfect study plan. I improved faster than ever be",
+        "overflowRight": -421.34,
+        "overflowLeft": -421.33,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "absolute -bottom-10 -right-10 w-32 h-32 bg-purple-50 rounded-full opacity-30",
+        "text": "",
+        "overflowRight": 40,
+        "overflowLeft": -301.33,
+        "overflowBottom": 40
+      },
+      {
+        "tag": "div",
+        "className": "bg-white rounded-[2.5rem] p-6 sm:p-10 shadow-2xl border-t border-white/60 -translate-y-1 hover:-translate-y-3 transition-transform relative overflow-hidden grou",
+        "text": "👩‍🎓Elena R.Full Stack Developer\"Real-world projects made all the difference. I built a portfolio that impressed every interviewer I met.\"",
+        "overflowRight": 0,
+        "overflowLeft": -842.66,
+        "overflowBottom": 24
+      },
+      {
+        "tag": "div",
+        "className": "absolute -bottom-10 -right-10 w-32 h-32 bg-purple-50 rounded-full opacity-30",
+        "text": "",
+        "overflowRight": 40,
+        "overflowLeft": -301.34,
+        "overflowBottom": 40
+      }
+    ],
+    "navInfo": {
+      "exists": true,
+      "scrollWidth": 1920,
+      "clientWidth": 1920,
+      "ratio": 1,
+      "mobileToggleVisible": false
+    }
+  }
+]

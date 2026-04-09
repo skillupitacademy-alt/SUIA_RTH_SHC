@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { Menu } from 'lucide-react';
 import { BrandConfig } from './brandConfig';
 import { BrandProvider, useBrand } from './PostLandingPage/app/context/BrandContext';
 import { Sidebar } from './Dashboard/components/Sidebar';
@@ -16,38 +17,44 @@ import { EngineSynchronization } from './Dashboard/components/EngineSynchronizat
 
 function DashboardContent() {
   const brand = useBrand();
+  const [isMobileNavOpen, setIsMobileNavOpen] = React.useState(false);
 
   return (
-    <div className="min-h-screen bg-slate-50 relative overflow-hidden font-sans">
-      <Sidebar />
-      <TopBar />
+    <div className="relative min-h-screen overflow-hidden bg-slate-50 font-sans">
+      <Sidebar isOpen={isMobileNavOpen} onClose={() => setIsMobileNavOpen(false)} />
+      <TopBar
+        mobileMenuButton={(
+          <button
+            type="button"
+            onClick={() => setIsMobileNavOpen(true)}
+            aria-label="Open dashboard navigation"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-gray-200 bg-white text-gray-700 shadow-sm transition-colors hover:bg-gray-50 md:hidden"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+        )}
+      />
 
-      {/* Main Content Area */}
-      {/* ml-20 accounts for typical mini-sidebar width, adjust if main sidebar differs (e.g., md:ml-64) */}
-      <main className="ml-20 mt-20 p-8 lg:p-12 transition-all">
-        <div className="max-w-[1800px] mx-auto">
-          {/* Welcome Header */}
-          <div className="mb-10">
-            <h1 className="text-4xl lg:text-5xl font-black text-slate-900 mb-2 tracking-tight">
+      <main className="mt-20 px-4 pb-28 pt-6 transition-all sm:px-6 md:ml-20 md:px-8 md:pb-8 lg:px-12">
+        <div className="mx-auto max-w-[1800px]">
+          <div className="mb-8 md:mb-10">
+            <h1 className="mb-2 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
               {brand.dashboardGreeting}
             </h1>
-            <p className="text-xl font-bold text-slate-500">
-              {brand.name} — Premium developer learning platform
+            <p className="max-w-3xl text-base font-bold text-slate-500 sm:text-lg lg:text-xl">
+              {brand.name} - Premium developer learning platform
             </p>
           </div>
 
-          {/* Bento Grid Layout - 60/40 Split */}
-          <div className="grid grid-cols-1 xl:grid-cols-5 gap-8">
-            {/* Left Column - 60% (3 columns on xl) */}
-            <div className="xl:col-span-3 space-y-8">
+          <div className="grid grid-cols-1 gap-6 lg:gap-8 xl:grid-cols-5">
+            <div className="space-y-6 lg:space-y-8 xl:col-span-3">
               <HeroActionCard />
               <EngineSynchronization />
               <EngineSynopsisWidget />
               <ActivityLog />
             </div>
 
-            {/* Right Column - 40% (2 columns on xl) */}
-            <div className="xl:col-span-2 space-y-8">
+            <div className="space-y-6 lg:space-y-8 xl:col-span-2">
               <DailyProgressWidget />
               <AITutorSuggestions />
               <CompetencyRadarChart />
@@ -61,7 +68,6 @@ function DashboardContent() {
 }
 
 export default function DashboardPage({ config }: { config: BrandConfig }) {
-  // Uses Pattern B (Context wrapping) so deeply nested component files don't need prop drilling
   return (
     <BrandProvider brand={config}>
       <DashboardContent />

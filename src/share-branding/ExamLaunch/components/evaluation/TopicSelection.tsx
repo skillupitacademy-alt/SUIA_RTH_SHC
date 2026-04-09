@@ -66,24 +66,24 @@ export function TopicSelection({ subjects, selected, onSelect, maxSelections = 4
   };
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-slate-800 mb-2">Select Topics</h2>
-        <p className="text-slate-600">Choose up to {maxSelections} topics to focus on</p>
+    <div className="flex h-full w-full min-w-0 max-w-full flex-col">
+      <div className="mb-6 min-w-0">
+        <h2 className="mb-2 break-words text-2xl font-bold text-slate-800">Select Topics</h2>
+        <p className="break-words text-slate-600">Choose up to {maxSelections} topics to focus on</p>
       </div>
 
       {selected.length >= maxSelections && (
-        <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-          <div>
+        <div className="mb-4 flex min-w-0 items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
+          <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+          <div className="min-w-0">
             <p className="text-sm font-medium text-amber-900">Maximum topics reached</p>
             <p className="text-sm text-amber-700">Deselect a topic to choose a different one</p>
           </div>
         </div>
       )}
 
-      <div className="flex-1 overflow-y-auto">
-        <div className="flex flex-wrap gap-3">
+      <div className="flex-1 min-w-0 w-full overflow-y-auto">
+        <div className="flex w-full min-w-0 flex-wrap gap-3">
           {availableTopics.map((topic) => {
             const isSelected = selected.some((t) => t.id === topic.id);
             const isDisabled = !isSelected && selected.length >= maxSelections;
@@ -93,12 +93,12 @@ export function TopicSelection({ subjects, selected, onSelect, maxSelections = 4
                 key={topic.id}
                 onClick={() => toggleTopic(topic)}
                 disabled={isDisabled}
-                className={`rounded-full px-4 py-2 border font-bold transition-all hover:shadow-md ${
+                className={`max-w-full min-w-0 rounded-full border px-4 py-2 font-bold transition-all shadow-[0_4px_12px_rgba(0,0,0,0.05)] hover:-translate-y-1 hover:shadow-[0_12px_24px_rgba(0,0,0,0.12)] ${
                   isSelected
-                    ? 'bg-[#d81b60] text-white border-[#d81b60]'
+                    ? 'border-[#d81b60] bg-[#d81b60] text-white'
                     : isDisabled
-                    ? 'bg-gray-50 border-gray-200 text-slate-400 cursor-not-allowed opacity-50'
-                    : 'bg-white border-gray-200 text-slate-700'
+                    ? 'cursor-not-allowed border-gray-200 bg-gray-50 text-slate-400 opacity-50'
+                    : 'border-gray-200 bg-white text-slate-700'
                 }`}
                 style={
                   isSelected
@@ -110,10 +110,10 @@ export function TopicSelection({ subjects, selected, onSelect, maxSelections = 4
                     : {}
                 }
               >
-                <div className="flex items-center gap-2">
-                  <span>{topic.title}</span>
-                  {isSelected && <Check className="w-4 h-4" />}
-                  <span className="text-xs opacity-75">({topic.subtopicCount})</span>
+                <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2">
+                  <span className="max-w-full break-words text-left">{topic.title}</span>
+                  {isSelected && <Check className="h-4 w-4 shrink-0" />}
+                  <span className="shrink-0 text-xs opacity-75">({topic.subtopicCount})</span>
                 </div>
               </button>
             );
@@ -121,7 +121,7 @@ export function TopicSelection({ subjects, selected, onSelect, maxSelections = 4
         </div>
 
         {selected.length > 0 && (
-          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+          <div className="mt-6 rounded-xl border border-blue-200 bg-blue-50 p-4">
             <p className="text-sm text-blue-900">
               <span className="font-medium">
                 {selected.length} of {maxSelections} topics selected

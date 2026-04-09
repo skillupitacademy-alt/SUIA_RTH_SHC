@@ -40,7 +40,7 @@ export function EngineSynchronization() {
           label: 'FAILED EXAM',
           color: '#dc2626',
           bgColor: '#fef2f2',
-          textColor: '#dc2626',
+          textColor: '#991b1b',
           icon: AlertCircle,
         };
       case 'weak':
@@ -48,7 +48,7 @@ export function EngineSynchronization() {
           label: 'WEAK DIAGNOSTIC',
           color: '#f59e0b',
           bgColor: '#fffbeb',
-          textColor: '#d97706',
+          textColor: '#92400e',
           icon: AlertTriangle,
         };
       case 'mastered':
@@ -56,7 +56,7 @@ export function EngineSynchronization() {
           label: 'FULLY MASTERED',
           color: '#10b981',
           bgColor: '#f0fdf4',
-          textColor: '#059669',
+          textColor: '#065f46',
           icon: CheckCircle2,
         };
       default:
@@ -73,14 +73,14 @@ export function EngineSynchronization() {
   return (
     <div className="rounded-[2rem] p-8 bg-white border border-gray-200 shadow-sm">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-8">
+      <div className="mb-8 flex min-w-0 items-center gap-4">
         <div
           className="w-14 h-14 rounded-2xl flex items-center justify-center"
           style={{ backgroundColor: brand.primaryColor }}
         >
           <TrendingUp className="text-white" size={26} />
         </div>
-        <h2 className="text-3xl font-black text-gray-900">Engine Synchronization</h2>
+        <h2 className="min-w-0 text-2xl font-black text-gray-900 sm:text-3xl">Engine Synchronization</h2>
       </div>
 
       {/* Topic Cards */}
@@ -94,12 +94,12 @@ export function EngineSynchronization() {
               key={index}
               className="p-6 rounded-2xl bg-gray-50 border border-gray-200 hover:border-gray-300 transition-all"
             >
-              <div className="flex items-start justify-between mb-4">
-                <h3 className="text-xl font-bold text-gray-900">{topic.title}</h3>
+              <div className="mb-4 flex items-start justify-between gap-4">
+                <h3 className="min-w-0 text-lg font-bold text-gray-900 sm:text-xl">{topic.title}</h3>
                 <StatusIcon style={{ color: statusConfig.color }} size={24} />
               </div>
 
-              <div className="flex items-center gap-4 mb-4">
+              <div className="mb-4 flex flex-wrap items-center gap-3">
                 <span
                   className="px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide"
                   style={{
@@ -109,7 +109,7 @@ export function EngineSynchronization() {
                 >
                   {statusConfig.label}
                 </span>
-                <span className="text-gray-600 font-semibold">Score: {topic.score}%</span>
+                <span className="font-semibold text-gray-700">Score: {topic.score}%</span>
               </div>
 
               {/* Progress Bar */}
@@ -125,7 +125,7 @@ export function EngineSynchronization() {
 
               {/* Action Button */}
               <button
-                className="text-blue-600 hover:text-blue-700 font-bold flex items-center gap-2 transition-colors group"
+                className="flex items-center gap-2 font-bold text-slate-700 transition-colors group hover:text-slate-900"
               >
                 {topic.action}
                 <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />

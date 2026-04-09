@@ -4,7 +4,7 @@ import { useBrand } from '../context/BrandContext';
 export function RealProjects() {
   const brand = useBrand();
   const accentClass = brand.accentColor === 'orange' ? 'orange' : 'pink';
-  
+
   const projects = [
     {
       icon: Globe,
@@ -51,11 +51,15 @@ export function RealProjects() {
   ];
 
   const getDifficultyColor = (difficulty: string) => {
-    switch(difficulty) {
-      case 'Intermediate': return 'bg-blue-100 text-blue-700';
-      case 'Advanced': return 'bg-purple-100 text-purple-700';
-      case 'Expert': return 'bg-orange-100 text-orange-700';
-      default: return 'bg-gray-100 text-gray-700';
+    switch (difficulty) {
+      case 'Intermediate':
+        return 'bg-blue-100 text-blue-700';
+      case 'Advanced':
+        return 'bg-purple-100 text-purple-700';
+      case 'Expert':
+        return 'bg-orange-100 text-orange-700';
+      default:
+        return 'bg-gray-100 text-gray-700';
     }
   };
 
@@ -67,45 +71,48 @@ export function RealProjects() {
             <Briefcase className={`w-4 h-4 text-${accentClass}-400`} />
             <span className={`text-sm text-${accentClass}-300`}>Real-World Experience</span>
           </div>
-          <h2 className="text-3xl md:text-5xl font-bold mb-4 md:mb-6 leading-tight">
+          <h2
+            className="font-bold mb-4 md:mb-6 leading-tight"
+            style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)' }}
+          >
             Build Portfolio-Ready Projects
           </h2>
           <p className="text-base md:text-xl text-gray-300 max-w-3xl mx-auto px-4">
-            Move beyond toy examples. Create production-quality applications that demonstrate 
+            Move beyond toy examples. Create production-quality applications that demonstrate
             your skills to employers and clients.
           </p>
         </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto px-4 md:px-0">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto px-4 md:px-0">
           {projects.map((project, idx) => {
             const Icon = project.icon;
             return (
-              <div 
-                key={idx} 
-                className="group bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 shadow-[0_15px_30px_rgba(0,0,0,0.3)] scale-[1.01] hover:shadow-2xl hover:bg-white/10 hover:border-orange-400/50 hover:scale-105 hover:-translate-y-2 transition-all duration-300"
+              <div
+                key={idx}
+                className="group min-w-0 w-full overflow-hidden bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 shadow-[0_15px_30px_rgba(0,0,0,0.3)] hover:shadow-2xl hover:bg-white/10 hover:border-orange-400/50 hover:-translate-y-2 transition-all duration-300"
               >
-                <div className="flex items-start justify-between mb-4">
-                  <div className={`w-14 h-14 bg-gradient-to-br ${brand.gradientFrom} ${brand.gradientTo} rounded-xl flex items-center justify-center`}>
+                <div className="flex items-start justify-between gap-4 mb-4 min-w-0">
+                  <div className={`w-14 h-14 bg-gradient-to-br ${brand.gradientFrom} ${brand.gradientTo} rounded-xl flex items-center justify-center flex-shrink-0`}>
                     <Icon className="w-7 h-7 text-white" />
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getDifficultyColor(project.difficulty)}`}>
+                  <span className={`px-3 py-1 rounded-full text-xs font-semibold flex-shrink-0 ${getDifficultyColor(project.difficulty)}`}>
                     {project.difficulty}
                   </span>
                 </div>
 
-                <h3 className="text-xl font-bold mb-3 group-hover:text-orange-400 transition-colors">
+                <h3 className="text-xl font-bold mb-3 group-hover:text-orange-400 transition-colors break-words">
                   {project.title}
                 </h3>
-                
-                <p className="text-gray-300 mb-4 leading-relaxed">
+
+                <p className="text-gray-300 mb-4 leading-relaxed break-words">
                   {project.description}
                 </p>
 
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2 min-w-0">
                   {project.tech.map((tech, i) => (
-                    <span 
-                      key={i} 
-                      className="px-3 py-1 bg-white/10 rounded-lg text-xs font-medium text-gray-300"
+                    <span
+                      key={i}
+                      className="px-3 py-1 bg-white/10 rounded-lg text-xs font-medium text-gray-300 break-words"
                     >
                       {tech}
                     </span>
@@ -117,7 +124,7 @@ export function RealProjects() {
         </div>
 
         <div className="mt-12 text-center">
-          <button className={`px-6 sm:px-8 py-4 bg-gradient-to-r ${brand.gradientFrom} ${brand.gradientTo} text-white rounded-xl font-semibold shadow-2xl scale-[1.01] hover:scale-105 hover:-translate-y-1 transition-all duration-300`}>
+          <button className={`px-6 sm:px-8 py-4 bg-gradient-to-r ${brand.gradientFrom} ${brand.gradientTo} text-white rounded-xl font-semibold shadow-2xl transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1`}>
             Explore All Projects
           </button>
         </div>

@@ -1,0 +1,247 @@
+[
+  {
+    "width": 320,
+    "height": 900,
+    "title": "Dashboard | RealTutorialHub",
+    "bodyScrollWidth": 320,
+    "windowInnerWidth": 320,
+    "hasHorizontalOverflow": false,
+    "documentScrollWidth": 320,
+    "documentHasHorizontalOverflow": false,
+    "visibleOverflowing": [
+      {
+        "tag": "div",
+        "className": "",
+        "text": "",
+        "overflowRight": 8,
+        "overflowLeft": 8,
+        "overflowBottom": 8
+      }
+    ],
+    "mobileNavVisible": true
+  },
+  {
+    "width": 375,
+    "height": 900,
+    "title": "Dashboard | RealTutorialHub",
+    "bodyScrollWidth": 375,
+    "windowInnerWidth": 375,
+    "hasHorizontalOverflow": false,
+    "documentScrollWidth": 375,
+    "documentHasHorizontalOverflow": false,
+    "visibleOverflowing": [
+      {
+        "tag": "div",
+        "className": "",
+        "text": "",
+        "overflowRight": 8,
+        "overflowLeft": 8,
+        "overflowBottom": 8
+      }
+    ],
+    "mobileNavVisible": true
+  },
+  {
+    "width": 480,
+    "height": 900,
+    "title": "Dashboard | RealTutorialHub",
+    "bodyScrollWidth": 480,
+    "windowInnerWidth": 480,
+    "hasHorizontalOverflow": false,
+    "documentScrollWidth": 480,
+    "documentHasHorizontalOverflow": false,
+    "visibleOverflowing": [
+      {
+        "tag": "div",
+        "className": "",
+        "text": "",
+        "overflowRight": 8,
+        "overflowLeft": 8,
+        "overflowBottom": 8
+      }
+    ],
+    "mobileNavVisible": true
+  },
+  {
+    "width": 640,
+    "height": 1024,
+    "title": "Dashboard | RealTutorialHub",
+    "bodyScrollWidth": 640,
+    "windowInnerWidth": 640,
+    "hasHorizontalOverflow": false,
+    "documentScrollWidth": 640,
+    "documentHasHorizontalOverflow": false,
+    "visibleOverflowing": [
+      {
+        "tag": "span",
+        "className": "text-xs font-semibold text-center break-words text-gray-900",
+        "text": "Diagnostic",
+        "overflowRight": 9.91,
+        "overflowLeft": 9.91,
+        "overflowBottom": 0
+      },
+      {
+        "tag": "span",
+        "className": "text-xs font-semibold text-center break-words text-gray-900",
+        "text": "Analysis",
+        "overflowRight": 3.8,
+        "overflowLeft": 3.8,
+        "overflowBottom": 0
+      },
+      {
+        "tag": "div",
+        "className": "",
+        "text": "",
+        "overflowRight": 8,
+        "overflowLeft": 8,
+        "overflowBottom": 8
+      }
+    ],
+    "mobileNavVisible": true
+  },
+  {
+    "width": 768,
+    "height": 1024,
+    "title": "Dashboard | RealTutorialHub",
+    "bodyScrollWidth": 768,
+    "windowInnerWidth": 768,
+    "hasHorizontalOverflow": false,
+    "documentScrollWidth": 768,
+    "documentHasHorizontalOverflow": false,
+    "visibleOverflowing": [
+      {
+        "tag": "span",
+        "className": "text-xs font-semibold text-center break-words text-gray-900",
+        "text": "Diagnostic",
+        "overflowRight": 8.45,
+        "overflowLeft": 8.45,
+        "overflowBottom": 0
+      },
+      {
+        "tag": "span",
+        "className": "text-xs font-semibold text-center break-words text-gray-900",
+        "text": "Analysis",
+        "overflowRight": 2.34,
+        "overflowLeft": 2.34,
+        "overflowBottom": 0
+      },
+      {
+        "tag": "div",
+        "className": "",
+        "text": "",
+        "overflowRight": 8,
+        "overflowLeft": 8,
+        "overflowBottom": 8
+      }
+    ],
+    "mobileNavVisible": false
+  },
+  {
+    "width": 1024,
+    "height": 1200,
+    "title": "Dashboard | RealTutorialHub",
+    "bodyScrollWidth": 1024,
+    "windowInnerWidth": 1024,
+    "hasHorizontalOverflow": false,
+    "documentScrollWidth": 1024,
+    "documentHasHorizontalOverflow": false,
+    "visibleOverflowing": [
+      {
+        "tag": "div",
+        "className": "",
+        "text": "",
+        "overflowRight": 8,
+        "overflowLeft": 8,
+        "overflowBottom": 8
+      }
+    ],
+    "mobileNavVisible": false
+  },
+  {
+    "width": 1280,
+    "height": 1200,
+    "title": "Dashboard | RealTutorialHub",
+    "bodyScrollWidth": 1280,
+    "windowInnerWidth": 1280,
+    "hasHorizontalOverflow": false,
+    "documentScrollWidth": 1280,
+    "documentHasHorizontalOverflow": false,
+    "visibleOverflowing": [
+      {
+        "tag": "span",
+        "className": "text-xs font-semibold text-center break-words text-gray-900",
+        "text": "Diagnostic",
+        "overflowRight": 7.3,
+        "overflowLeft": 7.28,
+        "overflowBottom": 0
+      },
+      {
+        "tag": "span",
+        "className": "text-xs font-semibold text-center break-words text-gray-900",
+        "text": "Analysis",
+        "overflowRight": 1.19,
+        "overflowLeft": 1.17,
+        "overflowBottom": 0
+      },
+      {
+        "tag": "div",
+        "className": "",
+        "text": "",
+        "overflowRight": 8,
+        "overflowLeft": 8,
+        "overflowBottom": 8
+      }
+    ],
+    "mobileNavVisible": false
+  },
+  {
+    "width": 1440,
+    "height": 1200,
+    "title": "Dashboard | RealTutorialHub",
+    "bodyScrollWidth": 1440,
+    "windowInnerWidth": 1440,
+    "hasHorizontalOverflow": false,
+    "documentScrollWidth": 1440,
+    "documentHasHorizontalOverflow": false,
+    "visibleOverflowing": [
+      {
+        "tag": "span",
+        "className": "text-xs font-semibold text-center break-words text-gray-900",
+        "text": "Diagnostic",
+        "overflowRight": 2.94,
+        "overflowLeft": 2.92,
+        "overflowBottom": 0
+      },
+      {
+        "tag": "div",
+        "className": "",
+        "text": "",
+        "overflowRight": 8,
+        "overflowLeft": 8,
+        "overflowBottom": 8
+      }
+    ],
+    "mobileNavVisible": false
+  },
+  {
+    "width": 1920,
+    "height": 1200,
+    "title": "Dashboard | RealTutorialHub",
+    "bodyScrollWidth": 1920,
+    "windowInnerWidth": 1920,
+    "hasHorizontalOverflow": false,
+    "documentScrollWidth": 1920,
+    "documentHasHorizontalOverflow": false,
+    "visibleOverflowing": [
+      {
+        "tag": "div",
+        "className": "",
+        "text": "",
+        "overflowRight": 8,
+        "overflowLeft": 8,
+        "overflowBottom": 8
+      }
+    ],
+    "mobileNavVisible": false
+  }
+]

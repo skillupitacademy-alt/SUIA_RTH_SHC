@@ -5,7 +5,7 @@ import { useBrand } from '../context/BrandContext';
 export function AdaptiveLoop() {
   const brand = useBrand();
   const accentClass = brand.accentColor === 'orange' ? 'orange' : 'pink';
-  
+
   const steps = [
     {
       icon: Target,
@@ -13,7 +13,7 @@ export function AdaptiveLoop() {
       subtitle: "Analyze knowledge gaps",
       description: "Take rigorous timed assessments to map your exact bounds in the Exam Engine",
       color: `bg-${accentClass}-50 border-${accentClass}-200`,
-      iconBg: `bg-${accentClass}-500`
+      iconBg: `bg-${accentClass}-700 shadow-md`
     },
     {
       icon: TrendingUp,
@@ -46,7 +46,7 @@ export function AdaptiveLoop() {
       title: "ENTER EXAM ENGINE",
       subtitle: "STRICT TESTING",
       description: "Evaluate Knowledge & Performance",
-      gradient: "from-orange-500 to-orange-600",
+      gradient: "from-orange-700 to-orange-800",
       icon: ClipboardCheck
     },
     {
@@ -59,59 +59,65 @@ export function AdaptiveLoop() {
   ];
 
   return (
-    <section className="py-24 bg-gradient-to-br from-gray-50 to-white relative overflow-hidden">
-      {/* Decorative Elements */}
-      <div className="absolute top-20 right-20 w-32 h-32 bg-orange-200 rounded-full blur-3xl opacity-20"></div>
-      <div className="absolute bottom-20 left-20 w-40 h-40 bg-blue-200 rounded-full blur-3xl opacity-20"></div>
-      
-      <div className="max-w-7xl mx-auto px-6 relative">
+    <section className="relative overflow-hidden bg-gradient-to-br from-gray-50 to-white py-24">
+      <div className="pointer-events-none absolute right-0 top-20 h-32 w-32 max-w-full rounded-full bg-orange-200 opacity-20 blur-3xl"></div>
+      <div className="pointer-events-none absolute bottom-20 left-0 h-40 w-40 max-w-full rounded-full bg-blue-200 opacity-20 blur-3xl"></div>
+
+      <div className="relative mx-auto w-full max-w-7xl px-6">
         <div className="text-center mb-16">
-          <h2 className="text-5xl font-bold text-gray-900 mb-6">
+          <h2
+            className="font-bold text-gray-900 mb-5"
+            style={{ fontSize: 'clamp(2rem, 4.8vw, 3.6rem)', lineHeight: 1.08 }}
+          >
             THE ADAPTIVE LOOP
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             A continuous cycle of assessment, learning, and mastery powered by AI
           </p>
         </div>
 
-        {/* 4-Step Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+        <div className="mb-16 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {steps.map((step, idx) => {
             const Icon = step.icon;
             return (
-              <div key={idx} className={`${step.color} rounded-2xl p-6 border-2 shadow-2xl hover:scale-105 hover:-translate-y-1 transition-all duration-300 cursor-default`}>
-                <div className={`w-16 h-16 ${step.iconBg} rounded-xl flex items-center justify-center mb-4`}>
+              <div
+                key={idx}
+                className={`${step.color} min-w-0 w-full overflow-hidden rounded-2xl p-6 border-2 shadow-2xl hover:-translate-y-1 transition-all duration-300 cursor-default`}
+              >
+                <div className={`w-16 h-16 ${step.iconBg} rounded-xl flex items-center justify-center mb-4 flex-shrink-0`}>
                   <Icon className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-lg font-bold text-gray-900 mb-1">{step.title}</h3>
-                <p className="text-sm text-gray-600 mb-3">{step.subtitle}</p>
-                <p className="text-sm text-gray-600 leading-relaxed">{step.description}</p>
+                <h3 className="text-lg font-bold text-gray-900 mb-1 break-words">{step.title}</h3>
+                <p className="text-sm text-gray-600 mb-3 break-words">{step.subtitle}</p>
+                <p className="text-sm text-gray-600 leading-relaxed break-words">{step.description}</p>
               </div>
             );
           })}
         </div>
 
-        {/* Engine Selection Cards */}
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        <div className="mx-auto grid max-w-4xl grid-cols-1 gap-8 md:grid-cols-2">
           {engineCards.map((card, idx) => {
             const Icon = card.icon;
             return (
-              <div 
-                key={idx} 
-                className={`bg-gradient-to-br ${card.gradient} rounded-2xl p-8 text-white shadow-2xl hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 cursor-pointer group`}
+              <div
+                key={idx}
+                className={`group min-w-0 w-full overflow-hidden rounded-2xl bg-gradient-to-br p-8 text-white shadow-2xl transition-transform duration-300 hover:-translate-y-1 hover:scale-[1.02] ${card.gradient}`}
               >
-                <div className="flex flex-col items-center text-center space-y-4">
-                  <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+                <div className="flex flex-col items-center text-center space-y-4 min-w-0">
+                  <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center flex-shrink-0">
                     <Icon className="w-10 h-10 text-white" />
                   </div>
-                  <div>
-                    <h3 className="text-2xl font-bold mb-2">{card.title}</h3>
-                    <p className="text-sm opacity-90 mb-2">{card.subtitle}</p>
-                    <p className="text-sm opacity-80">{card.description}</p>
+                  <div className="min-w-0">
+                    <h3 className="text-2xl font-bold mb-2 break-words">{card.title}</h3>
+                    <p className="text-sm opacity-90 mb-2 break-words">{card.subtitle}</p>
+                    <p className="text-sm opacity-80 break-words">{card.description}</p>
                   </div>
-                  <button className="mt-4 px-6 py-3 bg-white text-gray-900 rounded-lg font-semibold hover:shadow-lg transition-all flex items-center gap-2 group-hover:gap-3">
+                  <button
+                    aria-label={`Enter ${card.title.toLowerCase()}`}
+                    className="mt-4 flex items-center gap-2 rounded-lg bg-white px-6 py-3 font-semibold text-gray-900 transition-transform duration-300 hover:scale-[1.02] hover:shadow-lg group-hover:gap-3"
+                  >
                     ENTER NOW
-                    <ArrowRight className="w-4 h-4" />
+                    <ArrowRight className="w-4 h-4 flex-shrink-0" />
                   </button>
                 </div>
               </div>

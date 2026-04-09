@@ -1,0 +1,83 @@
+[
+  {
+    "width": 320,
+    "bodyOverflow": false,
+    "docOverflow": false,
+    "nav": {
+      "ratio": 1,
+      "mobileToggleVisible": true
+    }
+  },
+  {
+    "width": 375,
+    "bodyOverflow": false,
+    "docOverflow": false,
+    "nav": {
+      "ratio": 1,
+      "mobileToggleVisible": true
+    }
+  },
+  {
+    "width": 480,
+    "bodyOverflow": false,
+    "docOverflow": false,
+    "nav": {
+      "ratio": 1,
+      "mobileToggleVisible": true
+    }
+  },
+  {
+    "width": 640,
+    "bodyOverflow": false,
+    "docOverflow": false,
+    "nav": {
+      "ratio": 1,
+      "mobileToggleVisible": true
+    }
+  },
+  {
+    "width": 768,
+    "bodyOverflow": false,
+    "docOverflow": false,
+    "nav": {
+      "ratio": 1,
+      "mobileToggleVisible": true
+    }
+  },
+  {
+    "width": 1024,
+    "bodyOverflow": false,
+    "docOverflow": false,
+    "nav": {
+      "ratio": 1,
+      "mobileToggleVisible": false
+    }
+  },
+  {
+    "width": 1280,
+    "bodyOverflow": false,
+    "docOverflow": false,
+    "nav": {
+      "ratio": 1,
+      "mobileToggleVisible": false
+    }
+  },
+  {
+    "width": 1440,
+    "bodyOverflow": false,
+    "docOverflow": false,
+    "nav": {
+      "ratio": 1,
+      "mobileToggleVisible": false
+    }
+  },
+  {
+    "width": 1920,
+    "bodyOverflow": false,
+    "docOverflow": false,
+    "nav": {
+      "ratio": 1,
+      "mobileToggleVisible": false
+    }
+  }
+]

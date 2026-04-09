@@ -8,7 +8,7 @@ export function HeroSection() {
   const accentClass = brand.accentColor === 'orange' ? 'orange' : 'pink';
 
   return (
-    <section className={`relative min-h-screen bg-gradient-to-br from-white via-${accentClass}-50/30 to-white overflow-hidden`}>
+    <section className={`relative min-h-screen bg-gradient-to-br from-white via-${accentClass}-50/30 to-white overflow-x-clip`}>
       {/* Decorative Background Elements */}
       <div className={`absolute top-20 right-10 w-32 h-32 bg-${accentClass}-200 rounded-full blur-3xl opacity-30`}></div>
       <div className="absolute bottom-40 left-10 w-40 h-40 bg-blue-200 rounded-full blur-3xl opacity-30"></div>
@@ -26,12 +26,15 @@ export function HeroSection() {
               </span>
             </div>
 
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight">
-              <span className="bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+            <h1 
+              className="font-bold leading-tight"
+              style={{ fontSize: 'clamp(2.5rem, 8vw + 1rem, 5.5rem)' }}
+            >
+              <span className="bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent uppercase tracking-tight">
                 ELEVATE YOUR
               </span>
               <br />
-              <span className="bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent uppercase tracking-tight">
                 SKILLS
               </span>
             </h1>

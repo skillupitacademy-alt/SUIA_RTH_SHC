@@ -18,7 +18,7 @@ export function DailyProgressWidget() {
             <span className="text-5xl font-black" style={{ color: brand.primaryColor }}>
               {hoursToday}
             </span>
-            <span className="text-xl font-bold text-gray-400">hrs</span>
+            <span className="text-xl font-bold text-gray-600">hrs</span>
           </div>
           <p className="text-sm text-gray-600">
             Goal: {dailyGoal} hours daily

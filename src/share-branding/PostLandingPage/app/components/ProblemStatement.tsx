@@ -36,7 +36,10 @@ export function ProblemStatement() {
             <AlertCircle className="w-4 h-4 text-red-700" />
             <span className="text-sm text-red-700">The Problem with Traditional Platforms</span>
           </div>
-          <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4 md:mb-6 leading-tight">
+          <h2
+            className="font-bold text-gray-900 mb-4 md:mb-6 leading-tight"
+            style={{ fontSize: 'clamp(1.8rem, 5vw, 3.5rem)' }}
+          >
             One-Size-Fits-All Learning Doesn't Work
           </h2>
           <p className="text-base md:text-xl text-gray-600 max-w-3xl mx-auto px-4">
@@ -44,20 +47,23 @@ export function ProblemStatement() {
           </p>
         </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {problems.map((problem, idx) => (
-            <div key={idx} className="bg-white rounded-2xl p-6 md:p-8 border border-gray-200 shadow-2xl scale-[1.01] hover:border-red-300 hover:scale-[1.03] hover:-translate-y-1 transition-all duration-300">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+            <div
+              key={idx}
+              className="min-w-0 w-full overflow-hidden bg-white rounded-2xl p-6 md:p-8 border border-gray-200 shadow-2xl hover:border-red-300 hover:-translate-y-1 transition-all duration-300"
+            >
+              <div className="flex items-center gap-3 mb-6 min-w-0">
+                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
                   <X className="w-6 h-6 text-red-700" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900">{problem.platform}</h3>
+                <h3 className="text-2xl font-bold text-gray-900 min-w-0 break-words">{problem.platform}</h3>
               </div>
-              <ul className="space-y-3">
+              <ul className="space-y-3 min-w-0">
                 {problem.issues.map((issue, i) => (
-                  <li key={i} className="flex items-start gap-3 text-gray-600">
+                  <li key={i} className="flex items-start gap-3 text-gray-600 min-w-0">
                     <X className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                    <span>{issue}</span>
+                    <span className="min-w-0 break-words">{issue}</span>
                   </li>
                 ))}
               </ul>

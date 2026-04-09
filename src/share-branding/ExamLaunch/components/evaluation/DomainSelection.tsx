@@ -98,13 +98,13 @@ export function DomainSelection({ selected, onSelect }: DomainSelectionProps) {
   const brandConfig = useBrand();
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-slate-800 mb-2">Select Your Domain</h2>
-        <p className="text-slate-600">Choose the subject area you want to practice</p>
+    <div className="flex h-full w-full min-w-0 max-w-full flex-col">
+      <div className="mb-6 min-w-0">
+        <h2 className="mb-2 break-words text-2xl font-bold text-slate-800">Select Your Domain</h2>
+        <p className="break-words text-slate-600">Choose the subject area you want to practice</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid w-full min-w-0 grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         {domains.map((domain) => {
           const Icon = iconMap[domain.icon];
           const isSelected = selected?.id === domain.id;
@@ -113,7 +113,7 @@ export function DomainSelection({ selected, onSelect }: DomainSelectionProps) {
             <button
               key={domain.id}
               onClick={() => onSelect(domain)}
-              className={`p-6 rounded-2xl border transition-all duration-300 text-left hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(0,0,0,0.12)] hover:scale-[1.02] ${
+              className={`min-w-0 w-full overflow-hidden rounded-2xl border p-6 text-left transition-all duration-300 shadow-[0_12px_32px_rgba(0,0,0,0.08)] hover:-translate-y-2 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] ${
                 isSelected
                   ? 'border-2 bg-[#d81b60]/5 shadow-sm'
                   : 'border border-gray-200 bg-white'
@@ -128,9 +128,9 @@ export function DomainSelection({ selected, onSelect }: DomainSelectionProps) {
                   : {}
               }
             >
-              <div className="flex items-start justify-between mb-4">
+              <div className="mb-4 flex min-w-0 items-start justify-between gap-3">
                 <div
-                  className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                  className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${
                     isSelected ? 'bg-[#d81b60]' : 'bg-gray-100'
                   }`}
                   style={isSelected ? { backgroundColor: brandConfig.primaryColor } : {}}
@@ -138,7 +138,7 @@ export function DomainSelection({ selected, onSelect }: DomainSelectionProps) {
                   <Icon className={`w-6 h-6 ${isSelected ? 'text-white' : 'text-gray-600'}`} />
                 </div>
                 <span
-                  className={`text-xs font-medium px-2 py-1 rounded-full ${
+                  className={`max-w-full shrink-0 rounded-full px-2 py-1 text-xs font-medium ${
                     isSelected
                       ? 'bg-[#d81b60] text-white'
                       : 'bg-gray-100 text-gray-600'
@@ -149,10 +149,10 @@ export function DomainSelection({ selected, onSelect }: DomainSelectionProps) {
                 </span>
               </div>
 
-              <h3 className="font-bold text-lg text-slate-900 mb-2">{domain.title}</h3>
-              <p className="text-sm text-slate-600 mb-4">{domain.description}</p>
+              <h3 className="mb-2 break-words text-lg font-bold text-slate-900">{domain.title}</h3>
+              <p className="mb-4 break-words text-sm text-slate-600">{domain.description}</p>
 
-              <div className="flex items-center justify-between">
+              <div className="flex min-w-0 items-center justify-between gap-3">
                 <span className="text-xs text-slate-500">Coverage</span>
                 <span
                   className={`text-sm font-bold ${
