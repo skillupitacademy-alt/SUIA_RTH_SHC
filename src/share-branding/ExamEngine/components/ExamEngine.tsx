@@ -181,17 +181,17 @@ class ConcreteObserver extends Subject {
   };
 
   return (
-    <div className="h-screen w-screen overflow-hidden">
+    <div className="min-h-screen overflow-x-hidden bg-slate-100">
       <Header brand={brand} />
       
-      {/* Adjusted Split Workspace (45/55) */}
-      <main className="flex h-full pt-[60px] pb-[64px]">
-        {/* Left Pane: Question & Navigator Area (45%) */}
-        <div className="w-[45%] p-4 h-full flex flex-col gap-4">
-          {/* Question Area (Dynamic Height) */}
-          <div className={`${showTracker ? 'h-[60%]' : 'h-full'} bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden transform transition-transform duration-500 hover:scale-[1.002]`}>
+      <main className="flex flex-col gap-4 px-3 py-3 sm:px-4 sm:py-4 xl:flex-row">
+        <div className="flex w-full min-w-0 flex-col gap-4 xl:w-[45%]">
+          <div
+            className={`min-h-[320px] rounded-2xl border border-slate-200 bg-white shadow-2xl overflow-hidden xl:min-h-0 ${
+              showTracker ? 'xl:h-[60vh]' : 'xl:h-[calc(100vh-14rem)]'
+            }`}
+          >
             <QuestionPane
-              questionId={currentScenario.id}
               questionNumber={currentScenario.question.number}
               questionText={currentScenario.question.text}
               code={currentScenario.question.code}
@@ -200,9 +200,8 @@ class ConcreteObserver extends Subject {
             />
           </div>
 
-          {/* Navigator Area (Toggleable) */}
           {showTracker && (
-            <div className="h-[40%] bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden transform transition-transform duration-500 hover:scale-[1.002]">
+            <div className="min-h-[240px] rounded-2xl border border-slate-200 bg-white shadow-2xl overflow-hidden xl:h-[40vh] xl:min-h-0">
               <LegendCard 
                 primaryAccent={brand.primaryColor} 
                 currentQuestion={currentIndex + 1}
@@ -212,9 +211,8 @@ class ConcreteObserver extends Subject {
           )}
         </div>
 
-        {/* Right Pane: Decision Space (55%) */}
-        <div className="w-[55%] p-4 h-full">
-          <div className="h-full bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden transform transition-transform duration-500 hover:scale-[1.002]">
+        <div className="w-full min-w-0 xl:w-[55%]">
+          <div className="min-h-[420px] rounded-2xl border border-slate-200 bg-white shadow-2xl overflow-hidden xl:h-[calc(100vh-10rem)]">
             <AnswerPane
               options={currentScenario.answers}
               primaryAccent={brand.primaryColorDark}

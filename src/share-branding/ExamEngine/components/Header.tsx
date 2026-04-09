@@ -7,22 +7,21 @@ interface HeaderProps {
 
 export function Header({ brand }: HeaderProps) {
   return (
-    <header className="h-[60px] bg-white/95 backdrop-blur-md border-b border-slate-200 px-8 flex items-center justify-between fixed top-0 left-0 right-0 z-50">
-      {/* Left: Brand */}
-      <div className="flex items-center gap-3">
+    <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 px-3 py-3 backdrop-blur-md sm:px-4 lg:px-6">
+      <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center sm:gap-3 lg:gap-4">
+        <div className="col-span-2 flex items-center gap-3 sm:col-span-1 sm:flex-none">
         <div 
-          className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-black text-lg"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-lg font-black text-white"
           style={{ backgroundColor: brand.primaryColor }}
         >
           {brand.name === 'RealTutorialHub' ? 'R' : 'S'}
         </div>
-        <h1 className="text-lg font-extrabold text-slate-900" style={{ fontFamily: 'Outfit, sans-serif' }}>
+        <h1 className="text-sm font-extrabold leading-tight text-slate-900 sm:text-lg" style={{ fontFamily: 'Outfit, sans-serif' }}>
           {brand.name}
         </h1>
       </div>
 
-      {/* Center: Assessment Pulse Timer */}
-      <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-lg border border-slate-200">
+      <div className="flex min-w-0 items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
         <div className="relative flex items-center justify-center">
           <div className="w-2 h-2 rounded-full bg-[#ef4444] animate-pulse"></div>
           <div className="absolute w-2 h-2 rounded-full bg-[#ef4444] animate-ping opacity-75"></div>
@@ -31,15 +30,17 @@ export function Header({ brand }: HeaderProps) {
         <span className="text-sm font-semibold text-slate-700">45:32</span>
       </div>
 
-      {/* Right: Student Profile */}
-      <div className="flex items-center gap-3 px-3 py-2 bg-slate-50 rounded-lg border border-slate-200">
-        <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center">
+      <div className="flex min-w-0 items-center justify-end sm:flex-1 sm:justify-end">
+        <div className="flex min-w-0 items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-200">
           <User className="w-5 h-5 text-slate-600" />
         </div>
-        <div className="text-sm">
+        <div className="min-w-0 text-right text-xs leading-tight sm:text-sm">
           <div className="font-semibold text-slate-900">John Doe</div>
-          <div className="text-xs text-slate-600">Student ID: 12345</div>
+          <div className="text-xs text-slate-600 max-[359px]:hidden">Student ID: 12345</div>
         </div>
+      </div>
+      </div>
       </div>
     </header>
   );

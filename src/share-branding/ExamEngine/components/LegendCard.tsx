@@ -44,8 +44,7 @@ export function LegendCard({ primaryAccent, currentQuestion, totalQuestions }: L
       <div className="p-5 flex flex-col flex-1 overflow-auto custom-scrollbar">
         <h3 className="text-sm font-semibold text-slate-700 mb-5 tracking-tight">Question Navigator</h3>
         
-        {/* Responsive Full-Width Grid - Adaptive columns at 'Normal' size */}
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(44px,1fr))] gap-3 mb-6 w-full">
+        <div className="mb-6 grid w-full grid-cols-[repeat(auto-fill,minmax(38px,1fr))] gap-2 sm:grid-cols-[repeat(auto-fill,minmax(44px,1fr))] sm:gap-3">
           {questions.map((num) => {
             const status = getQuestionStatus(num);
             const colors = getStatusColor(status);

@@ -42,9 +42,8 @@ export function AnswerPane({ options, primaryAccent, primaryTint, multiSelect = 
 
   return (
     <div className="flex flex-col h-full bg-white">
-      {/* Branded Header */}
       <div 
-        className="px-4 py-3 flex items-center justify-between shadow-md z-10"
+        className="flex items-center justify-between px-4 py-3 shadow-md z-10"
         style={{ backgroundColor: primaryAccent }}
       >
         <MacOSDots />
@@ -54,9 +53,9 @@ export function AnswerPane({ options, primaryAccent, primaryTint, multiSelect = 
       </div>
 
       {/* Pane Content */}
-      <div className="p-8 flex-1 overflow-auto custom-scrollbar">
+      <div className="flex-1 overflow-auto p-4 custom-scrollbar sm:p-6 lg:p-8">
         <div className="max-w-3xl">
-          <div className="text-xs uppercase tracking-wider text-slate-600 mb-6 font-semibold">
+          <div className="mb-4 text-xs font-semibold uppercase tracking-wider text-slate-600 sm:mb-6">
             {multiSelect ? 'SELECT ALL THAT APPLY' : 'SELECT THE BEST OPTION'}
           </div>
 
@@ -78,14 +77,14 @@ export function AnswerPane({ options, primaryAccent, primaryTint, multiSelect = 
               ))}
             </div>
           ) : (
-            <div className="min-h-[500px] flex flex-col justify-between py-4">
+            <div className="flex min-h-0 flex-col gap-3 py-2 sm:gap-4 sm:py-4">
               {options.map((option) => {
                 const isSelected = selected.includes(option.id);
                 return (
                   <button
                     key={option.id}
                     onClick={() => handleSelect(option.id)}
-                    className={`w-full text-left p-6 rounded-xl border-2 transition-all flex items-center justify-between group shadow-xl -translate-y-1 ${
+                    className={`group flex w-full items-start justify-between gap-3 rounded-xl border-2 p-4 text-left shadow-xl transition-all sm:p-5 lg:p-6 ${
                       isSelected 
                         ? 'border-transparent translate-x-1' 
                         : 'border-slate-100 hover:border-slate-300'
@@ -95,10 +94,10 @@ export function AnswerPane({ options, primaryAccent, primaryTint, multiSelect = 
                       borderColor: isSelected ? primaryAccent : undefined 
                     }}
                   >
-                    <span className={`text-lg transition-colors ${isSelected ? 'font-bold' : 'text-slate-700'}`} style={{ color: isSelected ? primaryAccent : undefined }}>
+                    <span className={`min-w-0 flex-1 text-sm leading-6 transition-colors sm:text-base lg:text-lg ${isSelected ? 'font-bold' : 'text-slate-700'}`} style={{ color: isSelected ? primaryAccent : undefined }}>
                       {option.text}
                     </span>
-                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                    <div className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-all ${
                       isSelected ? 'bg-white border-transparent' : 'border-slate-200 group-hover:border-slate-300'
                     }`}>
                       {isSelected && <Check className="w-4 h-4" style={{ color: primaryAccent }} />}

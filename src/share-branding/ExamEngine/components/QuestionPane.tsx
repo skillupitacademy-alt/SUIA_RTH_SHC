@@ -14,9 +14,8 @@ export function QuestionPane({ questionNumber, questionText, code, primaryAccent
   
   return (
     <div className="flex flex-col h-full bg-white">
-      {/* Branded Header */}
       <div 
-        className="px-4 py-3 flex items-center justify-between shadow-md z-10"
+        className="flex items-center justify-between px-4 py-3 shadow-md z-10"
         style={{ backgroundColor: secondaryAccent }}
       >
         <MacOSDots />
@@ -25,13 +24,13 @@ export function QuestionPane({ questionNumber, questionText, code, primaryAccent
         </div>
       </div>
 
-      <div className="p-8 flex-1 overflow-auto custom-scrollbar">
+      <div className="flex-1 overflow-auto p-4 custom-scrollbar sm:p-6 lg:p-8">
         <div className="max-w-3xl">
-          <h2 className="text-2xl text-slate-900 mb-6 font-bold tracking-tight">
+          <h2 className="mb-4 text-xl font-bold tracking-tight text-slate-900 sm:mb-6 sm:text-2xl">
             {questionText}
           </h2>
           {code && (
-            <div className="mt-6">
+            <div className="mt-4 sm:mt-6">
               <CodeEditor code={code} primaryAccent={primaryAccent} size="large" />
             </div>
           )}
