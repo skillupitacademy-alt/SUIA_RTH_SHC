@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Exam Card Concepts</title>
+  <style>
+    :root {
+      --bg: #e9eef5;
+      --panel: #ffffff;
+      --border: #dbe4f0;
+      --text: #0f172a;
+      --muted: #516074;
+      --blue: #2457d3;
+      --orange: #c94900;
+      --green: #18b67a;
+      --amber: #f3a11a;
+      --shadow: 0 24px 60px rgba(15, 23, 42, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(36, 87, 211, 0.08), transparent 24%),
+        radial-gradient(circle at top right, rgba(201, 73, 0, 0.08), transparent 18%),
+        var(--bg);
+      color: var(--text);
+    }
+
+    .page {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 28px;
+    }
+
+    .title {
+      margin: 0 0 8px;
+      font-size: 34px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .subtitle {
+      margin: 0 0 24px;
+      font-size: 16px;
+      color: var(--muted);
+      max-width: 900px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 0.92fr 1.08fr;
+      gap: 22px;
+      align-items: start;
+    }
+
+    .stack {
+      display: grid;
+      gap: 18px;
+    }
+
+    .window {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .bar {
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+    }
+
+    .bar.blue { background: var(--blue); }
+    .bar.orange { background: var(--orange); }
+    .dots { display: flex; gap: 10px; }
+    .dot { width: 14px; height: 14px; border-radius: 50%; }
+    .dot.red { background: #ff5f57; }
+    .dot.yellow { background: #ffbd2f; }
+    .dot.green { background: #28c840; }
+
+    .question {
+      min-height: 360px;
+      padding: 34px 38px;
+    }
+
+    .question h2 {
+      margin: 0;
+      font-size: 32px;
+      line-height: 1.22;
+      letter-spacing: -0.04em;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px 18px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, #f8fafc, #f1f5f9);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      color: #35517a;
+      text-transform: uppercase;
+    }
+
+    .card-body { padding: 22px 24px; }
+
+    .progress-metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .metric {
+      padding: 14px;
+      border-radius: 16px;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+    }
+
+    .metric .label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .metric .value {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .progress-track {
+      height: 12px;
+      border-radius: 999px;
+      background: #d7e2f0;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 42%;
+      background: linear-gradient(90deg, var(--blue), #7bb0ff);
+      border-radius: inherit;
+    }
+
+    .progress-footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .tracker-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .tracker-pill {
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      border: 2px solid #ced9e7;
+      background: #fff;
+      font-weight: 700;
+      color: #35517a;
+    }
+
+    .tracker-pill.marked {
+      background: #f9a91c;
+      border-color: #f9a91c;
+      color: #10213f;
+    }
+
+    .tracker-pill.current {
+      border-color: var(--orange);
+      color: var(--orange);
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      font-weight: 800;
+      color: #35517a;
+      text-transform: uppercase;
+    }
+
+    .legend span::before {
+      content: "";
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border-radius: 4px;
+      margin-right: 10px;
+      vertical-align: -2px;
+      border: 2px solid transparent;
+    }
+
+    .legend .done::before { background: var(--green); }
+    .legend .marked::before { background: var(--amber); }
+    .legend .current::before { border-color: var(--orange); }
+
+    .options {
+      padding: 26px 22px 30px;
+    }
+
+    .helper {
+      margin: 0 0 18px 8px;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      color: #35517a;
+      text-transform: uppercase;
+    }
+
+    .option {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      min-height: 92px;
+      padding: 0 30px;
+      margin-bottom: 18px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: #fff;
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+      font-size: 22px;
+      line-height: 1.3;
+      color: #1e3a68;
+    }
+
+    .radio {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 2px solid #d5dfec;
+      flex: 0 0 auto;
+    }
+
+    @media (max-width: 1100px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1 class="title">Exam Page Concept With Added Progress Card</h1>
+    <p class="subtitle">
+      Preview mockup only. This shows the current exam layout with a dedicated progress overview card inserted
+      between the question window and the tracker card so progress is visible without relying on the footer.
+    </p>
+
+    <div class="layout">
+      <div class="stack">
+        <section class="window">
+          <div class="bar blue">
+            <div class="dots">
+              <span class="dot red"></span>
+              <span class="dot yellow"></span>
+              <span class="dot green"></span>
+            </div>
+            <span>Expert Inquiry 01</span>
+          </div>
+          <div class="question">
+            <h2>Which of the following best describes the primary purpose of the HTTP protocol in web development?</h2>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-head">
+            <span>Progress Overview</span>
+            <span>42% Complete</span>
+          </div>
+          <div class="card-body">
+            <div class="progress-metrics">
+              <div class="metric">
+                <span class="label">Answered</span>
+                <div class="value">08</div>
+              </div>
+              <div class="metric">
+                <span class="label">Marked</span>
+                <div class="value">02</div>
+              </div>
+              <div class="metric">
+                <span class="label">Remaining</span>
+                <div class="value">11</div>
+              </div>
+              <div class="metric">
+                <span class="label">Time Left</span>
+                <div class="value">45m</div>
+              </div>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill"></div>
+            </div>
+            <div class="progress-footer">
+              <span>Section: Web Foundations</span>
+              <span>Question 9 of 21</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-head">
+            <span>Live Tracker</span>
+            <span>Navigator</span>
+          </div>
+          <div class="card-body">
+            <div class="tracker-grid">
+              <div class="tracker-pill current">01</div>
+              <div class="tracker-pill">02</div>
+              <div class="tracker-pill marked">03</div>
+              <div class="tracker-pill">04</div>
+              <div class="tracker-pill">05</div>
+              <div class="tracker-pill">06</div>
+              <div class="tracker-pill marked">07</div>
+              <div class="tracker-pill">08</div>
+              <div class="tracker-pill">09</div>
+              <div class="tracker-pill">10</div>
+            </div>
+            <div class="legend">
+              <span class="done">Completed</span>
+              <span class="marked">Marked</span>
+              <span class="current">Current</span>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <section class="window">
+        <div class="bar orange">
+          <div class="dots">
+            <span class="dot red"></span>
+            <span class="dot yellow"></span>
+            <span class="dot green"></span>
+          </div>
+          <span>Decision Space</span>
+        </div>
+        <div class="options">
+          <p class="helper">Select The Best Option</p>
+          <div class="option">
+            <span>To establish secure encrypted connections between web browsers and servers</span>
+            <span class="radio"></span>
+          </div>
+          <div class="option">
+            <span>To define the structure and presentation of web page content</span>
+            <span class="radio"></span>
+          </div>
+          <div class="option">
+            <span>To transfer hypertext and other resources between clients and servers</span>
+            <span class="radio"></span>
+          </div>
+          <div class="option">
+            <span>To manage database transactions and queries in web applications</span>
+            <span class="radio"></span>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</body>
+</html>

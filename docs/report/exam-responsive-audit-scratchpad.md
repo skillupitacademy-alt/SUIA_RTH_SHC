@@ -18,39 +18,44 @@ Checklist sources:
 - Pass: `document.documentElement.scrollWidth <= window.innerWidth` at every audited breakpoint.
 - Pass: `document.body.scrollWidth <= window.innerWidth` at every audited breakpoint.
 - Pass: `125%` zoom validation is clean at `320`, `768`, `1280`, and `1920`.
+- Pass: desktop footer is flush to the viewport bottom at `1280`, `1440`, and `1920`.
 
-## Issues found in the first pass
+## Current layout behavior
 
-- The exam shell used a desktop-only `45/55` split, which compressed the left and right panes too aggressively on small screens.
-- The footer action bar forced all controls into one horizontal row, which caused parent-child overflow in the progress controls and CTA groups between `375` and `768`.
-- The header profile area was too dense for narrow widths and contributed to child boundary failures.
-- Answer options were using large text and rigid spacing that pushed the selection control outside the option row on the smallest widths.
-
-## Remediation applied
-
-- Converted the exam workspace to a mobile-first stacked layout below desktop and preserved the split-pane layout only at large widths.
-- Rebuilt the footer action bar into wrapped responsive groups so tracker controls, navigation buttons, and submit CTA stay inside their parent container.
-- Reworked the header into a compact responsive arrangement for brand, timer, and student profile content.
-- Reduced mobile padding and text scale in the question and answer panes so option rows stay aligned and readable.
-- Tightened the tracker grid sizing for smaller screens.
+- Mobile and tablet widths through `1024` use a single-column stack in this order:
+  - `Expert Inquiry`
+  - `Decision Space`
+  - `Progress Overview`
+  - `Live Tracker`
+- Desktop widths from `1280` upward use the intended 2x2 layout:
+  - top-left `Expert Inquiry`
+  - top-right `Decision Space`
+  - bottom-left `Live Tracker`
+  - bottom-right `Progress Overview`
+- Desktop row proportions are now visually aligned to the requested composition, with the top row occupying roughly `65%` of the workspace and the bottom row occupying the remaining `35%`.
+- Desktop footer is pinned to the bottom edge of the viewport, while the exam workspace consumes the middle height between header and footer.
+- Footer controls now include both `Hide Tracker` and `Hide Overview`; hiding either card expands the remaining bottom-row card, and hiding both collapses the desktop layout back to the top row only.
 
 ## Validation summary
 
-- Header, question pane, answer pane, tracker pane, and footer controls now remain inside their parent containers through all audited breakpoints.
-- The previous mobile/tablet overflow in `Hide Tracker`, `Mark for Review`, `Previous`, `Save & Next`, and `Submit Assessment` is resolved.
-- Typography is now stable across breakpoints:
+- All main containers and their child components remain inside parent boundaries through the audited breakpoints.
+- The top action shell, question area, option pane, progress card, tracker, and footer controls remain aligned without page-level overflow.
+- Typography is managed correctly at the key checkpoints:
   - `320px`: brand `h1` `14px / 17.5px`, question heading `20px / 28px`
   - `640px+`: brand `h1` `18px / 28px`, question heading `24px / 32px`
-- No visible clipping or alignment drift was observed after the fix pass.
+- Mobile and tablet layouts avoid the cramped partial-desktop state by remaining stacked until `1280`.
+- Desktop visual ordering now matches the intended layout instead of placing `Progress Overview` above `Decision Space`.
+- Desktop footer pinning remains correct during zoom validation at `1280` and `1920`.
 
 ## Remaining notes
 
 - Raw geometric scans still flag the animated timer ping dot because it expands outside its static parent during the animation.
 - That timer pulse does not create document/body overflow and does not break visible layout alignment.
 
-## Files changed
+## Files changed for this route
 
 - `src/share-branding/ExamEngine/components/ExamEngine.tsx`
+- `src/share-branding/ExamEngine/components/ProgressOverviewCard.tsx`
 - `src/share-branding/ExamEngine/components/Header.tsx`
 - `src/share-branding/ExamEngine/components/ProgressDashboard.tsx`
 - `src/share-branding/ExamEngine/components/ActionBar.tsx`

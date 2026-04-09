@@ -1,5 +1,4 @@
-import { ChevronLeft, ChevronRight, Flag, Monitor } from 'lucide-react';
-import { MacOSDots } from './MacOSDots';
+import { BarChart3, ChevronLeft, ChevronRight, Flag, Monitor } from 'lucide-react';
 import { ProgressDashboard } from './ProgressDashboard';
 
 const ELITE_BAR_BG = '#0d2561';
@@ -12,6 +11,8 @@ interface ActionBarProps {
   onPrevious: () => void;
   showTracker?: boolean;
   onToggleTracker?: () => void;
+  showOverview?: boolean;
+  onToggleOverview?: () => void;
 }
 
 export function ActionBar({ 
@@ -21,11 +22,13 @@ export function ActionBar({
   onNext, 
   onPrevious,
   showTracker = true,
-  onToggleTracker
+  onToggleTracker,
+  showOverview = true,
+  onToggleOverview,
 }: ActionBarProps) {
   return (
     <footer 
-      className="sticky bottom-0 z-40 mt-4 border-t border-white/10 px-3 py-3 sm:px-4 lg:px-6"
+      className="sticky bottom-0 z-40 mt-4 border-t border-white/10 px-3 py-3 sm:px-4 lg:px-6 xl:fixed xl:bottom-0 xl:left-0 xl:right-0 xl:mt-0"
       style={{ backgroundColor: ELITE_BAR_BG }}
     >
       <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
@@ -38,7 +41,7 @@ export function ActionBar({
           
           <div className="hidden h-8 w-px bg-white/10 xl:block"></div>
           
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:flex">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 xl:flex">
             <button 
               onClick={onToggleTracker}
               className={`flex min-h-11 items-center justify-center gap-2 rounded-lg border px-4 py-2 transition-all ${
@@ -48,6 +51,17 @@ export function ActionBar({
             >
               <Monitor className="h-4 w-4 shrink-0" />
               <span className="text-sm font-medium">{showTracker ? 'Hide Tracker' : 'Show Tracker'}</span>
+            </button>
+
+            <button 
+              onClick={onToggleOverview}
+              className={`flex min-h-11 items-center justify-center gap-2 rounded-lg border px-4 py-2 transition-all ${
+                showOverview ? 'border-white/20 text-white/70 hover:bg-white/10' : 'border-transparent bg-white/10 text-white'
+              }`}
+              title={showOverview ? 'Hide Overview' : 'Show Overview'}
+            >
+              <BarChart3 className="h-4 w-4 shrink-0" />
+              <span className="text-sm font-medium">{showOverview ? 'Hide Overview' : 'Show Overview'}</span>
             </button>
 
             <button className="flex min-h-11 items-center justify-center gap-2 rounded-lg border border-white/20 px-4 py-2 text-white transition-colors hover:bg-white/10">

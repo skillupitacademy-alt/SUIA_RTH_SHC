@@ -7,6 +7,7 @@ import { QuestionPane } from './QuestionPane';
 import { AnswerPane } from './AnswerPane';
 import { ActionBar } from './ActionBar';
 import { LegendCard } from './LegendCard';
+import { ProgressOverviewCard } from './ProgressOverviewCard';
 
 interface ExamEngineProps {
   brand: BrandConfig;
@@ -15,6 +16,7 @@ interface ExamEngineProps {
 export function ExamEngine({ brand }: ExamEngineProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showTracker, setShowTracker] = useState(true);
+  const [showOverview, setShowOverview] = useState(true);
 
   // Real permutations array showing the dual-pane code handling
   const questions = [
@@ -180,47 +182,70 @@ class ConcreteObserver extends Subject {
     setCurrentIndex((prev) => (prev === 0 ? questions.length - 1 : prev - 1));
   };
 
+  const showBottomRow = showTracker || showOverview;
+  const desktopMainClassName = showBottomRow
+    ? 'xl:h-[calc(100vh-9.5rem)] xl:grid-cols-[minmax(0,0.45fr)_minmax(0,0.55fr)] xl:grid-rows-[minmax(0,0.65fr)_minmax(0,0.35fr)]'
+    : 'xl:h-[calc(100vh-9.5rem)] xl:grid-cols-[minmax(0,0.45fr)_minmax(0,0.55fr)] xl:grid-rows-[minmax(0,1fr)]';
+
   return (
-    <div className="min-h-screen overflow-x-hidden bg-slate-100">
+    <div className="min-h-screen overflow-x-hidden bg-slate-100 xl:overflow-hidden">
       <Header brand={brand} />
       
-      <main className="flex flex-col gap-4 px-3 py-3 sm:px-4 sm:py-4 xl:flex-row">
-        <div className="flex w-full min-w-0 flex-col gap-4 xl:w-[45%]">
+      <main className={`grid gap-4 px-3 py-3 pb-24 sm:px-4 sm:py-4 sm:pb-24 xl:gap-4 xl:px-4 xl:py-4 xl:pb-[5.5rem] ${desktopMainClassName}`}>
+        <div
+          className={`order-1 min-h-[320px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl xl:col-start-1 xl:row-start-1 xl:h-full xl:min-h-0 ${
+            !showBottomRow ? 'xl:row-span-1' : ''
+          }`}
+        >
+          <QuestionPane
+            questionNumber={currentScenario.question.number}
+            questionText={currentScenario.question.text}
+            code={currentScenario.question.code}
+            primaryAccent={brand.primaryColor}
+            secondaryAccent={brand.secondaryColor}
+          />
+        </div>
+
+        <div className="order-2 min-h-[420px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl xl:col-start-2 xl:row-start-1 xl:h-full xl:min-h-0">
+          <AnswerPane
+            options={currentScenario.answers}
+            primaryAccent={brand.primaryColorDark}
+            primaryTint={`rgba(${brand.primaryRgb}, 0.05)`}
+            multiSelect={currentScenario.multiSelect}
+          />
+        </div>
+
+        {showOverview && (
           <div
-            className={`min-h-[320px] rounded-2xl border border-slate-200 bg-white shadow-2xl overflow-hidden xl:min-h-0 ${
-              showTracker ? 'xl:h-[60vh]' : 'xl:h-[calc(100vh-14rem)]'
+            className={`order-3 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl xl:h-full xl:min-h-0 ${
+              showTracker
+                ? 'xl:col-start-2 xl:row-start-2'
+                : 'xl:col-span-2 xl:row-start-2'
             }`}
           >
-            <QuestionPane
-              questionNumber={currentScenario.question.number}
-              questionText={currentScenario.question.text}
-              code={currentScenario.question.code}
+            <ProgressOverviewCard
+              current={currentIndex + 1}
+              total={questions.length}
               primaryAccent={brand.primaryColor}
-              secondaryAccent={brand.secondaryColor}
             />
           </div>
+        )}
 
-          {showTracker && (
-            <div className="min-h-[240px] rounded-2xl border border-slate-200 bg-white shadow-2xl overflow-hidden xl:h-[40vh] xl:min-h-0">
-              <LegendCard 
-                primaryAccent={brand.primaryColor} 
-                currentQuestion={currentIndex + 1}
-                totalQuestions={questions.length}
-              />
-            </div>
-          )}
-        </div>
-
-        <div className="w-full min-w-0 xl:w-[55%]">
-          <div className="min-h-[420px] rounded-2xl border border-slate-200 bg-white shadow-2xl overflow-hidden xl:h-[calc(100vh-10rem)]">
-            <AnswerPane
-              options={currentScenario.answers}
-              primaryAccent={brand.primaryColorDark}
-              primaryTint={`rgba(${brand.primaryRgb}, 0.05)`}
-              multiSelect={currentScenario.multiSelect}
+        {showTracker && (
+          <div
+            className={`order-4 min-h-[240px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl xl:h-full xl:min-h-0 ${
+              showOverview
+                ? 'xl:col-start-1 xl:row-start-2'
+                : 'xl:col-span-2 xl:row-start-2'
+            }`}
+          >
+            <LegendCard 
+              primaryAccent={brand.primaryColor} 
+              currentQuestion={currentIndex + 1}
+              totalQuestions={questions.length}
             />
           </div>
-        </div>
+        )}
       </main>
 
       <ActionBar 
@@ -231,6 +256,8 @@ class ConcreteObserver extends Subject {
         onPrevious={handlePrev}
         showTracker={showTracker}
         onToggleTracker={() => setShowTracker(!showTracker)}
+        showOverview={showOverview}
+        onToggleOverview={() => setShowOverview(!showOverview)}
       />
     </div>
   );
