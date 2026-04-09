@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { CodeEditor } from './CodeEditor';
 import { AccordionCodeOption } from './AccordionCodeOption';
 import { Check } from 'lucide-react';
+import { MacOSDots } from './MacOSDots';
 
 interface AnswerOption {
   id: string;
@@ -20,8 +20,9 @@ interface AnswerPaneProps {
 
 export function AnswerPane({ options, primaryAccent, primaryTint, multiSelect = false }: AnswerPaneProps) {
   const [selected, setSelected] = useState<string[]>([]);
-  // All code options start collapsed — user deliberately expands to read
-  const [expandedOption, setExpandedOption] = useState<string | null>(null);
+  const [expandedOption, setExpandedOption] = useState<string | null>(
+    options.length > 0 && options.some(o => !!o.code) ? options[0].id : null
+  );
 
   const handleSelect = (id: string) => {
     if (multiSelect) {
@@ -34,95 +35,79 @@ export function AnswerPane({ options, primaryAccent, primaryTint, multiSelect = 
   };
 
   const handleToggleExpand = (id: string) => {
-    // Only one can be expanded at a time
     setExpandedOption(prev => prev === id ? null : id);
   };
 
-  // Use accordion layout whenever any answer option contains code
   const useAccordionMode = options.some(opt => !!opt.code);
 
-  // If using accordion mode for code-heavy options
-  if (useAccordionMode) {
-    return (
-      <div className="bg-[#fdfdfe] p-8 h-full overflow-auto">
-        <div className="max-w-3xl">
-          <div className="text-xs uppercase tracking-wider text-slate-600 mb-6 font-semibold">
-            {multiSelect ? 'SELECT ALL THAT APPLY' : 'DECISION SPACE'}
-          </div>
-          <div className="space-y-4">
-            {options.map((option) => (
-              <AccordionCodeOption
-                key={option.id}
-                id={option.id}
-                code={option.code || option.text || ''}
-                label={option.text && option.code ? option.text : undefined}
-                primaryAccent={primaryAccent}
-                primaryTint={primaryTint}
-                isSelected={selected.includes(option.id)}
-                isExpanded={expandedOption === option.id}
-                multiSelect={multiSelect}
-                onSelect={handleSelect}
-                onToggleExpand={handleToggleExpand}
-              />
-            ))}
-          </div>
+  return (
+    <div className="flex flex-col h-full bg-white">
+      {/* Branded Header */}
+      <div 
+        className="px-4 py-3 flex items-center justify-between shadow-md z-10"
+        style={{ backgroundColor: primaryAccent }}
+      >
+        <MacOSDots />
+        <div className="text-[10px] uppercase tracking-[0.2em] font-extrabold text-white">
+          Decision Space
         </div>
       </div>
-    );
-  }
 
-  // Original mode for simple text or short code options
-  return (
-    <div className="bg-[#fdfdfe] p-8 h-full overflow-auto">
-      <div className="max-w-3xl">
-        <div className="text-xs uppercase tracking-wider text-slate-600 mb-6 font-semibold">
-          {multiSelect ? 'SELECT ALL THAT APPLY' : 'DECISION SPACE'}
-        </div>
-        <div className="space-y-4">
-          {options.map((option) => {
-            const isSelected = selected.includes(option.id);
-            return (
-              <button
-                key={option.id}
-                onClick={() => handleSelect(option.id)}
-                className="w-full text-left p-5 rounded-lg border-2 transition-all duration-200 hover:shadow-md"
-                style={{
-                  borderColor: isSelected ? primaryAccent : '#e2e8f0',
-                  backgroundColor: isSelected ? primaryTint : '#ffffff',
-                }}
-              >
-                <div className="flex items-start gap-4">
-                  {/* Radio/Checkbox indicator */}
-                  <div 
-                    className="flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center mt-1"
-                    style={{
-                      borderColor: isSelected ? primaryAccent : '#cbd5e1',
-                      backgroundColor: isSelected ? primaryAccent : 'transparent',
+      {/* Pane Content */}
+      <div className="p-8 flex-1 overflow-auto custom-scrollbar">
+        <div className="max-w-3xl">
+          <div className="text-xs uppercase tracking-wider text-slate-600 mb-6 font-semibold">
+            {multiSelect ? 'SELECT ALL THAT APPLY' : 'SELECT THE BEST OPTION'}
+          </div>
+
+          {useAccordionMode ? (
+            <div className="space-y-4">
+              {options.map((option) => (
+                <AccordionCodeOption
+                  key={option.id}
+                  id={option.id}
+                  code={option.code || option.text || ''}
+                  label={option.text && option.code ? option.text : undefined}
+                  primaryAccent={primaryAccent}
+                  primaryTint={primaryTint}
+                  isExpanded={expandedOption === option.id}
+                  onToggleExpand={() => handleToggleExpand(option.id)}
+                  isSelected={selected.includes(option.id)}
+                  onSelect={() => handleSelect(option.id)}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="min-h-[500px] flex flex-col justify-between py-4">
+              {options.map((option) => {
+                const isSelected = selected.includes(option.id);
+                return (
+                  <button
+                    key={option.id}
+                    onClick={() => handleSelect(option.id)}
+                    className={`w-full text-left p-6 rounded-xl border-2 transition-all flex items-center justify-between group shadow-xl -translate-y-1 ${
+                      isSelected 
+                        ? 'border-transparent translate-x-1' 
+                        : 'border-slate-100 hover:border-slate-300'
+                    }`}
+                    style={{ 
+                      backgroundColor: isSelected ? primaryTint : 'white',
+                      borderColor: isSelected ? primaryAccent : undefined 
                     }}
                   >
-                    {multiSelect && isSelected && (
-                      <Check className="w-3 h-3 text-white" />
-                    )}
-                    {!multiSelect && isSelected && (
-                      <div className="w-2 h-2 rounded-full bg-white"></div>
-                    )}
-                  </div>
-                  
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    {option.text && (
-                      <p className="text-base text-slate-800">{option.text}</p>
-                    )}
-                    {option.code && (
-                      <div className="mt-2">
-                        <CodeEditor code={option.code} primaryAccent={primaryAccent} size="mini" />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </button>
-            );
-          })}
+                    <span className={`text-lg transition-colors ${isSelected ? 'font-bold' : 'text-slate-700'}`} style={{ color: isSelected ? primaryAccent : undefined }}>
+                      {option.text}
+                    </span>
+                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                      isSelected ? 'bg-white border-transparent' : 'border-slate-200 group-hover:border-slate-300'
+                    }`}>
+                      {isSelected && <Check className="w-4 h-4" style={{ color: primaryAccent }} />}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
     </div>

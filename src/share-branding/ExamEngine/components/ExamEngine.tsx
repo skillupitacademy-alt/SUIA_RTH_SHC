@@ -6,15 +6,15 @@ import { Header } from './Header';
 import { QuestionPane } from './QuestionPane';
 import { AnswerPane } from './AnswerPane';
 import { ActionBar } from './ActionBar';
-import { Navigator } from './Navigator';
+import { LegendCard } from './LegendCard';
 
 interface ExamEngineProps {
   brand: BrandConfig;
 }
 
 export function ExamEngine({ brand }: ExamEngineProps) {
-  const [showNavigator, setShowNavigator] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [showTracker, setShowTracker] = useState(true);
 
   // Real permutations array showing the dual-pane code handling
   const questions = [
@@ -184,43 +184,56 @@ class ConcreteObserver extends Subject {
     <div className="h-screen w-screen overflow-hidden">
       <Header brand={brand} />
       
-      {/* 50/50 Split Workspace */}
+      {/* Adjusted Split Workspace (45/55) */}
       <main className="flex h-full pt-[60px] pb-[64px]">
-        {/* Left Pane: Expert Inquiry */}
-        <div className="w-1/2 border-r border-slate-200">
-          <QuestionPane
-            questionNumber={currentScenario.question.number}
-            questionText={currentScenario.question.text}
-            code={currentScenario.question.code}
-            primaryAccent={brand.primaryColor}
-          />
+        {/* Left Pane: Question & Navigator Area (45%) */}
+        <div className="w-[45%] p-4 h-full flex flex-col gap-4">
+          {/* Question Area (Dynamic Height) */}
+          <div className={`${showTracker ? 'h-[60%]' : 'h-full'} bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden transform transition-transform duration-500 hover:scale-[1.002]`}>
+            <QuestionPane
+              questionId={currentScenario.id}
+              questionNumber={currentScenario.question.number}
+              questionText={currentScenario.question.text}
+              code={currentScenario.question.code}
+              primaryAccent={brand.primaryColor}
+              secondaryAccent={brand.secondaryColor}
+            />
+          </div>
+
+          {/* Navigator Area (Toggleable) */}
+          {showTracker && (
+            <div className="h-[40%] bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden transform transition-transform duration-500 hover:scale-[1.002]">
+              <LegendCard 
+                primaryAccent={brand.primaryColor} 
+                currentQuestion={currentIndex + 1}
+                totalQuestions={questions.length}
+              />
+            </div>
+          )}
         </div>
 
-        {/* Right Pane: Decision Space */}
-        <div className="w-1/2">
-          <AnswerPane
-            options={currentScenario.answers}
-            primaryAccent={brand.primaryColor}
-            primaryTint={`rgba(${brand.primaryRgb}, 0.05)`}
-            multiSelect={currentScenario.multiSelect}
-          />
+        {/* Right Pane: Decision Space (55%) */}
+        <div className="w-[55%] p-4 h-full">
+          <div className="h-full bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden transform transition-transform duration-500 hover:scale-[1.002]">
+            <AnswerPane
+              options={currentScenario.answers}
+              primaryAccent={brand.primaryColorDark}
+              primaryTint={`rgba(${brand.primaryRgb}, 0.05)`}
+              multiSelect={currentScenario.multiSelect}
+            />
+          </div>
         </div>
       </main>
 
       <ActionBar 
-        primaryAccent={brand.primaryColor} 
-        onNavigatorToggle={() => setShowNavigator(!showNavigator)}
+        primaryAccent={brand.primaryColorDark} 
+        current={currentIndex + 1}
+        total={questions.length}
         onNext={handleNext}
         onPrevious={handlePrev}
+        showTracker={showTracker}
+        onToggleTracker={() => setShowTracker(!showTracker)}
       />
-
-      {showNavigator && (
-        <Navigator
-          primaryAccent={brand.primaryColor}
-          currentQuestion={currentScenario.question.number}
-          onClose={() => setShowNavigator(false)}
-        />
-      )}
     </div>
   );
 }

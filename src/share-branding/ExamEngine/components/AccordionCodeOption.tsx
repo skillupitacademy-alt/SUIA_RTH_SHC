@@ -31,9 +31,9 @@ export function AccordionCodeOption({
 }: AccordionCodeOptionProps) {
   return (
     <div
-      className="flex flex-col rounded-xl border-2 transition-all duration-200 overflow-hidden bg-white shadow-sm"
+      className="flex flex-col rounded-xl border-2 transition-all duration-300 overflow-hidden bg-white shadow-xl -translate-y-1"
       style={{
-        borderColor: isSelected ? primaryAccent : '#e2e8f0',
+        borderColor: isSelected ? primaryAccent : '#f1f5f9',
       }}
     >
       {/* Accordion Header Bar */}
@@ -69,7 +69,10 @@ export function AccordionCodeOption({
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-slate-700 text-xs font-semibold">
+        <div 
+          className="flex items-center gap-2 text-xs font-bold transition-transform hover:scale-105"
+          style={{ color: primaryAccent }}
+        >
           {isExpanded ? 'Hide Code' : 'View Code'}
           {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
         </div>
