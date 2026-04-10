@@ -24,7 +24,7 @@ export default function StartLearningGateway({ config }: { config: BrandConfig }
   return (
     <main className="min-h-[100dvh] bg-slate-50 relative overflow-hidden font-poppins pb-20">
       {/* Header */}
-      <nav className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
+      <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 flex items-center justify-between gap-3 min-w-0">
           <div className="flex items-center gap-2 min-w-0">
             <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: config.secondaryColor }}>
@@ -81,7 +81,7 @@ export default function StartLearningGateway({ config }: { config: BrandConfig }
         </div>
         
         {/* Right Dashboard Mock */}
-        <div className="w-full lg:w-1/2 relative min-w-0">
+         <div className="w-full lg:w-1/2 relative min-w-0">
           <div className="bg-white rounded-[2rem] shadow-2xl border border-gray-100 p-4 absolute top-0 right-0 md:-right-6 lg:-right-10 w-[calc(100%-0.5rem)] sm:w-full transform rotate-1 sm:rotate-2 md:rotate-3 translate-y-6 sm:translate-y-10 z-0 opacity-50 blur-[2px] hidden md:block overflow-hidden">
              <div className="h-6 w-full bg-slate-100 rounded-md mb-4 hidden sm:block"></div>
              <div className="h-48 w-full bg-slate-50 rounded-xl mb-4"></div>
@@ -176,21 +176,21 @@ export default function StartLearningGateway({ config }: { config: BrandConfig }
                <h2 className="text-3xl font-bold mb-3 font-poppins text-gray-900 text-center sm:text-left">Exam Difficulty Matrix</h2>
                <p className="text-sm text-slate-600 mb-8 font-medium text-center sm:text-left">Unlock higher diagnostic difficulty levels by fully graduating your Tutorial Engine blocks.</p>
                <div className="bg-white rounded-[2rem] p-5 sm:p-8 shadow-2xl border border-slate-100 overflow-hidden">
-                  <div className="grid grid-cols-4 gap-3 sm:gap-6">
+                  <div className="grid grid-cols-4 gap-2 sm:gap-6">
                     <div className="text-center flex-1 transition hover:-translate-y-1">
-                      <div className="w-12 h-12 sm:w-20 sm:h-20 bg-gradient-to-br from-slate-400 to-slate-500 rounded-[1.25rem] flex items-center justify-center mb-3 mx-auto shadow-md"><span className="text-white font-black text-xl">1.0</span></div>
+                      <div className="w-11 h-11 sm:w-20 sm:h-20 bg-gradient-to-br from-slate-400 to-slate-500 rounded-[1.25rem] flex items-center justify-center mb-3 mx-auto shadow-md"><span className="text-white font-black text-lg sm:text-xl">1.0</span></div>
                       <p className="text-[10px] sm:text-xs font-black text-slate-500 uppercase tracking-widest">Base</p>
                     </div>
                     <div className="text-center flex-1 transition hover:-translate-y-1">
-                      <div className="w-12 h-12 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-400 to-blue-500 rounded-[1.25rem] flex items-center justify-center mb-3 mx-auto shadow-md"><span className="text-white font-black text-xl">2.0</span></div>
+                      <div className="w-11 h-11 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-400 to-blue-500 rounded-[1.25rem] flex items-center justify-center mb-3 mx-auto shadow-md"><span className="text-white font-black text-lg sm:text-xl">2.0</span></div>
                       <p className="text-[10px] sm:text-xs font-black text-slate-500 uppercase tracking-widest">Inter</p>
                     </div>
                     <div className="text-center flex-1 transition hover:-translate-y-1">
-                      <div className="w-12 h-12 sm:w-20 sm:h-20 bg-gradient-to-br from-amber-400 to-amber-500 rounded-[1.25rem] flex items-center justify-center mb-3 mx-auto shadow-md"><span className="text-white font-black text-xl">3.0</span></div>
+                      <div className="w-11 h-11 sm:w-20 sm:h-20 bg-gradient-to-br from-amber-400 to-amber-500 rounded-[1.25rem] flex items-center justify-center mb-3 mx-auto shadow-md"><span className="text-white font-black text-lg sm:text-xl">3.0</span></div>
                       <p className="text-[10px] sm:text-xs font-black text-slate-500 uppercase tracking-widest">Upper</p>
                     </div>
                     <div className="text-center flex-1 transition hover:-translate-y-1">
-                      <div className="w-12 h-12 sm:w-20 sm:h-20 bg-gradient-to-br from-rose-500 to-rose-600 rounded-[1.25rem] flex items-center justify-center mb-3 mx-auto shadow-md"><span className="text-white font-black text-xl">4.0</span></div>
+                      <div className="w-11 h-11 sm:w-20 sm:h-20 bg-gradient-to-br from-rose-500 to-rose-600 rounded-[1.25rem] flex items-center justify-center mb-3 mx-auto shadow-md"><span className="text-white font-black text-lg sm:text-xl">4.0</span></div>
                       <p className="text-[10px] sm:text-xs font-black text-slate-500 uppercase tracking-widest">Pro</p>
                     </div>
                   </div>

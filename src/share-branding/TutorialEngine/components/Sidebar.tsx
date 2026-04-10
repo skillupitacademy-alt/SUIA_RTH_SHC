@@ -1,13 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ChevronDown, ChevronUp, Play, Bot, BarChart, AlertCircle, Calendar, Folder, CheckCircle, Lock, Circle } from 'lucide-react';
 import { useBrand } from '../../PostLandingPage/app/context/BrandContext';
-
-interface Topic {
-  id: string;
-  name: string;
-  status: 'completed' | 'active' | 'locked';
-  subtopics?: Topic[];
-}
+import { useTutorialData } from './TutorialDataContext';
 
 interface SidebarProps {
   onAITutorClick: () => void;
@@ -18,50 +12,31 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ onAITutorClick, onSectionScroll, isOpen, onClose }) => {
   const brandConfig = useBrand();
+  const data = useTutorialData();
   const [expandedTopics, setExpandedTopics] = useState<Set<string>>(new Set(['topic-1']));
   const [showScrollUp, setShowScrollUp] = useState(false);
   const [showScrollDown, setShowScrollDown] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const quickActions = [
-    { label: 'Continue', icon: Play, action: () => onSectionScroll('learner-flow') },
-    { label: brandConfig.tutorLabel, icon: Bot, action: onAITutorClick },
-    { label: 'Progress', icon: BarChart, action: () => onSectionScroll('learner-flow') },
-    { label: 'Weak Areas', icon: AlertCircle, action: () => {} },
-    { label: 'Sessions', icon: Calendar, action: () => onSectionScroll('live-session') },
-    { label: 'Projects', icon: Folder, action: () => onSectionScroll('projects') },
-  ];
+  const iconMap = {
+    Continue: Play,
+    Progress: BarChart,
+    'Weak Areas': AlertCircle,
+    Sessions: Calendar,
+    Projects: Folder,
+  } as const;
 
-  const curriculumTopics: Topic[] = [
-    {
-      id: 'topic-1',
-      name: 'Introduction to React',
-      status: 'completed',
-      subtopics: [
-        { id: 'sub-1-1', name: 'What is React?', status: 'completed' },
-        { id: 'sub-1-2', name: 'JSX Basics', status: 'completed' },
-      ],
+  const quickActions = data.sidebar.quickActions.map((action) => ({
+    ...action,
+    icon: action.label === brandConfig.tutorLabel ? Bot : iconMap[action.label as keyof typeof iconMap] ?? Play,
+    handler: () => {
+      if (action.target === 'ai-tutor') {
+        onAITutorClick();
+        return;
+      }
+      onSectionScroll(action.target);
     },
-    {
-      id: 'topic-2',
-      name: 'Component Architecture',
-      status: 'active',
-      subtopics: [
-        { id: 'sub-2-1', name: 'Functional Components', status: 'completed' },
-        { id: 'sub-2-2', name: 'Props & State', status: 'active' },
-        { id: 'sub-2-3', name: 'Lifecycle Methods', status: 'locked' },
-      ],
-    },
-    {
-      id: 'topic-3',
-      name: 'Hooks Deep Dive',
-      status: 'locked',
-      subtopics: [
-        { id: 'sub-3-1', name: 'useState', status: 'locked' },
-        { id: 'sub-3-2', name: 'useEffect', status: 'locked' },
-      ],
-    },
-  ];
+  }));
 
   const toggleTopic = (topicId: string) => {
     setExpandedTopics((prev) => {
@@ -104,7 +79,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAITutorClick, onSectionScrol
     return () => ref.removeEventListener('scroll', checkScroll);
   }, []);
 
-  const getStatusIcon = (status: Topic['status']) => {
+  const getStatusIcon = (status: 'completed' | 'active' | 'locked') => {
     switch (status) {
       case 'completed':
         return <CheckCircle className="h-4 w-4 text-emerald-600" />;
@@ -117,37 +92,28 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAITutorClick, onSectionScrol
 
   return (
     <>
-      {isOpen && (
-        <div
-          className="fixed inset-0 z-[45] bg-black/40 backdrop-blur-sm lg:hidden"
-          onClick={onClose}
-        />
-      )}
+      {isOpen && <div className="fixed inset-0 z-[45] bg-black/40 backdrop-blur-sm lg:hidden" onClick={onClose} />}
 
-      <aside aria-label="Tutorial curriculum menu" className={`fixed bottom-0 left-0 top-[80px] z-[50] flex w-[calc(100vw-1rem)] max-w-[280px] min-w-0 flex-col overflow-hidden p-2 sm:p-4 transition-transform duration-300 sm:top-[98px] lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside aria-label="Tutorial curriculum menu" className={`fixed bottom-0 left-0 top-[80px] z-[50] flex w-[calc(100vw-1rem)] max-w-[280px] min-w-0 flex-col overflow-hidden p-2 transition-transform duration-300 sm:top-[98px] sm:p-4 lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-gray-200 bg-white p-4 shadow-xl sm:p-5 lg:shadow-sm">
           <div className="mb-4 flex items-center justify-between border-b border-gray-100 pb-4 lg:hidden">
             <span className="font-bold text-gray-900">Tutorial Menu</span>
-            <button
-              onClick={onClose}
-              aria-label="Close tutorial menu"
-              className="group rounded-lg p-2 transition-all hover:bg-gray-100"
-            >
+            <button onClick={onClose} aria-label="Close tutorial menu" className="group rounded-lg p-2 transition-all hover:bg-gray-100">
               <Circle className="h-5 w-5 rotate-45 text-gray-600 group-hover:text-gray-800" />
             </button>
           </div>
 
           <div className="mb-6 min-w-0">
             <p className="mb-3 text-sm font-semibold text-gray-700" style={{ fontFamily: 'Outfit, sans-serif' }}>
-              Quick Actions
+              {data.sidebar.quickActionsTitle}
             </p>
             <div className="grid min-w-0 grid-cols-2 gap-2">
               {quickActions.map((action) => (
                 <button
                   key={action.label}
-                  onClick={action.action}
+                  onClick={action.handler}
                   aria-label={`Quick Action: ${action.label}`}
-                  className="flex min-w-0 w-full flex-col items-center justify-center gap-1 overflow-hidden rounded-lg border border-gray-200 bg-white p-3 transition-all hover:bg-gray-50"
+                  className="flex w-full min-w-0 flex-col items-center justify-center gap-1 overflow-hidden rounded-lg border border-gray-200 bg-white p-3 transition-all hover:bg-gray-50"
                 >
                   <action.icon className="h-5 w-5" style={{ color: brandConfig.primaryColor }} />
                   <span className="max-w-full break-words text-center text-xs text-gray-700" style={{ fontFamily: 'Inter, sans-serif' }}>
@@ -161,24 +127,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAITutorClick, onSectionScrol
           <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
             <div className="mb-3 flex items-center justify-between">
               <p className="text-sm font-semibold text-gray-700" style={{ fontFamily: 'Outfit, sans-serif' }}>
-                Curriculum
+                {data.sidebar.curriculumTitle}
               </p>
               <div className="flex gap-1">
                 {showScrollUp && (
-                  <button
-                    onClick={() => scrollTo('up')}
-                    aria-label="Scroll menu up"
-                    className="rounded p-1 transition-colors hover:bg-gray-100"
-                  >
+                  <button onClick={() => scrollTo('up')} aria-label="Scroll menu up" className="rounded p-1 transition-colors hover:bg-gray-100">
                     <ChevronUp className="h-4 w-4 text-gray-700" />
                   </button>
                 )}
                 {showScrollDown && (
-                  <button
-                    onClick={() => scrollTo('down')}
-                    aria-label="Scroll menu down"
-                    className="rounded p-1 transition-colors hover:bg-gray-100"
-                  >
+                  <button onClick={() => scrollTo('down')} aria-label="Scroll menu down" className="rounded p-1 transition-colors hover:bg-gray-100">
                     <ChevronDown className="h-4 w-4 text-gray-700" />
                   </button>
                 )}
@@ -187,23 +145,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAITutorClick, onSectionScrol
 
             <div ref={scrollRef} tabIndex={0} aria-label="Curriculum topics" className="hide-scrollbar min-w-0 flex-1 overflow-y-auto focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-2">
               <div className="space-y-1">
-                {curriculumTopics.map((topic) => (
+                {data.sidebar.topics.map((topic) => (
                   <div key={topic.id}>
-                    <button
-                      onClick={() => toggleTopic(topic.id)}
-                      aria-expanded={expandedTopics.has(topic.id)}
-                      aria-label={`Toggle topic: ${topic.name}`}
-                      className="flex w-full min-w-0 items-center gap-2 rounded-lg p-2 text-left transition-colors hover:bg-gray-50"
-                    >
+                    <button onClick={() => toggleTopic(topic.id)} aria-expanded={expandedTopics.has(topic.id)} aria-label={`Toggle topic: ${topic.name}`} className="flex w-full min-w-0 items-center gap-2 rounded-lg p-2 text-left transition-colors hover:bg-gray-50">
                       {getStatusIcon(topic.status)}
                       <span className="min-w-0 flex-1 break-words text-sm text-gray-800" style={{ fontFamily: 'Inter, sans-serif' }}>
                         {topic.name}
                       </span>
-                      {topic.subtopics && (
-                        <ChevronDown
-                          className={`h-4 w-4 text-gray-700 transition-transform ${expandedTopics.has(topic.id) ? 'rotate-180' : ''}`}
-                        />
-                      )}
+                      {topic.subtopics && <ChevronDown className={`h-4 w-4 text-gray-700 transition-transform ${expandedTopics.has(topic.id) ? 'rotate-180' : ''}`} />}
                     </button>
 
                     {topic.subtopics && expandedTopics.has(topic.id) && (
@@ -226,13 +175,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAITutorClick, onSectionScrol
 
           <section className="mt-4 min-w-0 overflow-hidden rounded-lg border border-amber-200 bg-amber-50 p-4">
             <h2 className="mb-2 text-sm font-semibold text-gray-800" style={{ fontFamily: 'Outfit, sans-serif' }}>
-              Key Terms
+              {data.sidebar.glossaryTitle}
             </h2>
-            <p className="break-words text-xs text-gray-700" style={{ fontFamily: 'Inter, sans-serif', lineHeight: '1.6' }}>
-              <strong>JSX:</strong> JavaScript XML syntax extension
-              <br />
-              <strong>Props:</strong> Data passed to components
-            </p>
+            <p className="break-words text-xs text-gray-700" style={{ fontFamily: 'Inter, sans-serif', lineHeight: '1.6' }} dangerouslySetInnerHTML={{ __html: data.sidebar.glossaryHtml }} />
           </section>
         </div>
       </aside>

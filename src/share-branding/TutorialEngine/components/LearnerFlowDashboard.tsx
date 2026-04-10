@@ -1,36 +1,35 @@
 import { useBrand } from '../../PostLandingPage/app/context/BrandContext';
 import React from 'react';
 import { ChevronRight } from 'lucide-react';
+import { useTutorialData } from './TutorialDataContext';
 
 interface LearnerFlowDashboardProps {
   completedCount: number;
   totalCount: number;
-  
 }
 
 export const LearnerFlowDashboard: React.FC<LearnerFlowDashboardProps> = ({ completedCount, totalCount }) => {
   const brandConfig = useBrand();
-
+  const data = useTutorialData();
   const percentage = (completedCount / totalCount) * 100;
 
-  const tiers = [
-    { name: 'Basic', status: completedCount >= 2 ? 'unlocked' : 'locked' },
-    { name: 'Intermediate', status: completedCount >= 4 ? 'unlocked' : 'locked' },
-    { name: 'Advanced', status: completedCount >= 6 ? 'unlocked' : 'locked' },
-  ];
+  const tiers = data.learnerFlow.tierNames.map((name, index) => ({
+    name,
+    status:
+      index === 0 ? (completedCount >= 2 ? 'unlocked' : 'locked') :
+      index === 1 ? (completedCount >= 4 ? 'unlocked' : 'locked') :
+      completedCount >= totalCount ? 'unlocked' : 'locked',
+  }));
 
   return (
     <div className="w-full min-w-0 overflow-hidden rounded-lg border border-gray-200 bg-white p-4 shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_40px_rgba(0,0,0,0.12)] sm:p-6">
       <div className="mb-6 flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 flex-1">
-          <h2
-            className="mb-2 break-words text-2xl font-bold text-gray-800"
-            style={{ fontFamily: 'Outfit, sans-serif', letterSpacing: '-0.04em' }}
-          >
-            Your Learning Progress
+          <h2 className="mb-2 break-words text-2xl font-bold text-gray-800" style={{ fontFamily: 'Outfit, sans-serif', letterSpacing: '-0.04em' }}>
+            {data.learnerFlow.title}
           </h2>
           <p className="break-words text-sm text-gray-700" style={{ fontFamily: 'Inter, sans-serif' }}>
-            Complete all sections to unlock assignments
+            {data.learnerFlow.description}
           </p>
         </div>
         <div className="shrink-0 text-left sm:text-right">
@@ -43,23 +42,15 @@ export const LearnerFlowDashboard: React.FC<LearnerFlowDashboardProps> = ({ comp
         </div>
       </div>
 
-      {/* Progress Bar */}
       <div className="mb-6">
-        <div className="h-3 rounded-full bg-gray-100 overflow-hidden border border-gray-200">
-          <div
-            className="h-full rounded-full transition-all duration-500"
-            style={{
-              width: `${percentage}%`,
-              background: brandConfig.primaryColor,
-            }}
-          />
+        <div className="h-3 overflow-hidden rounded-full border border-gray-200 bg-gray-100">
+          <div className="h-full rounded-full transition-all duration-500" style={{ width: `${percentage}%`, background: brandConfig.primaryColor }} />
         </div>
       </div>
 
-      {/* Assignment Tiers */}
       <div className="space-y-3">
-        <h3 className="text-sm font-semibold text-gray-700 mb-3" style={{ fontFamily: 'Outfit, sans-serif' }}>
-          Assignment Paths
+        <h3 className="mb-3 text-sm font-semibold text-gray-700" style={{ fontFamily: 'Outfit, sans-serif' }}>
+          {data.learnerFlow.tierTitle}
         </h3>
         <div className="grid w-full min-w-0 grid-cols-1 gap-3 sm:grid-cols-3">
           {tiers.map((tier) => (
@@ -67,16 +58,14 @@ export const LearnerFlowDashboard: React.FC<LearnerFlowDashboardProps> = ({ comp
               key={tier.name}
               disabled={tier.status === 'locked'}
               className={`w-full min-w-0 overflow-hidden rounded-lg border p-4 text-center transition-all duration-300 ${
-                tier.status === 'unlocked' 
-                  ? 'cursor-pointer border-gray-200 bg-white shadow-[0_8px_20px_rgba(0,0,0,0.06)] hover:-translate-y-1 hover:shadow-[0_15px_30px_rgba(0,0,0,0.10)]' 
+                tier.status === 'unlocked'
+                  ? 'cursor-pointer border-gray-200 bg-white shadow-[0_8px_20px_rgba(0,0,0,0.06)] hover:-translate-y-1 hover:shadow-[0_15px_30px_rgba(0,0,0,0.10)]'
                   : 'cursor-not-allowed border-gray-200 bg-gray-50'
               }`}
             >
               <div className="flex min-w-0 flex-wrap items-center justify-center gap-2">
                 <span
-                  className={`break-words text-sm font-semibold ${
-                    tier.status === 'unlocked' ? 'text-gray-800' : 'text-gray-700'
-                  }`}
+                  className={`break-words text-sm font-semibold ${tier.status === 'unlocked' ? 'text-gray-800' : 'text-gray-700'}`}
                   style={{ fontFamily: 'Outfit, sans-serif', color: tier.status === 'unlocked' ? brandConfig.primaryColor : undefined }}
                 >
                   {tier.name}

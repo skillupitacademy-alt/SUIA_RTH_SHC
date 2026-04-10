@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { CodeEditor } from './CodeEditor';
 import { Check, ChevronDown, ChevronRight } from 'lucide-react';
+import { ExamCardTheme } from './cardThemes';
 
 interface AccordionCodeOptionProps {
   id: string;
@@ -10,6 +11,7 @@ interface AccordionCodeOptionProps {
   label?: string;
   primaryAccent: string;
   primaryTint: string;
+  cardTheme: ExamCardTheme;
   isSelected: boolean;
   isExpanded: boolean;
   multiSelect?: boolean;
@@ -23,6 +25,7 @@ export function AccordionCodeOption({
   label,
   primaryAccent,
   primaryTint,
+  cardTheme,
   isSelected,
   isExpanded,
   multiSelect = false,
@@ -31,18 +34,25 @@ export function AccordionCodeOption({
 }: AccordionCodeOptionProps) {
   return (
     <div
-      className="flex flex-col rounded-xl border-2 transition-all duration-300 overflow-hidden bg-white shadow-xl -translate-y-1"
+      className="flex flex-col overflow-hidden rounded-xl border-2 shadow-xl transition-all duration-300 -translate-y-1"
       style={{
-        borderColor: isSelected ? primaryAccent : '#f1f5f9',
+        borderColor: isSelected ? primaryAccent : cardTheme.answerOptionBorder,
+        backgroundColor: cardTheme.answerOptionSurface,
       }}
     >
       {/* Accordion Header Bar */}
       <div 
-        className="flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 transition-colors"
+        className="flex cursor-pointer items-center justify-between p-4 transition-colors"
         style={{
-          backgroundColor: isSelected ? primaryTint : '#ffffff',
+          backgroundColor: isSelected ? primaryTint : cardTheme.answerOptionSurface,
         }}
         onClick={() => onToggleExpand(id)}
+        onMouseEnter={(e) => {
+          if (!isSelected) e.currentTarget.style.backgroundColor = cardTheme.answerOptionHoverSurface;
+        }}
+        onMouseLeave={(e) => {
+          if (!isSelected) e.currentTarget.style.backgroundColor = cardTheme.answerOptionSurface;
+        }}
       >
         <div className="flex items-center gap-4">
           <button
@@ -56,7 +66,7 @@ export function AccordionCodeOption({
             <div
               className="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all"
               style={{
-                borderColor: isSelected ? primaryAccent : '#cbd5e1',
+                borderColor: isSelected ? primaryAccent : cardTheme.answerIndicatorBorder,
                 backgroundColor: isSelected ? primaryAccent : 'transparent',
               }}
             >
@@ -64,7 +74,7 @@ export function AccordionCodeOption({
               {!multiSelect && isSelected && <div className="w-2 h-2 rounded-full bg-white"></div>}
             </div>
           </button>
-          <div className="font-semibold tracking-wide text-slate-800 text-sm">
+          <div className="text-sm font-semibold tracking-wide" style={{ color: cardTheme.answerOptionText }}>
             {label ? label : `Option ${id.toUpperCase()}`}
           </div>
         </div>
@@ -81,9 +91,10 @@ export function AccordionCodeOption({
       {/* Accordion Dropdown Body */}
       {isExpanded && (
         <div 
-          className="border-t border-slate-200 bg-slate-50 relative animate-in fade-in slide-in-from-top-2 duration-200"
+          className="relative animate-in border-t fade-in slide-in-from-top-2 duration-200"
+          style={{ borderColor: cardTheme.codeBorder, backgroundColor: cardTheme.questionSurface }}
         >
-          <CodeEditor code={code} primaryAccent={primaryAccent} size="mini" />
+          <CodeEditor code={code} primaryAccent={primaryAccent} size="mini" cardTheme={cardTheme} />
         </div>
       )}
     </div>

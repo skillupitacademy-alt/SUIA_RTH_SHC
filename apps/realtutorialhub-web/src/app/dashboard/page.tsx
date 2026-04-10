@@ -1,4 +1,5 @@
 import DashboardPage from '../../../../../src/share-branding/DashboardPage';
+import { loadDashboardData } from '../../../../../src/share-branding/dashboardPageData';
 import { rthConfig } from '../../../../../src/share-branding/brandConfig';
 
 export const metadata = {
@@ -6,6 +7,7 @@ export const metadata = {
   description: 'Your RealTutorialHub Engine Command Center.',
 };
 
-export default function Page() {
-  return <DashboardPage config={rthConfig} />;
+export default async function Page() {
+  const data = await loadDashboardData(rthConfig);
+  return <DashboardPage config={rthConfig} data={data} />;
 }

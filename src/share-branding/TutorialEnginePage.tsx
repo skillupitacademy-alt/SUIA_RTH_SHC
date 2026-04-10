@@ -10,13 +10,16 @@ import { AITutorDrawer } from './TutorialEngine/components/AITutorDrawer';
 import { LearnerFlowDashboard } from './TutorialEngine/components/LearnerFlowDashboard';
 import { CurriculumSection } from './TutorialEngine/components/CurriculumSection';
 import { FacultySupport } from './TutorialEngine/components/FacultySupport';
+import { TutorialDataProvider, useTutorialData } from './TutorialEngine/components/TutorialDataContext';
+import { TutorialViewData } from './tutorialPageData';
 
 function TutorialEngineContent() {
   const brandConfig = useBrand();
+  const data = useTutorialData();
   const [isAITutorOpen, setIsAITutorOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [completedSections, setCompletedSections] = useState(0);
-  const totalSections = 6;
+  const totalSections = data.learnerFlow.totalSections;
 
   const handleSectionView = (_id: string, viewed: boolean) => {
     if (viewed) {
@@ -53,9 +56,9 @@ function TutorialEngineContent() {
               {brandConfig.name}
             </h1>
             <div className="flex min-w-0 flex-wrap items-center gap-2 text-[10px] font-medium text-gray-700 sm:text-xs">
-              <span>Full-Stack Development</span>
+              <span>{data.nav.courseLabel}</span>
               <span className="text-gray-600">-</span>
-              <span className="font-bold text-gray-900">Component Architecture</span>
+              <span className="font-bold text-gray-900">{data.nav.lessonLabel}</span>
             </div>
           </div>
         </div>
@@ -67,17 +70,17 @@ function TutorialEngineContent() {
             className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900 sm:px-4 sm:py-2 sm:text-sm"
           >
             <ChevronLeft className="h-4 w-4" />
-            <span className="hidden xs:block">Dashboard</span>
+            <span className="hidden xs:block">{data.nav.dashboardCtaLabel}</span>
           </Link>
           <div className="hidden text-right xs:block">
             <p className="text-[10px] font-medium text-gray-700">Welcome,</p>
-            <p className="text-sm font-bold text-gray-800">Alex J.</p>
+            <p className="text-sm font-bold text-gray-800">{data.nav.learnerName}</p>
           </div>
           <div
             className="flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold text-white sm:h-10 sm:w-10"
             style={{ background: brandConfig.primaryColor }}
           >
-            AJ
+            {data.nav.learnerInitials}
           </div>
         </div>
       </nav>
@@ -129,10 +132,12 @@ function TutorialEngineContent() {
   );
 }
 
-export default function TutorialEnginePage({ config }: { config: BrandConfig }) {
+export default function TutorialEnginePage({ config, data }: { config: BrandConfig; data: TutorialViewData }) {
   return (
     <BrandProvider brand={config}>
-      <TutorialEngineContent />
+      <TutorialDataProvider value={data}>
+        <TutorialEngineContent />
+      </TutorialDataProvider>
     </BrandProvider>
   );
 }

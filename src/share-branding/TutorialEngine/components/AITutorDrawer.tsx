@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Send, Bot } from 'lucide-react';
 import { useBrand } from '../../PostLandingPage/app/context/BrandContext';
+import { useTutorialData } from './TutorialDataContext';
 
 interface AITutorDrawerProps {
   isOpen: boolean;
@@ -16,10 +17,11 @@ interface Message {
 
 export const AITutorDrawer: React.FC<AITutorDrawerProps> = ({ isOpen, onClose }) => {
   const brandConfig = useBrand();
+  const data = useTutorialData();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: `Hi! I'm your ${brandConfig.tutorLabel}. Ask me anything about the current topic!`,
+      text: data.tutorDrawer.welcomeMessage,
       sender: 'ai',
       timestamp: new Date(),
     },
@@ -54,22 +56,13 @@ export const AITutorDrawer: React.FC<AITutorDrawerProps> = ({ isOpen, onClose })
 
   return (
     <>
-      <div
-        className={`fixed inset-0 z-40 bg-black/20 transition-opacity ${isOpen ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
-        onClick={onClose}
-      />
+      <div className={`fixed inset-0 z-40 bg-black/20 transition-opacity ${isOpen ? 'opacity-100' : 'pointer-events-none opacity-0'}`} onClick={onClose} />
 
-      <aside
-        aria-label={`${brandConfig.tutorLabel} drawer`}
-        className={`fixed bottom-0 right-0 top-0 z-50 flex w-full max-w-[400px] min-w-0 flex-col border-l border-gray-200 bg-white shadow-lg transition-transform duration-300 ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
-      >
+      <aside aria-label={`${brandConfig.tutorLabel} drawer`} className={`fixed bottom-0 right-0 top-0 z-50 flex w-full max-w-[400px] min-w-0 flex-col border-l border-gray-200 bg-white shadow-lg transition-transform duration-300 ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
         <div className="border-b border-gray-200 p-4 sm:p-6">
           <div className="flex min-w-0 items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
-              <div
-                className="flex h-10 w-10 items-center justify-center rounded-full"
-                style={{ background: brandConfig.primaryColor }}
-              >
+              <div className="flex h-10 w-10 items-center justify-center rounded-full" style={{ background: brandConfig.primaryColor }}>
                 <Bot className="h-5 w-5 text-white" />
               </div>
               <div className="min-w-0">
@@ -77,15 +70,11 @@ export const AITutorDrawer: React.FC<AITutorDrawerProps> = ({ isOpen, onClose })
                   {brandConfig.tutorLabel}
                 </h2>
                 <p className="break-words text-xs text-gray-700" style={{ fontFamily: 'Inter, sans-serif' }}>
-                  Always here to help
+                  {data.tutorDrawer.subtitle}
                 </p>
               </div>
             </div>
-            <button
-              onClick={onClose}
-              aria-label={`Close ${brandConfig.tutorLabel} drawer`}
-              className="rounded-lg p-2 transition-colors hover:bg-gray-100"
-            >
+            <button onClick={onClose} aria-label={`Close ${brandConfig.tutorLabel} drawer`} className="rounded-lg p-2 transition-colors hover:bg-gray-100">
               <X className="h-5 w-5 text-gray-700" />
             </button>
           </div>
@@ -93,22 +82,14 @@ export const AITutorDrawer: React.FC<AITutorDrawerProps> = ({ isOpen, onClose })
 
         <div tabIndex={0} aria-label="Tutor conversation history" className="min-w-0 flex-1 space-y-4 overflow-y-auto bg-slate-50 p-4 focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-inset sm:p-6">
           {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
+            <div key={message.id} className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div
                 className={`max-w-[80%] min-w-0 rounded-lg border p-3 ${
-                  message.sender === 'user'
-                    ? 'rounded-tr-none border-transparent'
-                    : 'rounded-tl-none border-gray-200 bg-white'
+                  message.sender === 'user' ? 'rounded-tr-none border-transparent' : 'rounded-tl-none border-gray-200 bg-white'
                 }`}
                 style={{ background: message.sender === 'user' ? brandConfig.primaryColor : undefined }}
               >
-                <p
-                  className={`break-words text-sm ${message.sender === 'user' ? 'text-white' : 'text-gray-800'}`}
-                  style={{ fontFamily: 'Inter, sans-serif', lineHeight: '1.6' }}
-                >
+                <p className={`break-words text-sm ${message.sender === 'user' ? 'text-white' : 'text-gray-800'}`} style={{ fontFamily: 'Inter, sans-serif', lineHeight: '1.6' }}>
                   {message.text}
                 </p>
               </div>
@@ -124,16 +105,11 @@ export const AITutorDrawer: React.FC<AITutorDrawerProps> = ({ isOpen, onClose })
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
               aria-label={`Ask ${brandConfig.tutorLabel} a question`}
-              placeholder="Ask a question..."
+              placeholder={data.tutorDrawer.inputPlaceholder}
               className="min-w-0 flex-1 bg-transparent px-2 text-sm outline-none"
               style={{ fontFamily: 'Inter, sans-serif' }}
             />
-            <button
-              onClick={handleSend}
-              aria-label="Send tutorial question"
-              className="rounded-lg p-2 transition-all hover:opacity-90"
-              style={{ background: brandConfig.primaryColor }}
-            >
+            <button onClick={handleSend} aria-label="Send tutorial question" className="rounded-lg p-2 transition-all hover:opacity-90" style={{ background: brandConfig.primaryColor }}>
               <Send className="h-4 w-4 text-white" />
             </button>
           </div>

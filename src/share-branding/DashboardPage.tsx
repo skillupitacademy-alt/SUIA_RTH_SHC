@@ -14,6 +14,8 @@ import { CapstoneUnlockWidget } from './Dashboard/components/CapstoneUnlockWidge
 import { DailyProgressWidget } from './Dashboard/components/DailyProgressWidget';
 import { AITutorSuggestions } from './Dashboard/components/AITutorSuggestions';
 import { EngineSynchronization } from './Dashboard/components/EngineSynchronization';
+import { DashboardDataProvider } from './Dashboard/components/DashboardDataContext';
+import { DashboardViewData } from './dashboardPageData';
 
 function DashboardContent() {
   const brand = useBrand();
@@ -42,7 +44,7 @@ function DashboardContent() {
               {brand.dashboardGreeting}
             </h1>
             <p className="max-w-3xl text-base font-bold text-slate-500 sm:text-lg lg:text-xl">
-              {brand.name} - Premium developer learning platform
+              {brand.dashboardSubtext}
             </p>
           </div>
 
@@ -67,10 +69,12 @@ function DashboardContent() {
   );
 }
 
-export default function DashboardPage({ config }: { config: BrandConfig }) {
+export default function DashboardPage({ config, data }: { config: BrandConfig; data: DashboardViewData }) {
   return (
     <BrandProvider brand={config}>
-      <DashboardContent />
+      <DashboardDataProvider value={data}>
+        <DashboardContent />
+      </DashboardDataProvider>
     </BrandProvider>
   );
 }

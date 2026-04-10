@@ -1,28 +1,17 @@
 import React, { useState } from 'react';
 import { Calendar, Video, Clock, CheckCircle, Lock, FileText } from 'lucide-react';
 import { useBrand } from '../../PostLandingPage/app/context/BrandContext';
-
-interface Project {
-  id: string;
-  name: string;
-  status: 'open' | 'locked' | 'submitted';
-  dueDate: string;
-}
+import { useTutorialData } from './TutorialDataContext';
 
 export const FacultySupport: React.FC = () => {
   const brandConfig = useBrand();
+  const data = useTutorialData();
   const [sessionRequest, setSessionRequest] = useState({
     topic: '',
     preferredTime: '',
     description: '',
   });
   const [sessionStatus, setSessionStatus] = useState<'idle' | 'pending' | 'scheduled'>('idle');
-
-  const projects: Project[] = [
-    { id: 'p1', name: 'Build a Todo App', status: 'open', dueDate: 'Apr 5, 2026' },
-    { id: 'p2', name: 'Create a Weather Dashboard', status: 'submitted', dueDate: 'Apr 12, 2026' },
-    { id: 'p3', name: 'Design System Implementation', status: 'locked', dueDate: 'Apr 19, 2026' },
-  ];
 
   const handleSessionRequest = () => {
     if (sessionRequest.topic && sessionRequest.preferredTime) {
@@ -31,7 +20,7 @@ export const FacultySupport: React.FC = () => {
     }
   };
 
-  const getProjectIcon = (status: Project['status']) => {
+  const getProjectIcon = (status: 'open' | 'locked' | 'submitted') => {
     switch (status) {
       case 'submitted':
         return <CheckCircle className="h-5 w-5 text-emerald-700" />;
@@ -42,7 +31,7 @@ export const FacultySupport: React.FC = () => {
     }
   };
 
-  const getProjectStatusColor = (status: Project['status']) => {
+  const getProjectStatusColor = (status: 'open' | 'locked' | 'submitted') => {
     switch (status) {
       case 'submitted':
         return 'border-emerald-300 bg-emerald-100 text-emerald-800';
@@ -55,20 +44,17 @@ export const FacultySupport: React.FC = () => {
 
   return (
     <div className="w-full max-w-full min-w-0 space-y-6 overflow-x-hidden">
-      <div
-        id="live-session"
-        className="w-full min-w-0 overflow-hidden rounded-lg border border-gray-200 bg-white p-4 shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_25px_50px_rgba(0,0,0,0.12)] sm:p-6"
-      >
+      <div id="live-session" className="w-full min-w-0 overflow-hidden rounded-lg border border-gray-200 bg-white p-4 shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_25px_50px_rgba(0,0,0,0.12)] sm:p-6">
         <div className="mb-6 flex min-w-0 items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center rounded-lg" style={{ background: brandConfig.primaryColor }}>
             <Video className="h-6 w-6 text-white" />
           </div>
           <div className="min-w-0 flex-1">
             <h2 className="break-words text-xl font-bold text-gray-800" style={{ fontFamily: 'Outfit, sans-serif' }}>
-              Request Live Session
+              {data.facultySupport.liveSessionTitle}
             </h2>
             <p className="break-words text-sm text-gray-700" style={{ fontFamily: 'Inter, sans-serif' }}>
-              Schedule 1-on-1 time with faculty
+              {data.facultySupport.liveSessionSubtitle}
             </p>
           </div>
         </div>
@@ -77,14 +63,14 @@ export const FacultySupport: React.FC = () => {
           <div className="space-y-4">
             <div>
               <label htmlFor="session-topic" className="mb-2 block text-sm font-semibold text-gray-700" style={{ fontFamily: 'Outfit, sans-serif' }}>
-                Topic
+                {data.facultySupport.topicLabel}
               </label>
               <input
                 id="session-topic"
                 type="text"
                 value={sessionRequest.topic}
                 onChange={(e) => setSessionRequest({ ...sessionRequest, topic: e.target.value })}
-                placeholder="e.g., React Hooks confusion"
+                placeholder={data.facultySupport.topicPlaceholder}
                 className="w-full rounded-lg border border-gray-200 bg-white p-3 outline-none transition-colors"
                 style={{ fontFamily: 'Inter, sans-serif', borderColor: 'rgb(229 231 235)' }}
                 onFocus={(e) => (e.target.style.borderColor = brandConfig.primaryColor)}
@@ -94,7 +80,7 @@ export const FacultySupport: React.FC = () => {
 
             <div>
               <label htmlFor="session-preferred-time" className="mb-2 block text-sm font-semibold text-gray-700" style={{ fontFamily: 'Outfit, sans-serif' }}>
-                Preferred Time
+                {data.facultySupport.timeLabel}
               </label>
               <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-start">
                 <Calendar className="mt-0 h-5 w-5 shrink-0 text-gray-700 sm:mt-3" />
@@ -114,13 +100,13 @@ export const FacultySupport: React.FC = () => {
 
             <div>
               <label htmlFor="session-description" className="mb-2 block text-sm font-semibold text-gray-700" style={{ fontFamily: 'Outfit, sans-serif' }}>
-                Additional Details
+                {data.facultySupport.detailLabel}
               </label>
               <textarea
                 id="session-description"
                 value={sessionRequest.description}
                 onChange={(e) => setSessionRequest({ ...sessionRequest, description: e.target.value })}
-                placeholder="What would you like to discuss?"
+                placeholder={data.facultySupport.detailPlaceholder}
                 rows={3}
                 className="w-full resize-none rounded-lg border border-gray-200 bg-white p-3 outline-none transition-colors"
                 style={{ fontFamily: 'Inter, sans-serif', borderColor: 'rgb(229 231 235)' }}
@@ -129,12 +115,8 @@ export const FacultySupport: React.FC = () => {
               />
             </div>
 
-            <button
-              onClick={handleSessionRequest}
-              className="w-full rounded-lg py-3 font-semibold text-white transition-all hover:opacity-90"
-              style={{ background: brandConfig.primaryColor, fontFamily: 'Outfit, sans-serif' }}
-            >
-              Request Session
+            <button onClick={handleSessionRequest} className="w-full rounded-lg py-3 font-semibold text-white transition-all hover:opacity-90" style={{ background: brandConfig.primaryColor, fontFamily: 'Outfit, sans-serif' }}>
+              {data.facultySupport.requestCtaLabel}
             </button>
           </div>
         )}
@@ -143,7 +125,7 @@ export const FacultySupport: React.FC = () => {
           <div className="py-8 text-center">
             <Clock className="mx-auto mb-4 h-12 w-12 animate-pulse" style={{ color: brandConfig.primaryColor }} />
             <p className="text-lg font-semibold text-gray-800" style={{ fontFamily: 'Outfit, sans-serif' }}>
-              Processing Request...
+              {data.facultySupport.processingLabel}
             </p>
           </div>
         )}
@@ -152,32 +134,25 @@ export const FacultySupport: React.FC = () => {
           <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-6 text-center">
             <CheckCircle className="mx-auto mb-4 h-12 w-12 text-emerald-700" />
             <p className="mb-2 text-lg font-bold text-gray-800" style={{ fontFamily: 'Outfit, sans-serif' }}>
-              Session Scheduled!
+              {data.facultySupport.scheduledTitle}
             </p>
             <p className="text-sm text-gray-700" style={{ fontFamily: 'Inter, sans-serif' }}>
-              You'll receive a confirmation email shortly with the meeting link.
+              {data.facultySupport.scheduledDescription}
             </p>
-            <button
-              onClick={() => setSessionStatus('idle')}
-              className="mt-4 rounded-lg border border-gray-200 bg-white px-6 py-2 text-sm font-semibold transition-colors hover:bg-gray-50"
-              style={{ fontFamily: 'Outfit, sans-serif' }}
-            >
-              Request Another
+            <button onClick={() => setSessionStatus('idle')} className="mt-4 rounded-lg border border-gray-200 bg-white px-6 py-2 text-sm font-semibold transition-colors hover:bg-gray-50" style={{ fontFamily: 'Outfit, sans-serif' }}>
+              {data.facultySupport.requestAnotherLabel}
             </button>
           </div>
         )}
       </div>
 
-      <div
-        id="projects"
-        className="w-full min-w-0 overflow-hidden rounded-lg border border-gray-200 bg-white p-4 shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_25px_50px_rgba(0,0,0,0.12)] sm:p-6"
-      >
+      <div id="projects" className="w-full min-w-0 overflow-hidden rounded-lg border border-gray-200 bg-white p-4 shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_25px_50px_rgba(0,0,0,0.12)] sm:p-6">
         <h2 className="mb-6 break-words text-xl font-bold text-gray-800" style={{ fontFamily: 'Outfit, sans-serif' }}>
-          Project Assignments
+          {data.facultySupport.projectsTitle}
         </h2>
 
         <div className="space-y-3">
-          {projects.map((project) => (
+          {data.facultySupport.projects.map((project) => (
             <div
               key={project.id}
               className={`w-full min-w-0 overflow-hidden rounded-lg border bg-white p-4 transition-all duration-300 ${

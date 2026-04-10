@@ -12,25 +12,31 @@ import {
   Settings,
 } from 'lucide-react';
 import { useBrand } from '../../PostLandingPage/app/context/BrandContext';
+import { useDashboardData } from './DashboardDataContext';
 
 interface NavItem {
-  icon: React.ComponentType<{ className?: string; size?: number }>;
   label: string;
   href: string;
+  icon: React.ComponentType<{ className?: string; size?: number }>;
 }
 
-const navItems: NavItem[] = [
-  { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard' },
-  { icon: FileQuestion, label: 'Exam Engine', href: '/launch-exam' },
-  { icon: BookOpen, label: 'Tutorial Engine', href: '/tutorial' },
-  { icon: Network, label: 'Node Map', href: '/node-map' },
-  { icon: Award, label: 'Certificates', href: '/certificates' },
-  { icon: Settings, label: 'Settings', href: '/settings' },
-];
+const iconMap: Record<string, NavItem['icon']> = {
+  '/dashboard': LayoutDashboard,
+  '/launch-exam': FileQuestion,
+  '/tutorial': BookOpen,
+  '/node-map': Network,
+  '/certificates': Award,
+  '/settings': Settings,
+};
 
 export function Sidebar({ isOpen = false, onClose }: { isOpen?: boolean; onClose?: () => void }) {
   const brand = useBrand();
+  const data = useDashboardData();
   const pathname = usePathname();
+  const navItems: NavItem[] = data.navigation.map((item) => ({
+    ...item,
+    icon: iconMap[item.href] ?? LayoutDashboard,
+  }));
 
   return (
     <>
@@ -48,7 +54,7 @@ export function Sidebar({ isOpen = false, onClose }: { isOpen?: boolean; onClose
           className="mb-12 flex h-12 w-12 items-center justify-center rounded-2xl font-black text-xl text-white shadow-md"
           style={{ backgroundColor: brand.primaryColor }}
         >
-          {brand.name === 'RealTutorialHub' ? 'RTH' : 'SU'}
+          {brand.brandMark}
         </div>
 
         <nav className="flex flex-1 flex-col gap-4">
@@ -77,7 +83,7 @@ export function Sidebar({ isOpen = false, onClose }: { isOpen?: boolean; onClose
           className="mb-8 inline-flex min-h-12 min-w-12 items-center justify-center rounded-2xl px-4 font-black text-base text-white shadow-md"
           style={{ backgroundColor: brand.primaryColor }}
         >
-          {brand.name === 'RealTutorialHub' ? 'RTH' : 'SU'}
+          {brand.brandMark}
         </div>
 
         <nav className="flex flex-col gap-3">

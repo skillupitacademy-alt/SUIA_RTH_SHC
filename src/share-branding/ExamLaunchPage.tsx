@@ -4,12 +4,15 @@ import React from 'react';
 import { BrandConfig } from './brandConfig';
 import { BrandProvider } from './PostLandingPage/app/context/BrandContext';
 import { LaunchEvaluation } from './ExamLaunch/components/LaunchEvaluation';
+import { LaunchDataProvider } from './ExamLaunch/components/LaunchDataContext';
+import { LaunchViewData } from './launchExamPageData';
 
-export default function ExamLaunchPage({ config }: { config: BrandConfig }) {
-  // Wraps the massive 7-step layout inside the BrandProvider (Pattern B constraint)
+export default function ExamLaunchPage({ config, data }: { config: BrandConfig; data: LaunchViewData }) {
   return (
     <BrandProvider brand={config}>
-      <LaunchEvaluation />
+      <LaunchDataProvider value={data}>
+        <LaunchEvaluation />
+      </LaunchDataProvider>
     </BrandProvider>
   );
 }

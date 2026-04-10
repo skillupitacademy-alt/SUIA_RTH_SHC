@@ -6,6 +6,7 @@
 export interface BrandConfig {
   // ── Identity ────────────────────────────────────────
   name: string;               // e.g. "RealTutorialHub" | "SkillUp IT Academy"
+  brandMark: string;          // e.g. "R" | "S"
 
   // ── Colors ──────────────────────────────────────────
   primaryColor: string;       // RTH: #d03f00  |  SkillUp: #f54a8d
@@ -57,6 +58,7 @@ export interface BrandConfig {
 // ── RTH Brand Config ──────────────────────────────────
 export const rthConfig: BrandConfig = {
   name: 'RealTutorialHub',
+  brandMark: 'R',
 
   primaryColor: '#d03f00',
   primaryColorDark: '#b63600',
@@ -99,6 +101,7 @@ export const rthConfig: BrandConfig = {
 // ── SkillUp Brand Config ──────────────────────────────
 export const skillUpConfig: BrandConfig = {
   name: 'SkillUp IT Academy',
+  brandMark: 'S',
 
   primaryColor: '#f54a8d',
   primaryColorDark: '#d63d7a',

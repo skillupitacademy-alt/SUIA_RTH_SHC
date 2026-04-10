@@ -1,9 +1,11 @@
 import React from 'react';
 import { useBrand } from '../../PostLandingPage/app/context/BrandContext';
 import { ArrowRight, Sparkles } from 'lucide-react';
+import { useDashboardData } from './DashboardDataContext';
 
 export function HeroActionCard() {
   const brand = useBrand();
+  const { hero } = useDashboardData();
 
   return (
     <div
@@ -11,24 +13,18 @@ export function HeroActionCard() {
       style={{ backgroundColor: brand.primaryColor }}
     >
       <div className="relative z-10">
-        <div className="flex items-center gap-2 mb-3">
+        <div className="mb-3 flex items-center gap-2">
           <Sparkles className="text-white" size={20} />
-          <span className="text-sm font-semibold text-white uppercase tracking-wider">
-            {brand.dashboardGreeting}
-          </span>
+          <span className="text-sm font-semibold uppercase tracking-wider text-white">{hero.badge}</span>
         </div>
 
-        <h2 className="mb-2 text-3xl font-black text-white sm:text-4xl">
-          Resume {brand.tutorLabel} Session
-        </h2>
-        <p className="mb-6 text-lg text-white">
-          Continue your remediation for <span className="font-bold">Linked Lists & Trees</span>
-        </p>
+        <h2 className="mb-2 text-3xl font-black text-white sm:text-4xl">{hero.title}</h2>
+        <p className="mb-6 text-lg text-white">{hero.description}</p>
 
-        <button className="px-8 h-14 rounded-2xl bg-white hover:bg-gray-50 transition-all flex items-center gap-3 font-bold text-lg shadow-md group">
-          <span style={{ color: brand.primaryColor }}>Start Learning Now</span>
+        <button className="group flex h-14 items-center gap-3 rounded-2xl bg-white px-8 text-lg font-bold shadow-md transition-all hover:bg-gray-50">
+          <span style={{ color: brand.primaryColor }}>{hero.ctaLabel}</span>
           <ArrowRight
-            className="group-hover:translate-x-1 transition-transform"
+            className="transition-transform group-hover:translate-x-1"
             style={{ color: brand.primaryColor }}
             size={22}
           />

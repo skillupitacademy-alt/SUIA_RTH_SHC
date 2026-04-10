@@ -1,4 +1,5 @@
 import AuthPage from '../../../../../src/share-branding/AuthPage';
+import { loadAuthPageData } from '../../../../../src/share-branding/authPageData';
 import { rthConfig } from '../../../../../src/share-branding/brandConfig';
 
 export const metadata = {
@@ -6,6 +7,7 @@ export const metadata = {
   description: 'Create your RealTutorialHub account and start learning.',
 };
 
-export default function SignupPage() {
-  return <AuthPage config={rthConfig} initialMode="signup" />;
+export default async function SignupPage() {
+  const data = await loadAuthPageData(rthConfig);
+  return <AuthPage config={rthConfig} data={data} initialMode="signup" />;
 }
