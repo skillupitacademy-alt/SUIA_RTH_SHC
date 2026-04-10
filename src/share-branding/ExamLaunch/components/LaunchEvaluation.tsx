@@ -10,6 +10,7 @@ import { SubtopicSelection } from './evaluation/SubtopicSelection';
 import { EngineCalibration } from './evaluation/EngineCalibration';
 import { AssessmentSummary } from './evaluation/AssessmentSummary';
 import { useLaunchData } from './LaunchDataContext';
+import { LaunchSelectionState } from '../../launchExamPageData';
 
 export function LaunchEvaluation() {
   const brandConfig = useBrand();
@@ -21,22 +22,14 @@ export function LaunchEvaluation() {
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [showActiveSession, setShowActiveSession] = useState(true);
 
-  const [config, setConfig] = useState({
-    domain: null as any,
-    subjects: [] as any[],
-    topics: [] as any[],
-    subtopics: [] as any[],
-    difficulty: 'Mixed' as string,
+  const [config, setConfig] = useState<LaunchSelectionState>({
+    domain: null,
+    subjects: [],
+    topics: [],
+    subtopics: [],
+    difficulty: 'Mixed',
     questionCount: 20,
   });
-
-  const getBreadcrumb = () => {
-    const parts = [];
-    if (config.domain) parts.push(config.domain.title);
-    if (config.subjects.length > 0) parts.push(config.subjects[0].title);
-    if (config.topics.length > 0) parts.push(config.topics[0].title);
-    return parts.join(' / ') || 'Start Configuration';
-  };
 
   const canAdvance = () => {
     if (currentStep === 1) return config.domain !== null;
@@ -60,20 +53,43 @@ export function LaunchEvaluation() {
     }
   };
 
+  const currentStepConfig = data.steps[currentStep - 1];
+  const showFinalSummary = currentStep === data.steps.length;
+  const stepHeading =
+    currentStep === 1
+      ? data.domainSelection.title
+      : currentStep === 2
+        ? 'Select Your Subjects'
+        : currentStep === 3
+          ? 'Select Your Topics'
+          : currentStep === 4
+            ? 'Select Your Subtopics'
+            : data.calibration.title;
+  const stepDescription =
+    currentStep === 1
+      ? 'Pick the domain that best matches the evaluation you want to run. This choice shapes the subject and topic blueprint that follows.'
+      : currentStep === 2
+        ? `${data.subjectSelection.descriptionPrefix} ${config.domain?.title ?? data.domainSelection.emptyDomainPrompt.toLowerCase()}.`
+        : currentStep === 3
+          ? data.topicSelection.description.replace('{maxSelections}', String(data.topicSelection.maxSelections))
+          : currentStep === 4
+            ? data.subtopicSelection.description
+            : data.calibration.description;
+
   return (
     <div className="flex min-h-screen w-full max-w-full flex-col overflow-x-hidden bg-slate-50">
       <header role="banner" className="flex-none">
         {showActiveSession && (
-          <div className="flex flex-col items-center justify-between gap-3 px-4 py-2.5 text-center text-white transition-colors duration-300 sm:flex-row sm:py-3 sm:text-left" style={{ backgroundColor: brandConfig.primaryColorDark }}>
+          <div className="flex flex-col items-center justify-between gap-3 px-4 py-2 text-center text-white transition-colors duration-300 sm:flex-row sm:py-2.5 sm:text-left" style={{ backgroundColor: brandConfig.primaryColorDark }}>
             <div className="flex items-center gap-3">
-              <Clock className="h-5 w-5 flex-shrink-0" />
+              <Clock className="h-4 w-4 flex-shrink-0 sm:h-5 sm:w-5" />
               <div>
-                <p className="text-sm font-bold sm:text-base sm:font-medium">{data.labels.activeSessionTitle}</p>
-                <p className="text-[10px] text-white sm:text-sm">{data.labels.activeSessionDescription}</p>
+                <p className="text-sm font-bold sm:text-[15px] sm:font-semibold">{data.labels.activeSessionTitle}</p>
+                <p className="text-[10px] text-white/90 sm:text-xs">{data.labels.activeSessionDescription}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <button aria-label="Resume active session" className="rounded-lg bg-white px-3 py-1.5 text-xs font-bold shadow-md transition-colors hover:bg-gray-100 hover:shadow-lg sm:px-4 sm:py-2 sm:text-sm" style={{ color: brandConfig.primaryColorDark }}>
+              <button aria-label="Resume active session" className="rounded-xl bg-white px-3 py-1.5 text-xs font-bold shadow-sm transition-colors hover:bg-gray-100 sm:px-4 sm:text-sm" style={{ color: brandConfig.primaryColorDark }}>
                 {data.labels.activeSessionResumeLabel}
               </button>
               <button onClick={() => setShowActiveSession(false)} aria-label="Dismiss banner" className="rounded-full p-1 transition-all hover:scale-110 hover:bg-white/20">
@@ -83,34 +99,30 @@ export function LaunchEvaluation() {
           </div>
         )}
 
-        <div className="border-b border-gray-200 bg-white px-4 py-4 shadow-sm sm:px-6">
+        <div className="border-b border-gray-200 bg-white px-4 py-3 shadow-sm sm:px-6 sm:py-4">
           <div className="mx-auto max-w-7xl">
-            <div className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div className="grid gap-3 lg:gap-4 xl:grid-cols-[minmax(320px,1fr)_auto] xl:items-start">
               <div className="min-w-0 max-w-full">
-                <h1 className="text-2xl font-bold text-slate-800">{brandConfig.name}</h1>
-                <p className="mt-1 break-words text-sm font-semibold text-slate-500">
-                  {getBreadcrumb().split(' / ').map((part, index, arr) => (
-                    <span key={index}>
-                      <span className={index === arr.length - 1 ? '' : ''} style={index === arr.length - 1 ? { color: brandConfig.primaryColor } : {}}>
-                        {part}
-                      </span>
-                      {index < arr.length - 1 && ' / '}
-                    </span>
-                  ))}
+                <p className="text-[11px] font-black uppercase tracking-[0.24em] sm:text-xs" style={{ color: brandConfig.primaryColor }}>
+                  {data.labels.startConfigurationLabel}
+                </p>
+                <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-800 sm:text-3xl">{brandConfig.name}</h1>
+                <p className="mt-1.5 max-w-xl break-words text-sm font-medium leading-6 text-slate-500">
+                  {data.labels.shellDescription}
                 </p>
               </div>
 
-              <div className="flex min-w-0 flex-wrap items-center justify-between gap-3 sm:gap-4">
+              <div className="flex min-w-0 flex-wrap items-center justify-between gap-3 sm:gap-4 xl:justify-end">
                 <Link
                   href="/dashboard"
                   aria-label="Return to dashboard"
-                  className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900 sm:px-4 sm:py-2 sm:text-sm"
+                  className="flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900 sm:px-4 sm:text-sm"
                 >
                   <ArrowLeft className="h-4 w-4" />
-                  <span className="hidden xs:block">Dashboard</span>
+                  <span className="hidden xs:block">Back</span>
                 </Link>
-                <div className="ml-auto flex items-center gap-2 sm:ml-0">
-                  <span className="text-[10px] text-gray-600 sm:text-sm">{data.labels.basicModeLabel}</span>
+                <div className="ml-auto flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-3 py-2 sm:ml-0">
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-gray-500 sm:text-xs">{data.labels.basicModeLabel}</span>
                   <button
                     aria-label="Toggle Expert Mode"
                     onClick={() => setExpertMode(!expertMode)}
@@ -119,7 +131,7 @@ export function LaunchEvaluation() {
                   >
                     <div className={`absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white transition-transform sm:left-1 sm:top-1 ${expertMode ? 'translate-x-5 sm:translate-x-6' : ''}`} />
                   </button>
-                  <span className="text-[10px] text-gray-600 sm:text-sm">{data.labels.expertModeLabel}</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-gray-500 sm:text-xs">{data.labels.expertModeLabel}</span>
                 </div>
               </div>
             </div>
@@ -160,10 +172,28 @@ export function LaunchEvaluation() {
       </header>
 
       <main className="relative flex min-w-0 w-full max-w-full flex-1 flex-col overflow-hidden" role="main">
-        <div className="mx-auto flex w-full max-w-7xl min-w-0 flex-1 flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
-          <div className="min-w-0 flex-1 p-4 pb-28 sm:p-6 sm:pb-24 lg:pb-6">
-            <div className="mx-auto w-full max-w-5xl min-w-0">
-              <div className="w-full min-w-0 lg:h-[530px] lg:overflow-hidden lg:pb-0">
+        <div className="mx-auto flex w-full max-w-7xl min-w-0 flex-1 flex-col overflow-y-auto">
+          <div className="min-w-0 p-4 pb-20 sm:p-6 md:pb-6">
+            <div className="mx-auto w-full min-w-0">
+              <div className="mb-4 rounded-[1.75rem] border border-slate-200 bg-white px-4 py-4 shadow-[0_18px_44px_rgba(15,23,42,0.06)] sm:px-5 sm:py-4">
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-black uppercase tracking-[0.2em]" style={{ color: brandConfig.primaryColor }}>
+                      {data.labels.stepCounterLabel.replace('{current}', String(currentStep)).replace('{total}', String(data.steps.length))}
+                    </p>
+                    <h2 className="mt-1 break-words text-2xl font-bold text-slate-800 sm:text-3xl">{stepHeading}</h2>
+                    <p className="mt-1.5 max-w-3xl text-sm text-slate-600">
+                      {stepDescription}
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3.5 py-3 lg:min-w-[180px]">
+                    <p className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-500">{data.labels.currentFocusLabel}</p>
+                    <p className="mt-1 text-sm font-bold text-slate-900">{currentStepConfig.subtitle}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="w-full min-w-0 lg:min-h-[500px]">
                 {currentStep === 1 && <DomainSelection selected={config.domain} onSelect={(domain) => setConfig({ ...config, domain })} />}
                 {currentStep === 2 && <SubjectSelection domain={config.domain} selected={config.subjects} onSelect={(subjects) => setConfig({ ...config, subjects })} />}
                 {currentStep === 3 && <TopicSelection selected={config.topics} onSelect={(topics) => setConfig({ ...config, topics })} subjects={config.subjects} maxSelections={data.topicSelection.maxSelections} />}
@@ -177,26 +207,28 @@ export function LaunchEvaluation() {
                   />
                 )}
               </div>
-            </div>
-          </div>
 
-          <div className="hidden shrink-0 lg:block">
-            <AssessmentSummary config={config} currentStep={currentStep} />
+              {showFinalSummary && (
+                <div className="mt-6 w-full min-w-0">
+                  <AssessmentSummary config={config} currentStep={currentStep} />
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
-        <div className="fixed bottom-0 left-0 right-0 z-30 w-full max-w-full overflow-x-hidden border-t border-gray-200 bg-white px-4 py-4 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] sm:px-6 lg:relative lg:shadow-sm">
-          <div className="mx-auto flex w-full max-w-7xl min-w-0 flex-wrap items-center justify-between gap-3">
-            <button onClick={handleBack} disabled={currentStep === 1} aria-label="Go to previous step" className="flex min-w-0 items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50 sm:px-6 sm:py-2.5 sm:text-sm">
+        <div className="fixed bottom-0 left-0 right-0 z-30 w-full max-w-full overflow-x-hidden border-t border-gray-200 bg-white/95 px-4 py-3 backdrop-blur sm:px-6 md:relative md:py-4 md:backdrop-blur-0">
+          <div className="mx-auto flex w-full max-w-7xl min-w-0 flex-wrap items-center justify-between gap-2.5 sm:gap-3">
+            <button onClick={handleBack} disabled={currentStep === 1} aria-label="Go to previous step" className="flex min-w-0 items-center gap-2 rounded-xl border border-transparent px-4 py-2 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50 sm:px-5 sm:text-sm">
               <ChevronLeft className="h-5 w-5" />
               {data.labels.backLabel}
             </button>
 
-            <div className="order-3 w-full text-center text-xs font-medium text-gray-600 sm:order-none sm:w-auto sm:text-sm">
-              Step {currentStep} of {data.steps.length}
+            <div className="order-3 w-full text-center text-xs font-semibold text-gray-600 sm:order-none sm:w-auto sm:text-sm">
+              {data.labels.stepCounterLabel.replace('{current}', String(currentStep)).replace('{total}', String(data.steps.length))}
             </div>
 
-            <button onClick={handleAdvance} disabled={!canAdvance()} aria-label={currentStep === data.steps.length ? data.labels.launchLabel : data.labels.continueLabel} className="flex min-w-0 items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold text-white shadow-lg transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:px-6 sm:py-2.5 sm:text-sm" style={{ backgroundColor: brandConfig.primaryColor }}>
+            <button onClick={handleAdvance} disabled={!canAdvance()} aria-label={currentStep === data.steps.length ? data.labels.launchLabel : data.labels.continueLabel} className="flex min-w-0 items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-semibold text-white shadow-lg transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:px-6 sm:text-sm" style={{ backgroundColor: brandConfig.primaryColor }}>
               {currentStep === data.steps.length ? data.labels.launchLabel : data.labels.continueLabel}
               {currentStep < data.steps.length && <ChevronRight className="h-5 w-5" />}
               {currentStep === data.steps.length && <Zap className="h-5 w-5" />}
