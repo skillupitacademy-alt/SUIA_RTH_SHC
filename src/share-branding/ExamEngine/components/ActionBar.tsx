@@ -41,7 +41,7 @@ export function ActionBar({
 
           <button 
             onClick={onToggleOverview}
-            className={`flex min-h-10 items-center justify-center gap-1.5 rounded-lg border px-3 py-2 transition-all xl:px-2.5 ${
+            className={`flex min-h-10 items-center justify-center gap-1.5 rounded-lg border px-3 py-2 transition-all xl:hidden ${
               showOverview ? 'border-white/20 text-white/70 hover:bg-white/10' : 'border-transparent bg-white/10 text-white'
             }`}
             title={showOverview ? 'Hide Overview' : 'Show Overview'}
