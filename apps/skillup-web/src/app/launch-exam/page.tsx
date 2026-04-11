@@ -3,8 +3,8 @@ import { loadLaunchExamData } from '../../../../../src/share-branding/launchExam
 import { skillUpConfig } from '../../../../../src/share-branding/brandConfig';
 
 export const metadata = {
-  title: 'Mission Configuration | SkillUp',
-  description: 'Launch targeted live certification exams across SkillUp Academy.',
+  title: 'Instruction Manual | SkillUp',
+  description: 'Review the exam engine instruction manual before configuring your assessment on SkillUp IT Academy.',
 };
 
 export default async function Page() {

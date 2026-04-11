@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { ArrowRight, Target, Brain } from 'lucide-react';
 import { useBrand } from '../context/BrandContext';
 import dashboardImage from '../../assets/c4f1a4d51a48d5b5d3c8d47174d5e5571a3d1273.png';
@@ -49,17 +50,21 @@ export function HeroSection() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 pt-4 justify-center lg:justify-start">
-              <button className={`group px-6 sm:px-8 py-4 bg-gradient-to-r ${brand.gradientFrom} ${brand.gradientTo} text-white rounded-xl shadow-2xl hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-3 w-full sm:w-auto`}>
-                <Target className="w-5 h-5" />
-                <span className="font-semibold text-base sm:text-lg">Enter Exam Engine</span>
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </button>
+              <Link href="/launch-exam" className="w-full sm:w-auto">
+                <button className={`group px-6 sm:px-8 py-4 bg-gradient-to-r ${brand.gradientFrom} ${brand.gradientTo} text-white rounded-xl shadow-2xl hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-3 w-full`}>
+                  <Target className="w-5 h-5" />
+                  <span className="font-semibold text-base sm:text-lg">Enter Exam Engine</span>
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </button>
+              </Link>
 
-              <button className="group px-6 sm:px-8 py-4 bg-white border-2 border-blue-900 text-blue-900 rounded-xl shadow-2xl hover:bg-blue-900 hover:text-white hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-3 w-full sm:w-auto">
-                <Brain className="w-5 h-5" />
-                <span className="font-semibold text-base sm:text-lg">Enter Tutorial Engine</span>
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </button>
+              <Link href="/tutorial" className="w-full sm:w-auto">
+                <button className="group px-6 sm:px-8 py-4 bg-white border-2 border-blue-900 text-blue-900 rounded-xl shadow-2xl hover:bg-blue-900 hover:text-white hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-3 w-full">
+                  <Brain className="w-5 h-5" />
+                  <span className="font-semibold text-base sm:text-lg">Enter Tutorial Engine</span>
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </button>
+              </Link>
             </div>
           </div>
 

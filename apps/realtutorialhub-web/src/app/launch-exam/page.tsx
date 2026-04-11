@@ -3,8 +3,8 @@ import { loadLaunchExamData } from '../../../../../src/share-branding/launchExam
 import { rthConfig } from '../../../../../src/share-branding/brandConfig';
 
 export const metadata = {
-  title: 'Exam Configuration | RealTutorialHub',
-  description: 'Launch customized diagnostic assessments on RealTutorialHub.',
+  title: 'Instruction Manual | RealTutorialHub',
+  description: 'Review the exam engine instruction manual before configuring your assessment on RealTutorialHub.',
 };
 
 export default async function Page() {

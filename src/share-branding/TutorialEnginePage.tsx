@@ -67,7 +67,8 @@ function TutorialEngineContent() {
           <Link
             href="/dashboard"
             aria-label="Return to dashboard"
-            className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900 sm:px-4 sm:py-2 sm:text-sm"
+            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-opacity hover:opacity-90 sm:px-4 sm:py-2 sm:text-sm"
+            style={{ background: brandConfig.secondaryColor }}
           >
             <ChevronLeft className="h-4 w-4" />
             <span className="hidden xs:block">{data.nav.dashboardCtaLabel}</span>

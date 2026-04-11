@@ -116,7 +116,8 @@ export function LaunchEvaluation() {
                 <Link
                   href="/dashboard"
                   aria-label="Return to dashboard"
-                  className="flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900 sm:px-4 sm:text-sm"
+                  className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold text-white shadow-sm transition-opacity hover:opacity-90 sm:px-4 sm:text-sm"
+                  style={{ backgroundColor: brandConfig.secondaryColor }}
                 >
                   <ArrowLeft className="h-4 w-4" />
                   <span className="hidden xs:block">Back</span>
@@ -136,37 +137,6 @@ export function LaunchEvaluation() {
               </div>
             </div>
 
-            <div className="rounded-lg pb-2 focus:outline-none focus:ring-2 focus:ring-blue-500" tabIndex={0} role="region" aria-label="Assessment Steps Navigation">
-              <div className="flex flex-wrap items-center gap-x-1.5 gap-y-2 sm:gap-x-2 lg:flex-nowrap">
-                {data.steps.map((step, index) => {
-                  const isActive = currentStep === step.number;
-                  const isPast = currentStep > step.number;
-
-                  return (
-                    <div key={step.number} className="flex items-center">
-                      <div className="flex items-center gap-2">
-                        <div
-                          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-black transition-all duration-300 sm:h-8 sm:w-8 sm:text-sm ${
-                            isActive ? 'text-white shadow-lg' : isPast ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-400'
-                          }`}
-                          style={isActive ? { backgroundColor: brandConfig.primaryColor } : {}}
-                          title={step.subtitle}
-                        >
-                          {step.number}
-                        </div>
-                        <div className="hidden xl:block">
-                          <p className="whitespace-nowrap text-sm font-bold text-gray-900">{step.title}</p>
-                          <p className="whitespace-nowrap text-xs font-semibold text-gray-500">{step.subtitle}</p>
-                        </div>
-                      </div>
-                      {index < data.steps.length - 1 && (
-                        <div className={`mx-1 h-1 w-4 rounded-full transition-colors duration-300 sm:mx-2 sm:w-8 md:w-12 ${isPast ? 'bg-green-600/30' : 'bg-gray-200'}`} />
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
           </div>
         </div>
       </header>

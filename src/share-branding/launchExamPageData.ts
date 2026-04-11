@@ -30,6 +30,28 @@ export interface LaunchSubtopic {
   parentTopicId: string;
 }
 
+export interface InstructionManualStep {
+  id: string;
+  title: string;
+  description: string;
+  iconName: string;
+}
+
+export interface InstructionManualViewData {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  stageLabelPrefix: string;
+  journeyScopeLabel: string;
+  journeyScopeValueFormat: string;
+  journeyScopeDescription: string;
+  roadmapLabel: string;
+  roadmapTitle: string;
+  roadmapDescription: string;
+  ctaLabel: string;
+  steps: InstructionManualStep[];
+}
+
 export interface LaunchDifficultyTier {
   id: string;
   title: string;
@@ -137,6 +159,7 @@ export interface LaunchViewData {
     pointsProjectionSubtitle: string;
     progressTitle: string;
   };
+  instructions: InstructionManualViewData;
 }
 
 export interface LaunchExamApiResponse {
@@ -212,6 +235,7 @@ export interface LaunchExamApiResponse {
   };
   calibration: LaunchViewData['calibration'];
   summary: LaunchViewData['summary'];
+  instructions: InstructionManualViewData;
 }
 
 export function mapLaunchExamApiToViewData(api: LaunchExamApiResponse): LaunchViewData {
@@ -278,6 +302,7 @@ export function mapLaunchExamApiToViewData(api: LaunchExamApiResponse): LaunchVi
     },
     calibration: api.calibration,
     summary: api.summary,
+    instructions: api.instructions,
   };
 }
 
@@ -475,6 +500,57 @@ function buildLaunchExamApiResponse(): LaunchExamApiResponse {
       pointsProjectionTitle: 'Points Projection',
       pointsProjectionSubtitle: 'Maximum mastery points',
       progressTitle: 'Configuration Progress',
+    },
+    instructions: {
+      eyebrow: 'Exam Engine Briefing',
+      title: 'Before You Launch',
+      subtitle: 'Understand your assessment journey',
+      stageLabelPrefix: 'Stage',
+      journeyScopeLabel: 'Journey Scope',
+      journeyScopeValueFormat: '{count} defined stages',
+      journeyScopeDescription: 'Domain mapping through final summary.',
+      roadmapLabel: 'Start Configuration',
+      roadmapTitle: 'Enter the guided assessment setup',
+      roadmapDescription: 'The next screen applies the exact six-stage journey described above, beginning with domain mapping and ending with the pre-flight summary.',
+      ctaLabel: 'I Understand, Start Configuration',
+      steps: [
+        {
+          id: 'domain',
+          title: 'Domain Mapping',
+          description: 'Define the broad engineering or data field. This establishes the foundation for your entire diagnostic journey.',
+          iconName: 'globe',
+        },
+        {
+          id: 'subject',
+          title: 'Subject Filtering',
+          description: 'Filter curriculum-aligned subjects based on your domain. This determines the scope of your assessment.',
+          iconName: 'library',
+        },
+        {
+          id: 'topic',
+          title: 'Topic Isolation',
+          description: 'Identify specific high-impact topics for testing. This narrows your focus to areas that matter most.',
+          iconName: 'target',
+        },
+        {
+          id: 'subtopic',
+          title: 'Subtopic Precision',
+          description: 'Refine the assessment to specific skills and subtopics. This creates the blueprint for your exam.',
+          iconName: 'cpu',
+        },
+        {
+          id: 'calibration',
+          title: 'Engine Calibration',
+          description: 'Configure difficulty levels from Fundamentals to Pro, and set question density for optimal challenge.',
+          iconName: 'sliders',
+        },
+        {
+          id: 'summary',
+          title: 'Final Summary',
+          description: 'Review your total mastery points projection and confirm your configuration before launch.',
+          iconName: 'rocket',
+        },
+      ],
     },
   };
 }
