@@ -67,7 +67,9 @@ function AuthContent({ config, data, initialMode = 'login' }: AuthPageProps) {
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
-      if (mode === 'login' || mode === 'signup') {
+      if (mode === 'signup') {
+        router.push('/onboarding');
+      } else if (mode === 'login') {
         router.push(searchParams.get('redirect') || '/dashboard');
       }
     }, 1500);
