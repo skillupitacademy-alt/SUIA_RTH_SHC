@@ -4,19 +4,13 @@ import { useEffect, useState } from 'react';
 import { useBrand } from '../context/BrandContext';
 import { Loader2 } from 'lucide-react';
 
-const loadingMessages = [
-  'Saving preferences...',
-  'Generating AI learning path...',
-  'Initializing tutorial engine...',
-  'Setting up your dashboard...',
-  'Almost ready...'
-];
-
 interface InitializationStepProps {
+  messages: string[];
+  subtitle: string;
   onComplete: () => void;
 }
 
-export function InitializationStep({ onComplete }: InitializationStepProps) {
+export function InitializationStep({ messages, subtitle, onComplete }: InitializationStepProps) {
   const brand = useBrand();
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -37,7 +31,7 @@ export function InitializationStep({ onComplete }: InitializationStepProps) {
     // Message rotation
     const messageInterval = setInterval(() => {
       setCurrentMessageIndex((prev) => {
-        if (prev >= loadingMessages.length - 1) {
+        if (prev >= messages.length - 1) {
           clearInterval(messageInterval);
           return prev;
         }
@@ -89,11 +83,9 @@ export function InitializationStep({ onComplete }: InitializationStepProps) {
           className="text-2xl font-bold transition-all"
           style={{ color: brand.primaryColor }}
         >
-          {loadingMessages[currentMessageIndex]}
+          {messages[currentMessageIndex]}
         </h1>
-        <p className="text-slate-600">
-          Please wait while we set up your personalized learning experience
-        </p>
+        <p className="text-slate-600">{subtitle}</p>
       </div>
     </div>
   );

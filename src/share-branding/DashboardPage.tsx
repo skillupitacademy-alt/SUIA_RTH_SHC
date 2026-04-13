@@ -3,7 +3,7 @@
 import React from 'react';
 import { Menu } from 'lucide-react';
 import { BrandConfig } from './brandConfig';
-import { BrandProvider, useBrand } from './PostLandingPage/app/context/BrandContext';
+import { BrandProvider } from './PostLandingPage/app/context/BrandContext';
 import { Sidebar } from './Dashboard/components/Sidebar';
 import { TopBar } from './Dashboard/components/TopBar';
 import { HeroActionCard } from './Dashboard/components/HeroActionCard';
@@ -14,11 +14,11 @@ import { CapstoneUnlockWidget } from './Dashboard/components/CapstoneUnlockWidge
 import { DailyProgressWidget } from './Dashboard/components/DailyProgressWidget';
 import { AITutorSuggestions } from './Dashboard/components/AITutorSuggestions';
 import { EngineSynchronization } from './Dashboard/components/EngineSynchronization';
-import { DashboardDataProvider } from './Dashboard/components/DashboardDataContext';
+import { DashboardDataProvider, useDashboardData } from './Dashboard/components/DashboardDataContext';
 import { DashboardViewData } from './dashboardPageData';
 
 function DashboardContent() {
-  const brand = useBrand();
+  const { header } = useDashboardData();
   const [isMobileNavOpen, setIsMobileNavOpen] = React.useState(false);
 
   return (
@@ -41,10 +41,10 @@ function DashboardContent() {
         <div className="mx-auto max-w-[1800px]">
           <div className="mb-8 md:mb-10">
             <h1 className="mb-2 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
-              {brand.dashboardGreeting}
+              {header.title}
             </h1>
             <p className="max-w-3xl text-base font-bold text-slate-500 sm:text-lg lg:text-xl">
-              {brand.dashboardSubtext}
+              {header.subtitle}
             </p>
           </div>
 

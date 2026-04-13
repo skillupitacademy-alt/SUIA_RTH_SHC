@@ -1,19 +1,37 @@
 'use client';
 
 import { useBrand } from '../context/BrandContext';
-import { educationLevels } from '../models/onboardingSession';
+import { OnboardingStatusOption } from '../../onboardingPageData';
 
 interface ProfileStepProps {
+  title: string;
+  subtitle: string;
   fullName: string;
   educationLevel: string;
   status: 'student' | 'professional';
+  fullNameLabel: string;
+  fullNamePlaceholder: string;
+  educationLevelLabel: string;
+  educationLevelPlaceholder: string;
+  educationLevels: string[];
+  statusLabel: string;
+  statusOptions: OnboardingStatusOption[];
   onChange: (field: string, value: string) => void;
 }
 
 export function ProfileStep({
+  title,
+  subtitle,
   fullName,
   educationLevel,
   status,
+  fullNameLabel,
+  fullNamePlaceholder,
+  educationLevelLabel,
+  educationLevelPlaceholder,
+  educationLevels,
+  statusLabel,
+  statusOptions,
   onChange
 }: ProfileStepProps) {
   const brand = useBrand();
@@ -21,25 +39,19 @@ export function ProfileStep({
   return (
     <div className="space-y-8">
       <div className="text-center space-y-2">
-        <h1 className="text-4xl font-bold text-slate-900">
-          Tell us a bit about yourself
-        </h1>
-        <p className="text-slate-600">
-          This helps us personalize your learning experience
-        </p>
+        <h1 className="text-4xl font-bold text-slate-900">{title}</h1>
+        <p className="text-slate-600">{subtitle}</p>
       </div>
 
       <div className="space-y-6 max-w-2xl mx-auto">
         {/* Full Name */}
         <div className="space-y-2">
-          <label className="block text-sm font-semibold text-slate-700">
-            Full Name
-          </label>
+          <label className="block text-sm font-semibold text-slate-700">{fullNameLabel}</label>
           <input
             type="text"
             value={fullName}
             onChange={(e) => onChange('fullName', e.target.value)}
-            placeholder="Enter your full name"
+            placeholder={fullNamePlaceholder}
             className="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:border-current transition-colors"
             style={{
               borderColor: fullName ? brand.primaryColor : undefined
@@ -49,9 +61,7 @@ export function ProfileStep({
 
         {/* Education Level */}
         <div className="space-y-2">
-          <label className="block text-sm font-semibold text-slate-700">
-            Education Level
-          </label>
+          <label className="block text-sm font-semibold text-slate-700">{educationLevelLabel}</label>
           <select
             value={educationLevel}
             onChange={(e) => onChange('educationLevel', e.target.value)}
@@ -60,7 +70,7 @@ export function ProfileStep({
               borderColor: educationLevel ? brand.primaryColor : undefined
             }}
           >
-            <option value="">Select your education level</option>
+            <option value="">{educationLevelPlaceholder}</option>
             {educationLevels.map((level) => (
               <option key={level} value={level}>
                 {level}
@@ -71,38 +81,28 @@ export function ProfileStep({
 
         {/* Status Toggle */}
         <div className="space-y-2">
-          <label className="block text-sm font-semibold text-slate-700">
-            Current Status
-          </label>
-          <div className="flex gap-3">
-            <button
-              onClick={() => onChange('status', 'student')}
-              className={`flex-1 px-6 py-4 rounded-xl font-semibold border-2 transition-all ${
-                status === 'student'
-                  ? 'text-white shadow-lg'
-                  : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
-              }`}
-              style={{
-                backgroundColor: status === 'student' ? brand.primaryColor : undefined,
-                borderColor: status === 'student' ? brand.primaryColor : undefined
-              }}
-            >
-              Student
-            </button>
-            <button
-              onClick={() => onChange('status', 'professional')}
-              className={`flex-1 px-6 py-4 rounded-xl font-semibold border-2 transition-all ${
-                status === 'professional'
-                  ? 'text-white shadow-lg'
-                  : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
-              }`}
-              style={{
-                backgroundColor: status === 'professional' ? brand.primaryColor : undefined,
-                borderColor: status === 'professional' ? brand.primaryColor : undefined
-              }}
-            >
-              Working Professional
-            </button>
+          <label className="block text-sm font-semibold text-slate-700">{statusLabel}</label>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            {statusOptions.map((option) => {
+              const isSelected = status === option.value;
+              return (
+                <button
+                  key={option.value}
+                  onClick={() => onChange('status', option.value)}
+                  className={`flex-1 px-6 py-4 rounded-xl font-semibold border-2 transition-all ${
+                    isSelected
+                      ? 'text-white shadow-lg'
+                      : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
+                  }`}
+                  style={{
+                    backgroundColor: isSelected ? brand.primaryColor : undefined,
+                    borderColor: isSelected ? brand.primaryColor : undefined
+                  }}
+                >
+                  {option.label}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

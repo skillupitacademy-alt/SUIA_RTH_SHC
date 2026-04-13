@@ -1,33 +1,27 @@
 'use client';
 
 import { useBrand } from '../context/BrandContext';
-import { timeCommitments } from '../models/onboardingSession';
+import { OnboardingSkillLevelOption } from '../../onboardingPageData';
 
 interface SkillLevelStepProps {
+  title: string;
+  subtitle: string;
+  skillLevelLabel: string;
+  timeCommitmentLabel: string;
+  levels: OnboardingSkillLevelOption[];
+  timeCommitments: string[];
   skillLevel: 'beginner' | 'intermediate' | 'advanced' | '';
   timeCommitment: string;
   onChange: (field: string, value: string) => void;
 }
 
-const skillLevels = [
-  {
-    id: 'beginner',
-    title: 'Beginner',
-    description: "I'm starting fresh"
-  },
-  {
-    id: 'intermediate',
-    title: 'Intermediate',
-    description: 'I know the basics'
-  },
-  {
-    id: 'advanced',
-    title: 'Advanced',
-    description: 'I want to master complex topics'
-  }
-];
-
 export function SkillLevelStep({
+  title,
+  subtitle,
+  skillLevelLabel,
+  timeCommitmentLabel,
+  levels,
+  timeCommitments,
   skillLevel,
   timeCommitment,
   onChange
@@ -37,21 +31,15 @@ export function SkillLevelStep({
   return (
     <div className="space-y-10">
       <div className="text-center space-y-2">
-        <h1 className="text-4xl font-bold text-slate-900">
-          Where are you currently standing?
-        </h1>
-        <p className="text-slate-600">
-          Help us match the right difficulty level
-        </p>
+        <h1 className="text-4xl font-bold text-slate-900">{title}</h1>
+        <p className="text-slate-600">{subtitle}</p>
       </div>
 
       {/* Skill Level */}
       <div className="space-y-4 max-w-2xl mx-auto">
-        <h2 className="text-lg font-semibold text-slate-700">
-          Your skill level
-        </h2>
+        <h2 className="text-lg font-semibold text-slate-700">{skillLevelLabel}</h2>
         <div className="space-y-3">
-          {skillLevels.map((level) => {
+          {levels.map((level) => {
             const isSelected = skillLevel === level.id;
             return (
               <button
@@ -96,9 +84,7 @@ export function SkillLevelStep({
 
       {/* Time Commitment */}
       <div className="space-y-4 max-w-2xl mx-auto">
-        <h2 className="text-lg font-semibold text-slate-700">
-          How much time can you commit?
-        </h2>
+        <h2 className="text-lg font-semibold text-slate-700">{timeCommitmentLabel}</h2>
         <div className="flex gap-3 flex-wrap">
           {timeCommitments.map((time) => {
             const isSelected = timeCommitment === time;

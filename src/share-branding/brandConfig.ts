@@ -13,6 +13,7 @@ export interface BrandConfig {
   primaryColorDark: string;   // RTH: #b63600  |  SkillUp: #d63d7a
   secondaryColor: string;     // RTH: #124fd6  |  SkillUp: #133382
   primaryRgb: string;         // For shadow rgba() — e.g. "208,63,0"
+  accentBackground: string;
 
   // ── Tailwind Gradient Classes (used by gateway) ─────
   gradientFrom: string;       // e.g. "from-orange-500" | "from-pink-500"
@@ -64,6 +65,7 @@ export const rthConfig: BrandConfig = {
   primaryColorDark: '#b63600',
   secondaryColor: '#124fd6',
   primaryRgb: '208,63,0',
+  accentBackground: '#fff1eb',
 
   gradientFrom: 'from-orange-700',
   gradientTo: 'to-orange-800',
@@ -107,6 +109,7 @@ export const skillUpConfig: BrandConfig = {
   primaryColorDark: '#d63d7a',
   secondaryColor: '#133382',
   primaryRgb: '245,74,141',
+  accentBackground: '#fff0f6',
 
   gradientFrom: 'from-pink-500',
   gradientTo: 'to-pink-600',

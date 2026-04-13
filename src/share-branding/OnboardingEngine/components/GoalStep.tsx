@@ -1,10 +1,13 @@
 'use client';
 
 import { useBrand } from '../context/BrandContext';
-import { goalCards } from '../models/onboardingSession';
 import { BookOpen, Award, Briefcase, TrendingUp, Check } from 'lucide-react';
+import { GoalCard } from '../models/onboardingSession';
 
 interface GoalStepProps {
+  title: string;
+  subtitle: string;
+  cards: GoalCard[];
   selectedGoal: string;
   onChange: (goalId: string) => void;
 }
@@ -16,23 +19,19 @@ const iconMap = {
   TrendingUp
 };
 
-export function GoalStep({ selectedGoal, onChange }: GoalStepProps) {
+export function GoalStep({ title, subtitle, cards, selectedGoal, onChange }: GoalStepProps) {
   const brand = useBrand();
 
   return (
     <div className="space-y-8">
       <div className="text-center space-y-2">
-        <h1 className="text-4xl font-bold text-slate-900">
-          What is your primary goal?
-        </h1>
-        <p className="text-slate-600">
-          This helps us set up your learning engine correctly
-        </p>
+        <h1 className="text-4xl font-bold text-slate-900">{title}</h1>
+        <p className="text-slate-600">{subtitle}</p>
       </div>
 
       {/* Goal Grid */}
-      <div className="grid grid-cols-2 gap-6 max-w-4xl mx-auto">
-        {goalCards.map((goal) => {
+      <div className="grid max-w-4xl grid-cols-1 gap-6 mx-auto md:grid-cols-2">
+        {cards.map((goal) => {
           const Icon = iconMap[goal.icon as keyof typeof iconMap];
           const isSelected = selectedGoal === goal.id;
 

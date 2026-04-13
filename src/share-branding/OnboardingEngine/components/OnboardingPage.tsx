@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+
 import { BrandProvider } from '../context/BrandContext';
-import { brands } from '../../brandConfig';
+import { BrandConfig } from '../../brandConfig';
 import { OnboardingLayout } from './OnboardingLayout';
 import { WelcomeStep } from './WelcomeStep';
 import { ProfileStep } from './ProfileStep';
@@ -11,26 +12,31 @@ import { GoalStep } from './GoalStep';
 import { DomainStep } from './DomainStep';
 import { SkillLevelStep } from './SkillLevelStep';
 import { InitializationStep } from './InitializationStep';
-import { OnboardingData } from '../models/onboardingSession';
+import { OnboardingData, OnboardingViewData } from '../../onboardingPageData';
+import { OnboardingJourneyStatus } from '../../onboardingSessionCookie';
 
 interface OnboardingPageProps {
-  brand: 'rth' | 'skillup';
+  config: BrandConfig;
+  data: OnboardingViewData;
 }
 
-export function OnboardingPage({ brand: brandKey }: OnboardingPageProps) {
-  const brand = brands[brandKey];
+async function persistOnboardingSession(data: OnboardingData, journeyStatus: OnboardingJourneyStatus) {
+  await fetch('/api/onboarding/session', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      ...data,
+      journeyStatus,
+    }),
+  });
+}
+
+export function OnboardingPage({ config, data: viewData }: OnboardingPageProps) {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
-  const [data, setData] = useState<OnboardingData>({
-    fullName: '',
-    educationLevel: '',
-    status: 'student',
-    primaryGoal: '',
-    domain: '',
-    subDomain: '',
-    skillLevel: 'beginner',
-    timeCommitment: ''
-  });
+  const [data, setData] = useState<OnboardingData>(viewData.initialForm);
 
   const updateData = (field: string, value: string) => {
     setData((prev) => ({ ...prev, [field]: value }));
@@ -48,13 +54,20 @@ export function OnboardingPage({ brand: brandKey }: OnboardingPageProps) {
     setCurrentStep((prev) => prev - 1);
   };
 
-  const handleSkip = () => {
-    router.push('/dashboard');
+  const handleSkip = async () => {
+    try {
+      await persistOnboardingSession(data, 'skipped');
+    } finally {
+      router.push('/dashboard');
+    }
   };
 
-  const handleComplete = () => {
-    console.log('Onboarding completed:', data);
-    router.push('/dashboard');
+  const handleComplete = async () => {
+    try {
+      await persistOnboardingSession(data, 'completed');
+    } finally {
+      router.push('/dashboard');
+    }
   };
 
   const canContinue = () => {
@@ -66,54 +79,85 @@ export function OnboardingPage({ brand: brandKey }: OnboardingPageProps) {
       case 3:
         return data.domain !== '';
       case 4:
-        return data.skillLevel !== '' && data.timeCommitment !== '';
+        return data.timeCommitment !== '';
       default:
         return true;
     }
   };
 
   return (
-    <BrandProvider brand={brand}>
+    <BrandProvider brand={config}>
       {currentStep === 0 ? (
-        <main className="min-h-screen bg-slate-50 flex items-center justify-center px-6">
-          <WelcomeStep onStart={handleNext} onSkip={handleSkip} />
+        <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 sm:px-6">
+          <WelcomeStep
+            title={viewData.welcome.title}
+            subtitle={viewData.welcome.subtitle}
+            cards={viewData.welcome.cards}
+            skipLabel={viewData.welcome.skipLabel}
+            nextLabel={viewData.welcome.nextLabel}
+            onStart={handleNext}
+            onSkip={handleSkip}
+          />
         </main>
       ) : currentStep === 5 ? (
         <OnboardingLayout
           currentStep={4}
           totalSteps={5}
+          steps={viewData.steps}
+          footerText={viewData.footer.legalText}
           showBack={false}
           showContinue={false}
         >
-          <InitializationStep onComplete={handleComplete} />
+          <InitializationStep
+            messages={viewData.initialization.messages}
+            subtitle={viewData.initialization.subtitle}
+            onComplete={handleComplete}
+          />
         </OnboardingLayout>
       ) : (
         <OnboardingLayout
           currentStep={currentStep - 1}
           totalSteps={5}
+          steps={viewData.steps}
+          footerText={viewData.footer.legalText}
           onBack={currentStep > 1 ? handleBack : undefined}
           onContinue={handleNext}
           continueLabel={currentStep === 4 ? 'Finish' : 'Continue'}
           showBack={currentStep > 1}
-          showContinue={true}
+          showContinue
           continueDisabled={!canContinue()}
         >
           {currentStep === 1 && (
             <ProfileStep
+              title={viewData.profile.title}
+              subtitle={viewData.profile.subtitle}
               fullName={data.fullName}
               educationLevel={data.educationLevel}
               status={data.status}
+              fullNameLabel={viewData.profile.fullNameLabel}
+              fullNamePlaceholder={viewData.profile.fullNamePlaceholder}
+              educationLevelLabel={viewData.profile.educationLevelLabel}
+              educationLevelPlaceholder={viewData.profile.educationLevelPlaceholder}
+              educationLevels={viewData.profile.educationLevels}
+              statusLabel={viewData.profile.statusLabel}
+              statusOptions={viewData.profile.statusOptions}
               onChange={updateData}
             />
           )}
           {currentStep === 2 && (
             <GoalStep
+              title={viewData.goal.title}
+              subtitle={viewData.goal.subtitle}
+              cards={viewData.goal.cards}
               selectedGoal={data.primaryGoal}
               onChange={(goalId) => updateData('primaryGoal', goalId)}
             />
           )}
           {currentStep === 3 && (
             <DomainStep
+              title={viewData.domain.title}
+              subtitle={viewData.domain.subtitle}
+              cards={viewData.domain.cards}
               selectedDomain={data.domain}
               selectedSubDomain={data.subDomain}
               onChange={updateDomain}
@@ -121,7 +165,13 @@ export function OnboardingPage({ brand: brandKey }: OnboardingPageProps) {
           )}
           {currentStep === 4 && (
             <SkillLevelStep
-              skillLevel={data.skillLevel as 'beginner' | 'intermediate' | 'advanced' | ''}
+              title={viewData.skillLevel.title}
+              subtitle={viewData.skillLevel.subtitle}
+              skillLevelLabel={viewData.skillLevel.skillLevelLabel}
+              timeCommitmentLabel={viewData.skillLevel.timeCommitmentLabel}
+              levels={viewData.skillLevel.levels}
+              timeCommitments={viewData.skillLevel.timeCommitments}
+              skillLevel={data.skillLevel}
               timeCommitment={data.timeCommitment}
               onChange={updateData}
             />

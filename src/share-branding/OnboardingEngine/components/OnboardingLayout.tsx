@@ -1,13 +1,16 @@
 'use client';
 
 import { ReactNode } from 'react';
-import { useBrand } from '../context/BrandContext';
 import { BookOpen } from 'lucide-react';
+
+import { useBrand } from '../context/BrandContext';
 
 interface OnboardingLayoutProps {
   children: ReactNode;
   currentStep: number;
   totalSteps: number;
+  steps: string[];
+  footerText: string;
   onBack?: () => void;
   onContinue?: () => void;
   continueLabel?: string;
@@ -16,115 +19,111 @@ interface OnboardingLayoutProps {
   continueDisabled?: boolean;
 }
 
-const steps = ['Welcome', 'Profile', 'Goal', 'Domain', 'Skill Level'];
-
 export function OnboardingLayout({
   children,
   currentStep,
   totalSteps,
+  steps,
+  footerText,
   onBack,
   onContinue,
   continueLabel = 'Continue',
   showBack = true,
   showContinue = true,
-  continueDisabled = false
+  continueDisabled = false,
 }: OnboardingLayoutProps) {
   const brand = useBrand();
+  const visibleSteps = steps.slice(0, totalSteps);
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      {/* Header */}
-      <header className="border-b border-slate-200 px-6 py-4">
-        <div className="max-w-[800px] mx-auto flex items-center justify-between">
-          {/* Logo */}
+    <div className="flex min-h-screen flex-col bg-white">
+      <header className="border-b border-slate-200 px-4 py-4 sm:px-6">
+        <div className="mx-auto flex max-w-[800px] flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-2">
             <div
-              className="w-8 h-8 rounded flex items-center justify-center"
+              className="flex h-8 w-8 items-center justify-center rounded"
               style={{ backgroundColor: brand.primaryColor }}
             >
-              <BookOpen className="w-5 h-5 text-white" />
+              <BookOpen className="h-5 w-5 text-white" />
             </div>
             <span className="text-lg font-bold">
               <span style={{ color: brand.primaryColor }}>{brand.name.split(' ')[0]}</span>
-              <span className="text-slate-900">{brand.name.substring(brand.name.split(' ')[0].length)}</span>
+              <span className="text-slate-900">
+                {brand.name.substring(brand.name.split(' ')[0].length)}
+              </span>
             </span>
           </div>
 
-          {/* Progress Indicator */}
-          <div className="flex items-center gap-3">
-            {steps.map((step, index) => (
-              <div key={step} className="flex items-center gap-3">
-                <div className="flex flex-col items-center gap-1">
-                  <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm transition-all ${
-                      index < currentStep
-                        ? 'text-white'
-                        : index === currentStep
-                        ? 'text-white'
-                        : 'bg-slate-200 text-slate-400'
-                    }`}
-                    style={{
-                      backgroundColor: index <= currentStep ? brand.primaryColor : undefined
-                    }}
-                  >
-                    {index + 1}
+          <div className="-mx-1 overflow-x-auto pb-1">
+            <div className="flex min-w-max items-center gap-3 px-1">
+              {visibleSteps.map((step, index) => (
+                <div key={step} className="flex items-center gap-3">
+                  <div className="flex flex-col items-center gap-1">
+                    <div
+                      className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold transition-all ${
+                        index < currentStep || index === currentStep
+                          ? 'text-white'
+                          : 'bg-slate-200 text-slate-400'
+                      }`}
+                      style={{
+                        backgroundColor: index <= currentStep ? brand.primaryColor : undefined,
+                      }}
+                    >
+                      {index + 1}
+                    </div>
+                    <span
+                      className={`whitespace-nowrap text-xs font-medium ${
+                        index === currentStep ? 'opacity-100' : 'opacity-60'
+                      }`}
+                      style={{
+                        color: index === currentStep ? brand.primaryColor : '#64748b',
+                      }}
+                    >
+                      {step}
+                    </span>
                   </div>
-                  <span
-                    className={`text-xs font-medium whitespace-nowrap ${
-                      index === currentStep ? 'opacity-100' : 'opacity-60'
-                    }`}
-                    style={{
-                      color: index === currentStep ? brand.primaryColor : '#64748b'
-                    }}
-                  >
-                    {step}
-                  </span>
+                  {index < visibleSteps.length - 1 && (
+                    <div
+                      className={`mb-6 h-0.5 w-12 transition-all ${
+                        index < currentStep ? '' : 'bg-slate-200'
+                      }`}
+                      style={{
+                        backgroundColor: index < currentStep ? brand.primaryColor : undefined,
+                      }}
+                    />
+                  )}
                 </div>
-                {index < steps.length - 1 && (
-                  <div
-                    className={`w-12 h-0.5 mb-6 transition-all ${
-                      index < currentStep ? '' : 'bg-slate-200'
-                    }`}
-                    style={{
-                      backgroundColor: index < currentStep ? brand.primaryColor : undefined
-                    }}
-                  />
-                )}
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="flex-1 flex items-center justify-center px-6 py-12">
-        <div className="w-full max-w-[800px]">
-          {children}
-        </div>
+      <main className="flex flex-1 items-center justify-center px-4 py-8 sm:px-6 sm:py-12">
+        <div className="w-full max-w-[800px]">{children}</div>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-200 px-6 py-4">
-        <div className="max-w-[800px] mx-auto flex items-center justify-between">
+      <footer className="border-t border-slate-200 px-4 py-4 sm:px-6">
+        <div className="mx-auto flex max-w-[800px] flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           {showBack && onBack ? (
             <button
               onClick={onBack}
-              className="text-slate-600 hover:text-slate-900 font-medium transition-colors"
+              className="font-medium text-slate-600 transition-colors hover:text-slate-900"
             >
               Back
             </button>
           ) : (
-            <div />
+            <div className="hidden sm:block" />
           )}
 
           {showContinue && onContinue && (
             <button
               onClick={onContinue}
               disabled={continueDisabled}
-              className="px-6 py-2.5 rounded-lg font-semibold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg"
+              className="w-full rounded-lg px-6 py-2.5 font-semibold text-white transition-all hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
               style={{
                 backgroundColor: brand.primaryColor,
-                opacity: continueDisabled ? 0.5 : 1
+                opacity: continueDisabled ? 0.5 : 1,
               }}
             >
               {continueLabel}
@@ -133,11 +132,8 @@ export function OnboardingLayout({
         </div>
       </footer>
 
-      {/* Footer Links */}
-      <div className="px-6 py-4 bg-slate-50 border-t border-slate-200">
-        <div className="max-w-[800px] mx-auto text-center text-sm text-slate-500">
-          {brand.name} © 2024 • Privacy Policy • Terms
-        </div>
+      <div className="border-t border-slate-200 bg-slate-50 px-4 py-4 sm:px-6">
+        <div className="mx-auto max-w-[800px] text-center text-sm text-slate-500">{footerText}</div>
       </div>
     </div>
   );

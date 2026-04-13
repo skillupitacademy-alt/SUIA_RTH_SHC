@@ -2,16 +2,22 @@
 
 import { useState } from 'react';
 import { useBrand } from '../context/BrandContext';
-import { domainCards } from '../models/onboardingSession';
+import { DomainCard } from '../models/onboardingSession';
 import { ChevronDown, Check } from 'lucide-react';
 
 interface DomainStepProps {
+  title: string;
+  subtitle: string;
+  cards: DomainCard[];
   selectedDomain: string;
   selectedSubDomain?: string;
   onChange: (domain: string, subDomain?: string) => void;
 }
 
 export function DomainStep({
+  title,
+  subtitle,
+  cards,
   selectedDomain,
   selectedSubDomain,
   onChange
@@ -35,17 +41,13 @@ export function DomainStep({
   return (
     <div className="space-y-8">
       <div className="text-center space-y-2">
-        <h1 className="text-4xl font-bold text-slate-900">
-          Which field do you want to master?
-        </h1>
-        <p className="text-slate-600">
-          Choose your area of focus
-        </p>
+        <h1 className="text-4xl font-bold text-slate-900">{title}</h1>
+        <p className="text-slate-600">{subtitle}</p>
       </div>
 
       {/* Domain Cards */}
-      <div className="grid grid-cols-3 gap-4 max-w-5xl mx-auto">
-        {domainCards.map((domain) => {
+      <div className="grid max-w-5xl grid-cols-1 gap-4 mx-auto sm:grid-cols-2 xl:grid-cols-3">
+        {cards.map((domain) => {
           const isSelected = selectedDomain === domain.id;
           const isExpanded = expandedDomain === domain.id;
           const hasSubDomains = domain.subDomains && domain.subDomains.length > 0;
