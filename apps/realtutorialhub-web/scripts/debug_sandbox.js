@@ -1,5 +1,5 @@
-const { chromium } = require('playwright');
-const path = require('path');
+import { chromium } from 'playwright';
+import path from 'path';
 
 const ARTIFACT_DIR = 'C:\\Users\\RealTutorialHub\\.gemini\\antigravity\\brain\\d76a9880-0587-462d-95a4-adbaacbd77ab';
 

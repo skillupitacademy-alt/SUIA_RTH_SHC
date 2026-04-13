@@ -109,7 +109,11 @@ function buildAuthApiResponse(brand: BrandConfig): AuthApiResponse {
   };
 }
 
-export async function loadAuthPageData(brand: BrandConfig): Promise<AuthViewData> {
+export function getAuthPageData(brand: BrandConfig): AuthViewData {
   const apiResponse = buildAuthApiResponse(brand);
   return mapAuthApiToViewData(apiResponse, brand);
+}
+
+export async function loadAuthPageData(brand: BrandConfig): Promise<AuthViewData> {
+  return getAuthPageData(brand);
 }

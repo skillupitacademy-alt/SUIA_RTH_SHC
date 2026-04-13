@@ -58,6 +58,8 @@ export interface BrandConfig {
   dashboardSubtext: string;
 }
 
+export type SharedBrandId = 'realtutorialhub' | 'skillup';
+
 export const rthConfig: BrandConfig = {
   name: 'RealTutorialHub',
   brandMark: 'R',
@@ -162,3 +164,7 @@ export const brands: Record<'rth' | 'skillup', BrandConfig> = {
   rth: rthConfig,
   skillup: skillUpConfig,
 };
+
+export function getBrandConfig(brand: SharedBrandId): BrandConfig {
+  return brand === 'skillup' ? skillUpConfig : rthConfig;
+}

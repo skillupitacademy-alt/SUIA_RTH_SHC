@@ -60,7 +60,7 @@ export default function DashboardClientFallback({ serverUser, serverData }: Dash
                 <div className="min-w-0 flex-1">
                     <h1 className="truncate text-3xl font-extrabold tracking-tight text-slate-900 uppercase">Dashboard Overview</h1>
                     <p className="min-w-0 text-muted-foreground font-medium">
-                        Welcome back, <span className="break-words text-pink-600 font-black">{user?.name || "User"}</span>! Let's see your progress.
+                        Welcome back, <span className="break-words text-pink-600 font-black">{user?.name || "User"}</span>! Let&apos;s see your progress.
                     </p>
                 </div>
                 <div className="flex w-full min-w-0 flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center md:w-auto md:justify-end">

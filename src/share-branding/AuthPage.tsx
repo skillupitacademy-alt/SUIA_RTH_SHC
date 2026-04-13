@@ -16,16 +16,17 @@ import {
   EyeOff,
   Loader2,
 } from 'lucide-react';
-import { BrandConfig } from './brandConfig';
-import { AuthViewData } from './authPageData';
+
+import { type SharedBrandId, getBrandConfig } from './brandConfig';
+import { getAuthPageData } from './authPageData';
+import { loginUser } from './auth/authLoader';
 
 interface AuthPageProps {
-  config: BrandConfig;
-  data: AuthViewData;
+  brand: SharedBrandId;
   initialMode?: 'login' | 'signup' | 'forgot_password';
 }
 
-export default function AuthPage({ config, data, initialMode = 'login' }: AuthPageProps) {
+export default function AuthPage(props: AuthPageProps) {
   return (
     <React.Suspense
       fallback={
@@ -34,15 +35,18 @@ export default function AuthPage({ config, data, initialMode = 'login' }: AuthPa
         </div>
       }
     >
-      <AuthContent config={config} data={data} initialMode={initialMode} />
+      <AuthContent {...props} />
     </React.Suspense>
   );
 }
 
-function AuthContent({ config, data, initialMode = 'login' }: AuthPageProps) {
+function AuthContent({ brand, initialMode = 'login' }: AuthPageProps) {
+  const config = getBrandConfig(brand);
+  const data = getAuthPageData(config);
   const [mode, setMode] = useState<'login' | 'signup' | 'forgot_password'>(initialMode);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [submitError, setSubmitError] = useState('');
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -62,17 +66,29 @@ function AuthContent({ config, data, initialMode = 'login' }: AuthPageProps) {
     },
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setSubmitError('');
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      if (mode === 'signup') {
-        router.push('/onboarding');
-      } else if (mode === 'login') {
+
+    if (mode === 'login') {
+      const formData = new FormData(event.currentTarget);
+      const email = formData.get('email')?.toString().trim() ?? '';
+      const password = formData.get('password')?.toString() ?? '';
+
+      try {
+        await loginUser({ email, password, brand });
         router.push(searchParams.get('redirect') || '/dashboard');
+      } catch (error) {
+        setSubmitError(error instanceof Error ? error.message : 'Authentication failed');
+      } finally {
+        setIsLoading(false);
       }
-    }, 1500);
+      return;
+    }
+
+    setIsLoading(false);
+    setSubmitError('Authentication is only available through the live login flow.');
   };
 
   return (
@@ -192,10 +208,12 @@ function AuthContent({ config, data, initialMode = 'login' }: AuthPageProps) {
                       <Mail className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-[color:var(--brand-sec)]" />
                       <input
                         id="email"
+                        name="email"
                         type="email"
                         placeholder={data.emailPlaceholder}
                         autoComplete="email"
                         className="w-full rounded-2xl border border-slate-200 bg-gray-50 py-3 pl-12 pr-4 font-semibold text-slate-950 placeholder-slate-500 outline-none transition-all group-focus-within:shadow-sm focus:bg-white focus:border-[color:var(--brand-sec)] focus:ring-4 focus:ring-[color:var(--brand-sec)]/20"
+                        required
                       />
                     </div>
                   </div>
@@ -209,7 +227,7 @@ function AuthContent({ config, data, initialMode = 'login' }: AuthPageProps) {
                         {mode === 'login' && (
                           <button
                             type="button"
-                            onClick={() => setMode('forgot_password')}
+                            onClick={() => router.push('/forgot-password')}
                             className="text-sm font-bold transition-opacity hover:opacity-80"
                             style={{ color: config.secondaryColor }}
                           >
@@ -221,10 +239,12 @@ function AuthContent({ config, data, initialMode = 'login' }: AuthPageProps) {
                         <Lock className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-[color:var(--brand-sec)]" />
                         <input
                           id="password"
+                          name="password"
                           type={showPassword ? 'text' : 'password'}
                           placeholder={data.passwordPlaceholder}
                           autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                           className="w-full rounded-2xl border border-slate-200 bg-gray-50 py-3 pl-12 pr-12 font-semibold text-slate-950 placeholder-slate-500 outline-none transition-all group-focus-within:shadow-sm focus:bg-white focus:border-[color:var(--brand-sec)] focus:ring-4 focus:ring-[color:var(--brand-sec)]/20"
+                          required
                         />
                         <button
                           type="button"
@@ -237,6 +257,12 @@ function AuthContent({ config, data, initialMode = 'login' }: AuthPageProps) {
                       </div>
                     </div>
                   )}
+
+                  {submitError ? (
+                    <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+                      {submitError}
+                    </div>
+                  ) : null}
 
                   <button
                     disabled={isLoading}
@@ -271,6 +297,7 @@ function AuthContent({ config, data, initialMode = 'login' }: AuthPageProps) {
                         <button
                           key={provider.id}
                           className="group flex min-w-0 items-center justify-center gap-3 rounded-2xl border border-gray-200 py-3 transition-colors hover:bg-gray-50"
+                          type="button"
                         >
                           {provider.id === 'google' ? (
                             <svg className="h-5 w-5 transition-transform group-hover:scale-110" viewBox="0 0 24 24">
@@ -299,6 +326,7 @@ function AuthContent({ config, data, initialMode = 'login' }: AuthPageProps) {
                       onClick={() => setMode('login')}
                       className="font-black transition-opacity hover:opacity-80"
                       style={{ color: config.secondaryColor }}
+                      type="button"
                     >
                       {data.modes.forgot_password.switchAction}
                     </button>
@@ -307,9 +335,10 @@ function AuthContent({ config, data, initialMode = 'login' }: AuthPageProps) {
                   <p className="mt-2 text-center text-sm font-black text-slate-950 sm:mt-4 sm:text-base md:mt-8">
                     {mode === 'login' ? data.modes.login.switchPrompt : data.modes.signup.switchPrompt}{' '}
                     <button
-                      onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}
+                      onClick={() => router.push(mode === 'login' ? '/signup' : '/login')}
                       className="font-black transition-opacity hover:opacity-80"
                       style={{ color: config.secondaryColor }}
+                      type="button"
                     >
                       {mode === 'login' ? data.modes.login.switchAction : data.modes.signup.switchAction}
                     </button>
