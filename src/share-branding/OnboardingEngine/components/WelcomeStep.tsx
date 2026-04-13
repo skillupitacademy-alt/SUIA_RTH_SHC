@@ -23,6 +23,8 @@ export function WelcomeStep({
   onSkip,
 }: WelcomeStepProps) {
   const brand = useBrand();
+  const illustrationAccent = brand.illustrationAccentColor;
+  const illustrationHighlight = brand.illustrationHighlightColor;
 
   return (
     <div className="flex flex-col items-center space-y-8 py-8 text-center">
@@ -55,22 +57,22 @@ export function WelcomeStep({
                       <rect x="55" y="95" width="50" height="20" fill="#cbd5e1" />
                       <circle cx="40" cy="40" r="8" fill={brand.primaryColor} opacity="0.6" />
                       <circle cx="120" cy="45" r="6" fill={brand.primaryColor} opacity="0.4" />
-                      <circle cx="115" cy="30" r="10" fill="#fbbf24" opacity="0.8" />
-                      <path d="M115 40v5" stroke="#fbbf24" strokeWidth="2" />
+                      <circle cx="115" cy="30" r="10" fill={illustrationHighlight} opacity="0.8" />
+                      <path d="M115 40v5" stroke={illustrationHighlight} strokeWidth="2" />
                     </svg>
                   ) : (
                     <svg width="160" height="160" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="80" cy="55" r="18" fill="#ea580c" opacity="0.2" />
-                      <circle cx="80" cy="55" r="15" fill="#ea580c" />
-                      <path d="M60 95c0-11 9-20 20-20s20 9 20 20v15H60V95z" fill="#ea580c" />
-                      <path d="M55 85l-15-15" stroke="#ea580c" strokeWidth="4" strokeLinecap="round" />
-                      <path d="M105 85l15-15" stroke="#ea580c" strokeWidth="4" strokeLinecap="round" />
+                      <circle cx="80" cy="55" r="18" fill={illustrationAccent} opacity="0.2" />
+                      <circle cx="80" cy="55" r="15" fill={illustrationAccent} />
+                      <path d="M60 95c0-11 9-20 20-20s20 9 20 20v15H60V95z" fill={illustrationAccent} />
+                      <path d="M55 85l-15-15" stroke={illustrationAccent} strokeWidth="4" strokeLinecap="round" />
+                      <path d="M105 85l15-15" stroke={illustrationAccent} strokeWidth="4" strokeLinecap="round" />
                       <rect x="65" y="115" width="12" height="18" fill="#64748b" opacity="0.3" />
                       <rect x="78" y="120" width="12" height="13" fill="#64748b" opacity="0.4" />
                       <rect x="91" y="117" width="12" height="16" fill="#64748b" opacity="0.35" />
-                      <path d="M75 125h20v8c0 5-4 9-10 9s-10-4-10-9v-8z" fill="#fbbf24" />
-                      <rect x="82" y="133" width="6" height="8" fill="#fbbf24" opacity="0.7" />
-                      <rect x="78" y="141" width="14" height="3" fill="#fbbf24" />
+                      <path d="M75 125h20v8c0 5-4 9-10 9s-10-4-10-9v-8z" fill={illustrationHighlight} />
+                      <rect x="82" y="133" width="6" height="8" fill={illustrationHighlight} opacity="0.7" />
+                      <rect x="78" y="141" width="14" height="3" fill={illustrationHighlight} />
                     </svg>
                   )}
                 </div>

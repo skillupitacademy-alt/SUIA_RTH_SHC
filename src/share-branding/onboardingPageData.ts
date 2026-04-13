@@ -313,7 +313,7 @@ function buildOnboardingApiResponse(
       ],
     },
     footer_bar: {
-      legal_text: `${brand.name} © 2024 • Privacy Policy • Terms`,
+      legal_text: brand.onboardingFooterText,
     },
     session_seed: sessionSeed ?? {},
   };

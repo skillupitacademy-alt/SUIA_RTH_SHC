@@ -50,6 +50,9 @@ export interface BrandConfig {
   // ── Footer ──────────────────────────────────────────
   footerDescription: string;
   footerCopyright: string;
+  onboardingFooterText: string;
+  illustrationAccentColor: string;
+  illustrationHighlightColor: string;
 
   // ── Dashboard ───────────────────────────────────────
   dashboardGreeting: string;
@@ -95,6 +98,9 @@ export const rthConfig: BrandConfig = {
 
   footerDescription: 'The most advanced structured learning engine designed for modern developers and tech professionals.',
   footerCopyright: '© 2026 RealTutorialHub. All rights reserved.',
+  onboardingFooterText: '© 2024 RealTutorialHub • Privacy Policy • Terms',
+  illustrationAccentColor: '#ea580c',
+  illustrationHighlightColor: '#fbbf24',
 
   dashboardGreeting: 'Ready to Level Up?',
   dashboardSubtext: 'Your personalized learning path is waiting.',
@@ -139,6 +145,9 @@ export const skillUpConfig: BrandConfig = {
 
   footerDescription: 'Industry-ready IT training powered by expert mentors and hands-on practice.',
   footerCopyright: '© 2026 SkillUp IT Academy. All rights reserved.',
+  onboardingFooterText: '© 2024 SkillUp IT Academy • Privacy Policy • Terms',
+  illustrationAccentColor: '#ec4899',
+  illustrationHighlightColor: '#f9a8d4',
 
   dashboardGreeting: 'Master Your Craft',
   dashboardSubtext: 'Connect with a mentor and start building today.',
