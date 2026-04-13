@@ -34,6 +34,9 @@ export function OnboardingLayout({
 }: OnboardingLayoutProps) {
   const brand = useBrand();
   const visibleSteps = steps.slice(0, totalSteps);
+  const activeStepLabel = visibleSteps[currentStep] ?? visibleSteps[0] ?? 'Step';
+  const progressPercent =
+    totalSteps > 0 ? Math.min(100, Math.max(0, ((currentStep + 1) / totalSteps) * 100)) : 0;
 
   return (
     <div className="flex min-h-screen flex-col bg-white">
@@ -54,7 +57,30 @@ export function OnboardingLayout({
             </span>
           </div>
 
-          <div className="-mx-1 overflow-x-auto pb-1">
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3 md:hidden">
+            <div className="mb-2 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Step {currentStep + 1} of {totalSteps}
+                </p>
+                <p className="text-sm font-semibold text-slate-900">{activeStepLabel}</p>
+              </div>
+              <div
+                className="flex h-9 min-w-9 items-center justify-center rounded-full px-3 text-sm font-semibold text-white"
+                style={{ backgroundColor: brand.primaryColor }}
+              >
+                {currentStep + 1}
+              </div>
+            </div>
+            <div className="h-2 overflow-hidden rounded-full bg-slate-200">
+              <div
+                className="h-full rounded-full transition-all"
+                style={{ width: `${progressPercent}%`, backgroundColor: brand.primaryColor }}
+              />
+            </div>
+          </div>
+
+          <div className="-mx-1 hidden overflow-x-auto pb-1 md:block">
             <div className="flex min-w-max items-center gap-3 px-1">
               {visibleSteps.map((step, index) => (
                 <div key={step} className="flex items-center gap-3">

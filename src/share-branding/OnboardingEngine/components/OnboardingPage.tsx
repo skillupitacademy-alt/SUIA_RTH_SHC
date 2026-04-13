@@ -37,6 +37,7 @@ export function OnboardingPage({ config, data: viewData }: OnboardingPageProps) 
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [data, setData] = useState<OnboardingData>(viewData.initialForm);
+  const progressSteps = viewData.steps.slice(1);
 
   const updateData = (field: string, value: string) => {
     setData((prev) => ({ ...prev, [field]: value }));
@@ -101,9 +102,9 @@ export function OnboardingPage({ config, data: viewData }: OnboardingPageProps) 
         </main>
       ) : currentStep === 5 ? (
         <OnboardingLayout
-          currentStep={4}
-          totalSteps={5}
-          steps={viewData.steps}
+          currentStep={3}
+          totalSteps={progressSteps.length}
+          steps={progressSteps}
           footerText={viewData.footer.legalText}
           showBack={false}
           showContinue={false}
@@ -117,8 +118,8 @@ export function OnboardingPage({ config, data: viewData }: OnboardingPageProps) 
       ) : (
         <OnboardingLayout
           currentStep={currentStep - 1}
-          totalSteps={5}
-          steps={viewData.steps}
+          totalSteps={progressSteps.length}
+          steps={progressSteps}
           footerText={viewData.footer.legalText}
           onBack={currentStep > 1 ? handleBack : undefined}
           onContinue={handleNext}
