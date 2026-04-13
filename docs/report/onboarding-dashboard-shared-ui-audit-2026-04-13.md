@@ -4,165 +4,90 @@ Date: 2026-04-13
 
 Scope:
 - Guide: [SHARED_UI_BRAND_AND_DATA_IMPLEMENTATION_GUIDE.md](/d:/onlinewebsites/quiz-platform/docs/completeproject/SHARED_UI_BRAND_AND_DATA_IMPLEMENTATION_GUIDE.md)
-- Live flow audited: `http://localhost:3003/onboarding` -> `http://localhost:3003/dashboard`
-- Brand routes reviewed:
-  - [apps/realtutorialhub-web/src/app/onboarding/page.tsx](/d:/onlinewebsites/quiz-platform/apps/realtutorialhub-web/src/app/onboarding/page.tsx:1)
-  - [apps/skillup-web/src/app/onboarding/page.tsx](/d:/onlinewebsites/quiz-platform/apps/skillup-web/src/app/onboarding/page.tsx:1)
-  - [apps/realtutorialhub-web/src/app/dashboard/page.tsx](/d:/onlinewebsites/quiz-platform/apps/realtutorialhub-web/src/app/dashboard/page.tsx:1)
-  - [apps/skillup-web/src/app/dashboard/page.tsx](/d:/onlinewebsites/quiz-platform/apps/skillup-web/src/app/dashboard/page.tsx:1)
+- Live flows audited:
+  - `http://localhost:3003/onboarding` -> `http://localhost:3003/dashboard`
+  - `http://localhost:3004/onboarding` -> `http://localhost:3004/dashboard`
 
-## Live Audit Result
+## Final Status
 
-The journey is reachable end to end.
+The onboarding-to-dashboard implementation is now aligned with the guide for the audited scope.
 
-- `/onboarding` renders.
-- Onboarding persistence is wired through `POST /api/onboarding/session`.
-- `/dashboard` renders with the shared dashboard UI after onboarding completion.
+- Option 2: satisfied for onboarding and dashboard
+- Option 3: satisfied for onboarding and dashboard
+- Option 4: satisfied for onboarding and dashboard
 
-The implementation is only partially aligned with the guide.
+## Verified Behavior
 
-- Option 2 is mostly in place for onboarding and dashboard.
-- Option 3 and Option 4 now exist structurally for onboarding.
-- The dashboard still behaves like a demo page and does not meaningfully consume onboarding output.
-- Some shared UI still bypasses the page view-model or hardcodes brand/legal values outside `brandConfig.ts`.
+### RealTutorialHub (`3003`)
 
-## Findings
+- `/onboarding` renders with shared UI
+- mobile onboarding now shows a compact progress card instead of the horizontal stepper bar
+- completing onboarding persists the shared onboarding session
+- `/dashboard` renders onboarding-derived user state
+- dashboard content reflects submitted onboarding data
 
-### 1. Critical: dashboard ignores onboarding state in its rendered view-model
+Verified content:
+- `Welcome back, Priya`
+- `Priya Sharma`
+- `Open My Learning Path`
+- `React.js`
+- old demo content such as `Alex K.` and `Scheduled Live Mentorship` no longer appears
 
-The onboarding flow now persists a cookie-backed session and redirects to `/dashboard`, but the dashboard does not project that state into the UI the user sees.
+### SkillUp (`3004`)
 
-Evidence:
-- [src/share-branding/OnboardingEngine/components/OnboardingPage.tsx](/d:/onlinewebsites/quiz-platform/src/share-branding/OnboardingEngine/components/OnboardingPage.tsx:23)
-- [src/share-branding/OnboardingEngine/components/OnboardingPage.tsx](/d:/onlinewebsites/quiz-platform/src/share-branding/OnboardingEngine/components/OnboardingPage.tsx:67)
-- [src/share-branding/dashboardPageData.ts](/d:/onlinewebsites/quiz-platform/src/share-branding/dashboardPageData.ts:286)
-- [src/share-branding/dashboardPageData.ts](/d:/onlinewebsites/quiz-platform/src/share-branding/dashboardPageData.ts:437)
+- `/onboarding` renders with shared UI
+- mobile onboarding now shows a compact progress card instead of the horizontal stepper bar
+- completing onboarding persists the shared onboarding session
+- `/dashboard` renders onboarding-derived user state
+- dashboard content reflects submitted onboarding data
 
-Verified behavior:
-- Posting a completed onboarding session for `Priya Sharma` stores the `shared-onboarding-session` cookie.
-- The dashboard HTML still renders static dashboard identity and activity data such as `Alex K.` and `Scheduled Live Mentorship`.
-- The onboarding session is attached to the API-shaped object but not mapped into the displayed dashboard view data.
+Verified content:
+- `Welcome back, Arjun`
+- `Arjun Nair`
+- `Open My Learning Path`
+- `Machine Learning`
+- `Continue with Live Mentor`
+- old demo content such as `Alex K.` no longer appears
 
-Why this fails the guide:
-- The journey is not functionally connected.
-- Route/server data exists, but the shared UI does not receive a dashboard model derived from actual user/session state.
+## What Was Implemented
 
-Required implementation:
-- Map onboarding/session state into `DashboardViewData`.
-- Replace demo user identity, hero state, recommendations, and activity with loader-driven data.
-- Ensure dashboard output changes when onboarding inputs change.
+### Shared UI and Route Pattern
 
-### 2. High: dashboard still uses hardcoded demo content instead of a real UI-facing data boundary
+- both brands use one shared onboarding implementation
+- both brands use one shared dashboard implementation
+- brand routes remain thin consumers that inject config and load data
 
-The dashboard mapper has a valid API-shape-to-UI-shape transform, but the loader still manufactures mostly fixed sample data inline.
+### Onboarding Data Boundary
 
-Evidence:
-- [src/share-branding/dashboardPageData.ts](/d:/onlinewebsites/quiz-platform/src/share-branding/dashboardPageData.ts:294)
-- [src/share-branding/dashboardPageData.ts](/d:/onlinewebsites/quiz-platform/src/share-branding/dashboardPageData.ts:300)
-- [src/share-branding/dashboardPageData.ts](/d:/onlinewebsites/quiz-platform/src/share-branding/dashboardPageData.ts:364)
-
-Examples:
-- Search placeholder is hardcoded to `Search courses, topics, or mentors...`
-- Membership is hardcoded to `Alex K.`, `Premium`, `AK`
-- Activity includes `Scheduled Live Mentorship`
-- Recommendation, synchronization, competency, and certification content are fixed demo values
-
-Why this fails the guide:
-- The API boundary exists only nominally if the loader creates fake transport data inline instead of loading real route/session/backend data.
-- Shared UI is still coupled to placeholder content rather than a meaningful page contract.
-
-Required implementation:
-- Replace `buildDashboardApiResponse(...)` demo data with route-owned data acquisition.
-- Keep the mapper, but map from a real raw source.
-- Move all brand-varying wording into config or mapped route data.
-
-### 3. High: dashboard shared UI still bypasses the page view-model for key displayed text
-
-The guide requires shared UI to receive prepared props. The dashboard page header currently reads greeting/subtext directly from `brandConfig.ts` instead of using the passed dashboard view-model.
-
-Evidence:
-- [src/share-branding/DashboardPage.tsx](/d:/onlinewebsites/quiz-platform/src/share-branding/DashboardPage.tsx:44)
-- [src/share-branding/DashboardPage.tsx](/d:/onlinewebsites/quiz-platform/src/share-branding/DashboardPage.tsx:47)
-- [src/share-branding/dashboardPageData.ts](/d:/onlinewebsites/quiz-platform/src/share-branding/dashboardPageData.ts:292)
-
-Why this matters:
-- It weakens the page-specific UI model contract.
-- It makes the dashboard title/subtitle impossible to vary via mapped route data without editing shared UI.
-- It keeps brand config as a second data source for page content.
-
-Required implementation:
-- Render the page header from `DashboardViewData.header` or a dedicated page-level section in `DashboardViewData`.
-- Reserve `brandConfig.ts` for brand tokens and identity, not page-instance content.
-
-### 4. High: onboarding footer/legal copy is still hardcoded outside `brandConfig.ts`
-
-The guide says brand identity values should come from `brandConfig.ts`, but onboarding builds its footer legal text inline and uses a mismatched year/copy pattern.
-
-Evidence:
-- [src/share-branding/onboardingPageData.ts](/d:/onlinewebsites/quiz-platform/src/share-branding/onboardingPageData.ts:316)
-- [src/share-branding/brandConfig.ts](/d:/onlinewebsites/quiz-platform/src/share-branding/brandConfig.ts:97)
-- [src/share-branding/brandConfig.ts](/d:/onlinewebsites/quiz-platform/src/share-branding/brandConfig.ts:141)
-
-Current behavior:
-- Onboarding footer uses `${brand.name} © 2024 • Privacy Policy • Terms`
-- Brand config already defines `footerCopyright` for both brands with 2026 values
-
-Why this fails the guide:
-- Shared onboarding UI is sourcing legal/brand copy from page data generation instead of the brand config source of truth.
-
-Required implementation:
-- Source onboarding footer/legal content from `brandConfig.ts` or from a dedicated mapped page field populated from config.
-- Remove the inline year/legal string from `buildOnboardingApiResponse(...)`.
-
-### 5. Medium: onboarding welcome illustrations still hardcode brand-colored values in shared UI
-
-The onboarding welcome step still embeds fixed orange/yellow values directly in shared SVG artwork.
-
-Evidence:
-- [src/share-branding/OnboardingEngine/components/WelcomeStep.tsx](/d:/onlinewebsites/quiz-platform/src/share-branding/OnboardingEngine/components/WelcomeStep.tsx:58)
-- [src/share-branding/OnboardingEngine/components/WelcomeStep.tsx](/d:/onlinewebsites/quiz-platform/src/share-branding/OnboardingEngine/components/WelcomeStep.tsx:63)
-
-Examples:
-- `#ea580c`
-- `#fbbf24`
-
-Why this matters:
-- The shared onboarding visual language is not fully brand-agnostic.
-- SkillUp and RealTutorialHub share the same hardcoded accent treatment even though brand tokens already exist.
-
-Required implementation:
-- Replace fixed illustration fills/strokes with brand tokens.
-- If multiple accents are needed, add explicit config tokens instead of embedding raw values in shared UI.
-
-## What Already Aligns
-
-- Both brands use the same onboarding and dashboard shared page implementations.
-- Brand routes are thin consumers that inject config and load data.
-- Onboarding now has:
+- onboarding now uses:
   - `OnboardingViewData`
   - `OnboardingApiResponse`
   - `mapOnboardingApiToViewData(...)`
   - `loadOnboardingData(...)`
-- Onboarding persistence exists through the shared cookie contract and per-app API routes.
-- `accentBackground` is now defined on `BrandConfig`, so that earlier gap is resolved.
+- onboarding session persistence is handled through the shared cookie contract and app API routes
 
-## Required Implementation Checklist
+### Dashboard Data Boundary
 
-1. Make dashboard user-visible content derive from actual session/onboarding/backend data.
-2. Remove remaining dashboard demo placeholders from `buildDashboardApiResponse(...)`.
-3. Stop reading dashboard heading/subheading directly from `brandConfig.ts` inside shared UI.
-4. Move onboarding legal/footer copy to `brandConfig.ts` or a config-backed mapped field.
-5. Replace hardcoded welcome-step illustration colors with shared brand tokens.
+- dashboard now maps a raw API-shaped model into `DashboardViewData`
+- dashboard user-visible content is derived from the persisted onboarding session instead of fixed demo values
+- shared dashboard header now renders mapped view data instead of bypassing the page model
 
-## Implementation Priority
+### Brand Source Of Truth
 
-P0:
-- Connect onboarding output to dashboard view data
-- Replace dashboard demo identity/activity/recommendation content
+- onboarding footer/legal text is now sourced from `brandConfig.ts`
+- onboarding illustration accent colors are now sourced from `brandConfig.ts`
 
-P1:
-- Eliminate dashboard content bypasses around `brandConfig.ts`
-- Move onboarding legal/footer copy to config-backed data
+### Responsive UX
 
-P2:
-- Clean up remaining fixed illustration colors in shared onboarding UI
+- mobile onboarding no longer shows the desktop horizontal stepper bar
+- the progress UI now displays the active step as a compact `Step X of 4` progress card
+- the step count now correctly starts from `Profile` after the separate welcome screen
+
+## Findings
+
+No blocking findings remain for the audited onboarding-to-dashboard scope.
+
+## Residual Notes
+
+- There are still some older text-encoding artifacts in parts of `src/share-branding/` comments and legacy strings.
+- Those are cleanup items, not onboarding/dashboard architectural or UX blockers.
