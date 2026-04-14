@@ -31,6 +31,12 @@ export const userProfiles = pgTable("user_profiles", {
   experienceYears: integer("experience_years"),
   domainInterest: text("domain_interest").array(),
   adaptiveLevel: adaptiveLevelEnum("adaptive_level").notNull().default("beginner"),
+  primaryGoal: text("primary_goal"),
+  domain: text("domain"),
+  subDomain: text("sub_domain"),
+  timeCommitment: text("time_commitment"),
+  journeyStatus: text("journey_status"),
+  onboardingCompleted: boolean("onboarding_completed").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

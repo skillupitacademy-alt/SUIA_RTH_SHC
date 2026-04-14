@@ -1,12 +1,7 @@
-import { cookies } from 'next/headers';
-
+import { fetchBackendAuthState } from './auth/serverAuthState';
 import { BrandConfig } from './brandConfig';
 import { domainCards, goalCards } from './OnboardingEngine/models/onboardingSession';
-import {
-  ONBOARDING_SESSION_COOKIE,
-  PersistedOnboardingSession,
-  parseOnboardingSessionCookie,
-} from './onboardingSessionCookie';
+import { PersistedOnboardingSession } from './onboardingSessionCookie';
 
 export interface DashboardNavItem {
   label: string;
@@ -633,10 +628,30 @@ function buildDashboardApiResponse(
 }
 
 export async function loadDashboardData(brand: BrandConfig): Promise<DashboardViewData> {
-  const cookieStore = await cookies();
-  const onboardingSession = parseOnboardingSessionCookie(
-    cookieStore.get(ONBOARDING_SESSION_COOKIE)?.value,
-  );
+  const user = await fetchBackendAuthState();
+  const onboardingSession: PersistedOnboardingSession | null =
+    user === null
+      ? null
+      : {
+          fullName: user.fullName ?? user.name ?? '',
+          educationLevel: user.educationLevel ?? '',
+          status: user.status === 'professional' ? 'professional' : 'student',
+          primaryGoal: user.primaryGoal ?? '',
+          domain: user.domain ?? '',
+          subDomain: user.subDomain ?? '',
+          skillLevel: user.skillLevel ?? 'beginner',
+          timeCommitment: user.timeCommitment ?? '',
+          journeyStatus:
+            user.journeyStatus === 'completed' ||
+            user.journeyStatus === 'skipped' ||
+            user.journeyStatus === 'in_progress' ||
+            user.journeyStatus === 'not_started'
+              ? user.journeyStatus
+              : user.onboardingCompleted === true
+              ? 'completed'
+              : 'not_started',
+          updatedAt: new Date().toISOString(),
+        };
   const apiResponse = buildDashboardApiResponse(brand, onboardingSession);
 
   return mapDashboardApiToViewData(apiResponse);

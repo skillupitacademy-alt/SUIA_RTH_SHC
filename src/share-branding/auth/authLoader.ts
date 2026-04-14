@@ -1,8 +1,14 @@
-import type { LoginApiResponse, LoginRequestData, LoginResultViewData, SignupRequestData } from './authViewData';
+import type {
+  LoginApiResponse,
+  LoginRequestData,
+  LoginResultViewData,
+  SignupRequestData,
+} from './authViewData';
 import { mapLoginError, mapLoginResponse } from './authMapper';
 
 const LOGIN_ENDPOINT = '/api/auth/login';
 const SIGNUP_ENDPOINT = '/api/auth/signup';
+const AUTH_ME_ENDPOINT = '/api/auth/me';
 
 async function submitAuthRequest(endpoint: string, data: { email: string; password: string; brand: LoginRequestData['brand']; name?: string }) {
   const response = await fetch(endpoint, {
@@ -37,4 +43,29 @@ export async function loginUser(data: LoginRequestData): Promise<LoginResultView
 
 export async function signupUser(data: SignupRequestData): Promise<LoginResultViewData> {
   return submitAuthRequest(SIGNUP_ENDPOINT, data);
+}
+
+export async function fetchCurrentUserState(): Promise<{ onboardingCompleted: boolean }> {
+  const response = await fetch(AUTH_ME_ENDPOINT, {
+    method: 'GET',
+    credentials: 'include',
+    headers: {
+      accept: 'application/json',
+      'x-portal-identity': 'user',
+    },
+    cache: 'no-store',
+  });
+
+  const payload = (await response.json().catch(() => null)) as
+    | { user?: { onboardingCompleted?: boolean; onboarded?: boolean } }
+    | null;
+
+  if (!response.ok) {
+    throw new Error('Unable to resolve session state');
+  }
+
+  return {
+    onboardingCompleted:
+      payload?.user?.onboardingCompleted === true || payload?.user?.onboarded === true,
+  };
 }

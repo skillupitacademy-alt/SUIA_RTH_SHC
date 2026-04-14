@@ -11,6 +11,7 @@ import { withLogging } from '@/lib/withLogging';
 import { AuthService } from '@/modules/auth/auth.service';
 import { getClientIp } from '@/modules/auth/client-ip';
 import { setCsrfToken } from '@/modules/auth/csrf.middleware';
+import { setOnboardingStateCookie } from '@/modules/auth/onboarding-state-cookie';
 import { container } from '@/modules/core/container';
 import { loginSchema } from '@/schemas/auth.schemas';
 
@@ -61,6 +62,7 @@ async function handler(req: NextRequest) {
         name: (rawProfile as { name?: string | null }).name ?? null,
         professionalStatus: (rawProfile as { professionalStatus?: string | null }).professionalStatus ?? null,
         educationLevel: (rawProfile as { educationLevel?: string | null }).educationLevel ?? null,
+        onboardingCompleted: (rawProfile as { onboardingCompleted?: boolean | null }).onboardingCompleted ?? false,
       },
     } satisfies Parameters<typeof toUserSummaryDTO>[0];
 
@@ -106,6 +108,7 @@ async function handler(req: NextRequest) {
     });
 
     setCsrfToken(response, requestHostname);
+    setOnboardingStateCookie(response, req, userDto.onboardingCompleted === true);
 
     const end = Date.now();
     const durationMs = end - start;

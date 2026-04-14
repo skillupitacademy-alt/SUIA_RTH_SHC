@@ -6,6 +6,7 @@ import { resolveRequestHostnameFromHeaders } from '@/lib/request-brand';
 import { withLogging } from '@/lib/withLogging';
 import { AuthService } from '@/modules/auth/auth.service';
 import { getClientIp } from '@/modules/auth/client-ip';
+import { clearOnboardingStateCookie } from '@/modules/auth/onboarding-state-cookie';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 
@@ -70,6 +71,7 @@ async function handler(_req: NextRequest) {
   }
   
   clear('csrfToken');
+  clearOnboardingStateCookie(response, _req);
 
   return response;
 }

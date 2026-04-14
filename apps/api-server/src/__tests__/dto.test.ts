@@ -15,7 +15,8 @@ describe('Layer 66: DTO Pattern Verification', () => {
       profile: {
         name: 'Test User',
         professionalStatus: 'Employed',
-        educationLevel: 'Bachelors'
+        educationLevel: 'Bachelors',
+        onboardingCompleted: true,
       }
     };
 
@@ -25,6 +26,7 @@ describe('Layer 66: DTO Pattern Verification', () => {
       expect(dto).toHaveProperty('email', 'test@example.com');
       expect(dto).toHaveProperty('name', 'Test User');
       expect(dto).toHaveProperty('onboarded', true);
+      expect(dto).toHaveProperty('onboardingCompleted', true);
       expect((dto as any).passwordHash).toBeUndefined();
     });
 
@@ -39,7 +41,7 @@ describe('Layer 66: DTO Pattern Verification', () => {
         {
           id: 'a1',
           email: 'admin@example.com',
-          profile: { professionalStatus: '', educationLevel: null },
+          profile: { professionalStatus: '', educationLevel: null, onboardingCompleted: false },
           emailVerified: false,
           createdAt: new Date(),
         },

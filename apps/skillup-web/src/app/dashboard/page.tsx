@@ -1,3 +1,6 @@
+import { redirect } from 'next/navigation';
+
+import { fetchBackendAuthState } from '../../../../../src/share-branding/auth/serverAuthState';
 import DashboardPage from '../../../../../src/share-branding/DashboardPage';
 import { loadDashboardData } from '../../../../../src/share-branding/dashboardPageData';
 import { skillUpConfig } from '../../../../../src/share-branding/brandConfig';
@@ -8,6 +11,10 @@ export const metadata = {
 };
 
 export default async function Page() {
+  const authState = await fetchBackendAuthState();
+  if (authState !== null && authState.onboardingCompleted !== true) {
+    redirect('/onboarding');
+  }
   const data = await loadDashboardData(skillUpConfig);
   return <DashboardPage config={skillUpConfig} data={data} />;
 }

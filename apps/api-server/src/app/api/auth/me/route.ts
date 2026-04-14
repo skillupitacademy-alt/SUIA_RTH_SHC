@@ -6,6 +6,7 @@ import { withCacheHeaders } from '@/lib/cache-headers';
 import { type RequestBrand } from '@/lib/request-brand';
 import { withLogging } from '@/lib/withLogging';
 import { getAuthBrandContext, shouldUseBrandBinding } from '@/modules/auth/brand-db';
+import { setOnboardingStateCookie } from '@/modules/auth/onboarding-state-cookie';
 import { UserRepository } from '@/modules/auth/repositories/user.repository';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
@@ -41,14 +42,21 @@ async function handler(_req: NextRequest) {
     if (!_user) return ApiResponse.error(notFound('User', originalUserId));
 
     const profile = Array.isArray(_user.profile) ? _user.profile[0] ?? {} : (_user.profile ?? {});
-    const typedProfile = profile as { name?: string | null; professionalStatus?: string | null; educationLevel?: string | null };
+    const typedProfile = profile as {
+      name?: string | null;
+      professionalStatus?: string | null;
+      educationLevel?: string | null;
+      primaryGoal?: string | null;
+      domain?: string | null;
+      subDomain?: string | null;
+      adaptiveLevel?: 'beginner' | 'intermediate' | 'advanced' | null;
+      timeCommitment?: string | null;
+      journeyStatus?: string | null;
+      onboardingCompleted?: boolean | null;
+    };
+    const onboardingCompleted = typedProfile.onboardingCompleted === true;
 
-    const onboarded = typeof typedProfile.professionalStatus === 'string' && 
-                      typedProfile.professionalStatus !== '' && 
-                      typeof typedProfile.educationLevel === 'string' && 
-                      typedProfile.educationLevel !== '';
-
-    return withCacheHeaders(ApiResponse.success({
+    const response = withCacheHeaders(ApiResponse.success({
       user: {
         id: _user.id,
         originalUserId: _user.id,
@@ -59,13 +67,24 @@ async function handler(_req: NextRequest) {
         brand,
         email: _user.email,
         name: typedProfile.name,
-        onboarded,
+        onboarded: onboardingCompleted,
+        onboardingCompleted,
         professionalStatus: typedProfile.professionalStatus ?? null,
         educationLevel: typedProfile.educationLevel ?? null,
+        fullName: typedProfile.name ?? null,
+        status: typedProfile.professionalStatus ?? null,
+        primaryGoal: typedProfile.primaryGoal ?? null,
+        domain: typedProfile.domain ?? null,
+        subDomain: typedProfile.subDomain ?? null,
+        skillLevel: typedProfile.adaptiveLevel ?? 'beginner',
+        timeCommitment: typedProfile.timeCommitment ?? null,
+        journeyStatus: typedProfile.journeyStatus ?? null,
         roles: _user.userRoles.map((ur) => ur.role.name),
       },
       expiresAt: container.get(TokenService).getExpiration(_token),
     }), 'SESSION');
+    setOnboardingStateCookie(response, _req, onboardingCompleted);
+    return response;
   } catch (_error: unknown) {
     return ApiResponse.error(_error, 401);
   }

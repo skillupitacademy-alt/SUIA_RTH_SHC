@@ -13,7 +13,11 @@ const optionSchema = z.union([
     code: z.string().min(1).optional(),
     label: z.string().min(1).optional(),
     isCorrect: z.boolean().optional(),
-  }).refine((value) => Boolean(value.text || value.code), {
+  }).refine((value) => {
+    const hasText = typeof value.text === 'string' && value.text.length > 0;
+    const hasCode = typeof value.code === 'string' && value.code.length > 0;
+    return hasText || hasCode;
+  }, {
     message: 'Option must include text or code',
   }),
 ]);

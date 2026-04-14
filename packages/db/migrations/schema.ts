@@ -8,6 +8,7 @@ export const mappingType = pgEnum("mapping_type", ['conceptual', 'technical', 'p
 export const questionType = pgEnum("question_type", ['mcq', 'code_mcq', 'multi_select'])
 export const skillCategory = pgEnum("skill_category", ['technical', 'cognitive', 'process'])
 export const status = pgEnum("status", ['active', 'inactive', 'draft'])
+export const adaptiveLevel = pgEnum("adaptive_level", ['beginner', 'intermediate', 'advanced'])
 
 
 export const loginAttempts = pgTable("login_attempts", {
@@ -92,6 +93,13 @@ export const userProfiles = pgTable("user_profiles", {
 	ageGroup: text("age_group"),
 	experienceYears: integer("experience_years"),
 	domainInterest: text("domain_interest").array(),
+	adaptiveLevel: adaptiveLevel("adaptive_level").default('beginner').notNull(),
+	primaryGoal: text("primary_goal"),
+	domain: text(),
+	subDomain: text("sub_domain"),
+	timeCommitment: text("time_commitment"),
+	journeyStatus: text("journey_status"),
+	onboardingCompleted: boolean("onboarding_completed").default(false).notNull(),
 	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
 }, (table) => [

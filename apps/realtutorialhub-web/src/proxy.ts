@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const LOGIN_URL = process.env.NEXT_PUBLIC_LOGIN_URL ?? 'https://user.realtutorialhub.com/login';
 const INTERNAL_GATEWAY_SECRET = process.env.INTERNAL_GATEWAY_SECRET;
+const ONBOARDING_STATE_COOKIE = 'onboarding_state';
 
 const PUBLIC_PATHS = ['/', '/login', '/forgot-password', '/reset-password', '/verify-email', '/verify-success', '/offline', '/placement', '/api/healthz'];
 const PUBLIC_PREFIXES = ['/api/certificates/verify/'];
@@ -26,6 +27,13 @@ export function isProtectedRoute(pathname: string): boolean {
 
 export function getAccessToken(request: NextRequest): string | undefined {
   return request.cookies.get('accessToken')?.value;
+}
+
+function hasCompletedOnboarding(request: NextRequest): boolean | null {
+  const state = request.cookies.get(ONBOARDING_STATE_COOKIE)?.value;
+  if (state === 'completed') return true;
+  if (state === 'pending') return false;
+  return null;
 }
 
 function getLoginUrl(request: NextRequest, redirectPath: string): URL {
@@ -129,10 +137,24 @@ export async function proxy(request: NextRequest) {
   }
 
   const user = await resolveUser(request);
+  const onboardingCompleted = hasCompletedOnboarding(request);
   const redirectPath = `${pathname}${search}`;
+
+  if (user !== null && pathname === '/onboarding' && onboardingCompleted === true) {
+    return NextResponse.redirect(new URL('/dashboard', request.url));
+  }
 
   if (isProtectedRoute(pathname) && user === null) {
     return NextResponse.redirect(getLoginUrl(request, redirectPath));
+  }
+
+  if (
+    user !== null &&
+    onboardingCompleted === false &&
+    pathname !== '/onboarding' &&
+    pathname.startsWith('/dashboard')
+  ) {
+    return NextResponse.redirect(new URL('/onboarding', request.url));
   }
 
   if (user !== null) {

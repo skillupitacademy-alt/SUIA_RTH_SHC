@@ -32,6 +32,17 @@ export function getConfiguredAuthBaseUrls(fallbackApiBase: string): string[] {
   return Array.from(new Set([...preferred, ...fallback]));
 }
 
+export function getUpstreamUrls(fallbackApiBase: string, upstreamPath: string): string[] {
+  const normalizedPath = upstreamPath.replace(/^\/+/, '');
+  return getConfiguredAuthBaseUrls(fallbackApiBase).map((baseUrl) => {
+    const withoutTrailingSlash = baseUrl.replace(/\/+$/, '');
+    const normalizedBase = withoutTrailingSlash.toLowerCase().endsWith('/api')
+      ? withoutTrailingSlash
+      : `${withoutTrailingSlash}/api`;
+    return `${normalizedBase}/${normalizedPath}`;
+  });
+}
+
 export function getAuthUpstreamUrls(fallbackApiBase: string, authPath: string): string[] {
   const normalizedAuthPath = authPath.replace(/^\/+/, '');
   return getConfiguredAuthBaseUrls(fallbackApiBase).flatMap((baseUrl) => {
@@ -113,6 +124,44 @@ export function createForwardHeaders(request: NextRequest): Headers {
   return headers;
 }
 
+export async function fetchUpstream(
+  request: NextRequest,
+  options: {
+    fallbackApiBase: string;
+    upstreamPath: string;
+    method?: string;
+    body?: BodyInit | null;
+  },
+): Promise<Response | null> {
+  const method = options.method ?? request.method;
+  const body =
+    options.body !== undefined
+      ? options.body
+      : method === 'GET' || method === 'HEAD'
+      ? undefined
+      : await request.arrayBuffer();
+  const headers = createForwardHeaders(request);
+
+  let upstreamResponse: Response | null = null;
+
+  for (const url of getUpstreamUrls(options.fallbackApiBase, options.upstreamPath)) {
+    const candidate = await fetch(`${url}${request.nextUrl.search}`, {
+      method,
+      headers,
+      body,
+      redirect: 'manual',
+      cache: 'no-store',
+    });
+
+    upstreamResponse = candidate;
+    if (candidate.status !== 404) {
+      break;
+    }
+  }
+
+  return upstreamResponse;
+}
+
 export async function fetchAuthUpstream(
   request: NextRequest,
   options: {
@@ -149,6 +198,42 @@ export async function fetchAuthUpstream(
   }
 
   return upstreamResponse;
+}
+
+export async function proxyUpstreamRequest(
+  request: NextRequest,
+  options: {
+    fallbackApiBase: string;
+    upstreamPath: string;
+    method?: string;
+    body?: BodyInit | null;
+  },
+) {
+  const upstreamResponse = await fetchUpstream(request, options);
+
+  if (upstreamResponse === null) {
+    return NextResponse.json({ error: 'Upstream unavailable' }, { status: 502 });
+  }
+
+  const payload = await upstreamResponse.arrayBuffer();
+  const response = new NextResponse(payload, {
+    status: upstreamResponse.status,
+    statusText: upstreamResponse.statusText,
+  });
+
+  upstreamResponse.headers.forEach((value, key) => {
+    if (HOP_BY_HOP_HEADERS.has(key.toLowerCase()) || key.toLowerCase() === 'set-cookie') {
+      return;
+    }
+    response.headers.set(key, value);
+  });
+
+  const requestHost = getRequestHost(request);
+  for (const cookie of getSetCookies(upstreamResponse.headers)) {
+    response.headers.append('set-cookie', rewriteSetCookie(cookie, requestHost));
+  }
+
+  return response;
 }
 
 export async function proxyAuthRequest(

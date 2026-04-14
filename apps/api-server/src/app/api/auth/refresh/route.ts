@@ -3,11 +3,14 @@ import type { NextRequest } from 'next/server';
 import { badRequest } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { resolveCookieDomain } from '@/lib/cookie-domain';
-import { resolveRequestBrandFromHeaders, resolveRequestHostnameFromHeaders } from '@/lib/request-brand';
+import { type RequestBrand, resolveRequestBrandFromHeaders, resolveRequestHostnameFromHeaders } from '@/lib/request-brand';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
 import { AuthService } from '@/modules/auth/auth.service';
+import { getAuthBrandContext, shouldUseBrandBinding } from '@/modules/auth/brand-db';
 import { getClientIp } from '@/modules/auth/client-ip';
+import { setOnboardingStateCookie } from '@/modules/auth/onboarding-state-cookie';
+import { UserRepository } from '@/modules/auth/repositories/user.repository';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 
@@ -82,6 +85,30 @@ async function handler(_req: NextRequest) {
       path: '/',
       domain: cookieDomain,
     });
+
+    if (portalIdentity === 'user') {
+      const accessPayload = await tokenService.verifyUserAccessToken(accessToken).catch(() => null);
+      const brand = ((accessPayload?.brand === 'skillup'
+        ? 'skillup'
+        : accessPayload?.brand === 'realtutorialhub'
+        ? 'realtutorialhub'
+        : requestBrand) ?? null) satisfies RequestBrand | null;
+      const originalUserId =
+        typeof accessPayload?.originalUserId === 'string' && accessPayload.originalUserId.trim().length > 0
+          ? accessPayload.originalUserId
+          : null;
+
+      if (brand !== null && originalUserId !== null) {
+        const brandContext = getAuthBrandContext(brand);
+        const baseRepo = container.get(UserRepository);
+        const userRepo = shouldUseBrandBinding() && typeof baseRepo.withDb === 'function'
+          ? baseRepo.withDb(brandContext.db, brandContext.tables)
+          : baseRepo;
+        const user = await userRepo.findByIdWithDetails(originalUserId);
+        const profile = Array.isArray(user?.profile) ? user?.profile[0] : user?.profile;
+        setOnboardingStateCookie(response, _req, profile?.onboardingCompleted === true);
+      }
+    }
 
     return response;
   } catch (_error: unknown) {

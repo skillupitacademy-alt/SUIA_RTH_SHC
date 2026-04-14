@@ -5,6 +5,7 @@ export interface UserSummaryDTO {
   isVerified: boolean;
   createdAt: Date;
   onboarded: boolean;
+  onboardingCompleted: boolean;
   role: string;
   isAdmin: boolean;
 }
@@ -30,6 +31,13 @@ type AuthUserInput = {
     name?: string | null;
     professionalStatus?: string | null;
     educationLevel?: string | null;
+    primaryGoal?: string | null;
+    domain?: string | null;
+    subDomain?: string | null;
+    adaptiveLevel?: 'beginner' | 'intermediate' | 'advanced' | null;
+    timeCommitment?: string | null;
+    journeyStatus?: string | null;
+    onboardingCompleted?: boolean | null;
   } | null;
 };
 
@@ -39,10 +47,7 @@ const hasValue = (value: Maybe<string>) => value !== undefined && value !== null
  * Mappers
  */
 export function toUserSummaryDTO(user: AuthUserInput, isAdmin: boolean = false): UserSummaryDTO {
-  const onboarded = Boolean(
-    hasValue(user.profile?.professionalStatus) &&
-    hasValue(user.profile?.educationLevel)
-  );
+  const onboardingCompleted = user.profile?.onboardingCompleted === true;
 
   return {
     id: user.id,
@@ -50,7 +55,8 @@ export function toUserSummaryDTO(user: AuthUserInput, isAdmin: boolean = false):
     name: hasValue(user.profile?.name) ? user.profile!.name! : 'Unknown',
     isVerified: user.emailVerified === true,
     createdAt: user.createdAt,
-    onboarded,
+    onboarded: onboardingCompleted,
+    onboardingCompleted,
     role: isAdmin ? 'admin' : 'user',
     isAdmin
   };

@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers';
 
+import { fetchBackendAuthState } from './auth/serverAuthState';
 import { BrandConfig } from './brandConfig';
 import {
   DomainCard,
@@ -174,6 +175,23 @@ function extractPersistedFormState(session: ReturnType<typeof parseOnboardingSes
   };
 }
 
+function extractBackendFormState(user: Awaited<ReturnType<typeof fetchBackendAuthState>>): Partial<OnboardingData> | null {
+  if (user === null) {
+    return null;
+  }
+
+  return {
+    fullName: user.fullName ?? user.name ?? '',
+    educationLevel: user.educationLevel ?? '',
+    status: user.status === 'professional' ? 'professional' : 'student',
+    primaryGoal: user.primaryGoal ?? '',
+    domain: user.domain ?? '',
+    subDomain: user.subDomain ?? '',
+    skillLevel: user.skillLevel ?? 'beginner',
+    timeCommitment: user.timeCommitment ?? '',
+  };
+}
+
 export function mapOnboardingApiToViewData(api: OnboardingApiResponse): OnboardingViewData {
   return {
     steps: api.step_labels,
@@ -322,7 +340,11 @@ function buildOnboardingApiResponse(
 export async function loadOnboardingData(brand: BrandConfig): Promise<OnboardingViewData> {
   const cookieStore = await cookies();
   const session = parseOnboardingSessionCookie(cookieStore.get(ONBOARDING_SESSION_COOKIE)?.value);
-  const apiResponse = buildOnboardingApiResponse(brand, extractPersistedFormState(session));
+  const backendUser = await fetchBackendAuthState();
+  const apiResponse = buildOnboardingApiResponse(
+    brand,
+    extractBackendFormState(backendUser) ?? extractPersistedFormState(session),
+  );
 
   return mapOnboardingApiToViewData(apiResponse);
 }

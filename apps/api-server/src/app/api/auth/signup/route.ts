@@ -13,6 +13,7 @@ import { withRateLimit } from '@/middleware/rate-limit.middleware';
 import { AuthService } from '@/modules/auth/auth.service';
 import { getClientIp } from '@/modules/auth/client-ip';
 import { setCsrfToken } from '@/modules/auth/csrf.middleware';
+import { setOnboardingStateCookie } from '@/modules/auth/onboarding-state-cookie';
 import { container } from '@/modules/core/container';
 import { signupSchema } from '@/schemas/auth.schemas';
 
@@ -45,7 +46,7 @@ async function handler(_req: NextRequest) {
     recordTimer(METRICS.AUTH.SIGNUP + '.duration', Date.now() - start, { outcome: 'success' });
 
     // Ensure _user has profile shape for the DTO if needed
-    const userForDto = { ..._user, profile: { name } };
+    const userForDto = { ..._user, profile: { name, onboardingCompleted: false } };
     const userDto = toUserSummaryDTO(userForDto, false);
 
     const response = ApiResponse.success({
@@ -77,6 +78,7 @@ async function handler(_req: NextRequest) {
     });
 
     setCsrfToken(response, requestHostname);
+    setOnboardingStateCookie(response, _req, false);
 
     return response;
   } catch (_error: unknown) {

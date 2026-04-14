@@ -19,7 +19,7 @@ import {
 
 import { type SharedBrandId, getBrandConfig } from './brandConfig';
 import { getAuthPageData } from './authPageData';
-import { loginUser, signupUser } from './auth/authLoader';
+import { fetchCurrentUserState, loginUser, signupUser } from './auth/authLoader';
 
 interface AuthPageProps {
   brand: SharedBrandId;
@@ -83,7 +83,13 @@ function AuthContent({ brand, initialMode = 'login' }: AuthPageProps) {
 
       try {
         await loginUser({ email, password, brand });
-        router.push(searchParams.get('redirect') || '/dashboard');
+        const sessionState = await fetchCurrentUserState();
+        const redirectTarget = searchParams.get('redirect');
+        router.push(
+          sessionState.onboardingCompleted === true
+            ? redirectTarget || '/dashboard'
+            : '/onboarding',
+        );
       } catch (error) {
         setSubmitError(error instanceof Error ? error.message : 'Authentication failed');
       } finally {
@@ -100,7 +106,8 @@ function AuthContent({ brand, initialMode = 'login' }: AuthPageProps) {
 
       try {
         await signupUser({ name, email, password, brand });
-        router.push(searchParams.get('redirect') || '/dashboard');
+        const sessionState = await fetchCurrentUserState();
+        router.push(sessionState.onboardingCompleted === true ? '/dashboard' : '/onboarding');
       } catch (error) {
         setSubmitError(error instanceof Error ? error.message : 'Authentication failed');
       } finally {

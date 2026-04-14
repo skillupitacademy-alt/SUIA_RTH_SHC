@@ -16,6 +16,18 @@ export interface User {
   shadowUserId?: string | null;
 }
 
+export interface PersistedOnboardingInput {
+  fullName: string;
+  educationLevel: string;
+  status: 'student' | 'professional';
+  primaryGoal: string;
+  domain: string;
+  subDomain?: string;
+  skillLevel: 'beginner' | 'intermediate' | 'advanced';
+  timeCommitment: string;
+  journeyStatus: 'not_started' | 'in_progress' | 'skipped' | 'completed';
+}
+
 export class UserRepository extends BaseRepository<User, typeof users> {
   protected table = users;
   protected tables: BrandAuthTables;
@@ -80,6 +92,48 @@ export class UserRepository extends BaseRepository<User, typeof users> {
     });
 
     return user;
+  }
+
+  async upsertOnboardingProfile(userId: string, onboarding: PersistedOnboardingInput) {
+    const values = {
+      name: onboarding.fullName,
+      educationLevel: onboarding.educationLevel,
+      professionalStatus: onboarding.status,
+      primaryGoal: onboarding.primaryGoal,
+      domain: onboarding.domain,
+      subDomain: onboarding.subDomain ?? '',
+      adaptiveLevel: onboarding.skillLevel,
+      timeCommitment: onboarding.timeCommitment,
+      journeyStatus: onboarding.journeyStatus,
+      onboardingCompleted:
+        onboarding.journeyStatus === 'completed' || onboarding.journeyStatus === 'skipped',
+      domainInterest: [onboarding.domain, onboarding.subDomain].filter(
+        (value): value is string => typeof value === 'string' && value.trim().length > 0,
+      ),
+      updatedAt: new Date(),
+    };
+
+    const existing = await this.dbInstance.query.userProfiles.findFirst({
+      where: eq(this.tables.userProfiles.userId, userId),
+    });
+
+    if (existing !== undefined) {
+      const [updated] = await this.dbInstance
+        .update(this.tables.userProfiles)
+        .set(values)
+        .where(eq(this.tables.userProfiles.userId, userId))
+        .returning();
+      return updated;
+    }
+
+    const [inserted] = await this.dbInstance
+      .insert(this.tables.userProfiles)
+      .values({
+        userId,
+        ...values,
+      })
+      .returning();
+    return inserted;
   }
 
   async assignRole(userId: string, roleName: string, tx?: Pick<typeof db, 'insert' | 'query'>) {

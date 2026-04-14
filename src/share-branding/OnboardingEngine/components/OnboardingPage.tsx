@@ -20,9 +20,10 @@ interface OnboardingPageProps {
   data: OnboardingViewData;
 }
 
-async function persistOnboardingSession(data: OnboardingData, journeyStatus: OnboardingJourneyStatus) {
-  await fetch('/api/onboarding/session', {
+async function persistOnboarding(data: OnboardingData, journeyStatus: OnboardingJourneyStatus) {
+  await fetch('/api/onboarding', {
     method: 'POST',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
     },
@@ -57,7 +58,7 @@ export function OnboardingPage({ config, data: viewData }: OnboardingPageProps) 
 
   const handleSkip = async () => {
     try {
-      await persistOnboardingSession(data, 'skipped');
+      await persistOnboarding(data, 'skipped');
     } finally {
       router.push('/dashboard');
     }
@@ -65,7 +66,7 @@ export function OnboardingPage({ config, data: viewData }: OnboardingPageProps) 
 
   const handleComplete = async () => {
     try {
-      await persistOnboardingSession(data, 'completed');
+      await persistOnboarding(data, 'completed');
     } finally {
       router.push('/dashboard');
     }
