@@ -39,7 +39,7 @@ async function handler(_req: NextRequest) {
     const _user = await authService.signup(email, password, name, ip, brand);
 
     // Auto-login after signup
-    const { accessToken, refreshToken, shadowUserId } = await authService.login(email, password, ip, brand);
+    const { accessToken, refreshToken } = await authService.login(email, password, ip, brand);
 
     recordCounter(METRICS.AUTH.SIGNUP, 1, { outcome: 'success' });
     recordTimer(METRICS.AUTH.SIGNUP + '.duration', Date.now() - start, { outcome: 'success' });
@@ -51,8 +51,6 @@ async function handler(_req: NextRequest) {
     const response = ApiResponse.success({
       message: 'User created',
       user: userDto,
-      accessToken,
-      shadowUserId,
     });
 
     const requestHostname = resolveRequestHostnameFromHeaders(_req.headers, _req.nextUrl.hostname);

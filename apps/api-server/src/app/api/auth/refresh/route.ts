@@ -48,7 +48,7 @@ async function handler(_req: NextRequest) {
     const authService = container.get(AuthService);
     const tokenService = container.get(TokenService);
 
-    const { accessToken, refreshToken: newRefreshToken, shadowUserId } = await authService.refresh(tokenToUse, ip, examId, audience, requestBrand);
+    const { accessToken, refreshToken: newRefreshToken } = await authService.refresh(tokenToUse, ip, examId, audience, requestBrand);
     const expiresAt = tokenService.getExpiration(accessToken);
 
     let maxAge = 15 * 60; 
@@ -59,7 +59,7 @@ async function handler(_req: NextRequest) {
     }
     if (maxAge < 0) maxAge = 15 * 60; 
 
-    const response = ApiResponse.success({ success: true, accessToken, shadowUserId, expiresAt });
+    const response = ApiResponse.success({ success: true, expiresAt });
 
     const requestHostname = resolveRequestHostnameFromHeaders(_req.headers, _req.nextUrl.hostname);
     const cookieDomain = resolveCookieDomain(undefined, requestHostname);

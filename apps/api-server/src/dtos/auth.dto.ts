@@ -10,7 +10,6 @@ export interface UserSummaryDTO {
 }
 
 export interface LoginResponseDTO {
-  accessToken: string;
   expiresIn: number;
   user: UserSummaryDTO;
 }
@@ -57,9 +56,8 @@ export function toUserSummaryDTO(user: AuthUserInput, isAdmin: boolean = false):
   };
 }
 
-export function toLoginResponseDTO(user: AuthUserInput, tokens: { accessToken: string; expiresIn: number }, isAdmin: boolean = false): LoginResponseDTO {
+export function toLoginResponseDTO(user: AuthUserInput, tokens: { expiresIn: number }, isAdmin: boolean = false): LoginResponseDTO {
   return {
-    accessToken: tokens.accessToken,
     expiresIn: tokens.expiresIn,
     user: toUserSummaryDTO(user, isAdmin),
   };

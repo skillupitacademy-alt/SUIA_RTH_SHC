@@ -6,12 +6,6 @@ type PlacementBridgeClientProps = {
   redirectTarget: string;
 };
 
-type RefreshResponse = {
-  accessToken?: string;
-};
-
-const REFRESH_URL = 'https://api.realtutorialhub.com/api/auth/refresh';
-
 function getPlacementUrl(redirectTarget: string) {
   return `https://placement.skillhubcore.in${redirectTarget}`;
 }
@@ -24,7 +18,7 @@ export function PlacementBridgeClient({ redirectTarget }: PlacementBridgeClientP
 
     async function run() {
       try {
-        const refreshResponse = await fetch(REFRESH_URL, {
+        const handoffResponse = await fetch('/api/auth/placement-handoff', {
           method: 'POST',
           credentials: 'include',
           headers: {
@@ -32,33 +26,14 @@ export function PlacementBridgeClient({ redirectTarget }: PlacementBridgeClientP
             'x-portal-identity': 'user',
             'x-brand': 'realtutorialhub',
           },
-          body: JSON.stringify({}),
-        });
-
-        const payload = (await refreshResponse.json().catch(() => null)) as RefreshResponse | null;
-        const accessToken = typeof payload?.accessToken === 'string' ? payload.accessToken.trim() : '';
-
-        if (refreshResponse.ok === false || accessToken.length === 0) {
-          window.location.replace(`/login?redirect=${encodeURIComponent(`/placement?redirect=${encodeURIComponent(redirectTarget)}`)}`);
-          return;
-        }
-
-        const handoffResponse = await fetch('https://placement.skillhubcore.in/api/auth/handoff', {
-          method: 'POST',
-          credentials: 'include',
-          headers: {
-            'content-type': 'application/json',
-            'x-brand': 'realtutorialhub',
-          },
           body: JSON.stringify({
-            accessToken,
             redirectTo: redirectTarget,
-            brand: 'realtutorialhub',
           }),
         });
 
         if (handoffResponse.ok === false) {
-          throw new Error('Unable to continue into shared placement.');
+          window.location.replace(`/login?redirect=${encodeURIComponent(`/placement?redirect=${encodeURIComponent(redirectTarget)}`)}`);
+          return;
         }
 
         window.location.replace(getPlacementUrl(redirectTarget));

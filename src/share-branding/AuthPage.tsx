@@ -19,7 +19,7 @@ import {
 
 import { type SharedBrandId, getBrandConfig } from './brandConfig';
 import { getAuthPageData } from './authPageData';
-import { loginUser } from './auth/authLoader';
+import { loginUser, signupUser } from './auth/authLoader';
 
 interface AuthPageProps {
   brand: SharedBrandId;
@@ -92,8 +92,25 @@ function AuthContent({ brand, initialMode = 'login' }: AuthPageProps) {
       return;
     }
 
+    if (mode === 'signup') {
+      const formData = new FormData(event.currentTarget);
+      const name = formData.get('name')?.toString().trim() ?? '';
+      const email = formData.get('email')?.toString().trim() ?? '';
+      const password = formData.get('password')?.toString() ?? '';
+
+      try {
+        await signupUser({ name, email, password, brand });
+        router.push(searchParams.get('redirect') || '/dashboard');
+      } catch (error) {
+        setSubmitError(error instanceof Error ? error.message : 'Authentication failed');
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
+
     setIsLoading(false);
-    setSubmitError('Authentication is only available through the live login flow.');
+    setSubmitError('Authentication is only available through the live auth flow.');
   };
 
   return (
@@ -204,10 +221,12 @@ function AuthContent({ brand, initialMode = 'login' }: AuthPageProps) {
                         <User className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-[color:var(--brand-sec)]" />
                         <input
                           id="full-name"
+                          name="name"
                           type="text"
                           placeholder={data.fullNamePlaceholder}
                           autoComplete="name"
                           className="w-full rounded-2xl border border-slate-200 bg-gray-50 py-3 pl-12 pr-4 font-semibold text-slate-950 placeholder-slate-500 outline-none transition-all group-focus-within:shadow-sm focus:bg-white focus:border-[color:var(--brand-sec)] focus:ring-4 focus:ring-[color:var(--brand-sec)]/20"
+                          required
                         />
                       </div>
                     </div>

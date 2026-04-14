@@ -7,5 +7,5 @@ export const dynamic = 'force-dynamic';
 const FALLBACK_API_BASE = 'https://api.skillupitacademy.com/api';
 
 export async function POST(request: NextRequest) {
-  return proxyAuthRequest(request, { fallbackApiBase: FALLBACK_API_BASE, authPath: 'login' });
+  return proxyAuthRequest(request, { fallbackApiBase: FALLBACK_API_BASE, authPath: 'signup' });
 }

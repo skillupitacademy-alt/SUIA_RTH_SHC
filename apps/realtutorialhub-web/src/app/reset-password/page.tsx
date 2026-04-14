@@ -8,8 +8,6 @@ import { resolveSharedLoginBrand } from '@quiz/config/src/brands';
 
 import { getTutorialPortalBrandDefinition, withTutorialPortalBrand } from '@/lib/portal-brand';
 
-const API_BASE = (process.env.NEXT_PUBLIC_API_URL_RTH?.trim() ?? 'https://api.realtutorialhub.com/api').replace(/\/+$/, '');
-
 export default function ResetPasswordPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -33,8 +31,9 @@ export default function ResetPasswordPage() {
       </main>
     );
   }
-  const brandDefinition = getTutorialPortalBrandDefinition(portalBrand);
-  const accentColor = portalBrand === 'skillup' ? '#f54a8d' : '#fb4b91';
+  const activeBrand = portalBrand;
+  const brandDefinition = getTutorialPortalBrandDefinition(activeBrand);
+  const accentColor = activeBrand === 'skillup' ? '#f54a8d' : '#fb4b91';
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -46,10 +45,13 @@ export default function ResetPasswordPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${API_BASE}/auth/reset-password`, {
+      const response = await fetch('/api/auth/reset-password', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, password, brand: portalBrand }),
+        headers: {
+          'Content-Type': 'application/json',
+          'x-brand': activeBrand,
+        },
+        body: JSON.stringify({ token, password, platform: activeBrand }),
       });
 
       if (!response.ok) {
@@ -58,7 +60,7 @@ export default function ResetPasswordPage() {
       }
 
       setSuccess(true);
-      setTimeout(() => router.replace(withTutorialPortalBrand('/login', portalBrand!)), 2200);
+      setTimeout(() => router.replace(withTutorialPortalBrand('/login', activeBrand)), 2200);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to reset password.');
     } finally {
@@ -81,7 +83,7 @@ export default function ResetPasswordPage() {
         ) : success ? (
           <div className="mt-6">
             <p className="text-base leading-7 text-slate-600">Your password has been updated. Redirecting to login.</p>
-            <Link href={withTutorialPortalBrand('/login', portalBrand)} className="mt-6 inline-block rounded-full bg-rose-500 px-5 py-3 text-sm font-bold text-white transition hover:bg-rose-600">
+            <Link href={withTutorialPortalBrand('/login', activeBrand)} className="mt-6 inline-block rounded-full bg-rose-500 px-5 py-3 text-sm font-bold text-white transition hover:bg-rose-600">
               Sign in now
             </Link>
           </div>

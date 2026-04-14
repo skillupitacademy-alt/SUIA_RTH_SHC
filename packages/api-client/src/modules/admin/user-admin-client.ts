@@ -69,7 +69,6 @@ export class UserAdminClient implements IAdminUserClient {
   async login(email: string, password: string, brand: RequestBrand = 'realtutorialhub') {
     const response = await this.client.post<{
       user: AdminUserProfile;
-      accessToken: string;
       expiresAt: string | null;
     }>('/admin/auth/login', { email, password, platform: brand }, {
       timeout: TIMEOUTS.LONG,

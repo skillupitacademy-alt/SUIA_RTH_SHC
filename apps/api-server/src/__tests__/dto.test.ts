@@ -28,8 +28,8 @@ describe('Layer 66: DTO Pattern Verification', () => {
     });
 
     it('toLoginResponseDTO should assemble the full response structure', () => {
-      const dto = toLoginResponseDTO(mockUser, { accessToken: 'jwt.token', expiresIn: 3600 });
-      expect(dto.accessToken).toBe('jwt.token');
+      const dto = toLoginResponseDTO(mockUser, { expiresIn: 3600 });
+      expect(dto.expiresIn).toBe(3600);
       expect(dto.user.email).toBe('test@example.com');
     });
 

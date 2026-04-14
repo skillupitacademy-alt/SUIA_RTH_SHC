@@ -40,7 +40,7 @@ export function Header() {
             Sign In
           </Link>
           <Link
-            href="/register"
+            href="/signup"
             className="rounded-full bg-cyan-500 px-4 py-2 text-sm font-bold text-white transition hover:bg-cyan-600"
           >
             Apply

@@ -5,8 +5,6 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { CheckCircle, Eye, EyeOff, Loader2, Lock, ShieldCheck } from 'lucide-react';
 
-const API_BASE = (process.env.NEXT_PUBLIC_API_URL?.trim() ?? 'https://api.skillupitacademy.com/api').replace(/\/+$/, '');
-
 function PasswordStrength({ password }: { password: string }) {
   const strength = useMemo(() => {
     return [
@@ -64,7 +62,7 @@ function ResetPasswordContent() {
     setError(null);
 
     try {
-      const response = await fetch(`${API_BASE}/auth/reset-password`, {
+      const response = await fetch('/api/auth/reset-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -94,7 +94,6 @@ describe('AdminClient & Specialized Sub-Clients', () => {
     it('should call the admin login endpoint for admin sign-in', async () => {
       fetchClient.post.mockResolvedValue({
         user: { id: 'admin-1', email: 'admin@test.com', role: 'admin', isAdmin: true },
-        accessToken: 'admin-access-token',
         expiresAt: null,
       });
 

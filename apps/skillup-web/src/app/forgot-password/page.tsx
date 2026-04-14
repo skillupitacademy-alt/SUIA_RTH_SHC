@@ -4,8 +4,6 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { CheckCircle, Loader2, Mail, ShieldCheck } from 'lucide-react';
 
-const API_BASE = (process.env.NEXT_PUBLIC_API_URL?.trim() ?? 'https://api.skillupitacademy.com/api').replace(/\/+$/, '');
-
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -18,7 +16,7 @@ export default function ForgotPasswordPage() {
     setError(null);
 
     try {
-      const response = await fetch(`${API_BASE}/auth/forgot-password`, {
+      const response = await fetch('/api/auth/forgot-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

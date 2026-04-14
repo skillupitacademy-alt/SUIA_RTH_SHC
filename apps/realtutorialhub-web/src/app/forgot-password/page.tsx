@@ -8,8 +8,6 @@ import { resolveSharedLoginBrand } from '@quiz/config/src/brands';
 
 import { getTutorialPortalBrandDefinition, withTutorialPortalBrand } from '@/lib/portal-brand';
 
-const API_BASE = (process.env.NEXT_PUBLIC_API_URL_RTH?.trim() ?? 'https://api.realtutorialhub.com/api').replace(/\/+$/, '');
-
 export default function ForgotPasswordPage() {
   const searchParams = useSearchParams();
   const portalBrand = resolveSharedLoginBrand(searchParams.get('brand'));
@@ -29,17 +27,21 @@ export default function ForgotPasswordPage() {
       </main>
     );
   }
-  const brandDefinition = getTutorialPortalBrandDefinition(portalBrand);
-  const accentColor = portalBrand === 'skillup' ? '#f54a8d' : '#fb4b91';
+  const activeBrand = portalBrand;
+  const brandDefinition = getTutorialPortalBrandDefinition(activeBrand);
+  const accentColor = activeBrand === 'skillup' ? '#f54a8d' : '#fb4b91';
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setLoading(true);
     try {
-      await fetch(`${API_BASE}/auth/forgot-password`, {
+      await fetch('/api/auth/forgot-password', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, brand: portalBrand }),
+        headers: {
+          'Content-Type': 'application/json',
+          'x-brand': activeBrand,
+        },
+        body: JSON.stringify({ email, platform: activeBrand }),
       });
     } finally {
       setSubmitted(true);
@@ -60,7 +62,7 @@ export default function ForgotPasswordPage() {
             <button type="button" onClick={() => setSubmitted(false)} className="rounded-full border border-slate-200 px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-rose-200 hover:text-rose-700">
               Send again
             </button>
-            <Link href={withTutorialPortalBrand('/login', portalBrand)} className="rounded-full bg-rose-500 px-5 py-3 text-sm font-bold text-white transition hover:bg-rose-600">
+            <Link href={withTutorialPortalBrand('/login', activeBrand)} className="rounded-full bg-rose-500 px-5 py-3 text-sm font-bold text-white transition hover:bg-rose-600">
               Back to login
             </Link>
           </div>

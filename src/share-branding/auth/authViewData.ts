@@ -27,6 +27,10 @@ export interface LoginRequestData {
   brand: SharedBrandId;
 }
 
+export interface SignupRequestData extends LoginRequestData {
+  name: string;
+}
+
 export interface LoginResultViewData {
   success: boolean;
   user?: LoginUserSummary;

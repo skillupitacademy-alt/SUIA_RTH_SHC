@@ -58,13 +58,8 @@ function LoginForm() {
         step: 'response',
         ok: true,
         status: 200,
-        hasAccessToken: typeof payload?.accessToken === 'string' && payload.accessToken.trim().length > 0,
+        hasUser: payload?.user !== null && payload?.user !== undefined,
       });
-      const accessToken = typeof payload?.accessToken === 'string' ? payload.accessToken.trim() : '';
-
-      if (accessToken.length === 0) {
-        throw new Error('Authentication failed: missing access token.');
-      }
 
       if (payload.user !== null && payload.user !== undefined) {
         authLogin({

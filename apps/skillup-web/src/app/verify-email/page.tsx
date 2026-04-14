@@ -5,8 +5,6 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { CheckCircle, Loader2, MailX, ShieldCheck } from 'lucide-react';
 
-const API_BASE = (process.env.NEXT_PUBLIC_API_URL?.trim() ?? 'https://api.skillupitacademy.com/api').replace(/\/+$/, '');
-
 function VerifyEmailContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
@@ -23,7 +21,7 @@ function VerifyEmailContent() {
 
     async function verifyEmail() {
       try {
-        const response = await fetch(`${API_BASE}/auth/verify-email`, {
+        const response = await fetch('/api/auth/verify-email', {
           method: 'POST',
         headers: {
           'Content-Type': 'application/json',

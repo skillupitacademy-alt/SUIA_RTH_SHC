@@ -185,7 +185,6 @@ export interface IAdminUserClient {
   deleteUser(id: string): Promise<AdminSuccessResponse>;
   login(email: string, password: string, brand?: 'realtutorialhub' | 'skillup'): Promise<{
     user: AdminUserProfile;
-    accessToken: string;
     expiresAt: string | null;
   }>;
 }

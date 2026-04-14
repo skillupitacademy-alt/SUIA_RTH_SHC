@@ -25,7 +25,7 @@ export class AuthClient {
   }
 
   async signup(email: string, password: string, name: string, brand: RequestBrand = 'realtutorialhub') {
-    return this.client.post<{ user: UserProfile; accessToken: string }>(
+    return this.client.post<{ user: UserProfile }>(
       '/auth/signup',
       { email, password, name, platform: brand },
       { timeout: TIMEOUTS.STANDARD, headers: { 'x-brand': brand } }
@@ -53,7 +53,7 @@ export class AuthClient {
   }
 
   async refresh(examId?: string) {
-    return this.client.post<{ accessToken: string; expiresAt: string | null }>('/auth/refresh', { examId }, { timeout: TIMEOUTS.STANDARD });
+    return this.client.post<{ success: boolean; expiresAt: string | null }>('/auth/refresh', { examId }, { timeout: TIMEOUTS.STANDARD });
   }
 
   async updateProfile(profileData: Partial<UserProfile>) {

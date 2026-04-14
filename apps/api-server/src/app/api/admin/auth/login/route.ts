@@ -67,8 +67,6 @@ async function handler(_req: Request, body: z.infer<typeof loginSchema>) {
 
   const response = ApiResponse.success({
       user,
-      accessToken: result.accessToken,
-      shadowUserId: result.user.shadowUserId,
       expiresAt: result.expiresAt,
   });
 

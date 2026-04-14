@@ -2,8 +2,22 @@ import { NextRequest, NextResponse } from 'next/server';
 import { TokenService } from '@quiz/auth';
 
 const LOGIN_URL = process.env.NEXT_PUBLIC_LOGIN_URL ?? '/login';
+const INTERNAL_GATEWAY_SECRET = process.env.INTERNAL_GATEWAY_SECRET;
 
-const PUBLIC_PATHS = ['/', '/programs', '/api/healthz', '/verify', '/login', '/register', '/placement'];
+const PUBLIC_PATHS = [
+  '/',
+  '/programs',
+  '/api/healthz',
+  '/verify',
+  '/login',
+  '/signup',
+  '/register',
+  '/forgot-password',
+  '/reset-password',
+  '/verify-email',
+  '/placement',
+];
+const PUBLIC_PREFIXES = ['/verify', '/api/programs'];
 const PROTECTED_PATHS = ['/dashboard', '/student', '/batches', '/faculty', '/api/student', '/api/batches'];
 const OVERRIDE_ROLES = ['admin', 'super_admin', 'faculty'];
 
@@ -12,7 +26,7 @@ function hasPrefix(pathname: string, prefixes: string[]): boolean {
 }
 
 function isPublicRoute(pathname: string): boolean {
-  return PUBLIC_PATHS.includes(pathname) || hasPrefix(pathname, ['/verify']);
+  return PUBLIC_PATHS.includes(pathname) || hasPrefix(pathname, PUBLIC_PREFIXES);
 }
 
 export function isPublicAuthRoute(pathname: string): boolean {
@@ -35,6 +49,14 @@ function getLoginUrl(request: NextRequest, redirectPath: string): URL {
   loginUrl.searchParams.set('reason', 'session_expired');
   loginUrl.searchParams.set('redirect', redirectPath);
   return loginUrl;
+}
+
+function hasValidGatewaySecret(request: NextRequest): boolean {
+  if (typeof INTERNAL_GATEWAY_SECRET !== 'string' || INTERNAL_GATEWAY_SECRET.length === 0) {
+    return true;
+  }
+
+  return request.headers.get('x-gateway-secret') === INTERNAL_GATEWAY_SECRET;
 }
 
 type UserPayload = { sub: string; roles: string[]; shadowUserId: string; originalUserId: string };
@@ -101,8 +123,16 @@ export async function proxy(request: NextRequest) {
   const redirectPath = `${pathname}${search}`;
   const isApiRoute = pathname.startsWith('/api/');
 
+  if (pathname === '/api/healthz' || pathname === '/') {
+    return NextResponse.next();
+  }
+
   if (isPublicAuthRoute(pathname)) {
     return NextResponse.next();
+  }
+
+  if (isApiRoute && hasValidGatewaySecret(request) === false && isPublicRoute(pathname) === false) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
   if (isProtectedRoute(pathname) && user === null) {

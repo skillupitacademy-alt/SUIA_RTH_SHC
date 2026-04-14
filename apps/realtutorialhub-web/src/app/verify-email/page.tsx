@@ -8,8 +8,6 @@ import { resolveSharedLoginBrand } from '@quiz/config/src/brands';
 
 import { getTutorialPortalBrandDefinition, withTutorialPortalBrand } from '@/lib/portal-brand';
 
-const API_BASE = (process.env.NEXT_PUBLIC_API_URL_RTH?.trim() ?? 'https://api.realtutorialhub.com/api').replace(/\/+$/, '');
-
 export default function VerifyEmailPage() {
   const searchParams = useSearchParams();
   const portalBrand = resolveSharedLoginBrand(searchParams.get('brand'));
@@ -17,6 +15,7 @@ export default function VerifyEmailPage() {
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [error, setError] = useState<string | null>(null);
   const invalidBrand = portalBrand === undefined;
+  const activeBrand = portalBrand ?? 'realtutorialhub';
 
   useEffect(() => {
     if (portalBrand === undefined) {
@@ -33,10 +32,13 @@ export default function VerifyEmailPage() {
 
     async function verify() {
       try {
-        const response = await fetch(`${API_BASE}/auth/verify-email`, {
+        const response = await fetch('/api/auth/verify-email', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token, brand: portalBrand }),
+          headers: {
+            'Content-Type': 'application/json',
+            'x-brand': activeBrand,
+          },
+          body: JSON.stringify({ token, platform: activeBrand }),
         });
 
         const payload = (await response.json()) as { redirectUrl?: string; message?: string; error?: { message?: string } };
@@ -56,7 +58,7 @@ export default function VerifyEmailPage() {
     }
 
     void verify();
-  }, [portalBrand, token]);
+  }, [activeBrand, portalBrand, token]);
 
   if (invalidBrand) {
     return (
@@ -70,7 +72,6 @@ export default function VerifyEmailPage() {
       </main>
     );
   }
-  const activeBrand = portalBrand;
   const brandDefinition = getTutorialPortalBrandDefinition(activeBrand);
   const accentColor = activeBrand === 'skillup' ? '#f54a8d' : '#fb4b91';
 
