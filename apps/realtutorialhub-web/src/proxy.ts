@@ -147,5 +147,13 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)'],
+  matcher: [
+    {
+      source: '/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)',
+      missing: [
+        { type: 'query', key: '_rsc' },
+        { type: 'header', key: 'rsc' },
+      ],
+    },
+  ],
 };

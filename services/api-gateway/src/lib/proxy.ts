@@ -67,6 +67,8 @@ export async function proxyRequest(request: Request, upstream: string, options: 
     headers.set('X-Platform', options.brand);
   }
 
+  headers.delete('Host');
+  headers.delete('host');
   headers.delete('CF-Connecting-IP');
   headers.delete('cf-connecting-ip');
   headers.delete('X-Forwarded-For');
