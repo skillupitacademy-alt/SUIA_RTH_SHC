@@ -6,7 +6,7 @@ const INTERNAL_GATEWAY_SECRET = process.env.INTERNAL_GATEWAY_SECRET;
 
 const PUBLIC_PATHS = ['/', '/login', '/forgot-password', '/reset-password', '/verify-email', '/verify-success', '/offline', '/placement', '/api/healthz'];
 const PUBLIC_PREFIXES = ['/api/certificates/verify/'];
-const PROTECTED_PREFIXES = ['/learn/', '/api/tutorial/', '/api/ai-tutor/', '/remediation/'];
+const PROTECTED_PREFIXES = ['/learn/', '/api/tutorial/', '/api/ai-tutor/', '/remediation/', '/dashboard'];
 
 function hasPrefix(pathname: string, prefixes: string[]): boolean {
   return prefixes.some((prefix) => pathname === prefix.slice(0, -1) || pathname.startsWith(prefix));

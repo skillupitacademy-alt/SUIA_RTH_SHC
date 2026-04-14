@@ -29,4 +29,12 @@ describe('skillup-web proxy', () => {
 
     expect(response.status).toBe(200);
   });
+
+  it('redirects dashboard to login when unauthenticated', async () => {
+    const response = await proxy(makeRequest('/dashboard'));
+
+    expect(response.status).toBe(307);
+    expect(response.headers.get('location')).toContain('/login');
+    expect(response.headers.get('location')).toContain('redirect=%2Fdashboard');
+  });
 });

@@ -13,15 +13,34 @@ const HOP_BY_HOP_HEADERS = new Set([
   'upgrade',
 ]);
 
-function getBaseUrls(): string[] {
-  const rawBase = (process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'https://api.realtutorialhub.com').trim();
-  const normalized = rawBase.replace(/\/+$/, '');
-  const withoutApiSuffix = normalized.replace(/\/api$/i, '');
+function isPreferredUpstream(baseUrl: string): boolean {
+  return baseUrl.includes('vercel.app') === false;
+}
 
-  return Array.from(new Set([
-    `${withoutApiSuffix}/auth/login`,
-    `${withoutApiSuffix}/api/auth/login`,
-  ]));
+function getConfiguredBaseUrls(): string[] {
+  const candidates = [
+    process.env.INTERNAL_API_URL,
+    process.env.NEXT_PUBLIC_API_URL,
+    'https://api.realtutorialhub.com/api',
+  ]
+    .filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
+    .map((value) => value.trim().replace(/\/+$/, ''));
+
+  const preferred = candidates.filter(isPreferredUpstream);
+  const fallback = candidates.filter((value) => preferred.includes(value) === false);
+
+  return Array.from(new Set([...preferred, ...fallback]));
+}
+
+function getBaseUrls(): string[] {
+  return getConfiguredBaseUrls().flatMap((baseUrl) => {
+    const withoutApiSuffix = baseUrl.replace(/\/api$/i, '');
+
+    return [
+      `${withoutApiSuffix}/auth/login`,
+      `${withoutApiSuffix}/api/auth/login`,
+    ];
+  });
 }
 
 function normalizeHost(value?: string | null): string | undefined {
@@ -39,7 +58,16 @@ function normalizeHost(value?: string | null): string | undefined {
   return `.${labels.slice(-2).join('.')}`;
 }
 
-function rewriteSetCookie(cookie: string, requestHost: string): string {
+function getRequestHost(request: NextRequest): string | undefined {
+  const forwardedHost = request.headers.get('x-forwarded-host');
+  if (typeof forwardedHost === 'string' && forwardedHost.trim().length > 0) {
+    return forwardedHost.split(',')[0]?.trim();
+  }
+
+  return request.headers.get('host') ?? request.nextUrl.hostname;
+}
+
+function rewriteSetCookie(cookie: string, requestHost?: string): string {
   const cookieDomain = normalizeHost(requestHost);
   if (cookieDomain === undefined) {
     return cookie.replace(/;\s*Domain=[^;]+/i, '');
@@ -105,8 +133,10 @@ export async function POST(request: NextRequest) {
     response.headers.set(key, value);
   });
 
+  const requestHost = getRequestHost(request);
+
   for (const cookie of getSetCookies(upstreamResponse.headers)) {
-    response.headers.append('set-cookie', rewriteSetCookie(cookie, request.nextUrl.hostname));
+    response.headers.append('set-cookie', rewriteSetCookie(cookie, requestHost));
   }
 
   return response;

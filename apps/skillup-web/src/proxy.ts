@@ -4,7 +4,7 @@ import { TokenService } from '@quiz/auth';
 const LOGIN_URL = process.env.NEXT_PUBLIC_LOGIN_URL ?? '/login';
 
 const PUBLIC_PATHS = ['/', '/programs', '/api/healthz', '/verify', '/login', '/register', '/placement'];
-const PROTECTED_PATHS = ['/student', '/batches', '/faculty', '/api/student', '/api/batches'];
+const PROTECTED_PATHS = ['/dashboard', '/student', '/batches', '/faculty', '/api/student', '/api/batches'];
 const OVERRIDE_ROLES = ['admin', 'super_admin', 'faculty'];
 
 function hasPrefix(pathname: string, prefixes: string[]): boolean {

@@ -30,6 +30,13 @@ describe('realtutorialhub-web proxy', () => {
     expect(response.status).toBe(200);
   });
 
+  it('redirects dashboard to login when unauthenticated', async () => {
+    const response = await proxy(makeRequest('/dashboard'));
+
+    expect(response.status).toBe(307);
+    expect(response.headers.get('location')).toBe('https://user.realtutorialhub.com/login?redirect=%2Fdashboard');
+  });
+
   it('redirects protected routes to SkillHubCore login when unauthenticated', async () => {
     const response = await proxy(makeRequest('/learn/full-stack/js/promises'));
 
