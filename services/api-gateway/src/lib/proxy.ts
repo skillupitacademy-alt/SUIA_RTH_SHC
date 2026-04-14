@@ -80,5 +80,6 @@ export async function proxyRequest(request: Request, upstream: string, options: 
     method: request.method,
     headers,
     body,
+    redirect: 'manual',
   });
 }
