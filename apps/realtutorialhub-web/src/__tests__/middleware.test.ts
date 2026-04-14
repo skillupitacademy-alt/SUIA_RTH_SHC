@@ -9,7 +9,7 @@ vi.mock('@quiz/auth', () => ({
   },
 }));
 
-import { proxy } from '../proxy';
+import { isPublicAuthRoute, proxy } from '../proxy';
 
 const makeRequest = (pathname: string, cookie?: string) =>
   new NextRequest(`http://localhost${pathname}`, {
@@ -20,6 +20,13 @@ describe('realtutorialhub-web proxy', () => {
   it('allows the public login route without a gateway secret', async () => {
     const response = await proxy(makeRequest('/login'));
 
+    expect(response.status).toBe(200);
+  });
+
+  it('allows auth api routes without a gateway secret', async () => {
+    const response = await proxy(makeRequest('/api/auth/login'));
+
+    expect(isPublicAuthRoute('/api/auth/login')).toBe(true);
     expect(response.status).toBe(200);
   });
 

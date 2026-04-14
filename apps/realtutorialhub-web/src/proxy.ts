@@ -16,6 +16,10 @@ export function isPublicRoute(pathname: string): boolean {
   return PUBLIC_PATHS.includes(pathname) || hasPrefix(pathname, PUBLIC_PREFIXES);
 }
 
+export function isPublicAuthRoute(pathname: string): boolean {
+  return pathname === '/api/auth' || pathname.startsWith('/api/auth/');
+}
+
 export function isProtectedRoute(pathname: string): boolean {
   return hasPrefix(pathname, PROTECTED_PREFIXES);
 }
@@ -110,6 +114,10 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
   
+  if (isPublicAuthRoute(pathname)) {
+    return NextResponse.next();
+  }
+
   if (pathname.startsWith('/api/') && hasValidGatewaySecret(request) === false && isPublicRoute(pathname) === false) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }

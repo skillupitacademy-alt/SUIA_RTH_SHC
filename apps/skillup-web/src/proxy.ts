@@ -15,6 +15,10 @@ function isPublicRoute(pathname: string): boolean {
   return PUBLIC_PATHS.includes(pathname) || hasPrefix(pathname, ['/verify']);
 }
 
+export function isPublicAuthRoute(pathname: string): boolean {
+  return pathname === '/api/auth' || pathname.startsWith('/api/auth/');
+}
+
 function isProtectedRoute(pathname: string): boolean {
   return hasPrefix(pathname, PROTECTED_PATHS);
 }
@@ -90,6 +94,10 @@ export async function proxy(request: NextRequest) {
   const user = await resolveUser(request);
   const redirectPath = `${pathname}${search}`;
   const isApiRoute = pathname.startsWith('/api/');
+
+  if (isPublicAuthRoute(pathname)) {
+    return NextResponse.next();
+  }
 
   if (isProtectedRoute(pathname) && user === null) {
     return isApiRoute
