@@ -36,7 +36,7 @@ describe('AuthClient', () => {
   });
 
   it('sends explicit brand metadata during login', async () => {
-    client.post.mockResolvedValue({ user: { id: 'u1' }, accessToken: 'tok', refreshToken: 'ref' });
+    client.post.mockResolvedValue({ user: { id: 'u1' } });
 
     await authClient.login('u@test.com', 'pw', 'realtutorialhub');
 

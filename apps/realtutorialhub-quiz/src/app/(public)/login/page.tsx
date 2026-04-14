@@ -11,7 +11,6 @@ import { clientLogger } from '@/utils/clientLogger';
 import { getQuizPortalBrandDefinition, withQuizPortalBrand } from '@/lib/portal-brand';
 
 type LoginResponse = {
-  accessToken?: string;
   user?: {
     id: string;
     email: string;
@@ -81,15 +80,8 @@ function LoginForm() {
         step: 'response',
         ok: true,
         status: 200,
-        hasAccessToken: typeof payload?.accessToken === 'string' && payload.accessToken.trim().length > 0,
         brand: portalBrand,
       });
-
-      const accessToken = typeof payload?.accessToken === 'string' ? payload.accessToken.trim() : '';
-
-      if (accessToken.length === 0) {
-        throw new Error('Authentication failed: missing access token.');
-      }
 
       if (payload?.user) {
         authLogin({

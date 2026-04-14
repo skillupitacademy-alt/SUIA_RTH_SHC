@@ -11,7 +11,6 @@ import { recordClientMetric, METRICS } from '@quiz/observability';
 import { withQuizPortalBrand } from '@/lib/portal-brand';
 
 type LoginResponse = {
-  accessToken?: string;
     user?: {
         id?: string;
         name?: string;
@@ -84,12 +83,6 @@ export function LoginForm() {
 
             // API server already set httpOnly cookies via Set-Cookie header.
             // We do NOT create client-side cookies to avoid scope conflicts.
-            const accessToken = typeof payload?.accessToken === 'string' ? payload.accessToken.trim() : '';
-
-            if (accessToken.length === 0) {
-                throw new Error('Authentication failed: missing access token.');
-            }
-
             const user = payload?.user;
             if (user !== undefined) {
                 login(normalizeSkillHubUser(user, email), null);

@@ -12,7 +12,7 @@ export class AuthClient {
   }
 
   async login(email: string, password: string, brand: RequestBrand = 'realtutorialhub') {
-    const response = await this.client.post<{ user: UserProfile; accessToken: string; refreshToken: string }>(
+    const response = await this.client.post<{ user: UserProfile }>(
       '/auth/login',
       { email, password, platform: brand },
       { timeout: TIMEOUTS.STANDARD, headers: { 'x-brand': brand } }

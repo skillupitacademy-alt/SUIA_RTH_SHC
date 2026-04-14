@@ -24,8 +24,6 @@ export interface PortalLoginPageProps {
 }
 
 type LoginResponse = {
-  accessToken?: string;
-  refreshToken?: string;
   user?: {
     roles?: string[];
     email?: string;
@@ -111,12 +109,7 @@ export function PortalLoginPage({
 
       // API server already set httpOnly cookies via Set-Cookie header.
       // We do NOT create client-side cookies to avoid scope conflicts.
-      const accessToken = typeof payload?.accessToken === 'string' ? payload.accessToken.trim() : '';
       const roles = Array.isArray(payload?.user?.roles) ? payload?.user?.roles ?? [] : [];
-
-      if (accessToken.length === 0) {
-        throw new Error('Authentication failed: missing access token.');
-      }
 
       if (roles.some((role) => allowedRoles.includes(role)) === false) {
         throw new Error(`Access denied: ${portalName} privileges required.`);

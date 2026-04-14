@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const verifyUserAccessTokenMock = vi.hoisted(() => vi.fn());
 
@@ -17,6 +17,10 @@ const makeRequest = (pathname: string, cookie?: string) =>
   });
 
 describe('realtutorialhub-web proxy', () => {
+  beforeEach(() => {
+    verifyUserAccessTokenMock.mockReset();
+  });
+
   it('allows the public login route without a gateway secret', async () => {
     const response = await proxy(makeRequest('/login'));
 
@@ -35,6 +39,13 @@ describe('realtutorialhub-web proxy', () => {
 
     expect(response.status).toBe(307);
     expect(response.headers.get('location')).toBe('https://user.realtutorialhub.com/login?redirect=%2Fdashboard');
+  });
+
+  it('allows dashboard RSC requests without auth interception', async () => {
+    const response = await proxy(makeRequest('/dashboard?_rsc=test'));
+
+    expect(response.status).toBe(200);
+    expect(verifyUserAccessTokenMock).not.toHaveBeenCalled();
   });
 
   it('redirects protected routes to SkillHubCore login when unauthenticated', async () => {

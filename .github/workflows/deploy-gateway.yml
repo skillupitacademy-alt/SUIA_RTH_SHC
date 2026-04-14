@@ -12,22 +12,27 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
+      PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+      REGION: asia-southeast1
+      WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
+      WIF_SERVICE_ACCOUNT: ${{ secrets.WIF_SERVICE_ACCOUNT }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
       ADMIN_JWT_SECRET: ${{ secrets.ADMIN_JWT_SECRET }}
       INTERNAL_GATEWAY_SECRET: ${{ secrets.INTERNAL_GATEWAY_SECRET }}
-      QUIZ_WEB_URL: https://quiz-web-app-plldp3atca-el.a.run.app
-      RTH_ADMIN_URL: https://quiz-admin-app-plldp3atca-el.a.run.app
-      SKILLUP_WEB_URL: https://skillup-web-plldp3atca-el.a.run.app
-      SKILLUP_ADMIN_URL: https://skillup-admin-plldp3atca-el.a.run.app
-      FACULTY_URL: https://faculty-app-plldp3atca-el.a.run.app
+      QUIZ_WEB_URL: ""
+      RTH_ADMIN_URL: ""
+      SKILLUP_WEB_URL: ""
+      SKILLUP_ADMIN_URL: ""
+      FACULTY_URL: ""
       SKILLHUBCORE_URL: ${{ secrets.SKILLHUBCORE_URL }}
       STUDENT_FACULTY_URL: ${{ secrets.STUDENT_FACULTY_URL }}
       EXAM_SERVICE_URL: ${{ secrets.EXAM_SERVICE_URL }}
@@ -51,8 +56,63 @@ jobs:
           node-version: 20
           cache: pnpm
 
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Resolve current Cloud Run upstreams
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          quiz_web_url="$(gcloud run services describe quiz-web-app --project "$PROJECT_ID" --region "$REGION" --format='value(status.url)')"
+          rth_admin_url="$(gcloud run services describe quiz-admin-app --project "$PROJECT_ID" --region "$REGION" --format='value(status.url)')"
+          skillup_web_url="$(gcloud run services describe skillup-web --project "$PROJECT_ID" --region "$REGION" --format='value(status.url)')"
+          skillup_admin_url="$(gcloud run services describe skillup-admin --project "$PROJECT_ID" --region "$REGION" --format='value(status.url)')"
+          faculty_url="$(gcloud run services describe faculty-app --project "$PROJECT_ID" --region "$REGION" --format='value(status.url)')"
+          tutorial_service_url="$(gcloud run services describe realtutorialhub-web --project "$PROJECT_ID" --region "$REGION" --format='value(status.url)')"
+          exam_service_url="$(gcloud run services describe quiz-api-server --project "$PROJECT_ID" --region "$REGION" --format='value(status.url)')"
+          placement_url="$(gcloud run services describe skillhub-placement --project "$PROJECT_ID" --region "$REGION" --format='value(status.url)')"
+          skillhubcore_url="$(gcloud run services describe skillhubcore-service --project "$PROJECT_ID" --region "$REGION" --format='value(status.url)')"
+
+          {
+            echo "QUIZ_WEB_URL=$quiz_web_url"
+            echo "RTH_ADMIN_URL=$rth_admin_url"
+            echo "SKILLUP_WEB_URL=$skillup_web_url"
+            echo "SKILLUP_ADMIN_URL=$skillup_admin_url"
+            echo "FACULTY_URL=$faculty_url"
+            echo "STUDENT_FACULTY_URL=$faculty_url"
+            echo "TUTORIAL_SERVICE_URL=$tutorial_service_url"
+            echo "EXAM_SERVICE_URL=$exam_service_url"
+            echo "NOTIFICATION_URL=$exam_service_url"
+            echo "PLACEMENT_URL=$placement_url"
+            echo "SKILLHUBCORE_URL=$skillhubcore_url"
+            echo "LAST_VALIDATION_TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+          } >> "$GITHUB_ENV"
+
+      - name: Show resolved upstreams
+        shell: bash
+        run: |
+          printf '%s\n' \
+            "QUIZ_WEB_URL=$QUIZ_WEB_URL" \
+            "RTH_ADMIN_URL=$RTH_ADMIN_URL" \
+            "SKILLUP_WEB_URL=$SKILLUP_WEB_URL" \
+            "SKILLUP_ADMIN_URL=$SKILLUP_ADMIN_URL" \
+            "FACULTY_URL=$FACULTY_URL" \
+            "STUDENT_FACULTY_URL=$STUDENT_FACULTY_URL" \
+            "TUTORIAL_SERVICE_URL=$TUTORIAL_SERVICE_URL" \
+            "EXAM_SERVICE_URL=$EXAM_SERVICE_URL" \
+            "NOTIFICATION_URL=$NOTIFICATION_URL" \
+            "PLACEMENT_URL=$PLACEMENT_URL" \
+            "SKILLHUBCORE_URL=$SKILLHUBCORE_URL"
 
       - name: Build gateway
         run: pnpm --filter @quiz/api-gateway build
@@ -68,5 +128,22 @@ jobs:
           printf '%s' "$INTERNAL_GATEWAY_SECRET" | npx wrangler secret put INTERNAL_GATEWAY_SECRET --env production
 
       - name: Deploy with Wrangler
-        run: npx wrangler deploy --env production
+        shell: bash
+        run: |
+          npx wrangler deploy --env production --keep-vars \
+            --var ENVIRONMENT:production \
+            --var LAST_VALIDATION_TIMESTAMP:$LAST_VALIDATION_TIMESTAMP \
+            --var QUIZ_WEB_URL:$QUIZ_WEB_URL \
+            --var RTH_ADMIN_URL:$RTH_ADMIN_URL \
+            --var SKILLUP_WEB_URL:$SKILLUP_WEB_URL \
+            --var SKILLUP_ADMIN_URL:$SKILLUP_ADMIN_URL \
+            --var FACULTY_URL:$FACULTY_URL \
+            --var STUDENT_FACULTY_URL:$STUDENT_FACULTY_URL \
+            --var TUTORIAL_SERVICE_URL:$TUTORIAL_SERVICE_URL \
+            --var EXAM_SERVICE_URL:$EXAM_SERVICE_URL \
+            --var PAYMENT_SERVICE_URL:$PAYMENT_SERVICE_URL \
+            --var CRM_SERVICE_URL:$CRM_SERVICE_URL \
+            --var NOTIFICATION_URL:$NOTIFICATION_URL \
+            --var PLACEMENT_URL:$PLACEMENT_URL \
+            --var SKILLHUBCORE_URL:$SKILLHUBCORE_URL
         working-directory: services/api-gateway

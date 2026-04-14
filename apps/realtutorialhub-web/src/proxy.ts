@@ -107,6 +107,12 @@ async function resolveUser(request: NextRequest): Promise<UserPayload | null> {
 }
 
 export async function proxy(request: NextRequest) {
+  const isRSCRequest = request.nextUrl.searchParams.has('_rsc');
+
+  if (isRSCRequest) {
+    return NextResponse.next();
+  }
+
   const { pathname, search } = request.nextUrl;
   
   // Allow healthz and root path without gateway secret for health checks

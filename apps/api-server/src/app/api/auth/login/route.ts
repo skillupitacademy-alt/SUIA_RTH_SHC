@@ -50,7 +50,7 @@ async function handler(req: NextRequest) {
       return ApiResponse.error(badRequest('Brand is required'));
     }
 
-    const { _user, accessToken, refreshToken, isAdmin, shadowUserId } = await container.get(AuthService).login(email, password, ip, brand);
+    const { _user, accessToken, refreshToken, isAdmin } = await container.get(AuthService).login(email, password, ip, brand);
     const rawProfile = Array.isArray(_user.profile) ? _user.profile[0] ?? {} : (_user.profile ?? {});
     const authUserInput = {
       id: _user.id,
@@ -70,10 +70,6 @@ async function handler(req: NextRequest) {
 
     const response = ApiResponse.success({
       user: userDto,
-      accessToken,
-      refreshToken,
-      shadowUserId,
-      expiresAt: null,
     });
 
     const requestHostname = resolveRequestHostnameFromHeaders(req.headers, req.nextUrl.hostname);

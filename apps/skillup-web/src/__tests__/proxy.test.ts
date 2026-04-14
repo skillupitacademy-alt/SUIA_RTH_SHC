@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const verifyUserAccessTokenMock = vi.hoisted(() => vi.fn());
 
@@ -17,6 +17,10 @@ const makeRequest = (pathname: string, cookie?: string) =>
   });
 
 describe('skillup-web proxy', () => {
+  beforeEach(() => {
+    verifyUserAccessTokenMock.mockReset();
+  });
+
   it('allows auth api routes to pass through', async () => {
     const response = await proxy(makeRequest('/api/auth/login'));
 
@@ -36,5 +40,12 @@ describe('skillup-web proxy', () => {
     expect(response.status).toBe(307);
     expect(response.headers.get('location')).toContain('/login');
     expect(response.headers.get('location')).toContain('redirect=%2Fdashboard');
+  });
+
+  it('allows dashboard RSC requests without auth interception', async () => {
+    const response = await proxy(makeRequest('/dashboard?_rsc=test'));
+
+    expect(response.status).toBe(200);
+    expect(verifyUserAccessTokenMock).not.toHaveBeenCalled();
   });
 });

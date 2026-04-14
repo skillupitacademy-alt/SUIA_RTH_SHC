@@ -90,6 +90,12 @@ function hasRequiredRole(payload: UserPayload): boolean {
 }
 
 export async function proxy(request: NextRequest) {
+  const isRSCRequest = request.nextUrl.searchParams.has('_rsc');
+
+  if (isRSCRequest) {
+    return NextResponse.next();
+  }
+
   const { pathname, search } = request.nextUrl;
   const user = await resolveUser(request);
   const redirectPath = `${pathname}${search}`;

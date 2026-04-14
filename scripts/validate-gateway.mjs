@@ -208,6 +208,31 @@ function parseTomlVars(source) {
   return result;
 }
 
+function getGatewayEnvOverrides() {
+  const keys = [
+    'LAST_VALIDATION_TIMESTAMP',
+    'SKILLHUBCORE_URL',
+    'QUIZ_WEB_URL',
+    'SKILLUP_WEB_URL',
+    'RTH_ADMIN_URL',
+    'SKILLUP_ADMIN_URL',
+    'FACULTY_URL',
+    'STUDENT_FACULTY_URL',
+    'EXAM_SERVICE_URL',
+    'TUTORIAL_SERVICE_URL',
+    'PAYMENT_SERVICE_URL',
+    'CRM_SERVICE_URL',
+    'NOTIFICATION_URL',
+    'PLACEMENT_URL',
+  ];
+
+  return Object.fromEntries(
+    keys
+      .map((key) => [key, process.env[key]])
+      .filter(([, value]) => typeof value === 'string' && value.trim().length > 0),
+  );
+}
+
 function parseWorkflowEnvKeys(source) {
   const keys = new Set();
   const pattern = /^\s{4,}([A-Z0-9_]+):\s*(.+)$/gm;
@@ -569,8 +594,10 @@ async function main() {
   ]);
 
   const routes = parseRouteTable(routeSource);
-  const wranglerVars = parseTomlVars(wranglerSource);
+  const envOverrides = getGatewayEnvOverrides();
+  const wranglerVars = { ...parseTomlVars(wranglerSource), ...envOverrides };
   const workflowEnvKeys = parseWorkflowEnvKeys(workflowSource);
+  const effectiveWorkflowKeys = new Set([...workflowEnvKeys, ...Object.keys(envOverrides)]);
   const frontendEndpoints = await collectFrontendEndpoints();
   const gatewayEndpoints = await collectGatewayEndpoints();
   const apiServerRoutes = await collectApiServerRoutes();
@@ -654,8 +681,8 @@ async function main() {
   const usedServices = [...new Set(routes.map((route) => route.upstreamKey))].sort();
   const missingBindings = usedServices.filter((key) => !wranglerVars[key] && !OPTIONAL_SERVICE_KEYS.has(key));
   const optionalMissingBindings = usedServices.filter((key) => !wranglerVars[key] && OPTIONAL_SERVICE_KEYS.has(key));
-  const missingWorkflowVars = usedServices.filter((key) => !workflowEnvKeys.has(key) && !OPTIONAL_SERVICE_KEYS.has(key));
-  const optionalWorkflowVars = usedServices.filter((key) => !workflowEnvKeys.has(key) && OPTIONAL_SERVICE_KEYS.has(key));
+  const missingWorkflowVars = usedServices.filter((key) => !effectiveWorkflowKeys.has(key) && !OPTIONAL_SERVICE_KEYS.has(key));
+  const optionalWorkflowVars = usedServices.filter((key) => !effectiveWorkflowKeys.has(key) && OPTIONAL_SERVICE_KEYS.has(key));
 
   const serviceFindings = [];
   if (LIVE) {
