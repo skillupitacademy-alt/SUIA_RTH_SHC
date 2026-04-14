@@ -8,11 +8,14 @@ import { IQuestionRepository } from "@/repositories/interfaces/question.reposito
 
 import { queueService } from '../core/queue.service';
 import { SemanticSearchService } from '../intelligence/semantic-search.service';
+import { normalizeQuestionOptions, normalizeQuestionType, type BackendQuestionType } from '../question/question-contract';
 
 export interface QuestionOption {
   id: string;
-  text: string;
-  isCorrect: boolean;
+  text?: string;
+  code?: string;
+  label?: string;
+  isCorrect?: boolean;
 }
 
 export interface CreateQuestionInput {
@@ -21,7 +24,7 @@ export interface CreateQuestionInput {
   skillId?: string;
   skillIds?: string[];
   difficulty?: 'simple' | 'intermediate' | 'expert';
-  type?: string;
+  type?: BackendQuestionType;
   mappingType?: 'conceptual' | 'technical' | 'practical';
   questionText: string;
   options: (string | Partial<QuestionOption>)[];
@@ -76,9 +79,9 @@ export class AdminQuestionEngine {
             subtopicId: data.subtopicId,
             difficulty: (data.difficulty ?? "intermediate") as "simple" | "intermediate" | "expert",
             questionText: data.questionText,
-            options: data.options,
+            options: normalizeQuestionOptions(data.options),
             correctAnswer: data.correctAnswer ?? "No correct answer provided",
-            type: (data.type ?? "mcq") as "mcq" | "code_mcq",
+            type: normalizeQuestionType(data.type),
             explanation: data.explanation,
             codeSnippet: data.codeSnippet,
             status: (data.status ?? "active") as "active" | "inactive" | "draft"
@@ -114,9 +117,9 @@ export class AdminQuestionEngine {
             subtopicId: data.subtopicId,
             difficulty: data.difficulty as "simple" | "intermediate" | "expert" | undefined,
             questionText: data.questionText,
-            options: data.options,
+            options: data.options !== undefined ? normalizeQuestionOptions(data.options) : undefined,
             correctAnswer: data.correctAnswer,
-            type: data.type as "mcq" | "code_mcq" | undefined,
+            type: data.type !== undefined ? normalizeQuestionType(data.type) : undefined,
             explanation: data.explanation,
             codeSnippet: data.codeSnippet,
             status: data.status as "active" | "inactive" | "draft" | undefined

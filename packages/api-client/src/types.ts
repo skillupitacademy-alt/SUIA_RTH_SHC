@@ -36,7 +36,9 @@ export interface Skill extends BaseEntity {
 
 export interface QuestionOption {
   id: string;
-  text: string;
+  text?: string;
+  code?: string;
+  label?: string;
   isCorrect?: boolean;
 }
 
@@ -44,6 +46,8 @@ export interface QuestionSummary {
   id: string;
   questionText: string;
   type?: string;
+  questionType?: 'mcq' | 'code_mcq' | 'multi_select';
+  displayType?: 'text' | 'code' | 'mixed';
   status?: string;
   difficulty?: string;
   topicId?: string;
@@ -115,6 +119,8 @@ export interface ExamStartResponse {
     options: QuestionOption[];
     codeSnippet: string | null;
     type: string;
+    questionType?: 'mcq' | 'code_mcq' | 'multi_select';
+    displayType?: 'text' | 'code' | 'mixed';
     difficulty: string;
   };
 }
@@ -127,6 +133,8 @@ export interface ExamAnswerResponse {
     options: QuestionOption[];
     codeSnippet?: string | null;
     type?: string;
+    questionType?: 'mcq' | 'code_mcq' | 'multi_select';
+    displayType?: 'text' | 'code' | 'mixed';
     difficulty?: string;
   };
   remainingSeconds?: number | null;

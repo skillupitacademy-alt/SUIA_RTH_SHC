@@ -6,6 +6,7 @@ import { AppEvents, type ExamStartedPayload } from '@/lib/events';
 import { logger } from '@/lib/logger';
 import { container } from '@/modules/core/container';
 import { SelectionService } from '@/modules/selection-engine/selection.service';
+import { getDisplayType, normalizeQuestionOptions, normalizeQuestionType, parseAnswer } from '@/modules/question/question-contract';
 
 import type { AnswerEvaluationEngine } from '../answer-engine/answer.engine';
 import type { CacheValue } from '../core/cache.service';
@@ -149,9 +150,14 @@ export class ExamEngine {
           ? {
               id: questions[0].id,
               questionText: questions[0].questionText,
-              options: questions[0].options,
+              options: normalizeQuestionOptions(questions[0].options),
               codeSnippet: questions[0].codeSnippet,
-              type: questions[0].type,
+              type: normalizeQuestionType(questions[0].type),
+              questionType: normalizeQuestionType(questions[0].type),
+              displayType: getDisplayType({
+                questionText: questions[0].questionText,
+                codeSnippet: questions[0].codeSnippet,
+              }),
               order: 1
             }
           : null
@@ -185,9 +191,14 @@ export class ExamEngine {
           ? {
               id: exam.examQuestions[0].question.id,
               questionText: exam.examQuestions[0].question.questionText,
-              options: exam.examQuestions[0].question.options,
+              options: normalizeQuestionOptions(exam.examQuestions[0].question.options),
               codeSnippet: exam.examQuestions[0].question.codeSnippet,
-              type: exam.examQuestions[0].question.type,
+              type: normalizeQuestionType(exam.examQuestions[0].question.type),
+              questionType: normalizeQuestionType(exam.examQuestions[0].question.type),
+              displayType: getDisplayType({
+                questionText: exam.examQuestions[0].question.questionText,
+                codeSnippet: exam.examQuestions[0].question.codeSnippet,
+              }),
               order: exam.examQuestions[0].order
             }
           : null
@@ -236,11 +247,12 @@ export class ExamEngine {
     if (exam.userId !== userId) throw new Error('Unauthorized');
 
     this.checkExamTimeLimit(exam);
+    const normalizedAnswer = parseAnswer(answer).join(',');
 
     const liveStateKey = `exam-state:${examId}`;
     const answerPayload = {
         questionId,
-        answer,
+        answer: normalizedAnswer,
         timestamp: new Date().toISOString(),
         idempotencyKey: idempotencyKey ?? null
     };
@@ -282,10 +294,12 @@ export class ExamEngine {
     const existingMetadata = (eqRecord.responseMetadata as Record<string, unknown> | null) ?? {};
     const timeSpentSeconds = typeof existingMetadata.timeSpentSeconds === 'number' ? existingMetadata.timeSpentSeconds : Math.max(0, Math.floor((now.getTime() - lastAnsweredAt) / 1000));
     const firstAnsweredAt = existingMetadata.firstAnsweredAt ?? now.toISOString();
-    const isCorrect = this.answerEvaluation.evaluate(eqRecord.question.type, eqRecord.question.correctAnswer, answer);
+    const normalizedType = normalizeQuestionType(eqRecord.question.type);
+    const normalizedAnswer = normalizedType === 'multi_select' ? parseAnswer(answer).join(',') : answer.trim();
+    const isCorrect = this.answerEvaluation.evaluate(normalizedType, eqRecord.question.correctAnswer, normalizedAnswer);
 
     await this.examRepo.updateExamQuestionResponse(eqRecord.id, {
-      userAnswer: answer,
+      userAnswer: normalizedAnswer,
       isCorrect,
       responseMetadata: { ...existingMetadata, timeSpentSeconds, firstAnsweredAt }
     });

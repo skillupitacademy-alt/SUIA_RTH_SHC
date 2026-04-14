@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { toUserSummaryDTO, toLoginResponseDTO } from '../dtos/auth.dto';
 import { toQuestionDTO, toExamResultDTO, toExamStartDTO } from '../dtos/exam.dto';
 import { toAdminQuestionDTO, toAdminUserDTO } from '../dtos/admin.dto';
+import { getDisplayType, normalizeQuestionOptions, normalizeQuestionType, parseAnswer } from '../modules/question/question-contract';
 
 describe('Layer 66: DTO Pattern Verification', () => {
   describe('Auth DTOs', () => {
@@ -106,7 +107,23 @@ describe('Layer 66: DTO Pattern Verification', () => {
       } as any);
 
       expect(dto?.text).toBe('');
-      expect(dto?.options[0]).toEqual({ id: '1', text: '', label: 'A' });
+      expect(dto?.options[0]).toEqual({ id: '1', label: 'A' });
+    });
+
+    it('toQuestionDTO preserves multi_select and derives mixed display type', () => {
+      const dto = toQuestionDTO({
+        id: 'q5',
+        questionText: 'Choose all valid snippets',
+        type: 'multi_select',
+        codeSnippet: 'const x = 1;',
+        options: [{ id: 'o1', code: 'console.log(x)', label: 'A' }],
+      } as any);
+
+      expect(dto?.type).toBe('multi_select');
+      expect(dto?.questionType).toBe('multi_select');
+      expect(dto?.displayType).toBe('mixed');
+      expect(dto?.codeSnippet).toBe('const x = 1;');
+      expect(dto?.options[0]).toEqual({ id: 'o1', code: 'console.log(x)', label: 'A' });
     });
 
     it('toExamResultDTO handles numeric score fallback and non-finite time', () => {
@@ -213,6 +230,25 @@ describe('Layer 66: DTO Pattern Verification', () => {
       } as any);
 
       expect(dto.examId).toBe('');
+    });
+  });
+
+  describe('Question contract helpers', () => {
+    it('normalizes question type and answer parsing for multi-select payloads', () => {
+      expect(normalizeQuestionType('multi_select')).toBe('multi_select');
+      expect(normalizeQuestionType('unknown')).toBe('mcq');
+      expect(parseAnswer('A, B ,C')).toEqual(['A', 'B', 'C']);
+    });
+
+    it('normalizes option payloads and derives display type', () => {
+      expect(normalizeQuestionOptions(['yes', { id: 'o2', code: 'return true;', label: 'B' }])).toEqual([
+        { id: '1', text: 'yes', label: 'A' },
+        { id: 'o2', code: 'return true;', label: 'B', isCorrect: undefined },
+      ]);
+
+      expect(getDisplayType({ questionText: 'Question', codeSnippet: 'const x = 1;' })).toBe('mixed');
+      expect(getDisplayType({ questionText: '', codeSnippet: 'const x = 1;' })).toBe('code');
+      expect(getDisplayType({ questionText: 'Question', codeSnippet: null })).toBe('text');
     });
   });
 

@@ -1,4 +1,5 @@
 import type { IAnswerEvaluator } from './evaluator.interface';
+import { parseAnswer } from '@/modules/question/question-contract';
 
 /**
  * Evaluates Multiple Selection questions with partial credit.
@@ -8,8 +9,8 @@ export class MultiSelectEvaluator implements IAnswerEvaluator {
   evaluate(correctAnswer: string, userAnswer: string): number {
     if (!correctAnswer || !userAnswer) return 0;
 
-    const correctSet = new Set(correctAnswer.split(',').map(s => s.trim().toLowerCase()));
-    const userSet = new Set(userAnswer.split(',').map(s => s.trim().toLowerCase()));
+    const correctSet = new Set(parseAnswer(correctAnswer).map((item) => item.toLowerCase()));
+    const userSet = new Set(parseAnswer(userAnswer).map((item) => item.toLowerCase()));
 
     let matchedCorrect = 0;
     let incorrectSelections = 0;

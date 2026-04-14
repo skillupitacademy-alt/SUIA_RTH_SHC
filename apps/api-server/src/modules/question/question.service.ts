@@ -1,5 +1,6 @@
 import { db, questions, questionSkills } from '@quiz/db';
 import { desc,eq, inArray, sql } from 'drizzle-orm';
+import type { BackendQuestionType } from './question-contract';
 
 type QuestionRecord = typeof questions.$inferSelect;
 
@@ -40,7 +41,7 @@ export class QuestionService {
     topicId: string;
     subtopicId?: string;
     difficulty: "simple" | "intermediate" | "expert";
-    type: "mcq" | "code_mcq";
+    type: BackendQuestionType;
     questionText: string;
     options: unknown;
     correctAnswer: string;
@@ -77,7 +78,7 @@ export class QuestionService {
     topicId: string;
     subtopicId?: string;
     difficulty: "simple" | "intermediate" | "expert";
-    type: "mcq" | "code_mcq";
+    type: BackendQuestionType;
     questionText: string;
     options: unknown;
     correctAnswer: string;
@@ -145,7 +146,7 @@ export class QuestionService {
     topicId: string;
     subtopicId?: string;
     difficulty: "simple" | "intermediate" | "expert";
-    type: "mcq" | "code_mcq";
+    type: BackendQuestionType;
     questionText: string;
     options: unknown;
     correctAnswer: string;

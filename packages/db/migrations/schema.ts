@@ -5,7 +5,7 @@ export const difficulty = pgEnum("difficulty", ['simple', 'intermediate', 'exper
 export const examStatus = pgEnum("exam_status", ['started', 'processing', 'completed', 'abandoned', 'failed'])
 export const jobStatus = pgEnum("job_status", ['pending', 'processing', 'completed', 'failed'])
 export const mappingType = pgEnum("mapping_type", ['conceptual', 'technical', 'practical'])
-export const questionType = pgEnum("question_type", ['mcq', 'code_mcq'])
+export const questionType = pgEnum("question_type", ['mcq', 'code_mcq', 'multi_select'])
 export const skillCategory = pgEnum("skill_category", ['technical', 'cognitive', 'process'])
 export const status = pgEnum("status", ['active', 'inactive', 'draft'])
 

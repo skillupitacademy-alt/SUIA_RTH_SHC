@@ -8,7 +8,7 @@ export const tutorialSyncStatusEnum = pgEnum("tutorial_sync_status", [
   "failed",
 ]);
 
-export const questionTypeEnum = pgEnum("question_type", ["mcq", "code_mcq"]);
+export const questionTypeEnum = pgEnum("question_type", ["mcq", "code_mcq", "multi_select"]);
 
 export const difficultyEnum = pgEnum("difficulty", ["simple", "intermediate", "expert"]);
 

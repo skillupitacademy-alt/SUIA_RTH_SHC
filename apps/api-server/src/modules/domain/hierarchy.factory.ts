@@ -1,5 +1,6 @@
 import { db, domains, questions, questionSkills, skills,subjects, subtopics, topics } from '@quiz/db';
 import { and, eq, inArray } from 'drizzle-orm';
+import { normalizeQuestionOptions, normalizeQuestionType, type BackendQuestionType } from '../question/question-contract';
 
 export interface HierarchyQuestionPayload {
   skillNames?: string[];
@@ -330,9 +331,9 @@ export class HierarchyFactory {
         status: 'active' as "active" | "inactive" | "draft",
         difficulty: (rest.difficulty ?? 'simple') as "simple" | "intermediate" | "expert",
         questionText: rest.questionText ?? 'Placeholder Question',
-        options: rest.options ?? {},
+        options: normalizeQuestionOptions(rest.options),
         correctAnswer: rest.correctAnswer ?? '',
-        type: (rest.type === 'code_mcq' ? 'code_mcq' : 'mcq') as "mcq" | "code_mcq",
+        type: normalizeQuestionType(rest.type) as BackendQuestionType,
         explanation: rest.explanation ?? null,
         codeSnippet: rest.codeSnippet ?? null,
         metadata: rest.metadata ?? {}

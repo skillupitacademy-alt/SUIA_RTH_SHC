@@ -6,6 +6,7 @@ import { logger } from '@/lib/logger';
 import { cacheService } from '@/modules/core/cache.service';
 import { container } from '@/modules/core/container';
 import { ScoringEngine } from '@/modules/scoring-engine/scoring.engine';
+import { getDisplayType, normalizeQuestionOptions, normalizeQuestionType } from '@/modules/question/question-contract';
 
 
 export class SessionService {
@@ -123,9 +124,14 @@ export class SessionService {
         questionId: eq.question.id, // Explicitly provide questionId for ExamInterface mapping
         text: eq.question.questionText, 
         questionText: eq.question.questionText,
-        options: eq.question.options,
+        options: normalizeQuestionOptions(eq.question.options),
         codeSnippet: eq.question.codeSnippet,
-        type: eq.question.type,
+        type: normalizeQuestionType(eq.question.type),
+        questionType: normalizeQuestionType(eq.question.type),
+        displayType: getDisplayType({
+          questionText: eq.question.questionText,
+          codeSnippet: eq.question.codeSnippet,
+        }),
         difficulty: eq.question.difficulty,
         userAnswer: eq.userAnswer,
         order: eq.order
@@ -133,9 +139,14 @@ export class SessionService {
       currentQuestion: (currentEq !== undefined && currentEq !== null) ? {
         id: currentEq.question.id,
         questionText: currentEq.question.questionText,
-        options: currentEq.question.options,
+        options: normalizeQuestionOptions(currentEq.question.options),
         codeSnippet: currentEq.question.codeSnippet,
-        type: currentEq.question.type,
+        type: normalizeQuestionType(currentEq.question.type),
+        questionType: normalizeQuestionType(currentEq.question.type),
+        displayType: getDisplayType({
+          questionText: currentEq.question.questionText,
+          codeSnippet: currentEq.question.codeSnippet,
+        }),
         difficulty: currentEq.question.difficulty,
         topicId: currentEq.question.topicId,
         subtopicId: currentEq.question.subtopicId,

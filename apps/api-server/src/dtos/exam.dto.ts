@@ -1,15 +1,27 @@
+import {
+  getDisplayType,
+  normalizeQuestionOptions,
+  normalizeQuestionType,
+  type BackendQuestionType,
+  type QuestionDisplayType,
+} from '@/modules/question/question-contract';
+
 export interface OptionDTO {
   id: string;
-  text: string;
-  label: string;
+  text?: string;
+  code?: string;
+  label?: string;
 }
 
 export interface QuestionDTO {
   id: string;
   text: string;
-  type: string;
+  type: BackendQuestionType;
+  questionType: BackendQuestionType;
+  displayType: QuestionDisplayType;
   options: OptionDTO[];
   difficulty: string;
+  codeSnippet?: string | null;
   // CRITICAL: No correct answer here!
 }
 
@@ -38,7 +50,6 @@ export interface ExamResultDTO {
   completedAt: Date;
 }
 
-type ExamOptionInput = { id: string; text: string; label: string };
 type QuestionInput = {
   id: string;
   questionText?: string;
@@ -46,6 +57,7 @@ type QuestionInput = {
   type: string;
   difficulty?: string;
   options?: unknown;
+  codeSnippet?: string | null;
 };
 
 export type ExamStartInput = {
@@ -86,25 +98,26 @@ type ExamReportInput = {
  */
 export function toQuestionDTO(q: QuestionInput | null | undefined): QuestionDTO | null {
   if (q === null || q === undefined) return null;
-  const options = Array.isArray(q.options)
-    ? q.options.map((opt, index) => {
-        if (typeof opt === 'string') {
-          return { id: String(index + 1), text: opt, label: String.fromCharCode(65 + index) };
-        }
-        const maybe = opt as Partial<ExamOptionInput>;
-        return {
-          id: maybe.id ?? String(index + 1),
-          text: maybe.text ?? '',
-          label: maybe.label ?? String.fromCharCode(65 + index),
-        };
-      })
-    : [];
+  const type = normalizeQuestionType(q.type);
+  const options = normalizeQuestionOptions(q.options).map((option) => ({
+    id: option.id,
+    ...(option.text !== undefined ? { text: option.text } : {}),
+    ...(option.code !== undefined ? { code: option.code } : {}),
+    ...(option.label !== undefined ? { label: option.label } : {}),
+  }));
+
   return {
     id: q.id,
     text: q.questionText ?? q.text ?? '',
-    type: q.type,
+    type,
+    questionType: type,
+    displayType: getDisplayType({
+      questionText: q.questionText ?? q.text ?? '',
+      codeSnippet: q.codeSnippet ?? null,
+    }),
     difficulty: q.difficulty ?? 'intermediate',
-    options
+    options,
+    codeSnippet: q.codeSnippet ?? null,
   };
 }
 

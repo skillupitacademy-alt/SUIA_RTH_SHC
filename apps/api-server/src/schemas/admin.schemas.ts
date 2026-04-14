@@ -10,7 +10,11 @@ const optionSchema = z.union([
   z.object({
     id: z.string().optional(),
     text: z.string().min(1).optional(),
+    code: z.string().min(1).optional(),
+    label: z.string().min(1).optional(),
     isCorrect: z.boolean().optional(),
+  }).refine((value) => Boolean(value.text || value.code), {
+    message: 'Option must include text or code',
   }),
 ]);
 
@@ -20,7 +24,7 @@ export const questionSchema = z.object({
   skillId: uuid.optional(),
   skillIds: z.array(uuid).optional(),
   difficulty: difficultyEnum,
-  type: z.string().optional(),
+  type: z.enum(['mcq', 'code_mcq', 'multi_select']).optional(),
   mappingType: mappingEnum,
   questionText: z.string().min(1),
   options: z.array(optionSchema).min(1),
