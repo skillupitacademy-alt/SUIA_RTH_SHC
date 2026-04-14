@@ -6,10 +6,9 @@ import type { PortalIdentity } from '@quiz/types';
 import { Lock, Mail, ShieldCheck } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
+import { loginPortalSession, type LoginPlatform } from './lib/portal-auth';
 
-const DEFAULT_LOGIN_ENDPOINT = `${(process.env.NEXT_PUBLIC_API_URL ?? 'https://api.realtutorialhub.com').replace(/\/+$/, '').replace(/\/api$/i, '')}/auth/login`;
-
-export type LoginPlatform = 'realtutorialhub' | 'skillup';
+const DEFAULT_LOGIN_ENDPOINT = '/api/auth/login';
 
 export interface PortalLoginPageProps {
   title: string;
@@ -23,40 +22,12 @@ export interface PortalLoginPageProps {
   loginEndpoint?: string;
 }
 
-type LoginResponse = {
-  user?: {
-    roles?: string[];
-    email?: string;
-    id?: string;
-  };
-  error?: string;
-  message?: string;
-  _error?: string;
-};
-
 function normalizeRedirectTarget(rawTarget: string | null): string {
   if (typeof rawTarget === 'string' && rawTarget.startsWith('/') && !rawTarget.startsWith('//')) {
     return rawTarget;
   }
 
   return '/';
-}
-
-function toErrorMessage(response: Response | null, payload: LoginResponse | null, fallback: string): string {
-  const candidate = payload?.error ?? payload?.message ?? payload?._error;
-  if (typeof candidate === 'string' && candidate.trim().length > 0) {
-    return candidate.trim();
-  }
-
-  if (response !== null && response.status === 401) {
-    return 'Invalid credentials';
-  }
-
-  if (response !== null && response.status === 403) {
-    return 'Access denied: this account is not permitted for this portal.';
-  }
-
-  return fallback;
 }
 
 export function PortalLoginPage({
@@ -85,35 +56,15 @@ export function PortalLoginPage({
     setIsLoading(true);
 
     try {
-      const response = await fetch(loginEndpoint, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'content-type': 'application/json',
-          accept: 'application/json',
-          'x-portal-identity': portalIdentity,
-          'x-brand': platform,
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-          platform,
-        }),
+      await loginPortalSession({
+        email: formData.email,
+        password: formData.password,
+        platform,
+        portalIdentity,
+        portalName,
+        allowedRoles,
+        loginEndpoint,
       });
-
-      const payload = (await response.json().catch(() => null)) as LoginResponse | null;
-
-      if (!response.ok) {
-        throw new Error(toErrorMessage(response, payload, 'Authentication failed'));
-      }
-
-      // API server already set httpOnly cookies via Set-Cookie header.
-      // We do NOT create client-side cookies to avoid scope conflicts.
-      const roles = Array.isArray(payload?.user?.roles) ? payload?.user?.roles ?? [] : [];
-
-      if (roles.some((role) => allowedRoles.includes(role)) === false) {
-        throw new Error(`Access denied: ${portalName} privileges required.`);
-      }
 
       window.location.replace(redirectTarget);
     } catch (err: unknown) {

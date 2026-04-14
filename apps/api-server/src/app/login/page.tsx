@@ -1,7 +1,5 @@
 'use client';
 
-import { apiClient } from '@quiz/api-client';
-import { ApiRequestError } from '@quiz/api-client/core/fetch-client';
 import { ZLoader } from '@quiz/ui';
 import { ArrowRight, Lock, Shield } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -29,21 +27,63 @@ export default function LoginPage() {
         setIsLoading(true);
 
         try {
-            // Executive Handshake Protocol
-            apiClient.client.setPortalIdentity('infrastructure');
-            const { user, expiresAt } = await apiClient.admin.login(email, password, PORTAL_BRAND);
+            // Executive Handshake Protocol - Use direct fetch
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'content-type': 'application/json',
+                    accept: 'application/json',
+                    'x-portal-identity': 'infrastructure',
+                    'x-brand': PORTAL_BRAND,
+                },
+                body: JSON.stringify({
+                    email,
+                    password,
+                    platform: PORTAL_BRAND,
+                }),
+            });
+
+            const payload = (await response.json().catch(() => null)) as {
+                user?: {
+                    id: string;
+                    email: string;
+                    name?: string;
+                    role?: string;
+                    isAdmin?: boolean;
+                    onboarded?: boolean;
+                };
+                expiresAt?: string | null;
+                error?: string;
+            } | null;
+
+            if (!response.ok) {
+                if (response.status === 403) {
+                    throw new Error('ACCESS_DENIED: This account is not permitted for this portal.');
+                }
+                throw new Error(payload?.error ?? 'Handshake failed. Verify passkey.');
+            }
+
+            const user = payload?.user;
+            const expiresAt = payload?.expiresAt;
 
             // Critical Role Check: Only 'infrastructure' users can pass this gateway
-            if (user.role !== 'infrastructure') {
+            if (user?.role !== 'infrastructure') {
                 throw new Error("ACCESS_DENIED: SECURE_NODE_REQUIREMENT");
             }
 
-            login(user, expiresAt);
+            login({
+                id: user.id,
+                email: user.email,
+                name: user.name ?? '',
+                role: user.role ?? 'infrastructure',
+                isAdmin: user.isAdmin ?? false,
+                onboarded: user.onboarded ?? false,
+            }, expiresAt ?? null);
+            
             void router.push('/');
         } catch (err: unknown) {
-            if (err instanceof ApiRequestError && err.status === 403) {
-                setError('ACCESS_DENIED: This account is not permitted for this portal.');
-            } else if (err instanceof Error) {
+            if (err instanceof Error) {
                 setError(err.message || 'Handshake failed. Verify passkey.');
             } else {
                 setError('Handshake failed. Verify passkey.');

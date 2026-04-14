@@ -22,6 +22,12 @@
       ],
       "@quiz/types/*": [
         "../../packages/types/src/*"
+      ],
+      "@quiz/api-client": [
+        "../../packages/api-client/src/index.ts"
+      ],
+      "@quiz/api-client/*": [
+        "../../packages/api-client/src/*"
       ]
     },
     "jsx": "preserve",

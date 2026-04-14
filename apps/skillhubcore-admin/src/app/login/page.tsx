@@ -1,103 +1,5 @@
-'use client';
-
+import { PortalLoginPage } from '@quiz/ui';
 import { Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useState, type FormEvent } from 'react';
-
-function normalizeRedirectTarget(rawTarget: string | null): string {
-  if (typeof rawTarget === 'string' && rawTarget.startsWith('/') && rawTarget.startsWith('//') === false) {
-    return rawTarget;
-  }
-
-  return '/dashboard';
-}
-
-function LoginForm() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const redirectTarget = normalizeRedirectTarget(searchParams.get('redirect'));
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setError('');
-    setIsLoading(true);
-
-    try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'content-type': 'application/json',
-          accept: 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          email,
-          password,
-          portalIdentity: 'super_admin',
-        }),
-      });
-
-      const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-      if (!response.ok) {
-        throw new Error(payload?.error ?? 'Authentication failed');
-      }
-
-      router.replace(redirectTarget);
-      router.refresh();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Authentication failed');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return (
-    <div className="space-y-6">
-      <div className="space-y-2">
-        <h2 className="text-3xl font-black tracking-tight text-[#1A1A1A]">SkillHubCore Admin</h2>
-        <p className="text-sm text-slate-500">Authenticate to access the shared services governance terminal.</p>
-      </div>
-
-      {error.length > 0 ? (
-        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
-          {error}
-        </div>
-      ) : null}
-
-      <form className="space-y-4" onSubmit={(event) => void handleSubmit(event)}>
-        <input
-          type="email"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          placeholder="super-admin@skillhubcore.in"
-          autoComplete="username"
-          className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-slate-400"
-          required
-        />
-        <input
-          type="password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          placeholder="Password"
-          autoComplete="current-password"
-          className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-slate-400"
-          required
-        />
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="w-full rounded-2xl bg-[#1A1A1A] px-4 py-3 text-sm font-black uppercase tracking-[0.2em] text-white transition hover:bg-black disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {isLoading ? 'Authenticating...' : 'Authenticate'}
-        </button>
-      </form>
-    </div>
-  );
-}
 
 export default function LoginPage() {
   return (
@@ -114,7 +16,16 @@ export default function LoginPage() {
             </div>
           }
         >
-          <LoginForm />
+          <PortalLoginPage
+            title="SkillHubCore Admin"
+            description="Authenticate to access the shared services governance terminal."
+            portalIdentity="super_admin"
+            platform="skillup"
+            allowedRoles={['super_admin', 'infrastructure']}
+            portalName="SkillHubCore Admin"
+            footerTitle="Restricted Access System v1.0.4"
+            footerSubtitle="Unauthorized access attempts are logged and reported."
+          />
         </Suspense>
       </div>
     </div>

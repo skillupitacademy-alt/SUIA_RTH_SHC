@@ -25,11 +25,6 @@ test.describe('Web App Auth E2E', () => {
     await authFixtures.loginUser(page);
     const isAuthenticated = await authFixtures.hasAuth(page);
     expect(isAuthenticated, 'Expected to be authenticated after login').toBeTruthy();
-
-    const hasStore = await page.evaluate(
-      () => localStorage.getItem('quiz-platform-auth') !== null,
-    );
-    expect(hasStore, 'Expected quiz-platform-auth to be in localStorage').toBeTruthy();
   });
 
   test('Session Warning + Renew', async ({ page }) => {

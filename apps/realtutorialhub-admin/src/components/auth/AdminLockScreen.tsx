@@ -1,16 +1,13 @@
 'use client';
-
-import { apiClient } from '@quiz/api-client';
-import { ZLoader } from '@quiz/ui';
+import { loginPortalSession, ZLoader } from '@quiz/ui';
 import { ChevronRight, Lock, LogOut, ShieldCheck, User as UserIcon } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 
 import { useFocusTrap } from '@/hooks/useFocusTrap';
+
 import { useAuthStore } from '@/store/auth-store';
 import { clientLogger } from '@/utils/clientLogger';
-
-const PORTAL_BRAND = 'realtutorialhub' as const;
 
 export function AdminLockScreen() {
     const { user, unlock, logout, isLocked, login } = useAuthStore(
@@ -48,8 +45,14 @@ export function AdminLockScreen() {
                 step: 'submit',
                 emailDomain: email.includes('@') ? email.split('@')[1] : 'unknown',
             });
-            // 1. Verify password & establish fresh cookies
-            const { user: refreshedUser, expiresAt } = await apiClient.admin.login(email, password, PORTAL_BRAND);
+            const { user: refreshedUser, expiresAt } = await loginPortalSession({
+                email,
+                password,
+                platform: 'realtutorialhub',
+                portalIdentity: 'admin',
+                portalName: 'RealTutorialHub Admin',
+                allowedRoles: ['admin', 'super_admin'],
+            });
 
             clientLogger.warn('[AUTH_FLOW][ADMIN_LOCK_SCREEN][UNLOCK_RESPONSE]', {
                 step: 'response',
@@ -58,7 +61,16 @@ export function AdminLockScreen() {
             });
 
             // 2. Update local state
-            login(refreshedUser, expiresAt);
+            if (refreshedUser !== undefined && refreshedUser.email !== undefined) {
+                login({
+                    id: refreshedUser.id ?? user.id,
+                    email: refreshedUser.email,
+                    name: refreshedUser.name ?? user.name ?? '',
+                    isAdmin: refreshedUser.isAdmin ?? true,
+                    role: refreshedUser.role ?? 'admin',
+                    onboarded: refreshedUser.onboarded ?? true,
+                }, expiresAt);
+            }
 
             setPassword('');
             unlock();

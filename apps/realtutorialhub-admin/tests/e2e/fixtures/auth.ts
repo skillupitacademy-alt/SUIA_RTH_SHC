@@ -41,20 +41,15 @@ async function clearState(page: Page) {
   await page.goto(`${ADMIN_UI_URL}/login`, { waitUntil: 'domcontentloaded' });
   await page.context().clearCookies();
   await page.evaluate(() => {
-    localStorage.removeItem('quiz-platform-admin-auth');
     sessionStorage.clear();
   });
 }
 
 async function hasAuth(page: Page): Promise<boolean> {
   const cookies = await page.context().cookies();
-  const hasCookies = cookies.some(
+  return cookies.some(
     (c) => c.name === 'admin_accessToken' || c.name === 'admin_refreshToken'
   );
-  const hasStore = await page.evaluate(
-    () => localStorage.getItem('quiz-platform-admin-auth') !== null
-  );
-  return hasCookies || hasStore;
 }
 
 async function forceRefreshFail(page: Page) {

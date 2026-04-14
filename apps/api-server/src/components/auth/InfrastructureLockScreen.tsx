@@ -1,6 +1,6 @@
 'use client';
 
-import { apiClient } from '@quiz/api-client';
+
 import { ZLoader } from '@quiz/ui';
 import { ChevronRight, Lock, LogOut, ShieldCheck, User as UserIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
@@ -48,17 +48,60 @@ export function InfrastructureLockScreen() {
                 return;
             }
 
-            // 1. Re-authenticate with Portal Identity Hint
-            apiClient.client.setPortalIdentity('infrastructure');
-            const { user: refreshedUser, expiresAt } = await apiClient.admin.login(email, password, PORTAL_BRAND);
+            // 1. Re-authenticate with Portal Identity Hint - Use direct fetch
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'content-type': 'application/json',
+                    accept: 'application/json',
+                    'x-portal-identity': 'infrastructure',
+                    'x-brand': PORTAL_BRAND,
+                },
+                body: JSON.stringify({
+                    email,
+                    password,
+                    platform: PORTAL_BRAND,
+                }),
+            });
+
+            const payload = (await response.json().catch(() => null)) as {
+                user?: {
+                    id: string;
+                    email: string;
+                    name?: string;
+                    role?: string;
+                    isAdmin?: boolean;
+                    onboarded?: boolean;
+                };
+                expiresAt?: string | null;
+                error?: string;
+            } | null;
+
+            if (!response.ok) {
+                throw new Error(payload?.error ?? 'Authentication failed');
+            }
+
+            const refreshedUser = payload?.user;
+            const expiresAt = payload?.expiresAt;
 
             // 2. Validate Infrastructure Role Persistence
+            if (refreshedUser === undefined) {
+                throw new Error('AUTHENTICATION_FAILED');
+            }
+
             if (refreshedUser.role !== 'infrastructure') {
                 throw new Error("ACCESS_DENIED: ROLE_MISMATCH_ON_UNLOCK");
             }
 
             // 3. Re-establish Local Session
-            login(refreshedUser, expiresAt);
+            login({
+                ...refreshedUser,
+                name: refreshedUser.name ?? _user.name,
+                isAdmin: refreshedUser.isAdmin ?? _user.isAdmin,
+                role: refreshedUser.role ?? _user.role,
+                onboarded: refreshedUser.onboarded ?? _user.onboarded,
+            }, expiresAt);
             setPassword('');
             unlock();
         } catch (err: unknown) {

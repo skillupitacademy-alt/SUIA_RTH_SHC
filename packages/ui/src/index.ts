@@ -21,5 +21,6 @@ export * from './ZPortalModal';
 export * from './hooks';
 export * from './BrowserAuthFetchProvider';
 export * from './store/auth-store';
+export * from './lib/portal-auth';
 export * from './theme-store';
 export * from './PortalLoginPage';

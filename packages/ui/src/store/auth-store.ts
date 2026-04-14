@@ -31,7 +31,6 @@ export interface AuthState {
 }
 
 interface CreateAuthStoreOptions {
-  name: string;
   onLogout?: () => void;
 }
 

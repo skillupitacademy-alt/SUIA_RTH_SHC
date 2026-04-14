@@ -57,7 +57,7 @@ export class AuthClient {
   }
 
   async updateProfile(profileData: Partial<UserProfile>) {
-    return this.client.post<UserProfile, Partial<UserProfile>>('/auth/profile', profileData, { timeout: TIMEOUTS.STANDARD });
+    return this.client.post<UserProfile, Partial<UserProfile>>('/onboarding/profile', profileData, { timeout: TIMEOUTS.STANDARD });
   }
 
   async forgotPassword(email: string, brand: RequestBrand = 'realtutorialhub') {

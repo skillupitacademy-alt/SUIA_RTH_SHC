@@ -1,7 +1,7 @@
 'use client';
 
 import { Activity } from 'lucide-react';
-import { cn } from "@/lib/utils";
+import { cn } from "./lib/utils";
 
 interface ZLoaderProps {
     className?: string;

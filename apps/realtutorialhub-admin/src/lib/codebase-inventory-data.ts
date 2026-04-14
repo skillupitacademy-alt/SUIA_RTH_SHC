@@ -55,7 +55,6 @@ export const WEB_CORE_INVENTORY: CodeInventoryItem[] = [
     { name: 'app/layout.tsx', type: 'Layout', purpose: 'Root layout with global styles and providers.' },
     { name: 'app/login/page.tsx', type: 'Page', purpose: 'Student authentication entry.' },
     { name: 'app/signup/page.tsx', type: 'Page', purpose: 'New student registration.' },
-    { name: 'components/auth/AuthForms.tsx', type: 'Component', purpose: 'Login and Signup form logic.' },
     { name: 'components/auth/AuthGuard.tsx', type: 'Component', purpose: 'Route protection for authenticated users.' },
     { name: 'components/layout/AppShell.tsx', type: 'Layout', purpose: 'Main authenticated application frame.' },
 ];
@@ -64,7 +63,6 @@ export const WEB_STUDENT_INVENTORY: CodeInventoryItem[] = [
     { name: 'app/dashboard/page.tsx', type: 'Page', purpose: 'Student dashboard overview.' },
     { name: 'app/dashboard/settings/page.tsx', type: 'Page', purpose: 'User profile and preference settings.' },
     { name: 'app/onboarding/page.tsx', type: 'Page', purpose: 'Initial user setup flow.' },
-    { name: 'components/onboarding/OnboardingWizard.tsx', type: 'Component', purpose: 'Multi-step form for profile completion.' },
     { name: 'components/dashboard/Sidebar.tsx', type: 'Component', purpose: 'Main desktop navigation side bar.' },
     { name: 'components/dashboard/StatsCards.tsx', type: 'Component', purpose: 'Summary KPI cards for the dashboard.' },
 ];

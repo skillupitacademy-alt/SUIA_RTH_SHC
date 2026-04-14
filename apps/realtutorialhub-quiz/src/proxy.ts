@@ -2,29 +2,57 @@ import { TokenService } from '@quiz/auth';
 import { NextRequest, NextResponse } from 'next/server';
 
 const LOGIN_URL = process.env.NEXT_PUBLIC_LOGIN_URL ?? '/login';
+const INTERNAL_GATEWAY_SECRET = process.env.INTERNAL_GATEWAY_SECRET;
+const ONBOARDING_STATE_COOKIE = 'onboarding_state';
 
-const PUBLIC_PATHS = ['/', '/api/healthz', '/api/auth/login', '/api/auth/refresh', '/api/auth/logout', '/api/auth/me'];
-const PROTECTED_PREFIXES = ['/dashboard/', '/dashboard', '/exam/', '/exam', '/onboarding/', '/onboarding', '/reports/', '/reports', '/quiz/', '/quiz', '/profile/', '/profile'];
-const AUTH_PATHS = ['/login', '/signup', '/forgot-password', '/reset-password'];
+const PUBLIC_PATHS = [
+  '/',
+  '/api/healthz',
+  '/login',
+  '/signup',
+  '/forgot-password',
+  '/reset-password',
+];
+const PUBLIC_PREFIXES = ['/api/auth'];
+const PROTECTED_PATHS = [
+  '/dashboard',
+  '/exam',
+  '/onboarding',
+  '/reports',
+  '/quiz',
+  '/profile',
+  '/api/dashboard',
+  '/api/exam',
+  '/api/reports',
+  '/api/quiz',
+  '/api/profile',
+];
 
 function hasPrefix(pathname: string, prefixes: string[]): boolean {
-  return prefixes.some((prefix) => pathname === prefix.slice(0, -1) || pathname.startsWith(prefix));
+  return prefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 }
 
 export function isPublicRoute(pathname: string): boolean {
-  return PUBLIC_PATHS.includes(pathname);
+  return PUBLIC_PATHS.includes(pathname) || hasPrefix(pathname, PUBLIC_PREFIXES);
+}
+
+export function isPublicAuthRoute(pathname: string): boolean {
+  return pathname === '/api/auth' || pathname.startsWith('/api/auth/');
 }
 
 export function isProtectedRoute(pathname: string): boolean {
-  return hasPrefix(pathname, PROTECTED_PREFIXES) && pathname !== '/api/healthz';
-}
-
-function isAuthRoute(pathname: string): boolean {
-  return AUTH_PATHS.includes(pathname);
+  return hasPrefix(pathname, PROTECTED_PATHS);
 }
 
 export function getAccessToken(request: NextRequest): string | undefined {
   return request.cookies.get('accessToken')?.value;
+}
+
+function hasCompletedOnboarding(request: NextRequest): boolean | null {
+  const state = request.cookies.get(ONBOARDING_STATE_COOKIE)?.value;
+  if (state === 'completed') return true;
+  if (state === 'pending') return false;
+  return null;
 }
 
 function getLoginUrl(request: NextRequest, redirectPath: string): URL {
@@ -32,15 +60,20 @@ function getLoginUrl(request: NextRequest, redirectPath: string): URL {
     LOGIN_URL.startsWith('http://') || LOGIN_URL.startsWith('https://')
       ? new URL(LOGIN_URL)
       : new URL(LOGIN_URL, request.url);
+  loginUrl.searchParams.set('reason', 'session_expired');
   loginUrl.searchParams.set('redirect', redirectPath);
-  const brand = request.nextUrl.searchParams.get('brand');
-  if (typeof brand === 'string' && brand.trim().length > 0) {
-    loginUrl.searchParams.set('brand', brand.trim().toLowerCase());
-  }
   return loginUrl;
 }
 
-type UserPayload = { sub: string; roles?: string[]; shadowUserId: string; originalUserId: string };
+function hasValidGatewaySecret(request: NextRequest): boolean {
+  if (typeof INTERNAL_GATEWAY_SECRET !== 'string' || INTERNAL_GATEWAY_SECRET.length === 0) {
+    return true;
+  }
+
+  return request.headers.get('x-gateway-secret') === INTERNAL_GATEWAY_SECRET;
+}
+
+type UserPayload = { sub: string; roles: string[]; shadowUserId: string; originalUserId: string };
 
 type VerifiedTokenPayload = {
   sub?: string;
@@ -94,55 +127,78 @@ async function resolveUser(request: NextRequest): Promise<UserPayload | null> {
 }
 
 export async function proxy(request: NextRequest) {
-  const { pathname, search } = request.nextUrl;
-  const requestId = request.headers.get('x-request-id') ?? 'no-request-id';
-  const accessToken = getAccessToken(request);
-  const user = await resolveUser(request);
-  const redirectPath = `${pathname}${search}`;
-  const hasAccessToken = typeof accessToken === 'string' && accessToken.trim().length > 0;
+  const isRSCRequest = request.nextUrl.searchParams.has('_rsc');
+  if (isRSCRequest) {
+    return NextResponse.next();
+  }
 
-  if (pathname === '/login' || pathname === '/dashboard' || isProtectedRoute(pathname)) {
-    console.log('[AUTH_FLOW][QUIZ_PROXY][CHECK]', JSON.stringify({
-      requestId,
-      path: pathname,
-      search,
-      hasAccessToken,
-      isProtected: isProtectedRoute(pathname),
-      hasUser: user !== null,
-    }));
+  const { pathname, search } = request.nextUrl;
+  const user = await resolveUser(request);
+  const onboardingCompleted = hasCompletedOnboarding(request);
+  const redirectPath = `${pathname}${search}`;
+  const isApiRoute = pathname.startsWith('/api/');
+
+  if (pathname === '/api/healthz' || pathname === '/') {
+    return NextResponse.next();
+  }
+
+  if (isPublicAuthRoute(pathname)) {
+    return NextResponse.next();
+  }
+
+  if (isApiRoute && hasValidGatewaySecret(request) === false && isPublicRoute(pathname) === false) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
   if (isProtectedRoute(pathname) && user === null) {
-    console.log('[AUTH_FLOW][QUIZ_PROXY][REDIRECT_TO_LOGIN]', JSON.stringify({
-      requestId,
-      path: pathname,
-      redirectPath,
-      reason: 'missing_or_invalid_access_token',
-      hasAccessToken,
-    }));
-    return NextResponse.redirect(getLoginUrl(request, redirectPath));
+    return isApiRoute
+      ? NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+      : NextResponse.redirect(getLoginUrl(request, redirectPath));
   }
 
-  if (user !== null && isAuthRoute(pathname)) {
-    console.log('[AUTH_FLOW][QUIZ_PROXY][REDIRECT_TO_DASHBOARD]', JSON.stringify({
-      requestId,
-      path: pathname,
-      reason: 'authenticated_on_auth_route',
-    }));
+  if (user !== null && pathname === '/onboarding' && onboardingCompleted === true) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
-  if (user !== null) {
+  if (
+    user !== null &&
+    onboardingCompleted === false &&
+    pathname !== '/onboarding' &&
+    pathname.startsWith('/dashboard')
+  ) {
+    return NextResponse.redirect(new URL('/onboarding', request.url));
+  }
+
+  if (isPublicRoute(pathname)) {
+    return user !== null
+      ? addUserHeaders(NextResponse.next({ request: { headers: new Headers(request.headers) } }), user)
+      : NextResponse.next();
+  }
+
+  if (isProtectedRoute(pathname)) {
     const headers = new Headers(request.headers);
-    headers.set('x-user-id', user.shadowUserId);
-    headers.set('x-shadow-user-id', user.shadowUserId);
-    headers.set('x-original-user-id', user.originalUserId);
-    return addUserHeaders(NextResponse.next({ request: { headers } }), user);
+    if (user !== null) {
+      headers.set('x-user-id', user.shadowUserId);
+      headers.set('x-shadow-user-id', user.shadowUserId);
+      headers.set('x-original-user-id', user.originalUserId);
+    }
+
+    return user !== null
+      ? addUserHeaders(NextResponse.next({ request: { headers } }), user)
+      : NextResponse.next({ request: { headers } });
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)'],
+  matcher: [
+    {
+      source: '/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)',
+      missing: [
+        { type: 'query', key: '_rsc' },
+        { type: 'header', key: 'rsc' },
+      ],
+    },
+  ],
 };
