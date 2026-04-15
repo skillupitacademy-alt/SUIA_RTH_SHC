@@ -63,7 +63,6 @@ async function handler(req: NextRequest) {
         name: (rawProfile as { name?: string | null }).name ?? null,
         professionalStatus: (rawProfile as { professionalStatus?: string | null }).professionalStatus ?? null,
         educationLevel: (rawProfile as { educationLevel?: string | null }).educationLevel ?? null,
-        onboardingCompleted: (rawProfile as { onboardingCompleted?: boolean | null }).onboardingCompleted ?? false,
       },
     } satisfies Parameters<typeof toUserSummaryDTO>[0];
 
