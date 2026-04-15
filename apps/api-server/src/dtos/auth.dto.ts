@@ -5,7 +5,6 @@ export interface UserSummaryDTO {
   isVerified: boolean;
   createdAt: Date;
   onboarded: boolean;
-  onboardingCompleted: boolean;
   role: string;
   isAdmin: boolean;
 }
@@ -27,17 +26,11 @@ type AuthUserInput = {
   email: string;
   createdAt: Date;
   emailVerified?: boolean;
+  isOnboarded?: boolean;
   profile?: {
     name?: string | null;
     professionalStatus?: string | null;
     educationLevel?: string | null;
-    primaryGoal?: string | null;
-    domain?: string | null;
-    subDomain?: string | null;
-    adaptiveLevel?: 'beginner' | 'intermediate' | 'advanced' | null;
-    timeCommitment?: string | null;
-    journeyStatus?: string | null;
-    onboardingCompleted?: boolean | null;
   } | null;
 };
 
@@ -47,7 +40,12 @@ const hasValue = (value: Maybe<string>) => value !== undefined && value !== null
  * Mappers
  */
 export function toUserSummaryDTO(user: AuthUserInput, isAdmin: boolean = false): UserSummaryDTO {
-  const onboardingCompleted = user.profile?.onboardingCompleted === true;
+  // Use DB isOnboarded field as single source of truth
+  // Fallback to profile-based check for backward compatibility
+  const onboarded = user.isOnboarded === true || Boolean(
+    hasValue(user.profile?.professionalStatus) &&
+    hasValue(user.profile?.educationLevel)
+  );
 
   return {
     id: user.id,
@@ -55,8 +53,7 @@ export function toUserSummaryDTO(user: AuthUserInput, isAdmin: boolean = false):
     name: hasValue(user.profile?.name) ? user.profile!.name! : 'Unknown',
     isVerified: user.emailVerified === true,
     createdAt: user.createdAt,
-    onboarded: onboardingCompleted,
-    onboardingCompleted,
+    onboarded,
     role: isAdmin ? 'admin' : 'user',
     isAdmin
   };

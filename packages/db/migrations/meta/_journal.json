@@ -162,6 +162,13 @@
       "when": 1774929878092,
       "tag": "0022_deep_pixie",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1776274630310,
+      "tag": "0023_thankful_king_bedlam",
+      "breakpoints": true
     }
   ]
 }

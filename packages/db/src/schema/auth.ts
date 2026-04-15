@@ -13,6 +13,13 @@ export const users = pgTable("users", {
   deletedAt: timestamp("deleted_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  // Onboarding fields
+  isOnboarded: boolean("is_onboarded").notNull().default(false),
+  primaryGoal: text("primary_goal"),
+  domain: text("domain"),
+  subDomain: text("sub_domain"),
+  timeCommitment: text("time_commitment"),
+  journeyStatus: text("journey_status"),
 }, (t) => ({
   idx_users_created_at: index("idx_users_created_at").on(t.createdAt),
 }));

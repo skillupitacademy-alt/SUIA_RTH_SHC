@@ -58,6 +58,7 @@ async function handler(req: NextRequest) {
       email: _user.email,
       createdAt: _user.createdAt,
       emailVerified: (_user as { emailVerified?: boolean }).emailVerified ?? false,
+      isOnboarded: (_user as { isOnboarded?: boolean }).isOnboarded ?? false,
       profile: {
         name: (rawProfile as { name?: string | null }).name ?? null,
         professionalStatus: (rawProfile as { professionalStatus?: string | null }).professionalStatus ?? null,
