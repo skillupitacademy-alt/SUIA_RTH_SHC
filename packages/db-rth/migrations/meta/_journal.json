@@ -8,6 +8,13 @@
       "when": 1774934804587,
       "tag": "0000_lucky_thunderball",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1776265976231,
+      "tag": "0001_unusual_dexter_bennett",
+      "breakpoints": true
     }
   ]
 }

@@ -26,6 +26,7 @@ type AuthUserInput = {
   email: string;
   createdAt: Date;
   emailVerified?: boolean;
+  isOnboarded?: boolean;
   profile?: {
     name?: string | null;
     professionalStatus?: string | null;
@@ -39,7 +40,9 @@ const hasValue = (value: Maybe<string>) => value !== undefined && value !== null
  * Mappers
  */
 export function toUserSummaryDTO(user: AuthUserInput, isAdmin: boolean = false): UserSummaryDTO {
-  const onboarded = Boolean(
+  // Use DB isOnboarded field as single source of truth
+  // Fallback to profile-based check for backward compatibility
+  const onboarded = user.isOnboarded === true || Boolean(
     hasValue(user.profile?.professionalStatus) &&
     hasValue(user.profile?.educationLevel)
   );

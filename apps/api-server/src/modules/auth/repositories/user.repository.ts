@@ -14,6 +14,13 @@ export interface User {
   createdAt: Date;
   lastActiveAt: Date | null;
   shadowUserId?: string | null;
+  // Onboarding fields
+  isOnboarded?: boolean;
+  primaryGoal?: string | null;
+  domain?: string | null;
+  subDomain?: string | null;
+  timeCommitment?: string | null;
+  journeyStatus?: string | null;
 }
 
 export class UserRepository extends BaseRepository<User, typeof users> {
@@ -148,6 +155,50 @@ export class UserRepository extends BaseRepository<User, typeof users> {
     return await this.dbInstance.query.users.findFirst({
       where: eq(this.tables.users.id, id),
     });
+  }
+
+  /**
+   * Save user onboarding preferences
+   * @param userId - User ID
+   * @param preferences - Onboarding data
+   */
+  async saveUserPreferences(
+    userId: string,
+    preferences: {
+      primaryGoal?: string;
+      domain?: string;
+      subDomain?: string;
+      timeCommitment?: string;
+      journeyStatus?: string;
+    }
+  ): Promise<void> {
+    await this.dbInstance.update(this.tables.users)
+      .set({
+        primaryGoal: preferences.primaryGoal,
+        domain: preferences.domain,
+        subDomain: preferences.subDomain,
+        timeCommitment: preferences.timeCommitment,
+        journeyStatus: preferences.journeyStatus,
+      })
+      .where(eq(this.tables.users.id, userId));
+  }
+
+  /**
+   * Mark user as onboarded
+   * @param userId - User ID
+   */
+  async markUserOnboarded(userId: string): Promise<void> {
+    await this.dbInstance.update(this.tables.users)
+      .set({ isOnboarded: true })
+      .where(eq(this.tables.users.id, userId));
+  }
+
+  /**
+   * Get user by ID (alias for findById for consistency)
+   * @param userId - User ID
+   */
+  async getUserById(userId: string): Promise<User | undefined> {
+    return this.findById(userId);
   }
 
   private async hydrateUserDetails(user: User) {
