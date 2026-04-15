@@ -1,5 +1,6 @@
 import { METRICS } from '@quiz/observability';
-import type { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 import { toUserSummaryDTO } from '@/dtos/auth.dto';
 import { unauthorized } from '@/lib/api-error';
@@ -110,7 +111,7 @@ async function handler(req: NextRequest) {
       role: isAdmin ? 'admin' : 'user',
     }));
 
-    recordCounter(METRICS.AUTH.SUCCESS, 1, { operation: 'get_me' });
+    recordCounter(METRICS.AUTH.LOGIN, 1, { operation: 'get_me' });
 
     return ApiResponse.success({
       user: userDto,

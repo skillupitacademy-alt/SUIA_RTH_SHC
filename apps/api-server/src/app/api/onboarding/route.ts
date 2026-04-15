@@ -93,7 +93,7 @@ async function handler(req: NextRequest) {
       userId: payload.userId,
     }));
 
-    recordCounter(METRICS.AUTH.SUCCESS, 1, { operation: 'onboarding' });
+    recordCounter(METRICS.AUTH.LOGIN, 1, { operation: 'onboarding' });
 
     return ApiResponse.success({
       success: true,
