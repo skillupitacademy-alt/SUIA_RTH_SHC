@@ -1,5 +1,5 @@
 import { METRICS } from '@quiz/observability';
-import type { NextRequest } from 'next/server';
+import type { NextRequest, NextResponse } from 'next/server';
 
 import { toUserSummaryDTO } from '@/dtos/auth.dto';
 import { unauthorized } from '@/lib/api-error';
@@ -39,7 +39,7 @@ async function handler(req: NextRequest) {
     if (accessToken === undefined || accessToken === null || accessToken === '') {
       console.log('[AUTH_FLOW][ME][NO_TOKEN]', JSON.stringify({ requestId }));
       recordCounter(METRICS.AUTH.FAILURE, 1, { reason: 'no_token' });
-      return ApiResponse.json({ user: null }, { status: 401 });
+      return NextResponse.json({ user: null }, { status: 401 });
     }
 
     // Verify token and extract payload
@@ -52,7 +52,7 @@ async function handler(req: NextRequest) {
         error: error instanceof Error ? error.message : 'unknown',
       }));
       recordCounter(METRICS.AUTH.FAILURE, 1, { reason: 'invalid_token' });
-      return ApiResponse.json({ user: null }, { status: 401 });
+      return NextResponse.json({ user: null }, { status: 401 });
     }
 
     // Get user from DB
@@ -65,7 +65,7 @@ async function handler(req: NextRequest) {
         userId: payload.userId,
       }));
       recordCounter(METRICS.AUTH.FAILURE, 1, { reason: 'user_not_found' });
-      return ApiResponse.json({ user: null }, { status: 401 });
+      return NextResponse.json({ user: null }, { status: 401 });
     }
 
     // Check if user is blocked
@@ -122,7 +122,7 @@ async function handler(req: NextRequest) {
       message,
     }));
     recordCounter(METRICS.AUTH.FAILURE, 1, { reason: 'server_error' });
-    return ApiResponse.json({ user: null }, { status: 500 });
+    return NextResponse.json({ user: null }, { status: 500 });
   }
 }
 
