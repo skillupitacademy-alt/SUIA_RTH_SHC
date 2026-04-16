@@ -112,6 +112,8 @@ async function testJWTSecurity(account) {
     });
 
     console.log(`Status: ${meResponse.status}`);
+    console.log('Response Headers:', Object.fromEntries(Object.entries(meResponse.headers)));
+    console.log('Response Body:', JSON.stringify(meResponse.data, null, 2));
     
     if (meResponse.status !== 200) {
       console.log('❌ /me failed without headers - JWT security not implemented');
