@@ -8,7 +8,7 @@ import { IQuestionRepository } from "@/repositories/interfaces/question.reposito
 
 import { queueService } from '../core/queue.service';
 import { SemanticSearchService } from '../intelligence/semantic-search.service';
-import { normalizeQuestionOptions, normalizeQuestionType, type BackendQuestionType } from '../question/question-contract';
+import { type BackendQuestionType,normalizeQuestionOptions, normalizeQuestionType } from '../question/question-contract';
 
 export interface QuestionOption {
   id: string;

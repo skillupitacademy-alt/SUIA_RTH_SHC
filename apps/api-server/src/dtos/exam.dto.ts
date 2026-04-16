@@ -1,8 +1,8 @@
 import {
+  type BackendQuestionType,
   getDisplayType,
   normalizeQuestionOptions,
   normalizeQuestionType,
-  type BackendQuestionType,
   type QuestionDisplayType,
 } from '@/modules/question/question-contract';
 

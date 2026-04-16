@@ -5,8 +5,8 @@ import { eventBus } from '@/lib/event-bus';
 import { AppEvents, type ExamStartedPayload } from '@/lib/events';
 import { logger } from '@/lib/logger';
 import { container } from '@/modules/core/container';
-import { SelectionService } from '@/modules/selection-engine/selection.service';
 import { getDisplayType, normalizeQuestionOptions, normalizeQuestionType, parseAnswer } from '@/modules/question/question-contract';
+import { SelectionService } from '@/modules/selection-engine/selection.service';
 
 import type { AnswerEvaluationEngine } from '../answer-engine/answer.engine';
 import type { CacheValue } from '../core/cache.service';

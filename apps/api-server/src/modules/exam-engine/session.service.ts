@@ -5,8 +5,8 @@ import { and, eq } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { cacheService } from '@/modules/core/cache.service';
 import { container } from '@/modules/core/container';
-import { ScoringEngine } from '@/modules/scoring-engine/scoring.engine';
 import { getDisplayType, normalizeQuestionOptions, normalizeQuestionType } from '@/modules/question/question-contract';
+import { ScoringEngine } from '@/modules/scoring-engine/scoring.engine';
 
 
 export class SessionService {

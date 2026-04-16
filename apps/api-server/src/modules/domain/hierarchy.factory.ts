@@ -1,6 +1,7 @@
 import { db, domains, questions, questionSkills, skills,subjects, subtopics, topics } from '@quiz/db';
 import { and, eq, inArray } from 'drizzle-orm';
-import { normalizeQuestionOptions, normalizeQuestionType, type BackendQuestionType } from '../question/question-contract';
+
+import { type BackendQuestionType,normalizeQuestionOptions, normalizeQuestionType } from '../question/question-contract';
 
 export interface HierarchyQuestionPayload {
   skillNames?: string[];

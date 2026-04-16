@@ -1,5 +1,6 @@
-import type { IAnswerEvaluator } from './evaluator.interface';
 import { parseAnswer } from '@/modules/question/question-contract';
+
+import type { IAnswerEvaluator } from './evaluator.interface';
 
 /**
  * Evaluates Multiple Selection questions with partial credit.
