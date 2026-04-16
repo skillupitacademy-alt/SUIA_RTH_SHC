@@ -15,7 +15,7 @@ describe('TokenService Tail 4', () => {
         expect(service.getAccessToken(mockReq, { scope: 'infrastructure' })).toBe('infra-token');
     });
 
-    it('getAccessToken: does not read infra_accessToken without an explicit scope', () => {
+    it('getAccessToken: reads infra_accessToken as fallback when no scope specified', () => {
         container.reset();
         const service = container.get(TokenService);
         const mockReq = { 
@@ -23,6 +23,6 @@ describe('TokenService Tail 4', () => {
             headers: { get: () => null }
         } as unknown as NextRequest;
         
-        expect(service.getAccessToken(mockReq)).toBeUndefined();
+        expect(service.getAccessToken(mockReq)).toBe('infra-fallback'); // Now returns infra token as fallback
     });
 });

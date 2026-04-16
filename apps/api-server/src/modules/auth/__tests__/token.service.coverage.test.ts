@@ -22,6 +22,6 @@ describe('TokenService.getAccessToken', () => {
     expect(service.getAccessToken(req as any, { scope: 'admin' })).toBe('adminTok')
     expect(service.getAccessToken(req as any, { scope: 'user' })).toBe('userTok')
     expect(service.getAccessToken(req as any, { scope: 'infrastructure' })).toBe('infraTok')
-    expect(service.getAccessToken(req as any)).toBe('headerTok')
+    expect(service.getAccessToken(req as any)).toBe('userTok') // No scope - returns user token first
   })
 })

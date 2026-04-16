@@ -126,19 +126,10 @@ export class TokenService {
     try {
       const scope = options?.scope;
 
-      // 1. Authorization header (highest priority)
-      const authHeader = req.headers?.get?.('authorization');
-      if (typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
-        const token = authHeader.split(' ')[1];
-        if (token && token.length > 0) {
-          return token;
-        }
-      }
-
       // Helper function to get cookie value from either cookies API or cookie header
       const getCookieValue = (name: string): string | undefined => {
         try {
-          // 2. Next.js cookies API (BFF environment)
+          // Next.js cookies API (BFF environment)
           if (req.cookies?.get && typeof req.cookies.get === 'function') {
             const cookie = req.cookies.get(name);
             if (cookie?.value && typeof cookie.value === 'string' && cookie.value.length > 0) {
@@ -146,7 +137,7 @@ export class TokenService {
             }
           }
 
-          // 3. Raw cookie header parsing (API server environment)
+          // Raw cookie header parsing (API server environment)
           const cookieHeader = req.headers?.get?.('cookie');
           if (typeof cookieHeader === 'string' && cookieHeader.length > 0) {
             const cookies = cookieHeader.split(';').reduce((acc, cookie) => {
@@ -173,7 +164,7 @@ export class TokenService {
         return undefined;
       };
 
-      // Scope-specific token extraction
+      // Scope-specific token extraction (cookies have priority for scoped requests)
       if (scope === 'admin') {
         const adminToken = getCookieValue('admin_accessToken');
         if (adminToken) return adminToken;
@@ -185,7 +176,7 @@ export class TokenService {
         if (infraToken) return infraToken;
       }
 
-      // When no scope is specified, check default cookies in priority order
+      // When no scope is specified, check default cookies first, then Authorization header
       if (!scope) {
         // Check user token first (most common case)
         const userToken = getCookieValue('accessToken');
@@ -198,6 +189,15 @@ export class TokenService {
         // Check infrastructure token as fallback
         const infraToken = getCookieValue('infra_accessToken');
         if (infraToken) return infraToken;
+      }
+
+      // Authorization header (fallback for scoped requests, fallback for unscoped)
+      const authHeader = req.headers?.get?.('authorization');
+      if (typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.split(' ')[1];
+        if (token && token.length > 0) {
+          return token;
+        }
       }
 
       return undefined;
