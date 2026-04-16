@@ -7,25 +7,31 @@ class TestRepository extends BaseRepository<any, any> {
 }
 
 describe('BaseRepository', () => {
-  it('findById uses select path when available and delete returns first row', async () => {
-    const whereMock = vi.fn().mockResolvedValue([{ id: '1' }]);
+  it('findById throws error to prevent usage and delete returns first row', async () => {
     const dbMock = {
-      select: vi.fn(() => ({ from: vi.fn(() => ({ where: whereMock })) })),
+      select: vi.fn(() => ({ from: vi.fn(() => ({ where: vi.fn() })) })),
       delete: vi.fn(() => ({ where: vi.fn(() => ({ returning: vi.fn().mockResolvedValue([{ id: '1' }]) })) })),
     } as any;
     const repo = new TestRepository(dbMock);
 
-    await expect(repo.findById('1')).resolves.toEqual({ id: '1' });
+    // findById should throw error to prevent usage
+    await expect(repo.findById('1')).rejects.toThrow('❌ DO NOT USE BASE REPOSITORY findById');
+    
+    // delete should still work
     await expect(repo.delete('1')).resolves.toEqual({ id: '1' });
   });
 
-  it('findById falls back to query.exams.findFirst and handles missing adapters', async () => {
+  it('findById always throws error regardless of DB configuration', async () => {
     const repoWithQuery = new TestRepository({
       query: { exams: { findFirst: vi.fn().mockResolvedValue({ id: '2' }) } },
     } as any);
-    await expect(repoWithQuery.findById('2')).resolves.toEqual({ id: '2' });
+    
+    // Should throw error even with query API available
+    await expect(repoWithQuery.findById('2')).rejects.toThrow('❌ DO NOT USE BASE REPOSITORY findById');
 
     const repoWithoutAdapters = new TestRepository({} as any);
-    await expect(repoWithoutAdapters.findById('3')).resolves.toBeUndefined();
+    
+    // Should throw error even without adapters
+    await expect(repoWithoutAdapters.findById('3')).rejects.toThrow('❌ DO NOT USE BASE REPOSITORY findById');
   });
 });

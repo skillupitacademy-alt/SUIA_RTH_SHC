@@ -12,7 +12,7 @@ export abstract class BaseRepository<Row, TableType extends AnyPgTable & { id: A
    */
   abstract withDb(dbClient: typeof db): this;
 
-  async findById(id: string): Promise<Row | undefined> {
+  async findById(_id: string): Promise<Row | undefined> {
     throw new Error('❌ DO NOT USE BASE REPOSITORY findById - Each repository must implement its own findById method with proper query API');
   }
 

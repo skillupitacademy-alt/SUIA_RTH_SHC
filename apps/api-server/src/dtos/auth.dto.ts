@@ -5,6 +5,7 @@ export interface UserSummaryDTO {
   isVerified: boolean;
   createdAt: Date;
   onboarded: boolean;
+  onboardingCompleted: boolean; // 🔥 Add for backward compatibility
   role: string;
   isAdmin: boolean;
 }
@@ -51,6 +52,7 @@ export function toUserSummaryDTO(user: AuthUserInput, isAdmin: boolean = false):
     isVerified: user.emailVerified === true,
     createdAt: user.createdAt,
     onboarded,
+    onboardingCompleted: onboarded, // 🔥 Add for backward compatibility
     role: isAdmin ? 'admin' : 'user',
     isAdmin
   };

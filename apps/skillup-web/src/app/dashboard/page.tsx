@@ -10,9 +10,12 @@ export const metadata = {
   description: 'Your SkillUp Engine Command Center.',
 };
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function Page() {
   const authState = await fetchBackendAuthState();
-  if (authState !== null && authState.onboardingCompleted !== true) {
+  if (authState && authState.onboardingCompleted === false) {
     redirect('/onboarding');
   }
   const data = await loadDashboardData(skillUpConfig);

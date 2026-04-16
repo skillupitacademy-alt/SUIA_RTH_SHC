@@ -10,9 +10,12 @@ export const metadata = {
   description: 'Set up your learning profile.',
 };
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function RTHOnboardingRoute() {
   const authState = await fetchBackendAuthState();
-  if (authState !== null && authState.onboardingCompleted === true) {
+  if (authState && authState.onboardingCompleted === true) {
     redirect('/dashboard');
   }
   const data = await loadOnboardingData(rthConfig);

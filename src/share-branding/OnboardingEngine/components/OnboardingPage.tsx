@@ -21,9 +21,10 @@ interface OnboardingPageProps {
 }
 
 async function persistOnboarding(data: OnboardingData, journeyStatus: OnboardingJourneyStatus) {
-  await fetch('/api/auth/onboarding', {
+  const response = await fetch('/api/auth/onboarding', {
     method: 'POST',
     credentials: 'include',
+    cache: 'no-store',
     headers: {
       'Content-Type': 'application/json',
     },
@@ -32,6 +33,12 @@ async function persistOnboarding(data: OnboardingData, journeyStatus: Onboarding
       journeyStatus,
     }),
   });
+  
+  if (!response.ok) {
+    throw new Error(`Onboarding submission failed: ${response.status}`);
+  }
+  
+  return response.json();
 }
 
 export function OnboardingPage({ config, data: viewData }: OnboardingPageProps) {
@@ -58,23 +65,59 @@ export function OnboardingPage({ config, data: viewData }: OnboardingPageProps) 
 
   const handleSkip = async () => {
     try {
+      // Submit onboarding data as skipped
       await persistOnboarding(data, 'skipped');
-    } finally {
-      router.push('/dashboard');
+      
+      // 🔥 CRITICAL: Force session refresh after onboarding
+      const refreshResponse = await fetch('/api/auth/me', { 
+        credentials: 'include', 
+        cache: 'no-store' 
+      });
+      
+      if (refreshResponse.ok) {
+        const refreshData = await refreshResponse.json();
+        console.log('[ONBOARDING_SKIP] Session refreshed:', refreshData?.user?.onboarded);
+      }
+      
+      // Force Next.js to refresh server components
+      router.refresh();
+      
+      // Navigate to dashboard with replace to prevent back navigation
+      router.replace('/dashboard');
+    } catch (error) {
+      console.error('Onboarding skip failed:', error);
+      // Force refresh and navigate even if there's an error
+      router.refresh();
+      router.replace('/dashboard');
     }
   };
 
   const handleComplete = async () => {
     try {
+      // Submit onboarding data
       await persistOnboarding(data, 'completed');
+      
       // 🔥 CRITICAL: Force session refresh after onboarding
-      router.refresh(); // Force Next.js to refresh server components
-      await fetch('/api/auth/me', { 
+      const refreshResponse = await fetch('/api/auth/me', { 
         credentials: 'include', 
         cache: 'no-store' 
-      }); // Ensure fresh session state
-    } finally {
-      router.push('/dashboard');
+      });
+      
+      if (refreshResponse.ok) {
+        const refreshData = await refreshResponse.json();
+        console.log('[ONBOARDING_COMPLETE] Session refreshed:', refreshData?.user?.onboarded);
+      }
+      
+      // Force Next.js to refresh server components
+      router.refresh();
+      
+      // Navigate to dashboard with replace to prevent back navigation
+      router.replace('/dashboard');
+    } catch (error) {
+      console.error('Onboarding completion failed:', error);
+      // Force refresh and navigate even if there's an error
+      router.refresh();
+      router.replace('/dashboard');
     }
   };
 

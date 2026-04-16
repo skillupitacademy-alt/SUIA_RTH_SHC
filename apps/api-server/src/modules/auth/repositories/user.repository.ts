@@ -72,7 +72,7 @@ export class UserRepository extends BaseRepository<User, typeof users> {
     });
     
     // STRICT DB VALIDATION - NO fallback allowed (except in tests)
-    if (!isTestEnv && (!dbInstance || typeof dbInstance.select !== 'function')) {
+    if (!isTestEnv && (typeof dbInstance?.select !== 'function')) {
       throw new Error('❌ INVALID DB INSTANCE');
     }
   }
@@ -366,7 +366,7 @@ export class UserRepository extends BaseRepository<User, typeof users> {
       hasUsers: typeof db.query?.users === 'object' && db.query?.users !== null,
       hasFindFirst: typeof db.query?.users?.findFirst === 'function',
       dbType: db?.constructor?.name,
-      queryKeys: db.query ? Object.keys(db.query) : 'no query'
+      queryKeys: typeof db.query === 'object' && db.query !== null ? Object.keys(db.query) : 'no query'
     });
     
     // Force production mode - NO test environment fallback
@@ -397,6 +397,11 @@ export class UserRepository extends BaseRepository<User, typeof users> {
       subDomain?: string;
       timeCommitment?: string;
       journeyStatus?: string;
+      // 🔥 CRITICAL FIX: Accept ALL user input fields
+      fullName?: string;
+      educationLevel?: string;
+      status?: 'student' | 'professional';
+      skillLevel?: 'beginner' | 'intermediate' | 'advanced';
     }
   ): Promise<void> {
     console.log('[TRACE] entering saveUserPreferences', { userId });
@@ -433,16 +438,20 @@ export class UserRepository extends BaseRepository<User, typeof users> {
       existingProfile = null;
     }
 
-    // Use existing name or fallback to email
-    const userName = (existingProfile !== null && typeof existingProfile.name === 'string' && existingProfile.name !== '') 
-      ? existingProfile.name 
-      : user.email;
+    // 🔥 CRITICAL FIX: Use user-provided fullName if available, otherwise fallback
+    const userName = (preferences.fullName !== undefined && preferences.fullName !== null && preferences.fullName !== '') 
+      ? preferences.fullName
+      : (existingProfile !== null && typeof existingProfile.name === 'string' && existingProfile.name !== '') 
+        ? existingProfile.name 
+        : user.email;
 
-    // Use the existing upsertOnboardingProfile method which handles the complexity
+    // 🔥 CRITICAL FIX: Use ALL user-provided values instead of hardcoded defaults
     const onboardingData: PersistedOnboardingInput = {
-      fullName: userName, // Use actual user name to satisfy NOT NULL constraint
-      educationLevel: 'unknown',
-      status: 'student',
+      fullName: userName,
+      educationLevel: (preferences.educationLevel !== undefined && preferences.educationLevel !== null && preferences.educationLevel !== '') 
+        ? preferences.educationLevel 
+        : 'unknown',
+      status: preferences.status ?? 'student',
       primaryGoal: (preferences.primaryGoal !== undefined && preferences.primaryGoal !== null && preferences.primaryGoal !== '') 
         ? preferences.primaryGoal 
         : 'learning',
@@ -450,14 +459,22 @@ export class UserRepository extends BaseRepository<User, typeof users> {
         ? preferences.domain 
         : 'general',
       subDomain: preferences.subDomain,
-      skillLevel: 'beginner',
+      skillLevel: preferences.skillLevel ?? 'beginner',
       timeCommitment: (preferences.timeCommitment !== undefined && preferences.timeCommitment !== null && preferences.timeCommitment !== '') 
         ? preferences.timeCommitment 
         : 'flexible',
       journeyStatus: 'completed',
     };
 
-    console.log('[TRACE] calling upsertOnboardingProfile');
+    console.log('[TRACE] calling upsertOnboardingProfile with data:', {
+      hasFullName: Boolean(onboardingData.fullName),
+      educationLevel: onboardingData.educationLevel,
+      status: onboardingData.status,
+      skillLevel: onboardingData.skillLevel,
+      primaryGoal: onboardingData.primaryGoal,
+      domain: onboardingData.domain,
+    });
+    
     await this.upsertOnboardingProfile(userId, onboardingData);
     console.log('[TRACE] saveUserPreferences completed');
   }

@@ -24,7 +24,7 @@ import { withCorrelationId } from '@/lib/correlation-id.middleware';
  * DO NOT add business logic beyond saving preferences
  */
 async function handler(req: NextRequest) {
-  console.log('🔥 BUILD VERSION:', process.env.GIT_SHA || 'NO_SHA');
+  console.log('🔥 BUILD VERSION:', process.env.GIT_SHA ?? 'NO_SHA');
   console.log('🔥 ONBOARDING ROUTE HIT - NEW VERSION');
   
   const start = Date.now();
@@ -68,13 +68,20 @@ async function handler(req: NextRequest) {
       return ApiResponse.error(badRequest('Invalid request body'));
     }
 
-    // Extract onboarding preferences
+    // Extract onboarding preferences - SAVE ALL USER INPUT
     const preferences = {
+      // Core preferences
       primaryGoal: typeof body.primaryGoal === 'string' ? body.primaryGoal : undefined,
       domain: typeof body.domain === 'string' ? body.domain : undefined,
       subDomain: typeof body.subDomain === 'string' ? body.subDomain : undefined,
       timeCommitment: typeof body.timeCommitment === 'string' ? body.timeCommitment : undefined,
       journeyStatus: typeof body.journeyStatus === 'string' ? body.journeyStatus : undefined,
+      
+      // 🔥 CRITICAL FIX: Extract ALL user input fields that were missing
+      fullName: typeof body.fullName === 'string' ? body.fullName : undefined,
+      educationLevel: typeof body.educationLevel === 'string' ? body.educationLevel : undefined,
+      status: (body.status === 'student' || body.status === 'professional') ? body.status : undefined,
+      skillLevel: (body.skillLevel === 'beginner' || body.skillLevel === 'intermediate' || body.skillLevel === 'advanced') ? body.skillLevel : undefined,
     };
 
     console.log('[ONBOARDING][PREFERENCES]', JSON.stringify({
@@ -83,6 +90,10 @@ async function handler(req: NextRequest) {
       brand: payload.brand,
       hasGoal: preferences.primaryGoal !== undefined,
       hasDomain: preferences.domain !== undefined,
+      hasFullName: preferences.fullName !== undefined,
+      hasEducationLevel: preferences.educationLevel !== undefined,
+      hasStatus: preferences.status !== undefined,
+      hasSkillLevel: preferences.skillLevel !== undefined,
     }));
 
     // STEP 2: Get brand-specific DB instance
@@ -92,12 +103,12 @@ async function handler(req: NextRequest) {
     // MANDATORY RUNTIME DB VALIDATION
     console.log('[FINAL_DB_CHECK]', {
       hasSelect: typeof db.select === 'function',
-      hasQuery: !!db.query,
+      hasQuery: Boolean(db.query),
       dbType: db?.constructor?.name
     });
     
     // STEP 3: Add hard check - NO fallback allowed
-    if (!db || typeof db.select !== 'function') {
+    if (typeof db?.select !== 'function') {
       throw new Error('❌ INVALID DB INSTANCE');
     }
     
@@ -113,7 +124,7 @@ async function handler(req: NextRequest) {
     console.log('[ONBOARDING_DEBUG] Creating UserRepository with brand DB');
     console.log('[ONBOARDING_DEBUG] DB instance type:', typeof db);
     console.log('[ONBOARDING_DEBUG] DB has select:', typeof db.select === 'function');
-    console.log('[ONBOARDING_DEBUG] DB has query:', !!db.query);
+    console.log('[ONBOARDING_DEBUG] DB has query:', Boolean(db.query));
     
     const userRepo = new UserRepository(db, tables);
     

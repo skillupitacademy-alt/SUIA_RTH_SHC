@@ -39,7 +39,7 @@ async function handler(req: NextRequest) {
     const tokenService = container.get(TokenService);
     const accessToken = tokenService.getAccessToken(req);
 
-    if (accessToken === undefined || accessToken === null || accessToken === '') {
+    if (typeof accessToken !== 'string' || accessToken.length === 0) {
       console.log('[AUTH_FLOW][ME][NO_TOKEN]', JSON.stringify({ requestId }));
       recordCounter(METRICS.AUTH.FAILURE, 1, { reason: 'no_token' });
       return NextResponse.json({ user: null }, { status: 401 });
@@ -67,7 +67,7 @@ async function handler(req: NextRequest) {
       securityNote: 'Brand resolved from signed JWT payload'
     });
 
-    if (brand === null || brand === undefined || (brand !== 'realtutorialhub' && brand !== 'skillup')) {
+    if (typeof brand !== 'string' || (brand !== 'realtutorialhub' && brand !== 'skillup')) {
       console.log('[ME_DEBUG] FAILURE: Invalid brand in JWT payload');
       recordCounter(METRICS.AUTH.FAILURE, 1, { reason: 'invalid_token_brand' });
       return NextResponse.json({ user: null }, { status: 401 });
@@ -79,12 +79,12 @@ async function handler(req: NextRequest) {
     // MANDATORY RUNTIME DB VALIDATION
     console.log('[FINAL_DB_CHECK]', {
       hasSelect: typeof brandContext.db.select === 'function',
-      hasQuery: !!brandContext.db.query,
+      hasQuery: Boolean(brandContext.db.query),
       dbType: brandContext.db?.constructor?.name
     });
     
     // STRICT DB VALIDATION - NO fallback allowed
-    if (!brandContext.db || typeof brandContext.db.select !== 'function') {
+    if (typeof brandContext.db?.select !== 'function') {
       throw new Error('❌ INVALID DB INSTANCE');
     }
     
@@ -93,7 +93,7 @@ async function handler(req: NextRequest) {
     console.log('[ME_DEBUG] Database context:', {
       brand,
       useBrandBinding,
-      dbInstance: brandContext.db !== null && brandContext.db !== undefined ? 'present' : 'missing'
+      dbInstance: typeof brandContext.db === 'object' && brandContext.db !== null ? 'present' : 'missing'
     });
 
     const userRepo = container.get(UserRepository);

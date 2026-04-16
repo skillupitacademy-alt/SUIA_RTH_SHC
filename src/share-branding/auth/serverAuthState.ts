@@ -49,6 +49,7 @@ export async function fetchBackendAuthState(): Promise<BackendAuthUserState | nu
     const response = await fetch(`${getInternalApiBase()}/auth/me`, {
       headers: {
         Cookie: cookieHeader,
+        'Cache-Control': 'no-cache',
       },
       cache: 'no-store',
     });
@@ -58,7 +59,19 @@ export async function fetchBackendAuthState(): Promise<BackendAuthUserState | nu
     }
 
     const payload = (await response.json().catch(() => null)) as { user?: BackendAuthUserState } | null;
-    return payload?.user ?? null;
+    const user = payload?.user ?? null;
+    
+    // 🔥 CRITICAL: Normalize onboardingCompleted from onboarded field
+    if (user) {
+      user.onboardingCompleted = user.onboarded === true;
+      console.log('[AUTH_STATE]', {
+        userId: user.id,
+        onboarded: user.onboarded,
+        onboardingCompleted: user.onboardingCompleted
+      });
+    }
+    
+    return user;
   } catch {
     return null;
   }
