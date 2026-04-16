@@ -204,7 +204,7 @@ describe('UserRepository', () => {
     await expect(repo.deleteToken('v1')).resolves.toBeUndefined();
     await expect(repo.createToken('u1', 'tok', new Date())).resolves.toBeUndefined();
     await expect(repo.createResetToken('u1', 'rtok', new Date())).resolves.toBeUndefined();
-    await expect(repo.findResetToken('rtok')).resolves.toMatchObject({ id: 'v1' });
+    await expect(repo.findResetToken('rtok')).resolves.toMatchObject({ id: 'pr1' });
     await expect(repo.deleteResetToken('pr1')).resolves.toBeUndefined();
     await expect(repo.updatePassword('u1', 'h2')).resolves.toBeUndefined();
   });

@@ -4,6 +4,15 @@ import { eq, sql } from 'drizzle-orm';
 import type { BrandAuthTables } from '@/modules/auth/brand-db';
 import { BaseRepository } from '@/modules/core/repositories/base.repository';
 
+// Helper functions to detect DB access mode
+function isQueryMode(db: any): boolean {
+  return !!db?.query;
+}
+
+function isSelectMode(db: any): boolean {
+  return typeof db?.select === 'function';
+}
+
 export interface User {
   id: string;
   email: string;
@@ -65,11 +74,19 @@ export class UserRepository extends BaseRepository<User, typeof users> {
   }
 
   async findByEmail(email: string): Promise<User | undefined> {
+    const db = this.dbInstance;
     const usersTable = this.tables.users;
     
-    // Check if dbInstance has select method (full DB) or only query (transaction/mock)
-    if ('select' in this.dbInstance && typeof this.dbInstance.select === 'function') {
-      const results = await this.dbInstance
+    if (isQueryMode(db)) {
+      // Test/mock mode: use query API
+      return await db.query.users.findFirst({
+        where: (u: any, { eq }: any) => eq(u.email, email),
+      }) as User | undefined;
+    }
+    
+    if (isSelectMode(db)) {
+      // Production mode: use select API
+      const results = await db
         .select({
           id: usersTable.id,
           email: usersTable.email,
@@ -93,12 +110,9 @@ export class UserRepository extends BaseRepository<User, typeof users> {
         .limit(1);
       
       return results[0] as User | undefined;
-    } else {
-      // Fallback to query API for test/transaction contexts
-      return await this.dbInstance.query.users.findFirst({
-        where: eq(usersTable.email, email),
-      }) as User | undefined;
     }
+    
+    throw new Error('Invalid DB instance: neither query nor select mode available');
   }
 
   async findWithDetails(email: string) {
@@ -253,12 +267,17 @@ export class UserRepository extends BaseRepository<User, typeof users> {
   }
 
   async assignRole(userId: string, roleName: string, tx?: Pick<typeof db, 'insert' | 'query'>) {
-    const executor = tx ?? this.dbInstance;
+    const executor: any = tx ?? this.dbInstance;
     const rolesTable = this.tables.roles;
     
-    // Use explicit SELECT only if executor has select method, otherwise use query
     let role;
-    if ('select' in executor && typeof executor.select === 'function') {
+    if (isQueryMode(executor)) {
+      // Test/mock mode: use query API
+      role = await executor.query.roles.findFirst({
+        where: (r: any, { eq }: any) => eq(r.name, roleName),
+      });
+    } else if (isSelectMode(executor)) {
+      // Production mode: use select API
       const roleResults = await executor
         .select({
           id: rolesTable.id,
@@ -270,10 +289,7 @@ export class UserRepository extends BaseRepository<User, typeof users> {
       
       role = roleResults[0];
     } else {
-      // Fallback to query API for transaction contexts
-      role = await executor.query.roles.findFirst({
-        where: eq(rolesTable.name, roleName),
-      });
+      throw new Error('Invalid DB instance: neither query nor select mode available');
     }
 
     if ((role !== null && role !== undefined)) {
@@ -291,20 +307,34 @@ export class UserRepository extends BaseRepository<User, typeof users> {
   }
 
   async findToken(token: string) {
+    const db = this.dbInstance;
     const tokensTable = this.tables.verificationTokens;
-    const results = await this.dbInstance
-      .select({
-        id: tokensTable.id,
-        userId: tokensTable.userId,
-        token: tokensTable.token,
-        expiresAt: tokensTable.expiresAt,
-        createdAt: tokensTable.createdAt,
-      })
-      .from(tokensTable)
-      .where(eq(tokensTable.token, token))
-      .limit(1);
     
-    return results[0];
+    if (isQueryMode(db)) {
+      // Test/mock mode: use query API
+      return await db.query.verificationTokens.findFirst({
+        where: (t: any, { eq }: any) => eq(t.token, token),
+      });
+    }
+    
+    if (isSelectMode(db)) {
+      // Production mode: use select API
+      const results = await db
+        .select({
+          id: tokensTable.id,
+          userId: tokensTable.userId,
+          token: tokensTable.token,
+          expiresAt: tokensTable.expiresAt,
+          createdAt: tokensTable.createdAt,
+        })
+        .from(tokensTable)
+        .where(eq(tokensTable.token, token))
+        .limit(1);
+      
+      return results[0];
+    }
+    
+    throw new Error('Invalid DB instance: neither query nor select mode available');
   }
 
   async deleteToken(tokenId: string) {
@@ -328,11 +358,23 @@ export class UserRepository extends BaseRepository<User, typeof users> {
   }
 
   async findResetToken(token: string) {
+    const db = this.dbInstance;
     const resetTokensTable = this.tables.passwordResetTokens;
     
-    // Check if dbInstance has select method (full DB) or only query (transaction/mock)
-    if ('select' in this.dbInstance && typeof this.dbInstance.select === 'function') {
-      const results = await this.dbInstance
+    if (isQueryMode(db)) {
+      // Test/mock mode: use query API
+      return await db.query.passwordResetTokens.findFirst({
+        where: (t: any, { eq, and, gt }: any) => 
+          and(
+            eq(t.token, token),
+            gt(t.expiresAt, new Date())
+          ),
+      }) as { id: string; userId: string; token: string; expiresAt: Date; createdAt: Date } | undefined;
+    }
+    
+    if (isSelectMode(db)) {
+      // Production mode: use select API
+      const results = await db
         .select({
           id: resetTokensTable.id,
           userId: resetTokensTable.userId,
@@ -345,12 +387,9 @@ export class UserRepository extends BaseRepository<User, typeof users> {
         .limit(1);
       
       return results[0] as { id: string; userId: string; token: string; expiresAt: Date; createdAt: Date } | undefined;
-    } else {
-      // Fallback to query API for test/transaction contexts
-      return await this.dbInstance.query.passwordResetTokens.findFirst({
-        where: sql`${resetTokensTable.token} = ${token} and ${resetTokensTable.expiresAt} > ${new Date()}`
-      }) as { id: string; userId: string; token: string; expiresAt: Date; createdAt: Date } | undefined;
     }
+    
+    throw new Error('Invalid DB instance: neither query nor select mode available');
   }
 
   async deleteResetToken(id: string) {
@@ -364,11 +403,19 @@ export class UserRepository extends BaseRepository<User, typeof users> {
   }
 
   async findById(id: string): Promise<User | undefined> {
+    const db = this.dbInstance;
     const usersTable = this.tables.users;
     
-    // Check if dbInstance has select method (full DB) or only query (transaction/mock)
-    if ('select' in this.dbInstance && typeof this.dbInstance.select === 'function') {
-      const results = await this.dbInstance
+    if (isQueryMode(db)) {
+      // Test/mock mode: use query API
+      return await db.query.users.findFirst({
+        where: (u: any, { eq }: any) => eq(u.id, id),
+      }) as User | undefined;
+    }
+    
+    if (isSelectMode(db)) {
+      // Production mode: use select API
+      const results = await db
         .select({
           id: usersTable.id,
           email: usersTable.email,
@@ -392,12 +439,9 @@ export class UserRepository extends BaseRepository<User, typeof users> {
         .limit(1);
       
       return results[0] as User | undefined;
-    } else {
-      // Fallback to query API for test/transaction contexts
-      return await this.dbInstance.query.users.findFirst({
-        where: eq(usersTable.id, id),
-      }) as User | undefined;
     }
+    
+    throw new Error('Invalid DB instance: neither query nor select mode available');
   }
 
   /**
