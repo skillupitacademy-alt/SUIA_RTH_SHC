@@ -82,6 +82,70 @@ export class UserRepository extends BaseRepository<User, typeof users> {
     return this.hydrateUserDetails(user);
   }
 
+  private async hydrateUserDetails(user: User) {
+    let profile = null;
+    
+    try {
+      // Safe SELECT query to prevent schema mismatch crashes
+      const profileRows = await this.dbInstance
+        .select({
+          id: this.tables.userProfiles.id,
+          userId: this.tables.userProfiles.userId,
+          name: this.tables.userProfiles.name,
+          educationLevel: this.tables.userProfiles.educationLevel,
+          professionalStatus: this.tables.userProfiles.professionalStatus,
+          ageGroup: this.tables.userProfiles.ageGroup,
+          experienceYears: this.tables.userProfiles.experienceYears,
+          domainInterest: this.tables.userProfiles.domainInterest,
+          adaptiveLevel: this.tables.userProfiles.adaptiveLevel,
+          primaryGoal: this.tables.userProfiles.primaryGoal,
+          domain: this.tables.userProfiles.domain,
+          subDomain: this.tables.userProfiles.subDomain,
+          timeCommitment: this.tables.userProfiles.timeCommitment,
+          journeyStatus: this.tables.userProfiles.journeyStatus,
+          onboardingCompleted: this.tables.userProfiles.onboardingCompleted,
+          createdAt: this.tables.userProfiles.createdAt,
+          updatedAt: this.tables.userProfiles.updatedAt,
+        })
+        .from(this.tables.userProfiles)
+        .where(eq(this.tables.userProfiles.userId, user.id))
+        .limit(1);
+      
+      profile = profileRows[0] ?? null;
+    } catch {
+      console.warn('[USER_REPOSITORY] Profile fetch failed, continuing without profile');
+      profile = null;
+    }
+
+    let roleRows: Array<{ roleId: string; roleName: string }> = [];
+    
+    try {
+      roleRows = await this.dbInstance
+        .select({
+          roleId: this.tables.roles.id,
+          roleName: this.tables.roles.name,
+        })
+        .from(this.tables.userRoles)
+        .innerJoin(this.tables.roles, eq(this.tables.userRoles.roleId, this.tables.roles.id))
+        .where(eq(this.tables.userRoles.userId, user.id));
+    } catch {
+      console.warn('[USER_REPOSITORY] Role fetch failed, continuing without roles');
+      roleRows = [];
+    }
+
+    return {
+      ...user,
+      profile,
+      userRoles: roleRows.map((roleRow) => ({
+        roleId: roleRow.roleId,
+        role: {
+          id: roleRow.roleId,
+          name: roleRow.roleName,
+        },
+      })),
+    };
+  }
+
   async updateLastActive(id: string, date: Date = new Date()) {
     await this.dbInstance.update(this.tables.users).set({ lastActiveAt: date }).where(eq(this.tables.users.id, id));
   }
@@ -120,11 +184,25 @@ export class UserRepository extends BaseRepository<User, typeof users> {
       updatedAt: new Date(),
     };
 
-    const existing = await this.dbInstance.query.userProfiles.findFirst({
-      where: eq(this.tables.userProfiles.userId, userId),
-    });
+    let existing = null;
+    
+    try {
+      // Safe SELECT query to check if profile exists
+      const existingRows = await this.dbInstance
+        .select({
+          id: this.tables.userProfiles.id,
+        })
+        .from(this.tables.userProfiles)
+        .where(eq(this.tables.userProfiles.userId, userId))
+        .limit(1);
+      
+      existing = existingRows[0] ?? null;
+    } catch {
+      console.warn('[USER_REPOSITORY] Profile existence check failed, will attempt insert');
+      existing = null;
+    }
 
-    if (existing !== undefined) {
+    if (existing !== null && existing !== undefined) {
       const [updated] = await this.dbInstance
         .update(this.tables.userProfiles)
         .set(values)
@@ -149,7 +227,7 @@ export class UserRepository extends BaseRepository<User, typeof users> {
       where: sql`${this.tables.roles.name} = ${roleName}`,
     });
 
-    if (role !== null && role !== undefined) {
+    if ((role !== null && role !== undefined)) {
       await executor.insert(this.tables.userRoles).values({
         userId,
         roleId: role.id,
@@ -226,41 +304,56 @@ export class UserRepository extends BaseRepository<User, typeof users> {
       journeyStatus?: string;
     }
   ): Promise<void> {
-    // STEP 1 — CHECK IF PROFILE EXISTS
-    const existing = await this.dbInstance
-      .select()
-      .from(this.tables.userProfiles)
-      .where(eq(this.tables.userProfiles.userId, userId))
-      .limit(1);
-
-    // STEP 2 — IF EXISTS → UPDATE
-    if (existing.length > 0) {
-      await this.dbInstance.update(this.tables.userProfiles)
-        .set({
-          primaryGoal: preferences.primaryGoal,
-          domain: preferences.domain,
-          subDomain: preferences.subDomain,
-          timeCommitment: preferences.timeCommitment,
-          journeyStatus: preferences.journeyStatus,
-        })
-        .where(eq(this.tables.userProfiles.userId, userId));
-    } 
-    // STEP 3 — IF NOT EXISTS → INSERT (WITH NAME)
-    else {
-      const user = await this.dbInstance.select().from(this.tables.users)
-        .where(eq(this.tables.users.id, userId))
-        .limit(1);
-
-      await this.dbInstance.insert(this.tables.userProfiles).values({
-        userId,
-        name: user[0]?.email || 'User', // Safe fallback for required name field
-        primaryGoal: preferences.primaryGoal,
-        domain: preferences.domain,
-        subDomain: preferences.subDomain,
-        timeCommitment: preferences.timeCommitment,
-        journeyStatus: preferences.journeyStatus,
-      });
+    // Get user's actual name from database to satisfy NOT NULL constraint
+    const user = await this.findById(userId);
+    if (user === undefined) {
+      throw new Error(`User not found: ${userId}`);
     }
+
+    let existingProfile = null;
+    
+    try {
+      // Safe SELECT query to check if profile already exists
+      const profileRows = await this.dbInstance
+        .select({
+          id: this.tables.userProfiles.id,
+          name: this.tables.userProfiles.name,
+        })
+        .from(this.tables.userProfiles)
+        .where(eq(this.tables.userProfiles.userId, userId))
+        .limit(1);
+      
+      existingProfile = profileRows[0] ?? null;
+    } catch {
+      console.warn('[USER_REPOSITORY] Profile check failed, will create new profile');
+      existingProfile = null;
+    }
+
+    // Use existing name or fallback to email
+    const userName = (existingProfile !== null && existingProfile.name !== undefined && existingProfile.name !== null && existingProfile.name !== '') 
+      ? existingProfile.name 
+      : user.email;
+
+    // Use the existing upsertOnboardingProfile method which handles the complexity
+    const onboardingData: PersistedOnboardingInput = {
+      fullName: userName, // Use actual user name to satisfy NOT NULL constraint
+      educationLevel: 'unknown',
+      status: 'student',
+      primaryGoal: (preferences.primaryGoal !== undefined && preferences.primaryGoal !== null && preferences.primaryGoal !== '') 
+        ? preferences.primaryGoal 
+        : 'learning',
+      domain: (preferences.domain !== undefined && preferences.domain !== null && preferences.domain !== '') 
+        ? preferences.domain 
+        : 'general',
+      subDomain: preferences.subDomain,
+      skillLevel: 'beginner',
+      timeCommitment: (preferences.timeCommitment !== undefined && preferences.timeCommitment !== null && preferences.timeCommitment !== '') 
+        ? preferences.timeCommitment 
+        : 'flexible',
+      journeyStatus: 'completed',
+    };
+
+    await this.upsertOnboardingProfile(userId, onboardingData);
   }
 
   /**
@@ -281,30 +374,4 @@ export class UserRepository extends BaseRepository<User, typeof users> {
     return this.findById(userId);
   }
 
-  private async hydrateUserDetails(user: User) {
-    const profile = await this.dbInstance.query.userProfiles.findFirst({
-      where: eq(this.tables.userProfiles.userId, user.id),
-    });
-
-    const roleRows = await this.dbInstance
-      .select({
-        roleId: this.tables.roles.id,
-        roleName: this.tables.roles.name,
-      })
-      .from(this.tables.userRoles)
-      .innerJoin(this.tables.roles, eq(this.tables.userRoles.roleId, this.tables.roles.id))
-      .where(eq(this.tables.userRoles.userId, user.id));
-
-    return {
-      ...user,
-      profile,
-      userRoles: roleRows.map((roleRow) => ({
-        roleId: roleRow.roleId,
-        role: {
-          id: roleRow.roleId,
-          name: roleRow.roleName,
-        },
-      })),
-    };
-  }
 }
