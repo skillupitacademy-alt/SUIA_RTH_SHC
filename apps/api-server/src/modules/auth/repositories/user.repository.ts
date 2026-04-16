@@ -75,7 +75,6 @@ export class UserRepository extends BaseRepository<User, typeof users> {
 
   async findByEmail(email: string): Promise<User | undefined> {
     const db = this.dbInstance;
-    const usersTable = this.tables.users;
     
     if (isQueryMode(db)) {
       // Test/mock mode: use query API
@@ -85,14 +84,10 @@ export class UserRepository extends BaseRepository<User, typeof users> {
     }
     
     if (isSelectMode(db)) {
-      // Production mode: use select API without explicit column selection to avoid alias issues
-      const results = await db
-        .select()
-        .from(usersTable)
-        .where(eq(usersTable.email, email))
-        .limit(1);
-      
-      return results[0] as User | undefined;
+      // Production mode: use query API to avoid Drizzle alias conflict
+      return await db.query.users.findFirst({
+        where: (u: any, { eq }: any) => eq(u.email, email),
+      }) as User | undefined;
     }
     
     throw new Error('Invalid DB instance: neither query nor select mode available');
@@ -387,7 +382,6 @@ export class UserRepository extends BaseRepository<User, typeof users> {
 
   async findById(id: string): Promise<User | undefined> {
     const db = this.dbInstance;
-    const usersTable = this.tables.users;
     
     if (isQueryMode(db)) {
       // Test/mock mode: use query API
@@ -398,14 +392,11 @@ export class UserRepository extends BaseRepository<User, typeof users> {
     
     if (isSelectMode(db)) {
       // Production mode: use select API
-      // Use explicit column selection without table alias to avoid "users" "users" duplicate
-      const results = await db
-        .select()
-        .from(usersTable)
-        .where(eq(usersTable.id, id))
-        .limit(1);
-      
-      return results[0] as User | undefined;
+      // CRITICAL: Do NOT use this.tables.users in from() - causes duplicate alias
+      // Use db.query instead to avoid Drizzle alias conflict
+      return await db.query.users.findFirst({
+        where: (u: any, { eq }: any) => eq(u.id, id),
+      }) as User | undefined;
     }
     
     throw new Error('Invalid DB instance: neither query nor select mode available');
