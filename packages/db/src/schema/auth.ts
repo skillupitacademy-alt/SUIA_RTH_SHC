@@ -13,6 +13,7 @@ export const users = pgTable("users", {
   deletedAt: timestamp("deleted_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  shadowUserId: uuid('shadow_user_id'),
   // Onboarding fields
   isOnboarded: boolean("is_onboarded").notNull().default(false),
   primaryGoal: text("primary_goal"),

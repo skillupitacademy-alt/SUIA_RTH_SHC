@@ -66,30 +66,39 @@ export class UserRepository extends BaseRepository<User, typeof users> {
 
   async findByEmail(email: string): Promise<User | undefined> {
     const usersTable = this.tables.users;
-    const results = await this.dbInstance
-      .select({
-        id: usersTable.id,
-        email: usersTable.email,
-        passwordHash: usersTable.passwordHash,
-        emailVerified: usersTable.emailVerified,
-        isBlocked: usersTable.isBlocked,
-        lastActiveAt: usersTable.lastActiveAt,
-        deletedAt: usersTable.deletedAt,
-        createdAt: usersTable.createdAt,
-        updatedAt: usersTable.updatedAt,
-        shadowUserId: usersTable.shadowUserId,
-        isOnboarded: usersTable.isOnboarded,
-        primaryGoal: usersTable.primaryGoal,
-        domain: usersTable.domain,
-        subDomain: usersTable.subDomain,
-        timeCommitment: usersTable.timeCommitment,
-        journeyStatus: usersTable.journeyStatus,
-      })
-      .from(usersTable)
-      .where(eq(usersTable.email, email))
-      .limit(1);
     
-    return results[0] as User | undefined;
+    // Check if dbInstance has select method (full DB) or only query (transaction/mock)
+    if ('select' in this.dbInstance && typeof this.dbInstance.select === 'function') {
+      const results = await this.dbInstance
+        .select({
+          id: usersTable.id,
+          email: usersTable.email,
+          passwordHash: usersTable.passwordHash,
+          emailVerified: usersTable.emailVerified,
+          isBlocked: usersTable.isBlocked,
+          lastActiveAt: usersTable.lastActiveAt,
+          deletedAt: usersTable.deletedAt,
+          createdAt: usersTable.createdAt,
+          updatedAt: usersTable.updatedAt,
+          shadowUserId: (usersTable as any).shadowUserId,
+          isOnboarded: usersTable.isOnboarded,
+          primaryGoal: usersTable.primaryGoal,
+          domain: usersTable.domain,
+          subDomain: usersTable.subDomain,
+          timeCommitment: usersTable.timeCommitment,
+          journeyStatus: usersTable.journeyStatus,
+        })
+        .from(usersTable)
+        .where(eq(usersTable.email, email))
+        .limit(1);
+      
+      return results[0] as User | undefined;
+    } else {
+      // Fallback to query API for test/transaction contexts
+      return await this.dbInstance.query.users.findFirst({
+        where: eq(usersTable.email, email),
+      }) as User | undefined;
+    }
   }
 
   async findWithDetails(email: string) {
@@ -247,17 +256,25 @@ export class UserRepository extends BaseRepository<User, typeof users> {
     const executor = tx ?? this.dbInstance;
     const rolesTable = this.tables.roles;
     
-    // Use explicit SELECT to avoid duplicate alias issue
-    const roleResults = await executor
-      .select({
-        id: rolesTable.id,
-        name: rolesTable.name,
-      })
-      .from(rolesTable)
-      .where(eq(rolesTable.name, roleName))
-      .limit(1);
-    
-    const role = roleResults[0];
+    // Use explicit SELECT only if executor has select method, otherwise use query
+    let role;
+    if ('select' in executor && typeof executor.select === 'function') {
+      const roleResults = await executor
+        .select({
+          id: rolesTable.id,
+          name: rolesTable.name,
+        })
+        .from(rolesTable)
+        .where(eq(rolesTable.name, roleName))
+        .limit(1);
+      
+      role = roleResults[0];
+    } else {
+      // Fallback to query API for transaction contexts
+      role = await executor.query.roles.findFirst({
+        where: eq(rolesTable.name, roleName),
+      });
+    }
 
     if ((role !== null && role !== undefined)) {
       await executor.insert(this.tables.userRoles).values({
@@ -312,19 +329,28 @@ export class UserRepository extends BaseRepository<User, typeof users> {
 
   async findResetToken(token: string) {
     const resetTokensTable = this.tables.passwordResetTokens;
-    const results = await this.dbInstance
-      .select({
-        id: resetTokensTable.id,
-        userId: resetTokensTable.userId,
-        token: resetTokensTable.token,
-        expiresAt: resetTokensTable.expiresAt,
-        createdAt: resetTokensTable.createdAt,
-      })
-      .from(resetTokensTable)
-      .where(sql`${resetTokensTable.token} = ${token} and ${resetTokensTable.expiresAt} > ${new Date()}`)
-      .limit(1);
     
-    return results[0];
+    // Check if dbInstance has select method (full DB) or only query (transaction/mock)
+    if ('select' in this.dbInstance && typeof this.dbInstance.select === 'function') {
+      const results = await this.dbInstance
+        .select({
+          id: resetTokensTable.id,
+          userId: resetTokensTable.userId,
+          token: resetTokensTable.token,
+          expiresAt: resetTokensTable.expiresAt,
+          createdAt: resetTokensTable.createdAt,
+        })
+        .from(resetTokensTable)
+        .where(sql`${resetTokensTable.token} = ${token} and ${resetTokensTable.expiresAt} > ${new Date()}`)
+        .limit(1);
+      
+      return results[0] as { id: string; userId: string; token: string; expiresAt: Date; createdAt: Date } | undefined;
+    } else {
+      // Fallback to query API for test/transaction contexts
+      return await this.dbInstance.query.passwordResetTokens.findFirst({
+        where: sql`${resetTokensTable.token} = ${token} and ${resetTokensTable.expiresAt} > ${new Date()}`
+      }) as { id: string; userId: string; token: string; expiresAt: Date; createdAt: Date } | undefined;
+    }
   }
 
   async deleteResetToken(id: string) {
@@ -339,30 +365,39 @@ export class UserRepository extends BaseRepository<User, typeof users> {
 
   async findById(id: string): Promise<User | undefined> {
     const usersTable = this.tables.users;
-    const results = await this.dbInstance
-      .select({
-        id: usersTable.id,
-        email: usersTable.email,
-        passwordHash: usersTable.passwordHash,
-        emailVerified: usersTable.emailVerified,
-        isBlocked: usersTable.isBlocked,
-        lastActiveAt: usersTable.lastActiveAt,
-        deletedAt: usersTable.deletedAt,
-        createdAt: usersTable.createdAt,
-        updatedAt: usersTable.updatedAt,
-        shadowUserId: usersTable.shadowUserId,
-        isOnboarded: usersTable.isOnboarded,
-        primaryGoal: usersTable.primaryGoal,
-        domain: usersTable.domain,
-        subDomain: usersTable.subDomain,
-        timeCommitment: usersTable.timeCommitment,
-        journeyStatus: usersTable.journeyStatus,
-      })
-      .from(usersTable)
-      .where(eq(usersTable.id, id))
-      .limit(1);
     
-    return results[0] as User | undefined;
+    // Check if dbInstance has select method (full DB) or only query (transaction/mock)
+    if ('select' in this.dbInstance && typeof this.dbInstance.select === 'function') {
+      const results = await this.dbInstance
+        .select({
+          id: usersTable.id,
+          email: usersTable.email,
+          passwordHash: usersTable.passwordHash,
+          emailVerified: usersTable.emailVerified,
+          isBlocked: usersTable.isBlocked,
+          lastActiveAt: usersTable.lastActiveAt,
+          deletedAt: usersTable.deletedAt,
+          createdAt: usersTable.createdAt,
+          updatedAt: usersTable.updatedAt,
+          shadowUserId: (usersTable as any).shadowUserId,
+          isOnboarded: usersTable.isOnboarded,
+          primaryGoal: usersTable.primaryGoal,
+          domain: usersTable.domain,
+          subDomain: usersTable.subDomain,
+          timeCommitment: usersTable.timeCommitment,
+          journeyStatus: usersTable.journeyStatus,
+        })
+        .from(usersTable)
+        .where(eq(usersTable.id, id))
+        .limit(1);
+      
+      return results[0] as User | undefined;
+    } else {
+      // Fallback to query API for test/transaction contexts
+      return await this.dbInstance.query.users.findFirst({
+        where: eq(usersTable.id, id),
+      }) as User | undefined;
+    }
   }
 
   /**

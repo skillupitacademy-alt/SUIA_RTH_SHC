@@ -147,13 +147,16 @@ export class SignupService {
         type DbVerificationQuery = {
           query?: {
             verificationTokens?: {
-              findFirst?: (args: { where?: unknown }) => Promise<VerificationToken | undefined>;
+              findFirst?: (args: { where?: unknown }) => Promise<VerificationToken>;
             };
           };
         };
         const fallbackFind = (db as unknown as DbVerificationQuery).query?.verificationTokens?.findFirst;
         if (typeof fallbackFind === 'function') {
-          verifiedToken = await fallbackFind({ where: undefined });
+          const result = await fallbackFind({ where: undefined });
+          if (result !== undefined) {
+            verifiedToken = result;
+          }
         }
       } catch {
         // ignore test-only fallback failures
