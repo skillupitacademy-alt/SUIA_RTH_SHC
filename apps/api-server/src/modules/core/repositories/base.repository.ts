@@ -13,23 +13,7 @@ export abstract class BaseRepository<Row, TableType extends AnyPgTable & { id: A
   abstract withDb(dbClient: typeof db): this;
 
   async findById(id: string): Promise<Row | undefined> {
-    const table = this.table as AnyPgTable & { id: AnyPgColumn };
-    const dbAny = this.dbInstance as unknown as {
-      select?: () => { from: (tbl: AnyPgTable) => { where: (cond: unknown) => Promise<Row[]> } };
-      query?: { exams?: { findFirst?: (args: unknown) => Promise<Row | undefined> } };
-    };
-
-    if (typeof dbAny.select === 'function') {
-      const results = await dbAny.select().from(table).where(eq(table.id, id));
-      return results?.[0] as Row | undefined;
-    }
-
-    if (typeof dbAny?.query?.exams?.findFirst === 'function') {
-      const row = await dbAny.query.exams.findFirst({ where: eq(table.id, id) });
-      return row as Row | undefined;
-    }
-
-    return undefined;
+    throw new Error('❌ DO NOT USE BASE REPOSITORY findById - Each repository must implement its own findById method with proper query API');
   }
 
   async delete(id: string): Promise<Row | void> {

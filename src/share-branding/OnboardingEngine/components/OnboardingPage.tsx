@@ -67,6 +67,12 @@ export function OnboardingPage({ config, data: viewData }: OnboardingPageProps) 
   const handleComplete = async () => {
     try {
       await persistOnboarding(data, 'completed');
+      // 🔥 CRITICAL: Force session refresh after onboarding
+      router.refresh(); // Force Next.js to refresh server components
+      await fetch('/api/auth/me', { 
+        credentials: 'include', 
+        cache: 'no-store' 
+      }); // Ensure fresh session state
     } finally {
       router.push('/dashboard');
     }

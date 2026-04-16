@@ -75,6 +75,19 @@ async function handler(req: NextRequest) {
 
     // TASK 2: Use brand-specific database based on JWT payload
     const brandContext = getAuthBrandContext(brand);
+    
+    // MANDATORY RUNTIME DB VALIDATION
+    console.log('[FINAL_DB_CHECK]', {
+      hasSelect: typeof brandContext.db.select === 'function',
+      hasQuery: !!brandContext.db.query,
+      dbType: brandContext.db?.constructor?.name
+    });
+    
+    // STRICT DB VALIDATION - NO fallback allowed
+    if (!brandContext.db || typeof brandContext.db.select !== 'function') {
+      throw new Error('❌ INVALID DB INSTANCE');
+    }
+    
     const useBrandBinding = shouldUseBrandBinding();
     
     console.log('[ME_DEBUG] Database context:', {
