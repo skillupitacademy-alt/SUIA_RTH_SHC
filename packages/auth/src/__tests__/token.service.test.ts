@@ -51,7 +51,7 @@ describe('TokenService', () => {
     expect(token3).toBe('cookie-infra');
 
     const token4 = service.getAccessToken({ cookies: { get: (name: string) => name === 'accessToken' ? { value: 'cookie-any' } : undefined } });
-    expect(token4).toBeUndefined();
+    expect(token4).toBe('cookie-any');
 
     const token5 = service.getAccessToken({ headers: { get: () => 'Bearer header-token' } });
     expect(token5).toBe('header-token');
