@@ -30,7 +30,11 @@ export async function GET(req: NextRequest) {
     }
 
     const data = await res.json();
-    return NextResponse.json(data);
+    return NextResponse.json(data, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate'
+      }
+    });
   } catch (error) {
     console.error('[BFF][/api/auth/me] Error:', error);
     return NextResponse.json({ user: null }, { status: 500 });

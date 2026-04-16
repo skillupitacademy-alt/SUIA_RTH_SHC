@@ -82,6 +82,7 @@ function AuthContent({ brand, initialMode = 'login' }: AuthPageProps) {
       const password = formData.get('password')?.toString() ?? '';
 
       try {
+        // 🔥 TASK 5: Clear stale state before login
         await loginUser({ email, password, brand });
         
         // 🔥 MUST REFETCH SESSION - Force fresh session state after login
@@ -109,6 +110,7 @@ function AuthContent({ brand, initialMode = 'login' }: AuthPageProps) {
       const password = formData.get('password')?.toString() ?? '';
 
       try {
+        // 🔥 TASK 5: Clear stale state before signup
         await signupUser({ name, email, password, brand });
         
         // 🔥 MUST REFETCH SESSION - Force fresh session state after signup

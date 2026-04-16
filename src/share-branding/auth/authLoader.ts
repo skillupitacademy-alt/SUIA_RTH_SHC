@@ -56,14 +56,15 @@ export async function fetchCurrentUserState(): Promise<{ onboardingCompleted: bo
     cache: 'no-store', // ✅ Avoid stale response
   });
 
+  if (!response.ok) {
+    throw new Error('Failed to fetch session');
+  }
+
   const payload = (await response.json().catch(() => null)) as
     | { user?: { onboardingCompleted?: boolean; onboarded?: boolean } }
     | null;
 
-  if (!response.ok) {
-    throw new Error('Unable to resolve session state');
-  }
-
+  // ✅ CRITICAL: user: null is VALID state, not an error
   return {
     onboardingCompleted:
       payload?.user?.onboardingCompleted === true || payload?.user?.onboarded === true,
