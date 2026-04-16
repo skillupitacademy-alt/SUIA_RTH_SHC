@@ -166,6 +166,8 @@ async function handler(req: NextRequest) {
 
     return ApiResponse.success({
       user: userDto,
+    }, 200, {
+      'Cache-Control': 'no-store, no-cache, must-revalidate'
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to get user';

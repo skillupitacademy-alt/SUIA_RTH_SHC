@@ -48,12 +48,12 @@ export async function signupUser(data: SignupRequestData): Promise<LoginResultVi
 export async function fetchCurrentUserState(): Promise<{ onboardingCompleted: boolean }> {
   const response = await fetch(AUTH_ME_ENDPOINT, {
     method: 'GET',
-    credentials: 'include',
+    credentials: 'include', // ✅ Send cookies
     headers: {
       accept: 'application/json',
       'x-portal-identity': 'user',
     },
-    cache: 'no-store',
+    cache: 'no-store', // ✅ Avoid stale response
   });
 
   const payload = (await response.json().catch(() => null)) as

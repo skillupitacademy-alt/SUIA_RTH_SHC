@@ -83,7 +83,11 @@ function AuthContent({ brand, initialMode = 'login' }: AuthPageProps) {
 
       try {
         await loginUser({ email, password, brand });
+        
+        // 🔥 MUST REFETCH SESSION - Force fresh session state after login
+        router.refresh(); // Force Next.js to refresh server components
         const sessionState = await fetchCurrentUserState();
+        
         const redirectTarget = searchParams.get('redirect');
         router.push(
           sessionState.onboardingCompleted === true
@@ -106,7 +110,11 @@ function AuthContent({ brand, initialMode = 'login' }: AuthPageProps) {
 
       try {
         await signupUser({ name, email, password, brand });
+        
+        // 🔥 MUST REFETCH SESSION - Force fresh session state after signup
+        router.refresh(); // Force Next.js to refresh server components
         const sessionState = await fetchCurrentUserState();
+        
         router.push(sessionState.onboardingCompleted === true ? '/dashboard' : '/onboarding');
       } catch (error) {
         setSubmitError(error instanceof Error ? error.message : 'Authentication failed');
