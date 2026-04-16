@@ -5,6 +5,8 @@
 
 import { ROLE_PERMISSIONS, type Role, type Permission, type RBACUser, ForbiddenError } from './rbac.types';
 
+export type { RBACUser } from './rbac.types';
+
 export class RBACService {
   /**
    * Check if user has specific permission

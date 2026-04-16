@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
 
     // Forward request to API server with cookies
-    const res = await fetch(`${apiServerUrl}/api/onboarding`, {
+    const res = await fetch(`${apiServerUrl}/api/auth/onboarding`, {
       method: 'POST',
       headers: {
         'content-type': 'application/json',

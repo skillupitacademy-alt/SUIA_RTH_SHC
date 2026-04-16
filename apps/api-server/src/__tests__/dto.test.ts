@@ -12,6 +12,7 @@ describe('Layer 66: DTO Pattern Verification', () => {
       passwordHash: 'SUPER_SECRET_HASH',
       emailVerified: true,
       createdAt: new Date(),
+      isOnboarded: true, // Add the database field that the DTO now uses
       profile: {
         name: 'Test User',
         professionalStatus: 'Employed',

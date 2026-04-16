@@ -40,12 +40,9 @@ const hasValue = (value: Maybe<string>) => value !== undefined && value !== null
  * Mappers
  */
 export function toUserSummaryDTO(user: AuthUserInput, isAdmin: boolean = false): UserSummaryDTO {
-  // Use DB isOnboarded field as single source of truth
-  // Fallback to profile-based check for backward compatibility
-  const onboarded = user.isOnboarded === true || Boolean(
-    hasValue(user.profile?.professionalStatus) &&
-    hasValue(user.profile?.educationLevel)
-  );
+  // CRITICAL FIX: Use DB isOnboarded field as single source of truth
+  // Remove fallback logic that can override DB value
+  const onboarded = user.isOnboarded === true;
 
   return {
     id: user.id,

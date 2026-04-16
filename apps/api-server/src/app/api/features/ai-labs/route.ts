@@ -3,12 +3,13 @@
  * Demonstrates feature-based access control
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { AuthMiddleware, handleAuthError } from '@quiz/auth/middleware/auth.middleware';
-import { container } from '@/modules/core/container';
 import { TokenService } from '@quiz/auth';
-import { SessionService } from '@quiz/auth/session.service';
 import { FeatureFlagService } from '@quiz/auth/feature-flags.service';
+import { AuthMiddleware, handleAuthError } from '@quiz/auth/middleware/auth.middleware';
+import { SessionService } from '@quiz/auth/session.service';
+import { NextRequest, NextResponse } from 'next/server';
+
+import { container } from '@/modules/core/container';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,7 +31,7 @@ export async function GET(req: NextRequest) {
       features: ['AI_LABS']
     });
 
-    if (!user) {
+    if (user === null || user === undefined) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
     
@@ -78,7 +79,7 @@ export async function POST(req: NextRequest) {
       features: ['AI_LABS']
     });
 
-    if (!user) {
+    if (user === null || user === undefined) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
     

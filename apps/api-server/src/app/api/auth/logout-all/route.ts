@@ -3,12 +3,13 @@
  * Revokes all sessions for the user
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { AuthMiddleware, handleAuthError } from '@quiz/auth/middleware/auth.middleware';
-import { container } from '@/modules/core/container';
 import { TokenService } from '@quiz/auth';
-import { SessionService } from '@quiz/auth/session.service';
 import { FeatureFlagService } from '@quiz/auth/feature-flags.service';
+import { AuthMiddleware, handleAuthError } from '@quiz/auth/middleware/auth.middleware';
+import { SessionService } from '@quiz/auth/session.service';
+import { NextRequest, NextResponse } from 'next/server';
+
+import { container } from '@/modules/core/container';
 
 export const dynamic = 'force-dynamic';
 

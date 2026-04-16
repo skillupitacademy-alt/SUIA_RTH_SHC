@@ -81,7 +81,7 @@ export interface RBACUser {
   id: string;
   email: string;
   role: Role;
-  brand: string;
+  brand: string; // Keep as string for flexibility, cast when needed
 }
 
 export class ForbiddenError extends Error {
@@ -95,5 +95,26 @@ export class UnauthorizedError extends Error {
   constructor(message = 'Authentication required') {
     super(message);
     this.name = 'UnauthorizedError';
+  }
+}
+
+export class SessionExpiredError extends Error {
+  constructor(message = 'Session expired') {
+    super(message);
+    this.name = 'SessionExpiredError';
+  }
+}
+
+export class SessionRevokedError extends Error {
+  constructor(message = 'Session revoked') {
+    super(message);
+    this.name = 'SessionRevokedError';
+  }
+}
+
+export class FeatureNotAvailableError extends Error {
+  constructor(message = 'Feature not available') {
+    super(message);
+    this.name = 'FeatureNotAvailableError';
   }
 }

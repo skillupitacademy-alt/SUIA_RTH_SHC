@@ -21,7 +21,7 @@ interface OnboardingPageProps {
 }
 
 async function persistOnboarding(data: OnboardingData, journeyStatus: OnboardingJourneyStatus) {
-  await fetch('/api/onboarding', {
+  await fetch('/api/auth/onboarding', {
     method: 'POST',
     credentials: 'include',
     headers: {

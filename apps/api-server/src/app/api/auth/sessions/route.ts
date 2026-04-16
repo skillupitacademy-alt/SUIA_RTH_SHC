@@ -3,12 +3,13 @@
  * Demonstrates session tracking and device management
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { AuthMiddleware, handleAuthError } from '@quiz/auth/middleware/auth.middleware';
-import { container } from '@/modules/core/container';
 import { TokenService } from '@quiz/auth';
-import { SessionService } from '@quiz/auth/session.service';
 import { FeatureFlagService } from '@quiz/auth/feature-flags.service';
+import { AuthMiddleware, handleAuthError } from '@quiz/auth/middleware/auth.middleware';
+import { SessionService } from '@quiz/auth/session.service';
+import { NextRequest, NextResponse } from 'next/server';
+
+import { container } from '@/modules/core/container';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,7 +30,7 @@ export async function GET(req: NextRequest) {
     const sessionService = container.get(SessionService);
     
     // Get current session ID from request
-    const currentSessionId = (req as any).sessionId;
+    const currentSessionId = (req as { sessionId?: string }).sessionId;
     
     // Get all user sessions
     const sessions = await sessionService.getUserSessions(user.id, currentSessionId);
@@ -60,7 +61,7 @@ export async function DELETE(req: NextRequest) {
     const url = new URL(req.url);
     const sessionId = url.pathname.split('/').pop();
     
-    if (!sessionId) {
+    if (sessionId === undefined || sessionId === null || sessionId === '') {
       return NextResponse.json({ error: 'Session ID required' }, { status: 400 });
     }
     
