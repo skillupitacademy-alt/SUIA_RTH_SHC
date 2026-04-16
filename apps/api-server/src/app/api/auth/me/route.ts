@@ -84,7 +84,7 @@ async function handler(req: NextRequest) {
     console.log('[ME_DEBUG] Database context:', {
       brand,
       useBrandBinding,
-      dbInstance: brandContext.db ? 'present' : 'missing'
+      dbInstance: brandContext.db !== null && brandContext.db !== undefined ? 'present' : 'missing'
     });
 
     const userRepo = container.get(UserRepository);
@@ -109,7 +109,7 @@ async function handler(req: NextRequest) {
       hasProfile: user?.profile !== null && user?.profile !== undefined
     });
 
-    if (!user) {
+    if (user === null || user === undefined) {
       console.log('[AUTH_FLOW][ME][USER_NOT_FOUND]', JSON.stringify({
         requestId,
         userId: payload.userId,

@@ -1,17 +1,10 @@
-import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
 
-import { toUserSummaryDTO } from '@/dtos/auth.dto';
-import { badRequest, forbidden, locked, unauthorized, validationError } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
-import { resolveCookieDomain } from '@/lib/cookie-domain';
-import { recordCounter, recordTimer } from '@/lib/metrics';
-import { resolveRequestBrand, resolveRequestBrandFromHeaders, resolveRequestHostnameFromHeaders } from '@/lib/request-brand';
+import { resolveRequestBrand, resolveRequestBrandFromHeaders } from '@/lib/request-brand';
 import { withLogging } from '@/lib/withLogging';
 import { AuthService } from '@/modules/auth/auth.service';
 import { getClientIp } from '@/modules/auth/client-ip';
-import { setCsrfToken } from '@/modules/auth/csrf.middleware';
-import { setOnboardingStateCookie } from '@/modules/auth/onboarding-state-cookie';
 import { container } from '@/modules/core/container';
 import { loginSchema } from '@/schemas/auth.schemas';
 
@@ -20,8 +13,17 @@ export const dynamic = 'force-dynamic';
 import { withCorrelationId } from '@/lib/correlation-id.middleware';
 
 async function handler(req: NextRequest) {
-  const start = Date.now();
-  const debugInfo: any = {
+  const debugInfo: {
+    timestamp: string;
+    steps: string[];
+    request?: Record<string, unknown>;
+    loginData?: Record<string, unknown>;
+    validationError?: unknown;
+    error?: string;
+    loginResult?: Record<string, unknown>;
+    loginError?: Record<string, unknown>;
+    handlerError?: Record<string, unknown>;
+  } = {
     timestamp: new Date().toISOString(),
     steps: []
   };

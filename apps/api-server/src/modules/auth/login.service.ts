@@ -80,7 +80,7 @@ export class LoginService {
     console.log('[LOGIN_DEBUG] Brand context:', {
       brand,
       useBrandBinding,
-      dbInstance: brandContext.db ? 'present' : 'missing'
+      dbInstance: brandContext.db !== null && brandContext.db !== undefined ? 'present' : 'missing'
     });
 
     const brandSecurityService = useBrandBinding && typeof this.securityService.withContext === 'function'
@@ -106,10 +106,10 @@ export class LoginService {
     console.log('[LOGIN_DEBUG] Looking up user:', email);
     const user = await brandUserRepo.findWithDetails(email);
     console.log('[LOGIN_DEBUG] User lookup result:', {
-      found: !!user,
+      found: user !== null && user !== undefined,
       userId: user?.id,
       email: user?.email,
-      hasPasswordHash: !!user?.passwordHash,
+      hasPasswordHash: user?.passwordHash !== null && user?.passwordHash !== undefined && user.passwordHash.length > 0,
       isBlocked: user?.isBlocked,
       emailVerified: user?.emailVerified
     });
@@ -126,7 +126,7 @@ export class LoginService {
     const passwordMatch = await this.passwordService.compare(password, user.passwordHash);
     console.log('[LOGIN_DEBUG] Password comparison result:', {
       match: passwordMatch,
-      hasHash: !!user.passwordHash,
+      hasHash: user.passwordHash !== null && user.passwordHash !== undefined && user.passwordHash.length > 0,
       hashLength: user.passwordHash?.length
     });
 
