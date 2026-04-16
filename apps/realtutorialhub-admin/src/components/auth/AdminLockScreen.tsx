@@ -1,11 +1,11 @@
 'use client';
+
 import { loginPortalSession, ZLoader } from '@quiz/ui';
 import { ChevronRight, Lock, LogOut, ShieldCheck, User as UserIcon } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 
 import { useFocusTrap } from '@/hooks/useFocusTrap';
-
 import { useAuthStore } from '@/store/auth-store';
 import { clientLogger } from '@/utils/clientLogger';
 

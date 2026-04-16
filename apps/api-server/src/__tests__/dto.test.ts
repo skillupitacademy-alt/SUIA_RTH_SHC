@@ -26,7 +26,6 @@ describe('Layer 66: DTO Pattern Verification', () => {
       expect(dto).toHaveProperty('email', 'test@example.com');
       expect(dto).toHaveProperty('name', 'Test User');
       expect(dto).toHaveProperty('onboarded', true);
-      expect(dto).toHaveProperty('onboardingCompleted', true);
       expect((dto as any).passwordHash).toBeUndefined();
     });
 

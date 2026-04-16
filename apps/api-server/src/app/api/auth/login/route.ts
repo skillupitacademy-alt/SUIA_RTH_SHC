@@ -108,7 +108,7 @@ async function handler(req: NextRequest) {
     });
 
     setCsrfToken(response, requestHostname);
-    setOnboardingStateCookie(response, req, userDto.onboardingCompleted === true);
+    setOnboardingStateCookie(response, req, userDto.onboarded === true);
 
     const end = Date.now();
     const durationMs = end - start;
