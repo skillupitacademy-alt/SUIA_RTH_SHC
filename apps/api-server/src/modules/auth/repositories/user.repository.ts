@@ -75,44 +75,13 @@ export class UserRepository extends BaseRepository<User, typeof users> {
 
   async findByEmail(email: string): Promise<User | undefined> {
     const db = this.dbInstance;
-    const usersTable = this.tables.users;
     
-    if (isQueryMode(db)) {
-      // Test/mock mode: use query API
-      return await db.query.users.findFirst({
-        where: (u: any, { eq }: any) => eq(u.email, email),
-      }) as User | undefined;
-    }
+    // Use raw SQL to avoid Drizzle alias bug
+    const results = await db.execute(
+      sql`SELECT * FROM users WHERE email = ${email} LIMIT 1`
+    );
     
-    if (isSelectMode(db)) {
-      // Production mode: use select with explicit columns and brand-specific table
-      const results = await db
-        .select({
-          id: usersTable.id,
-          email: usersTable.email,
-          passwordHash: usersTable.passwordHash,
-          emailVerified: usersTable.emailVerified,
-          isBlocked: usersTable.isBlocked,
-          lastActiveAt: usersTable.lastActiveAt,
-          deletedAt: usersTable.deletedAt,
-          createdAt: usersTable.createdAt,
-          updatedAt: usersTable.updatedAt,
-          shadowUserId: usersTable.shadowUserId,
-          isOnboarded: usersTable.isOnboarded,
-          primaryGoal: usersTable.primaryGoal,
-          domain: usersTable.domain,
-          subDomain: usersTable.subDomain,
-          timeCommitment: usersTable.timeCommitment,
-          journeyStatus: usersTable.journeyStatus,
-        })
-        .from(usersTable)
-        .where(eq(usersTable.email, email))
-        .limit(1);
-      
-      return results[0] as User | undefined;
-    }
-    
-    throw new Error('Invalid DB instance: neither query nor select mode available');
+    return results.rows[0] as User | undefined;
   }
 
   async findWithDetails(email: string) {
@@ -420,33 +389,17 @@ export class UserRepository extends BaseRepository<User, typeof users> {
     console.log('[QUERY EXECUTED FROM] UserRepository.findById');
     
     const db = this.dbInstance;
+    const usersTable = this.tables.users;
     
-    // Debug: Check what's available on db
-    console.log('[DEBUG] DB capabilities:', {
-      hasQuery: !!db?.query,
-      hasQueryUsers: !!db?.query?.users,
-      hasQueryUsersFindFirst: !!db?.query?.users?.findFirst,
-      hasSelect: typeof db?.select === 'function',
-      dbKeys: db ? Object.keys(db).slice(0, 10) : []
-    });
+    // Use raw SQL to avoid Drizzle alias bug
+    // The issue: .select().from(this.tables.users) creates duplicate alias when
+    // this.tables.users is a different instance than the schema's users table
+    const results = await db.execute(
+      sql`SELECT * FROM users WHERE id = ${id} LIMIT 1`
+    );
     
-    // ALWAYS use query API to avoid duplicate alias bug
-    // The .select().from() pattern causes Drizzle to generate: from "users" "users"
-    if (db?.query?.users?.findFirst) {
-      console.log('[TRACE] Using db.query.users.findFirst');
-      const result = await db.query.users.findFirst({
-        where: (u: any, { eq }: any) => eq(u.id, id),
-      }) as User | undefined;
-      console.log('[TRACE] UserRepository.findById EXIT', { found: !!result });
-      return result;
-    }
-    
-    console.error('[ERROR] db.query.users.findFirst not available!', {
-      hasDb: !!db,
-      hasQuery: !!db?.query,
-      queryKeys: db?.query ? Object.keys(db.query) : []
-    });
-    throw new Error('Invalid DB instance: db.query.users.findFirst not available');
+    console.log('[TRACE] UserRepository.findById EXIT', { found: results.rows.length > 0 });
+    return results.rows[0] as User | undefined;
   }
 
   /**
