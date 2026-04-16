@@ -6,7 +6,6 @@ import { toUserSummaryDTO } from '@/dtos/auth.dto';
 import { unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { recordCounter } from '@/lib/metrics';
-import { resolveRequestBrandFromHeaders } from '@/lib/request-brand';
 import { withLogging } from '@/lib/withLogging';
 import { getAuthBrandContext, shouldUseBrandBinding } from '@/modules/auth/brand-db';
 import { UserRepository } from '@/modules/auth/repositories/user.repository';
@@ -22,6 +21,7 @@ import { withCorrelationId } from '@/lib/correlation-id.middleware';
  * Pattern: BFF → API Server → DB
  * 
  * CRITICAL: This route extracts user info from JWT token (httpOnly cookie)
+ * SECURITY: Brand resolution from JWT payload ONLY (not headers)
  * DO NOT expose tokens to frontend
  * DO NOT add business logic here - only user state retrieval
  */
@@ -34,25 +34,6 @@ async function handler(req: NextRequest) {
       requestId,
       path: req.nextUrl.pathname,
     }));
-
-    // TASK 1: Extract brand from request host
-    const host = req.headers.get('host') ?? req.nextUrl.hostname;
-    const brand = resolveRequestBrandFromHeaders(req.headers);
-    
-    console.log('[ME_DEBUG] Brand resolution:', {
-      host,
-      resolvedBrand: brand,
-      headers: {
-        host: req.headers.get('host'),
-        origin: req.headers.get('origin')
-      }
-    });
-
-    if (brand === null || brand === undefined || (brand !== 'realtutorialhub' && brand !== 'skillup')) {
-      console.log('[ME_DEBUG] FAILURE: Invalid or missing brand');
-      recordCounter(METRICS.AUTH.FAILURE, 1, { reason: 'invalid_brand' });
-      return NextResponse.json({ user: null }, { status: 401 });
-    }
 
     // Extract token from cookies (httpOnly)
     const tokenService = container.get(TokenService);
@@ -77,7 +58,22 @@ async function handler(req: NextRequest) {
       return NextResponse.json({ user: null }, { status: 401 });
     }
 
-    // TASK 2: Use brand-specific database
+    // 🔥 CRITICAL SECURITY FIX: Extract brand from JWT payload (NOT headers)
+    const brand = payload.brand;
+    
+    console.log('[ME_DEBUG] JWT-based brand resolution:', {
+      tokenBrand: brand,
+      userId: payload.userId,
+      securityNote: 'Brand resolved from signed JWT payload'
+    });
+
+    if (brand === null || brand === undefined || (brand !== 'realtutorialhub' && brand !== 'skillup')) {
+      console.log('[ME_DEBUG] FAILURE: Invalid brand in JWT payload');
+      recordCounter(METRICS.AUTH.FAILURE, 1, { reason: 'invalid_token_brand' });
+      return NextResponse.json({ user: null }, { status: 401 });
+    }
+
+    // TASK 2: Use brand-specific database based on JWT payload
     const brandContext = getAuthBrandContext(brand);
     const useBrandBinding = shouldUseBrandBinding();
     

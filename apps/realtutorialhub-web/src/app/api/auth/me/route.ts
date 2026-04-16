@@ -15,14 +15,11 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ user: null }, { status: 500 });
     }
 
-    // Forward request to API server with cookies and required headers
+    // Forward request to API server with cookies only (brand resolved from JWT)
     const res = await fetch(`${apiServerUrl}/api/auth/me`, {
       headers: {
         cookie: req.headers.get('cookie') || '',
         'x-request-id': req.headers.get('x-request-id') || crypto.randomUUID(),
-        'x-portal-identity': 'user', // Required by API server
-        'x-brand': 'realtutorialhub', // Brand-specific routing
-        host: req.headers.get('host') || '', // Forward host for brand resolution
       },
       cache: 'no-store',
     });
