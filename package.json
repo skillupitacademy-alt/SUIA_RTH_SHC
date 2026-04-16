@@ -83,6 +83,7 @@
         "@upstash/workflow": "^1.1.1",
         "@vitest/coverage-v8": "^4.0.18",
         "@vitest/ui": "^4.0.18",
+        "bcrypt": "^6.0.0",
         "cross-env": "^10.1.0",
         "dotenv": "^17.2.3",
         "drizzle-kit": "^0.31.8",
@@ -97,6 +98,7 @@
         "lint-staged": "^16.2.7",
         "lucide-react": "0.563.0",
         "next": "16.1.6",
+        "node-fetch": "^3.3.2",
         "pg": "^8.18.0",
         "pino": "^10.3.1",
         "react": "19.2.4",
@@ -121,8 +123,8 @@
         }
     },
     "dependencies": {
-        "zod": "^3.24.1",
         "motion": "12.23.24",
-        "recharts": "^3.8.1"
+        "recharts": "^3.8.1",
+        "zod": "^3.24.1"
     }
 }

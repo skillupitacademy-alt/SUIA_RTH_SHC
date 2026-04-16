@@ -1,0 +1,126 @@
+{
+  "environment_variables": {
+    "DATABASE_URL_RTH": {
+      "exists": true,
+      "length": 152,
+      "preview": "postgresql://neondb_..."
+    },
+    "DATABASE_URL_SKILLUP": {
+      "exists": true,
+      "length": 156,
+      "preview": "postgresql://neondb_..."
+    },
+    "JWT_SECRET": {
+      "exists": true,
+      "length": 128,
+      "preview": "a53ce3b12a7ad0c7a93f..."
+    },
+    "JWT_REFRESH_SECRET": {
+      "exists": true,
+      "length": 128,
+      "preview": "b8296169bed2bbe2ca6d..."
+    },
+    "NODE_ENV": {
+      "exists": true,
+      "length": 10,
+      "preview": "production..."
+    }
+  },
+  "brand_resolution": {
+    "platform_realtutorialhub": {
+      "input": "realtutorialhub",
+      "expected": "realtutorialhub",
+      "resolved": "realtutorialhub",
+      "passed": true
+    },
+    "platform_skillup": {
+      "input": "skillup",
+      "expected": "skillup",
+      "resolved": "skillup",
+      "passed": true
+    },
+    "platform_null": {
+      "input": null,
+      "expected": null,
+      "resolved": null,
+      "passed": true
+    },
+    "platform_invalid": {
+      "input": "invalid",
+      "expected": null,
+      "resolved": null,
+      "passed": true
+    }
+  },
+  "password_hashing": {
+    "saltRounds": 12,
+    "newHashGeneration": true,
+    "testPassword": "testing"
+  },
+  "realtutorialhub_backend_query": {
+    "found": true,
+    "user": {
+      "id": "54726a2e-fca5-4d93-abc6-e7cee97a86f8",
+      "email": "ajayshah@gmail.com",
+      "emailVerified": true,
+      "isBlocked": false,
+      "shadowUserId": "54726a2e-fca5-4d93-abc6-e7cee97a86f8",
+      "profile": [
+        {
+          "id": "64370bd6-8247-4791-8574-ea293684fbd6",
+          "name": "Ajay Shah",
+          "professional_status": "Learner",
+          "education_level": "Bachelors"
+        }
+      ],
+      "roles": [
+        "user"
+      ],
+      "passwordMatch": true,
+      "createdAt": "2026-01-24T22:09:51.368Z",
+      "updatedAt": "2026-04-15T16:20:35.349Z"
+    }
+  },
+  "skillup_backend_query": {
+    "found": true,
+    "user": {
+      "id": "b438fb19-fa32-4df4-93b4-91837a5a15ef",
+      "email": "student@skillupitacademy.com",
+      "emailVerified": true,
+      "isBlocked": false,
+      "shadowUserId": "afc355ca-6bae-4165-89dd-198494a62f85",
+      "profile": [
+        {
+          "id": "8a0ade4a-7f4e-45d3-a1bd-b566d3d0e578",
+          "name": "SkillUp Student",
+          "professional_status": null,
+          "education_level": null
+        }
+      ],
+      "roles": [
+        "student"
+      ],
+      "passwordMatch": true,
+      "createdAt": "2026-03-26T09:32:59.157Z",
+      "updatedAt": "2026-04-13T22:19:10.375Z"
+    }
+  },
+  "realtutorialhub_login_attempts": {
+    "error": "column \"email\" does not exist"
+  },
+  "skillup_login_attempts": {
+    "error": "column \"email\" does not exist"
+  },
+  "summary": {
+    "database_queries": "pass",
+    "environment_variables": "pass",
+    "brand_resolution": "pass",
+    "password_hashing": "pass",
+    "security_checks": "issues",
+    "likely_issues": [
+      "Production environment configuration mismatch",
+      "Production database connection using different credentials",
+      "Production brand database binding not working"
+    ]
+  }
+}

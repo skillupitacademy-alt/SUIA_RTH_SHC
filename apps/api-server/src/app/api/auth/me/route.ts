@@ -6,7 +6,9 @@ import { toUserSummaryDTO } from '@/dtos/auth.dto';
 import { unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { recordCounter } from '@/lib/metrics';
+import { resolveRequestBrandFromHeaders } from '@/lib/request-brand';
 import { withLogging } from '@/lib/withLogging';
+import { getAuthBrandContext, shouldUseBrandBinding } from '@/modules/auth/brand-db';
 import { UserRepository } from '@/modules/auth/repositories/user.repository';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
@@ -33,6 +35,25 @@ async function handler(req: NextRequest) {
       path: req.nextUrl.pathname,
     }));
 
+    // TASK 1: Extract brand from request host
+    const host = req.headers.get('host') ?? req.nextUrl.hostname;
+    const brand = resolveRequestBrandFromHeaders(req.headers);
+    
+    console.log('[ME_DEBUG] Brand resolution:', {
+      host,
+      resolvedBrand: brand,
+      headers: {
+        host: req.headers.get('host'),
+        origin: req.headers.get('origin')
+      }
+    });
+
+    if (brand === null || brand === undefined || (brand !== 'realtutorialhub' && brand !== 'skillup')) {
+      console.log('[ME_DEBUG] FAILURE: Invalid or missing brand');
+      recordCounter(METRICS.AUTH.FAILURE, 1, { reason: 'invalid_brand' });
+      return NextResponse.json({ user: null }, { status: 401 });
+    }
+
     // Extract token from cookies (httpOnly)
     const tokenService = container.get(TokenService);
     const accessToken = tokenService.getAccessToken(req);
@@ -56,17 +77,46 @@ async function handler(req: NextRequest) {
       return NextResponse.json({ user: null }, { status: 401 });
     }
 
-    // Get user from DB
+    // TASK 2: Use brand-specific database
+    const brandContext = getAuthBrandContext(brand);
+    const useBrandBinding = shouldUseBrandBinding();
+    
+    console.log('[ME_DEBUG] Database context:', {
+      brand,
+      useBrandBinding,
+      dbInstance: brandContext.db ? 'present' : 'missing'
+    });
+
     const userRepo = container.get(UserRepository);
-    const user = await userRepo.findByIdWithDetails(payload.userId);
+    const brandUserRepo = useBrandBinding && typeof userRepo.withDb === 'function'
+      ? userRepo.withDb(brandContext.db, brandContext.tables)
+      : userRepo;
+    
+    // TASK 3: Fetch user with brand-specific repository
+    console.log('[ME_DEBUG] Fetching user:', {
+      userId: payload.userId,
+      brand,
+      tokenBrand: payload.brand
+    });
+
+    const user = await brandUserRepo.findByIdWithDetails(payload.userId);
+
+    console.log('[ME_DEBUG] User lookup result:', {
+      found: user !== null && user !== undefined,
+      userId: user?.id,
+      email: user?.email,
+      isBlocked: user?.isBlocked,
+      hasProfile: user?.profile !== null && user?.profile !== undefined
+    });
 
     if (!user) {
       console.log('[AUTH_FLOW][ME][USER_NOT_FOUND]', JSON.stringify({
         requestId,
         userId: payload.userId,
+        brand,
       }));
       recordCounter(METRICS.AUTH.FAILURE, 1, { reason: 'user_not_found' });
-      return NextResponse.json({ user: null }, { status: 401 });
+      throw new Error(`User not found in ${brand} database`);
     }
 
     // Check if user is blocked
@@ -109,6 +159,7 @@ async function handler(req: NextRequest) {
       durationMs,
       userId: user.id,
       role: isAdmin ? 'admin' : 'user',
+      brand,
     }));
 
     recordCounter(METRICS.AUTH.LOGIN, 1, { operation: 'get_me' });
@@ -121,9 +172,15 @@ async function handler(req: NextRequest) {
     console.log('[AUTH_FLOW][ME][ERROR]', JSON.stringify({
       requestId,
       message,
+      stack: error instanceof Error ? error.stack?.split('\n').slice(0, 3) : undefined
     }));
     recordCounter(METRICS.AUTH.FAILURE, 1, { reason: 'server_error' });
-    return NextResponse.json({ user: null }, { status: 500 });
+    
+    // TASK 5: Proper error handling - return 500 for server errors, not 401
+    return NextResponse.json({ 
+      error: 'Internal server error',
+      message: process.env.NODE_ENV === 'development' ? message : 'Failed to get user'
+    }, { status: 500 });
   }
 }
 

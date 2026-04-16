@@ -180,18 +180,7 @@ async function handler(req: NextRequest) {
       return ApiResponse.error(forbidden(message));
     }
 
-    // Temporarily include debug info in development/debugging
-    const isDevelopment = process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true';
-    const errorResponse = unauthorized('Invalid credentials');
-    
-    if (isDevelopment) {
-      errorResponse.body = JSON.stringify({
-        ...JSON.parse(errorResponse.body as string),
-        debug: debugInfo
-      });
-    }
-
-    return errorResponse;
+    return ApiResponse.error(unauthorized('Invalid credentials'));
   }
 }
 

@@ -1,0 +1,333 @@
+{
+  "infrastructure": {
+    "rth_login_page": {
+      "status": 200,
+      "accessible": true,
+      "headers": {
+        "access-control-allow-credentials": "true",
+        "access-control-expose-headers": "X-Request-ID,X-RateLimit-Remaining",
+        "alt-svc": "h3=\":443\"; ma=86400",
+        "cache-control": "no-store, no-cache, must-revalidate",
+        "cf-cache-status": "DYNAMIC",
+        "cf-placement": "local-MRS",
+        "cf-ray": "9ed009a18c4e764d-MRS",
+        "connection": "keep-alive",
+        "content-encoding": "br",
+        "content-security-policy-report-only": "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://static.cloudflareinsights.com https://user.realtutorialhub.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://images.unsplash.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://api.realtutorialhub.com/api https://admin.realtutorialhub.com https://user.realtutorialhub.com https://cloudflareinsights.com https://api.realtutorialhub.com https://user.realtutorialhub.com https://admin.realtutorialhub.com https://*.sentry.io https://*.upstash.io https://cloudflareinsights.com https://api.realtutorialhub.com; frame-src 'self' https://api.realtutorialhub.com/api https://admin.realtutorialhub.com https://user.realtutorialhub.com https://cloudflareinsights.com https://api.realtutorialhub.com https://user.realtutorialhub.com https://admin.realtutorialhub.com https://*.sentry.io https://*.upstash.io https://cloudflareinsights.com https://api.realtutorialhub.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; manifest-src 'self'; report-uri https://api.realtutorialhub.com/api/security/report",
+        "content-type": "text/html; charset=utf-8",
+        "cross-origin-embedder-policy": "require-corp",
+        "cross-origin-opener-policy": "same-origin",
+        "cross-origin-resource-policy": "same-origin",
+        "date": "Thu, 16 Apr 2026 03:17:33 GMT",
+        "link": "</_next/static/media/1b99372b3eaef0c8-s.p.758e15a8.woff2>; rel=preload; as=\"font\"; crossorigin=\"\"; type=\"font/woff2\", </_next/static/media/47fe1b7cd6e6ed85-s.p.855a563b.woff2>; rel=preload; as=\"font\"; crossorigin=\"\"; type=\"font/woff2\", </_next/static/media/4b766aa38fdaaae3-s.p.6d98c708.woff2>; rel=preload; as=\"font\"; crossorigin=\"\"; type=\"font/woff2\", </_next/static/media/829ba4228c966254-s.p.a61bc753.woff2>; rel=preload; as=\"font\"; crossorigin=\"\"; type=\"font/woff2\", </_next/static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2>; rel=preload; as=\"font\"; crossorigin=\"\"; type=\"font/woff2\", </_next/static/media/8e6fa89aa22d24ec-s.p.3aec397d.woff2>; rel=preload; as=\"font\"; crossorigin=\"\"; type=\"font/woff2\", </_next/static/media/a218039a3287bcfd-s.p.4a23d71b.woff2>; rel=preload; as=\"font\"; crossorigin=\"\"; type=\"font/woff2\", </_next/static/media/e2334d715941921e-s.p.d82a9aff.woff2>; rel=preload; as=\"font\"; crossorigin=\"\"; type=\"font/woff2\"",
+        "nel": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}",
+        "permissions-policy": "camera=(), microphone=(), geolocation=(), interest-cohort=(), payment=(), usb=()",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=9h1AZFXd0xcYa8l76nHYTHr2fmWLZ4Hl%2BKIa6DmNA6irJ9RXkqW8%2BEi9LbuR8dgiA%2Bgn0kaGCh8E1idfgQXTFBnFxtG01jw1iZCu1kE%2FiNRoEncjdx0HsDrZmZ5JpHn1cqvjjtlLqd0RR38%3D\"}]}",
+        "server": "cloudflare",
+        "speculation-rules": "\"/cdn-cgi/speculation\"",
+        "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+        "transfer-encoding": "chunked",
+        "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding, Origin",
+        "x-content-type-options": "nosniff",
+        "x-dns-prefetch-control": "on",
+        "x-frame-options": "DENY",
+        "x-powered-by": "Next.js",
+        "x-request-id": "84a206c9-cd7f-4756-9aa8-294e3b05ed52",
+        "x-xss-protection": "0"
+      }
+    },
+    "rth_api_endpoint": {
+      "status": 204,
+      "accessible": true,
+      "headers": {
+        "access-control-allow-credentials": "true",
+        "access-control-allow-headers": "Content-Type,Authorization,Accept-Version,X-Brand,X-Portal-Identity,X-Request-ID,X-Gateway-Secret,X-User-ID,X-CSRF-Token",
+        "access-control-allow-methods": "GET,POST,PUT,DELETE,PATCH,OPTIONS",
+        "access-control-allow-origin": "https://user.realtutorialhub.com",
+        "access-control-expose-headers": "X-Request-ID,X-RateLimit-Remaining",
+        "alt-svc": "h3=\":443\"; ma=86400",
+        "cf-placement": "local-",
+        "cf-ray": "9ed009ab8c4e97b3-MRS",
+        "connection": "keep-alive",
+        "date": "Thu, 16 Apr 2026 03:17:34 GMT",
+        "nel": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}",
+        "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=nYSr4lK769QmoGdUYYLrpx%2FjUE0P%2F%2BvYA0M36KmRaaEi5pbzzGWSW1uRBUe2DgzntQdd78oiHuVy1hjn57Z4I%2F4SWgskp%2BprAk4dhf5BhqFZxBrp6LDq4AsV7MFKo3cFe5%2FhyVWa3xf36A%3D%3D\"}]}",
+        "server": "cloudflare",
+        "vary": "Origin, Access-Control-Request-Headers",
+        "x-request-id": "0719ad57-c611-4d5c-8205-9eb8b36ba9e8"
+      }
+    },
+    "skillup_login_page": {
+      "status": 200,
+      "accessible": true,
+      "headers": {
+        "access-control-allow-credentials": "true",
+        "access-control-expose-headers": "X-Request-ID,X-RateLimit-Remaining",
+        "alt-svc": "h3=\":443\"; ma=86400",
+        "cache-control": "s-maxage=31536000",
+        "cf-cache-status": "DYNAMIC",
+        "cf-placement": "local-MRS",
+        "cf-ray": "9ed009af3ae01d81-MRS",
+        "connection": "keep-alive",
+        "content-encoding": "br",
+        "content-type": "text/html; charset=utf-8",
+        "date": "Thu, 16 Apr 2026 03:17:38 GMT",
+        "nel": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}",
+        "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=v9tRvpFlq0xMkjFAGK7qGjKvbySkEFpIAySRTq8X%2FyF0V5LuNGQFdi25GcbcSST%2FCSQT2%2Fuwq2WHpF44dvGGtknPDVcbgft4nb8nSO1PdETSucBtZ3v0CU9JQl2kEy8HY9SBiPUkcxUAqert\"}]}",
+        "server": "cloudflare",
+        "transfer-encoding": "chunked",
+        "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding, Origin",
+        "x-nextjs-cache": "HIT",
+        "x-nextjs-prerender": "1, 1",
+        "x-nextjs-stale-time": "300",
+        "x-powered-by": "Next.js",
+        "x-request-id": "c6544416-fdc8-4b5c-bd64-64db327a781b"
+      }
+    },
+    "skillup_api_endpoint": {
+      "status": 204,
+      "accessible": true,
+      "headers": {
+        "access-control-allow-credentials": "true",
+        "access-control-allow-headers": "Content-Type,Authorization,Accept-Version,X-Brand,X-Portal-Identity,X-Request-ID,X-Gateway-Secret,X-User-ID,X-CSRF-Token",
+        "access-control-allow-methods": "GET,POST,PUT,DELETE,PATCH,OPTIONS",
+        "access-control-allow-origin": "https://user.skillupitacademy.com",
+        "access-control-expose-headers": "X-Request-ID,X-RateLimit-Remaining",
+        "alt-svc": "h3=\":443\"; ma=86400",
+        "cf-placement": "local-",
+        "cf-ray": "9ed009c97ee9b0fd-MRS",
+        "connection": "keep-alive",
+        "date": "Thu, 16 Apr 2026 03:17:39 GMT",
+        "nel": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}",
+        "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=jKzv9yttj1iuxf8hyPKjZCv9Pz1BIcxyw75AU8TrIRZvj613Ol2SrQUUF3PNoW%2FL4C%2BVIakgYWAyCVqLB%2BebxeSZ3rgiOfWFDjJnsjr4vaFhSI%2FsFLwdPWkiYs3FCxAmZPk8BXMldkigw8Y%3D\"}]}",
+        "server": "cloudflare",
+        "vary": "Origin, Access-Control-Request-Headers",
+        "x-request-id": "47f42a4a-f626-4cff-8236-b0941969b8c3"
+      }
+    }
+  },
+  "database": {
+    "rth_connection": {
+      "connected": true,
+      "version": "PostgreSQL 17.8 (a48d9ca) on aarch64-unknown-linux..."
+    },
+    "rth_user": {
+      "exists": true,
+      "id": "54726a2e-fca5-4d93-abc6-e7cee97a86f8",
+      "email": "ajayshah@gmail.com",
+      "emailVerified": true,
+      "isBlocked": false,
+      "profileName": "Ajay Shah",
+      "roles": [
+        "user"
+      ],
+      "passwordMatch": true,
+      "createdAt": "2026-01-24T22:09:51.368Z"
+    },
+    "rth_roles": [
+      {
+        "id": "0e4c2829-3bbd-424c-ab99-6ae43e11080a",
+        "name": "admin"
+      },
+      {
+        "id": "37f73358-d56a-4c43-ad9d-c6d8dc5656f9",
+        "name": "infrastructure"
+      },
+      {
+        "id": "c98349db-ffb0-4939-82ff-8d6e138c2128",
+        "name": "super_admin"
+      },
+      {
+        "id": "ce488cf5-7d2e-4849-9edf-216203b8c4d8",
+        "name": "user"
+      }
+    ],
+    "skillup_connection": {
+      "connected": true,
+      "version": "PostgreSQL 17.8 (a48d9ca) on aarch64-unknown-linux..."
+    },
+    "skillup_user": {
+      "exists": true,
+      "id": "b438fb19-fa32-4df4-93b4-91837a5a15ef",
+      "email": "student@skillupitacademy.com",
+      "emailVerified": true,
+      "isBlocked": false,
+      "profileName": "SkillUp Student",
+      "roles": [
+        "student"
+      ],
+      "passwordMatch": true,
+      "createdAt": "2026-03-26T09:32:59.157Z"
+    },
+    "skillup_roles": [
+      {
+        "id": "adaf5cd5-d435-4ea4-a2b2-7a414e834d55",
+        "name": "admin"
+      },
+      {
+        "id": "b231a45b-661c-4ecb-8671-080717ccf946",
+        "name": "faculty"
+      },
+      {
+        "id": "48361552-1879-45dc-b010-3d15e6a6757c",
+        "name": "infrastructure"
+      },
+      {
+        "id": "4eec5939-c7f4-4999-b156-2aee147d1d07",
+        "name": "student"
+      },
+      {
+        "id": "91299cef-33b4-4d2d-9ed9-4a4959eed0ec",
+        "name": "super_admin"
+      },
+      {
+        "id": "b3bb04bb-75dc-429d-8576-05217d368360",
+        "name": "user"
+      }
+    ]
+  },
+  "authentication": {
+    "rth_request": {
+      "correlationId": "7d301f3e-4374-405a-b0e2-ab85ebc0f867",
+      "status": 401,
+      "statusText": "Unauthorized",
+      "headers": {
+        "access-control-allow-credentials": "true",
+        "access-control-allow-headers": "Content-Type, Authorization, x-csrf-token, Idempotency-Key, x-portal-identity, x-request-id, accept-version, x-brand",
+        "access-control-allow-methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+        "access-control-allow-origin": "https://user.realtutorialhub.com",
+        "access-control-expose-headers": "X-Request-ID,X-RateLimit-Remaining",
+        "access-control-max-age": "86400",
+        "alt-svc": "h3=\":443\"; ma=86400",
+        "cache-control": "no-store, no-cache, must-revalidate",
+        "cf-cache-status": "DYNAMIC",
+        "cf-placement": "local-MRS",
+        "cf-ray": "9ed009e4febee218-MRS",
+        "connection": "keep-alive",
+        "content-length": "107",
+        "content-security-policy-report-only": "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://static.cloudflareinsights.com https://user.realtutorialhub.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://images.unsplash.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://api.realtutorialhub.com/api https://admin.realtutorialhub.com https://user.realtutorialhub.com https://api.realtutorialhub.com https://user.realtutorialhub.com https://admin.realtutorialhub.com https://*.sentry.io https://*.upstash.io https://cloudflareinsights.com https://api.realtutorialhub.com; frame-src 'self' https://api.realtutorialhub.com/api https://admin.realtutorialhub.com https://user.realtutorialhub.com https://api.realtutorialhub.com https://user.realtutorialhub.com https://admin.realtutorialhub.com https://*.sentry.io https://*.upstash.io https://cloudflareinsights.com https://api.realtutorialhub.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; manifest-src 'self'; report-uri https://api.realtutorialhub.com/api/security/report",
+        "content-type": "application/json",
+        "cross-origin-embedder-policy": "require-corp",
+        "cross-origin-opener-policy": "same-origin",
+        "cross-origin-resource-policy": "same-origin",
+        "date": "Thu, 16 Apr 2026 03:17:44 GMT",
+        "nel": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}",
+        "permissions-policy": "camera=(), microphone=(), geolocation=(), interest-cohort=(), payment=(), usb=()",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=sI9QeB%2BYqpem0jBP4yGrEySa7ncN6jVrQKm0DSA%2BHzq1JGSTN2KQauYfemWSGupT195per1Y9HSj28EUGoycf5R1PM1cGz9nvIwLM5RldxHUUZGWuo%2BQrsUrBpw%2BPGd0sozffYZ7kCDhew%3D%3D\"}]}",
+        "server": "cloudflare",
+        "set-cookie": "csrfToken=3f37877f9c0089a1e9cf894c1ef043dc5ac651edf7306fdc0910a634c3181baa; Path=/; Domain=.realtutorialhub.com; Secure; SameSite=none",
+        "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+        "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Origin",
+        "x-api-version": "v1",
+        "x-cloud-trace-context": "5550a7331200f5783960c89cc532c0dc;o=1",
+        "x-content-type-options": "nosniff",
+        "x-correlation-id": "7d301f3e-4374-405a-b0e2-ab85ebc0f867",
+        "x-dns-prefetch-control": "on",
+        "x-frame-options": "DENY",
+        "x-ratelimit-limit": "5",
+        "x-ratelimit-remaining": "4",
+        "x-ratelimit-reset": "1776309524303",
+        "x-request-id": "d94f6809-95cb-4229-8ae0-f14efa46f918",
+        "x-session-id": "anon-3e5cb170",
+        "x-xss-protection": "0"
+      },
+      "response": {
+        "code": "UNAUTHORIZED",
+        "message": "Invalid credentials",
+        "status": 401,
+        "timestamp": "2026-04-16T03:17:44.302Z"
+      },
+      "success": false
+    },
+    "skillup_request": {
+      "correlationId": "024060ea-8b91-4282-ad13-32e7a8c9d3f3",
+      "status": 401,
+      "statusText": "Unauthorized",
+      "headers": {
+        "access-control-allow-credentials": "true",
+        "access-control-allow-headers": "Content-Type, Authorization, x-csrf-token, Idempotency-Key, x-portal-identity, x-request-id, accept-version, x-brand",
+        "access-control-allow-methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+        "access-control-allow-origin": "https://user.skillupitacademy.com",
+        "access-control-expose-headers": "X-Request-ID,X-RateLimit-Remaining",
+        "access-control-max-age": "86400",
+        "alt-svc": "h3=\":443\"; ma=86400",
+        "cache-control": "no-store, no-cache, must-revalidate",
+        "cf-cache-status": "DYNAMIC",
+        "cf-placement": "local-",
+        "cf-ray": "9ed009e998ffb0fd-MRS",
+        "connection": "keep-alive",
+        "content-length": "107",
+        "content-security-policy-report-only": "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://static.cloudflareinsights.com https://user.realtutorialhub.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://images.unsplash.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://api.realtutorialhub.com/api https://admin.realtutorialhub.com https://user.realtutorialhub.com https://api.realtutorialhub.com https://user.realtutorialhub.com https://admin.realtutorialhub.com https://*.sentry.io https://*.upstash.io https://cloudflareinsights.com https://api.realtutorialhub.com; frame-src 'self' https://api.realtutorialhub.com/api https://admin.realtutorialhub.com https://user.realtutorialhub.com https://api.realtutorialhub.com https://user.realtutorialhub.com https://admin.realtutorialhub.com https://*.sentry.io https://*.upstash.io https://cloudflareinsights.com https://api.realtutorialhub.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; manifest-src 'self'; report-uri https://api.realtutorialhub.com/api/security/report",
+        "content-type": "application/json",
+        "cross-origin-embedder-policy": "require-corp",
+        "cross-origin-opener-policy": "same-origin",
+        "cross-origin-resource-policy": "same-origin",
+        "date": "Thu, 16 Apr 2026 03:17:45 GMT",
+        "nel": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}",
+        "permissions-policy": "camera=(), microphone=(), geolocation=(), interest-cohort=(), payment=(), usb=()",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=S5MeEfO%2BlbrSoryUMqB3KIbmL%2FyRca0UQqz48jmRR0ITKW%2BT5KPXmIZI9eoDSYTCNyTi7Cs4aOSxP%2B323CEYAUSZ2kzrhoGQYLB5oh4WnYuXLMdfFcLWG%2FTcGXJOIdfOTl2Ptq%2Fi6CsOnhM%3D\"}]}",
+        "server": "cloudflare",
+        "set-cookie": "csrfToken=6fefe62a52a8b38645e0810287c0ad10c47fa0f0aea70295a6dcee9de735b649; Path=/; Domain=.skillupitacademy.com; Secure; SameSite=none",
+        "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+        "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Origin",
+        "x-api-version": "v1",
+        "x-cloud-trace-context": "1404b3e5436b5b93319e1b6d6f1ffc2e",
+        "x-content-type-options": "nosniff",
+        "x-correlation-id": "024060ea-8b91-4282-ad13-32e7a8c9d3f3",
+        "x-dns-prefetch-control": "on",
+        "x-frame-options": "DENY",
+        "x-ratelimit-limit": "5",
+        "x-ratelimit-remaining": "4",
+        "x-ratelimit-reset": "1776309525048",
+        "x-request-id": "6ef16397-cd06-4438-bb2d-c6996ef99633",
+        "x-session-id": "anon-79a55e63",
+        "x-xss-protection": "0"
+      },
+      "response": {
+        "code": "UNAUTHORIZED",
+        "message": "Invalid credentials",
+        "status": 401,
+        "timestamp": "2026-04-16T03:17:45.047Z"
+      },
+      "success": false
+    },
+    "rth_wrong_password": {
+      "correlationId": "81e5a966-7dc6-407c-ba8b-b9c4bb297cb5",
+      "status": 401,
+      "response": {
+        "code": "UNAUTHORIZED",
+        "message": "Invalid credentials",
+        "status": 401,
+        "timestamp": "2026-04-16T03:17:46.035Z"
+      }
+    },
+    "skillup_wrong_password": {
+      "correlationId": "eb3f4f8b-ad5a-4e96-af4e-9119205d0a25",
+      "status": 401,
+      "response": {
+        "code": "UNAUTHORIZED",
+        "message": "Invalid credentials",
+        "status": 401,
+        "timestamp": "2026-04-16T03:17:47.064Z"
+      }
+    }
+  },
+  "summary": {
+    "infrastructure_status": "healthy",
+    "database_status": "healthy",
+    "authentication_status": "failing",
+    "root_cause": "authentication_logic",
+    "recommendations": [
+      "Check backend authentication logic",
+      "Verify environment variables in production",
+      "Check brand resolution logic"
+    ],
+    "users_exist": 2,
+    "passwords_match": 2,
+    "auth_successes": 0,
+    "auth_failures": 2
+  }
+}
