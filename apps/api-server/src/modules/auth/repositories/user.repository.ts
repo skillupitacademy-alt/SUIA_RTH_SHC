@@ -421,6 +421,15 @@ export class UserRepository extends BaseRepository<User, typeof users> {
     
     const db = this.dbInstance;
     
+    // Debug: Check what's available on db
+    console.log('[DEBUG] DB capabilities:', {
+      hasQuery: !!db?.query,
+      hasQueryUsers: !!db?.query?.users,
+      hasQueryUsersFindFirst: !!db?.query?.users?.findFirst,
+      hasSelect: typeof db?.select === 'function',
+      dbKeys: db ? Object.keys(db).slice(0, 10) : []
+    });
+    
     // ALWAYS use query API to avoid duplicate alias bug
     // The .select().from() pattern causes Drizzle to generate: from "users" "users"
     if (db?.query?.users?.findFirst) {
@@ -432,6 +441,11 @@ export class UserRepository extends BaseRepository<User, typeof users> {
       return result;
     }
     
+    console.error('[ERROR] db.query.users.findFirst not available!', {
+      hasDb: !!db,
+      hasQuery: !!db?.query,
+      queryKeys: db?.query ? Object.keys(db.query) : []
+    });
     throw new Error('Invalid DB instance: db.query.users.findFirst not available');
   }
 
