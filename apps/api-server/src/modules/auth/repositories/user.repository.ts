@@ -75,6 +75,7 @@ export class UserRepository extends BaseRepository<User, typeof users> {
 
   async findByEmail(email: string): Promise<User | undefined> {
     const db = this.dbInstance;
+    const usersTable = this.tables.users;
     
     if (isQueryMode(db)) {
       // Test/mock mode: use query API
@@ -84,10 +85,31 @@ export class UserRepository extends BaseRepository<User, typeof users> {
     }
     
     if (isSelectMode(db)) {
-      // Production mode: use query API to avoid Drizzle alias conflict
-      return await db.query.users.findFirst({
-        where: (u: any, { eq }: any) => eq(u.email, email),
-      }) as User | undefined;
+      // Production mode: use select with explicit columns and brand-specific table
+      const results = await db
+        .select({
+          id: usersTable.id,
+          email: usersTable.email,
+          passwordHash: usersTable.passwordHash,
+          emailVerified: usersTable.emailVerified,
+          isBlocked: usersTable.isBlocked,
+          lastActiveAt: usersTable.lastActiveAt,
+          deletedAt: usersTable.deletedAt,
+          createdAt: usersTable.createdAt,
+          updatedAt: usersTable.updatedAt,
+          shadowUserId: usersTable.shadowUserId,
+          isOnboarded: usersTable.isOnboarded,
+          primaryGoal: usersTable.primaryGoal,
+          domain: usersTable.domain,
+          subDomain: usersTable.subDomain,
+          timeCommitment: usersTable.timeCommitment,
+          journeyStatus: usersTable.journeyStatus,
+        })
+        .from(usersTable)
+        .where(eq(usersTable.email, email))
+        .limit(1);
+      
+      return results[0] as User | undefined;
     }
     
     throw new Error('Invalid DB instance: neither query nor select mode available');
@@ -381,22 +403,46 @@ export class UserRepository extends BaseRepository<User, typeof users> {
   }
 
   async findById(id: string): Promise<User | undefined> {
+    console.log('[QUERY SOURCE] findById', { id, hasQuery: !!this.dbInstance?.query, hasSelect: typeof this.dbInstance?.select === 'function' });
     const db = this.dbInstance;
+    const usersTable = this.tables.users;
     
     if (isQueryMode(db)) {
       // Test/mock mode: use query API
+      console.log('[QUERY] using query mode for findById');
       return await db.query.users.findFirst({
         where: (u: any, { eq }: any) => eq(u.id, id),
       }) as User | undefined;
     }
     
     if (isSelectMode(db)) {
-      // Production mode: use select API
-      // CRITICAL: Do NOT use this.tables.users in from() - causes duplicate alias
-      // Use db.query instead to avoid Drizzle alias conflict
-      return await db.query.users.findFirst({
-        where: (u: any, { eq }: any) => eq(u.id, id),
-      }) as User | undefined;
+      // Production mode: use select with explicit columns to avoid Drizzle alias conflict
+      // CRITICAL: Must select explicit columns and use brand-specific table reference
+      console.log('[QUERY] using select mode with explicit columns for findById');
+      const results = await db
+        .select({
+          id: usersTable.id,
+          email: usersTable.email,
+          passwordHash: usersTable.passwordHash,
+          emailVerified: usersTable.emailVerified,
+          isBlocked: usersTable.isBlocked,
+          lastActiveAt: usersTable.lastActiveAt,
+          deletedAt: usersTable.deletedAt,
+          createdAt: usersTable.createdAt,
+          updatedAt: usersTable.updatedAt,
+          shadowUserId: usersTable.shadowUserId,
+          isOnboarded: usersTable.isOnboarded,
+          primaryGoal: usersTable.primaryGoal,
+          domain: usersTable.domain,
+          subDomain: usersTable.subDomain,
+          timeCommitment: usersTable.timeCommitment,
+          journeyStatus: usersTable.journeyStatus,
+        })
+        .from(usersTable)
+        .where(eq(usersTable.id, id))
+        .limit(1);
+      
+      return results[0] as User | undefined;
     }
     
     throw new Error('Invalid DB instance: neither query nor select mode available');
@@ -417,15 +463,20 @@ export class UserRepository extends BaseRepository<User, typeof users> {
       journeyStatus?: string;
     }
   ): Promise<void> {
+    console.log('[TRACE] entering saveUserPreferences', { userId });
+    
     // Get user's actual name from database to satisfy NOT NULL constraint
+    console.log('[TRACE] calling findById');
     const user = await this.findById(userId);
     if (user === undefined) {
       throw new Error(`User not found: ${userId}`);
     }
+    console.log('[TRACE] findById completed', { userFound: true });
 
     let existingProfile = null;
     
     try {
+      console.log('[TRACE] checking existing profile');
       // Safe SELECT query to check if profile already exists
       const profileRows = await this.dbInstance
         .select({
@@ -437,8 +488,9 @@ export class UserRepository extends BaseRepository<User, typeof users> {
         .limit(1);
       
       existingProfile = profileRows[0] ?? null;
-    } catch {
-      console.warn('[USER_REPOSITORY] Profile check failed, will create new profile');
+      console.log('[TRACE] profile check completed', { profileExists: existingProfile !== null });
+    } catch (error) {
+      console.warn('[USER_REPOSITORY] Profile check failed, will create new profile', error);
       existingProfile = null;
     }
 
@@ -466,7 +518,9 @@ export class UserRepository extends BaseRepository<User, typeof users> {
       journeyStatus: 'completed',
     };
 
+    console.log('[TRACE] calling upsertOnboardingProfile');
     await this.upsertOnboardingProfile(userId, onboardingData);
+    console.log('[TRACE] saveUserPreferences completed');
   }
 
   /**
