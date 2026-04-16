@@ -76,12 +76,29 @@ export class UserRepository extends BaseRepository<User, typeof users> {
   async findByEmail(email: string): Promise<User | undefined> {
     const db = this.dbInstance;
     
-    // Use raw SQL to avoid Drizzle alias bug
-    const results = await db.execute(
-      sql`SELECT * FROM users WHERE email = ${email} LIMIT 1`
-    );
+    console.log('[DB CHECK findByEmail]', {
+      hasQuery: !!db.query,
+      hasUsers: !!db.query?.users,
+      hasFindFirst: !!db.query?.users?.findFirst
+    });
     
-    return results.rows[0] as User | undefined;
+    // Use db.query.users which references the schema's users table
+    if (!db.query || !db.query.users) {
+      console.error('[ERROR] DB query API not available in findByEmail! Falling back to select mode');
+      const usersTable = this.tables.users;
+      const results = await db
+        .select()
+        .from(usersTable)
+        .where(eq(usersTable.email, email))
+        .limit(1);
+      return results[0] as User | undefined;
+    }
+    
+    const result = await db.query.users.findFirst({
+      where: (users: any, { eq }: any) => eq(users.email, email),
+    });
+    
+    return result as User | undefined;
   }
 
   async findWithDetails(email: string) {
@@ -389,17 +406,38 @@ export class UserRepository extends BaseRepository<User, typeof users> {
     console.log('[QUERY EXECUTED FROM] UserRepository.findById');
     
     const db = this.dbInstance;
-    const usersTable = this.tables.users;
     
-    // Use raw SQL to avoid Drizzle alias bug
-    // The issue: .select().from(this.tables.users) creates duplicate alias when
-    // this.tables.users is a different instance than the schema's users table
-    const results = await db.execute(
-      sql`SELECT * FROM users WHERE id = ${id} LIMIT 1`
-    );
+    // STEP 1: Verify runtime DB capabilities
+    console.log('[DB CHECK]', {
+      hasQuery: !!db.query,
+      hasUsers: !!db.query?.users,
+      hasFindFirst: !!db.query?.users?.findFirst,
+      hasSelect: typeof db.select === 'function',
+      dbType: db.constructor?.name || 'unknown'
+    });
     
-    console.log('[TRACE] UserRepository.findById EXIT', { found: results.rows.length > 0 });
-    return results.rows[0] as User | undefined;
+    // CRITICAL: The db instance was created with drizzle(pool, { schema })
+    // where schema includes the users table. We MUST use db.query.users
+    // which references the schema's users table, NOT this.tables.users
+    // which is a different import and causes duplicate alias bug
+    if (!db.query || !db.query.users) {
+      console.error('[ERROR] DB query API not available! Falling back to select mode');
+      // Fallback: This will likely fail with duplicate alias, but at least we'll see the error
+      const usersTable = this.tables.users;
+      const results = await db
+        .select()
+        .from(usersTable)
+        .where(eq(usersTable.id, id))
+        .limit(1);
+      return results[0] as User | undefined;
+    }
+    
+    const result = await db.query.users.findFirst({
+      where: (users: any, { eq }: any) => eq(users.id, id),
+    });
+    
+    console.log('[TRACE] UserRepository.findById EXIT', { found: !!result });
+    return result as User | undefined;
   }
 
   /**
