@@ -122,15 +122,20 @@ export class UserRepository extends BaseRepository<User, typeof users> {
   }
 
   async findByIdWithDetails(id: string) {
+    console.log('[TRACE] UserRepository.findByIdWithDetails ENTRY', { id });
     const user = await this.findById(id);
     if (user === undefined) return undefined;
-    return this.hydrateUserDetails(user);
+    const result = await this.hydrateUserDetails(user);
+    console.log('[TRACE] UserRepository.findByIdWithDetails EXIT');
+    return result;
   }
 
   private async hydrateUserDetails(user: User) {
+    console.log('[TRACE] UserRepository.hydrateUserDetails ENTRY', { userId: user.id });
     let profile = null;
     
     try {
+      console.log('[QUERY EXECUTED FROM] UserRepository.hydrateUserDetails (userProfiles)');
       // Safe SELECT query to prevent schema mismatch crashes
       const profileRows = await this.dbInstance
         .select({
@@ -165,6 +170,7 @@ export class UserRepository extends BaseRepository<User, typeof users> {
     let roleRows: Array<{ roleId: string; roleName: string }> = [];
     
     try {
+      console.log('[QUERY EXECUTED FROM] UserRepository.hydrateUserDetails (roles)');
       roleRows = await this.dbInstance
         .select({
           roleId: this.tables.roles.id,
@@ -178,6 +184,7 @@ export class UserRepository extends BaseRepository<User, typeof users> {
       roleRows = [];
     }
 
+    console.log('[TRACE] UserRepository.hydrateUserDetails EXIT');
     return {
       ...user,
       profile,
@@ -211,6 +218,7 @@ export class UserRepository extends BaseRepository<User, typeof users> {
   }
 
   async upsertOnboardingProfile(userId: string, onboarding: PersistedOnboardingInput) {
+    console.log('[TRACE] UserRepository.upsertOnboardingProfile ENTRY', { userId });
     const values = {
       name: onboarding.fullName,
       educationLevel: onboarding.educationLevel,
@@ -232,6 +240,7 @@ export class UserRepository extends BaseRepository<User, typeof users> {
     let existing = null;
     
     try {
+      console.log('[QUERY EXECUTED FROM] UserRepository.upsertOnboardingProfile (check existing)');
       // Safe SELECT query to check if profile exists
       const existingRows = await this.dbInstance
         .select({
@@ -248,14 +257,17 @@ export class UserRepository extends BaseRepository<User, typeof users> {
     }
 
     if (existing !== null && existing !== undefined) {
+      console.log('[QUERY EXECUTED FROM] UserRepository.upsertOnboardingProfile (update)');
       const [updated] = await this.dbInstance
         .update(this.tables.userProfiles)
         .set(values)
         .where(eq(this.tables.userProfiles.userId, userId))
         .returning();
+      console.log('[TRACE] UserRepository.upsertOnboardingProfile EXIT (updated)');
       return updated;
     }
 
+    console.log('[QUERY EXECUTED FROM] UserRepository.upsertOnboardingProfile (insert)');
     const [inserted] = await this.dbInstance
       .insert(this.tables.userProfiles)
       .values({
@@ -263,6 +275,7 @@ export class UserRepository extends BaseRepository<User, typeof users> {
         ...values,
       })
       .returning();
+    console.log('[TRACE] UserRepository.upsertOnboardingProfile EXIT (inserted)');
     return inserted;
   }
 
@@ -403,49 +416,23 @@ export class UserRepository extends BaseRepository<User, typeof users> {
   }
 
   async findById(id: string): Promise<User | undefined> {
-    console.log('[QUERY SOURCE] findById', { id, hasQuery: !!this.dbInstance?.query, hasSelect: typeof this.dbInstance?.select === 'function' });
-    const db = this.dbInstance;
-    const usersTable = this.tables.users;
+    console.log('[TRACE] UserRepository.findById ENTRY', { id });
+    console.log('[QUERY EXECUTED FROM] UserRepository.findById');
     
-    if (isQueryMode(db)) {
-      // Test/mock mode: use query API
-      console.log('[QUERY] using query mode for findById');
-      return await db.query.users.findFirst({
+    const db = this.dbInstance;
+    
+    // ALWAYS use query API to avoid duplicate alias bug
+    // The .select().from() pattern causes Drizzle to generate: from "users" "users"
+    if (db?.query?.users?.findFirst) {
+      console.log('[TRACE] Using db.query.users.findFirst');
+      const result = await db.query.users.findFirst({
         where: (u: any, { eq }: any) => eq(u.id, id),
       }) as User | undefined;
+      console.log('[TRACE] UserRepository.findById EXIT', { found: !!result });
+      return result;
     }
     
-    if (isSelectMode(db)) {
-      // Production mode: use select with explicit columns to avoid Drizzle alias conflict
-      // CRITICAL: Must select explicit columns and use brand-specific table reference
-      console.log('[QUERY] using select mode with explicit columns for findById');
-      const results = await db
-        .select({
-          id: usersTable.id,
-          email: usersTable.email,
-          passwordHash: usersTable.passwordHash,
-          emailVerified: usersTable.emailVerified,
-          isBlocked: usersTable.isBlocked,
-          lastActiveAt: usersTable.lastActiveAt,
-          deletedAt: usersTable.deletedAt,
-          createdAt: usersTable.createdAt,
-          updatedAt: usersTable.updatedAt,
-          shadowUserId: usersTable.shadowUserId,
-          isOnboarded: usersTable.isOnboarded,
-          primaryGoal: usersTable.primaryGoal,
-          domain: usersTable.domain,
-          subDomain: usersTable.subDomain,
-          timeCommitment: usersTable.timeCommitment,
-          journeyStatus: usersTable.journeyStatus,
-        })
-        .from(usersTable)
-        .where(eq(usersTable.id, id))
-        .limit(1);
-      
-      return results[0] as User | undefined;
-    }
-    
-    throw new Error('Invalid DB instance: neither query nor select mode available');
+    throw new Error('Invalid DB instance: db.query.users.findFirst not available');
   }
 
   /**
@@ -528,9 +515,12 @@ export class UserRepository extends BaseRepository<User, typeof users> {
    * @param userId - User ID
    */
   async markUserOnboarded(userId: string): Promise<void> {
+    console.log('[TRACE] UserRepository.markUserOnboarded ENTRY', { userId });
+    console.log('[QUERY EXECUTED FROM] UserRepository.markUserOnboarded');
     await this.dbInstance.update(this.tables.users)
       .set({ isOnboarded: true })
       .where(eq(this.tables.users.id, userId));
+    console.log('[TRACE] UserRepository.markUserOnboarded EXIT');
   }
 
   /**
