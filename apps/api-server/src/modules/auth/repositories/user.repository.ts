@@ -226,7 +226,8 @@ export class UserRepository extends BaseRepository<User, typeof users> {
       journeyStatus?: string;
     }
   ): Promise<void> {
-    await this.dbInstance.update(this.tables.users)
+    // Update user_profiles table with onboarding preferences
+    await this.dbInstance.update(this.tables.userProfiles)
       .set({
         primaryGoal: preferences.primaryGoal,
         domain: preferences.domain,
@@ -234,7 +235,7 @@ export class UserRepository extends BaseRepository<User, typeof users> {
         timeCommitment: preferences.timeCommitment,
         journeyStatus: preferences.journeyStatus,
       })
-      .where(eq(this.tables.users.id, userId));
+      .where(eq(this.tables.userProfiles.userId, userId));
   }
 
   /**
