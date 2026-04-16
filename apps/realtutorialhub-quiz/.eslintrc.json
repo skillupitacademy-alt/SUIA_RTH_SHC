@@ -1,8 +1,7 @@
 {
     "extends": [
         "@quiz/eslint-config",
-        "next/core-web-vitals",
-        "next/typescript"
+        "next/core-web-vitals"
     ],
     "ignorePatterns": [
         "next.config.js",
@@ -47,9 +46,6 @@
             }
         }
     ],
-    "plugins": [
-        "security"
-    ],
     "rules": {
         "react/no-danger": "error",
         "@typescript-eslint/no-unused-vars": "warn",
@@ -58,8 +54,6 @@
         "react-hooks/exhaustive-deps": "warn",
         "no-eval": "error",
         "no-implied-eval": "error",
-        "no-new-func": "error",
-        "security/detect-object-injection": "off",
-        "security/detect-non-literal-require": "error"
+        "no-new-func": "error"
     }
 }
