@@ -139,11 +139,31 @@ async function handler(req: NextRequest) {
     return response;
   } catch (_error) {
     const message = _error instanceof Error ? _error.message : 'Invalid credentials';
+    const requestId = req.headers.get('x-request-id') ?? 'no-request-id';
+    
+    // Capture debug info for temporary debugging
+    const debugInfo = {
+      requestId,
+      timestamp: new Date().toISOString(),
+      error: {
+        message,
+        name: _error instanceof Error ? _error.name : 'Unknown',
+        stack: _error instanceof Error ? _error.stack?.split('\n').slice(0, 3) : undefined
+      },
+      request: {
+        host: req.headers.get('host'),
+        origin: req.headers.get('origin'),
+        userAgent: req.headers.get('user-agent')?.substring(0, 100)
+      }
+    };
+    
     console.log('[AUTH_FLOW][LOGIN][ERROR]', JSON.stringify({
-      requestId: req.headers.get('x-request-id') ?? 'no-request-id',
+      requestId,
       path: req.nextUrl.pathname,
       message,
+      debugInfo
     }));
+    
     recordCounter(METRICS.AUTH.FAILURE, 1, {
       reason: message === 'Account temporarily locked. Try again later.'
         ? 'account_locked'
@@ -160,7 +180,18 @@ async function handler(req: NextRequest) {
       return ApiResponse.error(forbidden(message));
     }
 
-    return ApiResponse.error(unauthorized('Invalid credentials'));
+    // Temporarily include debug info in development/debugging
+    const isDevelopment = process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true';
+    const errorResponse = unauthorized('Invalid credentials');
+    
+    if (isDevelopment) {
+      errorResponse.body = JSON.stringify({
+        ...JSON.parse(errorResponse.body as string),
+        debug: debugInfo
+      });
+    }
+
+    return errorResponse;
   }
 }
 
