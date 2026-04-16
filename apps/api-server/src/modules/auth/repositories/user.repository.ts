@@ -5,12 +5,12 @@ import type { BrandAuthTables } from '@/modules/auth/brand-db';
 import { BaseRepository } from '@/modules/core/repositories/base.repository';
 
 // Helper functions to detect DB access mode
-function isQueryMode(db: any): boolean {
-  return !!db?.query;
+function isQueryMode(db: unknown): boolean {
+  return typeof db === 'object' && db !== null && 'query' in db && Boolean(db.query);
 }
 
-function isSelectMode(db: any): boolean {
-  return typeof db?.select === 'function';
+function isSelectMode(db: unknown): boolean {
+  return typeof db === 'object' && db !== null && 'select' in db && typeof (db as Record<string, unknown>).select === 'function';
 }
 
 export interface User {
@@ -77,13 +77,15 @@ export class UserRepository extends BaseRepository<User, typeof users> {
     const db = this.dbInstance;
     
     console.log('[DB CHECK findByEmail]', {
-      hasQuery: !!db.query,
-      hasUsers: !!db.query?.users,
-      hasFindFirst: !!db.query?.users?.findFirst
+      hasQuery: typeof db === 'object' && db !== null && 'query' in db && Boolean(db.query),
+      hasUsers: typeof db === 'object' && db !== null && 'query' in db && db.query !== null && typeof db.query === 'object' && 'users' in db.query,
+      hasFindFirst: typeof db === 'object' && db !== null && 'query' in db && db.query !== null && typeof db.query === 'object' && 'users' in db.query && db.query.users !== null && typeof db.query.users === 'object' && 'findFirst' in db.query.users
     });
     
     // Use db.query.users which references the schema's users table
-    if (!db.query || !db.query.users) {
+    const hasQueryAPI = typeof db === 'object' && db !== null && 'query' in db && db.query !== null && typeof db.query === 'object' && 'users' in db.query;
+    
+    if (!hasQueryAPI) {
       console.error('[ERROR] DB query API not available in findByEmail! Falling back to select mode');
       const usersTable = this.tables.users;
       const results = await db
@@ -94,7 +96,9 @@ export class UserRepository extends BaseRepository<User, typeof users> {
       return results[0] as User | undefined;
     }
     
-    const result = await db.query.users.findFirst({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result = await (db.query as any).users.findFirst({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       where: (users: any, { eq }: any) => eq(users.email, email),
     });
     
@@ -266,6 +270,7 @@ export class UserRepository extends BaseRepository<User, typeof users> {
   }
 
   async assignRole(userId: string, roleName: string, tx?: Pick<typeof db, 'insert' | 'query'>) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const executor: any = tx ?? this.dbInstance;
     const rolesTable = this.tables.roles;
     
@@ -273,6 +278,7 @@ export class UserRepository extends BaseRepository<User, typeof users> {
     if (isQueryMode(executor)) {
       // Test/mock mode: use query API
       role = await executor.query.roles.findFirst({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         where: (r: any, { eq }: any) => eq(r.name, roleName),
       });
     } else if (isSelectMode(executor)) {
@@ -312,6 +318,7 @@ export class UserRepository extends BaseRepository<User, typeof users> {
     if (isQueryMode(db)) {
       // Test/mock mode: use query API
       return await db.query.verificationTokens.findFirst({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         where: (t: any, { eq }: any) => eq(t.token, token),
       });
     }
@@ -363,6 +370,7 @@ export class UserRepository extends BaseRepository<User, typeof users> {
     if (isQueryMode(db)) {
       // Test/mock mode: use query API
       return await db.query.passwordResetTokens.findFirst({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         where: (t: any, { eq, and, gt }: any) => 
           and(
             eq(t.token, token),
@@ -409,18 +417,20 @@ export class UserRepository extends BaseRepository<User, typeof users> {
     
     // STEP 1: Verify runtime DB capabilities
     console.log('[DB CHECK]', {
-      hasQuery: !!db.query,
-      hasUsers: !!db.query?.users,
-      hasFindFirst: !!db.query?.users?.findFirst,
-      hasSelect: typeof db.select === 'function',
-      dbType: db.constructor?.name || 'unknown'
+      hasQuery: typeof db === 'object' && db !== null && 'query' in db && Boolean(db.query),
+      hasUsers: typeof db === 'object' && db !== null && 'query' in db && db.query !== null && typeof db.query === 'object' && 'users' in db.query,
+      hasFindFirst: typeof db === 'object' && db !== null && 'query' in db && db.query !== null && typeof db.query === 'object' && 'users' in db.query && db.query.users !== null && typeof db.query.users === 'object' && 'findFirst' in db.query.users,
+      hasSelect: typeof db === 'object' && db !== null && 'select' in db && typeof (db as unknown as Record<string, unknown>).select === 'function',
+      dbType: (db as { constructor?: { name?: string } }).constructor?.name ?? 'unknown'
     });
     
     // CRITICAL: The db instance was created with drizzle(pool, { schema })
     // where schema includes the users table. We MUST use db.query.users
     // which references the schema's users table, NOT this.tables.users
     // which is a different import and causes duplicate alias bug
-    if (!db.query || !db.query.users) {
+    const hasQueryAPI = typeof db === 'object' && db !== null && 'query' in db && db.query !== null && typeof db.query === 'object' && 'users' in db.query;
+    
+    if (!hasQueryAPI) {
       console.error('[ERROR] DB query API not available! Falling back to select mode');
       // Fallback: This will likely fail with duplicate alias, but at least we'll see the error
       const usersTable = this.tables.users;
@@ -432,11 +442,13 @@ export class UserRepository extends BaseRepository<User, typeof users> {
       return results[0] as User | undefined;
     }
     
-    const result = await db.query.users.findFirst({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result = await (db.query as any).users.findFirst({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       where: (users: any, { eq }: any) => eq(users.id, id),
     });
     
-    console.log('[TRACE] UserRepository.findById EXIT', { found: !!result });
+    console.log('[TRACE] UserRepository.findById EXIT', { found: Boolean(result) });
     return result as User | undefined;
   }
 
