@@ -51,7 +51,8 @@ export async function fetchCurrentUserState(): Promise<{ onboardingCompleted: bo
     credentials: 'include', // ✅ Send cookies
     headers: {
       accept: 'application/json',
-      'x-portal-identity': 'user',
+      'x-portal-identity': 'user', // ✅ Required header
+      // Note: x-brand header is automatically resolved from hostname by BFF
     },
     cache: 'no-store', // ✅ Avoid stale response
   });
