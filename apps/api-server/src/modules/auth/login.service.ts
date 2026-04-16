@@ -65,8 +65,24 @@ export class LoginService {
   }
 
   async login(email: string, password: string, ip: string = 'unknown', brand: RequestBrand = 'realtutorialhub') {
+    // DEBUG: Log login inputs
+    console.log('[LOGIN_DEBUG] Login attempt:', {
+      email,
+      brand,
+      ip,
+      timestamp: new Date().toISOString()
+    });
+
     const brandContext = getAuthBrandContext(brand);
     const useBrandBinding = shouldUseBrandBinding();
+    
+    // DEBUG: Log database context
+    console.log('[LOGIN_DEBUG] Brand context:', {
+      brand,
+      useBrandBinding,
+      dbInstance: brandContext.db ? 'present' : 'missing'
+    });
+
     const brandSecurityService = useBrandBinding && typeof this.securityService.withContext === 'function'
       ? this.securityService.withContext(brandContext.db, {
           users: brandContext.tables.users,
@@ -81,22 +97,53 @@ export class LoginService {
       : this.tokenRepo;
 
     if (await brandSecurityService.isAccountLocked(email, ip, brand)) {
+      console.log('[LOGIN_DEBUG] Account locked:', email);
       await this.auditService.log({ action: 'login_locked', metadata: { email }, ip, brand });
       throw new Error('Account temporarily locked. Try again later.');
     }
 
+    // DEBUG: Log user lookup
+    console.log('[LOGIN_DEBUG] Looking up user:', email);
     const user = await brandUserRepo.findWithDetails(email);
+    console.log('[LOGIN_DEBUG] User lookup result:', {
+      found: !!user,
+      userId: user?.id,
+      email: user?.email,
+      hasPasswordHash: !!user?.passwordHash,
+      isBlocked: user?.isBlocked,
+      emailVerified: user?.emailVerified
+    });
 
-    if (user === undefined || (await this.passwordService.compare(password, user.passwordHash)) === false) {
+    if (user === undefined) {
+      console.log('[LOGIN_DEBUG] FAILURE: User not found');
       await brandSecurityService.trackLoginAttempt(ip, email, false, brand);
-      await this.auditService.log({ action: 'login_failed', metadata: { email }, ip, brand });
+      await this.auditService.log({ action: 'login_failed', metadata: { email, reason: 'user_not_found' }, ip, brand });
+      throw new Error('Invalid credentials');
+    }
+
+    // DEBUG: Test password comparison
+    console.log('[LOGIN_DEBUG] Testing password for user:', user.id);
+    const passwordMatch = await this.passwordService.compare(password, user.passwordHash);
+    console.log('[LOGIN_DEBUG] Password comparison result:', {
+      match: passwordMatch,
+      hasHash: !!user.passwordHash,
+      hashLength: user.passwordHash?.length
+    });
+
+    if (passwordMatch === false) {
+      console.log('[LOGIN_DEBUG] FAILURE: Password mismatch');
+      await brandSecurityService.trackLoginAttempt(ip, email, false, brand);
+      await this.auditService.log({ action: 'login_failed', metadata: { email, reason: 'password_mismatch' }, ip, brand });
       throw new Error('Invalid credentials');
     }
 
     if (user.isBlocked === true) {
+        console.log('[LOGIN_DEBUG] FAILURE: User blocked');
         await this.auditService.log({ action: 'login_blocked_user', metadata: { email }, ip, brand });
         throw new Error('Account has been blocked. Contact administrator.');
     }
+
+    console.log('[LOGIN_DEBUG] SUCCESS: All checks passed, proceeding with token generation');
 
     // Update Last Active
     await brandUserRepo.updateLastActive(user.id);

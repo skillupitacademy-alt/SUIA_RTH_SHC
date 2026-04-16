@@ -47,7 +47,19 @@ async function handler(req: NextRequest) {
     const ip = getClientIp(req);
     const brand = resolveRequestBrand(platform) ?? resolveRequestBrandFromHeaders(req.headers);
 
+    // DEBUG: Log request details
+    console.log('[LOGIN_ROUTE_DEBUG] Request details:', {
+      email,
+      platform,
+      resolvedBrand: brand,
+      ip,
+      host: req.headers.get('host'),
+      origin: req.headers.get('origin'),
+      userAgent: req.headers.get('user-agent')
+    });
+
     if (brand !== 'skillup' && brand !== 'realtutorialhub') {
+      console.log('[LOGIN_ROUTE_DEBUG] FAILURE: Invalid brand');
       return ApiResponse.error(badRequest('Brand is required'));
     }
 
