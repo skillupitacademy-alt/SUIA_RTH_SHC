@@ -136,6 +136,21 @@ export class TokenService {
       if (typeof infraToken === 'string' && infraToken.length > 0) return infraToken;
     }
 
+    // When no scope is specified, check default cookies first, then Authorization header
+    if (!scope) {
+      // Check user token first (most common case)
+      const userToken = req.cookies?.get('accessToken')?.value;
+      if (typeof userToken === 'string' && userToken.length > 0) return userToken;
+      
+      // Check admin token as fallback
+      const adminToken = req.cookies?.get('admin_accessToken')?.value;
+      if (typeof adminToken === 'string' && adminToken.length > 0) return adminToken;
+      
+      // Check infrastructure token as fallback
+      const infraToken = req.cookies?.get('infra_accessToken')?.value;
+      if (typeof infraToken === 'string' && infraToken.length > 0) return infraToken;
+    }
+
     const headerToken = req.headers?.get('authorization')?.replace('Bearer ', '');
     return typeof headerToken === 'string' && headerToken.length > 0 ? headerToken : undefined;
   }
