@@ -166,19 +166,10 @@ export class TokenService {
       if (infraToken) return infraToken;
     }
 
-    // When no scope is specified, check default cookies first, then Authorization header
+    // When no scope is specified, ONLY check accessToken cookie (not admin or infra)
     if (!scope) {
-      // Check user token first (most common case)
       const userToken = getCookieValue('accessToken');
       if (userToken) return userToken;
-      
-      // Check admin token as fallback
-      const adminToken = getCookieValue('admin_accessToken');
-      if (adminToken) return adminToken;
-      
-      // Check infrastructure token as fallback
-      const infraToken = getCookieValue('infra_accessToken');
-      if (infraToken) return infraToken;
     }
 
     // Fallback to Authorization header
