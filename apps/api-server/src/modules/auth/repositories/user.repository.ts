@@ -226,16 +226,41 @@ export class UserRepository extends BaseRepository<User, typeof users> {
       journeyStatus?: string;
     }
   ): Promise<void> {
-    // Update user_profiles table with onboarding preferences
-    await this.dbInstance.update(this.tables.userProfiles)
-      .set({
+    // STEP 1 — CHECK IF PROFILE EXISTS
+    const existing = await this.dbInstance
+      .select()
+      .from(this.tables.userProfiles)
+      .where(eq(this.tables.userProfiles.userId, userId))
+      .limit(1);
+
+    // STEP 2 — IF EXISTS → UPDATE
+    if (existing.length > 0) {
+      await this.dbInstance.update(this.tables.userProfiles)
+        .set({
+          primaryGoal: preferences.primaryGoal,
+          domain: preferences.domain,
+          subDomain: preferences.subDomain,
+          timeCommitment: preferences.timeCommitment,
+          journeyStatus: preferences.journeyStatus,
+        })
+        .where(eq(this.tables.userProfiles.userId, userId));
+    } 
+    // STEP 3 — IF NOT EXISTS → INSERT (WITH NAME)
+    else {
+      const user = await this.dbInstance.select().from(this.tables.users)
+        .where(eq(this.tables.users.id, userId))
+        .limit(1);
+
+      await this.dbInstance.insert(this.tables.userProfiles).values({
+        userId,
+        name: user[0]?.email || 'User', // Safe fallback for required name field
         primaryGoal: preferences.primaryGoal,
         domain: preferences.domain,
         subDomain: preferences.subDomain,
         timeCommitment: preferences.timeCommitment,
         journeyStatus: preferences.journeyStatus,
-      })
-      .where(eq(this.tables.userProfiles.userId, userId));
+      });
+    }
   }
 
   /**
