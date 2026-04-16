@@ -85,26 +85,9 @@ export class UserRepository extends BaseRepository<User, typeof users> {
     }
     
     if (isSelectMode(db)) {
-      // Production mode: use select API
+      // Production mode: use select API without explicit column selection to avoid alias issues
       const results = await db
-        .select({
-          id: usersTable.id,
-          email: usersTable.email,
-          passwordHash: usersTable.passwordHash,
-          emailVerified: usersTable.emailVerified,
-          isBlocked: usersTable.isBlocked,
-          lastActiveAt: usersTable.lastActiveAt,
-          deletedAt: usersTable.deletedAt,
-          createdAt: usersTable.createdAt,
-          updatedAt: usersTable.updatedAt,
-          shadowUserId: (usersTable as any).shadowUserId,
-          isOnboarded: usersTable.isOnboarded,
-          primaryGoal: usersTable.primaryGoal,
-          domain: usersTable.domain,
-          subDomain: usersTable.subDomain,
-          timeCommitment: usersTable.timeCommitment,
-          journeyStatus: usersTable.journeyStatus,
-        })
+        .select()
         .from(usersTable)
         .where(eq(usersTable.email, email))
         .limit(1);
@@ -415,25 +398,9 @@ export class UserRepository extends BaseRepository<User, typeof users> {
     
     if (isSelectMode(db)) {
       // Production mode: use select API
+      // Use explicit column selection without table alias to avoid "users" "users" duplicate
       const results = await db
-        .select({
-          id: usersTable.id,
-          email: usersTable.email,
-          passwordHash: usersTable.passwordHash,
-          emailVerified: usersTable.emailVerified,
-          isBlocked: usersTable.isBlocked,
-          lastActiveAt: usersTable.lastActiveAt,
-          deletedAt: usersTable.deletedAt,
-          createdAt: usersTable.createdAt,
-          updatedAt: usersTable.updatedAt,
-          shadowUserId: (usersTable as any).shadowUserId,
-          isOnboarded: usersTable.isOnboarded,
-          primaryGoal: usersTable.primaryGoal,
-          domain: usersTable.domain,
-          subDomain: usersTable.subDomain,
-          timeCommitment: usersTable.timeCommitment,
-          journeyStatus: usersTable.journeyStatus,
-        })
+        .select()
         .from(usersTable)
         .where(eq(usersTable.id, id))
         .limit(1);
