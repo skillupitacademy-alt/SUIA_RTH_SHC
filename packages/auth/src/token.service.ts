@@ -125,32 +125,63 @@ export class TokenService {
   getAccessToken(req: AccessTokenRequestLike, options?: { scope?: 'admin' | 'user' | 'infrastructure' }): string | undefined {
     const scope = options?.scope;
 
+    // Helper function to get cookie value from either cookies API or cookie header
+    const getCookieValue = (name: string): string | undefined => {
+      // Try Next.js cookies API first
+      if (req.cookies?.get) {
+        const cookie = req.cookies.get(name);
+        if (cookie?.value && typeof cookie.value === 'string' && cookie.value.length > 0) {
+          return cookie.value;
+        }
+      }
+
+      // Fallback to parsing cookie header
+      const cookieHeader = req.headers?.get('cookie');
+      if (typeof cookieHeader === 'string' && cookieHeader.length > 0) {
+        const cookies = cookieHeader.split(';').reduce((acc, cookie) => {
+          const [key, ...valueParts] = cookie.trim().split('=');
+          if (key && valueParts.length > 0) {
+            acc[key.trim()] = valueParts.join('=').trim();
+          }
+          return acc;
+        }, {} as Record<string, string>);
+
+        const value = cookies[name];
+        if (typeof value === 'string' && value.length > 0) {
+          return value;
+        }
+      }
+
+      return undefined;
+    };
+
     if (scope === 'admin') {
-      const adminToken = req.cookies?.get('admin_accessToken')?.value;
-      if (typeof adminToken === 'string' && adminToken.length > 0) return adminToken;
+      const adminToken = getCookieValue('admin_accessToken');
+      if (adminToken) return adminToken;
     } else if (scope === 'user') {
-      const userToken = req.cookies?.get('accessToken')?.value;
-      if (typeof userToken === 'string' && userToken.length > 0) return userToken;
+      const userToken = getCookieValue('accessToken');
+      if (userToken) return userToken;
     } else if (scope === 'infrastructure') {
-      const infraToken = req.cookies?.get('infra_accessToken')?.value;
-      if (typeof infraToken === 'string' && infraToken.length > 0) return infraToken;
+      const infraToken = getCookieValue('infra_accessToken');
+      if (infraToken) return infraToken;
     }
 
     // When no scope is specified, check default cookies first, then Authorization header
     if (!scope) {
       // Check user token first (most common case)
-      const userToken = req.cookies?.get('accessToken')?.value;
-      if (typeof userToken === 'string' && userToken.length > 0) return userToken;
+      const userToken = getCookieValue('accessToken');
+      if (userToken) return userToken;
       
       // Check admin token as fallback
-      const adminToken = req.cookies?.get('admin_accessToken')?.value;
-      if (typeof adminToken === 'string' && adminToken.length > 0) return adminToken;
+      const adminToken = getCookieValue('admin_accessToken');
+      if (adminToken) return adminToken;
       
       // Check infrastructure token as fallback
-      const infraToken = req.cookies?.get('infra_accessToken')?.value;
-      if (typeof infraToken === 'string' && infraToken.length > 0) return infraToken;
+      const infraToken = getCookieValue('infra_accessToken');
+      if (infraToken) return infraToken;
     }
 
+    // Fallback to Authorization header
     const headerToken = req.headers?.get('authorization')?.replace('Bearer ', '');
     return typeof headerToken === 'string' && headerToken.length > 0 ? headerToken : undefined;
   }
