@@ -65,9 +65,31 @@ export class UserRepository extends BaseRepository<User, typeof users> {
   }
 
   async findByEmail(email: string): Promise<User | undefined> {
-    return await this.dbInstance.query.users.findFirst({
-      where: eq(this.tables.users.email, email),
-    });
+    const usersTable = this.tables.users;
+    const results = await this.dbInstance
+      .select({
+        id: usersTable.id,
+        email: usersTable.email,
+        passwordHash: usersTable.passwordHash,
+        emailVerified: usersTable.emailVerified,
+        isBlocked: usersTable.isBlocked,
+        lastActiveAt: usersTable.lastActiveAt,
+        deletedAt: usersTable.deletedAt,
+        createdAt: usersTable.createdAt,
+        updatedAt: usersTable.updatedAt,
+        shadowUserId: usersTable.shadowUserId,
+        isOnboarded: usersTable.isOnboarded,
+        primaryGoal: usersTable.primaryGoal,
+        domain: usersTable.domain,
+        subDomain: usersTable.subDomain,
+        timeCommitment: usersTable.timeCommitment,
+        journeyStatus: usersTable.journeyStatus,
+      })
+      .from(usersTable)
+      .where(eq(usersTable.email, email))
+      .limit(1);
+    
+    return results[0] as User | undefined;
   }
 
   async findWithDetails(email: string) {
@@ -223,9 +245,19 @@ export class UserRepository extends BaseRepository<User, typeof users> {
 
   async assignRole(userId: string, roleName: string, tx?: Pick<typeof db, 'insert' | 'query'>) {
     const executor = tx ?? this.dbInstance;
-    const role = await executor.query.roles.findFirst({
-      where: sql`${this.tables.roles.name} = ${roleName}`,
-    });
+    const rolesTable = this.tables.roles;
+    
+    // Use explicit SELECT to avoid duplicate alias issue
+    const roleResults = await executor
+      .select({
+        id: rolesTable.id,
+        name: rolesTable.name,
+      })
+      .from(rolesTable)
+      .where(eq(rolesTable.name, roleName))
+      .limit(1);
+    
+    const role = roleResults[0];
 
     if ((role !== null && role !== undefined)) {
       await executor.insert(this.tables.userRoles).values({
@@ -242,9 +274,20 @@ export class UserRepository extends BaseRepository<User, typeof users> {
   }
 
   async findToken(token: string) {
-    return await this.dbInstance.query.verificationTokens.findFirst({
-      where: eq(this.tables.verificationTokens.token, token),
-    });
+    const tokensTable = this.tables.verificationTokens;
+    const results = await this.dbInstance
+      .select({
+        id: tokensTable.id,
+        userId: tokensTable.userId,
+        token: tokensTable.token,
+        expiresAt: tokensTable.expiresAt,
+        createdAt: tokensTable.createdAt,
+      })
+      .from(tokensTable)
+      .where(eq(tokensTable.token, token))
+      .limit(1);
+    
+    return results[0];
   }
 
   async deleteToken(tokenId: string) {
@@ -268,9 +311,20 @@ export class UserRepository extends BaseRepository<User, typeof users> {
   }
 
   async findResetToken(token: string) {
-    return await this.dbInstance.query.passwordResetTokens.findFirst({
-      where: sql`${this.tables.passwordResetTokens.token} = ${token} and ${this.tables.passwordResetTokens.expiresAt} > ${new Date()}`
-    });
+    const resetTokensTable = this.tables.passwordResetTokens;
+    const results = await this.dbInstance
+      .select({
+        id: resetTokensTable.id,
+        userId: resetTokensTable.userId,
+        token: resetTokensTable.token,
+        expiresAt: resetTokensTable.expiresAt,
+        createdAt: resetTokensTable.createdAt,
+      })
+      .from(resetTokensTable)
+      .where(sql`${resetTokensTable.token} = ${token} and ${resetTokensTable.expiresAt} > ${new Date()}`)
+      .limit(1);
+    
+    return results[0];
   }
 
   async deleteResetToken(id: string) {
@@ -284,9 +338,31 @@ export class UserRepository extends BaseRepository<User, typeof users> {
   }
 
   async findById(id: string): Promise<User | undefined> {
-    return await this.dbInstance.query.users.findFirst({
-      where: eq(this.tables.users.id, id),
-    });
+    const usersTable = this.tables.users;
+    const results = await this.dbInstance
+      .select({
+        id: usersTable.id,
+        email: usersTable.email,
+        passwordHash: usersTable.passwordHash,
+        emailVerified: usersTable.emailVerified,
+        isBlocked: usersTable.isBlocked,
+        lastActiveAt: usersTable.lastActiveAt,
+        deletedAt: usersTable.deletedAt,
+        createdAt: usersTable.createdAt,
+        updatedAt: usersTable.updatedAt,
+        shadowUserId: usersTable.shadowUserId,
+        isOnboarded: usersTable.isOnboarded,
+        primaryGoal: usersTable.primaryGoal,
+        domain: usersTable.domain,
+        subDomain: usersTable.subDomain,
+        timeCommitment: usersTable.timeCommitment,
+        journeyStatus: usersTable.journeyStatus,
+      })
+      .from(usersTable)
+      .where(eq(usersTable.id, id))
+      .limit(1);
+    
+    return results[0] as User | undefined;
   }
 
   /**
