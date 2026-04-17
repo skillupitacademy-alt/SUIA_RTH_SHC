@@ -10,6 +10,7 @@ import {
   Network,
   Award,
   Settings,
+  User,
 } from 'lucide-react';
 import { useBrand } from '../../PostLandingPage/app/context/BrandContext';
 import { useDashboardData } from './DashboardDataContext';
@@ -22,6 +23,7 @@ interface NavItem {
 
 const iconMap: Record<string, NavItem['icon']> = {
   '/dashboard': LayoutDashboard,
+  '/dashboard/profile': User,
   '/launch-exam': FileQuestion,
   '/tutorial': BookOpen,
   '/node-map': Network,

@@ -121,6 +121,20 @@ export function createForwardHeaders(request: NextRequest): Headers {
   const headers = new Headers(request.headers);
   headers.delete('host');
   headers.delete('content-length');
+  
+  // 🔐 ENTERPRISE AUTH: Preserve device context headers if present
+  // These headers are sent from the client and must be forwarded to the API server
+  // for multi-device session tracking and hijack detection
+  const deviceId = request.headers.get('x-device-id');
+  const deviceName = request.headers.get('x-device-name');
+  
+  if (deviceId) {
+    headers.set('x-device-id', deviceId);
+  }
+  if (deviceName) {
+    headers.set('x-device-name', deviceName);
+  }
+  
   return headers;
 }
 

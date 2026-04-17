@@ -40,6 +40,13 @@ async function handler(_req: NextRequest) {
 
     const ip = getClientIp(_req);
     
+    // 🔐 ENTERPRISE AUTH: Extract device context from request headers
+    const deviceContext = {
+      deviceId: _req.headers.get('x-device-id') ?? undefined,
+      userAgent: _req.headers.get('user-agent') ?? undefined,
+      deviceName: _req.headers.get('x-device-name') ?? undefined,
+    };
+    
     const rawBody = await _req.json().catch(() => ({}));
     if (!validateJsonDepth(rawBody) || !validateJsonSize(rawBody)) {
       return ApiResponse.error(badRequest('Payload too deep or large'));
@@ -51,7 +58,7 @@ async function handler(_req: NextRequest) {
     const authService = container.get(AuthService);
     const tokenService = container.get(TokenService);
 
-    const { accessToken, refreshToken: newRefreshToken } = await authService.refresh(tokenToUse, ip, examId, audience, requestBrand);
+    const { accessToken, refreshToken: newRefreshToken } = await authService.refresh(tokenToUse, ip, examId, audience, requestBrand, deviceContext);
     const expiresAt = tokenService.getExpiration(accessToken);
 
     let maxAge = 15 * 60; 

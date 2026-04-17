@@ -47,6 +47,13 @@ async function handler(req: NextRequest) {
     const ip = getClientIp(req);
     const brand = resolveRequestBrand(platform) ?? resolveRequestBrandFromHeaders(req.headers);
 
+    // 🔐 ENTERPRISE AUTH: Extract device context from request headers
+    const deviceContext = {
+      deviceId: req.headers.get('x-device-id') ?? undefined,
+      userAgent: req.headers.get('user-agent') ?? undefined,
+      deviceName: req.headers.get('x-device-name') ?? undefined,
+    };
+
     // DEBUG: Log request details
     console.log('[LOGIN_ROUTE_DEBUG] Request details:', {
       email,
@@ -55,7 +62,9 @@ async function handler(req: NextRequest) {
       ip,
       host: req.headers.get('host'),
       origin: req.headers.get('origin'),
-      userAgent: req.headers.get('user-agent')
+      userAgent: req.headers.get('user-agent'),
+      deviceId: deviceContext.deviceId,
+      deviceName: deviceContext.deviceName,
     });
 
     if (brand !== 'skillup' && brand !== 'realtutorialhub') {
@@ -63,7 +72,7 @@ async function handler(req: NextRequest) {
       return ApiResponse.error(badRequest('Brand is required'));
     }
 
-    const { _user, accessToken, refreshToken, isAdmin } = await container.get(AuthService).login(email, password, ip, brand);
+    const { _user, accessToken, refreshToken, isAdmin } = await container.get(AuthService).login(email, password, ip, brand, deviceContext);
     const rawProfile = Array.isArray(_user.profile) ? _user.profile[0] ?? {} : (_user.profile ?? {});
     const authUserInput = {
       id: _user.id,

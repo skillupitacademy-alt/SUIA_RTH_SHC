@@ -2,6 +2,7 @@ export * from './token.service';
 export * from './password.service';
 export * from './verify';
 export * from './subscription.cache';
+export * from './device-context';
 
 // RBAC exports
 export { RBACService, requirePermission, requireRole, requireAdmin } from './rbac.service';

@@ -518,6 +518,7 @@ function buildDashboardApiResponse(
     },
     nav_items: [
       { label: 'Dashboard', url: '/dashboard' },
+      { label: 'Profile', url: '/dashboard/profile' },
       { label: 'Exam Engine', url: '/launch-exam' },
       { label: 'Tutorial Engine', url: '/tutorial' },
       { label: 'Node Map', url: '/node-map' },
