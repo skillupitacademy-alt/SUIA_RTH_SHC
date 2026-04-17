@@ -5,12 +5,16 @@ import type {
   SignupRequestData,
 } from './authViewData';
 import { mapLoginError, mapLoginResponse } from './authMapper';
+import { getDeviceHeaders } from '@quiz/auth';
 
 const LOGIN_ENDPOINT = '/api/auth/login';
 const SIGNUP_ENDPOINT = '/api/auth/signup';
 const AUTH_ME_ENDPOINT = '/api/auth/me';
 
 async function submitAuthRequest(endpoint: string, data: { email: string; password: string; brand: LoginRequestData['brand']; name?: string }) {
+  // 🔐 ENTERPRISE AUTH: Inject device context headers
+  const deviceHeaders = getDeviceHeaders();
+  
   const response = await fetch(endpoint, {
     method: 'POST',
     credentials: 'include',
@@ -19,6 +23,7 @@ async function submitAuthRequest(endpoint: string, data: { email: string; passwo
       accept: 'application/json',
       'x-portal-identity': 'user',
       'x-brand': data.brand,
+      ...deviceHeaders, // 🔥 CRITICAL FIX: Device tracking
     },
     body: JSON.stringify({
       ...(typeof data.name === 'string' ? { name: data.name } : {}),
@@ -88,4 +93,9 @@ export async function logoutUser() {
   if (!response.ok) {
     throw new Error('Logout failed');
   }
+  
+  // 🔐 ENTERPRISE AUTH: Clear device context on logout
+  // This ensures fresh device ID on next login if user wants
+  // Note: Keeping device ID persistent is also valid - depends on product requirements
+  // For now, we keep it persistent for better device tracking
 }

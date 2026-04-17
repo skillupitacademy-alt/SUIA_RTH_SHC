@@ -4,6 +4,7 @@ import React from 'react';
 import { Menu } from 'lucide-react';
 import { BrandConfig } from './brandConfig';
 import { BrandProvider } from './PostLandingPage/app/context/BrandContext';
+import { AuthRefreshProvider } from './auth/AuthRefreshProvider';
 import { Sidebar } from './Dashboard/components/Sidebar';
 import { TopBar } from './Dashboard/components/TopBar';
 import { HeroActionCard } from './Dashboard/components/HeroActionCard';
@@ -72,9 +73,11 @@ function DashboardContent() {
 export default function DashboardPage({ config, data }: { config: BrandConfig; data: DashboardViewData }) {
   return (
     <BrandProvider brand={config}>
-      <DashboardDataProvider value={data}>
-        <DashboardContent />
-      </DashboardDataProvider>
+      <AuthRefreshProvider>
+        <DashboardDataProvider value={data}>
+          <DashboardContent />
+        </DashboardDataProvider>
+      </AuthRefreshProvider>
     </BrandProvider>
   );
 }
