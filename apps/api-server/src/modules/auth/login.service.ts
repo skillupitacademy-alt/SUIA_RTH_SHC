@@ -193,7 +193,18 @@ export class LoginService {
   }
 
   async logout(token: string, userId?: string, ip?: string, brand: RequestBrand = 'realtutorialhub') {
-    const tokenHash = await this.tokenService.hashToken(token);
+    // 🔐 CRITICAL FIX: Extract userId from token if not provided
+    let effectiveUserId = userId;
+    
+    if (!effectiveUserId) {
+      try {
+        // Decode the refresh token to get userId
+        const decoded = await this.tokenService.verifyRefreshToken(token);
+        effectiveUserId = decoded.userId;
+      } catch (error) {
+        console.warn('[LOGOUT] Failed to decode token, attempting hash-based revocation', error);
+      }
+    }
     
     // ✅ Use brand-specific database context
     const brandContext = getAuthBrandContext(brand);
@@ -207,18 +218,27 @@ export class LoginService {
       ? this.userRepo.withDb(brandContext.db, brandContext.tables)
       : this.userRepo;
     
-    // ✅ Revoke token in brand-specific database
-    await brandTokenRepo.revokeToken(tokenHash);
+    // 🔥 CRITICAL FIX: Revoke ALL tokens for the user (not just current token)
+    // This ensures logout is deterministic regardless of token rotation history
+    if (effectiveUserId) {
+      console.log('[LOGOUT] Revoking all tokens for user:', effectiveUserId);
+      await brandTokenRepo.revokeAll(effectiveUserId);
+    } else {
+      // Fallback: Revoke only the specific token if we can't determine userId
+      console.warn('[LOGOUT] Falling back to single token revocation');
+      const tokenHash = await this.tokenService.hashToken(token);
+      await brandTokenRepo.revokeToken(tokenHash);
+    }
 
     // ✅ Force Offline status by setting lastActiveAt to old date
-    if (userId !== undefined) {
+    if (effectiveUserId) {
         // Set to 1 hour ago to ensure they appear offline immediately
         const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000); 
-        await brandUserRepo.updateLastActive(userId, oneHourAgo);
+        await brandUserRepo.updateLastActive(effectiveUserId, oneHourAgo);
     }
 
     // ✅ Audit log with brand context
-    await this.auditService.log({ userId, action: 'logout_success', ip, brand });
+    await this.auditService.log({ userId: effectiveUserId, action: 'logout_success', ip, brand });
   }
 
   async heartbeat(userId: string) {

@@ -1,5 +1,9 @@
-// Mock user profile service (To be replaced with real BFF service layer later)
-import { fetchCurrentUserState } from '../auth/authLoader';
+/**
+ * 🔐 PRODUCTION USER PROFILE SERVICE
+ * 
+ * Real API integration for user profile management.
+ * Pattern: UI → BFF (/api/profile) → API Server (/api/auth/profile) → DB
+ */
 
 export interface UserProfile {
   id: string;
@@ -15,39 +19,114 @@ export interface UserProfile {
   createdAt: string;
 }
 
-const mockProfile: UserProfile = {
-  id: '1',
-  fullName: 'User Learner',
-  email: 'learner@example.com',
-  educationLevel: 'Bachelor\'s Degree',
-  status: 'Professional',
-  primaryGoal: 'Career Advancement',
-  domain: 'Software Development',
-  subDomain: 'Frontend Development',
-  skillLevel: 'Intermediate',
-  timeCommitment: '10-15 hours/week',
-  createdAt: new Date().toISOString(),
-};
-
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-export async function getUserProfile(): Promise<UserProfile> {
-  await delay(500);
-  
-  // Try to pull some truth from current state
-  try {
-    const authState = await fetchCurrentUserState();
-    // This is purely for demonstration of integration, the actual DB user fetches
-    // will happen via proper server requests later.
-  } catch (e) {
-    // ignore
-  }
-
-  return { ...mockProfile };
+/**
+ * API Response from backend (field names match database schema)
+ */
+interface ApiProfileResponse {
+  id: string;
+  userId: string;
+  name: string;
+  educationLevel: string | null;
+  professionalStatus: string | null;
+  primaryGoal: string | null;
+  domain: string | null;
+  subDomain: string | null;
+  adaptiveLevel: 'beginner' | 'intermediate' | 'advanced';
+  timeCommitment: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
+/**
+ * Map API response to UI format
+ */
+function mapProfileFromApi(apiData: ApiProfileResponse, userEmail: string): UserProfile {
+  return {
+    id: apiData.id,
+    fullName: apiData.name || 'User',
+    email: userEmail,
+    educationLevel: apiData.educationLevel || 'Not specified',
+    status: apiData.professionalStatus || 'Student',
+    primaryGoal: apiData.primaryGoal || 'Learning',
+    domain: apiData.domain || 'General',
+    subDomain: apiData.subDomain || 'Foundations',
+    skillLevel: apiData.adaptiveLevel || 'beginner',
+    timeCommitment: apiData.timeCommitment || 'Flexible',
+    createdAt: apiData.createdAt,
+  };
+}
+
+/**
+ * Map UI format to API request
+ */
+function mapProfileToApi(uiData: Partial<UserProfile>): Partial<ApiProfileResponse> {
+  const apiData: Partial<ApiProfileResponse> = {};
+  
+  if (uiData.fullName !== undefined) apiData.name = uiData.fullName;
+  if (uiData.educationLevel !== undefined) apiData.educationLevel = uiData.educationLevel;
+  if (uiData.status !== undefined) apiData.professionalStatus = uiData.status;
+  if (uiData.primaryGoal !== undefined) apiData.primaryGoal = uiData.primaryGoal;
+  if (uiData.domain !== undefined) apiData.domain = uiData.domain;
+  if (uiData.subDomain !== undefined) apiData.subDomain = uiData.subDomain;
+  if (uiData.skillLevel !== undefined) {
+    apiData.adaptiveLevel = uiData.skillLevel as 'beginner' | 'intermediate' | 'advanced';
+  }
+  if (uiData.timeCommitment !== undefined) apiData.timeCommitment = uiData.timeCommitment;
+  
+  return apiData;
+}
+
+/**
+ * Fetch user profile from backend
+ */
+export async function getUserProfile(): Promise<UserProfile> {
+  const res = await fetch('/api/profile', {
+    method: 'GET',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+    },
+    cache: 'no-store',
+  });
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({ message: 'Failed to fetch profile' }));
+    throw new Error(error.message || 'Failed to fetch profile');
+  }
+
+  const data = await res.json();
+  
+  // Handle both direct profile response and wrapped response
+  const profileData = data.data || data;
+  const userEmail = profileData.email || profileData.user?.email || 'user@example.com';
+  
+  return mapProfileFromApi(profileData, userEmail);
+}
+
+/**
+ * Update user profile
+ */
 export async function updateUserProfile(updates: Partial<UserProfile>): Promise<UserProfile> {
-  await delay(800);
-  Object.assign(mockProfile, updates);
-  return { ...mockProfile };
+  const apiUpdates = mapProfileToApi(updates);
+  
+  const res = await fetch('/api/profile', {
+    method: 'PATCH',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(apiUpdates),
+  });
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({ message: 'Failed to update profile' }));
+    throw new Error(error.message || 'Failed to update profile');
+  }
+
+  const data = await res.json();
+  const profileData = data.data || data;
+  const userEmail = updates.email || profileData.email || 'user@example.com';
+  
+  return mapProfileFromApi(profileData, userEmail);
 }

@@ -25,18 +25,46 @@ async function handler(_req: NextRequest) {
   const requestHostname = resolveRequestHostnameFromHeaders(_req.headers, _req.nextUrl.hostname);
   const brand: 'skillup' | 'realtutorialhub' = requestHostname?.includes('skillup') ? 'skillup' : 'realtutorialhub';
 
+  // 🔥 CRITICAL FIX: Extract userId from access token for deterministic logout
+  let userId: string | undefined;
   try {
     if (typeof _token === 'string' && _token.trim() !== '') {
-      await authService.logout(_token, undefined, ip, brand);
+      const payload = await tokenService.verifyAccessToken(_token);
+      userId = payload.userId;
     }
-    if (typeof adminToken === 'string' && adminToken.trim() !== '') {
-      await authService.logout(adminToken, undefined, ip, brand);
+  } catch (_err) {
+    // Token invalid or expired - still proceed with logout
+    console.warn('[LOGOUT] Failed to extract userId from access token');
+  }
+
+  try {
+    // Get refresh token for logout (needed to revoke in DB)
+    const refreshToken = _req.cookies.get('refreshToken')?.value;
+    const adminRefreshToken = _req.cookies.get('admin_refreshToken')?.value;
+    const infraRefreshToken = _req.cookies.get('infra_refreshToken')?.value;
+
+    // 🔥 CRITICAL: Pass userId to ensure ALL tokens are revoked
+    if (typeof refreshToken === 'string' && refreshToken.trim() !== '') {
+      await authService.logout(refreshToken, userId, ip, brand);
+    } else if (typeof _token === 'string' && _token.trim() !== '') {
+      // Fallback: Use access token if refresh token missing
+      await authService.logout(_token, userId, ip, brand);
     }
-    if (typeof infraToken === 'string' && infraToken.trim() !== '') {
-      await authService.logout(infraToken, undefined, ip, brand);
+    
+    if (typeof adminRefreshToken === 'string' && adminRefreshToken.trim() !== '') {
+      await authService.logout(adminRefreshToken, userId, ip, brand);
+    } else if (typeof adminToken === 'string' && adminToken.trim() !== '') {
+      await authService.logout(adminToken, userId, ip, brand);
+    }
+    
+    if (typeof infraRefreshToken === 'string' && infraRefreshToken.trim() !== '') {
+      await authService.logout(infraRefreshToken, userId, ip, brand);
+    } else if (typeof infraToken === 'string' && infraToken.trim() !== '') {
+      await authService.logout(infraToken, userId, ip, brand);
     }
   } catch (_err) {
     // Continue clearing cookies to avoid sticky sessions
+    console.error('[LOGOUT] Error during logout:', _err);
   }
 
   const response = ApiResponse.success({ message: 'Logged out' });

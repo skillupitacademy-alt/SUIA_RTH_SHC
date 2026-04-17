@@ -26,6 +26,7 @@ export function ProfileScreen() {
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadProfile();
@@ -33,12 +34,14 @@ export function ProfileScreen() {
 
   const loadProfile = async () => {
     setIsLoading(true);
+    setError(null);
     try {
       const data = await getUserProfile();
       setProfile(data);
       setEditedProfile(data);
     } catch (error) {
       console.error('Failed to load profile:', error);
+      setError(error instanceof Error ? error.message : 'Failed to load profile');
     } finally {
       setIsLoading(false);
     }
@@ -46,23 +49,28 @@ export function ProfileScreen() {
 
   const handleEdit = () => {
     setIsEditing(true);
+    setError(null);
   };
 
   const handleCancel = () => {
     setEditedProfile(profile);
     setIsEditing(false);
+    setError(null);
   };
 
   const handleSave = async () => {
     if (!editedProfile) return;
     
     setIsSaving(true);
+    setError(null);
     try {
       const updated = await updateUserProfile(editedProfile);
       setProfile(updated);
+      setEditedProfile(updated);
       setIsEditing(false);
     } catch (error) {
       console.error('Failed to save profile:', error);
+      setError(error instanceof Error ? error.message : 'Failed to save profile');
     } finally {
       setIsSaving(false);
     }
@@ -78,7 +86,31 @@ export function ProfileScreen() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="animate-spin text-gray-400" size={48} />
+        <div className="text-center">
+          <Loader2 className="animate-spin text-gray-400 mx-auto mb-4" size={48} />
+          <p className="text-gray-600">Loading your profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error && !profile) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center max-w-md">
+          <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+            <X className="text-red-600" size={32} />
+          </div>
+          <h2 className="text-2xl font-black text-gray-900 mb-2">Failed to Load Profile</h2>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button
+            onClick={loadProfile}
+            className="px-6 py-3 rounded-xl font-semibold text-white"
+            style={{ backgroundColor: brand.primaryColor }}
+          >
+            Try Again
+          </button>
+        </div>
       </div>
     );
   }
@@ -148,6 +180,23 @@ export function ProfileScreen() {
 
   return (
     <div className="space-y-6">
+      {/* Error Banner */}
+      {error && (
+        <div className="rounded-2xl p-4 bg-red-50 border border-red-200 flex items-start gap-3">
+          <X className="text-red-600 flex-shrink-0 mt-0.5" size={20} />
+          <div className="flex-1">
+            <p className="font-semibold text-red-900">Error</p>
+            <p className="text-sm text-red-700">{error}</p>
+          </div>
+          <button
+            onClick={() => setError(null)}
+            className="text-red-600 hover:text-red-800"
+          >
+            <X size={20} />
+          </button>
+        </div>
+      )}
+
       {/* Header Card */}
       <div className="rounded-[2rem] p-8 bg-white border border-gray-200 shadow-sm">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-4">

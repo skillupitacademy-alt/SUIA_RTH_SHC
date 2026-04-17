@@ -23,39 +23,62 @@ export class SignupService {
   ) {}
 
   async signup(email: string, password: string, name: string, ip?: string, brand: RequestBrand = 'realtutorialhub') {
+    console.log('🔥 [SIGNUP] START', { email, brand });
     await this.auditService.log({ action: 'signup_attempt', metadata: { email }, ip, brand });
 
-    const existingUser = await this.userRepo.findByEmail(email);
-
-    if (existingUser !== undefined) {
-      await this.auditService.log({ action: 'signup_failed', metadata: { reason: 'user_exists', email }, ip, brand });
-      throw new Error('User already exists');
-    }
-
-    const passwordHash = await this.passwordService.hash(password);
-
+    // 🔥 CRITICAL FIX: Get brand-specific DB context FIRST
     const brandContext = getAuthBrandContext(brand);
     const brandDb = brandContext.db;
     const brandUsers = brand === 'skillup' ? skillupUsers : realtutorialhubUsers;
+    
+    console.log('🔥 [SIGNUP] DB CONTEXT', {
+      brand,
+      dbType: brandDb?.constructor?.name,
+      hasSelect: typeof brandDb?.select === 'function',
+      hasQuery: Boolean(brandDb?.query),
+    });
+
+    // 🔥 CRITICAL FIX: Use brand-specific repo for existence check
     const brandUserRepo = shouldUseBrandBinding()
       ? this.userRepo.withDb(brandDb, brandContext.tables)
       : this.userRepo;
 
+    console.log('🔥 [SIGNUP] Checking existing user in brand DB');
+    const existingUser = await brandUserRepo.findByEmail(email);
+
+    if (existingUser !== undefined) {
+      console.log('🔥 [SIGNUP] User already exists');
+      await this.auditService.log({ action: 'signup_failed', metadata: { reason: 'user_exists', email }, ip, brand });
+      throw new Error('User already exists');
+    }
+
+    console.log('🔥 [SIGNUP] User does not exist, proceeding with creation');
+    const passwordHash = await this.passwordService.hash(password);
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const newUser = await brandDb.transaction(async (tx: any) => {
+      console.log('🔥 [SIGNUP] Inside transaction, creating user');
       const user = await brandUserRepo.create({
         email,
         passwordHash,
         name,
       }, tx);
 
+      console.log('🔥 [SIGNUP] User created', { userId: user.id });
+
       if (brandUserRepo.assignRole.length >= 3) {
+        console.log('🔥 [SIGNUP] Assigning role (with tx)');
         await brandUserRepo.assignRole(user.id, 'USER', tx);
       } else {
+        console.log('🔥 [SIGNUP] Assigning role (without tx)');
         await brandUserRepo.assignRole(user.id, 'USER');
       }
+      
+      console.log('🔥 [SIGNUP] Role assigned, returning user');
       return user;
     });
+
+    console.log('🔥 [SIGNUP] Transaction complete', { userId: newUser.id });
 
     const verificationToken = crypto.randomBytes(32).toString('hex');
     const verificationExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
@@ -139,7 +162,7 @@ export class SignupService {
       ? this.userRepo.withDb(brandContext.db, brandContext.tables)
       : this.userRepo;
     let verifiedToken = await brandUserRepo.findToken(token);
-    const isTestEnv = process.env.NODE_ENV === 'test' || process.env.VITEST === 'true' || process.env.VITEST_WORKER_ID !== undefined;
+    const isTestEnv = process.env.NODE_ENV === 'test' || process.env.VITEST === 'true' || typeof process.env.VITEST_WORKER_ID === 'string';
     if (verifiedToken === undefined && isTestEnv) {
       try {
         const { db } = await import('@quiz/db');
