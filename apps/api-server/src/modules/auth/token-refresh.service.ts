@@ -79,7 +79,7 @@ export class TokenRefreshService {
     }
 
     // 🔐 STEP 2: Session Hijack Detection (IP mismatch)
-    if (ip && existingSession.ipAddress && existingSession.ipAddress !== ip) {
+    if (typeof ip === 'string' && ip.length > 0 && typeof existingSession.ipAddress === 'string' && existingSession.ipAddress.length > 0 && existingSession.ipAddress !== ip) {
       console.warn('[SECURITY] IP mismatch during token refresh', {
         userId: existingSession.userId,
         originalIp: existingSession.ipAddress,

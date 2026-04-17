@@ -20,14 +20,14 @@ async function getHandler(_req: NextRequest) {
 
   const accessToken = tokenService.getAccessToken(_req, { scope: 'user' });
   
-  if (!accessToken) {
+  if (typeof accessToken !== 'string' || accessToken.length === 0) {
     return ApiResponse.error('Unauthorized', 401);
   }
 
   try {
     const payload = await tokenService.verifyAccessToken(accessToken);
     const userId = payload.userId;
-    const brand = (payload.brand ?? 'realtutorialhub') as 'skillup' | 'realtutorialhub';
+    const brand = (typeof payload.brand === 'string' && payload.brand.length > 0 ? payload.brand : 'realtutorialhub') as 'skillup' | 'realtutorialhub';
 
     const sessions = await globalLogoutService.getActiveSessions(userId, brand);
 
@@ -49,7 +49,7 @@ async function deleteHandler(_req: NextRequest) {
 
   const accessToken = tokenService.getAccessToken(_req, { scope: 'user' });
   
-  if (!accessToken) {
+  if (typeof accessToken !== 'string' || accessToken.length === 0) {
     return ApiResponse.error('Unauthorized', 401);
   }
 
@@ -57,7 +57,7 @@ async function deleteHandler(_req: NextRequest) {
     const payload = await tokenService.verifyAccessToken(accessToken);
     const userId = payload.userId;
     const requestHostname = resolveRequestHostnameFromHeaders(_req.headers, _req.nextUrl.hostname);
-    const brand = requestHostname?.includes('skillup') ? 'skillup' : 'realtutorialhub';
+    const brand = (typeof requestHostname === 'string' && requestHostname.includes('skillup')) ? 'skillup' : 'realtutorialhub';
 
     const result = await globalLogoutService.logoutAllDevices(userId, ip, brand);
 

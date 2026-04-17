@@ -23,7 +23,7 @@ async function handler(_req: NextRequest) {
 
   // ✅ Extract brand from request (hostname or header)
   const requestHostname = resolveRequestHostnameFromHeaders(_req.headers, _req.nextUrl.hostname);
-  const brand: 'skillup' | 'realtutorialhub' = requestHostname?.includes('skillup') ? 'skillup' : 'realtutorialhub';
+  const brand: 'skillup' | 'realtutorialhub' = (typeof requestHostname === 'string' && requestHostname.includes('skillup')) ? 'skillup' : 'realtutorialhub';
 
   // 🔥 CRITICAL FIX: Extract userId from access token for deterministic logout
   let userId: string | undefined;

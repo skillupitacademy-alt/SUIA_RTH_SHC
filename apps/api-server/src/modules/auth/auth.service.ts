@@ -1,9 +1,9 @@
 import type { RequestBrand } from '@/lib/request-brand';
 import type { LoginService } from '@/modules/auth/login.service';
 import type { PasswordRecoveryService } from '@/modules/auth/password-recovery.service';
+import type { DeviceContext } from '@/modules/auth/repositories/token.repository';
 import type { SignupService } from '@/modules/auth/signup.service';
 import type { TokenRefreshService } from '@/modules/auth/token-refresh.service';
-import type { DeviceContext } from '@/modules/auth/repositories/token.repository';
 
 export class AuthService {
   constructor(
