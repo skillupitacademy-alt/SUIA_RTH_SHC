@@ -84,8 +84,17 @@ export const refreshTokens = pgTable("refresh_tokens", {
   revoked: boolean("revoked").notNull().default(false),
   lastActiveAt: timestamp("last_active_at").notNull().defaultNow(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  // 🔐 Enterprise Auth Enhancements
+  deviceId: text("device_id"),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  deviceName: text("device_name"),
+  lastUsedAt: timestamp("last_used_at").defaultNow(),
 }, (t) => ({
   idx_refresh_tokens_user_id: index("idx_refresh_tokens_user_id").on(t.userId),
+  idx_refresh_tokens_device_id: index("idx_refresh_tokens_device_id").on(t.deviceId),
+  idx_refresh_tokens_user_device: index("idx_refresh_tokens_user_device").on(t.userId, t.deviceId),
+  idx_refresh_tokens_ip: index("idx_refresh_tokens_ip").on(t.ipAddress),
 }));
 
 export const auditLogs = pgTable("audit_logs", {

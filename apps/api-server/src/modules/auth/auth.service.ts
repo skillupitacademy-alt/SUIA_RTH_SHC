@@ -3,6 +3,7 @@ import type { LoginService } from '@/modules/auth/login.service';
 import type { PasswordRecoveryService } from '@/modules/auth/password-recovery.service';
 import type { SignupService } from '@/modules/auth/signup.service';
 import type { TokenRefreshService } from '@/modules/auth/token-refresh.service';
+import type { DeviceContext } from '@/modules/auth/repositories/token.repository';
 
 export class AuthService {
   constructor(
@@ -45,14 +46,14 @@ export class AuthService {
     return service.signup(email, password, name, ip, brand);
   }
 
-  async login(email: string, password: string, ip: string = 'unknown', brand: RequestBrand = 'realtutorialhub') {
+  async login(email: string, password: string, ip: string = 'unknown', brand: RequestBrand = 'realtutorialhub', deviceContext?: DeviceContext) {
     const service = await this.getLoginService();
-    return service.login(email, password, ip, brand);
+    return service.login(email, password, ip, brand, deviceContext);
   }
 
-  async refresh(token: string, ip?: string, examId?: string, requestedAudience: string = 'user', brand: RequestBrand = 'realtutorialhub') {
+  async refresh(token: string, ip?: string, examId?: string, requestedAudience: string = 'user', brand: RequestBrand = 'realtutorialhub', deviceContext?: DeviceContext) {
     const service = await this.getTokenRefreshService();
-    return service.refresh(token, ip, examId, requestedAudience, brand);
+    return service.refresh(token, ip, examId, requestedAudience, brand, deviceContext);
   }
 
   async logout(token: string, userId?: string, ip?: string, brand: RequestBrand = 'realtutorialhub') {

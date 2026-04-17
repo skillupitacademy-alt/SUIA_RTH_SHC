@@ -64,12 +64,13 @@ export class LoginService {
     }
   }
 
-  async login(email: string, password: string, ip: string = 'unknown', brand: RequestBrand = 'realtutorialhub') {
+  async login(email: string, password: string, ip: string = 'unknown', brand: RequestBrand = 'realtutorialhub', deviceContext?: { deviceId?: string; userAgent?: string; deviceName?: string }) {
     // DEBUG: Log login inputs
     console.log('[LOGIN_DEBUG] Login attempt:', {
       email,
       brand,
       ip,
+      deviceId: deviceContext?.deviceId,
       timestamp: new Date().toISOString()
     });
 
@@ -180,6 +181,12 @@ export class LoginService {
       userId: user.id,
       token: refreshTokenHash,
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      deviceContext: {
+        deviceId: deviceContext?.deviceId,
+        ipAddress: ip,
+        userAgent: deviceContext?.userAgent,
+        deviceName: deviceContext?.deviceName,
+      },
     });
 
     return { _user: user, accessToken, refreshToken, isAdmin, shadowUserId };

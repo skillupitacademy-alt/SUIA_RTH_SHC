@@ -1,88 +1,74 @@
-/**
- * Session Management API
- * Demonstrates session tracking and device management
- */
+import { type NextRequest } from 'next/server';
 
-import { TokenService } from '@quiz/auth';
-import { FeatureFlagService } from '@quiz/auth/feature-flags.service';
-import { AuthMiddleware, handleAuthError } from '@quiz/auth/middleware/auth.middleware';
-import { SessionService } from '@quiz/auth/session.service';
-import { NextRequest, NextResponse } from 'next/server';
-
+import { ApiResponse } from '@/lib/api-response';
+import { resolveRequestHostnameFromHeaders } from '@/lib/request-brand';
+import { withLogging } from '@/lib/withLogging';
+import { getClientIp } from '@/modules/auth/client-ip';
+import { GlobalLogoutService } from '@/modules/auth/global-logout.service';
+import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 
 export const dynamic = 'force-dynamic';
 
-// Initialize auth middleware
-const authMiddleware = new AuthMiddleware(
-  container.get(TokenService),
-  container.get(SessionService),
-  container.get(FeatureFlagService)
-);
-
 /**
- * GET /api/auth/sessions - List user sessions
+ * GET /api/auth/sessions
+ * Get all active sessions for the current user
  */
-export async function GET(req: NextRequest) {
-  try {
-    // Require valid session
-    const user = await authMiddleware.requireValidSession()(req);
-    const sessionService = container.get(SessionService);
-    
-    // Get current session ID from request
-    const currentSessionId = (req as { sessionId?: string }).sessionId;
-    
-    // Get all user sessions
-    const sessions = await sessionService.getUserSessions(user.id, currentSessionId);
-    
-    console.log(`[SESSIONS] User ${user.email} viewing ${sessions.length} sessions`);
-    
-    return NextResponse.json({
-      sessions,
-      currentSessionId,
-      totalSessions: sessions.length
-    });
+async function getHandler(_req: NextRequest) {
+  const tokenService = container.get(TokenService);
+  const globalLogoutService = container.get(GlobalLogoutService);
 
+  const accessToken = tokenService.getAccessToken(_req, { scope: 'user' });
+  
+  if (!accessToken) {
+    return ApiResponse.error('Unauthorized', 401);
+  }
+
+  try {
+    const payload = await tokenService.verifyAccessToken(accessToken);
+    const userId = payload.userId;
+    const brand = (payload.brand ?? 'realtutorialhub') as 'skillup' | 'realtutorialhub';
+
+    const sessions = await globalLogoutService.getActiveSessions(userId, brand);
+
+    return ApiResponse.success({ sessions });
   } catch (error) {
-    const { status, message } = handleAuthError(error as Error);
-    return NextResponse.json({ error: message }, { status });
+    console.error('[GET /api/auth/sessions] Error:', error);
+    return ApiResponse.error('Failed to fetch sessions', 500);
   }
 }
 
 /**
- * DELETE /api/auth/sessions/[sessionId] - Revoke specific session
+ * DELETE /api/auth/sessions
+ * Logout from all devices (global logout)
  */
-export async function DELETE(req: NextRequest) {
-  try {
-    const user = await authMiddleware.requireValidSession()(req);
-    const sessionService = container.get(SessionService);
-    
-    // Get session ID from URL
-    const url = new URL(req.url);
-    const sessionId = url.pathname.split('/').pop();
-    
-    if (sessionId === undefined || sessionId === null || sessionId === '') {
-      return NextResponse.json({ error: 'Session ID required' }, { status: 400 });
-    }
-    
-    // Verify session belongs to user
-    const session = await sessionService.getSession(sessionId);
-    if (!session || session.user_id !== user.id) {
-      return NextResponse.json({ error: 'Session not found' }, { status: 404 });
-    }
-    
-    // Revoke session
-    await sessionService.revokeSession(sessionId);
-    
-    console.log(`[SESSIONS] User ${user.email} revoked session ${sessionId}`);
-    
-    return NextResponse.json({
-      message: 'Session revoked successfully',
-      sessionId
-    });
+async function deleteHandler(_req: NextRequest) {
+  const ip = getClientIp(_req);
+  const tokenService = container.get(TokenService);
+  const globalLogoutService = container.get(GlobalLogoutService);
 
+  const accessToken = tokenService.getAccessToken(_req, { scope: 'user' });
+  
+  if (!accessToken) {
+    return ApiResponse.error('Unauthorized', 401);
+  }
+
+  try {
+    const payload = await tokenService.verifyAccessToken(accessToken);
+    const userId = payload.userId;
+    const requestHostname = resolveRequestHostnameFromHeaders(_req.headers, _req.nextUrl.hostname);
+    const brand = requestHostname?.includes('skillup') ? 'skillup' : 'realtutorialhub';
+
+    const result = await globalLogoutService.logoutAllDevices(userId, ip, brand);
+
+    return ApiResponse.success(result);
   } catch (error) {
-    const { status, message } = handleAuthError(error as Error);
-    return NextResponse.json({ error: message }, { status });
+    console.error('[DELETE /api/auth/sessions] Error:', error);
+    return ApiResponse.error('Failed to logout from all devices', 500);
   }
 }
+
+import { withCorrelationId } from '@/lib/correlation-id.middleware';
+
+export const GET = withCorrelationId(withLogging(getHandler, { component: 'auth', operation: 'get_sessions' }));
+export const DELETE = withCorrelationId(withLogging(deleteHandler, { component: 'auth', operation: 'global_logout' }));

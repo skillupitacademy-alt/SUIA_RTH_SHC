@@ -91,8 +91,17 @@ export const refreshTokens = pgTable("refresh_tokens", {
   revoked: boolean("revoked").notNull().default(false),
   lastActiveAt: timestamp("last_active_at").notNull().defaultNow(), // Added for presence tracking
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  // 🔐 Enterprise Auth Enhancements
+  deviceId: text("device_id"), // Unique device identifier
+  ipAddress: text("ip_address"), // IP address for hijack detection
+  userAgent: text("user_agent"), // Browser/device user agent
+  deviceName: text("device_name"), // Human-readable device name
+  lastUsedAt: timestamp("last_used_at").defaultNow(), // Last refresh time
 }, (t) => ({
   idx_refresh_tokens_user_id: index("idx_refresh_tokens_user_id").on(t.userId),
+  idx_refresh_tokens_device_id: index("idx_refresh_tokens_device_id").on(t.deviceId),
+  idx_refresh_tokens_user_device: index("idx_refresh_tokens_user_device").on(t.userId, t.deviceId),
+  idx_refresh_tokens_ip: index("idx_refresh_tokens_ip").on(t.ipAddress),
 }));
 
 // --- SECURITY HARDENING ---
