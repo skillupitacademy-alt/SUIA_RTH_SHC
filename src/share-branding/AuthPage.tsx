@@ -82,13 +82,15 @@ function AuthContent({ brand, initialMode = 'login' }: AuthPageProps) {
       const password = formData.get('password')?.toString() ?? '';
 
       try {
-        // 🔥 TASK 5: Clear stale state before login
+        // ✅ STEP 1: Authenticate user (sets cookies)
         await loginUser({ email, password, brand });
         
-        // 🔥 MUST REFETCH SESSION - Force fresh session state after login
-        router.refresh(); // Force Next.js to refresh server components
+        // ✅ STEP 2: Fetch fresh session state (cache: 'no-store' guarantees fresh data)
+        // NO router.refresh() needed - we fetch directly with cache bypass
         const sessionState = await fetchCurrentUserState();
         
+        // ✅ STEP 3: Navigate based on fresh state
+        // Server component will re-fetch and verify (double-check pattern)
         const redirectTarget = searchParams.get('redirect');
         router.push(
           sessionState.onboardingCompleted === true
@@ -110,13 +112,15 @@ function AuthContent({ brand, initialMode = 'login' }: AuthPageProps) {
       const password = formData.get('password')?.toString() ?? '';
 
       try {
-        // 🔥 TASK 5: Clear stale state before signup
+        // ✅ STEP 1: Create user account (sets cookies)
         await signupUser({ name, email, password, brand });
         
-        // 🔥 MUST REFETCH SESSION - Force fresh session state after signup
-        router.refresh(); // Force Next.js to refresh server components
+        // ✅ STEP 2: Fetch fresh session state (cache: 'no-store' guarantees fresh data)
+        // NO router.refresh() needed - we fetch directly with cache bypass
         const sessionState = await fetchCurrentUserState();
         
+        // ✅ STEP 3: Navigate based on fresh state
+        // Server component will re-fetch and verify (double-check pattern)
         router.push(sessionState.onboardingCompleted === true ? '/dashboard' : '/onboarding');
       } catch (error) {
         setSubmitError(error instanceof Error ? error.message : 'Authentication failed');

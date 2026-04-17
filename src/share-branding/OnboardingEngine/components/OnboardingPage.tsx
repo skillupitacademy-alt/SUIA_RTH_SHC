@@ -65,58 +65,36 @@ export function OnboardingPage({ config, data: viewData }: OnboardingPageProps) 
 
   const handleSkip = async () => {
     try {
-      // Submit onboarding data as skipped
+      // ✅ STEP 1: Submit onboarding data as skipped
       await persistOnboarding(data, 'skipped');
       
-      // 🔥 CRITICAL: Force session refresh after onboarding
-      const refreshResponse = await fetch('/api/auth/me', { 
-        credentials: 'include', 
-        cache: 'no-store' 
-      });
-      
-      if (refreshResponse.ok) {
-        const refreshData = await refreshResponse.json();
-        console.log('[ONBOARDING_SKIP] Session refreshed:', refreshData?.user?.onboarded);
-      }
-      
-      // Force Next.js to refresh server components
-      router.refresh();
-      
-      // Navigate to dashboard with replace to prevent back navigation
+      // ✅ STEP 2: Navigate to dashboard
+      // Server component will fetch fresh auth state and verify
+      // No need for client-side verification - server is source of truth
       router.replace('/dashboard');
+      
+      console.log('[ONBOARDING_SKIP] Navigating to dashboard');
     } catch (error) {
       console.error('Onboarding skip failed:', error);
-      // Force refresh and navigate even if there's an error
-      router.refresh();
+      // Even on error, try to navigate (user may already be onboarded)
       router.replace('/dashboard');
     }
   };
 
   const handleComplete = async () => {
     try {
-      // Submit onboarding data
+      // ✅ STEP 1: Submit onboarding data
       await persistOnboarding(data, 'completed');
       
-      // 🔥 CRITICAL: Force session refresh after onboarding
-      const refreshResponse = await fetch('/api/auth/me', { 
-        credentials: 'include', 
-        cache: 'no-store' 
-      });
-      
-      if (refreshResponse.ok) {
-        const refreshData = await refreshResponse.json();
-        console.log('[ONBOARDING_COMPLETE] Session refreshed:', refreshData?.user?.onboarded);
-      }
-      
-      // Force Next.js to refresh server components
-      router.refresh();
-      
-      // Navigate to dashboard with replace to prevent back navigation
+      // ✅ STEP 2: Navigate to dashboard
+      // Server component will fetch fresh auth state and verify
+      // No need for client-side verification - server is source of truth
       router.replace('/dashboard');
+      
+      console.log('[ONBOARDING_COMPLETE] Navigating to dashboard');
     } catch (error) {
       console.error('Onboarding completion failed:', error);
-      // Force refresh and navigate even if there's an error
-      router.refresh();
+      // Even on error, try to navigate (user may already be onboarded)
       router.replace('/dashboard');
     }
   };

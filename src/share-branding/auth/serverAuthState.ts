@@ -46,7 +46,9 @@ export async function fetchBackendAuthState(): Promise<BackendAuthUserState | nu
   }
 
   try {
-    const response = await fetch(`${getInternalApiBase()}/auth/me`, {
+    // ✅ Add timestamp to prevent any caching (defense in depth)
+    const timestamp = Date.now();
+    const response = await fetch(`${getInternalApiBase()}/auth/me?_t=${timestamp}`, {
       headers: {
         Cookie: cookieHeader,
         'Cache-Control': 'no-cache',

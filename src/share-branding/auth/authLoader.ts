@@ -46,7 +46,10 @@ export async function signupUser(data: SignupRequestData): Promise<LoginResultVi
 }
 
 export async function fetchCurrentUserState(): Promise<{ onboardingCompleted: boolean }> {
-  const response = await fetch(AUTH_ME_ENDPOINT, {
+  // ✅ Add timestamp to prevent any browser caching (defense in depth)
+  const timestamp = Date.now();
+  
+  const response = await fetch(`${AUTH_ME_ENDPOINT}?_t=${timestamp}`, {
     method: 'GET',
     credentials: 'include', // ✅ Send cookies
     headers: {
