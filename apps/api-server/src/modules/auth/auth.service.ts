@@ -55,9 +55,9 @@ export class AuthService {
     return service.refresh(token, ip, examId, requestedAudience, brand);
   }
 
-  async logout(token: string, userId?: string, ip?: string) {
+  async logout(token: string, userId?: string, ip?: string, brand: RequestBrand = 'realtutorialhub') {
     const service = await this.getLoginService();
-    return service.logout(token, userId, ip);
+    return service.logout(token, userId, ip, brand);
   }
 
   async heartbeat(userId: string) {

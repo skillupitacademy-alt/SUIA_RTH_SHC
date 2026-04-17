@@ -21,22 +21,25 @@ async function handler(_req: NextRequest) {
   const adminToken = _req.cookies.get('admin_accessToken')?.value;
   const infraToken = _req.cookies.get('infra_accessToken')?.value;
 
+  // ✅ Extract brand from request (hostname or header)
+  const requestHostname = resolveRequestHostnameFromHeaders(_req.headers, _req.nextUrl.hostname);
+  const brand: 'skillup' | 'realtutorialhub' = requestHostname?.includes('skillup') ? 'skillup' : 'realtutorialhub';
+
   try {
     if (typeof _token === 'string' && _token.trim() !== '') {
-      await authService.logout(_token, undefined, ip);
+      await authService.logout(_token, undefined, ip, brand);
     }
     if (typeof adminToken === 'string' && adminToken.trim() !== '') {
-      await authService.logout(adminToken, undefined, ip);
+      await authService.logout(adminToken, undefined, ip, brand);
     }
     if (typeof infraToken === 'string' && infraToken.trim() !== '') {
-      await authService.logout(infraToken, undefined, ip);
+      await authService.logout(infraToken, undefined, ip, brand);
     }
   } catch (_err) {
     // Continue clearing cookies to avoid sticky sessions
   }
 
   const response = ApiResponse.success({ message: 'Logged out' });
-  const requestHostname = resolveRequestHostnameFromHeaders(_req.headers, _req.nextUrl.hostname);
   const cookieDomain = resolveCookieDomain(undefined, requestHostname);
 
   const portalIdentity = _req.headers.get('x-portal-identity') ?? 'global';

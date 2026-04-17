@@ -185,19 +185,33 @@ export class LoginService {
     return { _user: user, accessToken, refreshToken, isAdmin, shadowUserId };
   }
 
-  async logout(token: string, userId?: string, ip?: string) {
+  async logout(token: string, userId?: string, ip?: string, brand: RequestBrand = 'realtutorialhub') {
     const tokenHash = await this.tokenService.hashToken(token);
     
-    await this.tokenRepo.revokeToken(tokenHash);
+    // ✅ Use brand-specific database context
+    const brandContext = getAuthBrandContext(brand);
+    const useBrandBinding = shouldUseBrandBinding();
+    
+    const brandTokenRepo = useBrandBinding && typeof this.tokenRepo.withDb === 'function'
+      ? this.tokenRepo.withDb(brandContext.db, { refreshTokens: brandContext.tables.refreshTokens })
+      : this.tokenRepo;
+    
+    const brandUserRepo = useBrandBinding && typeof this.userRepo.withDb === 'function'
+      ? this.userRepo.withDb(brandContext.db, brandContext.tables)
+      : this.userRepo;
+    
+    // ✅ Revoke token in brand-specific database
+    await brandTokenRepo.revokeToken(tokenHash);
 
-    // Force Offline status by setting lastActiveAt to null or old date
+    // ✅ Force Offline status by setting lastActiveAt to old date
     if (userId !== undefined) {
         // Set to 1 hour ago to ensure they appear offline immediately
         const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000); 
-        await this.userRepo.updateLastActive(userId, oneHourAgo);
+        await brandUserRepo.updateLastActive(userId, oneHourAgo);
     }
 
-    await this.auditService.log({ userId, action: 'logout_success', ip });
+    // ✅ Audit log with brand context
+    await this.auditService.log({ userId, action: 'logout_success', ip, brand });
   }
 
   async heartbeat(userId: string) {
