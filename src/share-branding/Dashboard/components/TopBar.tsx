@@ -1,9 +1,14 @@
-import React from 'react';
-import { Search, Flame, ChevronDown } from 'lucide-react';
+import React, { useState } from 'react';
+import { Search, Flame, ChevronDown, LogOut } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useBrand } from '../../PostLandingPage/app/context/BrandContext';
 import { useDashboardData } from './DashboardDataContext';
+import { logoutUser } from '../../auth/authLoader';
 
 export function TopBar({ mobileMenuButton }: { mobileMenuButton?: React.ReactNode }) {
+  const router = useRouter();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
   const brand = useBrand();
   const { header } = useDashboardData();
 
@@ -48,6 +53,30 @@ export function TopBar({ mobileMenuButton }: { mobileMenuButton?: React.ReactNod
           <span className="text-xs text-gray-500">{header.userRole}</span>
         </div>
         <ChevronDown className="text-gray-400" size={18} />
+      </button>
+
+      <button
+        type="button"
+        disabled={isLoggingOut}
+        onClick={async () => {
+          try {
+            setIsLoggingOut(true);
+            await logoutUser();
+            // ✅ Use replace() to prevent back button access to dashboard
+            router.replace('/login');
+          } catch (error) {
+            console.error('Logout failed:', error);
+            setIsLoggingOut(false);
+          }
+        }}
+        className="hidden h-12 items-center gap-2 rounded-2xl px-5 text-sm font-bold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 active:translate-y-0 sm:flex disabled:opacity-70 disabled:cursor-wait"
+        style={{ 
+          backgroundColor: brand.secondaryColor,
+          '--tw-ring-color': brand.secondaryColor
+        } as React.CSSProperties}
+      >
+        <LogOut size={18} />
+        {isLoggingOut ? 'Logging out...' : 'Logout'}
       </button>
     </header>
   );

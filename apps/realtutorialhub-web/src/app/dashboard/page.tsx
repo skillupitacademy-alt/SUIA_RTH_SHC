@@ -15,9 +15,17 @@ export const revalidate = 0;
 
 export default async function Page() {
   const authState = await fetchBackendAuthState();
-  if (authState && authState.onboardingCompleted === false) {
+  
+  // ✅ CRITICAL: Redirect to login if not authenticated
+  if (!authState) {
+    redirect('/login');
+  }
+  
+  // ✅ Redirect to onboarding if not completed
+  if (authState.onboardingCompleted === false) {
     redirect('/onboarding');
   }
+  
   const data = await loadDashboardData(rthConfig);
   return <DashboardPage config={rthConfig} data={data} />;
 }

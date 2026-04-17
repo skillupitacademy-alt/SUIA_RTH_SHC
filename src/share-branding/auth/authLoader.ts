@@ -74,3 +74,18 @@ export async function fetchCurrentUserState(): Promise<{ onboardingCompleted: bo
       payload?.user?.onboardingCompleted === true || payload?.user?.onboarded === true,
   };
 }
+
+export async function logoutUser() {
+  const response = await fetch('/api/auth/logout', {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      accept: 'application/json',
+      'x-portal-identity': 'user',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('Logout failed');
+  }
+}
