@@ -14,7 +14,7 @@ export const dynamic = 'force-dynamic';
  * DELETE /api/auth/sessions/[sessionId]
  * Revoke a specific session (logout from specific device)
  */
-async function deleteHandler(_req: NextRequest, { params }: { params: { sessionId: string } }) {
+async function deleteHandler(_req: NextRequest, context: { params: Promise<{ sessionId: string }> }) {
   const ip = getClientIp(_req);
   const tokenService = container.get(TokenService);
   const globalLogoutService = container.get(GlobalLogoutService);
@@ -31,6 +31,7 @@ async function deleteHandler(_req: NextRequest, { params }: { params: { sessionI
     const requestHostname = resolveRequestHostnameFromHeaders(_req.headers, _req.nextUrl.hostname);
     const brand = requestHostname?.includes('skillup') ? 'skillup' : 'realtutorialhub';
 
+    const params = await context.params;
     const sessionId = params.sessionId;
 
     const result = await globalLogoutService.revokeSession(userId, sessionId, ip, brand);
