@@ -5,8 +5,10 @@ import type { NextRequest } from 'next/server';
 import { badRequest, notFound, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { withCacheHeaders } from '@/lib/cache-headers';
+import type { RequestBrand } from '@/lib/request-brand';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
+import { getAuthBrandContext, shouldUseBrandBinding } from '@/modules/auth/brand-db';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 
@@ -43,8 +45,19 @@ async function getHandler(_req: NextRequest) {
       return ApiResponse.error(unauthorized('Unauthorized', 'UNAUTHORIZED'));
     }
     
+    // 🔥 CRITICAL FIX: Extract brand from JWT and use brand-specific database
+    const brand: RequestBrand = (_payload.brand as RequestBrand) || 'realtutorialhub';
+    console.log('[Profile GET] Brand from token:', brand);
     console.log('[Profile GET] Fetching profile for userId:', _payload.userId);
-    const profile = await db.query.userProfiles.findFirst({
+    
+    // Get brand-specific database context
+    const brandContext = getAuthBrandContext(brand);
+    const useBrandBinding = shouldUseBrandBinding();
+    const brandDb = useBrandBinding ? brandContext.db : db;
+    
+    console.log('[Profile GET] Using brand-specific DB:', useBrandBinding);
+    
+    const profile = await brandDb.query.userProfiles.findFirst({
       where: eq(userProfiles.userId, _payload.userId),
     });
 
@@ -53,7 +66,7 @@ async function getHandler(_req: NextRequest) {
       
       // 🚨 CRITICAL: Check if user has onboardingCompleted = true
       // If yes, this is a DATA INTEGRITY VIOLATION
-      const user = await db.query.users.findFirst({
+      const user = await brandDb.query.users.findFirst({
         where: (usersTable, { eq }) => eq(usersTable.id, _payload.userId),
       });
       
@@ -99,6 +112,17 @@ async function patchHandler(_req: NextRequest) {
       return ApiResponse.error(unauthorized('Unauthorized', 'UNAUTHORIZED'));
     }
     
+    // 🔥 CRITICAL FIX: Extract brand from JWT and use brand-specific database
+    const brand: RequestBrand = (_payload.brand as RequestBrand) || 'realtutorialhub';
+    console.log('[Profile PATCH] Brand from token:', brand);
+    
+    // Get brand-specific database context
+    const brandContext = getAuthBrandContext(brand);
+    const useBrandBinding = shouldUseBrandBinding();
+    const brandDb = useBrandBinding ? brandContext.db : db;
+    
+    console.log('[Profile PATCH] Using brand-specific DB:', useBrandBinding);
+    
     const rawBody = await _req.json().catch(() => ({}));
     
     if (!validateJsonDepth(rawBody) || !validateJsonSize(rawBody)) {
@@ -109,14 +133,14 @@ async function patchHandler(_req: NextRequest) {
     console.log('[Profile PATCH] Update fields:', Object.keys(body));
 
     // Check if profile exists first
-    const existing = await db.query.userProfiles.findFirst({
+    const existing = await brandDb.query.userProfiles.findFirst({
       where: eq(userProfiles.userId, _payload.userId),
     });
 
     if (existing) {
       console.log('[Profile PATCH] Updating existing profile');
       // Update existing profile
-      const [updated] = await db.update(userProfiles)
+      const [updated] = await brandDb.update(userProfiles)
         .set({ ...body, updatedAt: new Date() })
         .where(eq(userProfiles.userId, _payload.userId))
         .returning();
@@ -126,7 +150,7 @@ async function patchHandler(_req: NextRequest) {
     } else {
       console.log('[Profile PATCH] Creating new profile (fallback)');
       // Insert new profile
-      const [inserted] = await db.insert(userProfiles).values({
+      const [inserted] = await brandDb.insert(userProfiles).values({
         userId: _payload.userId,
         name: (typeof body.name === 'string' && body.name.length > 0) ? body.name : 'User',
         professionalStatus: body.professionalStatus,
