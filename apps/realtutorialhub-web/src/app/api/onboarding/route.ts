@@ -5,6 +5,8 @@ export const dynamic = 'force-dynamic';
 /**
  * BFF Route: Submit onboarding preferences
  * Pattern: UI → BFF → API Server → DB
+ * 
+ * 🔥 CRITICAL FIX: Forward BOTH cookie AND Authorization header
  */
 export async function POST(req: NextRequest) {
   try {
@@ -20,16 +22,41 @@ export async function POST(req: NextRequest) {
 
     // Parse request body
     const body = await req.json();
+    
+    const cookieHeader = req.headers.get('cookie') || '';
+    const authHeader = req.headers.get('authorization') || '';
+    
+    // Extract accessToken from cookies for Authorization header
+    const accessToken = cookieHeader
+      .split('; ')
+      .find(c => c.startsWith('accessToken='))
+      ?.split('=')[1];
+    
+    // Build headers - forward both cookie and create Authorization header
+    const headers: Record<string, string> = {
+      'content-type': 'application/json',
+      'x-request-id': req.headers.get('x-request-id') || crypto.randomUUID(),
+      'x-portal-identity': 'user',
+    };
+    
+    // Forward cookie header
+    if (cookieHeader) {
+      headers['cookie'] = cookieHeader;
+    }
+    
+    // Add Authorization header (prefer explicit auth header, fallback to cookie token)
+    if (authHeader) {
+      headers['Authorization'] = authHeader;
+    } else if (accessToken) {
+      headers['Authorization'] = `Bearer ${accessToken}`;
+    }
 
-    // Forward request to API server with cookies
+    // Forward request to API server with cookies + Authorization
     const res = await fetch(`${apiServerUrl}/api/auth/onboarding`, {
       method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        cookie: req.headers.get('cookie') || '',
-        'x-request-id': req.headers.get('x-request-id') || crypto.randomUUID(),
-      },
+      headers,
       body: JSON.stringify(body),
+      cache: 'no-store',
     });
 
     if (!res.ok) {

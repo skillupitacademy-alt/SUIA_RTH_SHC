@@ -15,58 +15,56 @@ const API_SERVER_URL = process.env.NEXT_PUBLIC_API_URL || process.env.API_SERVER
 /**
  * GET /api/profile
  * Fetch user profile from API server
+ * 
+ * 🔥 CRITICAL FIX: Forward BOTH cookie AND Authorization header
  */
 export async function GET(req: NextRequest) {
   try {
-    const cookieHeader = req.headers.get('cookie');
+    const cookieHeader = req.headers.get('cookie') || '';
+    const authHeader = req.headers.get('authorization') || '';
     
-    // 🔥 CRITICAL: Verify auth cookies exist
-    console.log('[BFF] Profile GET - Cookie header:', cookieHeader ? 'EXISTS' : 'MISSING');
-    console.log('[BFF] Profile GET - Cookie length:', cookieHeader?.length || 0);
+    console.log('[BFF] Profile GET - Cookie:', cookieHeader ? 'EXISTS' : 'MISSING');
+    console.log('[BFF] Profile GET - Auth header:', authHeader ? 'EXISTS' : 'MISSING');
     
-    if (!cookieHeader) {
-      console.error('[BFF] Profile GET - No auth cookie provided');
-      return NextResponse.json(
-        { error: 'No auth cookie', message: 'Authentication required' },
-        { status: 401 }
-      );
-    }
-
-    // 🔥 CRITICAL: Extract accessToken for Authorization header
+    // Extract accessToken from cookies for Authorization header
     const accessToken = cookieHeader
       .split('; ')
       .find(c => c.startsWith('accessToken='))
       ?.split('=')[1];
 
     console.log('[BFF] Profile GET - Has accessToken:', !!accessToken);
-
-    if (!accessToken) {
-      console.error('[BFF] Profile GET - Missing accessToken in cookies');
-      return NextResponse.json(
-        { error: 'Missing auth token', message: 'Please log in again' },
-        { status: 401 }
-      );
+    
+    // Build headers - forward both cookie and create Authorization header
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'x-portal-identity': 'user',
+    };
+    
+    // Forward cookie header
+    if (cookieHeader) {
+      headers['cookie'] = cookieHeader;
     }
     
-    console.log('[BFF] Profile GET - Forwarding to API server:', API_SERVER_URL);
-    console.log('[BFF] Profile GET - Token length:', accessToken.length);
+    // Add Authorization header (prefer explicit auth header, fallback to cookie token)
+    if (authHeader) {
+      headers['Authorization'] = authHeader;
+    } else if (accessToken) {
+      headers['Authorization'] = `Bearer ${accessToken}`;
+    }
+    
+    console.log('[BFF] Profile GET - Forwarding to:', API_SERVER_URL);
+    console.log('[BFF] Profile GET - Headers:', Object.keys(headers));
     
     const res = await fetch(`${API_SERVER_URL}/api/auth/profile`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'cookie': cookieHeader,
-        'Authorization': `Bearer ${accessToken}`, // 🔥 CRITICAL FIX
-        'x-portal-identity': 'user',
-      },
+      headers,
       credentials: 'include',
       cache: 'no-store',
     });
 
-    console.log('[BFF] Profile GET - API Server response status:', res.status);
+    console.log('[BFF] Profile GET - API response:', res.status);
 
     const data = await res.json();
-    console.log('[BFF] Profile GET - Response data keys:', Object.keys(data));
 
     // If profile doesn't exist yet, return empty profile structure
     if (res.status === 404) {

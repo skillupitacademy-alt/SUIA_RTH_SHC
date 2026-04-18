@@ -2,6 +2,7 @@ import { Hono, type Context } from 'hono';
 
 import { authenticateRequest } from '@/middleware/auth';
 import { createCorsMiddleware } from '@/middleware/cors';
+import { createTraceDebugMiddleware } from '@/middleware/trace-debug';
 import { proxyRequest } from '@/lib/proxy';
 import { createRateLimitMiddleware } from '@/middleware/rate-limit';
 import { createRequestIdMiddleware } from '@/middleware/request-id';
@@ -31,7 +32,9 @@ export const createApp = () => {
     ),
   );
 
+  // 🔥 OBSERVABILITY MIDDLEWARE
   app.use('*', createRequestIdMiddleware());
+  app.use('*', createTraceDebugMiddleware()); // 🌐 NEW: Trace debugging
   app.use('*', createCorsMiddleware());
   app.use('*', createRateLimitMiddleware());
 
@@ -63,6 +66,7 @@ export const createApp = () => {
 
       console.log('[GATEWAY_AUTH][CHECK]', JSON.stringify({
         requestId: c.get('requestId'),
+        traceId: c.get('traceId'), // 🔥 NEW: Include trace ID
         host: requestUrl.hostname,
         path: requestUrl.pathname,
         portal: authResult.portal,
