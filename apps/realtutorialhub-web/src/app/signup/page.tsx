@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import AuthPage from '../../../../../src/share-branding/AuthPage';
 
 export const metadata = {
@@ -6,5 +7,9 @@ export const metadata = {
 };
 
 export default function SignupPage() {
-  return <AuthPage brand="realtutorialhub" initialMode="signup" />;
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AuthPage brand="realtutorialhub" initialMode="signup" />
+    </Suspense>
+  );
 }
