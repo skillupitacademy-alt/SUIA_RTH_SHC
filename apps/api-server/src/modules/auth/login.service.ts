@@ -196,7 +196,7 @@ export class LoginService {
     // 🔐 CRITICAL FIX: Extract userId from token if not provided
     let effectiveUserId = userId;
     
-    if (!effectiveUserId) {
+    if (typeof effectiveUserId !== 'string' || effectiveUserId.length === 0) {
       try {
         // Decode the refresh token to get userId
         const decoded = await this.tokenService.verifyRefreshToken(token);
@@ -220,7 +220,7 @@ export class LoginService {
     
     // 🔥 CRITICAL FIX: Revoke ALL tokens for the user (not just current token)
     // This ensures logout is deterministic regardless of token rotation history
-    if (effectiveUserId) {
+    if (typeof effectiveUserId === 'string' && effectiveUserId.length > 0) {
       console.log('[LOGOUT] Revoking all tokens for user:', effectiveUserId);
       await brandTokenRepo.revokeAll(effectiveUserId);
     } else {
@@ -231,7 +231,7 @@ export class LoginService {
     }
 
     // ✅ Force Offline status by setting lastActiveAt to old date
-    if (effectiveUserId) {
+    if (typeof effectiveUserId === 'string' && effectiveUserId.length > 0) {
         // Set to 1 hour ago to ensure they appear offline immediately
         const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000); 
         await brandUserRepo.updateLastActive(effectiveUserId, oneHourAgo);

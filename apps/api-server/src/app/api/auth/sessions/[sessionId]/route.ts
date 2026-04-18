@@ -21,7 +21,7 @@ async function deleteHandler(_req: NextRequest, context: { params: Promise<{ ses
 
   const accessToken = tokenService.getAccessToken(_req, { scope: 'user' });
   
-  if (!accessToken) {
+  if (typeof accessToken !== 'string' || accessToken.length === 0) {
     return ApiResponse.error('Unauthorized', 401);
   }
 
@@ -29,14 +29,18 @@ async function deleteHandler(_req: NextRequest, context: { params: Promise<{ ses
     const payload = await tokenService.verifyAccessToken(accessToken);
     const userId = payload.userId;
     const requestHostname = resolveRequestHostnameFromHeaders(_req.headers, _req.nextUrl.hostname);
-    const brand = requestHostname?.includes('skillup') ? 'skillup' : 'realtutorialhub';
+    const brand = (typeof requestHostname === 'string' && requestHostname.includes('skillup')) ? 'skillup' : 'realtutorialhub';
 
     const params = await context.params;
     const sessionId = params.sessionId;
 
     const result = await globalLogoutService.revokeSession(userId, sessionId, ip, brand);
 
-    return ApiResponse.success(result);
+    if (typeof result === 'object' && result !== null) {
+      return ApiResponse.success(result);
+    }
+    
+    return ApiResponse.error('Session not found', 404);
   } catch (error) {
     console.error('[DELETE /api/auth/sessions/:id] Error:', error);
     return ApiResponse.error('Failed to revoke session', 500);

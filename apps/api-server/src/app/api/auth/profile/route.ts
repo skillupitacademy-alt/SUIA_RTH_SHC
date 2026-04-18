@@ -1,4 +1,4 @@
-import { db, userProfiles } from '@quiz/db';
+import { db, userProfiles, users } from '@quiz/db';
 import { eq } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 
@@ -67,7 +67,7 @@ async function getHandler(_req: NextRequest) {
       // 🚨 CRITICAL: Check if user has onboardingCompleted = true
       // If yes, this is a DATA INTEGRITY VIOLATION
       const user = await brandDb.query.users.findFirst({
-        where: (usersTable, { eq }) => eq(usersTable.id, _payload.userId),
+        where: eq(users.id, _payload.userId),
       });
       
       if (user !== null && user !== undefined && user.isOnboarded === true) {
@@ -137,7 +137,7 @@ async function patchHandler(_req: NextRequest) {
       where: eq(userProfiles.userId, _payload.userId),
     });
 
-    if (existing) {
+    if (existing !== null && existing !== undefined) {
       console.log('[Profile PATCH] Updating existing profile');
       // Update existing profile
       const [updated] = await brandDb.update(userProfiles)

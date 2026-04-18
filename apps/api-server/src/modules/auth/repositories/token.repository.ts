@@ -154,7 +154,7 @@ export class TokenRepository extends BaseRepository<RefreshTokenRow, typeof refr
     }
 
     // 🔥 IP Mismatch Detection (optional - can be disabled for mobile users)
-    if (session.ipAddress && session.ipAddress !== currentIp) {
+    if (typeof session.ipAddress === 'string' && session.ipAddress.length > 0 && session.ipAddress !== currentIp) {
       // Log suspicious activity but don't block (mobile IPs change frequently)
       console.warn('[SECURITY] IP mismatch detected', {
         sessionId: session.id,
