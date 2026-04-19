@@ -4,7 +4,7 @@ import {
   GOAL_OPTIONS,
   DOMAIN_OPTIONS,
   SUB_DOMAIN_MAPPINGS
-} from '../constants/fieldMappings';
+} from '../../constants/fieldMappings';
 
 export interface OnboardingData {
   fullName: string;
