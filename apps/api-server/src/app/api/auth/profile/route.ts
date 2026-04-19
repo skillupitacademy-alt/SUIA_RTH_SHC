@@ -139,9 +139,23 @@ async function patchHandler(_req: NextRequest) {
 
     if (existing !== null && existing !== undefined) {
       console.log('[Profile PATCH] Updating existing profile');
+      
+      // Prepare update data with proper handling for array fields
+      const updateData: Partial<ProfileUpdateBody> & { updatedAt: Date } = {
+        ...body,
+        updatedAt: new Date()
+      };
+      
+      // Ensure domainInterest is properly handled as an array
+      if (body.domainInterest !== undefined) {
+        updateData.domainInterest = Array.isArray(body.domainInterest) 
+          ? body.domainInterest 
+          : [];
+      }
+      
       // Update existing profile
       const [updated] = await brandDb.update(userProfiles)
-        .set({ ...body, updatedAt: new Date() })
+        .set(updateData)
         .where(eq(userProfiles.userId, _payload.userId))
         .returning();
 
@@ -149,6 +163,12 @@ async function patchHandler(_req: NextRequest) {
       return ApiResponse.success(updated);
     } else {
       console.log('[Profile PATCH] Creating new profile (fallback)');
+      
+      // Ensure domainInterest is an array
+      const domainInterestArray = Array.isArray(body.domainInterest) 
+        ? body.domainInterest 
+        : (body.domainInterest ? [body.domainInterest] : []);
+      
       // Insert new profile
       const [inserted] = await brandDb.insert(userProfiles).values({
         userId: _payload.userId,
@@ -157,7 +177,7 @@ async function patchHandler(_req: NextRequest) {
         educationLevel: body.educationLevel,
         ageGroup: body.ageGroup,
         experienceYears: body.experienceYears,
-        domainInterest: body.domainInterest,
+        domainInterest: domainInterestArray,
         adaptiveLevel: body.adaptiveLevel || 'beginner',
         primaryGoal: body.primaryGoal,
         domain: body.domain,
