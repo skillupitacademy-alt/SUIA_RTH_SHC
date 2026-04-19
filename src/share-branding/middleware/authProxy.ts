@@ -246,15 +246,3 @@ export async function createAuthProxy(options: AuthProxyOptions = {}) {
     return NextResponse.next();
   };
 }
-
-export const config = {
-  matcher: [
-    {
-      source: '/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)',
-      missing: [
-        { type: 'query', key: '_rsc' },
-        { type: 'header', key: 'rsc' },
-      ],
-    },
-  ],
-};
