@@ -12,3 +12,5 @@ export * from './alerts';
 export * from './trace';
 export * from './anomaly';
 export * from './metrics';
+export * from './muzzle';
+export * from './client';

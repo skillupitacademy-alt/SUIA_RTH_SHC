@@ -9,8 +9,12 @@ export const dynamic = 'force-dynamic';
  * 🔥 CRITICAL FIX: Forward BOTH cookie AND Authorization header
  */
 export async function POST(req: NextRequest) {
+  // 🔥 IMMEDIATE DEBUG: Log that handler is being called
+  console.log('[BFF_ONBOARDING_HANDLER_ENTRY] Route handler called');
+  
   try {
-    const apiServerUrl = process.env.NEXT_PUBLIC_API_URL || process.env.API_SERVER_URL;
+    // 🔥 CRITICAL: Use INTERNAL_API_URL for server-side calls to avoid circular routing through Cloudflare
+    const apiServerUrl = process.env.INTERNAL_API_URL || process.env.API_SERVER_URL || process.env.NEXT_PUBLIC_API_URL;
     
     if (!apiServerUrl) {
       console.error('[BFF][/api/onboarding] API_SERVER_URL not configured');
@@ -25,6 +29,13 @@ export async function POST(req: NextRequest) {
     
     const cookieHeader = req.headers.get('cookie') || '';
     const authHeader = req.headers.get('authorization') || '';
+    
+    // 🔥 CRITICAL DEBUG: Log header presence
+    console.log('[BFF_ONBOARDING]', JSON.stringify({
+      hasCookie: cookieHeader.length > 0,
+      hasAuthHeader: authHeader.length > 0,
+      cookieLength: cookieHeader.length,
+    }));
     
     // Extract accessToken from cookies for Authorization header
     const accessToken = cookieHeader
@@ -50,9 +61,15 @@ export async function POST(req: NextRequest) {
     } else if (accessToken) {
       headers['Authorization'] = `Bearer ${accessToken}`;
     }
+    
+    // 🔥 CRITICAL: Add INTERNAL_GATEWAY_SECRET for direct API server calls
+    const gatewaySecret = process.env.INTERNAL_GATEWAY_SECRET;
+    if (gatewaySecret) {
+      headers['X-Gateway-Secret'] = gatewaySecret;
+    }
 
     // Forward request to API server with cookies + Authorization
-    const res = await fetch(`${apiServerUrl}/api/auth/onboarding`, {
+    const res = await fetch(`${apiServerUrl}/auth/onboarding`, {
       method: 'POST',
       headers,
       body: JSON.stringify(body),

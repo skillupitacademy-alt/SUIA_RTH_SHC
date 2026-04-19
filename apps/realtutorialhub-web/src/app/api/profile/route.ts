@@ -10,7 +10,8 @@ import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-const API_SERVER_URL = process.env.NEXT_PUBLIC_API_URL || process.env.API_SERVER_URL || 'http://localhost:3001';
+// 🔥 CRITICAL: Use INTERNAL_API_URL for server-side calls to avoid circular routing through Cloudflare
+const API_SERVER_URL = process.env.INTERNAL_API_URL || process.env.API_SERVER_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 /**
  * GET /api/profile
@@ -55,7 +56,7 @@ export async function GET(req: NextRequest) {
     console.log('[BFF] Profile GET - Forwarding to:', API_SERVER_URL);
     console.log('[BFF] Profile GET - Headers:', Object.keys(headers));
     
-    const res = await fetch(`${API_SERVER_URL}/api/auth/profile`, {
+    const res = await fetch(`${API_SERVER_URL}/auth/profile`, {
       method: 'GET',
       headers,
       credentials: 'include',
@@ -95,7 +96,7 @@ export async function GET(req: NextRequest) {
       console.log('[BFF] Profile GET - Success, fetching user email');
       
       try {
-        const meRes = await fetch(`${API_SERVER_URL}/api/auth/me`, {
+        const meRes = await fetch(`${API_SERVER_URL}/auth/me`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -189,7 +190,7 @@ export async function PATCH(req: NextRequest) {
     const body = await req.json();
     console.log('[BFF] Profile PATCH - Update fields:', Object.keys(body));
 
-    const res = await fetch(`${API_SERVER_URL}/api/auth/profile`, {
+    const res = await fetch(`${API_SERVER_URL}/auth/profile`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',

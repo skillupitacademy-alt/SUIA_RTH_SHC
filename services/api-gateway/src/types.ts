@@ -35,6 +35,7 @@ export interface GatewayBindings {
 
 export interface GatewayVariables {
   requestId: string;
+  traceId: string;
   user?: SkillHubCoreTokenPayload;
 }
 

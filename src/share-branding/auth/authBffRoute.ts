@@ -135,6 +135,16 @@ export function createForwardHeaders(request: NextRequest): Headers {
     headers.set('x-device-name', deviceName);
   }
   
+  // 🏷️ BRAND RESOLUTION: Add x-brand header based on hostname
+  // This ensures the API server can identify the brand even when the client doesn't send it
+  if (!headers.has('x-brand')) {
+    const hostname = getRequestHost(request);
+    if (hostname) {
+      const brand = hostname.includes('skillup') ? 'skillup' : 'realtutorialhub';
+      headers.set('x-brand', brand);
+    }
+  }
+  
   return headers;
 }
 

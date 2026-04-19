@@ -169,6 +169,18 @@ export class LoginService {
       brand,
     });
 
+    // 🧾 CRITICAL DEBUG: Log token claims
+    console.log('[TOKEN_ISSUED]', JSON.stringify({
+      userId: user.id,
+      shadowUserId,
+      originalUserId: user.id,
+      tokenType: isAdmin ? 'admin' : 'user',
+      brand,
+      aud: isAdmin ? 'admin' : 'user',
+      roles: roleNames,
+      timestamp: new Date().toISOString(),
+    }));
+
     const refreshToken = await this.tokenService.generateRefreshToken(user.id, isAdmin, isAdmin ? 'admin' : 'user', {
       tokenType: isAdmin ? 'admin' : 'user',
       brand,

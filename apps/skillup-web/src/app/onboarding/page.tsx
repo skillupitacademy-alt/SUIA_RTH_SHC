@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 
 import { fetchBackendAuthState } from '../../../../../src/share-branding/auth/serverAuthState';
@@ -19,5 +20,9 @@ export default async function SkillUpOnboardingRoute() {
     redirect('/dashboard');
   }
   const data = await loadOnboardingData(skillUpConfig);
-  return <OnboardingPage config={skillUpConfig} data={data} />;
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <OnboardingPage config={skillUpConfig} data={data} />
+    </Suspense>
+  );
 }

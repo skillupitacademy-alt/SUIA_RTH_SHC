@@ -64,7 +64,18 @@ function hasValidGatewaySecret(request: NextRequest): boolean {
     return true;
   }
 
-  return request.headers.get('x-gateway-secret') === INTERNAL_GATEWAY_SECRET;
+  const gatewaySecret = request.headers.get('x-gateway-secret');
+  
+  // 🔥 CRITICAL DEBUG: Log gateway secret validation
+  console.log('[BFF_GATEWAY_SECRET]', JSON.stringify({
+    hasSecret: gatewaySecret !== null,
+    secretLength: gatewaySecret?.length ?? 0,
+    expectedLength: INTERNAL_GATEWAY_SECRET.length,
+    match: gatewaySecret === INTERNAL_GATEWAY_SECRET,
+    pathname: request.nextUrl.pathname,
+  }));
+
+  return gatewaySecret === INTERNAL_GATEWAY_SECRET;
 }
 
 type UserPayload = { sub: string; roles: string[]; shadowUserId: string; originalUserId: string };

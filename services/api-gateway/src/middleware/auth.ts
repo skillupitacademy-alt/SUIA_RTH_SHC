@@ -38,6 +38,11 @@ export function detectRequestBrand(request: Request): string | undefined {
   return undefined;
 }
 
+// 🔥 NEW: Consistent brand resolution from hostname
+export function resolveBrandFromHostname(hostname: string): 'realtutorialhub' | 'skillup' {
+  return hostname.includes('skillup') ? 'skillup' : 'realtutorialhub';
+}
+
 export function detectRequestPortal(request: Request, route?: RouteLike): PortalKind {
   const requestedPortal = normalizeString(request.headers.get('x-portal-identity'));
 
@@ -53,24 +58,28 @@ export function detectRequestPortal(request: Request, route?: RouteLike): Portal
 }
 
 function getTokenFromHeaders(request: Request, portal: PortalKind): { token?: string; source?: AuthTokenSource } {
+  // 🔥 CRITICAL FIX: Check cookie FIRST, then Authorization header (consistent with API server)
+  const cookieHeader = request.headers.get('cookie') ?? '';
+  
+  if (portal === 'admin') {
+    const adminAccessToken = getCookieValue(cookieHeader, 'admin_accessToken');
+    if (adminAccessToken !== undefined) {
+      return { token: adminAccessToken, source: 'admin_accessToken' };
+    }
+  } else {
+    const accessToken = getCookieValue(cookieHeader, 'accessToken');
+    if (accessToken !== undefined) {
+      return { token: accessToken, source: 'accessToken' };
+    }
+  }
+
+  // Fallback to Authorization header
   const authorization = request.headers.get('authorization') ?? request.headers.get('Authorization');
   if (typeof authorization === 'string' && authorization.startsWith('Bearer ')) {
     const bearerToken = authorization.slice(7).trim();
     if (bearerToken.length > 0) {
       return { token: bearerToken, source: 'authorization' };
     }
-  }
-
-  const cookieHeader = request.headers.get('cookie') ?? '';
-  const adminAccessToken = getCookieValue(cookieHeader, 'admin_accessToken');
-  const accessToken = getCookieValue(cookieHeader, 'accessToken');
-
-  if (portal === 'admin') {
-    if (adminAccessToken !== undefined) {
-      return { token: adminAccessToken, source: 'admin_accessToken' };
-    }
-  } else if (accessToken !== undefined) {
-    return { token: accessToken, source: 'accessToken' };
   }
 
   return {};
@@ -110,10 +119,30 @@ export async function authenticateRequest(
 ): Promise<AuthResolution | Response> {
   const portal = detectRequestPortal(request, route);
   const requestBrand = detectRequestBrand(request);
+  
+  // 🔥 NEW: Always derive brand from hostname for consistency
+  const url = new URL(request.url);
+  const hostnameBrand = resolveBrandFromHostname(url.hostname);
+  const effectiveBrand = requestBrand ?? hostnameBrand;
+  
   const selection = getTokenFromHeaders(request, portal);
   const token = selection.token;
 
+  // 🔥 CRITICAL DEBUG: Log token extraction
+  console.log('[CF_AUTH_DEBUG]', JSON.stringify({
+    portal,
+    hostname: url.hostname,
+    hostnameBrand,
+    requestBrand: requestBrand ?? null,
+    effectiveBrand,
+    hasCookie: request.headers.get('cookie') !== null,
+    hasAuthHeader: request.headers.get('authorization') !== null,
+    tokenSource: selection.source ?? null,
+    tokenFound: token !== undefined && token.length > 0,
+  }));
+
   if (token === undefined || token.trim().length === 0) {
+    console.log('[CF_AUTH_REJECT] No token found - returning 401');
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,
       headers: { 'content-type': 'application/json' },
@@ -134,6 +163,7 @@ export async function authenticateRequest(
     const originalUserId = normalizeString(verifiedPayload.originalUserId);
 
     if (shadowUserId === undefined || originalUserId === undefined) {
+      console.log('[CF_AUTH_REJECT] Missing identity claims - returning 401');
       throw new Error('Invalid token payload: missing shadow or original user id');
     }
 
@@ -147,35 +177,66 @@ export async function authenticateRequest(
 
     const tokenType = normalizeString(payload.tokenType);
     const expectedTokenType = portal === 'admin' ? 'admin' : 'user';
+    
+    // 🔥 CRITICAL DEBUG: Log tokenType validation
+    console.log('[CF_AUTH_TOKEN_TYPE]', JSON.stringify({
+      tokenType: tokenType ?? null,
+      expectedTokenType,
+      match: tokenType === expectedTokenType,
+    }));
+    
     if (tokenType === undefined || tokenType !== expectedTokenType) {
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
+      console.log('[CF_AUTH_REJECT] Token type mismatch - returning 403');
+      return new Response(JSON.stringify({ error: 'Forbidden', reason: 'token_type_mismatch' }), {
         status: 403,
         headers: { 'content-type': 'application/json' },
       });
     }
 
     const tokenBrand = normalizeString(payload.brand);
-    if (tokenBrand !== undefined && requestBrand !== undefined && tokenBrand !== requestBrand) {
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
+    
+    // 🔥 CRITICAL DEBUG: Log brand validation
+    console.log('[CF_AUTH_BRAND]', JSON.stringify({
+      tokenBrand: tokenBrand ?? null,
+      effectiveBrand,
+      match: tokenBrand === effectiveBrand,
+    }));
+    
+    // 🔥 CRITICAL FIX: Validate brand against hostname-derived brand
+    if (tokenBrand !== undefined && tokenBrand !== effectiveBrand) {
+      console.log('[CF_AUTH_REJECT] Brand mismatch - returning 403');
+      return new Response(JSON.stringify({ error: 'Forbidden', reason: 'brand_mismatch' }), {
         status: 403,
         headers: { 'content-type': 'application/json' },
       });
     }
 
     if (portal === 'admin' && hasRequiredRole(payload, 'admin') === false) {
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
+      console.log('[CF_AUTH_REJECT] Missing admin role - returning 403');
+      return new Response(JSON.stringify({ error: 'Forbidden', reason: 'missing_admin_role' }), {
         status: 403,
         headers: { 'content-type': 'application/json' },
       });
     }
 
+    console.log('[CF_AUTH_SUCCESS]', JSON.stringify({
+      portal,
+      tokenSource: selection.source ?? 'authorization',
+      tokenType,
+      tokenBrand: tokenBrand ?? null,
+      effectiveBrand,
+    }));
+
     return {
       payload,
       portal,
       tokenSource: selection.source ?? 'authorization',
-      requestBrand,
+      requestBrand: effectiveBrand,
     };
-  } catch {
+  } catch (error) {
+    console.log('[CF_AUTH_REJECT] Token verification failed - returning 401', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,
       headers: { 'content-type': 'application/json' },
