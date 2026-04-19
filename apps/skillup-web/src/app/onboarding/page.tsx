@@ -16,9 +16,16 @@ export const revalidate = 0;
 
 export default async function SkillUpOnboardingRoute() {
   const authState = await fetchBackendAuthState();
-  if (authState && authState.onboardingCompleted === true) {
+  
+  // If user is not authenticated, redirect to login
+  if (!authState) {
+    redirect('/login?redirect=/onboarding');
+  }
+  
+  if (authState.onboardingCompleted === true) {
     redirect('/dashboard');
   }
+  
   const data = await loadOnboardingData(skillUpConfig);
   return (
     <Suspense fallback={<div>Loading...</div>}>

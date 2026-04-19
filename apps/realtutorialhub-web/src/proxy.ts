@@ -7,7 +7,7 @@ const ONBOARDING_STATE_COOKIE = 'onboarding_state';
 
 const PUBLIC_PATHS = ['/', '/login', '/forgot-password', '/reset-password', '/verify-email', '/verify-success', '/offline', '/placement', '/api/healthz'];
 const PUBLIC_PREFIXES = ['/api/certificates/verify/'];
-const PROTECTED_PREFIXES = ['/learn/', '/api/tutorial/', '/api/ai-tutor/', '/remediation/', '/dashboard'];
+const PROTECTED_PREFIXES = ['/learn/', '/api/tutorial/', '/api/ai-tutor/', '/remediation/', '/dashboard', '/onboarding'];
 
 function hasPrefix(pathname: string, prefixes: string[]): boolean {
   return prefixes.some((prefix) => pathname === prefix.slice(0, -1) || pathname.startsWith(prefix));

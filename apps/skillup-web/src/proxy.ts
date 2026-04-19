@@ -19,7 +19,7 @@ const PUBLIC_PATHS = [
   '/placement',
 ];
 const PUBLIC_PREFIXES = ['/verify', '/api/programs'];
-const PROTECTED_PATHS = ['/dashboard', '/student', '/batches', '/faculty', '/api/student', '/api/batches'];
+const PROTECTED_PATHS = ['/dashboard', '/student', '/batches', '/faculty', '/api/student', '/api/batches', '/onboarding'];
 const OVERRIDE_ROLES = ['admin', 'super_admin', 'faculty'];
 
 function hasPrefix(pathname: string, prefixes: string[]): boolean {
