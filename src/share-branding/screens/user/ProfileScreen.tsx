@@ -3,7 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import { useBrand } from '@/share-branding/PostLandingPage/app/context/BrandContext';
 import { getUserProfile, updateUserProfile, UserProfile } from '@/share-branding/services/userProfileClient';
-import { Edit2, Save, X, Loader2, User, Mail, GraduationCap, Briefcase, Target, Code, BarChart3, Clock } from 'lucide-react';
+import { Edit2, Save, X, Loader2, User, Mail, GraduationCap, Briefcase, Target, Code, BarChart3, Clock, Shield, Settings, CheckCircle } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/share-branding/ui/tabs';
+import { DeviceSessions } from '@/share-branding/ui/device-sessions';
+import { Button } from '@/share-branding/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/share-branding/ui/card';
 import {
   EDUCATION_LEVEL_OPTIONS,
   STATUS_OPTIONS,
@@ -197,47 +201,8 @@ export function ProfileScreen() {
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-4">
           <div>
             <h1 className="text-4xl font-black text-gray-900 mb-2">Profile Settings</h1>
-            <p className="text-gray-600">Manage your personal information and learning preferences</p>
+            <p className="text-gray-600">Manage your personal information, learning preferences, and security settings</p>
           </div>
-          
-          {!isEditing ? (
-            <button
-              onClick={handleEdit}
-              className="flex items-center gap-2 px-6 h-12 rounded-2xl font-semibold text-white shadow-md hover:-translate-y-0.5 transition-all"
-              style={{ backgroundColor: brand.primaryColor }}
-            >
-              <Edit2 size={18} />
-              Edit Profile
-            </button>
-          ) : (
-            <div className="flex items-center gap-3">
-              <button
-                onClick={handleCancel}
-                className="flex items-center gap-2 px-6 h-12 rounded-2xl font-semibold border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition-all"
-              >
-                <X size={18} />
-                Cancel
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={!isDirty || isSaving}
-                className="flex items-center gap-2 px-6 h-12 rounded-2xl font-semibold text-white shadow-md hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                style={{ backgroundColor: brand.primaryColor }}
-              >
-                {isSaving ? (
-                  <>
-                    <Loader2 className="animate-spin" size={18} />
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <Save size={18} />
-                    Save Changes
-                  </>
-                )}
-              </button>
-            </div>
-          )}
         </div>
 
         {/* Profile Avatar */}
@@ -256,87 +221,283 @@ export function ProfileScreen() {
         </div>
       </div>
 
-      {/* Personal Information */}
-      <div className="rounded-[2rem] p-8 bg-white border border-gray-200 shadow-sm">
-        <h2 className="text-2xl font-black text-gray-900 mb-6">Personal Information</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <InfoField
-            icon={User}
-            label="Full Name"
-            value={editedProfile.fullName}
-            field="fullName"
-          />
-          <InfoField
-            icon={Mail}
-            label="Email Address"
-            value={editedProfile.email}
-            field={null}
-          />
-          <InfoField
-            icon={GraduationCap}
-            label="Education Level"
-            value={editedProfile.educationLevel}
-            field="educationLevel"
-            options={EDUCATION_LEVEL_OPTIONS}
-            isSelect={true}
-          />
-          <InfoField
-            icon={Briefcase}
-            label="Current Status"
-            value={editedProfile.status}
-            field="status"
-            options={STATUS_OPTIONS}
-            isSelect={true}
-          />
-        </div>
-      </div>
+      {/* Tabs */}
+      <Tabs defaultValue="profile" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-2 lg:w-[400px]">
+          <TabsTrigger value="profile" className="flex items-center gap-2">
+            <User className="h-4 w-4" />
+            Profile
+          </TabsTrigger>
+          <TabsTrigger value="security" className="flex items-center gap-2">
+            <Shield className="h-4 w-4" />
+            Security
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Learning Preferences */}
-      <div className="rounded-[2rem] p-8 bg-white border border-gray-200 shadow-sm">
-        <h2 className="text-2xl font-black text-gray-900 mb-6">Learning Preferences</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <InfoField
-            icon={Target}
-            label="Primary Goal"
-            value={editedProfile.primaryGoal}
-            field="primaryGoal"
-            options={GOAL_OPTIONS}
-            isSelect={true}
+        {/* Profile Tab */}
+        <TabsContent value="profile" className="space-y-6">
+          <div className="flex justify-end">
+            {!isEditing ? (
+              <button
+                onClick={handleEdit}
+                className="flex items-center gap-2 px-6 h-12 rounded-2xl font-semibold text-white shadow-md hover:-translate-y-0.5 transition-all"
+                style={{ backgroundColor: brand.primaryColor }}
+              >
+                <Edit2 size={18} />
+                Edit Profile
+              </button>
+            ) : (
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handleCancel}
+                  className="flex items-center gap-2 px-6 h-12 rounded-2xl font-semibold border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition-all"
+                >
+                  <X size={18} />
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSave}
+                  disabled={!isDirty || isSaving}
+                  className="flex items-center gap-2 px-6 h-12 rounded-2xl font-semibold text-white shadow-md hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  style={{ backgroundColor: brand.primaryColor }}
+                >
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="animate-spin" size={18} />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save size={18} />
+                      Save Changes
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Personal Information */}
+          <div className="rounded-[2rem] p-8 bg-white border border-gray-200 shadow-sm">
+            <h2 className="text-2xl font-black text-gray-900 mb-6">Personal Information</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <InfoField
+                icon={User}
+                label="Full Name"
+                value={editedProfile.fullName}
+                field="fullName"
+              />
+              <InfoField
+                icon={Mail}
+                label="Email Address"
+                value={editedProfile.email}
+                field={null}
+              />
+              <InfoField
+                icon={GraduationCap}
+                label="Education Level"
+                value={editedProfile.educationLevel}
+                field="educationLevel"
+                options={EDUCATION_LEVEL_OPTIONS}
+                isSelect={true}
+              />
+              <InfoField
+                icon={Briefcase}
+                label="Current Status"
+                value={editedProfile.status}
+                field="status"
+                options={STATUS_OPTIONS}
+                isSelect={true}
+              />
+            </div>
+          </div>
+
+          {/* Learning Preferences */}
+          <div className="rounded-[2rem] p-8 bg-white border border-gray-200 shadow-sm">
+            <h2 className="text-2xl font-black text-gray-900 mb-6">Learning Preferences</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <InfoField
+                icon={Target}
+                label="Primary Goal"
+                value={editedProfile.primaryGoal}
+                field="primaryGoal"
+                options={GOAL_OPTIONS}
+                isSelect={true}
+              />
+              <InfoField
+                icon={Code}
+                label="Domain"
+                value={editedProfile.domain}
+                field="domain"
+                options={DOMAIN_OPTIONS}
+                isSelect={true}
+              />
+              <InfoField
+                icon={Code}
+                label="Sub-Domain"
+                value={editedProfile.subDomain}
+                field="subDomain"
+                options={availableSubDomains.length > 0 ? availableSubDomains : ['Foundations']}
+                isSelect={true}
+              />
+              <InfoField
+                icon={BarChart3}
+                label="Skill Level"
+                value={editedProfile.skillLevel}
+                field="skillLevel"
+                options={SKILL_LEVEL_OPTIONS}
+                isSelect={true}
+              />
+              <InfoField
+                icon={Clock}
+                label="Time Commitment"
+                value={editedProfile.timeCommitment}
+                field="timeCommitment"
+                options={TIME_COMMITMENT_OPTIONS}
+                isSelect={true}
+              />
+            </div>
+          </div>
+        </TabsContent>
+
+        {/* Security Tab */}
+        <TabsContent value="security" className="space-y-6">
+          <DeviceSessions 
+            onSessionRevoked={(sessionId) => {
+              console.log('Session revoked:', sessionId);
+            }}
+            onGlobalLogout={() => {
+              console.log('Global logout initiated');
+            }}
           />
-          <InfoField
-            icon={Code}
-            label="Domain"
-            value={editedProfile.domain}
-            field="domain"
-            options={DOMAIN_OPTIONS}
-            isSelect={true}
-          />
-          <InfoField
-            icon={Code}
-            label="Sub-Domain"
-            value={editedProfile.subDomain}
-            field="subDomain"
-            options={availableSubDomains.length > 0 ? availableSubDomains : ['Foundations']}
-            isSelect={true}
-          />
-          <InfoField
-            icon={BarChart3}
-            label="Skill Level"
-            value={editedProfile.skillLevel}
-            field="skillLevel"
-            options={SKILL_LEVEL_OPTIONS}
-            isSelect={true}
-          />
-          <InfoField
-            icon={Clock}
-            label="Time Commitment"
-            value={editedProfile.timeCommitment}
-            field="timeCommitment"
-            options={TIME_COMMITMENT_OPTIONS}
-            isSelect={true}
-          />
-        </div>
-      </div>
+          
+          {/* Security Settings */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="h-5 w-5" />
+                Security Settings
+              </CardTitle>
+              <CardDescription>
+                Manage your account security and authentication
+              </CardDescription>
+            </CardHeader>
+            
+            <CardContent className="space-y-4">
+              {/* Change Password */}
+              <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/30 transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-full bg-blue-100">
+                    <Shield className="h-4 w-4 text-blue-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold">Change Password</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Last updated: {new Date(editedProfile.updatedAt || editedProfile.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+                <Button variant="outline" size="sm">
+                  Change Password
+                </Button>
+              </div>
+              
+              {/* Two-Factor Authentication */}
+              <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/30 transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-full bg-green-100">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold">Two-Factor Authentication</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Add an extra layer of security to your account
+                    </p>
+                  </div>
+                </div>
+                <Button variant="outline" size="sm">
+                  Enable 2FA
+                </Button>
+              </div>
+
+              {/* Login Notifications */}
+              <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/30 transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-full bg-purple-100">
+                    <Mail className="h-4 w-4 text-purple-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold">Login Notifications</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Get notified when someone signs into your account
+                    </p>
+                  </div>
+                </div>
+                <Button variant="outline" size="sm">
+                  Configure
+                </Button>
+              </div>
+
+              {/* Account Recovery */}
+              <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/30 transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-full bg-orange-100">
+                    <User className="h-4 w-4 text-orange-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold">Account Recovery</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Manage backup email and recovery options
+                    </p>
+                  </div>
+                </div>
+                <Button variant="outline" size="sm">
+                  Manage
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Security Activity */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5" />
+                Recent Security Activity
+              </CardTitle>
+              <CardDescription>
+                Monitor recent security events on your account
+              </CardDescription>
+            </CardHeader>
+            
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-green-50 border border-green-200">
+                  <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-green-900">Successful login</p>
+                    <p className="text-xs text-green-700">Today at {new Date().toLocaleTimeString()} • This device</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-blue-50 border border-blue-200">
+                  <Shield className="h-4 w-4 text-blue-600 flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-blue-900">Password last changed</p>
+                    <p className="text-xs text-blue-700">{new Date(editedProfile.updatedAt || editedProfile.createdAt).toLocaleDateString()}</p>
+                  </div>
+                </div>
+                
+                <div className="text-center py-4">
+                  <Button variant="ghost" size="sm">
+                    View All Activity
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

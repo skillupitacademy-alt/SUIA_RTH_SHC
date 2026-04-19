@@ -32,6 +32,7 @@ export interface UserProfile {
   skillLevel: string;
   timeCommitment: string;
   createdAt: string;
+  updatedAt: string;
 }
 
 /**
@@ -68,6 +69,7 @@ function mapProfileFromApi(apiData: ApiProfileResponse, userEmail: string): User
     skillLevel: mapSkillLevelToUI(apiData.adaptiveLevel),
     timeCommitment: mapTimeCommitmentToUI(apiData.timeCommitment),
     createdAt: apiData.createdAt,
+    updatedAt: apiData.updatedAt,
   };
 }
 

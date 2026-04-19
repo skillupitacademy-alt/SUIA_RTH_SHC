@@ -1,23 +1,12 @@
-import { Suspense } from 'react';
-import { Loader2 } from 'lucide-react';
-import ProfilePage from '@/share-branding/ProfilePage';
-import { skillUpConfig } from '@/share-branding/brandConfig';
+import { redirect } from 'next/navigation';
 
-function ProfileLoading() {
-  return (
-    <div className="flex items-center justify-center min-h-screen">
-      <Loader2 className="h-8 w-8 animate-spin" />
-      <span className="ml-2">Loading profile...</span>
-    </div>
-  );
-}
-
+/**
+ * Standalone /profile route - DEPRECATED
+ * Redirects to unified dashboard profile
+ * Pattern: One user → One profile → One control center
+ */
 export default function SkillUpProfilePage() {
-  return (
-    <Suspense fallback={<ProfileLoading />}>
-      <ProfilePage config={skillUpConfig} />
-    </Suspense>
-  );
+  redirect('/dashboard/profile');
 }
 
 export const metadata = {

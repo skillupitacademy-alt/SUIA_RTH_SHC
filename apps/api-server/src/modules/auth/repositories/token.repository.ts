@@ -94,6 +94,25 @@ export class TokenRepository extends BaseRepository<RefreshTokenRow, typeof refr
     });
   }
 
+  /**
+   * 🔐 FAANG-LEVEL: Find valid session by userId and refresh token hash
+   * This is the SOURCE OF TRUTH for session validation
+   * Used by /me endpoint to check if session is still valid after global logout
+   */
+  async findValidSession(params: {
+    userId: string;
+    refreshTokenHash: string;
+  }) {
+    return await this.dbInstance.query.refreshTokens.findFirst({
+      where: and(
+        eq(this.refreshTokensTable.userId, params.userId),
+        eq(this.refreshTokensTable.token, params.refreshTokenHash),
+        eq(this.refreshTokensTable.revoked, false),
+        gt(this.refreshTokensTable.expiresAt, new Date())
+      )
+    });
+  }
+
   async findByHash(tokenHash: string) {
     return await this.dbInstance.query.refreshTokens.findFirst({
       where: and(

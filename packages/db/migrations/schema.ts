@@ -74,8 +74,16 @@ export const refreshTokens = pgTable("refresh_tokens", {
 	revoked: boolean().default(false).notNull(),
 	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
 	lastActiveAt: timestamp("last_active_at", { mode: 'string' }).defaultNow().notNull(),
+	// 🔐 Device tracking fields for session management
+	deviceId: text("device_id"),
+	ipAddress: text("ip_address"),
+	userAgent: text("user_agent"),
+	deviceName: text("device_name"),
+	lastUsedAt: timestamp("last_used_at", { mode: 'string' }).defaultNow(),
 }, (table) => [
 	index("idx_refresh_tokens_user_id").using("btree", table.userId.asc().nullsLast().op("uuid_ops")),
+	index("idx_refresh_tokens_device_id").using("btree", table.deviceId.asc().nullsLast().op("text_ops")),
+	index("idx_refresh_tokens_user_device").using("btree", table.userId.asc().nullsLast().op("uuid_ops"), table.deviceId.asc().nullsLast().op("text_ops")),
 	foreignKey({
 			columns: [table.userId],
 			foreignColumns: [users.id],

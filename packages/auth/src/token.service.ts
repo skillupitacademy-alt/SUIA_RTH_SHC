@@ -208,6 +208,68 @@ export class TokenService {
     }
   }
 
+  /**
+   * 🔐 FAANG-LEVEL: Extract refresh token from cookies
+   * Used by /me endpoint to validate session against DB
+   */
+  getRefreshToken(req: AccessTokenRequestLike, options?: { scope?: 'admin' | 'user' | 'infrastructure' }): string | undefined {
+    try {
+      const scope = options?.scope;
+
+      // Helper function to get cookie value from either cookies API or cookie header
+      const getCookieValue = (name: string): string | undefined => {
+        try {
+          // Next.js cookies API (BFF environment)
+          if (req.cookies?.get && typeof req.cookies.get === 'function') {
+            const cookie = req.cookies.get(name);
+            if (cookie?.value && typeof cookie.value === 'string' && cookie.value.length > 0) {
+              return cookie.value;
+            }
+          }
+
+          // Raw cookie header parsing (API server environment)
+          const cookieHeader = req.headers?.get?.('cookie');
+          if (typeof cookieHeader === 'string' && cookieHeader.length > 0) {
+            const cookies = cookieHeader.split(';').reduce((acc, cookie) => {
+              const trimmed = cookie.trim();
+              if (trimmed.length > 0) {
+                const [key, ...valueParts] = trimmed.split('=');
+                if (key && valueParts.length > 0) {
+                  acc[key.trim()] = valueParts.join('=').trim();
+                }
+              }
+              return acc;
+            }, {} as Record<string, string>);
+
+            const value = cookies[name];
+            if (typeof value === 'string' && value.length > 0) {
+              return value;
+            }
+          }
+        } catch (error) {
+          // Silently handle cookie parsing errors
+          console.warn('[TokenService] Cookie parsing error for', name, ':', error);
+        }
+
+        return undefined;
+      };
+
+      // Scope-specific refresh token extraction
+      if (scope === 'admin') {
+        return getCookieValue('admin_refreshToken');
+      } else if (scope === 'infrastructure') {
+        return getCookieValue('infra_refreshToken');
+      }
+
+      // Default: user refresh token
+      return getCookieValue('refreshToken');
+    } catch (error) {
+      // Ensure method never throws
+      console.warn('[TokenService] getRefreshToken error:', error);
+      return undefined;
+    }
+  }
+
   async hashToken(token: string): Promise<string> {
     const msgUint8 = new TextEncoder().encode(token);
     const hashBuffer = await globalThis.crypto.subtle.digest('SHA-256', msgUint8);

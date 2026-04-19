@@ -99,33 +99,63 @@ async function handler(req: NextRequest) {
       : tokenRepo;
     
     try {
-      // Check if user has ANY active (non-revoked) refresh tokens
-      // CRITICAL: Use the original user ID (not shadow) for session lookup
-      const sessionUserId = payload.userId; // This is the original user ID used for storing tokens
-      const activeTokens = await brandTokenRepo.getUserSessions(sessionUserId);
+      // 🔥 FAANG-LEVEL FIX: Extract refresh token from cookie and validate session
+      const refreshToken = tokenService.getRefreshToken(req);
       
-      console.log('[ME_DEBUG] SECURITY: Token revocation check:', {
-        payloadUserId: payload.userId,
-        shadowUserId: payload.shadowUserId,
-        sessionUserId,
-        brand,
-        activeTokensCount: activeTokens.length,
-        activeTokens: activeTokens.map(t => ({
-          id: t.id,
-          revoked: t.revoked,
-          expiresAt: t.expiresAt,
-          deviceId: t.deviceId,
-          userId: t.userId
-        }))
-      });
-      
-      if (activeTokens.length === 0) {
-        console.log('[ME_DEBUG] SECURITY: No active refresh tokens found - global logout detected');
-        recordCounter(METRICS.AUTH.FAILURE, 1, { reason: 'no_active_tokens' });
-        return NextResponse.json({ user: null }, { status: 401 });
+      if (typeof refreshToken === 'string' && refreshToken.length > 0) {
+        // Hash the refresh token to match DB storage
+        const refreshTokenHash = await tokenService.hashToken(refreshToken);
+        
+        // CRITICAL: Use the original user ID (not shadow) for session lookup
+        const sessionUserId = payload.userId; // This is the original user ID used for storing tokens
+        
+        // Check if this specific session is still valid (not revoked)
+        const validSession = await brandTokenRepo.findValidSession({
+          userId: sessionUserId,
+          refreshTokenHash,
+        });
+        
+        console.log('[ME_DEBUG] FAANG-LEVEL: Session validation:', {
+          payloadUserId: payload.userId,
+          shadowUserId: payload.shadowUserId,
+          sessionUserId,
+          brand,
+          hasRefreshToken: true,
+          sessionFound: validSession !== null && validSession !== undefined,
+          sessionId: validSession?.id,
+          sessionRevoked: validSession?.revoked,
+        });
+        
+        if (!validSession) {
+          console.log('[ME_DEBUG] FAANG-LEVEL: Session not found or revoked - global logout detected');
+          recordCounter(METRICS.AUTH.FAILURE, 1, { reason: 'session_revoked' });
+          return NextResponse.json({ user: null }, { status: 401 });
+        }
+        
+        console.log('[ME_DEBUG] FAANG-LEVEL: Session validated successfully');
+      } else {
+        // Fallback: Check if user has ANY active refresh tokens
+        // This handles cases where refresh token cookie might be missing
+        const sessionUserId = payload.userId;
+        const activeTokens = await brandTokenRepo.getUserSessions(sessionUserId);
+        
+        console.log('[ME_DEBUG] SECURITY: Token revocation check (fallback):', {
+          payloadUserId: payload.userId,
+          shadowUserId: payload.shadowUserId,
+          sessionUserId,
+          brand,
+          hasRefreshToken: false,
+          activeTokensCount: activeTokens.length,
+        });
+        
+        if (activeTokens.length === 0) {
+          console.log('[ME_DEBUG] SECURITY: No active refresh tokens found - global logout detected');
+          recordCounter(METRICS.AUTH.FAILURE, 1, { reason: 'no_active_tokens' });
+          return NextResponse.json({ user: null }, { status: 401 });
+        }
+        
+        console.log('[ME_DEBUG] SECURITY: Found', activeTokens.length, 'active refresh tokens - allowing access');
       }
-      
-      console.log('[ME_DEBUG] SECURITY: Found', activeTokens.length, 'active refresh tokens - allowing access');
     } catch (tokenCheckError) {
       console.error('[ME_DEBUG] Token revocation check failed:', tokenCheckError);
       // Continue with normal flow if token check fails (graceful degradation)

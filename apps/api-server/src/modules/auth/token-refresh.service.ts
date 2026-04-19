@@ -107,6 +107,9 @@ export class TokenRefreshService {
       // For now, we'll allow it but log the warning (mobile IPs change frequently)
     }
 
+    // 🔐 STEP 2.5: Update last_used_at before rotation (for "Last active" display)
+    await brandTokenRepo.updateLastUsed(oldTokenHash);
+
     // 🔐 STEP 3: Revoke old refresh token (rotation)
     await brandTokenRepo.revokeToken(oldTokenHash);
 
