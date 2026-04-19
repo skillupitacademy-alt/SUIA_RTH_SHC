@@ -122,21 +122,28 @@ export function createForwardHeaders(request: NextRequest): Headers {
   headers.delete('host');
   headers.delete('content-length');
   
-  // 🔐 ENTERPRISE AUTH: Preserve device context headers if present
-  // These headers are sent from the client and must be forwarded to the API server
-  // for multi-device session tracking and hijack detection
+  // 🔐 ENTERPRISE AUTH: Preserve device context headers
+  // These headers are CRITICAL for multi-device session tracking
   const deviceId = request.headers.get('x-device-id');
   const deviceName = request.headers.get('x-device-name');
+  const forwardedFor = request.headers.get('x-forwarded-for');
+  const userAgent = request.headers.get('user-agent');
   
+  // Always forward device headers (even if empty, backend will generate fallbacks)
   if (deviceId) {
     headers.set('x-device-id', deviceId);
   }
   if (deviceName) {
     headers.set('x-device-name', deviceName);
   }
+  if (forwardedFor) {
+    headers.set('x-forwarded-for', forwardedFor);
+  }
+  if (userAgent) {
+    headers.set('user-agent', userAgent);
+  }
   
   // 🏷️ BRAND RESOLUTION: Add x-brand header based on hostname
-  // This ensures the API server can identify the brand even when the client doesn't send it
   if (!headers.has('x-brand')) {
     const hostname = getRequestHost(request);
     if (hostname) {

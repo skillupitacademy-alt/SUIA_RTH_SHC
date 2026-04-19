@@ -59,7 +59,7 @@ export class GlobalLogoutService {
    * 
    * Returns all active sessions for a user (for session management UI)
    */
-  async getActiveSessions(userId: string, brand: RequestBrand = 'realtutorialhub') {
+  async getActiveSessions(userId: string, brand: RequestBrand = 'realtutorialhub', currentDeviceId?: string) {
     const brandContext = getAuthBrandContext(brand);
     const useBrandBinding = shouldUseBrandBinding();
     
@@ -69,16 +69,31 @@ export class GlobalLogoutService {
 
     const sessions = await brandTokenRepo.getUserSessions(userId);
 
-    return sessions.map(session => ({
-      id: session.id,
-      deviceId: session.deviceId,
-      deviceName: session.deviceName,
-      ipAddress: session.ipAddress,
-      userAgent: session.userAgent,
-      lastUsedAt: session.lastUsedAt,
-      createdAt: session.createdAt,
-      expiresAt: session.expiresAt,
-    }));
+    // 🔥 CRITICAL: Mark current session
+    // If no currentDeviceId provided, mark the most recently used session as current
+    let markedCurrent = false;
+
+    return sessions.map((session, index) => {
+      const isCurrent = typeof currentDeviceId === 'string' && currentDeviceId.length > 0
+        ? session.deviceId === currentDeviceId
+        : !markedCurrent && index === 0; // First session (most recent) is current if no deviceId
+
+      if (isCurrent) {
+        markedCurrent = true;
+      }
+
+      return {
+        id: session.id,
+        deviceId: session.deviceId ?? 'unknown',
+        deviceName: session.deviceName ?? 'Unknown Device',
+        ipAddress: session.ipAddress,
+        userAgent: session.userAgent,
+        lastUsedAt: session.lastUsedAt,
+        createdAt: session.createdAt,
+        expiresAt: session.expiresAt,
+        isCurrent,
+      };
+    });
   }
 
   /**

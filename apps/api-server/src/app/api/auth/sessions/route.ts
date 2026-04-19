@@ -30,7 +30,10 @@ async function getHandler(_req: NextRequest) {
     const userId = payload.userId; // This is the original user ID used for storing tokens
     const brand = (typeof payload.brand === 'string' && payload.brand.length > 0 ? payload.brand : 'realtutorialhub') as 'skillup' | 'realtutorialhub';
 
-    const sessions = await globalLogoutService.getActiveSessions(userId, brand);
+    // 🔥 CRITICAL: Extract current device ID from request headers
+    const currentDeviceId = _req.headers.get('x-device-id') ?? undefined;
+
+    const sessions = await globalLogoutService.getActiveSessions(userId, brand, currentDeviceId);
 
     return ApiResponse.success({ sessions });
   } catch (error) {

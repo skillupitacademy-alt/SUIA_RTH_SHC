@@ -189,15 +189,24 @@ export class LoginService {
     });
     const refreshTokenHash = await this.tokenService.hashToken(refreshToken);
 
+    // 🔥 CRITICAL: Ensure deviceId is NEVER null
+    // Generate UUID if not provided by client
+    const finalDeviceId = (typeof deviceContext?.deviceId === 'string' && deviceContext.deviceId.length > 0) 
+      ? deviceContext.deviceId 
+      : crypto.randomUUID();
+    const finalDeviceName = (typeof deviceContext?.deviceName === 'string' && deviceContext.deviceName.length > 0)
+      ? deviceContext.deviceName
+      : 'Unknown Device';
+
     await brandTokenRepo.createRefreshToken({
       userId: user.id,
       token: refreshTokenHash,
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       deviceContext: {
-        deviceId: deviceContext?.deviceId,
+        deviceId: finalDeviceId,
         ipAddress: ip,
         userAgent: deviceContext?.userAgent,
-        deviceName: deviceContext?.deviceName,
+        deviceName: finalDeviceName,
       },
     });
 
