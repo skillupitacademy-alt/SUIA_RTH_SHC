@@ -1,10 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Monitor, Smartphone, Tablet, LogOut, Loader2, AlertTriangle, Shield } from 'lucide-react';
-import { Button } from './button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './card';
-import { Badge } from './badge';
+import { Monitor, Smartphone, Tablet, LogOut, Loader2, Shield } from 'lucide-react';
+import { useBrand } from '@/share-branding/PostLandingPage/app/context/BrandContext';
 
 interface DeviceSession {
   id: string;
@@ -42,10 +40,10 @@ function getDeviceType(userAgent: string | null): string {
   
   const ua = userAgent.toLowerCase();
   
-  if (ua.includes('chrome')) return 'Chrome on Windows';
-  if (ua.includes('firefox')) return 'Firefox';
-  if (ua.includes('safari') && !ua.includes('chrome')) return 'Safari';
-  if (ua.includes('edge')) return 'Edge';
+  if (ua.includes('chrome')) return 'Chrome Browser';
+  if (ua.includes('firefox')) return 'Firefox Browser';
+  if (ua.includes('safari') && !ua.includes('chrome')) return 'Safari Browser';
+  if (ua.includes('edge')) return 'Edge Browser';
   if (ua.includes('android')) return 'Android Device';
   if (ua.includes('iphone')) return 'iPhone';
   if (ua.includes('ipad')) return 'iPad';
@@ -70,7 +68,7 @@ function formatLastUsed(dateString: string): string {
 }
 
 function getLocationFromIP(ip: string | null): string {
-  if (!ip) return 'Unknown';
+  if (!ip) return 'Unknown location';
   
   if (ip.startsWith('192.168.') || ip.startsWith('10.') || ip.startsWith('172.')) {
     return 'Local Network';
@@ -79,13 +77,13 @@ function getLocationFromIP(ip: string | null): string {
   if (ip.startsWith('185.')) return 'Europe';
   if (ip.startsWith('104.')) return 'North America';
   
-  return 'Unknown';
+  return 'Unknown location';
 }
 
 export function DeviceSessions({ className, onSessionRevoked, onGlobalLogout }: DeviceSessionsProps) {
+  const brand = useBrand();
   const [sessions, setSessions] = useState<DeviceSession[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [revoking, setRevoking] = useState<string | null>(null);
   const [globalLoggingOut, setGlobalLoggingOut] = useState(false);
 
@@ -93,7 +91,6 @@ export function DeviceSessions({ className, onSessionRevoked, onGlobalLogout }: 
   const fetchSessions = async () => {
     try {
       setLoading(true);
-      setError(null);
       
       const response = await fetch('/api/auth/sessions', {
         method: 'GET',
@@ -105,7 +102,9 @@ export function DeviceSessions({ className, onSessionRevoked, onGlobalLogout }: 
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch sessions: ${response.status}`);
+        console.error('Failed to fetch sessions:', response.status);
+        setSessions([]);
+        return;
       }
 
       const data = await response.json();
@@ -121,7 +120,7 @@ export function DeviceSessions({ className, onSessionRevoked, onGlobalLogout }: 
       
     } catch (err) {
       console.error('Failed to fetch sessions:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load sessions');
+      setSessions([]);
     } finally {
       setLoading(false);
     }
@@ -141,7 +140,8 @@ export function DeviceSessions({ className, onSessionRevoked, onGlobalLogout }: 
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to revoke session: ${response.status}`);
+        console.error('Failed to revoke session:', response.status);
+        return;
       }
 
       setSessions(prev => prev.filter(s => s.id !== sessionId));
@@ -149,7 +149,6 @@ export function DeviceSessions({ className, onSessionRevoked, onGlobalLogout }: 
       
     } catch (err) {
       console.error('Failed to revoke session:', err);
-      setError(err instanceof Error ? err.message : 'Failed to revoke session');
     } finally {
       setRevoking(null);
     }
@@ -173,7 +172,8 @@ export function DeviceSessions({ className, onSessionRevoked, onGlobalLogout }: 
       });
 
       if (!response.ok) {
-        throw new Error(`Global logout failed: ${response.status}`);
+        console.error('Global logout failed:', response.status);
+        return;
       }
 
       setSessions([]);
@@ -185,7 +185,6 @@ export function DeviceSessions({ className, onSessionRevoked, onGlobalLogout }: 
       
     } catch (err) {
       console.error('Global logout failed:', err);
-      setError(err instanceof Error ? err.message : 'Global logout failed');
     } finally {
       setGlobalLoggingOut(false);
     }
@@ -197,23 +196,25 @@ export function DeviceSessions({ className, onSessionRevoked, onGlobalLogout }: 
 
   if (loading) {
     return (
-      <Card className={className}>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5" />
-            Device Sessions
-          </CardTitle>
-          <CardDescription>
-            Manage your active login sessions across all devices
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
-            <span className="ml-2 text-gray-600">Loading sessions...</span>
+      <div className={`rounded-[2rem] p-8 bg-white border border-gray-200 shadow-sm ${className || ''}`}>
+        <div className="flex items-center gap-3 mb-6">
+          <div
+            className="w-12 h-12 rounded-xl flex items-center justify-center"
+            style={{ backgroundColor: brand.primaryColor, opacity: 0.15 }}
+          />
+          <div className="w-12 h-12 rounded-xl flex items-center justify-center absolute">
+            <Shield size={22} style={{ color: brand.primaryColor }} />
           </div>
-        </CardContent>
-      </Card>
+          <div className="ml-14">
+            <h2 className="text-2xl font-black text-gray-900">Device Sessions</h2>
+            <p className="text-gray-600">Manage your active login sessions</p>
+          </div>
+        </div>
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="animate-spin text-gray-400" size={32} />
+          <span className="ml-3 text-gray-600">Loading sessions...</span>
+        </div>
+      </div>
     );
   }
 
@@ -221,84 +222,92 @@ export function DeviceSessions({ className, onSessionRevoked, onGlobalLogout }: 
   const otherSessions = sessions.filter(s => !s.isCurrent);
 
   return (
-    <Card className={className}>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
-              Device Sessions
-            </CardTitle>
-            <CardDescription>
+    <div className={`rounded-[2rem] p-8 bg-white border border-gray-200 shadow-sm ${className || ''}`}>
+      {/* Header */}
+      <div className="flex items-start justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div
+            className="w-12 h-12 rounded-xl flex items-center justify-center"
+            style={{ backgroundColor: brand.primaryColor, opacity: 0.15 }}
+          />
+          <div className="w-12 h-12 rounded-xl flex items-center justify-center absolute">
+            <Shield size={22} style={{ color: brand.primaryColor }} />
+          </div>
+          <div className="ml-14">
+            <h2 className="text-2xl font-black text-gray-900">Device Sessions</h2>
+            <p className="text-gray-600">
               {sessions.length === 1 
                 ? "You're signed in on this device only" 
                 : `You're signed in on ${sessions.length} devices`}
-            </CardDescription>
+            </p>
           </div>
-          
-          {sessions.length > 1 && (
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={handleGlobalLogout}
-              disabled={globalLoggingOut}
-              className="flex items-center gap-2"
-            >
-              {globalLoggingOut ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <LogOut className="h-4 w-4" />
-              )}
-              Logout All
-            </Button>
-          )}
         </div>
-      </CardHeader>
-      
-      <CardContent className="space-y-4">
-        {error && (
-          <div className="rounded-lg p-4 bg-red-50 border border-red-200 flex items-start gap-3">
-            <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-red-900">Error</p>
-              <p className="text-sm text-red-700">{error}</p>
-            </div>
-          </div>
+        
+        {sessions.length > 1 && (
+          <button
+            onClick={handleGlobalLogout}
+            disabled={globalLoggingOut}
+            className="flex items-center gap-2 px-4 h-10 rounded-xl font-semibold text-white shadow-md hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            style={{ backgroundColor: '#dc2626' }}
+          >
+            {globalLoggingOut ? (
+              <>
+                <Loader2 className="animate-spin" size={16} />
+                Logging out...
+              </>
+            ) : (
+              <>
+                <LogOut size={16} />
+                Logout All
+              </>
+            )}
+          </button>
         )}
+      </div>
 
+      {/* Sessions List */}
+      <div className="space-y-4">
         {sessions.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <Shield className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>No active sessions found</p>
-            <Button 
-              variant="outline" 
-              size="sm" 
+          <div className="text-center py-12">
+            <Shield className="mx-auto mb-4 opacity-30" size={48} style={{ color: brand.primaryColor }} />
+            <p className="text-gray-600 mb-4">No active sessions found</p>
+            <button
               onClick={fetchSessions}
-              className="mt-2"
+              className="px-6 h-10 rounded-xl font-semibold border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition-all"
             >
               Refresh
-            </Button>
+            </button>
           </div>
         ) : (
           <>
             {/* Current Device */}
             {currentSession && (
-              <div className="p-4 rounded-lg border-2 border-green-200 bg-green-50">
+              <div className="p-6 rounded-2xl bg-white border border-gray-200">
                 <div className="flex items-center gap-4">
-                  {React.createElement(getDeviceIcon(currentSession.userAgent), {
-                    className: "h-5 w-5 text-green-600 flex-shrink-0"
-                  })}
+                  <div
+                    className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={{ backgroundColor: brand.primaryColor, opacity: 0.15 }}
+                  />
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 absolute">
+                    {React.createElement(getDeviceIcon(currentSession.userAgent), {
+                      size: 22,
+                      style: { color: brand.primaryColor }
+                    })}
+                  </div>
                   
-                  <div className="flex-1">
+                  <div className="flex-1 ml-14">
                     <div className="flex items-center gap-2 mb-1">
-                      <p className="text-sm font-semibold text-gray-900">
+                      <p className="text-lg font-semibold text-gray-900">
                         {currentSession.deviceName || getDeviceType(currentSession.userAgent)}
                       </p>
-                      <Badge variant="secondary" className="text-xs bg-green-600 text-white">
+                      <span
+                        className="px-3 py-1 rounded-full text-xs font-semibold text-white"
+                        style={{ backgroundColor: brand.primaryColor }}
+                      >
                         This device
-                      </Badge>
+                      </span>
                     </div>
-                    <p className="text-xs text-gray-600">
+                    <p className="text-sm text-gray-600">
                       {getLocationFromIP(currentSession.ipAddress)} • {formatLastUsed(currentSession.lastUsedAt)}
                     </p>
                   </div>
@@ -310,54 +319,57 @@ export function DeviceSessions({ className, onSessionRevoked, onGlobalLogout }: 
             {otherSessions.map((session) => (
               <div
                 key={session.id}
-                className="p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
+                className="p-6 rounded-2xl bg-white border border-gray-200"
               >
                 <div className="flex items-center gap-4">
-                  {React.createElement(getDeviceIcon(session.userAgent), {
-                    className: "h-5 w-5 text-gray-400 flex-shrink-0"
-                  })}
+                  <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0">
+                    {React.createElement(getDeviceIcon(session.userAgent), {
+                      size: 22,
+                      className: "text-gray-400"
+                    })}
+                  </div>
                   
                   <div className="flex-1">
-                    <p className="text-sm font-semibold text-gray-900 mb-1">
+                    <p className="text-lg font-semibold text-gray-900 mb-1">
                       {session.deviceName || getDeviceType(session.userAgent)}
                     </p>
-                    <p className="text-xs text-gray-600">
+                    <p className="text-sm text-gray-600">
                       {getLocationFromIP(session.ipAddress)} • {formatLastUsed(session.lastUsedAt)}
                     </p>
                   </div>
                   
-                  <Button
-                    variant="outline"
-                    size="sm"
+                  <button
                     onClick={() => revokeSession(session.id)}
                     disabled={revoking === session.id}
+                    className="px-4 h-10 rounded-xl font-semibold border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {revoking === session.id ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <Loader2 className="animate-spin" size={16} />
                     ) : (
                       'Log out'
                     )}
-                  </Button>
+                  </button>
                 </div>
               </div>
             ))}
           </>
         )}
         
-        <div className="pt-2 border-t">
-          <div className="flex items-center justify-between text-xs text-gray-500">
-            <span>Sessions expire after 7 days of inactivity</span>
-            <Button 
-              variant="ghost" 
-              size="sm" 
+        {/* Footer */}
+        {sessions.length > 0 && (
+          <div className="pt-4 border-t border-gray-200 flex items-center justify-between">
+            <p className="text-sm text-gray-500">Sessions expire after 7 days of inactivity</p>
+            <button
               onClick={fetchSessions}
               disabled={loading}
+              className="text-sm font-semibold hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ color: brand.primaryColor }}
             >
               Refresh
-            </Button>
+            </button>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        )}
+      </div>
+    </div>
   );
 }
