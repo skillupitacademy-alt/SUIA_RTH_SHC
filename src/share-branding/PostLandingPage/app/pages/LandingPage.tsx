@@ -1,19 +1,19 @@
 "use client";
 
-import { BrandProvider } from '../context/BrandContext';
-import { brands } from '../config/brands';
-import { Navigation } from '../components/Navigation';
-import { HeroSection } from '../components/HeroSection';
-import { ProblemStatement } from '../components/ProblemStatement';
-import { SolutionSection } from '../components/SolutionSection';
-import { AdaptiveLoop } from '../components/AdaptiveLoop';
-import { AITutorSection } from '../components/AITutorSection';
-import { AssignmentSystem } from '../components/AssignmentSystem';
-import { RealProjects } from '../components/RealProjects';
-import { SmartRemediation } from '../components/SmartRemediation';
-import { ComparisonTable } from '../components/ComparisonTable';
-import { PricingSection } from '../components/PricingSection';
-import { FinalCTA } from '../components/FinalCTA';
+import { BrandProvider } from '@/share-branding/PostLandingPage/app/context/BrandContext';
+import { brands } from '@/share-branding/PostLandingPage/app/config/brands';
+import { Navigation } from '@/share-branding/PostLandingPage/app/components/Navigation';
+import { HeroSection } from '@/share-branding/PostLandingPage/app/components/HeroSection';
+import { ProblemStatement } from '@/share-branding/PostLandingPage/app/components/ProblemStatement';
+import { SolutionSection } from '@/share-branding/PostLandingPage/app/components/SolutionSection';
+import { AdaptiveLoop } from '@/share-branding/PostLandingPage/app/components/AdaptiveLoop';
+import { AITutorSection } from '@/share-branding/PostLandingPage/app/components/AITutorSection';
+import { AssignmentSystem } from '@/share-branding/PostLandingPage/app/components/AssignmentSystem';
+import { RealProjects } from '@/share-branding/PostLandingPage/app/components/RealProjects';
+import { SmartRemediation } from '@/share-branding/PostLandingPage/app/components/SmartRemediation';
+import { ComparisonTable } from '@/share-branding/PostLandingPage/app/components/ComparisonTable';
+import { PricingSection } from '@/share-branding/PostLandingPage/app/components/PricingSection';
+import { FinalCTA } from '@/share-branding/PostLandingPage/app/components/FinalCTA';
 
 interface LandingPageProps {
   brand: 'rth' | 'skillup';

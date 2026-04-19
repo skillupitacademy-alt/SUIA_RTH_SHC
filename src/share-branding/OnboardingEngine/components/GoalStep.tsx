@@ -1,8 +1,8 @@
 'use client';
 
-import { useBrand } from '../context/BrandContext';
+import { useBrand } from '@/share-branding/OnboardingEngine/context/BrandContext';
 import { BookOpen, Award, Briefcase, TrendingUp, Check } from 'lucide-react';
-import { GoalCard } from '../models/onboardingSession';
+import { GoalCard } from '@/share-branding/OnboardingEngine/models/onboardingSession';
 
 interface GoalStepProps {
   title: string;

@@ -1,5 +1,5 @@
 import { Briefcase, Code, Database, Globe, Smartphone, Cpu } from 'lucide-react';
-import { useBrand } from '../context/BrandContext';
+import { useBrand } from '@/share-branding/PostLandingPage/app/context/BrandContext';
 
 export function RealProjects() {
   const brand = useBrand();

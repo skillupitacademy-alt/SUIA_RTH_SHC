@@ -1,5 +1,5 @@
 import { Check, X } from 'lucide-react';
-import { useBrand } from '../context/BrandContext';
+import { useBrand } from '@/share-branding/PostLandingPage/app/context/BrandContext';
 
 export function ComparisonTable() {
   const brand = useBrand();

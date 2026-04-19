@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, ReactNode } from 'react';
-import { BrandConfig } from '../../../brandConfig';
+import { BrandConfig } from '@/share-branding/brandConfig';
 
 const BrandContext = createContext<BrandConfig | null>(null);
 

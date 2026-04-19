@@ -11,6 +11,9 @@
       "@/*": [
         "./src/*"
       ],
+      "@/share-branding/*": [
+        "../../src/share-branding/*"
+      ],
       "@admin-tests/*": [
         "../admin-app/tests/e2e/*"
       ],

@@ -11,6 +11,9 @@
       "@/*": [
         "./src/*"
       ],
+      "@/share-branding/*": [
+        "../../src/share-branding/*"
+      ],
       "@quiz/ui": [
         "../../packages/ui/src/index.ts"
       ],

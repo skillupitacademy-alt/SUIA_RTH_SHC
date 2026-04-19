@@ -1,5 +1,5 @@
 import { Check, Star, Zap, Crown } from 'lucide-react';
-import { useBrand } from '../context/BrandContext';
+import { useBrand } from '@/share-branding/PostLandingPage/app/context/BrandContext';
 
 export function PricingSection() {
   const brand = useBrand();

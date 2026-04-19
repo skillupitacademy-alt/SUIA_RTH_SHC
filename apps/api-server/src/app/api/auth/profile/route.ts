@@ -165,9 +165,13 @@ async function patchHandler(_req: NextRequest) {
       console.log('[Profile PATCH] Creating new profile (fallback)');
       
       // Ensure domainInterest is an array
-      const domainInterestArray = Array.isArray(body.domainInterest) 
-        ? body.domainInterest 
-        : (body.domainInterest ? [body.domainInterest] : []);
+      let domainInterestArray: string[] = [];
+      const di = body.domainInterest as unknown;
+      if (Array.isArray(di)) {
+        domainInterestArray = di as string[];
+      } else if (typeof di === 'string' && di.length > 0) {
+        domainInterestArray = [di];
+      }
       
       // Insert new profile
       const [inserted] = await brandDb.insert(userProfiles).values({

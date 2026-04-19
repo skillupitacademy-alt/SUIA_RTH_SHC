@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useBrand } from '../../PostLandingPage/app/context/BrandContext';
-import { getUserProfile, updateUserProfile, UserProfile } from '../../services/userProfileClient';
+import { useBrand } from '@/share-branding/PostLandingPage/app/context/BrandContext';
+import { getUserProfile, updateUserProfile, UserProfile } from '@/share-branding/services/userProfileClient';
 import { Edit2, Save, X, Loader2, User, Mail, GraduationCap, Briefcase, Target, Code, BarChart3, Clock } from 'lucide-react';
 import {
   EDUCATION_LEVEL_OPTIONS,
@@ -12,7 +12,7 @@ import {
   SUB_DOMAIN_MAPPINGS,
   SKILL_LEVEL_OPTIONS,
   TIME_COMMITMENT_OPTIONS
-} from '../../constants/fieldMappings';
+} from '@/share-branding/constants/fieldMappings';
 
 export function ProfileScreen() {
   const brand = useBrand();

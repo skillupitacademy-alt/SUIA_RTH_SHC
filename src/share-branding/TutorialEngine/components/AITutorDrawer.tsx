@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Send, Bot } from 'lucide-react';
-import { useBrand } from '../../PostLandingPage/app/context/BrandContext';
+import { useBrand } from '@/share-branding/PostLandingPage/app/context/BrandContext';
 import { useTutorialData } from './TutorialDataContext';
 
 interface AITutorDrawerProps {

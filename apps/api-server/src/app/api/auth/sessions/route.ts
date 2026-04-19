@@ -26,7 +26,8 @@ async function getHandler(_req: NextRequest) {
 
   try {
     const payload = await tokenService.verifyAccessToken(accessToken);
-    const userId = payload.userId;
+    // CRITICAL: Use the original user ID (not shadow) for session operations
+    const userId = payload.userId; // This is the original user ID used for storing tokens
     const brand = (typeof payload.brand === 'string' && payload.brand.length > 0 ? payload.brand : 'realtutorialhub') as 'skillup' | 'realtutorialhub';
 
     const sessions = await globalLogoutService.getActiveSessions(userId, brand);
@@ -55,7 +56,8 @@ async function deleteHandler(_req: NextRequest) {
 
   try {
     const payload = await tokenService.verifyAccessToken(accessToken);
-    const userId = payload.userId;
+    // CRITICAL: Use the original user ID (not shadow) for session operations
+    const userId = payload.userId; // This is the original user ID used for storing tokens
     const requestHostname = resolveRequestHostnameFromHeaders(_req.headers, _req.nextUrl.hostname);
     const brand = (typeof requestHostname === 'string' && requestHostname.includes('skillup')) ? 'skillup' : 'realtutorialhub';
 

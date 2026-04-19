@@ -8,6 +8,7 @@ import { ApiResponse } from '@/lib/api-response';
 import { recordCounter } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
 import { getAuthBrandContext, shouldUseBrandBinding } from '@/modules/auth/brand-db';
+import { TokenRepository } from '@/modules/auth/repositories/token.repository';
 import { UserRepository } from '@/modules/auth/repositories/user.repository';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
@@ -89,6 +90,46 @@ async function handler(req: NextRequest) {
     }
     
     const useBrandBinding = shouldUseBrandBinding();
+    
+    // 🔐 ENTERPRISE SECURITY: Check if user's refresh tokens have been globally revoked
+    // This fixes the global logout issue found in FAANG audit
+    const tokenRepo = container.get(TokenRepository);
+    const brandTokenRepo = useBrandBinding && typeof tokenRepo.withDb === 'function'
+      ? tokenRepo.withDb(brandContext.db, { refreshTokens: brandContext.tables.refreshTokens })
+      : tokenRepo;
+    
+    try {
+      // Check if user has ANY active (non-revoked) refresh tokens
+      // CRITICAL: Use the original user ID (not shadow) for session lookup
+      const sessionUserId = payload.userId; // This is the original user ID used for storing tokens
+      const activeTokens = await brandTokenRepo.getUserSessions(sessionUserId);
+      
+      console.log('[ME_DEBUG] SECURITY: Token revocation check:', {
+        payloadUserId: payload.userId,
+        shadowUserId: payload.shadowUserId,
+        sessionUserId,
+        brand,
+        activeTokensCount: activeTokens.length,
+        activeTokens: activeTokens.map(t => ({
+          id: t.id,
+          revoked: t.revoked,
+          expiresAt: t.expiresAt,
+          deviceId: t.deviceId,
+          userId: t.userId
+        }))
+      });
+      
+      if (activeTokens.length === 0) {
+        console.log('[ME_DEBUG] SECURITY: No active refresh tokens found - global logout detected');
+        recordCounter(METRICS.AUTH.FAILURE, 1, { reason: 'no_active_tokens' });
+        return NextResponse.json({ user: null }, { status: 401 });
+      }
+      
+      console.log('[ME_DEBUG] SECURITY: Found', activeTokens.length, 'active refresh tokens - allowing access');
+    } catch (tokenCheckError) {
+      console.error('[ME_DEBUG] Token revocation check failed:', tokenCheckError);
+      // Continue with normal flow if token check fails (graceful degradation)
+    }
     
     console.log('[ME_DEBUG] Database context:', {
       brand,

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { GraduationCap, Menu, X } from 'lucide-react';
-import { useBrand } from '../context/BrandContext';
+import { useBrand } from '@/share-branding/PostLandingPage/app/context/BrandContext';
 import Link from 'next/link';
 
 export function Navigation() {

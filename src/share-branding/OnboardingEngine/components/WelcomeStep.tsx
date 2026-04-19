@@ -1,7 +1,7 @@
 'use client';
 
-import { useBrand } from '../context/BrandContext';
-import { OnboardingWelcomeCard } from '../../onboardingPageData';
+import { useBrand } from '@/share-branding/OnboardingEngine/context/BrandContext';
+import { OnboardingWelcomeCard } from '@/share-branding/onboardingPageData';
 
 interface WelcomeStepProps {
   title: string;

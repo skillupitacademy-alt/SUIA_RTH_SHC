@@ -3,7 +3,7 @@
 import { ReactNode } from 'react';
 import { BookOpen } from 'lucide-react';
 
-import { useBrand } from '../context/BrandContext';
+import { useBrand } from '@/share-branding/OnboardingEngine/context/BrandContext';
 
 interface OnboardingLayoutProps {
   children: ReactNode;
