@@ -4,20 +4,15 @@ import React, { useState, useEffect } from 'react';
 import { useBrand } from '../../PostLandingPage/app/context/BrandContext';
 import { getUserProfile, updateUserProfile, UserProfile } from '../../services/userProfileClient';
 import { Edit2, Save, X, Loader2, User, Mail, GraduationCap, Briefcase, Target, Code, BarChart3, Clock } from 'lucide-react';
-
-const educationLevels = ['High School', 'Bachelor\'s Degree', 'Master\'s Degree', 'PhD', 'Self-Taught'];
-const statusOptions = ['Student', 'Professional', 'Career Changer', 'Hobbyist'];
-const goalOptions = ['Career Advancement', 'Skill Building', 'Certification', 'Personal Growth'];
-const domains = ['Software Development', 'Data Science', 'Web Development', 'Mobile Development', 'DevOps'];
-const subDomains: Record<string, string[]> = {
-  'Software Development': ['Frontend Development', 'Backend Development', 'Full Stack'],
-  'Data Science': ['Machine Learning', 'Data Analysis', 'AI'],
-  'Web Development': ['React', 'Vue', 'Angular'],
-  'Mobile Development': ['iOS', 'Android', 'React Native'],
-  'DevOps': ['CI/CD', 'Cloud', 'Containers'],
-};
-const skillLevels = ['Beginner', 'Intermediate', 'Advanced', 'Expert'];
-const timeCommitments = ['5-10 hours/week', '10-15 hours/week', '15-20 hours/week', '20+ hours/week'];
+import {
+  EDUCATION_LEVEL_OPTIONS,
+  STATUS_OPTIONS,
+  GOAL_OPTIONS,
+  DOMAIN_OPTIONS,
+  SUB_DOMAIN_MAPPINGS,
+  SKILL_LEVEL_OPTIONS,
+  TIME_COMMITMENT_OPTIONS
+} from '../../constants/fieldMappings';
 
 export function ProfileScreen() {
   const brand = useBrand();
@@ -176,7 +171,7 @@ export function ProfileScreen() {
     );
   };
 
-  const availableSubDomains = subDomains[editedProfile.domain] || [];
+  const availableSubDomains = SUB_DOMAIN_MAPPINGS[editedProfile.domain] || ['Foundations'];
 
   return (
     <div className="space-y-6">
@@ -282,7 +277,7 @@ export function ProfileScreen() {
             label="Education Level"
             value={editedProfile.educationLevel}
             field="educationLevel"
-            options={educationLevels}
+            options={EDUCATION_LEVEL_OPTIONS}
             isSelect={true}
           />
           <InfoField
@@ -290,7 +285,7 @@ export function ProfileScreen() {
             label="Current Status"
             value={editedProfile.status}
             field="status"
-            options={statusOptions}
+            options={STATUS_OPTIONS}
             isSelect={true}
           />
         </div>
@@ -305,7 +300,7 @@ export function ProfileScreen() {
             label="Primary Goal"
             value={editedProfile.primaryGoal}
             field="primaryGoal"
-            options={goalOptions}
+            options={GOAL_OPTIONS}
             isSelect={true}
           />
           <InfoField
@@ -313,7 +308,7 @@ export function ProfileScreen() {
             label="Domain"
             value={editedProfile.domain}
             field="domain"
-            options={domains}
+            options={DOMAIN_OPTIONS}
             isSelect={true}
           />
           <InfoField
@@ -329,7 +324,7 @@ export function ProfileScreen() {
             label="Skill Level"
             value={editedProfile.skillLevel}
             field="skillLevel"
-            options={skillLevels}
+            options={SKILL_LEVEL_OPTIONS}
             isSelect={true}
           />
           <InfoField
@@ -337,7 +332,7 @@ export function ProfileScreen() {
             label="Time Commitment"
             value={editedProfile.timeCommitment}
             field="timeCommitment"
-            options={timeCommitments}
+            options={TIME_COMMITMENT_OPTIONS}
             isSelect={true}
           />
         </div>

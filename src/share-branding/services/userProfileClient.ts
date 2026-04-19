@@ -5,6 +5,21 @@
  * Pattern: UI → BFF (/api/profile) → API Server (/api/auth/profile) → DB
  */
 
+import {
+  mapEducationLevelToUI,
+  mapEducationLevelToDB,
+  mapStatusToUI,
+  mapStatusToDB,
+  mapGoalToUI,
+  mapGoalToDB,
+  mapDomainToUI,
+  mapDomainToDB,
+  mapSkillLevelToUI,
+  mapSkillLevelToDB,
+  mapTimeCommitmentToUI,
+  mapTimeCommitmentToDB
+} from '../constants/fieldMappings';
+
 export interface UserProfile {
   id: string;
   fullName: string;
@@ -38,40 +53,40 @@ interface ApiProfileResponse {
 }
 
 /**
- * Map API response to UI format
+ * Map API response to UI format with proper field mappings
  */
 function mapProfileFromApi(apiData: ApiProfileResponse, userEmail: string): UserProfile {
   return {
     id: apiData.id,
     fullName: apiData.name || 'User',
     email: userEmail,
-    educationLevel: apiData.educationLevel || 'Not specified',
-    status: apiData.professionalStatus || 'Student',
-    primaryGoal: apiData.primaryGoal || 'Learning',
-    domain: apiData.domain || 'General',
+    educationLevel: mapEducationLevelToUI(apiData.educationLevel),
+    status: mapStatusToUI(apiData.professionalStatus),
+    primaryGoal: mapGoalToUI(apiData.primaryGoal),
+    domain: mapDomainToUI(apiData.domain),
     subDomain: apiData.subDomain || 'Foundations',
-    skillLevel: apiData.adaptiveLevel || 'beginner',
-    timeCommitment: apiData.timeCommitment || 'Flexible',
+    skillLevel: mapSkillLevelToUI(apiData.adaptiveLevel),
+    timeCommitment: mapTimeCommitmentToUI(apiData.timeCommitment),
     createdAt: apiData.createdAt,
   };
 }
 
 /**
- * Map UI format to API request
+ * Map UI format to API request with proper field mappings
  */
 function mapProfileToApi(uiData: Partial<UserProfile>): Partial<ApiProfileResponse> {
   const apiData: Partial<ApiProfileResponse> = {};
   
   if (uiData.fullName !== undefined) apiData.name = uiData.fullName;
-  if (uiData.educationLevel !== undefined) apiData.educationLevel = uiData.educationLevel;
-  if (uiData.status !== undefined) apiData.professionalStatus = uiData.status;
-  if (uiData.primaryGoal !== undefined) apiData.primaryGoal = uiData.primaryGoal;
-  if (uiData.domain !== undefined) apiData.domain = uiData.domain;
+  if (uiData.educationLevel !== undefined) apiData.educationLevel = mapEducationLevelToDB(uiData.educationLevel);
+  if (uiData.status !== undefined) apiData.professionalStatus = mapStatusToDB(uiData.status);
+  if (uiData.primaryGoal !== undefined) apiData.primaryGoal = mapGoalToDB(uiData.primaryGoal);
+  if (uiData.domain !== undefined) apiData.domain = mapDomainToDB(uiData.domain);
   if (uiData.subDomain !== undefined) apiData.subDomain = uiData.subDomain;
   if (uiData.skillLevel !== undefined) {
-    apiData.adaptiveLevel = uiData.skillLevel as 'beginner' | 'intermediate' | 'advanced';
+    apiData.adaptiveLevel = mapSkillLevelToDB(uiData.skillLevel) as 'beginner' | 'intermediate' | 'advanced';
   }
-  if (uiData.timeCommitment !== undefined) apiData.timeCommitment = uiData.timeCommitment;
+  if (uiData.timeCommitment !== undefined) apiData.timeCommitment = mapTimeCommitmentToDB(uiData.timeCommitment);
   
   return apiData;
 }

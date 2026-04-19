@@ -1,3 +1,11 @@
+import {
+  EDUCATION_LEVEL_OPTIONS,
+  TIME_COMMITMENT_OPTIONS,
+  GOAL_OPTIONS,
+  DOMAIN_OPTIONS,
+  SUB_DOMAIN_MAPPINGS
+} from '../constants/fieldMappings';
+
 export interface OnboardingData {
   fullName: string;
   educationLevel: string;
@@ -53,46 +61,35 @@ export const domainCards: DomainCard[] = [
   {
     id: 'web-dev',
     title: 'Web Development',
-    subDomains: ['React.js', 'Node.js', 'Next.js', 'Vue.js', 'Angular']
+    subDomains: SUB_DOMAIN_MAPPINGS['Web Development'] || ['React', 'Vue', 'Angular']
   },
   {
     id: 'data-science',
     title: 'Data Science',
-    subDomains: ['Python', 'Machine Learning', 'Deep Learning', 'Statistics']
+    subDomains: SUB_DOMAIN_MAPPINGS['Data Science'] || ['Machine Learning', 'Data Analysis', 'Statistics']
   },
   {
     id: 'ai-ml',
     title: 'AI/ML',
-    subDomains: ['Natural Language Processing', 'Computer Vision', 'Reinforcement Learning']
+    subDomains: SUB_DOMAIN_MAPPINGS['AI/ML'] || ['Natural Language Processing', 'Computer Vision', 'Deep Learning']
   },
   {
     id: 'mobile-dev',
     title: 'Mobile Development',
-    subDomains: ['React Native', 'Flutter', 'Swift', 'Kotlin']
+    subDomains: SUB_DOMAIN_MAPPINGS['Mobile Development'] || ['React Native', 'Flutter', 'iOS', 'Android']
   },
   {
     id: 'devops',
     title: 'DevOps',
-    subDomains: ['Docker', 'Kubernetes', 'CI/CD', 'AWS', 'Azure']
+    subDomains: SUB_DOMAIN_MAPPINGS['DevOps'] || ['CI/CD', 'Cloud', 'Containers', 'Kubernetes']
   },
   {
     id: 'cybersecurity',
     title: 'Cybersecurity',
-    subDomains: ['Ethical Hacking', 'Network Security', 'Cloud Security']
+    subDomains: SUB_DOMAIN_MAPPINGS['Cybersecurity'] || ['Ethical Hacking', 'Network Security', 'Cloud Security']
   }
 ];
 
-export const educationLevels = [
-  'High School',
-  'Undergraduate',
-  'Graduate',
-  'Postgraduate',
-  'Other'
-];
-
-export const timeCommitments = [
-  '30 min/day',
-  '1 hr/day',
-  '2 hrs/day',
-  'Weekends only'
-];
+// Use consistent options from field mappings
+export const educationLevels = [...EDUCATION_LEVEL_OPTIONS];
+export const timeCommitments = [...TIME_COMMITMENT_OPTIONS];
