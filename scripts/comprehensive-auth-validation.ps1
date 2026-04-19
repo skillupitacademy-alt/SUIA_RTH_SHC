@@ -185,6 +185,49 @@ function Test-OnboardingFlow {
     }
 }
 
+function Test-ProtectedRouteRedirects {
+    param($baseUrl, $brandName)
+    
+    Write-Host "`n🔒 TESTING $brandName PROTECTED ROUTE REDIRECTS..." -ForegroundColor Green
+    
+    $protectedRoutes = @('/dashboard', '/onboarding', '/student')
+    $redirectResults = @()
+    
+    foreach ($route in $protectedRoutes) {
+        try {
+            $response = Invoke-WebRequest -Uri "$baseUrl$route" -Method GET -MaximumRedirection 0
+            Write-Host "⚠️ ${route}: No redirect (Status: $($response.StatusCode))" -ForegroundColor Yellow
+            $redirectResults += @{ Route = $route; Success = $false; Issue = "No redirect" }
+        } catch {
+            if ($_.Exception.Response.StatusCode -eq "Redirect" -or $_.Exception.Response.StatusCode -eq "Found" -or $_.Exception.Response.StatusCode -eq "TemporaryRedirect") {
+                $location = $_.Exception.Response.Headers["Location"]
+                if ($location -and $location.ToString().Contains("/login")) {
+                    Write-Host "✅ ${route}: Redirects to login" -ForegroundColor Green
+                    $redirectResults += @{ Route = $route; Success = $true; Location = $location.ToString() }
+                } else {
+                    Write-Host "⚠️ ${route}: Redirects but not to login ($location)" -ForegroundColor Yellow
+                    $redirectResults += @{ Route = $route; Success = $false; Issue = "Wrong redirect" }
+                }
+            } elseif ($_.Exception.Response.StatusCode -eq "Unauthorized") {
+                Write-Host "✅ ${route}: Returns 401 (API route)" -ForegroundColor Green
+                $redirectResults += @{ Route = $route; Success = $true; Type = "API" }
+            } else {
+                Write-Host "❌ ${route}: Unexpected response ($($_.Exception.Response.StatusCode))" -ForegroundColor Red
+                $redirectResults += @{ Route = $route; Success = $false; Issue = "Unexpected response" }
+            }
+        }
+    }
+    
+    $successCount = ($redirectResults | Where-Object { $_.Success }).Count
+    $totalCount = $redirectResults.Count
+    
+    return @{
+        Success = ($successCount -eq $totalCount)
+        Results = $redirectResults
+        Summary = "$successCount/$totalCount routes properly protected"
+    }
+}
+
 function Test-FederatedIsolation {
     param($rthSession, $skillupSession)
     
@@ -235,6 +278,11 @@ $skillupAuthz = Test-Authorization -session $skillupAuth.Session -baseUrl $skill
 # Test Federation
 $federation = Test-FederatedIsolation -rthSession $rthAuth.Session -skillupSession $skillupAuth.Session
 
+# Test Protected Route Redirects
+Write-Host "`n🔒 TESTING PROTECTED ROUTE REDIRECTS..." -ForegroundColor Cyan
+$rthRedirects = Test-ProtectedRouteRedirects -baseUrl $rthCreds.baseUrl -brandName "RTH"
+$skillupRedirects = Test-ProtectedRouteRedirects -baseUrl $skillupCreds.baseUrl -brandName "SkillUp"
+
 # Test Onboarding (if BFF routes work)
 if ($rthMe.Success) {
     $rthOnboarding = Test-OnboardingFlow -session $rthAuth.Session -baseUrl $rthCreds.baseUrl -brandName "RTH" -initialOnboarded $rthMe.Onboarded
@@ -263,7 +311,11 @@ Write-Host "   SkillUp /api/auth/me: $(if ($skillupMe.Success) { '✅ PASS' } el
 Write-Host "`n🌐 FEDERATION:" -ForegroundColor Green
 Write-Host "   Isolation: $(if ($federation.Success) { '✅ PASS' } else { '❌ FAIL' })" -ForegroundColor $(if ($federation.Success) { 'Green' } else { 'Red' })
 
-$allPassed = $rthAuth.Success -and $skillupAuth.Success -and $rthAuthz.Success -and $skillupAuthz.Success -and $federation.Success -and $rthMe.Success -and $skillupMe.Success
+Write-Host "`n🔒 PROTECTED ROUTE REDIRECTS:" -ForegroundColor Green
+Write-Host "   RTH: $(if ($rthRedirects.Success) { '✅ PASS' } else { '❌ FAIL' }) ($($rthRedirects.Summary))" -ForegroundColor $(if ($rthRedirects.Success) { 'Green' } else { 'Red' })
+Write-Host "   SkillUp: $(if ($skillupRedirects.Success) { '✅ PASS' } else { '❌ FAIL' }) ($($skillupRedirects.Summary))" -ForegroundColor $(if ($skillupRedirects.Success) { 'Green' } else { 'Red' })
+
+$allPassed = $rthAuth.Success -and $skillupAuth.Success -and $rthAuthz.Success -and $skillupAuthz.Success -and $federation.Success -and $rthMe.Success -and $skillupMe.Success -and $rthRedirects.Success -and $skillupRedirects.Success
 
 Write-Host "`n🏁 FINAL VERDICT:" -ForegroundColor Cyan
 if ($allPassed) {
@@ -274,4 +326,5 @@ if ($allPassed) {
     Write-Host "❌ NOT SAFE" -ForegroundColor Red
 }
 
-Write-Host "`nValidation complete!" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "Validation complete!" -ForegroundColor Cyan
