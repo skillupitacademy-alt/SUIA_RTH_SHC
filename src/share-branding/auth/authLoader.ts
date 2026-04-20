@@ -51,32 +51,39 @@ export async function signupUser(data: SignupRequestData): Promise<LoginResultVi
 }
 
 export async function fetchCurrentUserState(): Promise<{ onboardingCompleted: boolean }> {
-  // ✅ Add timestamp to prevent any browser caching (defense in depth)
+  // 🚀 OPTIMIZATION: Use profile API instead of separate /auth/me call
+  // This eliminates duplicate network requests and uses our internal authentication
   const timestamp = Date.now();
   
-  const response = await fetch(`${AUTH_ME_ENDPOINT}?_t=${timestamp}`, {
+  const response = await fetch(`/api/profile?_t=${timestamp}`, {
     method: 'GET',
-    credentials: 'include', // ✅ Send cookies
+    credentials: 'include',
     headers: {
       accept: 'application/json',
-      'x-portal-identity': 'user', // ✅ Required header
-      // Note: x-brand header is automatically resolved from hostname by BFF
+      'x-portal-identity': 'user',
     },
-    cache: 'no-store', // ✅ Avoid stale response
+    cache: 'no-store',
   });
 
   if (!response.ok) {
+    // If profile fails, user might not be authenticated or onboarded
+    if (response.status === 404) {
+      // Profile not found = user not onboarded yet
+      return { onboardingCompleted: false };
+    }
     throw new Error('Failed to fetch session');
   }
 
   const payload = (await response.json().catch(() => null)) as
-    | { user?: { onboardingCompleted?: boolean; onboarded?: boolean } }
+    | { user?: { onboardingCompleted?: boolean; onboarded?: boolean }; onboardingCompleted?: boolean }
     | null;
 
-  // ✅ CRITICAL: user: null is VALID state, not an error
+  // Check both user.onboardingCompleted and direct onboardingCompleted
   return {
     onboardingCompleted:
-      payload?.user?.onboardingCompleted === true || payload?.user?.onboarded === true,
+      payload?.user?.onboardingCompleted === true || 
+      payload?.user?.onboarded === true ||
+      payload?.onboardingCompleted === true,
   };
 }
 

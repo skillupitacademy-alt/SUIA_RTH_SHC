@@ -8,24 +8,46 @@ export const dynamic = 'force-dynamic';
  */
 export async function GET(req: NextRequest) {
   try {
-    const apiServerUrl = process.env.NEXT_PUBLIC_API_URL || process.env.API_SERVER_URL;
+    const gatewayUrl = process.env.GATEWAY_URL;
     
-    if (!apiServerUrl) {
-      console.error('[BFF][/api/auth/me] API_SERVER_URL not configured');
+    if (!gatewayUrl) {
+      console.error('[BFF][/api/auth/me] GATEWAY_URL not configured');
       return NextResponse.json({ user: null }, { status: 500 });
     }
 
-    // Forward request to API server with cookies only (brand resolved from JWT)
-    const res = await fetch(`${apiServerUrl}/api/auth/me`, {
-      headers: {
-        cookie: req.headers.get('cookie') || '',
-        'x-request-id': req.headers.get('x-request-id') || crypto.randomUUID(),
-      },
+    console.log('[BFF][/api/auth/me] Using gateway URL:', gatewayUrl);
+
+    // Forward request to gateway with proper headers
+    const cookieHeader = req.headers.get('cookie') || '';
+    const accessToken = cookieHeader
+      .split('; ')
+      .find(c => c.startsWith('accessToken='))
+      ?.split('=')[1];
+
+    if (!accessToken) {
+      console.warn('[BFF][/api/auth/me] No access token found in cookies');
+      return NextResponse.json({ user: null }, { status: 401 });
+    }
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'cookie': cookieHeader,
+      'Authorization': `Bearer ${accessToken}`,
+      'x-portal-identity': 'user',
+      'x-request-id': req.headers.get('x-request-id') || crypto.randomUUID(),
+    };
+
+    console.log('[BFF][/api/auth/me] Calling gateway with headers:', Object.keys(headers));
+
+    const res = await fetch(`${gatewayUrl}/auth/me`, {
+      headers,
       cache: 'no-store',
     });
 
+    console.log('[BFF][/api/auth/me] Gateway response status:', res.status);
+
     if (!res.ok) {
-      console.warn('[BFF][/api/auth/me] API server returned non-OK status:', res.status);
+      console.warn('[BFF][/api/auth/me] Gateway returned non-OK status:', res.status);
       return NextResponse.json({ user: null }, { status: res.status });
     }
 
