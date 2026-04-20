@@ -21,6 +21,24 @@ import { withCorrelationId } from '@/lib/correlation-id.middleware';
 
 async function handler(req: NextRequest) {
   const start = Date.now();
+  const timings = {
+    start,
+    afterParsing: 0,
+    afterValidation: 0,
+    afterLogin: 0,
+    afterResponse: 0,
+  };
+  
+  // 🔥 COLD START DETECTION
+  const isColdStart = global.isWarm !== true;
+  if (isColdStart) {
+    console.log('[COLD_START][LOGIN]', JSON.stringify({
+      event: 'cold_start_request',
+      path: '/api/auth/login',
+      timestamp: new Date().toISOString(),
+    }));
+  }
+  
   try {
     const requestId = req.headers.get('x-request-id') ?? 'no-request-id';
     const origin = req.headers.get('origin') ?? 'unknown';
@@ -30,10 +48,14 @@ async function handler(req: NextRequest) {
       host,
       origin,
       path: req.nextUrl.pathname,
+      isColdStart,
     }));
 
     const rawBody = await req.json();
+    timings.afterParsing = Date.now();
+    
     const parsed = loginSchema.safeParse(rawBody);
+    timings.afterValidation = Date.now();
     if (!parsed.success) {
       recordCounter(METRICS.AUTH.FAILURE, 1, { reason: 'invalid_payload' });
       console.log('[AUTH_FLOW][LOGIN][FAIL]', JSON.stringify({
@@ -73,6 +95,8 @@ async function handler(req: NextRequest) {
     }
 
     const { _user, accessToken, refreshToken, isAdmin } = await container.get(AuthService).login(email, password, ip, brand, deviceContext);
+    timings.afterLogin = Date.now();
+    
     const rawProfile = Array.isArray(_user.profile) ? _user.profile[0] ?? {} : (_user.profile ?? {});
     const authUserInput = {
       id: _user.id,
@@ -132,10 +156,26 @@ async function handler(req: NextRequest) {
     setOnboardingStateCookie(response, req, userDto.onboarded === true);
 
     const end = Date.now();
+    timings.afterResponse = end;
     const durationMs = end - start;
     recordTimer(METRICS.AUTH.LOGIN + '.duration', durationMs);
 
     response.headers.set('X-Duration-Ms', durationMs.toString());
+    
+    // 🔥 PERFORMANCE INSTRUMENTATION
+    console.log('[PERF][API][LOGIN]', JSON.stringify({
+      requestId,
+      total: durationMs,
+      breakdown: {
+        parsing: timings.afterParsing - timings.start,
+        validation: timings.afterValidation - timings.afterParsing,
+        loginService: timings.afterLogin - timings.afterValidation,
+        responseBuilding: timings.afterResponse - timings.afterLogin,
+      },
+      path: req.nextUrl.pathname,
+      brand,
+    }));
+    
     console.log('[AUTH_FLOW][LOGIN][SUCCESS]', JSON.stringify({
       requestId,
       durationMs,

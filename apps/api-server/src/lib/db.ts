@@ -18,8 +18,29 @@ const connectionWithTimeout = hasEnvUrl
 
 /**
  * Primary SQL client for writes.
+ * 🔥 PERFORMANCE: Track connection creation
  */
-export const sql = neon(connectionWithTimeout);
+let connectionCount = 0;
+const connectionCreatedAt = Date.now();
+
+export const sql = neon(connectionWithTimeout, {
+  // @ts-expect-error - Neon runtime supports onConnect, but the current type defs omit it.
+  onConnect: () => {
+    connectionCount++;
+    console.log('[DB][CONNECTION]', JSON.stringify({
+      event: 'new_connection',
+      count: connectionCount,
+      timeSinceInit: Date.now() - connectionCreatedAt,
+      timestamp: new Date().toISOString(),
+    }));
+  },
+});
+
+console.log('[DB][INIT]', JSON.stringify({
+  event: 'pool_initialized',
+  hasEnvUrl,
+  timestamp: new Date().toISOString(),
+}));
 
 /**
  * Replica SQL client for heavy reads. 

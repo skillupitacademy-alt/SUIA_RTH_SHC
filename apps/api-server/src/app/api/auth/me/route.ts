@@ -6,17 +6,14 @@ import { toUserSummaryDTO } from '@/dtos/auth.dto';
 import { unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { recordCounter } from '@/lib/metrics';
-import { withLogging } from '@/lib/withLogging';
+import { withGatewayAuth } from '@/middleware/gateway-auth.middleware';
 import { getAuthBrandContext, shouldUseBrandBinding } from '@/modules/auth/brand-db';
 import { TokenRepository } from '@/modules/auth/repositories/token.repository';
 import { UserRepository } from '@/modules/auth/repositories/user.repository';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
-import { withGatewayAuth } from '@/middleware/gateway-auth.middleware';
 
 export const dynamic = 'force-dynamic';
-
-import { withCorrelationId } from '@/lib/correlation-id.middleware';
 
 /**
  * Backend Route: Get current authenticated user
