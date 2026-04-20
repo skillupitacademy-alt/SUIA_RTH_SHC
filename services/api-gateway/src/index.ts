@@ -43,8 +43,17 @@ export const createApp = () => {
   app.get('/internal/health', (c) => c.json(buildGatewayHealthSnapshot(c.env)));
 
   app.all('*', async (c: Context<{ Bindings: GatewayBindings; Variables: GatewayVariables }>) => {
+    const perfStart = Date.now();
+    const timings = {
+      start: perfStart,
+      afterRouteResolve: 0,
+      afterAuth: 0,
+      afterProxy: 0,
+    };
+    
     const requestUrl = new URL(c.req.url);
     const route = resolveGatewayRoute(requestUrl.hostname, requestUrl.pathname);
+    timings.afterRouteResolve = Date.now();
     
     // 🔥 DEBUG: Log route resolution
     console.log('[GATEWAY_ROUTE_DEBUG]', JSON.stringify({
@@ -92,7 +101,11 @@ export const createApp = () => {
     let originalUserId: string | undefined;
     let portal: 'admin' | 'user' | undefined;
     if (route.auth === true) {
+      const authStart = Date.now();
       const authResult = await authenticateRequest(requestToProxy, c.env, route);
+      timings.afterAuth = Date.now();
+      console.log('[PERF][GATEWAY][AUTH]', { duration: timings.afterAuth - authStart });
+      
       if (authResult instanceof Response) {
         return authResult;
       }
@@ -119,7 +132,7 @@ export const createApp = () => {
     const normalizedPath = requestUrl.pathname.startsWith('/api/') ? requestUrl.pathname.slice(4) : requestUrl.pathname;
 
     try {
-      return await proxyRequest(requestToProxy, upstream, {
+      const response = await proxyRequest(requestToProxy, upstream, {
         requestId: c.get('requestId'),
         gatewaySecret: c.env.INTERNAL_GATEWAY_SECRET,
         userId,
@@ -129,6 +142,22 @@ export const createApp = () => {
         brand,
         upstreamPath: rewritePath(normalizedPath, route.prefix, route.upstreamPathPrefix),
       });
+      timings.afterProxy = Date.now();
+      
+      // 🔥 PERFORMANCE INSTRUMENTATION
+      const totalDuration = timings.afterProxy - timings.start;
+      console.log('[PERF][GATEWAY]', JSON.stringify({
+        total: totalDuration,
+        breakdown: {
+          routeResolve: timings.afterRouteResolve - timings.start,
+          auth: route.auth ? timings.afterAuth - timings.afterRouteResolve : 0,
+          proxy: timings.afterProxy - (route.auth ? timings.afterAuth : timings.afterRouteResolve),
+        },
+        path: requestUrl.pathname,
+        method: c.req.method,
+      }));
+      
+      return response;
     } catch (error) {
       console.error('[GATEWAY_PROXY_ERROR]', {
         requestId: c.get('requestId'),
