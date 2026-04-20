@@ -12,6 +12,7 @@ import { TokenRepository } from '@/modules/auth/repositories/token.repository';
 import { UserRepository } from '@/modules/auth/repositories/user.repository';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
+import { withGatewayAuth } from '@/middleware/gateway-auth.middleware';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,7 +20,10 @@ import { withCorrelationId } from '@/lib/correlation-id.middleware';
 
 /**
  * Backend Route: Get current authenticated user
- * Pattern: BFF → API Server → DB
+ * Pattern: BFF → Gateway → API Server → DB
+ * 
+ * 🔥 GATEWAY-FIRST: This route expects requests from API Gateway only
+ * Gateway validates JWT and injects headers (x-user-id, x-brand, x-gateway-secret)
  * 
  * CRITICAL: This route extracts user info from JWT token (httpOnly cookie)
  * SECURITY: Brand resolution from JWT payload ONLY (not headers)
@@ -266,6 +270,4 @@ async function handler(req: NextRequest) {
   }
 }
 
-export const GET = withCorrelationId(
-  withLogging(handler, { component: 'auth', operation: 'me' })
-);
+export const GET = withGatewayAuth(handler);
