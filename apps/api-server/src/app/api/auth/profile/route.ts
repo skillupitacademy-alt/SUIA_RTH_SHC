@@ -73,7 +73,10 @@ async function getHandler(_req: NextRequest) {
       brand = (_payload.brand as RequestBrand) || 'realtutorialhub';
     }
     
-    const timings = { afterAuth: Date.now() };
+    const timings = { 
+      afterAuth: Date.now(),
+      afterDbQuery: 0
+    };
     
     console.log(`[TRACE][${correlationId}] Profile GET for userId: ${userId}, brand: ${brand}`);
     
