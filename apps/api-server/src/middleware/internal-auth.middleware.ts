@@ -25,7 +25,21 @@ export function validateRequest(req: NextRequest): { error?: Response; context?:
   const userEmail = req.headers.get('x-user-email');
   const brand = req.headers.get('x-brand');
   
-  if (internalSecret && process.env.INTERNAL_API_SECRET === internalSecret) {
+  // If internal secret is provided, validate it strictly
+  if (internalSecret) {
+    if (process.env.INTERNAL_API_SECRET !== internalSecret) {
+      console.error(`[AUTH][${correlationId}] Invalid internal secret provided`);
+      return {
+        error: new Response(JSON.stringify({ 
+          error: 'Unauthorized', 
+          message: 'Invalid internal service secret' 
+        }), { 
+          status: 401,
+          headers: { 'content-type': 'application/json' }
+        })
+      };
+    }
+    
     console.log(`[AUTH][${correlationId}] Internal service authentication`);
     
     if (!userId || !brand) {
