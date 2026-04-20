@@ -382,73 +382,73 @@ export function ProfileScreen() {
             
             <CardContent className="space-y-4">
               {/* Change Password */}
-              <div className="flex flex-col gap-4 rounded-lg border p-4 transition-colors hover:bg-muted/30 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-full bg-blue-100">
+              <div className="flex flex-col items-stretch gap-4 rounded-lg border p-4 transition-colors hover:bg-muted/30 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex min-w-0 items-start gap-3">
+                  <div className="rounded-full bg-blue-100 p-2">
                     <Shield className="h-4 w-4 text-blue-600" />
                   </div>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <h4 className="font-semibold">Change Password</h4>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="break-words text-sm text-muted-foreground">
                       Last updated: {new Date(editedProfile.updatedAt || editedProfile.createdAt).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
-                <Button variant="outline" size="sm" className="w-full sm:w-auto">
+                <Button variant="outline" size="sm" className="w-full justify-center whitespace-normal sm:w-auto">
                   Change Password
                 </Button>
               </div>
               
               {/* Two-Factor Authentication */}
-              <div className="flex flex-col gap-4 rounded-lg border p-4 transition-colors hover:bg-muted/30 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-full bg-green-100">
+              <div className="flex flex-col items-stretch gap-4 rounded-lg border p-4 transition-colors hover:bg-muted/30 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex min-w-0 items-start gap-3">
+                  <div className="rounded-full bg-green-100 p-2">
                     <CheckCircle className="h-4 w-4 text-green-600" />
                   </div>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <h4 className="font-semibold">Two-Factor Authentication</h4>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="break-words text-sm text-muted-foreground">
                       Add an extra layer of security to your account
                     </p>
                   </div>
                 </div>
-                <Button variant="outline" size="sm" className="w-full sm:w-auto">
+                <Button variant="outline" size="sm" className="w-full justify-center whitespace-normal sm:w-auto">
                   Enable 2FA
                 </Button>
               </div>
 
               {/* Login Notifications */}
-              <div className="flex flex-col gap-4 rounded-lg border p-4 transition-colors hover:bg-muted/30 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-full bg-purple-100">
+              <div className="flex flex-col items-stretch gap-4 rounded-lg border p-4 transition-colors hover:bg-muted/30 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex min-w-0 items-start gap-3">
+                  <div className="rounded-full bg-purple-100 p-2">
                     <Mail className="h-4 w-4 text-purple-600" />
                   </div>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <h4 className="font-semibold">Login Notifications</h4>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="break-words text-sm text-muted-foreground">
                       Get notified when someone signs into your account
                     </p>
                   </div>
                 </div>
-                <Button variant="outline" size="sm" className="w-full sm:w-auto">
+                <Button variant="outline" size="sm" className="w-full justify-center whitespace-normal sm:w-auto">
                   Configure
                 </Button>
               </div>
 
               {/* Account Recovery */}
-              <div className="flex flex-col gap-4 rounded-lg border p-4 transition-colors hover:bg-muted/30 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-full bg-orange-100">
+              <div className="flex flex-col items-stretch gap-4 rounded-lg border p-4 transition-colors hover:bg-muted/30 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex min-w-0 items-start gap-3">
+                  <div className="rounded-full bg-orange-100 p-2">
                     <User className="h-4 w-4 text-orange-600" />
                   </div>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <h4 className="font-semibold">Account Recovery</h4>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="break-words text-sm text-muted-foreground">
                       Manage backup email and recovery options
                     </p>
                   </div>
                 </div>
-                <Button variant="outline" size="sm" className="w-full sm:w-auto">
+                <Button variant="outline" size="sm" className="w-full justify-center whitespace-normal sm:w-auto">
                   Manage
                 </Button>
               </div>

@@ -247,7 +247,7 @@ export function DeviceSessions({ className, onSessionRevoked, onGlobalLogout }: 
           <button
             onClick={handleGlobalLogout}
             disabled={globalLoggingOut}
-            className="flex h-10 w-full items-center justify-center gap-2 rounded-xl px-4 font-semibold text-white shadow-md transition-all hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50 disabled:transform-none sm:w-auto"
+            className="flex h-10 w-full items-center justify-center gap-2 rounded-xl px-4 text-center font-semibold text-white shadow-md transition-all hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50 disabled:transform-none sm:w-auto"
             style={{ backgroundColor: '#dc2626' }}
           >
             {globalLoggingOut ? (
@@ -283,7 +283,7 @@ export function DeviceSessions({ className, onSessionRevoked, onGlobalLogout }: 
             {/* Current Device */}
             {currentSession && (
               <div className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-6">
-                <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+                <div className="flex flex-col items-stretch gap-4 sm:flex-row sm:items-center">
                   <div className="relative flex h-12 w-12 flex-shrink-0 items-center justify-center">
                     <div
                       className="absolute inset-0 rounded-xl"
@@ -297,7 +297,7 @@ export function DeviceSessions({ className, onSessionRevoked, onGlobalLogout }: 
                   
                   <div className="min-w-0 flex-1">
                     <div className="mb-1 flex flex-col items-start gap-2 sm:flex-row sm:items-center">
-                      <p className="text-lg font-semibold text-gray-900">
+                      <p className="break-words text-lg font-semibold text-gray-900">
                         {currentSession.deviceName || getDeviceType(currentSession.userAgent)}
                       </p>
                       <span
@@ -307,7 +307,7 @@ export function DeviceSessions({ className, onSessionRevoked, onGlobalLogout }: 
                         This device
                       </span>
                     </div>
-                    <p className="text-sm text-gray-600">
+                    <p className="break-words text-sm text-gray-600">
                       {getLocationFromIP(currentSession.ipAddress)} • {formatLastUsed(currentSession.lastUsedAt)}
                     </p>
                   </div>
@@ -321,7 +321,7 @@ export function DeviceSessions({ className, onSessionRevoked, onGlobalLogout }: 
                 key={session.id}
                 className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-6"
               >
-                <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+                <div className="flex flex-col items-stretch gap-4 sm:flex-row sm:items-center">
                   <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0">
                     {React.createElement(getDeviceIcon(session.userAgent), {
                       size: 22,
@@ -330,10 +330,10 @@ export function DeviceSessions({ className, onSessionRevoked, onGlobalLogout }: 
                   </div>
                   
                   <div className="min-w-0 flex-1">
-                    <p className="text-lg font-semibold text-gray-900 mb-1">
+                    <p className="mb-1 break-words text-lg font-semibold text-gray-900">
                       {session.deviceName || getDeviceType(session.userAgent)}
                     </p>
-                    <p className="text-sm text-gray-600">
+                    <p className="break-words text-sm text-gray-600">
                       {getLocationFromIP(session.ipAddress)} • {formatLastUsed(session.lastUsedAt)}
                     </p>
                   </div>
@@ -341,7 +341,7 @@ export function DeviceSessions({ className, onSessionRevoked, onGlobalLogout }: 
                   <button
                     onClick={() => revokeSession(session.id)}
                     disabled={revoking === session.id}
-                    className="h-10 w-full rounded-xl border-2 border-gray-300 px-4 font-semibold text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+                    className="h-10 w-full rounded-xl border-2 border-gray-300 px-4 text-center font-semibold text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                   >
                     {revoking === session.id ? (
                       <Loader2 className="animate-spin" size={16} />

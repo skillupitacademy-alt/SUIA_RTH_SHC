@@ -178,7 +178,7 @@ function ProfileContent({ config }: { config: BrandConfig }) {
       {/* Header */}
       <div className="bg-white border-b">
         <div className="max-w-6xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 className="text-3xl font-black tracking-tight text-slate-900">
                 Profile Settings
@@ -188,7 +188,7 @@ function ProfileContent({ config }: { config: BrandConfig }) {
               </p>
             </div>
             
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 self-start sm:self-auto">
               <Badge 
                 variant={profile.onboardingCompleted ? "default" : "secondary"}
                 className="px-3 py-1"
@@ -240,7 +240,7 @@ function ProfileContent({ config }: { config: BrandConfig }) {
           <TabsContent value="profile" className="space-y-6">
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <CardTitle className="flex items-center gap-2">
                       <User className="h-5 w-5" />
@@ -256,18 +256,19 @@ function ProfileContent({ config }: { config: BrandConfig }) {
                       variant="outline"
                       size="sm"
                       onClick={() => setEditing(true)}
-                      className="flex items-center gap-2"
+                      className="flex w-full items-center justify-center gap-2 sm:w-auto"
                     >
                       <Edit3 className="h-4 w-4" />
                       Edit
                     </Button>
                   ) : (
-                    <div className="flex items-center gap-2">
+                    <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={cancelEdit}
                         disabled={saving}
+                        className="w-full sm:w-auto"
                       >
                         <X className="h-4 w-4" />
                         Cancel
@@ -276,7 +277,7 @@ function ProfileContent({ config }: { config: BrandConfig }) {
                         size="sm"
                         onClick={saveProfile}
                         disabled={saving}
-                        className="flex items-center gap-2"
+                        className="flex w-full items-center justify-center gap-2 sm:w-auto"
                         style={{ backgroundColor: config.primaryColor }}
                       >
                         {saving ? (
@@ -433,26 +434,26 @@ function ProfileContent({ config }: { config: BrandConfig }) {
               </CardHeader>
               
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between p-4 border rounded-lg">
-                  <div>
+                <div className="flex flex-col items-stretch gap-4 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="min-w-0 flex-1">
                     <h4 className="font-semibold">Password</h4>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="break-words text-sm text-muted-foreground">
                       Last updated: {new Date(profile.updatedAt).toLocaleDateString()}
                     </p>
                   </div>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" className="w-full justify-center whitespace-normal sm:w-auto">
                     Change Password
                   </Button>
                 </div>
                 
-                <div className="flex items-center justify-between p-4 border rounded-lg">
-                  <div>
+                <div className="flex flex-col items-stretch gap-4 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="min-w-0 flex-1">
                     <h4 className="font-semibold">Two-Factor Authentication</h4>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="break-words text-sm text-muted-foreground">
                       Add an extra layer of security to your account
                     </p>
                   </div>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" className="w-full justify-center whitespace-normal sm:w-auto">
                     Enable 2FA
                   </Button>
                 </div>
