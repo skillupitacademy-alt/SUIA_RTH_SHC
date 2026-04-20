@@ -48,7 +48,12 @@ export async function fetchBackendAuthState(): Promise<BackendAuthUserState | nu
   try {
     // ✅ Add timestamp to prevent any caching (defense in depth)
     const timestamp = Date.now();
-    const response = await fetch(`${getInternalApiBase()}/auth/me?_t=${timestamp}`, {
+    const apiBase = getInternalApiBase();
+    
+    console.log('[AUTH_STATE] Fetching from:', apiBase);
+    console.log('[AUTH_STATE] Cookie header length:', cookieHeader.length);
+    
+    const response = await fetch(`${apiBase}/auth/me?_t=${timestamp}`, {
       headers: {
         Cookie: cookieHeader,
         'Cache-Control': 'no-cache',
@@ -56,7 +61,11 @@ export async function fetchBackendAuthState(): Promise<BackendAuthUserState | nu
       cache: 'no-store',
     });
 
+    console.log('[AUTH_STATE] Response status:', response.status);
+
     if (!response.ok) {
+      const errorText = await response.text().catch(() => 'Unable to read error');
+      console.error('[AUTH_STATE] API returned error:', response.status, errorText);
       return null;
     }
 
@@ -66,15 +75,19 @@ export async function fetchBackendAuthState(): Promise<BackendAuthUserState | nu
     // 🔥 CRITICAL: Normalize onboardingCompleted from onboarded field
     if (user) {
       user.onboardingCompleted = user.onboarded === true;
-      console.log('[AUTH_STATE]', {
+      console.log('[AUTH_STATE] Success:', {
         userId: user.id,
+        email: user.email,
         onboarded: user.onboarded,
         onboardingCompleted: user.onboardingCompleted
       });
+    } else {
+      console.error('[AUTH_STATE] No user in response payload');
     }
     
     return user;
-  } catch {
+  } catch (error) {
+    console.error('[AUTH_STATE] Exception:', error);
     return null;
   }
 }
