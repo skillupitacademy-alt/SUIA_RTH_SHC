@@ -196,16 +196,16 @@ export function DeviceSessions({ className, onSessionRevoked, onGlobalLogout }: 
 
   if (loading) {
     return (
-      <div className={`rounded-[2rem] p-8 bg-white border border-gray-200 shadow-sm ${className || ''}`}>
-        <div className="flex items-center gap-3 mb-6">
-          <div
-            className="w-12 h-12 rounded-xl flex items-center justify-center"
-            style={{ backgroundColor: brand.primaryColor, opacity: 0.15 }}
-          />
-          <div className="w-12 h-12 rounded-xl flex items-center justify-center absolute">
+      <div className={`rounded-[2rem] border border-gray-200 bg-white p-5 shadow-sm sm:p-8 ${className || ''}`}>
+        <div className="mb-6 flex items-center gap-3">
+          <div className="relative flex h-12 w-12 items-center justify-center">
+            <div
+              className="absolute inset-0 rounded-xl"
+              style={{ backgroundColor: brand.primaryColor, opacity: 0.15 }}
+            />
             <Shield size={22} style={{ color: brand.primaryColor }} />
           </div>
-          <div className="ml-14">
+          <div className="min-w-0">
             <h2 className="text-2xl font-black text-gray-900">Device Sessions</h2>
             <p className="text-gray-600">Manage your active login sessions</p>
           </div>
@@ -222,18 +222,18 @@ export function DeviceSessions({ className, onSessionRevoked, onGlobalLogout }: 
   const otherSessions = sessions.filter(s => !s.isCurrent);
 
   return (
-    <div className={`rounded-[2rem] p-8 bg-white border border-gray-200 shadow-sm ${className || ''}`}>
+    <div className={`rounded-[2rem] border border-gray-200 bg-white p-5 shadow-sm sm:p-8 ${className || ''}`}>
       {/* Header */}
-      <div className="flex items-start justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div
-            className="w-12 h-12 rounded-xl flex items-center justify-center"
-            style={{ backgroundColor: brand.primaryColor, opacity: 0.15 }}
-          />
-          <div className="w-12 h-12 rounded-xl flex items-center justify-center absolute">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex min-w-0 items-start gap-3 sm:gap-4">
+          <div className="relative flex h-12 w-12 flex-shrink-0 items-center justify-center">
+            <div
+              className="absolute inset-0 rounded-xl"
+              style={{ backgroundColor: brand.primaryColor, opacity: 0.15 }}
+            />
             <Shield size={22} style={{ color: brand.primaryColor }} />
           </div>
-          <div className="ml-14">
+          <div className="min-w-0">
             <h2 className="text-2xl font-black text-gray-900">Device Sessions</h2>
             <p className="text-gray-600">
               {sessions.length === 1 
@@ -247,7 +247,7 @@ export function DeviceSessions({ className, onSessionRevoked, onGlobalLogout }: 
           <button
             onClick={handleGlobalLogout}
             disabled={globalLoggingOut}
-            className="flex items-center gap-2 px-4 h-10 rounded-xl font-semibold text-white shadow-md hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            className="flex h-10 w-full items-center justify-center gap-2 rounded-xl px-4 font-semibold text-white shadow-md transition-all hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50 disabled:transform-none sm:w-auto"
             style={{ backgroundColor: '#dc2626' }}
           >
             {globalLoggingOut ? (
@@ -282,21 +282,21 @@ export function DeviceSessions({ className, onSessionRevoked, onGlobalLogout }: 
           <>
             {/* Current Device */}
             {currentSession && (
-              <div className="p-6 rounded-2xl bg-white border border-gray-200">
-                <div className="flex items-center gap-4">
-                  <div
-                    className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-                    style={{ backgroundColor: brand.primaryColor, opacity: 0.15 }}
-                  />
-                  <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 absolute">
+              <div className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-6">
+                <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+                  <div className="relative flex h-12 w-12 flex-shrink-0 items-center justify-center">
+                    <div
+                      className="absolute inset-0 rounded-xl"
+                      style={{ backgroundColor: brand.primaryColor, opacity: 0.15 }}
+                    />
                     {React.createElement(getDeviceIcon(currentSession.userAgent), {
                       size: 22,
                       style: { color: brand.primaryColor }
                     })}
                   </div>
                   
-                  <div className="flex-1 ml-14">
-                    <div className="flex items-center gap-2 mb-1">
+                  <div className="min-w-0 flex-1">
+                    <div className="mb-1 flex flex-col items-start gap-2 sm:flex-row sm:items-center">
                       <p className="text-lg font-semibold text-gray-900">
                         {currentSession.deviceName || getDeviceType(currentSession.userAgent)}
                       </p>
@@ -319,9 +319,9 @@ export function DeviceSessions({ className, onSessionRevoked, onGlobalLogout }: 
             {otherSessions.map((session) => (
               <div
                 key={session.id}
-                className="p-6 rounded-2xl bg-white border border-gray-200"
+                className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-6"
               >
-                <div className="flex items-center gap-4">
+                <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
                   <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0">
                     {React.createElement(getDeviceIcon(session.userAgent), {
                       size: 22,
@@ -329,7 +329,7 @@ export function DeviceSessions({ className, onSessionRevoked, onGlobalLogout }: 
                     })}
                   </div>
                   
-                  <div className="flex-1">
+                  <div className="min-w-0 flex-1">
                     <p className="text-lg font-semibold text-gray-900 mb-1">
                       {session.deviceName || getDeviceType(session.userAgent)}
                     </p>
@@ -341,7 +341,7 @@ export function DeviceSessions({ className, onSessionRevoked, onGlobalLogout }: 
                   <button
                     onClick={() => revokeSession(session.id)}
                     disabled={revoking === session.id}
-                    className="px-4 h-10 rounded-xl font-semibold border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="h-10 w-full rounded-xl border-2 border-gray-300 px-4 font-semibold text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                   >
                     {revoking === session.id ? (
                       <Loader2 className="animate-spin" size={16} />
@@ -357,7 +357,7 @@ export function DeviceSessions({ className, onSessionRevoked, onGlobalLogout }: 
         
         {/* Footer */}
         {sessions.length > 0 && (
-          <div className="pt-4 border-t border-gray-200 flex items-center justify-between">
+          <div className="flex flex-col gap-3 border-t border-gray-200 pt-4 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-gray-500">Sessions expire after 7 days of inactivity</p>
             <button
               onClick={fetchSessions}

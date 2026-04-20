@@ -122,22 +122,19 @@ export function ProfileScreen() {
     const isEditable = field && isEditing;
     
     return (
-      <div className="p-6 rounded-2xl bg-white border border-gray-200">
+      <div className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6">
         <div className="flex items-start gap-4">
-          <div
-            className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ 
-              backgroundColor: brand.primaryColor,
-              opacity: 0.15,
-              position: 'absolute'
-            }}
-          />
-          <div
-            className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 relative z-10"
-          >
-            <Icon style={{ color: brand.primaryColor }} size={22} />
+          <div className="relative flex h-12 w-12 flex-shrink-0 items-center justify-center">
+            <div
+              className="absolute inset-0 rounded-xl"
+              style={{
+                backgroundColor: brand.primaryColor,
+                opacity: 0.15,
+              }}
+            />
+            <Icon className="relative z-10" style={{ color: brand.primaryColor }} size={22} />
           </div>
-          <div className="flex-1 w-full relative z-20">
+          <div className="relative z-20 w-full flex-1">
             <label className="text-sm font-semibold text-gray-500 mb-2 block">{label}</label>
             {isEditable && isSelect ? (
               <select
@@ -197,25 +194,25 @@ export function ProfileScreen() {
       )}
 
       {/* Header Card */}
-      <div className="rounded-[2rem] p-8 bg-white border border-gray-200 shadow-sm">
+      <div className="rounded-[2rem] border border-gray-200 bg-white p-5 shadow-sm sm:p-8">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-4">
           <div>
-            <h1 className="text-4xl font-black text-gray-900 mb-2">Profile Settings</h1>
+            <h1 className="mb-2 text-3xl font-black text-gray-900 sm:text-4xl">Profile Settings</h1>
             <p className="text-gray-600">Manage your personal information, learning preferences, and security settings</p>
           </div>
         </div>
 
         {/* Profile Avatar */}
-        <div className="flex items-center gap-6 p-6 rounded-2xl bg-gray-50 border border-gray-200">
+        <div className="flex flex-col items-start gap-4 rounded-2xl border border-gray-200 bg-gray-50 p-5 sm:flex-row sm:items-center sm:gap-6 sm:p-6">
           <div
-            className="w-24 h-24 rounded-2xl flex items-center justify-center text-white text-3xl font-black"
+            className="flex h-20 w-20 items-center justify-center rounded-2xl text-3xl font-black text-white sm:h-24 sm:w-24"
             style={{ backgroundColor: brand.primaryColor }}
           >
             {editedProfile.fullName.split(' ').filter(Boolean).map(n => n[0]).join('').toUpperCase().substring(0, 2) || 'U'}
           </div>
-          <div>
-            <h2 className="text-2xl font-black text-gray-900 mb-1">{editedProfile.fullName}</h2>
-            <p className="text-gray-600">{editedProfile.email}</p>
+          <div className="min-w-0">
+            <h2 className="mb-1 text-2xl font-black text-gray-900">{editedProfile.fullName}</h2>
+            <p className="break-all text-gray-600 sm:break-normal">{editedProfile.email}</p>
             <p className="text-sm text-gray-500 mt-1">Member since {new Date(editedProfile.createdAt).toLocaleDateString()}</p>
           </div>
         </div>
@@ -240,17 +237,17 @@ export function ProfileScreen() {
             {!isEditing ? (
               <button
                 onClick={handleEdit}
-                className="flex items-center gap-2 px-6 h-12 rounded-2xl font-semibold text-white shadow-md hover:-translate-y-0.5 transition-all"
+                className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl px-6 font-semibold text-white shadow-md transition-all hover:-translate-y-0.5 sm:w-auto"
                 style={{ backgroundColor: brand.primaryColor }}
               >
                 <Edit2 size={18} />
                 Edit Profile
               </button>
             ) : (
-              <div className="flex items-center gap-3">
+              <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
                 <button
                   onClick={handleCancel}
-                  className="flex items-center gap-2 px-6 h-12 rounded-2xl font-semibold border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition-all"
+                  className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl border-2 border-gray-300 px-6 font-semibold text-gray-700 transition-all hover:bg-gray-50 sm:w-auto"
                 >
                   <X size={18} />
                   Cancel
@@ -258,7 +255,7 @@ export function ProfileScreen() {
                 <button
                   onClick={handleSave}
                   disabled={!isDirty || isSaving}
-                  className="flex items-center gap-2 px-6 h-12 rounded-2xl font-semibold text-white shadow-md hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl px-6 font-semibold text-white shadow-md transition-all hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50 disabled:transform-none sm:w-auto"
                   style={{ backgroundColor: brand.primaryColor }}
                 >
                   {isSaving ? (
@@ -278,7 +275,7 @@ export function ProfileScreen() {
           </div>
 
           {/* Personal Information */}
-          <div className="rounded-[2rem] p-8 bg-white border border-gray-200 shadow-sm">
+          <div className="rounded-[2rem] border border-gray-200 bg-white p-5 shadow-sm sm:p-8">
             <h2 className="text-2xl font-black text-gray-900 mb-6">Personal Information</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <InfoField
@@ -313,7 +310,7 @@ export function ProfileScreen() {
           </div>
 
           {/* Learning Preferences */}
-          <div className="rounded-[2rem] p-8 bg-white border border-gray-200 shadow-sm">
+          <div className="rounded-[2rem] border border-gray-200 bg-white p-5 shadow-sm sm:p-8">
             <h2 className="text-2xl font-black text-gray-900 mb-6">Learning Preferences</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <InfoField
@@ -385,7 +382,7 @@ export function ProfileScreen() {
             
             <CardContent className="space-y-4">
               {/* Change Password */}
-              <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/30 transition-colors">
+              <div className="flex flex-col gap-4 rounded-lg border p-4 transition-colors hover:bg-muted/30 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-full bg-blue-100">
                     <Shield className="h-4 w-4 text-blue-600" />
@@ -397,13 +394,13 @@ export function ProfileScreen() {
                     </p>
                   </div>
                 </div>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="w-full sm:w-auto">
                   Change Password
                 </Button>
               </div>
               
               {/* Two-Factor Authentication */}
-              <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/30 transition-colors">
+              <div className="flex flex-col gap-4 rounded-lg border p-4 transition-colors hover:bg-muted/30 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-full bg-green-100">
                     <CheckCircle className="h-4 w-4 text-green-600" />
@@ -415,13 +412,13 @@ export function ProfileScreen() {
                     </p>
                   </div>
                 </div>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="w-full sm:w-auto">
                   Enable 2FA
                 </Button>
               </div>
 
               {/* Login Notifications */}
-              <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/30 transition-colors">
+              <div className="flex flex-col gap-4 rounded-lg border p-4 transition-colors hover:bg-muted/30 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-full bg-purple-100">
                     <Mail className="h-4 w-4 text-purple-600" />
@@ -433,13 +430,13 @@ export function ProfileScreen() {
                     </p>
                   </div>
                 </div>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="w-full sm:w-auto">
                   Configure
                 </Button>
               </div>
 
               {/* Account Recovery */}
-              <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/30 transition-colors">
+              <div className="flex flex-col gap-4 rounded-lg border p-4 transition-colors hover:bg-muted/30 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-full bg-orange-100">
                     <User className="h-4 w-4 text-orange-600" />
@@ -451,7 +448,7 @@ export function ProfileScreen() {
                     </p>
                   </div>
                 </div>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="w-full sm:w-auto">
                   Manage
                 </Button>
               </div>
