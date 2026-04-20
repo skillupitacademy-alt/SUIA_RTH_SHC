@@ -214,7 +214,9 @@ export class LoginService {
   }
 
   async logout(token: string, userId?: string, ip?: string, brand: RequestBrand = 'realtutorialhub') {
-    // 🔐 CRITICAL FIX: Extract userId from token if not provided
+    // 🔐 DEVICE-SPECIFIC LOGOUT: Only revoke the CURRENT device session
+    // This allows users to stay logged in on other devices
+    
     let effectiveUserId = userId;
     
     if (typeof effectiveUserId !== 'string' || effectiveUserId.length === 0) {
@@ -239,27 +241,29 @@ export class LoginService {
       ? this.userRepo.withDb(brandContext.db, brandContext.tables)
       : this.userRepo;
     
-    // 🔥 CRITICAL FIX: Revoke ALL tokens for the user (not just current token)
-    // This ensures logout is deterministic regardless of token rotation history
-    if (typeof effectiveUserId === 'string' && effectiveUserId.length > 0) {
-      console.log('[LOGOUT] Revoking all tokens for user:', effectiveUserId);
-      await brandTokenRepo.revokeAll(effectiveUserId);
-    } else {
-      // Fallback: Revoke only the specific token if we can't determine userId
-      console.warn('[LOGOUT] Falling back to single token revocation');
-      const tokenHash = await this.tokenService.hashToken(token);
-      await brandTokenRepo.revokeToken(tokenHash);
-    }
+    // 🔥 CRITICAL FIX: Revoke ONLY the current device token (not all tokens)
+    // This ensures other devices remain logged in
+    const tokenHash = await this.tokenService.hashToken(token);
+    console.log('[LOGOUT] Revoking current device token only');
+    await brandTokenRepo.revokeToken(tokenHash);
 
-    // ✅ Force Offline status by setting lastActiveAt to old date
+    // ✅ Check if user has any remaining active sessions
+    // Only set offline if this was their last session
     if (typeof effectiveUserId === 'string' && effectiveUserId.length > 0) {
-        // Set to 1 hour ago to ensure they appear offline immediately
+      const remainingSessions = await brandTokenRepo.getUserSessions(effectiveUserId);
+      
+      if (remainingSessions.length === 0) {
+        // No more active sessions - set user offline
         const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000); 
         await brandUserRepo.updateLastActive(effectiveUserId, oneHourAgo);
+        console.log('[LOGOUT] Last session - user set to offline');
+      } else {
+        console.log('[LOGOUT] User still has', remainingSessions.length, 'active session(s)');
+      }
     }
 
     // ✅ Audit log with brand context
-    await this.auditService.log({ userId: effectiveUserId, action: 'logout_success', ip, brand });
+    await this.auditService.log({ userId: effectiveUserId, action: 'logout_success', metadata: { deviceSpecific: true }, ip, brand });
   }
 
   async heartbeat(userId: string) {

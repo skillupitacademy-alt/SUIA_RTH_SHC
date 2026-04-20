@@ -67,6 +67,16 @@ export class TokenRepository extends BaseRepository<RefreshTokenRow, typeof refr
         .where(eq(this.refreshTokensTable.userId, userId));
   }
 
+  // 🔐 Revoke specific device session by deviceId
+  async revokeByDeviceId(userId: string, deviceId: string) {
+    await this.dbInstance.update(this.refreshTokensTable)
+      .set({ revoked: true })
+      .where(and(
+        eq(this.refreshTokensTable.userId, userId),
+        eq(this.refreshTokensTable.deviceId, deviceId)
+      ));
+  }
+
   async touchSession(userId: string) {
     await this.dbInstance.update(this.refreshTokensTable)
       .set({ lastActiveAt: new Date() })
