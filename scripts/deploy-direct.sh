@@ -159,7 +159,6 @@ if [ "$RUN_QUIZ" = true ]; then
     --build-arg NEXT_PUBLIC_API_URL=https://api.realtutorialhub.com/api \
     --build-arg NEXT_PUBLIC_WEB_APP_URL=https://user.realtutorialhub.com \
     --build-arg NEXT_PUBLIC_ADMIN_URL=https://admin.realtutorialhub.com \
-    --build-arg INTERNAL_GATEWAY_SECRET="${INTERNAL_GATEWAY_SECRET}" \
     -f apps/api-server/Dockerfile \
     -t ${REGISTRY}/${PROJECT_ID}/quiz-platform/quiz-api-server:${GIT_SHA} \
     -t ${REGISTRY}/${PROJECT_ID}/quiz-platform/quiz-api-server:latest \
@@ -289,7 +288,6 @@ if [ "$RUN_TUTORIAL" = true ]; then
     --build-arg NEXT_PUBLIC_SITE_URL=https://user.realtutorialhub.com \
     --build-arg NEXT_PUBLIC_APP_URL=https://user.realtutorialhub.com \
     --build-arg NEXT_PUBLIC_LOGIN_URL=https://user.realtutorialhub.com/login \
-    --build-arg INTERNAL_GATEWAY_SECRET="${INTERNAL_GATEWAY_SECRET}" \
     -f apps/realtutorialhub-web/Dockerfile \
     -t ${REGISTRY}/${PROJECT_ID}/quiz-platform/realtutorialhub-web:${GIT_SHA} \
     -t ${REGISTRY}/${PROJECT_ID}/quiz-platform/realtutorialhub-web:latest \
