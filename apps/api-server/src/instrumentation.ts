@@ -4,8 +4,10 @@ export const runtime = 'nodejs';
 
 // 🔥 COLD START DETECTION
 declare global {
-  let isWarm: boolean | undefined;
-  let coldStartTime: number | undefined;
+  // eslint-disable-next-line no-var
+  var isWarm: boolean | undefined;
+  // eslint-disable-next-line no-var
+  var coldStartTime: number | undefined;
 }
 
 if (global.isWarm !== true) {

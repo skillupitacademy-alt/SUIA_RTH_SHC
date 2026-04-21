@@ -71,7 +71,19 @@ export async function fetchCurrentUserState(): Promise<{ onboardingCompleted: bo
       // Profile not found = user not onboarded yet
       return { onboardingCompleted: false };
     }
-    throw new Error('Failed to fetch session');
+    
+    // 🔥 ENHANCED ERROR LOGGING
+    console.error('[AUTH] Profile API failed:', {
+      status: response.status,
+      statusText: response.statusText,
+      url: response.url
+    });
+    
+    // Try to get error details
+    const errorText = await response.text().catch(() => 'Unable to read error');
+    console.error('[AUTH] Profile API error body:', errorText);
+    
+    throw new Error(`Failed to fetch session (HTTP ${response.status})`);
   }
 
   const payload = (await response.json().catch(() => null)) as

@@ -65,6 +65,18 @@ export class LoginService {
   }
 
   async login(email: string, password: string, ip: string = 'unknown', brand: RequestBrand = 'realtutorialhub', deviceContext?: { deviceId?: string; userAgent?: string; deviceName?: string }) {
+    const perfStart = Date.now();
+    const timings = {
+      start: perfStart,
+      afterBrandContext: 0,
+      afterSecurityCheck: 0,
+      afterUserLookup: 0,
+      afterPasswordCheck: 0,
+      afterShadowUser: 0,
+      afterTokenGen: 0,
+      afterSessionSave: 0,
+    };
+    
     // DEBUG: Log login inputs
     console.log('[LOGIN_DEBUG] Login attempt:', {
       email,
@@ -97,15 +109,20 @@ export class LoginService {
       ? this.tokenRepo.withDb(brandContext.db, { refreshTokens: brandContext.tables.refreshTokens })
       : this.tokenRepo;
 
+    timings.afterBrandContext = Date.now();
+
     if (await brandSecurityService.isAccountLocked(email, ip, brand)) {
       console.log('[LOGIN_DEBUG] Account locked:', email);
       await this.auditService.log({ action: 'login_locked', metadata: { email }, ip, brand });
       throw new Error('Account temporarily locked. Try again later.');
     }
 
+    timings.afterSecurityCheck = Date.now();
+
     // DEBUG: Log user lookup
     console.log('[LOGIN_DEBUG] Looking up user:', email);
     const user = await brandUserRepo.findWithDetails(email);
+    timings.afterUserLookup = Date.now();
     console.log('[LOGIN_DEBUG] User lookup result:', {
       found: user !== null && user !== undefined,
       userId: user?.id,
@@ -125,6 +142,8 @@ export class LoginService {
     // DEBUG: Test password comparison
     console.log('[LOGIN_DEBUG] Testing password for user:', user.id);
     const passwordMatch = await this.passwordService.compare(password, user.passwordHash);
+    timings.afterPasswordCheck = Date.now();
+    
     console.log('[LOGIN_DEBUG] Password comparison result:', {
       match: passwordMatch,
       hasHash: user.passwordHash !== null && user.passwordHash !== undefined && user.passwordHash.length > 0,
@@ -158,6 +177,8 @@ export class LoginService {
     const isAdmin = roleNames.includes('admin') || roleNames.includes('super_admin') || roleNames.includes('infrastructure');
     const shadowUserId = await this.ensureShadowUserId(user, brand);
 
+    timings.afterShadowUser = Date.now();
+
     const accessToken = await this.tokenService.generateAccessToken({
       userId: user.id,
       originalUserId: user.id,
@@ -189,6 +210,8 @@ export class LoginService {
     });
     const refreshTokenHash = await this.tokenService.hashToken(refreshToken);
 
+    timings.afterTokenGen = Date.now();
+
     // 🔥 CRITICAL: Ensure deviceId is NEVER null
     // Generate UUID if not provided by client
     const finalDeviceId = (typeof deviceContext?.deviceId === 'string' && deviceContext.deviceId.length > 0) 
@@ -209,6 +232,25 @@ export class LoginService {
         deviceName: finalDeviceName,
       },
     });
+
+    timings.afterSessionSave = Date.now();
+
+    // 🔥 PERFORMANCE INSTRUMENTATION
+    const totalTime = timings.afterSessionSave - timings.start;
+    console.log('[PERF][LOGIN_SERVICE]', JSON.stringify({
+      total: totalTime,
+      breakdown: {
+        brandContext: timings.afterBrandContext - timings.start,
+        securityCheck: timings.afterSecurityCheck - timings.afterBrandContext,
+        userLookup: timings.afterUserLookup - timings.afterSecurityCheck,
+        passwordCheck: timings.afterPasswordCheck - timings.afterUserLookup,
+        shadowUser: timings.afterShadowUser - timings.afterPasswordCheck,
+        tokenGen: timings.afterTokenGen - timings.afterShadowUser,
+        sessionSave: timings.afterSessionSave - timings.afterTokenGen,
+      },
+      email,
+      brand,
+    }));
 
     return { _user: user, accessToken, refreshToken, isAdmin, shadowUserId };
   }

@@ -18,17 +18,18 @@ export interface BackendAuthUserState {
   roles?: string[];
 }
 
+/**
+ * 🔥 GATEWAY-FIRST ARCHITECTURE
+ * Get Gateway URL for server-side auth requests
+ */
 function getInternalApiBase(): string {
-  const internal = process.env.INTERNAL_API_URL?.trim();
-  const fallback = process.env.NEXT_PUBLIC_API_URL?.trim();
-  const candidate = internal && internal.length > 0 ? internal : fallback;
-
-  if (!candidate) {
-    throw new Error('INTERNAL_API_URL or NEXT_PUBLIC_API_URL must be configured');
+  const gatewayUrl = process.env.GATEWAY_URL?.trim();
+  
+  if (!gatewayUrl || gatewayUrl.length === 0) {
+    throw new Error('GATEWAY_URL must be configured - all requests must go through API Gateway');
   }
 
-  const normalized = candidate.replace(/\/+$/, '');
-  return normalized.toLowerCase().endsWith('/api') ? normalized : `${normalized}/api`;
+  return gatewayUrl.replace(/\/+$/, '');
 }
 
 async function getCookieHeader(): Promise<string> {

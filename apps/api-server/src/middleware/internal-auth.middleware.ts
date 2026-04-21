@@ -25,10 +25,28 @@ export function validateRequest(req: NextRequest): { error?: Response; context?:
   const userEmail = req.headers.get('x-user-email');
   const brand = req.headers.get('x-brand');
   
+  console.log(`[AUTH][${correlationId}] Headers received:`, {
+    hasInternalSecret: !!internalSecret,
+    internalSecretLength: internalSecret?.length || 0,
+    internalSecretPreview: internalSecret ? `${internalSecret.substring(0, 20)}...` : 'NONE',
+    hasUserId: !!userId,
+    hasBrand: !!brand,
+    brand
+  });
+  
+  console.log(`[AUTH][${correlationId}] Expected secret configured:`, {
+    hasSecret: !!process.env.INTERNAL_API_SECRET,
+    secretLength: process.env.INTERNAL_API_SECRET?.length || 0,
+    secretPreview: process.env.INTERNAL_API_SECRET ? `${process.env.INTERNAL_API_SECRET.substring(0, 20)}...` : 'NONE'
+  });
+  
   // If internal secret is provided, validate it strictly
   if (internalSecret) {
+    console.log(`[AUTH][${correlationId}] Validating internal secret...`);
+    
     if (process.env.INTERNAL_API_SECRET !== internalSecret) {
       console.error(`[AUTH][${correlationId}] Invalid internal secret provided`);
+      console.error(`[AUTH][${correlationId}] Secret mismatch - received: ${internalSecret?.substring(0, 20)}..., expected: ${process.env.INTERNAL_API_SECRET?.substring(0, 20)}...`);
       return {
         error: new Response(JSON.stringify({ 
           error: 'Unauthorized', 

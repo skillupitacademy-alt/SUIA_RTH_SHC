@@ -13,46 +13,51 @@ const HOP_BY_HOP_HEADERS = new Set([
   'upgrade',
 ]);
 
-function isPreferredUpstream(baseUrl: string): boolean {
-  return baseUrl.includes('vercel.app') === false;
+/**
+ * 🔥 GATEWAY-FIRST ARCHITECTURE
+ * ALL requests MUST go through the API Gateway.
+ * NO direct API server calls allowed.
+ */
+function getGatewayUrl(hostname?: string): string {
+  // Determine brand from hostname
+  const isSkillUp = hostname?.includes('skillup') ?? false;
+  
+  // Use brand-specific gateway URL
+  const gatewayUrl = isSkillUp 
+    ? process.env.GATEWAY_URL_SKILLUP 
+    : process.env.GATEWAY_URL;
+  
+  if (!gatewayUrl || gatewayUrl.trim().length === 0) {
+    throw new Error('GATEWAY_URL not configured - all requests must go through API Gateway');
+  }
+  
+  return gatewayUrl.trim().replace(/\/+$/, '');
 }
 
 export function getConfiguredAuthBaseUrls(fallbackApiBase: string): string[] {
-  const candidates = [
-    process.env.INTERNAL_API_URL,
-    process.env.NEXT_PUBLIC_API_URL,
-    fallbackApiBase,
-  ]
-    .filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
-    .map((value) => value.trim().replace(/\/+$/, ''));
-
-  const preferred = candidates.filter(isPreferredUpstream);
-  const fallback = candidates.filter((value) => preferred.includes(value) === false);
-
-  return Array.from(new Set([...preferred, ...fallback]));
+  // 🔥 CRITICAL: Only return gateway URL - no fallbacks, no bypasses
+  try {
+    return [getGatewayUrl()];
+  } catch {
+    // If gateway URL not configured, throw error - don't allow fallback
+    throw new Error('GATEWAY_URL must be configured - direct API access is forbidden');
+  }
 }
 
 export function getUpstreamUrls(fallbackApiBase: string, upstreamPath: string): string[] {
   const normalizedPath = upstreamPath.replace(/^\/+/, '');
-  return getConfiguredAuthBaseUrls(fallbackApiBase).map((baseUrl) => {
-    const withoutTrailingSlash = baseUrl.replace(/\/+$/, '');
-    const normalizedBase = withoutTrailingSlash.toLowerCase().endsWith('/api')
-      ? withoutTrailingSlash
-      : `${withoutTrailingSlash}/api`;
-    return `${normalizedBase}/${normalizedPath}`;
-  });
+  const gatewayUrl = getGatewayUrl();
+  
+  // Gateway URLs already include routing - just append the path
+  return [`${gatewayUrl}/${normalizedPath}`];
 }
 
 export function getAuthUpstreamUrls(fallbackApiBase: string, authPath: string): string[] {
   const normalizedAuthPath = authPath.replace(/^\/+/, '');
-  return getConfiguredAuthBaseUrls(fallbackApiBase).flatMap((baseUrl) => {
-    const withoutApiSuffix = baseUrl.replace(/\/api$/i, '');
-
-    return [
-      `${withoutApiSuffix}/auth/${normalizedAuthPath}`,
-      `${withoutApiSuffix}/api/auth/${normalizedAuthPath}`,
-    ];
-  });
+  const gatewayUrl = getGatewayUrl();
+  
+  // Gateway handles auth routing - use /auth prefix
+  return [`${gatewayUrl}/auth/${normalizedAuthPath}`];
 }
 
 function normalizeHost(value?: string | null): string | undefined {

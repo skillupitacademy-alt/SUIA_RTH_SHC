@@ -11,7 +11,7 @@ import { NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 
 // 🔥 GATEWAY-FIRST: All requests go through API Gateway
-function getGatewayUrl(hostname?: string): string {
+function getGatewayUrl(): string {
   // 🚀 FIX: Use single GATEWAY_URL for consistency
   const gatewayUrl = process.env.GATEWAY_URL;
   
@@ -109,9 +109,12 @@ export async function GET(req: NextRequest) {
     }
     
     // 🚀 INTERNAL SERVICE CALL: Direct BFF → API Server
+    const internalSecret = process.env.INTERNAL_API_SECRET || '';
+    console.log(`[BFF][${correlationId}] Internal secret configured:`, internalSecret ? 'YES' : 'NO', `(length: ${internalSecret.length})`);
+    
     const internalHeaders: Record<string, string> = {
       'Content-Type': 'application/json',
-      'x-internal-secret': process.env.INTERNAL_API_SECRET || '',
+      'x-internal-secret': internalSecret,
       'x-user-id': userId,
       'x-brand': brand || 'skillup',
       'x-correlation-id': correlationId,
@@ -122,6 +125,7 @@ export async function GET(req: NextRequest) {
     }
     
     console.log(`[BFF][${correlationId}] Internal API call to:`, INTERNAL_API_URL);
+    console.log(`[BFF][${correlationId}] Headers:`, { ...internalHeaders, 'x-internal-secret': internalSecret ? `${internalSecret.substring(0, 20)}...` : 'MISSING' });
     
     const res = await fetch(`${INTERNAL_API_URL}/api/auth/profile`, {
       method: 'GET',
@@ -217,7 +221,7 @@ export async function GET(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   try {
     const hostname = req.headers.get('host') || req.nextUrl.hostname;
-    const gatewayUrl = getGatewayUrl(hostname);
+    const gatewayUrl = getGatewayUrl();
     
     const cookieHeader = req.headers.get('cookie');
     

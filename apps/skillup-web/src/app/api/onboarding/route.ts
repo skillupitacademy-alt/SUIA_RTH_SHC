@@ -4,17 +4,20 @@ export const dynamic = 'force-dynamic';
 
 /**
  * BFF Route: Submit onboarding preferences
- * Pattern: UI → BFF → API Server → DB
- * 
- * 🔥 CRITICAL FIX: Forward BOTH cookie AND Authorization header
+ * Pattern: UI → BFF → Gateway → API Server → DB
+ * 🔥 GATEWAY-FIRST: All requests go through API Gateway
  */
 export async function POST(req: NextRequest) {
   try {
-    // 🔥 CRITICAL: Use INTERNAL_API_URL for server-side calls to avoid circular routing through Cloudflare
-    const apiServerUrl = process.env.INTERNAL_API_URL || process.env.API_SERVER_URL || process.env.NEXT_PUBLIC_API_URL;
+    // 🔥 CRITICAL: Use GATEWAY_URL - NO direct API server access
+    const hostname = req.headers.get('host') || req.nextUrl.hostname;
+    const isSkillUp = hostname.includes('skillup');
+    const gatewayUrl = isSkillUp 
+      ? process.env.GATEWAY_URL_SKILLUP 
+      : process.env.GATEWAY_URL;
     
-    if (!apiServerUrl) {
-      console.error('[BFF][/api/onboarding] API_SERVER_URL not configured');
+    if (!gatewayUrl) {
+      console.error('[BFF][/api/onboarding] GATEWAY_URL not configured');
       return NextResponse.json(
         { error: 'Server configuration error' },
         { status: 500 }
@@ -27,24 +30,19 @@ export async function POST(req: NextRequest) {
     const cookieHeader = req.headers.get('cookie') || '';
     const authHeader = req.headers.get('authorization') || '';
     
-    // 🔥 CRITICAL DEBUG: Log header presence
     console.log('[BFF_ONBOARDING]', JSON.stringify({
       hasCookie: cookieHeader.length > 0,
       hasAuthHeader: authHeader.length > 0,
-      cookieLength: cookieHeader.length,
+      gatewayUrl,
     }));
     
-    // Extract accessToken from cookies for Authorization header
-    const accessToken = cookieHeader
-      .split('; ')
-      .find(c => c.startsWith('accessToken='))
-      ?.split('=')[1];
-    
-    // Build headers - forward both cookie and create Authorization header
+    // Build headers - forward cookies and auth
     const headers: Record<string, string> = {
       'content-type': 'application/json',
       'x-request-id': req.headers.get('x-request-id') || crypto.randomUUID(),
       'x-portal-identity': 'user',
+      'x-device-id': req.headers.get('x-device-id') || '',
+      'x-device-name': req.headers.get('x-device-name') || '',
     };
     
     // Forward cookie header
@@ -52,21 +50,13 @@ export async function POST(req: NextRequest) {
       headers['cookie'] = cookieHeader;
     }
     
-    // Add Authorization header (prefer explicit auth header, fallback to cookie token)
+    // Forward Authorization header if present
     if (authHeader) {
       headers['Authorization'] = authHeader;
-    } else if (accessToken) {
-      headers['Authorization'] = `Bearer ${accessToken}`;
-    }
-    
-    // 🔥 CRITICAL: Add INTERNAL_GATEWAY_SECRET for direct API server calls
-    const gatewaySecret = process.env.INTERNAL_GATEWAY_SECRET;
-    if (gatewaySecret) {
-      headers['X-Gateway-Secret'] = gatewaySecret;
     }
 
-    // Forward request to API server with cookies + Authorization
-    const res = await fetch(`${apiServerUrl}/auth/onboarding`, {
+    // Forward request to Gateway (which will route to API server)
+    const res = await fetch(`${gatewayUrl}/auth/onboarding`, {
       method: 'POST',
       headers,
       body: JSON.stringify(body),
@@ -74,7 +64,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (!res.ok) {
-      console.warn('[BFF][/api/onboarding] API server returned non-OK status:', res.status);
+      console.warn('[BFF][/api/onboarding] Gateway returned non-OK status:', res.status);
       const errorData = await res.json().catch(() => ({ error: 'Unknown error' }));
       return NextResponse.json(errorData, { status: res.status });
     }

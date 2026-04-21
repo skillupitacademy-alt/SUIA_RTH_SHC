@@ -8,10 +8,10 @@ import { withCacheHeaders } from '@/lib/cache-headers';
 import type { RequestBrand } from '@/lib/request-brand';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
+import { validateRequest } from '@/middleware/internal-auth.middleware';
 import { getAuthBrandContext, shouldUseBrandBinding } from '@/modules/auth/brand-db';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
-import { validateRequest, blockDirectAccess } from '@/middleware/internal-auth.middleware';
 
 export const dynamic = 'force-dynamic';
 

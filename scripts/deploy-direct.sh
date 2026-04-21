@@ -309,7 +309,7 @@ if [ "$RUN_TUTORIAL" = true ]; then
     --memory 1Gi \
     --min-instances 0 \
     --max-instances 10 \
-    --set-env-vars "NODE_ENV=production,CLOUD_RUN_BUILD=true,NEXT_PUBLIC_API_URL=https://api.realtutorialhub.com/api,INTERNAL_API_URL=${API_URL}/api,NEXT_PUBLIC_WEB_APP_URL=https://user.realtutorialhub.com,NEXT_PUBLIC_ADMIN_URL=https://admin.realtutorialhub.com,NEXT_PUBLIC_SITE_URL=https://user.realtutorialhub.com,NEXT_PUBLIC_APP_URL=https://user.realtutorialhub.com,NEXT_PUBLIC_LOGIN_URL=https://user.realtutorialhub.com/login,GIT_SHA=${GIT_SHA}" \
+    --set-env-vars "NODE_ENV=production,CLOUD_RUN_BUILD=true,NEXT_PUBLIC_API_URL=https://api.realtutorialhub.com/api,INTERNAL_API_URL=${API_URL}/api,GATEWAY_URL=https://api.realtutorialhub.com,NEXT_PUBLIC_WEB_APP_URL=https://user.realtutorialhub.com,NEXT_PUBLIC_ADMIN_URL=https://admin.realtutorialhub.com,NEXT_PUBLIC_SITE_URL=https://user.realtutorialhub.com,NEXT_PUBLIC_APP_URL=https://user.realtutorialhub.com,NEXT_PUBLIC_LOGIN_URL=https://user.realtutorialhub.com/login,GIT_SHA=${GIT_SHA}" \
     --set-secrets "JWT_SECRET=JWT_SECRET:latest,JWT_REFRESH_SECRET=JWT_REFRESH_SECRET:latest,COOKIE_DOMAIN=COOKIE_DOMAIN:latest,INTERNAL_API_KEY=INTERNAL_API_KEY:latest,INTERNAL_API_SECRET=INTERNAL_API_SECRET:latest,INTERNAL_GATEWAY_SECRET=INTERNAL_GATEWAY_SECRET:latest,UPSTASH_REDIS_REST_URL=UPSTASH_REDIS_REST_URL:latest,UPSTASH_REDIS_REST_TOKEN=UPSTASH_REDIS_REST_TOKEN:latest,QSTASH_TOKEN=QSTASH_TOKEN:latest,QSTASH_CURRENT_SIGNING_KEY=QSTASH_CURRENT_SIGNING_KEY:latest,QSTASH_NEXT_SIGNING_KEY=QSTASH_NEXT_SIGNING_KEY:latest"
 
   log_success "realtutorialhub-web deployed"
@@ -356,7 +356,7 @@ if [ "$RUN_SKILLUP" = true ]; then
     --memory 512Mi \
     --min-instances 0 \
     --max-instances 5 \
-    --set-env-vars "NODE_ENV=production,NEXT_PUBLIC_API_URL=https://api.skillupitacademy.com/api,INTERNAL_API_URL=${API_URL}/api,GIT_SHA=${GIT_SHA}" \
+    --set-env-vars "NODE_ENV=production,NEXT_PUBLIC_API_URL=https://api.skillupitacademy.com/api,INTERNAL_API_URL=${API_URL}/api,GATEWAY_URL=https://api.skillupitacademy.com,GIT_SHA=${GIT_SHA}" \
     --set-secrets "JWT_SECRET=JWT_SECRET:latest,INTERNAL_API_SECRET=INTERNAL_API_SECRET:latest,INTERNAL_GATEWAY_SECRET=INTERNAL_GATEWAY_SECRET:latest"
 
   log_success "skillup-web deployed"

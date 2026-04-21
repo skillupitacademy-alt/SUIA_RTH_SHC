@@ -1,63 +1,34 @@
-# dependencies
-node_modules
-.pnpm-debug.log*
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
 
-# next.js
-.next/
-out/
-
-# turbo
-.turbo/
-
-# build outputs
-dist/
-build/
-
-# misc
-.DS_Store
-*.pem
-
-# env
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# logs
+# Logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-tsc_output.txt
-git_log.txt
-git_log_utf8.txt
-coverage_report.txt
-scoped_coverage.txt
-tsc_errors.txt
-vitest_admin_out.txt
-vitest_output.txt
-apps/api-server/coverage-final-*.txt
 
-# build artifacts
-*.tsbuildinfo
-build_error_cache.log
-coverage/
-validation-report.json
+# Test results
+test-results/
+*.test.json
 
-# playwright artifacts/reports
-playwright-report
-playwright-artifacts
-test-results
+# Environment variables
+.env
+.env.local
+.env.*.local
 
-.vercel
-.env*.local
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 
-# test logs
-packages/events/test.log
-packages/events/test_utf8.log
-scripts/migration-log.json
+# OS
+.DS_Store
+Thumbs.db
 
-tmp/
-
-.vercel
-.env*.local
+# Temporary files
+*.tmp
+*.temp
