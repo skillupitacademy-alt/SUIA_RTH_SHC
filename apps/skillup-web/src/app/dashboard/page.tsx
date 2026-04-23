@@ -26,6 +26,12 @@ export default async function Page() {
     redirect('/onboarding');
   }
   
-  const data = await loadDashboardData(skillUpConfig);
-  return <DashboardPage config={skillUpConfig} data={data} />;
+  try {
+    const data = await loadDashboardData(skillUpConfig, authState);
+    return <DashboardPage config={skillUpConfig} data={data} />;
+  } catch (error) {
+    console.error('[SKILLUP_DASHBOARD] Error loading dashboard data:', error);
+    // If dashboard data loading fails, redirect to login
+    redirect('/login');
+  }
 }

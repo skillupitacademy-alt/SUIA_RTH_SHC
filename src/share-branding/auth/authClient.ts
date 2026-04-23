@@ -25,6 +25,7 @@ export async function authFetch(
   return fetch(url, {
     ...options,
     headers,
+    credentials: 'include', // 🔥 CRITICAL: Include cookies in all auth requests
   });
 }
 

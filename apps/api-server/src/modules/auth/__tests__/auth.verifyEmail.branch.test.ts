@@ -40,7 +40,7 @@ describe('AuthService.verifyEmail branches', () => {
   })
 
   it('throws on invalid or expired token', async () => {
-    ;(db.query as any) = {
+    (db.query as any) = {
       verificationTokens: {
         findFirst: vi.fn().mockResolvedValue(undefined),
       },

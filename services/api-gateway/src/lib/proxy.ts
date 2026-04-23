@@ -40,15 +40,20 @@ export async function proxyRequest(request: Request, upstream: string, options: 
   const targetPath = options.upstreamPath ?? url.pathname;
   const upstreamUrl = new URL(`${targetPath}${url.search}`, upstream).toString();
   const headers = new Headers(request.headers);
+  
+  // 🔥 CRITICAL FIX: Preserve the original public hostname for cookie domain resolution
+  // The Cloudflare Worker hostname (url.hostname) is internal, but we need the public domain
+  // for cookies to work across services. Use the CF Worker request hostname as the original.
   const originHostname = tryExtractHostname(headers.get('origin'));
-  const originalHostname = originHostname ?? url.hostname;
+  const cfWorkerHostname = url.hostname; // This is the public domain from the CF route
+  const originalHostname = originHostname ?? cfWorkerHostname;
 
   // 🔥 CORRELATION ID: Generate if not present for end-to-end tracing
   const correlationId = headers.get('x-correlation-id') || crypto.randomUUID();
   headers.set('X-Correlation-ID', correlationId);
   
   headers.set('X-Request-ID', options.requestId);
-  headers.set('X-Forwarded-Host', url.hostname);
+  headers.set('X-Forwarded-Host', cfWorkerHostname);
   headers.set('X-Original-Host', originalHostname);
   headers.set('X-Forwarded-Proto', url.protocol.replace(':', ''));
   

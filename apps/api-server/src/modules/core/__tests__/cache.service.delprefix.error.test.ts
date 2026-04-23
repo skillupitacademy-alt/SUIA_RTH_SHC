@@ -4,7 +4,7 @@ import { CacheService } from "../cache.service"
 
 describe("cache.service delByPrefix error branch", () => {
   beforeEach(() => {
-    ;(CacheService as any).instance = undefined
+    (CacheService as any).instance = undefined
   })
 
   it("swallows errors when deleting prefix keys", async () => {

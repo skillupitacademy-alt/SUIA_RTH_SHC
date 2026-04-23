@@ -1,4 +1,5 @@
 import { fetchBackendAuthState } from './auth/serverAuthState';
+import type { BackendAuthUserState } from './auth/serverAuthState';
 import { BrandConfig } from './brandConfig';
 import { domainCards, goalCards } from './OnboardingEngine/models/onboardingSession';
 import { PersistedOnboardingSession } from './onboardingSessionCookie';
@@ -628,27 +629,29 @@ function buildDashboardApiResponse(
   };
 }
 
-export async function loadDashboardData(brand: BrandConfig): Promise<DashboardViewData> {
-  const user = await fetchBackendAuthState();
+export async function loadDashboardData(brand: BrandConfig, user?: BackendAuthUserState | null): Promise<DashboardViewData> {
+  // Use provided user data instead of fetching again
+  const authUser = user ?? await fetchBackendAuthState();
+  
   const onboardingSession: PersistedOnboardingSession | null =
-    user === null
+    authUser === null
       ? null
       : {
-          fullName: user.fullName ?? user.name ?? '',
-          educationLevel: user.educationLevel ?? '',
-          status: user.status === 'professional' ? 'professional' : 'student',
-          primaryGoal: user.primaryGoal ?? '',
-          domain: user.domain ?? '',
-          subDomain: user.subDomain ?? '',
-          skillLevel: user.skillLevel ?? 'beginner',
-          timeCommitment: user.timeCommitment ?? '',
+          fullName: authUser.fullName ?? authUser.name ?? '',
+          educationLevel: authUser.educationLevel ?? '',
+          status: authUser.status === 'professional' ? 'professional' : 'student',
+          primaryGoal: authUser.primaryGoal ?? '',
+          domain: authUser.domain ?? '',
+          subDomain: authUser.subDomain ?? '',
+          skillLevel: authUser.skillLevel ?? 'beginner',
+          timeCommitment: authUser.timeCommitment ?? '',
           journeyStatus:
-            user.journeyStatus === 'completed' ||
-            user.journeyStatus === 'skipped' ||
-            user.journeyStatus === 'in_progress' ||
-            user.journeyStatus === 'not_started'
-              ? user.journeyStatus
-              : user.onboardingCompleted === true
+            authUser.journeyStatus === 'completed' ||
+            authUser.journeyStatus === 'skipped' ||
+            authUser.journeyStatus === 'in_progress' ||
+            authUser.journeyStatus === 'not_started'
+              ? authUser.journeyStatus
+              : authUser.onboardingCompleted === true
               ? 'completed'
               : 'not_started',
           updatedAt: new Date().toISOString(),

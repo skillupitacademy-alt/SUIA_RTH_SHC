@@ -29,6 +29,12 @@
       "@quiz/auth/*": [
         "../../packages/auth/src/*"
       ],
+      "@quiz/auth-core": [
+        "../../packages/auth-core/src/index.ts"
+      ],
+      "@quiz/auth-core/*": [
+        "../../packages/auth-core/src/*"
+      ],
       "@quiz/events": [
         "../../packages/events/src/index.ts"
       ],

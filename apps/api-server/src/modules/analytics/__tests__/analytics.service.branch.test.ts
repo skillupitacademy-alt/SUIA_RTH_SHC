@@ -5,7 +5,7 @@ import { AnalyticsService } from '../analytics.service'
 
 describe('AnalyticsService refreshAllViews', () => {
   it('refreshes all views successfully', async () => {
-    ;(db.execute as any) = vi.fn().mockResolvedValue(undefined)
+    (db.execute as any) = vi.fn().mockResolvedValue(undefined)
     await expect(AnalyticsService.refreshAllViews()).resolves.not.toThrow()
     expect((db.execute as any)).toHaveBeenCalled()
   })

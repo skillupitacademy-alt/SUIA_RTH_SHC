@@ -4,7 +4,7 @@ import { CacheService } from "../cache.service"
 
 describe("CacheService cooldown tail branches", () => {
   beforeEach(() => {
-    ;(CacheService as any).instance = undefined
+    (CacheService as any).instance = undefined
   })
 
   it("skips redis when in cooldown window", async () => {

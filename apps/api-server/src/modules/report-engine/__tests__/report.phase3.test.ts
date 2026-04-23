@@ -6,7 +6,7 @@ import { ReportEngine } from '@/modules/report-engine/report.engine'
 
 describe('ReportEngine phase 3 coverage', () => {
   it('getUserPerformance returns zeroed stats when no exams', async () => {
-    ;(db.query as any).exams = { findMany: vi.fn().mockResolvedValue([]) }
+    (db.query as any).exams = { findMany: vi.fn().mockResolvedValue([]) }
 
     const res = await ReportEngine.getUserPerformance('user-x')
     expect(res.examsCompleted).toBe(0)
@@ -14,7 +14,7 @@ describe('ReportEngine phase 3 coverage', () => {
   })
 
   it('calculatePercentile returns median 50 when cohort size is <= 1', async () => {
-    ;(db.query as any).exams = { findMany: vi.fn().mockResolvedValue([{
+    (db.query as any).exams = { findMany: vi.fn().mockResolvedValue([{
       id: 'e1',
       totalScore: 80,
       examQuestions: [{ isCorrect: true }],

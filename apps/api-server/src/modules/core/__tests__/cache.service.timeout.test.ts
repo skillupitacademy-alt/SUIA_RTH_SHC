@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { CacheService } from '../cache.service'
 
 beforeEach(() => {
-  ;(CacheService as unknown as { instance?: CacheService }).instance = undefined
+  (CacheService as unknown as { instance?: CacheService }).instance = undefined
 })
 
 describe('cacheService timeout/error branches', () => {

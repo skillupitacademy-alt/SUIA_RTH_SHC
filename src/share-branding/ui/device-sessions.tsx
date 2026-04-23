@@ -23,7 +23,9 @@ interface DeviceSessionsProps {
 }
 
 // Utility functions
-function getDeviceIcon(userAgent: string) {
+function getDeviceIcon(userAgent: string | null | undefined) {
+  if (!userAgent) return Monitor;
+  
   const ua = userAgent.toLowerCase();
   
   if (ua.includes('mobile') || ua.includes('android') || ua.includes('iphone')) {
@@ -35,7 +37,7 @@ function getDeviceIcon(userAgent: string) {
   return Monitor;
 }
 
-function getDeviceType(userAgent: string | null): string {
+function getDeviceType(userAgent: string | null | undefined): string {
   if (!userAgent) return 'Unknown Device';
   
   const ua = userAgent.toLowerCase();

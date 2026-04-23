@@ -76,6 +76,17 @@
                 "skipBlankLines": true,
                 "skipComments": true
             }
+        ],
+        "no-restricted-syntax": [
+            "error",
+            {
+                "selector": "CallExpression[callee.name='fetch'][arguments.1.type!='ObjectExpression']",
+                "message": "Raw fetch() calls should include options object with credentials"
+            },
+            {
+                "selector": "CallExpression[callee.name='fetch'] ObjectExpression:not(:has(Property[key.name='credentials']))",
+                "message": "fetch() calls should include credentials: 'include' for authenticated requests"
+            }
         ]
     },
     "overrides": [

@@ -4,14 +4,12 @@ import type { NextRequest } from 'next/server';
 
 import { badRequest, notFound, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
+import { getAuthContext } from '@/lib/auth-context';
 import { withCacheHeaders } from '@/lib/cache-headers';
 import type { RequestBrand } from '@/lib/request-brand';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
-import { validateRequest } from '@/middleware/internal-auth.middleware';
 import { getAuthBrandContext, shouldUseBrandBinding } from '@/modules/auth/brand-db';
-import { TokenService } from '@/modules/auth/token.service';
-import { container } from '@/modules/core/container';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,59 +31,26 @@ interface ProfileUpdateBody {
 
 async function getHandler(_req: NextRequest) {
   const perfStart = Date.now();
-  const correlationId = _req.headers.get('x-correlation-id') || crypto.randomUUID();
   
   try {
-    console.log(`[Profile GET][${correlationId}] START`);
-    
-    // 🚀 INTERNAL SERVICE-TO-SERVICE AUTHENTICATION
-    const authResult = validateRequest(_req);
-    if (authResult.error) {
-      console.log(`[Profile GET][${correlationId}] Auth failed`);
-      return authResult.error;
+    // 🔐 UNIFIED AUTH: Single source of truth
+    const auth = getAuthContext(_req);
+    if (!auth) {
+      return ApiResponse.error(unauthorized('Unauthorized'));
     }
     
-    let userId: string;
-    let brand: RequestBrand;
-    
-    if (authResult.context) {
-      userId = authResult.context.userId;
-      brand = authResult.context.brand as RequestBrand;
-      
-      console.log(`[Profile GET][${correlationId}] Auth mode: ${authResult.context.authMode}, Brand: ${brand}`);
-    } else {
-      // JWT Fallback for direct API access
-      console.log(`[Profile GET][${correlationId}] Using JWT fallback`);
-      
-      const _token = container.get(TokenService).getAccessToken(_req, { scope: 'user' });
-      if (typeof _token !== 'string' || _token.trim().length === 0) {
-        console.log(`[Profile GET][${correlationId}] No token`);
-        return ApiResponse.error(unauthorized('Unauthorized', 'UNAUTHORIZED'));
-      }
-
-      const _payload = await container.get(TokenService).verifyUserAccessToken(_token);
-      if (_payload === null || _payload === undefined || typeof _payload.userId !== 'string' || _payload.userId.length === 0) {
-        console.log(`[Profile GET][${correlationId}] Invalid token payload`);
-        return ApiResponse.error(unauthorized('Unauthorized', 'UNAUTHORIZED'));
-      }
-      
-      userId = _payload.userId;
-      brand = (_payload.brand as RequestBrand) || 'realtutorialhub';
-    }
+    const { userId, brand, correlationId } = auth;
+    console.log(`[Profile GET][${correlationId}] Auth SUCCESS - userId: ${userId}, brand: ${brand}`);
     
     const timings = { 
       afterAuth: Date.now(),
       afterDbQuery: 0
     };
     
-    console.log(`[TRACE][${correlationId}] Profile GET for userId: ${userId}, brand: ${brand}`);
-    
     // Get brand-specific database context
-    const brandContext = getAuthBrandContext(brand);
+    const brandContext = getAuthBrandContext(brand as RequestBrand);
     const useBrandBinding = shouldUseBrandBinding();
     const brandDb = useBrandBinding ? brandContext.db : db;
-    
-    console.log(`[TRACE][${correlationId}] Using brand-specific DB: ${useBrandBinding}`);
     
     const dbQueryStart = Date.now();
     const profile = await brandDb.query.userProfiles.findFirst({
@@ -94,30 +59,25 @@ async function getHandler(_req: NextRequest) {
     const dbQueryDuration = Date.now() - dbQueryStart;
     timings.afterDbQuery = Date.now();
     
-    // 🔥 CRITICAL PERFORMANCE LOG
     console.log(`[PERF][DB][PROFILE_QUERY][${correlationId}]`, {
       duration: dbQueryDuration,
-      userId: userId,
+      userId,
       brand,
-      found: profile !== null && profile !== undefined,
+      found: profile !== undefined,
     });
 
-    if (profile === null || profile === undefined) {
-      console.log(`[TRACE][${correlationId}] Profile not found`);
-      
-      // 🚨 CRITICAL: Check if user has onboardingCompleted = true
+    if (profile === undefined) {
+      // Check if user has onboardingCompleted = true
       const user = await brandDb.query.users.findFirst({
         where: eq(users.id, userId),
       });
       
-      if (user !== null && user !== undefined && user.isOnboarded === true) {
-        console.error(`[ERROR][${correlationId}] DATA INTEGRITY VIOLATION: onboardingCompleted = true but profile does NOT exist`);
-        console.error('UserId:', userId);
-        console.error('User email:', user.email);
+      if (user?.isOnboarded === true) {
+        console.error(`[ERROR][${correlationId}] DATA INTEGRITY: onboarded but profile missing`);
         return ApiResponse.error({
           code: 'DATA_INTEGRITY_ERROR',
           message: 'User marked as onboarded but profile does not exist',
-          userId: userId,
+          userId,
           correlationId
         }, 500);
       }
@@ -125,58 +85,33 @@ async function getHandler(_req: NextRequest) {
       return ApiResponse.error(notFound('Profile', userId));
     }
 
-    console.log(`[TRACE][${correlationId}] Profile found`);
-    
-    // 🚀 PERFORMANCE INSTRUMENTATION - INTERNAL SERVICE AUTH
     const totalDuration = Date.now() - perfStart;
-    console.log(`[PERF][API][PROFILE_INTERNAL_AUTH][${correlationId}]`, JSON.stringify({
+    console.log(`[PERF][API][PROFILE][${correlationId}]`, {
       total: totalDuration,
-      breakdown: {
-        auth: timings.afterAuth - perfStart,
-        dbQuery: timings.afterDbQuery - timings.afterAuth,
-      },
-      authMode: authResult.context?.authMode || 'jwt-fallback',
+      auth: timings.afterAuth - perfStart,
+      dbQuery: timings.afterDbQuery - timings.afterAuth,
+      source: auth.source,
       brand,
-      userId: userId,
-      optimization: authResult.context?.authMode === 'internal' ? 'FASTEST (internal service)' : 
-                   authResult.context?.authMode === 'gateway' ? 'FAST (gateway)' : 'SLOW (jwt)'
-    }));
+    });
     
     return withCacheHeaders(ApiResponse.success(profile), 'SESSION');
   } catch (_error: unknown) {
+    const correlationId = _req.headers.get('x-correlation-id') ?? 'unknown';
     console.error(`[Profile GET][${correlationId}] Error:`, _error);
-    if (_error !== null && _error !== undefined && typeof _error === 'object' && 'code' in _error && _error.code === 'UNAUTHORIZED') {
-      return ApiResponse.error(_error, 401);
-    }
     return ApiResponse.error(_error, 500);
   }
 }
 
 async function patchHandler(_req: NextRequest) {
   try {
-    console.log('[Profile PATCH] START');
-    const _token = container.get(TokenService).getAccessToken(_req, { scope: 'user' });
-    if (typeof _token !== 'string' || _token.length === 0) {
-      console.log('[Profile PATCH] No token');
-      return ApiResponse.error(unauthorized('Unauthorized', 'UNAUTHORIZED'));
-    }
-
-    const _payload = await container.get(TokenService).verifyUserAccessToken(_token);
-    if (_payload === null || _payload === undefined || typeof _payload.userId !== 'string' || _payload.userId.length === 0) {
-      console.log('[Profile PATCH] Invalid token payload');
-      return ApiResponse.error(unauthorized('Unauthorized', 'UNAUTHORIZED'));
+    // 🔐 UNIFIED AUTH: Single source of truth
+    const auth = getAuthContext(_req);
+    if (!auth) {
+      return ApiResponse.error(unauthorized('Unauthorized'));
     }
     
-    // 🔥 CRITICAL FIX: Extract brand from JWT and use brand-specific database
-    const brand: RequestBrand = (_payload.brand as RequestBrand) || 'realtutorialhub';
-    console.log('[Profile PATCH] Brand from token:', brand);
-    
-    // Get brand-specific database context
-    const brandContext = getAuthBrandContext(brand);
-    const useBrandBinding = shouldUseBrandBinding();
-    const brandDb = useBrandBinding ? brandContext.db : db;
-    
-    console.log('[Profile PATCH] Using brand-specific DB:', useBrandBinding);
+    const { userId, brand, correlationId } = auth;
+    console.log(`[Profile PATCH][${correlationId}] Auth SUCCESS - userId: ${userId}, brand: ${brand}`);
     
     const rawBody = await _req.json().catch(() => ({}));
     
@@ -185,41 +120,42 @@ async function patchHandler(_req: NextRequest) {
     }
 
     const body = sanitizeJsonField(rawBody) as ProfileUpdateBody;
-    console.log('[Profile PATCH] Update fields:', Object.keys(body));
+    console.log(`[Profile PATCH][${correlationId}] Update fields:`, Object.keys(body));
+
+    // Get brand-specific database context
+    const brandContext = getAuthBrandContext(brand as RequestBrand);
+    const useBrandBinding = shouldUseBrandBinding();
+    const brandDb = useBrandBinding ? brandContext.db : db;
 
     // Check if profile exists first
     const existing = await brandDb.query.userProfiles.findFirst({
-      where: eq(userProfiles.userId, _payload.userId),
+      where: eq(userProfiles.userId, userId),
     });
 
-    if (existing !== null && existing !== undefined) {
-      console.log('[Profile PATCH] Updating existing profile');
+    if (existing !== undefined) {
+      console.log(`[Profile PATCH][${correlationId}] Updating existing profile`);
       
-      // Prepare update data with proper handling for array fields
       const updateData: Partial<ProfileUpdateBody> & { updatedAt: Date } = {
         ...body,
         updatedAt: new Date()
       };
       
-      // Ensure domainInterest is properly handled as an array
       if (body.domainInterest !== undefined) {
         updateData.domainInterest = Array.isArray(body.domainInterest) 
           ? body.domainInterest 
           : [];
       }
       
-      // Update existing profile
       const [updated] = await brandDb.update(userProfiles)
         .set(updateData)
-        .where(eq(userProfiles.userId, _payload.userId))
+        .where(eq(userProfiles.userId, userId))
         .returning();
 
-      console.log('[Profile PATCH] Profile updated successfully');
+      console.log(`[Profile PATCH][${correlationId}] Profile updated successfully`);
       return ApiResponse.success(updated);
     } else {
-      console.log('[Profile PATCH] Creating new profile (fallback)');
+      console.log(`[Profile PATCH][${correlationId}] Creating new profile`);
       
-      // Ensure domainInterest is an array
       let domainInterestArray: string[] = [];
       const di = body.domainInterest as unknown;
       if (Array.isArray(di)) {
@@ -228,9 +164,8 @@ async function patchHandler(_req: NextRequest) {
         domainInterestArray = [di];
       }
       
-      // Insert new profile
       const [inserted] = await brandDb.insert(userProfiles).values({
-        userId: _payload.userId,
+        userId,
         name: (typeof body.name === 'string' && body.name.length > 0) ? body.name : 'User',
         professionalStatus: body.professionalStatus,
         educationLevel: body.educationLevel,
@@ -246,12 +181,12 @@ async function patchHandler(_req: NextRequest) {
         onboardingCompleted: body.onboardingCompleted === true,
       }).returning();
 
-      console.log('[Profile PATCH] Profile created successfully');
+      console.log(`[Profile PATCH][${correlationId}] Profile created successfully`);
       return ApiResponse.success(inserted);
     }
   } catch (_error: unknown) {
-    console.error('[Profile PATCH] Error:', _error);
-    // Return 500 for database errors, not 400
+    const correlationId = _req.headers.get('x-correlation-id') ?? 'unknown';
+    console.error(`[Profile PATCH][${correlationId}] Error:`, _error);
     return ApiResponse.error(_error, 500);
   }
 }

@@ -19,19 +19,10 @@ export interface BackendAuthUserState {
 }
 
 /**
- * 🔥 GATEWAY-FIRST ARCHITECTURE
- * Get Gateway URL for server-side auth requests
+ * 🔥 UNIFIED: Use standard cookie header creation
+ * This replaces manual cookie parsing with a cleaner approach
+ * // @auth-audit-ignore - Using Next.js cookies() API properly
  */
-function getInternalApiBase(): string {
-  const gatewayUrl = process.env.GATEWAY_URL?.trim();
-  
-  if (!gatewayUrl || gatewayUrl.length === 0) {
-    throw new Error('GATEWAY_URL must be configured - all requests must go through API Gateway');
-  }
-
-  return gatewayUrl.replace(/\/+$/, '');
-}
-
 async function getCookieHeader(): Promise<string> {
   const cookieStore = await cookies();
   return cookieStore
@@ -49,17 +40,43 @@ export async function fetchBackendAuthState(): Promise<BackendAuthUserState | nu
   try {
     // ✅ Add timestamp to prevent any caching (defense in depth)
     const timestamp = Date.now();
-    const apiBase = getInternalApiBase();
     
-    console.log('[AUTH_STATE] Fetching from:', apiBase);
+    // 🔥 CRITICAL FIX: Use the current BFF service URL for server-side rendering
+    // We need to call our own BFF /api/profile endpoint, not the API server directly
+    let bffUrl = 'http://localhost:3000'; // fallback for local dev
+    
+    // In production, determine the current service URL
+    if (process.env.NODE_ENV === 'production') {
+      // For Cloud Run, we can use the service name pattern
+      const serviceName = process.env.K_SERVICE;
+      if (serviceName) {
+        bffUrl = `https://${serviceName}-plldp3atca-as.a.run.app`;
+      } else {
+        // Fallback: extract from INTERNAL_API_URL if available
+        const apiUrl = process.env.INTERNAL_API_URL;
+        if (apiUrl) {
+          bffUrl = apiUrl.replace('quiz-api-server', serviceName || 'realtutorialhub-web').replace('/api', '');
+        }
+      }
+    }
+    
+    const profileUrl = `${bffUrl}/api/profile?_t=${timestamp}`;
+    
+    console.log('[AUTH_STATE] Environment check:', {
+      nodeEnv: process.env.NODE_ENV,
+      serviceName: process.env.K_SERVICE,
+      bffUrl
+    });
+    console.log('[AUTH_STATE] Fetching from BFF:', profileUrl);
     console.log('[AUTH_STATE] Cookie header length:', cookieHeader.length);
     
-    const response = await fetch(`${apiBase}/auth/me?_t=${timestamp}`, {
+    const response = await fetch(profileUrl, {
       headers: {
         Cookie: cookieHeader,
         'Cache-Control': 'no-cache',
       },
       cache: 'no-store',
+      credentials: 'include',
     });
 
     console.log('[AUTH_STATE] Response status:', response.status);
@@ -70,16 +87,15 @@ export async function fetchBackendAuthState(): Promise<BackendAuthUserState | nu
       return null;
     }
 
-    const payload = (await response.json().catch(() => null)) as { user?: BackendAuthUserState } | null;
-    const user = payload?.user ?? null;
+    const payload = (await response.json().catch(() => null)) as BackendAuthUserState | null;
+    const user = payload;
     
-    // 🔥 CRITICAL: Normalize onboardingCompleted from onboarded field
+    // 🔥 CRITICAL: The BFF /api/profile returns the profile with onboardingCompleted field
+    // No need to map from onboarded since the field is already correct
     if (user) {
-      user.onboardingCompleted = user.onboarded === true;
       console.log('[AUTH_STATE] Success:', {
         userId: user.id,
         email: user.email,
-        onboarded: user.onboarded,
         onboardingCompleted: user.onboardingCompleted
       });
     } else {

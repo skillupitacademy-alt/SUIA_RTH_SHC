@@ -26,6 +26,12 @@ export default async function Page() {
     redirect('/onboarding');
   }
   
-  const data = await loadDashboardData(rthConfig);
-  return <DashboardPage config={rthConfig} data={data} />;
+  try {
+    const data = await loadDashboardData(rthConfig, authState);
+    return <DashboardPage config={rthConfig} data={data} />;
+  } catch (error) {
+    console.error('[RTH_DASHBOARD] Error loading dashboard data:', error);
+    // If dashboard data loading fails, redirect to login
+    redirect('/login');
+  }
 }

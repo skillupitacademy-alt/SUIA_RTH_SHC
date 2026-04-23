@@ -1,6 +1,6 @@
 import { createAuthProxy } from '../../../src/share-branding/middleware/authProxy';
 
-const LOGIN_URL = process.env.NEXT_PUBLIC_LOGIN_URL ?? '/login';
+const LOGIN_URL = process.env.NEXT_PUBLIC_LOGIN_URL ?? 'https://user.skillupitacademy.com/login';
 
 export const proxy = await createAuthProxy({
   brandLoginUrl: LOGIN_URL,

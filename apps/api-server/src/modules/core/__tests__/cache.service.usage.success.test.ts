@@ -4,7 +4,7 @@ import { CacheService } from "../cache.service"
 
 describe("cache.service getUsage success path", () => {
   beforeEach(() => {
-    ;(CacheService as any).instance = undefined
+    (CacheService as any).instance = undefined
   })
 
   it("returns stats when redis provides info and dbsize", async () => {

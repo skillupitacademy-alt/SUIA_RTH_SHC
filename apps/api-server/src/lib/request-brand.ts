@@ -51,7 +51,18 @@ export function resolveRequestBrandFromHeaders(headers?: HeaderReader | null, _f
 }
 
 export function resolveRequestHostnameFromHeaders(headers?: HeaderReader | null, fallbackHostname?: string | null): string | undefined {
-  return resolveRequestHostCandidates(headers, fallbackHostname).find((candidate) => candidate !== undefined);
+  const candidates = resolveRequestHostCandidates(headers, fallbackHostname);
+  const resolved = candidates.find((candidate) => candidate !== undefined);
+  
+  // 🔥 DEBUG: Log hostname resolution for cookie domain debugging
+  if (resolved !== undefined) {
+    console.log('[HOSTNAME_RESOLUTION]', JSON.stringify({
+      resolved,
+      candidates: candidates.map((c, i) => ({ index: i, value: c })),
+    }));
+  }
+  
+  return resolved;
 }
 
 function resolveRequestHostCandidates(headers?: HeaderReader | null, fallbackHostname?: string | null) {

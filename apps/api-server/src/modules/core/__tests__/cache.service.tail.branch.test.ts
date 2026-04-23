@@ -10,7 +10,7 @@ vi.mock("@/lib/logger", () => ({
 const mockLogger = logger as unknown as { warn: ReturnType<typeof vi.fn> }
 
 beforeEach(() => {
-  ;(CacheService as unknown as { instance?: CacheService }).instance = undefined
+  (CacheService as unknown as { instance?: CacheService }).instance = undefined
 })
 
 describe("cache.service cooldown and error tails", () => {

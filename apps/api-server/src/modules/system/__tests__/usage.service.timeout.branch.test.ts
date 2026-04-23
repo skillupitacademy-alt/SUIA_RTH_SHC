@@ -6,7 +6,7 @@ import { cacheService } from '@/modules/core/cache.service'
 
 describe('UsageService timeout/error branches', () => {
   it('returns error state when Neon query times out', async () => {
-    ;(db.execute as any) = vi.fn().mockImplementation(() => new Promise(() => {}))
+    (db.execute as any) = vi.fn().mockImplementation(() => new Promise(() => {}))
     const res = await UsageService['getNeonUsage']()
     expect(res.status).toBe('_error')
     expect(res.configured).toBe(true)

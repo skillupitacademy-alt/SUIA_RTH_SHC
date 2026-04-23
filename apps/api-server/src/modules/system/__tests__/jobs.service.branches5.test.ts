@@ -46,7 +46,7 @@ describe('JobsService branch spots', () => {
     await JobsService.updateJobStatus('j1', JobStatus.PROCESSING);
     await JobsService.updateJobStatus('j1', JobStatus.COMPLETED, { result: { ok: true } });
     await JobsService.updateJobStatus('j1', JobStatus.FAILED, { error: 'oops' });
-    expect(update).not.toThrow;
+    expect(update).not.toThrow();
   });
 });
 

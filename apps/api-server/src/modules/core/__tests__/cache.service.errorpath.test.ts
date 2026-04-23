@@ -5,7 +5,7 @@ import { logger } from '@/lib/logger'
 
 describe('cacheService set error path', () => {
   it('logs and continues when redis set throws', async () => {
-    ;(cacheService as any).cache = {
+    (cacheService as any).cache = {
       set: vi.fn(),
     }
     ;(cacheService as any).redis = {

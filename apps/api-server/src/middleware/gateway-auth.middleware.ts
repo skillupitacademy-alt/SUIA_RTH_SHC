@@ -16,7 +16,9 @@ import { NextResponse } from 'next/server';
 
 export function validateGatewaySecret(req: NextRequest): NextResponse | null {
   const gatewaySecret = req.headers.get('x-gateway-secret');
+  const internalSecret = req.headers.get('x-internal-secret');
   const expectedSecret = process.env.INTERNAL_GATEWAY_SECRET;
+  const expectedInternalSecret = process.env.INTERNAL_API_SECRET;
   
   // Allow health checks without gateway secret
   const pathname = req.nextUrl.pathname;
@@ -37,6 +39,38 @@ export function validateGatewaySecret(req: NextRequest): NextResponse | null {
   
   if (publicAuthPaths.some(path => pathname === path || pathname.startsWith(`${path}/`))) {
     return null;
+  }
+  
+  // 🔥 CRITICAL: Allow internal service-to-service calls (BFF → API)
+  // These calls have x-internal-secret header instead of x-gateway-secret
+  if (internalSecret !== null) {
+    const trimmedInternalSecret = internalSecret.trim();
+    const trimmedExpectedSecret = expectedInternalSecret?.trim();
+    
+    console.log('[GATEWAY_AUTH] Internal service call detected', {
+      path: pathname,
+      hasInternalSecret: true,
+      secretMatch: trimmedInternalSecret === trimmedExpectedSecret,
+    });
+    
+    if (trimmedExpectedSecret !== undefined && trimmedInternalSecret === trimmedExpectedSecret) {
+      console.log('[GATEWAY_AUTH] Internal service authentication SUCCESS');
+      return null; // Allow internal call
+    }
+    
+    console.error('[GATEWAY_AUTH] Invalid internal secret', {
+      path: pathname,
+      received: trimmedInternalSecret.substring(0, 10) + '...',
+      expected: trimmedExpectedSecret !== undefined ? trimmedExpectedSecret.substring(0, 10) + '...' : 'NOT_SET',
+    });
+    
+    return NextResponse.json(
+      { 
+        error: 'Forbidden',
+        message: 'Invalid internal service secret'
+      },
+      { status: 403 }
+    );
   }
   
   // Validate gateway secret for all other requests

@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { LRUCache } from 'lru-cache';
 
 import { UsageService } from '../usage.service';
 
@@ -12,7 +13,7 @@ describe('UsageService branches', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // reset static cache
-    (UsageService as any).cache = new (require('lru-cache').LRUCache)({ max: 10, ttl: 1 });
+    (UsageService as any).cache = new LRUCache({ max: 10, ttl: 1 });
   });
 
   it('marks Redis as _error when cacheService.getUsage throws (lines ~159-174)', async () => {

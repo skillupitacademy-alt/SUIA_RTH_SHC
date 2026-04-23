@@ -162,7 +162,7 @@ async function resolveUser(request: NextRequest): Promise<UserPayload | null> {
 }
 
 function hasRequiredRole(payload: UserPayload): boolean {
-  return payload.roles.includes('student') || payload.roles.some((role) => OVERRIDE_ROLES.includes(role));
+  return payload.roles.includes('student') || payload.roles.includes('user') || payload.roles.some((role) => OVERRIDE_ROLES.includes(role));
 }
 
 export interface AuthProxyOptions {
@@ -192,7 +192,18 @@ export async function createAuthProxy(options: AuthProxyOptions = {}) {
       return NextResponse.next();
     }
 
-    if (isApiRoute && hasValidGatewaySecret(request) === false && isPublicRoute(pathname) === false) {
+    // 🔥 CRITICAL: BFF's own API routes should NOT require gateway secret
+    // Only external API calls (through gateway) need gateway secret
+    // BFF internal routes like /api/profile, /api/auth/* are internal service calls
+    const isBffInternalRoute = pathname.startsWith('/api/') && (
+      pathname.startsWith('/api/auth/') ||
+      pathname.startsWith('/api/profile') ||
+      pathname.startsWith('/api/user/') ||
+      pathname.startsWith('/api/dashboard/') ||
+      pathname.startsWith('/api/onboarding/')
+    );
+    
+    if (isApiRoute && !isBffInternalRoute && hasValidGatewaySecret(request) === false && isPublicRoute(pathname) === false) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

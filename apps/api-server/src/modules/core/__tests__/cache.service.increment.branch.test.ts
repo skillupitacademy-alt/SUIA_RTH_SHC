@@ -4,7 +4,7 @@ import { CacheService } from "../cache.service"
 
 describe("cache.service increment branches", () => {
   beforeEach(() => {
-    ;(CacheService as any).instance = undefined
+    (CacheService as any).instance = undefined
   })
 
   it("uses redis when available for increment", async () => {

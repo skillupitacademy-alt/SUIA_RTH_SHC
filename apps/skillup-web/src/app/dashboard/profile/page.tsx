@@ -41,7 +41,7 @@ export default async function Page() {
   }
   
   console.log('[PROFILE_PAGE] Loading dashboard data');
-  const data = await loadDashboardData(skillUpConfig);
+  const data = await loadDashboardData(skillUpConfig, authState);
   console.log('[PROFILE_PAGE] Rendering page');
   return <DashboardProfilePage config={skillUpConfig} data={data} />;
 }

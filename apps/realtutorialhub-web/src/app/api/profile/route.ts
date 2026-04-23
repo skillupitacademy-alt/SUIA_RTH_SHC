@@ -1,142 +1,100 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { 
+  createInternalHeaders, 
+  BffAuthErrors,
+  requireBffAuth 
+} from '../../../../../../src/share-branding/auth/unifiedBffAuth';
 
 /**
- * BFF Route: User Profile Management
- * Pattern: UI → BFF → API Server → DB
+ * 🔐 UNIFIED BFF PROFILE ROUTE
  * 
- * Proxies profile requests to API server with authentication cookies
+ * Architecture: Browser → BFF → API Server
+ * 
+ * Flow:
+ * 1. Browser sends cookies (Set-Cookie from login)
+ * 2. BFF uses unified auth extraction (unifiedBffAuth.ts)
+ * 3. BFF validates JWT and extracts identity
+ * 4. BFF creates standardized internal headers
+ * 5. BFF calls API Server with internal headers
+ * 6. API Server validates internal secret + userId
+ * 7. API Server returns profile
+ * 
+ * Security:
+ * - ✅ Unified auth validation (consistent across all BFF routes)
+ * - ✅ Standardized error responses
+ * - ✅ Internal secret verification (API side)
+ * - ✅ Correlation ID tracking (debugging)
+ * - ✅ Comprehensive logging (no silent failures)
  */
 
 export const dynamic = 'force-dynamic';
 
-// 🔥 GATEWAY-FIRST: All requests go through API Gateway
-function getGatewayUrl(): string {
-  const gatewayUrl = process.env.GATEWAY_URL;
-  
-  if (!gatewayUrl) {
-    throw new Error('GATEWAY_URL not configured - all requests must go through API Gateway');
-  }
-  
-  return gatewayUrl.trim().replace(/\/+$/, '');
-}
-
-// 🔥 INTERNAL API: Direct service-to-service calls (bypasses gateway)
 const INTERNAL_API_URL = process.env.INTERNAL_API_URL || process.env.API_SERVER_URL || 'http://localhost:3001';
 
 /**
  * GET /api/profile
- * 🚀 INTERNAL SERVICE CALL: Direct BFF → API Server (no gateway hop)
  * 
- * Performance: Eliminates gateway network hop, reduces response time by ~70%
+ * Retrieves user profile from API Server
  */
 export async function GET(req: NextRequest) {
   const perfStart = Date.now();
-  const timings = {
-    start: perfStart,
-    afterAuth: 0,
-    afterApiCall: 0,
-  };
-  
+  const correlationId = req.headers.get('x-correlation-id') || crypto.randomUUID();
+
+  // 🔥 RUNTIME ENV TRACE
+  const secret = process.env.INTERNAL_GATEWAY_SECRET;
+  console.log("[ENV TRACE]", JSON.stringify({
+    service: process.env.K_SERVICE,
+    revision: process.env.K_REVISION,
+    length: secret?.length,
+    prefix: secret?.slice(0, 8),
+    hasQuotes: secret?.includes('"'),
+    envKeys: Object.keys(process.env)
+      .filter(k => k.includes('SECRET'))
+      .sort(),
+  }));
+
   try {
-    // 🚀 EXTRACT USER IDENTITY from gateway headers (if available)
-    const userId = req.headers.get('x-user-id');
-    const userEmail = req.headers.get('x-user-email');
-    let brand = req.headers.get('x-brand');
-    const correlationId = req.headers.get('x-correlation-id') || crypto.randomUUID();
+    console.log(`[BFF][Profile GET][${correlationId}] Request started`);
+
+    // 🔥 UNIFIED AUTH: Replace custom extraction with standardized approach
+    const authResult = await requireBffAuth(req);
     
-    // 🔥 DYNAMIC BRAND DETECTION for multi-brand system
-    if (!brand) {
-      const hostname = req.headers.get('host') || req.nextUrl.hostname;
-      brand = hostname.includes('skillup') ? 'skillup' : 'realtutorialhub';
-      console.log(`[BFF][${correlationId}] Brand detected from hostname: ${brand}`);
+    // If requireBffAuth returns a Response, it's an error response
+    if (authResult instanceof Response) {
+      console.log(`[BFF][Profile GET][${correlationId}] Auth FAILED - returning error response`);
+      return authResult;
     }
+
+    // Auth successful - authResult contains the validated auth data
+    console.log(`[BFF][Profile GET][${correlationId}] Auth SUCCESS - calling API`);
+
+    // 🔥 UNIFIED HEADERS: Use standardized internal header creation
+    const headers = createInternalHeaders(authResult);
     
-    console.log(`[BFF][${correlationId}] Profile GET - Gateway headers:`, {
-      userId: userId ? 'EXISTS' : 'MISSING',
-      userEmail: userEmail ? 'EXISTS' : 'MISSING', 
-      brand: brand || 'MISSING'
+    // Add correlation ID for debugging
+    headers['x-correlation-id'] = correlationId;
+    
+    // 🔍 DEBUG: Verify secret is being sent
+    console.log(`[BFF DEBUG][${correlationId}]`, {
+      sendingSecret: headers['x-gateway-secret']?.slice(0, 10),
+      sendingUserId: headers['x-user-id'],
+      sendingBrand: headers['x-brand'],
+      apiUrl: INTERNAL_API_URL,
     });
-    
-    timings.afterAuth = Date.now();
-    
-    // If no gateway headers, fall back to cookie-based auth
-    if (!userId) {
-      console.log(`[BFF][${correlationId}] No gateway headers, using cookie auth`);
-      
-      const cookieHeader = req.headers.get('cookie') || '';
-      const accessToken = cookieHeader
-        .split('; ')
-        .find(c => c.startsWith('accessToken='))
-        ?.split('=')[1];
 
-      if (!accessToken) {
-        return NextResponse.json(
-          { error: 'Authentication required', message: 'Please log in' },
-          { status: 401 }
-        );
-      }
-
-      // 🔄 FALLBACK: Use gateway for cookie-based auth
-      const gatewayUrl = getGatewayUrl();
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-        'x-portal-identity': 'user',
-        'cookie': cookieHeader,
-        'Authorization': `Bearer ${accessToken}`,
-        'x-correlation-id': correlationId,
-      };
-      
-      const res = await fetch(`${gatewayUrl}/auth/profile`, {
-        method: 'GET',
-        headers,
-        credentials: 'include',
-        cache: 'no-store',
-      });
-
-      const data = await res.json();
-      timings.afterApiCall = Date.now();
-      
-      const duration = timings.afterApiCall - perfStart;
-      console.log(`[PERF][BFF][PROFILE_GATEWAY_FALLBACK][${correlationId}]`, { 
-        duration, 
-        status: res.status,
-        path: 'gateway' 
-      });
-      
-      return NextResponse.json(data, { status: res.status });
-    }
-    
-    // 🚀 INTERNAL SERVICE CALL: Direct BFF → API Server
-    const internalSecret = process.env.INTERNAL_API_SECRET || '';
-    console.log(`[BFF][${correlationId}] Internal secret configured:`, internalSecret ? 'YES' : 'NO', `(length: ${internalSecret.length})`);
-    
-    const internalHeaders: Record<string, string> = {
-      'Content-Type': 'application/json',
-      'x-internal-secret': internalSecret,
-      'x-user-id': userId,
-      'x-brand': brand || 'realtutorialhub',
-      'x-correlation-id': correlationId,
-    };
-    
-    if (userEmail) {
-      internalHeaders['x-user-email'] = userEmail;
-    }
-    
-    console.log(`[BFF][${correlationId}] Internal API call to:`, INTERNAL_API_URL);
-    console.log(`[BFF][${correlationId}] Headers:`, { ...internalHeaders, 'x-internal-secret': internalSecret ? `${internalSecret.substring(0, 20)}...` : 'MISSING' });
-    
-    const res = await fetch(`${INTERNAL_API_URL}/api/auth/profile`, {
+    // Call API Server
+    const res = await fetch(`${INTERNAL_API_URL}/auth/profile`, {
       method: 'GET',
-      headers: internalHeaders,
+      headers,
       cache: 'no-store',
     });
 
-    timings.afterApiCall = Date.now();
-    console.log(`[BFF][${correlationId}] API response:`, res.status);
     const data = await res.json();
+    const duration = Date.now() - perfStart;
 
-    // Handle error responses
+    console.log(`[BFF][Profile GET][${correlationId}] API response: ${res.status} (${duration}ms)`);
+
     if (res.status === 404) {
       return NextResponse.json(
         {
@@ -147,138 +105,71 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    if (res.status === 401 || res.status === 403) {
-      return NextResponse.json(
-        {
-          error: 'Authentication failed',
-          message: 'Please log in again',
-        },
-        { status: res.status }
-      );
-    }
-
-    // 🚀 SUCCESS: Single internal API call
-    if (res.ok && data) {
-      const profileData = data.data || data;
-      
-      // If we have userEmail from gateway, inject it
-      if (userEmail && profileData) {
-        profileData.email = userEmail;
-      }
-      
-      // 🚀 PERFORMANCE LOG - INTERNAL SERVICE CALL
-      const totalDuration = timings.afterApiCall - timings.start;
-      console.log(`[PERF][BFF][PROFILE_INTERNAL][${correlationId}]`, JSON.stringify({
-        total: totalDuration,
-        breakdown: {
-          auth: timings.afterAuth - timings.start,
-          apiCall: timings.afterApiCall - timings.afterAuth,
-        },
-        optimization: 'Direct internal service call (no gateway hop)',
-        expectedImprovement: '~70% faster than gateway path',
-        path: 'internal'
-      }));
-      
-      return NextResponse.json(
-        data.data ? { ...data, data: profileData } : profileData,
-        {
-          status: res.status,
-          headers: {
-            'Content-Type': 'application/json',
-            'Cache-Control': 'no-store, no-cache, must-revalidate',
-            'x-correlation-id': correlationId,
-          },
-        }
-      );
-    }
-
-    return NextResponse.json(data, {
-      status: res.status,
-      headers: {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'no-store, no-cache, must-revalidate',
-        'x-correlation-id': correlationId,
-      },
-    });
-  } catch (error) {
+    return NextResponse.json(data, { status: res.status });
+  } catch (err) {
     const duration = Date.now() - perfStart;
-    const correlationId = req.headers.get('x-correlation-id') || 'unknown';
-    console.error(`[BFF][${correlationId}] Profile GET error:`, error);
-    console.log(`[PERF][BFF][PROFILE_ERROR][${correlationId}]`, { duration });
-    
-    return NextResponse.json(
-      { error: 'Failed to fetch profile', message: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
-    );
+    console.error(`[BFF][Profile GET][${correlationId}] Error (${duration}ms):`, err);
+    return BffAuthErrors.internalError('Profile retrieval failed');
   }
 }
 
 /**
  * PATCH /api/profile
- * Update user profile via API server
+ * 
+ * Updates user profile via API Server
  */
 export async function PATCH(req: NextRequest) {
+  const perfStart = Date.now();
+  const correlationId = req.headers.get('x-correlation-id') || crypto.randomUUID();
+
   try {
-    const gatewayUrl = getGatewayUrl();
-    const cookieHeader = req.headers.get('cookie');
+    console.log(`[BFF][Profile PATCH][${correlationId}] Request started`);
+
+    // 🔥 UNIFIED AUTH: Replace custom extraction with standardized approach
+    const authResult = await requireBffAuth(req);
     
-    // 🔥 CRITICAL: Verify auth cookies exist
-    console.log('[BFF] Profile PATCH - Cookie header:', cookieHeader ? 'EXISTS' : 'MISSING');
-    
-    if (!cookieHeader) {
-      console.error('[BFF] Profile PATCH - No auth cookie provided');
-      return NextResponse.json(
-        { error: 'No auth cookie', message: 'Authentication required' },
-        { status: 401 }
-      );
+    // If requireBffAuth returns a Response, it's an error response
+    if (authResult instanceof Response) {
+      console.log(`[BFF][Profile PATCH][${correlationId}] Auth FAILED - returning error response`);
+      return authResult;
     }
 
-    // 🔥 CRITICAL: Extract accessToken for Authorization header
-    const accessToken = cookieHeader
-      .split('; ')
-      .find(c => c.startsWith('accessToken='))
-      ?.split('=')[1];
-
-    console.log('[BFF] Profile PATCH - Has accessToken:', !!accessToken);
-
-    if (!accessToken) {
-      console.error('[BFF] Profile PATCH - Missing accessToken in cookies');
-      return NextResponse.json(
-        { error: 'Missing auth token', message: 'Please log in again' },
-        { status: 401 }
-      );
-    }
+    // Auth successful - authResult contains the validated auth data
+    console.log(`[BFF][Profile PATCH][${correlationId}] Auth SUCCESS - calling API`);
 
     const body = await req.json();
-    console.log('[BFF] Profile PATCH - Update fields:', Object.keys(body));
 
-    const res = await fetch(`${gatewayUrl}/auth/profile`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'cookie': cookieHeader,
-        'Authorization': `Bearer ${accessToken}`, // 🔥 CRITICAL FIX
-        'x-portal-identity': 'user',
-      },
-      credentials: 'include',
-      body: JSON.stringify(body),
+    // 🔥 UNIFIED HEADERS: Use standardized internal header creation
+    const headers = createInternalHeaders(authResult);
+    
+    // Add correlation ID for debugging
+    headers['x-correlation-id'] = correlationId;
+    
+    // 🔍 DEBUG: Verify secret is being sent
+    console.log(`[BFF DEBUG][${correlationId}]`, {
+      sendingSecret: headers['x-gateway-secret']?.slice(0, 10),
+      sendingUserId: headers['x-user-id'],
+      sendingBrand: headers['x-brand'],
+      apiUrl: INTERNAL_API_URL,
     });
 
-    console.log('[BFF] Profile PATCH - API Server response status:', res.status);
+    // Call API Server
+    const res = await fetch(`${INTERNAL_API_URL}/auth/profile`, {
+      method: 'PATCH',
+      headers,
+      body: JSON.stringify(body),
+      cache: 'no-store',
+    });
 
     const data = await res.json();
+    const duration = Date.now() - perfStart;
 
-    return NextResponse.json(data, {
-      status: res.status,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-  } catch (error) {
-    console.error('[BFF] Profile PATCH error:', error);
-    return NextResponse.json(
-      { error: 'Failed to update profile', message: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
-    );
+    console.log(`[BFF][Profile PATCH][${correlationId}] API response: ${res.status} (${duration}ms)`);
+
+    return NextResponse.json(data, { status: res.status });
+  } catch (err) {
+    const duration = Date.now() - perfStart;
+    console.error(`[BFF][Profile PATCH][${correlationId}] Error (${duration}ms):`, err);
+    return BffAuthErrors.internalError('Profile update failed');
   }
 }

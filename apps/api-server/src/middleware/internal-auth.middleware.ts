@@ -17,7 +17,7 @@ export interface AuthContext {
 }
 
 export function validateRequest(req: NextRequest): { error?: Response; context?: AuthContext } {
-  const correlationId = req.headers.get('x-correlation-id') || crypto.randomUUID();
+  const correlationId = req.headers.get('x-correlation-id') ?? crypto.randomUUID();
   
   // Mode 1: Internal Service Authentication (NEW - FASTEST)
   const internalSecret = req.headers.get('x-internal-secret');
@@ -26,27 +26,37 @@ export function validateRequest(req: NextRequest): { error?: Response; context?:
   const brand = req.headers.get('x-brand');
   
   console.log(`[AUTH][${correlationId}] Headers received:`, {
-    hasInternalSecret: !!internalSecret,
-    internalSecretLength: internalSecret?.length || 0,
-    internalSecretPreview: internalSecret ? `${internalSecret.substring(0, 20)}...` : 'NONE',
-    hasUserId: !!userId,
-    hasBrand: !!brand,
+    hasInternalSecret: internalSecret !== null,
+    internalSecretLength: internalSecret?.length ?? 0,
+    internalSecretPreview: internalSecret !== null ? `${internalSecret.substring(0, 20)}...` : 'NONE',
+    hasUserId: userId !== null,
+    hasBrand: brand !== null,
     brand
   });
   
   console.log(`[AUTH][${correlationId}] Expected secret configured:`, {
-    hasSecret: !!process.env.INTERNAL_API_SECRET,
-    secretLength: process.env.INTERNAL_API_SECRET?.length || 0,
-    secretPreview: process.env.INTERNAL_API_SECRET ? `${process.env.INTERNAL_API_SECRET.substring(0, 20)}...` : 'NONE'
+    hasSecret: process.env.INTERNAL_API_SECRET !== undefined,
+    secretLength: process.env.INTERNAL_API_SECRET?.length ?? 0,
+    secretPreview: process.env.INTERNAL_API_SECRET !== undefined ? `${process.env.INTERNAL_API_SECRET.substring(0, 20)}...` : 'NONE'
   });
   
   // If internal secret is provided, validate it strictly
-  if (internalSecret) {
+  if (internalSecret !== null) {
     console.log(`[AUTH][${correlationId}] Validating internal secret...`);
     
-    if (process.env.INTERNAL_API_SECRET !== internalSecret) {
+    // Trim both secrets to handle whitespace issues
+    const receivedSecret = internalSecret.trim();
+    const expectedSecret = process.env.INTERNAL_API_SECRET?.trim();
+    
+    console.log(`[AUTH][${correlationId}] Secret comparison:`, {
+      receivedLength: receivedSecret.length,
+      expectedLength: expectedSecret?.length ?? 0,
+      match: receivedSecret === expectedSecret
+    });
+    
+    if (expectedSecret !== receivedSecret) {
       console.error(`[AUTH][${correlationId}] Invalid internal secret provided`);
-      console.error(`[AUTH][${correlationId}] Secret mismatch - received: ${internalSecret?.substring(0, 20)}..., expected: ${process.env.INTERNAL_API_SECRET?.substring(0, 20)}...`);
+      console.error(`[AUTH][${correlationId}] Secret mismatch - received: ${receivedSecret?.substring(0, 20)}..., expected: ${expectedSecret?.substring(0, 20)}...`);
       return {
         error: new Response(JSON.stringify({ 
           error: 'Unauthorized', 
@@ -60,7 +70,7 @@ export function validateRequest(req: NextRequest): { error?: Response; context?:
     
     console.log(`[AUTH][${correlationId}] Internal service authentication`);
     
-    if (!userId || !brand) {
+    if (userId === null || brand === null) {
       console.error(`[AUTH][${correlationId}] Internal call missing required headers`);
       return {
         error: new Response(JSON.stringify({ 
@@ -96,7 +106,7 @@ export function validateRequest(req: NextRequest): { error?: Response; context?:
     return {
       context: {
         userId,
-        userEmail: userEmail || undefined,
+        userEmail: userEmail ?? undefined,
         brand,
         correlationId,
         authMode: 'internal'
@@ -108,7 +118,7 @@ export function validateRequest(req: NextRequest): { error?: Response; context?:
   const gatewayUserId = req.headers.get('x-user-id');
   const gatewayBrand = req.headers.get('x-brand');
   
-  if (gatewayUserId && gatewayBrand) {
+  if (gatewayUserId !== null && gatewayBrand !== null) {
     console.log(`[AUTH][${correlationId}] Gateway authentication`);
     
     // Validate brand for multi-brand system
@@ -134,7 +144,7 @@ export function validateRequest(req: NextRequest): { error?: Response; context?:
     return {
       context: {
         userId: gatewayUserId,
-        userEmail: req.headers.get('x-user-email') || undefined,
+        userEmail: req.headers.get('x-user-email') ?? undefined,
         brand: gatewayBrand,
         correlationId,
         authMode: 'gateway'
@@ -156,7 +166,7 @@ export function blockDirectAccess(req: NextRequest): Response | null {
   const hasJwtCookie = req.headers.get('cookie')?.includes('accessToken=');
   
   // Allow if any valid auth method present
-  if (internalSecret || gatewayUserId || hasJwtCookie) {
+  if (internalSecret !== null || gatewayUserId !== null || hasJwtCookie === true) {
     return null; // Allow
   }
   

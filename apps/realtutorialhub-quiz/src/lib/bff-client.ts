@@ -12,7 +12,9 @@ export interface BffExamConfigResponse {
 }
 
 export async function getBffQuizHierarchy(): Promise<BffQuizHierarchyResponse> {
-    const res = await fetch('/api/bff/quiz-hierarchy');
+    const res = await fetch('/api/bff/quiz-hierarchy', {
+        credentials: 'include', // 🔥 Include cookies for auth
+    });
     if (!res.ok) {
         const body = await res.text().catch(() => '');
         throw new Error(`BFF quiz hierarchy failed: ${res.status} ${body}`);
@@ -32,7 +34,9 @@ export async function getBffExamConfig(filters: {
     if (filters.topicIds?.length) params.set('topicIds', filters.topicIds.join(','));
     if (filters.subtopicIds?.length) params.set('subtopicIds', filters.subtopicIds.join(','));
 
-    const res = await fetch(`/api/bff/exam-config?${params.toString()}`);
+    const res = await fetch(`/api/bff/exam-config?${params.toString()}`, {
+        credentials: 'include', // 🔥 Include cookies for auth
+    });
     if (!res.ok) {
         const body = await res.text().catch(() => '');
         throw new Error(`BFF exam config failed: ${res.status} ${body}`);

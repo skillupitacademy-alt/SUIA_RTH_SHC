@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { UsageService } from '../usage.service';
 
 const fetchMock = vi.fn();
 global.fetch = fetchMock as any;
@@ -11,14 +12,14 @@ describe('UsageService Cloudflare/Redis branches', () => {
     process.env.CLOUDFLARE_ZONE_ID = 'zone';
     // clear in-memory cache
     try {
-      const { UsageService } = require('../usage.service');
       (UsageService as any)['cache']?.clear?.();
-    } catch {}
+    } catch (err) {
+      // Ignore errors during cache clearing in tests
+    }
   });
 
   it('handles Cloudflare non-OK response (line 159-174)', async () => {
     fetchMock.mockResolvedValue({ ok: false, status: 500, json: async () => ({}) });
-    const { UsageService } = await import('../usage.service');
     const res = await UsageService.getAllUsage();
     expect(res.cloudflare.status).toBe('_error');
   });

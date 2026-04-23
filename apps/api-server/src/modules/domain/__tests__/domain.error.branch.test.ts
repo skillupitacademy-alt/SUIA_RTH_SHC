@@ -6,7 +6,7 @@ import { cacheService } from '@/modules/core/cache.service'
 
 describe('DomainService error branches', () => {
   it('swallows cache set error on getAllDomains', async () => {
-    ;(cacheService.get as any) = vi.fn().mockResolvedValue(null)
+    (cacheService.get as any) = vi.fn().mockResolvedValue(null)
     ;(db.query as any).domains = { findMany: vi.fn().mockResolvedValue([{ id: 'd1' }]) }
     vi.spyOn(cacheService, 'set').mockRejectedValue(new Error('cache fail'))
 

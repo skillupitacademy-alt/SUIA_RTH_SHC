@@ -5,7 +5,7 @@ import { QuestionCounts, applyBffCacheHeaders } from '@quiz/api-client';
 
 function getInternalApiBase(): string {
     const internal = process.env.INTERNAL_API_URL?.trim();
-    if (internal) {
+    if (internal !== undefined && internal !== '') {
         const withoutTrailingSlash = internal.replace(/\/+$/, '');
         return withoutTrailingSlash.toLowerCase().endsWith('/api')
             ? withoutTrailingSlash
@@ -39,7 +39,7 @@ async function getAuthHeaders() {
 }
 
 function parseList(value: string | null): string[] {
-    if (!value) return [];
+    if (value === null || value === '') return [];
     return value.split(',').map((item) => item.trim()).filter(Boolean);
 }
 
@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
     const apiUrl = getInternalApiBase();
 
     const domainId = req.nextUrl.searchParams.get('domainId');
-    if (!domainId) {
+    if (domainId === null || domainId === '') {
         return NextResponse.json({ error: 'domainId is required' }, { status: 400 });
     }
 
@@ -79,7 +79,7 @@ export async function GET(req: NextRequest) {
         next: { revalidate: 300 }
     });
 
-    if (!res.ok) {
+    if (res.ok === false) {
         const body = await res.text().catch(() => '');
         return applyBffCacheHeaders(
             NextResponse.json(
