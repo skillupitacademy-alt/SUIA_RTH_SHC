@@ -154,6 +154,14 @@ export function createForwardHeaders(request: NextRequest): Headers {
     if (hostname) {
       const brand = hostname.includes('skillup') ? 'skillup' : 'realtutorialhub';
       headers.set('x-brand', brand);
+      
+      // 📊 OBSERVABILITY: Log brand resolution
+      console.log('[AUTH_FLOW]', {
+        action: 'brand_resolution',
+        hostname,
+        brand,
+        hasDeviceId: !!deviceId,
+      });
     }
   }
   
@@ -281,11 +289,35 @@ export async function proxyAuthRequest(
     body?: BodyInit | null;
   },
 ) {
+  // 📊 OBSERVABILITY: Log auth proxy request
+  const hostname = getRequestHost(request);
+  const brand = hostname?.includes('skillup') ? 'skillup' : 'realtutorialhub';
+  console.log('[AUTH_FLOW]', {
+    action: 'proxy_auth_request',
+    authPath: options.authPath,
+    method: options.method ?? request.method,
+    brand,
+    hostname,
+  });
+
   const upstreamResponse = await fetchAuthUpstream(request, options);
 
   if (upstreamResponse === null) {
+    console.log('[AUTH_FLOW]', {
+      action: 'proxy_auth_failed',
+      authPath: options.authPath,
+      error: 'upstream_unavailable',
+    });
     return NextResponse.json({ error: 'Authentication upstream unavailable' }, { status: 502 });
   }
+
+  // 📊 OBSERVABILITY: Log upstream response
+  console.log('[AUTH_FLOW]', {
+    action: 'proxy_auth_response',
+    authPath: options.authPath,
+    status: upstreamResponse.status,
+    brand,
+  });
 
   const payload = await upstreamResponse.arrayBuffer();
   const response = new NextResponse(payload, {
