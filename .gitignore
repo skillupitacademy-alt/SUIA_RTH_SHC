@@ -32,3 +32,10 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+
+# Build and IDE artifacts
+.next/
+dist/
+.turbo/
+tmp/
+*.tsbuildinfo
