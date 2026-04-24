@@ -31,22 +31,22 @@ interface ProfileUpdateBody {
 
 async function getHandler(_req: NextRequest) {
   const perfStart = Date.now();
-  
+
   try {
     // 🔐 UNIFIED AUTH: Single source of truth
-    const auth = getAuthContext(_req);
+    const auth = await getAuthContext(_req);
     if (!auth) {
       return ApiResponse.error(unauthorized('Unauthorized'));
     }
-    
+
     const { userId, brand, correlationId } = auth;
     console.log(`[Profile GET][${correlationId}] Auth SUCCESS - userId: ${userId}, brand: ${brand}`);
-    
-    const timings = { 
+
+    const timings = {
       afterAuth: Date.now(),
       afterDbQuery: 0
     };
-    
+
     // Get brand-specific database context
     const brandContext = getAuthBrandContext(brand as RequestBrand);
     const useBrandBinding = shouldUseBrandBinding();
@@ -58,7 +58,7 @@ async function getHandler(_req: NextRequest) {
     });
     const dbQueryDuration = Date.now() - dbQueryStart;
     timings.afterDbQuery = Date.now();
-    
+
     console.log(`[PERF][DB][PROFILE_QUERY][${correlationId}]`, {
       duration: dbQueryDuration,
       userId,
@@ -71,7 +71,7 @@ async function getHandler(_req: NextRequest) {
       const user = await brandDb.query.users.findFirst({
         where: eq(users.id, userId),
       });
-      
+
       if (user?.isOnboarded === true) {
         console.error(`[ERROR][${correlationId}] DATA INTEGRITY: onboarded but profile missing`);
         return ApiResponse.error({
@@ -81,7 +81,7 @@ async function getHandler(_req: NextRequest) {
           correlationId
         }, 500);
       }
-      
+
       return ApiResponse.error(notFound('Profile', userId));
     }
 
@@ -93,7 +93,7 @@ async function getHandler(_req: NextRequest) {
       source: auth.source,
       brand,
     });
-    
+
     return withCacheHeaders(ApiResponse.success(profile), 'SESSION');
   } catch (_error: unknown) {
     const correlationId = _req.headers.get('x-correlation-id') ?? 'unknown';
@@ -105,16 +105,16 @@ async function getHandler(_req: NextRequest) {
 async function patchHandler(_req: NextRequest) {
   try {
     // 🔐 UNIFIED AUTH: Single source of truth
-    const auth = getAuthContext(_req);
+    const auth = await getAuthContext(_req);
     if (!auth) {
       return ApiResponse.error(unauthorized('Unauthorized'));
     }
-    
+
     const { userId, brand, correlationId } = auth;
     console.log(`[Profile PATCH][${correlationId}] Auth SUCCESS - userId: ${userId}, brand: ${brand}`);
-    
+
     const rawBody = await _req.json().catch(() => ({}));
-    
+
     if (!validateJsonDepth(rawBody) || !validateJsonSize(rawBody)) {
       return ApiResponse.error(badRequest('Payload too deep or large'));
     }
@@ -134,18 +134,18 @@ async function patchHandler(_req: NextRequest) {
 
     if (existing !== undefined) {
       console.log(`[Profile PATCH][${correlationId}] Updating existing profile`);
-      
+
       const updateData: Partial<ProfileUpdateBody> & { updatedAt: Date } = {
         ...body,
         updatedAt: new Date()
       };
-      
+
       if (body.domainInterest !== undefined) {
-        updateData.domainInterest = Array.isArray(body.domainInterest) 
-          ? body.domainInterest 
+        updateData.domainInterest = Array.isArray(body.domainInterest)
+          ? body.domainInterest
           : [];
       }
-      
+
       const [updated] = await brandDb.update(userProfiles)
         .set(updateData)
         .where(eq(userProfiles.userId, userId))
@@ -155,7 +155,7 @@ async function patchHandler(_req: NextRequest) {
       return ApiResponse.success(updated);
     } else {
       console.log(`[Profile PATCH][${correlationId}] Creating new profile`);
-      
+
       let domainInterestArray: string[] = [];
       const di = body.domainInterest as unknown;
       if (Array.isArray(di)) {
@@ -163,7 +163,7 @@ async function patchHandler(_req: NextRequest) {
       } else if (typeof di === 'string' && di.length > 0) {
         domainInterestArray = [di];
       }
-      
+
       const [inserted] = await brandDb.insert(userProfiles).values({
         userId,
         name: (typeof body.name === 'string' && body.name.length > 0) ? body.name : 'User',
