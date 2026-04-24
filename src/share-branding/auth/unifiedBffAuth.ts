@@ -37,11 +37,12 @@ export async function extractAuthFromRequest(req: NextRequest): Promise<BffAuthR
 
   if (!accessToken) {
     // 📊 OBSERVABILITY: Log missing token
-    console.log('[AUTH_FLOW]', {
+    console.log(JSON.stringify({
+      tag: 'AUTH_FLOW',
       action: 'extract_auth',
       result: 'no_token',
       path: req.nextUrl.pathname,
-    });
+    }));
     return { isAuthenticated: false };
   }
 
@@ -57,16 +58,18 @@ export async function extractAuthFromRequest(req: NextRequest): Promise<BffAuthR
 
     if (!shadowUserId || !originalUserId) {
       console.warn('[BFF_AUTH] Missing identity claims in token');
-      console.log('[AUTH_FLOW]', {
+      console.log(JSON.stringify({
+        tag: 'AUTH_FLOW',
         action: 'extract_auth',
         result: 'missing_identity',
         path: req.nextUrl.pathname,
-      });
+      }));
       return { isAuthenticated: false };
     }
 
     // 📊 OBSERVABILITY: Log successful auth extraction
-    console.log('[AUTH_FLOW]', {
+    console.log(JSON.stringify({
+      tag: 'AUTH_FLOW',
       action: 'extract_auth',
       result: 'success',
       brand,
@@ -74,7 +77,7 @@ export async function extractAuthFromRequest(req: NextRequest): Promise<BffAuthR
       shadowUserId: shadowUserId.slice(0, 8),
       roles,
       path: req.nextUrl.pathname,
-    });
+    }));
 
     return {
       isAuthenticated: true,
@@ -89,12 +92,13 @@ export async function extractAuthFromRequest(req: NextRequest): Promise<BffAuthR
   } catch (error) {
     console.warn('[BFF_AUTH] Token validation failed:', error instanceof Error ? error.message : 'Unknown error');
     // 📊 OBSERVABILITY: Log validation failure
-    console.log('[AUTH_FLOW]', {
+    console.log(JSON.stringify({
+      tag: 'AUTH_FLOW',
       action: 'extract_auth',
       result: 'validation_failed',
       error: error instanceof Error ? error.message : 'Unknown',
       path: req.nextUrl.pathname,
-    });
+    }));
     return { isAuthenticated: false };
   }
 }
@@ -114,13 +118,14 @@ export function createInternalHeaders(auth: BffAuthResult): Record<string, strin
   }
 
   // 📊 OBSERVABILITY: Log header creation
-  console.log('[AUTH_FLOW]', {
+  console.log(JSON.stringify({
+    tag: 'AUTH_FLOW',
     action: 'create_internal_headers',
     brand: auth.brand,
     originalUserId: auth.originalUserId.slice(0, 8),
     shadowUserId: auth.shadowUserId.slice(0, 8),
     hasSecret: !!internalSecret,
-  });
+  }));
 
   // 🔥 FIX: Use originalUserId as the primary user ID for database queries
   // The shadowUserId is only for specific shadow user scenarios
