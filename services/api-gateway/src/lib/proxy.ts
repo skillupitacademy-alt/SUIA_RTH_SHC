@@ -57,9 +57,18 @@ export async function proxyRequest(request: Request, upstream: string, options: 
   headers.set('X-Original-Host', originalHostname);
   headers.set('X-Forwarded-Proto', url.protocol.replace(':', ''));
   
-  // 🔥 GATEWAY SECRET: Validate API server trusts gateway
+  // 🔥 INTERNAL SECRET: Validate API server trusts gateway (Phase 3: Standardized header)
   if (typeof options.gatewaySecret === 'string' && options.gatewaySecret.length > 0) {
-    headers.set('X-Gateway-Secret', options.gatewaySecret);
+    headers.set('X-Internal-Secret', options.gatewaySecret);
+    
+    // 📊 OBSERVABILITY: Log header standardization (Phase 3)
+    console.log(JSON.stringify({
+      tag: 'PHASE_3_HEADER',
+      action: 'set_internal_secret',
+      source: 'api_gateway',
+      path: targetPath,
+      hasSecret: true,
+    }));
   }
   
   // 🚀 OPTIMIZATION: Inject user identity headers from JWT validation

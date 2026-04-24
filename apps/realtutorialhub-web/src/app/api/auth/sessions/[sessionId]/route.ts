@@ -1,9 +1,7 @@
 import type { NextRequest } from 'next/server';
-import { proxyAuthRequest } from '@/share-branding/auth/authBffRoute';
+import { proxyAuthRequest, FALLBACK_API_BASE_RTH } from '@/share-branding/auth';
 
 export const dynamic = 'force-dynamic';
-
-const FALLBACK_API_BASE = 'https://api.realtutorialhub.com/api';
 
 /**
  * DELETE /api/auth/sessions/[sessionId]
@@ -15,7 +13,7 @@ export async function DELETE(
 ) {
   const { sessionId } = await params;
   return proxyAuthRequest(request, { 
-    fallbackApiBase: FALLBACK_API_BASE, 
+    fallbackApiBase: FALLBACK_API_BASE_RTH, 
     authPath: `sessions/${sessionId}` 
   });
 }

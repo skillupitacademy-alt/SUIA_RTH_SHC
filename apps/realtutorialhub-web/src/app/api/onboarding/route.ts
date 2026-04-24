@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { extractAuthFromRequest, createInternalHeaders } from '../../../../../../src/share-branding/auth/unifiedBffAuth';
+import { extractAuthFromRequest, createInternalHeaders } from '@/share-branding/auth';
 
 export const dynamic = 'force-dynamic';
 

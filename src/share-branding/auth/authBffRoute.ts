@@ -127,6 +127,14 @@ export function createForwardHeaders(request: NextRequest): Headers {
   headers.delete('host');
   headers.delete('content-length');
   
+  // 🔥 CRITICAL: Add internal secret for BFF → API authentication
+  const internalSecret = process.env.INTERNAL_API_SECRET;
+  if (internalSecret) {
+    headers.set('x-internal-secret', internalSecret);
+  } else {
+    console.error('[BFF_AUTH] INTERNAL_API_SECRET not configured - BFF → API calls will fail');
+  }
+  
   // 🔐 ENTERPRISE AUTH: Preserve device context headers
   // These headers are CRITICAL for multi-device session tracking
   const deviceId = request.headers.get('x-device-id');
@@ -155,13 +163,14 @@ export function createForwardHeaders(request: NextRequest): Headers {
       const brand = hostname.includes('skillup') ? 'skillup' : 'realtutorialhub';
       headers.set('x-brand', brand);
       
-      // 📊 OBSERVABILITY: Log brand resolution
+      // 📊 OBSERVABILITY: Log brand resolution and internal secret status
       console.log(JSON.stringify({
         tag: 'AUTH_FLOW',
-        action: 'brand_resolution',
+        action: 'create_forward_headers',
         hostname,
         brand,
         hasDeviceId: !!deviceId,
+        hasInternalSecret: !!internalSecret,
       }));
     }
   }

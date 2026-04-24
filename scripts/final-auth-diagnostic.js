@@ -1,149 +1,315 @@
 #!/usr/bin/env node
 
+/**
+ * 🚀 MASTER AUTH VALIDATION SCRIPT
+ *
+ * Covers:
+ * ✔ Phase 1 (Observability)
+ * ✔ Phase 2 (Identity safety - indirect)
+ * ✔ Phase 3 (Header standardization via logs)
+ *
+ * Uses REAL production flow:
+ * Client → BFF → API → DB
+ */
 
-const TEST_EMAIL_RTH = "ajayshah@gmail.com";
-const TEST_PASSWORD_RTH = "testing";
+const https = require('https');
+const { execSync } = require('child_process');
 
-const TEST_EMAIL_SKILLUP = "student@skillupitacademy.com";
-const TEST_PASSWORD_SKILLUP = "testing";
+// =====================================
+// CONFIG
+// =====================================
 
-
+const PROJECT_ID = 'project-48af6a2d-e8bb-46dd-a58';
 
 const BRANDS = [
-    {
-        name: 'RTH',
-        baseUrl: 'https://user.realtutorialhub.com',
-        email: TEST_EMAIL_RTH,
-        password: TEST_PASSWORD_RTH,
-    },
-    {
-        name: 'SkillUp',
-        baseUrl: 'https://user.skillupitacademy.com',
-        email: TEST_EMAIL_SKILLUP,
-        password: TEST_PASSWORD_SKILLUP,
-    },
+  {
+    name: 'RTH',
+    host: 'user.realtutorialhub.com',
+    email: 'ajayshah@gmail.com',
+    password: 'testing',
+  },
+  {
+    name: 'SkillUp',
+    host: 'user.skillupitacademy.com',
+    email: 'student@skillupitacademy.com',
+    password: 'testing',
+  },
 ];
 
-async function testBrand(brand) {
-    console.log(`\n🔍 Testing ${brand.name}`);
-    console.log('====================================');
+// =====================================
+// HTTP HELPER
+// =====================================
 
-    let cookies = '';
+function request(host, path, method = 'GET', body = null, cookie = '') {
+  return new Promise((resolve, reject) => {
+    const data = body ? JSON.stringify(body) : null;
 
-    try {
-        // 1. LOGIN
-        const loginRes = await fetch(`${brand.baseUrl}/api/auth/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                email: brand.email,
-                password: brand.password,
-            }),
+    const options = {
+      hostname: host,
+      path,
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(cookie && { Cookie: cookie }),
+      },
+      timeout: 15000,
+    };
+
+    const req = https.request(options, (res) => {
+      let raw = '';
+
+      res.on('data', (chunk) => (raw += chunk));
+
+      res.on('end', () => {
+        let parsed = null;
+
+        try {
+          parsed = JSON.parse(raw);
+        } catch {}
+
+        const cookies = res.headers['set-cookie']
+          ? res.headers['set-cookie'].map((c) => c.split(';')[0]).join('; ')
+          : '';
+
+        resolve({
+          status: res.statusCode,
+          data: parsed,
+          cookie: cookies,
         });
+      });
+    });
 
-        if (loginRes.status !== 200) {
-            throw new Error(`Login failed (${loginRes.status})`);
-        }
+    req.on('error', reject);
 
-        const setCookie = loginRes.headers.get('set-cookie');
-        cookies = setCookie || '';
-        
-        console.log('  Login: ✅');
+    req.on('timeout', () => {
+      console.log(`  ❌ Timeout: ${host}${path}`);
+      req.destroy();
+      reject(new Error('Request timeout'));
+    });
 
-        // 2. PROFILE (/me)
-        const meRes = await fetch(`${brand.baseUrl}/api/auth/me`, {
-            headers: { cookie: cookies },
-        });
-
-        if (meRes.status !== 200) {
-            throw new Error(`/me failed (${meRes.status})`);
-        }
-
-        console.log('  Profile: ✅');
-
-        // 3. ONBOARDING (may be 200 or 403 depending state)
-        const onboardingRes = await fetch(`${brand.baseUrl}/api/onboarding`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                cookie: cookies,
-            },
-            body: JSON.stringify({ test: true }),
-        });
-
-        if (![200, 403].includes(onboardingRes.status)) {
-            throw new Error(`Onboarding unexpected (${onboardingRes.status})`);
-        }
-
-        console.log('  Onboarding: ✅');
-
-        // 4. SESSIONS
-        const sessionRes = await fetch(`${brand.baseUrl}/api/auth/sessions`, {
-            headers: { cookie: cookies },
-        });
-
-        if (sessionRes.status !== 200) {
-            throw new Error(`Sessions failed (${sessionRes.status})`);
-        }
-
-        const sessionData = await sessionRes.json();
-
-        const hasCurrent = sessionData?.sessions?.some(s => s.isCurrent);
-
-        console.log('  Sessions: ✅');
-        console.log(`  Current session marked: ${hasCurrent ? '✅' : '❌'}`);
-
-        return {
-            brand: brand.name,
-            login: '✅',
-            profile: '✅',
-            onboarding: '✅',
-            sessions: '✅',
-            currentSession: hasCurrent ? '✅' : '❌',
-        };
-
-    } catch (err) {
-        console.error(`❌ ${brand.name} FAILED:`, err.message);
-
-        return {
-            brand: brand.name,
-            error: err.message,
-        };
-    }
+    if (data) req.write(data);
+    req.end();
+  });
 }
 
-(async () => {
-    console.log('🚀 FINAL AUTH DIAGNOSTIC');
-    console.log('====================================');
+// =====================================
+// TEST BRAND FLOW
+// =====================================
 
-    const results = [];
+async function testBrand(brand) {
+  console.log(`\n🔍 Testing ${brand.name}`);
+  console.log('--------------------------------');
 
-    for (const brand of BRANDS) {
-        const result = await testBrand(brand);
-        results.push(result);
-    }
-
-    console.log('\n📊 SUMMARY');
-    console.log('====================================');
-
-    console.table(results);
-
-    const allPassed = results.every(r =>
-        r.login === '✅' &&
-        r.profile === '✅' &&
-        r.onboarding === '✅' &&
-        r.sessions === '✅' &&
-        r.currentSession === '✅'
+  try {
+    // LOGIN
+    const login = await request(
+      brand.host,
+      '/api/auth/login',
+      'POST',
+      {
+        email: brand.email,
+        password: brand.password,
+      }
     );
 
-    console.log('\n🏁 FINAL RESULT');
-    console.log('====================================');
-
-    if (allPassed) {
-        console.log('✅ PASS — SAFE TO DEPLOY');
-        process.exit(0);
-    } else {
-        console.log('❌ FAIL — ROLLBACK REQUIRED');
-        process.exit(1);
+    if (login.status !== 200) {
+      throw new Error(`Login failed (${login.status})`);
     }
+
+    if (!login.cookie) {
+      throw new Error('No cookies received');
+    }
+
+    console.log('  Login: ✅');
+
+    // PROFILE (BFF ROUTE)
+    const profile = await request(
+      brand.host,
+      '/api/profile',
+      'GET',
+      null,
+      login.cookie
+    );
+
+    if (profile.status !== 200) {
+      throw new Error(`Profile failed (${profile.status})`);
+    }
+
+    console.log('  Profile: ✅');
+
+    // ONBOARDING
+    const onboarding = await request(
+      brand.host,
+      '/api/onboarding',
+      'POST',
+      { test: true },
+      login.cookie
+    );
+
+    if (![200, 403].includes(onboarding.status)) {
+      throw new Error(`Onboarding failed (${onboarding.status})`);
+    }
+
+    console.log('  Onboarding: ✅');
+
+    // SESSIONS
+    const sessions = await request(
+      brand.host,
+      '/api/auth/sessions',
+      'GET',
+      null,
+      login.cookie
+    );
+
+    if (sessions.status !== 200) {
+      throw new Error(`Sessions failed (${sessions.status})`);
+    }
+
+    const hasCurrent =
+      Array.isArray(sessions.data?.sessions) &&
+      sessions.data.sessions.some((s) => s.isCurrent === true);
+
+    console.log('  Sessions: ✅');
+    console.log(`  Current session: ${hasCurrent ? '✅' : '❌'}`);
+
+    if (!hasCurrent) {
+      throw new Error('Current session not marked');
+    }
+
+    return true;
+  } catch (err) {
+    console.log(`  ❌ ${err.message}`);
+    return false;
+  }
+}
+
+// =====================================
+// CHECK ERRORS
+// =====================================
+
+function checkErrors() {
+  console.log('\n🔍 Checking production errors...');
+
+  try {
+    const output = execSync(
+      `gcloud logging read "severity>=ERROR" --limit=5 --freshness=10m --project=${PROJECT_ID}`,
+      { encoding: 'utf-8' }
+    );
+
+    if (!output.trim()) {
+      console.log('  ✅ No recent errors');
+      return true;
+    }
+
+    console.log('  ⚠️ Errors found');
+    return false;
+  } catch {
+    console.log('  ⚠️ Could not check logs (non-blocking)');
+    return true;
+  }
+}
+
+// =====================================
+// CHECK PHASE 3 LOGS
+// =====================================
+
+// function checkPhase3Logs() {
+//   console.log('\n🔍 Checking Phase 3 header logs...');
+
+//   try {
+//     const output = execSync(
+//       `gcloud logging read 'textPayload:"PHASE_3_HEADER"' --limit=5 --freshness=5m --project=${PROJECT_ID}`,
+//       { encoding: 'utf-8' }
+//     );
+
+//     if (!output.trim()) {
+//       console.log('  ❌ No PHASE_3_HEADER logs found');
+//       return false;
+//     }
+
+//     console.log('  ✅ Header standardization confirmed');
+//     return true;
+
+//   } catch (err) {
+//     console.log('  ❌ Log check failed:', err.message);
+//     return false;
+//   }
+// }
+
+// function checkPhase3Logs() {
+//   console.log('\n🔍 Checking Phase 3 header logs...');
+
+//   try {
+//     const output = execSync(
+//       `gcloud logging read 'textPayload:"PHASE_3_HEADER"' --limit=5 --freshness=5m --project=${PROJECT_ID}`,
+//       { encoding: 'utf-8' }
+//     );
+
+//     if (!output.trim()) {
+//       console.log('  ❌ No PHASE_3_HEADER logs found');
+//       return false;
+//     }
+
+//     console.log('  ✅ Header standardization confirmed');
+//     return true;
+
+//   } catch (err) {
+//     console.log('  ❌ Log check failed:', err.message);
+//     return false;
+//   }
+// }
+
+
+function checkPhase3Logs() {
+  console.log('\n🔍 Checking Phase 3 header logs...');
+
+  try {
+    const output = execSync(
+      `gcloud logging read 'resource.type="cloud_run_revision" AND "PHASE_3_HEADER"' --limit=5 --freshness=5m --project=${PROJECT_ID}`,
+      { encoding: 'utf-8' }
+    );
+
+    if (!output.trim()) {
+      console.log('  ❌ No PHASE_3_HEADER logs found');
+      return false;
+    }
+
+    console.log('  ✅ Header standardization confirmed');
+    return true;
+
+  } catch (err) {
+    console.log('  ❌ Log check failed:', err.message);
+    return false;
+  }
+}
+
+// =====================================
+// MAIN
+// =====================================
+
+(async () => {
+  console.log('🚀 MASTER AUTH VALIDATION');
+  console.log('====================================');
+
+  const errorsOk = checkErrors();
+
+  let authOk = true;
+
+  for (const brand of BRANDS) {
+    const result = await testBrand(brand);
+    if (!result) authOk = false;
+  }
+
+  const phase3LogsOk = checkPhase3Logs();
+
+  console.log('\n📊 FINAL RESULT');
+  console.log('====================================');
+
+  if (errorsOk && authOk && phase3LogsOk) {
+    console.log('✅ PASS — SYSTEM HEALTHY & PHASE 3 VERIFIED');
+    process.exit(0);
+  } else {
+    console.log('❌ FAIL — INVESTIGATE BEFORE PROCEEDING');
+    process.exit(1);
+  }
 })();

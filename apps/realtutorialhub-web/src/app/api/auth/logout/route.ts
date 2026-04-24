@@ -1,16 +1,14 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { proxyAuthRequest } from '../../../../../../../src/share-branding/auth/authBffRoute';
+import { proxyAuthRequest, FALLBACK_API_BASE_RTH } from '../../../../../../../src/share-branding/auth';
 
 export const dynamic = 'force-dynamic';
-
-const FALLBACK_API_BASE = 'https://api.realtutorialhub.com/api';
 
 export async function POST(request: NextRequest) {
   // ✅ Proxy to backend (which clears cookies and revokes tokens)
   const backendResponse = await proxyAuthRequest(request, { 
-    fallbackApiBase: FALLBACK_API_BASE, 
+    fallbackApiBase: FALLBACK_API_BASE_RTH, 
     authPath: 'logout' 
   });
   

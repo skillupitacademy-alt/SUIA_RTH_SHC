@@ -7,11 +7,11 @@ import {
   fetchAuthUpstream,
   getSetCookies,
   rewriteSetCookie,
-} from '../../../../../../../src/share-branding/auth/authBffRoute';
+  FALLBACK_API_BASE_SKILLUP,
+} from '../../../../../../../src/share-branding/auth';
 
 export const dynamic = 'force-dynamic';
 
-const FALLBACK_API_BASE = 'https://api.skillupitacademy.com/api';
 const PLACEMENT_HANDOFF_URL = 'https://placement.skillhubcore.in/api/auth/handoff';
 
 function normalizeRedirectTo(rawValue: unknown): string {
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
 
   if (accessToken.length === 0) {
     const refreshResponse = await fetchAuthUpstream(request, {
-      fallbackApiBase: FALLBACK_API_BASE,
+      fallbackApiBase: FALLBACK_API_BASE_SKILLUP,
       authPath: 'refresh',
       method: 'POST',
       body: JSON.stringify({}),

@@ -1,9 +1,7 @@
 import type { NextRequest } from 'next/server';
-import { proxyAuthRequest } from '@/share-branding/auth/authBffRoute';
+import { proxyAuthRequest, FALLBACK_API_BASE_SKILLUP } from '@/share-branding/auth';
 
 export const dynamic = 'force-dynamic';
-
-const FALLBACK_API_BASE = 'https://api.skillupitacademy.com/api';
 
 /**
  * GET /api/auth/sessions
@@ -11,7 +9,7 @@ const FALLBACK_API_BASE = 'https://api.skillupitacademy.com/api';
  */
 export async function GET(request: NextRequest) {
   return proxyAuthRequest(request, { 
-    fallbackApiBase: FALLBACK_API_BASE, 
+    fallbackApiBase: FALLBACK_API_BASE_SKILLUP, 
     authPath: 'sessions' 
   });
 }
@@ -22,7 +20,7 @@ export async function GET(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   return proxyAuthRequest(request, { 
-    fallbackApiBase: FALLBACK_API_BASE, 
+    fallbackApiBase: FALLBACK_API_BASE_SKILLUP, 
     authPath: 'sessions' 
   });
 }

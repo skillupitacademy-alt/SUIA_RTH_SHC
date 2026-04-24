@@ -2,21 +2,30 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 /**
- * 🔥 GATEWAY-FIRST ARCHITECTURE: Gateway Secret Validation
+ * 🔥 GATEWAY-FIRST ARCHITECTURE: Internal Secret Validation
  * 
- * This middleware ensures ALL requests to the API server come through the API Gateway.
+ * This middleware ensures ALL requests to the API server come through trusted sources.
  * Direct API server access is FORBIDDEN.
  * 
  * SECURITY MODEL:
  * - Gateway validates JWT and injects user headers
- * - Gateway adds X-Gateway-Secret header
- * - API server trusts gateway headers if secret is valid
- * - API server rejects requests without valid gateway secret
+ * - Gateway adds X-Internal-Secret header (Phase 3: standardized)
+ * - BFF services add X-Internal-Secret header for internal calls
+ * - API server trusts headers if secret is valid
+ * - API server rejects requests without valid secret
+ * 
+ * PHASE 3 TRANSITION:
+ * - Accepts BOTH x-gateway-secret (legacy) and x-internal-secret (new standard)
+ * - Prefers x-internal-secret if both present
+ * - This allows zero-downtime migration
  */
 
 export function validateGatewaySecret(req: NextRequest): NextResponse | null {
-  const gatewaySecret = req.headers.get('x-gateway-secret');
+  // Phase 3: Check for new standardized header first
   const internalSecret = req.headers.get('x-internal-secret');
+  // Backward compatibility: Check legacy header
+  const gatewaySecret = req.headers.get('x-gateway-secret');
+  
   const expectedSecret = process.env.INTERNAL_GATEWAY_SECRET;
   const expectedInternalSecret = process.env.INTERNAL_API_SECRET;
   
@@ -41,21 +50,25 @@ export function validateGatewaySecret(req: NextRequest): NextResponse | null {
     return null;
   }
   
-  // 🔥 CRITICAL: Allow internal service-to-service calls (BFF → API)
-  // These calls have x-internal-secret header instead of x-gateway-secret
+  // 🔥 PHASE 3: Unified internal authentication
+  // Accept BOTH x-internal-secret (new standard) and x-gateway-secret (legacy)
+  // This allows zero-downtime migration
+  
+  // Priority 1: Check x-internal-secret (new standard from BFF or Gateway)
   if (internalSecret !== null) {
     const trimmedInternalSecret = internalSecret.trim();
     const trimmedExpectedSecret = expectedInternalSecret?.trim();
     
-    console.log('[GATEWAY_AUTH] Internal service call detected', {
+    console.log('[GATEWAY_AUTH] Internal secret authentication', {
       path: pathname,
-      hasInternalSecret: true,
+      headerType: 'x-internal-secret',
+      hasSecret: true,
       secretMatch: trimmedInternalSecret === trimmedExpectedSecret,
     });
     
     if (trimmedExpectedSecret !== undefined && trimmedInternalSecret === trimmedExpectedSecret) {
-      console.log('[GATEWAY_AUTH] Internal service authentication SUCCESS');
-      return null; // Allow internal call
+      console.log('[GATEWAY_AUTH] Internal authentication SUCCESS (x-internal-secret)');
+      return null; // Allow request
     }
     
     console.error('[GATEWAY_AUTH] Invalid internal secret', {
@@ -73,39 +86,56 @@ export function validateGatewaySecret(req: NextRequest): NextResponse | null {
     );
   }
   
-  // Validate gateway secret for all other requests
-  if (typeof expectedSecret !== 'string' || expectedSecret.trim().length === 0) {
-    console.error('[GATEWAY_AUTH] INTERNAL_GATEWAY_SECRET not configured');
-    return NextResponse.json(
-      { 
-        error: 'Server configuration error',
-        message: 'Gateway secret not configured'
-      },
-      { status: 500 }
-    );
-  }
-  
-  if (typeof gatewaySecret !== 'string' || gatewaySecret !== expectedSecret) {
-    const forwardedFor = req.headers.get('x-forwarded-for');
-    const cfConnectingIp = req.headers.get('cf-connecting-ip');
-
-    console.warn('[GATEWAY_AUTH] Invalid or missing gateway secret', {
+  // Priority 2: Check x-gateway-secret (legacy, backward compatibility)
+  if (gatewaySecret !== null) {
+    const trimmedGatewaySecret = gatewaySecret.trim();
+    const trimmedExpectedSecret = expectedSecret?.trim();
+    
+    console.log('[GATEWAY_AUTH] Gateway secret authentication (legacy)', {
       path: pathname,
-      hasSecret: typeof gatewaySecret === 'string' && gatewaySecret.length > 0,
-      ip: forwardedFor ?? cfConnectingIp ?? 'unknown',
+      headerType: 'x-gateway-secret',
+      hasSecret: true,
+      secretMatch: trimmedGatewaySecret === trimmedExpectedSecret,
+    });
+    
+    if (trimmedExpectedSecret !== undefined && trimmedGatewaySecret === trimmedExpectedSecret) {
+      console.log('[GATEWAY_AUTH] Gateway authentication SUCCESS (x-gateway-secret - legacy)');
+      return null; // Allow request
+    }
+    
+    console.error('[GATEWAY_AUTH] Invalid gateway secret', {
+      path: pathname,
+      received: trimmedGatewaySecret.substring(0, 10) + '...',
+      expected: trimmedExpectedSecret !== undefined ? trimmedExpectedSecret.substring(0, 10) + '...' : 'NOT_SET',
     });
     
     return NextResponse.json(
       { 
         error: 'Forbidden',
-        message: 'Direct API access is not allowed. All requests must go through API Gateway.'
+        message: 'Invalid gateway secret'
       },
       { status: 403 }
     );
   }
   
-  // Gateway secret is valid - allow request
-  return null;
+  // No valid authentication header found
+  const forwardedFor = req.headers.get('x-forwarded-for');
+  const cfConnectingIp = req.headers.get('cf-connecting-ip');
+
+  console.warn('[GATEWAY_AUTH] No valid authentication header', {
+    path: pathname,
+    hasInternalSecret: false,
+    hasGatewaySecret: false,
+    ip: forwardedFor ?? cfConnectingIp ?? 'unknown',
+  });
+  
+  return NextResponse.json(
+    { 
+      error: 'Forbidden',
+      message: 'Direct API access is not allowed. All requests must go through API Gateway or BFF.'
+    },
+    { status: 403 }
+  );
 }
 
 /**

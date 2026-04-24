@@ -34,4 +34,13 @@ export {
   proxyAuthRequest,
   fetchAuthUpstream,
   createForwardHeaders,
+  extractCookieValue,
+  getSetCookies,
+  rewriteSetCookie,
 } from './authBffRoute';
+
+// Constants and utilities
+export {
+  FALLBACK_API_BASE_RTH,
+  FALLBACK_API_BASE_SKILLUP,
+} from './constants';
