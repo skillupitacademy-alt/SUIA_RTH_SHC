@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { AUTH_CONFIG } from './config';
 
 const HOP_BY_HOP_HEADERS = new Set([
   'connection',
@@ -34,27 +35,27 @@ function getGatewayUrl(hostname?: string): string {
   return gatewayUrl.trim().replace(/\/+$/, '');
 }
 
-export function getConfiguredAuthBaseUrls(fallbackApiBase: string): string[] {
+export function getConfiguredAuthBaseUrls(fallbackApiBase: string, hostname?: string): string[] {
   // 🔥 CRITICAL: Only return gateway URL - no fallbacks, no bypasses
   try {
-    return [getGatewayUrl()];
+    return [getGatewayUrl(hostname)];
   } catch {
     // If gateway URL not configured, throw error - don't allow fallback
     throw new Error('GATEWAY_URL must be configured - direct API access is forbidden');
   }
 }
 
-export function getUpstreamUrls(fallbackApiBase: string, upstreamPath: string): string[] {
+export function getUpstreamUrls(fallbackApiBase: string, upstreamPath: string, hostname?: string): string[] {
   const normalizedPath = upstreamPath.replace(/^\/+/, '');
-  const gatewayUrl = getGatewayUrl();
+  const gatewayUrl = getGatewayUrl(hostname);
   
   // Gateway URLs already include routing - just append the path
   return [`${gatewayUrl}/${normalizedPath}`];
 }
 
-export function getAuthUpstreamUrls(fallbackApiBase: string, authPath: string): string[] {
+export function getAuthUpstreamUrls(fallbackApiBase: string, authPath: string, hostname?: string): string[] {
   const normalizedAuthPath = authPath.replace(/^\/+/, '');
-  const gatewayUrl = getGatewayUrl();
+  const gatewayUrl = getGatewayUrl(hostname);
   
   // Gateway handles auth routing - use /auth prefix
   return [`${gatewayUrl}/auth/${normalizedAuthPath}`];
@@ -195,10 +196,11 @@ export async function fetchUpstream(
       ? undefined
       : await request.arrayBuffer();
   const headers = createForwardHeaders(request);
+  const hostname = getRequestHost(request);
 
   let upstreamResponse: Response | null = null;
 
-  for (const url of getUpstreamUrls(options.fallbackApiBase, options.upstreamPath)) {
+  for (const url of getUpstreamUrls(options.fallbackApiBase, options.upstreamPath, hostname)) {
     const candidate = await fetch(`${url}${request.nextUrl.search}`, {
       method,
       headers,
@@ -233,10 +235,11 @@ export async function fetchAuthUpstream(
       ? undefined
       : await request.arrayBuffer();
   const headers = createForwardHeaders(request);
+  const hostname = getRequestHost(request);
 
   let upstreamResponse: Response | null = null;
 
-  for (const url of getAuthUpstreamUrls(options.fallbackApiBase, options.authPath)) {
+  for (const url of getAuthUpstreamUrls(options.fallbackApiBase, options.authPath, hostname)) {
     const candidate = await fetch(`${url}${request.nextUrl.search}`, {
       method,
       headers,
@@ -299,9 +302,10 @@ export async function proxyAuthRequest(
     body?: BodyInit | null;
   },
 ) {
-  // 📊 OBSERVABILITY: Log auth proxy request
+  // 📊 OBSERVABILITY: Log auth proxy request and current mode
   const hostname = getRequestHost(request);
   const brand = hostname?.includes('skillup') ? 'skillup' : 'realtutorialhub';
+  
   console.log(JSON.stringify({
     tag: 'AUTH_FLOW',
     action: 'proxy_auth_request',
@@ -311,44 +315,168 @@ export async function proxyAuthRequest(
     hostname,
   }));
 
-  const upstreamResponse = await fetchAuthUpstream(request, options);
-
-  if (upstreamResponse === null) {
-    console.log(JSON.stringify({
-      tag: 'AUTH_FLOW',
-      action: 'proxy_auth_failed',
-      authPath: options.authPath,
-      error: 'upstream_unavailable',
-    }));
-    return NextResponse.json({ error: 'Authentication upstream unavailable' }, { status: 502 });
-  }
-
-  // 📊 OBSERVABILITY: Log upstream response
+  // 📊 PHASE 5: Log current configuration mode
   console.log(JSON.stringify({
-    tag: 'AUTH_FLOW',
-    action: 'proxy_auth_response',
-    authPath: options.authPath,
-    status: upstreamResponse.status,
-    brand,
+    tag: 'AUTH_FLOW_MODE',
+    fallbackEnabled: AUTH_CONFIG.ENABLE_FALLBACK,
+    strictGateway: AUTH_CONFIG.STRICT_GATEWAY,
+    phase: 'phase_5_safe_mode',
   }));
 
-  const payload = await upstreamResponse.arrayBuffer();
-  const response = new NextResponse(payload, {
-    status: upstreamResponse.status,
-    statusText: upstreamResponse.statusText,
-  });
+  // 🔥 PHASE 5: Gateway-first execution
+  const gatewayUrl = getGatewayUrl(hostname);
+  const targetUrl = `${gatewayUrl}/auth/${options.authPath}`;
+  const headers = createForwardHeaders(request);
+  const method = options.method ?? request.method;
+  const body = options.body !== undefined
+    ? options.body
+    : method === 'GET' || method === 'HEAD'
+    ? undefined
+    : await request.arrayBuffer();
 
-  upstreamResponse.headers.forEach((value, key) => {
-    if (HOP_BY_HOP_HEADERS.has(key.toLowerCase()) || key.toLowerCase() === 'set-cookie') {
-      return;
+  try {
+    // 🟢 PRIMARY: Gateway call
+    const upstreamResponse = await fetch(`${targetUrl}${request.nextUrl.search}`, {
+      method,
+      headers,
+      body,
+      redirect: 'manual',
+      cache: 'no-store',
+    });
+
+    // ✅ SUCCESS → return immediately
+    if (upstreamResponse.ok || upstreamResponse.status < 500) {
+      console.log(JSON.stringify({
+        tag: 'AUTH_METRIC',
+        type: 'gateway_success',
+        status: upstreamResponse.status,
+        authPath: options.authPath,
+        brand,
+      }));
+
+      // Process successful response
+      const payload = await upstreamResponse.arrayBuffer();
+      const response = new NextResponse(payload, {
+        status: upstreamResponse.status,
+        statusText: upstreamResponse.statusText,
+      });
+
+      upstreamResponse.headers.forEach((value, key) => {
+        if (HOP_BY_HOP_HEADERS.has(key.toLowerCase()) || key.toLowerCase() === 'set-cookie') {
+          return;
+        }
+        response.headers.set(key, value);
+      });
+
+      const requestHost = getRequestHost(request);
+      for (const cookie of getSetCookies(upstreamResponse.headers)) {
+        response.headers.append('set-cookie', rewriteSetCookie(cookie, requestHost));
+      }
+
+      return response;
     }
-    response.headers.set(key, value);
-  });
 
-  const requestHost = getRequestHost(request);
-  for (const cookie of getSetCookies(upstreamResponse.headers)) {
-    response.headers.append('set-cookie', rewriteSetCookie(cookie, requestHost));
+    // ❌ Gateway returned 5xx error
+    throw new Error(`Gateway failed with ${upstreamResponse.status}`);
+
+  } catch (err) {
+    // 📊 OBSERVABILITY: Log gateway failure
+    console.log(JSON.stringify({
+      tag: 'AUTH_GATEWAY_FAIL',
+      authPath: options.authPath,
+      error: err instanceof Error ? err.message : 'Unknown error',
+      brand,
+      hostname,
+    }));
+
+    console.log(JSON.stringify({
+      tag: 'AUTH_METRIC',
+      type: 'gateway_failure',
+      authPath: options.authPath,
+      brand,
+    }));
+
+    // 🔴 STRICT MODE → NO fallback
+    if (AUTH_CONFIG.STRICT_GATEWAY) {
+      console.log(JSON.stringify({
+        tag: 'AUTH_FLOW',
+        action: 'strict_mode_503',
+        authPath: options.authPath,
+        reason: 'gateway_failed_strict_mode',
+      }));
+
+      return NextResponse.json(
+        { error: 'Authentication service temporarily unavailable' },
+        { status: 503 }
+      );
+    }
+
+    // 🟡 FALLBACK (ONLY if enabled)
+    if (AUTH_CONFIG.ENABLE_FALLBACK && options.fallbackApiBase) {
+      console.log(JSON.stringify({
+        tag: 'AUTH_FALLBACK_TRIGGERED',
+        authPath: options.authPath,
+        fallbackApiBase: options.fallbackApiBase,
+        brand,
+      }));
+
+      console.log(JSON.stringify({
+        tag: 'AUTH_METRIC',
+        type: 'fallback_used',
+        authPath: options.authPath,
+        brand,
+      }));
+
+      try {
+        const fallbackUrl = `${options.fallbackApiBase}/auth/${options.authPath}`;
+        const fallbackResponse = await fetch(`${fallbackUrl}${request.nextUrl.search}`, {
+          method,
+          headers,
+          body,
+          redirect: 'manual',
+          cache: 'no-store',
+        });
+
+        const payload = await fallbackResponse.arrayBuffer();
+        const response = new NextResponse(payload, {
+          status: fallbackResponse.status,
+          statusText: fallbackResponse.statusText,
+        });
+
+        fallbackResponse.headers.forEach((value, key) => {
+          if (HOP_BY_HOP_HEADERS.has(key.toLowerCase()) || key.toLowerCase() === 'set-cookie') {
+            return;
+          }
+          response.headers.set(key, value);
+        });
+
+        const requestHost = getRequestHost(request);
+        for (const cookie of getSetCookies(fallbackResponse.headers)) {
+          response.headers.append('set-cookie', rewriteSetCookie(cookie, requestHost));
+        }
+
+        return response;
+      } catch (fallbackErr) {
+        console.log(JSON.stringify({
+          tag: 'AUTH_FLOW',
+          action: 'fallback_failed',
+          authPath: options.authPath,
+          error: fallbackErr instanceof Error ? fallbackErr.message : 'Unknown error',
+        }));
+      }
+    }
+
+    // ❌ No fallback allowed or fallback failed
+    console.log(JSON.stringify({
+      tag: 'AUTH_FLOW',
+      action: 'auth_unavailable',
+      authPath: options.authPath,
+      reason: AUTH_CONFIG.ENABLE_FALLBACK ? 'fallback_failed' : 'fallback_disabled',
+    }));
+
+    return NextResponse.json(
+      { error: 'Authentication unavailable (no fallback)' },
+      { status: 503 }
+    );
   }
-
-  return response;
 }

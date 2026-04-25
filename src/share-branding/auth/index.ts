@@ -44,3 +44,8 @@ export {
   FALLBACK_API_BASE_RTH,
   FALLBACK_API_BASE_SKILLUP,
 } from './constants';
+
+// Configuration and feature flags
+export {
+  AUTH_CONFIG,
+} from './config';
