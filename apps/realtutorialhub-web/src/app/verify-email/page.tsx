@@ -38,6 +38,7 @@ export default function VerifyEmailPage() {
             'Content-Type': 'application/json',
             'x-brand': activeBrand,
           },
+          credentials: 'include',
           body: JSON.stringify({ token, platform: activeBrand }),
         });
 

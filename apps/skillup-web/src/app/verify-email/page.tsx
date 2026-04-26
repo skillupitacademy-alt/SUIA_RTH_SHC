@@ -23,10 +23,11 @@ function VerifyEmailContent() {
       try {
         const response = await fetch('/api/auth/verify-email', {
           method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-brand': 'skillup',
-        },
+          headers: {
+            'Content-Type': 'application/json',
+            'x-brand': 'skillup',
+          },
+          credentials: 'include',
           body: JSON.stringify({
             token,
             platform: 'skillup',

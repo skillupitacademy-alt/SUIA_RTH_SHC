@@ -51,6 +51,7 @@ export default function ResetPasswordPage() {
           'Content-Type': 'application/json',
           'x-brand': activeBrand,
         },
+        credentials: 'include',
         body: JSON.stringify({ token, password, platform: activeBrand }),
       });
 

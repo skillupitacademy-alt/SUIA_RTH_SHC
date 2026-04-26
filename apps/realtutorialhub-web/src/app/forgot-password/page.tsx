@@ -41,6 +41,7 @@ export default function ForgotPasswordPage() {
           'Content-Type': 'application/json',
           'x-brand': activeBrand,
         },
+        credentials: 'include',
         body: JSON.stringify({ email, platform: activeBrand }),
       });
     } finally {

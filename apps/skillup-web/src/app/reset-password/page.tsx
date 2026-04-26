@@ -68,6 +68,7 @@ function ResetPasswordContent() {
           'Content-Type': 'application/json',
           'x-brand': 'skillup',
         },
+        credentials: 'include',
         body: JSON.stringify({
           token,
           password,

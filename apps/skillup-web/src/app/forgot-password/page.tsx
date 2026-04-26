@@ -22,6 +22,7 @@ export default function ForgotPasswordPage() {
           'Content-Type': 'application/json',
           'x-brand': 'skillup',
         },
+        credentials: 'include',
         body: JSON.stringify({
           email,
           platform: 'skillup',

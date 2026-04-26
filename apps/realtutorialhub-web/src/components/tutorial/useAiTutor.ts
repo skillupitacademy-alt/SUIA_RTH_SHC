@@ -72,6 +72,7 @@ export function useAiTutor(initialGreeting: string, subtopicId: string, subtopic
         headers: {
           'content-type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           subtopicId,
           question: trimmedQuestion,

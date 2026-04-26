@@ -96,6 +96,7 @@ export function AITutorBlock({
         headers: {
           'content-type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           subtopicId,
           question: trimmedQuestion,
