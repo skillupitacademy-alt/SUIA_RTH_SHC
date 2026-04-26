@@ -1,4 +1,4 @@
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 
 export interface BackendAuthUserState {
   id: string;
@@ -19,46 +19,75 @@ export interface BackendAuthUserState {
 }
 
 /**
- * 🔥 UNIFIED: Use standard cookie header creation
- * This replaces manual cookie parsing with a cleaner approach
- * // @auth-audit-ignore - Using Next.js cookies() API properly
+ * 🔥 Build base URL using incoming request headers
+ * SSR MUST go through gateway (NOT localhost)
  */
-async function getCookieHeader(): Promise<string> {
+function buildBaseUrl(
+  headerList: Awaited<ReturnType<typeof headers>>
+): string {
+  const host =
+    headerList.get('x-forwarded-host') ||
+    headerList.get('host');
+
+  if (!host) {
+    throw new Error('[AUTH_STATE] No host header found');
+  }
+
+  // 🔒 Force https in production (important for secure cookies)
+  const protocol =
+    process.env.NODE_ENV === 'development'
+      ? 'http'
+      : 'https';
+
+  return `${protocol}://${host}`;
+}
+
+/**
+ * 🔥 Build cookie header from Next.js cookies()
+ */
+async function buildCookieHeader(): Promise<string> {
   const cookieStore = await cookies();
-  const allCookies = cookieStore.getAll();
-  return allCookies
-    .map(({ name, value }: { name: string; value: string }) => `${name}=${value}`)
+
+  return cookieStore
+    .getAll()
+    .map(({ name, value }) => `${name}=${value}`)
     .join('; ');
 }
 
+/**
+ * 🔐 SSR AUTH STATE FETCH (FINAL)
+ */
 export async function fetchBackendAuthState(): Promise<BackendAuthUserState | null> {
-  const cookieHeader = await getCookieHeader();
-  
-  console.log('[AUTH_STATE] Cookie check:', {
-    hasCookies: cookieHeader.length > 0,
-    cookieLength: cookieHeader.length,
-    cookiePreview: cookieHeader.substring(0, 100),
-  });
-  
-  if (cookieHeader.length === 0) {
-    console.log('[AUTH_STATE] No cookies found, returning null');
-    return null;
-  }
-
   try {
-    // ✅ Add timestamp to prevent any caching (defense in depth)
-    const timestamp = Date.now();
-    
-    // 🔥 SSR OPTIMIZATION: Call localhost (same service)
-    // In SSR context, we're calling our own BFF endpoint
-    const profileUrl = `http://localhost:3000/api/profile?_t=${timestamp}`;
-    
-    console.log('[AUTH_STATE] Fetching profile from local BFF');
-    console.log('[AUTH_STATE] Cookie header length:', cookieHeader.length);
-    
+    // ✅ Single headers source (no duplication)
+    const headerList = await headers();
+
+    const baseUrl = buildBaseUrl(headerList);
+    const cookieHeader = await buildCookieHeader();
+
+    console.log('[AUTH_STATE_DEBUG]', {
+      baseUrl,
+      hasCookie: !!cookieHeader,
+      cookieLength: cookieHeader.length,
+    });
+
+    if (!cookieHeader) {
+      console.log('[AUTH_STATE] No cookies → returning null');
+      return null;
+    }
+
+    const profileUrl = `${baseUrl}/api/profile`;
+
+    console.log('[AUTH_STATE] Fetching profile via gateway:', profileUrl);
+
     const response = await fetch(profileUrl, {
       headers: {
-        Cookie: cookieHeader,
+        cookie: cookieHeader,
+
+        // 🔥 REQUIRED for your gateway routing (DO NOT REMOVE)
+        host: headerList.get('host') || '',
+        'x-forwarded-host': headerList.get('host') || '',
+
         'Cache-Control': 'no-cache',
       },
       cache: 'no-store',
@@ -68,25 +97,23 @@ export async function fetchBackendAuthState(): Promise<BackendAuthUserState | nu
 
     if (!response.ok) {
       const errorText = await response.text().catch(() => 'Unable to read error');
-      console.error('[AUTH_STATE] API returned error:', response.status, errorText);
+      console.error('[AUTH_STATE] API error:', response.status, errorText);
       return null;
     }
 
-    const payload = (await response.json().catch(() => null)) as BackendAuthUserState | null;
-    const user = payload;
-    
-    // 🔥 CRITICAL: The BFF /api/profile returns the profile with onboardingCompleted field
-    // No need to map from onboarded since the field is already correct
-    if (user) {
-      console.log('[AUTH_STATE] Success:', {
-        userId: user.id,
-        email: user.email,
-        onboardingCompleted: user.onboardingCompleted
-      });
-    } else {
-      console.error('[AUTH_STATE] No user in response payload');
+    const user = (await response.json().catch(() => null)) as BackendAuthUserState | null;
+
+    if (!user) {
+      console.error('[AUTH_STATE] No user in response');
+      return null;
     }
-    
+
+    console.log('[AUTH_STATE] Success:', {
+      userId: user.id,
+      email: user.email,
+      onboardingCompleted: user.onboardingCompleted,
+    });
+
     return user;
   } catch (error) {
     console.error('[AUTH_STATE] Exception:', error);
