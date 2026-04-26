@@ -23,16 +23,16 @@ export interface BackendAuthUserState {
  * This replaces manual cookie parsing with a cleaner approach
  * // @auth-audit-ignore - Using Next.js cookies() API properly
  */
-function getCookieHeader(): string {
-  const cookieStore = cookies();
-  return cookieStore
-    .getAll()
-    .map(({ name, value }) => `${name}=${value}`)
+async function getCookieHeader(): Promise<string> {
+  const cookieStore = await cookies();
+  const allCookies = cookieStore.getAll();
+  return allCookies
+    .map(({ name, value }: { name: string; value: string }) => `${name}=${value}`)
     .join('; ');
 }
 
 export async function fetchBackendAuthState(): Promise<BackendAuthUserState | null> {
-  const cookieHeader = getCookieHeader();
+  const cookieHeader = await getCookieHeader();
   
   console.log('[AUTH_STATE] Cookie check:', {
     hasCookies: cookieHeader.length > 0,
