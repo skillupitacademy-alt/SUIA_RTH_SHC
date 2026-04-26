@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { unifiedFetch } from '@/share-branding/lib/unifiedFetch';
 import { 
   createInternalHeaders, 
   BffAuthErrors,
@@ -85,7 +86,7 @@ export async function handleProfileGet(req: NextRequest) {
     });
 
     // Call API Server
-    const res = await fetch(`${INTERNAL_API_URL}/auth/profile`, {
+    const res = await unifiedFetch(`${INTERNAL_API_URL}/auth/profile`, {
       method: 'GET',
       headers,
       cache: 'no-store',
@@ -155,7 +156,7 @@ export async function handleProfilePatch(req: NextRequest) {
     });
 
     // Call API Server
-    const res = await fetch(`${INTERNAL_API_URL}/auth/profile`, {
+    const res = await unifiedFetch(`${INTERNAL_API_URL}/auth/profile`, {
       method: 'PATCH',
       headers,
       body: JSON.stringify(body),

@@ -23,8 +23,8 @@ export interface BackendAuthUserState {
  * This replaces manual cookie parsing with a cleaner approach
  * // @auth-audit-ignore - Using Next.js cookies() API properly
  */
-async function getCookieHeader(): Promise<string> {
-  const cookieStore = await cookies();
+function getCookieHeader(): string {
+  const cookieStore = cookies();
   return cookieStore
     .getAll()
     .map(({ name, value }) => `${name}=${value}`)
@@ -32,8 +32,16 @@ async function getCookieHeader(): Promise<string> {
 }
 
 export async function fetchBackendAuthState(): Promise<BackendAuthUserState | null> {
-  const cookieHeader = await getCookieHeader();
+  const cookieHeader = getCookieHeader();
+  
+  console.log('[AUTH_STATE] Cookie check:', {
+    hasCookies: cookieHeader.length > 0,
+    cookieLength: cookieHeader.length,
+    cookiePreview: cookieHeader.substring(0, 100),
+  });
+  
   if (cookieHeader.length === 0) {
+    console.log('[AUTH_STATE] No cookies found, returning null');
     return null;
   }
 
@@ -41,33 +49,11 @@ export async function fetchBackendAuthState(): Promise<BackendAuthUserState | nu
     // ✅ Add timestamp to prevent any caching (defense in depth)
     const timestamp = Date.now();
     
-    // 🔥 CRITICAL FIX: Use the current BFF service URL for server-side rendering
-    // We need to call our own BFF /api/profile endpoint, not the API server directly
-    let bffUrl = 'http://localhost:3000'; // fallback for local dev
+    // 🔥 SSR OPTIMIZATION: Call localhost (same service)
+    // In SSR context, we're calling our own BFF endpoint
+    const profileUrl = `http://localhost:3000/api/profile?_t=${timestamp}`;
     
-    // In production, determine the current service URL
-    if (process.env.NODE_ENV === 'production') {
-      // For Cloud Run, we can use the service name pattern
-      const serviceName = process.env.K_SERVICE;
-      if (serviceName) {
-        bffUrl = `https://${serviceName}-plldp3atca-as.a.run.app`;
-      } else {
-        // Fallback: extract from INTERNAL_API_URL if available
-        const apiUrl = process.env.INTERNAL_API_URL;
-        if (apiUrl) {
-          bffUrl = apiUrl.replace('quiz-api-server', serviceName || 'realtutorialhub-web').replace('/api', '');
-        }
-      }
-    }
-    
-    const profileUrl = `${bffUrl}/api/profile?_t=${timestamp}`;
-    
-    console.log('[AUTH_STATE] Environment check:', {
-      nodeEnv: process.env.NODE_ENV,
-      serviceName: process.env.K_SERVICE,
-      bffUrl
-    });
-    console.log('[AUTH_STATE] Fetching from BFF:', profileUrl);
+    console.log('[AUTH_STATE] Fetching profile from local BFF');
     console.log('[AUTH_STATE] Cookie header length:', cookieHeader.length);
     
     const response = await fetch(profileUrl, {
@@ -76,7 +62,6 @@ export async function fetchBackendAuthState(): Promise<BackendAuthUserState | nu
         'Cache-Control': 'no-cache',
       },
       cache: 'no-store',
-      credentials: 'include',
     });
 
     console.log('[AUTH_STATE] Response status:', response.status);

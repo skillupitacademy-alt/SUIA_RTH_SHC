@@ -1,3 +1,6 @@
+import { RBACService, validateBrandOrThrow } from '@quiz/auth';
+import { PERMISSIONS } from '@quiz/auth/rbac/permissions';
+import type { Role } from '@quiz/auth/rbac/roles';
 import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
 
@@ -32,6 +35,18 @@ async function handler(_req: NextRequest) {
     if (brand === null) {
       return ApiResponse.error(unauthorized('Brand claim missing', 'UNAUTHORIZED'));
     }
+    
+    // 🔥 SECURITY FIX: Validate brand context (defense in depth)
+    try {
+      validateBrandOrThrow({ brand, userId: _payload.originalUserId }, _req);
+    } catch (brandError) {
+      console.error('[Admin /me] Brand validation failed:', brandError);
+      return ApiResponse.error({
+        code: 'BRAND_MISMATCH',
+        message: brandError instanceof Error ? brandError.message : 'Brand validation failed',
+      }, 403);
+    }
+    
     const brandContext = getAuthBrandContext(brand);
     const userRepo = shouldUseBrandBinding() && typeof container.get(UserRepository).withDb === 'function'
       ? container.get(UserRepository).withDb(brandContext.db, brandContext.tables)
@@ -51,11 +66,14 @@ async function handler(_req: NextRequest) {
     const typedProfile = profile as { name?: string | null };
 
     const role = _user.userRoles[0]?.role?.name?.toLowerCase() ?? 'user';
-    const isAdmin = role === 'admin' || role === 'super_admin' || role === 'infrastructure';
-
-    if (!isAdmin) {
-        return ApiResponse.error(forbidden('Admin access only'));
+    const roleArray = [role].filter((r): r is Role => ['user', 'student', 'admin', 'super_admin', 'faculty', 'infrastructure'].includes(r)) as Role[];
+    
+    // RBAC check
+    if (!RBACService.hasPermission(roleArray, PERMISSIONS.ADMIN_PANEL)) {
+        return ApiResponse.error(forbidden('Admin access required'));
     }
+    
+    const isAdmin = true; // User passed RBAC check
 
     const durationMs = Date.now() - start;
     recordCounter(METRICS.AUTH.LOGIN + '.me', 1, { outcome: 'success', scope });

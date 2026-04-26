@@ -1,0 +1,17 @@
+{
+  "domain": "your-domain.com",
+  "protocol": "https",
+  "tokens": {
+    "basicUser": "PASTE_YOUR_BASIC_USER_TOKEN_HERE",
+    "student": "PASTE_YOUR_STUDENT_TOKEN_HERE",
+    "invalidRole": "PASTE_YOUR_INVALID_ROLE_TOKEN_HERE"
+  },
+  "instructions": {
+    "step1": "Copy this file to rbac-test-config.json",
+    "step2": "Update the domain with your actual domain",
+    "step3": "Login to your site with different user types",
+    "step4": "Get tokens from browser DevTools → Application → Cookies → accessToken",
+    "step5": "Paste the tokens above",
+    "step6": "Run: node test-rbac-live-configured.js"
+  }
+}

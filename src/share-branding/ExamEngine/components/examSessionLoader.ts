@@ -65,7 +65,7 @@ console.log(mystery(numbers));`,
           code: `// useEffect Hook - Standard Side Effects
 useEffect(() => {
   const fetchData = async () => {
-    const response = await fetch('/api/data');
+    const response = await unifiedFetch('/api/data');
     const result = await response.json();
     setData(result);
   };

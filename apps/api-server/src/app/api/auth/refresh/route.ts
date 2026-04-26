@@ -2,10 +2,10 @@ import type { NextRequest } from 'next/server';
 
 import { badRequest } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
-import { resolveCookieDomain } from '@/lib/cookie-domain';
-import { type RequestBrand, resolveRequestBrandFromHeaders, resolveRequestHostnameFromHeaders } from '@/lib/request-brand';
+import { type RequestBrand, resolveRequestBrandFromHeaders } from '@/lib/request-brand';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
+import { withObservability } from '@/middleware/observability.middleware';
 import { AuthService } from '@/modules/auth/auth.service';
 import { getAuthBrandContext, shouldUseBrandBinding } from '@/modules/auth/brand-db';
 import { getClientIp } from '@/modules/auth/client-ip';
@@ -14,17 +14,29 @@ import { UserRepository } from '@/modules/auth/repositories/user.repository';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 
+// 🔐 CRITICAL: Import shared cookie middleware to ensure correct domain per brand
+import { setAuthCookies, type Brand as CookieBrand } from '@quiz/auth';
+
 export const dynamic = 'force-dynamic';
 
 interface RefreshRequest {
   examId?: string;
 }
 
-async function handler(_req: NextRequest) {
+async function handler(_req: NextRequest, obsCtx: any) {
+  const { requestId } = obsCtx; // 🔥 Use observability context
+  
   try {
     const portalIdentity = _req.headers.get('x-portal-identity') ?? 'user';
     const audience = portalIdentity === 'infrastructure' ? 'infra' : portalIdentity === 'admin' ? 'admin' : 'user';
     const requestBrand = resolveRequestBrandFromHeaders(_req.headers);
+
+    console.log('[AUTH_FLOW][REFRESH][START]', JSON.stringify({
+      requestId,
+      portalIdentity,
+      audience,
+      requestBrand,
+    }));
 
     const infraRefresh = _req.cookies.get('infra_refreshToken')?.value;
     const adminRefresh = _req.cookies.get('admin_refreshToken')?.value;
@@ -71,56 +83,56 @@ async function handler(_req: NextRequest) {
 
     const response = ApiResponse.success({ success: true, expiresAt });
 
-    const requestHostname = resolveRequestHostnameFromHeaders(_req.headers, _req.nextUrl.hostname);
-    const cookieDomain = resolveCookieDomain(undefined, requestHostname);
-
-    const accessTokenCookieName = portalIdentity === 'infrastructure' ? 'infra_accessToken' : portalIdentity === 'admin' ? 'admin_accessToken' : 'accessToken';
-    response.cookies.set(accessTokenCookieName, accessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none',
-      maxAge: maxAge, 
-      path: '/',
-      domain: cookieDomain,
-    });
-
-    response.cookies.set(cookieName, newRefreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none',
-      maxAge: 7 * 24 * 60 * 60,
-      path: '/',
-      domain: cookieDomain,
-    });
-
-    if (portalIdentity === 'user') {
-      const accessPayload = await tokenService.verifyUserAccessToken(accessToken).catch(() => null);
-      const brand = ((accessPayload?.brand === 'skillup'
-        ? 'skillup'
-        : accessPayload?.brand === 'realtutorialhub'
-        ? 'realtutorialhub'
-        : requestBrand) ?? null) satisfies RequestBrand | null;
-      const originalUserId =
-        typeof accessPayload?.originalUserId === 'string' && accessPayload.originalUserId.trim().length > 0
-          ? accessPayload.originalUserId
-          : null;
-
-      if (brand !== null && originalUserId !== null) {
-        const brandContext = getAuthBrandContext(brand);
-        const baseRepo = container.get(UserRepository);
-        const userRepo = shouldUseBrandBinding() && typeof baseRepo.withDb === 'function'
-          ? baseRepo.withDb(brandContext.db, brandContext.tables)
-          : baseRepo;
-        const user = await userRepo.findByIdWithDetails(originalUserId);
-        const profile = Array.isArray(user?.profile) ? user?.profile[0] : user?.profile;
-        setOnboardingStateCookie(response, _req, profile?.onboardingCompleted === true);
-      }
+    // 🔐 CRITICAL FIX: Use shared cookie middleware to ensure correct domain per brand
+    const cookieBrand: CookieBrand = requestBrand === 'skillup' ? 'skillup' : 'realtutorialhub';
+    
+    // Build cookies with correct domain for the brand
+    const isAdmin = portalIdentity === 'admin';
+    const isInfra = portalIdentity === 'infrastructure';
+    
+    if (isInfra) {
+      // Infrastructure tokens use special handling (not brand-specific)
+      response.cookies.set('infra_accessToken', accessToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none',
+        maxAge: maxAge,
+        path: '/',
+      });
+      response.cookies.set('infra_refreshToken', newRefreshToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none',
+        maxAge: 7 * 24 * 60 * 60,
+        path: '/',
+      });
+    } else {
+      // User and admin tokens use brand-specific domains
+      setAuthCookies(response, accessToken, newRefreshToken, cookieBrand, isAdmin);
+      
+      console.log('[AUTH_FLOW][REFRESH][COOKIES]', JSON.stringify({
+        requestId,
+        requestBrand,
+        cookieBrand,
+        portalIdentity,
+        isAdmin,
+      }));
     }
+
+    console.log('[AUTH_FLOW][REFRESH][SUCCESS]', JSON.stringify({
+      requestId,
+      portalIdentity,
+      requestBrand,
+    }));
 
     return response;
   } catch (_error: unknown) {
+    console.log('[AUTH_FLOW][REFRESH][ERROR]', JSON.stringify({
+      requestId: obsCtx.requestId,
+      error: _error instanceof Error ? _error.message : 'Unknown error',
+    }));
     return ApiResponse.error(_error, 401);
   }
 }
 
-export const POST = withLogging(handler, { component: 'auth', operation: 'refresh_tokens' });
+export const POST = withObservability(handler);

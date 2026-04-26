@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 };
 
 async function getUserId(): Promise<string | null> {
-  const cookieStore = await cookies();
+  const cookieStore = cookies();
   const token = tokenService.getAccessToken({ cookies: cookieStore }, { scope: 'user' });
   if (token === undefined) return null;
 

@@ -2,6 +2,7 @@ import { TokenService, type UserTokenPayload } from '@quiz/auth';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+// 🔥 CRITICAL FIX: All roles must be lowercase to prevent security bypass
 const ALLOWED_ROLES = new Set(['student', 'admin', 'super_admin', 'faculty']);
 
 type StudentAuthResult =
@@ -33,15 +34,32 @@ function getRequestToken(request: NextRequest): string | null {
 }
 
 function getPayloadRoles(payload: UserTokenPayload): string[] {
+  let roles: string[] = [];
+  
   if (Array.isArray(payload.roles) && payload.roles.length > 0) {
-    return payload.roles.filter((role): role is string => typeof role === 'string' && role.trim().length > 0);
+    roles = payload.roles.filter((role): role is string => 
+      typeof role === 'string' && role.trim().length > 0
+    );
+  } else if (typeof payload.role === 'string' && payload.role.trim().length > 0) {
+    roles = [payload.role.trim()];
   }
-
-  if (typeof payload.role === 'string' && payload.role.trim().length > 0) {
-    return [payload.role.trim()];
+  
+  // 🔥 CRITICAL: Normalize roles to prevent security bypass
+  // This is the ONLY place in SkillUp auth where normalization happens
+  const normalizedRoles = roles.map(role => role.toLowerCase().trim());
+  
+  // 📊 SECURITY AUDIT: Log role normalization violations (dev only)
+  const hadMixedCase = roles.some(role => role !== role.toLowerCase());
+  if (hadMixedCase && process.env.NODE_ENV !== 'production') {
+    console.warn('⚠️ SECURITY: Role normalization in SkillUp auth', JSON.stringify({
+      tag: 'SKILLUP_ROLE_NORMALIZATION',
+      original: roles,
+      normalized: normalizedRoles,
+      timestamp: new Date().toISOString(),
+    }));
   }
-
-  return [];
+  
+  return normalizedRoles;
 }
 
 function hasSkillupAccess(payload: UserTokenPayload): boolean {

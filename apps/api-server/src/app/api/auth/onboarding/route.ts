@@ -1,3 +1,7 @@
+import { createRBACUser, validateBrandOrThrow } from '@quiz/auth';
+import { PERMISSIONS } from '@quiz/auth/rbac/permissions';
+import { RBACService } from '@quiz/auth/rbac/rbac.service';
+import type { Role } from '@quiz/auth/rbac/roles';
 import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
 
@@ -6,6 +10,7 @@ import { ApiResponse } from '@/lib/api-response';
 import { recordCounter } from '@/lib/metrics';
 import type { RequestBrand } from '@/lib/request-brand';
 import { withLogging } from '@/lib/withLogging';
+import { withObservability } from '@/middleware/observability.middleware';
 import { getAuthBrandContext } from '@/modules/auth/brand-db';
 import { UserRepository } from '@/modules/auth/repositories/user.repository';
 import { TokenService } from '@/modules/auth/token.service';
@@ -59,6 +64,55 @@ async function handler(req: NextRequest) {
       return ApiResponse.error(unauthorized('Invalid authentication'));
     }
 
+    // 🔐 BRAND VALIDATION (defense in depth)
+    try {
+      validateBrandOrThrow({ brand: payload.brand, userId: payload.userId }, req);
+    } catch (brandError) {
+      console.error('[ONBOARDING] Brand validation failed:', brandError);
+      return ApiResponse.error({
+        code: 'BRAND_MISMATCH',
+        message: brandError instanceof Error ? brandError.message : 'Brand validation failed',
+      }, 403);
+    }
+
+    // 🔐 RBAC CHECK
+    const brand: RequestBrand = (payload.brand === 'skillup' ? 'skillup' : 'realtutorialhub');
+    const normalizedRoles = (Array.isArray(payload.roles) ? payload.roles : []).map(r => r.toLowerCase().trim()).filter((r): r is Role => r.length > 0);
+    const rbacUser = createRBACUser({
+      isAuthenticated: true,
+      userId: payload.userId,
+      originalUserId: payload.userId,
+      shadowUserId: payload.userId,
+      roles: normalizedRoles,
+      brand: brand as 'realtutorialhub' | 'skillup',
+      email: payload.email,
+    });
+
+    try {
+      RBACService.requirePermission(rbacUser.roles, PERMISSIONS.PROFILE_WRITE);
+      console.log('🔐 RBAC_AUDIT', JSON.stringify({
+        route: '/api/auth/onboarding',
+        method: 'POST',
+        userId: payload.userId.slice(0, 8),
+        roles: rbacUser.roles,
+        permission: PERMISSIONS.PROFILE_WRITE,
+        result: 'GRANTED',
+      }));
+    } catch (rbacError) {
+      console.warn('🔐 RBAC_AUDIT', JSON.stringify({
+        route: '/api/auth/onboarding',
+        method: 'POST',
+        userId: payload.userId.slice(0, 8),
+        permission: PERMISSIONS.PROFILE_WRITE,
+        result: 'DENIED',
+        error: rbacError instanceof Error ? rbacError.message : 'Unknown',
+      }));
+      return ApiResponse.error({
+        code: 'PERMISSION_DENIED',
+        message: `Permission required: ${PERMISSIONS.PROFILE_WRITE}`,
+      }, 403);
+    }
+
     // Parse request body
     const body = await req.json();
     
@@ -87,7 +141,7 @@ async function handler(req: NextRequest) {
     console.log('[ONBOARDING][PREFERENCES]', JSON.stringify({
       requestId,
       userId: payload.userId,
-      brand: payload.brand,
+      brand,
       hasGoal: preferences.primaryGoal !== undefined,
       hasDomain: preferences.domain !== undefined,
       hasFullName: preferences.fullName !== undefined,
@@ -96,8 +150,7 @@ async function handler(req: NextRequest) {
       hasSkillLevel: preferences.skillLevel !== undefined,
     }));
 
-    // STEP 2: Get brand-specific DB instance
-    const brand: RequestBrand = (payload.brand === 'skillup' ? 'skillup' : 'realtutorialhub');
+    // STEP 2: Get brand-specific DB instance (brand already defined above in RBAC section)
     const { db, tables } = getAuthBrandContext(brand);
     
     // MANDATORY RUNTIME DB VALIDATION
@@ -160,6 +213,8 @@ async function handler(req: NextRequest) {
   }
 }
 
-export const POST = withCorrelationId(
-  withLogging(handler, { component: 'auth', operation: 'onboarding' })
+export const POST = withObservability(
+  withCorrelationId(
+    withLogging(handler, { component: 'auth', operation: 'onboarding' })
+  )
 );

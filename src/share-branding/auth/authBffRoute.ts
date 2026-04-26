@@ -1,6 +1,7 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { AUTH_CONFIG } from './config';
+import { unifiedFetch } from '@/share-branding/lib/unifiedFetch';
 
 const HOP_BY_HOP_HEADERS = new Set([
   'connection',
@@ -201,7 +202,7 @@ export async function fetchUpstream(
   let upstreamResponse: Response | null = null;
 
   for (const url of getUpstreamUrls(options.fallbackApiBase, options.upstreamPath, hostname)) {
-    const candidate = await fetch(`${url}${request.nextUrl.search}`, {
+    const candidate = await unifiedFetch(`${url}${request.nextUrl.search}`, {
       method,
       headers,
       body,
@@ -240,7 +241,7 @@ export async function fetchAuthUpstream(
   let upstreamResponse: Response | null = null;
 
   for (const url of getAuthUpstreamUrls(options.fallbackApiBase, options.authPath, hostname)) {
-    const candidate = await fetch(`${url}${request.nextUrl.search}`, {
+    const candidate = await unifiedFetch(`${url}${request.nextUrl.search}`, {
       method,
       headers,
       body,
@@ -336,7 +337,7 @@ export async function proxyAuthRequest(
 
   try {
     // 🟢 PRIMARY: Gateway call
-    const upstreamResponse = await fetch(`${targetUrl}${request.nextUrl.search}`, {
+    const upstreamResponse = await unifiedFetch(`${targetUrl}${request.nextUrl.search}`, {
       method,
       headers,
       body,
@@ -429,7 +430,7 @@ export async function proxyAuthRequest(
 
       try {
         const fallbackUrl = `${options.fallbackApiBase}/auth/${options.authPath}`;
-        const fallbackResponse = await fetch(`${fallbackUrl}${request.nextUrl.search}`, {
+        const fallbackResponse = await unifiedFetch(`${fallbackUrl}${request.nextUrl.search}`, {
           method,
           headers,
           body,

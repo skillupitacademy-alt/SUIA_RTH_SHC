@@ -14,6 +14,7 @@ export interface AuthContext {
   brand: string;
   correlationId: string;
   authMode: 'gateway' | 'internal';
+  roles?: string[]; // 🔥 ADD: User roles for RBAC
 }
 
 export function validateRequest(req: NextRequest): { error?: Response; context?: AuthContext } {
@@ -24,15 +25,18 @@ export function validateRequest(req: NextRequest): { error?: Response; context?:
   const userId = req.headers.get('x-user-id');
   const userEmail = req.headers.get('x-user-email');
   const brand = req.headers.get('x-brand');
+  const userRoles = req.headers.get('x-user-roles'); // 🔥 ADD: Extract roles from gateway
   
-  console.log(`[AUTH][${correlationId}] Headers received:`, {
+  console.log(`🔥 [API_AUTH_HEADERS][${correlationId}]`, JSON.stringify({
     hasInternalSecret: internalSecret !== null,
     internalSecretLength: internalSecret?.length ?? 0,
-    internalSecretPreview: internalSecret !== null ? `${internalSecret.substring(0, 20)}...` : 'NONE',
     hasUserId: userId !== null,
     hasBrand: brand !== null,
+    hasRoles: userRoles !== null,
+    rolesHeaderValue: userRoles, // 🔥 CRITICAL: Raw header value
+    rolesHeaderType: typeof userRoles,
     brand
-  });
+  }));
   
   console.log(`[AUTH][${correlationId}] Expected secret configured:`, {
     hasSecret: process.env.INTERNAL_API_SECRET !== undefined,
@@ -103,13 +107,35 @@ export function validateRequest(req: NextRequest): { error?: Response; context?:
       brand
     });
     
+    // 🔥 CRITICAL FIX: Use unified role normalization
+    // This handles "user,student" string → ["user"] array
+    const roles = userRoles 
+      ? userRoles.split(',').map(r => r.trim().toLowerCase()).filter(r => r.length > 0)
+      : undefined;
+    
+    console.log(`🔥 [API_AUTH_ROLES_PARSED][${correlationId}]`, JSON.stringify({
+      rolesHeaderRaw: userRoles,
+      rolesParsed: roles,
+      rolesCount: roles?.length ?? 0,
+      rolesType: typeof roles,
+      rolesIsArray: Array.isArray(roles),
+      authMode: 'internal'
+    }));
+    
+    // 🚨 GUARD: Ensure roles is always array or undefined (never string)
+    if (roles && !Array.isArray(roles)) {
+      console.error(`🚨 [API_AUTH_ERROR][${correlationId}] Roles is not an array!`, { roles, type: typeof roles });
+      throw new Error('RBAC_ERROR: Roles must be an array');
+    }
+    
     return {
       context: {
         userId,
         userEmail: userEmail ?? undefined,
         brand,
         correlationId,
-        authMode: 'internal'
+        authMode: 'internal',
+        roles, // 🔥 FIXED: Always array or undefined
       }
     };
   }
@@ -117,6 +143,7 @@ export function validateRequest(req: NextRequest): { error?: Response; context?:
   // Mode 2: Gateway Authentication (EXISTING)
   const gatewayUserId = req.headers.get('x-user-id');
   const gatewayBrand = req.headers.get('x-brand');
+  const gatewayRoles = req.headers.get('x-user-roles'); // 🔥 ADD: Extract roles from gateway
   
   if (gatewayUserId !== null && gatewayBrand !== null) {
     console.log(`[AUTH][${correlationId}] Gateway authentication`);
@@ -141,13 +168,35 @@ export function validateRequest(req: NextRequest): { error?: Response; context?:
       brand: gatewayBrand
     });
     
+    // 🔥 CRITICAL FIX: Use unified role normalization
+    // This handles "user,student" string → ["user"] array
+    const roles = gatewayRoles 
+      ? gatewayRoles.split(',').map(r => r.trim().toLowerCase()).filter(r => r.length > 0)
+      : undefined;
+    
+    console.log(`🔥 [API_AUTH_ROLES_PARSED][${correlationId}]`, JSON.stringify({
+      rolesHeaderRaw: gatewayRoles,
+      rolesParsed: roles,
+      rolesCount: roles?.length ?? 0,
+      rolesType: typeof roles,
+      rolesIsArray: Array.isArray(roles),
+      authMode: 'gateway'
+    }));
+    
+    // 🚨 GUARD: Ensure roles is always array or undefined (never string)
+    if (roles && !Array.isArray(roles)) {
+      console.error(`🚨 [API_AUTH_ERROR][${correlationId}] Roles is not an array!`, { roles, type: typeof roles });
+      throw new Error('RBAC_ERROR: Roles must be an array');
+    }
+    
     return {
       context: {
         userId: gatewayUserId,
         userEmail: req.headers.get('x-user-email') ?? undefined,
         brand: gatewayBrand,
         correlationId,
-        authMode: 'gateway'
+        authMode: 'gateway',
+        roles, // 🔥 FIXED: Always array or undefined
       }
     };
   }

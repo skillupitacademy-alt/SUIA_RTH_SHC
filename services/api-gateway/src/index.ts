@@ -66,8 +66,28 @@ export const createApp = () => {
       auth: route?.auth,
     }));
     
+    // 🔒 SECURITY: Return 404 BEFORE auth to prevent resource enumeration
+    // This prevents attackers from probing endpoints to detect valid routes
     if (route === undefined) {
       console.log('[GATEWAY_ERROR] No route found for request');
+      return c.json({ error: 'Not Found', requestId: c.get('requestId') }, 404);
+    }
+    
+    // 🔒 SECURITY: Reject catch-all routes for API paths to prevent enumeration
+    // API paths should have explicit routes, not fall through to frontend catch-all
+    // Exception: Host-specific catch-all routes (like admin.realtutorialhub.com -> /) are allowed
+    const normalizedPath = requestUrl.pathname.startsWith('/api/') ? requestUrl.pathname.slice(4) : requestUrl.pathname;
+    const isApiPath = requestUrl.pathname.startsWith('/api/');
+    const isCatchAllRoute = route.prefix === '/';
+    const isHostSpecificRoute = route.host !== undefined;
+    
+    if (isApiPath && isCatchAllRoute && !isHostSpecificRoute) {
+      console.log('[GATEWAY_SECURITY] Blocked API path with catch-all route', JSON.stringify({
+        pathname: requestUrl.pathname,
+        normalizedPath,
+        routePrefix: route.prefix,
+        routeHost: route.host,
+      }));
       return c.json({ error: 'Not Found', requestId: c.get('requestId') }, 404);
     }
 
@@ -100,6 +120,7 @@ export const createApp = () => {
     let shadowUserId: string | undefined;
     let originalUserId: string | undefined;
     let portal: 'admin' | 'user' | undefined;
+    let roles: string[] | undefined; // 🔥 ADD: Extract roles from JWT
     if (route.auth === true) {
       const authStart = Date.now();
       const authResult = await authenticateRequest(requestToProxy, c.env, route);
@@ -118,19 +139,33 @@ export const createApp = () => {
         portal: authResult.portal,
         tokenSource: authResult.tokenSource,
         requestBrand: authResult.requestBrand ?? null,
+        roles: authResult.payload.roles, // 🔥 ADD: Log roles for debugging
       }));
 
       shadowUserId = authResult.payload.shadowUserId;
       originalUserId = authResult.payload.originalUserId;
-      userId = shadowUserId;
+      userId = originalUserId; // 🔥 FIX: Use originalUserId for database queries (profiles are stored under originalUserId)
       portal = authResult.portal;
+      roles = authResult.payload.roles; // 🔥 ADD: Extract roles from JWT payload
+      
+      // 🔒 SECURITY: Ensure roles are always present for authenticated requests
+      if (!roles || !Array.isArray(roles) || roles.length === 0) {
+        console.error('[GATEWAY_SECURITY] Authenticated request missing roles', JSON.stringify({
+          requestId: c.get('requestId'),
+          path: requestUrl.pathname,
+          portal,
+          userId: userId?.slice(0, 8),
+          rolesType: typeof roles,
+          rolesValue: roles,
+        }));
+        // Don't block - let API server handle with empty roles (will deny via RBAC)
+      }
+      
       // Brand is already set from hostname resolution above
       c.set('user', authResult.payload);
     }
 
-    // Normalize pathname — strip /api prefix to match route prefixes
-    const normalizedPath = requestUrl.pathname.startsWith('/api/') ? requestUrl.pathname.slice(4) : requestUrl.pathname;
-
+    // normalizedPath already declared above for security check - reuse it
     try {
       const response = await proxyRequest(requestToProxy, upstream, {
         requestId: c.get('requestId'),
@@ -140,6 +175,7 @@ export const createApp = () => {
         originalUserId,
         portal,
         brand,
+        roles, // 🔥 ADD: Forward roles to upstream
         upstreamPath: rewritePath(normalizedPath, route.prefix, route.upstreamPathPrefix),
       });
       timings.afterProxy = Date.now();

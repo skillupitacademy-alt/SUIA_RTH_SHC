@@ -6,6 +6,7 @@ import type {
 } from './authViewData';
 import { mapLoginError, mapLoginResponse } from './authMapper';
 import { getDeviceHeaders } from '@quiz/auth';
+import { unifiedFetch } from '../lib/unifiedFetch';
 
 const LOGIN_ENDPOINT = '/api/auth/login';
 const SIGNUP_ENDPOINT = '/api/auth/signup';
@@ -15,7 +16,7 @@ async function submitAuthRequest(endpoint: string, data: { email: string; passwo
   // 🔐 ENTERPRISE AUTH: Inject device context headers
   const deviceHeaders = getDeviceHeaders();
   
-  const response = await fetch(endpoint, {
+  const response = await unifiedFetch(endpoint, {
     method: 'POST',
     credentials: 'include',
     headers: {
@@ -55,7 +56,7 @@ export async function fetchCurrentUserState(): Promise<{ onboardingCompleted: bo
   // This eliminates duplicate network requests and uses our internal authentication
   const timestamp = Date.now();
   
-  const response = await fetch(`/api/profile?_t=${timestamp}`, {
+  const response = await unifiedFetch(`/api/profile?_t=${timestamp}`, {
     method: 'GET',
     credentials: 'include',
     headers: {
@@ -100,7 +101,7 @@ export async function fetchCurrentUserState(): Promise<{ onboardingCompleted: bo
 }
 
 export async function logoutUser() {
-  const response = await fetch('/api/auth/logout', {
+  const response = await unifiedFetch('/api/auth/logout', {
     method: 'POST',
     credentials: 'include',
     headers: {

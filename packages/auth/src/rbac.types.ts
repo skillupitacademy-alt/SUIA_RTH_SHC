@@ -3,75 +3,43 @@
  * Role-Based Access Control system
  */
 
-export type Role = 
-  | 'student'
-  | 'instructor' 
-  | 'admin'
-  | 'super_admin';
+import type { Role } from './rbac/roles'; // 🔥 FIX: Import Role from correct location
+import type { Permission } from './rbac/permissions'; // 🔥 FIX: Import Permission from correct location
 
-export type Permission = 
-  // Course permissions
-  | 'read:course'
-  | 'create:course'
-  | 'edit:course'
-  | 'delete:course'
-  
-  // Exam permissions
-  | 'attempt:exam'
-  | 'create:exam'
-  | 'grade:exam'
-  | 'view:exam_results'
-  
-  // User management
-  | 'read:users'
-  | 'manage:users'
-  | 'impersonate:user'
-  
-  // Analytics
-  | 'view:analytics'
-  | 'view:reports'
-  | 'export:data'
-  
-  // System administration
-  | 'manage:system'
-  | 'manage:feature_flags'
-  | 'view:logs'
-  
-  // Wildcard (super admin)
-  | '*';
-
-export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
+// 🔥 DEPRECATED: Use role-permissions.ts instead
+// This is kept for backward compatibility only
+export const ROLE_PERMISSIONS: Record<string, string[]> = {
   student: [
-    'read:course',
-    'attempt:exam'
+    'course.read',
+    'exam.start'
   ],
   
-  instructor: [
-    'read:course',
-    'create:course', 
-    'edit:course',
-    'attempt:exam',
-    'create:exam',
-    'grade:exam',
-    'view:exam_results',
-    'read:users'
+  user: [
+    'course.read',
+    'exam.start'
+  ],
+  
+  faculty: [
+    'course.read',
+    'course.create', 
+    'course.edit',
+    'exam.start',
+    'exam.grade',
+    'exam.view_results',
   ],
   
   admin: [
-    'read:course',
-    'create:course',
-    'edit:course', 
-    'delete:course',
-    'attempt:exam',
-    'create:exam',
-    'grade:exam',
-    'view:exam_results',
-    'read:users',
-    'manage:users',
-    'view:analytics',
-    'view:reports',
-    'export:data',
-    'manage:feature_flags'
+    'course.read',
+    'course.create',
+    'course.edit', 
+    'course.delete',
+    'exam.start',
+    'exam.grade',
+    'exam.view_results',
+    'user.manage',
+    'analytics.view',
+    'reports.view',
+    'reports.export',
   ],
   
   super_admin: ['*']
@@ -80,7 +48,7 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
 export interface RBACUser {
   id: string;
   email: string;
-  role: Role;
+  role: Role; // 🔥 FIX: Now uses correct Role type
   brand: string; // Keep as string for flexibility, cast when needed
 }
 
@@ -118,3 +86,6 @@ export class FeatureNotAvailableError extends Error {
     this.name = 'FeatureNotAvailableError';
   }
 }
+
+// Re-export for backward compatibility
+export type { Role, Permission };

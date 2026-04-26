@@ -1,3 +1,4 @@
+import { validateBrandOrThrow } from '@quiz/auth';
 import { db, exams } from "@quiz/db";
 import { METRICS } from "@quiz/observability";
 import { type ReportJSON } from "@quiz/types/report";
@@ -84,6 +85,18 @@ async function postHandler(req: NextRequest) {
       if (payload === null || payload === undefined || payload.userId === null || payload.userId === undefined) {
         throw unauthorized("Unauthorized");
       }
+      
+      // 🔥 SECURITY FIX: Validate brand context (defense in depth)
+      try {
+        validateBrandOrThrow({ brand: payload?.brand, userId: payload?.userId }, req);
+      } catch (brandError) {
+        console.error('[Generate Report] Brand validation failed:', brandError);
+        return ApiResponse.error({
+          code: 'BRAND_MISMATCH',
+          message: brandError instanceof Error ? brandError.message : 'Brand validation failed',
+        }, 403);
+      }
+      
       userId = payload.userId;
     }
     

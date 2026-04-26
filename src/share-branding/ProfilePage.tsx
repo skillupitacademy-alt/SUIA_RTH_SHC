@@ -66,7 +66,7 @@ function ProfileContent({ config }: { config: BrandConfig }) {
       setLoading(true);
       setError(null);
       
-      const response = await fetch('/api/profile', {
+      const response = await unifiedFetch('/api/profile', {
         method: 'GET',
         credentials: 'include',
         headers: {
@@ -98,7 +98,7 @@ function ProfileContent({ config }: { config: BrandConfig }) {
       setSaving(true);
       setError(null);
       
-      const response = await fetch('/api/profile', {
+      const response = await unifiedFetch('/api/profile', {
         method: 'PATCH',
         credentials: 'include',
         headers: {

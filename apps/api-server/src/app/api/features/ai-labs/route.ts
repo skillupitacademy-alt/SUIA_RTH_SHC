@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
   try {
     // Require AI_LABS feature and read permissions
     const user = await authMiddleware.authenticate(req, {
-      permissions: ['read:course'],
+      permissions: ['course.read'],
       features: ['AI_LABS']
     });
 
@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
   try {
     // Require AI_LABS feature and course permissions
     const user = await authMiddleware.authenticate(req, {
-      permissions: ['read:course', 'attempt:exam'],
+      permissions: ['course.read', 'exam.start'],
       features: ['AI_LABS']
     });
 

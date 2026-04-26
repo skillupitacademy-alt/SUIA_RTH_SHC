@@ -1,4 +1,7 @@
 // Edge-compatible UUID generation using standard web crypto
+import { RBACService } from '@quiz/auth/rbac';
+import { PERMISSIONS } from '@quiz/auth/rbac/permissions';
+import type { Role } from '@quiz/auth/rbac/roles';
 import crypto from 'crypto';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
@@ -119,8 +122,11 @@ export async function proxy(request: NextRequest) {
                              pathname.startsWith('/api/analytics/admin');
 
         if (isInfraRoute) {
-            const roles = Array.isArray(_payload.roles) ? (_payload.roles as string[]) : [];
-            if (!roles.includes('infrastructure')) {
+            const roles = (Array.isArray(_payload.roles) ? _payload.roles : [])
+              .map(r => typeof r === 'string' ? r.toLowerCase() : null)
+              .filter((r): r is Role => r !== null) as Role[];
+            
+            if (!RBACService.hasPermission(roles, PERMISSIONS.ADMIN_PANEL)) {
               const res = NextResponse.json({ error: 'Forbidden: Infrastructure privileges required' }, { status: 403 });
               res.headers.set('x-request-id', requestId);
               return corsMiddleware(request, res);

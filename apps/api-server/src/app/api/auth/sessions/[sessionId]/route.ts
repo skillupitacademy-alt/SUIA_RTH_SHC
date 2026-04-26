@@ -1,3 +1,7 @@
+import { createRBACUser, validateBrandOrThrow } from '@quiz/auth';
+import { PERMISSIONS } from '@quiz/auth/rbac/permissions';
+import { RBACService } from '@quiz/auth/rbac/rbac.service';
+import type { Role } from '@quiz/auth/rbac/roles';
 import { type NextRequest } from 'next/server';
 
 import { ApiResponse } from '@/lib/api-response';
@@ -30,6 +34,54 @@ async function deleteHandler(_req: NextRequest, context: { params: Promise<{ ses
     const userId = payload.userId;
     const requestHostname = resolveRequestHostnameFromHeaders(_req.headers, _req.nextUrl.hostname);
     const brand = (typeof requestHostname === 'string' && requestHostname.includes('skillup')) ? 'skillup' : 'realtutorialhub';
+
+    // 🔐 BRAND VALIDATION (defense in depth)
+    try {
+      validateBrandOrThrow({ brand: payload.brand, userId: payload.userId }, _req);
+    } catch (brandError) {
+      console.error('[DELETE /api/auth/sessions/:id] Brand validation failed:', brandError);
+      return ApiResponse.error({
+        code: 'BRAND_MISMATCH',
+        message: brandError instanceof Error ? brandError.message : 'Brand validation failed',
+      }, 403);
+    }
+
+    // 🔐 RBAC CHECK
+    const normalizedRoles = (Array.isArray(payload.roles) ? payload.roles : []).map(r => r.toLowerCase().trim()).filter((r): r is Role => r.length > 0);
+    const rbacUser = createRBACUser({
+      isAuthenticated: true,
+      userId: payload.userId,
+      originalUserId: payload.userId,
+      shadowUserId: payload.userId,
+      roles: normalizedRoles,
+      brand: brand as 'realtutorialhub' | 'skillup',
+      email: payload.email,
+    });
+
+    try {
+      RBACService.requirePermission(rbacUser.roles, PERMISSIONS.PROFILE_WRITE);
+      console.log('🔐 RBAC_AUDIT', JSON.stringify({
+        route: '/api/auth/sessions/:id',
+        method: 'DELETE',
+        userId: userId.slice(0, 8),
+        roles: rbacUser.roles,
+        permission: PERMISSIONS.PROFILE_WRITE,
+        result: 'GRANTED',
+      }));
+    } catch (rbacError) {
+      console.warn('🔐 RBAC_AUDIT', JSON.stringify({
+        route: '/api/auth/sessions/:id',
+        method: 'DELETE',
+        userId: userId.slice(0, 8),
+        permission: PERMISSIONS.PROFILE_WRITE,
+        result: 'DENIED',
+        error: rbacError instanceof Error ? rbacError.message : 'Unknown',
+      }));
+      return ApiResponse.error({
+        code: 'PERMISSION_DENIED',
+        message: `Permission required: ${PERMISSIONS.PROFILE_WRITE}`,
+      }, 403);
+    }
 
     const params = await context.params;
     const sessionId = params.sessionId;

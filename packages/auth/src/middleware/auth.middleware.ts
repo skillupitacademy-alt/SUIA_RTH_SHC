@@ -5,7 +5,7 @@
 
 import type { NextRequest } from 'next/server';
 import { TokenService } from '../token.service';
-import { RBACService, type RBACUser } from '../rbac.service';
+import { RBACService } from '../rbac/rbac.service';
 import { FeatureFlagService } from '../feature-flags.service';
 import { SessionService } from '../session.service';
 import { 
@@ -15,7 +15,9 @@ import {
   SessionRevokedError,
   FeatureNotAvailableError 
 } from '../rbac.types';
-import type { Permission, Role } from '../rbac.types';
+import type { RBACUser } from '../rbac.types';
+import type { Role } from '../rbac/roles';
+import type { Permission } from '../rbac/permissions';
 import type { FeatureKey, Brand } from '../feature-flags.types';
 
 export interface AuthenticatedRequest extends NextRequest {
@@ -79,7 +81,7 @@ export class AuthMiddleware {
       // Check permissions
       if (options.permissions?.length) {
         for (const permission of options.permissions) {
-          RBACService.requirePermission(user, permission);
+          RBACService.requirePermission([user.role], permission);
         }
       }
 
@@ -132,7 +134,7 @@ export class AuthMiddleware {
   requireAdmin() {
     return async (req: NextRequest): Promise<RBACUser> => {
       const user = await this.authenticate(req, { 
-        permissions: ['manage:users'] 
+        permissions: ['user.manage'] // 🔥 FIX: Use correct permission format
       });
       if (!user) {
         throw new UnauthorizedError();

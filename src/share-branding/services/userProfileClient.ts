@@ -5,6 +5,7 @@
  * Pattern: UI → BFF (/api/profile) → API Server (/api/auth/profile) → DB
  */
 
+import { unifiedFetch } from '../lib/unifiedFetch';
 import {
   mapEducationLevelToUI,
   mapEducationLevelToDB,
@@ -97,7 +98,7 @@ function mapProfileToApi(uiData: Partial<UserProfile>): Partial<ApiProfileRespon
  * Fetch user profile from backend
  */
 export async function getUserProfile(): Promise<UserProfile> {
-  const res = await fetch('/api/profile', {
+  const res = await unifiedFetch('/api/profile', {
     method: 'GET',
     credentials: 'include',
     headers: {
@@ -127,7 +128,7 @@ export async function getUserProfile(): Promise<UserProfile> {
 export async function updateUserProfile(updates: Partial<UserProfile>): Promise<UserProfile> {
   const apiUpdates = mapProfileToApi(updates);
   
-  const res = await fetch('/api/profile', {
+  const res = await unifiedFetch('/api/profile', {
     method: 'PATCH',
     credentials: 'include',
     headers: {

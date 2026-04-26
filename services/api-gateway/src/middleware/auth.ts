@@ -94,6 +94,16 @@ function normalizeString(value: unknown): string | undefined {
   return typeof value === 'string' && value.trim().length > 0 ? value.trim().toLowerCase() : undefined;
 }
 
+/**
+ * 🔥 UNIFIED ROLE NORMALIZATION (STRICT MODE)
+ * 
+ * RULES:
+ * 1. ALWAYS return array (never undefined)
+ * 2. ALWAYS lowercase
+ * 3. ALWAYS deduplicate
+ * 4. ❌ NO FALLBACK to ['user'] - empty roles = denial
+ * 5. Support legacy 'role' field for backward compatibility
+ */
 function normalizeRoles(payload: Partial<SkillHubCoreTokenPayload> & { role?: unknown }): string[] {
   const rawRoles = Array.isArray(payload.roles)
     ? payload.roles
@@ -105,10 +115,8 @@ function normalizeRoles(payload: Partial<SkillHubCoreTokenPayload> & { role?: un
     .filter((role): role is string => typeof role === 'string' && role.trim().length > 0)
     .map((role) => role.trim().toLowerCase());
 
-  if (roles.length === 0) {
-    return ['user'];
-  }
-
+  // 🔥 CRITICAL FIX: NO FALLBACK - empty roles should be handled by RBAC
+  // If JWT has no roles, that's a token generation bug, not a normalization issue
   return Array.from(new Set(roles));
 }
 

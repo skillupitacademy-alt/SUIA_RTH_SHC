@@ -1,3 +1,7 @@
+import { createRBACUser, validateBrandOrThrow } from '@quiz/auth';
+import { PERMISSIONS } from '@quiz/auth/rbac/permissions';
+import { RBACService } from '@quiz/auth/rbac/rbac.service';
+import type { Role } from '@quiz/auth/rbac/roles';
 import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
@@ -7,6 +11,7 @@ import { unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { recordCounter } from '@/lib/metrics';
 import { withGatewayAuth } from '@/middleware/gateway-auth.middleware';
+import { withObservability } from '@/middleware/observability.middleware';
 import { getAuthBrandContext, shouldUseBrandBinding } from '@/modules/auth/brand-db';
 import { TokenRepository } from '@/modules/auth/repositories/token.repository';
 import { UserRepository } from '@/modules/auth/repositories/user.repository';
@@ -27,9 +32,9 @@ export const dynamic = 'force-dynamic';
  * DO NOT expose tokens to frontend
  * DO NOT add business logic here - only user state retrieval
  */
-async function handler(req: NextRequest) {
+async function handler(req: NextRequest, obsCtx: any) {
   const start = Date.now();
-  const requestId = req.headers.get('x-request-id') ?? 'no-request-id';
+  const { requestId } = obsCtx; // 🔥 Observability context from withObservability
 
   try {
     console.log('[AUTH_FLOW][ME][START]', JSON.stringify({
@@ -73,6 +78,56 @@ async function handler(req: NextRequest) {
       console.log('[ME_DEBUG] FAILURE: Invalid brand in JWT payload');
       recordCounter(METRICS.AUTH.FAILURE, 1, { reason: 'invalid_token_brand' });
       return NextResponse.json({ user: null }, { status: 401 });
+    }
+
+    // 🔐 BRAND VALIDATION (defense in depth)
+    try {
+      validateBrandOrThrow({ brand: payload.brand, userId: payload.userId }, req);
+    } catch (brandError) {
+      console.error('[GET /api/auth/me] Brand validation failed:', brandError);
+      return ApiResponse.error({
+        code: 'BRAND_MISMATCH',
+        message: brandError instanceof Error ? brandError.message : 'Brand validation failed',
+      }, 403);
+    }
+
+    // 🔐 RBAC CHECK
+    const normalizedRoles = (Array.isArray(payload.roles) ? payload.roles : []).map(r => r.toLowerCase().trim()).filter((r): r is Role => r.length > 0);
+    const rbacUser = createRBACUser({
+      isAuthenticated: true,
+      userId: payload.userId,
+      originalUserId: payload.userId,
+      shadowUserId: payload.userId,
+      roles: normalizedRoles,
+      brand: brand as 'realtutorialhub' | 'skillup',
+      email: payload.email,
+    });
+
+    try {
+      RBACService.requirePermission(rbacUser.roles, PERMISSIONS.PROFILE_READ, payload.userId, requestId);
+      console.log('🔐 RBAC_AUDIT', JSON.stringify({
+        requestId, // 🔥 Correlation
+        route: '/api/auth/me',
+        method: 'GET',
+        userId: payload.userId.slice(0, 8),
+        roles: rbacUser.roles,
+        permission: PERMISSIONS.PROFILE_READ,
+        result: 'GRANTED',
+      }));
+    } catch (rbacError) {
+      console.warn('🔐 RBAC_AUDIT', JSON.stringify({
+        requestId, // 🔥 Correlation
+        route: '/api/auth/me',
+        method: 'GET',
+        userId: payload.userId.slice(0, 8),
+        permission: PERMISSIONS.PROFILE_READ,
+        result: 'DENIED',
+        error: rbacError instanceof Error ? rbacError.message : 'Unknown',
+      }));
+      return ApiResponse.error({
+        code: 'PERMISSION_DENIED',
+        message: `Permission required: ${PERMISSIONS.PROFILE_READ}`,
+      }, 403);
     }
 
     // TASK 2: Use brand-specific database based on JWT payload
@@ -267,4 +322,5 @@ async function handler(req: NextRequest) {
   }
 }
 
-export const GET = withGatewayAuth(handler);
+// 🔥 OBSERVABILITY: Wrap with withObservability for full request tracing
+export const GET = withObservability(handler);

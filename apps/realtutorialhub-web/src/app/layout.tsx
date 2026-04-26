@@ -46,7 +46,7 @@ const themeBootstrap = `(function () {
 })();`;
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
-  const cookieStore = await cookies();
+  const cookieStore = cookies();
   const locale = cookieStore.get('rth-locale')?.value === 'hi' ? 'hi' : 'en';
   const messages = locale === 'hi' ? hiMessages : enMessages;
 

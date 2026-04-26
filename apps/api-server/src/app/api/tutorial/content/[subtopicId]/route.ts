@@ -1,6 +1,11 @@
 import { TutorialContentRepository } from '@quiz/db-tutorial';
 import type { TutorialContentRecord } from '@quiz/types';
 import { NextRequest, NextResponse } from 'next/server';
+import { RBACService } from '@quiz/auth/rbac/rbac.service';
+import { PERMISSIONS } from '@quiz/auth/rbac/permissions';
+import { withObservability } from '@/middleware/observability.middleware';
+import { TokenService } from '@/modules/auth/token.service';
+import { container } from '@/modules/core/container';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -34,10 +39,30 @@ function toDto(record: TutorialContentRecord) {
   };
 }
 
-export async function GET(
+async function handler(
   _request: NextRequest,
+  obsCtx: any,
   context: { params: Promise<{ subtopicId: string }> }
 ) {
+  const { requestId } = obsCtx; // 🔥 Observability context
+
+  // 🔐 RBAC: Enforce tutorial content access permission
+  const tokenService = container.get(TokenService);
+  const token = tokenService.getAccessToken(_request, { scope: 'user' });
+  
+  if (!token) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const payload = await tokenService.verifyUserAccessToken(token);
+  
+  RBACService.requirePermission(
+    (payload.roles || []) as any,
+    PERMISSIONS.TUTORIAL_VIEW,
+    payload.userId,
+    requestId
+  );
+
   const { subtopicId } = await context.params;
   const rows = await repository.getPublished(subtopicId, 'simple');
   const record = rows[0];
@@ -50,3 +75,6 @@ export async function GET(
   response.headers.set('Cache-Control', 'public, max-age=3600');
   return response;
 }
+
+// 🔥 OBSERVABILITY: Wrap with withObservability for full request tracing
+export const GET = withObservability(handler);

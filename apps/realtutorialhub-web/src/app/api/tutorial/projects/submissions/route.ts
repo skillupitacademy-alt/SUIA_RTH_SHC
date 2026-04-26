@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
+import { withObservability } from '@/middleware/observability.middleware';
 import { AssignmentAuthError, requireStudent } from '@/lib/assignment-auth';
 import { ProjectService } from '@/server/project.service';
 
@@ -7,7 +7,9 @@ export const dynamic = 'force-dynamic';
 
 const projectService = new ProjectService();
 
-export async function GET(req: NextRequest) {
+async function handler(req: NextRequest, obsCtx: any) {
+  const { requestId } = obsCtx; // 🔥 Observability context
+  
   try {
     const session = await requireStudent(req);
     const data = await projectService.getMyProjects(session.userId);
@@ -19,3 +21,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 }
+
+// 🔥 OBSERVABILITY: Wrap with withObservability for full request tracing
+export const GET = withObservability(handler);

@@ -1,3 +1,4 @@
+import { validateBrandOrThrow } from '@quiz/auth';
 import { db, exams } from '@quiz/db';
 import { METRICS } from '@quiz/observability';
 import { eq } from 'drizzle-orm';
@@ -65,6 +66,18 @@ async function getHandler(req: NextRequest) {
       }
       
       const payload = await container.get(TokenService).verifyUserAccessToken(token);
+      
+      // 🔥 SECURITY FIX: Validate brand context (defense in depth)
+      try {
+        validateBrandOrThrow({ brand: payload?.brand, userId: payload?.userId }, req);
+      } catch (brandError) {
+        console.error('[Reports] Brand validation failed:', brandError);
+        return ApiResponse.error({
+          code: 'BRAND_MISMATCH',
+          message: brandError instanceof Error ? brandError.message : 'Brand validation failed',
+        }, 403);
+      }
+      
       userId = payload.userId;
 
       if (id !== '') {

@@ -1,3 +1,9 @@
+// 🔥 STEP 1C: RBAC Integration (First Route) - WITH OWNERSHIP
+import { createRBACUser, validateBrandOrThrow } from '@quiz/auth';
+import type { OwnershipContext } from '@quiz/auth/rbac/ownership.service';
+import { OwnershipRBACService } from '@quiz/auth/rbac/ownership.service';
+import { PERMISSIONS } from '@quiz/auth/rbac/permissions';
+import type { Role } from '@quiz/auth/rbac/roles';
 import { db, userProfiles, users } from '@quiz/db';
 import { eq } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
@@ -12,6 +18,30 @@ import { withLogging } from '@/lib/withLogging';
 import { getAuthBrandContext, shouldUseBrandBinding } from '@/modules/auth/brand-db';
 
 export const dynamic = 'force-dynamic';
+
+// 🔥 RBAC: Role normalization function (local copy to avoid import issues)
+const VALID_ROLES: Set<Role> = new Set(['user', 'admin', 'super_admin', 'faculty']);
+
+function normalizeRoles(roles: string[] = []): Role[] {
+  const normalized = roles
+    .map(role => role.toLowerCase().trim())
+    .filter(role => role.length > 0);
+  
+  // Filter out unknown roles for security
+  const validRoles = normalized.filter((role): role is Role => VALID_ROLES.has(role as Role));
+  
+  // 🚨 CRITICAL SECURITY: Return empty array if no valid roles
+  // DO NOT fallback to ['user'] here - that would make RBAC fake
+  // Let the caller decide what to do with empty roles
+  return [...new Set(validRoles)];
+}
+
+// 🚨 CRITICAL SECURITY: Helper to get roles for RBAC (no fallback to 'user')
+function getRBACRoles(authRoles: string[] | undefined): Role[] {
+  const normalized = normalizeRoles(authRoles || []);
+  // Return empty array if no valid roles - this will cause RBAC denial
+  return normalized;
+}
 
 interface ProfileUpdateBody {
   name?: string;
@@ -33,14 +63,127 @@ async function getHandler(_req: NextRequest) {
   const perfStart = Date.now();
 
   try {
-    // 🔐 UNIFIED AUTH: Single source of truth
+    // 🔐 EXISTING AUTH: Keep existing auth check (no changes)
     const auth = await getAuthContext(_req);
     if (!auth) {
       return ApiResponse.error(unauthorized('Unauthorized'));
     }
 
+    // 🔥 SECURITY FIX: Validate brand context (defense in depth)
+    try {
+      validateBrandOrThrow(auth, _req);
+    } catch (brandError) {
+      console.error(`[Profile GET][${auth.correlationId}] Brand validation failed:`, brandError);
+      return ApiResponse.error({
+        code: 'BRAND_MISMATCH',
+        message: brandError instanceof Error ? brandError.message : 'Brand validation failed',
+      }, 403);
+    }
+
     const { userId, brand, correlationId } = auth;
     console.log(`[Profile GET][${correlationId}] Auth SUCCESS - userId: ${userId}, brand: ${brand}`);
+
+    // 🚨 DIAGNOSTIC: Prove deployment and role pipeline
+    console.log('🔍 RBAC_VERSION_CHECK_V2 - Code is executing');
+    console.log('🔍 RBAC_DEBUG_ROLES_RAW', JSON.stringify({
+      authRoles: auth.roles,
+      authRolesType: typeof auth.roles,
+      authRolesIsArray: Array.isArray(auth.roles),
+      authRolesValue: auth.roles,
+      correlationId
+    }));
+
+    // 🔥 STEP 1C: RBAC LAYER WITH OWNERSHIP (NEW - Added on top of existing auth)
+    try {
+      // 🚨 CRITICAL DEBUG: Log raw auth.roles BEFORE normalization
+      console.log('🔍 RBAC_DEBUG_RAW_INPUT', JSON.stringify({
+        authRoles: auth.roles,
+        authRolesType: typeof auth.roles,
+        authRolesIsArray: Array.isArray(auth.roles),
+        authRolesLength: Array.isArray(auth.roles) ? auth.roles.length : 'N/A',
+        correlationId
+      }));
+      
+      // Create RBAC user from existing auth context
+      const normalizedRoles = getRBACRoles(auth.roles);
+      
+      console.log('🔍 RBAC_DEBUG_NORMALIZED', JSON.stringify({
+        normalizedRoles,
+        normalizedRolesLength: normalizedRoles.length,
+        normalizedRolesType: typeof normalizedRoles,
+        normalizedRolesIsArray: Array.isArray(normalizedRoles),
+        correlationId
+      }));
+      
+      // 🐛 DEBUG: Check if roles are empty
+      if (normalizedRoles.length === 0) {
+        console.error('🚨 RBAC_ERROR: No valid roles after normalization!', JSON.stringify({
+          authRoles: auth.roles,
+          authRolesType: typeof auth.roles,
+          authRolesIsArray: Array.isArray(auth.roles),
+          normalizedRoles,
+          correlationId
+        }));
+        throw new Error('Cannot create RBAC user: No roles assigned');
+      }
+      
+      const rbacUser = createRBACUser({
+        isAuthenticated: true,
+        userId: auth.userId,
+        originalUserId: auth.userId,
+        shadowUserId: auth.userId,
+        roles: normalizedRoles,
+        brand: auth.brand as 'realtutorialhub' | 'skillup',
+        email: auth.email,
+      });
+
+      // 🔒 RBAC: Check permission WITH OWNERSHIP
+      // User can read their OWN profile OR have explicit permission
+      const ownershipContext: OwnershipContext = {
+        requestingUserId: auth.userId,
+        resourceOwnerId: userId, // Profile belongs to this user
+        userRoles: rbacUser.roles,
+      };
+
+      OwnershipRBACService.requirePermissionOrOwnership(
+        ownershipContext,
+        PERMISSIONS.PROFILE_READ
+      );
+
+      // 📊 RBAC DEBUG: Temporary logging for validation
+      console.log('🔐 RBAC DEBUG', JSON.stringify({
+        tag: 'STEP_1C_OWNERSHIP',
+        route: '/api/auth/profile',
+        method: 'GET',
+        userId: userId.slice(0, 8),
+        roles: rbacUser.roles,
+        permission: PERMISSIONS.PROFILE_READ,
+        isOwner: auth.userId === userId,
+        result: 'GRANTED',
+        correlationId,
+        timestamp: new Date().toISOString(),
+      }));
+
+    } catch (rbacError) {
+      // 📊 RBAC DEBUG: Log permission denial
+      console.warn('🔐 RBAC DENIED', JSON.stringify({
+        tag: 'STEP_1C_OWNERSHIP',
+        route: '/api/auth/profile',
+        method: 'GET',
+        userId: userId.slice(0, 8),
+        permission: PERMISSIONS.PROFILE_READ,
+        result: 'DENIED',
+        error: rbacError instanceof Error ? rbacError.message : 'Unknown',
+        correlationId,
+        timestamp: new Date().toISOString(),
+      }));
+
+      return ApiResponse.error({
+        code: 'PERMISSION_DENIED',
+        message: `Permission required: ${PERMISSIONS.PROFILE_READ}`,
+        permission: PERMISSIONS.PROFILE_READ,
+      }, 403);
+    }
 
     const timings = {
       afterAuth: Date.now(),
@@ -104,14 +247,113 @@ async function getHandler(_req: NextRequest) {
 
 async function patchHandler(_req: NextRequest) {
   try {
-    // 🔐 UNIFIED AUTH: Single source of truth
+    // 🔐 EXISTING AUTH: Keep existing auth check (no changes)
     const auth = await getAuthContext(_req);
     if (!auth) {
       return ApiResponse.error(unauthorized('Unauthorized'));
     }
 
+    // 🔥 SECURITY FIX: Validate brand context (defense in depth)
+    try {
+      validateBrandOrThrow(auth, _req);
+    } catch (brandError) {
+      console.error(`[Profile PATCH][${auth.correlationId}] Brand validation failed:`, brandError);
+      return ApiResponse.error({
+        code: 'BRAND_MISMATCH',
+        message: brandError instanceof Error ? brandError.message : 'Brand validation failed',
+      }, 403);
+    }
+
     const { userId, brand, correlationId } = auth;
     console.log(`[Profile PATCH][${correlationId}] Auth SUCCESS - userId: ${userId}, brand: ${brand}`);
+
+    // 🚨 DIAGNOSTIC: Prove deployment and role pipeline
+    console.log('🔍 RBAC_VERSION_CHECK_V2 - Code is executing (PATCH)');
+    console.log('🔍 RBAC_DEBUG_ROLES_RAW_PATCH', JSON.stringify({
+      authRoles: auth.roles,
+      authRolesType: typeof auth.roles,
+      authRolesIsArray: Array.isArray(auth.roles),
+      correlationId
+    }));
+
+    // 🔥 STEP 1C: RBAC LAYER WITH OWNERSHIP (NEW - Added on top of existing auth)
+    try {
+      // Create RBAC user from existing auth context
+      const normalizedRoles = getRBACRoles(auth.roles);
+      
+      console.log('🔍 RBAC_DEBUG_NORMALIZED_PATCH', JSON.stringify({
+        normalizedRoles,
+        normalizedRolesLength: normalizedRoles.length,
+        correlationId
+      }));
+      
+      const rbacUser = createRBACUser({
+        isAuthenticated: true,
+        userId: auth.userId,
+        originalUserId: auth.userId,
+        shadowUserId: auth.userId,
+        roles: normalizedRoles,
+        brand: auth.brand as 'realtutorialhub' | 'skillup',
+        email: auth.email,
+      });
+
+      // 🔒 RBAC: Check permission WITH OWNERSHIP (WRITE permission for updates)
+      // User can update their OWN profile OR have explicit permission
+      const ownershipContext: OwnershipContext = {
+        requestingUserId: auth.userId,
+        resourceOwnerId: userId, // Profile belongs to this user
+        userRoles: rbacUser.roles,
+      };
+
+      // 🔍 DEBUG: Log ownership context before check
+      console.log('🔍 OWNERSHIP_DEBUG_PATCH', JSON.stringify({
+        requestingUserId: auth.userId,
+        resourceOwnerId: userId,
+        areEqual: auth.userId === userId,
+        userRoles: rbacUser.roles,
+        permission: PERMISSIONS.PROFILE_WRITE,
+        correlationId,
+      }));
+
+      OwnershipRBACService.requirePermissionOrOwnership(
+        ownershipContext,
+        PERMISSIONS.PROFILE_WRITE
+      );
+
+      // 📊 RBAC DEBUG: Temporary logging for validation
+      console.log('🔐 RBAC DEBUG', JSON.stringify({
+        tag: 'STEP_1C_OWNERSHIP',
+        route: '/api/auth/profile',
+        method: 'PATCH',
+        userId: userId.slice(0, 8),
+        roles: rbacUser.roles,
+        permission: PERMISSIONS.PROFILE_WRITE,
+        isOwner: auth.userId === userId,
+        result: 'GRANTED',
+        correlationId,
+        timestamp: new Date().toISOString(),
+      }));
+
+    } catch (rbacError) {
+      // 📊 RBAC DEBUG: Log permission denial
+      console.warn('🔐 RBAC DENIED', JSON.stringify({
+        tag: 'STEP_1C_OWNERSHIP',
+        route: '/api/auth/profile',
+        method: 'PATCH',
+        userId: userId.slice(0, 8),
+        permission: PERMISSIONS.PROFILE_WRITE,
+        result: 'DENIED',
+        error: rbacError instanceof Error ? rbacError.message : 'Unknown',
+        correlationId,
+        timestamp: new Date().toISOString(),
+      }));
+
+      return ApiResponse.error({
+        code: 'PERMISSION_DENIED',
+        message: `Permission required: ${PERMISSIONS.PROFILE_WRITE}`,
+        permission: PERMISSIONS.PROFILE_WRITE,
+      }, 403);
+    }
 
     const rawBody = await _req.json().catch(() => ({}));
 

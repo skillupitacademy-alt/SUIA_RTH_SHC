@@ -4,10 +4,8 @@ export * from './verify';
 export * from './subscription.cache';
 export * from './device-context';
 
-// RBAC exports
-export { RBACService, requirePermission, requireRole, requireAdmin } from './rbac.service';
-export type { Role, Permission, RBACUser } from './rbac.types';
-export { ForbiddenError, UnauthorizedError } from './rbac.types';
+// 🔥 NEW RBAC SYSTEM (Step 1B)
+export * from './rbac';
 
 // Feature Flags exports
 export { FeatureFlagService, requireFeature } from './feature-flags.service';
@@ -22,8 +20,56 @@ export { SessionExpiredError, SessionRevokedError, InvalidSessionError } from '.
 // Middleware exports
 export { AuthMiddleware, handleAuthError } from './middleware/auth.middleware';
 export type { AuthenticatedRequest, AuthMiddlewareOptions } from './middleware/auth.middleware';
+export { 
+  enforceBrandValidation, 
+  validateBrandContext, 
+  withBrandValidation,
+  resolveBrandFromHostname,
+  BrandValidationError 
+} from './middleware/brand-validator.middleware';
+export type { BrandId, BrandValidationContext } from './middleware/brand-validator.middleware';
+export { validateBrandOrThrow } from './middleware/brand.guard';
+
+// 🔐 Cookie Middleware exports (CRITICAL for multi-brand auth)
+export {
+  getCookieDomain,
+  resolveBrandFromHostname as resolveBrandFromHostnameForCookie,
+  buildAuthCookie,
+  buildAccessTokenCookie,
+  buildRefreshTokenCookie,
+  validateCookieDomain,
+  setAuthCookies,
+  clearAuthCookies,
+  clearAllBrandCookies,
+} from './middleware/cookie.middleware';
+export type { Brand as CookieBrand, AuthCookieOptions } from './middleware/cookie.middleware';
+
+// Audit exports
+export { logRBACDecision, logOwnershipCheck } from './audit/rbac.audit';
+export type { RBACDecision } from './audit/rbac.audit';
+
+// Utils exports
+export {
+  canonicalizeRoles,
+  hasRole,
+  hasAnyRole,
+  hasAllRoles,
+  isAdmin,
+  isRegularUser,
+} from './utils/canonical-roles';
+export type { Role } from './utils/canonical-roles';
 
 // Schema exports
 export { userRoleUpdate, roleEnum } from './schemas/rbac.schema';
 export { createFeatureFlagsTable, insertDefaultFeatureFlags } from './schemas/feature-flags.schema';
 export { createSessionsTable, createCleanupFunction } from './schemas/sessions.schema';
+
+// Error classes
+export {
+  AuthError,
+  UnauthorizedError,
+  ForbiddenError,
+  BadRequestError,
+  ConflictError,
+  isAuthError,
+} from './errors/auth-errors';

@@ -1,3 +1,6 @@
+import { RBACService, validateBrandOrThrow } from '@quiz/auth';
+import { PERMISSIONS } from '@quiz/auth/rbac/permissions';
+import type { Role } from '@quiz/auth/rbac/roles';
 import { METRICS } from "@quiz/observability";
 import { type NextRequest } from "next/server";
 
@@ -35,11 +38,27 @@ async function getHandler(req: NextRequest) {
     const payload = await container.get(TokenService).verifyAdminAccessToken(token as string) as {
       isAdmin?: boolean;
       roles?: string[];
+      brand?: string;
+      userId?: string;
     } | null;
-    const isAdmin = payload?.isAdmin === true;
-    const roles = Array.isArray(payload?.roles) ? payload.roles : [];
+    
+    // 🔥 SECURITY FIX: Validate brand context (defense in depth)
+    try {
+      validateBrandOrThrow({ brand: payload?.brand, userId: payload?.userId }, req);
+    } catch (brandError) {
+      console.error('[Analytics Item Difficulty] Brand validation failed:', brandError);
+      return ApiResponse.error({
+        code: 'BRAND_MISMATCH',
+        message: brandError instanceof Error ? brandError.message : 'Brand validation failed',
+      }, 403);
+    }
+    
+    // RBAC check
+    const roles = (Array.isArray(payload?.roles) ? payload.roles : [])
+      .map(r => typeof r === 'string' ? r.toLowerCase() : null)
+      .filter((r): r is Role => r !== null) as Role[];
 
-    if (!isAdmin && !roles.includes('admin')) {
+    if (!RBACService.hasPermission(roles, PERMISSIONS.ANALYTICS_VIEW)) {
       throw forbidden("Forbidden");
     }
 

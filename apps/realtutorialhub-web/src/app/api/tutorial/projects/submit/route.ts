@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-
+import { withObservability } from '@/middleware/observability.middleware';
 import { AssignmentAuthError, requireStudent } from '@/lib/assignment-auth';
 import { ProjectService } from '@/server/project.service';
 import { ProjectNotEligibleError } from '@quiz/types';
@@ -14,7 +14,9 @@ const submitSchema = z.object({
   deliverable: z.record(z.unknown()),
 });
 
-export async function POST(req: NextRequest) {
+async function handler(req: NextRequest, obsCtx: any) {
+  const { requestId } = obsCtx; // 🔥 Observability context
+  
   let session;
   try {
     session = await requireStudent(req);
@@ -48,3 +50,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: error instanceof Error ? error.message : 'Failed to submit project' }, { status: 500 });
   }
 }
+
+// 🔥 OBSERVABILITY: Wrap with withObservability for full request tracing
+export const POST = withObservability(handler);

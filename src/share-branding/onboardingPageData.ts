@@ -338,7 +338,7 @@ function buildOnboardingApiResponse(
 }
 
 export async function loadOnboardingData(brand: BrandConfig): Promise<OnboardingViewData> {
-  const cookieStore = await cookies();
+  const cookieStore = cookies();
   const session = parseOnboardingSessionCookie(cookieStore.get(ONBOARDING_SESSION_COOKIE)?.value);
   const backendUser = await fetchBackendAuthState();
   const apiResponse = buildOnboardingApiResponse(

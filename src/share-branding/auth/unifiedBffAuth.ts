@@ -9,6 +9,7 @@ import { TokenService } from '@quiz/auth';
  * - Validate JWT
  * - Extract identity
  * - Send internal headers
+ * - RBAC permission checking (Integration pending - Step 1C)
  */
 
 export interface BffAuthResult {
@@ -16,10 +17,63 @@ export interface BffAuthResult {
   userId?: string;
   email?: string;
   brand?: 'realtutorialhub' | 'skillup';
-  roles?: string[];
+  roles?: Role[]; // 🔥 TYPE SAFETY: Use typed roles
   accessToken?: string;
   shadowUserId?: string;
   originalUserId?: string;
+}
+
+/**
+ * 🔥 CRITICAL: Normalize roles to prevent security bypass
+ * ALL ROLES MUST BE LOWERCASE AND DEDUPLICATED
+ * 
+ * This fixes the USER vs user security vulnerability where:
+ * - JWT contains: ["USER", "STUDENT"] 
+ * - Code checks: roles.includes('student') → FAILS
+ * - Result: Access denied incorrectly OR granted incorrectly
+ */
+
+// 🔥 TYPE SAFETY: Define valid roles for RBAC preparation
+export type Role = 'user' | 'student' | 'admin' | 'super_admin' | 'faculty';
+
+const VALID_ROLES: Set<Role> = new Set(['user', 'student', 'admin', 'super_admin', 'faculty']);
+
+function normalizeRoles(roles: string[] = []): Role[] {
+  const normalized = roles
+    .map(role => role.toLowerCase().trim())
+    .filter(role => role.length > 0);
+  
+  // 🚨 SECURITY AUDIT: Log non-normalized roles for monitoring (dev only)
+  const hasUppercase = roles.some(role => role !== role.toLowerCase());
+  const hasDuplicates = roles.length !== new Set(roles.map(r => r.toLowerCase())).size;
+  
+  if ((hasUppercase || hasDuplicates) && process.env.NODE_ENV !== 'production') {
+    console.warn('⚠️ SECURITY: Role normalization violation detected', JSON.stringify({
+      tag: 'ROLE_NORMALIZATION_VIOLATION',
+      original: roles,
+      normalized,
+      hasUppercase,
+      hasDuplicates,
+      timestamp: new Date().toISOString(),
+    }));
+  }
+  
+  // 🔒 SECURITY: Filter out unknown roles (reject unknown roles for security)
+  const validRoles = normalized.filter((role): role is Role => VALID_ROLES.has(role as Role));
+  
+  // 🚨 SECURITY: Log unknown roles (dev only)
+  const unknownRoles = normalized.filter(role => !VALID_ROLES.has(role as Role));
+  if (unknownRoles.length > 0 && process.env.NODE_ENV !== 'production') {
+    console.warn('⚠️ SECURITY: Unknown roles detected and filtered', JSON.stringify({
+      tag: 'UNKNOWN_ROLES_FILTERED',
+      unknown: unknownRoles,
+      valid: validRoles,
+      timestamp: new Date().toISOString(),
+    }));
+  }
+  
+  // Deduplicate (USER + user = user)
+  return [...new Set(validRoles)];
 }
 
 /**
@@ -54,7 +108,10 @@ export async function extractAuthFromRequest(req: NextRequest): Promise<BffAuthR
     const shadowUserId = payload.shadowUserId;
     const originalUserId = payload.originalUserId;
     const brand = payload.brand as 'realtutorialhub' | 'skillup' | undefined;
-    const roles = Array.isArray(payload.roles) ? payload.roles : [];
+    
+    // 🔥 CRITICAL FIX: Normalize roles immediately to prevent security bypass
+    const rawRoles = Array.isArray(payload.roles) ? payload.roles : [];
+    const normalizedRoles = normalizeRoles(rawRoles);
 
     if (!shadowUserId || !originalUserId) {
       console.warn('[BFF_AUTH] Missing identity claims in token');
@@ -67,7 +124,7 @@ export async function extractAuthFromRequest(req: NextRequest): Promise<BffAuthR
       return { isAuthenticated: false };
     }
 
-    // 📊 OBSERVABILITY: Log successful auth extraction
+    // 📊 OBSERVABILITY: Log successful auth extraction with normalized roles
     console.log(JSON.stringify({
       tag: 'AUTH_FLOW',
       action: 'extract_auth',
@@ -75,7 +132,8 @@ export async function extractAuthFromRequest(req: NextRequest): Promise<BffAuthR
       brand,
       originalUserId: originalUserId.slice(0, 8),
       shadowUserId: shadowUserId.slice(0, 8),
-      roles,
+      rawRoles,
+      normalizedRoles,
       path: req.nextUrl.pathname,
     }));
 
@@ -84,7 +142,7 @@ export async function extractAuthFromRequest(req: NextRequest): Promise<BffAuthR
       userId: shadowUserId,
       email: payload.email,
       brand: brand || 'realtutorialhub', // fallback
-      roles,
+      roles: normalizedRoles, // ✅ Always normalized and deduplicated
       accessToken,
       shadowUserId,
       originalUserId,
@@ -181,3 +239,8 @@ export async function requireBffAuth(req: NextRequest): Promise<BffAuthResult | 
   
   return auth;
 }
+
+// ========================================
+// 🔐 RBAC INTEGRATION HELPERS (STEP 1C)
+// ========================================
+// RBAC integration will be added in Step 1C to avoid circular dependencies

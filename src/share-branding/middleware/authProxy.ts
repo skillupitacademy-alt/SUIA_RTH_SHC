@@ -35,6 +35,7 @@ const PROTECTED_PREFIXES = [
   '/api/batches',
 ];
 
+// 🔥 CRITICAL FIX: All roles must be lowercase to prevent security bypass
 const OVERRIDE_ROLES = ['admin', 'super_admin', 'faculty'];
 
 function hasPrefix(pathname: string, prefixes: string[]): boolean {
@@ -162,7 +163,13 @@ async function resolveUser(request: NextRequest): Promise<UserPayload | null> {
 }
 
 function hasRequiredRole(payload: UserPayload): boolean {
-  return payload.roles.includes('student') || payload.roles.includes('user') || payload.roles.some((role) => OVERRIDE_ROLES.includes(role));
+  // 🔥 CRITICAL: Roles are already normalized in unifiedBffAuth.ts
+  // DO NOT re-normalize here to avoid inconsistency
+  const roles = payload.roles; // already normalized
+  
+  return roles.includes('student') || 
+         roles.includes('user') || 
+         roles.some((role) => OVERRIDE_ROLES.includes(role));
 }
 
 export interface AuthProxyOptions {

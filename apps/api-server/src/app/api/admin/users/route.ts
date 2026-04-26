@@ -26,7 +26,7 @@ const authMiddleware = new AuthMiddleware(
 export async function GET(req: NextRequest) {
   try {
     // Require admin permissions
-    const user = await authMiddleware.requirePermissions('manage:users')(req);
+    const user = await authMiddleware.requirePermissions('user.manage')(req);
     
     console.log(`[ADMIN_USERS] Admin ${user.email} accessing user list`);
     
@@ -56,7 +56,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     // Require admin permissions
-    const user = await authMiddleware.requirePermissions('manage:users')(req);
+    const user = await authMiddleware.requirePermissions('user.manage')(req);
     
     const body = await req.json();
     

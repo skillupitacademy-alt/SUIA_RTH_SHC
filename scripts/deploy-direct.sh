@@ -146,7 +146,7 @@ echo "🧪 Running checks..."
 
 pnpm lint:all || exit 1
 pnpm typecheck:all || exit 1
-pnpm build:all || exit 1
+pnpm turbo run build --force || exit 1
 
 echo "✅ Quality checks passed"
 
@@ -321,6 +321,35 @@ echo "✅ Cloudflare Worker deployed"
 
 
 #############################################
+# 🔐 PRE-TRAFFIC SAFETY CHECK
+#############################################
+
+echo ""
+echo "🔐 Running PRE-TRAFFIC safety gate..."
+
+
+node ./scripts/auth-safety-gate.js
+
+if [ $? -ne 0 ]; then
+  echo "❌ SAFETY CHECK FAILED — BLOCKING TRAFFIC RELEASE"
+  exit 1
+fi
+
+echo "✅ Pre-traffic safety check passed"
+
+echo ""
+echo "🔐 Running PRE-TRAFFIC comprehensive audit..."
+
+node ./scripts/auth-full-audit.js
+
+if [ $? -ne 0 ]; then
+  echo "❌ COMPREHENSIVE AUDIT FAILED — BLOCKING TRAFFIC RELEASE"
+  exit 1
+fi
+
+echo "✅ Pre-traffic comprehensive audit passed"
+
+#############################################
 # 🚀 FULL TRAFFIC RELEASE
 #############################################
 
@@ -337,6 +366,70 @@ gcloud run services update-traffic $SERVICE_RTH \
 gcloud run services update-traffic $SERVICE_SKILLUP \
   --region $REGION \
   --to-latest
+
+#############################################
+# 🔐 POST-DEPLOY SAFETY CHECK
+#############################################
+
+echo ""
+echo "🔐 Running POST-DEPLOY safety gate..."
+
+node ./scripts/auth-safety-gate.js
+
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "❌ POST-DEPLOY SAFETY FAILED — INITIATING ROLLBACK"
+
+  rollback() {
+    SERVICE=$1
+    REV=$2
+
+    if [ -n "$REV" ]; then
+      gcloud run services update-traffic $SERVICE \
+        --region $REGION \
+        --to-revisions ${REV}=100
+    fi
+  }
+
+  rollback $SERVICE_API $PREV_API
+  rollback $SERVICE_RTH $PREV_RTH
+  rollback $SERVICE_SKILLUP $PREV_SKILLUP
+
+  echo "❌ ROLLBACK COMPLETE"
+  exit 1
+fi
+
+echo "✅ Post-deploy safety check passed"
+
+echo ""
+echo "🔐 Running POST-DEPLOY comprehensive audit..."
+
+node ./scripts/auth-full-audit.js
+
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "❌ POST-DEPLOY COMPREHENSIVE AUDIT FAILED — INITIATING ROLLBACK"
+
+  rollback() {
+    SERVICE=$1
+    REV=$2
+
+    if [ -n "$REV" ]; then
+      gcloud run services update-traffic $SERVICE \
+        --region $REGION \
+        --to-revisions ${REV}=100
+    fi
+  }
+
+  rollback $SERVICE_API $PREV_API
+  rollback $SERVICE_RTH $PREV_RTH
+  rollback $SERVICE_SKILLUP $PREV_SKILLUP
+
+  echo "❌ ROLLBACK COMPLETE"
+  exit 1
+fi
+
+echo "✅ Post-deploy comprehensive audit passed"
 
 
 
@@ -426,6 +519,92 @@ if [ $AUTH_EXIT_CODE -ne 0 ]; then
 fi
 
 echo "✅ Auth validation passed"
+
+#############################################
+# 🧪 RBAC VALIDATION (PRODUCTION-GRADE)
+#############################################
+
+echo ""
+echo "🧪 Running RBAC validation..."
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# Step 1: Fetch access tokens
+echo "🔐 Fetching access tokens for RBAC test users..."
+node ./scripts/get-access-token.js
+
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "⚠️  WARNING: Could not fetch RBAC test tokens"
+  echo "   Set environment variables:"
+  echo "     RBAC_ADMIN_EMAIL / RBAC_ADMIN_PASSWORD"
+  echo "     RBAC_STUDENT_EMAIL / RBAC_STUDENT_PASSWORD"
+  echo "     RBAC_USER_EMAIL / RBAC_USER_PASSWORD"
+  echo ""
+  echo "   Skipping RBAC validation..."
+  echo "   ⚠️  RBAC enforcement NOT verified in this deployment!"
+  echo ""
+else
+  # Step 2: Run RBAC live tests
+  echo ""
+  echo "🧪 Running RBAC live tests..."
+  node ./scripts/test-rbac-live.js
+
+  RBAC_EXIT_CODE=$?
+
+  if [ $RBAC_EXIT_CODE -ne 0 ]; then
+    echo ""
+    echo "❌ RBAC VALIDATION FAILED — CRITICAL SECURITY ISSUE"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+    echo "🚨 RBAC is NOT enforcing properly!"
+    echo "   This means non-admin users can access admin endpoints!"
+    echo ""
+    echo "🔍 Checking RBAC implementation..."
+    echo "   Running stale code detector..."
+    node ./scripts/detect-stale-rbac-code.js || true
+    echo ""
+    echo "🔁 INITIATING ROLLBACK..."
+
+    rollback() {
+      SERVICE=$1
+      REV=$2
+
+      if [ -n "$REV" ]; then
+        echo "  Rolling back $SERVICE to $REV..."
+        gcloud run services update-traffic $SERVICE \
+          --region $REGION \
+          --to-revisions ${REV}=100 2>/dev/null || echo "  ⚠️  Rollback failed for $SERVICE"
+      else
+        echo "  ⚠️  No previous revision for $SERVICE"
+      fi
+    }
+
+    rollback $SERVICE_API $PREV_API
+    rollback $SERVICE_RTH $PREV_RTH
+    rollback $SERVICE_SKILLUP $PREV_SKILLUP
+
+    echo ""
+    echo "🔁 Rollback complete"
+    echo ""
+    echo "❌ DEPLOYMENT BLOCKED - RBAC security validation failed"
+    echo "   Fix RBAC enforcement before deploying again"
+    exit 1
+  fi
+
+  echo ""
+  echo "✅ RBAC validation passed"
+  echo "   ✅ Non-admin users blocked from admin endpoints"
+  echo "   ✅ Admin users can access admin endpoints"
+  echo "   ✅ Ownership RBAC working"
+  echo ""
+  echo "🔍 IMPORTANT: Check production logs for:"
+  echo "   - RBAC_AUDIT with result:GRANTED"
+  echo "   - RBAC_AUDIT with result:DENIED"
+  echo "   You MUST see BOTH granted and denied entries!"
+  echo ""
+fi
+
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 #############################################
 # 🎉 DONE

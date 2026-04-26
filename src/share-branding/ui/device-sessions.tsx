@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Monitor, Smartphone, Tablet, LogOut, Loader2, Shield } from 'lucide-react';
 import { useBrand } from '@/share-branding/PostLandingPage/app/context/BrandContext';
+import { unifiedFetch } from '../lib/unifiedFetch';
 
 interface DeviceSession {
   id: string;
@@ -94,7 +95,7 @@ export function DeviceSessions({ className, onSessionRevoked, onGlobalLogout }: 
     try {
       setLoading(true);
       
-      const response = await fetch('/api/auth/sessions', {
+      const response = await unifiedFetch('/api/auth/sessions', {
         method: 'GET',
         credentials: 'include',
         headers: {
@@ -133,7 +134,7 @@ export function DeviceSessions({ className, onSessionRevoked, onGlobalLogout }: 
     try {
       setRevoking(sessionId);
       
-      const response = await fetch(`/api/auth/sessions/${sessionId}`, {
+      const response = await unifiedFetch(`/api/auth/sessions/${sessionId}`, {
         method: 'DELETE',
         credentials: 'include',
         headers: {
@@ -165,7 +166,7 @@ export function DeviceSessions({ className, onSessionRevoked, onGlobalLogout }: 
     try {
       setGlobalLoggingOut(true);
       
-      const response = await fetch('/api/auth/sessions', {
+      const response = await unifiedFetch('/api/auth/sessions', {
         method: 'DELETE',
         credentials: 'include',
         headers: {

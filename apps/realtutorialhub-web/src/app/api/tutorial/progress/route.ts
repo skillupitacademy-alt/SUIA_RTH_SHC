@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-
+import { withObservability } from '@/middleware/observability.middleware';
 import { AssignmentAuthError, requireStudent } from '@/lib/assignment-auth';
 import { TutorialProgressRepository } from '@quiz/db-tutorial';
 
@@ -32,7 +32,9 @@ function toSnapshot(blocksCompleted: string[] | null | undefined, assignmentUnlo
   };
 }
 
-export async function GET(request: NextRequest) {
+async function getHandler(request: NextRequest, obsCtx: any) {
+  const { requestId } = obsCtx; // 🔥 Observability context
+  
   try {
     const user = await requireStudent(request);
     const parsed = getQuerySchema.safeParse({
@@ -56,7 +58,9 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function POST(request: NextRequest) {
+async function postHandler(request: NextRequest, obsCtx: any) {
+  const { requestId } = obsCtx; // 🔥 Observability context
+  
   try {
     const user = await requireStudent(request);
 
@@ -84,3 +88,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: error instanceof Error ? error.message : 'Unauthorized' }, { status: 500 });
   }
 }
+
+// 🔥 OBSERVABILITY: Wrap with withObservability for full request tracing
+export const GET = withObservability(getHandler);
+export const POST = withObservability(postHandler);

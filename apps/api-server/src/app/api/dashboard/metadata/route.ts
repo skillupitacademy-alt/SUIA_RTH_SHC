@@ -1,3 +1,4 @@
+import { validateBrandOrThrow } from '@quiz/auth';
 import type { NextRequest } from 'next/server';
 
 import { internalError, unauthorized } from '@/lib/api-error';
@@ -19,6 +20,17 @@ async function handler(_req: NextRequest) {
     }
 
     const _payload = await container.get(TokenService).verifyUserAccessToken(_token);
+    
+    // 🔥 SECURITY FIX: Validate brand context (defense in depth)
+    try {
+      validateBrandOrThrow({ brand: _payload?.brand, userId: _payload?.userId }, _req);
+    } catch (brandError) {
+      console.error('[Dashboard Metadata] Brand validation failed:', brandError);
+      return ApiResponse.error({
+        code: 'BRAND_MISMATCH',
+        message: brandError instanceof Error ? brandError.message : 'Brand validation failed',
+      }, 403);
+    }
     const data = await DashboardEngine.getPerformanceBreakdownMetadata(_payload.userId);
     
     const durationMs = Date.now() - start;

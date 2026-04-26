@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-
+import { withObservability } from '@/middleware/observability.middleware';
 import { requireStudent } from '@/lib/assignment-auth';
 import { assignmentHelpSchema, assignmentService } from '@/lib/assignment';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(req: NextRequest) {
+async function handler(req: NextRequest, obsCtx: any) {
+  const { requestId } = obsCtx; // 🔥 Observability context
+  
   try {
     const user = await requireStudent(req);
 
@@ -37,3 +39,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: error instanceof Error ? error.message : 'Unauthorized' }, { status: 401 });
   }
 }
+
+// 🔥 OBSERVABILITY: Wrap with withObservability for full request tracing
+export const POST = withObservability(handler);

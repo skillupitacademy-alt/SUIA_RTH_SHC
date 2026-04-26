@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { unifiedFetch } from '../../lib/unifiedFetch';
 
 import { BrandProvider } from '@/share-branding/OnboardingEngine/context/BrandContext';
 import { BrandConfig } from '@/share-branding/brandConfig';
@@ -21,7 +22,7 @@ interface OnboardingPageProps {
 }
 
 async function persistOnboarding(data: OnboardingData, journeyStatus: OnboardingJourneyStatus) {
-  const response = await fetch('/api/auth/onboarding', {
+  const response = await unifiedFetch('/api/auth/onboarding', {
     method: 'POST',
     credentials: 'include',
     cache: 'no-store',

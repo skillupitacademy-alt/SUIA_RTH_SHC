@@ -1,14 +1,19 @@
+import { RBACService, validateBrandOrThrow } from '@quiz/auth';
+import { PERMISSIONS } from '@quiz/auth/rbac/permissions';
+import type { Role } from '@quiz/auth/rbac/roles';
 import { METRICS } from "@quiz/observability";
 import { type NextRequest } from "next/server";
 
 import { forbidden, unauthorized } from "@/lib/api-error";
 import { ApiResponse } from "@/lib/api-response";
+import { getAuthContext } from "@/lib/auth-context";
 import { sqlReplica } from "@/lib/db";
 import { recordCounter, recordTimer } from "@/lib/metrics";
 import { redis } from "@/lib/redis";
 import { withLogging } from "@/lib/withLogging";
 import { CACHE_KEYS } from "@/modules/analytics/analytics.constants";
-import { verifyAdminOrInfraToken } from "@/modules/auth/admin-audience.util";
+import { TokenService } from "@/modules/auth/token.service";
+import { container } from '@/modules/core/container';
 import { ResilienceService } from "@/modules/core/resilience.service";
 
 export const dynamic = "force-dynamic";
@@ -24,17 +29,29 @@ async function getHandler(req: NextRequest) {
       return ApiResponse.error(new Error("Analytics service is busy"), 503);
     }
 
-    const { payload } = await verifyAdminOrInfraToken(req);
-    // verifyAdminOrInfraToken might throw if no token, but let's be safe
-    if (payload === null || payload === undefined) {
-        throw unauthorized("Authentication required");
+    // Get auth context
+    const auth = await getAuthContext(req);
+    if (!auth) {
+      throw unauthorized("Authentication required");
     }
 
-    const hasAdminRole = Array.isArray(payload.roles) && payload.roles.some(
-        (role: string) => role === "admin" || role === "super_admin"
-    );
+    // 🔥 SECURITY FIX: Validate brand context (defense in depth)
+    try {
+      validateBrandOrThrow(auth, req);
+    } catch (brandError) {
+      console.error('[Analytics Pool Sufficiency] Brand validation failed:', brandError);
+      return ApiResponse.error({
+        code: 'BRAND_MISMATCH',
+        message: brandError instanceof Error ? brandError.message : 'Brand validation failed',
+      }, 403);
+    }
 
-    if (!hasAdminRole && payload.isAdmin !== true) {
+    // RBAC check
+    const roles = (Array.isArray(auth.roles) ? auth.roles : [])
+      .map((r: string) => typeof r === 'string' ? r.toLowerCase() : null)
+      .filter((r): r is Role => r !== null) as Role[];
+    
+    if (!RBACService.hasPermission(roles, PERMISSIONS.ANALYTICS_VIEW)) {
         throw forbidden("Insufficient permissions");
     }
 

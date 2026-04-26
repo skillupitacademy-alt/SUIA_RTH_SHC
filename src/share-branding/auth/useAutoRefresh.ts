@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { getDeviceHeaders } from '@quiz/auth';
+import { unifiedFetch } from '../lib/unifiedFetch';
 
 /**
  * 🔐 ENTERPRISE AUTH: Automatic Token Refresh Hook
@@ -26,7 +27,7 @@ export function useAutoRefresh() {
       try {
         const deviceHeaders = getDeviceHeaders();
         
-        const response = await fetch('/api/auth/refresh', {
+        const response = await unifiedFetch('/api/auth/refresh', {
           method: 'POST',
           credentials: 'include',
           headers: {
@@ -98,7 +99,7 @@ export async function manualRefresh(): Promise<boolean> {
   try {
     const deviceHeaders = getDeviceHeaders();
     
-    const response = await fetch('/api/auth/refresh', {
+    const response = await unifiedFetch('/api/auth/refresh', {
       method: 'POST',
       credentials: 'include',
       headers: {

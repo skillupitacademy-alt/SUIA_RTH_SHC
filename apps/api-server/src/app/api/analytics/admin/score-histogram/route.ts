@@ -1,3 +1,6 @@
+import { RBACService, validateBrandOrThrow } from '@quiz/auth';
+import { PERMISSIONS } from '@quiz/auth/rbac/permissions';
+import type { Role } from '@quiz/auth/rbac/roles';
 import { METRICS } from "@quiz/observability";
 import { type NextRequest } from "next/server";
 
@@ -36,11 +39,23 @@ async function getHandler(req: NextRequest) {
       throw unauthorized("Authentication required");
     }
     
-    const hasAdminRole = Array.isArray(payload.roles) && payload.roles.some(
-      (role: string) => role === "admin" || role === "super_admin"
-    );
+    // 🔥 SECURITY FIX: Validate brand context (defense in depth)
+    try {
+      validateBrandOrThrow({ brand: payload?.brand, userId: payload?.userId }, req);
+    } catch (brandError) {
+      console.error('[Analytics Score Histogram] Brand validation failed:', brandError);
+      return ApiResponse.error({
+        code: 'BRAND_MISMATCH',
+        message: brandError instanceof Error ? brandError.message : 'Brand validation failed',
+      }, 403);
+    }
     
-    if (!hasAdminRole && payload.isAdmin !== true) {
+    // RBAC check
+    const roles = (Array.isArray(payload.roles) ? payload.roles : [])
+      .map(r => typeof r === 'string' ? r.toLowerCase() : null)
+      .filter((r): r is Role => r !== null) as Role[];
+    
+    if (!RBACService.hasPermission(roles, PERMISSIONS.ANALYTICS_VIEW)) {
       throw forbidden("Insufficient permissions");
     }
 

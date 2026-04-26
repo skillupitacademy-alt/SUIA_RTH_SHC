@@ -6,6 +6,7 @@ export type ProxyRequestOptions = {
   originalUserId?: string;
   portal?: 'admin' | 'user';
   brand?: string;
+  roles?: string[]; // 🔥 ADD: User roles for RBAC
   upstreamPath?: string;
 };
 
@@ -91,6 +92,26 @@ export async function proxyRequest(request: Request, upstream: string, options: 
     headers.set('X-Platform', options.brand);
   }
 
+  // 🔥 RBAC: Forward user roles for permission checks
+  if (Array.isArray(options.roles) && options.roles.length > 0) {
+    const rolesHeader = options.roles.join(',');
+    headers.set('X-User-Roles', rolesHeader);
+    console.log('🔥 [PROXY_ROLES_SET]', JSON.stringify({
+      roles: options.roles,
+      rolesHeader,
+      path: targetPath,
+      correlationId
+    }));
+  } else {
+    console.log('⚠️ [PROXY_ROLES_MISSING]', JSON.stringify({
+      roles: options.roles,
+      rolesType: typeof options.roles,
+      rolesIsArray: Array.isArray(options.roles),
+      path: targetPath,
+      correlationId
+    }));
+  }
+
   // 🔥 DEVICE TRACKING: Forward device headers for multi-device session management
   const deviceId = request.headers.get('x-device-id');
   const deviceName = request.headers.get('x-device-name');
@@ -99,6 +120,29 @@ export async function proxyRequest(request: Request, upstream: string, options: 
   }
   if (deviceName) {
     headers.set('X-Device-Name', deviceName);
+  }
+
+  // 🔥 CRITICAL: Forward brand explicitly (source of truth)
+  if (options.brand) {
+    headers.set('X-Brand', options.brand);
+    console.log('🔥 [PROXY_BRAND_SET]', JSON.stringify({
+      brand: options.brand,
+      path: targetPath,
+      correlationId
+    }));
+  }
+
+  // 🔥 CRITICAL FIX: Forward cookies to BFF endpoints
+  // BFF routes need cookies for authentication when requests come through gateway
+  const cookieHeader = request.headers.get('cookie');
+  if (cookieHeader) {
+    headers.set('Cookie', cookieHeader);
+    console.log('🍪 [PROXY_COOKIE_FORWARDED]', JSON.stringify({
+      hasCookie: true,
+      cookieLength: cookieHeader.length,
+      path: targetPath,
+      correlationId
+    }));
   }
 
   // Clean up headers that shouldn't be forwarded

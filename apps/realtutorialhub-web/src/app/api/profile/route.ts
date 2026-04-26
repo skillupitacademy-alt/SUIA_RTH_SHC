@@ -1,4 +1,6 @@
 import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { withObservability } from '@/middleware/observability.middleware';
 import { 
   handleProfileGet, 
   handleProfilePatch 
@@ -13,10 +15,23 @@ import {
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: NextRequest) {
-  return handleProfileGet(req);
-}
+// 🔥 OBSERVABILITY: Wrap with withObservability for full request tracing
+export const GET = withObservability(async (req: NextRequest, _obsCtx: unknown) => {
+  const response = await handleProfileGet(req);
+  // Convert Response to NextResponse
+  return new NextResponse(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers: response.headers,
+  });
+});
 
-export async function PATCH(req: NextRequest) {
-  return handleProfilePatch(req);
-}
+export const PATCH = withObservability(async (req: NextRequest, _obsCtx: unknown) => {
+  const response = await handleProfilePatch(req);
+  // Convert Response to NextResponse
+  return new NextResponse(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers: response.headers,
+  });
+});

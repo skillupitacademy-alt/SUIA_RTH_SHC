@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-
+import { withObservability } from '@/middleware/observability.middleware';
 import { requireStudent, AssignmentAuthError } from '@/lib/assignment-auth';
 import { liveSessionService } from '@/server/live-session.service';
 import { SessionRequestDuplicateError } from '@quiz/types';
@@ -12,7 +12,9 @@ const schema = z.object({
   doubtText: z.string().min(1).optional(),
 });
 
-export async function POST(req: NextRequest) {
+async function handler(req: NextRequest, obsCtx: any) {
+  const { requestId } = obsCtx; // 🔥 Observability context
+  
   try {
     const session = await requireStudent(req);
 
@@ -44,3 +46,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 }
+
+// 🔥 OBSERVABILITY: Wrap with withObservability for full request tracing
+export const POST = withObservability(handler);

@@ -78,18 +78,22 @@ async function handler(_req: Request, body: z.infer<typeof loginSchema>) {
       domain: cookieDomain,
   };
 
-  const accessTokenName = audience === 'infra' ? 'infra_accessToken' : 'admin_accessToken';
-  const refreshTokenName = audience === 'infra' ? 'infra_refreshToken' : 'admin_refreshToken';
+  if (audience === 'infra') {
+    // Infrastructure tokens use special handling (not brand-specific)
+    response.cookies.set('infra_accessToken', result.accessToken, {
+        ...cookieOptions,
+        maxAge: 15 * 60,
+    });
 
-  response.cookies.set(accessTokenName, result.accessToken, {
-      ...cookieOptions,
-      maxAge: 15 * 60,
-  });
-
-  response.cookies.set(refreshTokenName, result.refreshToken, {
-      ...cookieOptions,
-      maxAge: 24 * 60 * 60,
-  });
+    response.cookies.set('infra_refreshToken', result.refreshToken, {
+        ...cookieOptions,
+        maxAge: 24 * 60 * 60,
+    });
+  } else {
+    // Admin tokens use brand-specific domains via middleware
+    const { setAuthCookies } = await import('@quiz/auth');
+    setAuthCookies(response, result.accessToken, result.refreshToken, brand as any, true);
+  }
 
   const { setCsrfToken } = await import('@/modules/auth/csrf.middleware');
   setCsrfToken(response, requestHostname);

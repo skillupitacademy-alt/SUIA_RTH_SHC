@@ -1,7 +1,10 @@
+import { RBACService, validateBrandOrThrow } from '@quiz/auth';
+import { PERMISSIONS } from '@quiz/auth/rbac/permissions';
+import type { Role } from '@quiz/auth/rbac/roles';
 import { METRICS } from "@quiz/observability";
 import { type NextRequest } from "next/server";
 
-import { unauthorized } from "@/lib/api-error";
+import { forbidden,unauthorized } from "@/lib/api-error";
 import { ApiResponse } from "@/lib/api-response";
 import { sqlReplica } from "@/lib/db";
 import { recordCounter, recordTimer } from "@/lib/metrics";
@@ -31,7 +34,30 @@ async function getHandler(req: NextRequest) {
       throw unauthorized("Authentication required");
     }
 
-    await container.get(TokenService).verifyAdminAccessToken(token);
+    const payload = await container.get(TokenService).verifyAdminAccessToken(token);
+    if (payload === null || payload === undefined) {
+      throw unauthorized("Authentication required");
+    }
+
+    // 🔥 SECURITY FIX: Validate brand context (defense in depth)
+    try {
+      validateBrandOrThrow({ brand: payload?.brand, userId: payload?.userId }, req);
+    } catch (brandError) {
+      console.error('[Analytics Mastery Trend] Brand validation failed:', brandError);
+      return ApiResponse.error({
+        code: 'BRAND_MISMATCH',
+        message: brandError instanceof Error ? brandError.message : 'Brand validation failed',
+      }, 403);
+    }
+
+    // RBAC check
+    const roles = (Array.isArray(payload.roles) ? payload.roles : [])
+      .map(r => typeof r === 'string' ? r.toLowerCase() : null)
+      .filter((r): r is Role => r !== null) as Role[];
+    
+    if (!RBACService.hasPermission(roles, PERMISSIONS.ANALYTICS_VIEW)) {
+      throw forbidden("Insufficient permissions");
+    }
 
     try {
       const cachedData = await redis.get(CACHE_KEYS.ANALYTICS.ADMIN("mastery-trend"));

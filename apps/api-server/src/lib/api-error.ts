@@ -3,6 +3,8 @@
  * Standardized API Error System (Task 45)
  */
 
+import { isAuthError, type AuthError } from '@quiz/auth';
+
 export type ApiErrorCode = 
   | 'BAD_REQUEST'
   | 'UNAUTHORIZED'
@@ -40,6 +42,18 @@ export class ApiError extends Error {
 
   static fromError(err: unknown, status: number = 500, requestId?: string): ApiError {
     if (err instanceof ApiError) return err;
+    
+    // 🔥 Handle AuthError with proper status codes
+    if (isAuthError(err)) {
+      return new ApiError(
+        err.statusCode,
+        err.message,
+        err.code as ApiErrorCode,
+        undefined,
+        requestId
+      );
+    }
+    
     const message = err instanceof Error ? err.message : 'Internal Server Error';
     return new ApiError(status, message, 'INTERNAL_ERROR', undefined, requestId);
   }

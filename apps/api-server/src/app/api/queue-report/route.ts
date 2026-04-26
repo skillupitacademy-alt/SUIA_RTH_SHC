@@ -6,6 +6,8 @@ import { after, NextRequest } from "next/server";
 
 export const dynamic = 'force-dynamic';
 
+import { validateBrandOrThrow } from '@quiz/auth';
+
 import { badRequest, forbidden, unauthorized } from "@/lib/api-error";
 import { ApiResponse } from "@/lib/api-response";
 import { logger } from "@/lib/logger";
@@ -83,6 +85,18 @@ async function postHandler(req: NextRequest) {
       if (payload === null || payload === undefined || payload.userId === null || payload.userId === undefined) {
         throw unauthorized("Unauthorized");
       }
+      
+      // 🔥 SECURITY FIX: Validate brand context (defense in depth)
+      try {
+        validateBrandOrThrow({ brand: payload?.brand, userId: payload?.userId }, req);
+      } catch (brandError) {
+        console.error('[Queue Report] Brand validation failed:', brandError);
+        return ApiResponse.error({
+          code: 'BRAND_MISMATCH',
+          message: brandError instanceof Error ? brandError.message : 'Brand validation failed',
+        }, 403);
+      }
+      
       userId = payload.userId;
 
       const exam = await db.query.exams.findFirst({

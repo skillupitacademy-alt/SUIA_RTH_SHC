@@ -1,3 +1,4 @@
+import { validateBrandOrThrow } from '@quiz/auth';
 import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
 
@@ -22,6 +23,17 @@ async function handler(_req: NextRequest) {
     }
 
     const _payload = await container.get(TokenService).verifyUserAccessToken(_token);
+    
+    // 🔥 SECURITY FIX: Validate brand context (defense in depth)
+    try {
+      validateBrandOrThrow({ brand: _payload?.brand, userId: _payload?.userId }, _req);
+    } catch (brandError) {
+      console.error('[Dashboard Trend] Brand validation failed:', brandError);
+      return ApiResponse.error({
+        code: 'BRAND_MISMATCH',
+        message: brandError instanceof Error ? brandError.message : 'Brand validation failed',
+      }, 403);
+    }
     
     const range = _req.nextUrl.searchParams.get('range') ?? '7d';
     const validRanges = ['7d', '14d', '28d', '90d'];

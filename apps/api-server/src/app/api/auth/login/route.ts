@@ -4,7 +4,6 @@ import type { NextRequest } from 'next/server';
 import { toUserSummaryDTO } from '@/dtos/auth.dto';
 import { badRequest, forbidden, locked, unauthorized, validationError } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
-import { resolveCookieDomain } from '@/lib/cookie-domain';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { resolveRequestBrand, resolveRequestBrandFromHeaders, resolveRequestHostnameFromHeaders } from '@/lib/request-brand';
 import { withLogging } from '@/lib/withLogging';
@@ -15,12 +14,17 @@ import { setOnboardingStateCookie } from '@/modules/auth/onboarding-state-cookie
 import { container } from '@/modules/core/container';
 import { loginSchema } from '@/schemas/auth.schemas';
 
+// 🔐 CRITICAL: Import shared cookie middleware to ensure correct domain per brand
+import { setAuthCookies, type CookieBrand } from '@quiz/auth';
+
 export const dynamic = 'force-dynamic';
 
 import { withCorrelationId } from '@/lib/correlation-id.middleware';
+import { withObservability } from '@/middleware/observability.middleware';
 
-async function handler(req: NextRequest) {
+async function handler(req: NextRequest, obsCtx: any) {
   const start = Date.now();
+  const { requestId } = obsCtx; // 🔥 Use observability context
   const timings = {
     start,
     afterParsing: 0,
@@ -36,11 +40,11 @@ async function handler(req: NextRequest) {
       event: 'cold_start_request',
       path: '/api/auth/login',
       timestamp: new Date().toISOString(),
+      requestId, // 🔥 Add correlation
     }));
   }
   
   try {
-    const requestId = req.headers.get('x-request-id') ?? 'no-request-id';
     const origin = req.headers.get('origin') ?? 'unknown';
     const host = req.headers.get('host') ?? req.nextUrl.hostname;
     console.log('[AUTH_FLOW][LOGIN][START]', JSON.stringify({
@@ -119,38 +123,36 @@ async function handler(req: NextRequest) {
       user: userDto,
     });
 
+    // 🔐 CRITICAL FIX: Use shared cookie middleware to ensure correct domain per brand
+    // This fixes the SkillUp redirect loop caused by cookie domain mismatch
+    const cookieBrand: CookieBrand = brand === 'skillup' ? 'skillup' : 'realtutorialhub';
+    
     const requestHostname = resolveRequestHostnameFromHeaders(req.headers, req.nextUrl.hostname);
-    const cookieDomain = resolveCookieDomain(undefined, requestHostname);
+    
+    // 🔍 CRITICAL DEBUG: Log cookie domain resolution
+    console.log('[AUTH_FLOW][LOGIN][COOKIE_DOMAIN_DEBUG]', JSON.stringify({
+      requestId,
+      requestHostname,
+      nextUrlHostname: req.nextUrl.hostname,
+      xOriginalHost: req.headers.get('x-original-host'),
+      xForwardedHost: req.headers.get('x-forwarded-host'),
+      host: req.headers.get('host'),
+      origin: req.headers.get('origin'),
+      brand,
+      cookieBrand,
+    }));
+
+    // Set cookies using the shared middleware helper
+    setAuthCookies(response, accessToken, refreshToken, cookieBrand, isAdmin);
+    
     console.log('[AUTH_FLOW][LOGIN][COOKIES]', JSON.stringify({
       requestId,
       host,
-      cookieDomain: cookieDomain ?? 'unset',
-      accessTokenCookieName: isAdmin === true ? 'admin_accessToken' : 'accessToken',
-      refreshTokenCookieName: isAdmin === true ? 'admin_refreshToken' : 'refreshToken',
+      brand,
+      cookieBrand,
       sameSite: 'none',
       secure: true,
     }));
-
-    const accessTokenCookieName = isAdmin === true ? 'admin_accessToken' : 'accessToken';
-    response.cookies.set(accessTokenCookieName, accessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none',
-      maxAge: 15 * 60,
-      path: '/',
-      domain: cookieDomain,
-    });
-
-    const refreshCookieName = isAdmin === true ? 'admin_refreshToken' : 'refreshToken';
-    const refreshMaxAge = isAdmin === true ? 24 * 60 * 60 : 7 * 24 * 60 * 60;
-    response.cookies.set(refreshCookieName, refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none',
-      maxAge: refreshMaxAge, 
-      path: '/',
-      domain: cookieDomain,
-    });
 
     setCsrfToken(response, requestHostname);
     setOnboardingStateCookie(response, req, userDto.onboarded === true);
@@ -181,14 +183,14 @@ async function handler(req: NextRequest) {
       durationMs,
       path: req.nextUrl.pathname,
       role: isAdmin ? 'admin' : 'user',
-      cookieDomain: cookieDomain ?? 'unset',
+      cookieBrand,
       brand,
     }));
 
     return response;
   } catch (_error) {
     const message = _error instanceof Error ? _error.message : 'Invalid credentials';
-    const requestId = req.headers.get('x-request-id') ?? 'no-request-id';
+    const { requestId } = obsCtx; // 🔥 Use observability context
     
     // Capture debug info for temporary debugging
     const debugInfo = {
@@ -235,9 +237,11 @@ async function handler(req: NextRequest) {
 
 import { withRateLimit } from '@/middleware/rate-limit.middleware';
 
-export const POST = withRateLimit(
-  withCorrelationId(
-    withLogging(handler, { component: 'auth', operation: 'login' })
-  ),
-  { limit: 5, windowMs: 60000 }
+export const POST = withObservability(
+  withRateLimit(
+    withCorrelationId(
+      withLogging(handler, { component: 'auth', operation: 'login' })
+    ),
+    { limit: 5, windowMs: 60000 }
+  )
 );
