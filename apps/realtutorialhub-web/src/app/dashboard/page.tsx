@@ -1,8 +1,8 @@
 import { redirect } from 'next/navigation';
 
-import { fetchBackendAuthState } from '../../../../../src/share-branding/auth/serverAuthState';
+import { validateAuthState } from '../../../../../src/share-branding/auth/validateAuthState';
 import DashboardPage from '../../../../../src/share-branding/DashboardPage';
-import { loadDashboardData } from '../../../../../src/share-branding/dashboardPageData';
+import { resolveDashboardData } from '../../../../../src/share-branding/dashboardResolver';
 import { rthConfig } from '../../../../../src/share-branding/brandConfig';
 
 export const metadata = {
@@ -14,38 +14,34 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function Page() {
-  // 🔍 DEBUG: Log cookie state
-  console.log('[DASHBOARD_SSR] Fetching auth state...');
+  // 🔥 STEP 1: LIGHTWEIGHT AUTH VALIDATION (FAST)
+  console.log('[DASHBOARD_SSR] Validating auth...');
   
-  const authState = await fetchBackendAuthState();
+  const auth = await validateAuthState();
   
-  // 🔍 DEBUG: Log result
-  console.log('[DASHBOARD_SSR] Auth state result:', {
-    hasAuthState: !!authState,
-    userId: authState?.id?.slice(0, 8),
-    onboardingCompleted: authState?.onboardingCompleted,
+  console.log('[DASHBOARD_SSR] Auth validation result:', {
+    isAuthenticated: !!auth,
+    userId: auth?.id?.slice(0, 8),
+    onboardingCompleted: auth?.onboardingCompleted,
+    roles: auth?.roles,
   });
   
   // ✅ CRITICAL: Redirect to login if not authenticated
-  if (!authState) {
-    console.log('[DASHBOARD_SSR] No auth state, redirecting to login');
+  if (!auth) {
+    console.log('[DASHBOARD_SSR] Not authenticated, redirecting to login');
     redirect('/login');
   }
   
   // ✅ Redirect to onboarding if not completed
-  if (authState.onboardingCompleted === false) {
+  if (auth.onboardingCompleted === false) {
     console.log('[DASHBOARD_SSR] Onboarding not completed, redirecting');
     redirect('/onboarding');
   }
   
-  console.log('[DASHBOARD_SSR] Auth checks passed, loading dashboard data');
+  // 🔥 STEP 2: LOAD DASHBOARD DATA (GUARANTEED TO RETURN)
+  console.log('[DASHBOARD_SSR] Auth confirmed, loading dashboard data...');
   
-  try {
-    const data = await loadDashboardData(rthConfig, authState);
-    return <DashboardPage config={rthConfig} data={data} />;
-  } catch (error) {
-    console.error('[RTH_DASHBOARD] Error loading dashboard data:', error);
-    // If dashboard data loading fails, redirect to login
-    redirect('/login');
-  }
+  const data = await resolveDashboardData(rthConfig);
+  
+  return <DashboardPage config={rthConfig} data={data} />;
 }

@@ -22,6 +22,34 @@ IMAGE_RTH="${REGISTRY}/${PROJECT_ID}/quiz-platform/realtutorialhub-web:${GIT_SHA
 IMAGE_SKILLUP="${REGISTRY}/${PROJECT_ID}/quiz-platform/skillup-web:${GIT_SHA}"
 
 #############################################
+# 🔐 RBAC TEST USER CREDENTIALS
+#############################################
+
+# RealTutorialHub brand users
+export RTH_TEST_EMAIL="${RTH_TEST_EMAIL:-ajayshah@gmail.com}"
+export RTH_TEST_PASSWORD="${RTH_TEST_PASSWORD:-testing}"
+export RBAC_RTH_USER_EMAIL="${RBAC_RTH_USER_EMAIL:-ajayshah@gmail.com}"
+export RBAC_RTH_USER_PASSWORD="${RBAC_RTH_USER_PASSWORD:-testing}"
+export RBAC_RTH_ADMIN_EMAIL="${RBAC_RTH_ADMIN_EMAIL:-admin@test.com}"
+export RBAC_RTH_ADMIN_PASSWORD="${RBAC_RTH_ADMIN_PASSWORD:-admin123}"
+
+# SkillUp IT Academy brand users
+export SKILLUP_TEST_EMAIL="${SKILLUP_TEST_EMAIL:-student@skillupitacademy.com}"
+export SKILLUP_TEST_PASSWORD="${SKILLUP_TEST_PASSWORD:-testing}"
+export RBAC_SKILLUP_STUDENT_EMAIL="${RBAC_SKILLUP_STUDENT_EMAIL:-student@skillupitacademy.com}"
+export RBAC_SKILLUP_STUDENT_PASSWORD="${RBAC_SKILLUP_STUDENT_PASSWORD:-testing}"
+export RBAC_SKILLUP_ADMIN_EMAIL="${RBAC_SKILLUP_ADMIN_EMAIL:-skillup_admin@test.com}"
+export RBAC_SKILLUP_ADMIN_PASSWORD="${RBAC_SKILLUP_ADMIN_PASSWORD:-Admin@2024}"
+
+# Fallback test users (RBAC validation)
+export RBAC_USER_EMAIL="${RBAC_USER_EMAIL:-rbac-user@test.com}"
+export RBAC_USER_PASSWORD="${RBAC_USER_PASSWORD:-RbacTest123!}"
+export RBAC_ADMIN_EMAIL="${RBAC_ADMIN_EMAIL:-admin@test.com}"
+export RBAC_ADMIN_PASSWORD="${RBAC_ADMIN_PASSWORD:-admin123}"
+export RBAC_STUDENT_EMAIL="${RBAC_STUDENT_EMAIL:-rbac-student@test.com}"
+export RBAC_STUDENT_PASSWORD="${RBAC_STUDENT_PASSWORD:-RbacTest123!}"
+
+#############################################
 # 🔐 SET PROJECT
 #############################################
 
@@ -327,7 +355,6 @@ echo "✅ Cloudflare Worker deployed"
 echo ""
 echo "🔐 Running PRE-TRAFFIC safety gate..."
 
-
 node ./scripts/auth-safety-gate.js
 
 if [ $? -ne 0 ]; then
@@ -348,6 +375,32 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "✅ Pre-traffic comprehensive audit passed"
+
+echo ""
+echo "🔥 Running PHASE 1 FALLBACK VALIDATION..."
+
+node ./scripts/test-phase1-fallback.js
+
+if [ $? -ne 0 ]; then
+  echo "❌ PHASE 1 FALLBACK VALIDATION FAILED — BLOCKING TRAFFIC RELEASE"
+  echo "   Dashboard resilience not guaranteed"
+  exit 1
+fi
+
+echo "✅ Phase 1 fallback validation passed"
+
+echo ""
+echo "🔄 Running NAVIGATION STABILITY TEST..."
+
+node ./scripts/test-auth-resilience.js
+
+if [ $? -ne 0 ]; then
+  echo "❌ NAVIGATION STABILITY TEST FAILED — BLOCKING TRAFFIC RELEASE"
+  echo "   Users may be logged out on navigation"
+  exit 1
+fi
+
+echo "✅ Navigation stability test passed"
 
 #############################################
 # 🚀 FULL TRAFFIC RELEASE
@@ -430,6 +483,37 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "✅ Post-deploy comprehensive audit passed"
+
+echo ""
+echo "🔥 Running POST-DEPLOY PHASE 1 VALIDATION..."
+
+node ./scripts/test-phase1-fallback.js
+
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "❌ POST-DEPLOY PHASE 1 VALIDATION FAILED — INITIATING ROLLBACK"
+  echo "   Dashboard resilience compromised in production"
+
+  rollback() {
+    SERVICE=$1
+    REV=$2
+
+    if [ -n "$REV" ]; then
+      gcloud run services update-traffic $SERVICE \
+        --region $REGION \
+        --to-revisions ${REV}=100
+    fi
+  }
+
+  rollback $SERVICE_API $PREV_API
+  rollback $SERVICE_RTH $PREV_RTH
+  rollback $SERVICE_SKILLUP $PREV_SKILLUP
+
+  echo "❌ ROLLBACK COMPLETE"
+  exit 1
+fi
+
+echo "✅ Post-deploy Phase 1 validation passed"
 
 
 

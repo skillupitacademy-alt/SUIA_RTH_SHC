@@ -7,6 +7,7 @@ export interface UserSummaryDTO {
   onboarded: boolean;
   onboardingCompleted: boolean; // 🔥 Add for backward compatibility
   role: string;
+  roles: string[]; // 🔥 CRITICAL: Add roles array for consistency
   isAdmin: boolean;
 }
 
@@ -44,6 +45,7 @@ export function toUserSummaryDTO(user: AuthUserInput, isAdmin: boolean = false):
   // CRITICAL FIX: Use DB isOnboarded field as single source of truth
   // Remove fallback logic that can override DB value
   const onboarded = user.isOnboarded === true;
+  const role = isAdmin ? 'admin' : 'user';
 
   return {
     id: user.id,
@@ -53,7 +55,8 @@ export function toUserSummaryDTO(user: AuthUserInput, isAdmin: boolean = false):
     createdAt: user.createdAt,
     onboarded,
     onboardingCompleted: onboarded, // 🔥 Add for backward compatibility
-    role: isAdmin ? 'admin' : 'user',
+    role,
+    roles: [role], // 🔥 CRITICAL: Always provide roles as array
     isAdmin
   };
 }

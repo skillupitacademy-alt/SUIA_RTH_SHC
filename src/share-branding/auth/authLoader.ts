@@ -7,10 +7,10 @@ import type {
 import { mapLoginError, mapLoginResponse } from './authMapper';
 import { getDeviceHeaders } from '@quiz/auth';
 import { unifiedFetch } from '../lib/unifiedFetch';
+import { validateAuthState } from './validateAuthState';
 
 const LOGIN_ENDPOINT = '/api/auth/login';
 const SIGNUP_ENDPOINT = '/api/auth/signup';
-const AUTH_ME_ENDPOINT = '/api/auth/me';
 
 async function submitAuthRequest(endpoint: string, data: { email: string; password: string; brand: LoginRequestData['brand']; name?: string }) {
   // 🔐 ENTERPRISE AUTH: Inject device context headers
@@ -52,51 +52,24 @@ export async function signupUser(data: SignupRequestData): Promise<LoginResultVi
 }
 
 export async function fetchCurrentUserState(): Promise<{ onboardingCompleted: boolean }> {
-  // 🚀 OPTIMIZATION: Use profile API instead of separate /auth/me call
-  // This eliminates duplicate network requests and uses our internal authentication
-  const timestamp = Date.now();
+  // 🔥 CRITICAL FIX: Use lightweight validation instead of heavy /api/profile
+  console.log('[AUTH_LOADER] Using lightweight auth validation');
   
-  const response = await unifiedFetch(`/api/profile?_t=${timestamp}`, {
-    method: 'GET',
-    credentials: 'include',
-    headers: {
-      accept: 'application/json',
-      'x-portal-identity': 'user',
-    },
-    cache: 'no-store',
-  });
-
-  if (!response.ok) {
-    // If profile fails, user might not be authenticated or onboarded
-    if (response.status === 404) {
-      // Profile not found = user not onboarded yet
-      return { onboardingCompleted: false };
-    }
-    
-    // 🔥 ENHANCED ERROR LOGGING
-    console.error('[AUTH] Profile API failed:', {
-      status: response.status,
-      statusText: response.statusText,
-      url: response.url
-    });
-    
-    // Try to get error details
-    const errorText = await response.text().catch(() => 'Unable to read error');
-    console.error('[AUTH] Profile API error body:', errorText);
-    
-    throw new Error(`Failed to fetch session (HTTP ${response.status})`);
+  const auth = await validateAuthState();
+  
+  if (!auth) {
+    // Not authenticated
+    return { onboardingCompleted: false };
   }
-
-  const payload = (await response.json().catch(() => null)) as
-    | { user?: { onboardingCompleted?: boolean; onboarded?: boolean }; onboardingCompleted?: boolean }
-    | null;
-
-  // Check both user.onboardingCompleted and direct onboardingCompleted
+  
+  console.log('[AUTH_LOADER] Auth validation success:', {
+    userId: auth.id.slice(0, 8),
+    onboardingCompleted: auth.onboardingCompleted,
+    roles: auth.roles,
+  });
+  
   return {
-    onboardingCompleted:
-      payload?.user?.onboardingCompleted === true || 
-      payload?.user?.onboarded === true ||
-      payload?.onboardingCompleted === true,
+    onboardingCompleted: auth.onboardingCompleted === true,
   };
 }
 

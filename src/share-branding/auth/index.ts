@@ -4,6 +4,14 @@
  * Central export point for all shared authentication utilities.
  */
 
+// 🔥 NEW: Lightweight auth validation
+export {
+  validateAuthState,
+  hasCompletedOnboarding,
+  getUserRole,
+  type AuthValidationState,
+} from './validateAuthState';
+
 // Core auth extraction and validation
 export {
   extractAuthFromRequest,
