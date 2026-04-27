@@ -22,23 +22,21 @@ export interface BackendAuthUserState {
  * 🔥 Build base URL using incoming request headers
  * SSR MUST go through gateway (NOT localhost)
  */
-function buildBaseUrl(
-  headerList: Awaited<ReturnType<typeof headers>>
-): string {
+async function buildBaseUrl(): Promise<string> {
+  const headerList = await headers();
+  
+  const protocol =
+    headerList.get('x-forwarded-proto') ||
+    (process.env.NODE_ENV === 'development' ? 'http' : 'https');
+  
   const host =
     headerList.get('x-forwarded-host') ||
     headerList.get('host');
-
+  
   if (!host) {
     throw new Error('[AUTH_STATE] No host header found');
   }
-
-  // 🔒 Force https in production (important for secure cookies)
-  const protocol =
-    process.env.NODE_ENV === 'development'
-      ? 'http'
-      : 'https';
-
+  
   return `${protocol}://${host}`;
 }
 
@@ -47,76 +45,119 @@ function buildBaseUrl(
  */
 async function buildCookieHeader(): Promise<string> {
   const cookieStore = await cookies();
-
+  
   return cookieStore
     .getAll()
-    .map(({ name, value }) => `${name}=${value}`)
+    .map(({ name, value }: { name: string; value: string }) => `${name}=${value}`)
     .join('; ');
 }
 
-/**
- * 🔐 SSR AUTH STATE FETCH (FINAL)
- */
 export async function fetchBackendAuthState(): Promise<BackendAuthUserState | null> {
-  try {
-    // ✅ Single headers source (no duplication)
-    const headerList = await headers();
+  const MAX_RETRIES = 2;
+  const TIMEOUT_MS = 3000;
+  
+  let lastError: any = null;
 
-    const baseUrl = buildBaseUrl(headerList);
-    const cookieHeader = await buildCookieHeader();
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
-    console.log('[AUTH_STATE_DEBUG]', {
-      baseUrl,
-      hasCookie: !!cookieHeader,
-      cookieLength: cookieHeader.length,
-    });
+      const baseUrl = await buildBaseUrl();
+      const cookieHeader = await buildCookieHeader();
 
-    if (!cookieHeader) {
-      console.log('[AUTH_STATE] No cookies → returning null');
-      return null;
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[AUTH_STATE_DEBUG]', {
+          baseUrl,
+          hasCookie: !!cookieHeader,
+          cookieLength: cookieHeader.length,
+          attempt: attempt + 1,
+        });
+      }
+
+      if (!cookieHeader) {
+        console.log('[AUTH_STATE] No cookies → returning null');
+        clearTimeout(timeout);
+        return null;
+      }
+
+      const profileUrl = `${baseUrl}/api/profile`;
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[AUTH_STATE] Fetching profile via gateway:', profileUrl);
+      }
+
+      const response = await fetch(profileUrl, {
+        headers: {
+          cookie: cookieHeader,
+          'Cache-Control': 'no-cache',
+        },
+        cache: 'no-store',
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeout);
+
+      console.log('[AUTH_STATE] Response status:', response.status);
+
+      // ✅ CASE 1: REAL AUTH FAILURE (401 = invalid/expired token)
+      if (response.status === 401) {
+        console.warn('[AUTH_STATE] Auth invalid (401) → logout');
+        return null;
+      }
+
+      // ⚠️ CASE 2: SERVER ERROR (DO NOT LOGOUT - retry)
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Unable to read error');
+        console.warn('[AUTH_STATE] API error (will retry):', response.status, errorText);
+        lastError = new Error(`HTTP ${response.status}`);
+        
+        // Wait before retry (exponential backoff)
+        if (attempt < MAX_RETRIES) {
+          await new Promise(resolve => setTimeout(resolve, 100 * (attempt + 1)));
+        }
+        continue; // retry
+      }
+
+      const user = (await response.json().catch(() => null)) as BackendAuthUserState | null;
+
+      if (!user) {
+        console.error('[AUTH_STATE] No user in response');
+        lastError = new Error('Empty response');
+        
+        if (attempt < MAX_RETRIES) {
+          await new Promise(resolve => setTimeout(resolve, 100 * (attempt + 1)));
+        }
+        continue; // retry
+      }
+
+      console.log('[AUTH_STATE] Success:', {
+        userId: user.id,
+        email: user.email,
+        onboardingCompleted: user.onboardingCompleted,
+      });
+
+      return user;
+    } catch (error: any) {
+      lastError = error;
+
+      if (error.name === 'AbortError') {
+        console.warn('[AUTH_STATE] Request timeout (attempt', attempt + 1, ')');
+      } else {
+        console.warn('[AUTH_STATE] Request failed (attempt', attempt + 1, '):', error.message);
+      }
+
+      // Wait before retry
+      if (attempt < MAX_RETRIES) {
+        await new Promise(resolve => setTimeout(resolve, 100 * (attempt + 1)));
+      }
     }
-
-    const profileUrl = `${baseUrl}/api/profile`;
-
-    console.log('[AUTH_STATE] Fetching profile via gateway:', profileUrl);
-
-    const response = await fetch(profileUrl, {
-      headers: {
-        cookie: cookieHeader,
-
-        // 🔥 REQUIRED for your gateway routing (DO NOT REMOVE)
-        host: headerList.get('host') || '',
-        'x-forwarded-host': headerList.get('host') || '',
-
-        'Cache-Control': 'no-cache',
-      },
-      cache: 'no-store',
-    });
-
-    console.log('[AUTH_STATE] Response status:', response.status);
-
-    if (!response.ok) {
-      const errorText = await response.text().catch(() => 'Unable to read error');
-      console.error('[AUTH_STATE] API error:', response.status, errorText);
-      return null;
-    }
-
-    const user = (await response.json().catch(() => null)) as BackendAuthUserState | null;
-
-    if (!user) {
-      console.error('[AUTH_STATE] No user in response');
-      return null;
-    }
-
-    console.log('[AUTH_STATE] Success:', {
-      userId: user.id,
-      email: user.email,
-      onboardingCompleted: user.onboardingCompleted,
-    });
-
-    return user;
-  } catch (error) {
-    console.error('[AUTH_STATE] Exception:', error);
-    return null;
   }
+
+  // 🚨 FINAL FALLBACK: All retries exhausted
+  console.error('[AUTH_STATE] All retries exhausted:', lastError);
+  
+  // ⚠️ IMPORTANT: Return null only after all retries failed
+  // This prevents random logout on temporary issues
+  return null;
 }

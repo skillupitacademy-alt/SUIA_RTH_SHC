@@ -26,24 +26,52 @@ export function ProfileScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [retryKey, setRetryKey] = useState(0);
 
   useEffect(() => {
+    let isMounted = true;
+
+    const loadProfile = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[PROFILE_SCREEN] Starting client fetch');
+        }
+        const data = await getUserProfile();
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[PROFILE_SCREEN] Data received:', { hasData: !!data, email: data?.email });
+        }
+
+        if (!data) {
+          throw new Error('No profile data received from server');
+        }
+
+        if (isMounted) {
+          setProfile(data);
+          setEditedProfile(data);
+        }
+      } catch (error) {
+        console.error('[PROFILE_SCREEN] Failed to load profile:', error);
+        if (isMounted) {
+          setError(error instanceof Error ? error.message : 'Failed to load profile');
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
     loadProfile();
-  }, []);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [retryKey]);
 
   const loadProfile = async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const data = await getUserProfile();
-      setProfile(data);
-      setEditedProfile(data);
-    } catch (error) {
-      console.error('Failed to load profile:', error);
-      setError(error instanceof Error ? error.message : 'Failed to load profile');
-    } finally {
-      setIsLoading(false);
-    }
+    setRetryKey(prev => prev + 1);
   };
 
   const handleEdit = () => {
@@ -115,7 +143,24 @@ export function ProfileScreen() {
   }
 
   if (!profile || !editedProfile) {
-    return null;
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center max-w-md">
+          <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+            <User className="text-gray-400" size={32} />
+          </div>
+          <h2 className="text-2xl font-black text-gray-900 mb-2">No Profile Data</h2>
+          <p className="text-gray-600 mb-4">Unable to load your profile information.</p>
+          <button
+            onClick={loadProfile}
+            className="px-6 py-3 rounded-xl font-semibold text-white"
+            style={{ backgroundColor: brand.primaryColor }}
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
   }
 
   const InfoField = ({ icon: Icon, label, value, field, options, isSelect = false }: any) => {
@@ -172,7 +217,7 @@ export function ProfileScreen() {
     );
   };
 
-  const availableSubDomains = SUB_DOMAIN_MAPPINGS[editedProfile.domain] || ['Foundations'];
+  const availableSubDomains = SUB_DOMAIN_MAPPINGS[editedProfile?.domain || ''] || ['Foundations'];
 
   return (
     <div className="space-y-6">
@@ -208,12 +253,12 @@ export function ProfileScreen() {
             className="flex h-20 w-20 items-center justify-center rounded-2xl text-3xl font-black text-white sm:h-24 sm:w-24"
             style={{ backgroundColor: brand.primaryColor }}
           >
-            {editedProfile.fullName.split(' ').filter(Boolean).map(n => n[0]).join('').toUpperCase().substring(0, 2) || 'U'}
+            {editedProfile?.fullName?.split(' ').filter(Boolean).map(n => n[0]).join('').toUpperCase().substring(0, 2) || 'U'}
           </div>
           <div className="min-w-0">
-            <h2 className="mb-1 text-2xl font-black text-gray-900">{editedProfile.fullName}</h2>
-            <p className="break-all text-gray-600 sm:break-normal">{editedProfile.email}</p>
-            <p className="text-sm text-gray-500 mt-1">Member since {new Date(editedProfile.createdAt).toLocaleDateString()}</p>
+            <h2 className="mb-1 text-2xl font-black text-gray-900">{editedProfile?.fullName || 'User'}</h2>
+            <p className="break-all text-gray-600 sm:break-normal">{editedProfile?.email || 'No email'}</p>
+            <p className="text-sm text-gray-500 mt-1">Member since {editedProfile?.createdAt ? new Date(editedProfile.createdAt).toLocaleDateString() : 'Unknown'}</p>
           </div>
         </div>
       </div>

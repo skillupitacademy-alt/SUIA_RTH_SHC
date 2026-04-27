@@ -4,6 +4,7 @@ import { fetchBackendAuthState } from '../../../../../../src/share-branding/auth
 import DashboardProfilePage from '../../../../../../src/share-branding/DashboardProfilePage';
 import { loadDashboardData } from '../../../../../../src/share-branding/dashboardPageData';
 import { rthConfig } from '../../../../../../src/share-branding/brandConfig';
+import { ErrorBoundary } from '../../../../../../src/share-branding/components/ErrorBoundary';
 
 export const metadata = {
   title: 'Profile | RealTutorialHub',
@@ -43,5 +44,10 @@ export default async function Page() {
   console.log('[PROFILE_PAGE] Loading dashboard data');
   const data = await loadDashboardData(rthConfig, authState);
   console.log('[PROFILE_PAGE] Rendering page');
-  return <DashboardProfilePage config={rthConfig} data={data} />;
+  
+  return (
+    <ErrorBoundary>
+      <DashboardProfilePage config={rthConfig} data={data} />
+    </ErrorBoundary>
+  );
 }

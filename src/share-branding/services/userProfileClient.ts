@@ -95,31 +95,81 @@ function mapProfileToApi(uiData: Partial<UserProfile>): Partial<ApiProfileRespon
 }
 
 /**
+ * Normalize profile data with graceful degradation
+ * Never throws - always returns usable data
+ */
+function normalizeProfileData(data: any): any {
+  if (!data || typeof data !== 'object') {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[getUserProfile] Invalid data type, using fallback');
+    }
+    return null;
+  }
+
+  // Handle wrapped response
+  const profileData = data.data || data;
+
+  if (!profileData || typeof profileData !== 'object') {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[getUserProfile] Invalid profile structure, using fallback');
+    }
+    return null;
+  }
+
+  // Gracefully handle missing or misnamed fields
+  const normalized = {
+    ...profileData,
+    id: profileData.id || profileData.userId || 'unknown',
+    email: profileData.email || profileData.user?.email || 'user@example.com',
+    name: profileData.name || profileData.fullName || 'User',
+  };
+
+  // Only fail if we truly have no usable data
+  if (!normalized.id || normalized.id === 'unknown') {
+    console.error('[getUserProfile] No valid user identifier found');
+    return null;
+  }
+
+  return normalized;
+}
+
+/**
  * Fetch user profile from backend
  */
 export async function getUserProfile(): Promise<UserProfile> {
-  const res = await unifiedFetch('/api/profile', {
-    method: 'GET',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      'Cache-Control': 'no-cache, no-store, must-revalidate',
-    },
-    cache: 'no-store',
-  });
+  try {
+    const res = await unifiedFetch('/api/profile', {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+      },
+      cache: 'no-store',
+    });
 
-  if (!res.ok) {
-    const error = await res.json().catch(() => ({ message: 'Failed to fetch profile' }));
-    throw new Error(error.message || 'Failed to fetch profile');
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({ message: 'Failed to fetch profile' }));
+      console.error('[getUserProfile] API error:', res.status, error);
+      throw new Error(error.message || `Failed to fetch profile (${res.status})`);
+    }
+
+    const data = await res.json();
+    
+    // Normalize data with graceful degradation
+    const profileData = normalizeProfileData(data);
+    
+    if (!profileData) {
+      throw new Error('Unable to process profile data from server');
+    }
+    
+    const userEmail = profileData.email || 'user@example.com';
+    
+    return mapProfileFromApi(profileData, userEmail);
+  } catch (error) {
+    console.error('[getUserProfile] Exception:', error);
+    throw error;
   }
-
-  const data = await res.json();
-  
-  // Handle both direct profile response and wrapped response
-  const profileData = data.data || data;
-  const userEmail = profileData.email || profileData.user?.email || 'user@example.com';
-  
-  return mapProfileFromApi(profileData, userEmail);
 }
 
 /**
