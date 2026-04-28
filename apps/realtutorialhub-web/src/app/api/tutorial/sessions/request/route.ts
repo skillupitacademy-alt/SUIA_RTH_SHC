@@ -12,9 +12,7 @@ const schema = z.object({
   doubtText: z.string().min(1).optional(),
 });
 
-async function handler(req: NextRequest, obsCtx: any) {
-  const { requestId } = obsCtx; // 🔥 Observability context
-  
+async function handler(req: NextRequest) {
   try {
     const session = await requireStudent(req);
 

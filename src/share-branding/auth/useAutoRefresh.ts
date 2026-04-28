@@ -40,31 +40,39 @@ export function useAutoRefresh() {
         });
 
         if (!response.ok) {
-          console.warn('[AUTO_REFRESH] Token refresh failed, redirecting to login');
-          
-          // Clear interval before redirect
-          if (intervalRef.current) {
-            clearInterval(intervalRef.current);
-            intervalRef.current = null;
+          // 🔥 PRODUCTION FIX: Only redirect on 401 (expired session)
+          // Network errors and 5xx should not immediately log out user
+          if (response.status === 401) {
+            console.warn('[AUTO_REFRESH] Session expired (401), redirecting to login');
+            
+            // Clear interval before redirect
+            if (intervalRef.current) {
+              clearInterval(intervalRef.current);
+              intervalRef.current = null;
+            }
+            
+            // 🔥 FIX: Use window.location to avoid polluting browser history
+            // router.replace() in App Router adds to history, causing back button issues
+            // Full page reload clears auth state and prevents back navigation to protected pages
+            if (typeof window !== 'undefined') {
+              window.location.href = '/login?reason=session_expired';
+            } else {
+              // Fallback for SSR (shouldn't happen, but safety)
+              router.replace('/login?reason=session_expired');
+            }
+          } else {
+            // Transient failure - log but don't redirect
+            console.warn(`[AUTO_REFRESH] Refresh failed with status ${response.status}, will retry on next interval`);
           }
-          
-          // Redirect to login
-          router.replace('/login?reason=session_expired');
           return;
         }
 
         console.log('[AUTO_REFRESH] Tokens refreshed successfully');
       } catch (error) {
-        console.error('[AUTO_REFRESH] Refresh error:', error);
-        
-        // Clear interval on error
-        if (intervalRef.current) {
-          clearInterval(intervalRef.current);
-          intervalRef.current = null;
-        }
-        
-        // Redirect to login
-        router.replace('/login?reason=session_expired');
+        // 🔥 PRODUCTION FIX: Network errors should not immediately log out user
+        // These could be temporary connectivity issues
+        console.error('[AUTO_REFRESH] Refresh error (network/timeout), will retry on next interval:', error);
+        // Do NOT redirect - let the interval retry
       }
     };
 
@@ -74,19 +82,46 @@ export function useAutoRefresh() {
 
     intervalRef.current = setInterval(refreshTokens, REFRESH_INTERVAL);
 
-    // 🔥 Also refresh immediately on mount (in case token is close to expiry)
-    // But delay by 1 second to avoid race conditions with initial page load
-    const initialRefreshTimeout = setTimeout(() => {
-      void refreshTokens();
-    }, 1000);
+    // 🔥 PRODUCTION FIX: Check for fresh session flag
+    // If user just logged in, skip initial refresh to avoid race conditions
+    const skipInitialRefresh = typeof window !== 'undefined' 
+      ? sessionStorage.getItem('skip_initial_refresh')
+      : null;
 
-    // Cleanup on unmount
+    if (skipInitialRefresh) {
+      // Remove flag after reading
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('skip_initial_refresh');
+      }
+      console.log('[AUTO_REFRESH] Skipping initial refresh for fresh session');
+    } else {
+      // 🔥 PRODUCTION FIX: Delay initial refresh to 30 seconds
+      // This prevents race conditions with page load and profile data fetching
+      // 30 seconds is safe since tokens expire in 15 minutes
+      const initialRefreshTimeout = setTimeout(() => {
+        console.log('[AUTO_REFRESH] Running delayed initial refresh');
+        void refreshTokens();
+      }, 30000); // 30 seconds
+
+      // Store timeout for cleanup
+      const cleanupTimeout = initialRefreshTimeout;
+      
+      // Update cleanup to clear the timeout
+      return () => {
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
+        clearTimeout(cleanupTimeout);
+      };
+    }
+
+    // Cleanup on unmount (for skip case)
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
       }
-      clearTimeout(initialRefreshTimeout);
     };
   }, [router]);
 }

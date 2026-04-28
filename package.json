@@ -20,6 +20,9 @@
         ],
         "packages/**/*.{ts,tsx,js,jsx}": [
             "eslint --no-ignore --max-warnings=0 --fix"
+        ],
+        "src/**/*.{ts,tsx,js,jsx}": [
+            "eslint --no-ignore --max-warnings=0 --fix"
         ]
     },
     "scripts": {

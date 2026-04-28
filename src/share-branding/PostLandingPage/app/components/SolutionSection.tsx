@@ -1,5 +1,5 @@
 import { BookOpen, Lightbulb, Code, Brain, CheckCircle, Award } from 'lucide-react';
-import { useBrand } from '@/share-branding/PostLandingPage/app/context/BrandContext';
+import { useBrand } from '../context/BrandContext';
 
 export function SolutionSection() {
   const brand = useBrand();

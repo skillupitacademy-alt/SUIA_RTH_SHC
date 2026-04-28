@@ -92,7 +92,7 @@ async function handler(_req: Request, body: z.infer<typeof loginSchema>) {
   } else {
     // Admin tokens use brand-specific domains via middleware
     const { setAuthCookies } = await import('@quiz/auth');
-    setAuthCookies(response, result.accessToken, result.refreshToken, brand as any, true);
+    setAuthCookies(response, result.accessToken, result.refreshToken, brand as 'skillup' | 'realtutorialhub', true);
   }
 
   const { setCsrfToken } = await import('@/modules/auth/csrf.middleware');

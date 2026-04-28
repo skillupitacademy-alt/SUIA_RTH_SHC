@@ -4,8 +4,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { unifiedFetch } from '../../lib/unifiedFetch';
 
-import { BrandProvider } from '@/share-branding/OnboardingEngine/context/BrandContext';
-import { BrandConfig } from '@/share-branding/brandConfig';
+import { BrandProvider } from '../context/BrandContext';
+import { BrandConfig } from '../../brandConfig';
 import { OnboardingLayout } from './OnboardingLayout';
 import { WelcomeStep } from './WelcomeStep';
 import { ProfileStep } from './ProfileStep';
@@ -13,8 +13,8 @@ import { GoalStep } from './GoalStep';
 import { DomainStep } from './DomainStep';
 import { SkillLevelStep } from './SkillLevelStep';
 import { InitializationStep } from './InitializationStep';
-import { OnboardingData, OnboardingViewData } from '@/share-branding/onboardingPageData';
-import { OnboardingJourneyStatus } from '@/share-branding/onboardingSessionCookie';
+import { OnboardingData, OnboardingViewData } from '../../onboardingPageData';
+import { OnboardingJourneyStatus } from '../../onboardingSessionCookie';
 
 interface OnboardingPageProps {
   config: BrandConfig;
@@ -69,6 +69,12 @@ export function OnboardingPage({ config, data: viewData }: OnboardingPageProps) 
       // ✅ STEP 1: Submit onboarding data as skipped
       await persistOnboarding(data, 'skipped');
       
+      // 🔥 PRODUCTION FIX: Set flag to skip initial token refresh
+      // This prevents race conditions when navigating to dashboard
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('skip_initial_refresh', 'true');
+      }
+      
       // ✅ STEP 2: Navigate to dashboard
       // Server component will fetch fresh auth state and verify
       // No need for client-side verification - server is source of truth
@@ -86,6 +92,12 @@ export function OnboardingPage({ config, data: viewData }: OnboardingPageProps) 
     try {
       // ✅ STEP 1: Submit onboarding data
       await persistOnboarding(data, 'completed');
+      
+      // 🔥 PRODUCTION FIX: Set flag to skip initial token refresh
+      // This prevents race conditions when navigating to dashboard
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('skip_initial_refresh', 'true');
+      }
       
       // ✅ STEP 2: Navigate to dashboard
       // Server component will fetch fresh auth state and verify

@@ -21,7 +21,7 @@ function normalizeRedirectTo(rawValue: unknown): string {
     return rawValue;
   }
 
-  return '/profile';
+  return '/dashboard/profile';
 }
 
 export async function POST(request: Request) {

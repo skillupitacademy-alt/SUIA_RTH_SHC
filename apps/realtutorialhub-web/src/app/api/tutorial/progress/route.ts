@@ -32,9 +32,7 @@ function toSnapshot(blocksCompleted: string[] | null | undefined, assignmentUnlo
   };
 }
 
-async function getHandler(request: NextRequest, obsCtx: any) {
-  const { requestId } = obsCtx; // 🔥 Observability context
-  
+async function getHandler(request: NextRequest) {
   try {
     const user = await requireStudent(request);
     const parsed = getQuerySchema.safeParse({
@@ -58,9 +56,7 @@ async function getHandler(request: NextRequest, obsCtx: any) {
   }
 }
 
-async function postHandler(request: NextRequest, obsCtx: any) {
-  const { requestId } = obsCtx; // 🔥 Observability context
-  
+async function postHandler(request: NextRequest) {
   try {
     const user = await requireStudent(request);
 

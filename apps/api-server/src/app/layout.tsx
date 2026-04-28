@@ -2,9 +2,6 @@ import './index.css';
 
 import type { Metadata } from 'next';
 
-// Use system fonts to avoid Google Fonts fetch during build
-const fontVariables = '--font-inter --font-outfit';
-
 export const metadata: Metadata = {
     title: 'API Node | Quiz Platform',
     description: 'High-performance backend infrastructure for the modern quiz experience.',

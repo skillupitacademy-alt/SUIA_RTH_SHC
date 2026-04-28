@@ -123,6 +123,7 @@
         "apps",
         "packages",
         "services",
-        "tests"
+        "tests",
+        "src"
     ]
 }

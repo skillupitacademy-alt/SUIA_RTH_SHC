@@ -1,7 +1,7 @@
 'use client';
 
-import { useBrand } from '@/share-branding/OnboardingEngine/context/BrandContext';
-import { OnboardingSkillLevelOption } from '@/share-branding/onboardingPageData';
+import { useBrand } from '../context/BrandContext';
+import { OnboardingSkillLevelOption } from '../../onboardingPageData';
 
 interface SkillLevelStepProps {
   title: string;

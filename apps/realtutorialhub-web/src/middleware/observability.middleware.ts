@@ -42,7 +42,7 @@ function buildRequestContext(req: NextRequest): ObservabilityContext {
 /**
  * Log event helper with automatic timestamp
  */
-function logEvent(tag: string, data: Record<string, any>): void {
+function logEvent(tag: string, data: Record<string, unknown>): void {
   console.log(JSON.stringify({
     tag,
     timestamp: new Date().toISOString(),
@@ -60,9 +60,9 @@ function logEvent(tag: string, data: Record<string, any>): void {
  * @returns Wrapped handler with full observability
  */
 export function withObservability<T extends NextResponse>(
-  handler: (req: NextRequest, obsCtx: ObservabilityContext, ...rest: any[]) => Promise<T>
-): (req: NextRequest, ...rest: any[]) => Promise<T> {
-  return async (req: NextRequest, ...rest: any[]): Promise<T> => {
+  handler: (req: NextRequest, obsCtx: ObservabilityContext, ...rest: unknown[]) => Promise<T>
+): (req: NextRequest, ...rest: unknown[]) => Promise<T> {
+  return async (req: NextRequest, ...rest: unknown[]): Promise<T> => {
     const obsCtx = buildRequestContext(req);
     const startTime = Date.now();
 
@@ -90,17 +90,21 @@ export function withObservability<T extends NextResponse>(
 
       return response;
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       // 🔍 Log error with full context
       const duration = Date.now() - startTime;
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorStatus = (error && typeof error === 'object' && 'status' in error && typeof error.status === 'number') ? error.status : 500;
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      
       logEvent('API_ERROR', {
         requestId: obsCtx.requestId,
-        error: error.message,
-        status: error.status || 500,
+        error: errorMessage,
+        status: errorStatus,
         path: obsCtx.path,
         method: obsCtx.method,
         duration,
-        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+        stack: process.env.NODE_ENV === 'development' ? errorStack : undefined,
       });
 
       throw error;

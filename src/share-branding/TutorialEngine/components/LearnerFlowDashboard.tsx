@@ -1,4 +1,4 @@
-import { useBrand } from '@/share-branding/PostLandingPage/app/context/BrandContext';
+import { useBrand } from '../../PostLandingPage/app/context/BrandContext';
 import React from 'react';
 import { ChevronRight } from 'lucide-react';
 import { useTutorialData } from './TutorialDataContext';

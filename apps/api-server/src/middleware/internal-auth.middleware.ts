@@ -109,7 +109,7 @@ export function validateRequest(req: NextRequest): { error?: Response; context?:
     
     // 🔥 CRITICAL FIX: Use unified role normalization
     // This handles "user,student" string → ["user"] array
-    const roles = userRoles 
+    const roles = typeof userRoles === 'string' && userRoles.trim() !== ''
       ? userRoles.split(',').map(r => r.trim().toLowerCase()).filter(r => r.length > 0)
       : undefined;
     
@@ -170,7 +170,7 @@ export function validateRequest(req: NextRequest): { error?: Response; context?:
     
     // 🔥 CRITICAL FIX: Use unified role normalization
     // This handles "user,student" string → ["user"] array
-    const roles = gatewayRoles 
+    const roles = typeof gatewayRoles === 'string' && gatewayRoles.trim() !== ''
       ? gatewayRoles.split(',').map(r => r.trim().toLowerCase()).filter(r => r.length > 0)
       : undefined;
     

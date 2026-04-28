@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { ArrowRight, Target, Brain } from 'lucide-react';
-import { useBrand } from '@/share-branding/PostLandingPage/app/context/BrandContext';
+import { useBrand } from '../context/BrandContext';
 import dashboardImage from '@/share-branding/PostLandingPage/assets/c4f1a4d51a48d5b5d3c8d47174d5e5571a3d1273.png';
 import skillupDashboardImage from '@/share-branding/PostLandingPage/assets/skillup_dashboard.png';
 

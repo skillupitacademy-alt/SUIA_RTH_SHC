@@ -41,5 +41,6 @@ export function buildRequestContext(req: NextRequest): RequestContext {
  * @returns Request ID
  */
 export function getRequestId(req: NextRequest): string {
-  return req.headers.get('x-request-id') || randomUUID();
+  const requestId = req.headers.get('x-request-id');
+  return (typeof requestId === 'string' && requestId.trim() !== '') ? requestId : randomUUID();
 }

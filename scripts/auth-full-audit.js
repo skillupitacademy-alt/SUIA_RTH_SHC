@@ -8,6 +8,7 @@
  * ✔ End-to-end auth validation
  * ✔ Gateway failure simulation
  * ✔ Fallback behavior validation
+ * ✔ Profile page SSR/prefetch 503 regression test
  */
 
 const https = require('https');
@@ -308,6 +309,89 @@ async function checkPhase5Safety(brand) {
 }
 
 // =============================
+// PROFILE PAGE 503 CHECK (SSR/PREFETCH REGRESSION TEST)
+// =============================
+
+async function checkProfilePage503(brand, cookie) {
+  console.log(`\n📄 PROFILE PAGE 503 CHECK: ${brand.name}`);
+  console.log('   Testing SSR/prefetch behavior to detect 503 errors');
+
+  let testsPassed = 0;
+  let totalTests = 2;
+
+  // TEST 1: Profile WITHOUT cookies (simulates prefetch)
+  console.log('\n   🔍 TEST 1: Profile WITHOUT cookies (simulates prefetch)');
+  try {
+    const resNoCookie = await request(
+      brand.host,
+      '/dashboard/profile',
+      'GET',
+      null,
+      '' // no cookie
+    );
+
+    console.log(`      Status: ${resNoCookie.status}`);
+
+    // Check for 503 error - this is the critical test
+    if (resNoCookie.status === 503) {
+      console.log('      ❌ FAIL: 503 detected (prefetch issue still exists)');
+    } else if (resNoCookie.status === 302 || resNoCookie.status === 307) {
+      console.log('      ✅ PASS: Redirect detected (acceptable for unauthenticated)');
+      testsPassed++;
+    } else if (resNoCookie.status === 200) {
+      console.log('      ✅ PASS: No 503, SSR safe');
+      testsPassed++;
+    } else {
+      console.log(`      ⚠️  Unexpected status: ${resNoCookie.status} (but not 503)`);
+      testsPassed++; // Not 503, so acceptable
+    }
+  } catch (err) {
+    console.log('      ❌ ERROR:', err.message);
+  }
+
+  // TEST 2: Profile WITH cookies (real navigation)
+  console.log('\n   🔐 TEST 2: Profile WITH cookies (authenticated access)');
+  try {
+    const resWithCookie = await request(
+      brand.host,
+      '/dashboard/profile',
+      'GET',
+      null,
+      cookie
+    );
+
+    console.log(`      Status: ${resWithCookie.status}`);
+
+    // Check for 503 error
+    if (resWithCookie.status === 503) {
+      console.log('      ❌ FAIL: 503 detected with valid auth');
+    } else if (resWithCookie.status === 200) {
+      console.log('      ✅ PASS: Profile accessible (200)');
+      testsPassed++;
+    } else if (resWithCookie.status === 302 || resWithCookie.status === 307) {
+      console.log('      ✅ PASS: Redirect (acceptable if session expired)');
+      testsPassed++;
+    } else {
+      console.log(`      ⚠️  Unexpected status: ${resWithCookie.status}`);
+      testsPassed++; // Not 503, so acceptable
+    }
+  } catch (err) {
+    console.log('      ❌ ERROR:', err.message);
+  }
+
+  // Summary
+  console.log(`\n   📊 Result: ${testsPassed}/${totalTests} tests passed`);
+  
+  if (testsPassed === totalTests) {
+    console.log('   ✅ Profile page SSR/prefetch safe - no 503 errors detected');
+    return true;
+  } else {
+    console.log('   ❌ Profile page has issues - check logs above');
+    return false;
+  }
+}
+
+// =============================
 // COMPREHENSIVE BRAND TEST
 // =============================
 
@@ -321,6 +405,7 @@ async function comprehensiveBrandTest(brand) {
     gatewayFailure: false,
     brandHeaders: false,
     phase5Safety: false,
+    profilePage503: false,
   };
 
   // Run auth test first to get cookie
@@ -332,9 +417,10 @@ async function comprehensiveBrandTest(brand) {
   results.gatewayFailure = await simulateGatewayFailure(brand);
   results.phase5Safety = await checkPhase5Safety(brand);
 
-  // Run brand header validation if we have a valid cookie
+  // Run brand header validation and profile page check if we have a valid cookie
   if (authResult.success && authResult.cookie) {
     results.brandHeaders = await validateBrandHeaders(brand, authResult.cookie);
+    results.profilePage503 = await checkProfilePage503(brand, authResult.cookie);
   }
 
   return results;
@@ -372,6 +458,7 @@ async function comprehensiveBrandTest(brand) {
     'Gateway Failure': r.gatewayFailure ? '✅' : '❌',
     'Brand Headers': r.brandHeaders ? '✅' : '❌',
     'Phase 5 Safety': r.phase5Safety ? '✅' : '❌',
+    'Profile 503': r.profilePage503 ? '✅' : '❌',
   })));
 
   console.log('\n🏁 FINAL VERDICT');
@@ -383,6 +470,7 @@ async function comprehensiveBrandTest(brand) {
     console.log('✔ Gateway-first architecture working');
     console.log('✔ Phase 5 safety controls active');
     console.log('✔ All authentication flows validated');
+    console.log('✔ Profile page accessible (no 503 errors)');
     process.exit(0);
   } else {
     console.log('❌ SYSTEM NOT SAFE');

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { withObservability } from '@/middleware/observability.middleware';
+import { withObservability, type ObservabilityContext } from '@/middleware/observability.middleware';
 import { requireAssignmentAccess } from '@/lib/assignment-auth';
 import { assignmentDifficultySchema, assignmentService } from '@/lib/assignment';
 
@@ -18,10 +18,10 @@ function getStatusCode(error: unknown): number {
 
 async function handler(
   req: NextRequest,
-  obsCtx: any,
+  obsCtx: ObservabilityContext,
   context: { params: Promise<{ subtopicId: string }> }
 ) {
-  const { requestId } = obsCtx; // 🔥 Observability context
+  // obsCtx available for logging if needed
   const params = await context.params;
   
   let user;
@@ -46,4 +46,4 @@ async function handler(
 }
 
 // 🔥 OBSERVABILITY: Wrap with withObservability for full request tracing
-export const GET = withObservability(handler);
+export const GET = withObservability(handler as (req: NextRequest, obsCtx: ObservabilityContext, ...rest: unknown[]) => Promise<NextResponse>);

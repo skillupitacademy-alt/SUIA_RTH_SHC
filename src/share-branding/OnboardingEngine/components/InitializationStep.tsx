@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useBrand } from '@/share-branding/OnboardingEngine/context/BrandContext';
+import { useBrand } from '../context/BrandContext';
 import { Loader2 } from 'lucide-react';
 
 interface InitializationStepProps {

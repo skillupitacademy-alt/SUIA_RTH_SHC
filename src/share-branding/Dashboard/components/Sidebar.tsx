@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
@@ -12,6 +11,7 @@ import {
   Settings,
   User,
 } from 'lucide-react';
+import { SafeLink } from '../../components/SafeLink';
 import { useBrand } from '../../PostLandingPage/app/context/BrandContext';
 import { useDashboardData } from './DashboardDataContext';
 
@@ -64,7 +64,7 @@ export function Sidebar({ isOpen = false, onClose }: { isOpen?: boolean; onClose
             const Icon = item.icon;
             const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
             return (
-              <Link
+              <SafeLink
                 key={item.href}
                 href={item.href}
                 title={item.label}
@@ -74,7 +74,7 @@ export function Sidebar({ isOpen = false, onClose }: { isOpen?: boolean; onClose
                 style={isActive ? { backgroundColor: brand.primaryColor } : undefined}
               >
                 <Icon className={isActive ? 'text-white' : 'text-gray-600'} size={22} />
-              </Link>
+              </SafeLink>
             );
           })}
         </nav>
@@ -93,7 +93,7 @@ export function Sidebar({ isOpen = false, onClose }: { isOpen?: boolean; onClose
             const Icon = item.icon;
             const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
             return (
-              <Link
+              <SafeLink
                 key={item.href}
                 href={item.href}
                 title={item.label}
@@ -107,7 +107,7 @@ export function Sidebar({ isOpen = false, onClose }: { isOpen?: boolean; onClose
               >
                 <Icon className={isActive ? 'text-white' : 'text-gray-600'} size={20} />
                 <span>{item.label}</span>
-              </Link>
+              </SafeLink>
             );
           })}
         </nav>

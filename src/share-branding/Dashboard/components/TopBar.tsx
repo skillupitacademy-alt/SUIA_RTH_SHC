@@ -62,8 +62,10 @@ export function TopBar({ mobileMenuButton }: { mobileMenuButton?: React.ReactNod
           try {
             setIsLoggingOut(true);
             await logoutUser();
-            // ✅ Use replace() to prevent back button access to dashboard
-            router.replace('/login');
+            // 🔥 FIX: Use window.location to avoid polluting browser history
+            // router.replace() in App Router adds to history, causing back button issues
+            // Full page reload clears auth state and prevents back navigation to protected pages
+            window.location.href = '/login';
           } catch (error) {
             console.error('Logout failed:', error);
             setIsLoggingOut(false);

@@ -4,6 +4,77 @@
 set -euo pipefail
 
 #############################################
+# 🔧 PREREQUISITES CHECK
+#############################################
+
+echo "🔍 Checking prerequisites..."
+
+# Check if Python is installed (required by gcloud)
+PYTHON_CMD=""
+if command -v python3 &> /dev/null; then
+    PYTHON_CMD="python3"
+elif command -v python &> /dev/null; then
+    PYTHON_CMD="python"
+fi
+
+if [ -z "$PYTHON_CMD" ]; then
+    echo ""
+    echo "❌ Python is not installed"
+    echo ""
+    echo "Google Cloud SDK requires Python to be installed."
+    echo ""
+    echo "📥 To install Python on Windows:"
+    echo "   1. Download from: https://www.python.org/downloads/"
+    echo "   2. Run the installer"
+    echo "   3. ✅ CHECK 'Add Python to PATH' during installation"
+    echo "   4. Restart your terminal"
+    echo ""
+    echo "   OR install from Microsoft Store:"
+    echo "   1. Open Microsoft Store"
+    echo "   2. Search for 'Python 3.12' (or latest version)"
+    echo "   3. Click Install"
+    echo ""
+    echo "After installation, verify with: python --version"
+    echo ""
+    exit 1
+fi
+
+# Check Python version (suppress stderr as Windows Python launcher shows a message)
+PYTHON_VERSION=$($PYTHON_CMD --version 2>&1 | grep -oP 'Python \K[0-9.]+' || echo "installed")
+echo "✅ Python $PYTHON_VERSION found"
+
+# Check if gcloud is installed
+if ! command -v gcloud &> /dev/null; then
+    echo ""
+    echo "❌ Google Cloud SDK (gcloud) is not installed"
+    echo ""
+    echo "📥 To install gcloud:"
+    echo "   Download from: https://cloud.google.com/sdk/docs/install"
+    echo ""
+    exit 1
+fi
+
+GCLOUD_VERSION=$(gcloud version --format="value(version)" 2>/dev/null || echo "installed")
+echo "✅ gcloud $GCLOUD_VERSION found"
+
+# Check if Docker is installed
+if ! command -v docker &> /dev/null; then
+    echo ""
+    echo "❌ Docker is not installed"
+    echo ""
+    echo "📥 To install Docker:"
+    echo "   Download Docker Desktop from: https://www.docker.com/products/docker-desktop"
+    echo ""
+    exit 1
+fi
+
+DOCKER_VERSION=$(docker --version 2>&1 | grep -oP 'version \K[0-9.]+' || echo "installed")
+echo "✅ Docker $DOCKER_VERSION found"
+
+echo "✅ All prerequisites met"
+echo ""
+
+#############################################
 # 🔧 CONFIG
 #############################################
 
@@ -30,24 +101,12 @@ export RTH_TEST_EMAIL="${RTH_TEST_EMAIL:-ajayshah@gmail.com}"
 export RTH_TEST_PASSWORD="${RTH_TEST_PASSWORD:-testing}"
 export RBAC_RTH_USER_EMAIL="${RBAC_RTH_USER_EMAIL:-ajayshah@gmail.com}"
 export RBAC_RTH_USER_PASSWORD="${RBAC_RTH_USER_PASSWORD:-testing}"
-export RBAC_RTH_ADMIN_EMAIL="${RBAC_RTH_ADMIN_EMAIL:-admin@test.com}"
-export RBAC_RTH_ADMIN_PASSWORD="${RBAC_RTH_ADMIN_PASSWORD:-admin123}"
 
 # SkillUp IT Academy brand users
 export SKILLUP_TEST_EMAIL="${SKILLUP_TEST_EMAIL:-student@skillupitacademy.com}"
 export SKILLUP_TEST_PASSWORD="${SKILLUP_TEST_PASSWORD:-testing}"
 export RBAC_SKILLUP_STUDENT_EMAIL="${RBAC_SKILLUP_STUDENT_EMAIL:-student@skillupitacademy.com}"
 export RBAC_SKILLUP_STUDENT_PASSWORD="${RBAC_SKILLUP_STUDENT_PASSWORD:-testing}"
-export RBAC_SKILLUP_ADMIN_EMAIL="${RBAC_SKILLUP_ADMIN_EMAIL:-skillup_admin@test.com}"
-export RBAC_SKILLUP_ADMIN_PASSWORD="${RBAC_SKILLUP_ADMIN_PASSWORD:-Admin@2024}"
-
-# Fallback test users (RBAC validation)
-export RBAC_USER_EMAIL="${RBAC_USER_EMAIL:-rbac-user@test.com}"
-export RBAC_USER_PASSWORD="${RBAC_USER_PASSWORD:-RbacTest123!}"
-export RBAC_ADMIN_EMAIL="${RBAC_ADMIN_EMAIL:-admin@test.com}"
-export RBAC_ADMIN_PASSWORD="${RBAC_ADMIN_PASSWORD:-admin123}"
-export RBAC_STUDENT_EMAIL="${RBAC_STUDENT_EMAIL:-rbac-student@test.com}"
-export RBAC_STUDENT_PASSWORD="${RBAC_STUDENT_PASSWORD:-RbacTest123!}"
 
 #############################################
 # 🔐 SET PROJECT
@@ -172,9 +231,9 @@ echo "✅ Cleanup completed - all services will be deployed only to $REGION"
 
 echo "🧪 Running checks..."
 
-pnpm lint:all || exit 1
-pnpm typecheck:all || exit 1
-pnpm turbo run build --force || exit 1
+pnpm lint:all --force || exit 1
+pnpm typecheck:all --force || exit 1
+pnpm build:all --force || exit 1
 
 echo "✅ Quality checks passed"
 
@@ -612,80 +671,109 @@ echo ""
 echo "🧪 Running RBAC validation..."
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-# Step 1: Fetch access tokens
-echo "🔐 Fetching access tokens for RBAC test users..."
-node ./scripts/get-access-token.js
+# Check if RBAC test credentials are configured
+RBAC_CONFIGURED=false
 
-if [ $? -ne 0 ]; then
+if [ -n "$RBAC_RTH_USER_EMAIL" ] && [ -n "$RBAC_RTH_USER_PASSWORD" ]; then
+  RBAC_CONFIGURED=true
+fi
+
+if [ "$RBAC_CONFIGURED" = false ]; then
   echo ""
-  echo "⚠️  WARNING: Could not fetch RBAC test tokens"
-  echo "   Set environment variables:"
-  echo "     RBAC_ADMIN_EMAIL / RBAC_ADMIN_PASSWORD"
-  echo "     RBAC_STUDENT_EMAIL / RBAC_STUDENT_PASSWORD"
-  echo "     RBAC_USER_EMAIL / RBAC_USER_PASSWORD"
+  echo "⚠️  RBAC test credentials not configured"
+  echo "   Set environment variables to enable RBAC validation:"
   echo ""
-  echo "   Skipping RBAC validation..."
+  echo "   # RealTutorialHub users"
+  echo "   export RBAC_RTH_USER_EMAIL='ajayshah@gmail.com'"
+  echo "   export RBAC_RTH_USER_PASSWORD='testing'"
+  echo ""
+  echo "   # SkillUp users"
+  echo "   export RBAC_SKILLUP_STUDENT_EMAIL='student@skillupitacademy.com'"
+  echo "   export RBAC_SKILLUP_STUDENT_PASSWORD='testing'"
+  echo ""
+  echo "   ⚠️  Skipping RBAC validation..."
   echo "   ⚠️  RBAC enforcement NOT verified in this deployment!"
   echo ""
 else
-  # Step 2: Run RBAC live tests
-  echo ""
-  echo "🧪 Running RBAC live tests..."
-  node ./scripts/test-rbac-live.js
+  # Step 1: Fetch access tokens
+  echo "🔐 Fetching access tokens for RBAC test users..."
+  node ./scripts/get-access-token.js
 
-  RBAC_EXIT_CODE=$?
+  if [ $? -ne 0 ]; then
+    echo ""
+    echo "⚠️  WARNING: Could not fetch RBAC test tokens"
+    echo "   Possible reasons:"
+    echo "   1. Test users don't exist in the database"
+    echo "   2. Passwords are incorrect"
+    echo "   3. Login endpoint is not working"
+    echo ""
+    echo "   Current test users:"
+    echo "   - RTH: ajayshah@gmail.com"
+    echo "   - SkillUp: student@skillupitacademy.com"
+    echo ""
+    echo "   Skipping RBAC validation..."
+    echo "   ⚠️  RBAC enforcement NOT verified in this deployment!"
+    echo ""
+  else
+    # Step 2: Run RBAC live tests
+    echo ""
+    echo "🧪 Running RBAC live tests..."
+    node ./scripts/test-rbac-live.js
 
-  if [ $RBAC_EXIT_CODE -ne 0 ]; then
-    echo ""
-    echo "❌ RBAC VALIDATION FAILED — CRITICAL SECURITY ISSUE"
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo ""
-    echo "🚨 RBAC is NOT enforcing properly!"
-    echo "   This means non-admin users can access admin endpoints!"
-    echo ""
-    echo "🔍 Checking RBAC implementation..."
-    echo "   Running stale code detector..."
-    node ./scripts/detect-stale-rbac-code.js || true
-    echo ""
-    echo "🔁 INITIATING ROLLBACK..."
+    RBAC_EXIT_CODE=$?
 
-    rollback() {
-      SERVICE=$1
-      REV=$2
+    if [ $RBAC_EXIT_CODE -ne 0 ]; then
+      echo ""
+      echo "❌ RBAC VALIDATION FAILED — CRITICAL SECURITY ISSUE"
+      echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      echo ""
+      echo "🚨 RBAC is NOT enforcing properly!"
+      echo "   This means non-admin users can access admin endpoints!"
+      echo ""
+      echo "🔍 Checking RBAC implementation..."
+      echo "   Running stale code detector..."
+      node ./scripts/detect-stale-rbac-code.js || true
+      echo ""
+      echo "🔁 INITIATING ROLLBACK..."
 
-      if [ -n "$REV" ]; then
-        echo "  Rolling back $SERVICE to $REV..."
-        gcloud run services update-traffic $SERVICE \
-          --region $REGION \
-          --to-revisions ${REV}=100 2>/dev/null || echo "  ⚠️  Rollback failed for $SERVICE"
-      else
-        echo "  ⚠️  No previous revision for $SERVICE"
-      fi
-    }
+      rollback() {
+        SERVICE=$1
+        REV=$2
 
-    rollback $SERVICE_API $PREV_API
-    rollback $SERVICE_RTH $PREV_RTH
-    rollback $SERVICE_SKILLUP $PREV_SKILLUP
+        if [ -n "$REV" ]; then
+          echo "  Rolling back $SERVICE to $REV..."
+          gcloud run services update-traffic $SERVICE \
+            --region $REGION \
+            --to-revisions ${REV}=100 2>/dev/null || echo "  ⚠️  Rollback failed for $SERVICE"
+        else
+          echo "  ⚠️  No previous revision for $SERVICE"
+        fi
+      }
+
+      rollback $SERVICE_API $PREV_API
+      rollback $SERVICE_RTH $PREV_RTH
+      rollback $SERVICE_SKILLUP $PREV_SKILLUP
+
+      echo ""
+      echo "🔁 Rollback complete"
+      echo ""
+      echo "❌ DEPLOYMENT BLOCKED - RBAC security validation failed"
+      echo "   Fix RBAC enforcement before deploying again"
+      exit 1
+    fi
 
     echo ""
-    echo "🔁 Rollback complete"
+    echo "✅ RBAC validation passed"
+    echo "   ✅ Non-admin users blocked from admin endpoints"
+    echo "   ✅ Admin users can access admin endpoints"
+    echo "   ✅ Ownership RBAC working"
     echo ""
-    echo "❌ DEPLOYMENT BLOCKED - RBAC security validation failed"
-    echo "   Fix RBAC enforcement before deploying again"
-    exit 1
+    echo "🔍 IMPORTANT: Check production logs for:"
+    echo "   - RBAC_AUDIT with result:GRANTED"
+    echo "   - RBAC_AUDIT with result:DENIED"
+    echo "   You MUST see BOTH granted and denied entries!"
+    echo ""
   fi
-
-  echo ""
-  echo "✅ RBAC validation passed"
-  echo "   ✅ Non-admin users blocked from admin endpoints"
-  echo "   ✅ Admin users can access admin endpoints"
-  echo "   ✅ Ownership RBAC working"
-  echo ""
-  echo "🔍 IMPORTANT: Check production logs for:"
-  echo "   - RBAC_AUDIT with result:GRANTED"
-  echo "   - RBAC_AUDIT with result:DENIED"
-  echo "   You MUST see BOTH granted and denied entries!"
-  echo ""
 fi
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

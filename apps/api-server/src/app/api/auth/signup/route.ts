@@ -1,10 +1,10 @@
+import { type CookieBrand,setAuthCookies } from '@quiz/auth';
 import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
 
 import { toUserSummaryDTO } from '@/dtos/auth.dto';
 import { badRequest } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
-import { resolveCookieDomain } from '@/lib/cookie-domain';
 import { withCorrelationId } from '@/lib/correlation-id.middleware';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { resolveRequestBrand, resolveRequestBrandFromHeaders, resolveRequestHostnameFromHeaders } from '@/lib/request-brand';
@@ -17,7 +17,6 @@ import { setCsrfToken } from '@/modules/auth/csrf.middleware';
 import { setOnboardingStateCookie } from '@/modules/auth/onboarding-state-cookie';
 import { container } from '@/modules/core/container';
 import { signupSchema } from '@/schemas/auth.schemas';
-import { buildAccessTokenCookie, buildRefreshTokenCookie, setAuthCookies, type CookieBrand } from '@quiz/auth';
 
 export const dynamic = 'force-dynamic';
 

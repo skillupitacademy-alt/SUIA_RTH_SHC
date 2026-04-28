@@ -12,8 +12,6 @@ import { recordCounter, recordTimer } from "@/lib/metrics";
 import { redis } from "@/lib/redis";
 import { withLogging } from "@/lib/withLogging";
 import { CACHE_KEYS } from "@/modules/analytics/analytics.constants";
-import { TokenService } from "@/modules/auth/token.service";
-import { container } from '@/modules/core/container';
 import { ResilienceService } from "@/modules/core/resilience.service";
 
 export const dynamic = "force-dynamic";

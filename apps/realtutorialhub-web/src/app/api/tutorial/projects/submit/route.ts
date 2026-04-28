@@ -14,9 +14,7 @@ const submitSchema = z.object({
   deliverable: z.record(z.unknown()),
 });
 
-async function handler(req: NextRequest, obsCtx: any) {
-  const { requestId } = obsCtx; // 🔥 Observability context
-  
+async function handler(req: NextRequest) {
   let session;
   try {
     session = await requireStudent(req);

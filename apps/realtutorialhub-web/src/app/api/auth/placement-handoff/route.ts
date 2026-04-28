@@ -19,7 +19,7 @@ function normalizeRedirectTo(rawValue: unknown): string {
     return rawValue;
   }
 
-  return '/profile';
+  return '/dashboard/profile';
 }
 
 function resolveRequestHost(request: NextRequest): string {

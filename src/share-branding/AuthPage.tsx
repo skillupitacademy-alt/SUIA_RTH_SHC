@@ -89,6 +89,12 @@ function AuthContent({ brand, initialMode = 'login' }: AuthPageProps) {
         // NO router.refresh() needed - we fetch directly with cache bypass
         const sessionState = await fetchCurrentUserState();
         
+        // 🔥 PRODUCTION FIX: Set flag to skip initial token refresh
+        // This prevents race conditions when navigating to dashboard/profile
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('skip_initial_refresh', 'true');
+        }
+        
         // ✅ STEP 3: Navigate based on fresh state
         // Server component will re-fetch and verify (double-check pattern)
         const redirectTarget = searchParams.get('redirect');
@@ -118,6 +124,12 @@ function AuthContent({ brand, initialMode = 'login' }: AuthPageProps) {
         // ✅ STEP 2: Fetch fresh session state (cache: 'no-store' guarantees fresh data)
         // NO router.refresh() needed - we fetch directly with cache bypass
         const sessionState = await fetchCurrentUserState();
+        
+        // 🔥 PRODUCTION FIX: Set flag to skip initial token refresh
+        // This prevents race conditions when navigating to dashboard/profile
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('skip_initial_refresh', 'true');
+        }
         
         // ✅ STEP 3: Navigate based on fresh state
         // Server component will re-fetch and verify (double-check pattern)

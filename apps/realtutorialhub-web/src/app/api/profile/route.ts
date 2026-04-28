@@ -16,7 +16,7 @@ import {
 export const dynamic = 'force-dynamic';
 
 // 🔥 OBSERVABILITY: Wrap with withObservability for full request tracing
-export const GET = withObservability(async (req: NextRequest, _obsCtx: unknown) => {
+export const GET = withObservability(async (req: NextRequest) => {
   const response = await handleProfileGet(req);
   // Convert Response to NextResponse
   return new NextResponse(response.body, {
@@ -26,7 +26,7 @@ export const GET = withObservability(async (req: NextRequest, _obsCtx: unknown) 
   });
 });
 
-export const PATCH = withObservability(async (req: NextRequest, _obsCtx: unknown) => {
+export const PATCH = withObservability(async (req: NextRequest) => {
   const response = await handleProfilePatch(req);
   // Convert Response to NextResponse
   return new NextResponse(response.body, {

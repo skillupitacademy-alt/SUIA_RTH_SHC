@@ -10,6 +10,7 @@ const https = require('https');
 const { URL } = require('url');
 
 const BASE_URL = 'https://user.realtutorialhub.com';
+const SKILLUP_BASE_URL = 'https://user.skillupitacademy.com';
 
 // Test users for RBAC validation
 // Real users from both brands for comprehensive testing
@@ -18,36 +19,16 @@ const USERS = {
   rth_user: {
     email: process.env.RBAC_RTH_USER_EMAIL || 'ajayshah@gmail.com',
     password: process.env.RBAC_RTH_USER_PASSWORD || 'testing',
-    brand: 'realtutorialhub'
-  },
-  rth_admin: {
-    email: process.env.RBAC_RTH_ADMIN_EMAIL || 'admin@test.com',
-    password: process.env.RBAC_RTH_ADMIN_PASSWORD || 'admin123',
-    brand: 'realtutorialhub'
+    brand: 'realtutorialhub',
+    baseUrl: BASE_URL
   },
   
   // SkillUp IT Academy brand users
   skillup_student: {
     email: process.env.RBAC_SKILLUP_STUDENT_EMAIL || 'student@skillupitacademy.com',
-    password: process.env.RBAC_SKILLUP_STUDENT_PASSWORD || 'SkillUp@2025',
-    brand: 'skillupitacademy'
-  },
-  skillup_admin: {
-    email: process.env.RBAC_SKILLUP_ADMIN_EMAIL || 'admin@skillupitacademy.com',
-    password: process.env.RBAC_SKILLUP_ADMIN_PASSWORD || 'SkillUpAdmin@2025',
-    brand: 'skillupitacademy'
-  },
-  
-  // Fallback test users (if above don't exist)
-  test_user: {
-    email: process.env.RBAC_USER_EMAIL || 'rbac-user@test.com',
-    password: process.env.RBAC_USER_PASSWORD || 'RbacTest123!',
-    brand: 'realtutorialhub'
-  },
-  test_admin: {
-    email: process.env.RBAC_ADMIN_EMAIL || 'rbac-admin@test.com',
-    password: process.env.RBAC_ADMIN_PASSWORD || 'RbacTest123!',
-    brand: 'realtutorialhub'
+    password: process.env.RBAC_SKILLUP_STUDENT_PASSWORD || 'testing',
+    brand: 'skillupitacademy',
+    baseUrl: SKILLUP_BASE_URL
   }
 };
 
@@ -64,7 +45,8 @@ async function makeRequest(url, options = {}) {
         'Content-Type': 'application/json',
         'User-Agent': 'RBAC-Token-Fetcher/1.0',
         ...options.headers
-      }
+      },
+      timeout: 10000 // 10 second timeout
     };
 
     const req = https.request(requestOptions, (res) => {
@@ -85,6 +67,11 @@ async function makeRequest(url, options = {}) {
 
     req.on('error', (err) => {
       reject(err);
+    });
+
+    req.on('timeout', () => {
+      req.destroy();
+      reject(new Error('Request timeout'));
     });
 
     if (options.body) {
@@ -108,9 +95,9 @@ function extractCookie(headers, cookieName) {
   return null;
 }
 
-async function login(email, password) {
+async function login(email, password, baseUrl = BASE_URL) {
   try {
-    const response = await makeRequest(`${BASE_URL}/api/auth/login`, {
+    const response = await makeRequest(`${baseUrl}/api/auth/login`, {
       method: 'POST',
       body: { email, password }
     });
@@ -138,7 +125,7 @@ async function fetchAllTokens() {
 
   for (const [role, creds] of Object.entries(USERS)) {
     try {
-      const token = await login(creds.email, creds.password);
+      const token = await login(creds.email, creds.password, creds.baseUrl);
       tokens[role] = token;
       console.log(`✅ ${role.toUpperCase()}: ${token.substring(0, 40)}...`);
     } catch (err) {
@@ -154,10 +141,10 @@ async function fetchAllTokens() {
     errors.forEach(({ role, error }) => {
       console.error(`   - ${role}: ${error}`);
     });
-    console.error('\nSet environment variables:');
-    console.error('  RBAC_ADMIN_EMAIL / RBAC_ADMIN_PASSWORD');
-    console.error('  RBAC_STUDENT_EMAIL / RBAC_STUDENT_PASSWORD');
-    console.error('  RBAC_USER_EMAIL / RBAC_USER_PASSWORD\n');
+    console.error('\nNote: Only testing with configured users (ajayshah@gmail.com, student@skillupitacademy.com)');
+    console.error('If you need additional test users, set environment variables:\n');
+    console.error('  RBAC_RTH_USER_EMAIL / RBAC_RTH_USER_PASSWORD');
+    console.error('  RBAC_SKILLUP_STUDENT_EMAIL / RBAC_SKILLUP_STUDENT_PASSWORD\n');
   }
 
   // Save to file for next script

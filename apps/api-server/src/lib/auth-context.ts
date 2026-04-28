@@ -63,12 +63,15 @@ export interface AuthContext {
 }
 
 export async function getAuthContext(req: NextRequest): Promise<AuthContext | null> {
-  const correlationId = req.headers.get('x-correlation-id') || crypto.randomUUID();
+  const requestCorrelationId = req.headers.get('x-correlation-id');
+  const correlationId = (typeof requestCorrelationId === 'string' && requestCorrelationId.trim() !== '') 
+    ? requestCorrelationId 
+    : crypto.randomUUID();
 
   // Try internal/gateway authentication first (fastest)
   const authResult = validateRequest(req);
   
-  if (authResult.context) {
+  if (authResult.context !== undefined) {
     // 🔐 STEP 1: Extract raw roles from context
     const rawRoles = authResult.context.roles;
     
@@ -76,7 +79,7 @@ export async function getAuthContext(req: NextRequest): Promise<AuthContext | nu
     const roles = canonicalizeRoles(rawRoles);
     
     // 🔐 HARD GUARD (NO SILENT FAIL)
-    if (!roles || roles.length === 0) {
+    if (roles.length === 0) {
       console.error('🚨 RBAC_ERROR: No valid roles found in gateway/internal auth', {
         rawRoles,
         correlationId,
@@ -113,7 +116,7 @@ export async function getAuthContext(req: NextRequest): Promise<AuthContext | nu
 
     const payload = await container.get(TokenService).verifyUserAccessToken(token);
     
-    if (!payload || typeof payload.userId !== 'string' || payload.userId.length === 0) {
+    if (payload === null || typeof payload.userId !== 'string' || payload.userId.length === 0) {
       console.log(`[AUTH][${correlationId}] Invalid token payload`);
       return null;
     }
@@ -125,7 +128,7 @@ export async function getAuthContext(req: NextRequest): Promise<AuthContext | nu
     const roles = canonicalizeRoles(rawJwtRoles);
     
     // 🔐 HARD GUARD (NO SILENT FAIL)
-    if (!roles || roles.length === 0) {
+    if (roles.length === 0) {
       console.error('🚨 RBAC_ERROR: No valid roles found in JWT', {
         rawJwtRoles,
         correlationId,

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ChevronDown, ChevronUp, Play, Bot, BarChart, AlertCircle, Calendar, Folder, CheckCircle, Lock, Circle } from 'lucide-react';
-import { useBrand } from '@/share-branding/PostLandingPage/app/context/BrandContext';
+import { useBrand } from '../../PostLandingPage/app/context/BrandContext';
 import { useTutorialData } from './TutorialDataContext';
 
 interface SidebarProps {

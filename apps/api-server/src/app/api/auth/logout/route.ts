@@ -1,3 +1,4 @@
+import { type Brand,clearAuthCookies } from '@quiz/auth';
 import { type NextRequest } from 'next/server';
 
 import { ApiResponse } from '@/lib/api-response';
@@ -10,11 +11,10 @@ import { getClientIp } from '@/modules/auth/client-ip';
 import { clearOnboardingStateCookie } from '@/modules/auth/onboarding-state-cookie';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
-import { clearAuthCookies, type Brand } from '@quiz/auth';
 
 export const dynamic = 'force-dynamic';
 
-async function handler(_req: NextRequest, obsCtx: any) {
+async function handler(_req: NextRequest, obsCtx: { requestId: string }) {
   const { requestId } = obsCtx; // 🔥 Use observability context
   const ip = getClientIp(_req);
   const tokenService = container.get(TokenService);

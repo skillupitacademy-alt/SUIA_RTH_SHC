@@ -1,5 +1,5 @@
 import { ArrowRight, Sparkles, Target, Brain } from 'lucide-react';
-import { useBrand } from '@/share-branding/PostLandingPage/app/context/BrandContext';
+import { useBrand } from '../context/BrandContext';
 
 export function FinalCTA() {
   const brand = useBrand();

@@ -7,9 +7,7 @@ export const dynamic = 'force-dynamic';
 
 const projectService = new ProjectService();
 
-async function handler(req: NextRequest, obsCtx: any) {
-  const { requestId } = obsCtx; // 🔥 Observability context
-  
+async function handler(req: NextRequest) {
   try {
     const session = await requireStudent(req);
     const data = await projectService.getMyProjects(session.userId);

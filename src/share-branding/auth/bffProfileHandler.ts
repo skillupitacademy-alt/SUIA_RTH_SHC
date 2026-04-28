@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { unifiedFetch } from '@/share-branding/lib/unifiedFetch';
+import { unifiedFetch } from '../lib/unifiedFetch';
 import { 
   createInternalHeaders, 
   BffAuthErrors,
@@ -107,6 +107,19 @@ export async function handleProfileGet(req: NextRequest) {
       );
     }
 
+    // 🔥 ENRICH RESPONSE: Add email from auth context (API doesn't return it)
+    // The userProfiles table doesn't have email, but the client needs it
+    if (res.status === 200 && data && authResult.email) {
+      // If data is wrapped in { data: {...} }, enrich the inner object
+      if (data.data && typeof data.data === 'object') {
+        data.data.email = authResult.email;
+      } else if (typeof data === 'object') {
+        // If data is the profile object directly
+        data.email = authResult.email;
+      }
+      console.log(`[BFF][Profile GET][${correlationId}] Enriched response with email: ${authResult.email}`);
+    }
+
     return NextResponse.json(data, { status: res.status });
   } catch (err) {
     const duration = Date.now() - perfStart;
@@ -167,6 +180,18 @@ export async function handleProfilePatch(req: NextRequest) {
     const duration = Date.now() - perfStart;
 
     console.log(`[BFF][Profile PATCH][${correlationId}] API response: ${res.status} (${duration}ms)`);
+
+    // 🔥 ENRICH RESPONSE: Add email from auth context (API doesn't return it)
+    if (res.status === 200 && data && authResult.email) {
+      // If data is wrapped in { data: {...} }, enrich the inner object
+      if (data.data && typeof data.data === 'object') {
+        data.data.email = authResult.email;
+      } else if (typeof data === 'object') {
+        // If data is the profile object directly
+        data.email = authResult.email;
+      }
+      console.log(`[BFF][Profile PATCH][${correlationId}] Enriched response with email: ${authResult.email}`);
+    }
 
     return NextResponse.json(data, { status: res.status });
   } catch (err) {

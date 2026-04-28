@@ -1,5 +1,6 @@
-import { validateBrandOrThrow, RBACService, ForbiddenError } from '@quiz/auth';
+import { RBACService, validateBrandOrThrow } from '@quiz/auth';
 import { PERMISSIONS } from '@quiz/auth/rbac/permissions';
+import type { Role } from '@quiz/auth/rbac/roles';
 import { type NextRequest } from 'next/server';
 
 import { unauthorized } from '@/lib/api-error';
@@ -13,7 +14,7 @@ import { DashboardEngine } from '@/modules/dashboard-engine/dashboard.engine';
 
 export const dynamic = 'force-dynamic';
 
-async function getHandler(req: NextRequest, obsCtx: any) {
+async function getHandler(req: NextRequest, obsCtx: { requestId: string }) {
   const { requestId } = obsCtx; // 🔥 Observability context
   const start = Date.now();
   
@@ -25,8 +26,9 @@ async function getHandler(req: NextRequest, obsCtx: any) {
   const payload = await container.get(TokenService).verifyUserAccessToken(token);
   
   // 🔥 RBAC: Enforce dashboard access permission (throws ForbiddenError if denied)
+  const roles = Array.isArray(payload.roles) ? payload.roles as Role[] : [];
   RBACService.requirePermission(
-    (payload.roles || []) as any,
+    roles,
     PERMISSIONS.DASHBOARD_VIEW,
     payload.userId,
     requestId

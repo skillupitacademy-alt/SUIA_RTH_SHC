@@ -1,7 +1,7 @@
 'use client';
 
-import { useBrand } from '@/share-branding/OnboardingEngine/context/BrandContext';
-import { OnboardingStatusOption } from '@/share-branding/onboardingPageData';
+import { useBrand } from '../context/BrandContext';
+import { OnboardingStatusOption } from '../../onboardingPageData';
 
 interface ProfileStepProps {
   title: string;

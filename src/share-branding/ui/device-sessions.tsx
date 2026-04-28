@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Monitor, Smartphone, Tablet, LogOut, Loader2, Shield } from 'lucide-react';
-import { useBrand } from '@/share-branding/PostLandingPage/app/context/BrandContext';
+import { useBrand } from '../PostLandingPage/app/context/BrandContext';
 import { unifiedFetch } from '../lib/unifiedFetch';
 
 interface DeviceSession {

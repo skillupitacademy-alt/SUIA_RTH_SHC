@@ -1,9 +1,12 @@
+import { PERMISSIONS } from '@quiz/auth/rbac/permissions';
+import { RBACService } from '@quiz/auth/rbac/rbac.service';
+import type { Role } from '@quiz/auth/rbac/roles';
 import { TutorialContentRepository } from '@quiz/db-tutorial';
 import type { TutorialContentRecord } from '@quiz/types';
 import { NextRequest, NextResponse } from 'next/server';
-import { RBACService } from '@quiz/auth/rbac/rbac.service';
-import { PERMISSIONS } from '@quiz/auth/rbac/permissions';
+
 import { withObservability } from '@/middleware/observability.middleware';
+import type { RequestContext } from '@/middleware/request-context';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 
@@ -41,7 +44,7 @@ function toDto(record: TutorialContentRecord) {
 
 async function handler(
   _request: NextRequest,
-  obsCtx: any,
+  obsCtx: RequestContext,
   context: { params: Promise<{ subtopicId: string }> }
 ) {
   const { requestId } = obsCtx; // 🔥 Observability context
@@ -50,14 +53,15 @@ async function handler(
   const tokenService = container.get(TokenService);
   const token = tokenService.getAccessToken(_request, { scope: 'user' });
   
-  if (!token) {
+  if (typeof token !== 'string' || token.trim() === '') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const payload = await tokenService.verifyUserAccessToken(token);
   
+  const roles = Array.isArray(payload.roles) ? payload.roles as Role[] : [];
   RBACService.requirePermission(
-    (payload.roles || []) as any,
+    roles,
     PERMISSIONS.TUTORIAL_VIEW,
     payload.userId,
     requestId
@@ -67,7 +71,7 @@ async function handler(
   const rows = await repository.getPublished(subtopicId, 'simple');
   const record = rows[0];
 
-  if (record === undefined) {
+  if (record === undefined || record === null) {
     return NextResponse.json({ error: 'Tutorial content not found' }, { status: 404 });
   }
 
@@ -77,4 +81,4 @@ async function handler(
 }
 
 // 🔥 OBSERVABILITY: Wrap with withObservability for full request tracing
-export const GET = withObservability(handler);
+export const GET = withObservability(handler as (req: NextRequest, obsCtx: RequestContext, ...rest: unknown[]) => Promise<NextResponse>);

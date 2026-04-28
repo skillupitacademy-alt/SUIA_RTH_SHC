@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Calendar, Video, Clock, CheckCircle, Lock, FileText } from 'lucide-react';
-import { useBrand } from '@/share-branding/PostLandingPage/app/context/BrandContext';
+import { useBrand } from '../../PostLandingPage/app/context/BrandContext';
 import { useTutorialData } from './TutorialDataContext';
 
 export const FacultySupport: React.FC = () => {

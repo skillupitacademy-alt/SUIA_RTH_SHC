@@ -5,9 +5,7 @@ import { assignmentHelpSchema, assignmentService } from '@/lib/assignment';
 
 export const dynamic = 'force-dynamic';
 
-async function handler(req: NextRequest, obsCtx: any) {
-  const { requestId } = obsCtx; // 🔥 Observability context
-  
+async function handler(req: NextRequest) {
   try {
     const user = await requireStudent(req);
 

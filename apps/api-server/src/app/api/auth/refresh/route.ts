@@ -1,21 +1,16 @@
+// 🔐 CRITICAL: Import shared cookie middleware to ensure correct domain per brand
+import { type Brand as CookieBrand,setAuthCookies } from '@quiz/auth';
 import type { NextRequest } from 'next/server';
 
 import { badRequest } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
-import { type RequestBrand, resolveRequestBrandFromHeaders } from '@/lib/request-brand';
+import { resolveRequestBrandFromHeaders } from '@/lib/request-brand';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
-import { withLogging } from '@/lib/withLogging';
 import { withObservability } from '@/middleware/observability.middleware';
 import { AuthService } from '@/modules/auth/auth.service';
-import { getAuthBrandContext, shouldUseBrandBinding } from '@/modules/auth/brand-db';
 import { getClientIp } from '@/modules/auth/client-ip';
-import { setOnboardingStateCookie } from '@/modules/auth/onboarding-state-cookie';
-import { UserRepository } from '@/modules/auth/repositories/user.repository';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
-
-// 🔐 CRITICAL: Import shared cookie middleware to ensure correct domain per brand
-import { setAuthCookies, type Brand as CookieBrand } from '@quiz/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,7 +18,7 @@ interface RefreshRequest {
   examId?: string;
 }
 
-async function handler(_req: NextRequest, obsCtx: any) {
+async function handler(_req: NextRequest, obsCtx: { requestId: string }) {
   const { requestId } = obsCtx; // 🔥 Use observability context
   
   try {
@@ -47,8 +42,6 @@ async function handler(_req: NextRequest, obsCtx: any) {
     if (tokenToUse === undefined || tokenToUse === null || tokenToUse === '') {
       return ApiResponse.error(badRequest(`No refresh token for scope: ${portalIdentity}`, 'UNAUTHORIZED'));
     }
-
-    const cookieName = portalIdentity === 'infrastructure' ? 'infra_refreshToken' : portalIdentity === 'admin' ? 'admin_refreshToken' : 'refreshToken';
 
     const ip = getClientIp(_req);
     

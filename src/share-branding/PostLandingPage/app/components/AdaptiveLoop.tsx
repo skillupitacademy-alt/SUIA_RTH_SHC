@@ -1,6 +1,6 @@
 import { Target, TrendingUp, MessageSquare, Shield, FileEdit, ClipboardCheck } from 'lucide-react';
 import { ArrowRight } from 'lucide-react';
-import { useBrand } from '@/share-branding/PostLandingPage/app/context/BrandContext';
+import { useBrand } from '../context/BrandContext';
 
 export function AdaptiveLoop() {
   const brand = useBrand();

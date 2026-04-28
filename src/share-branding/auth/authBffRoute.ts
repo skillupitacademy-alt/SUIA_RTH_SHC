@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { AUTH_CONFIG } from './config';
-import { unifiedFetch } from '@/share-branding/lib/unifiedFetch';
+import { unifiedFetch } from '../lib/unifiedFetch';
 
 const HOP_BY_HOP_HEADERS = new Set([
   'connection',

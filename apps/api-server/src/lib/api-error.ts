@@ -3,7 +3,7 @@
  * Standardized API Error System (Task 45)
  */
 
-import { isAuthError, type AuthError } from '@quiz/auth';
+import { isAuthError } from '@quiz/auth';
 
 export type ApiErrorCode = 
   | 'BAD_REQUEST'
@@ -83,7 +83,7 @@ export const locked = (message: string = 'Locked') =>
   new ApiError(423, message, 'LOCKED');
 
 export const notFound = (resource: string, id?: string) => {
-  const hasId = id !== undefined && id !== null && id !== '';
+  const hasId = typeof id === 'string' && id.trim() !== '';
   const suffix = hasId ? `: ${id}` : '';
   return new ApiError(404, `${resource} not found${suffix}`, 'NOT_FOUND');
 };

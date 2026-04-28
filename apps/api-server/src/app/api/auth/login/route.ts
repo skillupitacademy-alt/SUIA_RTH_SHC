@@ -1,3 +1,5 @@
+// 🔐 CRITICAL: Import shared cookie middleware to ensure correct domain per brand
+import { type CookieBrand,setAuthCookies } from '@quiz/auth';
 import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
 
@@ -14,15 +16,12 @@ import { setOnboardingStateCookie } from '@/modules/auth/onboarding-state-cookie
 import { container } from '@/modules/core/container';
 import { loginSchema } from '@/schemas/auth.schemas';
 
-// 🔐 CRITICAL: Import shared cookie middleware to ensure correct domain per brand
-import { setAuthCookies, type CookieBrand } from '@quiz/auth';
-
 export const dynamic = 'force-dynamic';
 
 import { withCorrelationId } from '@/lib/correlation-id.middleware';
 import { withObservability } from '@/middleware/observability.middleware';
 
-async function handler(req: NextRequest, obsCtx: any) {
+async function handler(req: NextRequest, obsCtx: { requestId: string }) {
   const start = Date.now();
   const { requestId } = obsCtx; // 🔥 Use observability context
   const timings = {

@@ -10,7 +10,6 @@ import { toUserSummaryDTO } from '@/dtos/auth.dto';
 import { unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { recordCounter } from '@/lib/metrics';
-import { withGatewayAuth } from '@/middleware/gateway-auth.middleware';
 import { withObservability } from '@/middleware/observability.middleware';
 import { getAuthBrandContext, shouldUseBrandBinding } from '@/modules/auth/brand-db';
 import { TokenRepository } from '@/modules/auth/repositories/token.repository';
@@ -32,7 +31,7 @@ export const dynamic = 'force-dynamic';
  * DO NOT expose tokens to frontend
  * DO NOT add business logic here - only user state retrieval
  */
-async function handler(req: NextRequest, obsCtx: any) {
+async function handler(req: NextRequest, obsCtx: { requestId: string }) {
   const start = Date.now();
   const { requestId } = obsCtx; // 🔥 Observability context from withObservability
 

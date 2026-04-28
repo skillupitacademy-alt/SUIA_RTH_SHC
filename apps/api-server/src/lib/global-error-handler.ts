@@ -5,8 +5,8 @@
  * Ensures consistent error responses with proper HTTP status codes.
  */
 
+import { type AuthError,isAuthError } from '@quiz/auth';
 import { NextResponse } from 'next/server';
-import { isAuthError, type AuthError } from '@quiz/auth';
 
 export interface ErrorResponse {
   error: string;

@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useBrand } from '@/share-branding/OnboardingEngine/context/BrandContext';
-import { DomainCard } from '@/share-branding/OnboardingEngine/models/onboardingSession';
+import { useBrand } from '../context/BrandContext';
+import { DomainCard } from '../models/onboardingSession';
 import { ChevronDown, Check } from 'lucide-react';
 
 interface DomainStepProps {

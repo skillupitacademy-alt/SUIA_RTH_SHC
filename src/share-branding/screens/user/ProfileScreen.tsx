@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useBrand } from '@/share-branding/PostLandingPage/app/context/BrandContext';
-import { getUserProfile, updateUserProfile, UserProfile } from '@/share-branding/services/userProfileClient';
+import { useState, useEffect } from 'react';
+import { useBrand } from '../../PostLandingPage/app/context/BrandContext';
+import { getUserProfile, updateUserProfile, UserProfile } from '../../services/userProfileClient';
 import { Edit2, Save, X, Loader2, User, Mail, GraduationCap, Briefcase, Target, Code, BarChart3, Clock, Shield, Settings, CheckCircle } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/share-branding/ui/tabs';
-import { DeviceSessions } from '@/share-branding/ui/device-sessions';
-import { Button } from '@/share-branding/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/share-branding/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../ui/tabs';
+import { DeviceSessions } from '../../ui/device-sessions';
+import { Button } from '../../ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../ui/card';
 import {
   EDUCATION_LEVEL_OPTIONS,
   STATUS_OPTIONS,
@@ -16,7 +16,7 @@ import {
   SUB_DOMAIN_MAPPINGS,
   SKILL_LEVEL_OPTIONS,
   TIME_COMMITMENT_OPTIONS
-} from '@/share-branding/constants/fieldMappings';
+} from '../../constants/fieldMappings';
 
 export function ProfileScreen() {
   const brand = useBrand();
@@ -34,32 +34,55 @@ export function ProfileScreen() {
     const loadProfile = async () => {
       setIsLoading(true);
       setError(null);
-      try {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('[PROFILE_SCREEN] Starting client fetch');
-        }
-        const data = await getUserProfile();
-        if (process.env.NODE_ENV === 'development') {
-          console.log('[PROFILE_SCREEN] Data received:', { hasData: !!data, email: data?.email });
-        }
+      
+      // 🔥 PRODUCTION HARDENING: Retry logic for transient failures
+      const MAX_RETRIES = 2;
+      let attempt = 0;
+      
+      while (attempt <= MAX_RETRIES) {
+        try {
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`[PROFILE_SCREEN] Fetch attempt ${attempt + 1}/${MAX_RETRIES + 1}`);
+          }
+          
+          const data = await getUserProfile();
+          
+          if (process.env.NODE_ENV === 'development') {
+            console.log('[PROFILE_SCREEN] Data received:', { hasData: !!data, email: data?.email });
+          }
 
-        if (!data) {
-          throw new Error('No profile data received from server');
-        }
+          if (!data) {
+            throw new Error('No profile data received from server');
+          }
 
-        if (isMounted) {
-          setProfile(data);
-          setEditedProfile(data);
+          if (isMounted) {
+            setProfile(data);
+            setEditedProfile(data);
+          }
+          
+          // Success - exit retry loop
+          break;
+          
+        } catch (error) {
+          attempt++;
+          
+          if (attempt > MAX_RETRIES) {
+            // Final failure after all retries
+            console.error('[PROFILE_SCREEN] Failed after all retries:', error);
+            if (isMounted) {
+              setError(error instanceof Error ? error.message : 'Failed to load profile');
+            }
+          } else {
+            // Retry with exponential backoff
+            const backoffMs = 1000 * attempt; // 1s, 2s
+            console.warn(`[PROFILE_SCREEN] Retry ${attempt}/${MAX_RETRIES} after ${backoffMs}ms`);
+            await new Promise(resolve => setTimeout(resolve, backoffMs));
+          }
         }
-      } catch (error) {
-        console.error('[PROFILE_SCREEN] Failed to load profile:', error);
-        if (isMounted) {
-          setError(error instanceof Error ? error.message : 'Failed to load profile');
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
+      }
+      
+      if (isMounted) {
+        setIsLoading(false);
       }
     };
 
@@ -253,7 +276,7 @@ export function ProfileScreen() {
             className="flex h-20 w-20 items-center justify-center rounded-2xl text-3xl font-black text-white sm:h-24 sm:w-24"
             style={{ backgroundColor: brand.primaryColor }}
           >
-            {editedProfile?.fullName?.split(' ').filter(Boolean).map(n => n[0]).join('').toUpperCase().substring(0, 2) || 'U'}
+            {editedProfile?.fullName?.split(' ').filter(Boolean).map((n: string) => n[0]).join('').toUpperCase().substring(0, 2) || 'U'}
           </div>
           <div className="min-w-0">
             <h2 className="mb-1 text-2xl font-black text-gray-900">{editedProfile?.fullName || 'User'}</h2>
@@ -405,7 +428,7 @@ export function ProfileScreen() {
         {/* Security Tab */}
         <TabsContent value="security" className="space-y-6">
           <DeviceSessions 
-            onSessionRevoked={(sessionId) => {
+            onSessionRevoked={(sessionId: string) => {
               console.log('Session revoked:', sessionId);
             }}
             onGlobalLogout={() => {

@@ -219,7 +219,7 @@ function checkPhase3Logs() {
 
   try {
     const output = execSync(
-      `gcloud logging read 'textPayload:"GATEWAY_AUTH"' --limit=5 --freshness=5m --project=${PROJECT_ID}`,
+      `gcloud logging read "textPayload:GATEWAY_AUTH" --limit=5 --freshness=5m --project=${PROJECT_ID}`,
       { encoding: 'utf-8' }
     );
 

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext } from 'react';
-import { TutorialViewData } from '@/share-branding/tutorialPageData';
+import { TutorialViewData } from '../../tutorialPageData';
 
 const TutorialDataContext = createContext<TutorialViewData | null>(null);
 
