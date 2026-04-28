@@ -22,7 +22,7 @@ export const users = pgTable("users", {
   idx_users_created_at: index("idx_users_created_at").on(t.createdAt),
 }));
 
-export const adaptiveLevelEnum = pgEnum("adaptive_level", ["beginner", "intermediate", "advanced"]);
+export const adaptiveLevelEnum = pgEnum("adaptive_level", ["beginner", "intermediate", "advanced", "expert"]);
 
 export const userProfiles = pgTable("user_profiles", {
   id: uuid("id").primaryKey().defaultRandom(),
