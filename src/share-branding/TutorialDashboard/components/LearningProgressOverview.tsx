@@ -1,7 +1,7 @@
 import React from 'react';
 import { useBrand } from '../../PostLandingPage/app/context/BrandContext';
 import { useTutorialDashboardData } from './TutorialDashboardDataContext';
-import { ChevronDown, Code, Server, Database, Settings } from 'lucide-react';
+import { ChevronDown, Code, Server, Database, Settings, ArrowRight } from 'lucide-react';
 
 export function LearningProgressOverview() {
   const brand = useBrand();
@@ -10,10 +10,10 @@ export function LearningProgressOverview() {
   const getToneColor = (tone: string) => {
     switch (tone) {
       case 'primary': return brand.primaryColor;
-      case 'success': return '#22c55e'; // green-500
-      case 'info': return '#3b82f6'; // blue-500
-      case 'accent': return '#8b5cf6'; // violet-500
-      default: return '#94a3b8'; // slate-400
+      case 'success': return '#22c55e';
+      case 'info': return '#3b82f6';
+      case 'accent': return '#8b5cf6';
+      default: return '#94a3b8';
     }
   };
 
@@ -25,66 +25,69 @@ export function LearningProgressOverview() {
 
     return (
       <div 
-        className="flex h-8 w-8 items-center justify-center rounded-lg bg-opacity-10" 
-        style={{ backgroundColor: `${toneColor}1A`, color: toneColor }}
+        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl" 
+        style={{ backgroundColor: `${toneColor}15`, color: toneColor }}
       >
-        <Icon size={16} />
+        <Icon size={20} />
       </div>
     );
   };
 
   return (
     <div 
-      className="flex h-full flex-col rounded-2xl border border-gray-100 bg-white p-6 transition-transform duration-300 hover:-translate-y-1"
-      style={{ boxShadow: `0 8px 24px rgba(${brand.primaryRgb}, 0.08)` }}
+      className="flex h-full flex-col rounded-3xl border border-gray-100 bg-white p-8 transition-all duration-500 -translate-y-2 scale-[1.01] shadow-2xl hover:-translate-y-3"
+      style={{ boxShadow: `0 20px 50px rgba(${brand.primaryRgb}, 0.05)` }}
     >
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-base font-black text-gray-900">Learning Progress Overview</h3>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8">
+        <h3 className="text-xl font-black text-[#1e293b]">Learning Progress Overview</h3>
         <button 
-          aria-label="Filter progress by time range"
-          className="flex items-center gap-1 text-xs font-bold text-gray-700 hover:text-gray-900"
+          aria-label="Filter progress"
+          className="flex items-center gap-1 text-sm font-bold text-slate-400 hover:text-slate-600 transition-colors"
         >
-          This Week <ChevronDown size={14} aria-hidden="true" />
+          This Week <ChevronDown size={16} />
         </button>
       </div>
 
-      <div className="flex flex-1 flex-col items-center gap-8 xl:flex-row">
-        {/* Donut Chart (Simulated) */}
-        <div className="relative flex h-40 w-40 shrink-0 items-center justify-center">
+      <div className="flex flex-1 flex-col items-center gap-10 lg:flex-row lg:items-start lg:justify-between">
+        {/* Large Donut Chart */}
+        <div className="relative flex h-48 w-48 shrink-0 items-center justify-center">
           <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90 transform">
-            <circle cx="50" cy="50" r="40" stroke="#f1f5f9" strokeWidth="12" fill="none" />
+            <circle cx="50" cy="50" r="42" stroke="#f1f5f9" strokeWidth="10" fill="none" />
             <circle 
-              cx="50" cy="50" r="40" 
+              cx="50" cy="50" r="42" 
               stroke={brand.primaryColor} 
-              strokeWidth="12" fill="none" 
-              strokeDasharray={`${(learningProgress.overallPercent * 251.2) / 100} 251.2`} 
+              strokeWidth="10" fill="none" 
+              strokeDasharray={`${(learningProgress.overallPercent * 263.8) / 100} 263.8`} 
               strokeLinecap="round" 
+              style={{ transition: 'stroke-dasharray 1s ease-out' }}
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-3xl font-black text-gray-900">{learningProgress.overallPercent}%</span>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-600">Overall Progress</span>
+            <span className="text-4xl font-black text-[#1e293b]">{learningProgress.overallPercent}%</span>
+            <span className="text-xs font-bold text-slate-400 mt-1 uppercase tracking-wider">Overall Progress</span>
           </div>
         </div>
 
-        {/* Subjects Breakdown */}
-        <div className="flex w-full flex-1 flex-col justify-center gap-4">
+        {/* Subjects Breakdown - Vertical List */}
+        <div className="flex flex-1 flex-col gap-6 w-full">
           {learningProgress.subjects.map((subject) => {
             const toneColor = getToneColor(subject.tone);
             return (
-              <div key={subject.subject} className="flex flex-col gap-2">
-                <div className="flex items-center gap-3">
-                  {getSubjectIcon(subject.subject, toneColor)}
-                  <div className="flex flex-1 items-center justify-between">
-                    <span className="text-sm font-bold text-gray-700">{subject.subject}</span>
-                    <span className="text-xs font-black text-gray-900">{subject.percent}%</span>
+              <div key={subject.subject} className="flex items-center gap-4">
+                {getSubjectIcon(subject.subject, toneColor)}
+                
+                <div className="flex-1 flex flex-col gap-1.5">
+                  <span className="text-sm font-bold text-[#334155]">{subject.subject}</span>
+                  <div className="flex items-center gap-3">
+                    <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
+                      <div 
+                        className="h-full rounded-full transition-all duration-1000 ease-out" 
+                        style={{ width: `${subject.percent}%`, backgroundColor: brand.primaryColor }}
+                      />
+                    </div>
+                    <span className="text-xs font-black text-slate-500 w-8">{subject.percent}%</span>
                   </div>
-                </div>
-                <div className="ml-11 h-1.5 overflow-hidden rounded-full bg-gray-100">
-                  <div 
-                    className="h-full rounded-full transition-all duration-500" 
-                    style={{ width: `${subject.percent}%`, backgroundColor: toneColor }}
-                  />
                 </div>
               </div>
             );
@@ -92,13 +95,14 @@ export function LearningProgressOverview() {
         </div>
       </div>
 
-      <div className="mt-6 flex justify-center border-t border-gray-100 pt-4">
+      {/* Footer Link */}
+      <div className="mt-10 pt-6 border-t border-slate-50 flex justify-center">
         <button 
-          aria-label="View detailed learning analytics"
-          className="text-sm font-bold hover:underline" 
-          style={{ color: brand.accentColor === 'orange' ? '#b43a00' : '#be185d' }}
+          aria-label="View detailed analytics"
+          className="flex items-center gap-2 text-base font-bold transition-all hover:gap-3" 
+          style={{ color: brand.primaryColor }}
         >
-          View Detailed Analytics →
+          View Detailed Analytics <ArrowRight size={20} />
         </button>
       </div>
     </div>

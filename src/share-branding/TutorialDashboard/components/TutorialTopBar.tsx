@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu, Bell, Flame, Star, Award, ChevronDown } from 'lucide-react';
+import { Menu, Bell, Flame, Star, Award, ChevronDown, Settings } from 'lucide-react';
 import { useBrand } from '../../PostLandingPage/app/context/BrandContext';
 import { useTutorialDashboardData } from './TutorialDashboardDataContext';
 
@@ -8,14 +8,14 @@ export function TutorialTopBar({ onOpenSidebar }: { onOpenSidebar: () => void })
   const { header } = useTutorialDashboardData();
 
   return (
-    <header className="fixed left-0 right-0 top-0 z-40 flex h-20 items-center justify-between border-b border-gray-100 bg-white px-4 xl:left-[260px] xl:px-8">
+    <header className="fixed left-0 right-0 top-0 z-40 flex h-20 items-center justify-between border-b border-gray-100 bg-white px-4 lg:px-8">
       <div className="flex items-center gap-4">
         <button
           onClick={onOpenSidebar}
+          className="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-50 text-gray-600 transition-colors hover:bg-gray-100"
           aria-label="Open Sidebar"
-          className="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-50 text-gray-700 transition-colors hover:bg-gray-100 xl:hidden"
         >
-          <Menu size={20} />
+          <Menu size={24} />
         </button>
         <div className="hidden flex-col md:flex">
           <h1 className="text-xl font-black text-gray-900">{header.title}</h1>
@@ -62,6 +62,13 @@ export function TutorialTopBar({ onOpenSidebar }: { onOpenSidebar: () => void })
 
         {/* Action Buttons */}
         <div className="flex items-center gap-3">
+          <button 
+            aria-label="Settings"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 transition-colors hover:bg-gray-50"
+          >
+            <Settings size={18} />
+          </button>
+          
           <button 
             aria-label="Notifications"
             className="relative flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 transition-colors hover:bg-gray-50"

@@ -8,130 +8,136 @@ export function WelcomeHero() {
   const { hero } = useTutorialDashboardData();
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 mb-8">
-      
-      {/* Welcome & Continue Learning Card */}
-      <div 
-        className="relative overflow-hidden rounded-2xl p-6 transition-transform duration-300 hover:-translate-y-1 lg:col-span-1"
-        style={{ 
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 mb-10 pt-4">
+
+      {/* Card 1: Welcome & Continue Learning */}
+      <div
+        className="relative overflow-hidden rounded-3xl p-6 transition-all duration-500 -translate-y-2 scale-[1.01] shadow-2xl hover:-translate-y-3 hover:scale-[1.02]"
+        style={{
           backgroundColor: brand.primaryColorDark,
-          boxShadow: `0 8px 24px rgba(${brand.primaryRgb}, 0.15)`
+          boxShadow: `0 20px 50px rgba(${brand.primaryRgb}, 0.25)`
         }}
       >
-        {/* Subtle Background Pattern */}
         <div className="absolute -right-4 -top-4 h-32 w-32 rounded-full bg-white/10 blur-3xl" />
         <div className="absolute -left-4 -bottom-4 h-24 w-24 rounded-full bg-black/10 blur-2xl" />
 
         <div className="relative z-10">
-          <h2 className="text-2xl font-black text-white mb-1">{hero.greeting}</h2>
-          <p className="text-sm font-semibold text-white/90 mb-6">{hero.subGreeting}</p>
-          
-          <div className="rounded-xl bg-white/10 p-4 border border-white/10">
-            <h3 className="text-[10px] font-black uppercase tracking-widest text-white/70 mb-3">Continue Learning</h3>
-            <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white text-lg font-black" style={{ color: brand.primaryColorDark }}>
+          <h2 className="text-xl font-black text-white mb-1 leading-tight truncate">{hero.greeting}</h2>
+          <p className="text-xs font-semibold text-white/90 mb-5 line-clamp-1">{hero.subGreeting}</p>
+
+          <div className="rounded-2xl bg-white/10 p-4 border border-white/10 backdrop-blur-sm">
+            <h3 className="text-[9px] font-black uppercase tracking-widest text-white/80 mb-3">Continue Learning</h3>
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white text-base font-black shadow-lg" style={{ color: brand.primaryColorDark }}>
                 JS
               </div>
-              <div className="flex flex-1 flex-col">
-                <span className="text-sm font-bold text-white">{hero.continueTitle}</span>
-                <span className="text-[11px] font-semibold text-white/70">{hero.continueContext}</span>
-                <div className="mt-2 flex items-center gap-3">
+              <div className="flex flex-1 flex-col min-w-0">
+                <span className="text-xs font-bold text-white truncate">{hero.continueTitle}</span>
+                <div className="mt-2 flex items-center gap-2">
                   <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/20">
-                    <div 
-                      className="h-full rounded-full bg-white transition-all duration-700 ease-out" 
+                    <div
+                      className="h-full rounded-full bg-white transition-all duration-700 ease-out"
                       style={{ width: `${hero.continuePercent}%` }}
                     />
                   </div>
-                  <span className="text-xs font-bold text-white">{hero.continuePercent}%</span>
+                  <span className="text-[10px] font-bold text-white">{hero.continuePercent}%</span>
                 </div>
               </div>
             </div>
-            <div className="mt-4 flex justify-end">
-              <button 
-                aria-label={`Resume learning ${hero.continueTitle}`}
-                className="flex shrink-0 items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-black shadow-lg transition-all hover:scale-105 active:scale-95"
-                style={{ color: brand.primaryColorDark }} 
+            <div className="mt-3 flex justify-end">
+              <button
+                className="flex items-center gap-1.5 rounded-xl bg-white px-4 py-1.5 text-[11px] font-black shadow-lg transition-all hover:scale-105 active:scale-95"
+                style={{ color: brand.primaryColorDark }}
               >
-                <Play size={16} className="fill-current" aria-hidden="true" />
-                Resume Now
+                <Play size={12} className="fill-current" />
+                Resume
               </button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Today's Progress Card */}
-      <div 
-        className="rounded-2xl border border-gray-100 bg-white p-6 lg:col-span-1 flex flex-col justify-between transition-transform duration-300 hover:-translate-y-1"
-        style={{ boxShadow: `0 8px 24px rgba(${brand.primaryRgb}, 0.08)` }}
+      {/* Card 2: Today's Progress */}
+      <div
+        className="relative overflow-hidden rounded-3xl p-6 transition-all duration-500 -translate-y-2 scale-[1.01] shadow-2xl hover:-translate-y-3 hover:scale-[1.02] text-white"
+        style={{
+          backgroundColor: '#15803d',
+          boxShadow: '0 20px 50px rgba(21, 128, 61, 0.25)'
+        }}
       >
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-base font-black text-gray-900">Today's Progress</h3>
-          <button 
-            aria-label="View all progress details"
-            className="text-xs font-bold hover:underline" 
-            style={{ color: brand.accentColor === 'orange' ? '#b43a00' : '#be185d' }}
-          >View All</button>
-        </div>
-        
-        <div className="grid grid-cols-2 gap-3 mb-4">
-          <div className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 p-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-700"><BookOpen size={16} /></div>
-            <div className="flex flex-col">
-              <span className="text-sm font-black text-gray-900">{hero.progressTimeSpent}</span>
-              <span className="text-[10px] font-bold text-gray-600">Time Spent</span>
+        <div className="absolute -right-6 -bottom-6 h-32 w-32 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute left-1/4 top-0 h-16 w-16 rounded-full bg-white/5 blur-2xl" />
+
+        <div className="relative z-10 h-full flex flex-col">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-base font-black">Today's Progress</h3>
+            <span className="text-[10px] font-bold uppercase tracking-widest bg-white/20 px-2 py-1 rounded-lg">Live</span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="flex items-center gap-2.5 rounded-2xl bg-white/10 p-3 border border-white/5 backdrop-blur-sm">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/20 text-white"><BookOpen size={16} /></div>
+              <div className="flex flex-col min-w-0">
+                <span className="text-sm font-black truncate">{hero.progressTimeSpent}</span>
+                <span className="text-[9px] font-bold text-white/70 uppercase">Time</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2.5 rounded-2xl bg-white/10 p-3 border border-white/5 backdrop-blur-sm">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/20 text-white"><CheckCircle size={16} /></div>
+              <div className="flex flex-col min-w-0">
+                <span className="text-sm font-black truncate">{hero.progressLessons}</span>
+                <span className="text-[9px] font-bold text-white/70 uppercase">Lessons</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2.5 rounded-2xl bg-white/10 p-3 border border-white/5 backdrop-blur-sm">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/20 text-white"><Target size={16} /></div>
+              <div className="flex flex-col min-w-0">
+                <span className="text-sm font-black truncate">{hero.progressDailyGoal}%</span>
+                <span className="text-[9px] font-bold text-white/70 uppercase">Goal</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2.5 rounded-2xl bg-white/10 p-3 border border-white/5 backdrop-blur-sm">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/20 text-white"><TrendingUp size={16} /></div>
+              <div className="flex flex-col min-w-0">
+                <span className="text-sm font-black truncate">{hero.progressXpEarned}</span>
+                <span className="text-[9px] font-bold text-white/70 uppercase">XP</span>
+              </div>
             </div>
           </div>
-          <div className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 p-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-100 text-green-700"><CheckCircle size={16} /></div>
-            <div className="flex flex-col">
-              <span className="text-sm font-black text-gray-900">{hero.progressLessons}</span>
-              <span className="text-[10px] font-bold text-gray-600">Lessons Completed</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 p-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-100 text-purple-700"><Target size={16} /></div>
-            <div className="flex flex-col">
-              <span className="text-sm font-black text-gray-900">{hero.progressDailyGoal}%</span>
-              <span className="text-[10px] font-bold text-gray-600">Daily Goal</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 p-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-100 text-orange-700"><TrendingUp size={16} /></div>
-            <div className="flex flex-col">
-              <span className="text-sm font-black text-gray-900">{hero.progressXpEarned}</span>
-              <span className="text-[10px] font-bold text-gray-600">XP Earned</span>
-            </div>
-          </div>
-        </div>
-        
-        <div className="text-center text-xs font-bold text-gray-500 border-t border-gray-100 pt-3">
-          Great progress! Keep it up! 🎯
+
+          <p className="mt-auto text-center text-[10px] font-bold text-white/60 italic uppercase tracking-widest">
+            Consistency is key ⚡
+          </p>
         </div>
       </div>
 
-      {/* AI Tutor / Mentor Card */}
-      <div 
-        className="relative overflow-hidden rounded-2xl border border-gray-100 bg-slate-50 p-6 lg:col-span-2 flex flex-col items-center justify-center text-center transition-transform duration-300 hover:-translate-y-1"
-        style={{ boxShadow: `0 8px 24px rgba(${brand.primaryRgb}, 0.08)` }}
+      {/* Card 3: AI Tutor */}
+      <div
+        className="relative overflow-hidden rounded-3xl p-6 transition-all duration-500 -translate-y-2 scale-[1.01] shadow-2xl hover:-translate-y-3 hover:scale-[1.02] text-white"
+        style={{
+          backgroundColor: '#7e22ce',
+          boxShadow: '0 20px 50px rgba(126, 34, 206, 0.25)'
+        }}
       >
-        <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-blue-100 opacity-50 blur-2xl" />
-        
-        <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-md border border-gray-100">
-          <span className="text-2xl">🤖</span>
+        <div className="absolute -left-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute right-0 bottom-0 h-20 w-20 rounded-full bg-white/5 blur-2xl" />
+
+        <div className="relative z-10 flex flex-col items-center justify-center h-full text-center">
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/20 border border-white/20 shadow-inner backdrop-blur-md">
+            <span className="text-2xl animate-bounce">🤖</span>
+          </div>
+          <h3 className="text-lg font-black mb-1">Your {brand.tutorLabel} is ready</h3>
+          <p className="text-[11px] font-semibold text-white/80 mb-6 px-2 line-clamp-2">
+            Instant help, expert explanations, and coding guidance available 24/7.
+          </p>
+          <button
+            className="flex items-center gap-2 rounded-2xl bg-white px-6 py-2.5 text-sm font-black shadow-xl transition-all hover:scale-105 active:scale-95"
+            style={{ color: '#7e22ce' }}
+          >
+            <MessageCircle size={18} />
+            Chat Now
+          </button>
         </div>
-        <h3 className="text-base font-black text-gray-900 mb-1">Your {brand.tutorLabel} is ready</h3>
-        <p className="text-[11px] font-semibold text-gray-600 mb-4 px-2">
-          Get instant help, explanations, and personalized guidance.
-        </p>
-        <button 
-          aria-label={`Chat with ${brand.tutorLabel}`}
-          className="flex items-center gap-2 rounded-xl border-2 px-4 py-2 text-sm font-bold transition-colors hover:bg-white shadow-sm" 
-          style={{ borderColor: brand.accentColor === 'orange' ? '#b43a00' : '#be185d', color: brand.accentColor === 'orange' ? '#b43a00' : '#be185d' }}
-        >
-          <MessageCircle size={16} />
-          Chat with {brand.tutorLabel}
-        </button>
       </div>
     </div>
   );

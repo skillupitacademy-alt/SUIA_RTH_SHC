@@ -12,8 +12,8 @@ export function AssignmentsWidget() {
 
   return (
     <div 
-      className="flex h-full flex-col rounded-2xl border border-gray-100 bg-white p-6 transition-transform duration-300 hover:-translate-y-1"
-      style={{ boxShadow: `0 8px 24px rgba(${brand.primaryRgb}, 0.08)` }}
+      className="flex h-full flex-col rounded-2xl border border-gray-100 bg-white p-6 transition-all duration-500 -translate-y-2 scale-[1.01] shadow-2xl hover:-translate-y-3"
+      style={{ boxShadow: `0 20px 40px rgba(${brand.primaryRgb}, 0.08)` }}
     >
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-base font-black text-gray-900">Assignments</h3>

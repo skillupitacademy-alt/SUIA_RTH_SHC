@@ -20,13 +20,13 @@ export function MyDomainsGrid() {
   const { myDomains } = useTutorialDashboardData();
 
   const getDomainConfig = (title: string) => {
-    if (title.includes('Full Stack')) return { Icon: Code2, color: '#f97316', colorDark: '#c2410c', bg: '#fff7ed', border: '#ffedd5' };
-    if (title.includes('Data Science')) return { Icon: BarChart3, color: '#2563eb', colorDark: '#1e40af', bg: '#eff6ff', border: '#dbeafe' };
-    if (title.includes('Data Engineering')) return { Icon: Database, color: '#16a34a', colorDark: '#15803d', bg: '#f0fdf4', border: '#dcfce7' };
-    if (title.includes('DevOps')) return { Icon: Cloud, color: '#7c3aed', colorDark: '#6d28d9', bg: '#f5f3ff', border: '#ede9fe' };
-    if (title.includes('AI')) return { Icon: Brain, color: '#0891b2', colorDark: '#0e7490', bg: '#ecfeff', border: '#cffafe' };
-    if (title.includes('Cyber')) return { Icon: ShieldCheck, color: '#dc2626', colorDark: '#b91c1c', bg: '#fef2f2', border: '#fee2e2' };
-    return { Icon: Code2, color: '#f97316', colorDark: '#c2410c', bg: '#fff7ed', border: '#ffedd5' };
+    if (title.includes('Full Stack')) return { Icon: Code2, color: '#c2410c', colorDark: '#9a3412', bg: '#fff7ed', border: '#ffedd5' };
+    if (title.includes('Data Science')) return { Icon: BarChart3, color: '#1d4ed8', colorDark: '#1e3a8a', bg: '#eff6ff', border: '#dbeafe' };
+    if (title.includes('Data Engineering')) return { Icon: Database, color: '#15803d', colorDark: '#064e3b', bg: '#f0fdf4', border: '#dcfce7' };
+    if (title.includes('DevOps')) return { Icon: Cloud, color: '#7e22ce', colorDark: '#4c1d95', bg: '#f5f3ff', border: '#ede9fe' };
+    if (title.includes('AI')) return { Icon: Brain, color: '#0e7490', colorDark: '#164e63', bg: '#ecfeff', border: '#cffafe' };
+    if (title.includes('Cyber')) return { Icon: ShieldCheck, color: '#b91c1c', colorDark: '#7f1d1d', bg: '#fef2f2', border: '#fee2e2' };
+    return { Icon: Code2, color: '#c2410c', colorDark: '#9a3412', bg: '#fff7ed', border: '#ffedd5' };
   };
 
   return (
@@ -50,8 +50,11 @@ export function MyDomainsGrid() {
           return (
             <div 
               key={domain.id} 
-              className="group flex flex-col rounded-3xl border bg-white p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
-              style={{ borderColor: config.border }}
+              className="group flex flex-col rounded-3xl border bg-white p-6 transition-all duration-500 -translate-y-2 scale-[1.01] shadow-2xl hover:-translate-y-3"
+              style={{ 
+                borderColor: config.border,
+                boxShadow: `0 20px 50px rgba(${brand.primaryRgb}, 0.05)`
+              }}
             >
               {/* Header */}
               <div className="mb-6 flex items-start justify-between">
@@ -69,7 +72,7 @@ export function MyDomainsGrid() {
                   </div>
                 </div>
                 {domain.isPopular && (
-                  <span className="rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-[10px] font-bold text-orange-600">
+                  <span className="rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-[10px] font-bold text-orange-800">
                     Popular
                   </span>
                 )}
