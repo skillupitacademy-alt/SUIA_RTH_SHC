@@ -1,78 +1,121 @@
 import React from 'react';
 import { useBrand } from '../../PostLandingPage/app/context/BrandContext';
 import { useTutorialDashboardData } from './TutorialDashboardDataContext';
-import { X, AlertTriangle, Check, ArrowRight } from 'lucide-react';
+import { DashboardSyncTopic } from '../../tutorialDashboardData';
+import { 
+  TrendingUp, 
+  AlertCircle, 
+  AlertTriangle, 
+  ArrowRight 
+} from 'lucide-react';
 
 export function EngineSynchronizationWidget() {
   const brand = useBrand();
   const { engineSync } = useTutorialDashboardData();
 
-  const getStatusConfig = (status: string) => {
+  const getStatusStyles = (status: string) => {
     switch (status) {
       case 'failed':
-        return { Icon: X, color: '#ef4444', textColor: '#991b1b', bg: '#fef2f2', badgeBg: '#fee2e2', label: 'Failed' };
+        return { 
+          Icon: AlertCircle, 
+          color: '#dc2626', // Red-600
+          bg: '#fef2f2', 
+          badgeBg: '#fee2e2', 
+          badgeText: '#991b1b',
+          barBg: '#dc2626'
+        };
       case 'weak':
-        return { Icon: AlertTriangle, color: '#f97316', textColor: '#9a3412', bg: '#fff7ed', badgeBg: '#ffedd5', label: 'Weak' };
-      case 'mastered':
-        return { Icon: Check, color: '#22c55e', textColor: '#166534', bg: '#f0fdf4', badgeBg: '#dcfce7', label: 'Mastered' };
+        return { 
+          Icon: AlertTriangle, 
+          color: '#d97706', // Amber-600
+          bg: '#fffbeb', 
+          badgeBg: '#fef3c7', 
+          badgeText: '#92400e',
+          barBg: '#f59e0b'
+        };
       default:
-        return { Icon: Check, color: '#94a3b8', textColor: '#374151', bg: '#f8fafc', badgeBg: '#f1f5f9', label: 'Unknown' };
+        return { 
+          Icon: AlertTriangle, 
+          color: '#d97706', 
+          bg: '#fffbeb', 
+          badgeBg: '#fef3c7', 
+          badgeText: '#92400e',
+          barBg: '#f59e0b'
+        };
     }
   };
 
   return (
-    <div 
-      className="flex h-full flex-col rounded-2xl border border-gray-100 bg-white p-6 transition-transform duration-300 hover:-translate-y-1"
-      style={{ boxShadow: `0 8px 24px rgba(${brand.primaryRgb}, 0.08)` }}
+    <div
+      className="flex h-full flex-col rounded-[2.5rem] border border-gray-100 bg-white p-8 transition-transform duration-300 hover:-translate-y-1"
+      style={{ boxShadow: `0 20px 50px rgba(${brand.primaryRgb}, 0.1)` }}
     >
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-base font-black text-gray-900">Engine Synchronization</h3>
-        <button 
-          aria-label="View all engine synchronization details"
-          className="text-xs font-bold hover:underline" 
-          style={{ color: brand.accentColor === 'orange' ? '#b43a00' : '#be185d' }}
+      {/* Header */}
+      <div className="flex items-center gap-5 mb-8">
+        <div 
+          className="flex h-16 w-16 items-center justify-center rounded-2xl shadow-lg"
+          style={{ backgroundColor: brand.primaryColor }}
         >
-          View All
-        </button>
+          <TrendingUp size={32} className="text-white" />
+        </div>
+        <h3 className="text-2xl font-black text-gray-900 tracking-tight">Engine Synchronization</h3>
       </div>
 
-      <div className="flex flex-1 flex-col gap-4">
-        {engineSync.topics.map((topic, index) => {
-          const config = getStatusConfig(topic.status);
-          const Icon = config.Icon;
+      {/* Topics List */}
+      <div className="flex flex-1 flex-col gap-6">
+        {engineSync.topics.map((topic: DashboardSyncTopic, index: number) => {
+          const styles = getStatusStyles(topic.status);
+          const StatusIcon = styles.Icon;
 
           return (
-            <div key={index} className="flex items-center gap-4 border-b border-gray-50 pb-4 last:border-0 last:pb-0">
-              <div 
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full" 
-                style={{ backgroundColor: config.bg, color: config.textColor }}
-              >
-                <Icon size={18} />
-              </div>
-              
-              <div className="flex flex-1 flex-col">
-                <span className="text-sm font-bold text-gray-900">{topic.title}</span>
-                <span className="text-xs font-semibold text-gray-700">{topic.subtext}</span>
+            <div 
+              key={index} 
+              className="group relative flex flex-col rounded-3xl border border-gray-100 bg-gray-50/30 p-6 transition-all duration-300 hover:bg-white hover:shadow-xl hover:scale-[1.01]"
+            >
+              {/* Internal Header */}
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex flex-col gap-2">
+                  <h4 className="text-lg font-black text-gray-900 leading-none">{topic.title}</h4>
+                  <div className="flex items-center gap-3">
+                    <span 
+                      className="rounded-lg px-2.5 py-1 text-[10px] font-black tracking-wider"
+                      style={{ backgroundColor: styles.badgeBg, color: styles.badgeText }}
+                    >
+                      {topic.statusLabel}
+                    </span>
+                    <span className="text-sm font-bold text-gray-600">Score: {topic.score}%</span>
+                  </div>
+                </div>
+                <StatusIcon size={24} style={{ color: styles.color }} className="shrink-0" />
               </div>
 
-              <span 
-                className="rounded-full px-3 py-1 text-[10px] font-bold tracking-wide"
-                style={{ backgroundColor: config.badgeBg, color: config.textColor }}
-              >
-                {config.label}
-              </span>
+              {/* Progress Bar */}
+              <div className="mb-5 h-2 w-full overflow-hidden rounded-full bg-gray-200/60">
+                <div 
+                  className="h-full rounded-full transition-all duration-1000 ease-out"
+                  style={{ width: `${topic.score}%`, backgroundColor: styles.barBg }}
+                />
+              </div>
+
+              {/* Action Link */}
+              <button className="flex items-center gap-1.5 self-start text-sm font-black text-gray-800 transition-all hover:gap-2">
+                {topic.actionLabel}
+                <ArrowRight size={16} />
+              </button>
             </div>
           );
         })}
       </div>
 
-      <div className="mt-6 flex justify-center border-t border-gray-100 pt-4">
+      {/* Footer Button */}
+      <div className="mt-8">
         <button 
-          aria-label="Auto-deploy tutorial sequence for remediation"
-          className="flex items-center gap-2 text-sm font-bold hover:underline" 
-          style={{ color: brand.accentColor === 'orange' ? '#b43a00' : '#be185d' }}
+          aria-label="Deploy personalized tutorial sequence"
+          className="group flex w-full items-center justify-center gap-3 rounded-2xl py-4 text-lg font-black text-white shadow-xl transition-all hover:scale-[1.02] active:scale-95"
+          style={{ backgroundColor: brand.primaryColor }}
         >
-          Auto-Deploy Tutorial Sequence <ArrowRight size={14} aria-hidden="true" />
+          Deploy Personalized Sequence
+          <ArrowRight size={20} className="transition-transform group-hover:translate-x-1" />
         </button>
       </div>
     </div>

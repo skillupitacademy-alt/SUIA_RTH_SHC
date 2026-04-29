@@ -47,23 +47,21 @@ function TutorialDashboardContent() {
               <MyDomainsGrid />
             </div>
 
-            {/* ROW 3: Medium Density Content */}
-            <div className="lg:col-span-1 flex flex-col gap-6 lg:gap-8">
-              <div className="flex-1">
-                <LearningProgressOverview />
-              </div>
-              <div className="flex-1">
-                <AssignmentsWidget />
-              </div>
+            {/* ROW 3: Full Width Widgets */}
+            <div className="lg:col-span-2">
+              <LearningProgressOverview />
             </div>
 
-            <div className="lg:col-span-1 flex flex-col gap-6 lg:gap-8">
-              <div className="flex-1">
-                <ProjectsWidget />
-              </div>
-              <div className="flex-1">
-                <EngineSynchronizationWidget />
-              </div>
+            <div className="lg:col-span-2">
+              <AssignmentsWidget />
+            </div>
+
+            <div className="lg:col-span-2">
+              <ProjectsWidget />
+            </div>
+
+            <div className="lg:col-span-2">
+              <EngineSynchronizationWidget />
             </div>
 
             {/* ROW 4: High Density Content */}

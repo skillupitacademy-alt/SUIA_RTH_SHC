@@ -9,10 +9,16 @@ export interface DashboardNavItem {
 export interface DashboardDomainItem {
   id: string;
   title: string;
+  description: string;
   percent: number;
+  stats: {
+    topics: number;
+    projects: number;
+    exams: number;
+  };
+  careerOutcomes: string[];
   skillLevel: 'Beginner' | 'Intermediate' | 'Advanced';
-  completedSubjects: number;
-  totalSubjects: number;
+  isPopular?: boolean;
 }
 
 export interface DashboardSubjectProgress {
@@ -38,7 +44,9 @@ export interface DashboardProjectItem {
 export interface DashboardSyncTopic {
   title: string;
   status: 'failed' | 'weak' | 'mastered';
-  subtext: string;
+  statusLabel: string;
+  score: number;
+  actionLabel: string;
 }
 
 export interface TutorialDashboardViewData {
@@ -152,19 +160,70 @@ export function buildTutorialDashboardData(brand: BrandConfig): TutorialDashboar
     },
     myDomains: {
       items: [
-        { id: '1', title: 'Full Stack Development', percent: 72, skillLevel: 'Advanced', completedSubjects: 8, totalSubjects: 12 },
-        { id: '2', title: 'Data Science', percent: 48, skillLevel: 'Intermediate', completedSubjects: 5, totalSubjects: 10 },
-        { id: '3', title: 'Data Engineering', percent: 35, skillLevel: 'Beginner', completedSubjects: 3, totalSubjects: 9 },
-        { id: '4', title: 'DevOps', percent: 28, skillLevel: 'Beginner', completedSubjects: 2, totalSubjects: 7 },
-        { id: '5', title: 'AI & Machine Learning', percent: 22, skillLevel: 'Beginner', completedSubjects: 2, totalSubjects: 8 },
-        { id: '6', title: 'Cybersecurity', percent: 15, skillLevel: 'Beginner', completedSubjects: 1, totalSubjects: 6 },
+        { 
+          id: '1', 
+          title: 'Full Stack Development', 
+          description: 'Master both frontend and backend technologies to build complete web applications.',
+          percent: 68, 
+          stats: { topics: 42, projects: 18, exams: 6 },
+          careerOutcomes: ['Full Stack Developer', 'Software Engineer', 'Tech Lead'],
+          skillLevel: 'Advanced',
+          isPopular: true
+        },
+        { 
+          id: '2', 
+          title: 'Data Science', 
+          description: 'Learn data analysis, machine learning and visualization to extract insights from data.',
+          percent: 45, 
+          stats: { topics: 42, projects: 15, exams: 5 },
+          careerOutcomes: ['Data Scientist', 'ML Engineer', 'Data Analyst'],
+          skillLevel: 'Intermediate',
+          isPopular: true
+        },
+        { 
+          id: '3', 
+          title: 'Data Engineering', 
+          description: 'Build scalable data pipelines and infrastructure for big data applications.',
+          percent: 32, 
+          stats: { topics: 35, projects: 14, exams: 4 },
+          careerOutcomes: ['Data Engineer', 'Big Data Engineer', 'ETL Developer'],
+          skillLevel: 'Intermediate'
+        },
+        { 
+          id: '4', 
+          title: 'DevOps Engineering', 
+          description: 'Learn deployment, CI/CD, containerization and infrastructure automation.',
+          percent: 40, 
+          stats: { topics: 32, projects: 12, exams: 4 },
+          careerOutcomes: ['DevOps Engineer', 'Site Reliability Engineer', 'Cloud Engineer'],
+          skillLevel: 'Beginner'
+        },
+        { 
+          id: '5', 
+          title: 'AI / Machine Learning', 
+          description: 'Explore artificial intelligence, deep learning and neural networks.',
+          percent: 28, 
+          stats: { topics: 33, projects: 11, exams: 4 },
+          careerOutcomes: ['AI Engineer', 'ML Engineer', 'Research Scientist'],
+          skillLevel: 'Beginner',
+          isPopular: true
+        },
+        { 
+          id: '6', 
+          title: 'Cybersecurity Engineering', 
+          description: 'Learn ethical hacking, network security and security best practices.',
+          percent: 35, 
+          stats: { topics: 30, projects: 10, exams: 4 },
+          careerOutcomes: ['Security Analyst', 'Ethical Hacker', 'SOC Analyst'],
+          skillLevel: 'Beginner'
+        },
       ],
     },
     engineSync: {
       topics: [
-        { title: 'Linked Lists in DSA', status: 'failed', subtext: 'Failed in Exam' },
-        { title: 'Async/Await Concepts', status: 'weak', subtext: 'Weak in Diagnostic' },
-        { title: 'React Components', status: 'mastered', subtext: 'Fully Mastered' },
+        { title: 'Backend Development', status: 'failed', statusLabel: 'FAILED EXAM', score: 42, actionLabel: 'Open Learning Path' },
+        { title: 'Core Concepts', status: 'weak', statusLabel: 'WEAK DIAGNOSTIC', score: 58, actionLabel: 'Review Concepts' },
+        { title: 'Practice Sprint', status: 'weak', statusLabel: 'WEAK DIAGNOSTIC', score: 64, actionLabel: 'Practice Now' },
       ],
     },
     assignments: {

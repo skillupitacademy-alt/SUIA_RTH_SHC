@@ -1,78 +1,155 @@
 import React from 'react';
 import { useBrand } from '../../PostLandingPage/app/context/BrandContext';
 import { useTutorialDashboardData } from './TutorialDashboardDataContext';
-import { Code2, BarChart3, Cloud, Brain, ShieldCheck, Database } from 'lucide-react';
+import { DashboardDomainItem } from '../../tutorialDashboardData';
+import { 
+  Code2, 
+  BarChart3, 
+  Cloud, 
+  Brain, 
+  ShieldCheck, 
+  Database,
+  BookOpen,
+  Briefcase,
+  Bookmark,
+  ArrowRight
+} from 'lucide-react';
 
 export function MyDomainsGrid() {
   const brand = useBrand();
   const { myDomains } = useTutorialDashboardData();
 
-  const getDomainIcon = (title: string) => {
-    if (title.includes('Full Stack')) return { Icon: Code2, color: '#9a3412', bg: '#fff7ed' }; // darker orange
-    if (title.includes('Data Science')) return { Icon: BarChart3, color: '#1e40af', bg: '#eff6ff' }; // darker blue
-    if (title.includes('Engineering')) return { Icon: Database, color: '#166534', bg: '#f0fdf4' }; // darker green
-    if (title.includes('DevOps')) return { Icon: Cloud, color: '#5b21b6', bg: '#f5f3ff' }; // darker purple
-    if (title.includes('AI')) return { Icon: Brain, color: '#854d0e', bg: '#fefce8' }; // darker yellow
-    if (title.includes('Cyber')) return { Icon: ShieldCheck, color: '#991b1b', bg: '#fef2f2' }; // darker red
-    return { Icon: Code2, color: brand.primaryColor, bg: `${brand.primaryColor}1A` };
-  };
-
-  const getBadgeColor = (level: string) => {
-    switch (level) {
-      case 'Beginner': return { text: '#9d174d', bg: '#fdf2f8' }; // darker pink
-      case 'Intermediate': return { text: '#1e40af', bg: '#eff6ff' }; // darker blue
-      case 'Advanced': return { text: '#9a3412', bg: '#fff7ed' }; // darker orange
-      default: return { text: brand.accentColor === 'orange' ? '#b43a00' : '#be185d', bg: 'rgba(0,0,0,0.05)' };
-    }
+  const getDomainConfig = (title: string) => {
+    if (title.includes('Full Stack')) return { Icon: Code2, color: '#f97316', colorDark: '#c2410c', bg: '#fff7ed', border: '#ffedd5' };
+    if (title.includes('Data Science')) return { Icon: BarChart3, color: '#2563eb', colorDark: '#1e40af', bg: '#eff6ff', border: '#dbeafe' };
+    if (title.includes('Data Engineering')) return { Icon: Database, color: '#16a34a', colorDark: '#15803d', bg: '#f0fdf4', border: '#dcfce7' };
+    if (title.includes('DevOps')) return { Icon: Cloud, color: '#7c3aed', colorDark: '#6d28d9', bg: '#f5f3ff', border: '#ede9fe' };
+    if (title.includes('AI')) return { Icon: Brain, color: '#0891b2', colorDark: '#0e7490', bg: '#ecfeff', border: '#cffafe' };
+    if (title.includes('Cyber')) return { Icon: ShieldCheck, color: '#dc2626', colorDark: '#b91c1c', bg: '#fef2f2', border: '#fee2e2' };
+    return { Icon: Code2, color: '#f97316', colorDark: '#c2410c', bg: '#fff7ed', border: '#ffedd5' };
   };
 
   return (
-    <div 
-      className="flex h-full flex-col rounded-2xl border border-gray-100 bg-white p-6 transition-transform duration-300 hover:-translate-y-1"
-      style={{ boxShadow: `0 8px 24px rgba(${brand.primaryRgb}, 0.08)` }}
-    >
+    <div className="flex h-full flex-col">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-base font-black text-gray-900">My Domains</h3>
+        <h3 className="text-xl font-black text-gray-900">My Domains</h3>
         <button 
           aria-label="View all learning domains"
-          className="text-xs font-bold hover:underline" 
+          className="text-sm font-bold hover:underline" 
           style={{ color: brand.accentColor === 'orange' ? '#b43a00' : '#be185d' }}
         >
           View All
         </button>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 flex-1">
-        {myDomains.items.map((domain) => {
-          const { Icon, color, bg } = getDomainIcon(domain.title);
-          const badge = getBadgeColor(domain.skillLevel);
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {myDomains.items.map((domain: DashboardDomainItem) => {
+          const config = getDomainConfig(domain.title);
+          const Icon = config.Icon;
 
           return (
             <div 
               key={domain.id} 
-              className="flex flex-col items-center rounded-xl border border-gray-100 bg-white p-5 text-center transition-transform duration-300 hover:-translate-y-1"
-              style={{ boxShadow: `0 8px 24px rgba(${brand.primaryRgb}, 0.08)` }}
+              className="group flex flex-col rounded-3xl border bg-white p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+              style={{ borderColor: config.border }}
             >
-              <div 
-                className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl" 
-                style={{ backgroundColor: bg, color: color }}
-              >
-                <Icon size={24} />
+              {/* Header */}
+              <div className="mb-6 flex items-start justify-between">
+                <div className="flex items-center gap-4">
+                  <div 
+                    className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full shadow-inner"
+                    style={{ backgroundColor: config.color, color: '#ffffff' }}
+                  >
+                    <Icon size={28} />
+                  </div>
+                  <div className="flex flex-col">
+                    <h4 className="text-lg font-black text-gray-900 leading-tight">
+                      {domain.title}
+                    </h4>
+                  </div>
+                </div>
+                {domain.isPopular && (
+                  <span className="rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-[10px] font-bold text-orange-600">
+                    Popular
+                  </span>
+                )}
               </div>
-              
-              <h4 className="mb-1 text-sm font-bold text-gray-900 leading-tight">{domain.title}</h4>
-              <p className="mb-4 text-[11px] font-semibold text-gray-700">{domain.percent}% Complete</p>
-              
-              <span 
-                className="mb-3 rounded-md px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide"
-                style={{ backgroundColor: badge.bg, color: badge.text }}
-              >
-                {domain.skillLevel}
-              </span>
-              
-              <p className="text-xs font-bold text-gray-600">
-                {domain.completedSubjects}/{domain.totalSubjects} Subjects
+
+              {/* Description */}
+              <p className="mb-6 text-xs font-medium leading-relaxed text-gray-600">
+                {domain.description}
               </p>
+
+              {/* Progress */}
+              <div className="mb-6">
+                <div className="mb-2 flex items-center justify-between text-[11px] font-bold uppercase tracking-wider">
+                  <span style={{ color: config.color }}>Your Progress</span>
+                  <span style={{ color: config.color }}>{domain.percent}%</span>
+                </div>
+                <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100">
+                  <div 
+                    className="h-full rounded-full transition-all duration-700 ease-out"
+                    style={{ width: `${domain.percent}%`, backgroundColor: config.color }}
+                  />
+                </div>
+              </div>
+
+              {/* Stats Row */}
+              <div className="mb-6 grid grid-cols-3 gap-3">
+                <div className="flex flex-col items-center justify-center rounded-xl bg-gray-50/50 p-2.5 border border-gray-50">
+                  <div className="mb-1 flex items-center gap-1.5 text-gray-500">
+                    <BookOpen size={14} style={{ color: config.color }} />
+                    <span className="text-[11px] font-black text-gray-900">{domain.stats.topics}</span>
+                  </div>
+                  <span className="text-[9px] font-bold text-gray-500 uppercase">Topics</span>
+                </div>
+                <div className="flex flex-col items-center justify-center rounded-xl bg-gray-50/50 p-2.5 border border-gray-50">
+                  <div className="mb-1 flex items-center gap-1.5 text-gray-500">
+                    <Briefcase size={14} style={{ color: config.color }} />
+                    <span className="text-[11px] font-black text-gray-900">{domain.stats.projects}</span>
+                  </div>
+                  <span className="text-[9px] font-bold text-gray-500 uppercase">Projects</span>
+                </div>
+                <div className="flex flex-col items-center justify-center rounded-xl bg-gray-50/50 p-2.5 border border-gray-50">
+                  <div className="mb-1 flex items-center gap-1.5 text-gray-500">
+                    <Bookmark size={14} style={{ color: config.color }} />
+                    <span className="text-[11px] font-black text-gray-900">{domain.stats.exams}</span>
+                  </div>
+                  <span className="text-[9px] font-bold text-gray-500 uppercase">Exams</span>
+                </div>
+              </div>
+
+              {/* Career Outcomes */}
+              <div className="mb-8">
+                <span className="mb-3 block text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                  Career Outcomes
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {domain.careerOutcomes.map((outcome, idx) => (
+                    <span 
+                      key={idx}
+                      className="rounded-lg px-2.5 py-1 text-[10px] font-bold transition-colors"
+                      style={{ backgroundColor: config.bg, color: config.colorDark }}
+                    >
+                      {outcome}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="mt-auto flex items-center justify-between pt-4 border-t border-gray-50">
+                <button 
+                  className="rounded-xl px-5 py-2.5 text-xs font-black text-white shadow-lg transition-all hover:scale-105 active:scale-95"
+                  style={{ backgroundColor: config.color }}
+                >
+                  Continue Learning
+                </button>
+                <button className="flex items-center gap-1.5 text-xs font-black text-gray-700 hover:text-gray-900 group">
+                  View Details
+                  <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+                </button>
+              </div>
             </div>
           );
         })}
