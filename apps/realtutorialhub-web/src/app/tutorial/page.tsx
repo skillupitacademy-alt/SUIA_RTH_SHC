@@ -1,13 +1,13 @@
-import TutorialEnginePage from '../../../../../src/share-branding/TutorialEnginePage';
-import { loadTutorialData } from '../../../../../src/share-branding/tutorialPageData';
+import TutorialEngineDashboardPage from '../../../../../src/share-branding/TutorialDashboard/TutorialEngineDashboardPage';
+import { buildTutorialDashboardData } from '../../../../../src/share-branding/tutorialDashboardData';
 import { rthConfig } from '../../../../../src/share-branding/brandConfig';
 
 export const metadata = {
-  title: 'Tutorial Engine | RealTutorialHub',
-  description: 'Immersive guided learning paths for technical mastery.',
+  title: 'Tutorial Engine Dashboard | RealTutorialHub',
+  description: 'Your personalized learning command center.',
 };
 
 export default async function Page() {
-  const data = await loadTutorialData(rthConfig);
-  return <TutorialEnginePage config={rthConfig} data={data} />;
+  const data = buildTutorialDashboardData(rthConfig);
+  return <TutorialEngineDashboardPage config={rthConfig} data={data} />;
 }
