@@ -34,7 +34,7 @@ export function TutorialSidebar({ isOpen = false, onClose }: { isOpen?: boolean;
 
   const renderNavGroup = (title: string, items: typeof navigation) => (
     <div className="mb-6">
-      <h3 className="mb-3 px-4 text-xs font-bold uppercase tracking-wider text-gray-400">{title}</h3>
+      <h3 className="mb-3 px-4 text-xs font-bold uppercase tracking-wider text-gray-600">{title}</h3>
       <div className="flex flex-col gap-1">
         {items.map((item) => {
           const Icon = getIcon(item.label);
@@ -46,16 +46,16 @@ export function TutorialSidebar({ isOpen = false, onClose }: { isOpen?: boolean;
               href={item.href}
               onClick={onClose}
               className={`group flex items-center justify-between rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
-                isActive ? 'text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                isActive ? 'text-white' : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
               }`}
-              style={isActive ? { backgroundColor: brand.primaryColor } : undefined}
+              style={isActive ? { backgroundColor: brand.accentColor === 'orange' ? '#b43a00' : '#be185d' } : undefined}
             >
               <div className="flex items-center gap-3">
-                <Icon className={isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-600'} size={20} />
+                <Icon className={isActive ? 'text-white' : 'text-gray-600 group-hover:text-gray-900'} size={20} />
                 <span>{item.label}</span>
               </div>
               {item.badge && (
-                <span className="rounded-full bg-orange-500 px-2 py-0.5 text-[10px] font-bold text-white shadow-sm">
+                <span className="rounded-full bg-orange-700 px-2 py-0.5 text-[10px] font-bold text-white shadow-sm">
                   {item.badge}
                 </span>
               )}
@@ -85,7 +85,7 @@ export function TutorialSidebar({ isOpen = false, onClose }: { isOpen?: boolean;
             </div>
             <div className="flex flex-col">
               <span className="text-lg font-black leading-tight text-gray-900">{brand.name}</span>
-              <span className="text-[10px] font-bold tracking-wider text-gray-500 uppercase">
+              <span className="text-[10px] font-bold tracking-wider text-gray-600 uppercase">
                 {brand.accentColor === 'orange' ? 'AI-Powered Learning' : 'Mentor-Guided Learning'}
               </span>
             </div>
@@ -96,8 +96,9 @@ export function TutorialSidebar({ isOpen = false, onClose }: { isOpen?: boolean;
         <div className="flex-1 overflow-y-auto px-4 py-6 scrollbar-hide">
           <Link
             href="/dashboard"
+            aria-label="Back to Dashboard"
             className="mb-8 flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-white shadow-md transition-transform hover:-translate-y-0.5"
-            style={{ backgroundColor: brand.primaryColor }}
+            style={{ backgroundColor: brand.accentColor === 'orange' ? '#b43a00' : '#be185d' }}
           >
             <LayoutDashboard size={20} />
             <span>Dashboard</span>

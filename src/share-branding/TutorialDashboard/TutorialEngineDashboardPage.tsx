@@ -39,37 +39,36 @@ function TutorialDashboardContent() {
           {/* Top Row: Welcome Hero */}
           <WelcomeHero />
 
-          {/* Grid Layout matching the Image */}
-          <div className="grid grid-cols-1 gap-6 lg:gap-8 xl:grid-cols-12 mb-6 lg:mb-8">
+          {/* Grid Layout (Max 2 cards per row) */}
+          <div className="grid grid-cols-1 gap-6 lg:gap-8 lg:grid-cols-2 mb-6 lg:mb-8">
             
-            {/* Left Column (Progress & Assignments) */}
-            <div className="flex flex-col gap-6 lg:gap-8 xl:col-span-4">
-              <div className="h-[400px]">
+            {/* ROW 2: High Density Content */}
+            <div className="lg:col-span-2">
+              <MyDomainsGrid />
+            </div>
+
+            {/* ROW 3: Medium Density Content */}
+            <div className="lg:col-span-1 flex flex-col gap-6 lg:gap-8">
+              <div className="flex-1">
                 <LearningProgressOverview />
               </div>
-              <div className="h-[380px]">
+              <div className="flex-1">
                 <AssignmentsWidget />
               </div>
             </div>
 
-            {/* Middle Column (Domains & Projects) */}
-            <div className="flex flex-col gap-6 lg:gap-8 xl:col-span-5">
-              <div className="h-[400px]">
-                <MyDomainsGrid />
-              </div>
-              <div className="h-[380px]">
+            <div className="lg:col-span-1 flex flex-col gap-6 lg:gap-8">
+              <div className="flex-1">
                 <ProjectsWidget />
+              </div>
+              <div className="flex-1">
+                <EngineSynchronizationWidget />
               </div>
             </div>
 
-            {/* Right Column (Sync & Career) */}
-            <div className="flex flex-col gap-6 lg:gap-8 xl:col-span-3">
-              <div className="h-[400px]">
-                <EngineSynchronizationWidget />
-              </div>
-              <div className="h-[380px]">
-                <CareerReadinessWidget />
-              </div>
+            {/* ROW 4: High Density Content */}
+            <div className="lg:col-span-2">
+              <CareerReadinessWidget />
             </div>
 
           </div>

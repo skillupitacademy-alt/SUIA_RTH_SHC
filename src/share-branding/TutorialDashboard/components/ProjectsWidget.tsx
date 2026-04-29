@@ -14,10 +14,17 @@ export function ProjectsWidget() {
   };
 
   return (
-    <div className="flex h-full flex-col rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+    <div 
+      className="flex h-full flex-col rounded-2xl border border-gray-100 bg-white p-6 transition-transform duration-300 hover:-translate-y-1"
+      style={{ boxShadow: `0 8px 24px rgba(${brand.primaryRgb}, 0.08)` }}
+    >
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-base font-black text-gray-900">Projects</h3>
-        <button className="text-xs font-bold hover:underline" style={{ color: brand.primaryColor }}>
+        <button 
+          aria-label="View all projects"
+          className="text-xs font-bold hover:underline" 
+          style={{ color: brand.accentColor === 'orange' ? '#b43a00' : '#be185d' }}
+        >
           View All
         </button>
       </div>
@@ -38,7 +45,7 @@ export function ProjectsWidget() {
                 
                 <div className="flex flex-1 flex-col">
                   <span className="text-sm font-bold text-gray-900">{project.title}</span>
-                  <span className="text-[11px] font-semibold text-gray-500">{project.type}</span>
+                  <span className="text-[11px] font-semibold text-gray-700">{project.type}</span>
                 </div>
 
                 <span className="text-xs font-black text-gray-900">
@@ -58,8 +65,12 @@ export function ProjectsWidget() {
       </div>
 
       <div className="mt-6 flex justify-center border-t border-gray-100 pt-4">
-        <button className="flex items-center gap-2 text-sm font-bold hover:underline" style={{ color: brand.primaryColor }}>
-          View All Projects <ArrowRight size={14} />
+        <button 
+          aria-label="View detailed projects dashboard"
+          className="flex items-center gap-2 text-sm font-bold hover:underline" 
+          style={{ color: brand.accentColor === 'orange' ? '#b43a00' : '#be185d' }}
+        >
+          View All Projects <ArrowRight size={14} aria-hidden="true" />
         </button>
       </div>
     </div>
