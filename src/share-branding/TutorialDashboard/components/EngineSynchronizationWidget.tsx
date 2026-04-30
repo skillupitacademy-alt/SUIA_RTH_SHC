@@ -56,7 +56,7 @@ export function EngineSynchronizationWidget() {
         <h3 className="text-xl font-black text-[#1e293b]">Engine Synchronization</h3>
         <button 
           aria-label="View all sync topics"
-          className="text-sm font-bold text-orange-600 hover:underline"
+          className="text-sm font-bold text-orange-700 hover:underline"
         >
           View All
         </button>
@@ -84,7 +84,7 @@ export function EngineSynchronizationWidget() {
               {/* Title & Subtitle */}
               <div className="flex flex-1 flex-col gap-1">
                 <h4 className="text-base font-bold text-[#334155]">{topic.title}</h4>
-                <span className="text-xs font-semibold text-slate-400">
+                <span className="text-xs font-semibold text-slate-600">
                   {topic.status === 'failed' ? 'Failed in Exam' : topic.status === 'weak' ? 'Weak in Diagnostic' : 'Fully Mastered'}
                 </span>
               </div>

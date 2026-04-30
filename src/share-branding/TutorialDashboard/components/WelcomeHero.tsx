@@ -23,10 +23,10 @@ export function WelcomeHero() {
 
         <div className="relative z-10">
           <h2 className="text-xl font-black text-white mb-1 leading-tight truncate">{hero.greeting}</h2>
-          <p className="text-xs font-semibold text-white/90 mb-5 line-clamp-1">{hero.subGreeting}</p>
+          <p className="text-xs font-semibold text-white mb-5 line-clamp-1">{hero.subGreeting}</p>
 
-          <div className="rounded-2xl bg-white/10 p-4 border border-white/10 backdrop-blur-sm">
-            <h3 className="text-[9px] font-black uppercase tracking-widest text-white/80 mb-3">Continue Learning</h3>
+          <div className="rounded-2xl bg-white/10 p-4 border border-white/20 backdrop-blur-sm">
+            <h3 className="text-[9px] font-black uppercase tracking-widest text-white mb-3">Continue Learning</h3>
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white text-base font-black shadow-lg" style={{ color: brand.primaryColorDark }}>
                 JS
@@ -61,8 +61,8 @@ export function WelcomeHero() {
       <div
         className="relative overflow-hidden rounded-3xl p-6 transition-all duration-500 -translate-y-2 scale-[1.01] shadow-2xl hover:-translate-y-3 hover:scale-[1.02] text-white"
         style={{
-          backgroundColor: '#15803d',
-          boxShadow: '0 20px 50px rgba(21, 128, 61, 0.25)'
+          backgroundColor: '#166534', // Darker Green for WCAG
+          boxShadow: '0 20px 50px rgba(22, 101, 52, 0.25)'
         }}
       >
         <div className="absolute -right-6 -bottom-6 h-32 w-32 rounded-full bg-white/10 blur-3xl" />
@@ -75,37 +75,37 @@ export function WelcomeHero() {
           </div>
 
           <div className="grid grid-cols-2 gap-3 mb-4">
-            <div className="flex items-center gap-2.5 rounded-2xl bg-white/10 p-3 border border-white/5 backdrop-blur-sm">
+            <div className="flex items-center gap-2.5 rounded-2xl bg-white/10 p-3 border border-white/10 backdrop-blur-sm">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/20 text-white"><BookOpen size={16} /></div>
               <div className="flex flex-col min-w-0">
                 <span className="text-sm font-black truncate">{hero.progressTimeSpent}</span>
-                <span className="text-[9px] font-bold text-white/70 uppercase">Time</span>
+                <span className="text-[9px] font-bold text-white uppercase">Time</span>
               </div>
             </div>
-            <div className="flex items-center gap-2.5 rounded-2xl bg-white/10 p-3 border border-white/5 backdrop-blur-sm">
+            <div className="flex items-center gap-2.5 rounded-2xl bg-white/10 p-3 border border-white/10 backdrop-blur-sm">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/20 text-white"><CheckCircle size={16} /></div>
               <div className="flex flex-col min-w-0">
                 <span className="text-sm font-black truncate">{hero.progressLessons}</span>
-                <span className="text-[9px] font-bold text-white/70 uppercase">Lessons</span>
+                <span className="text-[9px] font-bold text-white uppercase">Lessons</span>
               </div>
             </div>
-            <div className="flex items-center gap-2.5 rounded-2xl bg-white/10 p-3 border border-white/5 backdrop-blur-sm">
+            <div className="flex items-center gap-2.5 rounded-2xl bg-white/10 p-3 border border-white/10 backdrop-blur-sm">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/20 text-white"><Target size={16} /></div>
               <div className="flex flex-col min-w-0">
                 <span className="text-sm font-black truncate">{hero.progressDailyGoal}%</span>
-                <span className="text-[9px] font-bold text-white/70 uppercase">Goal</span>
+                <span className="text-[9px] font-bold text-white uppercase">Goal</span>
               </div>
             </div>
-            <div className="flex items-center gap-2.5 rounded-2xl bg-white/10 p-3 border border-white/5 backdrop-blur-sm">
+            <div className="flex items-center gap-2.5 rounded-2xl bg-white/10 p-3 border border-white/10 backdrop-blur-sm">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/20 text-white"><TrendingUp size={16} /></div>
               <div className="flex flex-col min-w-0">
                 <span className="text-sm font-black truncate">{hero.progressXpEarned}</span>
-                <span className="text-[9px] font-bold text-white/70 uppercase">XP</span>
+                <span className="text-[9px] font-bold text-white uppercase">XP</span>
               </div>
             </div>
           </div>
 
-          <p className="mt-auto text-center text-[10px] font-bold text-white/60 italic uppercase tracking-widest">
+          <p className="mt-auto text-center text-[10px] font-bold text-white italic uppercase tracking-widest">
             Consistency is key ⚡
           </p>
         </div>
@@ -127,7 +127,7 @@ export function WelcomeHero() {
             <span className="text-2xl animate-bounce">🤖</span>
           </div>
           <h3 className="text-lg font-black mb-1">Your {brand.tutorLabel} is ready</h3>
-          <p className="text-[11px] font-semibold text-white/80 mb-6 px-2 line-clamp-2">
+          <p className="text-[11px] font-semibold text-white mb-6 px-2 line-clamp-2">
             Instant help, expert explanations, and coding guidance available 24/7.
           </p>
           <button

@@ -43,7 +43,7 @@ export function LearningProgressOverview() {
         <h3 className="text-xl font-black text-[#1e293b]">Learning Progress Overview</h3>
         <button 
           aria-label="Filter progress"
-          className="flex items-center gap-1 text-sm font-bold text-slate-400 hover:text-slate-600 transition-colors"
+          className="flex items-center gap-1 text-sm font-bold text-slate-600 hover:text-slate-800 transition-colors"
         >
           This Week <ChevronDown size={16} />
         </button>
@@ -65,7 +65,7 @@ export function LearningProgressOverview() {
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <span className="text-4xl font-black text-[#1e293b]">{learningProgress.overallPercent}%</span>
-            <span className="text-xs font-bold text-slate-400 mt-1 uppercase tracking-wider">Overall Progress</span>
+            <span className="text-xs font-bold text-slate-600 mt-1 uppercase tracking-wider">Overall Progress</span>
           </div>
         </div>
 
