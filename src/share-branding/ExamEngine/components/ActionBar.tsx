@@ -75,7 +75,7 @@ export function ActionBar({
       className="sticky bottom-0 z-40 mt-4 border-t border-white/10 px-3 py-3 sm:px-4 lg:px-6 xl:fixed xl:bottom-0 xl:left-0 xl:right-0 xl:mt-0 xl:h-[60px] xl:px-4 xl:py-0"
       style={{ backgroundColor: chromeStyles.footerBackground, color: chromeStyles.utilityText }}
     >
-      <div className="flex flex-col gap-3 xl:grid xl:h-full xl:grid-cols-[minmax(560px,1fr)_minmax(540px,590px)] xl:items-center xl:gap-3 xl:pr-20">
+      <div className="flex flex-col gap-3 xl:grid xl:h-full xl:grid-cols-[minmax(0,1fr)_minmax(0,500px)] xl:items-center xl:gap-3 2xl:pr-20">
         <div className="flex min-w-0 flex-col gap-2 xl:flex-row xl:items-center xl:gap-3">
           <ThemeToggle value={themeMode} onChange={onThemeChange} accentColor={primaryAccent} />
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 xl:min-w-0 xl:flex-1 xl:grid-cols-3">
@@ -114,31 +114,31 @@ export function ActionBar({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 xl:grid-cols-[minmax(136px,1fr)_minmax(172px,1.02fr)_minmax(184px,1.08fr)] xl:gap-2.5">
+        <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-3 xl:grid-cols-[minmax(112px,1fr)_minmax(136px,1.02fr)_minmax(152px,1.08fr)] xl:gap-2">
           <button 
             onClick={onPrevious}
-            className="flex min-h-10 items-center justify-center gap-1.5 rounded-lg border px-3.5 py-2 transition-colors"
+            className="flex min-h-10 min-w-0 items-center justify-center gap-1.5 rounded-lg border px-3 py-2 transition-colors"
             style={{ borderColor: chromeStyles.utilityBorder, color: chromeStyles.utilityText, backgroundColor: 'transparent' }}
           >
             <ChevronLeft className="h-4 w-4 shrink-0" />
-            <span className="whitespace-nowrap text-sm font-medium xl:text-[13px]">Previous</span>
+            <span className="truncate text-sm font-medium xl:text-[13px]">Previous</span>
           </button>
           <button 
             onClick={onNext}
-            className="flex min-h-10 items-center justify-center gap-1.5 rounded-lg px-3.5 py-2 font-bold transition-opacity hover:opacity-90"
+            className="flex min-h-10 min-w-0 items-center justify-center gap-1.5 rounded-lg px-3 py-2 font-bold transition-opacity hover:opacity-90"
             style={{ 
               backgroundColor: primaryAccent,
               color: '#ffffff' 
             }}
           >
-            <span className="whitespace-nowrap text-sm xl:text-[13px]">Save & Next</span>
+            <span className="truncate text-sm xl:text-[13px]">Save & Next</span>
             <ChevronRight className="h-4 w-4 shrink-0" />
           </button>
           <button 
-            className="min-h-10 rounded-lg px-3.5 py-2 text-sm font-bold transition-opacity hover:opacity-90 xl:text-[13px]"
+            className="min-h-10 min-w-0 rounded-lg px-3 py-2 text-sm font-bold transition-opacity hover:opacity-90 xl:text-[13px]"
             style={{ backgroundColor: chromeStyles.submitBg, color: chromeStyles.submitText }}
           >
-            <span className="whitespace-nowrap">Submit Assessment</span>
+            <span className="block truncate">Submit Assessment</span>
           </button>
         </div>
       </div>

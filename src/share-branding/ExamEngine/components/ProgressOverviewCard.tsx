@@ -44,7 +44,7 @@ export function ProgressOverviewCard({
               className="rounded-2xl border px-3 py-3"
               style={{ borderColor: cardTheme.overviewStatBorder, backgroundColor: cardTheme.overviewStatSurface }}
             >
-              <div className="text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: cardTheme.overviewStatLabel }}>
+              <div className="text-[10px] font-bold uppercase tracking-[0.08em] sm:tracking-[0.16em]" style={{ color: cardTheme.overviewStatLabel }}>
                 {stat.label}
               </div>
               <div className="mt-2 text-2xl font-black tracking-tight" style={{ color: cardTheme.overviewStatValue }}>

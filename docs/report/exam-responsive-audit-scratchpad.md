@@ -1,76 +1,93 @@
 # Exam Responsive Audit Scratchpad
 
-Date: 2026-04-09
-Route: `http://localhost:3004/exam`
+Date: 2026-04-30
 
-Checklist sources:
-- `docs/completeproject/responsive-audit-checklist.md`
-- `docs/completeproject/responsive-guidelines.md`
-- `docs/completeproject/responsive-engineering-system.md`
+Routes:
+- `http://localhost:3003/exam`
+- `http://localhost:3004/exam`
 
-## Breakpoints audited
+Checklist source:
+- `docs/completeproject/SHARED_UI_BRAND_AND_DATA_IMPLEMENTATION_GUIDE.md`
 
-`320, 375, 480, 640, 768, 1024, 1280, 1440, 1920`
+## Breakpoints Audited
 
-## Audit result
+Default zoom:
+- `320`
+- `375`
+- `480`
+- `640`
+- `768`
+- `1024`
+- `1280`
+- `1440`
+- `1920`
 
-- Pass: no page-level horizontal overflow at any audited breakpoint.
-- Pass: `document.documentElement.scrollWidth <= window.innerWidth` at every audited breakpoint.
-- Pass: `document.body.scrollWidth <= window.innerWidth` at every audited breakpoint.
-- Pass: `125%` zoom validation is clean at `320`, `768`, `1280`, and `1920`.
-- Pass: desktop footer is flush to the viewport bottom at `1280`, `1440`, and `1920`.
-- Pass: desktop footer CTA area is no longer clipped at `1280`, `1440`, and `1920`.
+125% zoom:
+- `320`
+- `768`
+- `1280`
+- `1920`
 
-## Current layout behavior
+## Result Summary
 
-- Mobile and tablet widths through `1024` use a single-column stack in this order:
-  - `Expert Inquiry`
-  - `Decision Space`
-  - `Progress Overview`
-  - `Live Tracker`
-- Desktop widths from `1280` upward use the intended 2x2 layout:
-  - top-left `Expert Inquiry`
-  - top-right `Decision Space`
-  - bottom-left `Live Tracker`
-  - bottom-right `Progress Overview`
-- Desktop row proportions are now visually aligned to the requested composition, with the top row occupying roughly `65%` of the workspace and the bottom row occupying the remaining `35%`.
-- Desktop footer is pinned to the bottom edge of the viewport, while the exam workspace consumes the middle height between header and footer.
-- Desktop footer spacing has been rebalanced so the action buttons fit cleanly, including safe right-side space for the `Submit Assessment` CTA.
-- Desktop footer center controls were tightened so `Hide Tracker`, `Hide Overview`, and `Mark for Review` stay within their parent cells at the narrowest desktop breakpoint.
-- Footer controls now include both `Hide Tracker` and `Hide Overview`; hiding either card expands the remaining bottom-row card, and hiding both collapses the desktop layout back to the top row only.
+- Pass: both exam pages render the same shared `ExamEngine` UI.
+- Pass: both routes are thin app consumers that inject brand config and shared session data.
+- Pass: exam session data uses the shared UI model and API-to-UI mapper boundary.
+- Pass: no document-level or body-level horizontal overflow at any audited breakpoint.
+- Pass: no visible shared exam UI elements overflow the viewport.
+- Pass: no shared exam child component overflows or crops against a bounded parent container.
+- Pass: desktop footer remains flush to the viewport bottom at desktop checkpoints.
+- Pass: 125% zoom validation is clean at `320`, `768`, `1280`, and `1920`.
 
-## Validation summary
+## Issues Found And Fixed
 
-- All main containers and their child components remain inside parent boundaries through the audited breakpoints.
-- The top action shell, question area, option pane, progress card, tracker, and footer controls remain aligned without page-level overflow.
-- Typography is managed correctly at the key checkpoints:
-  - `320px`: brand `h1` `14px / 17.5px`, question heading `20px / 28px`
-  - `640px+`: brand `h1` `18px / 28px`, question heading `24px / 32px`
-- Mobile and tablet layouts avoid the cramped partial-desktop state by remaining stacked until `1280`.
-- Desktop visual ordering now matches the intended layout instead of placing `Progress Overview` above `Decision Space`.
-- Desktop footer pinning remains correct during zoom validation at `1280` and `1920`.
-- Desktop footer CTA spacing is verified at the desktop checkpoints:
-  - `1280px`: `Submit Assessment` right gap `90px`
-  - `1440px`: `Submit Assessment` right gap `96.02px`
-  - `1920px`: `Submit Assessment` right gap `96.02px`
-- Recheck at `1280px`: footer child overflow flags are cleared.
+- The `REMAINING` progress overview stat label was slightly wider than its stat card at `320px` with `125%` zoom because of letter spacing.
+- The desktop header stat strip exceeded its center column at `1280px` with `125%` zoom.
+- The desktop footer used fixed minimum grid columns and right padding that pushed `Submit Assessment` beyond the visible footer area at `1280px` with `125%` zoom.
 
-## Remaining notes
+## Current Responsive State
 
-- Raw geometric scans still flag the animated timer ping dot because it expands outside its static parent during the animation.
-- That timer pulse does not create document/body overflow and does not break visible layout alignment.
-
-## Files changed for this route
-
+Files reviewed or patched:
+- `apps/realtutorialhub-web/src/app/exam/page.tsx`
+- `apps/skillup-web/src/app/exam/page.tsx`
 - `src/share-branding/ExamEngine/components/ExamEngine.tsx`
-- `src/share-branding/ExamEngine/components/ProgressOverviewCard.tsx`
 - `src/share-branding/ExamEngine/components/Header.tsx`
-- `src/share-branding/ExamEngine/components/ProgressDashboard.tsx`
 - `src/share-branding/ExamEngine/components/ActionBar.tsx`
+- `src/share-branding/ExamEngine/components/ProgressOverviewCard.tsx`
 - `src/share-branding/ExamEngine/components/QuestionPane.tsx`
 - `src/share-branding/ExamEngine/components/AnswerPane.tsx`
+- `src/share-branding/ExamEngine/components/AccordionCodeOption.tsx`
+- `src/share-branding/ExamEngine/components/CodeEditor.tsx`
 - `src/share-branding/ExamEngine/components/LegendCard.tsx`
+- `src/share-branding/ExamEngine/components/examSession.ts`
+- `src/share-branding/ExamEngine/components/examSessionMapper.ts`
+- `src/share-branding/ExamEngine/components/examSessionLoader.ts`
 
-## Conclusion
+Validated behaviors:
+- Mobile and tablet widths through `1024` use a stacked layout with readable question, answer, tracker, and overview panels.
+- Desktop widths from `1280` upward use the intended fixed-height exam workspace between header and footer.
+- The header brand area, student identity, and desktop stat strip stay contained.
+- The question panel, code block, answer options, accordion code choices, tracker grid, overview card, and footer controls remain inside parent boundaries.
+- The footer action area fits at default and zoomed desktop widths without clipping the submit CTA.
+- Both RealTutorialHub and SkillUp use brand config only for identity and colors while preserving the same shared layout.
 
-- Current route status: pass for the responsive audit criteria requested for `http://localhost:3004/exam`.
+## Audit Notes
+
+- Decorative SVG primitives and intentionally scrollable code blocks are excluded from content overflow findings when they do not create document/body overflow or visible UI clipping.
+- Development-only React Query Devtools controls are excluded from shared page UI checks when present.
+- The animated timer pulse mentioned in the earlier audit is not a layout failure because it does not affect document/body overflow or readable container placement.
+
+## Verification
+
+- Automated audit output: `docs/report/exam-responsive-audit-results.json`
+- Type checks:
+  - `pnpm --filter @quiz/realtutorialhub-web type-check`
+  - `pnpm --filter @quiz/skillup-web type-check`
+
+Confirmed for all audited entries:
+- `bodyOverflow=false`
+- `docOverflow=false`
+- `viewportOverflowCount=0`
+- `clippedContentCount=0`
+- `parentBoundaryCount=0`
+- `footerIssueCount=0`

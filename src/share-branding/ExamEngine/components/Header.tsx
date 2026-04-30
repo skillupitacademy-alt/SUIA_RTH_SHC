@@ -107,18 +107,18 @@ export function Header({ brand, breadcrumb, desktopStats = [], showOverview = tr
           </div>
         </div>
 
-        <div className="hidden min-w-0 items-center justify-center gap-2 xl:flex">
+        <div className="hidden min-w-0 grid-cols-4 items-center justify-center gap-2 xl:grid">
           {showOverview &&
             desktopStats.map((stat) => (
               <div
                 key={stat.label}
-                className="min-w-[110px] rounded-lg border px-3 py-2 text-center"
+                className="min-w-0 rounded-lg border px-2 py-2 text-center"
                 style={{ borderColor: chromeStyles.statBorder, backgroundColor: chromeStyles.statBg }}
               >
-                <div className="text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: chromeStyles.statLabel }}>
+                <div className="truncate text-[10px] font-bold uppercase tracking-[0.08em] 2xl:tracking-[0.14em]" style={{ color: chromeStyles.statLabel }}>
                   {stat.label}
                 </div>
-                <div className="mt-1 text-base font-black leading-none" style={{ color: chromeStyles.statValue }}>
+                <div className="mt-1 truncate text-base font-black leading-none" style={{ color: chromeStyles.statValue }}>
                   {stat.value}
                 </div>
               </div>
