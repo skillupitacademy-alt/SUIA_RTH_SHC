@@ -50,29 +50,29 @@ export function MyDomainsGrid() {
           return (
             <div 
               key={domain.id} 
-              className="group flex flex-col rounded-3xl border bg-white p-6 transition-all duration-500 -translate-y-2 scale-[1.01] shadow-2xl hover:-translate-y-3"
+              className="group flex min-w-0 flex-col rounded-3xl border bg-white p-5 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl sm:p-6"
               style={{ 
                 borderColor: config.border,
                 boxShadow: `0 20px 50px rgba(${brand.primaryRgb}, 0.05)`
               }}
             >
               {/* Header */}
-              <div className="mb-6 flex items-start justify-between">
-                <div className="flex items-center gap-4">
+              <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
+                <div className="flex min-w-0 items-center gap-4">
                   <div 
                     className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full shadow-inner"
                     style={{ backgroundColor: config.color, color: '#ffffff' }}
                   >
                     <Icon size={28} />
                   </div>
-                  <div className="flex flex-col">
-                    <h4 className="text-lg font-black text-gray-900 leading-tight">
+                  <div className="flex min-w-0 flex-col">
+                    <h4 className="break-words text-lg font-black leading-tight text-gray-900">
                       {domain.title}
                     </h4>
                   </div>
                 </div>
                 {domain.isPopular && (
-                  <span className="rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-[10px] font-bold text-orange-800">
+                  <span className="shrink-0 rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-[10px] font-bold text-orange-800">
                     Popular
                   </span>
                 )}
@@ -99,26 +99,26 @@ export function MyDomainsGrid() {
 
               {/* Stats Row */}
               <div className="mb-6 grid grid-cols-3 gap-3">
-                <div className="flex flex-col items-center justify-center rounded-xl bg-gray-50/50 p-2.5 border border-gray-50">
+                <div className="flex min-w-0 flex-col items-center justify-center rounded-xl border border-gray-50 bg-gray-50/50 p-2">
                   <div className="mb-1 flex items-center gap-1.5 text-gray-500">
                     <BookOpen size={14} style={{ color: config.color }} />
                     <span className="text-[13px] font-black text-gray-900">{domain.stats.topics}</span>
                   </div>
-                  <span className="text-[11px] font-bold text-gray-500 uppercase">Topics</span>
+                  <span className="w-full min-w-0 truncate text-center text-[10px] font-bold uppercase text-gray-500">Topics</span>
                 </div>
-                <div className="flex flex-col items-center justify-center rounded-xl bg-gray-50/50 p-2.5 border border-gray-50">
+                <div className="flex min-w-0 flex-col items-center justify-center rounded-xl border border-gray-50 bg-gray-50/50 p-2">
                   <div className="mb-1 flex items-center gap-1.5 text-gray-500">
                     <Briefcase size={14} style={{ color: config.color }} />
                     <span className="text-[13px] font-black text-gray-900">{domain.stats.projects}</span>
                   </div>
-                  <span className="text-[11px] font-bold text-gray-500 uppercase">Projects</span>
+                  <span className="w-full min-w-0 truncate text-center text-[10px] font-bold uppercase text-gray-500">Projects</span>
                 </div>
-                <div className="flex flex-col items-center justify-center rounded-xl bg-gray-50/50 p-2.5 border border-gray-50">
+                <div className="flex min-w-0 flex-col items-center justify-center rounded-xl border border-gray-50 bg-gray-50/50 p-2">
                   <div className="mb-1 flex items-center gap-1.5 text-gray-500">
                     <Bookmark size={14} style={{ color: config.color }} />
                     <span className="text-[13px] font-black text-gray-900">{domain.stats.exams}</span>
                   </div>
-                  <span className="text-[11px] font-bold text-gray-500 uppercase">Exams</span>
+                  <span className="w-full min-w-0 truncate text-center text-[10px] font-bold uppercase text-gray-500">Exams</span>
                 </div>
               </div>
 
@@ -141,14 +141,14 @@ export function MyDomainsGrid() {
               </div>
 
               {/* Actions */}
-              <div className="mt-auto flex items-center justify-between pt-4 border-t border-gray-50">
+              <div className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-gray-50 pt-4">
                 <button 
-                  className="rounded-xl px-5 py-2.5 text-xs font-black text-white shadow-lg transition-all hover:scale-105 active:scale-95"
+                  className="min-w-0 rounded-xl px-4 py-2.5 text-xs font-black text-white shadow-lg transition-all hover:-translate-y-0.5 active:translate-y-0 sm:px-5"
                   style={{ backgroundColor: config.color }}
                 >
                   Continue Learning
                 </button>
-                <button className="flex items-center gap-1.5 text-xs font-black text-gray-700 hover:text-gray-900 group">
+                <button className="group flex shrink-0 items-center gap-1.5 text-xs font-black text-gray-700 hover:text-gray-900">
                   View Details
                   <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
                 </button>

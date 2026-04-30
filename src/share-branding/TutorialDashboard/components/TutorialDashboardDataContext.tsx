@@ -1,5 +1,5 @@
 import React from 'react';
-import { TutorialDashboardViewData } from '../tutorialDashboardData';
+import { TutorialDashboardViewData } from '../../tutorialDashboardData';
 
 const TutorialDashboardDataContext = React.createContext<TutorialDashboardViewData | null>(null);
 

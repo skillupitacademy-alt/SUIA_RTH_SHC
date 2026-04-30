@@ -48,7 +48,7 @@ export function EngineSynchronizationWidget() {
 
   return (
     <div
-      className="flex h-full flex-col rounded-2xl border border-gray-100 bg-white p-6 transition-all duration-500 -translate-y-2 scale-[1.01] shadow-2xl hover:-translate-y-3"
+      className="flex h-full min-w-0 flex-col rounded-2xl border border-gray-100 bg-white p-5 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl sm:p-6"
       style={{ boxShadow: `0 20px 40px rgba(${brand.primaryRgb}, 0.08)` }}
     >
       {/* Header */}
@@ -72,7 +72,7 @@ export function EngineSynchronizationWidget() {
           return (
             <div 
               key={index} 
-              className="group flex items-center gap-3 rounded-xl border border-slate-50 bg-slate-50/20 p-3 transition-all duration-300 hover:bg-white hover:shadow-md hover:border-slate-100"
+              className="group grid min-w-0 grid-cols-[2.5rem_minmax(0,1fr)] gap-x-3 gap-y-2 rounded-xl border border-slate-50 bg-slate-50/20 p-3 transition-all duration-300 hover:border-slate-100 hover:bg-white hover:shadow-md"
             >
               {/* Round Icon */}
               <div 
@@ -83,16 +83,16 @@ export function EngineSynchronizationWidget() {
               </div>
 
               {/* Title & Subtitle */}
-              <div className="flex flex-1 flex-col">
-                <h4 className="text-sm font-bold text-gray-900">{topic.title}</h4>
-                <span className="text-[11px] font-semibold text-gray-700">
+              <div className="flex min-w-0 flex-1 flex-col">
+                <h4 className="break-words text-sm font-bold leading-snug text-gray-900">{topic.title}</h4>
+                <span className="break-words text-[11px] font-semibold leading-snug text-gray-700">
                   {topic.status === 'failed' ? 'Failed in Exam' : topic.status === 'weak' ? 'Weak in Diagnostic' : 'Fully Mastered'}
                 </span>
               </div>
 
               {/* Right Side Badge */}
               <span 
-                className="rounded-lg px-2.5 py-1 text-[10px] font-black"
+                className="col-start-2 w-fit rounded-lg px-2.5 py-1 text-[10px] font-black"
                 style={{ backgroundColor: config.badgeBg, color: config.badgeText }}
               >
                 {config.label.toUpperCase()}
@@ -106,7 +106,7 @@ export function EngineSynchronizationWidget() {
       <div className="mt-6 pt-4 border-t border-gray-100 flex justify-center">
         <button 
           aria-label="Auto-deploy tutorial sequence"
-          className="flex items-center gap-2 text-sm font-bold transition-all hover:gap-3" 
+          className="flex max-w-full flex-wrap items-center justify-center gap-2 text-center text-sm font-bold transition-colors" 
           style={{ color: brand.accentColor === 'orange' ? '#b43a00' : '#be185d' }}
         >
           Auto-Deploy Tutorial Sequence <ArrowRight size={14} />

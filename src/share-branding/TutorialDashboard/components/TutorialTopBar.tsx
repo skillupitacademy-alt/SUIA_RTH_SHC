@@ -8,8 +8,8 @@ export function TutorialTopBar({ onOpenSidebar }: { onOpenSidebar: () => void })
   const { header } = useTutorialDashboardData();
 
   return (
-    <header className="fixed left-0 right-0 top-0 z-40 flex h-20 items-center justify-between border-b border-gray-100 bg-white px-4 lg:px-8">
-      <div className="flex items-center gap-4">
+    <header className="fixed left-0 right-0 top-0 z-40 flex h-20 items-center justify-between gap-3 border-b border-gray-100 bg-white px-4 lg:px-8">
+      <div className="flex min-w-0 items-center gap-4">
         <button
           onClick={onOpenSidebar}
           className="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-50 text-gray-600 transition-colors hover:bg-gray-100"
@@ -17,15 +17,15 @@ export function TutorialTopBar({ onOpenSidebar }: { onOpenSidebar: () => void })
         >
           <Menu size={24} />
         </button>
-        <div className="hidden flex-col md:flex">
-          <h1 className="text-xl font-black text-gray-900">{header.title}</h1>
-          <p className="text-xs font-semibold text-gray-700">{header.subtitle}</p>
+        <div className="hidden min-w-0 flex-col md:flex">
+          <h1 className="truncate text-xl font-black text-gray-900">{header.title}</h1>
+          <p className="truncate text-xs font-semibold text-gray-700">{header.subtitle}</p>
         </div>
       </div>
 
-      <div className="flex items-center gap-3 sm:gap-6">
+      <div className="flex min-w-0 shrink-0 items-center gap-3 sm:gap-6">
         {/* Gamification Stats */}
-        <div className="hidden items-center gap-6 rounded-2xl bg-white px-6 py-2 shadow-md border border-gray-100 lg:flex">
+        <div className="hidden items-center gap-6 rounded-2xl border border-gray-100 bg-white px-6 py-2 shadow-md xl:flex">
           {/* Streak */}
           <div className="flex items-center gap-3 border-r border-gray-200 pr-6">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-50">

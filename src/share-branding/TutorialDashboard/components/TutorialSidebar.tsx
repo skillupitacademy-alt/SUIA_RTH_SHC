@@ -66,14 +66,14 @@ export function TutorialSidebar({ isOpen = false, onClose }: { isOpen?: boolean;
       >
         {/* Header with Logo & Close Button */}
         <div className="flex items-center justify-between p-6">
-          <div className="flex items-center gap-3">
+          <div className="flex min-w-0 items-center gap-3">
             <div 
               className="flex h-10 w-10 items-center justify-center rounded-xl text-lg font-black text-white shadow-lg"
               style={{ backgroundColor: brand.primaryColor }}
             >
               {brand.brandMark}
             </div>
-            <span className="text-xl font-black tracking-tight text-gray-900">{brand.brandName}</span>
+            <span className="min-w-0 break-words text-xl font-black tracking-tight text-gray-900">{brand.name}</span>
           </div>
           <button 
             onClick={onClose}
@@ -95,7 +95,7 @@ export function TutorialSidebar({ isOpen = false, onClose }: { isOpen?: boolean;
                 key={item.href}
                 href={item.href}
                 onClick={onClose}
-                className={`group flex items-center gap-4 rounded-2xl px-4 py-3.5 transition-all duration-300 ${
+                className={`group flex min-w-0 items-center gap-4 rounded-2xl px-4 py-3.5 transition-all duration-300 ${
                   isActive 
                     ? 'shadow-lg shadow-orange-500/10' 
                     : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
@@ -109,11 +109,11 @@ export function TutorialSidebar({ isOpen = false, onClose }: { isOpen?: boolean;
                   size={22} 
                   className={`transition-colors ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-900'}`} 
                 />
-                <span className="text-sm font-bold tracking-tight">{item.label}</span>
+                <span className="min-w-0 flex-1 break-words text-sm font-bold tracking-tight">{item.label}</span>
                 
                 {item.badge && (
                   <span 
-                    className={`ml-auto rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wider ${
+                    className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wider ${
                       isActive ? 'bg-white/20 text-white' : 'bg-orange-100 text-orange-700'
                     }`}
                   >
@@ -129,7 +129,7 @@ export function TutorialSidebar({ isOpen = false, onClose }: { isOpen?: boolean;
         <div className="p-6 border-t border-gray-50">
           <div className="rounded-2xl bg-gray-50 p-4">
             <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Current Workspace</p>
-            <p className="text-sm font-black text-gray-900">{brand.brandName} Portal</p>
+            <p className="break-words text-sm font-black text-gray-900">{brand.name} Portal</p>
           </div>
         </div>
       </aside>

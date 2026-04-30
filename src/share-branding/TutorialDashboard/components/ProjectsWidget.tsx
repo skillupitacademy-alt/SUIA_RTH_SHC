@@ -15,7 +15,7 @@ export function ProjectsWidget() {
 
   return (
     <div 
-      className="flex h-full flex-col rounded-2xl border border-gray-100 bg-white p-6 transition-all duration-500 -translate-y-2 scale-[1.01] shadow-2xl hover:-translate-y-3"
+      className="flex h-full min-w-0 flex-col rounded-2xl border border-gray-100 bg-white p-5 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl sm:p-6"
       style={{ boxShadow: `0 20px 40px rgba(${brand.primaryRgb}, 0.08)` }}
     >
       <div className="flex items-center justify-between mb-6">
@@ -35,7 +35,7 @@ export function ProjectsWidget() {
           
           return (
             <div key={project.id} className="flex flex-col gap-3">
-              <div className="flex items-center gap-3">
+              <div className="flex min-w-0 items-center gap-3">
                 <div 
                   className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg" 
                   style={{ backgroundColor: bg, color: color }}
@@ -43,17 +43,17 @@ export function ProjectsWidget() {
                   <Icon size={18} />
                 </div>
                 
-                <div className="flex flex-1 flex-col">
-                  <span className="text-sm font-bold text-gray-900">{project.title}</span>
+                <div className="flex min-w-0 flex-1 flex-col">
+                  <span className="break-words text-sm font-bold leading-snug text-gray-900">{project.title}</span>
                   <span className="text-[11px] font-semibold text-gray-700">{project.type}</span>
                 </div>
 
-                <span className="text-xs font-black text-gray-900">
+                <span className="shrink-0 text-xs font-black text-gray-900">
                   {project.percent}%
                 </span>
               </div>
               
-              <div className="ml-13 h-1.5 overflow-hidden rounded-full bg-gray-100">
+              <div className="ml-[52px] h-1.5 overflow-hidden rounded-full bg-gray-100">
                 <div 
                   className="h-full rounded-full transition-all duration-500" 
                   style={{ width: `${project.percent}%`, backgroundColor: color }}

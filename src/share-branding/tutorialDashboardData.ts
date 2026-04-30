@@ -108,11 +108,11 @@ export function buildTutorialDashboardData(brand: BrandConfig): TutorialDashboar
 
   return {
     header: {
-      title: 'Tutorial Engine Dashboard',
-      subtitle: 'Your personalized learning command center',
+      title: brand.tutorialDashboardTitle,
+      subtitle: brand.tutorialDashboardSubtitle,
       streakLabel: 'Day Streak',
       streakCount: 16,
-      searchPlaceholder: 'Search courses, topics...',
+      searchPlaceholder: brand.tutorialDashboardSearchPlaceholder,
       xpPoints: '2,450',
       level: 12,
       levelRole: 'Advanced Learner',

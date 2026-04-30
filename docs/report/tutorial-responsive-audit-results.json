@@ -1,974 +1,548 @@
 [
   {
+    "target": "realtutorialhub",
+    "url": "http://localhost:3003/tutorial",
     "width": 320,
     "height": 900,
-    "title": "Tutorial Engine | RealTutorialHub",
+    "zoom": 1,
+    "status": 200,
+    "title": "Tutorial Engine Dashboard | RealTutorialHub",
+    "headerTitle": "Tutorial Engine Dashboard",
     "bodyScrollWidth": 320,
+    "docScrollWidth": 320,
     "windowInnerWidth": 320,
-    "hasHorizontalOverflow": false,
-    "documentScrollWidth": 320,
-    "documentHasHorizontalOverflow": false,
-    "visibleOverflowing": [
-      {
-        "tag": "aside",
-        "className": "fixed bottom-0 left-0 top-[80px] z-[50] flex w-[calc(100vw-1rem)] max-w-[280px] min-w-0 flex-col overflow-hidden p-2 sm:p-4 transition-transform duration-300 sm:top-[98px] lg:translate-x-0 -translate-x-full",
-        "text": "Tutorial MenuQuick ActionsContinueAI TutorProgressWeak AreasSessionsProjectsCurriculumIntroduction to ReactWhat is React?JSX BasicsComponent",
-        "overflowRight": -320,
-        "overflowLeft": 280,
-        "overflowBottom": 0
-      },
-      {
-        "tag": "div",
-        "className": "flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-gray-200 bg-white p-4 shadow-xl sm:p-5 lg:shadow-sm",
-        "text": "Tutorial MenuQuick ActionsContinueAI TutorProgressWeak AreasSessionsProjectsCurriculumIntroduction to ReactWhat is React?JSX BasicsComponent",
-        "overflowRight": -328,
-        "overflowLeft": 272,
-        "overflowBottom": -8
-      },
-      {
-        "tag": "div",
-        "className": "mb-4 flex items-center justify-between border-b border-gray-100 pb-4 lg:hidden",
-        "text": "Tutorial Menu",
-        "overflowRight": -345,
-        "overflowLeft": 255,
-        "overflowBottom": -742
-      },
-      {
-        "tag": "span",
-        "className": "font-bold text-gray-900",
-        "text": "Tutorial Menu",
-        "overflowRight": -461.41,
-        "overflowLeft": 255,
-        "overflowBottom": -765
-      },
-      {
-        "tag": "button",
-        "className": "group rounded-lg p-2 transition-all hover:bg-gray-100",
-        "text": "",
-        "overflowRight": -345,
-        "overflowLeft": 61,
-        "overflowBottom": -759
-      },
-      {
-        "tag": "svg",
-        "className": {},
-        "text": "",
-        "overflowRight": -348.86,
-        "overflowLeft": 57.14,
-        "overflowBottom": -762.86
-      },
-      {
-        "tag": "circle",
-        "className": {},
-        "text": "",
-        "overflowRight": -351.21,
-        "overflowLeft": 54.79,
-        "overflowBottom": -765.21
-      },
-      {
-        "tag": "div",
-        "className": "mb-6 min-w-0",
-        "text": "Quick ActionsContinueAI TutorProgressWeak AreasSessionsProjects",
-        "overflowRight": -345,
-        "overflowLeft": 255,
-        "overflowBottom": -480
-      },
-      {
-        "tag": "p",
-        "className": "mb-3 text-sm font-semibold text-gray-700",
-        "text": "Quick Actions",
-        "overflowRight": -345,
-        "overflowLeft": 255,
-        "overflowBottom": -706
-      },
-      {
-        "tag": "div",
-        "className": "grid min-w-0 grid-cols-2 gap-2",
-        "text": "ContinueAI TutorProgressWeak AreasSessionsProjects",
-        "overflowRight": -345,
-        "overflowLeft": 255,
-        "overflowBottom": -480
-      },
-      {
-        "tag": "button",
-        "className": "flex min-w-0 w-full flex-col items-center justify-center gap-1 overflow-hidden rounded-lg border border-gray-200 bg-white p-3 transition-all hover:bg-gray-50",
-        "text": "Continue",
-        "overflowRight": -464,
-        "overflowLeft": 255,
-        "overflowBottom": -628
-      },
-      {
-        "tag": "svg",
-        "className": {},
-        "text": "",
-        "overflowRight": -509.5,
-        "overflowLeft": 209.5,
-        "overflowBottom": -661
-      }
-    ]
+    "bodyOverflow": false,
+    "docOverflow": false,
+    "viewportOverflowCount": 0,
+    "clippedContentCount": 0,
+    "parentBoundaryCount": 0,
+    "viewportOverflow": [],
+    "clippedContent": [],
+    "parentBoundary": []
   },
   {
+    "target": "realtutorialhub",
+    "url": "http://localhost:3003/tutorial",
     "width": 375,
     "height": 900,
-    "title": "Tutorial Engine | RealTutorialHub",
+    "zoom": 1,
+    "status": 200,
+    "title": "Tutorial Engine Dashboard | RealTutorialHub",
+    "headerTitle": "Tutorial Engine Dashboard",
     "bodyScrollWidth": 375,
+    "docScrollWidth": 375,
     "windowInnerWidth": 375,
-    "hasHorizontalOverflow": false,
-    "documentScrollWidth": 375,
-    "documentHasHorizontalOverflow": false,
-    "visibleOverflowing": [
-      {
-        "tag": "aside",
-        "className": "fixed bottom-0 left-0 top-[80px] z-[50] flex w-[calc(100vw-1rem)] max-w-[280px] min-w-0 flex-col overflow-hidden p-2 sm:p-4 transition-transform duration-300 sm:top-[98px] lg:translate-x-0 -translate-x-full",
-        "text": "Tutorial MenuQuick ActionsContinueAI TutorProgressWeak AreasSessionsProjectsCurriculumIntroduction to ReactWhat is React?JSX BasicsComponent",
-        "overflowRight": -375,
-        "overflowLeft": 280,
-        "overflowBottom": 0
-      },
-      {
-        "tag": "div",
-        "className": "flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-gray-200 bg-white p-4 shadow-xl sm:p-5 lg:shadow-sm",
-        "text": "Tutorial MenuQuick ActionsContinueAI TutorProgressWeak AreasSessionsProjectsCurriculumIntroduction to ReactWhat is React?JSX BasicsComponent",
-        "overflowRight": -383,
-        "overflowLeft": 272,
-        "overflowBottom": -8
-      },
-      {
-        "tag": "div",
-        "className": "mb-4 flex items-center justify-between border-b border-gray-100 pb-4 lg:hidden",
-        "text": "Tutorial Menu",
-        "overflowRight": -400,
-        "overflowLeft": 255,
-        "overflowBottom": -742
-      },
-      {
-        "tag": "span",
-        "className": "font-bold text-gray-900",
-        "text": "Tutorial Menu",
-        "overflowRight": -516.41,
-        "overflowLeft": 255,
-        "overflowBottom": -765
-      },
-      {
-        "tag": "button",
-        "className": "group rounded-lg p-2 transition-all hover:bg-gray-100",
-        "text": "",
-        "overflowRight": -400,
-        "overflowLeft": 61,
-        "overflowBottom": -759
-      },
-      {
-        "tag": "svg",
-        "className": {},
-        "text": "",
-        "overflowRight": -403.86,
-        "overflowLeft": 57.14,
-        "overflowBottom": -762.86
-      },
-      {
-        "tag": "circle",
-        "className": {},
-        "text": "",
-        "overflowRight": -406.21,
-        "overflowLeft": 54.79,
-        "overflowBottom": -765.21
-      },
-      {
-        "tag": "div",
-        "className": "mb-6 min-w-0",
-        "text": "Quick ActionsContinueAI TutorProgressWeak AreasSessionsProjects",
-        "overflowRight": -400,
-        "overflowLeft": 255,
-        "overflowBottom": -480
-      },
-      {
-        "tag": "p",
-        "className": "mb-3 text-sm font-semibold text-gray-700",
-        "text": "Quick Actions",
-        "overflowRight": -400,
-        "overflowLeft": 255,
-        "overflowBottom": -706
-      },
-      {
-        "tag": "div",
-        "className": "grid min-w-0 grid-cols-2 gap-2",
-        "text": "ContinueAI TutorProgressWeak AreasSessionsProjects",
-        "overflowRight": -400,
-        "overflowLeft": 255,
-        "overflowBottom": -480
-      },
-      {
-        "tag": "button",
-        "className": "flex min-w-0 w-full flex-col items-center justify-center gap-1 overflow-hidden rounded-lg border border-gray-200 bg-white p-3 transition-all hover:bg-gray-50",
-        "text": "Continue",
-        "overflowRight": -519,
-        "overflowLeft": 255,
-        "overflowBottom": -628
-      },
-      {
-        "tag": "svg",
-        "className": {},
-        "text": "",
-        "overflowRight": -564.5,
-        "overflowLeft": 209.5,
-        "overflowBottom": -661
-      }
-    ]
+    "bodyOverflow": false,
+    "docOverflow": false,
+    "viewportOverflowCount": 0,
+    "clippedContentCount": 0,
+    "parentBoundaryCount": 0,
+    "viewportOverflow": [],
+    "clippedContent": [],
+    "parentBoundary": []
   },
   {
+    "target": "realtutorialhub",
+    "url": "http://localhost:3003/tutorial",
     "width": 480,
     "height": 900,
-    "title": "Tutorial Engine | RealTutorialHub",
+    "zoom": 1,
+    "status": 200,
+    "title": "Tutorial Engine Dashboard | RealTutorialHub",
+    "headerTitle": "Tutorial Engine Dashboard",
     "bodyScrollWidth": 480,
+    "docScrollWidth": 480,
     "windowInnerWidth": 480,
-    "hasHorizontalOverflow": false,
-    "documentScrollWidth": 480,
-    "documentHasHorizontalOverflow": false,
-    "visibleOverflowing": [
-      {
-        "tag": "aside",
-        "className": "fixed bottom-0 left-0 top-[80px] z-[50] flex w-[calc(100vw-1rem)] max-w-[280px] min-w-0 flex-col overflow-hidden p-2 sm:p-4 transition-transform duration-300 sm:top-[98px] lg:translate-x-0 -translate-x-full",
-        "text": "Tutorial MenuQuick ActionsContinueAI TutorProgressWeak AreasSessionsProjectsCurriculumIntroduction to ReactWhat is React?JSX BasicsComponent",
-        "overflowRight": -480,
-        "overflowLeft": 280,
-        "overflowBottom": 0
-      },
-      {
-        "tag": "div",
-        "className": "flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-gray-200 bg-white p-4 shadow-xl sm:p-5 lg:shadow-sm",
-        "text": "Tutorial MenuQuick ActionsContinueAI TutorProgressWeak AreasSessionsProjectsCurriculumIntroduction to ReactWhat is React?JSX BasicsComponent",
-        "overflowRight": -488,
-        "overflowLeft": 272,
-        "overflowBottom": -8
-      },
-      {
-        "tag": "div",
-        "className": "mb-4 flex items-center justify-between border-b border-gray-100 pb-4 lg:hidden",
-        "text": "Tutorial Menu",
-        "overflowRight": -505,
-        "overflowLeft": 255,
-        "overflowBottom": -742
-      },
-      {
-        "tag": "span",
-        "className": "font-bold text-gray-900",
-        "text": "Tutorial Menu",
-        "overflowRight": -621.41,
-        "overflowLeft": 255,
-        "overflowBottom": -765
-      },
-      {
-        "tag": "button",
-        "className": "group rounded-lg p-2 transition-all hover:bg-gray-100",
-        "text": "",
-        "overflowRight": -505,
-        "overflowLeft": 61,
-        "overflowBottom": -759
-      },
-      {
-        "tag": "svg",
-        "className": {},
-        "text": "",
-        "overflowRight": -508.86,
-        "overflowLeft": 57.14,
-        "overflowBottom": -762.86
-      },
-      {
-        "tag": "circle",
-        "className": {},
-        "text": "",
-        "overflowRight": -511.21,
-        "overflowLeft": 54.79,
-        "overflowBottom": -765.21
-      },
-      {
-        "tag": "div",
-        "className": "mb-6 min-w-0",
-        "text": "Quick ActionsContinueAI TutorProgressWeak AreasSessionsProjects",
-        "overflowRight": -505,
-        "overflowLeft": 255,
-        "overflowBottom": -480
-      },
-      {
-        "tag": "p",
-        "className": "mb-3 text-sm font-semibold text-gray-700",
-        "text": "Quick Actions",
-        "overflowRight": -505,
-        "overflowLeft": 255,
-        "overflowBottom": -706
-      },
-      {
-        "tag": "div",
-        "className": "grid min-w-0 grid-cols-2 gap-2",
-        "text": "ContinueAI TutorProgressWeak AreasSessionsProjects",
-        "overflowRight": -505,
-        "overflowLeft": 255,
-        "overflowBottom": -480
-      },
-      {
-        "tag": "button",
-        "className": "flex min-w-0 w-full flex-col items-center justify-center gap-1 overflow-hidden rounded-lg border border-gray-200 bg-white p-3 transition-all hover:bg-gray-50",
-        "text": "Continue",
-        "overflowRight": -624,
-        "overflowLeft": 255,
-        "overflowBottom": -628
-      },
-      {
-        "tag": "svg",
-        "className": {},
-        "text": "",
-        "overflowRight": -669.5,
-        "overflowLeft": 209.5,
-        "overflowBottom": -661
-      }
-    ]
+    "bodyOverflow": false,
+    "docOverflow": false,
+    "viewportOverflowCount": 0,
+    "clippedContentCount": 0,
+    "parentBoundaryCount": 0,
+    "viewportOverflow": [],
+    "clippedContent": [],
+    "parentBoundary": []
   },
   {
+    "target": "realtutorialhub",
+    "url": "http://localhost:3003/tutorial",
     "width": 640,
     "height": 1024,
-    "title": "Tutorial Engine | RealTutorialHub",
+    "zoom": 1,
+    "status": 200,
+    "title": "Tutorial Engine Dashboard | RealTutorialHub",
+    "headerTitle": "Tutorial Engine Dashboard",
     "bodyScrollWidth": 640,
+    "docScrollWidth": 640,
     "windowInnerWidth": 640,
-    "hasHorizontalOverflow": false,
-    "documentScrollWidth": 640,
-    "documentHasHorizontalOverflow": false,
-    "visibleOverflowing": [
-      {
-        "tag": "aside",
-        "className": "fixed bottom-0 left-0 top-[80px] z-[50] flex w-[calc(100vw-1rem)] max-w-[280px] min-w-0 flex-col overflow-hidden p-2 sm:p-4 transition-transform duration-300 sm:top-[98px] lg:translate-x-0 -translate-x-full",
-        "text": "Tutorial MenuQuick ActionsContinueAI TutorProgressWeak AreasSessionsProjectsCurriculumIntroduction to ReactWhat is React?JSX BasicsComponent",
-        "overflowRight": -640,
-        "overflowLeft": 280,
-        "overflowBottom": 0
-      },
-      {
-        "tag": "div",
-        "className": "flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-gray-200 bg-white p-4 shadow-xl sm:p-5 lg:shadow-sm",
-        "text": "Tutorial MenuQuick ActionsContinueAI TutorProgressWeak AreasSessionsProjectsCurriculumIntroduction to ReactWhat is React?JSX BasicsComponent",
-        "overflowRight": -656,
-        "overflowLeft": 264,
-        "overflowBottom": -16
-      },
-      {
-        "tag": "div",
-        "className": "mb-4 flex items-center justify-between border-b border-gray-100 pb-4 lg:hidden",
-        "text": "Tutorial Menu",
-        "overflowRight": -677,
-        "overflowLeft": 243,
-        "overflowBottom": -836
-      },
-      {
-        "tag": "span",
-        "className": "font-bold text-gray-900",
-        "text": "Tutorial Menu",
-        "overflowRight": -769.41,
-        "overflowLeft": 243,
-        "overflowBottom": -859
-      },
-      {
-        "tag": "button",
-        "className": "group rounded-lg p-2 transition-all hover:bg-gray-100",
-        "text": "",
-        "overflowRight": -677,
-        "overflowLeft": 73,
-        "overflowBottom": -853
-      },
-      {
-        "tag": "svg",
-        "className": {},
-        "text": "",
-        "overflowRight": -680.86,
-        "overflowLeft": 69.14,
-        "overflowBottom": -856.86
-      },
-      {
-        "tag": "circle",
-        "className": {},
-        "text": "",
-        "overflowRight": -683.21,
-        "overflowLeft": 66.79,
-        "overflowBottom": -859.21
-      },
-      {
-        "tag": "div",
-        "className": "mb-6 min-w-0",
-        "text": "Quick ActionsContinueAI TutorProgressWeak AreasSessionsProjects",
-        "overflowRight": -677,
-        "overflowLeft": 243,
-        "overflowBottom": -574
-      },
-      {
-        "tag": "p",
-        "className": "mb-3 text-sm font-semibold text-gray-700",
-        "text": "Quick Actions",
-        "overflowRight": -677,
-        "overflowLeft": 243,
-        "overflowBottom": -800
-      },
-      {
-        "tag": "div",
-        "className": "grid min-w-0 grid-cols-2 gap-2",
-        "text": "ContinueAI TutorProgressWeak AreasSessionsProjects",
-        "overflowRight": -677,
-        "overflowLeft": 243,
-        "overflowBottom": -574
-      },
-      {
-        "tag": "button",
-        "className": "flex min-w-0 w-full flex-col items-center justify-center gap-1 overflow-hidden rounded-lg border border-gray-200 bg-white p-3 transition-all hover:bg-gray-50",
-        "text": "Continue",
-        "overflowRight": -784,
-        "overflowLeft": 243,
-        "overflowBottom": -722
-      },
-      {
-        "tag": "svg",
-        "className": {},
-        "text": "",
-        "overflowRight": -823.5,
-        "overflowLeft": 203.5,
-        "overflowBottom": -755
-      }
-    ]
+    "bodyOverflow": false,
+    "docOverflow": false,
+    "viewportOverflowCount": 0,
+    "clippedContentCount": 0,
+    "parentBoundaryCount": 0,
+    "viewportOverflow": [],
+    "clippedContent": [],
+    "parentBoundary": []
   },
   {
+    "target": "realtutorialhub",
+    "url": "http://localhost:3003/tutorial",
     "width": 768,
     "height": 1024,
-    "title": "Tutorial Engine | RealTutorialHub",
+    "zoom": 1,
+    "status": 200,
+    "title": "Tutorial Engine Dashboard | RealTutorialHub",
+    "headerTitle": "Tutorial Engine Dashboard",
     "bodyScrollWidth": 768,
+    "docScrollWidth": 768,
     "windowInnerWidth": 768,
-    "hasHorizontalOverflow": false,
-    "documentScrollWidth": 768,
-    "documentHasHorizontalOverflow": false,
-    "visibleOverflowing": [
-      {
-        "tag": "aside",
-        "className": "fixed bottom-0 left-0 top-[80px] z-[50] flex w-[calc(100vw-1rem)] max-w-[280px] min-w-0 flex-col overflow-hidden p-2 sm:p-4 transition-transform duration-300 sm:top-[98px] lg:translate-x-0 -translate-x-full",
-        "text": "Tutorial MenuQuick ActionsContinueAI TutorProgressWeak AreasSessionsProjectsCurriculumIntroduction to ReactWhat is React?JSX BasicsComponent",
-        "overflowRight": -768,
-        "overflowLeft": 280,
-        "overflowBottom": 0
-      },
-      {
-        "tag": "div",
-        "className": "flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-gray-200 bg-white p-4 shadow-xl sm:p-5 lg:shadow-sm",
-        "text": "Tutorial MenuQuick ActionsContinueAI TutorProgressWeak AreasSessionsProjectsCurriculumIntroduction to ReactWhat is React?JSX BasicsComponent",
-        "overflowRight": -784,
-        "overflowLeft": 264,
-        "overflowBottom": -16
-      },
-      {
-        "tag": "div",
-        "className": "mb-4 flex items-center justify-between border-b border-gray-100 pb-4 lg:hidden",
-        "text": "Tutorial Menu",
-        "overflowRight": -805,
-        "overflowLeft": 243,
-        "overflowBottom": -836
-      },
-      {
-        "tag": "span",
-        "className": "font-bold text-gray-900",
-        "text": "Tutorial Menu",
-        "overflowRight": -897.41,
-        "overflowLeft": 243,
-        "overflowBottom": -859
-      },
-      {
-        "tag": "button",
-        "className": "group rounded-lg p-2 transition-all hover:bg-gray-100",
-        "text": "",
-        "overflowRight": -805,
-        "overflowLeft": 73,
-        "overflowBottom": -853
-      },
-      {
-        "tag": "svg",
-        "className": {},
-        "text": "",
-        "overflowRight": -808.86,
-        "overflowLeft": 69.14,
-        "overflowBottom": -856.86
-      },
-      {
-        "tag": "circle",
-        "className": {},
-        "text": "",
-        "overflowRight": -811.21,
-        "overflowLeft": 66.79,
-        "overflowBottom": -859.21
-      },
-      {
-        "tag": "div",
-        "className": "mb-6 min-w-0",
-        "text": "Quick ActionsContinueAI TutorProgressWeak AreasSessionsProjects",
-        "overflowRight": -805,
-        "overflowLeft": 243,
-        "overflowBottom": -574
-      },
-      {
-        "tag": "p",
-        "className": "mb-3 text-sm font-semibold text-gray-700",
-        "text": "Quick Actions",
-        "overflowRight": -805,
-        "overflowLeft": 243,
-        "overflowBottom": -800
-      },
-      {
-        "tag": "div",
-        "className": "grid min-w-0 grid-cols-2 gap-2",
-        "text": "ContinueAI TutorProgressWeak AreasSessionsProjects",
-        "overflowRight": -805,
-        "overflowLeft": 243,
-        "overflowBottom": -574
-      },
-      {
-        "tag": "button",
-        "className": "flex min-w-0 w-full flex-col items-center justify-center gap-1 overflow-hidden rounded-lg border border-gray-200 bg-white p-3 transition-all hover:bg-gray-50",
-        "text": "Continue",
-        "overflowRight": -912,
-        "overflowLeft": 243,
-        "overflowBottom": -722
-      },
-      {
-        "tag": "svg",
-        "className": {},
-        "text": "",
-        "overflowRight": -951.5,
-        "overflowLeft": 203.5,
-        "overflowBottom": -755
-      }
-    ]
+    "bodyOverflow": false,
+    "docOverflow": false,
+    "viewportOverflowCount": 0,
+    "clippedContentCount": 0,
+    "parentBoundaryCount": 0,
+    "viewportOverflow": [],
+    "clippedContent": [],
+    "parentBoundary": []
   },
   {
+    "target": "realtutorialhub",
+    "url": "http://localhost:3003/tutorial",
     "width": 1024,
     "height": 1200,
-    "title": "Tutorial Engine | RealTutorialHub",
+    "zoom": 1,
+    "status": 200,
+    "title": "Tutorial Engine Dashboard | RealTutorialHub",
+    "headerTitle": "Tutorial Engine Dashboard",
     "bodyScrollWidth": 1024,
+    "docScrollWidth": 1024,
     "windowInnerWidth": 1024,
-    "hasHorizontalOverflow": false,
-    "documentScrollWidth": 1024,
-    "documentHasHorizontalOverflow": false,
-    "visibleOverflowing": [
-      {
-        "tag": "aside",
-        "className": "fixed bottom-0 right-0 top-0 z-50 flex w-full max-w-[400px] min-w-0 flex-col border-l border-gray-200 bg-white shadow-lg transition-transform duration-300 translate-x-full",
-        "text": "AI TutorAlways here to helpHi! I'm your AI Tutor. Ask me anything about the current topic!",
-        "overflowRight": 400,
-        "overflowLeft": -1024,
-        "overflowBottom": 0
-      },
-      {
-        "tag": "div",
-        "className": "border-b border-gray-200 p-4 sm:p-6",
-        "text": "AI TutorAlways here to help",
-        "overflowRight": 400,
-        "overflowLeft": -1025,
-        "overflowBottom": -1111
-      },
-      {
-        "tag": "div",
-        "className": "flex min-w-0 items-center justify-between gap-3",
-        "text": "AI TutorAlways here to help",
-        "overflowRight": 376,
-        "overflowLeft": -1049,
-        "overflowBottom": -1136
-      },
-      {
-        "tag": "div",
-        "className": "flex min-w-0 items-center gap-3",
-        "text": "AI TutorAlways here to help",
-        "overflowRight": 188.53,
-        "overflowLeft": -1049,
-        "overflowBottom": -1136
-      },
-      {
-        "tag": "div",
-        "className": "flex h-10 w-10 items-center justify-center rounded-full",
-        "text": "",
-        "overflowRight": 65,
-        "overflowLeft": -1049,
-        "overflowBottom": -1136
-      },
-      {
-        "tag": "svg",
-        "className": {},
-        "text": "",
-        "overflowRight": 55,
-        "overflowLeft": -1059,
-        "overflowBottom": -1146
-      },
-      {
-        "tag": "path",
-        "className": {},
-        "text": "",
-        "overflowRight": 45,
-        "overflowLeft": -1065.67,
-        "overflowBottom": -1159.33
-      },
-      {
-        "tag": "rect",
-        "className": {},
-        "text": "",
-        "overflowRight": 51.67,
-        "overflowLeft": -1062.33,
-        "overflowBottom": -1149.33
-      },
-      {
-        "tag": "div",
-        "className": "min-w-0",
-        "text": "AI TutorAlways here to help",
-        "overflowRight": 188.53,
-        "overflowLeft": -1101,
-        "overflowBottom": -1136
-      },
-      {
-        "tag": "h2",
-        "className": "break-words font-bold text-gray-800",
-        "text": "AI Tutor",
-        "overflowRight": 188.53,
-        "overflowLeft": -1101,
-        "overflowBottom": -1152
-      },
-      {
-        "tag": "p",
-        "className": "break-words text-xs text-gray-700",
-        "text": "Always here to help",
-        "overflowRight": 188.53,
-        "overflowLeft": -1101,
-        "overflowBottom": -1136
-      },
-      {
-        "tag": "button",
-        "className": "rounded-lg p-2 transition-colors hover:bg-gray-100",
-        "text": "",
-        "overflowRight": 376,
-        "overflowLeft": -1364,
-        "overflowBottom": -1138
-      }
-    ]
+    "bodyOverflow": false,
+    "docOverflow": false,
+    "viewportOverflowCount": 0,
+    "clippedContentCount": 0,
+    "parentBoundaryCount": 0,
+    "viewportOverflow": [],
+    "clippedContent": [],
+    "parentBoundary": []
   },
   {
+    "target": "realtutorialhub",
+    "url": "http://localhost:3003/tutorial",
     "width": 1280,
     "height": 1200,
-    "title": "Tutorial Engine | RealTutorialHub",
+    "zoom": 1,
+    "status": 200,
+    "title": "Tutorial Engine Dashboard | RealTutorialHub",
+    "headerTitle": "Tutorial Engine Dashboard",
     "bodyScrollWidth": 1280,
+    "docScrollWidth": 1280,
     "windowInnerWidth": 1280,
-    "hasHorizontalOverflow": false,
-    "documentScrollWidth": 1280,
-    "documentHasHorizontalOverflow": false,
-    "visibleOverflowing": [
-      {
-        "tag": "aside",
-        "className": "fixed bottom-0 right-0 top-0 z-50 flex w-full max-w-[400px] min-w-0 flex-col border-l border-gray-200 bg-white shadow-lg transition-transform duration-300 translate-x-full",
-        "text": "AI TutorAlways here to helpHi! I'm your AI Tutor. Ask me anything about the current topic!",
-        "overflowRight": 400,
-        "overflowLeft": -1280,
-        "overflowBottom": 0
-      },
-      {
-        "tag": "div",
-        "className": "border-b border-gray-200 p-4 sm:p-6",
-        "text": "AI TutorAlways here to help",
-        "overflowRight": 400,
-        "overflowLeft": -1281,
-        "overflowBottom": -1111
-      },
-      {
-        "tag": "div",
-        "className": "flex min-w-0 items-center justify-between gap-3",
-        "text": "AI TutorAlways here to help",
-        "overflowRight": 376,
-        "overflowLeft": -1305,
-        "overflowBottom": -1136
-      },
-      {
-        "tag": "div",
-        "className": "flex min-w-0 items-center gap-3",
-        "text": "AI TutorAlways here to help",
-        "overflowRight": 188.53,
-        "overflowLeft": -1305,
-        "overflowBottom": -1136
-      },
-      {
-        "tag": "div",
-        "className": "flex h-10 w-10 items-center justify-center rounded-full",
-        "text": "",
-        "overflowRight": 65,
-        "overflowLeft": -1305,
-        "overflowBottom": -1136
-      },
-      {
-        "tag": "svg",
-        "className": {},
-        "text": "",
-        "overflowRight": 55,
-        "overflowLeft": -1315,
-        "overflowBottom": -1146
-      },
-      {
-        "tag": "path",
-        "className": {},
-        "text": "",
-        "overflowRight": 45,
-        "overflowLeft": -1321.67,
-        "overflowBottom": -1159.33
-      },
-      {
-        "tag": "rect",
-        "className": {},
-        "text": "",
-        "overflowRight": 51.67,
-        "overflowLeft": -1318.33,
-        "overflowBottom": -1149.33
-      },
-      {
-        "tag": "div",
-        "className": "min-w-0",
-        "text": "AI TutorAlways here to help",
-        "overflowRight": 188.53,
-        "overflowLeft": -1357,
-        "overflowBottom": -1136
-      },
-      {
-        "tag": "h2",
-        "className": "break-words font-bold text-gray-800",
-        "text": "AI Tutor",
-        "overflowRight": 188.53,
-        "overflowLeft": -1357,
-        "overflowBottom": -1152
-      },
-      {
-        "tag": "p",
-        "className": "break-words text-xs text-gray-700",
-        "text": "Always here to help",
-        "overflowRight": 188.53,
-        "overflowLeft": -1357,
-        "overflowBottom": -1136
-      },
-      {
-        "tag": "button",
-        "className": "rounded-lg p-2 transition-colors hover:bg-gray-100",
-        "text": "",
-        "overflowRight": 376,
-        "overflowLeft": -1620,
-        "overflowBottom": -1138
-      }
-    ]
+    "bodyOverflow": false,
+    "docOverflow": false,
+    "viewportOverflowCount": 0,
+    "clippedContentCount": 0,
+    "parentBoundaryCount": 0,
+    "viewportOverflow": [],
+    "clippedContent": [],
+    "parentBoundary": []
   },
   {
+    "target": "realtutorialhub",
+    "url": "http://localhost:3003/tutorial",
     "width": 1440,
     "height": 1200,
-    "title": "Tutorial Engine | RealTutorialHub",
+    "zoom": 1,
+    "status": 200,
+    "title": "Tutorial Engine Dashboard | RealTutorialHub",
+    "headerTitle": "Tutorial Engine Dashboard",
     "bodyScrollWidth": 1440,
+    "docScrollWidth": 1440,
     "windowInnerWidth": 1440,
-    "hasHorizontalOverflow": false,
-    "documentScrollWidth": 1440,
-    "documentHasHorizontalOverflow": false,
-    "visibleOverflowing": [
-      {
-        "tag": "aside",
-        "className": "fixed bottom-0 right-0 top-0 z-50 flex w-full max-w-[400px] min-w-0 flex-col border-l border-gray-200 bg-white shadow-lg transition-transform duration-300 translate-x-full",
-        "text": "AI TutorAlways here to helpHi! I'm your AI Tutor. Ask me anything about the current topic!",
-        "overflowRight": 400,
-        "overflowLeft": -1440,
-        "overflowBottom": 0
-      },
-      {
-        "tag": "div",
-        "className": "border-b border-gray-200 p-4 sm:p-6",
-        "text": "AI TutorAlways here to help",
-        "overflowRight": 400,
-        "overflowLeft": -1441,
-        "overflowBottom": -1111
-      },
-      {
-        "tag": "div",
-        "className": "flex min-w-0 items-center justify-between gap-3",
-        "text": "AI TutorAlways here to help",
-        "overflowRight": 376,
-        "overflowLeft": -1465,
-        "overflowBottom": -1136
-      },
-      {
-        "tag": "div",
-        "className": "flex min-w-0 items-center gap-3",
-        "text": "AI TutorAlways here to help",
-        "overflowRight": 188.53,
-        "overflowLeft": -1465,
-        "overflowBottom": -1136
-      },
-      {
-        "tag": "div",
-        "className": "flex h-10 w-10 items-center justify-center rounded-full",
-        "text": "",
-        "overflowRight": 65,
-        "overflowLeft": -1465,
-        "overflowBottom": -1136
-      },
-      {
-        "tag": "svg",
-        "className": {},
-        "text": "",
-        "overflowRight": 55,
-        "overflowLeft": -1475,
-        "overflowBottom": -1146
-      },
-      {
-        "tag": "path",
-        "className": {},
-        "text": "",
-        "overflowRight": 45,
-        "overflowLeft": -1481.67,
-        "overflowBottom": -1159.33
-      },
-      {
-        "tag": "rect",
-        "className": {},
-        "text": "",
-        "overflowRight": 51.67,
-        "overflowLeft": -1478.33,
-        "overflowBottom": -1149.33
-      },
-      {
-        "tag": "div",
-        "className": "min-w-0",
-        "text": "AI TutorAlways here to help",
-        "overflowRight": 188.53,
-        "overflowLeft": -1517,
-        "overflowBottom": -1136
-      },
-      {
-        "tag": "h2",
-        "className": "break-words font-bold text-gray-800",
-        "text": "AI Tutor",
-        "overflowRight": 188.53,
-        "overflowLeft": -1517,
-        "overflowBottom": -1152
-      },
-      {
-        "tag": "p",
-        "className": "break-words text-xs text-gray-700",
-        "text": "Always here to help",
-        "overflowRight": 188.53,
-        "overflowLeft": -1517,
-        "overflowBottom": -1136
-      },
-      {
-        "tag": "button",
-        "className": "rounded-lg p-2 transition-colors hover:bg-gray-100",
-        "text": "",
-        "overflowRight": 376,
-        "overflowLeft": -1780,
-        "overflowBottom": -1138
-      }
-    ]
+    "bodyOverflow": false,
+    "docOverflow": false,
+    "viewportOverflowCount": 0,
+    "clippedContentCount": 0,
+    "parentBoundaryCount": 0,
+    "viewportOverflow": [],
+    "clippedContent": [],
+    "parentBoundary": []
   },
   {
+    "target": "realtutorialhub",
+    "url": "http://localhost:3003/tutorial",
     "width": 1920,
     "height": 1200,
-    "title": "Tutorial Engine | RealTutorialHub",
+    "zoom": 1,
+    "status": 200,
+    "title": "Tutorial Engine Dashboard | RealTutorialHub",
+    "headerTitle": "Tutorial Engine Dashboard",
     "bodyScrollWidth": 1920,
+    "docScrollWidth": 1920,
     "windowInnerWidth": 1920,
-    "hasHorizontalOverflow": false,
-    "documentScrollWidth": 1920,
-    "documentHasHorizontalOverflow": false,
-    "visibleOverflowing": [
-      {
-        "tag": "aside",
-        "className": "fixed bottom-0 right-0 top-0 z-50 flex w-full max-w-[400px] min-w-0 flex-col border-l border-gray-200 bg-white shadow-lg transition-transform duration-300 translate-x-full",
-        "text": "AI TutorAlways here to helpHi! I'm your AI Tutor. Ask me anything about the current topic!",
-        "overflowRight": 400,
-        "overflowLeft": -1920,
-        "overflowBottom": 0
-      },
-      {
-        "tag": "div",
-        "className": "border-b border-gray-200 p-4 sm:p-6",
-        "text": "AI TutorAlways here to help",
-        "overflowRight": 400,
-        "overflowLeft": -1921,
-        "overflowBottom": -1111
-      },
-      {
-        "tag": "div",
-        "className": "flex min-w-0 items-center justify-between gap-3",
-        "text": "AI TutorAlways here to help",
-        "overflowRight": 376,
-        "overflowLeft": -1945,
-        "overflowBottom": -1136
-      },
-      {
-        "tag": "div",
-        "className": "flex min-w-0 items-center gap-3",
-        "text": "AI TutorAlways here to help",
-        "overflowRight": 188.53,
-        "overflowLeft": -1945,
-        "overflowBottom": -1136
-      },
-      {
-        "tag": "div",
-        "className": "flex h-10 w-10 items-center justify-center rounded-full",
-        "text": "",
-        "overflowRight": 65,
-        "overflowLeft": -1945,
-        "overflowBottom": -1136
-      },
-      {
-        "tag": "svg",
-        "className": {},
-        "text": "",
-        "overflowRight": 55,
-        "overflowLeft": -1955,
-        "overflowBottom": -1146
-      },
-      {
-        "tag": "path",
-        "className": {},
-        "text": "",
-        "overflowRight": 45,
-        "overflowLeft": -1961.67,
-        "overflowBottom": -1159.33
-      },
-      {
-        "tag": "rect",
-        "className": {},
-        "text": "",
-        "overflowRight": 51.67,
-        "overflowLeft": -1958.33,
-        "overflowBottom": -1149.33
-      },
-      {
-        "tag": "div",
-        "className": "min-w-0",
-        "text": "AI TutorAlways here to help",
-        "overflowRight": 188.53,
-        "overflowLeft": -1997,
-        "overflowBottom": -1136
-      },
-      {
-        "tag": "h2",
-        "className": "break-words font-bold text-gray-800",
-        "text": "AI Tutor",
-        "overflowRight": 188.53,
-        "overflowLeft": -1997,
-        "overflowBottom": -1152
-      },
-      {
-        "tag": "p",
-        "className": "break-words text-xs text-gray-700",
-        "text": "Always here to help",
-        "overflowRight": 188.53,
-        "overflowLeft": -1997,
-        "overflowBottom": -1136
-      },
-      {
-        "tag": "button",
-        "className": "rounded-lg p-2 transition-colors hover:bg-gray-100",
-        "text": "",
-        "overflowRight": 376,
-        "overflowLeft": -2260,
-        "overflowBottom": -1138
-      }
-    ]
+    "bodyOverflow": false,
+    "docOverflow": false,
+    "viewportOverflowCount": 0,
+    "clippedContentCount": 0,
+    "parentBoundaryCount": 0,
+    "viewportOverflow": [],
+    "clippedContent": [],
+    "parentBoundary": []
+  },
+  {
+    "target": "realtutorialhub",
+    "url": "http://localhost:3003/tutorial",
+    "width": 320,
+    "height": 900,
+    "zoom": 1.25,
+    "status": 200,
+    "title": "Tutorial Engine Dashboard | RealTutorialHub",
+    "headerTitle": "Tutorial Engine Dashboard",
+    "bodyScrollWidth": 256,
+    "docScrollWidth": 320,
+    "windowInnerWidth": 320,
+    "bodyOverflow": false,
+    "docOverflow": false,
+    "viewportOverflowCount": 0,
+    "clippedContentCount": 0,
+    "parentBoundaryCount": 0,
+    "viewportOverflow": [],
+    "clippedContent": [],
+    "parentBoundary": []
+  },
+  {
+    "target": "realtutorialhub",
+    "url": "http://localhost:3003/tutorial",
+    "width": 768,
+    "height": 1024,
+    "zoom": 1.25,
+    "status": 200,
+    "title": "Tutorial Engine Dashboard | RealTutorialHub",
+    "headerTitle": "Tutorial Engine Dashboard",
+    "bodyScrollWidth": 614,
+    "docScrollWidth": 768,
+    "windowInnerWidth": 768,
+    "bodyOverflow": false,
+    "docOverflow": false,
+    "viewportOverflowCount": 0,
+    "clippedContentCount": 0,
+    "parentBoundaryCount": 0,
+    "viewportOverflow": [],
+    "clippedContent": [],
+    "parentBoundary": []
+  },
+  {
+    "target": "realtutorialhub",
+    "url": "http://localhost:3003/tutorial",
+    "width": 1280,
+    "height": 1200,
+    "zoom": 1.25,
+    "status": 200,
+    "title": "Tutorial Engine Dashboard | RealTutorialHub",
+    "headerTitle": "Tutorial Engine Dashboard",
+    "bodyScrollWidth": 1024,
+    "docScrollWidth": 1280,
+    "windowInnerWidth": 1280,
+    "bodyOverflow": false,
+    "docOverflow": false,
+    "viewportOverflowCount": 0,
+    "clippedContentCount": 0,
+    "parentBoundaryCount": 0,
+    "viewportOverflow": [],
+    "clippedContent": [],
+    "parentBoundary": []
+  },
+  {
+    "target": "realtutorialhub",
+    "url": "http://localhost:3003/tutorial",
+    "width": 1920,
+    "height": 1200,
+    "zoom": 1.25,
+    "status": 200,
+    "title": "Tutorial Engine Dashboard | RealTutorialHub",
+    "headerTitle": "Tutorial Engine Dashboard",
+    "bodyScrollWidth": 1536,
+    "docScrollWidth": 1920,
+    "windowInnerWidth": 1920,
+    "bodyOverflow": false,
+    "docOverflow": false,
+    "viewportOverflowCount": 0,
+    "clippedContentCount": 0,
+    "parentBoundaryCount": 0,
+    "viewportOverflow": [],
+    "clippedContent": [],
+    "parentBoundary": []
+  },
+  {
+    "target": "skillup",
+    "url": "http://localhost:3004/tutorial",
+    "width": 320,
+    "height": 900,
+    "zoom": 1,
+    "status": 200,
+    "title": "Mentorship Dashboard | SkillUp Academy | SkillUp IT Academy",
+    "headerTitle": "Mentorship Dashboard",
+    "bodyScrollWidth": 320,
+    "docScrollWidth": 320,
+    "windowInnerWidth": 320,
+    "bodyOverflow": false,
+    "docOverflow": false,
+    "viewportOverflowCount": 0,
+    "clippedContentCount": 0,
+    "parentBoundaryCount": 0,
+    "viewportOverflow": [],
+    "clippedContent": [],
+    "parentBoundary": []
+  },
+  {
+    "target": "skillup",
+    "url": "http://localhost:3004/tutorial",
+    "width": 375,
+    "height": 900,
+    "zoom": 1,
+    "status": 200,
+    "title": "Mentorship Dashboard | SkillUp Academy | SkillUp IT Academy",
+    "headerTitle": "Mentorship Dashboard",
+    "bodyScrollWidth": 375,
+    "docScrollWidth": 375,
+    "windowInnerWidth": 375,
+    "bodyOverflow": false,
+    "docOverflow": false,
+    "viewportOverflowCount": 0,
+    "clippedContentCount": 0,
+    "parentBoundaryCount": 0,
+    "viewportOverflow": [],
+    "clippedContent": [],
+    "parentBoundary": []
+  },
+  {
+    "target": "skillup",
+    "url": "http://localhost:3004/tutorial",
+    "width": 480,
+    "height": 900,
+    "zoom": 1,
+    "status": 200,
+    "title": "Mentorship Dashboard | SkillUp Academy | SkillUp IT Academy",
+    "headerTitle": "Mentorship Dashboard",
+    "bodyScrollWidth": 480,
+    "docScrollWidth": 480,
+    "windowInnerWidth": 480,
+    "bodyOverflow": false,
+    "docOverflow": false,
+    "viewportOverflowCount": 0,
+    "clippedContentCount": 0,
+    "parentBoundaryCount": 0,
+    "viewportOverflow": [],
+    "clippedContent": [],
+    "parentBoundary": []
+  },
+  {
+    "target": "skillup",
+    "url": "http://localhost:3004/tutorial",
+    "width": 640,
+    "height": 1024,
+    "zoom": 1,
+    "status": 200,
+    "title": "Mentorship Dashboard | SkillUp Academy | SkillUp IT Academy",
+    "headerTitle": "Mentorship Dashboard",
+    "bodyScrollWidth": 640,
+    "docScrollWidth": 640,
+    "windowInnerWidth": 640,
+    "bodyOverflow": false,
+    "docOverflow": false,
+    "viewportOverflowCount": 0,
+    "clippedContentCount": 0,
+    "parentBoundaryCount": 0,
+    "viewportOverflow": [],
+    "clippedContent": [],
+    "parentBoundary": []
+  },
+  {
+    "target": "skillup",
+    "url": "http://localhost:3004/tutorial",
+    "width": 768,
+    "height": 1024,
+    "zoom": 1,
+    "status": 200,
+    "title": "Mentorship Dashboard | SkillUp Academy | SkillUp IT Academy",
+    "headerTitle": "Mentorship Dashboard",
+    "bodyScrollWidth": 768,
+    "docScrollWidth": 768,
+    "windowInnerWidth": 768,
+    "bodyOverflow": false,
+    "docOverflow": false,
+    "viewportOverflowCount": 0,
+    "clippedContentCount": 0,
+    "parentBoundaryCount": 0,
+    "viewportOverflow": [],
+    "clippedContent": [],
+    "parentBoundary": []
+  },
+  {
+    "target": "skillup",
+    "url": "http://localhost:3004/tutorial",
+    "width": 1024,
+    "height": 1200,
+    "zoom": 1,
+    "status": 200,
+    "title": "Mentorship Dashboard | SkillUp Academy | SkillUp IT Academy",
+    "headerTitle": "Mentorship Dashboard",
+    "bodyScrollWidth": 1024,
+    "docScrollWidth": 1024,
+    "windowInnerWidth": 1024,
+    "bodyOverflow": false,
+    "docOverflow": false,
+    "viewportOverflowCount": 0,
+    "clippedContentCount": 0,
+    "parentBoundaryCount": 0,
+    "viewportOverflow": [],
+    "clippedContent": [],
+    "parentBoundary": []
+  },
+  {
+    "target": "skillup",
+    "url": "http://localhost:3004/tutorial",
+    "width": 1280,
+    "height": 1200,
+    "zoom": 1,
+    "status": 200,
+    "title": "Mentorship Dashboard | SkillUp Academy | SkillUp IT Academy",
+    "headerTitle": "Mentorship Dashboard",
+    "bodyScrollWidth": 1280,
+    "docScrollWidth": 1280,
+    "windowInnerWidth": 1280,
+    "bodyOverflow": false,
+    "docOverflow": false,
+    "viewportOverflowCount": 0,
+    "clippedContentCount": 0,
+    "parentBoundaryCount": 0,
+    "viewportOverflow": [],
+    "clippedContent": [],
+    "parentBoundary": []
+  },
+  {
+    "target": "skillup",
+    "url": "http://localhost:3004/tutorial",
+    "width": 1440,
+    "height": 1200,
+    "zoom": 1,
+    "status": 200,
+    "title": "Mentorship Dashboard | SkillUp Academy | SkillUp IT Academy",
+    "headerTitle": "Mentorship Dashboard",
+    "bodyScrollWidth": 1440,
+    "docScrollWidth": 1440,
+    "windowInnerWidth": 1440,
+    "bodyOverflow": false,
+    "docOverflow": false,
+    "viewportOverflowCount": 0,
+    "clippedContentCount": 0,
+    "parentBoundaryCount": 0,
+    "viewportOverflow": [],
+    "clippedContent": [],
+    "parentBoundary": []
+  },
+  {
+    "target": "skillup",
+    "url": "http://localhost:3004/tutorial",
+    "width": 1920,
+    "height": 1200,
+    "zoom": 1,
+    "status": 200,
+    "title": "Mentorship Dashboard | SkillUp Academy | SkillUp IT Academy",
+    "headerTitle": "Mentorship Dashboard",
+    "bodyScrollWidth": 1920,
+    "docScrollWidth": 1920,
+    "windowInnerWidth": 1920,
+    "bodyOverflow": false,
+    "docOverflow": false,
+    "viewportOverflowCount": 0,
+    "clippedContentCount": 0,
+    "parentBoundaryCount": 0,
+    "viewportOverflow": [],
+    "clippedContent": [],
+    "parentBoundary": []
+  },
+  {
+    "target": "skillup",
+    "url": "http://localhost:3004/tutorial",
+    "width": 320,
+    "height": 900,
+    "zoom": 1.25,
+    "status": 200,
+    "title": "Mentorship Dashboard | SkillUp Academy | SkillUp IT Academy",
+    "headerTitle": "Mentorship Dashboard",
+    "bodyScrollWidth": 256,
+    "docScrollWidth": 320,
+    "windowInnerWidth": 320,
+    "bodyOverflow": false,
+    "docOverflow": false,
+    "viewportOverflowCount": 0,
+    "clippedContentCount": 0,
+    "parentBoundaryCount": 0,
+    "viewportOverflow": [],
+    "clippedContent": [],
+    "parentBoundary": []
+  },
+  {
+    "target": "skillup",
+    "url": "http://localhost:3004/tutorial",
+    "width": 768,
+    "height": 1024,
+    "zoom": 1.25,
+    "status": 200,
+    "title": "Mentorship Dashboard | SkillUp Academy | SkillUp IT Academy",
+    "headerTitle": "Mentorship Dashboard",
+    "bodyScrollWidth": 614,
+    "docScrollWidth": 768,
+    "windowInnerWidth": 768,
+    "bodyOverflow": false,
+    "docOverflow": false,
+    "viewportOverflowCount": 0,
+    "clippedContentCount": 0,
+    "parentBoundaryCount": 0,
+    "viewportOverflow": [],
+    "clippedContent": [],
+    "parentBoundary": []
+  },
+  {
+    "target": "skillup",
+    "url": "http://localhost:3004/tutorial",
+    "width": 1280,
+    "height": 1200,
+    "zoom": 1.25,
+    "status": 200,
+    "title": "Mentorship Dashboard | SkillUp Academy | SkillUp IT Academy",
+    "headerTitle": "Mentorship Dashboard",
+    "bodyScrollWidth": 1024,
+    "docScrollWidth": 1280,
+    "windowInnerWidth": 1280,
+    "bodyOverflow": false,
+    "docOverflow": false,
+    "viewportOverflowCount": 0,
+    "clippedContentCount": 0,
+    "parentBoundaryCount": 0,
+    "viewportOverflow": [],
+    "clippedContent": [],
+    "parentBoundary": []
+  },
+  {
+    "target": "skillup",
+    "url": "http://localhost:3004/tutorial",
+    "width": 1920,
+    "height": 1200,
+    "zoom": 1.25,
+    "status": 200,
+    "title": "Mentorship Dashboard | SkillUp Academy | SkillUp IT Academy",
+    "headerTitle": "Mentorship Dashboard",
+    "bodyScrollWidth": 1536,
+    "docScrollWidth": 1920,
+    "windowInnerWidth": 1920,
+    "bodyOverflow": false,
+    "docOverflow": false,
+    "viewportOverflowCount": 0,
+    "clippedContentCount": 0,
+    "parentBoundaryCount": 0,
+    "viewportOverflow": [],
+    "clippedContent": [],
+    "parentBoundary": []
   }
 ]

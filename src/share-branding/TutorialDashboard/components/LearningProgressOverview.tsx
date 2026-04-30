@@ -35,12 +35,12 @@ export function LearningProgressOverview() {
 
   return (
     <div 
-      className="flex h-full flex-col rounded-3xl border border-gray-100 bg-white p-8 transition-all duration-500 -translate-y-2 scale-[1.01] shadow-2xl hover:-translate-y-3"
+      className="flex h-full min-w-0 flex-col rounded-3xl border border-gray-100 bg-white p-5 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl sm:p-8"
       style={{ boxShadow: `0 20px 50px rgba(${brand.primaryRgb}, 0.05)` }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <h3 className="text-xl font-black text-[#1e293b]">Learning Progress Overview</h3>
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
+        <h3 className="min-w-0 break-words text-xl font-black text-[#1e293b]">Learning Progress Overview</h3>
         <button 
           aria-label="Filter progress"
           className="flex items-center gap-1 text-sm font-bold text-slate-600 hover:text-slate-800 transition-colors"
@@ -51,7 +51,7 @@ export function LearningProgressOverview() {
 
       <div className="flex flex-1 flex-col items-center gap-10 lg:flex-row lg:items-start lg:justify-between">
         {/* Large Donut Chart */}
-        <div className="relative flex h-48 w-48 shrink-0 items-center justify-center">
+        <div className="relative flex h-40 w-40 max-w-full shrink-0 items-center justify-center sm:h-48 sm:w-48">
           <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90 transform">
             <circle cx="50" cy="50" r="42" stroke="#f1f5f9" strokeWidth="10" fill="none" />
             <circle 
@@ -64,8 +64,8 @@ export function LearningProgressOverview() {
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-4xl font-black text-[#1e293b]">{learningProgress.overallPercent}%</span>
-            <span className="text-xs font-bold text-slate-600 mt-1 uppercase tracking-wider">Overall Progress</span>
+            <span className="text-3xl font-black text-[#1e293b] sm:text-4xl">{learningProgress.overallPercent}%</span>
+            <span className="mt-1 max-w-[7rem] text-center text-[10px] font-bold uppercase text-slate-600 sm:max-w-none sm:text-xs">Overall Progress</span>
           </div>
         </div>
 
@@ -74,11 +74,11 @@ export function LearningProgressOverview() {
           {learningProgress.subjects.map((subject) => {
             const toneColor = getToneColor(subject.tone);
             return (
-              <div key={subject.subject} className="flex items-center gap-4">
+              <div key={subject.subject} className="flex min-w-0 items-center gap-4">
                 {getSubjectIcon(subject.subject, toneColor)}
                 
-                <div className="flex-1 flex flex-col gap-1.5">
-                  <span className="text-sm font-bold text-[#334155]">{subject.subject}</span>
+                <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                  <span className="break-words text-sm font-bold text-[#334155]">{subject.subject}</span>
                   <div className="flex items-center gap-3">
                     <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
                       <div 
@@ -99,7 +99,7 @@ export function LearningProgressOverview() {
       <div className="mt-10 pt-6 border-t border-slate-50 flex justify-center">
         <button 
           aria-label="View detailed analytics"
-          className="flex items-center gap-2 text-base font-bold transition-all hover:gap-3" 
+          className="flex max-w-full flex-wrap items-center justify-center gap-2 text-center text-base font-bold transition-colors" 
           style={{ color: brand.primaryColor }}
         >
           View Detailed Analytics <ArrowRight size={20} />

@@ -56,6 +56,11 @@ export interface BrandConfig {
   // Dashboard
   dashboardGreeting: string;
   dashboardSubtext: string;
+
+  // Tutorial dashboard
+  tutorialDashboardTitle: string;
+  tutorialDashboardSubtitle: string;
+  tutorialDashboardSearchPlaceholder: string;
 }
 
 export type SharedBrandId = 'realtutorialhub' | 'skillup';
@@ -108,6 +113,10 @@ export const rthConfig: BrandConfig = {
 
   dashboardGreeting: 'Ready to Level Up?',
   dashboardSubtext: 'Your personalized learning path is waiting.',
+
+  tutorialDashboardTitle: 'Tutorial Engine Dashboard',
+  tutorialDashboardSubtitle: 'Your personalized learning command center',
+  tutorialDashboardSearchPlaceholder: 'Search courses, topics...',
 };
 
 export const skillUpConfig: BrandConfig = {
@@ -158,6 +167,10 @@ export const skillUpConfig: BrandConfig = {
 
   dashboardGreeting: 'Master Your Craft',
   dashboardSubtext: 'Connect with a mentor and start building today.',
+
+  tutorialDashboardTitle: 'Mentorship Dashboard',
+  tutorialDashboardSubtitle: 'Your personalized learning and mentorship command center',
+  tutorialDashboardSearchPlaceholder: 'Search courses, topics, mentors...',
 };
 
 export const brands: Record<'rth' | 'skillup', BrandConfig> = {

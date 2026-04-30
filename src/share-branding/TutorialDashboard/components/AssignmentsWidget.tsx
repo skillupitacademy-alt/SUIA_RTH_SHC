@@ -12,7 +12,7 @@ export function AssignmentsWidget() {
 
   return (
     <div 
-      className="flex h-full flex-col rounded-2xl border border-gray-100 bg-white p-6 transition-all duration-500 -translate-y-2 scale-[1.01] shadow-2xl hover:-translate-y-3"
+      className="flex h-full min-w-0 flex-col rounded-2xl border border-gray-100 bg-white p-5 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl sm:p-6"
       style={{ boxShadow: `0 20px 40px rgba(${brand.primaryRgb}, 0.08)` }}
     >
       <div className="flex items-center justify-between mb-4">
@@ -27,14 +27,14 @@ export function AssignmentsWidget() {
       </div>
 
       {/* Tabs */}
-      <div className="mb-6 flex space-x-1 border-b border-gray-100">
+      <div className="mb-6 flex flex-wrap gap-1 border-b border-gray-100 pb-1">
         {tabs.map((tab) => {
           const isActive = activeTab === tab;
           return (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`relative flex items-center gap-1.5 px-3 py-2 text-xs font-bold transition-colors ${
+              className={`relative flex shrink-0 items-center gap-1.5 rounded-t-lg px-2.5 py-2 text-[11px] font-bold transition-colors sm:text-xs ${
                 isActive ? 'text-gray-900' : 'text-gray-600 hover:text-gray-900'
               }`}
             >
@@ -57,17 +57,17 @@ export function AssignmentsWidget() {
 
       <div className="flex flex-1 flex-col gap-3">
         {assignments.items.map((item) => (
-          <div key={item.id} className="flex items-center gap-3 rounded-xl border border-gray-50 bg-gray-50/50 p-3 transition-colors hover:bg-gray-50">
+          <div key={item.id} className="grid min-w-0 grid-cols-[2.5rem_minmax(0,1fr)] gap-x-3 gap-y-2 rounded-xl border border-gray-50 bg-gray-50/50 p-3 transition-colors hover:bg-gray-50">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-500">
               <FileText size={18} />
             </div>
             
-            <div className="flex flex-1 flex-col">
-              <span className="text-sm font-bold text-gray-900">{item.title}</span>
+            <div className="flex min-w-0 flex-col">
+              <span className="break-words text-sm font-bold leading-snug text-gray-900">{item.title}</span>
               <span className="text-[11px] font-semibold text-gray-700">{item.category}</span>
             </div>
 
-            <span className="text-xs font-bold text-red-700 whitespace-nowrap">
+            <span className="col-start-2 w-fit rounded-full bg-red-50 px-2 py-0.5 text-xs font-bold text-red-700">
               {item.dueText}
             </span>
           </div>

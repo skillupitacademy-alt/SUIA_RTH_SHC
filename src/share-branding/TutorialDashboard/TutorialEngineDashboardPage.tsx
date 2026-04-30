@@ -23,7 +23,7 @@ function TutorialDashboardContent() {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   return (
-    <div className="relative min-h-screen bg-[#f8fafc] font-sans selection:bg-orange-500/30">
+    <div className="relative min-h-screen bg-[#f8fafc] font-sans">
 
       <TutorialSidebar
         isOpen={isMobileNavOpen}
@@ -71,9 +71,9 @@ function TutorialDashboardContent() {
           </div>
 
           {/* Footer Help */}
-          <div className="flex items-center gap-2 rounded-xl bg-blue-50 px-6 py-3 text-sm font-semibold text-blue-700">
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 text-[10px]">ℹ</span>
-            Tip: Use the Tutor regularly to clear doubts and reinforce your learning!
+          <div className="flex items-start gap-2 rounded-xl bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-700 sm:px-6">
+            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-[10px]">ℹ</span>
+            <span className="min-w-0 break-words">Tip: Use the {brand.tutorLabel} regularly to clear doubts and reinforce your learning!</span>
           </div>
 
         </div>
