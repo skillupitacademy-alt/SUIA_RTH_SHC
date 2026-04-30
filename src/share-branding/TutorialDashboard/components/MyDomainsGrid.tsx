@@ -79,13 +79,13 @@ export function MyDomainsGrid() {
               </div>
 
               {/* Description */}
-              <p className="mb-6 text-xs font-medium leading-relaxed text-gray-600">
+              <p className="mb-6 text-[13px] font-medium leading-relaxed text-gray-600">
                 {domain.description}
               </p>
 
               {/* Progress */}
               <div className="mb-6">
-                <div className="mb-2 flex items-center justify-between text-[11px] font-bold uppercase tracking-wider">
+                <div className="mb-2 flex items-center justify-between text-xs font-bold uppercase tracking-wider">
                   <span style={{ color: config.color }}>Your Progress</span>
                   <span style={{ color: config.color }}>{domain.percent}%</span>
                 </div>
@@ -102,36 +102,36 @@ export function MyDomainsGrid() {
                 <div className="flex flex-col items-center justify-center rounded-xl bg-gray-50/50 p-2.5 border border-gray-50">
                   <div className="mb-1 flex items-center gap-1.5 text-gray-500">
                     <BookOpen size={14} style={{ color: config.color }} />
-                    <span className="text-[11px] font-black text-gray-900">{domain.stats.topics}</span>
+                    <span className="text-[13px] font-black text-gray-900">{domain.stats.topics}</span>
                   </div>
-                  <span className="text-[9px] font-bold text-gray-500 uppercase">Topics</span>
+                  <span className="text-[11px] font-bold text-gray-500 uppercase">Topics</span>
                 </div>
                 <div className="flex flex-col items-center justify-center rounded-xl bg-gray-50/50 p-2.5 border border-gray-50">
                   <div className="mb-1 flex items-center gap-1.5 text-gray-500">
                     <Briefcase size={14} style={{ color: config.color }} />
-                    <span className="text-[11px] font-black text-gray-900">{domain.stats.projects}</span>
+                    <span className="text-[13px] font-black text-gray-900">{domain.stats.projects}</span>
                   </div>
-                  <span className="text-[9px] font-bold text-gray-500 uppercase">Projects</span>
+                  <span className="text-[11px] font-bold text-gray-500 uppercase">Projects</span>
                 </div>
                 <div className="flex flex-col items-center justify-center rounded-xl bg-gray-50/50 p-2.5 border border-gray-50">
                   <div className="mb-1 flex items-center gap-1.5 text-gray-500">
                     <Bookmark size={14} style={{ color: config.color }} />
-                    <span className="text-[11px] font-black text-gray-900">{domain.stats.exams}</span>
+                    <span className="text-[13px] font-black text-gray-900">{domain.stats.exams}</span>
                   </div>
-                  <span className="text-[9px] font-bold text-gray-500 uppercase">Exams</span>
+                  <span className="text-[11px] font-bold text-gray-500 uppercase">Exams</span>
                 </div>
               </div>
 
               {/* Career Outcomes */}
               <div className="mb-8">
-                <span className="mb-3 block text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                <span className="mb-3 block text-xs font-bold uppercase tracking-wider text-gray-500">
                   Career Outcomes
                 </span>
                 <div className="flex flex-wrap gap-2">
                   {domain.careerOutcomes.map((outcome, idx) => (
                     <span 
                       key={idx}
-                      className="rounded-lg px-2.5 py-1 text-[10px] font-bold transition-colors"
+                      className="rounded-lg px-2.5 py-1 text-[11px] font-bold transition-colors"
                       style={{ backgroundColor: config.bg, color: config.colorDark }}
                     >
                       {outcome}
