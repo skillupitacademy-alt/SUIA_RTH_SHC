@@ -19,7 +19,7 @@ export function TutorialTopBar({ onOpenSidebar }: { onOpenSidebar: () => void })
         </button>
         <div className="hidden flex-col md:flex">
           <h1 className="text-xl font-black text-gray-900">{header.title}</h1>
-          <p className="text-xs font-semibold text-gray-600">{header.subtitle}</p>
+          <p className="text-xs font-semibold text-gray-700">{header.subtitle}</p>
         </div>
       </div>
 
@@ -33,7 +33,7 @@ export function TutorialTopBar({ onOpenSidebar }: { onOpenSidebar: () => void })
             </div>
             <div className="flex flex-col">
               <span className="text-lg font-black leading-none text-gray-900">{header.streakCount}</span>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-gray-600">{header.streakLabel}</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-gray-700">{header.streakLabel}</span>
             </div>
           </div>
 
@@ -44,7 +44,7 @@ export function TutorialTopBar({ onOpenSidebar }: { onOpenSidebar: () => void })
             </div>
             <div className="flex flex-col">
               <span className="text-lg font-black leading-none text-gray-900">{header.xpPoints}</span>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-gray-600">XP Points</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-gray-700">XP Points</span>
             </div>
           </div>
 
@@ -55,7 +55,7 @@ export function TutorialTopBar({ onOpenSidebar }: { onOpenSidebar: () => void })
             </div>
             <div className="flex flex-col">
               <span className="text-lg font-black leading-none text-gray-900">Level {header.level}</span>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-gray-600">{header.levelRole}</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-gray-700">{header.levelRole}</span>
             </div>
           </div>
         </div>
@@ -86,9 +86,9 @@ export function TutorialTopBar({ onOpenSidebar }: { onOpenSidebar: () => void })
             </div>
             <div className="hidden flex-col items-start sm:flex">
               <span className="text-sm font-bold text-gray-900">{header.userName}</span>
-              <span className="text-[10px] font-semibold text-gray-600">{header.userRole}</span>
+              <span className="text-[10px] font-semibold text-gray-700">{header.userRole}</span>
             </div>
-            <ChevronDown size={16} className="text-gray-500 hidden sm:block" aria-hidden="true" />
+            <ChevronDown size={16} className="text-gray-600 hidden sm:block" aria-hidden="true" />
           </button>
         </div>
       </div>

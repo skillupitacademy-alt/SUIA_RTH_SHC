@@ -49,7 +49,7 @@ function TutorialDashboardContent() {
               <MyDomainsGrid />
             </div>
 
-            {/* Row: Assignments + Projects + Career Readiness (each 2/6 = 1/3) */}
+            {/* Row: Assignments + Projects + Engine Synchronization (each 2/6 = 1/3) */}
             <div className="lg:col-span-2">
               <AssignmentsWidget />
             </div>
@@ -57,15 +57,15 @@ function TutorialDashboardContent() {
               <ProjectsWidget />
             </div>
             <div className="lg:col-span-2">
-              <CareerReadinessWidget />
+              <EngineSynchronizationWidget />
             </div>
 
-            {/* Row: Learning Progress + Engine Synchronization (each 3/6 = 1/2) */}
+            {/* Row: Learning Progress + Career Readiness (each 3/6 = 1/2) */}
             <div className="lg:col-span-3">
               <LearningProgressOverview />
             </div>
             <div className="lg:col-span-3">
-              <EngineSynchronizationWidget />
+              <CareerReadinessWidget />
             </div>
 
           </div>
