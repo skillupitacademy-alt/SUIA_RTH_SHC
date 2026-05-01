@@ -1,0 +1,35 @@
+<svg width="200" height="240" viewBox="0 0 200 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Main Card Body -->
+  <rect x="10" y="10" width="180" height="220" rx="16" fill="white" stroke="#E2E8F0" stroke-width="1"/>
+  
+  <!-- Card Header/Banner -->
+  <path d="M10 26C10 17.1634 17.1634 10 26 10H174C182.837 10 190 17.1634 190 26V40H10V26Z" fill="#F0F9FF"/>
+  <rect x="30" y="22" width="140" height="8" rx="4" fill="#BAE6FD"/>
+  
+  <!-- Content Lines (Placeholders) -->
+  <rect x="30" y="60" width="140" height="12" rx="4" fill="#F1F5F9"/>
+  <rect x="30" y="84" width="140" height="12" rx="4" fill="#F1F5F9"/>
+  <rect x="30" y="108" width="100" height="12" rx="4" fill="#F1F5F9"/>
+  
+  <rect x="30" y="140" width="140" height="6" rx="3" fill="#F8FAFC"/>
+  <rect x="30" y="156" width="120" height="6" rx="3" fill="#F8FAFC"/>
+  
+  <!-- Success Badge at Bottom Right -->
+  <circle cx="160" cy="200" r="24" fill="white" filter="url(#filter0_d)"/>
+  <circle cx="160" cy="200" r="20" fill="#FBBF24"/>
+  <path d="M152 200L158 206L168 194" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Decorative shadow/glow -->
+  <defs>
+    <filter id="filter0_d" x="130" y="170" width="60" height="60" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+      <feOffset dy="4"/>
+      <feGaussianBlur stdDeviation="6"/>
+      <feComposite in2="hardAlpha" operator="out"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.1 0"/>
+      <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow" result="shape"/>
+    </filter>
+  </defs>
+</svg>

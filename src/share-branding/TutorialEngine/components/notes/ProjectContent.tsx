@@ -43,7 +43,7 @@ export function ProjectContent({ onNext }: { onNext?: () => void }) {
           <div className="space-y-1">
             <div className="flex items-center gap-3">
               <h1 className="text-4xl font-black text-[#1e293b] tracking-tight">Project: User Management Dashboard</h1>
-              <div className="rounded-full bg-orange-100 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-orange-600 border border-transparent">Intermediate</div>
+              <div className="rounded-full bg-orange-100 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-orange-600 border border-slate-200">Intermediate</div>
             </div>
             <p className="text-[15px] font-medium text-slate-500">Build a user management dashboard that fetches and manages users using Promises and async/await.</p>
           </div>
@@ -62,7 +62,7 @@ export function ProjectContent({ onNext }: { onNext?: () => void }) {
       </div>
 
       {/* Project Overview Banner */}
-      <section className="rounded-[40px] bg-gradient-to-br from-rose-50 to-orange-50 p-10 relative overflow-hidden group border border-transparent shadow-sm">
+      <section className="rounded-[40px] bg-gradient-to-br from-rose-50 to-orange-50 p-10 relative overflow-hidden group border border-slate-200 shadow-sm">
          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
             <div className="lg:col-span-7 space-y-8 relative z-10">
                <div className="flex items-center gap-3">
@@ -76,14 +76,14 @@ export function ProjectContent({ onNext }: { onNext?: () => void }) {
                </p>
                
                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-                  <div className="rounded-2xl bg-white p-5 shadow-sm space-y-3 border border-transparent">
+                  <div className="rounded-2xl bg-white p-5 shadow-sm space-y-3 border border-slate-200">
                      <div className="flex items-center gap-2 text-rose-500">
                         <Icons.Globe size={18} />
                         <span className="text-xs font-black uppercase tracking-widest">Real-world Use</span>
                      </div>
                      <p className="text-[11px] font-bold text-slate-500">Admin dashboards, CRM systems, user panels</p>
                   </div>
-                  <div className="rounded-2xl bg-white p-5 shadow-sm space-y-3 border border-transparent">
+                  <div className="rounded-2xl bg-white p-5 shadow-sm space-y-3 border border-slate-200">
                      <div className="flex items-center gap-2 text-orange-500">
                         <Icons.Code2 size={18} />
                         <span className="text-xs font-black uppercase tracking-widest">Skills You'll Use</span>
@@ -132,7 +132,7 @@ export function ProjectContent({ onNext }: { onNext?: () => void }) {
       {/* Tab Content */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
          <div className="lg:col-span-7 space-y-8">
-            <div className="rounded-[32px] bg-white p-10 shadow-sm border border-transparent space-y-8">
+            <div className="rounded-[32px] bg-white p-10 shadow-sm border border-slate-200 space-y-8">
                <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-50 text-slate-800">
                      <Icons.Layers size={22} />
@@ -152,7 +152,7 @@ export function ProjectContent({ onNext }: { onNext?: () => void }) {
             </div>
             
             {/* Starter Template */}
-            <div className="rounded-[24px] bg-slate-50 p-6 flex items-center justify-between gap-6 border border-transparent">
+            <div className="rounded-[24px] bg-slate-50 p-6 flex items-center justify-between gap-6 border border-slate-200">
                <div className="flex items-center gap-4">
                   <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-sm text-orange-500">
                      <Icons.Code2 size={24} />
@@ -162,14 +162,14 @@ export function ProjectContent({ onNext }: { onNext?: () => void }) {
                      <p className="text-[12px] font-medium text-slate-500">Get started with a boilerplate code.</p>
                   </div>
                </div>
-               <button className="flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-xs font-black text-slate-700 shadow-sm hover:bg-slate-50 transition-all border border-transparent">
+               <button className="flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-xs font-black text-slate-700 shadow-sm hover:bg-slate-50 transition-all border border-slate-200">
                   <Icons.Download size={16} /> Download Starter
                </button>
             </div>
          </div>
          
          <div className="lg:col-span-5 space-y-8">
-            <div className="rounded-[32px] bg-white p-10 shadow-sm border border-transparent space-y-8">
+            <div className="rounded-[32px] bg-white p-10 shadow-sm border border-slate-200 space-y-8">
                <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-50 text-rose-500">
                      <Icons.Gift size={22} />
@@ -179,7 +179,7 @@ export function ProjectContent({ onNext }: { onNext?: () => void }) {
                <ul className="space-y-5">
                   {deliverableItems.map((item, i) => (
                     <li key={i} className="flex items-center gap-4">
-                       <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-50 text-slate-400 border border-transparent">
+                       <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-50 text-slate-400 border border-slate-200">
                           <Icons.Check size={14} />
                        </div>
                        <p className="text-[13px] font-bold text-slate-600 leading-tight">{item}</p>
@@ -192,7 +192,7 @@ export function ProjectContent({ onNext }: { onNext?: () => void }) {
 
       {/* Footer Navigation */}
       <div className="flex items-center justify-between gap-4 pt-10">
-        <button className="group flex flex-1 items-center gap-4 rounded-2xl bg-white p-4 shadow-sm hover:bg-slate-50 transition-all active:scale-95 text-left border border-transparent">
+        <button className="group flex flex-1 items-center gap-4 rounded-2xl bg-white p-4 shadow-sm hover:bg-slate-50 transition-all active:scale-95 text-left border border-slate-200">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 group-hover:bg-white transition-colors">
             <Icons.ArrowLeft size={18} className="text-slate-400 group-hover:text-slate-600" aria-hidden="true" />
           </div>
@@ -202,7 +202,7 @@ export function ProjectContent({ onNext }: { onNext?: () => void }) {
           </div>
         </button>
 
-        <button className="hidden sm:flex items-center gap-2 rounded-2xl bg-white px-8 py-4 text-sm font-black text-slate-600 shadow-sm hover:bg-slate-50 transition-all active:scale-95 border border-transparent">
+        <button className="hidden sm:flex items-center gap-2 rounded-2xl bg-white px-8 py-4 text-sm font-black text-slate-600 shadow-sm hover:bg-slate-50 transition-all active:scale-95 border border-slate-200">
            <Icons.LayoutGrid size={18} aria-hidden="true" /> Back to Subtopic
         </button>
 

@@ -9,7 +9,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
   return (
     <aside 
       aria-label="Tools and statistics sidebar" 
-      className={`absolute bottom-0 right-0 top-0 z-40 flex w-[350px] flex-col overflow-y-auto bg-white p-5 hide-scrollbar transition-transform duration-300 ${isOpen ? 'translate-x-0 shadow-2xl' : 'translate-x-full shadow-none'} border border-transparent`}
+      className={`absolute bottom-0 right-0 top-0 z-40 flex w-[350px] flex-col overflow-y-auto bg-white p-5 hide-scrollbar transition-transform duration-300 ${isOpen ? 'translate-x-0 shadow-2xl' : 'translate-x-full shadow-none'} border border-slate-200`}
       tabIndex={0}
       role="region"
     >
@@ -19,7 +19,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
         {activeTab === 'assignments' && (
           <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
             {/* Assignment Info */}
-            <section className="rounded-3xl bg-white p-6 shadow-sm border border-transparent">
+            <section className="rounded-3xl bg-white p-6 shadow-sm border border-slate-200">
               <div className="flex items-center gap-2 mb-6">
                 <Icons.CalendarCheck size={18} className="text-rose-500" />
                 <h2 className="text-sm font-black text-slate-800 uppercase tracking-widest">Assignment Info</h2>
@@ -40,7 +40,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
             </section>
 
             {/* Deadline */}
-            <section className="rounded-3xl bg-white p-6 shadow-sm border border-transparent">
+            <section className="rounded-3xl bg-white p-6 shadow-sm border border-slate-200">
               <div className="flex items-center gap-2 mb-4">
                 <Icons.Clock size={18} className="text-orange-500" />
                 <h2 className="text-sm font-black text-slate-800 uppercase tracking-widest">Deadline</h2>
@@ -55,7 +55,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
             </section>
 
             {/* Rewards */}
-            <section className="rounded-3xl bg-white p-6 shadow-sm border border-transparent">
+            <section className="rounded-3xl bg-white p-6 shadow-sm border border-slate-200">
               <div className="flex items-center gap-2 mb-6">
                 <Icons.Trophy size={18} className="text-amber-500" />
                 <h2 className="text-sm font-black text-slate-800 uppercase tracking-widest">Rewards</h2>
@@ -75,7 +75,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
             </section>
 
             {/* Submit Assignment */}
-            <section className="rounded-3xl bg-white p-6 shadow-sm space-y-6 border border-transparent">
+            <section className="rounded-3xl bg-white p-6 shadow-sm space-y-6 border border-slate-200">
               <div className="flex items-center gap-2">
                 <Icons.UploadCloud size={18} className="text-primary-dark" />
                 <h2 className="text-sm font-black text-slate-800 uppercase tracking-widest">Submit Assignment</h2>
@@ -118,7 +118,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
             </section>
 
             {/* Helpful Resources */}
-            <section className="rounded-3xl bg-white p-6 shadow-sm border border-transparent">
+            <section className="rounded-3xl bg-white p-6 shadow-sm border border-slate-200">
                <div className="flex items-center gap-2 mb-6">
                   <Icons.Link size={18} className="text-orange-600" />
                   <h2 className="text-sm font-black text-slate-800 uppercase tracking-widest">Helpful Resources</h2>
@@ -148,7 +148,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
         {activeTab === 'project' && (
           <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
             {/* Your Progress */}
-            <section className="rounded-3xl bg-white p-6 shadow-sm border border-transparent">
+            <section className="rounded-3xl bg-white p-6 shadow-sm border border-slate-200">
               <div className="flex items-center justify-between mb-6">
                  <h2 className="text-sm font-black text-slate-800 uppercase tracking-widest">Your Progress</h2>
               </div>
@@ -191,7 +191,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
             </section>
 
             {/* Project Info */}
-            <section className="rounded-3xl bg-white p-6 shadow-sm border border-transparent">
+            <section className="rounded-3xl bg-white p-6 shadow-sm border border-slate-200">
               <div className="flex items-center gap-2 mb-6">
                 <Icons.Calendar size={18} className="text-rose-500" />
                 <h2 className="text-sm font-black text-slate-800 uppercase tracking-widest">Project Info</h2>
@@ -212,7 +212,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
             </section>
 
             {/* Deadline */}
-            <section className="rounded-3xl bg-white p-6 shadow-sm border border-transparent">
+            <section className="rounded-3xl bg-white p-6 shadow-sm border border-slate-200">
               <div className="flex items-center gap-2 mb-4">
                 <Icons.Clock size={18} className="text-orange-500" />
                 <h2 className="text-sm font-black text-slate-800 uppercase tracking-widest">Deadline</h2>
@@ -227,7 +227,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
             </section>
 
             {/* Submit Project */}
-            <section className="rounded-3xl bg-white p-6 shadow-sm space-y-6 border border-transparent">
+            <section className="rounded-3xl bg-white p-6 shadow-sm space-y-6 border border-slate-200">
               <div className="flex items-center gap-2">
                 <Icons.UploadCloud size={18} className="text-primary-dark" />
                 <h2 className="text-sm font-black text-slate-800 uppercase tracking-widest">Submit Your Project</h2>
@@ -246,7 +246,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
             </section>
 
             {/* Need Help? */}
-            <section className="rounded-[32px] bg-rose-50/50 p-8 space-y-6 relative overflow-hidden group border border-transparent">
+            <section className="rounded-[32px] bg-rose-50/50 p-8 space-y-6 relative overflow-hidden group border border-slate-200">
                <div className="flex items-center gap-3 relative z-10">
                   <Icons.HeartPulse size={18} className="text-rose-500" fill="currentColor" />
                   <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">Need Help?</h3>
@@ -258,7 +258,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
                   <button className="flex items-center justify-center gap-2 rounded-xl bg-[#ec4899] py-3 px-2 text-white shadow-lg transition-all hover:bg-[#db2777] active:scale-95">
                      <span className="text-[10px] font-black uppercase tracking-wider">Ask AI Tutor</span>
                   </button>
-                  <button className="flex items-center justify-center gap-2 rounded-xl bg-white py-3 px-2 text-slate-700 shadow-sm transition-all hover:bg-slate-50 active:scale-95 border border-transparent">
+                  <button className="flex items-center justify-center gap-2 rounded-xl bg-white py-3 px-2 text-slate-700 shadow-sm transition-all hover:bg-slate-50 active:scale-95 border border-slate-200">
                      <span className="text-[10px] font-black uppercase tracking-wider">Contact Mentor</span>
                   </button>
                </div>
@@ -269,7 +269,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
             </section>
 
             {/* Badge */}
-            <section className="rounded-3xl bg-white p-6 shadow-sm border border-transparent flex flex-col items-center text-center space-y-4">
+            <section className="rounded-3xl bg-white p-6 shadow-sm border border-slate-200 flex flex-col items-center text-center space-y-4">
                <div className="flex items-center gap-2 w-full">
                   <Icons.Award size={18} className="text-purple-500" />
                   <h2 className="text-sm font-black text-slate-800 uppercase tracking-widest">Badge You'll Earn</h2>
@@ -294,7 +294,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
         {activeTab === 'quiz' && (
           <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
             {/* Time Left */}
-            <section className="rounded-3xl bg-white p-6 shadow-sm border border-transparent flex flex-col items-center">
+            <section className="rounded-3xl bg-white p-6 shadow-sm border border-slate-200 flex flex-col items-center">
               <h2 className="text-sm font-black text-slate-800 uppercase tracking-widest mb-6 w-full text-left">Time Left</h2>
               <div className="relative h-32 w-32 flex items-center justify-center">
                  <svg className="absolute inset-0 h-full w-full -rotate-90 transform" viewBox="0 0 100 100">
@@ -320,7 +320,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
             </section>
 
             {/* Question Navigator */}
-            <section className="rounded-3xl bg-white p-6 shadow-sm border border-transparent space-y-6">
+            <section className="rounded-3xl bg-white p-6 shadow-sm border border-slate-200 space-y-6">
               <h2 className="text-sm font-black text-slate-800 uppercase tracking-widest">Question Navigator</h2>
               <div className="grid grid-cols-4 gap-2 text-[7px] font-black uppercase tracking-tighter">
                  <div className="flex items-center gap-1.5"><div className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Answered</div>
@@ -345,7 +345,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
                      key={q.id} 
                      className={`flex h-10 items-center justify-center rounded-xl text-sm font-black transition-all border ${
                        q.status === 'answered' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                       q.status === 'current' ? 'bg-rose-500 text-white shadow-lg shadow-rose-100 border-transparent' :
+                       q.status === 'current' ? 'bg-rose-500 text-white shadow-lg shadow-rose-100 border-slate-200' :
                        q.status === 'marked' ? 'bg-amber-50 text-amber-600 border-amber-200' :
                        'bg-white text-slate-400 border-slate-100'
                      }`}
@@ -357,7 +357,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
             </section>
 
             {/* AI Study Assistant */}
-            <section className="rounded-[32px] bg-gradient-to-br from-rose-50 to-white p-8 space-y-6 relative overflow-hidden group border border-transparent">
+            <section className="rounded-[32px] bg-gradient-to-br from-rose-50 to-white p-8 space-y-6 relative overflow-hidden group border border-slate-200">
                <div className="flex items-center justify-between relative z-10">
                   <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white shadow-sm text-primary-dark">
                      <Icons.Bot size={22} />
@@ -380,7 +380,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
             </section>
 
             {/* Performance Snapshot */}
-            <section className="rounded-3xl bg-white p-6 shadow-sm border border-transparent space-y-6">
+            <section className="rounded-3xl bg-white p-6 shadow-sm border border-slate-200 space-y-6">
                <h2 className="text-sm font-black text-slate-800 uppercase tracking-widest">Performance Snapshot</h2>
                <div className="flex items-center gap-6">
                   <div className="relative h-24 w-24 flex items-center justify-center">
@@ -420,7 +420,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
             </section>
 
             {/* Struggling Link */}
-            <section className="rounded-3xl bg-white p-6 shadow-sm border border-transparent flex items-center gap-4 group cursor-pointer hover:bg-slate-50 transition-colors">
+            <section className="rounded-3xl bg-white p-6 shadow-sm border border-slate-200 flex items-center gap-4 group cursor-pointer hover:bg-slate-50 transition-colors">
                <div className="flex-1 space-y-1">
                   <h3 className="text-[12px] font-black text-slate-800">Struggling with this topic?</h3>
                   <p className="text-[10px] font-bold text-slate-500">Review weak areas and get a personalized study plan.</p>
@@ -440,7 +440,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
         {activeTab === 'code-example' && (
           <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
             {/* Code Explanation */}
-            <section className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
+            <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
               <div className="flex items-center gap-2 mb-4">
                 <Icons.Lightbulb size={18} className="text-amber-500" />
                 <h2 className="text-sm font-black text-slate-800 uppercase tracking-widest">Code Explanation</h2>
@@ -482,7 +482,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
             </section>
 
             {/* Related Concepts */}
-            <section className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
+            <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
               <div className="flex items-center gap-2 mb-4">
                 <Icons.Link2 size={18} className="text-orange-600" />
                 <h2 className="text-sm font-black text-slate-800 uppercase tracking-widest">Related Concepts</h2>
@@ -502,7 +502,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
             </section>
 
             {/* AI Tutor Help Card (Promotional) */}
-            <section className="relative overflow-hidden rounded-[32px] bg-white border border-gray-100 shadow-xl shadow-slate-200/50 p-8 space-y-6">
+            <section className="relative overflow-hidden rounded-[32px] bg-white border border-slate-200 shadow-xl shadow-slate-200/50 p-8 space-y-6">
               <div className="flex justify-center relative">
                  <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-orange-50 border border-orange-100 shadow-inner relative z-10">
                     <Icons.Bot size={40} className="text-orange-500" />
@@ -532,7 +532,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
 
         {/* AI Tutor Help Card (Standard / Deep Dive) */}
         {activeTab !== 'code-example' && activeTab !== 'layman' && (
-          <section className="relative overflow-hidden rounded-[32px] bg-white border border-gray-100 shadow-xl shadow-slate-200/50">
+          <section className="relative overflow-hidden rounded-[32px] bg-white border border-slate-200 shadow-xl shadow-slate-200/50">
             <div className="absolute top-0 right-0 p-8 opacity-5">
                <Icons.Bot size={120} />
             </div>
@@ -582,7 +582,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
             </section>
 
             {/* Key Terms */}
-            <section className="rounded-3xl border border-gray-100 bg-white p-5 shadow-sm">
+            <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
               <div className="flex items-center gap-2 mb-4">
                 <Icons.BookMarked size={18} style={{ color: brand.primaryColor }} aria-hidden="true" />
                 <h2 className="text-sm font-black text-slate-800">Key Terms</h2>
@@ -598,7 +598,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
             </section>
 
             {/* Reading Time */}
-            <section className="flex items-center gap-3 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+            <section className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-50">
                 <Icons.Clock size={20} className="text-slate-400" aria-hidden="true" />
               </div>
@@ -679,7 +679,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
             <span className="bg-gray-200 h-px flex-1"></span>
           </h2>
           <div className="flex items-center gap-4 mb-4">
-             <div className="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-[3px] border-gray-100">
+             <div className="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-[3px] border-slate-200">
                 <svg className="absolute inset-0 h-full w-full -rotate-90 transform" viewBox="0 0 100 100">
                   <circle
                     className="text-gray-100 transition-all duration-1000 ease-out"
@@ -726,7 +726,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
             XP from this Subtopic
             <span className="bg-gray-200 h-px flex-1"></span>
           </h2>
-          <div className="flex items-center justify-between rounded-xl bg-slate-50 border border-gray-100 p-4">
+          <div className="flex items-center justify-between rounded-xl bg-slate-50 border border-slate-200 p-4">
              <span className="text-lg font-black text-emerald-700">+{data.xpStats.earned} XP</span>
              <span className="text-xs font-bold text-slate-600 flex items-center gap-1">Total XP: {data.xpStats.total} <Icons.Star size={12} aria-hidden="true" /></span>
           </div>
@@ -737,7 +737,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
           <h2 className="mb-4 text-[13px] font-bold text-gray-900">Related Subtopics</h2>
           <div className="space-y-2">
             {data.relatedSubtopics.map(sub => (
-              <button key={sub.id} className="flex w-full items-center justify-between rounded-xl border border-gray-100 p-3 hover:bg-gray-50 transition-colors text-left">
+              <button key={sub.id} className="flex w-full items-center justify-between rounded-xl border border-slate-200 p-3 hover:bg-gray-50 transition-colors text-left">
                  <span className="text-xs font-bold text-slate-700">{sub.title}</span>
                  {sub.status === 'next' ? (
                    <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1 group-hover:text-slate-600 transition-colors">Next <Icons.ChevronRight size={12} aria-hidden="true" /></span>
@@ -750,7 +750,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
         </section>
 
         {/* Footer Actions */}
-        <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
+        <div className="flex items-center gap-3 pt-4 border-t border-slate-200">
            <button className="flex-1 flex justify-center items-center gap-1.5 rounded-lg border border-gray-200 py-2 text-[11px] font-bold text-slate-600 hover:bg-gray-50 transition-colors">
              <Icons.Bookmark size={14} aria-hidden="true" /> Add to Revision
            </button>

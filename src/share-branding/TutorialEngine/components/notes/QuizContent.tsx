@@ -75,14 +75,14 @@ export function QuizContent({ onNext }: { onNext?: () => void }) {
       </div>
 
       {/* Question Card */}
-      <section className="rounded-[32px] bg-white p-10 shadow-sm border border-transparent space-y-8 relative group">
+      <section className="rounded-[32px] bg-white p-10 shadow-sm border border-slate-200 space-y-8 relative group">
          <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
                <div className="rounded-lg bg-rose-500 px-3 py-1.5 text-xs font-black text-white shadow-lg shadow-rose-100">Q4</div>
-               <div className="flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-1.5 text-[10px] font-black text-slate-600 border border-transparent">
+               <div className="flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-1.5 text-[10px] font-black text-slate-600 border border-slate-200">
                   <Icons.ListChecks size={14} /> Single Choice
                </div>
-               <div className="flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-1.5 text-[10px] font-black text-slate-600 border border-transparent">
+               <div className="flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-1.5 text-[10px] font-black text-slate-600 border border-slate-200">
                   <Icons.Star size={14} className="text-amber-500" fill="currentColor" /> 2 Points
                </div>
             </div>
@@ -134,7 +134,7 @@ export function QuizContent({ onNext }: { onNext?: () => void }) {
 
          {/* Explanation Box */}
          {selectedOption === 'C' && (
-            <div className="rounded-[24px] bg-rose-50/50 p-8 flex items-start gap-6 border border-transparent relative overflow-hidden animate-in fade-in slide-in-from-top-4 duration-500">
+            <div className="rounded-[24px] bg-rose-50/50 p-8 flex items-start gap-6 border border-slate-200 relative overflow-hidden animate-in fade-in slide-in-from-top-4 duration-500">
                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white shadow-sm text-rose-500 relative z-10">
                   <Icons.Lightbulb size={24} />
                </div>
@@ -154,11 +154,11 @@ export function QuizContent({ onNext }: { onNext?: () => void }) {
 
       {/* Footer Navigation */}
       <div className="flex items-center justify-between gap-4 pt-4">
-        <button className="flex items-center gap-3 rounded-2xl bg-white px-8 py-4 text-sm font-black text-slate-600 shadow-sm hover:bg-slate-50 transition-all border border-transparent">
+        <button className="flex items-center gap-3 rounded-2xl bg-white px-8 py-4 text-sm font-black text-slate-600 shadow-sm hover:bg-slate-50 transition-all border border-slate-200">
            <Icons.ArrowLeft size={18} /> Previous
         </button>
 
-        <button className="hidden sm:flex items-center gap-2 rounded-2xl bg-white px-8 py-4 text-sm font-black text-slate-600 shadow-sm hover:bg-slate-50 transition-all border border-transparent">
+        <button className="hidden sm:flex items-center gap-2 rounded-2xl bg-white px-8 py-4 text-sm font-black text-slate-600 shadow-sm hover:bg-slate-50 transition-all border border-slate-200">
            <Icons.RotateCcw size={18} /> Clear Answer
         </button>
 

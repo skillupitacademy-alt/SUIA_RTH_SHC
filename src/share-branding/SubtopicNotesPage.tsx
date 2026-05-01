@@ -1,3 +1,4 @@
+// Rebuild trigger: Hardened UI with visible borders and fixed navigation
 import React, { useState } from 'react';
 import { useBrand } from './PostLandingPage/app/context/BrandContext';
 import { SubtopicNotesViewData } from './subtopicNotesData';
@@ -64,6 +65,10 @@ export function SubtopicNotesPage({ data }: SubtopicNotesPageProps) {
           isOpen={isSidebarOpen}
           activeId={activeTab}
           onSelect={(id) => {
+            if (id === 'overview') {
+              window.location.href = 'http://localhost:3003/start-learning/subtopic';
+              return;
+            }
             setActiveTab(id);
             setIsSidebarOpen(false);
           }}

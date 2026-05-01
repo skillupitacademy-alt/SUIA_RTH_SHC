@@ -17,10 +17,10 @@ export function RealLifeExamplesContent({ data }: { data: SubtopicNotesViewData[
           <p className="text-[14px] font-medium text-slate-500">{data.intro}</p>
         </div>
         <div className="flex items-center gap-3">
-          <button className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-100 bg-white text-slate-500 shadow-sm hover:bg-gray-50 transition-all active:scale-95" aria-label="Bookmark">
+          <button className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 shadow-sm hover:bg-gray-50 transition-all active:scale-95" aria-label="Bookmark">
             <Icons.Bookmark size={18} aria-hidden="true" />
           </button>
-          <button className="flex items-center gap-2 rounded-xl border border-gray-100 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm hover:bg-gray-50 transition-all active:scale-95">
+          <button className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm hover:bg-gray-50 transition-all active:scale-95">
             <Icons.Share2 size={18} aria-hidden="true" /> Share
           </button>
         </div>
@@ -28,9 +28,7 @@ export function RealLifeExamplesContent({ data }: { data: SubtopicNotesViewData[
 
       {/* Hero Analogy Card */}
       <div 
-        className="relative overflow-hidden rounded-[40px] border p-8 md:p-10 shadow-sm transition-all duration-700"
-        style={{ 
-          borderColor: `${brand.primaryColor}22`, 
+        className="relative overflow-hidden rounded-[40px] border p-8 md:p-10 shadow-sm transition-all duration-700 border-slate-200" style={{ 
           background: `linear-gradient(135deg, ${brand.primaryColor}08, ${brand.primaryColor}03)` 
         }}
       >
@@ -61,7 +59,7 @@ export function RealLifeExamplesContent({ data }: { data: SubtopicNotesViewData[
             <p className="text-[15px] font-medium leading-relaxed text-slate-600">
               {data.hero.description}
             </p>
-            <div className="flex items-center gap-3 rounded-2xl bg-white p-4 border shadow-sm" style={{ borderColor: `${brand.primaryColor}11` }}>
+            <div className="flex items-center gap-3 rounded-2xl bg-white p-4 border-slate-200 shadow-sm">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: `${brand.primaryColor}15` }}>
                 <Icons.Lightbulb size={20} style={{ color: brand.primaryColor }} fill={`${brand.primaryColor}33`} aria-hidden="true" />
               </div>
@@ -85,7 +83,7 @@ export function RealLifeExamplesContent({ data }: { data: SubtopicNotesViewData[
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {data.scenarios.map((item) => (
-            <div key={item.id} className="group flex flex-col rounded-3xl border border-gray-100 bg-white p-6 shadow-sm transition-all hover:shadow-md hover:-translate-y-1">
+            <div key={item.id} className="group flex flex-col rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:shadow-md hover:-translate-y-1">
               <div 
                 className="mb-6 flex aspect-square items-center justify-center rounded-2xl bg-slate-50 p-4 transition-colors group-hover:bg-opacity-50"
                 style={{ backgroundColor: `${brand.primaryColor}05` } as any}
@@ -151,7 +149,7 @@ export function RealLifeExamplesContent({ data }: { data: SubtopicNotesViewData[
 
       {/* Bottom Navigation */}
       <div className="flex items-center justify-between gap-4 pt-4 pb-10">
-        <button className="group flex flex-1 items-center gap-4 rounded-2xl border border-gray-100 bg-white p-4 text-left shadow-sm transition-all hover:bg-gray-50 active:scale-95">
+        <button className="group flex flex-1 items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 text-left shadow-sm transition-all hover:bg-gray-50 active:scale-95">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 group-hover:bg-white transition-colors">
             <Icons.ArrowLeft size={18} className="text-slate-400 group-hover:text-slate-600" aria-hidden="true" />
           </div>
@@ -161,7 +159,7 @@ export function RealLifeExamplesContent({ data }: { data: SubtopicNotesViewData[
           </div>
         </button>
 
-        <button className="hidden sm:flex items-center gap-2 rounded-2xl border border-gray-100 bg-white px-8 py-4 text-sm font-black text-slate-600 shadow-sm hover:bg-gray-50 transition-all active:scale-95">
+        <button className="hidden sm:flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-8 py-4 text-sm font-black text-slate-600 shadow-sm hover:bg-gray-50 transition-all active:scale-95">
            <Icons.LayoutGrid size={18} aria-hidden="true" /> Back to Subtopic
         </button>
 

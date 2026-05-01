@@ -20,13 +20,13 @@ export function LaymanExplanationContent({ data }: { data: SubtopicNotesViewData
           {data.badge}
         </div>
         <div className="flex items-center gap-3">
-          <button className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-100 bg-white text-slate-500 shadow-sm hover:bg-gray-50" aria-label="Bookmark">
+          <button className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm hover:bg-gray-50" aria-label="Bookmark">
             <Icons.Bookmark size={16} />
           </button>
-          <button className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-100 bg-white text-slate-500 shadow-sm hover:bg-gray-50" aria-label="Listen">
+          <button className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm hover:bg-gray-50" aria-label="Listen">
             <Icons.Volume2 size={16} />
           </button>
-          <button className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-100 bg-white text-slate-500 shadow-sm hover:bg-gray-50" aria-label="Share">
+          <button className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm hover:bg-gray-50" aria-label="Share">
             <Icons.Share2 size={16} />
           </button>
         </div>
@@ -43,7 +43,7 @@ export function LaymanExplanationContent({ data }: { data: SubtopicNotesViewData
       {/* Main Concept Card */}
       <div className="space-y-4">
         <h2 className="text-lg font-bold" style={{ color: brand.primaryColor }}>What is a Component?</h2>
-        <div className="flex flex-col md:flex-row gap-8 rounded-3xl border border-gray-100 bg-white p-8 shadow-sm">
+        <div className="flex flex-col md:flex-row gap-8 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
           <div className="flex-1 flex justify-center items-center">
             <img 
               src={data.mainConcept.image} 
@@ -72,7 +72,7 @@ export function LaymanExplanationContent({ data }: { data: SubtopicNotesViewData
           {data.reasonGrid.map((item) => {
             const Icon = (Icons as any)[item.icon] || Icons.HelpCircle;
             return (
-              <div key={item.id} className="flex flex-col items-center text-center p-6 rounded-2xl border border-gray-50 bg-[#fff9f5] space-y-3">
+              <div key={item.id} className="flex flex-col items-center text-center p-6 rounded-2xl border border-slate-200 bg-[#fff9f5] space-y-3">
                 <div className="p-3 rounded-xl bg-white shadow-sm">
                    <Icon size={24} style={{ color: brand.primaryColor }} aria-hidden="true" />
                 </div>
@@ -89,7 +89,7 @@ export function LaymanExplanationContent({ data }: { data: SubtopicNotesViewData
         <h2 className="text-lg font-bold" style={{ color: brand.primaryColor }}>Architecture in Simple Words</h2>
         <p className="text-[13px] font-bold text-slate-500">Different layers mean different sizes of building blocks.</p>
         
-        <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
           <table className="w-full text-left border-collapse">
             <tbody className="divide-y divide-gray-50">
               {data.typesTable.map((type) => {

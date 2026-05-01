@@ -67,10 +67,10 @@ console.log("✅ Component rendered successfully!");`;
           <p className="text-[15px] font-medium text-slate-500">See how Component Architecture works in real code. Try it, run it, and observe the output.</p>
         </div>
         <div className="flex items-center gap-2">
-          <button className="flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition-all hover:bg-gray-50 active:scale-95 border border-transparent">
+          <button className="flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition-all hover:bg-gray-50 active:scale-95 border border-slate-200">
             <Icons.Bookmark size={16} /> Bookmark
           </button>
-          <button className="flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition-all hover:bg-gray-50 active:scale-95 border border-transparent">
+          <button className="flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition-all hover:bg-gray-50 active:scale-95 border border-slate-200">
             <Icons.Share2 size={16} /> Share
           </button>
         </div>
@@ -93,7 +93,7 @@ console.log("✅ Component rendered successfully!");`;
           ))}
         </div>
         <div className="relative group">
-           <button className="flex items-center gap-3 rounded-xl bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm border border-transparent">
+           <button className="flex items-center gap-3 rounded-xl bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm border border-slate-200">
               <span className="flex h-5 w-5 items-center justify-center rounded bg-amber-400 text-[10px] font-black text-white">JS</span>
               JavaScript
               <Icons.ChevronDown size={14} className="text-slate-400" />
@@ -104,7 +104,7 @@ console.log("✅ Component rendered successfully!");`;
       {/* Main Interactive Area */}
       <div className="space-y-4">
         {/* Editor Window */}
-        <div className="rounded-[24px] overflow-hidden bg-[#0f172a] shadow-2xl border border-transparent">
+        <div className="rounded-[24px] overflow-hidden bg-[#0f172a] shadow-2xl border border-slate-200">
           <div className="flex items-center justify-between bg-[#1e293b]/50 px-6 py-4 border-b border-slate-800/50">
             <div className="flex items-center gap-3">
               <div className="h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50" />
@@ -114,10 +114,10 @@ console.log("✅ Component rendered successfully!");`;
               <button className="flex items-center gap-2 rounded-lg bg-orange-600 px-4 py-2 text-xs font-black text-white shadow-lg shadow-orange-600/20 hover:bg-orange-500 transition-all active:scale-95">
                 <Icons.Play size={14} fill="currentColor" /> Run Code
               </button>
-              <button className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-colors border border-transparent">
+              <button className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-colors border border-slate-200">
                 <Icons.Copy size={14} />
               </button>
-              <button className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-colors border border-transparent">
+              <button className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-colors border border-slate-200">
                 <Icons.Download size={14} />
               </button>
             </div>
@@ -151,7 +151,7 @@ console.log("✅ Component rendered successfully!");`;
         </div>
 
         {/* Output Window */}
-        <div className="rounded-[24px] overflow-hidden bg-[#0a0f1a] shadow-xl border border-transparent">
+        <div className="rounded-[24px] overflow-hidden bg-[#0a0f1a] shadow-xl border border-slate-200">
            <div className="flex items-center justify-between bg-[#111827] px-6 py-3 border-b border-slate-900">
               <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Output</span>
               <button className="text-[10px] font-black text-slate-500 hover:text-slate-300 transition-colors uppercase tracking-widest">Clear</button>
@@ -168,7 +168,7 @@ console.log("✅ Component rendered successfully!");`;
               <p className="flex items-center gap-3 text-emerald-400 font-bold mb-4">
                  <Icons.CheckCircle size={14} /> Success! Component rendered:
               </p>
-              <div className="rounded-xl bg-slate-900/50 p-6 space-y-2 border border-transparent">
+              <div className="rounded-xl bg-slate-900/50 p-6 space-y-2 border border-slate-200">
                  <p>{`{`}</p>
                  <p className="ml-4">id: <span className="text-rose-400">101</span>,</p>
                  <p className="ml-4">name: <span className="text-emerald-400">'RealTutorialHub'</span>,</p>
@@ -180,7 +180,7 @@ console.log("✅ Component rendered successfully!");`;
         </div>
 
         {/* Try It Yourself Box */}
-        <div className="rounded-[24px] bg-orange-50/20 p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6 border border-transparent">
+        <div className="rounded-[24px] bg-orange-50/20 p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6 border border-slate-200">
            <div className="flex items-center gap-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-100 text-orange-600">
                  <Icons.Code size={24} />
@@ -190,7 +190,7 @@ console.log("✅ Component rendered successfully!");`;
                  <p className="text-[14px] font-medium text-slate-500">Edit the code above and click Run Code to see how it works.</p>
               </div>
            </div>
-           <div className="rounded-2xl bg-white p-4 shadow-sm flex items-start gap-3 max-w-md border border-transparent">
+           <div className="rounded-2xl bg-white p-4 shadow-sm flex items-start gap-3 max-w-md border border-slate-200">
               <Icons.Lightbulb size={18} className="text-orange-500 shrink-0 mt-0.5" />
               <p className="text-[12px] font-bold text-slate-600 leading-relaxed">
                  <span className="text-orange-600 uppercase tracking-tighter mr-1">Tip:</span> 
@@ -202,7 +202,7 @@ console.log("✅ Component rendered successfully!");`;
 
       {/* Footer Navigation */}
       <div className="flex items-center justify-between gap-4 pt-10">
-        <button className="group flex flex-1 items-center gap-4 rounded-2xl bg-white p-4 shadow-sm hover:bg-slate-50 transition-all active:scale-95 text-left border border-transparent">
+        <button className="group flex flex-1 items-center gap-4 rounded-2xl bg-white p-4 shadow-sm hover:bg-slate-50 transition-all active:scale-95 text-left border border-slate-200">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 group-hover:bg-white transition-colors">
             <Icons.ArrowLeft size={18} className="text-slate-400 group-hover:text-slate-600" aria-hidden="true" />
           </div>
@@ -212,7 +212,7 @@ console.log("✅ Component rendered successfully!");`;
           </div>
         </button>
 
-        <button className="hidden sm:flex items-center gap-2 rounded-2xl bg-white px-8 py-4 text-sm font-black text-slate-600 shadow-sm hover:bg-slate-50 transition-all active:scale-95 border border-transparent">
+        <button className="hidden sm:flex items-center gap-2 rounded-2xl bg-white px-8 py-4 text-sm font-black text-slate-600 shadow-sm hover:bg-slate-50 transition-all active:scale-95 border border-slate-200">
            <Icons.LayoutGrid size={18} aria-hidden="true" /> Back to Subtopic
         </button>
 

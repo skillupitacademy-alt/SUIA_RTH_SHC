@@ -1,92 +1,56 @@
 <svg width="800" height="600" viewBox="0 0 800 600" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <filter id="shadow" x="-50" y="-50" width="900" height="700" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
-      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
-      <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-      <feOffset dy="20"/>
-      <feGaussianBlur stdDeviation="25"/>
-      <feComposite in2="hardAlpha" operator="out"/>
-      <feColorMatrix type="matrix" values="0 0 0 0 0.745098 0 0 0 0 0.772549 0 0 0 0 0.811765 0 0 0 0.15 0"/>
-      <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow"/>
-      <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow" result="shape"/>
-    </filter>
-    <linearGradient id="pinkGradient" x1="0" y1="0" x2="130" y2="130" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#fb7185" />
-      <stop offset="1" stop-color="#be185d" />
-    </linearGradient>
-    <style>
-      .text-main { font-family: sans-serif; font-weight: 700; fill: #1e293b; font-size: 14px; }
-      .text-sub { font-family: sans-serif; font-weight: 500; fill: #64748b; font-size: 11px; }
-      .text-badge { font-family: sans-serif; font-weight: 800; fill: #be185d; font-size: 9px; text-transform: uppercase; }
-    </style>
-  </defs>
-
-  <!-- Main Dashboard Card -->
-  <rect x="50" y="50" width="700" height="500" rx="40" fill="white" filter="url(#shadow)"/>
+  <!-- Background -->
+  <rect width="800" height="600" rx="40" fill="#f8fafc"/>
   
-  <!-- Browser Header -->
-  <circle cx="90" cy="90" r="6" fill="#FF5F56"/>
-  <circle cx="115" cy="90" r="6" fill="#FFBD2E"/>
-  <circle cx="140" cy="90" r="6" fill="#27C93F"/>
-  <rect x="620" y="75" width="100" height="30" rx="10" fill="#F1F5F9"/>
-
-  <!-- Page Title -->
-  <text x="90" y="125" class="text-main" style="font-size: 18px;">User Management</text>
-
-  <!-- Search Bar -->
-  <rect x="90" y="145" width="620" height="50" rx="15" fill="#F8FAFC"/>
-  <circle cx="120" cy="170" r="7" stroke="#94A3B8" stroke-width="2"/>
-  <line x1="125" y1="175" x2="130" y2="180" stroke="#94A3B8" stroke-width="2" stroke-linecap="round"/>
-  <text x="145" y="174" class="text-sub" style="fill: #94A3B8;">Search users by name or email...</text>
-
-  <!-- User Table Headers -->
-  <text x="145" y="225" class="text-sub" style="font-weight: 700; fill: #475569;">User Details</text>
-  <text x="400" y="225" class="text-sub" style="font-weight: 700; fill: #475569;">Role</text>
-  <text x="550" y="225" class="text-sub" style="font-weight: 700; fill: #475569;">Status</text>
-  <line x1="90" y1="235" x2="710" y2="235" stroke="#F1F5F9" stroke-width="2"/>
-
-  <!-- User Rows -->
-  <g transform="translate(90, 270)">
-    <circle cx="30" cy="0" r="22" fill="#FFE4E6"/>
-    <text x="70" y="-5" class="text-main">Sarah Johnson</text>
-    <text x="70" y="10" class="text-sub">sarah.j@example.com</text>
-    <text x="310" y="5" class="text-sub">Admin</text>
-    <rect x="460" y="-10" width="60" height="20" rx="10" fill="#F0FDF4"/>
-    <text x="472" y="4" class="text-badge" style="fill: #166534;">Active</text>
-  </g>
-
-  <g transform="translate(90, 340)">
-    <circle cx="30" cy="0" r="22" fill="#FEF3C7"/>
-    <text x="70" y="-5" class="text-main">Michael Chen</text>
-    <text x="70" y="10" class="text-sub">m.chen@example.com</text>
-    <text x="310" y="5" class="text-sub">Editor</text>
-    <rect x="460" y="-10" width="60" height="20" rx="10" fill="#F0FDF4"/>
-    <text x="472" y="4" class="text-badge" style="fill: #166534;">Active</text>
-  </g>
-
-  <g transform="translate(90, 410)">
-    <circle cx="30" cy="0" r="22" fill="#E0E7FF"/>
-    <text x="70" y="-5" class="text-main">Emma Wilson</text>
-    <text x="70" y="10" class="text-sub">emma.w@example.com</text>
-    <text x="310" y="5" class="text-sub">User</text>
-    <rect x="460" y="-10" width="60" height="20" rx="10" fill="#FFFBEB"/>
-    <text x="468" y="4" class="text-badge" style="fill: #92400E;">Pending</text>
-  </g>
-
-  <g transform="translate(90, 480)">
-    <circle cx="30" cy="0" r="22" fill="#F3F4F6"/>
-    <text x="70" y="-5" class="text-main">Alex Rivera</text>
-    <text x="70" y="10" class="text-sub">alex.r@example.com</text>
-    <text x="310" y="5" class="text-sub">Editor</text>
-    <rect x="460" y="-10" width="60" height="20" rx="10" fill="#F0FDF4"/>
-    <text x="472" y="4" class="text-badge" style="fill: #166534;">Active</text>
-  </g>
-
-  <!-- Overlapping Pink Box -->
-  <g transform="translate(620, 450)">
-    <rect width="130" height="130" rx="35" fill="url(#pinkGradient)" filter="url(#shadow)"/>
-    <path d="M40 65L50 55M40 65L50 75" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M90 65L80 55M90 65L80 75" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M72 48L58 82" stroke="white" stroke-width="5" stroke-linecap="round"/>
-  </g>
+  <!-- Left Navigation Bar -->
+  <rect x="0" y="0" width="220" height="600" rx="40" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <rect x="30" y="40" width="160" height="40" rx="12" fill="#1e293b"/> <!-- Brand Logo Area -->
+  <rect x="30" y="110" width="160" height="35" rx="10" fill="#f1f5f9"/>
+  <rect x="30" y="155" width="160" height="35" rx="10" fill="#f1f5f9"/>
+  <rect x="30" y="200" width="160" height="35" rx="10" fill="#f1f5f9"/>
+  <rect x="30" y="245" width="160" height="35" rx="10" fill="#f1f5f9"/>
+  
+  <!-- Main Header -->
+  <rect x="240" y="20" width="540" height="100" rx="24" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <circle cx="290" cy="70" r="25" fill="#cbd5e1"/> <!-- Profile Pic -->
+  <rect x="330" y="55" width="180" height="12" rx="6" fill="#1e293b"/>
+  <rect x="330" y="75" width="120" height="10" rx="5" fill="#94a3b8"/>
+  
+  <!-- Grid Content -->
+  <!-- Stats Card 1 -->
+  <rect x="240" y="140" width="165" height="100" rx="20" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <rect x="260" y="160" width="40" height="40" rx="10" fill="#fee2e2"/>
+  <rect x="310" y="165" width="70" height="10" rx="5" fill="#f87171"/>
+  <rect x="310" y="185" width="40" height="8" rx="4" fill="#fca5a5"/>
+  
+  <!-- Stats Card 2 -->
+  <rect x="425" y="140" width="165" height="100" rx="20" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <rect x="445" y="160" width="40" height="40" rx="10" fill="#dcfce7"/>
+  <rect x="495" y="165" width="70" height="10" rx="5" fill="#4ade80"/>
+  <rect x="495" y="185" width="40" height="8" rx="4" fill="#86efac"/>
+  
+  <!-- Stats Card 3 -->
+  <rect x="610" y="140" width="170" height="100" rx="20" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <rect x="630" y="160" width="40" height="40" rx="10" fill="#dbeafe"/>
+  <rect x="680" y="165" width="70" height="10" rx="5" fill="#60a5fa"/>
+  <rect x="680" y="185" width="40" height="8" rx="4" fill="#93c5fd"/>
+  
+  <!-- Main Chart Area -->
+  <rect x="240" y="260" width="540" height="320" rx="24" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <rect x="270" y="290" width="150" height="14" rx="7" fill="#1e293b"/>
+  
+  <!-- Bar Chart Simulation -->
+  <rect x="270" y="520" width="30" height="80" transform="translate(0, -80)" rx="4" fill="#f43f5e"/>
+  <rect x="320" y="520" width="30" height="120" transform="translate(0, -120)" rx="4" fill="#3b82f6"/>
+  <rect x="370" y="520" width="30" height="160" transform="translate(0, -160)" rx="4" fill="#10b981"/>
+  <rect x="420" y="520" width="30" height="100" transform="translate(0, -100)" rx="4" fill="#f59e0b"/>
+  <rect x="470" y="520" width="30" height="140" transform="translate(0, -140)" rx="4" fill="#8b5cf6"/>
+  <rect x="520" y="520" width="30" height="190" transform="translate(0, -190)" rx="4" fill="#ec4899"/>
+  <rect x="570" y="520" width="30" height="70" transform="translate(0, -70)" rx="4" fill="#6366f1"/>
+  
+  <!-- Horizontal Grid Lines -->
+  <line x1="270" y1="520" x2="750" y2="520" stroke="#f1f5f9" stroke-width="2"/>
+  <line x1="270" y1="470" x2="750" y2="470" stroke="#f1f5f9" stroke-width="2"/>
+  <line x1="270" y1="420" x2="750" y2="420" stroke="#f1f5f9" stroke-width="2"/>
+  <line x1="270" y1="370" x2="750" y2="370" stroke="#f1f5f9" stroke-width="2"/>
 </svg>

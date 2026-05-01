@@ -28,7 +28,7 @@ render(<UserDashboard />);`;
       </div>
 
       {/* Problem Statement */}
-      <section className="rounded-[32px] bg-white p-10 shadow-sm relative overflow-hidden group border border-transparent">
+      <section className="rounded-[32px] bg-white p-10 shadow-sm relative overflow-hidden group border border-slate-200">
         <div className="flex items-center gap-3 mb-6">
           <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-50 text-rose-500">
             <Icons.ClipboardList size={22} />
@@ -56,7 +56,7 @@ render(<UserDashboard />);`;
       </section>
 
       {/* Requirements */}
-      <section className="rounded-[32px] bg-white p-10 shadow-sm relative overflow-hidden group border border-transparent">
+      <section className="rounded-[32px] bg-white p-10 shadow-sm relative overflow-hidden group border border-slate-200">
         <div className="flex items-center gap-3 mb-6">
           <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-500">
             <Icons.CheckCircle size={22} />
@@ -72,7 +72,7 @@ render(<UserDashboard />);`;
             'Code must be clean and well-commented.'
           ].map((item, i) => (
             <li key={i} className="flex items-center gap-4 text-[14px] font-bold text-slate-600">
-              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-50 text-indigo-600 border border-transparent">
+              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-50 text-indigo-600 border border-slate-200">
                 <Icons.Check size={14} strokeWidth={4} />
               </div>
               {item}
@@ -90,12 +90,12 @@ render(<UserDashboard />);`;
              </div>
              <h2 className="text-lg font-black text-slate-800">Starter Code</h2>
           </div>
-          <button className="flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-[12px] font-black text-slate-600 shadow-sm hover:bg-gray-50 transition-all active:scale-95 border border-transparent">
+          <button className="flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-[12px] font-black text-slate-600 shadow-sm hover:bg-gray-50 transition-all active:scale-95 border border-slate-200">
              <Icons.Copy size={14} /> Copy Code
           </button>
         </div>
         
-        <div className="rounded-[24px] overflow-hidden bg-[#0f172a] shadow-2xl border border-transparent">
+        <div className="rounded-[24px] overflow-hidden bg-[#0f172a] shadow-2xl border border-slate-200">
           <div className="relative group min-h-[300px]">
              {/* Line Numbers */}
              <div className="absolute left-0 top-0 bottom-0 w-12 bg-slate-900/50 border-r border-slate-800/50 flex flex-col items-center py-6 text-[12px] font-mono text-slate-600 select-none">
@@ -126,7 +126,7 @@ render(<UserDashboard />);`;
       </section>
 
       {/* Submission Guidelines */}
-      <section className="rounded-[32px] bg-sky-50/30 p-10 flex items-center justify-between gap-10 relative overflow-hidden group border border-transparent">
+      <section className="rounded-[32px] bg-sky-50/30 p-10 flex items-center justify-between gap-10 relative overflow-hidden group border border-slate-200">
          <div className="space-y-6 relative z-10 lg:max-w-xl">
             <div className="flex items-center gap-3">
                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-100 text-sky-600">
@@ -150,24 +150,18 @@ render(<UserDashboard />);`;
          <div className="hidden lg:block relative">
             <div className="absolute inset-0 bg-sky-500/10 blur-3xl rounded-full" />
             <div className="relative transform hover:scale-110 transition-transform duration-700">
-               {/* Illustration Placeholder */}
-               <div className="w-48 h-56 bg-white rounded-2xl shadow-2xl p-4 flex flex-col gap-4 border border-transparent">
-                  <div className="w-full h-8 bg-sky-100 rounded-lg animate-pulse" />
-                  <div className="w-full h-4 bg-slate-100 rounded-lg" />
-                  <div className="w-2/3 h-4 bg-slate-100 rounded-lg" />
-                  <div className="mt-auto flex justify-end">
-                     <div className="w-12 h-12 bg-amber-400 rounded-full border-4 border-white shadow-lg flex items-center justify-center">
-                        <Icons.Check size={24} className="text-white" strokeWidth={4} />
-                     </div>
-                  </div>
-               </div>
+               <img 
+                 src="/submission_guidelines.svg" 
+                 alt="Submission Guidelines Illustration" 
+                 className="w-48 h-auto drop-shadow-2xl transition-transform duration-700 hover:scale-105"
+               />
             </div>
          </div>
       </section>
 
       {/* Footer Navigation */}
       <div className="flex items-center justify-between gap-4 pt-10">
-        <button className="group flex flex-1 items-center gap-4 rounded-2xl bg-white p-4 shadow-sm hover:bg-slate-50 transition-all active:scale-95 text-left border border-transparent">
+        <button className="group flex flex-1 items-center gap-4 rounded-2xl bg-white p-4 shadow-sm hover:bg-slate-50 transition-all active:scale-95 text-left border border-slate-200">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 group-hover:bg-white transition-colors">
             <Icons.ArrowLeft size={18} className="text-slate-400 group-hover:text-slate-600" aria-hidden="true" />
           </div>
@@ -177,7 +171,7 @@ render(<UserDashboard />);`;
           </div>
         </button>
 
-        <button className="hidden sm:flex items-center gap-2 rounded-2xl bg-white px-8 py-4 text-sm font-black text-slate-600 shadow-sm hover:bg-slate-50 transition-all active:scale-95 border border-transparent">
+        <button className="hidden sm:flex items-center gap-2 rounded-2xl bg-white px-8 py-4 text-sm font-black text-slate-600 shadow-sm hover:bg-slate-50 transition-all active:scale-95 border border-slate-200">
            <Icons.LayoutGrid size={18} aria-hidden="true" /> Back to Subtopic
         </button>
 
