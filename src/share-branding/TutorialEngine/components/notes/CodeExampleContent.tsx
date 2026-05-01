@@ -192,10 +192,10 @@ console.log("✅ Component rendered successfully!");`;
             </div>
              <div className="rounded-2xl bg-slate-50 p-4 shadow-sm flex items-start gap-3 max-w-md border border-slate-200">
                <Icons.Lightbulb size={18} className="text-amber-700 shrink-0 mt-0.5" aria-hidden="true" />
-               <p className="text-[12px] font-bold text-slate-900 leading-relaxed">
+                <p className="text-[12px] font-bold text-slate-900 leading-relaxed">
                   <span className="text-amber-800 uppercase tracking-tighter mr-1 font-bold">Tip:</span> 
-                  {data?.output?.tip}
-               </p>
+                  Change name = 'Your Name' on line 16 to see the component update in real-time.
+                </p>
             </div>
         </section>
       </div>
