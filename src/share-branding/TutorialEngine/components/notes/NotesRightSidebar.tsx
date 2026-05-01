@@ -318,28 +318,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
               </div>
             </section>
 
-            {/* AI Study Assistant */}
-            <section className="rounded-[32px] bg-gradient-to-br from-rose-50 to-white p-8 space-y-6 relative overflow-hidden group transition-all duration-300 hover:-translate-y-1 shadow-xl border border-rose-100">
-               <div className="flex items-center justify-between relative z-10">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white shadow-sm text-primary-dark border border-rose-100">
-                     <Icons.Bot size={22} aria-hidden="true" />
-                  </div>
-                  <span className="rounded-full bg-rose-100 px-2.5 py-1 text-[8px] font-bold uppercase text-rose-950 border border-rose-200">Beta</span>
-               </div>
-               <div className="space-y-2 relative z-10">
-                  <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest">AI Study Assistant</h3>
-                  <p className="text-[12px] font-medium text-slate-800 leading-relaxed">
-                    Need help on this topic? Our AI Tutor can explain Concepts, give hints, or solve doubts.
-                  </p>
-               </div>
-               <button 
-                 className="flex w-full items-center justify-between rounded-2xl p-4 text-white shadow-xl transition-all hover:scale-[1.02] active:scale-95"
-                 style={{ background: `linear-gradient(135deg, ${brand.primaryColor}, ${brand.primaryColor}dd)` }}
-               >
-                  <span className="text-[11px] font-bold uppercase tracking-wider">Ask AI Tutor</span>
-                  <Icons.ArrowRight size={18} aria-hidden="true" />
-               </button>
-            </section>
+
 
             {/* Performance Snapshot */}
             <section className="rounded-3xl bg-white p-6 shadow-xl space-y-6 transition-all duration-300 hover:-translate-y-1 border border-slate-100">
@@ -572,7 +551,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
           </div>
         </section>
 
-        {activeTab !== 'layman' && activeTab !== 'real-life' && activeTab !== 'technical-deep-dive' && activeTab !== 'code-example' && activeTab !== 'assignments' && activeTab !== 'project' && (
+        {activeTab !== 'layman' && activeTab !== 'real-life' && activeTab !== 'technical-deep-dive' && activeTab !== 'code-example' && activeTab !== 'assignments' && activeTab !== 'project' && activeTab !== 'quiz' && (
           <>
         {/* Your Progress */}
         <section>
