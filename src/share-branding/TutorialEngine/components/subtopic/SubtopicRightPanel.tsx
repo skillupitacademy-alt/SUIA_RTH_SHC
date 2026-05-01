@@ -5,16 +5,35 @@ import * as Icons from 'lucide-react';
 import { useBrand } from '../../../PostLandingPage/app/context/BrandContext';
 import { Achievement, Weakness } from '../../../subtopicPageData';
 
-interface SubtopicRightPanelProps {
+export interface SubtopicRightPanelProps {
   data: {
-    xpSection: { title: string; earnedXp: number; totalXp: number; xpMessage: string };
-    achievements: { title: string; items: Achievement[] };
-    weaknessAnalysis: { title: string; score: number; scoreLabel: string; items: Weakness[] };
-    aiTutor: { title: string; subtitle: string; inputPlaceholder: string; examples: string[] };
+    xpSection: {
+      title: string;
+      earnedXp: number;
+      totalXp: number;
+      xpMessage: string;
+    };
+    achievements: {
+      title: string;
+      items: Achievement[];
+    };
+    weaknessAnalysis: {
+      title: string;
+      score: number;
+      scoreLabel: string;
+      items: Weakness[];
+    };
+    aiTutor: {
+      title: string;
+      subtitle: string;
+      inputPlaceholder: string;
+      examples: string[];
+    };
   };
+  isOpen: boolean;
 }
 
-export function SubtopicRightPanel({ data }: SubtopicRightPanelProps) {
+export function SubtopicRightPanel({ data, isOpen }: SubtopicRightPanelProps) {
   const brand = useBrand();
 
   const getIcon = (iconName: string) => {
@@ -22,34 +41,54 @@ export function SubtopicRightPanel({ data }: SubtopicRightPanelProps) {
   };
 
   return (
-    <aside className="hidden w-80 flex-col overflow-y-auto border-l border-gray-200 bg-white p-6 xl:flex hide-scrollbar">
+    <aside tabIndex={0} aria-label="Progress and stats sidebar" className={`absolute bottom-0 right-0 top-0 z-40 flex w-[340px] flex-col overflow-y-auto border-l border-gray-200 bg-white p-6 hide-scrollbar focus:outline-none transition-all duration-300 ${isOpen ? 'translate-x-0 shadow-2xl' : 'translate-x-full shadow-none'}`}>
       <div className="space-y-8">
-        {/* XP Section */}
+        {/* XP Section - Interactive Stats Row */}
         <section className="rounded-3xl bg-slate-50 p-6 border border-slate-100 shadow-sm">
-          <h3 className="mb-4 text-xs font-black uppercase tracking-widest text-gray-400">{data.xpSection.title}</h3>
+          <h2 className="mb-4 text-[11px] font-black uppercase tracking-widest text-gray-500">{data.xpSection.title}</h2>
           <div className="flex items-end gap-1">
             <span className="text-4xl font-black text-gray-800">{data.xpSection.earnedXp}</span>
-            <span className="mb-1.5 text-sm font-bold text-gray-400">/ {data.xpSection.totalXp} XP</span>
+            <span className="mb-1.5 text-[13px] font-bold text-gray-500">/ {data.xpSection.totalXp} XP</span>
           </div>
-          <p className="mt-2 text-[10px] font-bold text-slate-500 leading-tight">
+          <p className="mt-3 text-[13px] font-bold text-slate-500 leading-snug">
             {data.xpSection.xpMessage}
           </p>
         </section>
 
+        {/* Career Outcomes Component */}
+        <section className="rounded-3xl bg-emerald-50/50 p-6 border border-emerald-100">
+          <div className="mb-4 flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500 text-white shadow-lg shadow-emerald-200">
+              <Icons.Briefcase size={16} />
+            </div>
+            <h2 className="text-[11px] font-black uppercase tracking-widest text-emerald-700">Career Outcomes</h2>
+          </div>
+          <div className="space-y-3">
+            <div className="flex items-start gap-3">
+              <div className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400" />
+              <p className="text-[13px] font-medium text-emerald-800 leading-tight">Mastering this topic prepares you for Senior Frontend roles.</p>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400" />
+              <p className="text-[13px] font-medium text-emerald-800 leading-tight">Relevant for Architecture & Design interviews.</p>
+            </div>
+          </div>
+        </section>
+
         {/* Achievements */}
         <section>
-          <h3 className="mb-4 text-xs font-black uppercase tracking-widest text-gray-400">{data.achievements.title}</h3>
+          <h2 className="mb-4 text-[11px] font-black uppercase tracking-widest text-gray-500">{data.achievements.title}</h2>
           <div className="space-y-3">
             {data.achievements.items.map((item) => {
               const Icon = getIcon(item.icon);
               return (
                 <div key={item.id} className="flex items-center gap-3 rounded-2xl bg-white p-3 border border-gray-100 shadow-sm transition-transform hover:scale-[1.02]">
-                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-${item.color}-50 text-${item.color}-500`}>
+                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-50 text-slate-500`}>
                     <Icon size={20} />
                   </div>
                   <div>
-                    <h4 className="text-xs font-black text-gray-800">{item.title}</h4>
-                    <p className="text-[10px] font-medium text-gray-400">{item.description}</p>
+                    <h3 className="text-[13px] font-black text-gray-800">{item.title}</h3>
+                    <p className="text-[11px] font-medium text-gray-500">{item.description}</p>
                   </div>
                 </div>
               );
@@ -60,7 +99,7 @@ export function SubtopicRightPanel({ data }: SubtopicRightPanelProps) {
         {/* Weakness Analysis */}
         <section className="rounded-3xl bg-slate-900 p-6 text-white shadow-xl">
           <div className="mb-4 flex items-center justify-between">
-            <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400">{data.weaknessAnalysis.title}</h3>
+            <h2 className="text-[11px] font-black uppercase tracking-widest text-slate-400">{data.weaknessAnalysis.title}</h2>
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-800 text-[10px] font-black">
               {data.weaknessAnalysis.score}%
             </div>
@@ -69,14 +108,14 @@ export function SubtopicRightPanel({ data }: SubtopicRightPanelProps) {
           <div className="mb-6 space-y-3">
             {data.weaknessAnalysis.items.map((item) => (
               <div key={item.id} className="flex items-center justify-between border-b border-slate-800 pb-2">
-                <span className="text-xs font-medium text-slate-300">{item.topic}</span>
-                <span className={`text-[10px] font-black uppercase text-${item.color}-400`}>{item.status}</span>
+                <span className="text-[13px] font-medium text-slate-300">{item.topic}</span>
+                <span className={`text-[10px] font-black uppercase text-amber-400`}>{item.status}</span>
               </div>
             ))}
           </div>
 
-          <button className="w-full rounded-xl bg-slate-800 py-3 text-xs font-black transition-colors hover:bg-slate-700">
-            View Analytics
+          <button className="w-full rounded-xl bg-slate-800 py-3 text-[13px] font-black transition-colors hover:bg-slate-700">
+            View Full Analysis
           </button>
         </section>
 
@@ -86,14 +125,14 @@ export function SubtopicRightPanel({ data }: SubtopicRightPanelProps) {
             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md">
               <Icons.Brain size={24} />
             </div>
-            <h3 className="mb-1 text-lg font-black">{data.aiTutor.title}</h3>
-            <p className="mb-6 text-xs font-medium text-white/80">{data.aiTutor.subtitle}</p>
+            <h2 className="mb-1 text-lg font-black">{data.aiTutor.title}</h2>
+            <p className="mb-6 text-[13px] font-medium text-white/80">{data.aiTutor.subtitle}</p>
 
             <div className="relative mb-4">
               <input 
                 type="text" 
                 placeholder={data.aiTutor.inputPlaceholder}
-                className="w-full rounded-xl bg-white/10 py-3 pl-4 pr-10 text-xs font-medium placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-white/30"
+                className="w-full rounded-xl bg-white/10 py-3 pl-4 pr-10 text-[13px] font-medium placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-white/30"
               />
               <Icons.Send size={14} className="absolute right-3 top-3.5 text-white/50" />
             </div>

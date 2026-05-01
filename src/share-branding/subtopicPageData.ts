@@ -1,217 +1,226 @@
 import { BrandConfig } from './brandConfig';
 
-export interface TutorialQuickAction {
-  label: string;
-  target: string;
-}
-
-export interface TutorialTopicTreeNode {
-  id: string;
-  name: string;
-  status: 'completed' | 'active' | 'locked';
-  subtopics?: TutorialTopicTreeNode[];
-}
-
-export interface TutorialContentBlock {
+export interface ContentCardData {
   id: string;
   title: string;
-  tone: 'notes' | 'layman' | 'example' | 'technical' | 'code' | 'tutor';
-  content: string;
+  type: 'notes' | 'layman' | 'example' | 'code' | 'deep-dive' | 'visual' | 'task' | 'practice' | 'assignment' | 'project' | 'quiz';
+  content?: string;
+  code?: string;
+  ctaLabel: string;
+  badge?: {
+    text: string;
+    type: 'success' | 'warning' | 'info';
+  };
 }
 
-export interface TutorialProjectAssignment {
+export interface Achievement {
   id: string;
-  name: string;
-  status: 'open' | 'locked' | 'submitted';
-  dueDate: string;
+  title: string;
+  description: string;
+  icon: string;
+  color: string;
 }
 
-export interface TutorialViewData {
+export interface Weakness {
+  id: string;
+  topic: string;
+  status: string;
+  color: string;
+}
+
+export interface SubtopicViewData {
   nav: {
     courseLabel: string;
     lessonLabel: string;
     dashboardCtaLabel: string;
-    learnerName: string;
+    streak: number;
+    xpPoints: number;
     learnerInitials: string;
   };
-  sidebar: {
-    quickActionsTitle: string;
-    quickActions: TutorialQuickAction[];
-    curriculumTitle: string;
-    topics: TutorialTopicTreeNode[];
-    glossaryTitle: string;
-    glossaryHtml: string;
-  };
-  learnerFlow: {
+  subtopic: {
     title: string;
     description: string;
-    totalSections: number;
-    tierTitle: string;
-    tierNames: string[];
+    progress: number; // For Header
+    progressLabel: string; // For Header
+    metadata: {
+      level: string;
+      readingTime: string;
+      xp: number;
+      topicsCount: number;
+      lastUpdated: string;
+    };
+    stats: { id: string; label: string; value: string; icon: string }[];
+    overallProgress: {
+      percentage: number;
+      checklist: { label: string; completed: boolean }[];
+    };
+    sidebar: {
+      subtopicsTitle: string;
+      items: {
+        id: string;
+        title: string;
+        status: 'completed' | 'active' | 'locked';
+        isCurrent?: boolean;
+      }[];
+    };
+    tabs: { id: string; label: string; icon: string }[];
+    content: ContentCardData[];
+    tasks: ContentCardData[];
+    navigation: {
+      prev: { title: string };
+      next: { title: string };
+    };
   };
-  curriculum: {
-    title: string;
-    blocks: TutorialContentBlock[];
-  };
-  facultySupport: {
-    liveSessionTitle: string;
-    liveSessionSubtitle: string;
-    topicLabel: string;
-    topicPlaceholder: string;
-    timeLabel: string;
-    detailLabel: string;
-    detailPlaceholder: string;
-    requestCtaLabel: string;
-    processingLabel: string;
-    scheduledTitle: string;
-    scheduledDescription: string;
-    requestAnotherLabel: string;
-    projectsTitle: string;
-    projects: TutorialProjectAssignment[];
-  };
-  tutorDrawer: {
-    subtitle: string;
-    welcomeMessage: string;
-    inputPlaceholder: string;
+  rightSidebar: {
+    xpSection: { title: string; earnedXp: number; totalXp: number; xpMessage: string };
+    achievements: { title: string; items: Achievement[] };
+    weaknessAnalysis: { title: string; score: number; scoreLabel: string; items: Weakness[] };
+    aiTutor: { title: string; subtitle: string; inputPlaceholder: string; examples: string[] };
   };
 }
 
-export interface TutorialApiResponse extends TutorialViewData {}
-
-export function mapTutorialApiToViewData(api: TutorialApiResponse): TutorialViewData {
-  return api;
-}
-
-function buildTutorialApiResponse(brand: BrandConfig): TutorialApiResponse {
+export async function loadTutorialData(brand: BrandConfig): Promise<SubtopicViewData> {
   return {
     nav: {
       courseLabel: 'Full-Stack Development',
-      lessonLabel: 'Component Architecture',
+      lessonLabel: 'React Basics',
       dashboardCtaLabel: 'Dashboard',
-      learnerName: 'Alex J.',
+      streak: 12,
+      xpPoints: 12450,
       learnerInitials: 'AJ',
     },
-    sidebar: {
-      quickActionsTitle: 'Quick Actions',
-      quickActions: [
-        { label: 'Continue', target: 'learner-flow' },
-        { label: brand.tutorLabel, target: 'ai-tutor' },
-        { label: 'Progress', target: 'learner-flow' },
-        { label: 'Weak Areas', target: 'learner-flow' },
-        { label: 'Sessions', target: 'live-session' },
-        { label: 'Projects', target: 'projects' },
+    subtopic: {
+      title: 'Component Architecture',
+      description: 'Master the art of building scalable and reusable UI components using React best practices and design patterns.',
+      progress: 65,
+      progressLabel: 'Subtopic Progress',
+      metadata: {
+        level: 'Intermediate',
+        readingTime: '45 mins',
+        xp: 500,
+        topicsCount: 5,
+        lastUpdated: 'Today',
+      },
+      stats: [
+        { id: 'time', label: 'Est. Time', value: '45 mins', icon: 'Clock' },
+        { id: 'level', label: 'Difficulty', value: 'Intermediate', icon: 'BarChart' },
+        { id: 'xp', label: 'Reward', value: '500 XP', icon: 'Zap' },
       ],
-      curriculumTitle: 'Curriculum',
-      topics: [
-        {
-          id: 'topic-1',
-          name: 'Introduction to React',
-          status: 'completed',
-          subtopics: [
-            { id: 'sub-1-1', name: 'What is React?', status: 'completed' },
-            { id: 'sub-1-2', name: 'JSX Basics', status: 'completed' },
-          ],
-        },
-        {
-          id: 'topic-2',
-          name: 'Component Architecture',
-          status: 'active',
-          subtopics: [
-            { id: 'sub-2-1', name: 'Functional Components', status: 'completed' },
-            { id: 'sub-2-2', name: 'Props & State', status: 'active' },
-            { id: 'sub-2-3', name: 'Lifecycle Methods', status: 'locked' },
-          ],
-        },
-        {
-          id: 'topic-3',
-          name: 'Hooks Deep Dive',
-          status: 'locked',
-          subtopics: [
-            { id: 'sub-3-1', name: 'useState', status: 'locked' },
-            { id: 'sub-3-2', name: 'useEffect', status: 'locked' },
-          ],
-        },
+      overallProgress: {
+        percentage: 65,
+        checklist: [
+          { label: 'Introduction to Components', completed: true },
+          { label: 'Functional vs Class Components', completed: true },
+          { label: 'State Management Basics', completed: false },
+          { label: 'Component Lifecycle', completed: false },
+        ],
+      },
+      sidebar: {
+        subtopicsTitle: 'React Fundamentals',
+        items: [
+          { id: 'st1', title: 'What is JSX?', status: 'completed' },
+          { id: 'st2', title: 'Components & Props', status: 'completed' },
+          { id: 'st3', title: 'Component Architecture', status: 'active', isCurrent: true },
+          { id: 'st4', title: 'State & Lifecycle', status: 'locked' },
+          { id: 'st5', title: 'Hooks Introduction', status: 'locked' },
+        ],
+      },
+      tabs: [
+        { id: 'learn', label: 'Learn', icon: 'BookOpen' },
+        { id: 'practice', label: 'Practice', icon: 'Code2' },
+        { id: 'quiz', label: 'Quiz', icon: 'HelpCircle' },
+        { id: 'resources', label: 'Resources', icon: 'Link' },
       ],
-      glossaryTitle: 'Key Terms',
-      glossaryHtml: '<strong>JSX:</strong> JavaScript XML syntax extension<br /><strong>Props:</strong> Data passed to components',
-    },
-    learnerFlow: {
-      title: 'Your Learning Progress',
-      description: 'Complete all sections to unlock assignments',
-      totalSections: 6,
-      tierTitle: 'Assignment Paths',
-      tierNames: ['Basic', 'Intermediate', 'Advanced'],
-    },
-    curriculum: {
-      title: 'Curriculum Sections',
-      blocks: [
+      content: [
         {
-          id: 'notes',
-          title: 'Notes',
-          tone: 'notes',
-          content: 'Component architecture is the foundation of React development. It involves breaking down your UI into reusable, self-contained pieces called components. Each component manages its own state and can be composed together to build complex interfaces.',
+          id: 'c1', title: 'Notes', type: 'notes',
+          content: 'A variable is a container that stores data values. In JavaScript, we can declare variables using var, let, or const.\n\n• var → Old way, function-scoped\n• let → Block-scoped, can be updated\n• const → Block-scoped, cannot be reassigned',
+          ctaLabel: 'Read Full Notes'
         },
         {
-          id: 'layman',
-          title: 'Layman Explanation',
-          tone: 'layman',
-          content: 'Think of React components like LEGO blocks. Each block is a separate piece that does one thing well. You can snap them together in different ways to build whatever you want. Just like LEGO, you can reuse the same blocks in different parts of your creation!',
+          id: 'c2', title: 'Layman Explanation', type: 'layman',
+          content: 'Think of variables like boxes that hold values. You can change what\'s inside the box (let), or keep it constant (const).\n\nImagine a box labeled "name" that can hold a value like "Suresh". You can change it to "Rohan" if the box is declared with let.',
+          ctaLabel: 'Read More'
         },
         {
-          id: 'reallife',
-          title: 'Real Life Example',
-          tone: 'example',
-          content: "Imagine you're building a social media feed. Instead of writing all the code in one giant file, you create separate components: a Post component, a CommentList component, and a LikeButton component. Now you can use these components anywhere in your app!",
+          id: 'c3', title: 'Real-Life Example', type: 'example',
+          content: 'Variables are used everywhere!\n\n✓ Shopping cart total\n✓ User profile data\n✓ Game scores\n✓ Temperature in weather apps',
+          ctaLabel: 'Read Examples'
         },
         {
-          id: 'technical',
-          title: 'Technical Deep Dive',
-          tone: 'technical',
-          content: 'Components are JavaScript functions or classes that return JSX. They encapsulate state, props, and lifecycle logic. The component tree forms a unidirectional data flow where parent components pass props down to children. State updates trigger re-renders through the reconciliation algorithm.',
+          id: 'c4', title: 'Code Example', type: 'code',
+          code: '// Variable declarations\nvar name = "Suresh";\nlet age = 25;\nconst isStudent = true;\n\n// Data types\nlet number = 42;             // Number\nlet text = "Hello";          // String\nlet flag = false;            // Boolean\nlet nothing = null;          // Null\nlet data;                    // Undefined\nlet person = { name: "Suresh" }; // Object\nlet fruits = ["Apple", "Banana"]; // Array',
+          ctaLabel: 'Run Code'
         },
         {
-          id: 'code',
-          title: 'Code Example',
-          tone: 'code',
-          content: `function UserCard({ name, email }) {\n  const [isFollowing, setIsFollowing] = useState(false);\n\n  return (\n    <div className="user-card">\n      <h3>{name}</h3>\n      <p>{email}</p>\n      <button onClick={() => setIsFollowing(!isFollowing)}>\n        {isFollowing ? 'Unfollow' : 'Follow'}\n      </button>\n    </div>\n  );\n}`,
+          id: 'c5', title: 'Technical Deep Dive', type: 'deep-dive',
+          content: '• JavaScript is loosely typed.\n• Types are dynamic.\n• Primitive types are stored in stack.\n• Reference types are stored in heap.\n• Use typeof to check type.\n• Type coercion happens in comparisons.',
+          ctaLabel: 'Read Full Details'
         },
         {
-          id: 'ai-tutor',
-          title: `${brand.tutorLabel} Brief`,
-          tone: 'tutor',
-          content: 'Key concepts to master: 1) Component composition, 2) Props for data flow, 3) State for interactivity, 4) Reusability patterns. Practice by identifying reusable parts in existing websites and imagining how you would componentize them.',
-        },
+          id: 'c6', title: 'Visual Explanation', type: 'visual',
+          content: 'Stack (Primitive) vs Heap (Reference)',
+          ctaLabel: 'Watch Video (4:35)'
+        }
       ],
-    },
-    facultySupport: {
-      liveSessionTitle: 'Request Live Session',
-      liveSessionSubtitle: 'Schedule 1-on-1 time with faculty',
-      topicLabel: 'Topic',
-      topicPlaceholder: 'e.g., React Hooks confusion',
-      timeLabel: 'Preferred Time',
-      detailLabel: 'Additional Details',
-      detailPlaceholder: 'What would you like to discuss?',
-      requestCtaLabel: 'Request Session',
-      processingLabel: 'Processing Request...',
-      scheduledTitle: 'Session Scheduled!',
-      scheduledDescription: "You'll receive a confirmation email shortly with the meeting link.",
-      requestAnotherLabel: 'Request Another',
-      projectsTitle: 'Project Assignments',
-      projects: [
-        { id: 'p1', name: 'Build a Todo App', status: 'open', dueDate: 'Apr 5, 2026' },
-        { id: 'p2', name: 'Create a Weather Dashboard', status: 'submitted', dueDate: 'Apr 12, 2026' },
-        { id: 'p3', name: 'Design System Implementation', status: 'locked', dueDate: 'Apr 19, 2026' },
+      tasks: [
+        {
+          id: 't1', title: 'Practice Tasks', type: 'practice',
+          content: '• Declare variables of all data types\n• Swap two variables\n• Check data types using typeof',
+          ctaLabel: 'View All (10)'
+        },
+        {
+          id: 't2', title: 'Assignment', type: 'assignment',
+          content: 'Create a program that stores user information (name, age, email, isStudent) and display them.',
+          badge: { text: 'Easy', type: 'success' },
+          ctaLabel: 'Start Assignment'
+        },
+        {
+          id: 't3', title: 'Project', type: 'project',
+          content: 'Build a Personal Information Manager that stores and displays user details.',
+          badge: { text: 'Beginner', type: 'success' },
+          ctaLabel: 'View Project'
+        },
+        {
+          id: 't4', title: 'Quiz', type: 'quiz',
+          content: '10 Questions\nPassing Score: 70%\nBest Score: 8/10',
+          ctaLabel: 'Start Quiz'
+        }
       ],
+      navigation: {
+        prev: { title: 'Components & Props' },
+        next: { title: 'State & Lifecycle' },
+      },
     },
-    tutorDrawer: {
-      subtitle: 'Always here to help',
-      welcomeMessage: `Hi! I'm your ${brand.tutorLabel}. Ask me anything about the current topic!`,
-      inputPlaceholder: 'Ask a question...',
-    },
+    rightSidebar: {
+      xpSection: {
+        title: 'Session Progress',
+        earnedXp: 325,
+        totalXp: 500,
+        xpMessage: 'You are doing great! 175 more XP to reach today\'s goal.'
+      },
+      achievements: {
+        title: 'Recent Milestones',
+        items: [
+          { id: 'a1', title: 'Component Master', description: 'Built 5 reusable components', icon: 'Award', color: 'amber' },
+          { id: 'a2', title: 'Clean Coder', description: 'Passed 10 linting checks', icon: 'Shield', color: 'emerald' },
+        ]
+      },
+      weaknessAnalysis: {
+        title: 'Weakness Analysis',
+        score: 72,
+        scoreLabel: 'Overall Proficiency',
+        items: [
+          { id: 'w1', topic: 'State Management', status: 'Improving', color: 'blue' },
+          { id: 'w2', topic: 'Lifecycle Hooks', status: 'Needs Work', color: 'rose' },
+        ]
+      },
+      aiTutor: {
+        title: `${brand.tutorLabel}`,
+        subtitle: 'I can help you understand component architecture better.',
+        inputPlaceholder: 'Ask me anything...',
+        examples: ['What is Props?', 'Explain State', 'Code Review']
+      }
+    }
   };
-}
-
-export async function loadTutorialData(brand: BrandConfig): Promise<TutorialViewData> {
-  const apiResponse = buildTutorialApiResponse(brand);
-  return mapTutorialApiToViewData(apiResponse);
 }

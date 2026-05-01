@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { SubtopicViewPage } from '@/share-branding/SubtopicViewPage';
 import { loadTutorialData, SubtopicViewData } from '@/share-branding/subtopicPageData';
 import { useBrand, BrandProvider } from '@/share-branding/PostLandingPage/app/context/BrandContext';
-import { rthConfig } from '@/share-branding/brandConfig';
+import { skillUpConfig } from '@/share-branding/brandConfig';
 
 function SubtopicPageContent() {
   const brand = useBrand();
@@ -31,7 +31,7 @@ function SubtopicPageContent() {
 
 export default function SubtopicDemoPage() {
   return (
-    <BrandProvider brand={rthConfig}>
+    <BrandProvider brand={skillUpConfig}>
       <SubtopicPageContent />
     </BrandProvider>
   );
