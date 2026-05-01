@@ -139,33 +139,33 @@ export async function loadTutorialData(brand: BrandConfig): Promise<SubtopicView
       content: [
         {
           id: 'c1', title: 'Notes', type: 'notes',
-          content: 'Component Architecture involves breaking down a UI into smaller, independent, and reusable pieces. A well-architected React app often separates Container components (handling logic and state) from Presentational components (handling UI and styling).',
+          content: 'Learn how to break down complex UIs into smaller, independent, and reusable pieces for better scalability.',
           ctaLabel: 'Read Full Notes'
         },
         {
           id: 'c2', title: 'Layman Explanation', type: 'layman',
-          content: 'Think of Component Architecture like building with LEGO bricks. Instead of building an entire car as one giant piece, you build the wheels, doors, and chassis separately, and then assemble them together. This way, you can easily reuse the wheels on another vehicle!',
+          content: 'Think of Component Architecture like building with LEGO bricks. Mix and match pieces to build anything!',
           ctaLabel: 'Read More'
         },
         {
           id: 'c3', title: 'Real-Life Example', type: 'example',
-          content: 'Reusable components are used everywhere in web apps:\n\n✓ A primary Button used across the site\n✓ A Navbar shared on all pages\n✓ A User Profile card\n✓ A reusable Modal window',
+          content: 'From navbars to profile cards, reusable components are the building blocks of every modern web application.',
           ctaLabel: 'Read Examples'
         },
         {
           id: 'c4', title: 'Code Example', type: 'code',
-          code: '// Presentational Component (Dumb)\nconst UserCard = ({ user }) => (\n  <div className="card">\n    <h2>{user.name}</h2>\n    <p>{user.email}</p>\n  </div>\n);\n\n// Container Component (Smart)\nconst UserContainer = () => {\n  const [user, setUser] = useState(null);\n  \n  useEffect(() => {\n    fetchUser().then(data => setUser(data));\n  }, []);\n\n  if (!user) return <Loader />;\n  return <UserCard user={user} />;\n};',
+          code: '// Simple UI Component\nconst Card = ({ title }) => (\n  <div className="card">\n    <h2>{title}</h2>\n  </div>\n);',
           ctaLabel: 'Run Code'
         },
         {
           id: 'c5', title: 'Technical Deep Dive', type: 'deep-dive',
-          content: '• Container/Presentational Pattern: separates logic from UI.\n• Atomic Design: Atoms (Button) → Molecules (SearchBar) → Organisms (Header) → Templates.\n• Lifting State Up: Sharing state between sibling components.\n• Composition: Using props.children to pass React nodes.',
-          ctaLabel: 'Read Full Details'
+          content: 'Master advanced patterns like Container/Presentational, Atomic Design, and Prop Composition.',
+          ctaLabel: 'Read Details'
         },
         {
           id: 'c6', title: 'Visual Explanation', type: 'visual',
-          content: 'Container vs Presentational Flowchart',
-          ctaLabel: 'Watch Video (4:35)'
+          content: 'Flowchart: Logic vs UI',
+          ctaLabel: 'Watch Video'
         }
       ],
       tasks: [

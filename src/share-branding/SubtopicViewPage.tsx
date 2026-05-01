@@ -87,26 +87,22 @@ export function SubtopicViewPage({ data }: SubtopicViewPageProps) {
               metadata: data.subtopic.metadata
             }} />
 
-            {/* Navigation Tabs */}
-            <SubtopicTabs
-              tabs={data.subtopic.tabs}
-              activeTab={activeTab}
-              onTabChange={setActiveTab}
-            />
+            {/* Mastery Learning Path Heading */}
+            <div className="flex flex-col gap-2 py-2">
+              <h2 className="text-3xl font-black tracking-tighter text-slate-950 uppercase">
+                Mastery Learning Roadmap
+              </h2>
+              <p className="text-sm font-bold text-slate-600">
+                Complete all 10 modules to master this topic and earn up to 500 XP.
+              </p>
+            </div>
 
             {/* Content Grid Area */}
             <div className="min-h-[400px]">
-              {activeTab === 'learn' ? (
-                <SubtopicContentGrid
-                  content={data.subtopic.content}
-                  tasks={data.subtopic.tasks}
-                />
-              ) : (
-                <div className="flex h-64 flex-col items-center justify-center rounded-3xl bg-white/50">
-                  <h2 className="sr-only">Additional Content</h2>
-                  <p className="text-[13px] font-bold text-slate-600">Content for {activeTab} coming soon...</p>
-                </div>
-              )}
+              <SubtopicContentGrid
+                content={data.subtopic.content}
+                tasks={data.subtopic.tasks}
+              />
             </div>
 
             {/* Bottom Navigation */}
