@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import * as Icons from 'lucide-react';
 import { useBrand } from '../../../PostLandingPage/app/context/BrandContext';
@@ -7,78 +9,69 @@ export function ProjectContent({ onNext }: { onNext?: () => void }) {
   const [activeTab, setActiveTab] = useState('overview');
 
   const tabs = [
-    { id: 'overview', label: 'Overview', icon: <Icons.Layout size={16} /> },
-    { id: 'requirements', label: 'Requirements', icon: <Icons.ClipboardList size={16} /> },
-    { id: 'resources', label: 'Resources', icon: <Icons.BookOpen size={16} /> },
-    { id: 'submission', label: 'Submission', icon: <Icons.Upload size={16} /> },
-    { id: 'mentor', label: 'Mentor Review', icon: <Icons.UserCheck size={16} /> },
+    { id: 'overview', label: 'Overview', icon: <Icons.Search size={18} /> },
+    { id: 'features', label: 'Features', icon: <Icons.Zap size={18} /> },
+    { id: 'resources', label: 'Resources', icon: <Icons.Link size={18} /> },
   ];
 
   const buildItems = [
-    'Fetch all users from the API and display them in a table.',
-    'Add a search input to filter users by name.',
-    'Add functionality to create a new user.',
-    'Edit existing user details.',
-    'Delete a user with confirmation.',
-    'Handle all errors gracefully and show appropriate messages.'
+    'Create a Component for the User Table Header.',
+    'Build a row component that handles individual user data.',
+    'Implement a Modal component for adding new users.',
+    'Use composition to build the full Dashboard page.'
   ];
 
   const deliverableItems = [
-    'Fully functional dashboard',
-    'Create / Read / Update / Delete',
-    'Search & filter users',
-    'Clean & commented code',
-    'README with setup instructions'
+    'Fully functional React dashboard.',
+    'Source code on GitHub repository.',
+    'A short video demo of the UI interactions.',
+    'Project documentation and README.'
   ];
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
-      {/* Header & Breadcrumbs */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-700">
-           <span>JavaScript</span> <Icons.ChevronRight size={10} aria-hidden="true" /> <span>Asynchronous JavaScript</span> <Icons.ChevronRight size={10} aria-hidden="true" /> <span>Promises</span> <Icons.ChevronRight size={10} aria-hidden="true" /> <span className="text-slate-950">2.9 Project</span>
+    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
+      
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="space-y-1">
+          <h1 className="text-4xl font-bold text-[#1e293b] tracking-tight">Capstone Project</h1>
+          <p className="text-[14px] font-medium text-slate-800">Master Component Architecture through this hands-on project.</p>
         </div>
-        
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-3">
-              <h1 className="text-4xl font-bold text-slate-950 tracking-tight">Project: User Management Dashboard</h1>
-              <div className="rounded-full bg-orange-100 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-orange-950 border border-orange-200">Intermediate</div>
-            </div>
-            <p className="text-[15px] font-medium text-slate-800">Build a user management dashboard that fetches and manages users using Promises and async/await.</p>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 rounded-xl bg-orange-50 px-4 py-2 border border-orange-100 shadow-sm">
+             <Icons.Trophy size={16} className="text-orange-600" />
+             <span className="text-xs font-bold text-orange-950">+500 XP</span>
           </div>
-          
-          <div className="flex items-center gap-6">
-             <div className="flex items-center gap-2 text-slate-800">
-                <Icons.Clock size={18} aria-hidden="true" />
-                <span className="text-sm font-bold text-slate-950">5-7 hrs</span>
-             </div>
-             <div className="flex items-center gap-2 text-rose-950">
-                <Icons.Star size={18} fill="currentColor" aria-hidden="true" />
-                <span className="text-sm font-bold">+400 XP</span>
-             </div>
+          <div className="flex items-center gap-1.5 rounded-xl bg-slate-50 px-4 py-2 border border-slate-100 shadow-sm">
+             <Icons.Calendar size={16} className="text-slate-600" />
+             <span className="text-xs font-bold text-slate-950">2 Days Left</span>
           </div>
         </div>
       </div>
 
-      {/* Project Overview Banner */}
-      <section className="rounded-[40px] bg-gradient-to-br from-rose-50 to-orange-50 p-10 relative overflow-hidden group shadow-xl transition-all duration-300 hover:-translate-y-1">
-         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-            <div className="lg:col-span-7 space-y-8 relative z-10">
-               <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white shadow-sm text-rose-950 border border-rose-100">
-                     <Icons.ClipboardList size={22} aria-hidden="true" />
-                  </div>
-                  <h2 className="text-xl font-bold text-slate-950 tracking-tight">Project Overview</h2>
+      {/* Hero Section */}
+      <section className="relative overflow-hidden rounded-[40px] bg-[#fffbf9] p-10 shadow-xl transition-all duration-300 hover:-translate-y-1 border border-orange-100">
+         <div className="absolute top-0 right-0 w-96 h-96 bg-orange-500/5 rounded-full -mr-48 -mt-48 blur-3xl" />
+         
+         <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            <div className="lg:col-span-7 space-y-8">
+               <div 
+                 className="inline-flex items-center rounded-full px-4 py-1 text-[11px] font-bold tracking-wide uppercase shadow-sm"
+                 style={{ backgroundColor: `${brand.primaryColor}15`, color: brand.primaryColor }}
+               >
+                 intermediate project
                </div>
+               <h2 className="text-4xl font-bold text-slate-900 leading-tight">
+                  User Management <br/> <span style={{ color: brand.primaryColorDark }}>System Dashboard</span>
+               </h2>
                <p className="text-[16px] font-medium leading-relaxed text-slate-800">
-                  You will build a fully functional User Management Dashboard that interacts with a mock REST API. This project will help you apply Promises, async/await, error handling, and DOM manipulation in a real-world scenario.
+                  Build a professional User Management Dashboard where every part of the interface is a modular, reusable component. This project will test your ability to compose complex layouts from simple building blocks.
                </p>
                
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="rounded-2xl bg-white p-5 shadow-sm space-y-3 border border-slate-200">
                        <div className="flex items-center gap-2 text-rose-950">
-                          <Icons.Globe size={18} aria-hidden="true" />
+                          <Icons.Layers size={18} aria-hidden="true" />
                           <span className="text-xs font-bold uppercase tracking-widest">Real-world Use</span>
                        </div>
                        <p className="text-[11px] font-bold text-slate-800">Admin dashboards, CRM systems, user panels</p>
@@ -190,36 +183,6 @@ export function ProjectContent({ onNext }: { onNext?: () => void }) {
          </div>
       </div>
 
-      {/* Footer Navigation */}
-      <div className="flex items-center justify-between gap-4 pt-10">
-        <button className="group flex flex-1 items-center gap-4 rounded-2xl bg-white p-4 shadow-sm border border-slate-100 hover:bg-slate-50 transition-all active:scale-95 text-left border border-slate-200">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 group-hover:bg-white transition-colors border border-slate-100">
-            <Icons.ArrowLeft size={18} className="text-slate-700 group-hover:text-slate-950" aria-hidden="true" />
-          </div>
-          <div>
-            <p className="text-[10px] font-bold text-slate-800 uppercase tracking-widest">Previous</p>
-            <p className="text-sm font-bold text-slate-950">Assignment</p>
-          </div>
-        </button>
-
-        <button className="hidden sm:flex items-center gap-2 rounded-2xl bg-white px-8 py-4 text-sm font-bold text-slate-800 shadow-sm border border-slate-200 hover:bg-slate-50 transition-all active:scale-95">
-           <Icons.LayoutGrid size={18} aria-hidden="true" /> Back to Subtopic
-        </button>
-
-        <button 
-          onClick={onNext}
-          className="group flex flex-1 items-center justify-between gap-4 rounded-2xl p-4 shadow-xl transition-all hover:scale-[1.02] active:scale-95 text-left text-white" 
-          style={{ background: `linear-gradient(135deg, ${brand.primaryColor}, ${brand.primaryColor}dd)` }}
-        >
-          <div>
-            <p className="text-[10px] font-bold text-white/90 uppercase tracking-widest">Next</p>
-            <p className="text-sm font-bold">AI Tutor</p>
-          </div>
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20">
-            <Icons.ArrowRight size={18} aria-hidden="true" />
-          </div>
-        </button>
-      </div>
     </div>
   );
 }

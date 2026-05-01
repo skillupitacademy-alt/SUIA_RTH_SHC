@@ -1,50 +1,37 @@
+'use client';
+
 import React, { useState } from 'react';
 import * as Icons from 'lucide-react';
 import { useBrand } from '../../../PostLandingPage/app/context/BrandContext';
 
 export function QuizContent({ onNext }: { onNext?: () => void }) {
   const brand = useBrand();
-  const [selectedOption, setSelectedOption] = useState('C');
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
   const codeSnippet = `Promise.resolve(1)
-  .then(res => res + 1)
-  .then(res => { throw new Error("Oops"); })
+  .then(x => x + 1)
+  .then(x => { throw new Error('Oops') })
   .catch(err => console.log(err.message));`;
 
   const options = [
-    { id: 'A', text: '1' },
-    { id: 'B', text: '2' },
-    { id: 'C', text: 'Oops' },
-    { id: 'D', text: 'Error' },
+    { id: 'A', text: 'Output: 2' },
+    { id: 'B', text: 'Output: 1' },
+    { id: 'C', text: 'Output: Oops' },
+    { id: 'D', text: 'Output: Uncaught Error' }
   ];
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
-      {/* Breadcrumbs */}
-      <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-700">
-         <span>JavaScript</span> <Icons.ChevronRight size={10} aria-hidden="true" /> <span>React Development</span> <Icons.ChevronRight size={10} aria-hidden="true" /> <span>Component Architecture</span> <Icons.ChevronRight size={10} aria-hidden="true" /> <span className="text-slate-950">2.9 Quiz</span>
-      </div>
-
+    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
+      
       {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-        <div className="space-y-3">
-          <div className="flex items-center gap-4">
-             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50 text-rose-500 shadow-sm">
-                <Icons.FileText size={24} />
-             </div>
-              <div>
-                 <div className="flex items-center gap-2">
-                    <span className="rounded-md bg-rose-100 px-2 py-0.5 text-[10px] font-bold uppercase text-rose-950 border border-rose-200">Quiz</span>
-                    <h2 className="text-2xl font-bold text-slate-950 tracking-tight">2.9 Quiz: Component Architecture - Intermediate</h2>
-                 </div>
-                 <p className="text-[14px] font-medium text-slate-800">Test your understanding of component composition, props flow, and modular design patterns.</p>
-              </div>
-          </div>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="space-y-1">
+          <h1 className="text-4xl font-bold text-[#1e293b] tracking-tight">Interactive Quiz</h1>
+          <p className="text-[14px] font-medium text-slate-800">Test your mastery of Promise Chains & Error Handling.</p>
         </div>
-        
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-6">
            <div className="flex items-center gap-2 text-slate-800">
-              <Icons.Layout size={18} aria-hidden="true" />
+              <Icons.HelpCircle size={18} aria-hidden="true" />
               <span className="text-sm font-bold text-slate-900">10 Questions</span>
            </div>
            <div className="flex items-center gap-2 text-slate-800">
@@ -151,26 +138,6 @@ export function QuizContent({ onNext }: { onNext?: () => void }) {
             </div>
          )}
       </section>
-
-      {/* Footer Navigation */}
-      <div className="flex items-center justify-between gap-4 pt-4">
-         <button className="flex items-center gap-3 rounded-2xl bg-white px-8 py-4 text-sm font-bold text-slate-800 shadow-sm hover:bg-slate-50 transition-all border border-slate-200">
-            <Icons.ArrowLeft size={18} aria-hidden="true" /> Previous
-         </button>
-
-         <button className="hidden sm:flex items-center gap-2 rounded-2xl bg-white px-8 py-4 text-sm font-bold text-slate-800 shadow-sm hover:bg-slate-50 transition-all border border-slate-200">
-            <Icons.RotateCcw size={18} aria-hidden="true" /> Clear Answer
-         </button>
-
-        <button 
-          onClick={onNext}
-          className="group flex items-center gap-4 rounded-2xl px-10 py-4 shadow-xl transition-all hover:scale-[1.02] active:scale-95 text-white" 
-          style={{ background: `linear-gradient(135deg, ${brand.primaryColor}, ${brand.primaryColor}dd)` }}
-        >
-          <span className="text-sm font-bold">Next Question</span>
-          <Icons.ArrowRight size={18} />
-        </button>
-      </div>
 
       {/* Tip Footer */}
       <div className="flex items-center justify-between gap-4 pt-10 border-t border-slate-100">

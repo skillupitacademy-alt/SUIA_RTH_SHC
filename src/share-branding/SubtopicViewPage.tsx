@@ -4,11 +4,11 @@ import React, { useState } from 'react';
 import { useBrand } from './PostLandingPage/app/context/BrandContext';
 import { SubtopicViewData } from './subtopicPageData';
 import { SubtopicHeader } from './TutorialEngine/components/subtopic/SubtopicHeader';
-import { SubtopicTabs } from './TutorialEngine/components/subtopic/SubtopicTabs';
 import { SubtopicContentGrid } from './TutorialEngine/components/subtopic/SubtopicContentGrid';
 import { SubtopicSidebar } from './TutorialEngine/components/subtopic/SubtopicSidebar';
 import { SubtopicTopBar } from './TutorialEngine/components/subtopic/SubtopicTopBar';
 import { SubtopicRightPanel } from './TutorialEngine/components/subtopic/SubtopicRightPanel';
+import { TabFooter } from './TutorialEngine/components/notes/TabFooter';
 import { ChevronRight } from 'lucide-react';
 
 interface SubtopicViewPageProps {
@@ -17,7 +17,6 @@ interface SubtopicViewPageProps {
 
 export function SubtopicViewPage({ data }: SubtopicViewPageProps) {
   const brand = useBrand();
-  const [activeTab, setActiveTab] = useState(data.subtopic.tabs[0].id);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
 
@@ -68,48 +67,45 @@ export function SubtopicViewPage({ data }: SubtopicViewPageProps) {
             if (isRightSidebarOpen) setIsRightSidebarOpen(false);
           }}
         >
-          <div className="mx-auto w-full max-w-[1600px] px-8 py-10 space-y-10 transition-all duration-500">
-            {/* Breadcrumbs */}
-            <nav aria-label="Breadcrumbs" className="flex items-center gap-2 text-sm font-bold text-slate-600">
-              <span className="hover:text-slate-900 cursor-pointer transition-colors">Home</span>
-              <ChevronRight size={16} className="text-slate-400" />
-              <span className="hover:text-slate-900 cursor-pointer transition-colors">JavaScript</span>
-              <ChevronRight size={16} className="text-slate-400" />
-              <span className="text-primary-dark font-black">Component Architecture</span>
-            </nav>
+          <div className="mx-auto flex min-h-full w-full max-w-[1600px] flex-col px-8 py-10 transition-all duration-500">
+            {/* Main Content Body */}
+            <div className="flex-1 space-y-10">
+                {/* Breadcrumbs */}
+                <nav aria-label="Breadcrumbs" className="flex items-center gap-2 text-sm font-bold text-slate-600">
+                  <span className="hover:text-slate-900 cursor-pointer transition-colors">Home</span>
+                  <ChevronRight size={16} className="text-slate-400" />
+                  <span className="hover:text-slate-900 cursor-pointer transition-colors">JavaScript</span>
+                  <ChevronRight size={16} className="text-slate-400" />
+                  <span className="text-primary-dark font-black">Component Architecture</span>
+                </nav>
 
-            {/* Header Section */}
-            <SubtopicHeader data={{
-              title: data.subtopic.title,
-              description: data.subtopic.description,
-              progress: data.subtopic.progress,
-              progressLabel: data.subtopic.progressLabel,
-              metadata: data.subtopic.metadata
-            }} />
+                {/* Header Section */}
+                <SubtopicHeader data={{
+                  title: data.subtopic.title,
+                  description: data.subtopic.description,
+                  progress: data.subtopic.progress,
+                  progressLabel: data.subtopic.progressLabel,
+                  metadata: data.subtopic.metadata
+                }} />
 
-            {/* Content Grid Area */}
-            <div className="min-h-[400px]">
-              <SubtopicContentGrid
-                content={data.subtopic.content}
-                tasks={data.subtopic.tasks}
-              />
+                {/* Content Grid Area */}
+                <div className="min-h-[400px]">
+                  <SubtopicContentGrid
+                    content={data.subtopic.content}
+                    tasks={data.subtopic.tasks}
+                  />
+                </div>
             </div>
 
-            {/* Bottom Navigation */}
-            <nav aria-label="Topic navigation" className="mt-12 flex items-center justify-between pt-8 pb-12">
-              <button className="flex flex-col items-start gap-1 group" aria-label={`Previous topic: ${data.subtopic.navigation.prev.title}`}>
-                <span className="text-[13px] font-bold text-slate-600 uppercase tracking-wider">Previous</span>
-                <span className="text-[13px] font-black text-slate-800 hover-text-primary transition-colors">
-                  {data.subtopic.navigation.prev.title}
-                </span>
-              </button>
-              <button className="flex flex-col items-end gap-1 group" aria-label={`Next topic: ${data.subtopic.navigation.next.title}`}>
-                <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">Next Topic</span>
-                <span className="text-sm font-black text-slate-800 hover-text-primary transition-colors">
-                  {data.subtopic.navigation.next.title}
-                </span>
-              </button>
-            </nav>
+            {/* Standardized Navigation Footer */}
+            <div className="mt-12 pt-8">
+                <TabFooter 
+                    prevLabel={data.subtopic.navigation.prev.title}
+                    nextLabel={data.subtopic.navigation.next.title}
+                    onPrev={() => console.log('Prev Topic')}
+                    onNext={() => console.log('Next Topic')}
+                />
+            </div>
           </div>
         </main>
 

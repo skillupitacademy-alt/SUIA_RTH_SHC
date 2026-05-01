@@ -1,9 +1,11 @@
+'use client';
+
 import React from 'react';
 import * as Icons from 'lucide-react';
 import { useBrand } from '../../../PostLandingPage/app/context/BrandContext';
 import { SubtopicNotesViewData } from '../../../subtopicNotesData';
 
-export function TechnicalDeepDiveContent({ data, onNext }: { data?: SubtopicNotesViewData['mainContent']['technicalDeepDive']; onNext?: () => void }) {
+export function TechnicalDeepDiveContent({ data }: { data?: SubtopicNotesViewData['mainContent']['technicalDeepDive'] }) {
   const brand = useBrand();
   if (!data) return null;
 
@@ -78,23 +80,23 @@ export function TechnicalDeepDiveContent({ data, onNext }: { data?: SubtopicNote
                  <p className="ml-8 text-indigo-100">{`<`}<span className="text-pink-400">div</span> <span className="text-orange-300">className</span>=<span className="text-emerald-400">"..."</span>{`>`}Pending{`</`}<span className="text-pink-400">div</span>{`>`}</p>
                  <p className="ml-8 text-indigo-100">{`<`}<span className="text-pink-400">span</span> <span className="text-orange-300">className</span>=<span className="text-emerald-400">"..."</span>{`>`}Mounting / Loading{`</`}<span className="text-pink-400">span</span>{`>`}</p>
                  <p className="ml-4 text-indigo-100">{`</`}<span className="text-pink-400">div</span>{`>`}</p>
-
+                 
                  <p className="ml-4 text-indigo-100">{`<`}<span className="text-indigo-300">Icons.ArrowRight</span> <span className="text-orange-300">size</span>={`{`}<span className="text-orange-300">18</span>{`}`} <span className="text-orange-300">className</span>=<span className="text-emerald-400">"..."</span> {`/>`}</p>
-
+                 
                  {/* Fulfilled */}
                  <p className="ml-4 text-indigo-100">{`<`}<span className="text-pink-400">div</span> <span className="text-orange-300">className</span>=<span className="text-emerald-400">"flex flex-col items-center gap-2"</span>{`>`}</p>
                  <p className="ml-8 text-indigo-100">{`<`}<span className="text-pink-400">div</span> <span className="text-orange-300">className</span>=<span className="text-emerald-400">"..."</span>{`>`}Fulfilled{`</`}<span className="text-pink-400">div</span>{`>`}</p>
                  <p className="ml-8 text-indigo-100">{`<`}<span className="text-pink-400">span</span> <span className="text-orange-300">className</span>=<span className="text-emerald-400">"..."</span>{`>`}Rendered / Active UI{`</`}<span className="text-pink-400">span</span>{`>`}</p>
                  <p className="ml-4 text-indigo-100">{`</`}<span className="text-pink-400">div</span>{`>`}</p>
-
+                 
                  <p className="ml-4 text-indigo-100">{`<`}<span className="text-indigo-300">Icons.ArrowRight</span> <span className="text-orange-300">size</span>={`{`}<span className="text-orange-300">18</span>{`}`} <span className="text-orange-300">className</span>=<span className="text-emerald-400">"..."</span> {`/>`}</p>
-
+                 
                  {/* Rejected */}
                  <p className="ml-4 text-indigo-100">{`<`}<span className="text-pink-400">div</span> <span className="text-orange-300">className</span>=<span className="text-emerald-400">"flex flex-col items-center gap-2"</span>{`>`}</p>
                  <p className="ml-8 text-indigo-100">{`<`}<span className="text-pink-400">div</span> <span className="text-orange-300">className</span>=<span className="text-emerald-400">"..."</span>{`>`}Rejected{`</`}<span className="text-pink-400">div</span>{`>`}</p>
                  <p className="ml-8 text-indigo-100">{`<`}<span className="text-pink-400">span</span> <span className="text-orange-300">className</span>=<span className="text-emerald-400">"..."</span>{`>`}Error / Fallback{`</`}<span className="text-pink-400">span</span>{`>`}</p>
                  <p className="ml-4 text-indigo-100">{`</`}<span className="text-pink-400">div</span>{`>`}</p>
-
+                 
                  <p className="text-indigo-100">{`</`}<span className="text-pink-400">div</span>{`>`}</p>
               </div>
               <div className="absolute bottom-6 right-6 flex items-center gap-4">
@@ -369,37 +371,6 @@ export function TechnicalDeepDiveContent({ data, onNext }: { data?: SubtopicNote
            </div>
         </div>
       </section>
-
-      {/* Footer Navigation */}
-      <div className="flex items-center justify-between gap-4 pt-10">
-        <button className="group flex flex-1 items-center gap-4 rounded-2xl bg-white p-4 shadow-sm border border-slate-200 hover:bg-slate-50 transition-all active:scale-95 text-left">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 group-hover:bg-white transition-colors">
-            <Icons.ArrowLeft size={18} className="text-slate-600 group-hover:text-slate-900" aria-hidden="true" />
-          </div>
-          <div>
-            <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Previous</p>
-            <p className="text-sm font-bold text-slate-900">Real Life Example</p>
-          </div>
-        </button>
-
-        <button className="hidden sm:flex items-center gap-2 rounded-2xl bg-white px-8 py-4 text-sm font-bold text-slate-800 shadow-sm border border-slate-200 hover:bg-slate-50 transition-all active:scale-95">
-           <Icons.LayoutGrid size={18} aria-hidden="true" /> Back to Subtopic
-        </button>
-
-        <button 
-          onClick={onNext}
-          className="group flex flex-1 items-center justify-between gap-4 rounded-2xl p-4 shadow-xl transition-all hover:scale-[1.02] active:scale-95 text-left text-white" 
-          style={{ background: `linear-gradient(135deg, ${brand.primaryColor}, ${brand.primaryColor}dd)` }}
-        >
-          <div>
-            <p className="text-[10px] font-bold text-white/90 uppercase tracking-widest">Next</p>
-            <p className="text-sm font-bold">Code Example</p>
-          </div>
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20">
-            <Icons.ArrowRight size={18} aria-hidden="true" />
-          </div>
-        </button>
-      </div>
 
     </div>
   );

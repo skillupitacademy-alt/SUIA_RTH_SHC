@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import * as Icons from 'lucide-react';
 import { useBrand } from '../../../PostLandingPage/app/context/BrandContext';
@@ -145,32 +147,6 @@ export function RealLifeExamplesContent({ data }: { data: SubtopicNotesViewData[
             {data.walkthrough.footer}
           </p>
         </div>
-      </div>
-
-      {/* Bottom Navigation */}
-      <div className="flex items-center justify-between gap-4 pt-4 pb-10">
-        <button className="group flex flex-1 items-center gap-4 rounded-2xl bg-white p-4 text-left shadow-sm transition-all border border-slate-100 hover:bg-slate-50 active:scale-95">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 group-hover:bg-white transition-colors">
-            <Icons.ArrowLeft size={18} className="text-slate-600 group-hover:text-slate-900" aria-hidden="true" />
-          </div>
-          <div>
-            <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Previous</p>
-            <p className="text-sm font-bold text-slate-900">Layman Explanation</p>
-          </div>
-        </button>
-
-        <button className="hidden sm:flex items-center gap-2 rounded-2xl bg-white px-8 py-4 text-sm font-bold text-slate-800 shadow-sm border border-slate-200 hover:bg-slate-50 transition-all active:scale-95">
-           <Icons.LayoutGrid size={18} aria-hidden="true" /> Back to Subtopic
-        </button>
-
-        <button className="group flex flex-1 items-center justify-between gap-4 rounded-2xl p-4 text-left shadow-xl transition-all hover:scale-[1.02] active:scale-95" style={{ background: `linear-gradient(135deg, ${brand.primaryColor}, ${brand.primaryColor}dd)` }}>
-          <div className="text-white">
-            <p className="text-sm font-bold text-white">Technical Deep Dive</p>
-          </div>
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20">
-            <Icons.ArrowRight size={18} className="text-white" aria-hidden="true" />
-          </div>
-        </button>
       </div>
 
     </div>

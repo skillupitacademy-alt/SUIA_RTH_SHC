@@ -1,4 +1,4 @@
-// Rebuild trigger: Hardened UI with visible borders and fixed navigation
+// Rebuild trigger: Centralized navigation and footer stability
 import React, { useState } from 'react';
 import { useBrand } from './PostLandingPage/app/context/BrandContext';
 import { SubtopicNotesViewData } from './subtopicNotesData';
@@ -13,6 +13,7 @@ import { CodeExampleContent } from './TutorialEngine/components/notes/CodeExampl
 import { AssignmentContent } from './TutorialEngine/components/notes/AssignmentContent';
 import { ProjectContent } from './TutorialEngine/components/notes/ProjectContent';
 import { QuizContent } from './TutorialEngine/components/notes/QuizContent';
+import { TabFooter } from './TutorialEngine/components/notes/TabFooter';
 
 export interface SubtopicNotesPageProps {
   data: SubtopicNotesViewData;
@@ -32,6 +33,38 @@ export function SubtopicNotesPage({ data }: SubtopicNotesPageProps) {
     }
   }, []);
 
+  const orderedTabs = [
+    { id: 'notes', label: 'Full Notes' },
+    { id: 'layman', label: 'Layman Explanation' },
+    { id: 'real-life', label: 'Real Life Examples' },
+    { id: 'technical-deep-dive', label: 'Technical Deep Dive' },
+    { id: 'code-example', label: 'Code Example' },
+    { id: 'assignments', label: 'Assignments' },
+    { id: 'project', label: 'Projects' },
+    { id: 'quiz', label: 'Quiz' },
+    { id: 'ai-tutor', label: 'AI Tutor' }
+  ];
+
+  const handleTabChange = (id: string) => {
+    if (id === 'overview') {
+      window.location.href = '/start-learning/subtopic';
+      return;
+    }
+    const url = new URL(window.location.href);
+    url.searchParams.set('tab', id);
+    window.history.pushState({}, '', url);
+    setActiveTab(id);
+    setIsSidebarOpen(false);
+    
+    // Scroll to top on tab change
+    const scrollContainer = document.getElementById('main-content-area');
+    if (scrollContainer) scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const currentTabIndex = orderedTabs.findIndex(t => t.id === activeTab);
+  const nextTab = orderedTabs[currentTabIndex + 1];
+  const prevTab = orderedTabs[currentTabIndex - 1];
+
   return (
     <div className="flex h-screen w-full flex-col overflow-hidden bg-[#F8FAFC]">
       {/* Dynamic Branding Styles */}
@@ -39,7 +72,7 @@ export function SubtopicNotesPage({ data }: SubtopicNotesPageProps) {
         __html: `
         .bg-primary-dynamic { background-color: ${brand.primaryColor}; }
         .text-primary-dynamic { color: ${brand.primaryColor}; }
-        .text-primary-dark { color: ${brand.primaryColor}; filter: brightness(0.85); }
+        .text-primary-dark { color: ${brand.primaryColorDark}; }
         .border-primary-dynamic { border-color: ${brand.primaryColor}; }
         .ring-primary-dynamic { --tw-ring-color: ${brand.primaryColor}; }
         
@@ -72,23 +105,12 @@ export function SubtopicNotesPage({ data }: SubtopicNotesPageProps) {
           data={data.leftSidebar}
           isOpen={isSidebarOpen}
           activeId={activeTab}
-          onSelect={(id) => {
-            if (id === 'overview') {
-              window.location.href = '/start-learning/subtopic';
-              return;
-            }
-            // Update URL query string without page reload
-            const url = new URL(window.location.href);
-            url.searchParams.set('tab', id);
-            window.history.pushState({}, '', url);
-            
-            setActiveTab(id);
-            setIsSidebarOpen(false);
-          }}
+          onSelect={handleTabChange}
         />
 
         {/* Main Scrollable Content */}
         <main 
+          id="main-content-area"
           className="flex-1 overflow-y-auto hide-scrollbar bg-white" 
           tabIndex={0}
           onClick={() => {
@@ -96,15 +118,43 @@ export function SubtopicNotesPage({ data }: SubtopicNotesPageProps) {
             if (isRightSidebarOpen) setIsRightSidebarOpen(false);
           }}
         >
-          <div className="mx-auto w-full px-8 py-10 lg:px-12 xl:px-16">
-            {activeTab === 'notes' && <NotesMainContent data={data.mainContent} isStandalone={false} />}
-            {activeTab === 'layman' && <LaymanExplanationContent data={data.mainContent.laymanExplanation} />}
-            {activeTab === 'real-life' && <RealLifeExamplesContent data={data.mainContent.realLifeExamples} />}
-            {activeTab === 'technical-deep-dive' && <TechnicalDeepDiveContent data={data.mainContent.technicalDeepDive} onNext={() => setActiveTab('code-example')} />}
-            {activeTab === 'code-example' && <CodeExampleContent onNext={() => setActiveTab('assignments')} />}
-            {activeTab === 'assignments' && <AssignmentContent onNext={() => setActiveTab('project')} />}
-            {activeTab === 'project' && <ProjectContent onNext={() => setActiveTab('quiz')} />}
-            {activeTab === 'quiz' && <QuizContent onNext={() => setActiveTab('ai-tutor')} />}
+          <div className="mx-auto flex min-h-full w-full flex-col px-8 py-10 lg:px-12 xl:px-16 transition-all duration-500">
+            <div className="flex-1">
+                {activeTab === 'notes' && (
+                  <NotesMainContent data={data.mainContent} isStandalone={false} />
+                )}
+                {activeTab === 'layman' && (
+                  <LaymanExplanationContent data={data.mainContent.laymanExplanation} />
+                )}
+                {activeTab === 'real-life' && (
+                  <RealLifeExamplesContent data={data.mainContent.realLifeExamples} />
+                )}
+                {activeTab === 'technical-deep-dive' && (
+                  <TechnicalDeepDiveContent data={data.mainContent.technicalDeepDive} />
+                )}
+                {activeTab === 'code-example' && (
+                  <CodeExampleContent />
+                )}
+                {activeTab === 'assignments' && (
+                  <AssignmentContent />
+                )}
+                {activeTab === 'project' && (
+                  <ProjectContent />
+                )}
+                {activeTab === 'quiz' && (
+                  <QuizContent />
+                )}
+            </div>
+
+            {/* Standardized Navigation Footer - Centralized for Stability */}
+            <div className="mt-12 pt-8">
+                <TabFooter 
+                    prevLabel={prevTab?.label}
+                    nextLabel={nextTab?.label}
+                    onPrev={prevTab ? () => handleTabChange(prevTab.id) : undefined}
+                    onNext={nextTab ? () => handleTabChange(nextTab.id) : undefined}
+                />
+            </div>
           </div>
         </main>
 

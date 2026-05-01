@@ -1,8 +1,10 @@
+'use client';
+
 import React, { useState } from 'react';
 import * as Icons from 'lucide-react';
 import { useBrand } from '../../../PostLandingPage/app/context/BrandContext';
 
-export function CodeExampleContent({ onNext }: { onNext?: () => void }) {
+export function CodeExampleContent() {
   const brand = useBrand();
   const [activeExample, setActiveExample] = useState(0);
 
@@ -126,7 +128,7 @@ console.log("✅ Component rendered successfully!");`;
              {/* Line Numbers */}
              <div className="absolute left-0 top-0 bottom-0 w-12 bg-[#020617] border-r border-slate-800/50 flex flex-col items-center py-6 text-[12px] font-mono text-slate-400 select-none">
                 {Array.from({ length: 24 }).map((_, i) => (
-                  <div key={i} className="h-6 leading-6">{i + 1}</div>
+                   <div key={i} className="h-6 leading-6">{i + 1}</div>
                 ))}
              </div>
              {/* Code Content */}
@@ -200,36 +202,6 @@ console.log("✅ Component rendered successfully!");`;
         </section>
       </div>
 
-      {/* Footer Navigation */}
-      <div className="flex items-center justify-between gap-4 pt-10">
-        <button className="group flex flex-1 items-center gap-4 rounded-2xl bg-white p-4 shadow-sm hover:bg-slate-50 transition-all active:scale-95 text-left">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 group-hover:bg-white transition-colors">
-            <Icons.ArrowLeft size={18} className="text-slate-600 group-hover:text-slate-900" aria-hidden="true" />
-          </div>
-          <div>
-            <p className="text-[10px] font-bold text-slate-700 uppercase tracking-widest">Previous</p>
-            <p className="text-sm font-bold text-slate-950">Technical Deep Dive</p>
-          </div>
-        </button>
-
-        <button className="hidden sm:flex items-center gap-2 rounded-2xl bg-white px-8 py-4 text-sm font-bold text-slate-800 shadow-sm hover:bg-slate-50 transition-all active:scale-95 border border-slate-200">
-           <Icons.LayoutGrid size={18} aria-hidden="true" /> Back to Subtopic
-        </button>
-
-        <button 
-          onClick={onNext}
-          className="group flex flex-1 items-center justify-between gap-4 rounded-2xl p-4 shadow-xl transition-all hover:scale-[1.02] active:scale-95 text-left text-white" 
-          style={{ background: `linear-gradient(135deg, ${brand.primaryColor}, ${brand.primaryColor}dd)` }}
-        >
-          <div>
-            <p className="text-[10px] font-bold text-white/90 uppercase tracking-widest">Next</p>
-            <p className="text-sm font-bold">AI Tutor</p>
-          </div>
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20">
-            <Icons.ArrowRight size={18} aria-hidden="true" />
-          </div>
-        </button>
-      </div>
     </div>
   );
 }

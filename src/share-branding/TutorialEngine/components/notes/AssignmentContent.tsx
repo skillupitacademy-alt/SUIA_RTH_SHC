@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import * as Icons from 'lucide-react';
 import { useBrand } from '../../../PostLandingPage/app/context/BrandContext';
@@ -5,39 +7,59 @@ import { useBrand } from '../../../PostLandingPage/app/context/BrandContext';
 export function AssignmentContent({ onNext }: { onNext?: () => void }) {
   const brand = useBrand();
 
-  const starterCode = `// Write your code here
-function UserDashboard() {
-  // 1. Create a Header component
-  // 2. Create a Sidebar component
-  // 3. Create a MainContent component
-  // 4. Compose them into the UserDashboard
+  const starterCode = `// 1. Define your components
+function Navbar() { return <div>Navbar</div>; }
+function Sidebar() { return <div>Sidebar</div>; }
+function ProfileCard({ user }) { 
+  return <div>{user.name}</div>; 
 }
 
-// Test your architecture
-render(<UserDashboard />);`;
+// 2. Compose them
+function App() {
+  const user = { name: "John Doe" };
+  return (
+    <div>
+      <Navbar />
+      <Sidebar />
+      <ProfileCard user={user} />
+    </div>
+  );
+}
+
+render(<App />);`;
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
+    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
+      
       {/* Header */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-3">
-          <h1 className="text-4xl font-bold text-slate-950 tracking-tight">Assignment</h1>
-          <span className="rounded-full bg-orange-100 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-orange-950 border border-orange-200">Practical</span>
+      <div className="flex items-center justify-between">
+        <div className="space-y-1">
+          <h1 className="text-4xl font-bold text-[#1e293b] tracking-tight">Assignment</h1>
+          <p className="text-[14px] font-medium text-slate-800">Apply Component Architecture to a real-world task.</p>
         </div>
-        <p className="text-[15px] font-medium text-slate-800">Apply what you've learned about Component Architecture by solving this real-world problem.</p>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 rounded-xl bg-emerald-50 px-4 py-2 border border-emerald-100 shadow-sm">
+             <Icons.Zap size={16} className="text-emerald-600" />
+             <span className="text-xs font-bold text-emerald-950">+150 XP</span>
+          </div>
+          <div className="flex items-center gap-1.5 rounded-xl bg-orange-50 px-4 py-2 border border-orange-100 shadow-sm">
+             <Icons.Clock size={16} className="text-orange-600" />
+             <span className="text-xs font-bold text-orange-950">20 Mins</span>
+          </div>
+        </div>
       </div>
 
-      {/* Problem Statement */}
-      <section className="rounded-[32px] bg-white p-10 shadow-xl relative overflow-hidden group transition-all duration-300 hover:-translate-y-1">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-100 text-rose-950 border border-rose-200">
-            <Icons.ClipboardList size={22} aria-hidden="true" />
+      {/* Task Description Card */}
+      <section className="rounded-[40px] bg-[#fffbf9] p-10 shadow-xl border border-orange-100 transition-all duration-300 hover:-translate-y-1">
+        <div className="space-y-8">
+          <div className="flex items-center gap-3">
+             <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-orange-100 text-orange-950 border border-orange-200">
+                <Icons.Target size={22} aria-hidden="true" />
+             </div>
+             <h2 className="text-xl font-bold text-slate-900">Task: Profile Dashboard Composition</h2>
           </div>
-          <h2 className="text-xl font-bold text-slate-900">Problem Statement</h2>
-        </div>
-        <div className="space-y-6">
-          <p className="text-[15px] font-medium text-slate-800 leading-relaxed">
-            Create a modular <span className="bg-rose-100 text-rose-950 px-2 py-0.5 rounded border border-rose-200 font-mono">UserDashboard</span> component that assembles multiple sub-components. The architecture should:
+          <p className="text-[16px] font-medium leading-relaxed text-slate-800">
+            Your task is to refactor a monolithic dashboard into three clean, reusable components. The final result should:
           </p>
           <ul className="space-y-4 ml-6">
             {[
@@ -159,36 +181,6 @@ render(<UserDashboard />);`;
          </div>
       </section>
 
-      {/* Footer Navigation */}
-      <div className="flex items-center justify-between gap-4 pt-10">
-        <button className="group flex flex-1 items-center gap-4 rounded-2xl bg-white p-4 shadow-sm hover:bg-slate-50 transition-all active:scale-95 text-left border border-slate-200">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 group-hover:bg-white transition-colors">
-            <Icons.ArrowLeft size={18} className="text-slate-700 group-hover:text-slate-950" aria-hidden="true" />
-          </div>
-          <div>
-            <p className="text-[10px] font-bold text-slate-700 uppercase tracking-widest">Previous</p>
-            <p className="text-sm font-bold text-slate-900">Code Example</p>
-          </div>
-        </button>
-
-        <button className="hidden sm:flex items-center gap-2 rounded-2xl bg-white px-8 py-4 text-sm font-bold text-slate-800 shadow-sm hover:bg-slate-50 transition-all active:scale-95 border border-slate-200">
-           <Icons.LayoutGrid size={18} aria-hidden="true" /> Back to Subtopic
-        </button>
-
-        <button 
-          onClick={onNext}
-          className="group flex flex-1 items-center justify-between gap-4 rounded-2xl p-4 shadow-xl transition-all hover:scale-[1.02] active:scale-95 text-left text-white" 
-          style={{ background: `linear-gradient(135deg, ${brand.primaryColor}, ${brand.primaryColor}dd)` }}
-        >
-          <div>
-            <p className="text-[10px] font-bold text-white/90 uppercase tracking-widest">Next</p>
-            <p className="text-sm font-bold">AI Tutor</p>
-          </div>
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20">
-            <Icons.ArrowRight size={18} aria-hidden="true" />
-          </div>
-        </button>
-      </div>
     </div>
   );
 }

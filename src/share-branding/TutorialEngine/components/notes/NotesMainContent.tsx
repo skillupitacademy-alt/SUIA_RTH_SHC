@@ -113,17 +113,6 @@ export function NotesMainContent({ data, isStandalone = true }: { data: Subtopic
         ))}
       </div>
 
-      {/* Footer actions */}
-      <div className="flex items-center justify-between border-t border-gray-100 pt-8 pb-10">
-        <button className="text-sm font-bold text-slate-800 hover:text-slate-950 transition-colors">← Previous: Components & Props</button>
-        <button
-          className="rounded-xl px-6 py-3 text-sm font-bold text-white shadow-lg transition-transform hover:-translate-y-0.5 active:translate-y-0"
-          style={{ backgroundColor: brand.primaryColor }}
-        >
-          Continue to State & Lifecycle →
-        </button>
-      </div>
-
     </div>
   );
 
