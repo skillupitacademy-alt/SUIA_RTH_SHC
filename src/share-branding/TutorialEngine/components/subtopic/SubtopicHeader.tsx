@@ -24,7 +24,7 @@ export function SubtopicHeader({ data }: SubtopicHeaderProps) {
   const brand = useBrand();
 
   return (
-    <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+    <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between rounded-2xl border border-slate-200 bg-white p-6 shadow-xl transition-all duration-300 hover:-translate-y-1">
       {/* Title & Meta Section */}
       <div className="flex flex-1 gap-5">
         {/* JS Icon */}

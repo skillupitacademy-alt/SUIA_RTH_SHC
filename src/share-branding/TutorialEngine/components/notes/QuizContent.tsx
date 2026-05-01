@@ -75,7 +75,7 @@ export function QuizContent({ onNext }: { onNext?: () => void }) {
       </div>
 
       {/* Question Card */}
-      <section className="rounded-[32px] bg-white p-10 shadow-sm border border-slate-200 space-y-8 relative group">
+      <section className="rounded-[32px] bg-white p-10 shadow-xl border border-slate-200 space-y-8 relative group transition-all duration-300 hover:-translate-y-1">
          <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
                <div className="rounded-lg bg-rose-500 px-3 py-1.5 text-xs font-black text-white shadow-lg shadow-rose-100">Q4</div>
@@ -119,8 +119,8 @@ export function QuizContent({ onNext }: { onNext?: () => void }) {
                <button
                   key={opt.id}
                   onClick={() => setSelectedOption(opt.id)}
-                  className={`group flex items-center gap-6 rounded-2xl p-6 transition-all border ${selectedOption === opt.id ? 'border-rose-500 bg-rose-50/30 ring-4 ring-rose-500/5' : 'border-slate-100 hover:border-slate-200 bg-white'}`}
-               >
+                   className={`group flex items-center gap-6 rounded-2xl p-6 transition-all border shadow-md hover:shadow-xl hover:-translate-y-0.5 ${selectedOption === opt.id ? 'border-rose-500 bg-rose-50/30 ring-4 ring-rose-500/5' : 'border-slate-100 hover:border-slate-200 bg-white'}`}
+                >
                   <div className={`flex h-6 w-6 items-center justify-center rounded-full border-2 transition-all ${selectedOption === opt.id ? 'border-rose-500 bg-rose-500' : 'border-slate-200 group-hover:border-slate-300'}`}>
                      {selectedOption === opt.id && <div className="h-2 w-2 rounded-full bg-white" />}
                   </div>
@@ -134,7 +134,7 @@ export function QuizContent({ onNext }: { onNext?: () => void }) {
 
          {/* Explanation Box */}
          {selectedOption === 'C' && (
-            <div className="rounded-[24px] bg-rose-50/50 p-8 flex items-start gap-6 border border-slate-200 relative overflow-hidden animate-in fade-in slide-in-from-top-4 duration-500">
+            <div className="rounded-[24px] bg-rose-50/50 p-8 flex items-start gap-6 border border-slate-200 relative overflow-hidden animate-in fade-in slide-in-from-top-4 duration-500 shadow-xl transition-all duration-300 hover:shadow-2xl">
                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white shadow-sm text-rose-500 relative z-10">
                   <Icons.Lightbulb size={24} />
                </div>

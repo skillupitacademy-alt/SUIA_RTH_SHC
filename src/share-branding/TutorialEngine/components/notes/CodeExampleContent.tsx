@@ -104,7 +104,7 @@ console.log("✅ Component rendered successfully!");`;
       {/* Main Interactive Area */}
       <div className="space-y-4">
         {/* Editor Window */}
-        <div className="rounded-[24px] overflow-hidden bg-[#0f172a] shadow-2xl border border-slate-200">
+        <div className="rounded-[24px] overflow-hidden bg-[#0f172a] shadow-xl border border-slate-200 transition-all duration-300 hover:-translate-y-1">
           <div className="flex items-center justify-between bg-[#1e293b]/50 px-6 py-4 border-b border-slate-800/50">
             <div className="flex items-center gap-3">
               <div className="h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50" />
@@ -151,7 +151,7 @@ console.log("✅ Component rendered successfully!");`;
         </div>
 
         {/* Output Window */}
-        <div className="rounded-[24px] overflow-hidden bg-[#0a0f1a] shadow-xl border border-slate-200">
+        <div className="rounded-[24px] overflow-hidden bg-[#0a0f1a] shadow-xl border border-slate-200 transition-all duration-300 hover:-translate-y-1">
            <div className="flex items-center justify-between bg-[#111827] px-6 py-3 border-b border-slate-900">
               <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Output</span>
               <button className="text-[10px] font-black text-slate-500 hover:text-slate-300 transition-colors uppercase tracking-widest">Clear</button>
@@ -180,7 +180,7 @@ console.log("✅ Component rendered successfully!");`;
         </div>
 
         {/* Try It Yourself Box */}
-        <div className="rounded-[24px] bg-orange-50/20 p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6 border border-slate-200">
+        <div className="rounded-[24px] bg-orange-50/20 p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6 border border-slate-200 shadow-xl transition-all duration-300 hover:-translate-y-1">
            <div className="flex items-center gap-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-100 text-orange-600">
                  <Icons.Code size={24} />

@@ -28,7 +28,7 @@ export function RealLifeExamplesContent({ data }: { data: SubtopicNotesViewData[
 
       {/* Hero Analogy Card */}
       <div 
-        className="relative overflow-hidden rounded-[40px] border p-8 md:p-10 shadow-sm transition-all duration-700 border-slate-200" style={{ 
+        className="relative overflow-hidden rounded-[40px] border p-8 md:p-10 shadow-xl transition-all duration-300 hover:-translate-y-1 border-slate-200" style={{ 
           background: `linear-gradient(135deg, ${brand.primaryColor}08, ${brand.primaryColor}03)` 
         }}
       >
@@ -59,7 +59,7 @@ export function RealLifeExamplesContent({ data }: { data: SubtopicNotesViewData[
             <p className="text-[15px] font-medium leading-relaxed text-slate-600">
               {data.hero.description}
             </p>
-            <div className="flex items-center gap-3 rounded-2xl bg-white p-4 border-slate-200 shadow-sm">
+            <div className="flex items-center gap-3 rounded-2xl bg-white p-4 border border-slate-200 shadow-lg transition-all duration-300 hover:-translate-y-1">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: `${brand.primaryColor}15` }}>
                 <Icons.Lightbulb size={20} style={{ color: brand.primaryColor }} fill={`${brand.primaryColor}33`} aria-hidden="true" />
               </div>
@@ -83,7 +83,7 @@ export function RealLifeExamplesContent({ data }: { data: SubtopicNotesViewData[
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {data.scenarios.map((item) => (
-            <div key={item.id} className="group flex flex-col rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:shadow-md hover:-translate-y-1">
+            <div key={item.id} className="group flex flex-col rounded-3xl border border-slate-200 bg-white p-6 shadow-xl transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
               <div 
                 className="mb-6 flex aspect-square items-center justify-center rounded-2xl bg-slate-50 p-4 transition-colors group-hover:bg-opacity-50"
                 style={{ backgroundColor: `${brand.primaryColor}05` } as any}
@@ -102,8 +102,8 @@ export function RealLifeExamplesContent({ data }: { data: SubtopicNotesViewData[
 
       {/* Walkthrough Section */}
       <div 
-        className="rounded-[40px] p-10 border shadow-inner"
-        style={{ backgroundColor: `${brand.primaryColor}05`, borderColor: `${brand.primaryColor}11` }}
+        className="rounded-[40px] p-10 border border-slate-200 shadow-xl transition-all duration-300 hover:-translate-y-1"
+        style={{ backgroundColor: `${brand.primaryColor}05` }}
       >
         <div className="mb-10 space-y-2">
           <h2 className="text-2xl font-black text-slate-900">{data.walkthrough.title}</h2>

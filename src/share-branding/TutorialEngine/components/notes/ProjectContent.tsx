@@ -62,7 +62,7 @@ export function ProjectContent({ onNext }: { onNext?: () => void }) {
       </div>
 
       {/* Project Overview Banner */}
-      <section className="rounded-[40px] bg-gradient-to-br from-rose-50 to-orange-50 p-10 relative overflow-hidden group border border-slate-200 shadow-sm">
+      <section className="rounded-[40px] bg-gradient-to-br from-rose-50 to-orange-50 p-10 relative overflow-hidden group border border-slate-200 shadow-xl transition-all duration-300 hover:-translate-y-1">
          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
             <div className="lg:col-span-7 space-y-8 relative z-10">
                <div className="flex items-center gap-3">
@@ -132,7 +132,7 @@ export function ProjectContent({ onNext }: { onNext?: () => void }) {
       {/* Tab Content */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
          <div className="lg:col-span-7 space-y-8">
-            <div className="rounded-[32px] bg-white p-10 shadow-sm border border-slate-200 space-y-8">
+            <div className="rounded-[32px] bg-white p-10 shadow-xl border border-slate-200 space-y-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
                <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-50 text-slate-800">
                      <Icons.Layers size={22} />
@@ -152,7 +152,7 @@ export function ProjectContent({ onNext }: { onNext?: () => void }) {
             </div>
             
             {/* Starter Template */}
-            <div className="rounded-[24px] bg-slate-50 p-6 flex items-center justify-between gap-6 border border-slate-200">
+            <div className="rounded-[24px] bg-slate-50 p-6 flex items-center justify-between gap-6 border border-slate-200 shadow-xl transition-all duration-300 hover:-translate-y-1">
                <div className="flex items-center gap-4">
                   <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-sm text-orange-500">
                      <Icons.Code2 size={24} />
@@ -169,7 +169,7 @@ export function ProjectContent({ onNext }: { onNext?: () => void }) {
          </div>
          
          <div className="lg:col-span-5 space-y-8">
-            <div className="rounded-[32px] bg-white p-10 shadow-sm border border-slate-200 space-y-8">
+            <div className="rounded-[32px] bg-white p-10 shadow-xl border border-slate-200 space-y-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
                <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-50 text-rose-500">
                      <Icons.Gift size={22} />

@@ -45,8 +45,8 @@ export function SubtopicRightPanel({ data, isOpen }: SubtopicRightPanelProps) {
       <div className="space-y-4">
         
         {/* XP Section */}
-        <section className="rounded-3xl bg-white p-5 border border-gray-100 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
-                 style={{ boxShadow: `0 8px 24px rgba(${brand.primaryRgb || '0,0,0'}, 0.05)` }}>
+        <section className="rounded-3xl bg-white p-5 border border-slate-200 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+                 style={{ boxShadow: `0 20px 50px rgba(${brand.primaryRgb || '0,0,0'}, 0.05)` }}>
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Icons.Flame size={18} className="text-orange-500" />
@@ -82,8 +82,8 @@ export function SubtopicRightPanel({ data, isOpen }: SubtopicRightPanelProps) {
 
         {/* Achievements */}
         <section 
-          className="rounded-3xl bg-white p-5 border border-gray-100 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
-          style={{ boxShadow: `0 8px 24px rgba(${brand.primaryRgb || '0,0,0'}, 0.05)` }}
+          className="rounded-3xl bg-white p-5 border border-slate-200 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+          style={{ boxShadow: `0 20px 50px rgba(${brand.primaryRgb || '0,0,0'}, 0.05)` }}
         >
           <div className="mb-5 flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -113,8 +113,8 @@ export function SubtopicRightPanel({ data, isOpen }: SubtopicRightPanelProps) {
 
         {/* Weakness Analysis */}
         <section 
-          className="rounded-3xl p-5 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
-          style={{ backgroundColor: '#1d4ed8', boxShadow: `0 8px 24px rgba(${brand.primaryRgb || '0,0,0'}, 0.08)` }}
+          className="rounded-3xl p-5 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl border border-slate-200"
+          style={{ backgroundColor: '#1d4ed8', boxShadow: `0 20px 50px rgba(${brand.primaryRgb || '0,0,0'}, 0.08)` }}
         >
           <div className="mb-5 flex items-center gap-2">
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/20 text-white">
@@ -157,8 +157,8 @@ export function SubtopicRightPanel({ data, isOpen }: SubtopicRightPanelProps) {
 
         {/* AI Tutor Chat Box */}
         <section 
-          className="rounded-3xl p-5 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
-          style={{ backgroundColor: '#7e22ce', boxShadow: `0 8px 24px rgba(${brand.primaryRgb || '0,0,0'}, 0.08)` }}
+          className="rounded-3xl p-5 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl border border-slate-200"
+          style={{ backgroundColor: '#7e22ce', boxShadow: `0 20px 50px rgba(${brand.primaryRgb || '0,0,0'}, 0.08)` }}
         >
           <div className="mb-3 flex items-center gap-2">
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/20 text-white">

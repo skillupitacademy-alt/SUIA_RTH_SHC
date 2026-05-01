@@ -28,7 +28,7 @@ render(<UserDashboard />);`;
       </div>
 
       {/* Problem Statement */}
-      <section className="rounded-[32px] bg-white p-10 shadow-sm relative overflow-hidden group border border-slate-200">
+      <section className="rounded-[32px] bg-white p-10 shadow-xl relative overflow-hidden group border border-slate-200 transition-all duration-300 hover:-translate-y-1">
         <div className="flex items-center gap-3 mb-6">
           <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-50 text-rose-500">
             <Icons.ClipboardList size={22} />
@@ -56,7 +56,7 @@ render(<UserDashboard />);`;
       </section>
 
       {/* Requirements */}
-      <section className="rounded-[32px] bg-white p-10 shadow-sm relative overflow-hidden group border border-slate-200">
+      <section className="rounded-[32px] bg-white p-10 shadow-xl relative overflow-hidden group border border-slate-200 transition-all duration-300 hover:-translate-y-1">
         <div className="flex items-center gap-3 mb-6">
           <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-500">
             <Icons.CheckCircle size={22} />
@@ -126,7 +126,7 @@ render(<UserDashboard />);`;
       </section>
 
       {/* Submission Guidelines */}
-      <section className="rounded-[32px] bg-sky-50/30 p-10 flex items-center justify-between gap-10 relative overflow-hidden group border border-slate-200">
+      <section className="rounded-[32px] bg-sky-50/30 p-10 flex items-center justify-between gap-10 relative overflow-hidden group border border-slate-200 shadow-xl transition-all duration-300 hover:-translate-y-1">
          <div className="space-y-6 relative z-10 lg:max-w-xl">
             <div className="flex items-center gap-3">
                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-100 text-sky-600">

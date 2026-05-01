@@ -52,7 +52,7 @@ export function SubtopicSidebar({ data, progress, isOpen, onToggle }: SubtopicSi
           </button>
 
           {/* Progress Card */}
-          <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xl transition-all duration-300 hover:-translate-y-1">
             <h2 className="mb-4 text-[13px] font-bold text-gray-800">Subtopic Progress</h2>
             <div className="flex items-center gap-4">
               <div className="relative flex h-[68px] w-[68px] shrink-0 items-center justify-center rounded-full">
@@ -78,7 +78,7 @@ export function SubtopicSidebar({ data, progress, isOpen, onToggle }: SubtopicSi
           </div>
 
           {/* Curriculum List */}
-          <div className="rounded-2xl border border-gray-100 bg-white p-2 shadow-sm">
+          <div className="rounded-2xl border border-slate-200 bg-white p-2 shadow-xl transition-all duration-300 hover:-translate-y-1">
             <div className="px-3 pb-2 pt-3">
               <div className="text-[13px] font-bold text-gray-800">{data.subtopicsTitle}</div>
             </div>

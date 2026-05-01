@@ -54,9 +54,8 @@ export function SubtopicContentGrid({ content, tasks }: SubtopicContentGridProps
           return (
             <div 
               key={card.id}
-              className="group flex min-w-0 flex-col rounded-3xl border bg-white p-5 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl sm:p-6 min-h-[320px]"
+              className="group flex min-w-0 flex-col rounded-3xl border bg-white p-5 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl sm:p-6 min-h-[320px] border-slate-200"
               style={{ 
-                borderColor: `${brand.primaryColor}22`,
                 boxShadow: `0 20px 50px rgba(${brand.primaryRgb || '0,0,0'}, 0.05)`
               }}
             >
@@ -146,10 +145,9 @@ export function SubtopicContentGrid({ content, tasks }: SubtopicContentGridProps
           return (
             <div 
               key={task.id}
-              className="group flex min-w-0 flex-col rounded-3xl border p-5 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl sm:p-6 min-h-[320px]"
+              className="group flex min-w-0 flex-col rounded-3xl border p-5 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl sm:p-6 min-h-[320px] border-slate-200"
               style={{ 
                 backgroundColor: bgColor,
-                borderColor: `${brand.primaryColor}22`,
                 boxShadow: `0 20px 50px rgba(${brand.primaryRgb || '0,0,0'}, 0.05)`
               }}
             >

@@ -62,8 +62,8 @@ export function NotesMainContent({ data, isStandalone = true }: { data: Subtopic
 
         {/* In Simple Words Box */}
         <div 
-          className="flex gap-4 rounded-xl p-5 border shadow-sm"
-          style={{ backgroundColor: `${brand.primaryColor}08`, borderColor: `${brand.primaryColor}22` }}
+          className="flex gap-4 rounded-xl p-5 border border-slate-200 shadow-xl transition-all duration-300 hover:-translate-y-1"
+          style={{ backgroundColor: `${brand.primaryColor}08` }}
         >
           <div className="shrink-0 mt-0.5">
             <Icons.Lightbulb size={20} className="text-primary-dark" />
@@ -83,7 +83,7 @@ export function NotesMainContent({ data, isStandalone = true }: { data: Subtopic
               </p>
               
               {section.keyPoint && (
-                <div className="flex gap-4 rounded-xl bg-amber-50 p-5 border border-amber-100 mt-6">
+                <div className="flex gap-4 rounded-xl bg-amber-50 p-5 border border-slate-200 mt-6 shadow-xl transition-all duration-300 hover:-translate-y-1">
                   <Icons.Star size={20} className="text-amber-600 shrink-0 mt-0.5" />
                   <div>
                     <h3 className="text-[13px] font-bold text-amber-900 mb-1">Key Point</h3>
@@ -94,7 +94,7 @@ export function NotesMainContent({ data, isStandalone = true }: { data: Subtopic
 
               {section.codeExample && (
                 <div className="mt-6 space-y-4">
-                  <div className="relative overflow-hidden rounded-xl bg-[#1e293b] p-5 shadow-lg">
+                  <div className="relative overflow-hidden rounded-xl bg-[#1e293b] p-5 shadow-xl border border-slate-200 transition-all duration-300 hover:-translate-y-1">
                     <button className="absolute right-3 top-3 flex items-center gap-1.5 rounded-md bg-white/10 px-2.5 py-1 text-[11px] font-bold text-white hover:bg-white/20 transition-colors border border-white/10" aria-label="Copy code">
                       <Icons.Copy size={12} /> Copy
                     </button>

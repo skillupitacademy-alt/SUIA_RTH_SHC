@@ -38,7 +38,7 @@ export function TechnicalDeepDiveContent({ data, onNext }: { data?: SubtopicNote
       </div>
 
       {/* 0. Intro Section */}
-      <section className="rounded-[40px] bg-[#fffbf9] p-10 border border-slate-200">
+      <section className="rounded-[40px] bg-[#fffbf9] p-10 border border-slate-200 shadow-xl transition-all duration-300 hover:-translate-y-1">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
            <div className="space-y-8">
               <h2 className="text-3xl font-black text-slate-900 tracking-tight">What is a Component?</h2>
@@ -108,7 +108,7 @@ export function TechnicalDeepDiveContent({ data, onNext }: { data?: SubtopicNote
       </section>
 
       {/* 1. Component Anatomy */}
-      <section className="rounded-[32px] bg-white p-10 shadow-sm space-y-8 border border-slate-200">
+      <section className="rounded-[32px] bg-white p-10 shadow-xl space-y-8 border border-slate-200 transition-all duration-300 hover:-translate-y-1">
         <div className="flex items-center gap-3">
           <div className="flex h-7 w-7 items-center justify-center rounded-full text-xs font-black text-white" style={{ backgroundColor: brand.primaryColor }}>1</div>
           <h2 className="text-xl font-black text-slate-900 tracking-tight">1. Component Anatomy</h2>
@@ -116,7 +116,7 @@ export function TechnicalDeepDiveContent({ data, onNext }: { data?: SubtopicNote
         
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left Box: Internal Structure */}
-          <div className="lg:col-span-7 rounded-[24px] bg-slate-50/50 p-8 relative border border-slate-200">
+          <div className="lg:col-span-7 rounded-[24px] bg-slate-50/50 p-8 relative border border-slate-200 shadow-lg transition-all duration-300 hover:shadow-xl">
              <h3 className="text-sm font-bold text-slate-500 mb-8">Internal Structure:</h3>
              
              <div className="relative flex items-center h-[280px]">
@@ -174,7 +174,7 @@ export function TechnicalDeepDiveContent({ data, onNext }: { data?: SubtopicNote
           </div>
 
           {/* Right Box: Key Points */}
-          <div className="lg:col-span-5 rounded-[24px] bg-white p-8 relative border border-slate-200">
+          <div className="lg:col-span-5 rounded-[24px] bg-white p-8 relative border border-slate-200 shadow-lg transition-all duration-300 hover:shadow-xl">
              <h3 className="text-sm font-black text-slate-900 mb-8">Key Points</h3>
              <ul className="space-y-6">
                 {[
@@ -196,7 +196,7 @@ export function TechnicalDeepDiveContent({ data, onNext }: { data?: SubtopicNote
       </section>
 
       {/* 2. Rendering & Reconciliation */}
-      <section className="rounded-[32px] bg-white p-10 shadow-sm space-y-8 border border-slate-200">
+      <section className="rounded-[32px] bg-white p-10 shadow-xl space-y-8 border border-slate-200 transition-all duration-300 hover:-translate-y-1">
         <div className="flex items-center gap-3">
           <div className="flex h-7 w-7 items-center justify-center rounded-full text-xs font-black text-white" style={{ backgroundColor: brand.primaryColor }}>2</div>
           <h2 className="text-xl font-black text-slate-900 tracking-tight">2. Rendering & Reconciliation</h2>
@@ -252,7 +252,7 @@ export function TechnicalDeepDiveContent({ data, onNext }: { data?: SubtopicNote
       </section>
 
       {/* 3. Component Resolution */}
-      <section className="rounded-[32px] bg-white p-10 shadow-sm space-y-8 border border-slate-200">
+      <section className="rounded-[32px] bg-white p-10 shadow-xl space-y-8 border border-slate-200 transition-all duration-300 hover:-translate-y-1">
         <div className="flex items-center gap-3">
           <div className="flex h-7 w-7 items-center justify-center rounded-full text-xs font-black text-white" style={{ backgroundColor: brand.primaryColor }}>3</div>
           <h2 className="text-xl font-black text-slate-900 tracking-tight">3. Component Resolution</h2>
@@ -303,7 +303,7 @@ export function TechnicalDeepDiveContent({ data, onNext }: { data?: SubtopicNote
       </section>
 
       {/* 4. Recursive Composition */}
-      <section className="rounded-[32px] bg-white p-10 shadow-sm space-y-8 border border-slate-200">
+      <section className="rounded-[32px] bg-white p-10 shadow-xl space-y-8 border border-slate-200 transition-all duration-300 hover:-translate-y-1">
         <div className="flex items-center gap-3">
           <div className="flex h-7 w-7 items-center justify-center rounded-full text-xs font-black text-white" style={{ backgroundColor: brand.primaryColor }}>4</div>
           <h2 className="text-xl font-black text-slate-900 tracking-tight">4. Recursive Composition</h2>
