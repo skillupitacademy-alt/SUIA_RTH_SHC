@@ -7,7 +7,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
   const brand = useBrand();
 
   return (
-    <aside aria-label="Tools and statistics sidebar" className={`absolute bottom-0 right-0 top-0 z-40 flex w-[350px] flex-col overflow-y-auto border-l border-gray-200 bg-white p-5 hide-scrollbar transition-transform duration-300 ${isOpen ? 'translate-x-0 shadow-2xl' : 'translate-x-full shadow-none'} md:relative md:translate-x-0 md:shadow-none`}>
+    <aside aria-label="Tools and statistics sidebar" className={`absolute bottom-0 right-0 top-0 z-40 flex w-[350px] flex-col overflow-y-auto border-l border-gray-200 bg-white p-5 hide-scrollbar transition-transform duration-300 ${isOpen ? 'translate-x-0 shadow-2xl' : 'translate-x-full shadow-none'}`}>
       <div className="space-y-6">
         
         {/* Layman Sidebar Content (Appended) */}

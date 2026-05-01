@@ -7,6 +7,7 @@ import { NotesMainContent } from './TutorialEngine/components/notes/NotesMainCon
 import { NotesRightSidebar } from './TutorialEngine/components/notes/NotesRightSidebar';
 import { LaymanExplanationContent } from './TutorialEngine/components/notes/LaymanExplanationContent';
 import { RealLifeExamplesContent } from './TutorialEngine/components/notes/RealLifeExamplesContent';
+import { TechnicalDeepDiveContent } from './TutorialEngine/components/notes/TechnicalDeepDiveContent';
 
 export interface SubtopicNotesPageProps {
   data: SubtopicNotesViewData;
@@ -43,20 +44,34 @@ export function SubtopicNotesPage({ data }: SubtopicNotesPageProps) {
       />
 
       <div className="relative flex flex-1 overflow-hidden">
+        {/* Mobile Overlay */}
+        {(isSidebarOpen || isRightSidebarOpen) && (
+          <div 
+            className="absolute inset-0 z-30 bg-slate-900/40 backdrop-blur-[2px] transition-opacity"
+            onClick={() => {
+              setIsSidebarOpen(false);
+              setIsRightSidebarOpen(false);
+            }}
+          />
+        )}
         {/* Left Sidebar - Learning Path */}
         <NotesLeftSidebar
           data={data.leftSidebar}
           isOpen={isSidebarOpen}
           activeId={activeTab}
-          onSelect={setActiveTab}
+          onSelect={(id) => {
+            setActiveTab(id);
+            setIsSidebarOpen(false);
+          }}
         />
 
         {/* Main Scrollable Content */}
         <main className="flex-1 overflow-y-auto hide-scrollbar bg-white">
-          <div className="mx-auto w-full max-w-[900px] px-8 py-10">
+          <div className="mx-auto w-full px-8 py-10 lg:px-12 xl:px-16">
             {activeTab === 'notes' && <NotesMainContent data={data.mainContent} isStandalone={false} />}
             {activeTab === 'layman' && <LaymanExplanationContent data={data.mainContent.laymanExplanation} />}
             {activeTab === 'real-life' && <RealLifeExamplesContent data={data.mainContent.realLifeExamples} />}
+            {activeTab === 'technical-deep-dive' && <TechnicalDeepDiveContent data={data.mainContent.technicalDeepDive} />}
           </div>
         </main>
 

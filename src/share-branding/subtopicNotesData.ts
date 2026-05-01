@@ -104,6 +104,27 @@ export interface SubtopicNotesViewData {
         footer: string;
       };
     };
+    technicalDeepDive?: {
+      title: string;
+      badge: string;
+      intro: string;
+      sections: {
+        id: string;
+        title: string;
+        content: string;
+        diagram?: {
+          type: 'anatomy' | 'flow' | 'chain';
+          data: any;
+        };
+        code?: {
+          language: string;
+          code: string;
+          output?: string;
+        };
+        keyPoints?: string[];
+        highlight?: string;
+      }[];
+    };
   };
   rightSidebar: {
     aiTutor: {
@@ -145,10 +166,10 @@ export async function loadSubtopicNotesData(brand: BrandConfig): Promise<Subtopi
       items: [
         { id: 'overview', label: 'Overview', status: 'pending', icon: 'Circle' },
         { id: 'notes', label: 'Notes', status: 'active', icon: 'FileText' },
-        { id: 'layman', label: 'Layman Explanation', status: 'completed', icon: 'CheckCircle2' },
-        { id: 'real-life', label: 'Real-Life Examples', status: 'completed', icon: 'CheckCircle2' },
-        { id: 'deep-dive', label: 'Technical Deep Dive', status: 'completed', icon: 'CheckCircle2' },
-        { id: 'code', label: 'Code Examples', status: 'pending', icon: 'Circle' },
+        { id: 'layman', label: 'Layman Explanation', icon: 'Zap', status: 'completed' },
+        { id: 'real-life', label: 'Real Life Examples', icon: 'Globe', status: 'completed' },
+        { id: 'technical-deep-dive', label: 'Technical Deep Dive', icon: 'Cpu', status: 'pending' },
+        { id: 'code-example', label: 'Code Example', icon: 'Code', status: 'locked' },
         { id: 'ai-tutor', label: 'AI Tutor', status: 'pending', icon: 'Circle' },
         { id: 'assignments', label: 'Assignments', status: 'locked', icon: 'Lock' },
         { id: 'projects', label: 'Projects', status: 'locked', icon: 'Lock' },
@@ -238,6 +259,59 @@ export async function loadSubtopicNotesData(brand: BrandConfig): Promise<Subtopi
           ],
           footer: 'Components help us build complex apps by combining simple, reusable parts!'
         }
+      },
+      technicalDeepDive: {
+        title: 'Technical Deep Dive',
+        badge: 'In-Depth',
+        intro: "Let's understand the internal workings of Component Architecture in React.",
+        sections: [
+          {
+            id: 'td1',
+            title: '1. Component Anatomy',
+            content: 'At its core, a React component is a JavaScript function or class that accepts props and returns a React element. Internally, React maintains a complex structure to track its lifecycle and state.',
+            diagram: {
+              type: 'anatomy',
+              data: {
+                slots: [
+                  { label: '[[Props]]', desc: 'Read-only external data' },
+                  { label: '[[State]]', desc: 'Internal mutable data' },
+                  { label: '[[Hooks]]', desc: 'State & Lifecycle effects' },
+                  { label: '[[VirtualDOM]]', desc: 'UI representation' }
+                ]
+              }
+            },
+            keyPoints: [
+              'Components are conceptually pure functions.',
+              'Props must be treated as immutable.',
+              'State changes trigger a re-render cycle.',
+              'React handles the DOM updates via diffing.'
+            ]
+          },
+          {
+            id: 'td2',
+            title: '2. The Reconciliation Cycle',
+            content: 'React uses a "Virtual DOM" to optimize updates. When state changes, React generates a new Virtual DOM tree and compares it with the previous one (Diffing).',
+            diagram: {
+              type: 'flow',
+              data: ['Render Phase', 'Diffing', 'Commit Phase', 'DOM Update']
+            },
+            code: {
+              language: 'javascript',
+              code: 'const [count, setCount] = useState(0);\n\n// 1. User clicks → setCount(1)\n// 2. React triggers Render Phase\n// 3. New Virtual DOM generated\n// 4. Diffing: count changed 0 → 1\n// 5. Commit Phase: Update only the text node',
+              output: '// Result: Only one DOM node updated'
+            }
+          },
+          {
+            id: 'td3',
+            title: '3. Composition vs Inheritance',
+            content: 'React favors composition over inheritance. You build complex UIs by nesting components rather than extending classes.',
+            diagram: {
+              type: 'chain',
+              data: ['Layout', 'Navbar', 'UserMenu', 'Avatar']
+            },
+            highlight: 'This allows for maximum reusability and a predictable data flow.'
+          }
+        ]
       }
     },
     rightSidebar: {
