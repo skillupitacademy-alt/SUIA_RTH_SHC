@@ -27,11 +27,20 @@ export function RealLifeExamplesContent({ data }: { data: SubtopicNotesViewData[
       </div>
 
       {/* Hero Analogy Card */}
-      <div className="relative overflow-hidden rounded-[40px] border border-orange-100 bg-gradient-to-br from-[#fff7f2] to-[#fffcfb] p-8 md:p-10 shadow-sm">
+      <div 
+        className="relative overflow-hidden rounded-[40px] border p-8 md:p-10 shadow-sm transition-all duration-700"
+        style={{ 
+          borderColor: `${brand.primaryColor}22`, 
+          background: `linear-gradient(135deg, ${brand.primaryColor}08, ${brand.primaryColor}03)` 
+        }}
+      >
         <div className="flex flex-col md:flex-row gap-10 items-center">
           <div className="flex-1 w-full">
             <div className="relative group">
-              <div className="absolute -inset-4 bg-orange-200/20 rounded-full blur-3xl group-hover:bg-orange-300/30 transition-all duration-700"></div>
+              <div 
+                className="absolute -inset-4 rounded-full blur-3xl opacity-30 transition-all duration-700 group-hover:opacity-50"
+                style={{ backgroundColor: brand.primaryColor }}
+              ></div>
               <img 
                 src={data.hero.image} 
                 alt="Modular Kitchen Analogy" 
@@ -40,7 +49,10 @@ export function RealLifeExamplesContent({ data }: { data: SubtopicNotesViewData[
             </div>
           </div>
           <div className="flex-[1.2] space-y-6">
-            <div className="inline-flex items-center rounded-full bg-orange-100 px-4 py-1 text-[11px] font-black text-orange-700 tracking-wide uppercase">
+            <div 
+              className="inline-flex items-center rounded-full px-4 py-1 text-[11px] font-black tracking-wide uppercase"
+              style={{ backgroundColor: `${brand.primaryColor}15`, color: brand.primaryColor }}
+            >
               {data.hero.badge}
             </div>
             <h2 className="text-3xl font-black text-slate-900 leading-tight">
@@ -49,11 +61,11 @@ export function RealLifeExamplesContent({ data }: { data: SubtopicNotesViewData[
             <p className="text-[15px] font-medium leading-relaxed text-slate-600">
               {data.hero.description}
             </p>
-            <div className="flex items-center gap-3 rounded-2xl bg-white p-4 border border-orange-50 shadow-sm">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-100">
-                <Icons.Lightbulb size={20} className="text-amber-600 fill-amber-300" aria-hidden="true" />
+            <div className="flex items-center gap-3 rounded-2xl bg-white p-4 border shadow-sm" style={{ borderColor: `${brand.primaryColor}11` }}>
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: `${brand.primaryColor}15` }}>
+                <Icons.Lightbulb size={20} style={{ color: brand.primaryColor }} fill={`${brand.primaryColor}33`} aria-hidden="true" />
               </div>
-              <p className="text-[13px] font-bold text-orange-800 italic">
+              <p className="text-[13px] font-bold italic" style={{ color: brand.primaryColor }}>
                 {data.hero.highlight}
               </p>
             </div>
@@ -64,8 +76,8 @@ export function RealLifeExamplesContent({ data }: { data: SubtopicNotesViewData[
       {/* Scenarios Grid */}
       <div className="space-y-6">
         <div className="flex items-center gap-2">
-           <div className="p-1.5 rounded-lg bg-orange-100">
-              <Icons.LayoutGrid size={18} className="text-orange-600" aria-hidden="true" />
+           <div className="p-1.5 rounded-lg" style={{ backgroundColor: `${brand.primaryColor}15` }}>
+              <Icons.LayoutGrid size={18} style={{ color: brand.primaryColor }} aria-hidden="true" />
            </div>
            <h2 className="text-xl font-black text-slate-900 tracking-tight">Real Life Scenarios</h2>
         </div>
@@ -74,12 +86,15 @@ export function RealLifeExamplesContent({ data }: { data: SubtopicNotesViewData[
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {data.scenarios.map((item) => (
             <div key={item.id} className="group flex flex-col rounded-3xl border border-gray-100 bg-white p-6 shadow-sm transition-all hover:shadow-md hover:-translate-y-1">
-              <div className="mb-6 flex aspect-square items-center justify-center rounded-2xl bg-slate-50 p-4 transition-colors group-hover:bg-orange-50/50">
+              <div 
+                className="mb-6 flex aspect-square items-center justify-center rounded-2xl bg-slate-50 p-4 transition-colors group-hover:bg-opacity-50"
+                style={{ backgroundColor: `${brand.primaryColor}05` } as any}
+              >
                 <img src={item.image} alt={item.title} className="w-full h-full object-contain drop-shadow-lg" />
               </div>
               <h3 className="mb-2 text-[15px] font-black text-slate-900">{item.title}</h3>
               <p className="mb-6 flex-1 text-[12px] font-medium leading-relaxed text-slate-500">{item.description}</p>
-              <div className="text-[11px] font-black text-rose-500 uppercase tracking-wider">
+              <div className="text-[11px] font-black uppercase tracking-wider" style={{ color: brand.primaryColor }}>
                 {item.footer}
               </div>
             </div>
@@ -88,7 +103,10 @@ export function RealLifeExamplesContent({ data }: { data: SubtopicNotesViewData[
       </div>
 
       {/* Walkthrough Section */}
-      <div className="rounded-[40px] bg-[#fff9f5] p-10 border border-orange-50 shadow-inner">
+      <div 
+        className="rounded-[40px] p-10 border shadow-inner"
+        style={{ backgroundColor: `${brand.primaryColor}05`, borderColor: `${brand.primaryColor}11` }}
+      >
         <div className="mb-10 space-y-2">
           <h2 className="text-2xl font-black text-slate-900">{data.walkthrough.title}</h2>
           <p className="text-sm font-medium text-slate-500">Detailed example: {data.walkthrough.subtitle}</p>
@@ -101,11 +119,11 @@ export function RealLifeExamplesContent({ data }: { data: SubtopicNotesViewData[
               <React.Fragment key={step.id}>
                 <div className="relative z-10 space-y-4">
                   <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-md transition-transform hover:rotate-6">
-                    <Icon size={24} className="text-orange-600" aria-hidden="true" />
+                    <Icon size={24} style={{ color: brand.primaryColor }} aria-hidden="true" />
                   </div>
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-orange-600 text-[10px] font-black text-white">{i + 1}</span>
+                      <span className="flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-black text-white" style={{ backgroundColor: brand.primaryColor }}>{i + 1}</span>
                       <h3 className="text-sm font-black text-slate-900">{step.title}</h3>
                     </div>
                     <p className="text-[11px] font-medium leading-relaxed text-slate-500">
@@ -114,8 +132,8 @@ export function RealLifeExamplesContent({ data }: { data: SubtopicNotesViewData[
                   </div>
                 </div>
                 {i < 3 && (
-                  <div className="hidden md:flex absolute top-6 h-px w-full pointer-events-none" style={{ left: `${(i * 25) + 12.5}%`, width: '12.5%' }}>
-                     <Icons.ChevronRight className="mx-auto text-orange-200" size={20} aria-hidden="true" />
+                  <div className="hidden md:flex absolute top-6 h-px pointer-events-none" style={{ left: `${(i * 25) + 12.5}%`, width: '12.5%' }}>
+                     <Icons.ChevronRight className="mx-auto" size={20} style={{ color: `${brand.primaryColor}44` }} aria-hidden="true" />
                   </div>
                 )}
               </React.Fragment>
@@ -123,9 +141,9 @@ export function RealLifeExamplesContent({ data }: { data: SubtopicNotesViewData[
           })}
         </div>
 
-        <div className="mt-12 flex items-center gap-3 rounded-2xl bg-orange-100/50 p-4 border border-orange-100">
-          <Icons.Star size={20} className="text-orange-500 fill-orange-300" aria-hidden="true" />
-          <p className="text-[13px] font-bold text-orange-900">
+        <div className="mt-12 flex items-center gap-3 rounded-2xl p-4 border" style={{ backgroundColor: `${brand.primaryColor}11`, borderColor: `${brand.primaryColor}22` }}>
+          <Icons.Star size={20} style={{ color: brand.primaryColor }} fill={`${brand.primaryColor}33`} aria-hidden="true" />
+          <p className="text-[13px] font-bold" style={{ color: brand.primaryColor }}>
             {data.walkthrough.footer}
           </p>
         </div>
