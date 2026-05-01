@@ -120,6 +120,11 @@ export function SubtopicContentGrid({ content, tasks }: SubtopicContentGridProps
                   </p>
                   <div className="mt-auto flex items-center border-t border-gray-50 pt-4">
                     <button 
+                      onClick={() => {
+                        if (card.type === 'notes') {
+                          window.location.href = '/start-learning/subtopic/notes';
+                        }
+                      }}
                       className="group flex items-center gap-1.5 text-xs font-black transition-colors"
                       style={{ color: brand.primaryColor }}
                     >
