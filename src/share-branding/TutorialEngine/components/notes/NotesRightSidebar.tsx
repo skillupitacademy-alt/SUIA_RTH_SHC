@@ -98,24 +98,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
               <p className="text-[10px] font-bold text-slate-800 text-center">You can submit only once</p>
             </section>
 
-            {/* AI Hint Card */}
-            <section className="rounded-[32px] bg-rose-50/50 p-8 space-y-6 relative overflow-hidden group transition-all duration-300 hover:-translate-y-1 shadow-xl border border-rose-100">
-               <div className="flex items-center gap-3 relative z-10">
-                  <Icons.Zap size={18} className="text-rose-950" fill="currentColor" aria-hidden="true" />
-                  <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest">AI Hint</h3>
-               </div>
-               <p className="text-[12px] font-medium text-slate-900 leading-relaxed relative z-10">
-                 Stuck? Get a smart hint from AI Tutor without revealing the full solution.
-               </p>
-               <button className="flex items-center justify-between w-full rounded-2xl bg-pink-800 p-4 text-white shadow-lg transition-all hover:bg-pink-900 active:scale-95 group">
-                  <span className="text-xs font-bold uppercase tracking-wider">Ask AI Tutor</span>
-                  <Icons.ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" aria-hidden="true" />
-               </button>
-               {/* Robot illustration placeholder */}
-               <div className="absolute -right-4 -bottom-4 opacity-10">
-                  <Icons.Cpu size={120} className="text-rose-900" />
-               </div>
-            </section>
+
 
             {/* Helpful Resources */}
             <section className="rounded-3xl bg-white p-6 shadow-xl transition-all duration-300 hover:-translate-y-1 border border-slate-100">
@@ -610,7 +593,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
           </div>
         </section>
 
-        {activeTab !== 'layman' && activeTab !== 'real-life' && activeTab !== 'technical-deep-dive' && activeTab !== 'code-example' && (
+        {activeTab !== 'layman' && activeTab !== 'real-life' && activeTab !== 'technical-deep-dive' && activeTab !== 'code-example' && activeTab !== 'assignments' && (
           <>
         {/* Your Progress */}
         <section>
