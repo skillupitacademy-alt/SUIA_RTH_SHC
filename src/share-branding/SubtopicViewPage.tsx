@@ -28,7 +28,7 @@ export function SubtopicViewPage({ data }: SubtopicViewPageProps) {
         __html: `
         .bg-primary-dynamic { background-color: ${brand.primaryColor}; }
         .text-primary-dynamic { color: ${brand.primaryColor}; }
-        .text-primary-dark { color: ${brand.primaryColor}; filter: brightness(0.85); }
+        .text-primary-dark { color: ${brand.primaryColorDark}; }
         .border-primary-dynamic { border-color: ${brand.primaryColor}; }
         .hover-text-primary:hover { color: ${brand.primaryColor}; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }

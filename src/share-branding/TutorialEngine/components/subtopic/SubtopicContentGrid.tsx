@@ -97,7 +97,7 @@ export function SubtopicContentGrid({ content, tasks }: SubtopicContentGridProps
               >
                 <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
                 <div className="mb-2 flex h-10 w-10 items-center justify-center transition-transform duration-500 group-hover:scale-110">
-                  <div className="text-white scale-[1.9]">{getIcon(card.type, true)}</div>
+                  <div className="text-white scale-[1.4]">{getIcon(card.type, true)}</div>
                 </div>
                 <h3 className="mt-3 text-center text-[15px] font-black tracking-wide text-white transition-all duration-300">
                   {card.title}
@@ -137,7 +137,7 @@ export function SubtopicContentGrid({ content, tasks }: SubtopicContentGridProps
               >
                 <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
                 <div className="mb-2 flex h-10 w-10 items-center justify-center transition-transform duration-500 group-hover:scale-110">
-                  <div className="text-white scale-[1.9]">{getIcon(card.type, true)}</div>
+                  <div className="text-white scale-[1.4]">{getIcon(card.type, true)}</div>
                 </div>
                 <h3 className="mt-3 text-center text-[15px] font-black tracking-wide text-white transition-all duration-300">
                   {card.title}

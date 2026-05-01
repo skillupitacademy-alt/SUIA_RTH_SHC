@@ -35,7 +35,7 @@ export function QuizContent({ onNext }: { onNext?: () => void }) {
               <div>
                  <div className="flex items-center gap-2">
                     <span className="rounded-md bg-rose-100 px-2 py-0.5 text-[10px] font-bold uppercase text-rose-950 border border-rose-200">Quiz</span>
-                    <h1 className="text-2xl font-bold text-slate-950 tracking-tight">2.9 Quiz: Component Architecture - Intermediate</h1>
+                    <h2 className="text-2xl font-bold text-slate-950 tracking-tight">2.9 Quiz: Component Architecture - Intermediate</h2>
                  </div>
                  <p className="text-[14px] font-medium text-slate-800">Test your understanding of component composition, props flow, and modular design patterns.</p>
               </div>
@@ -91,7 +91,7 @@ export function QuizContent({ onNext }: { onNext?: () => void }) {
             </button>
          </div>
 
-         <h2 className="text-xl font-bold text-slate-950 leading-tight">What will be the output of the following code?</h2>
+         <h3 className="text-xl font-bold text-slate-950 leading-tight">What will be the output of the following code?</h3>
 
          {/* Code Block */}
          <div className="rounded-2xl bg-[#0f172a] p-6 font-mono text-sm leading-relaxed overflow-hidden shadow-2xl relative">

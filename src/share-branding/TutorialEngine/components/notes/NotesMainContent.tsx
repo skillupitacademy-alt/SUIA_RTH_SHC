@@ -63,13 +63,13 @@ export function NotesMainContent({ data, isStandalone = true }: { data: Subtopic
         {/* In Simple Words Box */}
         <div 
           className="flex gap-4 rounded-xl p-5 shadow-xl transition-all duration-300 hover:-translate-y-1"
-          style={{ backgroundColor: `${brand.primaryColor}15` }}
+          style={{ backgroundColor: `${brand.primaryColor}10` }}
         >
           <div className="shrink-0 mt-0.5">
-            <Icons.Lightbulb size={20} className="text-primary-dark" aria-hidden="true" />
+            <Icons.Lightbulb size={20} style={{ color: brand.primaryColorDark }} aria-hidden="true" />
           </div>
           <p className="text-sm font-medium leading-relaxed text-slate-800">
-            <strong className="text-primary-dark font-bold">In Simple Words:</strong> {data.simpleWords}
+            <strong className="font-bold" style={{ color: brand.primaryColorDark }}>In Simple Words:</strong> {data.simpleWords}
           </p>
         </div>
 
