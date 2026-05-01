@@ -10,31 +10,11 @@ export function LaymanExplanationContent({ data }: { data: SubtopicNotesViewData
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
 
-      {/* Header Badge & Actions */}
-      <div className="flex items-center justify-between">
-        <div
-          className="flex items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-bold shadow-sm"
-          style={{ borderColor: brand.primaryColor, color: brand.primaryColor, backgroundColor: `${brand.primaryColor}08` }}
-        >
-          <Icons.Zap size={14} fill={brand.primaryColor} aria-hidden="true" />
-          {data.badge}
-        </div>
-        <div className="flex items-center gap-3">
-          <button className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm hover:bg-slate-50" aria-label="Bookmark this explanation">
-            <Icons.Bookmark size={16} aria-hidden="true" />
-          </button>
-          <button className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm hover:bg-slate-50" aria-label="Listen to audio explanation">
-            <Icons.Volume2 size={16} aria-hidden="true" />
-          </button>
-          <button className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm hover:bg-slate-50" aria-label="Share this explanation">
-            <Icons.Share2 size={16} aria-hidden="true" />
-          </button>
-        </div>
-      </div>
+
 
       {/* Title & Intro */}
       <div className="space-y-4">
-        <h1 className="text-4xl font-bold text-[#1e293b] tracking-tight">{data.title}</h1>
+        <h1 className="text-4xl font-bold text-slate-950 tracking-tight">{data.title}</h1>
         <p className="text-[15px] font-medium leading-relaxed text-slate-800">
           {data.intro}
         </p>
@@ -42,7 +22,7 @@ export function LaymanExplanationContent({ data }: { data: SubtopicNotesViewData
 
       {/* Main Concept Card */}
       <div className="space-y-4">
-        <h2 className="text-lg font-bold" style={{ color: brand.primaryColor }}>What is a Component?</h2>
+        <h2 className="text-xl font-bold text-slate-900 tracking-tight">What is a Component?</h2>
         <div className="flex flex-col md:flex-row gap-8 rounded-3xl bg-white p-8 shadow-xl transition-all duration-300 hover:-translate-y-1">
           <div className="flex-1 flex justify-center items-center">
             <img
@@ -67,7 +47,7 @@ export function LaymanExplanationContent({ data }: { data: SubtopicNotesViewData
 
       {/* Grid of Reasons */}
       <div className="space-y-4">
-        <h2 className="text-lg font-bold" style={{ color: brand.primaryColor }}>Why Do We Need Components?</h2>
+        <h2 className="text-xl font-bold text-slate-900 tracking-tight">Why Do We Need Components?</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {data.reasonGrid.map((item) => {
             const Icon = (Icons as any)[item.icon] || Icons.HelpCircle;
@@ -86,7 +66,7 @@ export function LaymanExplanationContent({ data }: { data: SubtopicNotesViewData
 
       {/* Types Table */}
       <div className="space-y-4">
-        <h2 className="text-lg font-bold" style={{ color: brand.primaryColor }}>Architecture in Simple Words</h2>
+        <h2 className="text-xl font-bold text-slate-900 tracking-tight">Architecture in Simple Words</h2>
         <p className="text-[13px] font-bold text-slate-800">Different layers mean different sizes of building blocks.</p>
 
         <div className="overflow-hidden rounded-2xl bg-white shadow-xl transition-all duration-300 hover:-translate-y-1">

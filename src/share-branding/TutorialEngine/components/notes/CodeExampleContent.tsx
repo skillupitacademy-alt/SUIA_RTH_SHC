@@ -63,7 +63,7 @@ console.log("✅ Component rendered successfully!");`;
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="space-y-2">
           <div className="flex items-center gap-3">
-            <h1 className="text-4xl font-bold text-[#1e293b] tracking-tight">Code Example</h1>
+            <h1 className="text-4xl font-bold text-slate-950 tracking-tight">Code Example</h1>
             <span className="rounded-full bg-orange-100 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-orange-950 border border-orange-200">Practical</span>
           </div>
           <p className="text-[15px] font-medium text-slate-800">See how Component Architecture works in real code. Try it, run it, and observe the output.</p>

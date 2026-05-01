@@ -15,7 +15,7 @@ export function RealLifeExamplesContent({ data }: { data: SubtopicNotesViewData[
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="space-y-1">
-          <h1 className="text-4xl font-bold text-[#1e293b] tracking-tight">{data.title}</h1>
+          <h1 className="text-4xl font-bold text-slate-950 tracking-tight">{data.title}</h1>
           <p className="text-[14px] font-medium text-slate-800">{data.intro}</p>
         </div>
         <div className="flex items-center gap-3">
@@ -30,17 +30,11 @@ export function RealLifeExamplesContent({ data }: { data: SubtopicNotesViewData[
 
       {/* Hero Analogy Card */}
       <div 
-        className="relative overflow-hidden rounded-[40px] p-8 md:p-10 shadow-xl transition-all duration-300 hover:-translate-y-1" style={{ 
-          background: `linear-gradient(135deg, ${brand.primaryColor}08, ${brand.primaryColor}03)` 
-        }}
+        className="relative overflow-hidden rounded-[40px] bg-white p-8 md:p-10 shadow-xl transition-all duration-300 hover:-translate-y-1"
       >
         <div className="flex flex-col md:flex-row gap-10 items-center">
           <div className="flex-1 w-full">
             <div className="relative group">
-              <div 
-                className="absolute -inset-4 rounded-full blur-3xl opacity-30 transition-all duration-700 group-hover:opacity-50"
-                style={{ backgroundColor: brand.primaryColor }}
-              ></div>
               <img 
                 src={data.hero.image} 
                 alt="Modular Kitchen Analogy" 
@@ -51,7 +45,7 @@ export function RealLifeExamplesContent({ data }: { data: SubtopicNotesViewData[
           <div className="flex-[1.2] space-y-6">
             <div 
               className="inline-flex items-center rounded-full px-4 py-1 text-[11px] font-bold tracking-wide uppercase shadow-sm"
-              style={{ backgroundColor: `${brand.primaryColor}15`, color: brand.primaryColor }}
+              style={{ backgroundColor: `${brand.primaryColor}15`, color: brand.primaryColorDark }}
             >
               {data.hero.badge}
             </div>
@@ -104,8 +98,7 @@ export function RealLifeExamplesContent({ data }: { data: SubtopicNotesViewData[
 
       {/* Walkthrough Section */}
       <div 
-        className="rounded-[40px] p-10 shadow-xl transition-all duration-300 hover:-translate-y-1"
-        style={{ backgroundColor: `${brand.primaryColor}05` }}
+        className="rounded-[40px] bg-white p-10 shadow-xl transition-all duration-300 hover:-translate-y-1"
       >
         <div className="mb-10 space-y-2">
           <h2 className="text-2xl font-bold text-slate-900">{data.walkthrough.title}</h2>

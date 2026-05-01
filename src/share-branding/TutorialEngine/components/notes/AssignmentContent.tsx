@@ -34,7 +34,7 @@ render(<App />);`;
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="space-y-1">
-          <h1 className="text-4xl font-bold text-[#1e293b] tracking-tight">Assignment</h1>
+          <h1 className="text-4xl font-bold text-slate-950 tracking-tight">Assignment</h1>
           <p className="text-[14px] font-medium text-slate-800">Apply Component Architecture to a real-world task.</p>
         </div>
         <div className="flex items-center gap-3">

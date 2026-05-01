@@ -34,7 +34,7 @@ export function ProjectContent({ onNext }: { onNext?: () => void }) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="space-y-1">
-          <h1 className="text-4xl font-bold text-[#1e293b] tracking-tight">Capstone Project</h1>
+          <h1 className="text-4xl font-bold text-slate-950 tracking-tight">Capstone Project</h1>
           <p className="text-[14px] font-medium text-slate-800">Master Component Architecture through this hands-on project.</p>
         </div>
         <div className="flex items-center gap-3">

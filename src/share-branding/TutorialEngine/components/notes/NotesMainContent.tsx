@@ -9,33 +9,7 @@ export function NotesMainContent({ data, isStandalone = true }: { data: Subtopic
   const content = (
     <div className={`space-y-8 transition-all duration-500 ${isStandalone ? 'mx-auto w-full max-w-[900px] px-8 py-10' : ''}`}>
 
-      {/* Breadcrumbs & Actions */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-wrap items-center gap-2 text-sm font-bold text-slate-800">
-          {data.breadcrumbs.map((crumb, index) => (
-            <React.Fragment key={index}>
-              <button className={`text-sm font-bold ${index === data.breadcrumbs.length - 1 ? 'text-slate-950 cursor-default' : 'text-slate-700 hover:text-slate-950 transition-colors'}`} disabled={index === data.breadcrumbs.length - 1}>
-                {crumb}
-              </button>
-              {index < data.breadcrumbs.length - 1 && <Icons.ChevronRight size={14} className="text-slate-800" aria-hidden="true" />}
-            </React.Fragment>
-          ))}
-        </div>
-        <div className="flex items-center gap-2">
-          <button className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-bold text-slate-900 shadow-sm transition-colors hover:bg-slate-50 border border-slate-200">
-            <Icons.ArrowLeft size={14} aria-hidden="true" /> Previous
-          </button>
-          <button className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-bold text-slate-900 shadow-sm transition-colors hover:bg-slate-50 border border-slate-200">
-            Next Subtopic <Icons.ArrowRight size={14} aria-hidden="true" />
-          </button>
-          <button className="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-slate-900 shadow-sm hover:bg-slate-50 border border-slate-200" aria-label="Bookmark subtopic">
-            <Icons.Bookmark size={14} aria-hidden="true" />
-          </button>
-          <button className="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-slate-900 shadow-sm hover:bg-slate-50 border border-slate-200" aria-label="More options">
-            <Icons.MoreHorizontal size={14} aria-hidden="true" />
-          </button>
-        </div>
-      </div>
+
 
       {/* Title & Meta */}
       <div className="space-y-4">

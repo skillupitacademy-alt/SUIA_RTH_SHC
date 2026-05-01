@@ -26,7 +26,7 @@ export function QuizContent({ onNext }: { onNext?: () => void }) {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-1">
-          <h1 className="text-4xl font-bold text-[#1e293b] tracking-tight">Interactive Quiz</h1>
+          <h1 className="text-4xl font-bold text-slate-950 tracking-tight">Interactive Quiz</h1>
           <p className="text-[14px] font-medium text-slate-800">Test your mastery of Promise Chains & Error Handling.</p>
         </div>
         <div className="flex items-center gap-6">

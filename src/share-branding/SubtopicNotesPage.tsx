@@ -1,5 +1,6 @@
 // Rebuild trigger: Centralized navigation and footer stability
 import React, { useState } from 'react';
+import { ChevronRight } from 'lucide-react';
 import { useBrand } from './PostLandingPage/app/context/BrandContext';
 import { SubtopicNotesViewData } from './subtopicNotesData';
 import { SubtopicTopBar } from './TutorialEngine/components/subtopic/SubtopicTopBar';
@@ -120,6 +121,19 @@ export function SubtopicNotesPage({ data }: SubtopicNotesPageProps) {
         >
           <div className="mx-auto flex min-h-full w-full flex-col px-8 py-10 lg:px-12 xl:px-16 transition-all duration-500">
             <div className="flex-1">
+                {/* Centralized Breadcrumbs */}
+                <nav aria-label="Breadcrumbs" className="mb-8 flex flex-wrap items-center gap-2 text-[13px] font-bold text-slate-500">
+                  <a href="#" className="hover:text-slate-900 transition-colors">Home</a>
+                  <ChevronRight size={14} className="text-slate-400" />
+                  <a href="#" className="hover:text-slate-900 transition-colors">JavaScript</a>
+                  <ChevronRight size={14} className="text-slate-400" />
+                  <a href="/start-learning/subtopic" className="hover:text-slate-900 transition-colors">Component Architecture</a>
+                  <ChevronRight size={14} className="text-slate-400" />
+                  <span className="text-slate-950 cursor-default" style={{ color: brand.primaryColorDark }}>
+                    {orderedTabs.find(t => t.id === activeTab)?.label || 'Notes'}
+                  </span>
+                </nav>
+
                 {activeTab === 'notes' && (
                   <NotesMainContent data={data.mainContent} isStandalone={false} />
                 )}

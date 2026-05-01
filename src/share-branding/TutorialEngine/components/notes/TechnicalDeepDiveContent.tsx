@@ -15,11 +15,9 @@ export function TechnicalDeepDiveContent({ data }: { data?: SubtopicNotesViewDat
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="space-y-1">
-          <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-700">
-             <span>JavaScript</span> <Icons.ChevronRight size={10} aria-hidden="true" /> <span>Components</span> <Icons.ChevronRight size={10} aria-hidden="true" /> <span className="text-slate-950">Technical Deep Dive</span>
-          </div>
+
           <div className="flex items-center gap-3">
-            <h1 className="text-4xl font-bold text-[#1e293b] tracking-tight">{data.title}</h1>
+            <h1 className="text-4xl font-bold text-slate-950 tracking-tight">{data.title}</h1>
             <div 
               className="rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm"
               style={{ backgroundColor: brand.primaryColor }}
