@@ -87,7 +87,7 @@ export function LaymanExplanationContent({ data }: { data: SubtopicNotesViewData
       {/* Types Table */}
       <div className="space-y-4">
         <h2 className="text-lg font-bold" style={{ color: brand.primaryColor }}>Architecture in Simple Words</h2>
-        <p className="text-[13px] font-black text-slate-700">Different layers mean different sizes of building blocks.</p>
+        <p className="text-[13px] font-bold text-slate-800">Different layers mean different sizes of building blocks.</p>
 
         <div className="overflow-hidden rounded-2xl bg-white shadow-xl transition-all duration-300 hover:-translate-y-1">
           <table className="w-full text-left border-collapse">
@@ -123,7 +123,7 @@ export function LaymanExplanationContent({ data }: { data: SubtopicNotesViewData
       {/* Footer Tip */}
       <div className="flex items-center gap-3 rounded-xl bg-slate-100 p-4 border border-slate-200">
         <Icons.Lightbulb size={20} className="text-amber-800 fill-amber-50" aria-hidden="true" />
-        <p className="text-[13px] font-black text-slate-800">
+        <p className="text-[13px] font-bold text-slate-900">
           {data.footerTip}
         </p>
       </div>

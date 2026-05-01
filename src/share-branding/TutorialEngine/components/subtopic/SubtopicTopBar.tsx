@@ -35,19 +35,19 @@ export function SubtopicTopBar({ data, isLeftOpen, isRightOpen, onToggleLeft, on
           <Menu size={20} aria-hidden="true" />
         </button>
         <div 
-          className="flex h-10 w-10 items-center justify-center rounded-xl text-xl font-black text-white shadow-lg shadow-primary/20"
+          className="flex h-10 w-10 items-center justify-center rounded-xl text-xl font-bold text-white shadow-lg shadow-primary/20"
           style={{ backgroundColor: brand.primaryColor }}
         >
           {brand.name.charAt(0)}
         </div>
         <div className="hidden h-8 w-px bg-slate-100 sm:block"></div>
         <div className="flex flex-col">
-          <div className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-slate-700">
+          <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-slate-800">
             <span>{data.courseLabel}</span>
-            <span className="text-slate-500">/</span>
-            <span className="text-slate-900">{data.lessonLabel}</span>
+            <span className="text-slate-400">/</span>
+            <span className="text-slate-950">{data.lessonLabel}</span>
           </div>
-          <div className="text-sm font-black text-slate-900">{brand.name}</div>
+          <div className="text-sm font-bold text-slate-950">{brand.name}</div>
         </div>
       </div>
 
@@ -55,7 +55,7 @@ export function SubtopicTopBar({ data, isLeftOpen, isRightOpen, onToggleLeft, on
       <div className="flex items-center gap-6">
         <Link 
           href="/dashboard"
-          className="flex items-center gap-2 rounded-full bg-slate-100 px-4 py-1.5 text-xs font-black text-slate-900 transition-all hover:bg-slate-200"
+          className="flex items-center gap-2 rounded-full bg-slate-100 px-4 py-1.5 text-xs font-bold text-slate-900 transition-all hover:bg-slate-200 border border-slate-200"
         >
           <ChevronLeft size={14} aria-hidden="true" />
           {data.dashboardCtaLabel}
@@ -64,21 +64,21 @@ export function SubtopicTopBar({ data, isLeftOpen, isRightOpen, onToggleLeft, on
         <div className="flex items-center gap-4 pl-6">
           {/* Streak */}
           <div className="flex items-center gap-1.5">
-            <Flame size={18} fill="currentColor" style={{ color: brand.primaryColor }} />
-            <span className="text-sm font-black text-gray-800">{data.streak}</span>
+            <Flame size={18} fill="currentColor" style={{ color: brand.primaryColor }} aria-hidden="true" />
+            <span className="text-sm font-bold text-slate-950">{data.streak}</span>
           </div>
 
           {/* XP */}
           <div className="flex flex-col items-end">
-            <span className="text-[10px] font-black uppercase tracking-tighter text-slate-800 leading-none">Total XP</span>
-            <span className="text-sm font-black text-primary leading-none" style={{ color: brand.primaryColor }}>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-800 leading-none">Total XP</span>
+            <span className="text-sm font-bold text-primary leading-none" style={{ color: brand.primaryColor }}>
               {data.xpPoints.toLocaleString()}
             </span>
           </div>
 
           {/* Profile Circle */}
           <div 
-            className="flex h-9 w-9 items-center justify-center rounded-full text-sm font-black text-white shadow-md"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold text-white shadow-md"
             style={{ backgroundColor: brand.primaryColor }}
           >
             {data.learnerInitials}

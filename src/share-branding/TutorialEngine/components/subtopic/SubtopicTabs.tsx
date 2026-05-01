@@ -25,16 +25,16 @@ export function SubtopicTabs({ tabs, activeTab, onTabChange }: SubtopicTabsProps
             role="tab"
             aria-selected={isActive}
             onClick={() => onTabChange(tab.id)}
-            className={`flex shrink-0 items-center gap-2 px-5 py-4 text-[13px] font-black transition-all relative ${
+            className={`flex shrink-0 items-center gap-2 px-5 py-4 text-[13px] font-bold transition-all relative ${
               isActive 
                 ? '' 
-                : 'text-slate-700 hover:text-slate-900'
+                : 'text-slate-800 hover:text-slate-950'
             }`}
             style={isActive ? { color: brand.primaryColor } : {}}
           >
             <IconComponent 
               size={16} 
-              className={isActive ? '' : 'text-slate-700'} 
+              className={isActive ? '' : 'text-slate-800'} 
               aria-hidden="true"
             />
             <span>{tab.label}</span>

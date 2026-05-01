@@ -66,16 +66,16 @@ export const AITutorDrawer: React.FC<AITutorDrawerProps> = ({ isOpen, onClose })
                 <Bot className="h-5 w-5 text-white" />
               </div>
               <div className="min-w-0">
-                <h2 className="break-words font-bold text-gray-800" style={{ fontFamily: 'Outfit, sans-serif' }}>
+                <h2 className="break-words font-bold text-slate-950" style={{ fontFamily: 'Outfit, sans-serif' }}>
                   {brandConfig.tutorLabel}
                 </h2>
-                <p className="break-words text-xs text-gray-700" style={{ fontFamily: 'Inter, sans-serif' }}>
+                <p className="break-words text-xs font-medium text-slate-800" style={{ fontFamily: 'Inter, sans-serif' }}>
                   {data.tutorDrawer.subtitle}
                 </p>
               </div>
             </div>
-            <button onClick={onClose} aria-label={`Close ${brandConfig.tutorLabel} drawer`} className="rounded-lg p-2 transition-colors hover:bg-gray-100">
-              <X className="h-5 w-5 text-gray-700" />
+            <button onClick={onClose} aria-label={`Close ${brandConfig.tutorLabel} drawer`} className="rounded-lg p-2 transition-colors hover:bg-slate-100 border border-transparent hover:border-slate-200">
+              <X className="h-5 w-5 text-slate-700" aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -84,12 +84,12 @@ export const AITutorDrawer: React.FC<AITutorDrawerProps> = ({ isOpen, onClose })
           {messages.map((message) => (
             <div key={message.id} className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div
-                className={`max-w-[80%] min-w-0 rounded-lg border p-3 ${
-                  message.sender === 'user' ? 'rounded-tr-none border-transparent' : 'rounded-tl-none border-gray-200 bg-white'
+                className={`max-w-[80%] min-w-0 rounded-lg border p-3 shadow-sm ${
+                  message.sender === 'user' ? 'rounded-tr-none border-transparent' : 'rounded-tl-none border-slate-200 bg-white'
                 }`}
                 style={{ background: message.sender === 'user' ? brandConfig.primaryColor : undefined }}
               >
-                <p className={`break-words text-sm ${message.sender === 'user' ? 'text-white' : 'text-gray-800'}`} style={{ fontFamily: 'Inter, sans-serif', lineHeight: '1.6' }}>
+                <p className={`break-words text-sm font-medium ${message.sender === 'user' ? 'text-white' : 'text-slate-900'}`} style={{ fontFamily: 'Inter, sans-serif', lineHeight: '1.6' }}>
                   {message.text}
                 </p>
               </div>
@@ -98,7 +98,7 @@ export const AITutorDrawer: React.FC<AITutorDrawerProps> = ({ isOpen, onClose })
         </div>
 
         <div className="border-t border-gray-200 bg-white p-4 sm:p-6">
-          <div className="flex min-w-0 gap-2 rounded-lg border border-gray-200 bg-white p-2">
+          <div className="flex min-w-0 gap-2 rounded-lg border border-slate-200 bg-white p-2 shadow-inner focus-within:ring-2 focus-within:ring-slate-200">
             <input
               type="text"
               value={inputValue}
@@ -106,11 +106,11 @@ export const AITutorDrawer: React.FC<AITutorDrawerProps> = ({ isOpen, onClose })
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
               aria-label={`Ask ${brandConfig.tutorLabel} a question`}
               placeholder={data.tutorDrawer.inputPlaceholder}
-              className="min-w-0 flex-1 bg-transparent px-2 text-sm outline-none"
+              className="min-w-0 flex-1 bg-transparent px-2 text-sm font-medium text-slate-900 placeholder:text-slate-500 outline-none"
               style={{ fontFamily: 'Inter, sans-serif' }}
             />
-            <button onClick={handleSend} aria-label="Send tutorial question" className="rounded-lg p-2 transition-all hover:opacity-90" style={{ background: brandConfig.primaryColor }}>
-              <Send className="h-4 w-4 text-white" />
+            <button onClick={handleSend} aria-label="Send tutorial question" className="rounded-lg p-2 transition-all hover:opacity-90 active:scale-95" style={{ background: brandConfig.primaryColor }}>
+              <Send className="h-4 w-4 text-white" aria-hidden="true" />
             </button>
           </div>
         </div>

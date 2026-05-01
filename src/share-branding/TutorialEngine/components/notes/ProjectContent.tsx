@@ -198,11 +198,11 @@ export function ProjectContent({ onNext }: { onNext?: () => void }) {
           </div>
           <div>
             <p className="text-[10px] font-bold text-slate-800 uppercase tracking-widest">Previous</p>
-            <p className="text-sm font-black text-slate-900">Assignment</p>
+            <p className="text-sm font-bold text-slate-950">Assignment</p>
           </div>
         </button>
 
-        <button className="hidden sm:flex items-center gap-2 rounded-2xl bg-white px-8 py-4 text-sm font-black text-slate-800 shadow-sm border border-slate-100 hover:bg-slate-50 transition-all active:scale-95 border border-slate-200">
+        <button className="hidden sm:flex items-center gap-2 rounded-2xl bg-white px-8 py-4 text-sm font-bold text-slate-800 shadow-sm border border-slate-200 hover:bg-slate-50 transition-all active:scale-95">
            <Icons.LayoutGrid size={18} aria-hidden="true" /> Back to Subtopic
         </button>
 
@@ -212,8 +212,8 @@ export function ProjectContent({ onNext }: { onNext?: () => void }) {
           style={{ background: `linear-gradient(135deg, ${brand.primaryColor}, ${brand.primaryColor}dd)` }}
         >
           <div>
-            <p className="text-[10px] font-black text-white/90 uppercase tracking-widest">Next</p>
-            <p className="text-sm font-black">AI Tutor</p>
+            <p className="text-[10px] font-bold text-white/90 uppercase tracking-widest">Next</p>
+            <p className="text-sm font-bold">AI Tutor</p>
           </div>
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20">
             <Icons.ArrowRight size={18} aria-hidden="true" />

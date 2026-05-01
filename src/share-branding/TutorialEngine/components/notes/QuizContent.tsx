@@ -167,7 +167,7 @@ export function QuizContent({ onNext }: { onNext?: () => void }) {
           className="group flex items-center gap-4 rounded-2xl px-10 py-4 shadow-xl transition-all hover:scale-[1.02] active:scale-95 text-white" 
           style={{ background: `linear-gradient(135deg, ${brand.primaryColor}, ${brand.primaryColor}dd)` }}
         >
-          <span className="text-sm font-black">Next Question</span>
+          <span className="text-sm font-bold">Next Question</span>
           <Icons.ArrowRight size={18} />
         </button>
       </div>

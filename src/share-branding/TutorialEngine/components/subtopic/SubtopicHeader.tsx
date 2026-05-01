@@ -28,7 +28,7 @@ export function SubtopicHeader({ data }: SubtopicHeaderProps) {
       {/* Title & Meta Section */}
       <div className="flex flex-1 gap-5">
         {/* JS Icon */}
-        <div className="flex h-[72px] w-[72px] shrink-0 items-center justify-center rounded-[20px] bg-[#FFD600] text-3xl font-black text-black shadow-sm">
+        <div className="flex h-[72px] w-[72px] shrink-0 items-center justify-center rounded-[20px] bg-[#FFD600] text-3xl font-bold text-black shadow-md border border-black/5">
           JS
         </div>
         

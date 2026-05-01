@@ -242,7 +242,7 @@ export function TechnicalDeepDiveContent({ data, onNext }: { data?: SubtopicNote
                  <p>{`};`}</p>
               </div>
               <div className="absolute bottom-6 right-6 flex items-center gap-4">
-                 <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">RECONCILIATION</span>
+                 <span className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em]">RECONCILIATION</span>
                  <button className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-800 text-slate-400 hover:text-white transition-colors shadow-lg">
                     <Icons.Copy size={16} />
                  </button>
@@ -330,7 +330,7 @@ export function TechnicalDeepDiveContent({ data, onNext }: { data?: SubtopicNote
                     <div className="flex flex-col items-center justify-center h-10 w-10 rounded-xl bg-orange-100 shadow-sm">
                        <Icons.ArrowRight size={12} className="text-orange-900" />
                     </div>
-                    <span className="text-[9px] font-black text-slate-700 uppercase tracking-tighter">RENDERS</span>
+                    <span className="text-[9px] font-bold text-slate-800 uppercase tracking-tighter">RENDERS</span>
                  </div>
 
                   {/* Child */}
@@ -341,7 +341,7 @@ export function TechnicalDeepDiveContent({ data, onNext }: { data?: SubtopicNote
                     <div className="flex flex-col items-center justify-center h-10 w-10 rounded-xl bg-orange-100 shadow-sm">
                        <Icons.ArrowRight size={12} className="text-orange-900" />
                     </div>
-                    <span className="text-[9px] font-black text-slate-700 uppercase tracking-tighter">RENDERS</span>
+                    <span className="text-[9px] font-bold text-slate-800 uppercase tracking-tighter">RENDERS</span>
                  </div>
 
                   {/* Grandchild */}
@@ -352,7 +352,7 @@ export function TechnicalDeepDiveContent({ data, onNext }: { data?: SubtopicNote
                     <div className="flex flex-col items-center justify-center h-10 w-10 rounded-xl bg-orange-100 shadow-sm">
                        <Icons.ArrowRight size={12} className="text-orange-900" />
                     </div>
-                    <span className="text-[9px] font-black text-slate-700 uppercase tracking-tighter">COMMITS</span>
+                    <span className="text-[9px] font-bold text-slate-800 uppercase tracking-tighter">COMMITS</span>
                  </div>
 
                   {/* Real DOM */}
@@ -392,8 +392,8 @@ export function TechnicalDeepDiveContent({ data, onNext }: { data?: SubtopicNote
           style={{ background: `linear-gradient(135deg, ${brand.primaryColor}, ${brand.primaryColor}dd)` }}
         >
           <div>
-            <p className="text-[10px] font-black text-white/90 uppercase tracking-widest">Next</p>
-            <p className="text-sm font-black">Code Example</p>
+            <p className="text-[10px] font-bold text-white/90 uppercase tracking-widest">Next</p>
+            <p className="text-sm font-bold">Code Example</p>
           </div>
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20">
             <Icons.ArrowRight size={18} aria-hidden="true" />

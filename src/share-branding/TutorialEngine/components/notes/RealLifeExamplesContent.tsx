@@ -48,7 +48,7 @@ export function RealLifeExamplesContent({ data }: { data: SubtopicNotesViewData[
           </div>
           <div className="flex-[1.2] space-y-6">
             <div 
-              className="inline-flex items-center rounded-full px-4 py-1 text-[11px] font-black tracking-wide uppercase"
+              className="inline-flex items-center rounded-full px-4 py-1 text-[11px] font-bold tracking-wide uppercase shadow-sm"
               style={{ backgroundColor: `${brand.primaryColor}15`, color: brand.primaryColor }}
             >
               {data.hero.badge}
@@ -92,7 +92,7 @@ export function RealLifeExamplesContent({ data }: { data: SubtopicNotesViewData[
               </div>
               <h3 className="mb-2 text-[15px] font-bold text-slate-900">{item.title}</h3>
               <p className="mb-6 flex-1 text-[12px] font-medium leading-relaxed text-slate-800">{item.description}</p>
-              <div className="text-[11px] font-black uppercase tracking-wider" style={{ color: brand.primaryColor }}>
+              <div className="text-[11px] font-bold uppercase tracking-widest" style={{ color: brand.primaryColor }}>
                 {item.footer}
               </div>
             </div>
@@ -165,7 +165,7 @@ export function RealLifeExamplesContent({ data }: { data: SubtopicNotesViewData[
 
         <button className="group flex flex-1 items-center justify-between gap-4 rounded-2xl p-4 text-left shadow-xl transition-all hover:scale-[1.02] active:scale-95" style={{ background: `linear-gradient(135deg, ${brand.primaryColor}, ${brand.primaryColor}dd)` }}>
           <div className="text-white">
-            <p className="text-sm font-black text-white">Technical Explanation</p>
+            <p className="text-sm font-bold text-white">Technical Deep Dive</p>
           </div>
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20">
             <Icons.ArrowRight size={18} className="text-white" aria-hidden="true" />

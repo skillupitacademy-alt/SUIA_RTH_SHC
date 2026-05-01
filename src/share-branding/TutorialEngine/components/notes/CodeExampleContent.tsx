@@ -193,8 +193,8 @@ console.log("✅ Component rendered successfully!");`;
              <div className="rounded-2xl bg-slate-50 p-4 shadow-sm flex items-start gap-3 max-w-md border border-slate-200">
                <Icons.Lightbulb size={18} className="text-amber-700 shrink-0 mt-0.5" aria-hidden="true" />
                <p className="text-[12px] font-bold text-slate-900 leading-relaxed">
-                  <span className="text-orange-950 uppercase tracking-tighter mr-1 font-black">Tip:</span> 
-                  Change name = 'Your Name' on line 16 to see the component update in real-time.
+                  <span className="text-amber-800 uppercase tracking-tighter mr-1 font-bold">Tip:</span> 
+                  {data?.output?.tip}
                </p>
             </div>
         </section>
@@ -207,12 +207,12 @@ console.log("✅ Component rendered successfully!");`;
             <Icons.ArrowLeft size={18} className="text-slate-600 group-hover:text-slate-900" aria-hidden="true" />
           </div>
           <div>
-            <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Previous</p>
-            <p className="text-sm font-black text-slate-900">Technical Deep Dive</p>
+            <p className="text-[10px] font-bold text-slate-700 uppercase tracking-widest">Previous</p>
+            <p className="text-sm font-bold text-slate-950">Technical Deep Dive</p>
           </div>
         </button>
 
-        <button className="hidden sm:flex items-center gap-2 rounded-2xl bg-white px-8 py-4 text-sm font-black text-slate-800 shadow-sm hover:bg-slate-50 transition-all active:scale-95 border border-slate-100">
+        <button className="hidden sm:flex items-center gap-2 rounded-2xl bg-white px-8 py-4 text-sm font-bold text-slate-800 shadow-sm hover:bg-slate-50 transition-all active:scale-95 border border-slate-200">
            <Icons.LayoutGrid size={18} aria-hidden="true" /> Back to Subtopic
         </button>
 
@@ -222,8 +222,8 @@ console.log("✅ Component rendered successfully!");`;
           style={{ background: `linear-gradient(135deg, ${brand.primaryColor}, ${brand.primaryColor}dd)` }}
         >
           <div>
-            <p className="text-[10px] font-black text-white/90 uppercase tracking-widest">Next</p>
-            <p className="text-sm font-black">AI Tutor</p>
+            <p className="text-[10px] font-bold text-white/90 uppercase tracking-widest">Next</p>
+            <p className="text-sm font-bold">AI Tutor</p>
           </div>
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20">
             <Icons.ArrowRight size={18} aria-hidden="true" />

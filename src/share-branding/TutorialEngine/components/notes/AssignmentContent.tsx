@@ -181,8 +181,8 @@ render(<UserDashboard />);`;
           style={{ background: `linear-gradient(135deg, ${brand.primaryColor}, ${brand.primaryColor}dd)` }}
         >
           <div>
-            <p className="text-[10px] font-black text-white/90 uppercase tracking-widest">Next</p>
-            <p className="text-sm font-black">AI Tutor</p>
+            <p className="text-[10px] font-bold text-white/90 uppercase tracking-widest">Next</p>
+            <p className="text-sm font-bold">AI Tutor</p>
           </div>
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20">
             <Icons.ArrowRight size={18} aria-hidden="true" />
