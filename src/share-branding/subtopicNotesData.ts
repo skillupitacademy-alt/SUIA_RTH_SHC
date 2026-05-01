@@ -122,6 +122,7 @@ export interface SubtopicNotesViewData {
           output?: string;
         };
         keyPoints?: string[];
+        steps?: { id: string; text: string }[];
         highlight?: string;
       }[];
     };
@@ -148,6 +149,10 @@ export interface SubtopicNotesViewData {
       readingTime: string;
       thinkAboutIt: string;
     };
+    deepDiveSidebar?: {
+      onThisPage: { id: string; label: string }[];
+      quickLinks: { id: string; label: string; icon: string }[];
+    };
   };
 }
 
@@ -168,12 +173,12 @@ export async function loadSubtopicNotesData(brand: BrandConfig): Promise<Subtopi
         { id: 'notes', label: 'Notes', status: 'active', icon: 'FileText' },
         { id: 'layman', label: 'Layman Explanation', icon: 'Zap', status: 'completed' },
         { id: 'real-life', label: 'Real Life Examples', icon: 'Globe', status: 'completed' },
-        { id: 'technical-deep-dive', label: 'Technical Deep Dive', icon: 'Cpu', status: 'pending' },
-        { id: 'code-example', label: 'Code Example', icon: 'Code', status: 'locked' },
+        { id: 'technical-deep-dive', label: 'Technical Deep Dive', icon: 'Cpu', status: 'completed' },
+        { id: 'code-example', label: 'Code Example', icon: 'Code', status: 'completed' },
+        { id: 'assignments', label: 'Assignments', status: 'completed', icon: 'FileCheck' },
+        { id: 'project', label: 'Projects', icon: 'Briefcase', status: 'completed' },
+        { id: 'quiz', label: 'Quiz', status: 'active', icon: 'HelpCircle' },
         { id: 'ai-tutor', label: 'AI Tutor', status: 'pending', icon: 'Circle' },
-        { id: 'assignments', label: 'Assignments', status: 'locked', icon: 'Lock' },
-        { id: 'projects', label: 'Projects', status: 'locked', icon: 'Lock' },
-        { id: 'quiz', label: 'Quiz', status: 'locked', icon: 'Lock' },
         { id: 'progress', label: 'Progress Tracker', status: 'pending', icon: 'TrendingUp' },
       ],
       progress: {
@@ -273,10 +278,10 @@ export async function loadSubtopicNotesData(brand: BrandConfig): Promise<Subtopi
               type: 'anatomy',
               data: {
                 slots: [
-                  { label: '[[Props]]', desc: 'Read-only external data' },
-                  { label: '[[State]]', desc: 'Internal mutable data' },
-                  { label: '[[Hooks]]', desc: 'State & Lifecycle effects' },
-                  { label: '[[VirtualDOM]]', desc: 'UI representation' }
+                  { label: '[[Props]]', desc: 'Read-only external data', color: 'blue' },
+                  { label: '[[State]]', desc: 'Internal mutable data', color: 'emerald' },
+                  { label: '[[Hooks]]', desc: 'State & Lifecycle effects', color: 'purple' },
+                  { label: '[[VirtualDOM]]', desc: 'UI representation', color: 'rose' }
                 ]
               }
             },
@@ -289,7 +294,7 @@ export async function loadSubtopicNotesData(brand: BrandConfig): Promise<Subtopi
           },
           {
             id: 'td2',
-            title: '2. The Reconciliation Cycle',
+            title: '2. Reconciliation & Queues',
             content: 'React uses a "Virtual DOM" to optimize updates. When state changes, React generates a new Virtual DOM tree and compares it with the previous one (Diffing).',
             diagram: {
               type: 'flow',
@@ -298,16 +303,31 @@ export async function loadSubtopicNotesData(brand: BrandConfig): Promise<Subtopi
             code: {
               language: 'javascript',
               code: 'const [count, setCount] = useState(0);\n\n// 1. User clicks → setCount(1)\n// 2. React triggers Render Phase\n// 3. New Virtual DOM generated\n// 4. Diffing: count changed 0 → 1\n// 5. Commit Phase: Update only the text node',
-              output: '// Result: Only one DOM node updated'
+              output: '// Output: 1, 4, 3, 2'
             }
           },
           {
             id: 'td3',
-            title: '3. Composition vs Inheritance',
-            content: 'React favors composition over inheritance. You build complex UIs by nesting components rather than extending classes.',
+            title: '3. Component Resolution',
+            content: 'Component resolution procedure:',
+            steps: [
+               { id: 's1', text: 'If a component receives new props → it becomes dirty.' },
+               { id: 's2', text: 'If state updates → it schedules a re-render.' },
+               { id: 's3', text: 'If parent re-renders → children are re-evaluated.' }
+            ],
+            code: {
+              language: 'javascript',
+              code: 'const Parent = () => {\n  const [val, setVal] = useState(0);\n  return <Child value={val} />;\n};\n\n// 1. setVal(1)\n// 2. Parent re-renders\n// 3. Child receives new props\n// 4. Child re-renders',
+              output: '// Result: Full subtree updated'
+            }
+          },
+          {
+            id: 'td4',
+            title: '4. Chaining Mechanics',
+            content: 'Each render returns a new Virtual DOM node.',
             diagram: {
               type: 'chain',
-              data: ['Layout', 'Navbar', 'UserMenu', 'Avatar']
+              data: ['Component', 'Element', 'Instance', 'DOM Node']
             },
             highlight: 'This allows for maximum reusability and a predictable data flow.'
           }

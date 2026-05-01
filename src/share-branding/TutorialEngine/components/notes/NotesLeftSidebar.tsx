@@ -11,7 +11,12 @@ export function NotesLeftSidebar({ data, isOpen, activeId, onSelect }: { data: S
   };
 
   return (
-    <aside aria-label="Learning Path Sidebar" className={`absolute bottom-0 left-0 top-0 z-40 flex w-[280px] flex-col overflow-y-auto border-r border-gray-200 bg-white p-5 hide-scrollbar transition-transform duration-300 shadow-2xl ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+    <aside 
+      aria-label="Learning Path Sidebar" 
+      className={`absolute bottom-0 left-0 top-0 z-40 flex w-[280px] flex-col overflow-y-auto border-r border-gray-200 bg-white p-5 hide-scrollbar transition-transform duration-300 shadow-2xl ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
+      tabIndex={0}
+      role="region"
+    >
       <div className="mb-6 flex items-center gap-2 text-sm font-bold text-gray-900">
         <Icons.BookOpen size={16} />
         {data.title}

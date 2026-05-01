@@ -8,6 +8,10 @@ import { NotesRightSidebar } from './TutorialEngine/components/notes/NotesRightS
 import { LaymanExplanationContent } from './TutorialEngine/components/notes/LaymanExplanationContent';
 import { RealLifeExamplesContent } from './TutorialEngine/components/notes/RealLifeExamplesContent';
 import { TechnicalDeepDiveContent } from './TutorialEngine/components/notes/TechnicalDeepDiveContent';
+import { CodeExampleContent } from './TutorialEngine/components/notes/CodeExampleContent';
+import { AssignmentContent } from './TutorialEngine/components/notes/AssignmentContent';
+import { ProjectContent } from './TutorialEngine/components/notes/ProjectContent';
+import { QuizContent } from './TutorialEngine/components/notes/QuizContent';
 
 export interface SubtopicNotesPageProps {
   data: SubtopicNotesViewData;
@@ -66,12 +70,16 @@ export function SubtopicNotesPage({ data }: SubtopicNotesPageProps) {
         />
 
         {/* Main Scrollable Content */}
-        <main className="flex-1 overflow-y-auto hide-scrollbar bg-white">
+        <main className="flex-1 overflow-y-auto hide-scrollbar bg-white" tabIndex={0}>
           <div className="mx-auto w-full px-8 py-10 lg:px-12 xl:px-16">
             {activeTab === 'notes' && <NotesMainContent data={data.mainContent} isStandalone={false} />}
             {activeTab === 'layman' && <LaymanExplanationContent data={data.mainContent.laymanExplanation} />}
             {activeTab === 'real-life' && <RealLifeExamplesContent data={data.mainContent.realLifeExamples} />}
-            {activeTab === 'technical-deep-dive' && <TechnicalDeepDiveContent data={data.mainContent.technicalDeepDive} />}
+            {activeTab === 'technical-deep-dive' && <TechnicalDeepDiveContent data={data.mainContent.technicalDeepDive} onNext={() => setActiveTab('code-example')} />}
+            {activeTab === 'code-example' && <CodeExampleContent onNext={() => setActiveTab('assignments')} />}
+            {activeTab === 'assignments' && <AssignmentContent onNext={() => setActiveTab('project')} />}
+            {activeTab === 'project' && <ProjectContent onNext={() => setActiveTab('quiz')} />}
+            {activeTab === 'quiz' && <QuizContent onNext={() => setActiveTab('ai-tutor')} />}
           </div>
         </main>
 
