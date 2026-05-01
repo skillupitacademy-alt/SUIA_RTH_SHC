@@ -24,7 +24,8 @@ export function SubtopicViewPage({ data }: SubtopicViewPageProps) {
   return (
     <div className="flex h-screen w-full flex-col overflow-hidden bg-[#F8FAFC]">
       {/* Dynamic Branding Styles */}
-      <style dangerouslySetInnerHTML={{ __html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         .bg-primary-dynamic { background-color: ${brand.primaryColor}; }
         .text-primary-dynamic { color: ${brand.primaryColor}; }
         .text-primary-dark { color: ${brand.primaryColor}; filter: brightness(0.85); }
@@ -38,8 +39,8 @@ export function SubtopicViewPage({ data }: SubtopicViewPageProps) {
       `}} />
 
       {/* Top Navigation Bar */}
-      <SubtopicTopBar 
-        data={data.nav} 
+      <SubtopicTopBar
+        data={data.nav}
         isLeftOpen={isSidebarOpen}
         isRightOpen={isRightSidebarOpen}
         onToggleLeft={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -48,8 +49,8 @@ export function SubtopicViewPage({ data }: SubtopicViewPageProps) {
 
       <div className="relative flex flex-1 overflow-hidden">
         {/* Left Sidebar - Curriculum & Progress */}
-        <SubtopicSidebar 
-          data={data.subtopic.sidebar} 
+        <SubtopicSidebar
+          data={data.subtopic.sidebar}
           progress={{
             percentage: data.subtopic.overallProgress?.percentage || 0,
             checklist: data.subtopic.overallProgress?.checklist || []
@@ -67,7 +68,7 @@ export function SubtopicViewPage({ data }: SubtopicViewPageProps) {
               <ChevronRight size={16} className="text-gray-400" />
               <span className="hover:text-[#1e293b] cursor-pointer transition-colors">JavaScript</span>
               <ChevronRight size={16} className="text-gray-400" />
-              <span className="text-primary-dark">Variables & Data Types</span>
+              <span className="text-primary-dark">Component Architecture</span>
             </div>
 
             {/* Header Section */}
@@ -80,18 +81,18 @@ export function SubtopicViewPage({ data }: SubtopicViewPageProps) {
             }} />
 
             {/* Navigation Tabs */}
-            <SubtopicTabs 
-              tabs={data.subtopic.tabs} 
-              activeTab={activeTab} 
-              onTabChange={setActiveTab} 
+            <SubtopicTabs
+              tabs={data.subtopic.tabs}
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
             />
 
             {/* Content Grid Area */}
             <div className="min-h-[400px]">
               {activeTab === 'learn' ? (
-                <SubtopicContentGrid 
-                  content={data.subtopic.content} 
-                  tasks={data.subtopic.tasks} 
+                <SubtopicContentGrid
+                  content={data.subtopic.content}
+                  tasks={data.subtopic.tasks}
                 />
               ) : (
                 <div className="flex h-64 flex-col items-center justify-center rounded-3xl border-2 border-dashed border-gray-200 bg-white/50">
@@ -119,8 +120,8 @@ export function SubtopicViewPage({ data }: SubtopicViewPageProps) {
         </main>
 
         {/* Right Sidebar - Stats & AI Tutor */}
-        <SubtopicRightPanel 
-          data={data.rightSidebar} 
+        <SubtopicRightPanel
+          data={data.rightSidebar}
           isOpen={isRightSidebarOpen}
         />
       </div>

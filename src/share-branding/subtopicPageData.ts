@@ -139,51 +139,51 @@ export async function loadTutorialData(brand: BrandConfig): Promise<SubtopicView
       content: [
         {
           id: 'c1', title: 'Notes', type: 'notes',
-          content: 'A variable is a container that stores data values. In JavaScript, we can declare variables using var, let, or const.\n\n• var → Old way, function-scoped\n• let → Block-scoped, can be updated\n• const → Block-scoped, cannot be reassigned',
+          content: 'Component Architecture involves breaking down a UI into smaller, independent, and reusable pieces. A well-architected React app often separates Container components (handling logic and state) from Presentational components (handling UI and styling).',
           ctaLabel: 'Read Full Notes'
         },
         {
           id: 'c2', title: 'Layman Explanation', type: 'layman',
-          content: 'Think of variables like boxes that hold values. You can change what\'s inside the box (let), or keep it constant (const).\n\nImagine a box labeled "name" that can hold a value like "Suresh". You can change it to "Rohan" if the box is declared with let.',
+          content: 'Think of Component Architecture like building with LEGO bricks. Instead of building an entire car as one giant piece, you build the wheels, doors, and chassis separately, and then assemble them together. This way, you can easily reuse the wheels on another vehicle!',
           ctaLabel: 'Read More'
         },
         {
           id: 'c3', title: 'Real-Life Example', type: 'example',
-          content: 'Variables are used everywhere!\n\n✓ Shopping cart total\n✓ User profile data\n✓ Game scores\n✓ Temperature in weather apps',
+          content: 'Reusable components are used everywhere in web apps:\n\n✓ A primary Button used across the site\n✓ A Navbar shared on all pages\n✓ A User Profile card\n✓ A reusable Modal window',
           ctaLabel: 'Read Examples'
         },
         {
           id: 'c4', title: 'Code Example', type: 'code',
-          code: '// Variable declarations\nvar name = "Suresh";\nlet age = 25;\nconst isStudent = true;\n\n// Data types\nlet number = 42;             // Number\nlet text = "Hello";          // String\nlet flag = false;            // Boolean\nlet nothing = null;          // Null\nlet data;                    // Undefined\nlet person = { name: "Suresh" }; // Object\nlet fruits = ["Apple", "Banana"]; // Array',
+          code: '// Presentational Component (Dumb)\nconst UserCard = ({ user }) => (\n  <div className="card">\n    <h2>{user.name}</h2>\n    <p>{user.email}</p>\n  </div>\n);\n\n// Container Component (Smart)\nconst UserContainer = () => {\n  const [user, setUser] = useState(null);\n  \n  useEffect(() => {\n    fetchUser().then(data => setUser(data));\n  }, []);\n\n  if (!user) return <Loader />;\n  return <UserCard user={user} />;\n};',
           ctaLabel: 'Run Code'
         },
         {
           id: 'c5', title: 'Technical Deep Dive', type: 'deep-dive',
-          content: '• JavaScript is loosely typed.\n• Types are dynamic.\n• Primitive types are stored in stack.\n• Reference types are stored in heap.\n• Use typeof to check type.\n• Type coercion happens in comparisons.',
+          content: '• Container/Presentational Pattern: separates logic from UI.\n• Atomic Design: Atoms (Button) → Molecules (SearchBar) → Organisms (Header) → Templates.\n• Lifting State Up: Sharing state between sibling components.\n• Composition: Using props.children to pass React nodes.',
           ctaLabel: 'Read Full Details'
         },
         {
           id: 'c6', title: 'Visual Explanation', type: 'visual',
-          content: 'Stack (Primitive) vs Heap (Reference)',
+          content: 'Container vs Presentational Flowchart',
           ctaLabel: 'Watch Video (4:35)'
         }
       ],
       tasks: [
         {
           id: 't1', title: 'Practice Tasks', type: 'practice',
-          content: '• Declare variables of all data types\n• Swap two variables\n• Check data types using typeof',
+          content: '• Identify container vs presentational components\n• Break a complex UI into a component tree\n• Implement the children prop',
           ctaLabel: 'View All (10)'
         },
         {
           id: 't2', title: 'Assignment', type: 'assignment',
-          content: 'Create a program that stores user information (name, age, email, isStudent) and display them.',
+          content: 'Refactor a monolithic React component into 3 smaller, reusable functional components using props.',
           badge: { text: 'Easy', type: 'success' },
           ctaLabel: 'Start Assignment'
         },
         {
           id: 't3', title: 'Project', type: 'project',
-          content: 'Build a Personal Information Manager that stores and displays user details.',
-          badge: { text: 'Beginner', type: 'success' },
+          content: 'Build a modular E-commerce Dashboard using Atomic Design principles and strict component separation.',
+          badge: { text: 'Intermediate', type: 'success' },
           ctaLabel: 'View Project'
         },
         {
@@ -207,9 +207,9 @@ export async function loadTutorialData(brand: BrandConfig): Promise<SubtopicView
       achievements: {
         title: 'Achievements',
         items: [
-          { id: 'a1', title: 'Variable Master', description: 'Declare your first variable', icon: 'Award', color: 'blue' },
-          { id: 'a2', title: 'Type Explorer', description: 'Explore all data types', icon: 'Award', color: 'red' },
-          { id: 'a3', title: 'Code Practitioner', description: 'Write 5 code examples', icon: 'Award', color: 'blue' },
+          { id: 'a1', title: 'Architecture Novice', description: 'Build your first reusable component', icon: 'Award', color: 'blue' },
+          { id: 'a2', title: 'State Lifter', description: 'Successfully lift state to a parent component', icon: 'Award', color: 'red' },
+          { id: 'a3', title: 'Atomic Thinker', description: 'Apply atomic design to a feature', icon: 'Award', color: 'blue' },
         ]
       },
       weaknessAnalysis: {
@@ -217,9 +217,9 @@ export async function loadTutorialData(brand: BrandConfig): Promise<SubtopicView
         score: 68,
         scoreLabel: 'Needs Improvement',
         items: [
-          { id: 'w1', topic: 'Type coercion', status: 'Weak', color: 'rose' },
-          { id: 'w2', topic: 'Null vs Undefined', status: 'Weak', color: 'rose' },
-          { id: 'w3', topic: 'Let vs Const', status: 'Medium', color: 'amber' },
+          { id: 'w1', topic: 'Prop Drilling', status: 'Weak', color: 'rose' },
+          { id: 'w2', topic: 'State Colocation', status: 'Weak', color: 'rose' },
+          { id: 'w3', topic: 'Component Reusability', status: 'Medium', color: 'amber' },
         ]
       },
       aiTutor: {

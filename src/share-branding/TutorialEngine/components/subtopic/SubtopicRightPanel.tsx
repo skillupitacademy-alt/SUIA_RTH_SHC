@@ -45,13 +45,14 @@ export function SubtopicRightPanel({ data, isOpen }: SubtopicRightPanelProps) {
       <div className="space-y-4">
         
         {/* XP Section */}
-        <section className="rounded-2xl bg-white p-5 border border-gray-100 shadow-sm">
+        <section className="rounded-3xl bg-white p-5 border border-gray-100 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+                 style={{ boxShadow: `0 8px 24px rgba(${brand.primaryRgb || '0,0,0'}, 0.05)` }}>
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Icons.Flame size={18} className="text-orange-500" />
               <h2 className="text-[14px] font-bold text-[#1e293b]">{data.xpSection.title}</h2>
             </div>
-            <span className="text-[11px] font-bold text-emerald-500">+{data.xpSection.totalXp} XP</span>
+            <span className="text-[11px] font-bold text-emerald-700">+{data.xpSection.totalXp} XP</span>
           </div>
           
           <div className="mb-5 flex items-center justify-between">
@@ -80,13 +81,16 @@ export function SubtopicRightPanel({ data, isOpen }: SubtopicRightPanelProps) {
         </section>
 
         {/* Achievements */}
-        <section className="rounded-2xl bg-white p-5 border border-gray-100 shadow-sm">
+        <section 
+          className="rounded-3xl bg-white p-5 border border-gray-100 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+          style={{ boxShadow: `0 8px 24px rgba(${brand.primaryRgb || '0,0,0'}, 0.05)` }}
+        >
           <div className="mb-5 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Icons.Trophy size={16} className="text-amber-500" />
               <h2 className="text-[14px] font-bold text-[#1e293b]">{data.achievements.title}</h2>
             </div>
-            <button className="text-[11px] font-bold text-orange-500 hover:text-orange-600 transition-colors">View All</button>
+            <button className="text-[11px] font-bold text-orange-700 hover:text-orange-800 transition-colors">View All</button>
           </div>
           <div className="space-y-4">
             {data.achievements.items.map((item) => {
@@ -108,32 +112,34 @@ export function SubtopicRightPanel({ data, isOpen }: SubtopicRightPanelProps) {
         </section>
 
         {/* Weakness Analysis */}
-        <section className="rounded-2xl bg-white p-5 border border-gray-100 shadow-sm">
+        <section 
+          className="rounded-3xl p-5 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+          style={{ backgroundColor: '#1d4ed8', boxShadow: `0 8px 24px rgba(${brand.primaryRgb || '0,0,0'}, 0.08)` }}
+        >
           <div className="mb-5 flex items-center gap-2">
-            <Icons.BarChart2 size={16} className="text-blue-500" />
-            <h2 className="text-[14px] font-bold text-[#1e293b]">{data.weaknessAnalysis.title}</h2>
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/20 text-white">
+              <Icons.BarChart2 size={16} />
+            </div>
+            <h2 className="text-[14px] font-bold text-white">{data.weaknessAnalysis.title}</h2>
           </div>
           
           <div className="mb-5 flex items-center gap-4">
             <div className="flex flex-col">
-              <span className="text-[11px] font-medium text-gray-500">Your Score</span>
-              <span className="text-[32px] font-black text-[#1e293b] leading-none">{data.weaknessAnalysis.score}%</span>
+              <span className="text-[11px] font-medium text-white/80">Your Score</span>
+              <span className="text-[32px] font-black text-white leading-none">{data.weaknessAnalysis.score}%</span>
             </div>
-            <span className="text-[12px] font-bold text-orange-500 mt-3">{data.weaknessAnalysis.scoreLabel}</span>
+            <span className="text-[12px] font-bold text-white/90 mt-3">{data.weaknessAnalysis.scoreLabel}</span>
           </div>
           
           <ul className="mb-5 space-y-2">
             {data.weaknessAnalysis.items.map((item) => {
-              const badgeClass = item.status === 'Weak' 
-                ? 'bg-rose-50 text-rose-500' 
-                : 'bg-amber-50 text-amber-500';
               return (
                 <li key={item.id} className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="text-gray-400 text-xs">•</span>
-                    <span className="text-[12px] font-medium text-[#475569]">{item.topic}</span>
+                    <span className="text-white/50 text-xs">•</span>
+                    <span className="text-[12px] font-medium text-white/90">{item.topic}</span>
                   </div>
-                  <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${badgeClass}`}>
+                  <span className="rounded-full bg-black/20 px-2.5 py-0.5 text-[10px] font-bold text-white border border-white/10">
                     {item.status}
                   </span>
                 </li>
@@ -141,35 +147,44 @@ export function SubtopicRightPanel({ data, isOpen }: SubtopicRightPanelProps) {
             })}
           </ul>
 
-          <button className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-orange-50 py-2.5 text-[12px] font-bold text-orange-600 transition-colors hover:bg-orange-100">
+          <button 
+            className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-white py-2.5 text-[12px] font-bold transition-all shadow-lg hover:-translate-y-0.5 active:translate-y-0"
+            style={{ color: '#1d4ed8' }}
+          >
             View Detailed Analysis <Icons.ArrowRight size={14} />
           </button>
         </section>
 
         {/* AI Tutor Chat Box */}
-        <section className="rounded-2xl bg-[#f5f3ff] p-5 border border-purple-100">
+        <section 
+          className="rounded-3xl p-5 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+          style={{ backgroundColor: '#7e22ce', boxShadow: `0 8px 24px rgba(${brand.primaryRgb || '0,0,0'}, 0.08)` }}
+        >
           <div className="mb-3 flex items-center gap-2">
-            <Icons.Bot size={18} className="text-[#6d28d9]" />
-            <h2 className="text-[15px] font-bold text-[#6d28d9]">{data.aiTutor.title}</h2>
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/20 text-white">
+              <Icons.Bot size={18} />
+            </div>
+            <h2 className="text-[15px] font-bold text-white">{data.aiTutor.title}</h2>
           </div>
-          <p className="mb-4 text-[12px] font-medium text-[#4c1d95] leading-relaxed whitespace-pre-line">
+          <p className="mb-4 text-[12px] font-medium text-white/80 leading-relaxed whitespace-pre-line">
             {data.aiTutor.subtitle}
           </p>
 
           <div className="relative mb-4">
             <input 
               type="text" 
+              aria-label="Ask AI Tutor"
               placeholder={data.aiTutor.inputPlaceholder}
-              className="w-full rounded-xl bg-white py-3 pl-4 pr-10 text-[12px] font-medium text-gray-700 placeholder:text-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-200 border border-purple-50"
+              className="w-full rounded-xl bg-white py-3 pl-4 pr-10 text-[12px] font-medium text-gray-700 placeholder:text-gray-400 shadow-lg focus:outline-none focus:ring-2 focus:ring-white border-none"
             />
-            <button className="absolute right-3 top-2.5 text-purple-300 hover:text-purple-500 transition-colors">
-              <Icons.Send size={16} />
+            <button aria-label="Send message" className="absolute right-3 top-2.5 text-[#7e22ce] hover:text-[#581c87] transition-colors bg-purple-50 p-1 rounded-lg">
+              <Icons.Send size={14} />
             </button>
           </div>
 
           <div className="flex flex-wrap gap-2">
             {data.aiTutor.examples.map((ex, i) => (
-              <button key={i} className="rounded-lg bg-white px-3 py-1.5 text-[10px] font-bold text-[#6d28d9] shadow-sm hover:bg-purple-50 transition-colors border border-purple-100">
+              <button key={i} className="rounded-lg bg-white/10 px-3 py-1.5 text-[10px] font-bold text-white shadow-sm hover:bg-white/20 transition-colors border border-white/20">
                 {ex}
               </button>
             ))}
