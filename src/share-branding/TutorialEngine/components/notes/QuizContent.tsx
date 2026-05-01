@@ -106,7 +106,7 @@ export function QuizContent({ onNext }: { onNext?: () => void }) {
                <button
                   key={opt.id}
                   onClick={() => setSelectedOption(opt.id)}
-                   className={`group flex items-center gap-6 rounded-2xl p-6 transition-all border shadow-md hover:shadow-xl hover:-translate-y-0.5 ${selectedOption === opt.id ? 'border-rose-500 bg-rose-50/30 ring-4 ring-rose-500/5' : 'border-slate-100 hover:border-slate-200 bg-white'}`}
+                   className={`group flex items-center gap-6 rounded-2xl p-6 transition-all border ${selectedOption === opt.id ? 'border-rose-500 bg-rose-50/30 ring-4 ring-rose-500/5' : 'border-transparent bg-white hover:bg-slate-50'}`}
                 >
                   <div className={`flex h-6 w-6 items-center justify-center rounded-full border-2 transition-all ${selectedOption === opt.id ? 'border-rose-900 bg-rose-900' : 'border-slate-300 group-hover:border-slate-400'}`}>
                      {selectedOption === opt.id && <div className="h-2 w-2 rounded-full bg-white" />}
@@ -139,16 +139,7 @@ export function QuizContent({ onNext }: { onNext?: () => void }) {
          )}
       </section>
 
-      {/* Tip Footer */}
-      <div className="flex items-center justify-between gap-4 pt-10 border-t border-slate-100">
-         <div className="flex items-center gap-3 text-[12px] font-medium text-slate-800">
-            <Icons.Zap size={16} className="text-amber-900" fill="currentColor" aria-hidden="true" />
-            <p>Tip: Review the Promise Chain execution order in the <span className="text-slate-950 font-bold">Technical Deep Dive</span> section.</p>
-         </div>
-         <button className="flex items-center gap-2 text-[12px] font-bold text-rose-700 hover:text-rose-900 transition-colors uppercase tracking-widest">
-            Go to Section <Icons.ArrowRight size={14} aria-hidden="true" />
-         </button>
-      </div>
+
     </div>
   );
 }

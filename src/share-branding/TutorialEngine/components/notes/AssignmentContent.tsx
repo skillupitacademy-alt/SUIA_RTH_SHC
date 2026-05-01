@@ -50,7 +50,7 @@ render(<App />);`;
       </div>
 
       {/* Task Description Card */}
-      <section className="rounded-[40px] bg-[#fffbf9] p-10 shadow-xl border border-orange-100 transition-all duration-300 hover:-translate-y-1">
+      <section className="rounded-[40px] bg-white p-10 shadow-xl border border-orange-100 transition-all duration-300 hover:-translate-y-1">
         <div className="space-y-8">
           <div className="flex items-center gap-3">
              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-orange-100 text-orange-950 border border-orange-200">
@@ -148,7 +148,7 @@ render(<App />);`;
       </section>
 
       {/* Submission Guidelines */}
-      <section className="rounded-[32px] bg-sky-50/30 p-10 flex items-center justify-between gap-10 relative overflow-hidden group shadow-xl transition-all duration-300 hover:-translate-y-1">
+      <section className="rounded-[32px] bg-white p-10 flex items-center justify-between gap-10 relative overflow-hidden group shadow-xl transition-all duration-300 hover:-translate-y-1">
          <div className="space-y-6 relative z-10 lg:max-w-xl">
             <div className="flex items-center gap-3">
                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-100 text-sky-950 border border-sky-200">
@@ -170,7 +170,6 @@ render(<App />);`;
             </ul>
          </div>
          <div className="hidden lg:block relative">
-            <div className="absolute inset-0 bg-sky-500/10 blur-3xl rounded-full" />
             <div className="relative transform hover:scale-110 transition-transform duration-700">
                <img 
                  src="/submission_guidelines.svg" 

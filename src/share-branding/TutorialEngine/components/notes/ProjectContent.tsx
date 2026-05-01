@@ -50,14 +50,13 @@ export function ProjectContent({ onNext }: { onNext?: () => void }) {
       </div>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden rounded-[40px] bg-[#fffbf9] p-10 shadow-xl transition-all duration-300 hover:-translate-y-1 border border-orange-100">
-         <div className="absolute top-0 right-0 w-96 h-96 bg-orange-500/5 rounded-full -mr-48 -mt-48 blur-3xl" />
+      <section className="relative overflow-hidden rounded-[40px] bg-white p-10 shadow-xl transition-all duration-300 hover:-translate-y-1 border border-orange-100">
          
          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             <div className="lg:col-span-7 space-y-8">
                <div 
                  className="inline-flex items-center rounded-full px-4 py-1 text-[11px] font-bold tracking-wide uppercase shadow-sm"
-                 style={{ backgroundColor: `${brand.primaryColor}15`, color: brand.primaryColor }}
+                 style={{ backgroundColor: `${brand.primaryColor}15`, color: brand.primaryColorDark }}
                >
                  intermediate project
                </div>
@@ -144,21 +143,6 @@ export function ProjectContent({ onNext }: { onNext?: () => void }) {
                </ul>
             </div>
             
-            {/* Starter Template */}
-            <div className="rounded-[24px] bg-slate-50 p-6 flex items-center justify-between gap-6 shadow-xl transition-all duration-300 hover:-translate-y-1">
-               <div className="flex items-center gap-4">
-                   <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-sm text-orange-950 border border-orange-100">
-                     <Icons.Code2 size={24} aria-hidden="true" />
-                  </div>
-                  <div>
-                     <h4 className="text-sm font-bold text-slate-950">Starter Template</h4>
-                     <p className="text-[12px] font-medium text-slate-800">Get started with a boilerplate code.</p>
-                  </div>
-               </div>
-                <button className="flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-xs font-bold text-slate-800 shadow-sm hover:bg-slate-50 transition-all border border-slate-200">
-                   <Icons.Download size={16} aria-hidden="true" /> Download Starter
-                </button>
-            </div>
          </div>
          
          <div className="lg:col-span-5 space-y-8">

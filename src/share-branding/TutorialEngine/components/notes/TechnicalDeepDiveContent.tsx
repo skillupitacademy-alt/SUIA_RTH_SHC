@@ -38,7 +38,7 @@ export function TechnicalDeepDiveContent({ data }: { data?: SubtopicNotesViewDat
       </div>
 
       {/* 0. Intro Section */}
-      <section className="rounded-[40px] bg-[#fffbf9] p-10 shadow-xl transition-all duration-300 hover:-translate-y-1">
+      <section className="rounded-[40px] bg-white p-10 shadow-xl transition-all duration-300 hover:-translate-y-1">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
            <div className="space-y-8">
               <h2 className="text-3xl font-bold text-slate-950 tracking-tight">What is a Component?</h2>
