@@ -44,8 +44,8 @@ export function SubtopicSidebar({ data, progress, isOpen, onToggle }: SubtopicSi
           
           {/* Back Button */}
           <button 
-            className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold transition-all hover:opacity-80"
-            style={{ backgroundColor: bgLight, color: brand.primaryColor }}
+            className="flex w-full items-center gap-2 rounded-xl px-4 py-3 text-sm font-bold transition-all hover:brightness-95"
+            style={{ backgroundColor: bgLight, color: brand.primaryColorDark || brand.primaryColor }}
           >
             <ArrowLeft size={16} />
             Back to Course
@@ -107,7 +107,7 @@ export function SubtopicSidebar({ data, progress, isOpen, onToggle }: SubtopicSi
                       </div>
                       <span 
                         className="text-[13px] font-bold"
-                        style={{ color: isActive ? brand.primaryColor : '#334155' }}
+                        style={{ color: isActive ? (brand.primaryColorDark || brand.primaryColor) : '#334155' }}
                       >
                         {idx + 1}. {item.title}
                       </span>
@@ -128,8 +128,8 @@ export function SubtopicSidebar({ data, progress, isOpen, onToggle }: SubtopicSi
         {/* Bottom Fixed Area */}
         <div className="border-t border-gray-100 bg-white px-6 py-5 space-y-4">
           <button 
-            className="flex w-full items-center justify-center gap-2 rounded-xl border-2 px-4 py-3 text-[13px] font-bold transition-all hover:bg-white"
-            style={{ backgroundColor: bgLight, borderColor: bgLight, color: brand.primaryColor }}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border-2 px-4 py-3 text-[13px] font-bold transition-all hover:brightness-95"
+            style={{ backgroundColor: bgLight, borderColor: bgLight, color: brand.primaryColorDark || brand.primaryColor }}
           >
             <Download size={16} />
             Download Notes (PDF)

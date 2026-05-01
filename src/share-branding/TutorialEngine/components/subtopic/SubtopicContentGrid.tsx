@@ -153,7 +153,7 @@ export function SubtopicContentGrid({ content, tasks }: SubtopicContentGridProps
                   isQuiz 
                     ? { backgroundColor: brand.primaryColor, color: 'white' } 
                     : task.type === 'assignment' 
-                      ? { border: `1px solid ${brand.primaryColor}33`, backgroundColor: `${brand.primaryColor}11`, color: brand.primaryColor }
+                      ? { border: `1px solid ${brand.primaryColor}33`, backgroundColor: `${brand.primaryColor}11`, color: brand.primaryColorDark || brand.primaryColor }
                       : { color: brand.primaryColor, paddingLeft: 0, paddingRight: 0 }
                 }
               >

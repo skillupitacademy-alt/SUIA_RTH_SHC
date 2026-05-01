@@ -127,9 +127,14 @@ export async function loadTutorialData(brand: BrandConfig): Promise<SubtopicView
       },
       tabs: [
         { id: 'learn', label: 'Learn', icon: 'BookOpen' },
-        { id: 'practice', label: 'Practice', icon: 'Code2' },
-        { id: 'quiz', label: 'Quiz', icon: 'HelpCircle' },
-        { id: 'resources', label: 'Resources', icon: 'Link' },
+        { id: 'practice', label: 'Practice', icon: 'Rocket' },
+        { id: 'assignment', label: 'Assignment', icon: 'ClipboardList' },
+        { id: 'project', label: 'Project', icon: 'Puzzle' },
+        { id: 'quiz', label: 'Quiz', icon: 'ClipboardCheck' },
+        { id: 'ai-tutor', label: 'AI Tutor', icon: 'Bot' },
+        { id: 'summary', label: 'Summary', icon: 'FileText' },
+        { id: 'interview', label: 'Interview', icon: 'Presentation' },
+        { id: 'remediation', label: 'Remediation', icon: 'Activity' },
       ],
       content: [
         {
@@ -194,32 +199,34 @@ export async function loadTutorialData(brand: BrandConfig): Promise<SubtopicView
     },
     rightSidebar: {
       xpSection: {
-        title: 'Session Progress',
-        earnedXp: 325,
-        totalXp: 500,
-        xpMessage: 'You are doing great! 175 more XP to reach today\'s goal.'
+        title: 'XP & Badges',
+        earnedXp: 80,
+        totalXp: 120,
+        xpMessage: 'for completing this subtopic'
       },
       achievements: {
-        title: 'Recent Milestones',
+        title: 'Achievements',
         items: [
-          { id: 'a1', title: 'Component Master', description: 'Built 5 reusable components', icon: 'Award', color: 'amber' },
-          { id: 'a2', title: 'Clean Coder', description: 'Passed 10 linting checks', icon: 'Shield', color: 'emerald' },
+          { id: 'a1', title: 'Variable Master', description: 'Declare your first variable', icon: 'Award', color: 'blue' },
+          { id: 'a2', title: 'Type Explorer', description: 'Explore all data types', icon: 'Award', color: 'red' },
+          { id: 'a3', title: 'Code Practitioner', description: 'Write 5 code examples', icon: 'Award', color: 'blue' },
         ]
       },
       weaknessAnalysis: {
         title: 'Weakness Analysis',
-        score: 72,
-        scoreLabel: 'Overall Proficiency',
+        score: 68,
+        scoreLabel: 'Needs Improvement',
         items: [
-          { id: 'w1', topic: 'State Management', status: 'Improving', color: 'blue' },
-          { id: 'w2', topic: 'Lifecycle Hooks', status: 'Needs Work', color: 'rose' },
+          { id: 'w1', topic: 'Type coercion', status: 'Weak', color: 'rose' },
+          { id: 'w2', topic: 'Null vs Undefined', status: 'Weak', color: 'rose' },
+          { id: 'w3', topic: 'Let vs Const', status: 'Medium', color: 'amber' },
         ]
       },
       aiTutor: {
-        title: `${brand.tutorLabel}`,
-        subtitle: 'I can help you understand component architecture better.',
-        inputPlaceholder: 'Ask me anything...',
-        examples: ['What is Props?', 'Explain State', 'Code Review']
+        title: `Ask ${brand.tutorLabel}`,
+        subtitle: 'Got doubts about this topic?\nAsk our AI Tutor anytime.',
+        inputPlaceholder: 'Ask anything...',
+        examples: ['Examples', 'Explain like I\'m 5', 'Interview Q']
       }
     }
   };

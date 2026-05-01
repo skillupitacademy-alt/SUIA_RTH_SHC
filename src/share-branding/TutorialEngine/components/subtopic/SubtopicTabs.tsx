@@ -23,16 +23,16 @@ export function SubtopicTabs({ tabs, activeTab, onTabChange }: SubtopicTabsProps
           <button
             key={tab.id}
             onClick={() => onTabChange(tab.id)}
-            className={`flex shrink-0 items-center gap-2 px-5 py-4 text-[14px] font-bold transition-all relative ${
+            className={`flex shrink-0 items-center gap-2 px-5 py-4 text-[13px] font-bold transition-all relative ${
               isActive 
-                ? 'text-[#1e293b]' 
-                : 'text-gray-500 hover:text-[#1e293b]'
+                ? '' 
+                : 'text-slate-500 hover:text-slate-800'
             }`}
+            style={isActive ? { color: brand.primaryColor } : {}}
           >
             <IconComponent 
-              size={18} 
-              className={isActive ? '' : 'text-gray-400'} 
-              style={isActive ? { color: brand.primaryColor } : {}} 
+              size={16} 
+              className={isActive ? '' : 'text-slate-400'} 
             />
             <span>{tab.label}</span>
             {isActive && (
