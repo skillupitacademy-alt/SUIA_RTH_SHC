@@ -228,28 +228,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
               <p className="text-[10px] font-bold text-slate-800 text-center">You can submit 2 more times</p>
             </section>
 
-            {/* Need Help? */}
-            <section className="rounded-[32px] bg-rose-50/50 p-8 space-y-6 relative overflow-hidden group border border-rose-100">
-               <div className="flex items-center gap-3 relative z-10">
-                  <Icons.HeartPulse size={18} className="text-rose-950" fill="currentColor" aria-hidden="true" />
-                  <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Need Help?</h3>
-               </div>
-               <p className="text-[12px] font-medium text-slate-900 leading-relaxed relative z-10">
-                 Ask AI Tutor or connect with your mentor for personalized guidance.
-               </p>
-               <div className="grid grid-cols-2 gap-2 relative z-10">
-                  <button className="flex items-center justify-center gap-2 rounded-xl bg-pink-800 py-3 px-2 text-white shadow-lg transition-all hover:bg-pink-900 active:scale-95">
-                     <span className="text-[10px] font-bold uppercase tracking-wider">Ask AI Tutor</span>
-                  </button>
-                  <button className="flex items-center justify-center gap-2 rounded-xl bg-white py-3 px-2 text-slate-900 shadow-sm transition-all hover:bg-slate-50 active:scale-95 border border-slate-200">
-                     <span className="text-[10px] font-bold uppercase tracking-wider">Contact Mentor</span>
-                  </button>
-               </div>
-               {/* Illustration */}
-               <div className="absolute -right-2 -bottom-2 opacity-20 transform rotate-12">
-                  <Icons.Bot size={80} className="text-rose-900" />
-               </div>
-            </section>
+
 
             {/* Badge */}
             <section className="rounded-3xl bg-white p-6 shadow-xl flex flex-col items-center text-center space-y-4 transition-all duration-300 hover:-translate-y-1 border border-slate-100">
@@ -593,7 +572,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
           </div>
         </section>
 
-        {activeTab !== 'layman' && activeTab !== 'real-life' && activeTab !== 'technical-deep-dive' && activeTab !== 'code-example' && activeTab !== 'assignments' && (
+        {activeTab !== 'layman' && activeTab !== 'real-life' && activeTab !== 'technical-deep-dive' && activeTab !== 'code-example' && activeTab !== 'assignments' && activeTab !== 'project' && (
           <>
         {/* Your Progress */}
         <section>
