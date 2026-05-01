@@ -87,16 +87,6 @@ export function SubtopicViewPage({ data }: SubtopicViewPageProps) {
               metadata: data.subtopic.metadata
             }} />
 
-            {/* Mastery Learning Path Heading */}
-            <div className="flex flex-col gap-2 py-2">
-              <h2 className="text-3xl font-black tracking-tighter text-slate-950 uppercase">
-                Mastery Learning Roadmap
-              </h2>
-              <p className="text-sm font-bold text-slate-600">
-                Complete all 10 modules to master this topic and earn up to 500 XP.
-              </p>
-            </div>
-
             {/* Content Grid Area */}
             <div className="min-h-[400px]">
               <SubtopicContentGrid
