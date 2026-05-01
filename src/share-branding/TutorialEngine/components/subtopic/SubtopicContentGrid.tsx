@@ -69,14 +69,14 @@ export function SubtopicContentGrid({ content, tasks }: SubtopicContentGridProps
           Mastery Learning Roadmap
         </h2>
         <p className="text-lg font-bold text-slate-500 max-w-2xl mx-auto">
-          Complete all 10 modules to master this topic and earn up to 500 XP.
+          Click each card to complete all 10 modules, master this topic, and earn up to 500 XP.
         </p>
       </div>
 
       {/* 10-Card Roadmap Grid with Arrows */}
-      <div className="w-full space-y-16">
+      <div className="w-full space-y-24 px-12">
         {/* Row 1: First 5 Cards */}
-        <div className="flex items-center justify-center gap-6">
+        <div className="flex w-full items-center justify-between">
           {allCards.slice(0, 5).map((card, index) => (
             <React.Fragment key={card.id}>
               <div 
@@ -92,31 +92,31 @@ export function SubtopicContentGrid({ content, tasks }: SubtopicContentGridProps
                   else if (card.type === 'deep-dive') tab = 'technical-deep-dive';
                   window.location.href = `/start-learning/subtopic/notes?tab=${tab}`;
                 }}
-                className="group relative flex h-[160px] w-[160px] flex-shrink-0 flex-col items-center justify-center rounded-[36px] p-4 shadow-[0_12px_40px_rgba(0,0,0,0.08)] transition-all duration-500 hover:scale-105 hover:shadow-[0_25px_70px_rgba(0,0,0,0.12)] cursor-pointer overflow-hidden border-b-[4px] border-black/10"
+                className="group relative flex h-[192px] w-[192px] flex-shrink-0 flex-col items-center justify-center rounded-[44px] p-5 shadow-[0_12px_40px_rgba(0,0,0,0.08)] transition-all duration-500 hover:scale-105 hover:shadow-[0_25px_70px_rgba(0,0,0,0.12)] cursor-pointer overflow-hidden border-b-[4px] border-black/10"
                 style={{ backgroundColor: isTaskCard(card.type) ? getTaskBgColor(card.type) : getContentBgColor(card.type) }}
               >
                 <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
                 <div className="mb-2 flex h-10 w-10 items-center justify-center transition-transform duration-500 group-hover:scale-110">
-                  <div className="text-white scale-[1.6]">{getIcon(card.type, true)}</div>
+                  <div className="text-white scale-[1.9]">{getIcon(card.type, true)}</div>
                 </div>
-                <h3 className="mt-2 text-center text-[13px] font-black tracking-wide text-white transition-all duration-300">
+                <h3 className="mt-3 text-center text-[15px] font-black tracking-wide text-white transition-all duration-300">
                   {card.title}
                 </h3>
                 {isTaskCard(card.type) && (
-                  <div className="absolute top-4 right-4 rounded-full bg-black/20 px-2.5 py-1 text-[8px] font-black text-white backdrop-blur-md">
+                  <div className="absolute top-5 right-5 rounded-full bg-black/20 px-2.5 py-1 text-[9px] font-black text-white backdrop-blur-md">
                     {card.type === 'assignment' ? '+50 XP' : card.type === 'project' ? '+150 XP' : 'Task'}
                   </div>
                 )}
               </div>
               {index < 4 && (
-                <ArrowRight size={28} className="text-violet-300 flex-shrink-0" />
+                <ArrowRight size={32} className="text-violet-300 flex-shrink-0 mx-4 opacity-50" />
               )}
             </React.Fragment>
           ))}
         </div>
 
         {/* Row 2: Next 5 Cards */}
-        <div className="flex items-center justify-center gap-6">
+        <div className="flex w-full items-center justify-between">
           {allCards.slice(5, 10).map((card, index) => (
             <React.Fragment key={card.id}>
               <div 
@@ -132,24 +132,24 @@ export function SubtopicContentGrid({ content, tasks }: SubtopicContentGridProps
                   else if (card.type === 'deep-dive') tab = 'technical-deep-dive';
                   window.location.href = `/start-learning/subtopic/notes?tab=${tab}`;
                 }}
-                className="group relative flex h-[160px] w-[160px] flex-shrink-0 flex-col items-center justify-center rounded-[36px] p-4 shadow-[0_12px_40px_rgba(0,0,0,0.08)] transition-all duration-500 hover:scale-105 hover:shadow-[0_25px_70px_rgba(0,0,0,0.12)] cursor-pointer overflow-hidden border-b-[4px] border-black/10"
+                className="group relative flex h-[192px] w-[192px] flex-shrink-0 flex-col items-center justify-center rounded-[44px] p-5 shadow-[0_12px_40px_rgba(0,0,0,0.08)] transition-all duration-500 hover:scale-105 hover:shadow-[0_25px_70px_rgba(0,0,0,0.12)] cursor-pointer overflow-hidden border-b-[4px] border-black/10"
                 style={{ backgroundColor: isTaskCard(card.type) ? getTaskBgColor(card.type) : getContentBgColor(card.type) }}
               >
                 <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
                 <div className="mb-2 flex h-10 w-10 items-center justify-center transition-transform duration-500 group-hover:scale-110">
-                  <div className="text-white scale-[1.6]">{getIcon(card.type, true)}</div>
+                  <div className="text-white scale-[1.9]">{getIcon(card.type, true)}</div>
                 </div>
-                <h3 className="mt-2 text-center text-[13px] font-black tracking-wide text-white transition-all duration-300">
+                <h3 className="mt-3 text-center text-[15px] font-black tracking-wide text-white transition-all duration-300">
                   {card.title}
                 </h3>
                 {isTaskCard(card.type) && (
-                  <div className="absolute top-4 right-4 rounded-full bg-black/20 px-2.5 py-1 text-[8px] font-black text-white backdrop-blur-md">
+                  <div className="absolute top-5 right-5 rounded-full bg-black/20 px-2.5 py-1 text-[9px] font-black text-white backdrop-blur-md">
                     {card.type === 'assignment' ? '+50 XP' : card.type === 'project' ? '+150 XP' : 'Task'}
                   </div>
                 )}
               </div>
               {index < 4 && (
-                <ArrowRight size={28} className="text-violet-300 flex-shrink-0" />
+                <ArrowRight size={32} className="text-violet-300 flex-shrink-0 mx-4 opacity-50" />
               )}
             </React.Fragment>
           ))}
