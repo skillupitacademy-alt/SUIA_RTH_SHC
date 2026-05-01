@@ -74,9 +74,14 @@ export function SubtopicNotesPage({ data }: SubtopicNotesPageProps) {
           activeId={activeTab}
           onSelect={(id) => {
             if (id === 'overview') {
-              window.location.href = 'http://localhost:3003/start-learning/subtopic';
+              window.location.href = '/start-learning/subtopic';
               return;
             }
+            // Update URL query string without page reload
+            const url = new URL(window.location.href);
+            url.searchParams.set('tab', id);
+            window.history.pushState({}, '', url);
+            
             setActiveTab(id);
             setIsSidebarOpen(false);
           }}
