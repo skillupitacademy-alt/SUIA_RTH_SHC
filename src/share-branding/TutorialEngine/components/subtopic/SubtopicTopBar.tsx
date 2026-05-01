@@ -24,15 +24,15 @@ export function SubtopicTopBar({ data, isLeftOpen, isRightOpen, onToggleLeft, on
   const brand = useBrand();
 
   return (
-    <nav aria-label="Top navigation" className="sticky top-0 z-50 flex h-16 w-full items-center justify-between border-b border-gray-200 bg-white px-4 shadow-sm sm:px-6">
+    <nav aria-label="Top navigation" className="sticky top-0 z-50 flex h-16 w-full items-center justify-between bg-white px-4 shadow-sm sm:px-6">
       {/* Left: Branding & Breadcrumbs */}
       <div className="flex items-center gap-4">
         <button 
           onClick={onToggleLeft}
-          className="flex h-10 w-10 items-center justify-center rounded-xl text-gray-500 transition-colors hover:bg-slate-100 hover:text-gray-800"
+          className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900"
           aria-label={isLeftOpen ? 'Close curriculum sidebar' : 'Open curriculum sidebar'}
         >
-          <Menu size={20} />
+          <Menu size={20} aria-hidden="true" />
         </button>
         <div 
           className="flex h-10 w-10 items-center justify-center rounded-xl text-xl font-black text-white shadow-lg shadow-primary/20"
@@ -40,14 +40,14 @@ export function SubtopicTopBar({ data, isLeftOpen, isRightOpen, onToggleLeft, on
         >
           {brand.name.charAt(0)}
         </div>
-        <div className="hidden h-8 w-px bg-gray-200 sm:block"></div>
+        <div className="hidden h-8 w-px bg-slate-100 sm:block"></div>
         <div className="flex flex-col">
-          <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-gray-500">
+          <div className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-slate-700">
             <span>{data.courseLabel}</span>
-            <span className="text-gray-300">/</span>
-            <span className="text-gray-600">{data.lessonLabel}</span>
+            <span className="text-slate-500">/</span>
+            <span className="text-slate-900">{data.lessonLabel}</span>
           </div>
-          <div className="text-sm font-extrabold text-gray-800">{brand.name}</div>
+          <div className="text-sm font-black text-slate-900">{brand.name}</div>
         </div>
       </div>
 
@@ -55,13 +55,13 @@ export function SubtopicTopBar({ data, isLeftOpen, isRightOpen, onToggleLeft, on
       <div className="flex items-center gap-6">
         <Link 
           href="/dashboard"
-          className="flex items-center gap-2 rounded-full border border-gray-200 px-4 py-1.5 text-xs font-bold text-gray-600 transition-all hover:bg-gray-50 hover:border-gray-300"
+          className="flex items-center gap-2 rounded-full bg-slate-100 px-4 py-1.5 text-xs font-black text-slate-900 transition-all hover:bg-slate-200"
         >
-          <ChevronLeft size={14} />
+          <ChevronLeft size={14} aria-hidden="true" />
           {data.dashboardCtaLabel}
         </Link>
 
-        <div className="flex items-center gap-4 border-l border-gray-200 pl-6">
+        <div className="flex items-center gap-4 pl-6">
           {/* Streak */}
           <div className="flex items-center gap-1.5">
             <Flame size={18} fill="currentColor" style={{ color: brand.primaryColor }} />
@@ -70,7 +70,7 @@ export function SubtopicTopBar({ data, isLeftOpen, isRightOpen, onToggleLeft, on
 
           {/* XP */}
           <div className="flex flex-col items-end">
-            <span className="text-[10px] font-bold uppercase tracking-tighter text-gray-500 leading-none">Total XP</span>
+            <span className="text-[10px] font-black uppercase tracking-tighter text-slate-800 leading-none">Total XP</span>
             <span className="text-sm font-black text-primary leading-none" style={{ color: brand.primaryColor }}>
               {data.xpPoints.toLocaleString()}
             </span>
@@ -84,15 +84,15 @@ export function SubtopicTopBar({ data, isLeftOpen, isRightOpen, onToggleLeft, on
             {data.learnerInitials}
           </div>
 
-          <div className="h-6 w-px bg-gray-200 mx-2"></div>
+          <div className="h-6 w-px bg-slate-100 mx-2"></div>
 
           {/* Right Sidebar Toggle */}
           <button 
             onClick={onToggleRight}
-            className="flex h-10 w-10 items-center justify-center rounded-xl text-gray-500 transition-colors hover:bg-slate-100 hover:text-gray-800"
+            className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900"
             aria-label={isRightOpen ? 'Close stats sidebar' : 'Open stats sidebar'}
           >
-            {isRightOpen ? <PanelRightClose size={20} /> : <PanelRightOpen size={20} />}
+            {isRightOpen ? <PanelRightClose size={20} aria-hidden="true" /> : <PanelRightOpen size={20} aria-hidden="true" />}
           </button>
         </div>
       </div>

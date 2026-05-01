@@ -14,7 +14,7 @@ export function SubtopicTabs({ tabs, activeTab, onTabChange }: SubtopicTabsProps
   const brand = useBrand();
 
   return (
-    <div tabIndex={0} aria-label="Content sections" className="flex w-full items-center gap-1 overflow-x-auto pb-2 hide-scrollbar border-b border-gray-100 focus:outline-none">
+    <nav role="tablist" aria-label="Content sections" className="flex w-full items-center gap-1 overflow-x-auto pb-2 hide-scrollbar focus:outline-none">
       {tabs.map((tab) => {
         const IconComponent = (Icons as any)[tab.icon] || Icons.BookOpen;
         const isActive = activeTab === tab.id;
@@ -22,17 +22,20 @@ export function SubtopicTabs({ tabs, activeTab, onTabChange }: SubtopicTabsProps
         return (
           <button
             key={tab.id}
+            role="tab"
+            aria-selected={isActive}
             onClick={() => onTabChange(tab.id)}
-            className={`flex shrink-0 items-center gap-2 px-5 py-4 text-[13px] font-bold transition-all relative ${
+            className={`flex shrink-0 items-center gap-2 px-5 py-4 text-[13px] font-black transition-all relative ${
               isActive 
                 ? '' 
-                : 'text-slate-500 hover:text-slate-800'
+                : 'text-slate-700 hover:text-slate-900'
             }`}
             style={isActive ? { color: brand.primaryColor } : {}}
           >
             <IconComponent 
               size={16} 
-              className={isActive ? '' : 'text-slate-400'} 
+              className={isActive ? '' : 'text-slate-700'} 
+              aria-hidden="true"
             />
             <span>{tab.label}</span>
             {isActive && (
@@ -44,6 +47,6 @@ export function SubtopicTabs({ tabs, activeTab, onTabChange }: SubtopicTabsProps
           </button>
         );
       })}
-    </div>
+    </nav>
   );
 }

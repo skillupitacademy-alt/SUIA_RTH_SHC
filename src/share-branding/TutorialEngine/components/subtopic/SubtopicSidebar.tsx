@@ -36,7 +36,7 @@ export function SubtopicSidebar({ data, progress, isOpen, onToggle }: SubtopicSi
   const bgLight = hexToRgba(brand.primaryColor, 0.05);
 
   return (
-    <aside aria-label="Curriculum sidebar" className={`absolute bottom-0 left-0 top-0 z-40 flex w-[350px] flex-col border-r border-gray-200 bg-white transition-all duration-300 ${isOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full shadow-none'}`}>
+    <aside aria-label="Curriculum sidebar" className={`absolute bottom-0 left-0 top-0 z-40 flex w-[350px] flex-col bg-white transition-all duration-300 ${isOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full shadow-none'}`}>
       <div className="flex flex-col h-full">
         
         {/* Scrollable Content */}
@@ -44,15 +44,16 @@ export function SubtopicSidebar({ data, progress, isOpen, onToggle }: SubtopicSi
           
           {/* Back Button */}
           <button 
-            className="flex w-full items-center gap-2 rounded-xl px-4 py-3 text-sm font-bold transition-all hover:brightness-95"
+            className="flex w-full items-center gap-2 rounded-xl px-4 py-3 text-sm font-black transition-all hover:brightness-95"
             style={{ backgroundColor: bgLight, color: brand.primaryColorDark || brand.primaryColor }}
+            aria-label="Back to Course curriculum"
           >
-            <ArrowLeft size={16} />
+            <ArrowLeft size={16} aria-hidden="true" />
             Back to Course
           </button>
 
           {/* Progress Card */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xl transition-all duration-300 hover:-translate-y-1">
+          <div className="rounded-2xl bg-white p-5 transition-all duration-300 hover:-translate-y-1">
             <h2 className="mb-4 text-[13px] font-bold text-gray-800">Subtopic Progress</h2>
             <div className="flex items-center gap-4">
               <div className="relative flex h-[68px] w-[68px] shrink-0 items-center justify-center rounded-full">
@@ -68,8 +69,8 @@ export function SubtopicSidebar({ data, progress, isOpen, onToggle }: SubtopicSi
                 <span className="text-base font-black text-gray-800">{progress.percentage}%</span>
               </div>
               <div className="flex flex-1 flex-col">
-                <span className="text-[13px] font-bold text-gray-800">Great Progress!</span>
-                <span className="mb-2 text-xs font-medium text-gray-500">Keep it up 🚀</span>
+                <span className="text-[13px] font-black text-gray-800">Great Progress!</span>
+                <span className="mb-2 text-xs font-black text-slate-800">Keep it up 🚀</span>
                 <div className="h-2 w-full rounded-full bg-gray-100">
                   <div className="h-full rounded-full" style={{ width: `${progress.percentage}%`, backgroundColor: brand.primaryColor }} />
                 </div>
@@ -78,7 +79,7 @@ export function SubtopicSidebar({ data, progress, isOpen, onToggle }: SubtopicSi
           </div>
 
           {/* Curriculum List */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-2 shadow-xl transition-all duration-300 hover:-translate-y-1">
+          <div className="rounded-2xl bg-white p-2 transition-all duration-300 hover:-translate-y-1">
             <div className="px-3 pb-2 pt-3">
               <div className="text-[13px] font-bold text-gray-800">{data.subtopicsTitle}</div>
             </div>
@@ -97,12 +98,12 @@ export function SubtopicSidebar({ data, progress, isOpen, onToggle }: SubtopicSi
                   >
                     <div className="flex items-center gap-3">
                       <div className="flex w-5 items-center justify-center">
-                        {isActive ? (
-                          <Rocket size={16} style={{ color: brand.primaryColor }} />
+                         {isActive ? (
+                          <Rocket size={16} style={{ color: brand.primaryColor }} aria-hidden="true" />
                         ) : isCompleted ? (
-                          <CheckCircle2 size={16} className="text-emerald-700" />
+                          <CheckCircle2 size={16} className="text-emerald-900" aria-hidden="true" />
                         ) : (
-                          <Lock size={14} className="text-gray-300" />
+                          <Lock size={14} className="text-slate-700" aria-hidden="true" />
                         )}
                       </div>
                       <span 
@@ -114,8 +115,8 @@ export function SubtopicSidebar({ data, progress, isOpen, onToggle }: SubtopicSi
                     </div>
                     {/* Right side circle indicator */}
                     <div 
-                      className={`h-2.5 w-2.5 rounded-full border-2 ${isActive ? '' : 'border-gray-200'}`}
-                      style={isActive ? { borderColor: brand.primaryColor } : {}}
+                      className={`h-2.5 w-2.5 rounded-full ${isActive ? 'bg-current' : 'bg-slate-200'}`}
+                      style={isActive ? { color: brand.primaryColor } : {}}
                     />
                   </button>
                 );
@@ -126,22 +127,22 @@ export function SubtopicSidebar({ data, progress, isOpen, onToggle }: SubtopicSi
         </div>
 
         {/* Bottom Fixed Area */}
-        <div className="border-t border-gray-100 bg-white px-6 py-5 space-y-4">
+        <div className="bg-white px-6 py-5 space-y-4">
           <button 
-            className="flex w-full items-center justify-center gap-2 rounded-xl border-2 px-4 py-3 text-[13px] font-bold transition-all hover:brightness-95"
-            style={{ backgroundColor: bgLight, borderColor: bgLight, color: brand.primaryColorDark || brand.primaryColor }}
+            className="flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-[13px] font-bold transition-all hover:brightness-95"
+            style={{ backgroundColor: bgLight, color: brand.primaryColorDark || brand.primaryColor }}
           >
             <Download size={16} />
             Download Notes (PDF)
             <FileText size={16} className="ml-1" />
           </button>
 
-          <button className="flex w-full items-center gap-4 rounded-xl bg-[#F5F3FF] p-4 text-left transition-all hover:bg-[#EDE9FE]">
+          <button className="flex w-full items-center gap-4 rounded-xl bg-[#F5F3FF] p-4 text-left transition-all border border-violet-100 hover:bg-[#EDE9FE]" aria-label="Ask AI Tutor for help">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-[#6D28D9] shadow-sm">
-              <Bot size={20} />
+              <Bot size={20} aria-hidden="true" />
             </div>
             <div className="flex flex-col">
-              <span className="text-[11px] font-bold text-[#6D28D9]">Need Help?</span>
+              <span className="text-[11px] font-black text-[#6D28D9] uppercase tracking-widest">Need Help?</span>
               <span className="text-sm font-black text-[#4C1D95]">Ask AI Tutor</span>
             </div>
           </button>

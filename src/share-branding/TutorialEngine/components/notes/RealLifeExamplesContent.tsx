@@ -13,14 +13,14 @@ export function RealLifeExamplesContent({ data }: { data: SubtopicNotesViewData[
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="space-y-1">
-          <h1 className="text-4xl font-black text-[#1e293b] tracking-tight">{data.title}</h1>
-          <p className="text-[14px] font-medium text-slate-500">{data.intro}</p>
+          <h1 className="text-4xl font-bold text-[#1e293b] tracking-tight">{data.title}</h1>
+          <p className="text-[14px] font-medium text-slate-800">{data.intro}</p>
         </div>
         <div className="flex items-center gap-3">
-          <button className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 shadow-sm hover:bg-gray-50 transition-all active:scale-95" aria-label="Bookmark">
+          <button className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-slate-800 shadow-sm border border-slate-200 hover:bg-slate-50 transition-all active:scale-95" aria-label="Bookmark this section">
             <Icons.Bookmark size={18} aria-hidden="true" />
           </button>
-          <button className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm hover:bg-gray-50 transition-all active:scale-95">
+          <button className="flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-slate-900 shadow-sm border border-slate-200 hover:bg-slate-50 transition-all active:scale-95">
             <Icons.Share2 size={18} aria-hidden="true" /> Share
           </button>
         </div>
@@ -28,7 +28,7 @@ export function RealLifeExamplesContent({ data }: { data: SubtopicNotesViewData[
 
       {/* Hero Analogy Card */}
       <div 
-        className="relative overflow-hidden rounded-[40px] border p-8 md:p-10 shadow-xl transition-all duration-300 hover:-translate-y-1 border-slate-200" style={{ 
+        className="relative overflow-hidden rounded-[40px] p-8 md:p-10 shadow-xl transition-all duration-300 hover:-translate-y-1" style={{ 
           background: `linear-gradient(135deg, ${brand.primaryColor}08, ${brand.primaryColor}03)` 
         }}
       >
@@ -53,17 +53,17 @@ export function RealLifeExamplesContent({ data }: { data: SubtopicNotesViewData[
             >
               {data.hero.badge}
             </div>
-            <h2 className="text-3xl font-black text-slate-900 leading-tight">
+            <h2 className="text-3xl font-bold text-slate-900 leading-tight">
               {data.hero.title}
             </h2>
-            <p className="text-[15px] font-medium leading-relaxed text-slate-600">
+            <p className="text-[15px] font-medium leading-relaxed text-slate-800">
               {data.hero.description}
             </p>
-            <div className="flex items-center gap-3 rounded-2xl bg-white p-4 border border-slate-200 shadow-lg transition-all duration-300 hover:-translate-y-1">
+            <div className="flex items-center gap-3 rounded-2xl bg-white p-4 shadow-lg transition-all duration-300 hover:-translate-y-1">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: `${brand.primaryColor}15` }}>
                 <Icons.Lightbulb size={20} style={{ color: brand.primaryColor }} fill={`${brand.primaryColor}33`} aria-hidden="true" />
               </div>
-              <p className="text-[13px] font-bold italic" style={{ color: brand.primaryColor }}>
+              <p className="text-[13px] font-medium italic" style={{ color: brand.primaryColor }}>
                 {data.hero.highlight}
               </p>
             </div>
@@ -77,21 +77,21 @@ export function RealLifeExamplesContent({ data }: { data: SubtopicNotesViewData[
            <div className="p-1.5 rounded-lg" style={{ backgroundColor: `${brand.primaryColor}15` }}>
               <Icons.LayoutGrid size={18} style={{ color: brand.primaryColor }} aria-hidden="true" />
            </div>
-           <h2 className="text-xl font-black text-slate-900 tracking-tight">Real Life Scenarios</h2>
+           <h2 className="text-xl font-bold text-slate-900 tracking-tight">Real Life Scenarios</h2>
         </div>
-        <p className="text-sm font-medium text-slate-500">More everyday examples to make it crystal clear.</p>
+         <p className="text-sm font-medium text-slate-800">More everyday examples to make it crystal clear.</p>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {data.scenarios.map((item) => (
-            <div key={item.id} className="group flex flex-col rounded-3xl border border-slate-200 bg-white p-6 shadow-xl transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
+            <div key={item.id} className="group flex flex-col rounded-3xl bg-white p-6 shadow-xl transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
               <div 
                 className="mb-6 flex aspect-square items-center justify-center rounded-2xl bg-slate-50 p-4 transition-colors group-hover:bg-opacity-50"
                 style={{ backgroundColor: `${brand.primaryColor}05` } as any}
               >
                 <img src={item.image} alt={item.title} className="w-full h-full object-contain drop-shadow-lg" />
               </div>
-              <h3 className="mb-2 text-[15px] font-black text-slate-900">{item.title}</h3>
-              <p className="mb-6 flex-1 text-[12px] font-medium leading-relaxed text-slate-500">{item.description}</p>
+              <h3 className="mb-2 text-[15px] font-bold text-slate-900">{item.title}</h3>
+              <p className="mb-6 flex-1 text-[12px] font-medium leading-relaxed text-slate-800">{item.description}</p>
               <div className="text-[11px] font-black uppercase tracking-wider" style={{ color: brand.primaryColor }}>
                 {item.footer}
               </div>
@@ -102,12 +102,12 @@ export function RealLifeExamplesContent({ data }: { data: SubtopicNotesViewData[
 
       {/* Walkthrough Section */}
       <div 
-        className="rounded-[40px] p-10 border border-slate-200 shadow-xl transition-all duration-300 hover:-translate-y-1"
+        className="rounded-[40px] p-10 shadow-xl transition-all duration-300 hover:-translate-y-1"
         style={{ backgroundColor: `${brand.primaryColor}05` }}
       >
         <div className="mb-10 space-y-2">
-          <h2 className="text-2xl font-black text-slate-900">{data.walkthrough.title}</h2>
-          <p className="text-sm font-medium text-slate-500">Detailed example: {data.walkthrough.subtitle}</p>
+          <h2 className="text-2xl font-bold text-slate-900">{data.walkthrough.title}</h2>
+          <p className="text-sm font-medium text-slate-800">Detailed example: {data.walkthrough.subtitle}</p>
         </div>
 
         <div className="relative grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -121,10 +121,10 @@ export function RealLifeExamplesContent({ data }: { data: SubtopicNotesViewData[
                   </div>
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <span className="flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-black text-white" style={{ backgroundColor: brand.primaryColor }}>{i + 1}</span>
-                      <h3 className="text-sm font-black text-slate-900">{step.title}</h3>
+                      <span className="flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white" style={{ backgroundColor: brand.primaryColor }}>{i + 1}</span>
+                      <h3 className="text-sm font-bold text-slate-900">{step.title}</h3>
                     </div>
-                    <p className="text-[11px] font-medium leading-relaxed text-slate-500">
+                    <p className="text-[11px] font-medium leading-relaxed text-slate-800">
                       {step.description}
                     </p>
                   </div>
@@ -139,7 +139,7 @@ export function RealLifeExamplesContent({ data }: { data: SubtopicNotesViewData[
           })}
         </div>
 
-        <div className="mt-12 flex items-center gap-3 rounded-2xl p-4 border" style={{ backgroundColor: `${brand.primaryColor}11`, borderColor: `${brand.primaryColor}22` }}>
+        <div className="mt-12 flex items-center gap-3 rounded-2xl p-4 shadow-sm" style={{ backgroundColor: `${brand.primaryColor}11` }}>
           <Icons.Star size={20} style={{ color: brand.primaryColor }} fill={`${brand.primaryColor}33`} aria-hidden="true" />
           <p className="text-[13px] font-bold" style={{ color: brand.primaryColor }}>
             {data.walkthrough.footer}
@@ -149,23 +149,22 @@ export function RealLifeExamplesContent({ data }: { data: SubtopicNotesViewData[
 
       {/* Bottom Navigation */}
       <div className="flex items-center justify-between gap-4 pt-4 pb-10">
-        <button className="group flex flex-1 items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 text-left shadow-sm transition-all hover:bg-gray-50 active:scale-95">
+        <button className="group flex flex-1 items-center gap-4 rounded-2xl bg-white p-4 text-left shadow-sm transition-all border border-slate-100 hover:bg-slate-50 active:scale-95">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 group-hover:bg-white transition-colors">
-            <Icons.ArrowLeft size={18} className="text-slate-400 group-hover:text-slate-600" aria-hidden="true" />
+            <Icons.ArrowLeft size={18} className="text-slate-600 group-hover:text-slate-900" aria-hidden="true" />
           </div>
           <div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Previous</p>
-            <p className="text-sm font-black text-slate-700">Layman Explanation</p>
+            <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Previous</p>
+            <p className="text-sm font-bold text-slate-900">Layman Explanation</p>
           </div>
         </button>
 
-        <button className="hidden sm:flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-8 py-4 text-sm font-black text-slate-600 shadow-sm hover:bg-gray-50 transition-all active:scale-95">
+        <button className="hidden sm:flex items-center gap-2 rounded-2xl bg-white px-8 py-4 text-sm font-bold text-slate-800 shadow-sm border border-slate-200 hover:bg-slate-50 transition-all active:scale-95">
            <Icons.LayoutGrid size={18} aria-hidden="true" /> Back to Subtopic
         </button>
 
         <button className="group flex flex-1 items-center justify-between gap-4 rounded-2xl p-4 text-left shadow-xl transition-all hover:scale-[1.02] active:scale-95" style={{ background: `linear-gradient(135deg, ${brand.primaryColor}, ${brand.primaryColor}dd)` }}>
           <div className="text-white">
-            <p className="text-[10px] font-black text-white/60 uppercase tracking-widest">Next</p>
             <p className="text-sm font-black text-white">Technical Explanation</p>
           </div>
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20">

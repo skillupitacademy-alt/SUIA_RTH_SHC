@@ -11,45 +11,45 @@ export function NotesMainContent({ data, isStandalone = true }: { data: Subtopic
         
         {/* Breadcrumbs & Actions */}
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex flex-wrap items-center gap-2 text-sm font-bold text-gray-500">
+          <div className="flex flex-wrap items-center gap-2 text-sm font-bold text-slate-800">
             {data.breadcrumbs.map((crumb, index) => (
               <React.Fragment key={index}>
-                <button className={`text-sm font-bold ${index === data.breadcrumbs.length - 1 ? 'text-gray-900 cursor-default' : 'text-slate-500 hover:text-gray-900 transition-colors'}`} disabled={index === data.breadcrumbs.length - 1}>
+                <button className={`text-sm font-bold ${index === data.breadcrumbs.length - 1 ? 'text-slate-950 cursor-default' : 'text-slate-700 hover:text-slate-950 transition-colors'}`} disabled={index === data.breadcrumbs.length - 1}>
                   {crumb}
                 </button>
-                {index < data.breadcrumbs.length - 1 && <Icons.ChevronRight size={14} className="text-slate-500" />}
+                {index < data.breadcrumbs.length - 1 && <Icons.ChevronRight size={14} className="text-slate-800" aria-hidden="true" />}
               </React.Fragment>
             ))}
           </div>
           <div className="flex items-center gap-2">
-            <button className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-bold text-gray-600 shadow-sm transition-colors hover:bg-gray-50 hover:text-gray-900">
-              <Icons.ArrowLeft size={14} /> Previous
+            <button className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-bold text-slate-900 shadow-sm transition-colors hover:bg-slate-50 border border-slate-200">
+              <Icons.ArrowLeft size={14} aria-hidden="true" /> Previous
             </button>
-            <button className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-bold text-gray-600 shadow-sm transition-colors hover:bg-gray-50 hover:text-gray-900">
-              Next Subtopic <Icons.ArrowRight size={14} />
+            <button className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-bold text-slate-900 shadow-sm transition-colors hover:bg-slate-50 border border-slate-200">
+              Next Subtopic <Icons.ArrowRight size={14} aria-hidden="true" />
             </button>
-            <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white text-slate-600 shadow-sm hover:bg-gray-50" aria-label="Bookmark subtopic">
-              <Icons.Bookmark size={14} />
+            <button className="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-slate-900 shadow-sm hover:bg-slate-50 border border-slate-200" aria-label="Bookmark subtopic">
+              <Icons.Bookmark size={14} aria-hidden="true" />
             </button>
-            <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white text-slate-600 shadow-sm hover:bg-gray-50" aria-label="More options">
-              <Icons.MoreHorizontal size={14} />
+            <button className="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-slate-900 shadow-sm hover:bg-slate-50 border border-slate-200" aria-label="More options">
+              <Icons.MoreHorizontal size={14} aria-hidden="true" />
             </button>
           </div>
         </div>
 
         {/* Title & Meta */}
         <div className="space-y-4">
-          <h1 className="text-4xl font-black text-[#1e293b] tracking-tight">{data.title}</h1>
+          <h1 className="text-4xl font-bold text-slate-950 tracking-tight">{data.title}</h1>
           <div className="flex flex-wrap items-center justify-between gap-4 border-b border-gray-100 pb-6">
             <div className="flex items-center gap-4 text-xs font-bold">
-              <span className="flex items-center gap-1.5 text-slate-600">
-                <Icons.Clock size={14} /> {data.meta.readTime}
+              <span className="flex items-center gap-1.5 text-slate-900">
+                <Icons.Clock size={14} aria-hidden="true" /> {data.meta.readTime}
               </span>
-              <span className="flex items-center gap-1.5 text-amber-800 bg-amber-50 px-2.5 py-1 rounded-md border border-amber-100">
-                <Icons.BarChart2 size={14} /> {data.meta.level}
+              <span className="flex items-center gap-1.5 text-amber-950 bg-amber-100 px-2.5 py-1 rounded-md border border-amber-200">
+                <Icons.BarChart2 size={14} aria-hidden="true" /> {data.meta.level}
               </span>
-              <span className="flex items-center gap-1.5 text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-100">
-                <Icons.Star size={14} /> +{data.meta.xp} XP
+              <span className="flex items-center gap-1.5 text-emerald-950 bg-emerald-100 px-2.5 py-1 rounded-md border border-emerald-200">
+                <Icons.Star size={14} aria-hidden="true" /> +{data.meta.xp} XP
               </span>
             </div>
             <button 
@@ -62,14 +62,14 @@ export function NotesMainContent({ data, isStandalone = true }: { data: Subtopic
 
         {/* In Simple Words Box */}
         <div 
-          className="flex gap-4 rounded-xl p-5 border border-slate-200 shadow-xl transition-all duration-300 hover:-translate-y-1"
-          style={{ backgroundColor: `${brand.primaryColor}08` }}
+          className="flex gap-4 rounded-xl p-5 shadow-xl transition-all duration-300 hover:-translate-y-1"
+          style={{ backgroundColor: `${brand.primaryColor}15` }}
         >
           <div className="shrink-0 mt-0.5">
-            <Icons.Lightbulb size={20} className="text-primary-dark" />
+            <Icons.Lightbulb size={20} className="text-primary-dark" aria-hidden="true" />
           </div>
-          <p className="text-sm font-medium leading-relaxed text-gray-700">
-            <strong className="text-primary-dark">In Simple Words:</strong> {data.simpleWords}
+          <p className="text-sm font-medium leading-relaxed text-slate-800">
+            <strong className="text-primary-dark font-bold">In Simple Words:</strong> {data.simpleWords}
           </p>
         </div>
 
@@ -77,33 +77,33 @@ export function NotesMainContent({ data, isStandalone = true }: { data: Subtopic
         <div className="space-y-10">
           {data.sections.map((section) => (
             <section key={section.id} className="space-y-4">
-              <h2 className="text-xl font-black text-gray-900">{section.title}</h2>
-              <p className="text-[15px] font-medium leading-relaxed text-slate-700 whitespace-pre-wrap">
+              <h2 className="text-xl font-bold text-slate-950">{section.title}</h2>
+              <p className="text-[15px] font-medium leading-relaxed text-slate-800 whitespace-pre-wrap">
                 {section.content}
               </p>
               
               {section.keyPoint && (
-                <div className="flex gap-4 rounded-xl bg-amber-50 p-5 border border-slate-200 mt-6 shadow-xl transition-all duration-300 hover:-translate-y-1">
-                  <Icons.Star size={20} className="text-amber-600 shrink-0 mt-0.5" />
+                <div className="flex gap-4 rounded-xl bg-amber-100 p-5 mt-6 shadow-xl transition-all duration-300 hover:-translate-y-1 border border-amber-200">
+                  <Icons.Star size={20} className="text-amber-900 shrink-0 mt-0.5" aria-hidden="true" />
                   <div>
-                    <h3 className="text-[13px] font-bold text-amber-900 mb-1">Key Point</h3>
-                    <p className="text-[13px] font-medium text-amber-800">{section.keyPoint}</p>
+                    <h3 className="text-[13px] font-bold text-amber-950 mb-1">Key Point</h3>
+                    <p className="text-[13px] font-medium text-amber-950">{section.keyPoint}</p>
                   </div>
                 </div>
               )}
 
               {section.codeExample && (
                 <div className="mt-6 space-y-4">
-                  <div className="relative overflow-hidden rounded-xl bg-[#1e293b] p-5 shadow-xl border border-slate-200 transition-all duration-300 hover:-translate-y-1">
-                    <button className="absolute right-3 top-3 flex items-center gap-1.5 rounded-md bg-white/10 px-2.5 py-1 text-[11px] font-bold text-white hover:bg-white/20 transition-colors border border-white/10" aria-label="Copy code">
-                      <Icons.Copy size={12} /> Copy
+                  <div className="relative overflow-hidden rounded-xl bg-[#1e293b] p-5 shadow-xl transition-all duration-300 hover:-translate-y-1">
+                    <button className="absolute right-3 top-3 flex items-center gap-1.5 rounded-md bg-white/10 px-2.5 py-1 text-[11px] font-bold text-white hover:bg-white/20 transition-colors border border-white/10" aria-label="Copy code snippet">
+                      <Icons.Copy size={12} aria-hidden="true" /> Copy
                     </button>
-                    <pre className="text-[13px] leading-relaxed text-slate-300 font-mono overflow-x-auto">
+                    <pre className="text-[13px] leading-relaxed text-slate-200 font-mono overflow-x-auto">
                       <code>{section.codeExample.code}</code>
                     </pre>
                   </div>
-                  <div className="rounded-xl bg-blue-50/50 p-4 border border-blue-100">
-                    <p className="text-[13px] font-medium text-slate-700 font-mono whitespace-pre-wrap">
+                  <div className="rounded-xl bg-slate-100 p-4 border border-slate-200">
+                    <p className="text-[13px] font-medium text-slate-900 font-mono whitespace-pre-wrap">
                       {section.codeExample.output}
                     </p>
                   </div>
@@ -115,7 +115,7 @@ export function NotesMainContent({ data, isStandalone = true }: { data: Subtopic
         
         {/* Footer actions */}
         <div className="flex items-center justify-between border-t border-gray-100 pt-8 pb-10">
-           <button className="text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors">← Previous: Components & Props</button>
+           <button className="text-sm font-bold text-slate-800 hover:text-slate-950 transition-colors">← Previous: Components & Props</button>
            <button 
              className="rounded-xl px-6 py-3 text-sm font-bold text-white shadow-lg transition-transform hover:-translate-y-0.5 active:translate-y-0"
              style={{ backgroundColor: brand.primaryColor }}

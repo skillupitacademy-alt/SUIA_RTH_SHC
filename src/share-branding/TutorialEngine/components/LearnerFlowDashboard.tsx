@@ -22,7 +22,7 @@ export const LearnerFlowDashboard: React.FC<LearnerFlowDashboardProps> = ({ comp
   }));
 
   return (
-    <div className="w-full min-w-0 overflow-hidden rounded-lg border border-gray-200 bg-white p-4 shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_40px_rgba(0,0,0,0.12)] sm:p-6">
+    <div className="w-full min-w-0 overflow-hidden rounded-lg bg-white p-4 shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_40px_rgba(0,0,0,0.12)] sm:p-6">
       <div className="mb-6 flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 flex-1">
           <h2 className="mb-2 break-words text-2xl font-bold text-gray-800" style={{ fontFamily: 'Outfit, sans-serif', letterSpacing: '-0.04em' }}>
@@ -43,7 +43,7 @@ export const LearnerFlowDashboard: React.FC<LearnerFlowDashboardProps> = ({ comp
       </div>
 
       <div className="mb-6">
-        <div className="h-3 overflow-hidden rounded-full border border-gray-200 bg-gray-100">
+        <div className="h-3 overflow-hidden rounded-full bg-gray-100">
           <div className="h-full rounded-full transition-all duration-500" style={{ width: `${percentage}%`, background: brandConfig.primaryColor }} />
         </div>
       </div>
@@ -57,10 +57,10 @@ export const LearnerFlowDashboard: React.FC<LearnerFlowDashboardProps> = ({ comp
             <button
               key={tier.name}
               disabled={tier.status === 'locked'}
-              className={`w-full min-w-0 overflow-hidden rounded-lg border p-4 text-center transition-all duration-300 ${
+              className={`w-full min-w-0 overflow-hidden rounded-lg p-4 text-center transition-all duration-300 ${
                 tier.status === 'unlocked'
-                  ? 'cursor-pointer border-gray-200 bg-white shadow-[0_8px_20px_rgba(0,0,0,0.06)] hover:-translate-y-1 hover:shadow-[0_15px_30px_rgba(0,0,0,0.10)]'
-                  : 'cursor-not-allowed border-gray-200 bg-gray-50'
+                  ? 'cursor-pointer bg-white shadow-[0_8px_20px_rgba(0,0,0,0.06)] hover:-translate-y-1 hover:shadow-[0_15px_30px_rgba(0,0,0,0.10)]'
+                  : 'cursor-not-allowed bg-gray-50'
               }`}
             >
               <div className="flex min-w-0 flex-wrap items-center justify-center gap-2">

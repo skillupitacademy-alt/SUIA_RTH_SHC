@@ -23,6 +23,14 @@ export function SubtopicNotesPage({ data }: SubtopicNotesPageProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('notes');
+  
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tab = params.get('tab');
+      if (tab) setActiveTab(tab);
+    }
+  }, []);
 
   return (
     <div className="flex h-screen w-full flex-col overflow-hidden bg-[#F8FAFC]">
@@ -75,7 +83,14 @@ export function SubtopicNotesPage({ data }: SubtopicNotesPageProps) {
         />
 
         {/* Main Scrollable Content */}
-        <main className="flex-1 overflow-y-auto hide-scrollbar bg-white" tabIndex={0}>
+        <main 
+          className="flex-1 overflow-y-auto hide-scrollbar bg-white" 
+          tabIndex={0}
+          onClick={() => {
+            if (isSidebarOpen) setIsSidebarOpen(false);
+            if (isRightSidebarOpen) setIsRightSidebarOpen(false);
+          }}
+        >
           <div className="mx-auto w-full px-8 py-10 lg:px-12 xl:px-16">
             {activeTab === 'notes' && <NotesMainContent data={data.mainContent} isStandalone={false} />}
             {activeTab === 'layman' && <LaymanExplanationContent data={data.mainContent.laymanExplanation} />}

@@ -21,23 +21,23 @@ render(<UserDashboard />);`;
       {/* Header */}
       <div className="space-y-2">
         <div className="flex items-center gap-3">
-          <h1 className="text-4xl font-black text-[#1e293b] tracking-tight">Assignment</h1>
-          <span className="rounded-full bg-orange-100 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-orange-600 border border-orange-200">Practical</span>
+          <h1 className="text-4xl font-bold text-slate-950 tracking-tight">Assignment</h1>
+          <span className="rounded-full bg-orange-100 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-orange-950 border border-orange-200">Practical</span>
         </div>
-        <p className="text-[15px] font-medium text-slate-500">Apply what you've learned about Component Architecture by solving this real-world problem.</p>
+        <p className="text-[15px] font-medium text-slate-800">Apply what you've learned about Component Architecture by solving this real-world problem.</p>
       </div>
 
       {/* Problem Statement */}
-      <section className="rounded-[32px] bg-white p-10 shadow-xl relative overflow-hidden group border border-slate-200 transition-all duration-300 hover:-translate-y-1">
+      <section className="rounded-[32px] bg-white p-10 shadow-xl relative overflow-hidden group transition-all duration-300 hover:-translate-y-1">
         <div className="flex items-center gap-3 mb-6">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-50 text-rose-500">
-            <Icons.ClipboardList size={22} />
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-100 text-rose-950 border border-rose-200">
+            <Icons.ClipboardList size={22} aria-hidden="true" />
           </div>
-          <h2 className="text-xl font-black text-slate-800">Problem Statement</h2>
+          <h2 className="text-xl font-bold text-slate-900">Problem Statement</h2>
         </div>
         <div className="space-y-6">
-          <p className="text-[15px] font-bold text-slate-600 leading-relaxed">
-            Create a modular <span className="bg-rose-50 text-rose-600 px-2 py-0.5 rounded border border-rose-100 font-mono">UserDashboard</span> component that assembles multiple sub-components. The architecture should:
+          <p className="text-[15px] font-medium text-slate-800 leading-relaxed">
+            Create a modular <span className="bg-rose-100 text-rose-950 px-2 py-0.5 rounded border border-rose-200 font-mono">UserDashboard</span> component that assembles multiple sub-components. The architecture should:
           </p>
           <ul className="space-y-4 ml-6">
             {[
@@ -46,8 +46,8 @@ render(<UserDashboard />);`;
               'Contain a <ProfileCard /> component to display user details.',
               'Compose all three into a single cohesive layout.'
             ].map((item, i) => (
-              <li key={i} className="flex items-center gap-3 text-[14px] font-bold text-slate-500">
-                <div className="h-1.5 w-1.5 rounded-full bg-rose-500" />
+              <li key={i} className="flex items-center gap-3 text-[14px] font-medium text-slate-800">
+                <div className="h-1.5 w-1.5 rounded-full bg-rose-900" />
                 {item}
               </li>
             ))}
@@ -56,12 +56,12 @@ render(<UserDashboard />);`;
       </section>
 
       {/* Requirements */}
-      <section className="rounded-[32px] bg-white p-10 shadow-xl relative overflow-hidden group border border-slate-200 transition-all duration-300 hover:-translate-y-1">
+      <section className="rounded-[32px] bg-white p-10 shadow-xl relative overflow-hidden group transition-all duration-300 hover:-translate-y-1">
         <div className="flex items-center gap-3 mb-6">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-500">
-            <Icons.CheckCircle size={22} />
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-950 border border-indigo-200">
+            <Icons.CheckCircle size={22} aria-hidden="true" />
           </div>
-          <h2 className="text-xl font-black text-slate-800">Requirements</h2>
+          <h2 className="text-xl font-bold text-slate-900">Requirements</h2>
         </div>
         <ul className="space-y-5">
           {[
@@ -71,9 +71,9 @@ render(<UserDashboard />);`;
             'Maintain a clear parent-child relationship.',
             'Code must be clean and well-commented.'
           ].map((item, i) => (
-            <li key={i} className="flex items-center gap-4 text-[14px] font-bold text-slate-600">
-              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-50 text-indigo-600 border border-slate-200">
-                <Icons.Check size={14} strokeWidth={4} />
+            <li key={i} className="flex items-center gap-4 text-[14px] font-medium text-slate-700">
+              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-100 text-indigo-950 border border-indigo-200">
+                <Icons.Check size={14} strokeWidth={4} aria-hidden="true" />
               </div>
               {item}
             </li>
@@ -85,20 +85,20 @@ render(<UserDashboard />);`;
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
-                <Icons.Code2 size={18} />
-             </div>
-             <h2 className="text-lg font-black text-slate-800">Starter Code</h2>
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-emerald-950 border border-emerald-200">
+                 <Icons.Code2 size={18} aria-hidden="true" />
+              </div>
+              <h2 className="text-lg font-bold text-slate-900">Starter Code</h2>
           </div>
-          <button className="flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-[12px] font-black text-slate-600 shadow-sm hover:bg-gray-50 transition-all active:scale-95 border border-slate-200">
-             <Icons.Copy size={14} /> Copy Code
+          <button className="flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-[12px] font-bold text-slate-800 shadow-sm hover:bg-slate-50 transition-all active:scale-95 border border-slate-200" aria-label="Copy starter code to clipboard">
+             <Icons.Copy size={14} aria-hidden="true" /> Copy Code
           </button>
         </div>
         
         <div className="rounded-[24px] overflow-hidden bg-[#0f172a] shadow-2xl border border-slate-200">
           <div className="relative group min-h-[300px]">
              {/* Line Numbers */}
-             <div className="absolute left-0 top-0 bottom-0 w-12 bg-slate-900/50 border-r border-slate-800/50 flex flex-col items-center py-6 text-[12px] font-mono text-slate-600 select-none">
+             <div className="absolute left-0 top-0 bottom-0 w-12 bg-slate-900/50 border-r border-slate-800/50 flex flex-col items-center py-6 text-[12px] font-mono text-slate-400 select-none">
                 {Array.from({ length: 12 }).map((_, i) => (
                   <div key={i} className="h-6 leading-6">{i + 1}</div>
                 ))}
@@ -113,9 +113,9 @@ render(<UserDashboard />);`;
                 <pre className="text-indigo-100">
                    {starterCode.split('\n').map((line, i) => (
                      <div key={i} className="h-6 whitespace-pre">
-                       {line.includes('//') ? <span className="text-emerald-500/60 italic">{line}</span> : 
-                        line.includes('function') ? <span className="text-pink-400">function </span> :
-                        line.includes('render') ? <span className="text-amber-400">{line}</span> :
+                       {line.includes('//') ? <span className="text-emerald-300 italic">{line}</span> : 
+                        line.includes('function') ? <span className="text-pink-300">function </span> :
+                        line.includes('render') ? <span className="text-amber-300">{line}</span> :
                         line}
                      </div>
                    ))}
@@ -126,13 +126,13 @@ render(<UserDashboard />);`;
       </section>
 
       {/* Submission Guidelines */}
-      <section className="rounded-[32px] bg-sky-50/30 p-10 flex items-center justify-between gap-10 relative overflow-hidden group border border-slate-200 shadow-xl transition-all duration-300 hover:-translate-y-1">
+      <section className="rounded-[32px] bg-sky-50/30 p-10 flex items-center justify-between gap-10 relative overflow-hidden group shadow-xl transition-all duration-300 hover:-translate-y-1">
          <div className="space-y-6 relative z-10 lg:max-w-xl">
             <div className="flex items-center gap-3">
-               <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-100 text-sky-600">
-                  <Icons.Info size={22} />
+               <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-100 text-sky-950 border border-sky-200">
+                  <Icons.Info size={22} aria-hidden="true" />
                </div>
-               <h2 className="text-xl font-black text-slate-800">Submission Guidelines</h2>
+               <h2 className="text-xl font-bold text-slate-900">Submission Guidelines</h2>
             </div>
             <ul className="space-y-4">
                {[
@@ -140,8 +140,8 @@ render(<UserDashboard />);`;
                  'Do not modify the render call at the bottom.',
                  'Test your code structure before submitting.'
                ].map((item, i) => (
-                 <li key={i} className="flex items-center gap-3 text-[14px] font-bold text-slate-600">
-                    <div className="h-1.5 w-1.5 rounded-full bg-sky-500" />
+                 <li key={i} className="flex items-center gap-3 text-[14px] font-medium text-slate-800">
+                    <div className="h-1.5 w-1.5 rounded-full bg-sky-950" />
                     {item}
                  </li>
                ))}
@@ -163,15 +163,15 @@ render(<UserDashboard />);`;
       <div className="flex items-center justify-between gap-4 pt-10">
         <button className="group flex flex-1 items-center gap-4 rounded-2xl bg-white p-4 shadow-sm hover:bg-slate-50 transition-all active:scale-95 text-left border border-slate-200">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 group-hover:bg-white transition-colors">
-            <Icons.ArrowLeft size={18} className="text-slate-400 group-hover:text-slate-600" aria-hidden="true" />
+            <Icons.ArrowLeft size={18} className="text-slate-700 group-hover:text-slate-950" aria-hidden="true" />
           </div>
           <div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Previous</p>
-            <p className="text-sm font-black text-slate-800">Code Example</p>
+            <p className="text-[10px] font-bold text-slate-700 uppercase tracking-widest">Previous</p>
+            <p className="text-sm font-bold text-slate-900">Code Example</p>
           </div>
         </button>
 
-        <button className="hidden sm:flex items-center gap-2 rounded-2xl bg-white px-8 py-4 text-sm font-black text-slate-600 shadow-sm hover:bg-slate-50 transition-all active:scale-95 border border-slate-200">
+        <button className="hidden sm:flex items-center gap-2 rounded-2xl bg-white px-8 py-4 text-sm font-bold text-slate-800 shadow-sm hover:bg-slate-50 transition-all active:scale-95 border border-slate-200">
            <Icons.LayoutGrid size={18} aria-hidden="true" /> Back to Subtopic
         </button>
 
@@ -181,7 +181,7 @@ render(<UserDashboard />);`;
           style={{ background: `linear-gradient(135deg, ${brand.primaryColor}, ${brand.primaryColor}dd)` }}
         >
           <div>
-            <p className="text-[10px] font-black text-white/60 uppercase tracking-widest">Next</p>
+            <p className="text-[10px] font-black text-white/90 uppercase tracking-widest">Next</p>
             <p className="text-sm font-black">AI Tutor</p>
           </div>
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20">

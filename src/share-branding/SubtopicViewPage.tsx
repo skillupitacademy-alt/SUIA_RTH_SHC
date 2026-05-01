@@ -18,8 +18,8 @@ interface SubtopicViewPageProps {
 export function SubtopicViewPage({ data }: SubtopicViewPageProps) {
   const brand = useBrand();
   const [activeTab, setActiveTab] = useState(data.subtopic.tabs[0].id);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
 
   return (
     <div className="flex h-screen w-full flex-col overflow-hidden bg-[#F8FAFC]">
@@ -60,16 +60,23 @@ export function SubtopicViewPage({ data }: SubtopicViewPageProps) {
         />
 
         {/* Main Scrollable Content */}
-        <main tabIndex={0} className="flex-1 overflow-y-auto hide-scrollbar bg-slate-50/30 focus:outline-none">
+        <main 
+          tabIndex={0} 
+          className="flex-1 overflow-y-auto hide-scrollbar bg-slate-50/30 focus:outline-none"
+          onClick={() => {
+            if (isSidebarOpen) setIsSidebarOpen(false);
+            if (isRightSidebarOpen) setIsRightSidebarOpen(false);
+          }}
+        >
           <div className="mx-auto w-full max-w-[1600px] px-8 py-10 space-y-10 transition-all duration-500">
             {/* Breadcrumbs */}
-            <div className="flex items-center gap-2 text-sm font-bold text-gray-500">
-              <span className="hover:text-[#1e293b] cursor-pointer transition-colors">Home</span>
-              <ChevronRight size={16} className="text-gray-400" />
-              <span className="hover:text-[#1e293b] cursor-pointer transition-colors">JavaScript</span>
-              <ChevronRight size={16} className="text-gray-400" />
-              <span className="text-primary-dark">Component Architecture</span>
-            </div>
+            <nav aria-label="Breadcrumbs" className="flex items-center gap-2 text-sm font-bold text-slate-600">
+              <span className="hover:text-slate-900 cursor-pointer transition-colors">Home</span>
+              <ChevronRight size={16} className="text-slate-400" />
+              <span className="hover:text-slate-900 cursor-pointer transition-colors">JavaScript</span>
+              <ChevronRight size={16} className="text-slate-400" />
+              <span className="text-primary-dark font-black">Component Architecture</span>
+            </nav>
 
             {/* Header Section */}
             <SubtopicHeader data={{
@@ -95,27 +102,28 @@ export function SubtopicViewPage({ data }: SubtopicViewPageProps) {
                   tasks={data.subtopic.tasks}
                 />
               ) : (
-                <div className="flex h-64 flex-col items-center justify-center rounded-3xl border-2 border-dashed border-gray-200 bg-white/50">
-                  <p className="text-[13px] font-bold text-gray-500">Content for {activeTab} coming soon...</p>
+                <div className="flex h-64 flex-col items-center justify-center rounded-3xl bg-white/50">
+                  <h2 className="sr-only">Additional Content</h2>
+                  <p className="text-[13px] font-bold text-slate-600">Content for {activeTab} coming soon...</p>
                 </div>
               )}
             </div>
 
             {/* Bottom Navigation */}
-            <div className="mt-12 flex items-center justify-between border-t border-gray-200 pt-8 pb-12">
-              <button className="flex flex-col items-start gap-1 group">
-                <span className="text-[13px] font-medium text-gray-500 uppercase tracking-wider">Previous</span>
-                <span className="text-[13px] font-bold text-gray-800 hover-text-primary transition-colors">
+            <nav aria-label="Topic navigation" className="mt-12 flex items-center justify-between pt-8 pb-12">
+              <button className="flex flex-col items-start gap-1 group" aria-label={`Previous topic: ${data.subtopic.navigation.prev.title}`}>
+                <span className="text-[13px] font-bold text-slate-600 uppercase tracking-wider">Previous</span>
+                <span className="text-[13px] font-black text-slate-800 hover-text-primary transition-colors">
                   {data.subtopic.navigation.prev.title}
                 </span>
               </button>
-              <button className="flex flex-col items-end gap-1 group">
-                <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Next Topic</span>
-                <span className="text-sm font-bold text-gray-800 hover-text-primary transition-colors">
+              <button className="flex flex-col items-end gap-1 group" aria-label={`Next topic: ${data.subtopic.navigation.next.title}`}>
+                <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">Next Topic</span>
+                <span className="text-sm font-black text-slate-800 hover-text-primary transition-colors">
                   {data.subtopic.navigation.next.title}
                 </span>
               </button>
-            </div>
+            </nav>
           </div>
         </main>
 

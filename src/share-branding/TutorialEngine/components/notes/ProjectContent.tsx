@@ -35,65 +35,65 @@ export function ProjectContent({ onNext }: { onNext?: () => void }) {
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
       {/* Header & Breadcrumbs */}
       <div className="space-y-4">
-        <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
-           <span>JavaScript</span> <Icons.ChevronRight size={10} /> <span>Asynchronous JavaScript</span> <Icons.ChevronRight size={10} /> <span>Promises</span> <Icons.ChevronRight size={10} /> <span className="text-slate-600">2.9 Project</span>
+        <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-700">
+           <span>JavaScript</span> <Icons.ChevronRight size={10} aria-hidden="true" /> <span>Asynchronous JavaScript</span> <Icons.ChevronRight size={10} aria-hidden="true" /> <span>Promises</span> <Icons.ChevronRight size={10} aria-hidden="true" /> <span className="text-slate-950">2.9 Project</span>
         </div>
         
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-3">
-              <h1 className="text-4xl font-black text-[#1e293b] tracking-tight">Project: User Management Dashboard</h1>
-              <div className="rounded-full bg-orange-100 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-orange-600 border border-slate-200">Intermediate</div>
+              <h1 className="text-4xl font-bold text-slate-950 tracking-tight">Project: User Management Dashboard</h1>
+              <div className="rounded-full bg-orange-100 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-orange-950 border border-orange-200">Intermediate</div>
             </div>
-            <p className="text-[15px] font-medium text-slate-500">Build a user management dashboard that fetches and manages users using Promises and async/await.</p>
+            <p className="text-[15px] font-medium text-slate-800">Build a user management dashboard that fetches and manages users using Promises and async/await.</p>
           </div>
           
           <div className="flex items-center gap-6">
-             <div className="flex items-center gap-2 text-slate-400">
-                <Icons.Clock size={18} />
-                <span className="text-sm font-black text-slate-600">5-7 hrs</span>
+             <div className="flex items-center gap-2 text-slate-800">
+                <Icons.Clock size={18} aria-hidden="true" />
+                <span className="text-sm font-bold text-slate-950">5-7 hrs</span>
              </div>
-             <div className="flex items-center gap-2 text-rose-500">
-                <Icons.Star size={18} fill="currentColor" />
-                <span className="text-sm font-black">+400 XP</span>
+             <div className="flex items-center gap-2 text-rose-950">
+                <Icons.Star size={18} fill="currentColor" aria-hidden="true" />
+                <span className="text-sm font-bold">+400 XP</span>
              </div>
           </div>
         </div>
       </div>
 
       {/* Project Overview Banner */}
-      <section className="rounded-[40px] bg-gradient-to-br from-rose-50 to-orange-50 p-10 relative overflow-hidden group border border-slate-200 shadow-xl transition-all duration-300 hover:-translate-y-1">
+      <section className="rounded-[40px] bg-gradient-to-br from-rose-50 to-orange-50 p-10 relative overflow-hidden group shadow-xl transition-all duration-300 hover:-translate-y-1">
          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
             <div className="lg:col-span-7 space-y-8 relative z-10">
                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white shadow-sm text-rose-500">
-                     <Icons.ClipboardList size={22} />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white shadow-sm text-rose-950 border border-rose-100">
+                     <Icons.ClipboardList size={22} aria-hidden="true" />
                   </div>
-                  <h2 className="text-xl font-black text-slate-800 tracking-tight">Project Overview</h2>
+                  <h2 className="text-xl font-bold text-slate-950 tracking-tight">Project Overview</h2>
                </div>
-               <p className="text-[16px] font-medium leading-relaxed text-slate-600">
+               <p className="text-[16px] font-medium leading-relaxed text-slate-800">
                   You will build a fully functional User Management Dashboard that interacts with a mock REST API. This project will help you apply Promises, async/await, error handling, and DOM manipulation in a real-world scenario.
                </p>
                
                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-                  <div className="rounded-2xl bg-white p-5 shadow-sm space-y-3 border border-slate-200">
-                     <div className="flex items-center gap-2 text-rose-500">
-                        <Icons.Globe size={18} />
-                        <span className="text-xs font-black uppercase tracking-widest">Real-world Use</span>
-                     </div>
-                     <p className="text-[11px] font-bold text-slate-500">Admin dashboards, CRM systems, user panels</p>
-                  </div>
-                  <div className="rounded-2xl bg-white p-5 shadow-sm space-y-3 border border-slate-200">
-                     <div className="flex items-center gap-2 text-orange-500">
-                        <Icons.Code2 size={18} />
-                        <span className="text-xs font-black uppercase tracking-widest">Skills You'll Use</span>
-                     </div>
-                     <div className="flex flex-wrap gap-1.5">
-                        {['Promises', 'async/await', 'Fetch API', 'Error Handling', 'DOM', 'JSON'].map(s => (
-                           <span key={s} className="px-2 py-0.5 rounded-md bg-slate-50 text-[9px] font-black text-slate-500 uppercase">{s}</span>
-                        ))}
-                     </div>
-                  </div>
+                    <div className="rounded-2xl bg-white p-5 shadow-sm space-y-3 border border-slate-200">
+                       <div className="flex items-center gap-2 text-rose-950">
+                          <Icons.Globe size={18} aria-hidden="true" />
+                          <span className="text-xs font-bold uppercase tracking-widest">Real-world Use</span>
+                       </div>
+                       <p className="text-[11px] font-bold text-slate-800">Admin dashboards, CRM systems, user panels</p>
+                    </div>
+                    <div className="rounded-2xl bg-white p-5 shadow-sm space-y-3 border border-slate-200">
+                       <div className="flex items-center gap-2 text-orange-950">
+                          <Icons.Code2 size={18} aria-hidden="true" />
+                          <span className="text-xs font-bold uppercase tracking-widest">Skills You'll Use</span>
+                       </div>
+                       <div className="flex flex-wrap gap-1.5">
+                          {['Promises', 'async/await', 'Fetch API', 'Error Handling', 'DOM', 'JSON'].map(s => (
+                             <span key={s} className="px-2 py-0.5 rounded-md bg-slate-100 text-[9px] font-bold text-slate-800 uppercase border border-slate-200">{s}</span>
+                          ))}
+                       </div>
+                    </div>
                </div>
             </div>
             
@@ -118,7 +118,7 @@ export function ProjectContent({ onNext }: { onNext?: () => void }) {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 px-6 py-4 text-sm font-black transition-all relative whitespace-nowrap ${activeTab === tab.id ? 'text-slate-900' : 'text-slate-400 hover:text-slate-600'}`}
+            className={`flex items-center gap-2 px-6 py-4 text-sm font-bold transition-all relative whitespace-nowrap ${activeTab === tab.id ? 'text-slate-950' : 'text-slate-600 hover:text-slate-950'}`}
           >
             {tab.icon}
             {tab.label}
@@ -132,57 +132,57 @@ export function ProjectContent({ onNext }: { onNext?: () => void }) {
       {/* Tab Content */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
          <div className="lg:col-span-7 space-y-8">
-            <div className="rounded-[32px] bg-white p-10 shadow-xl border border-slate-200 space-y-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
+            <div className="rounded-[32px] bg-white p-10 shadow-xl space-y-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-50 text-slate-800">
-                     <Icons.Layers size={22} />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-50 text-slate-900 border border-slate-100">
+                     <Icons.Layers size={22} aria-hidden="true" />
                   </div>
-                  <h2 className="text-xl font-black text-slate-800 tracking-tight">What You Need To Build</h2>
+                  <h2 className="text-xl font-bold text-slate-950 tracking-tight">What You Need To Build</h2>
                </div>
                <ul className="space-y-6">
-                  {buildItems.map((item, i) => (
+                   {buildItems.map((item, i) => (
                     <li key={i} className="flex items-start gap-4">
-                       <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-rose-500 text-white shadow-sm shadow-rose-200">
-                          <Icons.Check size={12} strokeWidth={4} />
+                       <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-rose-950 text-white shadow-sm">
+                          <Icons.Check size={12} strokeWidth={4} aria-hidden="true" />
                        </div>
-                       <p className="text-[14px] font-bold text-slate-600 leading-tight">{item}</p>
+                       <p className="text-[14px] font-medium text-slate-900 leading-tight">{item}</p>
                     </li>
                   ))}
                </ul>
             </div>
             
             {/* Starter Template */}
-            <div className="rounded-[24px] bg-slate-50 p-6 flex items-center justify-between gap-6 border border-slate-200 shadow-xl transition-all duration-300 hover:-translate-y-1">
+            <div className="rounded-[24px] bg-slate-50 p-6 flex items-center justify-between gap-6 shadow-xl transition-all duration-300 hover:-translate-y-1">
                <div className="flex items-center gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-sm text-orange-500">
-                     <Icons.Code2 size={24} />
+                   <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-sm text-orange-950 border border-orange-100">
+                     <Icons.Code2 size={24} aria-hidden="true" />
                   </div>
                   <div>
-                     <h4 className="text-sm font-black text-slate-800">Starter Template</h4>
-                     <p className="text-[12px] font-medium text-slate-500">Get started with a boilerplate code.</p>
+                     <h4 className="text-sm font-bold text-slate-950">Starter Template</h4>
+                     <p className="text-[12px] font-medium text-slate-800">Get started with a boilerplate code.</p>
                   </div>
                </div>
-               <button className="flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-xs font-black text-slate-700 shadow-sm hover:bg-slate-50 transition-all border border-slate-200">
-                  <Icons.Download size={16} /> Download Starter
-               </button>
+                <button className="flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-xs font-bold text-slate-800 shadow-sm hover:bg-slate-50 transition-all border border-slate-200">
+                   <Icons.Download size={16} aria-hidden="true" /> Download Starter
+                </button>
             </div>
          </div>
          
          <div className="lg:col-span-5 space-y-8">
-            <div className="rounded-[32px] bg-white p-10 shadow-xl border border-slate-200 space-y-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
+            <div className="rounded-[32px] bg-white p-10 shadow-xl space-y-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-50 text-rose-500">
-                     <Icons.Gift size={22} />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-100 text-rose-950 border border-rose-200">
+                     <Icons.Gift size={22} aria-hidden="true" />
                   </div>
-                  <h2 className="text-xl font-black text-slate-800 tracking-tight">Deliverables</h2>
+                  <h2 className="text-xl font-bold text-slate-950 tracking-tight">Deliverables</h2>
                </div>
                <ul className="space-y-5">
-                  {deliverableItems.map((item, i) => (
+                   {deliverableItems.map((item, i) => (
                     <li key={i} className="flex items-center gap-4">
-                       <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-50 text-slate-400 border border-slate-200">
-                          <Icons.Check size={14} />
+                       <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-950 border border-emerald-200">
+                          <Icons.Check size={14} aria-hidden="true" />
                        </div>
-                       <p className="text-[13px] font-bold text-slate-600 leading-tight">{item}</p>
+                       <p className="text-[13px] font-medium text-slate-800 leading-tight">{item}</p>
                     </li>
                   ))}
                </ul>
@@ -192,17 +192,17 @@ export function ProjectContent({ onNext }: { onNext?: () => void }) {
 
       {/* Footer Navigation */}
       <div className="flex items-center justify-between gap-4 pt-10">
-        <button className="group flex flex-1 items-center gap-4 rounded-2xl bg-white p-4 shadow-sm hover:bg-slate-50 transition-all active:scale-95 text-left border border-slate-200">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 group-hover:bg-white transition-colors">
-            <Icons.ArrowLeft size={18} className="text-slate-400 group-hover:text-slate-600" aria-hidden="true" />
+        <button className="group flex flex-1 items-center gap-4 rounded-2xl bg-white p-4 shadow-sm border border-slate-100 hover:bg-slate-50 transition-all active:scale-95 text-left border border-slate-200">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 group-hover:bg-white transition-colors border border-slate-100">
+            <Icons.ArrowLeft size={18} className="text-slate-700 group-hover:text-slate-950" aria-hidden="true" />
           </div>
           <div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Previous</p>
-            <p className="text-sm font-black text-slate-800">Assignment</p>
+            <p className="text-[10px] font-bold text-slate-800 uppercase tracking-widest">Previous</p>
+            <p className="text-sm font-black text-slate-900">Assignment</p>
           </div>
         </button>
 
-        <button className="hidden sm:flex items-center gap-2 rounded-2xl bg-white px-8 py-4 text-sm font-black text-slate-600 shadow-sm hover:bg-slate-50 transition-all active:scale-95 border border-slate-200">
+        <button className="hidden sm:flex items-center gap-2 rounded-2xl bg-white px-8 py-4 text-sm font-black text-slate-800 shadow-sm border border-slate-100 hover:bg-slate-50 transition-all active:scale-95 border border-slate-200">
            <Icons.LayoutGrid size={18} aria-hidden="true" /> Back to Subtopic
         </button>
 
@@ -212,7 +212,7 @@ export function ProjectContent({ onNext }: { onNext?: () => void }) {
           style={{ background: `linear-gradient(135deg, ${brand.primaryColor}, ${brand.primaryColor}dd)` }}
         >
           <div>
-            <p className="text-[10px] font-black text-white/60 uppercase tracking-widest">Next</p>
+            <p className="text-[10px] font-black text-white/90 uppercase tracking-widest">Next</p>
             <p className="text-sm font-black">AI Tutor</p>
           </div>
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20">

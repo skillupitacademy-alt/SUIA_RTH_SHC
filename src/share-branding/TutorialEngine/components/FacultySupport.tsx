@@ -34,17 +34,17 @@ export const FacultySupport: React.FC = () => {
   const getProjectStatusColor = (status: 'open' | 'locked' | 'submitted') => {
     switch (status) {
       case 'submitted':
-        return 'border-emerald-300 bg-emerald-100 text-emerald-800';
+        return 'bg-emerald-100 text-emerald-800';
       case 'locked':
-        return 'border-gray-300 bg-gray-100 text-gray-700';
+        return 'bg-gray-100 text-gray-700';
       case 'open':
-        return 'border-blue-300 bg-blue-100 text-blue-900';
+        return 'bg-blue-100 text-blue-900';
     }
   };
 
   return (
     <div className="w-full max-w-full min-w-0 space-y-6 overflow-x-hidden">
-      <div id="live-session" className="w-full min-w-0 overflow-hidden rounded-lg border border-gray-200 bg-white p-4 shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_25px_50px_rgba(0,0,0,0.12)] sm:p-6">
+      <div id="live-session" className="w-full min-w-0 overflow-hidden rounded-lg bg-white p-4 shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_25px_50px_rgba(0,0,0,0.12)] sm:p-6">
         <div className="mb-6 flex min-w-0 items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center rounded-lg" style={{ background: brandConfig.primaryColor }}>
             <Video className="h-6 w-6 text-white" />
@@ -71,10 +71,10 @@ export const FacultySupport: React.FC = () => {
                 value={sessionRequest.topic}
                 onChange={(e) => setSessionRequest({ ...sessionRequest, topic: e.target.value })}
                 placeholder={data.facultySupport.topicPlaceholder}
-                className="w-full rounded-lg border border-gray-200 bg-white p-3 outline-none transition-colors"
-                style={{ fontFamily: 'Inter, sans-serif', borderColor: 'rgb(229 231 235)' }}
-                onFocus={(e) => (e.target.style.borderColor = brandConfig.primaryColor)}
-                onBlur={(e) => (e.target.style.borderColor = 'rgb(229 231 235)')}
+                className="w-full rounded-lg bg-white p-3 outline-none transition-colors shadow-sm"
+                style={{ fontFamily: 'Inter, sans-serif' }}
+                onFocus={(e) => (e.target.style.boxShadow = `0 0 0 2px ${brandConfig.primaryColor}33`)}
+                onBlur={(e) => (e.target.style.boxShadow = 'none')}
               />
             </div>
 
@@ -90,10 +90,10 @@ export const FacultySupport: React.FC = () => {
                   aria-label="Preferred time for live session"
                   value={sessionRequest.preferredTime}
                   onChange={(e) => setSessionRequest({ ...sessionRequest, preferredTime: e.target.value })}
-                  className="w-full min-w-0 flex-1 rounded-lg border border-gray-200 bg-white p-3 outline-none transition-colors"
-                  style={{ fontFamily: 'Inter, sans-serif', borderColor: 'rgb(229 231 235)' }}
-                  onFocus={(e) => (e.target.style.borderColor = brandConfig.primaryColor)}
-                  onBlur={(e) => (e.target.style.borderColor = 'rgb(229 231 235)')}
+                  className="w-full min-w-0 flex-1 rounded-lg bg-white p-3 outline-none transition-colors shadow-sm"
+                  style={{ fontFamily: 'Inter, sans-serif' }}
+                  onFocus={(e) => (e.target.style.boxShadow = `0 0 0 2px ${brandConfig.primaryColor}33`)}
+                  onBlur={(e) => (e.target.style.boxShadow = 'none')}
                 />
               </div>
             </div>
@@ -108,10 +108,10 @@ export const FacultySupport: React.FC = () => {
                 onChange={(e) => setSessionRequest({ ...sessionRequest, description: e.target.value })}
                 placeholder={data.facultySupport.detailPlaceholder}
                 rows={3}
-                className="w-full resize-none rounded-lg border border-gray-200 bg-white p-3 outline-none transition-colors"
-                style={{ fontFamily: 'Inter, sans-serif', borderColor: 'rgb(229 231 235)' }}
-                onFocus={(e) => (e.target.style.borderColor = brandConfig.primaryColor)}
-                onBlur={(e) => (e.target.style.borderColor = 'rgb(229 231 235)')}
+                className="w-full resize-none rounded-lg bg-white p-3 outline-none transition-colors shadow-sm"
+                style={{ fontFamily: 'Inter, sans-serif' }}
+                onFocus={(e) => (e.target.style.boxShadow = `0 0 0 2px ${brandConfig.primaryColor}33`)}
+                onBlur={(e) => (e.target.style.boxShadow = 'none')}
               />
             </div>
 
@@ -131,7 +131,7 @@ export const FacultySupport: React.FC = () => {
         )}
 
         {sessionStatus === 'scheduled' && (
-          <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-6 text-center">
+          <div className="rounded-lg bg-emerald-50 p-6 text-center shadow-sm">
             <CheckCircle className="mx-auto mb-4 h-12 w-12 text-emerald-700" />
             <p className="mb-2 text-lg font-bold text-gray-800" style={{ fontFamily: 'Outfit, sans-serif' }}>
               {data.facultySupport.scheduledTitle}
@@ -139,14 +139,14 @@ export const FacultySupport: React.FC = () => {
             <p className="text-sm text-gray-700" style={{ fontFamily: 'Inter, sans-serif' }}>
               {data.facultySupport.scheduledDescription}
             </p>
-            <button onClick={() => setSessionStatus('idle')} className="mt-4 rounded-lg border border-gray-200 bg-white px-6 py-2 text-sm font-semibold transition-colors hover:bg-gray-50" style={{ fontFamily: 'Outfit, sans-serif' }}>
+            <button onClick={() => setSessionStatus('idle')} className="mt-4 rounded-lg bg-white px-6 py-2 text-sm font-semibold transition-colors hover:bg-gray-50 shadow-sm" style={{ fontFamily: 'Outfit, sans-serif' }}>
               {data.facultySupport.requestAnotherLabel}
             </button>
           </div>
         )}
       </div>
 
-      <div id="projects" className="w-full min-w-0 overflow-hidden rounded-lg border border-gray-200 bg-white p-4 shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_25px_50px_rgba(0,0,0,0.12)] sm:p-6">
+      <div id="projects" className="w-full min-w-0 overflow-hidden rounded-lg bg-white p-4 shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_25px_50px_rgba(0,0,0,0.12)] sm:p-6">
         <h2 className="mb-6 break-words text-xl font-bold text-gray-800" style={{ fontFamily: 'Outfit, sans-serif' }}>
           {data.facultySupport.projectsTitle}
         </h2>
@@ -155,10 +155,9 @@ export const FacultySupport: React.FC = () => {
           {data.facultySupport.projects.map((project) => (
             <div
               key={project.id}
-              className={`w-full min-w-0 overflow-hidden rounded-lg border bg-white p-4 transition-all duration-300 ${
+              className={`w-full min-w-0 overflow-hidden rounded-lg bg-white p-4 transition-all duration-300 ${
                 project.status === 'locked' ? 'bg-gray-50' : 'shadow-[0_4px_12px_rgba(0,0,0,0.05)] hover:-translate-y-1.5 hover:shadow-[0_15px_30px_rgba(0,0,0,0.10)]'
               }`}
-              style={{ borderColor: 'rgb(229 231 235)' }}
             >
               <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex min-w-0 flex-1 items-center gap-3">
@@ -172,7 +171,7 @@ export const FacultySupport: React.FC = () => {
                     </p>
                   </div>
                 </div>
-                <span className={`max-w-full shrink-0 rounded-full border px-3 py-1 text-xs font-semibold ${getProjectStatusColor(project.status)}`} style={{ fontFamily: 'Inter, sans-serif' }}>
+                <span className={`max-w-full shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${getProjectStatusColor(project.status)}`} style={{ fontFamily: 'Inter, sans-serif' }}>
                   {project.status.charAt(0).toUpperCase() + project.status.slice(1)}
                 </span>
               </div>
