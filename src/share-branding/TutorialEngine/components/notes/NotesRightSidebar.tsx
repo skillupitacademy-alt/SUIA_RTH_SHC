@@ -501,32 +501,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
               </div>
             </section>
 
-            {/* AI Tutor Help Card (Promotional) */}
-            <section className="relative overflow-hidden rounded-[32px] bg-white shadow-xl shadow-slate-200/50 p-8 space-y-6 border border-slate-100">
-              <div className="flex justify-center relative">
-                 <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-orange-50 shadow-inner relative z-10 border border-orange-100">
-                    <Icons.Bot size={40} className="text-orange-950" aria-hidden="true" />
-                 </div>
-                 <div className="absolute right-12 -top-2 h-4 w-4 rounded-full bg-emerald-600 border-2 border-white shadow-sm z-20 animate-pulse" />
-                 {/* Robot Illustration Placeholder */}
-                 <div className="absolute -right-4 -bottom-4 opacity-10">
-                    <Icons.Cpu size={120} aria-hidden="true" />
-                 </div>
-              </div>
-              <div className="text-center space-y-2">
-                 <h3 className="text-sm font-bold text-slate-950 uppercase tracking-widest">AI Tutor Help</h3>
-                 <p className="text-[12px] font-medium text-slate-800 leading-relaxed">
-                   Confused about Component Architecture? Ask AI Tutor for step-by-step explanation.
-                 </p>
-              </div>
-              <button 
-                className="group flex w-full items-center justify-between rounded-2xl p-4 text-white transition-all hover:scale-[1.02] active:scale-95 shadow-lg"
-                style={{ background: `linear-gradient(135deg, ${brand.primaryColor}, ${brand.primaryColor}dd)` }}
-              >
-                 <span className="text-xs font-bold uppercase tracking-wider">Ask AI Tutor</span>
-                 <Icons.ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" aria-hidden="true" />
-              </button>
-            </section>
+
           </div>
         )}
 
@@ -593,9 +568,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
           </div>
         )}
 
-        {activeTab !== 'layman' && activeTab !== 'real-life' && (
-          <>
-            {/* AI Tutor Chat */}
+        {/* AI Tutor Chat */}
         <section className="rounded-2xl shadow-sm flex flex-col h-[320px]" style={{ backgroundColor: `${brand.primaryColor}05` }}>
           <div className="flex items-center gap-2 p-3">
             <Icons.Bot size={16} className="text-primary-dark" aria-hidden="true" />
@@ -637,6 +610,8 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
           </div>
         </section>
 
+        {activeTab !== 'layman' && activeTab !== 'real-life' && activeTab !== 'technical-deep-dive' && activeTab !== 'code-example' && (
+          <>
         {/* Your Progress */}
         <section>
           <h2 className="mb-4 text-xs font-bold text-slate-800 relative flex items-center gap-2">
