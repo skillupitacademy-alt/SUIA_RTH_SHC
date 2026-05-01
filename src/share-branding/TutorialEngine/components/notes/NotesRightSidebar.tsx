@@ -589,17 +589,13 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
               </p>
             </section>
 
-            {/* Next Button */}
-            <button 
-              className="w-full flex items-center justify-center gap-2 rounded-2xl py-4 text-sm font-bold text-white shadow-xl transition-all hover:scale-[1.02] active:scale-95"
-              style={{ backgroundColor: brand.primaryColor }}
-            >
-              Next: Real-Life Analogy <Icons.ArrowRight size={18} aria-hidden="true" />
-            </button>
+
           </div>
         )}
 
-        {/* AI Tutor Chat */}
+        {activeTab !== 'layman' && activeTab !== 'real-life' && (
+          <>
+            {/* AI Tutor Chat */}
         <section className="rounded-2xl shadow-sm flex flex-col h-[320px]" style={{ backgroundColor: `${brand.primaryColor}05` }}>
           <div className="flex items-center gap-2 p-3">
             <Icons.Bot size={16} className="text-primary-dark" aria-hidden="true" />
@@ -728,6 +724,8 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
              <Icons.Share2 size={14} aria-hidden="true" /> Share
            </button>
         </div>
+          </>
+        )}
 
       </div>
     </aside>
