@@ -530,37 +530,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
           </div>
         )}
 
-        {/* AI Tutor Help Card (Standard / Deep Dive) */}
-        {activeTab !== 'code-example' && activeTab !== 'layman' && (
-          <section className="relative overflow-hidden rounded-[32px] bg-white shadow-xl shadow-slate-200/50">
-            <div className="absolute top-0 right-0 p-8 opacity-5">
-               <Icons.Bot size={120} />
-            </div>
-            <div className="p-8 space-y-6 relative z-10">
-              <div className="flex justify-center">
-                 <div className="relative">
-                    <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-orange-50 shadow-inner">
-                       <Icons.Bot size={40} className="text-orange-900" />
-                    </div>
-                    <div className="absolute -right-1 -top-1 h-4 w-4 rounded-full bg-emerald-500 border-2 border-white shadow-sm" />
-                 </div>
-              </div>
-              <div className="text-center space-y-2">
-                 <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Have doubts?</h3>
-                 <p className="text-[12px] font-medium text-slate-700 leading-relaxed">
-                   Ask AI Tutor anything about Components and Asynchronous JS.
-                 </p>
-              </div>
-              <button 
-                className="group flex w-full items-center justify-between rounded-2xl p-4 text-white transition-transform active:scale-95"
-                style={{ background: `linear-gradient(135deg, ${brand.primaryColor}, ${brand.primaryColor}dd)` }}
-              >
-                 <span className="text-xs font-bold uppercase tracking-wider">Ask Now</span>
-                 <Icons.ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-              </button>
-           </div>
-        </section>
-        )}
+
         
         {/* Layman Sidebar Content (Appended) */}
         {activeTab === 'layman' && data.laymanSidebar && (

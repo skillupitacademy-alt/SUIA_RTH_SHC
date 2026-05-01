@@ -243,8 +243,8 @@ export function TechnicalDeepDiveContent({ data }: { data?: SubtopicNotesViewDat
                   </div>
                   <div className="absolute bottom-6 right-6 flex items-center gap-4">
                      <span className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em]">RECONCILIATION</span>
-                     <button className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-800 text-slate-400 hover:text-white transition-colors shadow-lg">
-                        <Icons.Copy size={16} />
+                     <button className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-800 text-slate-400 hover:text-white transition-colors shadow-lg" aria-label="Copy code">
+                        <Icons.Copy size={16} aria-hidden="true" />
                      </button>
                   </div>
                </div>
@@ -260,7 +260,7 @@ export function TechnicalDeepDiveContent({ data }: { data?: SubtopicNotesViewDat
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
                <div className="space-y-6 py-4">
-                  <h4 className="text-[14px] font-bold text-slate-900">Resolution procedure:</h4>
+                  <h3 className="text-[14px] font-bold text-slate-900">Resolution procedure:</h3>
                   <div className="space-y-4">
                      {[
                         'If a component receives new props → it becomes dirty.',
@@ -294,8 +294,8 @@ export function TechnicalDeepDiveContent({ data }: { data?: SubtopicNotesViewDat
                      <p>{`});`}</p>
                   </div>
                   <div className="absolute bottom-6 right-6 flex items-center gap-4">
-                     <button className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-800 text-slate-400 hover:text-white transition-colors shadow-lg">
-                        <Icons.Copy size={16} />
+                     <button className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-800 text-slate-400 hover:text-white transition-colors shadow-lg" aria-label="Copy code">
+                        <Icons.Copy size={16} aria-hidden="true" />
                      </button>
                   </div>
                </div>
@@ -362,7 +362,7 @@ export function TechnicalDeepDiveContent({ data }: { data?: SubtopicNotesViewDat
 
                <div className="lg:col-span-4 rounded-[32px] bg-orange-100/10 p-10 flex flex-col justify-center relative overflow-hidden shadow-sm shadow-orange-100/10 border border-slate-200">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 rounded-full -mr-16 -mt-16" />
-                  <h4 className="text-[14px] font-bold text-orange-950 uppercase tracking-widest mb-4">Why it matters?</h4>
+                  <h3 className="text-[14px] font-bold text-orange-950 uppercase tracking-widest mb-4">Why it matters?</h3>
                   <p className="text-[14px] font-medium text-slate-800 leading-relaxed relative z-10">
                      This allows you to build powerful, scalable user interfaces by composing simple, reusable primitives step-by-step.
                   </p>
