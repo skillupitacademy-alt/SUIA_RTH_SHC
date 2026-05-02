@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { CheckCircle2, Rocket, ArrowLeft, Download, FileText, Bot, TrendingUp, Lock } from 'lucide-react';
+import { CheckCircle2, Rocket, ArrowLeft, Download, FileText, Bot, Lock } from 'lucide-react';
 import { useBrand } from '../../../PostLandingPage/app/context/BrandContext';
 
 interface SubtopicSidebarProps {
@@ -22,7 +22,7 @@ interface SubtopicSidebarProps {
   onToggle: () => void;
 }
 
-export function SubtopicSidebar({ data, progress, isOpen, onToggle }: SubtopicSidebarProps) {
+export function SubtopicSidebar({ data, progress, isOpen }: SubtopicSidebarProps) {
   const brand = useBrand();
 
   // Helper to convert hex to rgba for backgrounds
@@ -36,11 +36,11 @@ export function SubtopicSidebar({ data, progress, isOpen, onToggle }: SubtopicSi
   const bgLight = hexToRgba(brand.primaryColor, 0.05);
 
   return (
-    <aside aria-label="Curriculum sidebar" className={`absolute bottom-0 left-0 top-0 z-40 flex w-[350px] flex-col bg-white transition-all duration-300 ${isOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full shadow-none'}`}>
+    <aside aria-label="Curriculum sidebar" className={`fixed bottom-0 left-0 top-16 z-40 flex w-[78vw] flex-col bg-white transition-all duration-300 min-[480px]:w-[min(350px,calc(100vw-1rem))] ${isOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full shadow-none'}`}>
       <div className="flex flex-col h-full">
         
         {/* Scrollable Content */}
-        <div tabIndex={0} className="flex-1 overflow-y-auto px-6 py-6 hide-scrollbar focus:outline-none space-y-6">
+        <div tabIndex={0} className="flex-1 overflow-y-auto px-4 py-5 hide-scrollbar focus:outline-none space-y-6 sm:px-6 sm:py-6">
           
           {/* Back Button */}
           <button 
@@ -69,7 +69,7 @@ export function SubtopicSidebar({ data, progress, isOpen, onToggle }: SubtopicSi
               </div>
               <div className="flex flex-1 flex-col">
                 <span className="text-[13px] font-bold text-slate-950">Great Progress!</span>
-                <span className="mb-2 text-xs font-medium text-slate-800">Keep it up 🚀</span>
+                <span className="mb-2 text-xs font-medium text-slate-800">Keep it up</span>
                 <div className="h-2 w-full rounded-full bg-slate-100 border border-slate-200/50 overflow-hidden">
                   <div className="h-full rounded-full" style={{ width: `${progress.percentage}%`, backgroundColor: brand.primaryColor }} />
                 </div>
@@ -94,7 +94,7 @@ export function SubtopicSidebar({ data, progress, isOpen, onToggle }: SubtopicSi
                     className="group relative flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left transition-all"
                     style={{ backgroundColor: isActive ? bgLight : 'transparent' }}
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex min-w-0 items-center gap-3">
                       <div className="flex w-5 items-center justify-center">
                          {isActive ? (
                           <Rocket size={16} style={{ color: brand.primaryColor }} aria-hidden="true" />
@@ -105,7 +105,7 @@ export function SubtopicSidebar({ data, progress, isOpen, onToggle }: SubtopicSi
                         )}
                       </div>
                       <span 
-                        className="text-[13px] font-bold"
+                        className="min-w-0 break-words text-[13px] font-bold"
                         style={{ color: isActive ? (brand.primaryColorDark || brand.primaryColor) : '#334155' }}
                       >
                         {idx + 1}. {item.title}
@@ -125,7 +125,7 @@ export function SubtopicSidebar({ data, progress, isOpen, onToggle }: SubtopicSi
         </div>
 
         {/* Bottom Fixed Area */}
-        <div className="bg-white px-6 py-5 space-y-4">
+        <div className="space-y-4 bg-white px-4 py-5 sm:px-6">
           <button 
             className="flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-[13px] font-bold transition-all hover:brightness-95"
             style={{ backgroundColor: bgLight, color: brand.primaryColorDark || brand.primaryColor }}
@@ -135,13 +135,13 @@ export function SubtopicSidebar({ data, progress, isOpen, onToggle }: SubtopicSi
             <FileText size={16} className="ml-1" />
           </button>
 
-          <button className="flex w-full items-center gap-4 rounded-xl bg-[#F5F3FF] p-4 text-left transition-all border border-violet-100 hover:bg-[#EDE9FE] shadow-sm active:scale-[0.98]" aria-label="Ask AI Tutor for help">
+          <button className="flex w-full items-center gap-4 rounded-xl bg-[#F5F3FF] p-4 text-left transition-all border border-violet-100 hover:bg-[#EDE9FE] shadow-sm active:scale-[0.98]" aria-label={`Ask ${brand.tutorLabel} for help`}>
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-[#6D28D9] shadow-sm border border-violet-50">
               <Bot size={20} aria-hidden="true" />
             </div>
-            <div className="flex flex-col">
+            <div className="flex min-w-0 flex-col">
               <span className="text-[11px] font-bold text-[#6D28D9] uppercase tracking-widest">Need Help?</span>
-              <span className="text-sm font-bold text-[#4C1D95]">Ask AI Tutor</span>
+              <span className="break-words text-sm font-bold text-[#4C1D95]">Ask {brand.tutorLabel}</span>
             </div>
           </button>
         </div>

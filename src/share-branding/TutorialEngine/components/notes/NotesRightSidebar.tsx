@@ -9,7 +9,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
   return (
     <aside 
       aria-label="Tools and statistics sidebar" 
-      className={`absolute bottom-0 right-0 top-0 z-40 flex w-[350px] flex-col overflow-y-auto bg-white p-5 hide-scrollbar transition-transform duration-300 ${isOpen ? 'translate-x-0 shadow-2xl' : 'translate-x-full shadow-none'}`}
+      className={`fixed bottom-0 right-0 top-16 z-40 flex w-[78vw] flex-col overflow-y-auto bg-white p-4 hide-scrollbar transition-transform duration-300 min-[520px]:w-[350px] sm:p-5 ${isOpen ? 'translate-x-0 shadow-2xl' : 'translate-x-full shadow-none'}`}
       tabIndex={0}
       role="region"
     >
@@ -135,7 +135,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
               <div className="flex items-center justify-between mb-6">
                  <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Your Progress</h2>
               </div>
-              <div className="flex items-center gap-6">
+              <div className="flex min-w-0 flex-col gap-4 min-[360px]:flex-row min-[360px]:items-center min-[360px]:gap-6">
                  <div className="relative flex h-20 w-20 shrink-0 items-center justify-center rounded-full">
                     <svg className="absolute inset-0 h-full w-full -rotate-90 transform" viewBox="0 0 100 100">
                       <circle
@@ -156,16 +156,16 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
                        <p className="text-[8px] font-bold text-slate-800 uppercase">Completed</p>
                     </div>
                  </div>
-                 <div className="space-y-2 flex-1">
+                 <div className="min-w-0 flex-1 space-y-2">
                     {[
                       { label: 'Read Instructions', done: true },
                       { label: 'Code Implementation', done: true },
                       { label: 'Test & Debug', done: false },
                       { label: 'Submit Project', done: false }
                     ].map((step, i) => (
-                      <div key={i} className="flex items-center gap-2 text-[10px] font-bold">
+                      <div key={i} className="flex min-w-0 items-center gap-2 text-[10px] font-bold">
                          <div className={`h-1.5 w-1.5 rounded-full ${step.done ? 'bg-emerald-600' : 'bg-slate-300'}`} aria-hidden="true" />
-                         <span className={step.done ? 'text-slate-900' : 'text-slate-800'}>{step.label}</span>
+                         <span className={`min-w-0 break-words ${step.done ? 'text-slate-900' : 'text-slate-800'}`}>{step.label}</span>
                          {step.done && <Icons.Check size={10} className="text-emerald-800 ml-auto" aria-hidden="true" />}
                       </div>
                     ))}
@@ -509,7 +509,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
           </div>
         )}
 
-        {/* AI Tutor Chat */}
+        {/* Tutor Chat */}
         <section className="rounded-2xl shadow-sm flex flex-col h-[320px]" style={{ backgroundColor: `${brand.primaryColor}05` }}>
           <div className="flex items-center gap-2 p-3">
             <Icons.Bot size={16} className="text-primary-dark" aria-hidden="true" />
@@ -519,7 +519,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
             className="flex-1 overflow-y-auto p-4 space-y-4 hide-scrollbar"
             tabIndex={0}
             role="region"
-            aria-label="AI Tutor Chat Messages"
+            aria-label={`${brand.tutorLabel} chat messages`}
           >
             {data.aiTutor.messages.map((msg, i) => (
               <div key={i} className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}>
@@ -539,7 +539,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
             <div className="relative">
               <input 
                 type="text" 
-                aria-label="Ask AI Tutor"
+                aria-label={`Ask ${brand.tutorLabel}`}
                 placeholder={data.aiTutor.inputPlaceholder} 
                 className="w-full rounded-xl py-2.5 pl-3 pr-10 text-[12px] font-medium placeholder:text-slate-800 focus:outline-none focus:ring-2 shadow-sm border"
                 style={{ borderColor: `${brand.primaryColor}33`, '--tw-ring-color': brand.primaryColor } as any}

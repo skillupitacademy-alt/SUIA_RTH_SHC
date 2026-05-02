@@ -8,13 +8,13 @@ export function LaymanExplanationContent({ data }: { data: SubtopicNotesViewData
   if (!data) return null;
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="min-w-0 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
 
 
 
       {/* Title & Intro */}
       <div className="space-y-4">
-        <h1 className="text-4xl font-bold text-slate-950 tracking-tight">{data.title}</h1>
+        <h1 className="break-words text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl lg:text-4xl">{data.title}</h1>
         <p className="text-[15px] font-medium leading-relaxed text-slate-800">
           {data.intro}
         </p>
@@ -23,7 +23,7 @@ export function LaymanExplanationContent({ data }: { data: SubtopicNotesViewData
       {/* Main Concept Card */}
       <div className="space-y-4">
         <h2 className="text-xl font-bold text-slate-900 tracking-tight">What is a Component?</h2>
-        <div className="flex flex-col md:flex-row gap-8 rounded-3xl bg-white p-8 shadow-xl transition-all duration-300 hover:-translate-y-1">
+        <div className="flex min-w-0 flex-col gap-6 rounded-3xl bg-white p-5 shadow-xl transition-all duration-300 hover:-translate-y-1 sm:p-8 md:flex-row md:gap-8">
           <div className="flex-1 flex justify-center items-center">
             <img
               src={data.mainConcept.image}
@@ -48,7 +48,7 @@ export function LaymanExplanationContent({ data }: { data: SubtopicNotesViewData
       {/* Grid of Reasons */}
       <div className="space-y-4">
         <h2 className="text-xl font-bold text-slate-900 tracking-tight">Why Do We Need Components?</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
           {data.reasonGrid.map((item) => {
             const Icon = (Icons as any)[item.icon] || Icons.HelpCircle;
             return (
@@ -69,34 +69,24 @@ export function LaymanExplanationContent({ data }: { data: SubtopicNotesViewData
         <h2 className="text-xl font-bold text-slate-900 tracking-tight">Architecture in Simple Words</h2>
         <p className="text-[13px] font-bold text-slate-800">Different layers mean different sizes of building blocks.</p>
 
-        <div className="overflow-hidden rounded-2xl bg-white shadow-xl transition-all duration-300 hover:-translate-y-1">
-          <table className="w-full text-left border-collapse">
-            <tbody className="divide-y divide-gray-50">
-              {data.typesTable.map((type) => {
-                const Icon = (Icons as any)[type.icon] || Icons.HelpCircle;
-                return (
-                  <tr key={type.id} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="p-4 w-12">
-                      <div className={`flex h-8 w-8 items-center justify-center rounded-lg text-white ${type.iconBg}`}>
-                        <Icon size={16} aria-hidden="true" />
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <span className="text-sm font-bold text-slate-900">{type.label}</span>
-                    </td>
-                    <td className="p-4">
-                      <span className="text-xs font-medium text-slate-700">{type.description}</span>
-                    </td>
-                    <td className="p-4 text-right">
-                      <span className="inline-block rounded-md bg-emerald-100 px-2 py-1 text-[11px] font-bold text-emerald-900 border border-emerald-200">
-                        {type.example}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+        <div className="min-w-0 rounded-2xl bg-white p-3 shadow-xl transition-all duration-300 hover:-translate-y-1">
+          <div className="space-y-2">
+            {data.typesTable.map((type) => {
+              const Icon = (Icons as any)[type.icon] || Icons.HelpCircle;
+              return (
+                <div key={type.id} className="grid min-w-0 grid-cols-[auto_1fr] gap-3 rounded-xl p-3 transition-colors hover:bg-slate-50/50 sm:grid-cols-[auto_110px_1fr_auto] sm:items-center">
+                  <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white ${type.iconBg}`}>
+                    <Icon size={16} aria-hidden="true" />
+                  </div>
+                  <span className="min-w-0 break-words text-sm font-bold text-slate-900">{type.label}</span>
+                  <span className="col-span-2 min-w-0 break-words text-xs font-medium text-slate-700 sm:col-span-1">{type.description}</span>
+                  <span className="col-span-2 inline-flex w-fit rounded-md border border-emerald-200 bg-emerald-100 px-2 py-1 text-[11px] font-bold text-emerald-900 sm:col-span-1">
+                    {type.example}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
 

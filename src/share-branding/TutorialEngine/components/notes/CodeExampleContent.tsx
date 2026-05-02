@@ -30,27 +30,27 @@ const App = () => {
     <div className="container">
       <h1>Team Members</h1>
       <UserProfile 
-        name="RealTutorialHub" 
+        name="${brand.name}" 
         role="Senior Developer" 
       />
     </div>
   );
 };
 
-console.log("✅ Component rendered successfully!");`;
+console.log("Component rendered successfully.");`;
 
   const renderCode = (codeText: string) => {
     return codeText.split('\n').map((line, i) => {
       // Very basic highlighter for demonstration
       const parts = line.split(/(\/\/.*|const |return |".*?"|'.*?'|`.*?`|\d+)/g);
       return (
-        <div key={i} className="h-6 whitespace-pre">
+        <div key={i} className="min-h-6 whitespace-pre-wrap break-words">
           {parts.map((part, j) => {
             if (part.startsWith('//')) return <span key={j} className="text-slate-300 italic">{part}</span>;
             if (part === 'const ' || part === 'return ') return <span key={j} className="text-pink-300 font-bold">{part}</span>;
             if (part.startsWith('"') || part.startsWith("'")) return <span key={j} className="text-emerald-300 font-bold">{part}</span>;
             if (/^\d+$/.test(part)) return <span key={j} className="text-rose-300 font-bold">{part}</span>;
-            return <span key={j} className="text-indigo-50">{part}</span>;
+            return <span key={j} className="break-words text-indigo-50">{part}</span>;
           })}
         </div>
       );
@@ -58,17 +58,17 @@ console.log("✅ Component rendered successfully!");`;
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="min-w-0 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       {/* Header */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="space-y-2">
-          <div className="flex items-center gap-3">
-            <h1 className="text-4xl font-bold text-slate-950 tracking-tight">Code Example</h1>
+          <div className="flex min-w-0 flex-wrap items-center gap-3">
+            <h1 className="break-words text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl lg:text-4xl">Code Example</h1>
             <span className="rounded-full bg-orange-100 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-orange-950 border border-orange-200">Practical</span>
           </div>
           <p className="text-[15px] font-medium text-slate-800">See how Component Architecture works in real code. Try it, run it, and observe the output.</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button className="flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-slate-800 shadow-sm transition-all hover:bg-slate-50 active:scale-95 border border-slate-200" aria-label="Bookmark this code example">
             <Icons.Bookmark size={16} aria-hidden="true" /> Bookmark
           </button>
@@ -80,12 +80,12 @@ console.log("✅ Component rendered successfully!");`;
 
       {/* Navigation Tabs */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-gray-100 pb-2">
-        <div className="flex items-center gap-8">
+        <div className="flex min-w-0 flex-wrap items-center gap-3 sm:gap-6">
           {examples.map((ex, i) => (
             <button
               key={i}
               onClick={() => setActiveExample(i)}
-              className={`pb-4 text-sm font-bold transition-all relative ${activeExample === i ? 'text-orange-900' : 'text-slate-700 hover:text-slate-950'}`}
+              className={`relative pb-3 text-left text-sm font-bold transition-all ${activeExample === i ? 'text-orange-900' : 'text-slate-700 hover:text-slate-950'}`}
             >
               {ex.title}
               {activeExample === i && (
@@ -106,13 +106,13 @@ console.log("✅ Component rendered successfully!");`;
       {/* Main Interactive Area */}
       <div className="space-y-4">
         {/* Editor Window */}
-        <section className="flex flex-col overflow-hidden rounded-[32px] bg-[#1e293b] shadow-xl transition-all duration-300 hover:-translate-y-1">
-          <div className="flex items-center justify-between bg-[#1e293b]/50 px-6 py-4 border-b border-slate-800/50">
-            <div className="flex items-center gap-3">
+        <section className="flex min-w-0 flex-col overflow-hidden rounded-[32px] bg-[#1e293b] shadow-xl transition-all duration-300 hover:-translate-y-1">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800/50 bg-[#1e293b]/50 px-4 py-4 sm:px-6">
+            <div className="flex min-w-0 items-center gap-3">
               <div className="h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400/50" aria-hidden="true" />
-              <span className="text-[13px] font-mono font-bold text-slate-200">{examples[activeExample].file}</span>
+              <span className="min-w-0 break-words font-mono text-[13px] font-bold text-slate-200">{examples[activeExample].file}</span>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
               <button className="flex items-center gap-2 rounded-lg bg-orange-800 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-orange-900/20 hover:bg-orange-900 transition-all active:scale-95">
                 <Icons.Play size={14} fill="currentColor" aria-hidden="true" /> Run Code
               </button>
@@ -133,12 +133,12 @@ console.log("✅ Component rendered successfully!");`;
              </div>
              {/* Code Content */}
              <div 
-               className="pl-16 py-6 font-mono text-[14px] leading-6 overflow-auto hide-scrollbar"
+               className="min-w-0 py-6 pl-14 pr-4 font-mono text-[12px] leading-6 sm:pl-16 sm:text-[14px]"
                tabIndex={0}
                role="region"
                aria-label="Code Editor Content"
              >
-                <pre>
+                <pre className="whitespace-pre-wrap break-words">
                    {renderCode(code)}
                 </pre>
              </div>
@@ -173,7 +173,7 @@ console.log("✅ Component rendered successfully!");`;
               <div className="rounded-xl bg-slate-900/50 p-6 space-y-2">
                  <p>{`{`}</p>
                  <p className="ml-4">id: <span className="text-rose-400">101</span>,</p>
-                 <p className="ml-4">name: <span className="text-emerald-400">'RealTutorialHub'</span>,</p>
+                 <p className="ml-4">name: <span className="text-emerald-400">'{brand.name}'</span>,</p>
                  <p className="ml-4">role: <span className="text-emerald-400">'Senior Developer'</span></p>
                  <p>{`}`}</p>
               </div>

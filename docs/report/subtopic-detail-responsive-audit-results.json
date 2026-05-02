@@ -1,0 +1,4248 @@
+{
+  "summary": {
+    "auditedAt": "2026-05-02",
+    "routes": [
+      "http://localhost:3003/start-learning/subtopic/notes?tab=<tab>",
+      "http://localhost:3004/start-learning/subtopic/notes?tab=<tab>"
+    ],
+    "tabs": [
+      "notes",
+      "layman",
+      "real-life",
+      "technical-deep-dive",
+      "code-example",
+      "assignments",
+      "project",
+      "quiz",
+      "ai-tutor",
+      "progress"
+    ],
+    "defaultLayoutMatrix": {
+      "breakpoints": [
+        320,
+        375,
+        480,
+        640,
+        768,
+        1024,
+        1280,
+        1440,
+        1920
+      ],
+      "zoom125Breakpoints": [
+        320,
+        768,
+        1280,
+        1920
+      ],
+      "entries": 260,
+      "failures": 0
+    },
+    "openSidebarMatrix": {
+      "states": [
+        "left-open",
+        "right-open"
+      ],
+      "casesPerBrandTab": [
+        {
+          "width": 320,
+          "zoom": 1,
+          "state": "left-open"
+        },
+        {
+          "width": 320,
+          "zoom": 1.25,
+          "state": "left-open"
+        },
+        {
+          "width": 375,
+          "zoom": 1,
+          "state": "left-open"
+        },
+        {
+          "width": 768,
+          "zoom": 1.25,
+          "state": "left-open"
+        },
+        {
+          "width": 1280,
+          "zoom": 1.25,
+          "state": "left-open"
+        },
+        {
+          "width": 320,
+          "zoom": 1,
+          "state": "right-open"
+        },
+        {
+          "width": 320,
+          "zoom": 1.25,
+          "state": "right-open"
+        },
+        {
+          "width": 375,
+          "zoom": 1,
+          "state": "right-open"
+        },
+        {
+          "width": 768,
+          "zoom": 1.25,
+          "state": "right-open"
+        },
+        {
+          "width": 1280,
+          "zoom": 1.25,
+          "state": "right-open"
+        }
+      ],
+      "entries": 200,
+      "failures": 0
+    },
+    "total": 460,
+    "passed": 460,
+    "failed": 0
+  },
+  "failures": [],
+  "results": [
+    {
+      "brand": "realtutorialhub",
+      "tab": "notes",
+      "width": 320,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "notes",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "notes",
+      "width": 375,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "notes",
+      "width": 480,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "notes",
+      "width": 640,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "notes",
+      "width": 768,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "notes",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "notes",
+      "width": 1024,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "notes",
+      "width": 1280,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "notes",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "notes",
+      "width": 1440,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "notes",
+      "width": 1920,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "notes",
+      "width": 1920,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "notes",
+      "width": 320,
+      "zoom": 1,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "notes",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "notes",
+      "width": 375,
+      "zoom": 1,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "notes",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "notes",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "notes",
+      "width": 320,
+      "zoom": 1,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "notes",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "notes",
+      "width": 375,
+      "zoom": 1,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "notes",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "notes",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "layman",
+      "width": 320,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "layman",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "layman",
+      "width": 375,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "layman",
+      "width": 480,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "layman",
+      "width": 640,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "layman",
+      "width": 768,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "layman",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "layman",
+      "width": 1024,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "layman",
+      "width": 1280,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "layman",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "layman",
+      "width": 1440,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "layman",
+      "width": 1920,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "layman",
+      "width": 1920,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "layman",
+      "width": 320,
+      "zoom": 1,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "layman",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "layman",
+      "width": 375,
+      "zoom": 1,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "layman",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "layman",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "layman",
+      "width": 320,
+      "zoom": 1,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "layman",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "layman",
+      "width": 375,
+      "zoom": 1,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "layman",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "layman",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "real-life",
+      "width": 320,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "real-life",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "real-life",
+      "width": 375,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "real-life",
+      "width": 480,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "real-life",
+      "width": 640,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "real-life",
+      "width": 768,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "real-life",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "real-life",
+      "width": 1024,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "real-life",
+      "width": 1280,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "real-life",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "real-life",
+      "width": 1440,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "real-life",
+      "width": 1920,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "real-life",
+      "width": 1920,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "real-life",
+      "width": 320,
+      "zoom": 1,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "real-life",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "real-life",
+      "width": 375,
+      "zoom": 1,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "real-life",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "real-life",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "real-life",
+      "width": 320,
+      "zoom": 1,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "real-life",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "real-life",
+      "width": 375,
+      "zoom": 1,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "real-life",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "real-life",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "technical-deep-dive",
+      "width": 320,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "technical-deep-dive",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "technical-deep-dive",
+      "width": 375,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "technical-deep-dive",
+      "width": 480,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "technical-deep-dive",
+      "width": 640,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "technical-deep-dive",
+      "width": 768,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "technical-deep-dive",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "technical-deep-dive",
+      "width": 1024,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "technical-deep-dive",
+      "width": 1280,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "technical-deep-dive",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "technical-deep-dive",
+      "width": 1440,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "technical-deep-dive",
+      "width": 1920,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "technical-deep-dive",
+      "width": 1920,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "technical-deep-dive",
+      "width": 320,
+      "zoom": 1,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "technical-deep-dive",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "technical-deep-dive",
+      "width": 375,
+      "zoom": 1,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "technical-deep-dive",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "technical-deep-dive",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "technical-deep-dive",
+      "width": 320,
+      "zoom": 1,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "technical-deep-dive",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "technical-deep-dive",
+      "width": 375,
+      "zoom": 1,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "technical-deep-dive",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "technical-deep-dive",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "code-example",
+      "width": 320,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "code-example",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "code-example",
+      "width": 375,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "code-example",
+      "width": 480,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "code-example",
+      "width": 640,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "code-example",
+      "width": 768,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "code-example",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "code-example",
+      "width": 1024,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "code-example",
+      "width": 1280,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "code-example",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "code-example",
+      "width": 1440,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "code-example",
+      "width": 1920,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "code-example",
+      "width": 1920,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "code-example",
+      "width": 320,
+      "zoom": 1,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "code-example",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "code-example",
+      "width": 375,
+      "zoom": 1,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "code-example",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "code-example",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "code-example",
+      "width": 320,
+      "zoom": 1,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "code-example",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "code-example",
+      "width": 375,
+      "zoom": 1,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "code-example",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "code-example",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "assignments",
+      "width": 320,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "assignments",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "assignments",
+      "width": 375,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "assignments",
+      "width": 480,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "assignments",
+      "width": 640,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "assignments",
+      "width": 768,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "assignments",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "assignments",
+      "width": 1024,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "assignments",
+      "width": 1280,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "assignments",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "assignments",
+      "width": 1440,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "assignments",
+      "width": 1920,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "assignments",
+      "width": 1920,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "assignments",
+      "width": 320,
+      "zoom": 1,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "assignments",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "assignments",
+      "width": 375,
+      "zoom": 1,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "assignments",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "assignments",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "assignments",
+      "width": 320,
+      "zoom": 1,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "assignments",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "assignments",
+      "width": 375,
+      "zoom": 1,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "assignments",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "assignments",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "project",
+      "width": 320,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "project",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "project",
+      "width": 375,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "project",
+      "width": 480,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "project",
+      "width": 640,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "project",
+      "width": 768,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "project",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "project",
+      "width": 1024,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "project",
+      "width": 1280,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "project",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "project",
+      "width": 1440,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "project",
+      "width": 1920,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "project",
+      "width": 1920,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "project",
+      "width": 320,
+      "zoom": 1,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "project",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "project",
+      "width": 375,
+      "zoom": 1,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "project",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "project",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "project",
+      "width": 320,
+      "zoom": 1,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "project",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "project",
+      "width": 375,
+      "zoom": 1,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "project",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "project",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "quiz",
+      "width": 320,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "quiz",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "quiz",
+      "width": 375,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "quiz",
+      "width": 480,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "quiz",
+      "width": 640,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "quiz",
+      "width": 768,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "quiz",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "quiz",
+      "width": 1024,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "quiz",
+      "width": 1280,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "quiz",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "quiz",
+      "width": 1440,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "quiz",
+      "width": 1920,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "quiz",
+      "width": 1920,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "quiz",
+      "width": 320,
+      "zoom": 1,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "quiz",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "quiz",
+      "width": 375,
+      "zoom": 1,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "quiz",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "quiz",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "quiz",
+      "width": 320,
+      "zoom": 1,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "quiz",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "quiz",
+      "width": 375,
+      "zoom": 1,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "quiz",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "quiz",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "ai-tutor",
+      "width": 320,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "ai-tutor",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "ai-tutor",
+      "width": 375,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "ai-tutor",
+      "width": 480,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "ai-tutor",
+      "width": 640,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "ai-tutor",
+      "width": 768,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "ai-tutor",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "ai-tutor",
+      "width": 1024,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "ai-tutor",
+      "width": 1280,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "ai-tutor",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "ai-tutor",
+      "width": 1440,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "ai-tutor",
+      "width": 1920,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "ai-tutor",
+      "width": 1920,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "ai-tutor",
+      "width": 320,
+      "zoom": 1,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "ai-tutor",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "ai-tutor",
+      "width": 375,
+      "zoom": 1,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "ai-tutor",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "ai-tutor",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "ai-tutor",
+      "width": 320,
+      "zoom": 1,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "ai-tutor",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "ai-tutor",
+      "width": 375,
+      "zoom": 1,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "ai-tutor",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "ai-tutor",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "progress",
+      "width": 320,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "progress",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "progress",
+      "width": 375,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "progress",
+      "width": 480,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "progress",
+      "width": 640,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "progress",
+      "width": 768,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "progress",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "progress",
+      "width": 1024,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "progress",
+      "width": 1280,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "progress",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "progress",
+      "width": 1440,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "progress",
+      "width": 1920,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "progress",
+      "width": 1920,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "progress",
+      "width": 320,
+      "zoom": 1,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "progress",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "progress",
+      "width": 375,
+      "zoom": 1,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "progress",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "progress",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "progress",
+      "width": 320,
+      "zoom": 1,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "progress",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "progress",
+      "width": 375,
+      "zoom": 1,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "progress",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "tab": "progress",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "notes",
+      "width": 320,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "notes",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "notes",
+      "width": 375,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "notes",
+      "width": 480,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "notes",
+      "width": 640,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "notes",
+      "width": 768,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "notes",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "notes",
+      "width": 1024,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "notes",
+      "width": 1280,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "notes",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "notes",
+      "width": 1440,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "notes",
+      "width": 1920,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "notes",
+      "width": 1920,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "notes",
+      "width": 320,
+      "zoom": 1,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "notes",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "notes",
+      "width": 375,
+      "zoom": 1,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "notes",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "notes",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "notes",
+      "width": 320,
+      "zoom": 1,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "notes",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "notes",
+      "width": 375,
+      "zoom": 1,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "notes",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "notes",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "layman",
+      "width": 320,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "layman",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "layman",
+      "width": 375,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "layman",
+      "width": 480,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "layman",
+      "width": 640,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "layman",
+      "width": 768,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "layman",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "layman",
+      "width": 1024,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "layman",
+      "width": 1280,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "layman",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "layman",
+      "width": 1440,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "layman",
+      "width": 1920,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "layman",
+      "width": 1920,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "layman",
+      "width": 320,
+      "zoom": 1,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "layman",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "layman",
+      "width": 375,
+      "zoom": 1,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "layman",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "layman",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "layman",
+      "width": 320,
+      "zoom": 1,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "layman",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "layman",
+      "width": 375,
+      "zoom": 1,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "layman",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "layman",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "real-life",
+      "width": 320,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "real-life",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "real-life",
+      "width": 375,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "real-life",
+      "width": 480,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "real-life",
+      "width": 640,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "real-life",
+      "width": 768,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "real-life",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "real-life",
+      "width": 1024,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "real-life",
+      "width": 1280,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "real-life",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "real-life",
+      "width": 1440,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "real-life",
+      "width": 1920,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "real-life",
+      "width": 1920,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "real-life",
+      "width": 320,
+      "zoom": 1,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "real-life",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "real-life",
+      "width": 375,
+      "zoom": 1,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "real-life",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "real-life",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "real-life",
+      "width": 320,
+      "zoom": 1,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "real-life",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "real-life",
+      "width": 375,
+      "zoom": 1,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "real-life",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "real-life",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "technical-deep-dive",
+      "width": 320,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "technical-deep-dive",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "technical-deep-dive",
+      "width": 375,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "technical-deep-dive",
+      "width": 480,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "technical-deep-dive",
+      "width": 640,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "technical-deep-dive",
+      "width": 768,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "technical-deep-dive",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "technical-deep-dive",
+      "width": 1024,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "technical-deep-dive",
+      "width": 1280,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "technical-deep-dive",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "technical-deep-dive",
+      "width": 1440,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "technical-deep-dive",
+      "width": 1920,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "technical-deep-dive",
+      "width": 1920,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "technical-deep-dive",
+      "width": 320,
+      "zoom": 1,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "technical-deep-dive",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "technical-deep-dive",
+      "width": 375,
+      "zoom": 1,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "technical-deep-dive",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "technical-deep-dive",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "technical-deep-dive",
+      "width": 320,
+      "zoom": 1,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "technical-deep-dive",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "technical-deep-dive",
+      "width": 375,
+      "zoom": 1,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "technical-deep-dive",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "technical-deep-dive",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "code-example",
+      "width": 320,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "code-example",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "code-example",
+      "width": 375,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "code-example",
+      "width": 480,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "code-example",
+      "width": 640,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "code-example",
+      "width": 768,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "code-example",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "code-example",
+      "width": 1024,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "code-example",
+      "width": 1280,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "code-example",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "code-example",
+      "width": 1440,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "code-example",
+      "width": 1920,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "code-example",
+      "width": 1920,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "code-example",
+      "width": 320,
+      "zoom": 1,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "code-example",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "code-example",
+      "width": 375,
+      "zoom": 1,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "code-example",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "code-example",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "code-example",
+      "width": 320,
+      "zoom": 1,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "code-example",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "code-example",
+      "width": 375,
+      "zoom": 1,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "code-example",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "code-example",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "assignments",
+      "width": 320,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "assignments",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "assignments",
+      "width": 375,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "assignments",
+      "width": 480,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "assignments",
+      "width": 640,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "assignments",
+      "width": 768,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "assignments",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "assignments",
+      "width": 1024,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "assignments",
+      "width": 1280,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "assignments",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "assignments",
+      "width": 1440,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "assignments",
+      "width": 1920,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "assignments",
+      "width": 1920,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "assignments",
+      "width": 320,
+      "zoom": 1,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "assignments",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "assignments",
+      "width": 375,
+      "zoom": 1,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "assignments",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "assignments",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "assignments",
+      "width": 320,
+      "zoom": 1,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "assignments",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "assignments",
+      "width": 375,
+      "zoom": 1,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "assignments",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "assignments",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "project",
+      "width": 320,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "project",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "project",
+      "width": 375,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "project",
+      "width": 480,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "project",
+      "width": 640,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "project",
+      "width": 768,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "project",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "project",
+      "width": 1024,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "project",
+      "width": 1280,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "project",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "project",
+      "width": 1440,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "project",
+      "width": 1920,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "project",
+      "width": 1920,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "project",
+      "width": 320,
+      "zoom": 1,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "project",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "project",
+      "width": 375,
+      "zoom": 1,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "project",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "project",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "project",
+      "width": 320,
+      "zoom": 1,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "project",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "project",
+      "width": 375,
+      "zoom": 1,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "project",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "project",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "quiz",
+      "width": 320,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "quiz",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "quiz",
+      "width": 375,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "quiz",
+      "width": 480,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "quiz",
+      "width": 640,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "quiz",
+      "width": 768,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "quiz",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "quiz",
+      "width": 1024,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "quiz",
+      "width": 1280,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "quiz",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "quiz",
+      "width": 1440,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "quiz",
+      "width": 1920,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "quiz",
+      "width": 1920,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "quiz",
+      "width": 320,
+      "zoom": 1,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "quiz",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "quiz",
+      "width": 375,
+      "zoom": 1,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "quiz",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "quiz",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "quiz",
+      "width": 320,
+      "zoom": 1,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "quiz",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "quiz",
+      "width": 375,
+      "zoom": 1,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "quiz",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "quiz",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "ai-tutor",
+      "width": 320,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "ai-tutor",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "ai-tutor",
+      "width": 375,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "ai-tutor",
+      "width": 480,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "ai-tutor",
+      "width": 640,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "ai-tutor",
+      "width": 768,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "ai-tutor",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "ai-tutor",
+      "width": 1024,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "ai-tutor",
+      "width": 1280,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "ai-tutor",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "ai-tutor",
+      "width": 1440,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "ai-tutor",
+      "width": 1920,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "ai-tutor",
+      "width": 1920,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "ai-tutor",
+      "width": 320,
+      "zoom": 1,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "ai-tutor",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "ai-tutor",
+      "width": 375,
+      "zoom": 1,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "ai-tutor",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "ai-tutor",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "ai-tutor",
+      "width": 320,
+      "zoom": 1,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "ai-tutor",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "ai-tutor",
+      "width": 375,
+      "zoom": 1,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "ai-tutor",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "ai-tutor",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "progress",
+      "width": 320,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "progress",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "progress",
+      "width": 375,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "progress",
+      "width": 480,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "progress",
+      "width": 640,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "progress",
+      "width": 768,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "progress",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "progress",
+      "width": 1024,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "progress",
+      "width": 1280,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "progress",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "progress",
+      "width": 1440,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "progress",
+      "width": 1920,
+      "zoom": 1,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "progress",
+      "width": 1920,
+      "zoom": 1.25,
+      "state": "default",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "progress",
+      "width": 320,
+      "zoom": 1,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "progress",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "progress",
+      "width": 375,
+      "zoom": 1,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "progress",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "progress",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "left-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "progress",
+      "width": 320,
+      "zoom": 1,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "progress",
+      "width": 320,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "progress",
+      "width": 375,
+      "zoom": 1,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "progress",
+      "width": 768,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "brand": "skillup",
+      "tab": "progress",
+      "width": 1280,
+      "zoom": 1.25,
+      "state": "right-open",
+      "ok": true,
+      "issues": []
+    }
+  ]
+}

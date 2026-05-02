@@ -1,6 +1,6 @@
 // Rebuild trigger: Centralized navigation and footer stability
 import React, { useState } from 'react';
-import { ChevronRight } from 'lucide-react';
+import { Bot, CheckCircle2, ChevronRight, Send, Star, TrendingUp } from 'lucide-react';
 import { useBrand } from './PostLandingPage/app/context/BrandContext';
 import { SubtopicNotesViewData } from './subtopicNotesData';
 import { SubtopicTopBar } from './TutorialEngine/components/subtopic/SubtopicTopBar';
@@ -43,7 +43,7 @@ export function SubtopicNotesPage({ data }: SubtopicNotesPageProps) {
     { id: 'assignments', label: 'Assignments' },
     { id: 'project', label: 'Projects' },
     { id: 'quiz', label: 'Quiz' },
-    { id: 'ai-tutor', label: 'AI Tutor' }
+    { id: 'ai-tutor', label: brand.tutorLabel }
   ];
 
   const handleTabChange = (id: string) => {
@@ -79,6 +79,7 @@ export function SubtopicNotesPage({ data }: SubtopicNotesPageProps) {
         
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .subtopic-code-wrap, .subtopic-code-wrap * { overflow-wrap: anywhere; word-break: break-word; }
       `}} />
 
       {/* Top Navigation Bar */}
@@ -90,7 +91,7 @@ export function SubtopicNotesPage({ data }: SubtopicNotesPageProps) {
         onToggleRight={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
       />
 
-      <div className="relative flex flex-1 overflow-hidden">
+      <div className="relative flex min-w-0 flex-1 overflow-hidden">
         {/* Mobile Overlay */}
         {(isSidebarOpen || isRightSidebarOpen) && (
           <div 
@@ -112,24 +113,24 @@ export function SubtopicNotesPage({ data }: SubtopicNotesPageProps) {
         {/* Main Scrollable Content */}
         <main 
           id="main-content-area"
-          className="flex-1 overflow-y-auto hide-scrollbar bg-white" 
+          className="min-w-0 flex-1 overflow-y-auto hide-scrollbar bg-white"
           tabIndex={0}
           onClick={() => {
             if (isSidebarOpen) setIsSidebarOpen(false);
             if (isRightSidebarOpen) setIsRightSidebarOpen(false);
           }}
         >
-          <div className="mx-auto flex min-h-full w-full flex-col px-8 py-10 lg:px-12 xl:px-16 transition-all duration-500">
-            <div className="flex-1">
+          <div className="mx-auto flex min-h-full w-full min-w-0 flex-col px-4 py-6 transition-all duration-500 sm:px-6 sm:py-8 lg:px-10 xl:px-12">
+            <div className="min-w-0 flex-1">
                 {/* Centralized Breadcrumbs */}
-                <nav aria-label="Breadcrumbs" className="mb-8 flex flex-wrap items-center gap-2 text-[13px] font-bold text-slate-500">
+                <nav aria-label="Breadcrumbs" className="mb-8 flex min-w-0 flex-wrap items-center gap-2 text-[13px] font-bold text-slate-500">
                   <a href="#" className="hover:text-slate-900 transition-colors">Home</a>
                   <ChevronRight size={14} className="text-slate-400" />
                   <a href="#" className="hover:text-slate-900 transition-colors">JavaScript</a>
                   <ChevronRight size={14} className="text-slate-400" />
                   <a href="/start-learning/subtopic" className="hover:text-slate-900 transition-colors">Component Architecture</a>
                   <ChevronRight size={14} className="text-slate-400" />
-                  <span className="text-slate-950 cursor-default" style={{ color: brand.primaryColorDark }}>
+                  <span className="break-words text-slate-950 cursor-default" style={{ color: brand.primaryColorDark }}>
                     {orderedTabs.find(t => t.id === activeTab)?.label || 'Notes'}
                   </span>
                 </nav>
@@ -158,10 +159,81 @@ export function SubtopicNotesPage({ data }: SubtopicNotesPageProps) {
                 {activeTab === 'quiz' && (
                   <QuizContent />
                 )}
+                {activeTab === 'ai-tutor' && (
+                  <section className="min-w-0 space-y-6 rounded-[32px] bg-white p-5 shadow-xl sm:p-8">
+                    <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-white" style={{ backgroundColor: brand.primaryColor }}>
+                        <Bot size={24} aria-hidden="true" />
+                      </div>
+                      <div className="min-w-0">
+                        <h1 className="break-words text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">{data.rightSidebar.aiTutor.title}</h1>
+                        <p className="break-words text-sm font-medium text-slate-800">Component Architecture support thread</p>
+                      </div>
+                    </div>
+                    <div className="space-y-4">
+                      {data.rightSidebar.aiTutor.messages.map((message, index) => (
+                        <div key={index} className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                          <div className="max-w-full rounded-2xl px-4 py-3 text-sm font-medium leading-relaxed text-slate-950 shadow-sm sm:max-w-[80%]" style={{ backgroundColor: message.sender === 'user' ? `${brand.primaryColor}15` : '#f8fafc' }}>
+                            <p className="break-words">{message.text}</p>
+                            <p className="mt-2 text-[10px] font-bold text-slate-600">{message.time}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        aria-label={`Ask ${brand.tutorLabel}`}
+                        placeholder={data.rightSidebar.aiTutor.inputPlaceholder}
+                        className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-4 pr-12 text-sm font-medium text-slate-950 placeholder:text-slate-700 focus:outline-none focus:ring-2"
+                        style={{ '--tw-ring-color': brand.primaryColor } as React.CSSProperties}
+                      />
+                      <button className="absolute right-3 top-2.5 rounded-xl p-1.5 text-white" style={{ backgroundColor: brand.primaryColor }} aria-label="Send message">
+                        <Send size={16} aria-hidden="true" />
+                      </button>
+                    </div>
+                  </section>
+                )}
+                {activeTab === 'progress' && (
+                  <section className="min-w-0 space-y-6 rounded-[32px] bg-white p-5 shadow-xl sm:p-8">
+                    <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-white" style={{ backgroundColor: brand.primaryColor }}>
+                        <TrendingUp size={24} aria-hidden="true" />
+                      </div>
+                      <div className="min-w-0">
+                        <h1 className="break-words text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">Progress Tracker</h1>
+                        <p className="break-words text-sm font-medium text-slate-800">{data.leftSidebar.progress.message}</p>
+                      </div>
+                    </div>
+                    <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-3">
+                      <div className="rounded-2xl border border-slate-100 bg-slate-50 p-5">
+                        <p className="text-[11px] font-bold uppercase tracking-wider text-slate-700">Course</p>
+                        <p className="mt-2 break-words text-lg font-bold text-slate-950">{data.rightSidebar.courseProgress.courseName}</p>
+                      </div>
+                      <div className="rounded-2xl border border-slate-100 bg-slate-50 p-5">
+                        <p className="text-[11px] font-bold uppercase tracking-wider text-slate-700">Completion</p>
+                        <p className="mt-2 text-lg font-bold text-slate-950">{data.rightSidebar.courseProgress.label}</p>
+                      </div>
+                      <div className="rounded-2xl border border-slate-100 bg-slate-50 p-5">
+                        <p className="text-[11px] font-bold uppercase tracking-wider text-slate-700">XP</p>
+                        <p className="mt-2 flex items-center gap-2 text-lg font-bold text-emerald-800"><Star size={18} aria-hidden="true" /> +{data.rightSidebar.xpStats.earned} XP</p>
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      {data.leftSidebar.items.filter(item => item.id !== 'overview').slice(0, 8).map((item) => (
+                        <div key={item.id} className="flex min-w-0 items-center gap-3 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
+                          <CheckCircle2 size={18} className={item.status === 'completed' ? 'text-emerald-800' : 'text-slate-400'} aria-hidden="true" />
+                          <span className="min-w-0 break-words text-sm font-bold text-slate-900">{item.label}</span>
+                          <span className="ml-auto shrink-0 rounded-full bg-slate-100 px-2 py-1 text-[10px] font-bold uppercase text-slate-700">{item.status}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                )}
             </div>
 
             {/* Standardized Navigation Footer - Centralized for Stability */}
-            <div className="mt-12 pt-8">
+            <div className="mt-12 min-w-0 pt-8">
                 <TabFooter 
                     prevLabel={prevTab?.label}
                     nextLabel={nextTab?.label}
@@ -172,7 +244,7 @@ export function SubtopicNotesPage({ data }: SubtopicNotesPageProps) {
           </div>
         </main>
 
-        {/* Right Sidebar - Stats & AI Tutor */}
+        {/* Right Sidebar - Stats & Tutor */}
         <NotesRightSidebar
           data={data.rightSidebar}
           isOpen={isRightSidebarOpen}

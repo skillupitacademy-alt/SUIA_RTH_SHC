@@ -1,0 +1,45 @@
+{
+  "date": "2026-05-01",
+  "routes": [
+    "http://localhost:3003/start-learning/subtopic",
+    "http://localhost:3004/start-learning/subtopic"
+  ],
+  "checklistSource": "docs/completeproject/SHARED_UI_BRAND_AND_DATA_IMPLEMENTATION_GUIDE.md",
+  "defaultLayoutMatrix": {
+    "breakpoints": [320, 375, 480, 640, 768, 1024, 1280, 1440, 1920],
+    "zoom125Breakpoints": [320, 768, 1280, 1920],
+    "entries": 26,
+    "failures": 0
+  },
+  "openSidebarMatrix": {
+    "states": ["left-open", "right-open"],
+    "cases": [
+      { "width": 320, "zoom": 1 },
+      { "width": 320, "zoom": 1.25 },
+      { "width": 375, "zoom": 1 },
+      { "width": 375, "zoom": 1.25 },
+      { "width": 480, "zoom": 1.25 },
+      { "width": 768, "zoom": 1 },
+      { "width": 768, "zoom": 1.25 },
+      { "width": 1280, "zoom": 1.25 },
+      { "width": 1920, "zoom": 1.25 }
+    ],
+    "entries": 36,
+    "failures": 0
+  },
+  "confirmed": {
+    "bodyOverflow": false,
+    "docOverflow": false,
+    "viewportOverflowCount": 0,
+    "clippedContentCount": 0,
+    "parentBoundaryCount": 0,
+    "badMojibakeOrBulletCharacters": false,
+    "skillUpForbiddenAiTutorText": false,
+    "expectedTutorLabelsPresent": true
+  },
+  "notes": [
+    "Development-only React Query Devtools controls were excluded from shared page UI findings.",
+    "Hidden off-canvas sidebar states were excluded when closed; opened sidebar states were audited separately.",
+    "Decorative SVG primitives were excluded when they did not affect document overflow or visible component boundaries."
+  ]
+}

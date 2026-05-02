@@ -10,15 +10,15 @@ export function RealLifeExamplesContent({ data }: { data: SubtopicNotesViewData[
   if (!data) return null;
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="min-w-0 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <h1 className="text-4xl font-bold text-slate-950 tracking-tight">{data.title}</h1>
+      <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0 space-y-1">
+          <h1 className="break-words text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl lg:text-4xl">{data.title}</h1>
           <p className="text-[14px] font-medium text-slate-800">{data.intro}</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 flex-wrap items-center gap-3">
           <button className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-slate-800 shadow-sm border border-slate-200 hover:bg-slate-50 transition-all active:scale-95" aria-label="Bookmark this section">
             <Icons.Bookmark size={18} aria-hidden="true" />
           </button>
@@ -30,7 +30,7 @@ export function RealLifeExamplesContent({ data }: { data: SubtopicNotesViewData[
 
       {/* Hero Analogy Card */}
       <div 
-        className="relative overflow-hidden rounded-[40px] bg-white p-8 md:p-10 shadow-xl transition-all duration-300 hover:-translate-y-1"
+        className="relative overflow-hidden rounded-[32px] bg-white p-5 shadow-xl transition-all duration-300 hover:-translate-y-1 sm:p-8 md:p-10"
       >
         <div className="flex flex-col md:flex-row gap-10 items-center">
           <div className="flex-1 w-full">
@@ -49,7 +49,7 @@ export function RealLifeExamplesContent({ data }: { data: SubtopicNotesViewData[
             >
               {data.hero.badge}
             </div>
-            <h2 className="text-3xl font-bold text-slate-900 leading-tight">
+            <h2 className="break-words text-2xl font-bold leading-tight text-slate-900 sm:text-3xl">
               {data.hero.title}
             </h2>
             <p className="text-[15px] font-medium leading-relaxed text-slate-800">
@@ -98,7 +98,7 @@ export function RealLifeExamplesContent({ data }: { data: SubtopicNotesViewData[
 
       {/* Walkthrough Section */}
       <div 
-        className="rounded-[40px] bg-white p-10 shadow-xl transition-all duration-300 hover:-translate-y-1"
+        className="rounded-[32px] bg-white p-5 shadow-xl transition-all duration-300 hover:-translate-y-1 sm:p-10"
       >
         <div className="mb-10 space-y-2">
           <h2 className="text-2xl font-bold text-slate-900">{data.walkthrough.title}</h2>

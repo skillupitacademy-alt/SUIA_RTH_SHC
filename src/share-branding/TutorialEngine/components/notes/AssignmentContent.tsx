@@ -29,15 +29,15 @@ function App() {
 render(<App />);`;
 
   return (
-    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
+    <div className="min-w-0 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20 sm:space-y-12">
       
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <h1 className="text-4xl font-bold text-slate-950 tracking-tight">Assignment</h1>
+      <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0 space-y-1">
+          <h1 className="break-words text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl lg:text-4xl">Assignment</h1>
           <p className="text-[14px] font-medium text-slate-800">Apply Component Architecture to a real-world task.</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 flex-wrap items-center gap-3">
           <div className="flex items-center gap-1.5 rounded-xl bg-emerald-50 px-4 py-2 border border-emerald-100 shadow-sm">
              <Icons.Zap size={16} className="text-emerald-600" />
              <span className="text-xs font-bold text-emerald-950">+150 XP</span>
@@ -50,27 +50,27 @@ render(<App />);`;
       </div>
 
       {/* Task Description Card */}
-      <section className="rounded-[40px] bg-white p-10 shadow-xl border border-orange-100 transition-all duration-300 hover:-translate-y-1">
+      <section className="rounded-[32px] border border-orange-100 bg-white p-5 shadow-xl transition-all duration-300 hover:-translate-y-1 sm:p-10">
         <div className="space-y-8">
-          <div className="flex items-center gap-3">
+          <div className="flex min-w-0 items-center gap-3">
              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-orange-100 text-orange-950 border border-orange-200">
                 <Icons.Target size={22} aria-hidden="true" />
              </div>
-             <h2 className="text-xl font-bold text-slate-900">Task: Profile Dashboard Composition</h2>
+             <h2 className="break-words text-xl font-bold text-slate-900">Task: Profile Dashboard Composition</h2>
           </div>
           <p className="text-[16px] font-medium leading-relaxed text-slate-800">
             Your task is to refactor a monolithic dashboard into three clean, reusable components. The final result should:
           </p>
-          <ul className="space-y-4 ml-6">
+          <ul className="ml-0 space-y-4 sm:ml-6">
             {[
               'Contain a separate <Navbar /> component for branding.',
               'Contain a <Sidebar /> component for navigation links.',
               'Contain a <ProfileCard /> component to display user details.',
               'Compose all three into a single cohesive layout.'
             ].map((item, i) => (
-              <li key={i} className="flex items-center gap-3 text-[14px] font-medium text-slate-800">
-                <div className="h-1.5 w-1.5 rounded-full bg-rose-900" />
-                {item}
+              <li key={i} className="flex items-start gap-3 text-[14px] font-medium text-slate-800">
+                <div className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-rose-900" />
+                <span className="min-w-0 break-words">{item}</span>
               </li>
             ))}
           </ul>
@@ -78,7 +78,7 @@ render(<App />);`;
       </section>
 
       {/* Requirements */}
-      <section className="rounded-[32px] bg-white p-10 shadow-xl relative overflow-hidden group transition-all duration-300 hover:-translate-y-1">
+      <section className="relative overflow-hidden rounded-[32px] bg-white p-5 shadow-xl transition-all duration-300 hover:-translate-y-1 sm:p-10">
         <div className="flex items-center gap-3 mb-6">
           <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-950 border border-indigo-200">
             <Icons.CheckCircle size={22} aria-hidden="true" />
@@ -93,11 +93,11 @@ render(<App />);`;
             'Maintain a clear parent-child relationship.',
             'Code must be clean and well-commented.'
           ].map((item, i) => (
-            <li key={i} className="flex items-center gap-4 text-[14px] font-medium text-slate-700">
+            <li key={i} className="flex items-start gap-4 text-[14px] font-medium text-slate-700">
               <div className="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-100 text-indigo-950 border border-indigo-200">
                 <Icons.Check size={14} strokeWidth={4} aria-hidden="true" />
               </div>
-              {item}
+              <span className="min-w-0 break-words">{item}</span>
             </li>
           ))}
         </ul>
@@ -105,8 +105,8 @@ render(<App />);`;
 
       {/* Starter Code */}
       <section className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-emerald-950 border border-emerald-200">
                  <Icons.Code2 size={18} aria-hidden="true" />
               </div>
@@ -117,7 +117,7 @@ render(<App />);`;
           </button>
         </div>
         
-        <div className="rounded-[24px] overflow-hidden bg-[#0f172a] shadow-2xl border border-slate-200">
+        <div className="overflow-hidden rounded-[24px] border border-slate-200 bg-[#0f172a] shadow-2xl">
           <div className="relative group min-h-[300px]">
              {/* Line Numbers */}
              <div className="absolute left-0 top-0 bottom-0 w-12 bg-slate-900/50 border-r border-slate-800/50 flex flex-col items-center py-6 text-[12px] font-mono text-slate-400 select-none">
@@ -127,14 +127,14 @@ render(<App />);`;
              </div>
              {/* Code Content */}
              <div 
-               className="pl-16 py-6 font-mono text-[14px] leading-6 overflow-auto hide-scrollbar"
+               className="min-w-0 py-6 pl-14 pr-4 font-mono text-[12px] leading-6 sm:pl-16 sm:text-[14px]"
                tabIndex={0}
                role="region"
                aria-label="Starter Code Editor"
              >
-                <pre className="text-indigo-100">
+                <pre className="whitespace-pre-wrap break-words text-indigo-100">
                    {starterCode.split('\n').map((line, i) => (
-                     <div key={i} className="h-6 whitespace-pre">
+                     <div key={i} className="min-h-6 whitespace-pre-wrap break-words">
                        {line.includes('//') ? <span className="text-emerald-300 italic">{line}</span> : 
                         line.includes('function') ? <span className="text-pink-300">function </span> :
                         line.includes('render') ? <span className="text-amber-300">{line}</span> :
@@ -148,7 +148,7 @@ render(<App />);`;
       </section>
 
       {/* Submission Guidelines */}
-      <section className="rounded-[32px] bg-white p-10 flex items-center justify-between gap-10 relative overflow-hidden group shadow-xl transition-all duration-300 hover:-translate-y-1">
+      <section className="relative flex min-w-0 flex-col gap-8 rounded-[32px] bg-white p-5 shadow-xl transition-all duration-300 hover:-translate-y-1 sm:p-10 lg:flex-row lg:items-center lg:justify-between lg:gap-10">
          <div className="space-y-6 relative z-10 lg:max-w-xl">
             <div className="flex items-center gap-3">
                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-100 text-sky-950 border border-sky-200">
@@ -162,9 +162,9 @@ render(<App />);`;
                  'Do not modify the render call at the bottom.',
                  'Test your code structure before submitting.'
                ].map((item, i) => (
-                 <li key={i} className="flex items-center gap-3 text-[14px] font-medium text-slate-800">
-                    <div className="h-1.5 w-1.5 rounded-full bg-sky-950" />
-                    {item}
+                 <li key={i} className="flex items-start gap-3 text-[14px] font-medium text-slate-800">
+                    <div className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-sky-950" />
+                    <span className="min-w-0 break-words">{item}</span>
                  </li>
                ))}
             </ul>

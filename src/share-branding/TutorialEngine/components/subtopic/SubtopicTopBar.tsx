@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ChevronLeft, Flame, User, Menu, PanelRightClose, PanelRightOpen } from 'lucide-react';
+import { ChevronLeft, Flame, Menu, PanelRightClose, PanelRightOpen } from 'lucide-react';
 import { useBrand } from '../../../PostLandingPage/app/context/BrandContext';
 
 interface SubtopicTopBarProps {
@@ -24,9 +24,9 @@ export function SubtopicTopBar({ data, isLeftOpen, isRightOpen, onToggleLeft, on
   const brand = useBrand();
 
   return (
-    <nav aria-label="Top navigation" className="sticky top-0 z-50 flex h-16 w-full items-center justify-between bg-white px-4 shadow-sm sm:px-6">
+    <nav aria-label="Top navigation" className="sticky top-0 z-50 flex h-16 w-full items-center justify-between gap-2 bg-white px-3 shadow-sm sm:px-6">
       {/* Left: Branding & Breadcrumbs */}
-      <div className="flex items-center gap-4">
+      <div className="flex min-w-0 items-center gap-2 sm:gap-4">
         <button 
           onClick={onToggleLeft}
           className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900"
@@ -40,36 +40,36 @@ export function SubtopicTopBar({ data, isLeftOpen, isRightOpen, onToggleLeft, on
         >
           {brand.name.charAt(0)}
         </div>
-        <div className="hidden h-8 w-px bg-slate-100 sm:block"></div>
-        <div className="flex flex-col">
-          <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-slate-800">
-            <span>{data.courseLabel}</span>
+        <div className="hidden h-8 w-px bg-slate-100 lg:block"></div>
+        <div className="hidden min-w-0 flex-col lg:flex">
+          <div className="flex min-w-0 items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-slate-800">
+            <span className="truncate">{data.courseLabel}</span>
             <span className="text-slate-400">/</span>
-            <span className="text-slate-950">{data.lessonLabel}</span>
+            <span className="truncate text-slate-950">{data.lessonLabel}</span>
           </div>
-          <div className="text-sm font-bold text-slate-950">{brand.name}</div>
+          <div className="truncate text-sm font-bold text-slate-950">{brand.name}</div>
         </div>
       </div>
 
       {/* Right: Dashboard Link, Streak, Profile */}
-      <div className="flex items-center gap-6">
+      <div className="flex min-w-0 shrink-0 items-center gap-2 sm:gap-4 lg:gap-6">
         <Link 
           href="/dashboard"
-          className="flex items-center gap-2 rounded-full bg-slate-100 px-4 py-1.5 text-xs font-bold text-slate-900 transition-all hover:bg-slate-200 border border-slate-200"
+          className="hidden items-center gap-2 rounded-full border border-slate-200 bg-slate-100 px-4 py-1.5 text-xs font-bold text-slate-900 transition-all hover:bg-slate-200 sm:flex"
         >
           <ChevronLeft size={14} aria-hidden="true" />
           {data.dashboardCtaLabel}
         </Link>
 
-        <div className="flex items-center gap-4 pl-6">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-4 lg:pl-2">
           {/* Streak */}
-          <div className="flex items-center gap-1.5">
+          <div className="hidden items-center gap-1.5 min-[420px]:flex">
             <Flame size={18} fill="currentColor" style={{ color: brand.primaryColor }} aria-hidden="true" />
             <span className="text-sm font-bold text-slate-950">{data.streak}</span>
           </div>
 
           {/* XP */}
-          <div className="flex flex-col items-end">
+          <div className="hidden flex-col items-end md:flex">
             <span className="text-[10px] font-bold uppercase tracking-widest text-slate-800 leading-none">Total XP</span>
             <span className="text-sm font-bold text-primary leading-none" style={{ color: brand.primaryColor }}>
               {data.xpPoints.toLocaleString()}
@@ -84,7 +84,7 @@ export function SubtopicTopBar({ data, isLeftOpen, isRightOpen, onToggleLeft, on
             {data.learnerInitials}
           </div>
 
-          <div className="h-6 w-px bg-slate-100 mx-2"></div>
+          <div className="mx-1 hidden h-6 w-px bg-slate-100 md:block"></div>
 
           {/* Right Sidebar Toggle */}
           <button 

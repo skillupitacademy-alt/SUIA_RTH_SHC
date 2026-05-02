@@ -41,28 +41,28 @@ export function SubtopicRightPanel({ data, isOpen }: SubtopicRightPanelProps) {
   };
 
   return (
-    <aside tabIndex={0} aria-label="Progress and stats sidebar" className={`absolute bottom-0 right-0 top-0 z-40 flex w-[400px] flex-col overflow-y-auto bg-[#f8fafc] p-5 hide-scrollbar focus:outline-none transition-all duration-300 ${isOpen ? 'translate-x-0 shadow-2xl' : 'translate-x-full shadow-none'}`}>
+    <aside tabIndex={0} aria-label="Progress and stats sidebar" className={`fixed bottom-0 right-0 top-16 z-40 flex w-[78vw] flex-col overflow-y-auto bg-[#f8fafc] p-4 hide-scrollbar focus:outline-none transition-all duration-300 sm:p-5 min-[560px]:w-[min(400px,calc(100vw-1rem))] ${isOpen ? 'translate-x-0 shadow-2xl' : 'translate-x-full shadow-none'}`}>
       <div className="space-y-4">
         
         {/* XP Section */}
         <section className="rounded-3xl bg-white p-5 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
                  style={{ boxShadow: `0 20px 50px rgba(${brand.primaryRgb || '0,0,0'}, 0.05)` }}>
-          <div className="mb-4 flex items-center justify-between">
-            <div className="flex items-center gap-2">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+            <div className="flex min-w-0 items-center gap-2">
               <Icons.Flame size={18} className="text-orange-700" />
-              <h2 className="text-[14px] font-bold text-[#1e293b]">{data.xpSection.title}</h2>
+              <h2 className="break-words text-[14px] font-bold text-[#1e293b]">{data.xpSection.title}</h2>
             </div>
-            <span className="text-[11px] font-bold text-emerald-950 bg-emerald-100/50 px-2 py-0.5 rounded-full border border-emerald-200">+{data.xpSection.totalXp} XP</span>
+            <span className="shrink-0 rounded-full border border-emerald-200 bg-emerald-100/50 px-2 py-0.5 text-[11px] font-bold text-emerald-950">+{data.xpSection.totalXp} XP</span>
           </div>
           
-          <div className="mb-5 flex items-center justify-between">
-            <div className="flex flex-col">
+          <div className="mb-5 flex items-center justify-between gap-4">
+            <div className="flex min-w-0 flex-col">
               <span className="text-[11px] font-bold text-slate-800">You will earn</span>
               <div className="flex items-baseline gap-1 my-0.5">
                 <span className="text-[32px] font-bold text-slate-950 leading-none">{data.xpSection.totalXp}</span>
                 <span className="text-[14px] font-bold text-slate-950">XP</span>
               </div>
-              <span className="text-[11px] font-medium text-slate-800">{data.xpSection.xpMessage}</span>
+              <span className="break-words text-[11px] font-medium text-slate-800">{data.xpSection.xpMessage}</span>
             </div>
             <div className="flex h-[72px] w-[72px] shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-orange-700 shadow-lg shadow-orange-500/30 relative border border-orange-400">
                <div className="absolute inset-1 rounded-full bg-white/10"></div>
@@ -85,25 +85,25 @@ export function SubtopicRightPanel({ data, isOpen }: SubtopicRightPanelProps) {
           className="rounded-3xl bg-white p-5 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
           style={{ boxShadow: `0 20px 50px rgba(${brand.primaryRgb || '0,0,0'}, 0.05)` }}
         >
-          <div className="mb-5 flex items-center justify-between">
-            <div className="flex items-center gap-2">
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
+            <div className="flex min-w-0 items-center gap-2">
               <Icons.Trophy size={16} className="text-amber-700" />
-              <h2 className="text-[14px] font-bold text-[#1e293b]">{data.achievements.title}</h2>
+              <h2 className="break-words text-[14px] font-bold text-[#1e293b]">{data.achievements.title}</h2>
             </div>
-            <button className="text-[11px] font-bold text-orange-800 hover:text-orange-900 transition-colors">View All</button>
+            <button className="shrink-0 text-[11px] font-bold text-orange-800 transition-colors hover:text-orange-900">View All</button>
           </div>
           <div className="space-y-4">
             {data.achievements.items.map((item) => {
               const Icon = getIcon(item.icon);
               const colorClass = item.color === 'red' ? 'bg-rose-100 text-rose-950 border-rose-200' : 'bg-blue-100 text-blue-950 border-blue-200';
               return (
-                <div key={item.id} className="flex items-center gap-3">
+                <div key={item.id} className="flex min-w-0 items-center gap-3">
                   <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border ${colorClass}`}>
                     <Icon size={20} className="fill-current" aria-hidden="true" />
                   </div>
-                  <div className="flex flex-col">
-                    <h3 className="text-[12px] font-bold text-slate-950">{item.title}</h3>
-                    <p className="text-[11px] font-medium text-slate-800">{item.description}</p>
+                  <div className="flex min-w-0 flex-col">
+                    <h3 className="break-words text-[12px] font-bold text-slate-950">{item.title}</h3>
+                    <p className="break-words text-[11px] font-medium text-slate-800">{item.description}</p>
                   </div>
                 </div>
               );
@@ -116,30 +116,30 @@ export function SubtopicRightPanel({ data, isOpen }: SubtopicRightPanelProps) {
           className="rounded-3xl p-5 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
           style={{ backgroundColor: '#1d4ed8', boxShadow: `0 20px 50px rgba(${brand.primaryRgb || '0,0,0'}, 0.08)` }}
         >
-          <div className="mb-5 flex items-center gap-2">
+          <div className="mb-5 flex min-w-0 items-center gap-2">
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/20 text-white">
               <Icons.BarChart2 size={16} />
             </div>
             <h2 className="text-[14px] font-bold text-white">{data.weaknessAnalysis.title}</h2>
           </div>
           
-          <div className="mb-5 flex items-center gap-4">
+          <div className="mb-5 flex flex-wrap items-center gap-4">
             <div className="flex flex-col">
               <span className="text-[11px] font-medium text-white">Your Score</span>
               <span className="text-[32px] font-bold text-white leading-none">{data.weaknessAnalysis.score}%</span>
             </div>
-            <span className="text-[12px] font-bold text-white mt-3">{data.weaknessAnalysis.scoreLabel}</span>
+            <span className="mt-3 break-words text-[12px] font-bold text-white">{data.weaknessAnalysis.scoreLabel}</span>
           </div>
           
           <ul className="mb-5 space-y-2">
             {data.weaknessAnalysis.items.map((item) => {
               return (
-                <li key={item.id} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-white text-xs" aria-hidden="true">•</span>
-                    <span className="text-[12px] font-bold text-white">{item.topic}</span>
+                <li key={item.id} className="flex min-w-0 items-center justify-between gap-3">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span className="text-xs text-white" aria-hidden="true">-</span>
+                    <span className="break-words text-[12px] font-bold text-white">{item.topic}</span>
                   </div>
-                  <span className="rounded-full bg-white/30 px-2.5 py-0.5 text-[10px] font-bold text-white border border-white/10">
+                  <span className="shrink-0 rounded-full border border-white/10 bg-white/30 px-2.5 py-0.5 text-[10px] font-bold text-white">
                     {item.status}
                   </span>
                 </li>
@@ -155,7 +155,7 @@ export function SubtopicRightPanel({ data, isOpen }: SubtopicRightPanelProps) {
           </button>
         </section>
 
-        {/* AI Tutor Chat Box */}
+        {/* Tutor Chat Box */}
         <section 
           className="rounded-3xl p-5 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
           style={{ backgroundColor: '#7e22ce', boxShadow: `0 20px 50px rgba(${brand.primaryRgb || '0,0,0'}, 0.08)` }}
@@ -164,7 +164,7 @@ export function SubtopicRightPanel({ data, isOpen }: SubtopicRightPanelProps) {
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/20 text-white border border-white/10">
               <Icons.Bot size={18} aria-hidden="true" />
             </div>
-            <h2 className="text-[15px] font-bold text-white">{data.aiTutor.title}</h2>
+            <h2 className="break-words text-[15px] font-bold text-white">{data.aiTutor.title}</h2>
           </div>
           <p className="mb-4 text-[12px] font-medium text-white leading-relaxed whitespace-pre-line">
             {data.aiTutor.subtitle}
@@ -173,7 +173,7 @@ export function SubtopicRightPanel({ data, isOpen }: SubtopicRightPanelProps) {
           <div className="relative mb-4">
             <input 
               type="text" 
-              aria-label="Ask AI Tutor"
+              aria-label={`Ask ${brand.tutorLabel}`}
               placeholder={data.aiTutor.inputPlaceholder}
               className="w-full rounded-xl bg-white py-3 pl-4 pr-10 text-[12px] font-medium text-slate-900 placeholder:text-slate-800 shadow-lg focus:outline-none focus:ring-2 focus:ring-white border-none"
             />

@@ -178,7 +178,7 @@ export async function loadSubtopicNotesData(brand: BrandConfig): Promise<Subtopi
         { id: 'assignments', label: 'Assignments', status: 'completed', icon: 'FileCheck' },
         { id: 'project', label: 'Projects', icon: 'Briefcase', status: 'completed' },
         { id: 'quiz', label: 'Quiz', status: 'active', icon: 'HelpCircle' },
-        { id: 'ai-tutor', label: 'AI Tutor', status: 'pending', icon: 'Circle' },
+        { id: 'ai-tutor', label: brand.tutorLabel, status: 'pending', icon: 'Circle' },
         { id: 'progress', label: 'Progress Tracker', status: 'pending', icon: 'TrendingUp' },
       ],
       progress: {
@@ -242,20 +242,20 @@ export async function loadSubtopicNotesData(brand: BrandConfig): Promise<Subtopi
         intro: "Let's understand Component Architecture with real life situations around us.",
         hero: {
           badge: 'Think of a Component as...',
-          title: 'A Modular Kitchen Assembly 🍳',
+          title: 'A Modular Kitchen Assembly',
           description: "When you buy a modular kitchen, you don't build every shelf from scratch. You choose pre-made cabinets (components) and arrange them to fit your space. Each cabinet comes with its own doors and handles already attached.",
           highlight: 'You just choose the cabinets. The kitchen structure is done for you!',
           image: '/modular_kitchen.png'
         },
         scenarios: [
-          { id: 'rs1', title: 'Modular Furniture', description: 'IKEA parts that fit together perfectly to build a chair.', footer: 'You Connect → It Works', image: '/modular_furniture.png' },
-          { id: 'rs2', title: 'PC Components', description: 'RAM and GPU are components that plug into a motherboard.', footer: 'You Plug → It Executes', image: '/pc_components.png' },
-          { id: 'rs3', title: 'Traffic Lights', description: 'One standard design used at every intersection in the city.', footer: 'One Design → Many Places', image: '/traffic_light.png' },
-          { id: 'rs4', title: 'Vending Machines', description: 'Keypads and screens are reused parts of the machine.', footer: 'One Part → Multiple Uses', image: '/vending_machine.png' }
+          { id: 'rs1', title: 'Modular Furniture', description: 'IKEA parts that fit together perfectly to build a chair.', footer: 'You Connect -> It Works', image: '/modular_furniture.png' },
+          { id: 'rs2', title: 'PC Components', description: 'RAM and GPU are components that plug into a motherboard.', footer: 'You Plug -> It Executes', image: '/pc_components.png' },
+          { id: 'rs3', title: 'Traffic Lights', description: 'One standard design used at every intersection in the city.', footer: 'One Design -> Many Places', image: '/traffic_light.png' },
+          { id: 'rs4', title: 'Vending Machines', description: 'Keypads and screens are reused parts of the machine.', footer: 'One Part -> Multiple Uses', image: '/vending_machine.png' }
         ],
         walkthrough: {
           title: "Let's Walk Through This",
-          subtitle: 'Building a Social Media Feed 📱',
+          subtitle: 'Building a Social Media Feed',
           steps: [
             { id: 'st1', title: 'Identify Parts', description: 'Break the feed design into buttons and cards.', icon: 'PencilLine' },
             { id: 'st2', title: 'Build Bricks', description: 'Create individual components for each piece.', icon: 'Package' },
@@ -302,7 +302,7 @@ export async function loadSubtopicNotesData(brand: BrandConfig): Promise<Subtopi
             },
             code: {
               language: 'javascript',
-              code: 'const [count, setCount] = useState(0);\n\n// 1. User clicks → setCount(1)\n// 2. React triggers Render Phase\n// 3. New Virtual DOM generated\n// 4. Diffing: count changed 0 → 1\n// 5. Commit Phase: Update only the text node',
+              code: 'const [count, setCount] = useState(0);\n\n// 1. User clicks -> setCount(1)\n// 2. React triggers Render Phase\n// 3. New Virtual DOM generated\n// 4. Diffing: count changed 0 -> 1\n// 5. Commit Phase: Update only the text node',
               output: '// Output: 1, 4, 3, 2'
             }
           },
@@ -311,9 +311,9 @@ export async function loadSubtopicNotesData(brand: BrandConfig): Promise<Subtopi
             title: '3. Component Resolution',
             content: 'Component resolution procedure:',
             steps: [
-               { id: 's1', text: 'If a component receives new props → it becomes dirty.' },
-               { id: 's2', text: 'If state updates → it schedules a re-render.' },
-               { id: 's3', text: 'If parent re-renders → children are re-evaluated.' }
+               { id: 's1', text: 'If a component receives new props -> it becomes dirty.' },
+               { id: 's2', text: 'If state updates -> it schedules a re-render.' },
+               { id: 's3', text: 'If parent re-renders -> children are re-evaluated.' }
             ],
             code: {
               language: 'javascript',
@@ -336,7 +336,7 @@ export async function loadSubtopicNotesData(brand: BrandConfig): Promise<Subtopi
     },
     rightSidebar: {
       aiTutor: {
-        title: `${brand.tutorLabel || 'AI Tutor'} (Ask Anything)`,
+        title: `${brand.tutorLabel || 'Tutor'} (Ask Anything)`,
         messages: [
           { text: 'What is component architecture?', time: '2:30 PM', sender: 'user' },
           { text: 'Component architecture is a way to handle scalable applications by organizing code into independent components. Would you like to see an example?', time: '2:30 PM', sender: 'bot' }

@@ -10,14 +10,14 @@ export function TechnicalDeepDiveContent({ data }: { data?: SubtopicNotesViewDat
    if (!data) return null;
 
    return (
-      <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
+      <div className="min-w-0 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20 sm:space-y-12">
 
          {/* Header */}
-         <div className="flex items-center justify-between">
-            <div className="space-y-1">
+         <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0 space-y-1">
 
-               <div className="flex items-center gap-3">
-                  <h1 className="text-4xl font-bold text-slate-950 tracking-tight">{data.title}</h1>
+               <div className="flex min-w-0 flex-wrap items-center gap-3">
+                  <h1 className="break-words text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl lg:text-4xl">{data.title}</h1>
                   <div
                      className="rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm"
                      style={{ backgroundColor: brand.primaryColor }}
@@ -27,7 +27,7 @@ export function TechnicalDeepDiveContent({ data }: { data?: SubtopicNotesViewDat
                </div>
                <p className="text-[14px] font-medium text-slate-800">{data.intro}</p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex shrink-0 flex-wrap items-center gap-3">
                <button className="flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-bold text-slate-800 shadow-sm border border-slate-200 hover:bg-slate-50 transition-all active:scale-95" aria-label="Bookmark this technical deep dive">
                   <Icons.Bookmark size={16} aria-hidden="true" /> Bookmark
                </button>
@@ -38,14 +38,14 @@ export function TechnicalDeepDiveContent({ data }: { data?: SubtopicNotesViewDat
          </div>
 
          {/* 0. Intro Section */}
-         <section className="rounded-[40px] bg-white p-10 shadow-xl transition-all duration-300 hover:-translate-y-1">
+         <section className="rounded-[32px] bg-white p-5 shadow-xl transition-all duration-300 hover:-translate-y-1 sm:p-10">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                <div className="space-y-8">
-                  <h2 className="text-3xl font-bold text-slate-950 tracking-tight">What is a Component?</h2>
+                  <h2 className="break-words text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">What is a Component?</h2>
                   <p className="text-[16px] font-medium leading-relaxed text-slate-800">
                      A <strong>Component</strong> is a self-contained unit of UI that manages its own logic and appearance. It represents a piece of the eventual full page.
                   </p>
-                  <div className="flex items-center gap-6 py-2">
+                  <div className="flex flex-wrap items-center gap-4 py-2 sm:gap-6">
                      <div className="flex flex-col items-center gap-2">
                         <div className="rounded-[18px] bg-orange-100 px-6 py-3 text-sm font-bold text-orange-950 shadow-sm border border-orange-200">Pending</div>
                         <span className="text-[12px] text-slate-800 font-bold">Mounting / Loading</span>
@@ -62,9 +62,9 @@ export function TechnicalDeepDiveContent({ data }: { data?: SubtopicNotesViewDat
                      </div>
                   </div>
                </div>
-               <div className="rounded-[32px] overflow-hidden bg-[#0f172a] shadow-2xl relative h-[300px]">
+               <div className="relative h-[300px] overflow-hidden rounded-[32px] bg-[#0f172a] shadow-2xl">
                   <div
-                     className="p-8 font-mono text-[13px] leading-relaxed overflow-auto h-full hide-scrollbar text-indigo-100"
+                     className="subtopic-code-wrap h-full overflow-auto p-4 font-mono text-[12px] leading-relaxed text-indigo-100 hide-scrollbar sm:p-8 sm:text-[13px]"
                      style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                      tabIndex={0}
                      role="region"
@@ -97,8 +97,8 @@ export function TechnicalDeepDiveContent({ data }: { data?: SubtopicNotesViewDat
 
                      <p className="text-indigo-100">{`</`}<span className="text-pink-400">div</span>{`>`}</p>
                   </div>
-                  <div className="absolute bottom-6 right-6 flex items-center gap-4">
-                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">JSX</span>
+                  <div className="absolute bottom-4 left-4 right-4 flex items-center justify-end gap-4">
+                     <span className="hidden text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 sm:inline">JSX</span>
                      <button className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-800 text-slate-400 hover:text-white transition-colors shadow-lg" aria-label="Copy code">
                         <Icons.Copy size={16} aria-hidden="true" />
                      </button>
@@ -108,20 +108,20 @@ export function TechnicalDeepDiveContent({ data }: { data?: SubtopicNotesViewDat
          </section>
 
          {/* 1. Component Anatomy */}
-         <section className="rounded-[32px] bg-white p-10 shadow-xl space-y-8 transition-all duration-300 hover:-translate-y-1">
+         <section className="space-y-8 rounded-[32px] bg-white p-5 shadow-xl transition-all duration-300 hover:-translate-y-1 sm:p-10">
             <div className="flex items-center gap-3">
                <div className="flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold text-white" style={{ backgroundColor: brand.primaryColor }}>1</div>
-               <h2 className="text-xl font-bold text-slate-950 tracking-tight">Component Anatomy</h2>
+               <h2 className="break-words text-xl font-bold tracking-tight text-slate-950">Component Anatomy</h2>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                {/* Left Box: Internal Structure */}
-               <div className="lg:col-span-7 rounded-[24px] bg-slate-50/50 p-8 relative shadow-lg transition-all duration-300 hover:shadow-xl border border-slate-100">
+               <div className="relative rounded-[24px] border border-slate-100 bg-slate-50/50 p-4 shadow-lg transition-all duration-300 hover:shadow-xl sm:p-8 lg:col-span-7">
                   <h3 className="text-sm font-bold text-slate-800 mb-8 uppercase tracking-widest">Internal Structure:</h3>
 
-                  <div className="relative flex items-center h-[280px]">
+                  <div className="relative flex min-w-0 flex-col gap-4 sm:h-[280px] sm:flex-row sm:items-center">
                      {/* Center Object */}
-                     <div className="flex flex-col items-center gap-3 ml-12">
+                     <div className="flex flex-col items-center gap-3 sm:ml-12">
                         <div className="relative z-20 flex h-20 w-20 items-center justify-center rounded-full bg-white shadow-xl shadow-rose-50 overflow-hidden border border-rose-100">
                            <div className="absolute inset-0 bg-rose-500/5 animate-pulse" />
                            <Icons.Package size={32} className="text-rose-600 relative z-10" aria-hidden="true" />
@@ -130,7 +130,7 @@ export function TechnicalDeepDiveContent({ data }: { data?: SubtopicNotesViewDat
                      </div>
 
                      {/* SVG Colored Arrows */}
-                     <svg className="absolute inset-0 h-full w-full pointer-events-none z-10" viewBox="0 0 500 280">
+                     <svg className="pointer-events-none absolute inset-0 z-10 hidden h-full w-full sm:block" viewBox="0 0 500 280">
                         <defs>
                            <marker id="arrow-blue" markerWidth="10" markerHeight="10" refX="8" refY="3" orientation="auto" markerUnits="strokeWidth">
                               <path d="M0,0 L0,6 L9,3 z" fill="#3b82f6" />
@@ -152,10 +152,10 @@ export function TechnicalDeepDiveContent({ data }: { data?: SubtopicNotesViewDat
                      </svg>
 
                      {/* Labels */}
-                     <div className="absolute right-8 top-0 bottom-0 flex flex-col justify-between py-2 w-[200px] z-20">
+                     <div className="z-20 grid w-full min-w-0 grid-cols-1 gap-2 sm:absolute sm:bottom-0 sm:right-8 sm:top-0 sm:flex sm:w-[200px] sm:flex-col sm:justify-between sm:py-2">
                         <div className="rounded-xl bg-blue-100 p-3 shadow-sm border border-blue-200">
-                           <div className="text-[11px] font-bold text-blue-950">[[Props]]</div>
-                           <div className="text-[10px] font-medium text-blue-800">Read-only external data</div>
+                           <div className="break-words text-[11px] font-bold text-blue-950">[[Props]]</div>
+                           <div className="break-words text-[10px] font-medium text-blue-800">Read-only external data</div>
                         </div>
                         <div className="rounded-xl bg-emerald-100 p-3 shadow-sm border border-emerald-200">
                            <div className="text-[11px] font-bold text-emerald-950">[[State]]</div>
@@ -174,7 +174,7 @@ export function TechnicalDeepDiveContent({ data }: { data?: SubtopicNotesViewDat
                </div>
 
                {/* Right Box: Key Points */}
-               <div className="lg:col-span-5 rounded-[24px] bg-white p-8 relative shadow-lg transition-all duration-300 hover:shadow-xl">
+               <div className="relative rounded-[24px] bg-white p-5 shadow-lg transition-all duration-300 hover:shadow-xl sm:p-8 lg:col-span-5">
                   <h3 className="text-sm font-bold text-slate-900 mb-8 uppercase tracking-widest">Key Points:</h3>
                   <ul className="space-y-6">
                      {[
@@ -196,15 +196,15 @@ export function TechnicalDeepDiveContent({ data }: { data?: SubtopicNotesViewDat
          </section>
 
          {/* 2. Rendering & Reconciliation */}
-         <section className="rounded-[32px] bg-white p-10 shadow-xl space-y-8 transition-all duration-300 hover:-translate-y-1">
+         <section className="space-y-8 rounded-[32px] bg-white p-5 shadow-xl transition-all duration-300 hover:-translate-y-1 sm:p-10">
             <div className="flex items-center gap-3">
                <div className="flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold text-white" style={{ backgroundColor: brand.primaryColor }}>2</div>
                <h2 className="text-xl font-bold text-slate-950 tracking-tight">Rendering & Reconciliation</h2>
             </div>
             <p className="text-[14px] font-medium text-slate-800">Updates are batched and processed in the reconciliation phase.</p>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-               <div className="flex items-center justify-between gap-2 p-8 bg-slate-50 rounded-[32px] shadow-sm">
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-10">
+               <div className="flex flex-wrap items-center justify-center gap-4 rounded-[32px] bg-slate-50 p-5 shadow-sm sm:justify-between sm:gap-2 sm:p-8">
                   <div className="flex flex-col items-center gap-3">
                      <div className="relative flex h-20 w-16 flex-col items-center justify-center gap-1.5 rounded-xl bg-white p-2 shadow-sm border border-slate-200">
                         <Icons.Layout size={24} className="text-indigo-800" aria-hidden="true" />
@@ -227,7 +227,7 @@ export function TechnicalDeepDiveContent({ data }: { data?: SubtopicNotesViewDat
                </div>
                <div className="rounded-[32px] overflow-hidden bg-[#0f172a] shadow-2xl relative h-[300px]">
                   <div
-                     className="p-8 font-mono text-[13px] leading-relaxed overflow-auto h-full hide-scrollbar text-indigo-100"
+                     className="subtopic-code-wrap h-full overflow-auto p-4 font-mono text-[12px] leading-relaxed text-indigo-100 hide-scrollbar sm:p-8 sm:text-[13px]"
                      style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                      tabIndex={0}
                      role="region"
@@ -241,8 +241,8 @@ export function TechnicalDeepDiveContent({ data }: { data?: SubtopicNotesViewDat
                      <p className="mb-1 ml-4"><span className="text-indigo-300">console</span>.<span className="text-emerald-400">log</span>(<span className="text-emerald-400">'Batched!'</span>);</p>
                      <p>{`};`}</p>
                   </div>
-                  <div className="absolute bottom-6 right-6 flex items-center gap-4">
-                     <span className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em]">RECONCILIATION</span>
+                  <div className="absolute bottom-4 left-4 right-4 flex items-center justify-end gap-4">
+                     <span className="hidden text-[10px] font-bold uppercase tracking-[0.2em] text-slate-600 sm:inline">RECONCILIATION</span>
                      <button className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-800 text-slate-400 hover:text-white transition-colors shadow-lg" aria-label="Copy code">
                         <Icons.Copy size={16} aria-hidden="true" />
                      </button>
@@ -252,7 +252,7 @@ export function TechnicalDeepDiveContent({ data }: { data?: SubtopicNotesViewDat
          </section>
 
          {/* 3. Component Resolution */}
-         <section className="rounded-[32px] bg-white p-10 shadow-xl space-y-8 transition-all duration-300 hover:-translate-y-1">
+         <section className="space-y-8 rounded-[32px] bg-white p-5 shadow-xl transition-all duration-300 hover:-translate-y-1 sm:p-10">
             <div className="flex items-center gap-3">
                <div className="flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold text-white" style={{ backgroundColor: brand.primaryColor }}>3</div>
                <h2 className="text-xl font-bold text-slate-950 tracking-tight">Component Resolution</h2>
@@ -263,9 +263,9 @@ export function TechnicalDeepDiveContent({ data }: { data?: SubtopicNotesViewDat
                   <h3 className="text-[14px] font-bold text-slate-900">Resolution procedure:</h3>
                   <div className="space-y-4">
                      {[
-                        'If a component receives new props → it becomes dirty.',
-                        'If state updates → it schedules a re-render.',
-                        'If parent re-renders → children are re-evaluated.'
+                        'If a component receives new props -> it becomes dirty.',
+                        'If state updates -> it schedules a re-render.',
+                        'If parent re-renders -> children are re-evaluated.'
                      ].map((step, i) => (
                         <div key={i} className="flex items-start gap-4 p-4 rounded-2xl bg-orange-100/20 border border-orange-100/50">
                            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-orange-100 text-[10px] font-bold text-orange-950 border border-orange-200">{i + 1}</div>
@@ -276,7 +276,7 @@ export function TechnicalDeepDiveContent({ data }: { data?: SubtopicNotesViewDat
                </div>
                <div className="rounded-[32px] overflow-hidden bg-[#0f172a] shadow-2xl relative h-[300px]">
                   <div
-                     className="p-8 font-mono text-[13px] leading-relaxed overflow-auto h-full hide-scrollbar text-indigo-100"
+                     className="subtopic-code-wrap h-full overflow-auto p-4 font-mono text-[12px] leading-relaxed text-indigo-100 hide-scrollbar sm:p-8 sm:text-[13px]"
                      style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                      tabIndex={0}
                      role="region"
@@ -303,14 +303,14 @@ export function TechnicalDeepDiveContent({ data }: { data?: SubtopicNotesViewDat
          </section>
 
          {/* 4. Recursive Composition */}
-         <section className="rounded-[32px] bg-white p-10 shadow-xl space-y-8 transition-all duration-300 hover:-translate-y-1">
+         <section className="space-y-8 rounded-[32px] bg-white p-5 shadow-xl transition-all duration-300 hover:-translate-y-1 sm:p-10">
             <div className="flex items-center gap-3">
                <div className="flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold text-white" style={{ backgroundColor: brand.primaryColor }}>4</div>
                <h2 className="text-xl font-bold text-slate-950 tracking-tight">Recursive Composition</h2>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-               <div className="lg:col-span-8 rounded-[32px] bg-slate-50 p-10 space-y-10">
+               <div className="space-y-8 rounded-[32px] bg-slate-50 p-5 sm:p-10 lg:col-span-8 lg:space-y-10">
                   <div className="space-y-2">
                      <h3 className="text-[11px] font-bold text-slate-800 uppercase tracking-[0.2em]">RENDERING CHAIN:</h3>
                      <p className="text-[14px] font-medium text-slate-800">Each component returns a new element recursively until reaching basic units.</p>
@@ -360,10 +360,9 @@ export function TechnicalDeepDiveContent({ data }: { data?: SubtopicNotesViewDat
                   </div>
                </div>
 
-               <div className="lg:col-span-4 rounded-[32px] bg-orange-100/10 p-10 flex flex-col justify-center relative overflow-hidden shadow-sm shadow-orange-100/10 border border-slate-200">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 rounded-full -mr-16 -mt-16" />
+               <div className="relative flex min-w-0 flex-col justify-center rounded-[32px] border border-slate-200 bg-orange-100/10 p-5 shadow-sm shadow-orange-100/10 sm:p-10 lg:col-span-4">
                   <h3 className="text-[14px] font-bold text-orange-950 uppercase tracking-widest mb-4">Why it matters?</h3>
-                  <p className="text-[14px] font-medium text-slate-800 leading-relaxed relative z-10">
+                  <p className="relative z-10 break-words text-[14px] font-medium leading-relaxed text-slate-800">
                      This allows you to build powerful, scalable user interfaces by composing simple, reusable primitives step-by-step.
                   </p>
                </div>

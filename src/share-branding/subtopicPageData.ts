@@ -131,7 +131,7 @@ export async function loadTutorialData(brand: BrandConfig): Promise<SubtopicView
         { id: 'assignment', label: 'Assignment', icon: 'ClipboardList' },
         { id: 'project', label: 'Project', icon: 'Puzzle' },
         { id: 'quiz', label: 'Quiz', icon: 'ClipboardCheck' },
-        { id: 'ai-tutor', label: 'AI Tutor', icon: 'Bot' },
+        { id: 'ai-tutor', label: brand.tutorLabel, icon: 'Bot' },
         { id: 'summary', label: 'Summary', icon: 'FileText' },
         { id: 'interview', label: 'Interview', icon: 'Presentation' },
         { id: 'remediation', label: 'Remediation', icon: 'Activity' },
@@ -171,7 +171,7 @@ export async function loadTutorialData(brand: BrandConfig): Promise<SubtopicView
       tasks: [
         {
           id: 't1', title: 'Practice Tasks', type: 'practice',
-          content: '• Identify container vs presentational components\n• Break a complex UI into a component tree\n• Implement the children prop',
+          content: '- Identify container vs presentational components\n- Break a complex UI into a component tree\n- Implement the children prop',
           ctaLabel: 'View All (10)'
         },
         {
@@ -224,7 +224,7 @@ export async function loadTutorialData(brand: BrandConfig): Promise<SubtopicView
       },
       aiTutor: {
         title: `Ask ${brand.tutorLabel}`,
-        subtitle: 'Got doubts about this topic?\nAsk our AI Tutor anytime.',
+        subtitle: `Got doubts about this topic?\nAsk our ${brand.tutorLabel} anytime.`,
         inputPlaceholder: 'Ask anything...',
         examples: ['Examples', 'Explain like I\'m 5', 'Interview Q']
       }

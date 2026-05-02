@@ -13,7 +13,7 @@ export function NotesLeftSidebar({ data, isOpen, activeId, onSelect }: { data: S
   return (
     <aside 
       aria-label="Learning Path Sidebar" 
-      className={`absolute bottom-0 left-0 top-0 z-40 flex w-[280px] flex-col overflow-y-auto bg-white p-5 hide-scrollbar transition-transform duration-300 shadow-2xl ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
+      className={`fixed bottom-0 left-0 top-16 z-40 flex w-[78vw] flex-col overflow-y-auto bg-white p-4 hide-scrollbar transition-transform duration-300 shadow-2xl min-[440px]:w-[280px] sm:p-5 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
       tabIndex={0}
       role="region"
     >
@@ -49,12 +49,12 @@ export function NotesLeftSidebar({ data, isOpen, activeId, onSelect }: { data: S
               key={item.id}
               onClick={() => !isLocked && onSelect(item.id)}
               aria-label={`Learning path item: ${item.label}`}
-              className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-xs transition-colors ${bgClass} ${isActive ? 'bg-primary-dynamic bg-opacity-10' : ''}`}
+              className={`flex w-full min-w-0 items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-left text-xs transition-colors ${bgClass} ${isActive ? 'bg-primary-dynamic bg-opacity-10' : ''}`}
             >
-              <span className={`flex items-center gap-2.5 ${itemColorClass}`}>
+              <span className={`flex min-w-0 items-center gap-2.5 ${itemColorClass}`}>
                 {isActive && <div className="absolute left-0 h-5 w-1 rounded-r-md bg-primary-dynamic" aria-hidden="true" />}
-                <Icon size={14} className={iconColorClass} aria-hidden="true" />
-                {item.label}
+                <Icon size={14} className={`${iconColorClass} shrink-0`} aria-hidden="true" />
+                <span className="min-w-0 break-words">{item.label}</span>
               </span>
               {isCompleted && <Icons.CheckCircle2 size={14} className="text-emerald-950 fill-emerald-50" aria-hidden="true" />}
               {isLocked && <Icons.Lock size={12} className="text-slate-800" aria-hidden="true" />}

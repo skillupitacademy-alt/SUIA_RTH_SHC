@@ -29,15 +29,15 @@ export function ProjectContent({ onNext }: { onNext?: () => void }) {
   ];
 
   return (
-    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
+    <div className="min-w-0 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20 sm:space-y-12">
       
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <h1 className="text-4xl font-bold text-slate-950 tracking-tight">Capstone Project</h1>
+      <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0 space-y-1">
+          <h1 className="break-words text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl lg:text-4xl">Capstone Project</h1>
           <p className="text-[14px] font-medium text-slate-800">Master Component Architecture through this hands-on project.</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 flex-wrap items-center gap-3">
           <div className="flex items-center gap-1.5 rounded-xl bg-orange-50 px-4 py-2 border border-orange-100 shadow-sm">
              <Icons.Trophy size={16} className="text-orange-600" />
              <span className="text-xs font-bold text-orange-950">+500 XP</span>
@@ -50,7 +50,7 @@ export function ProjectContent({ onNext }: { onNext?: () => void }) {
       </div>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden rounded-[40px] bg-white p-10 shadow-xl transition-all duration-300 hover:-translate-y-1 border border-orange-100">
+      <section className="relative overflow-hidden rounded-[32px] border border-orange-100 bg-white p-5 shadow-xl transition-all duration-300 hover:-translate-y-1 sm:p-10">
          
          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             <div className="lg:col-span-7 space-y-8">
@@ -60,7 +60,7 @@ export function ProjectContent({ onNext }: { onNext?: () => void }) {
                >
                  intermediate project
                </div>
-               <h2 className="text-4xl font-bold text-slate-900 leading-tight">
+               <h2 className="break-words text-2xl font-bold leading-tight text-slate-900 sm:text-3xl lg:text-4xl">
                   User Management <br/> <span style={{ color: brand.primaryColorDark }}>System Dashboard</span>
                </h2>
                <p className="text-[16px] font-medium leading-relaxed text-slate-800">
@@ -105,12 +105,12 @@ export function ProjectContent({ onNext }: { onNext?: () => void }) {
       </section>
 
       {/* Navigation Tabs */}
-      <div className="flex items-center gap-1 border-b border-gray-100 pb-0 overflow-x-auto hide-scrollbar">
+      <div className="flex min-w-0 flex-wrap items-center gap-1 border-b border-gray-100 pb-0">
         {tabs.map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 px-6 py-4 text-sm font-bold transition-all relative whitespace-nowrap ${activeTab === tab.id ? 'text-slate-950' : 'text-slate-600 hover:text-slate-950'}`}
+            className={`relative flex items-center gap-2 px-4 py-4 text-sm font-bold transition-all sm:px-6 ${activeTab === tab.id ? 'text-slate-950' : 'text-slate-600 hover:text-slate-950'}`}
           >
             {tab.icon}
             {tab.label}
@@ -124,12 +124,12 @@ export function ProjectContent({ onNext }: { onNext?: () => void }) {
       {/* Tab Content */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
          <div className="lg:col-span-7 space-y-8">
-            <div className="rounded-[32px] bg-white p-10 shadow-xl space-y-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
+            <div className="space-y-8 rounded-[32px] bg-white p-5 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl sm:p-10">
                <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-50 text-slate-900 border border-slate-100">
                      <Icons.Layers size={22} aria-hidden="true" />
                   </div>
-                  <h2 className="text-xl font-bold text-slate-950 tracking-tight">What You Need To Build</h2>
+                  <h2 className="break-words text-xl font-bold tracking-tight text-slate-950">What You Need To Build</h2>
                </div>
                <ul className="space-y-6">
                    {buildItems.map((item, i) => (
@@ -146,7 +146,7 @@ export function ProjectContent({ onNext }: { onNext?: () => void }) {
          </div>
          
          <div className="lg:col-span-5 space-y-8">
-            <div className="rounded-[32px] bg-white p-10 shadow-xl space-y-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
+            <div className="space-y-8 rounded-[32px] bg-white p-5 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl sm:p-10">
                <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-100 text-rose-950 border border-rose-200">
                      <Icons.Gift size={22} aria-hidden="true" />

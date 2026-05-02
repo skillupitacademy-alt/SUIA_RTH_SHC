@@ -21,15 +21,15 @@ export function QuizContent({ onNext }: { onNext?: () => void }) {
   ];
 
   return (
-    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
+    <div className="min-w-0 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20 sm:space-y-12">
       
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-1">
-          <h1 className="text-4xl font-bold text-slate-950 tracking-tight">Interactive Quiz</h1>
+          <h1 className="break-words text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl lg:text-4xl">Interactive Quiz</h1>
           <p className="text-[14px] font-medium text-slate-800">Test your mastery of Promise Chains & Error Handling.</p>
         </div>
-        <div className="flex items-center gap-6">
+        <div className="flex flex-wrap items-center gap-4 sm:gap-6">
            <div className="flex items-center gap-2 text-slate-800">
               <Icons.HelpCircle size={18} aria-hidden="true" />
               <span className="text-sm font-bold text-slate-900">10 Questions</span>
@@ -62,9 +62,9 @@ export function QuizContent({ onNext }: { onNext?: () => void }) {
       </div>
 
       {/* Question Card */}
-      <section className="rounded-[32px] bg-white p-10 shadow-xl space-y-8 relative group transition-all duration-300 hover:-translate-y-1">
-         <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+      <section className="relative space-y-8 rounded-[32px] bg-white p-5 shadow-xl transition-all duration-300 hover:-translate-y-1 sm:p-10">
+         <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-3">
                <div className="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-bold text-white shadow-lg shadow-rose-100">Q4</div>
                <div className="flex items-center gap-2 rounded-lg bg-slate-100 px-3 py-1.5 text-[10px] font-bold text-slate-800 border border-slate-200">
                   <Icons.ListChecks size={14} aria-hidden="true" /> Single Choice
@@ -81,15 +81,15 @@ export function QuizContent({ onNext }: { onNext?: () => void }) {
          <h3 className="text-xl font-bold text-slate-950 leading-tight">What will be the output of the following code?</h3>
 
          {/* Code Block */}
-         <div className="rounded-2xl bg-[#0f172a] p-6 font-mono text-sm leading-relaxed overflow-hidden shadow-2xl relative">
+         <div className="relative overflow-hidden rounded-2xl bg-[#0f172a] p-4 font-mono text-[12px] leading-relaxed shadow-2xl sm:p-6 sm:text-sm">
             <div className="absolute top-0 right-0 p-2 opacity-20">
                <Icons.Code size={40} className="text-slate-400" aria-hidden="true" />
             </div>
-            <pre className="text-indigo-100">
+            <pre className="whitespace-pre-wrap break-words text-indigo-100">
                {codeSnippet.split('\n').map((line, i) => (
-                  <div key={i} className="flex gap-4">
+                  <div key={i} className="flex min-w-0 gap-3 sm:gap-4">
                      <span className="w-4 text-slate-600 select-none">{i + 1}</span>
-                     <span>
+                     <span className="min-w-0 break-words">
                         {line.includes('//') ? <span className="text-emerald-300 italic">{line}</span> :
                          line.includes('Promise') || line.includes('Error') ? <span className="text-amber-300">{line}</span> :
                          line.includes('then') || line.includes('catch') ? <span className="text-pink-300">{line}</span> :
