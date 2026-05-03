@@ -81,3 +81,41 @@ SHARED-*.txt
 SKILLUP-*.md
 STRICT-*.md
 TEST-*.md
+
+# Phase 2B documentation and reports (keep locally)
+LAYMAN_*.md
+PHASE_*.md
+PHASE_*.txt
+WHAT_*.md
+*_COMPLETE*.md
+*_SUMMARY*.md
+*_AUDIT*.md
+*_JOURNEY*.md
+*_CHECKLIST*.md
+*_DOCUMENTATION*.md
+*_QUICK_START*.md
+*_RESULTS*.txt
+*_STATUS*.md
+*_ANALYSIS*.md
+*_IMPLEMENTATION*.md
+*_VISUAL*.md
+scripts/PHASE*.md
+
+# Backup and report directories
+backups/
+docs/completeproject/
+docs/report/
+
+# Validation and audit outputs
+validation-report.json
+db-audit-output.txt
+*-audit-output.txt
+
+# Kiro specs (AI assistant workspace)
+.kiro/specs/
+
+# Migration and transformation reports
+scripts/deployment/*.txt
+scripts/transformation/*.txt
+packages/db-tutorial/src/migrations/p1-p0-foundation/*.txt
+scripts/validate-phase2b/README.md
