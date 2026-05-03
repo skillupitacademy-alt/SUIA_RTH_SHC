@@ -57,9 +57,11 @@ function request(host, path, method = 'GET', body = null, cookie = '') {
         let raw = '';
         res.on('data', (c) => (raw += c));
         res.on('end', () => {
-          const cookies = res.headers['set-cookie']
-            ? res.headers['set-cookie'].map((c) => c.split(';')[0]).join('; ')
-            : '';
+          // Extract cookies properly - get all Set-Cookie headers
+          const setCookieHeaders = res.headers['set-cookie'] || [];
+          const cookies = setCookieHeaders
+            .map((c) => c.split(';')[0]) // Get only the name=value part
+            .join('; ');
 
           resolve({
             status: res.statusCode,

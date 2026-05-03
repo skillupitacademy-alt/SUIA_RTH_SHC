@@ -1,0 +1,163 @@
+{
+  "timestamp": "2026-05-02T16:31:47.591Z",
+  "deliverable": "DELIVERABLE_2",
+  "phase": "PHASE_2_CONSTITUTIONAL_MAPPING_HARDENED",
+  "mode": "full",
+  "batchId": "af0c050c-3991-4451-9049-b661869a7fdb",
+  "status": "SUCCESS",
+  "migrations": [
+    {
+      "contentId": "8d231612-fdcb-49d3-bdb4-3f01a7e550b9",
+      "subtopicId": "6fb97ae5-9b8c-4ae1-9702-a2b7956fa64b",
+      "topicId": "e9b27093-64b7-4882-a90e-f59cd70d69ec",
+      "topicName": "JavaScript Fundamentals",
+      "subtopicName": "Variables and Literals",
+      "difficulty": "simple",
+      "sectionsCreated": 12,
+      "subsectionsCreated": 0,
+      "sections": [],
+      "errors": [],
+      "warnings": [],
+      "status": "skipped",
+      "validationScore": 0,
+      "rollbackReady": true
+    },
+    {
+      "contentId": "91000000-0000-0000-0000-100000000001",
+      "subtopicId": "90000000-0000-0000-0000-100000000004",
+      "topicId": "90000000-0000-0000-0000-100000000003",
+      "topicName": "JavaScript Fundamentals",
+      "subtopicName": "Looping",
+      "difficulty": "simple",
+      "sectionsCreated": 12,
+      "subsectionsCreated": 22,
+      "sections": [
+        {
+          "sectionType": "layman",
+          "sectionId": "a2c5b943-cda9-43bd-a69c-2a3a21a606b0",
+          "subsectionCount": 2
+        },
+        {
+          "sectionType": "notes",
+          "sectionId": "2c805090-39b0-4169-978f-5c05f2516490",
+          "subsectionCount": 1
+        },
+        {
+          "sectionType": "technical",
+          "sectionId": "3087b89a-70ae-4650-b573-230bed3596bd",
+          "subsectionCount": 3
+        },
+        {
+          "sectionType": "code",
+          "sectionId": "6a3a5d70-86ea-4f2d-8252-61a6db6fa1ee",
+          "subsectionCount": 2
+        },
+        {
+          "sectionType": "real_life",
+          "sectionId": "23eb5a02-ae5c-4260-8f47-e8a844b90d42",
+          "subsectionCount": 4
+        },
+        {
+          "sectionType": "visual",
+          "sectionId": "f9d62551-dfa9-4e38-bbae-1bec817f2d79",
+          "subsectionCount": 1
+        },
+        {
+          "sectionType": "practice",
+          "sectionId": "49463d16-6f3a-48aa-8370-4988e7a0e945",
+          "subsectionCount": 1
+        },
+        {
+          "sectionType": "assignment",
+          "sectionId": "9fb2c0cc-861f-4e56-bf2a-cd7615fc6ff5",
+          "subsectionCount": 1
+        },
+        {
+          "sectionType": "project",
+          "sectionId": "9238df3d-53cb-4124-bf4a-1daea9ecc605",
+          "subsectionCount": 1
+        },
+        {
+          "sectionType": "quiz",
+          "sectionId": "9b06e552-4407-4a8d-8aad-22c5fc575933",
+          "subsectionCount": 1
+        },
+        {
+          "sectionType": "summary",
+          "sectionId": "9d13b6e0-3d71-4713-9aa6-cceb4b1e135b",
+          "subsectionCount": 2
+        },
+        {
+          "sectionType": "interview",
+          "sectionId": "aa5553d8-036c-496f-9958-0806f9d90786",
+          "subsectionCount": 3
+        }
+      ],
+      "errors": [],
+      "warnings": [],
+      "status": "success",
+      "validationScore": 100,
+      "rollbackReady": true
+    },
+    {
+      "contentId": "91000000-0000-0000-0000-100000000002",
+      "subtopicId": "90000000-0000-0000-0000-100000000004",
+      "topicId": "90000000-0000-0000-0000-100000000003",
+      "topicName": "JavaScript Fundamentals",
+      "subtopicName": "Looping",
+      "difficulty": "mixed",
+      "sectionsCreated": 12,
+      "subsectionsCreated": 0,
+      "sections": [],
+      "errors": [],
+      "warnings": [],
+      "status": "skipped",
+      "validationScore": 0,
+      "rollbackReady": true
+    },
+    {
+      "contentId": "91000000-0000-0000-0000-100000000003",
+      "subtopicId": "90000000-0000-0000-0000-100000000004",
+      "topicId": "90000000-0000-0000-0000-100000000003",
+      "topicName": "JavaScript Fundamentals",
+      "subtopicName": "Looping",
+      "difficulty": "intermediate",
+      "sectionsCreated": 12,
+      "subsectionsCreated": 0,
+      "sections": [],
+      "errors": [],
+      "warnings": [],
+      "status": "skipped",
+      "validationScore": 0,
+      "rollbackReady": true
+    },
+    {
+      "contentId": "91000000-0000-0000-0000-100000000004",
+      "subtopicId": "90000000-0000-0000-0000-100000000004",
+      "topicId": "90000000-0000-0000-0000-100000000003",
+      "topicName": "JavaScript Fundamentals",
+      "subtopicName": "Looping",
+      "difficulty": "expert",
+      "sectionsCreated": 12,
+      "subsectionsCreated": 0,
+      "sections": [],
+      "errors": [],
+      "warnings": [],
+      "status": "skipped",
+      "validationScore": 0,
+      "rollbackReady": true
+    }
+  ],
+  "summary": {
+    "contentItemsProcessed": 5,
+    "successful": 1,
+    "partial": 0,
+    "failed": 0,
+    "skipped": 4,
+    "totalSections": 60,
+    "totalSubsections": 22,
+    "avgValidationScore": 100,
+    "avgDuration": 0,
+    "successRate": 20
+  }
+}

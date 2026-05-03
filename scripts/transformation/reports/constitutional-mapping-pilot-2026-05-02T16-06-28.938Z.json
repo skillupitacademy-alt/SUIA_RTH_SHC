@@ -1,0 +1,90 @@
+{
+  "timestamp": "2026-05-02T16:06:28.938Z",
+  "deliverable": "DELIVERABLE_2",
+  "phase": "PHASE_2_CONSTITUTIONAL_MAPPING",
+  "mode": "PILOT",
+  "status": "SUCCESS",
+  "migrations": [
+    {
+      "contentId": "8d231612-fdcb-49d3-bdb4-3f01a7e550b9",
+      "subtopicId": "6fb97ae5-9b8c-4ae1-9702-a2b7956fa64b",
+      "topicName": "JavaScript Fundamentals",
+      "subtopicName": "Variables and Literals",
+      "difficulty": "simple",
+      "sectionsCreated": 12,
+      "subsectionsCreated": 22,
+      "sections": [
+        {
+          "sectionType": "layman",
+          "sectionId": "26e20953-fd56-4f47-9bf8-1c19a39efa24",
+          "subsectionCount": 2
+        },
+        {
+          "sectionType": "notes",
+          "sectionId": "42d535d9-6fdd-41c2-bdd6-d6cd15842727",
+          "subsectionCount": 1
+        },
+        {
+          "sectionType": "technical",
+          "sectionId": "dba283c1-9813-49f5-aaf7-a8de0aa37da0",
+          "subsectionCount": 3
+        },
+        {
+          "sectionType": "code",
+          "sectionId": "16ccb548-f29f-410a-9b57-50f685c8db25",
+          "subsectionCount": 2
+        },
+        {
+          "sectionType": "real_life",
+          "sectionId": "9111625f-8662-4fb0-9b38-b28376293e5e",
+          "subsectionCount": 4
+        },
+        {
+          "sectionType": "visual",
+          "sectionId": "65f97924-4d3e-4086-9712-9c248f2878e0",
+          "subsectionCount": 1
+        },
+        {
+          "sectionType": "practice",
+          "sectionId": "d39398ce-76e1-40e8-a048-ee027d66babb",
+          "subsectionCount": 1
+        },
+        {
+          "sectionType": "assignment",
+          "sectionId": "e97c69a9-3907-4f39-8f38-3e545d133c67",
+          "subsectionCount": 1
+        },
+        {
+          "sectionType": "project",
+          "sectionId": "88b7ce26-0a37-4d09-acc5-e5b68726af89",
+          "subsectionCount": 1
+        },
+        {
+          "sectionType": "quiz",
+          "sectionId": "91b41cc9-4ef3-4e51-83ee-5de0dc6c5003",
+          "subsectionCount": 1
+        },
+        {
+          "sectionType": "summary",
+          "sectionId": "2a2fe31a-b0f5-49f3-8ac6-1ca43690e8ed",
+          "subsectionCount": 2
+        },
+        {
+          "sectionType": "interview",
+          "sectionId": "6dbb0601-80a9-4c60-bb72-550d63048923",
+          "subsectionCount": 3
+        }
+      ],
+      "errors": [],
+      "status": "SUCCESS"
+    }
+  ],
+  "summary": {
+    "contentItemsMigrated": 1,
+    "successfulMigrations": 1,
+    "totalSections": 12,
+    "totalSubsections": 22,
+    "totalErrors": 0,
+    "successRate": 100
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "timestamp": "2026-05-02T15:12:36.937Z",
+  "migration": "001-create-modular-schema.sql",
+  "status": "SUCCESS",
+  "tablesCreated": [
+    "tutorial_sections",
+    "tutorial_subsections",
+    "educational_architectures",
+    "ui_architectures",
+    "ai_generation_orchestration",
+    "ai_section_generation_jobs",
+    "prompt_templates",
+    "content_review_queue",
+    "content_deployments",
+    "ai_generation_metrics"
+  ],
+  "enumsCreated": [
+    "section_type",
+    "section_status",
+    "deployment_type",
+    "orchestration_status",
+    "job_status",
+    "review_status",
+    "priority_level"
+  ],
+  "indexesCreated": 33,
+  "foreignKeysCreated": 4
+}

@@ -1,0 +1,21 @@
+{
+  "timestamp": "2026-05-02T15:11:49.675Z",
+  "pendingMigrations": [
+    "0009_mv_student_weak_areas",
+    "0010_looping_demo_foundation"
+  ],
+  "appliedMigrations": [
+    {
+      "tag": "0009_mv_student_weak_areas",
+      "status": "SUCCESS",
+      "timestamp": "2026-05-02T15:11:50.265Z"
+    },
+    {
+      "tag": "0010_looping_demo_foundation",
+      "status": "SUCCESS",
+      "timestamp": "2026-05-02T15:11:50.453Z"
+    }
+  ],
+  "status": "SUCCESS",
+  "finalMigrationCount": 11
+}

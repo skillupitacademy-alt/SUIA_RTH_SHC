@@ -1,0 +1,78 @@
+{
+  "timestamp": "2026-05-02T15:57:48.545Z",
+  "deliverable": "DELIVERABLE_2",
+  "phase": "PHASE_2_CONSTITUTIONAL_MAPPING",
+  "mode": "PILOT",
+  "status": "PARTIAL",
+  "migrations": [
+    {
+      "contentId": "8d231612-fdcb-49d3-bdb4-3f01a7e550b9",
+      "subtopicId": "6fb97ae5-9b8c-4ae1-9702-a2b7956fa64b",
+      "topicName": "JavaScript Fundamentals",
+      "subtopicName": "Variables and Literals",
+      "difficulty": "simple",
+      "sectionsCreated": 0,
+      "subsectionsCreated": 0,
+      "sections": [],
+      "errors": [
+        {
+          "section": "overview",
+          "error": "invalid input value for enum section_status: \"published\""
+        },
+        {
+          "section": "prerequisites",
+          "error": "invalid input value for enum section_status: \"published\""
+        },
+        {
+          "section": "core_concepts",
+          "error": "invalid input value for enum section_status: \"published\""
+        },
+        {
+          "section": "syntax",
+          "error": "invalid input value for enum section_status: \"published\""
+        },
+        {
+          "section": "examples",
+          "error": "invalid input value for enum section_status: \"published\""
+        },
+        {
+          "section": "pitfalls",
+          "error": "invalid input value for enum section_status: \"published\""
+        },
+        {
+          "section": "best_practices",
+          "error": "invalid input value for enum section_status: \"published\""
+        },
+        {
+          "section": "advanced_topics",
+          "error": "invalid input value for enum section_status: \"published\""
+        },
+        {
+          "section": "practice",
+          "error": "invalid input value for enum section_status: \"published\""
+        },
+        {
+          "section": "interview_prep",
+          "error": "invalid input value for enum section_status: \"published\""
+        },
+        {
+          "section": "projects",
+          "error": "invalid input value for enum section_status: \"published\""
+        },
+        {
+          "section": "summary",
+          "error": "invalid input value for enum section_status: \"published\""
+        }
+      ],
+      "status": "PARTIAL"
+    }
+  ],
+  "summary": {
+    "contentItemsMigrated": 1,
+    "successfulMigrations": 0,
+    "totalSections": 0,
+    "totalSubsections": 0,
+    "totalErrors": 12,
+    "successRate": 0
+  }
+}

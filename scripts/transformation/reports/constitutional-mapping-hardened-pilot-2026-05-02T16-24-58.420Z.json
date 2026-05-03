@@ -1,0 +1,87 @@
+{
+  "timestamp": "2026-05-02T16:24:58.420Z",
+  "deliverable": "DELIVERABLE_2",
+  "phase": "PHASE_2_CONSTITUTIONAL_MAPPING_HARDENED",
+  "mode": "pilot",
+  "batchId": "3fa85c8a-61a6-4bf7-8353-1a6889bd03f7",
+  "status": "PARTIAL",
+  "migrations": [
+    {
+      "contentId": "8d231612-fdcb-49d3-bdb4-3f01a7e550b9",
+      "subtopicId": "6fb97ae5-9b8c-4ae1-9702-a2b7956fa64b",
+      "topicId": "e9b27093-64b7-4882-a90e-f59cd70d69ec",
+      "topicName": "JavaScript Fundamentals",
+      "subtopicName": "Variables and Literals",
+      "difficulty": "simple",
+      "sectionsCreated": 0,
+      "subsectionsCreated": 0,
+      "sections": [],
+      "errors": [
+        {
+          "section": "layman",
+          "error": "duplicate key value violates unique constraint \"uq_section_subtopic_type_difficulty_brand\""
+        },
+        {
+          "section": "notes",
+          "error": "duplicate key value violates unique constraint \"uq_section_subtopic_type_difficulty_brand\""
+        },
+        {
+          "section": "technical",
+          "error": "duplicate key value violates unique constraint \"uq_section_subtopic_type_difficulty_brand\""
+        },
+        {
+          "section": "code",
+          "error": "duplicate key value violates unique constraint \"uq_section_subtopic_type_difficulty_brand\""
+        },
+        {
+          "section": "real_life",
+          "error": "duplicate key value violates unique constraint \"uq_section_subtopic_type_difficulty_brand\""
+        },
+        {
+          "section": "visual",
+          "error": "duplicate key value violates unique constraint \"uq_section_subtopic_type_difficulty_brand\""
+        },
+        {
+          "section": "practice",
+          "error": "duplicate key value violates unique constraint \"uq_section_subtopic_type_difficulty_brand\""
+        },
+        {
+          "section": "assignment",
+          "error": "duplicate key value violates unique constraint \"uq_section_subtopic_type_difficulty_brand\""
+        },
+        {
+          "section": "project",
+          "error": "duplicate key value violates unique constraint \"uq_section_subtopic_type_difficulty_brand\""
+        },
+        {
+          "section": "quiz",
+          "error": "duplicate key value violates unique constraint \"uq_section_subtopic_type_difficulty_brand\""
+        },
+        {
+          "section": "summary",
+          "error": "duplicate key value violates unique constraint \"uq_section_subtopic_type_difficulty_brand\""
+        },
+        {
+          "section": "interview",
+          "error": "duplicate key value violates unique constraint \"uq_section_subtopic_type_difficulty_brand\""
+        }
+      ],
+      "warnings": [],
+      "status": "failed",
+      "validationScore": 20,
+      "rollbackReady": true
+    }
+  ],
+  "summary": {
+    "contentItemsProcessed": 1,
+    "successful": 0,
+    "partial": 0,
+    "failed": 1,
+    "skipped": 0,
+    "totalSections": 0,
+    "totalSubsections": 0,
+    "avgValidationScore": 20,
+    "avgDuration": 0,
+    "successRate": 0
+  }
+}

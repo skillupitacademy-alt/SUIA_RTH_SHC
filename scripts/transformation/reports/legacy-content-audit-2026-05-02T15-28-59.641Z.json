@@ -1,0 +1,16 @@
+{
+  "timestamp": "2026-05-02T15:28:59.641Z",
+  "deliverable": "DELIVERABLE_2",
+  "phase": "PHASE_1_LEGACY_CONTENT_AUDIT",
+  "status": "FAILED",
+  "legacy": {
+    "topics": {},
+    "subtopics": {},
+    "content": {}
+  },
+  "relationships": {},
+  "brandAnalysis": {},
+  "transformationOpportunities": {},
+  "risks": [],
+  "error": "column \"description\" does not exist"
+}

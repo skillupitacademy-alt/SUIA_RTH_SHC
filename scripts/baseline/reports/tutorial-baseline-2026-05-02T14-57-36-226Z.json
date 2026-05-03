@@ -1,0 +1,575 @@
+{
+  "database": "tutorial_prod",
+  "timestamp": "2026-05-02T14:57:36.227Z",
+  "connection": "ep-solitary-hill-a1m0s7zl-pooler.ap-southeast-1.aws.neon.tech",
+  "tables": {
+    "count": 23,
+    "list": [
+      "assignment_help_requests",
+      "assignment_progress",
+      "badges",
+      "certificates",
+      "content_generation_jobs",
+      "domain_content_config",
+      "live_session_requests",
+      "remediation_triggers",
+      "student_badges",
+      "student_streaks",
+      "subtopic_flow_progress",
+      "tutorial_assignments",
+      "tutorial_content",
+      "tutorial_content_audit",
+      "tutorial_content_versions",
+      "tutorial_domains",
+      "tutorial_progress",
+      "tutorial_project_submissions",
+      "tutorial_projects",
+      "tutorial_subjects",
+      "tutorial_subtopics",
+      "tutorial_topics",
+      "tutorial_video_links"
+    ],
+    "details": [
+      {
+        "table_name": "assignment_help_requests",
+        "column_count": "12"
+      },
+      {
+        "table_name": "assignment_progress",
+        "column_count": "11"
+      },
+      {
+        "table_name": "badges",
+        "column_count": "12"
+      },
+      {
+        "table_name": "certificates",
+        "column_count": "13"
+      },
+      {
+        "table_name": "content_generation_jobs",
+        "column_count": "15"
+      },
+      {
+        "table_name": "domain_content_config",
+        "column_count": "11"
+      },
+      {
+        "table_name": "live_session_requests",
+        "column_count": "14"
+      },
+      {
+        "table_name": "remediation_triggers",
+        "column_count": "10"
+      },
+      {
+        "table_name": "student_badges",
+        "column_count": "6"
+      },
+      {
+        "table_name": "student_streaks",
+        "column_count": "11"
+      },
+      {
+        "table_name": "subtopic_flow_progress",
+        "column_count": "19"
+      },
+      {
+        "table_name": "tutorial_assignments",
+        "column_count": "17"
+      },
+      {
+        "table_name": "tutorial_content",
+        "column_count": "18"
+      },
+      {
+        "table_name": "tutorial_content_audit",
+        "column_count": "6"
+      },
+      {
+        "table_name": "tutorial_content_versions",
+        "column_count": "6"
+      },
+      {
+        "table_name": "tutorial_domains",
+        "column_count": "7"
+      },
+      {
+        "table_name": "tutorial_progress",
+        "column_count": "13"
+      },
+      {
+        "table_name": "tutorial_project_submissions",
+        "column_count": "21"
+      },
+      {
+        "table_name": "tutorial_projects",
+        "column_count": "17"
+      },
+      {
+        "table_name": "tutorial_subjects",
+        "column_count": "8"
+      },
+      {
+        "table_name": "tutorial_subtopics",
+        "column_count": "9"
+      },
+      {
+        "table_name": "tutorial_topics",
+        "column_count": "8"
+      },
+      {
+        "table_name": "tutorial_video_links",
+        "column_count": "14"
+      }
+    ]
+  },
+  "rowCounts": {
+    "assignment_help_requests": 1,
+    "assignment_progress": 4,
+    "badges": 3,
+    "certificates": 1,
+    "content_generation_jobs": 2,
+    "domain_content_config": 1,
+    "live_session_requests": 1,
+    "remediation_triggers": 1,
+    "student_badges": 1,
+    "student_streaks": 1,
+    "subtopic_flow_progress": 1,
+    "tutorial_assignments": 4,
+    "tutorial_content": 5,
+    "tutorial_content_audit": 8,
+    "tutorial_content_versions": 3,
+    "tutorial_domains": 8,
+    "tutorial_progress": 1,
+    "tutorial_project_submissions": 3,
+    "tutorial_projects": 3,
+    "tutorial_subjects": 14,
+    "tutorial_subtopics": 7,
+    "tutorial_topics": 10,
+    "tutorial_video_links": 2
+  },
+  "enums": {
+    "count": 16,
+    "details": {
+      "assignment_help_request_status": "{open,in_progress,resolved}",
+      "assignment_progress_status": "{not_started,in_progress,self_completed}",
+      "assignment_question_type": "{mcq,short_answer,code,open_ended}",
+      "live_session_request_status": "{pending,accepted,scheduled,completed,cancelled}",
+      "tutorial_content_audit_action": "{created,updated,published,unpublished,restored}",
+      "tutorial_content_job_status": "{pending,processing,completed,failed}",
+      "tutorial_deliverable_type": "{code,repo,live_demo,document}",
+      "tutorial_difficulty": "{simple,mixed,intermediate,expert}",
+      "tutorial_evaluation_type": "{auto,ai_review,peer_review,admin_review}",
+      "tutorial_progress_status": "{not_started,in_progress,completed}",
+      "tutorial_project_level": "{simple,intermediate,expert}",
+      "tutorial_project_scope": "{topic,subject,domain}",
+      "tutorial_project_submission_status": "{pending,submitted,ai_reviewing,needs_review,approved,revision_needed,graded,revision-requested}",
+      "tutorial_question_type": "{mcq,short_answer,code,drag_drop,fill_blank}",
+      "tutorial_trigger_status": "{pending,accepted,dismissed,completed,failed}",
+      "tutorial_video_provider": "{youtube,vimeo,custom,loom}"
+    }
+  },
+  "indexes": {
+    "count": 64,
+    "byTable": {
+      "assignment_help_requests": [
+        {
+          "name": "assignment_help_requests_pkey",
+          "definition": "CREATE UNIQUE INDEX assignment_help_requests_pkey ON public.assignment_help_requests USING btree (id)"
+        },
+        {
+          "name": "uq_assignment_help_request_user_assignment",
+          "definition": "CREATE UNIQUE INDEX uq_assignment_help_request_user_assignment ON public.assignment_help_requests USING btree (user_id, assignment_id, subtopic_id)"
+        }
+      ],
+      "assignment_progress": [
+        {
+          "name": "assignment_progress_pkey",
+          "definition": "CREATE UNIQUE INDEX assignment_progress_pkey ON public.assignment_progress USING btree (id)"
+        },
+        {
+          "name": "uq_assignment_progress_user_subtopic_difficulty",
+          "definition": "CREATE UNIQUE INDEX uq_assignment_progress_user_subtopic_difficulty ON public.assignment_progress USING btree (user_id, subtopic_id, difficulty)"
+        }
+      ],
+      "badges": [
+        {
+          "name": "badges_pkey",
+          "definition": "CREATE UNIQUE INDEX badges_pkey ON public.badges USING btree (id)"
+        },
+        {
+          "name": "idx_badges_scope",
+          "definition": "CREATE INDEX idx_badges_scope ON public.badges USING btree (scope, level)"
+        }
+      ],
+      "certificates": [
+        {
+          "name": "certificates_pkey",
+          "definition": "CREATE UNIQUE INDEX certificates_pkey ON public.certificates USING btree (id)"
+        },
+        {
+          "name": "idx_certificates_user",
+          "definition": "CREATE INDEX idx_certificates_user ON public.certificates USING btree (user_id)"
+        },
+        {
+          "name": "idx_certificates_verify",
+          "definition": "CREATE UNIQUE INDEX idx_certificates_verify ON public.certificates USING btree (verification_code)"
+        }
+      ],
+      "content_generation_jobs": [
+        {
+          "name": "content_generation_jobs_pkey",
+          "definition": "CREATE UNIQUE INDEX content_generation_jobs_pkey ON public.content_generation_jobs USING btree (id)"
+        },
+        {
+          "name": "idx_content_generation_jobs_subtopic",
+          "definition": "CREATE INDEX idx_content_generation_jobs_subtopic ON public.content_generation_jobs USING btree (subtopic_id, status)"
+        }
+      ],
+      "domain_content_config": [
+        {
+          "name": "domain_content_config_pkey",
+          "definition": "CREATE UNIQUE INDEX domain_content_config_pkey ON public.domain_content_config USING btree (id)"
+        },
+        {
+          "name": "idx_domain_content_config_domain",
+          "definition": "CREATE INDEX idx_domain_content_config_domain ON public.domain_content_config USING btree (domain_id, default_language)"
+        },
+        {
+          "name": "uq_domain_content_config_domain",
+          "definition": "CREATE UNIQUE INDEX uq_domain_content_config_domain ON public.domain_content_config USING btree (domain_id)"
+        }
+      ],
+      "live_session_requests": [
+        {
+          "name": "idx_session_requests_faculty",
+          "definition": "CREATE INDEX idx_session_requests_faculty ON public.live_session_requests USING btree (faculty_id)"
+        },
+        {
+          "name": "idx_session_requests_status",
+          "definition": "CREATE INDEX idx_session_requests_status ON public.live_session_requests USING btree (status)"
+        },
+        {
+          "name": "idx_session_requests_student",
+          "definition": "CREATE INDEX idx_session_requests_student ON public.live_session_requests USING btree (student_id)"
+        },
+        {
+          "name": "live_session_requests_pkey",
+          "definition": "CREATE UNIQUE INDEX live_session_requests_pkey ON public.live_session_requests USING btree (id)"
+        }
+      ],
+      "mv_student_weak_areas": [
+        {
+          "name": "idx_mv_weak_areas_user_subtopic",
+          "definition": "CREATE UNIQUE INDEX idx_mv_weak_areas_user_subtopic ON public.mv_student_weak_areas USING btree (user_id, subtopic_id)"
+        }
+      ],
+      "remediation_triggers": [
+        {
+          "name": "idx_remediation_triggers_user",
+          "definition": "CREATE INDEX idx_remediation_triggers_user ON public.remediation_triggers USING btree (user_id, status)"
+        },
+        {
+          "name": "remediation_triggers_pkey",
+          "definition": "CREATE UNIQUE INDEX remediation_triggers_pkey ON public.remediation_triggers USING btree (id)"
+        }
+      ],
+      "student_badges": [
+        {
+          "name": "student_badges_pkey",
+          "definition": "CREATE UNIQUE INDEX student_badges_pkey ON public.student_badges USING btree (id)"
+        },
+        {
+          "name": "uq_student_badges_user_badge",
+          "definition": "CREATE UNIQUE INDEX uq_student_badges_user_badge ON public.student_badges USING btree (user_id, badge_id)"
+        }
+      ],
+      "student_streaks": [
+        {
+          "name": "student_streaks_pkey",
+          "definition": "CREATE UNIQUE INDEX student_streaks_pkey ON public.student_streaks USING btree (id)"
+        },
+        {
+          "name": "uq_student_streaks_user",
+          "definition": "CREATE UNIQUE INDEX uq_student_streaks_user ON public.student_streaks USING btree (user_id)"
+        }
+      ],
+      "subtopic_flow_progress": [
+        {
+          "name": "idx_subtopic_flow_progress_user",
+          "definition": "CREATE INDEX idx_subtopic_flow_progress_user ON public.subtopic_flow_progress USING btree (user_id)"
+        },
+        {
+          "name": "subtopic_flow_progress_pkey",
+          "definition": "CREATE UNIQUE INDEX subtopic_flow_progress_pkey ON public.subtopic_flow_progress USING btree (id)"
+        },
+        {
+          "name": "uq_subtopic_flow_progress_user_subtopic",
+          "definition": "CREATE UNIQUE INDEX uq_subtopic_flow_progress_user_subtopic ON public.subtopic_flow_progress USING btree (user_id, subtopic_id)"
+        }
+      ],
+      "tutorial_assignments": [
+        {
+          "name": "tutorial_assignments_pkey",
+          "definition": "CREATE UNIQUE INDEX tutorial_assignments_pkey ON public.tutorial_assignments USING btree (id)"
+        }
+      ],
+      "tutorial_content": [
+        {
+          "name": "idx_tutorial_content_content_gin",
+          "definition": "CREATE INDEX idx_tutorial_content_content_gin ON public.tutorial_content USING gin (content)"
+        },
+        {
+          "name": "idx_tutorial_content_published",
+          "definition": "CREATE INDEX idx_tutorial_content_published ON public.tutorial_content USING btree (subtopic_id, is_published)"
+        },
+        {
+          "name": "idx_tutorial_content_subtopic",
+          "definition": "CREATE INDEX idx_tutorial_content_subtopic ON public.tutorial_content USING btree (subtopic_id)"
+        },
+        {
+          "name": "tutorial_content_pkey",
+          "definition": "CREATE UNIQUE INDEX tutorial_content_pkey ON public.tutorial_content USING btree (id)"
+        },
+        {
+          "name": "uq_tutorial_content_subtopic_difficulty_type",
+          "definition": "CREATE UNIQUE INDEX uq_tutorial_content_subtopic_difficulty_type ON public.tutorial_content USING btree (subtopic_id, difficulty, content_type)"
+        }
+      ],
+      "tutorial_content_audit": [
+        {
+          "name": "idx_content_audit_content_id",
+          "definition": "CREATE INDEX idx_content_audit_content_id ON public.tutorial_content_audit USING btree (content_id)"
+        },
+        {
+          "name": "tutorial_content_audit_pkey",
+          "definition": "CREATE UNIQUE INDEX tutorial_content_audit_pkey ON public.tutorial_content_audit USING btree (id)"
+        }
+      ],
+      "tutorial_content_versions": [
+        {
+          "name": "idx_content_versions_content_id",
+          "definition": "CREATE INDEX idx_content_versions_content_id ON public.tutorial_content_versions USING btree (content_id)"
+        },
+        {
+          "name": "tutorial_content_versions_pkey",
+          "definition": "CREATE UNIQUE INDEX tutorial_content_versions_pkey ON public.tutorial_content_versions USING btree (id)"
+        }
+      ],
+      "tutorial_domains": [
+        {
+          "name": "tutorial_domains_pkey",
+          "definition": "CREATE UNIQUE INDEX tutorial_domains_pkey ON public.tutorial_domains USING btree (id)"
+        },
+        {
+          "name": "uq_tutorial_domains_external_id",
+          "definition": "CREATE UNIQUE INDEX uq_tutorial_domains_external_id ON public.tutorial_domains USING btree (external_id)"
+        },
+        {
+          "name": "uq_tutorial_domains_slug",
+          "definition": "CREATE UNIQUE INDEX uq_tutorial_domains_slug ON public.tutorial_domains USING btree (slug)"
+        }
+      ],
+      "tutorial_progress": [
+        {
+          "name": "idx_tutorial_progress_user",
+          "definition": "CREATE INDEX idx_tutorial_progress_user ON public.tutorial_progress USING btree (user_id)"
+        },
+        {
+          "name": "tutorial_progress_pkey",
+          "definition": "CREATE UNIQUE INDEX tutorial_progress_pkey ON public.tutorial_progress USING btree (id)"
+        },
+        {
+          "name": "uq_tutorial_progress_user_subtopic",
+          "definition": "CREATE UNIQUE INDEX uq_tutorial_progress_user_subtopic ON public.tutorial_progress USING btree (user_id, subtopic_id)"
+        }
+      ],
+      "tutorial_project_submissions": [
+        {
+          "name": "idx_tutorial_project_submissions_project",
+          "definition": "CREATE INDEX idx_tutorial_project_submissions_project ON public.tutorial_project_submissions USING btree (project_id)"
+        },
+        {
+          "name": "idx_tutorial_project_submissions_status",
+          "definition": "CREATE INDEX idx_tutorial_project_submissions_status ON public.tutorial_project_submissions USING btree (status)"
+        },
+        {
+          "name": "idx_tutorial_project_submissions_user",
+          "definition": "CREATE INDEX idx_tutorial_project_submissions_user ON public.tutorial_project_submissions USING btree (user_id)"
+        },
+        {
+          "name": "tutorial_project_submissions_pkey",
+          "definition": "CREATE UNIQUE INDEX tutorial_project_submissions_pkey ON public.tutorial_project_submissions USING btree (id)"
+        }
+      ],
+      "tutorial_projects": [
+        {
+          "name": "idx_tutorial_projects_scope",
+          "definition": "CREATE INDEX idx_tutorial_projects_scope ON public.tutorial_projects USING btree (scope, level)"
+        },
+        {
+          "name": "tutorial_projects_pkey",
+          "definition": "CREATE UNIQUE INDEX tutorial_projects_pkey ON public.tutorial_projects USING btree (id)"
+        }
+      ],
+      "tutorial_subjects": [
+        {
+          "name": "idx_tutorial_subjects_domain_id",
+          "definition": "CREATE INDEX idx_tutorial_subjects_domain_id ON public.tutorial_subjects USING btree (domain_id)"
+        },
+        {
+          "name": "tutorial_subjects_pkey",
+          "definition": "CREATE UNIQUE INDEX tutorial_subjects_pkey ON public.tutorial_subjects USING btree (id)"
+        },
+        {
+          "name": "uq_tutorial_subjects_external_id",
+          "definition": "CREATE UNIQUE INDEX uq_tutorial_subjects_external_id ON public.tutorial_subjects USING btree (external_id)"
+        },
+        {
+          "name": "uq_tutorial_subjects_slug",
+          "definition": "CREATE UNIQUE INDEX uq_tutorial_subjects_slug ON public.tutorial_subjects USING btree (slug)"
+        }
+      ],
+      "tutorial_subtopics": [
+        {
+          "name": "idx_tutorial_subtopics_topic_id",
+          "definition": "CREATE INDEX idx_tutorial_subtopics_topic_id ON public.tutorial_subtopics USING btree (topic_id)"
+        },
+        {
+          "name": "tutorial_subtopics_pkey",
+          "definition": "CREATE UNIQUE INDEX tutorial_subtopics_pkey ON public.tutorial_subtopics USING btree (id)"
+        },
+        {
+          "name": "uq_tutorial_subtopics_external_id",
+          "definition": "CREATE UNIQUE INDEX uq_tutorial_subtopics_external_id ON public.tutorial_subtopics USING btree (external_id)"
+        },
+        {
+          "name": "uq_tutorial_subtopics_slug",
+          "definition": "CREATE UNIQUE INDEX uq_tutorial_subtopics_slug ON public.tutorial_subtopics USING btree (slug)"
+        }
+      ],
+      "tutorial_topics": [
+        {
+          "name": "idx_tutorial_topics_subject_id",
+          "definition": "CREATE INDEX idx_tutorial_topics_subject_id ON public.tutorial_topics USING btree (subject_id)"
+        },
+        {
+          "name": "tutorial_topics_pkey",
+          "definition": "CREATE UNIQUE INDEX tutorial_topics_pkey ON public.tutorial_topics USING btree (id)"
+        },
+        {
+          "name": "uq_tutorial_topics_external_id",
+          "definition": "CREATE UNIQUE INDEX uq_tutorial_topics_external_id ON public.tutorial_topics USING btree (external_id)"
+        },
+        {
+          "name": "uq_tutorial_topics_slug",
+          "definition": "CREATE UNIQUE INDEX uq_tutorial_topics_slug ON public.tutorial_topics USING btree (slug)"
+        }
+      ],
+      "tutorial_video_links": [
+        {
+          "name": "idx_tutorial_video_links_subtopic",
+          "definition": "CREATE INDEX idx_tutorial_video_links_subtopic ON public.tutorial_video_links USING btree (subtopic_id)"
+        },
+        {
+          "name": "tutorial_video_links_pkey",
+          "definition": "CREATE UNIQUE INDEX tutorial_video_links_pkey ON public.tutorial_video_links USING btree (id)"
+        }
+      ]
+    }
+  },
+  "foreignKeys": {
+    "count": 7,
+    "details": [
+      {
+        "table_name": "assignment_help_requests",
+        "column_name": "assignment_id",
+        "foreign_table_name": "tutorial_assignments",
+        "foreign_column_name": "id",
+        "constraint_name": "assignment_help_requests_assignment_id_tutorial_assignments_id_"
+      },
+      {
+        "table_name": "student_badges",
+        "column_name": "badge_id",
+        "foreign_table_name": "badges",
+        "foreign_column_name": "id",
+        "constraint_name": "student_badges_badge_id_badges_id_fk"
+      },
+      {
+        "table_name": "student_badges",
+        "column_name": "project_submission_id",
+        "foreign_table_name": "tutorial_project_submissions",
+        "foreign_column_name": "id",
+        "constraint_name": "student_badges_project_submission_id_tutorial_project_submissio"
+      },
+      {
+        "table_name": "tutorial_project_submissions",
+        "column_name": "project_id",
+        "foreign_table_name": "tutorial_projects",
+        "foreign_column_name": "id",
+        "constraint_name": "tutorial_project_submissions_project_id_fkey"
+      },
+      {
+        "table_name": "tutorial_subjects",
+        "column_name": "domain_id",
+        "foreign_table_name": "tutorial_domains",
+        "foreign_column_name": "id",
+        "constraint_name": "tutorial_subjects_domain_id_tutorial_domains_id_fk"
+      },
+      {
+        "table_name": "tutorial_subtopics",
+        "column_name": "topic_id",
+        "foreign_table_name": "tutorial_topics",
+        "foreign_column_name": "id",
+        "constraint_name": "tutorial_subtopics_topic_id_tutorial_topics_id_fk"
+      },
+      {
+        "table_name": "tutorial_topics",
+        "column_name": "subject_id",
+        "foreign_table_name": "tutorial_subjects",
+        "foreign_column_name": "id",
+        "constraint_name": "tutorial_topics_subject_id_tutorial_subjects_id_fk"
+      }
+    ]
+  },
+  "uniqueConstraints": {
+    "count": 0,
+    "details": []
+  },
+  "migrationTracking": {
+    "exists": false,
+    "appliedMigrations": []
+  },
+  "schemaAnalysis": {
+    "legacySystem": {
+      "tables": [
+        "tutorial_assignments",
+        "tutorial_content",
+        "tutorial_content_audit",
+        "tutorial_content_versions",
+        "tutorial_domains",
+        "tutorial_progress",
+        "tutorial_project_submissions",
+        "tutorial_projects",
+        "tutorial_subjects",
+        "tutorial_subtopics",
+        "tutorial_topics",
+        "tutorial_video_links"
+      ],
+      "count": 12,
+      "totalRows": 68
+    },
+    "modularSystem": {
+      "tables": [],
+      "count": 0,
+      "deployed": false,
+      "totalRows": 0
+    },
+    "analyticsSystem": {
+      "tables": [],
+      "count": 0,
+      "deployed": false
+    }
+  }
+}

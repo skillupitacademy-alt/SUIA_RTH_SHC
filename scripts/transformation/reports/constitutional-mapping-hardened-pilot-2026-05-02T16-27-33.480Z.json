@@ -1,0 +1,38 @@
+{
+  "timestamp": "2026-05-02T16:27:33.480Z",
+  "deliverable": "DELIVERABLE_2",
+  "phase": "PHASE_2_CONSTITUTIONAL_MAPPING_HARDENED",
+  "mode": "pilot",
+  "batchId": "1cfa0e04-3051-4df5-8a7f-ac0484abcb73",
+  "status": "SUCCESS",
+  "migrations": [
+    {
+      "contentId": "8d231612-fdcb-49d3-bdb4-3f01a7e550b9",
+      "subtopicId": "6fb97ae5-9b8c-4ae1-9702-a2b7956fa64b",
+      "topicId": "e9b27093-64b7-4882-a90e-f59cd70d69ec",
+      "topicName": "JavaScript Fundamentals",
+      "subtopicName": "Variables and Literals",
+      "difficulty": "simple",
+      "sectionsCreated": 12,
+      "subsectionsCreated": 0,
+      "sections": [],
+      "errors": [],
+      "warnings": [],
+      "status": "skipped",
+      "validationScore": 0,
+      "rollbackReady": true
+    }
+  ],
+  "summary": {
+    "contentItemsProcessed": 1,
+    "successful": 0,
+    "partial": 0,
+    "failed": 0,
+    "skipped": 1,
+    "totalSections": 0,
+    "totalSubsections": 0,
+    "avgValidationScore": 20,
+    "avgDuration": 0,
+    "successRate": 0
+  }
+}

@@ -1,0 +1,113 @@
+{
+  "database": "people_prod",
+  "timestamp": "2026-05-02T14:58:00.095Z",
+  "tables": {
+    "count": 27,
+    "list": [
+      "admissions",
+      "attendance_records",
+      "auth_audit_log",
+      "batch_enrollments",
+      "batch_sessions",
+      "batches",
+      "demo_sessions",
+      "domains",
+      "enquiries",
+      "enquiry_follow_ups",
+      "faculty",
+      "faculty_availability",
+      "payment_installments",
+      "placement_jobs",
+      "platform_access",
+      "refresh_token_families",
+      "sso_sessions",
+      "student_placement_profiles",
+      "subjects",
+      "subscription_features",
+      "subscription_plans",
+      "subscriptions",
+      "subtopics",
+      "topics",
+      "user_features_cache",
+      "user_profiles",
+      "users"
+    ]
+  },
+  "rowCounts": {
+    "admissions": 150,
+    "attendance_records": 4,
+    "auth_audit_log": 55,
+    "batch_enrollments": 143,
+    "batch_sessions": 3,
+    "batches": 102,
+    "demo_sessions": 1,
+    "domains": 1,
+    "enquiries": 250,
+    "enquiry_follow_ups": 178,
+    "faculty": 1,
+    "faculty_availability": 2,
+    "payment_installments": 100,
+    "placement_jobs": 72,
+    "platform_access": 143,
+    "refresh_token_families": 40,
+    "sso_sessions": 40,
+    "student_placement_profiles": 1,
+    "subjects": 1,
+    "subscription_features": 0,
+    "subscription_plans": 0,
+    "subscriptions": 9,
+    "subtopics": 1,
+    "topics": 1,
+    "user_features_cache": 0,
+    "user_profiles": 158,
+    "users": 293
+  },
+  "anomalies": {
+    "unexpectedDomainTables": {
+      "found": true,
+      "tables": [
+        "domains",
+        "subjects",
+        "topics",
+        "subtopics"
+      ],
+      "rowCounts": {
+        "domains": 1,
+        "subjects": 1,
+        "topics": 1,
+        "subtopics": 1
+      },
+      "risk": "HIGH - Potential duplication with quiz DB"
+    }
+  },
+  "brandAnalysis": {
+    "usersByPlatform": {
+      "realtutorialhub": 100,
+      "skillup": 193
+    },
+    "totalActiveUsers": 293
+  },
+  "enums": {
+    "count": 18,
+    "details": {
+      "people_admission_status": "{pending,approved,rejected}",
+      "people_admission_type": "{digital,training}",
+      "people_attendance_status": "{present,absent,late}",
+      "people_batch_mode": "{online,offline,hybrid}",
+      "people_batch_status": "{upcoming,active,completed,cancelled}",
+      "people_demo_session_status": "{scheduled,completed,no_show}",
+      "people_enquiry_source": "{website,referral,ad,walkin}",
+      "people_enquiry_status": "{new,contacted,qualified,lost}",
+      "people_enrollment_status": "{active,dropped,completed}",
+      "people_faculty_availability_type": "{fulltime,parttime,contract}",
+      "people_faculty_status": "{active,inactive,on_leave}",
+      "people_payment_installment_status": "{paid,due,overdue}",
+      "people_platform": "{realtutorialhub,skillup,both}",
+      "people_session_status": "{scheduled,completed,cancelled}",
+      "people_subscription_feature_key": "{exam.unlimited,exam.basic,tutorial.full_access,tutorial.preview_only,ai_tutor,certificate,placement_matching,live_sessions}",
+      "people_subscription_plan": "{free,pro,enterprise}",
+      "people_subscription_status": "{active,cancelled,expired}",
+      "people_user_role": "{student,faculty,admin,super_admin}"
+    }
+  }
+}

@@ -53,6 +53,7 @@
         "validate:rbac": "node scripts/validate-rbac-shared.js",
         "validate:ssr": "node scripts/test-ssr-auth-flow.js",
         "validate:deployment": "node scripts/validate-deployment-ready.js",
+        "validate:phase2b": "tsx scripts/validate-phase2b.ts",
         "check:localhost": "node scripts/no-localhost-check.js",
         "verify:css-isolation": "node scripts/verify-css-isolation.mjs",
         "seed:skillup:test-credentials": "node scripts/seed-skillup-test-credentials.js",

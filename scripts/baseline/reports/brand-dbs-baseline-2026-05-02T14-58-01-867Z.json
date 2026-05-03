@@ -1,0 +1,96 @@
+{
+  "timestamp": "2026-05-02T14:58:01.868Z",
+  "databases": {
+    "rth": {
+      "database": "rth_prod",
+      "timestamp": "2026-05-02T14:58:01.868Z",
+      "tables": [
+        "audit_logs",
+        "login_attempts",
+        "password_reset_tokens",
+        "refresh_tokens",
+        "revoked_tokens",
+        "roles",
+        "roles_backup_20260404",
+        "sessions",
+        "user_profiles",
+        "user_roles",
+        "user_roles_backup_20260404",
+        "users",
+        "verification_tokens"
+      ],
+      "rowCounts": {
+        "audit_logs": 1905,
+        "login_attempts": 1,
+        "password_reset_tokens": 1,
+        "refresh_tokens": 1323,
+        "revoked_tokens": 0,
+        "roles": 4,
+        "roles_backup_20260404": 3,
+        "sessions": 0,
+        "user_profiles": 100,
+        "user_roles": 6,
+        "user_roles_backup_20260404": 6,
+        "users": 100,
+        "verification_tokens": 91
+      },
+      "anomalies": {
+        "backupTables": [
+          "roles_backup_20260404",
+          "user_roles_backup_20260404"
+        ],
+        "risk": "MEDIUM - Manual backup tables found"
+      }
+    },
+    "skillup": {
+      "database": "skillup_prod",
+      "timestamp": "2026-05-02T14:58:04.545Z",
+      "tables": [
+        "audit_logs",
+        "login_attempts",
+        "password_reset_tokens",
+        "refresh_tokens",
+        "revoked_tokens",
+        "roles",
+        "sessions",
+        "user_profiles",
+        "user_roles",
+        "users",
+        "verification_tokens"
+      ],
+      "rowCounts": {
+        "audit_logs": 975,
+        "login_attempts": 4,
+        "password_reset_tokens": 2,
+        "refresh_tokens": 696,
+        "revoked_tokens": 0,
+        "roles": 6,
+        "sessions": 0,
+        "user_profiles": 36,
+        "user_roles": 2,
+        "users": 42,
+        "verification_tokens": 34
+      }
+    }
+  },
+  "crossBrandAnalysis": {
+    "onlyInRTH": [
+      "roles_backup_20260404",
+      "user_roles_backup_20260404"
+    ],
+    "onlyInSkillUp": [],
+    "common": [
+      "audit_logs",
+      "login_attempts",
+      "password_reset_tokens",
+      "refresh_tokens",
+      "revoked_tokens",
+      "roles",
+      "sessions",
+      "user_profiles",
+      "user_roles",
+      "users",
+      "verification_tokens"
+    ]
+  }
+}

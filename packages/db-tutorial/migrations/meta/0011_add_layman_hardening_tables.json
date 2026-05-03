@@ -1,0 +1,14 @@
+{
+  "id": "0011_add_layman_hardening_tables",
+  "prevId": "0010_looping_demo_foundation",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {},
+  "enums": {},
+  "schemas": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  }
+}

@@ -1,0 +1,136 @@
+{
+  "timestamp": "2026-05-02T15:35:03.000Z",
+  "deliverable": "DELIVERABLE_2",
+  "phase": "PHASE_1_DATA_INTEGRITY_REMEDIATION",
+  "status": "SUCCESS",
+  "orphanedContent": [
+    {
+      "id": "8d231612-fdcb-49d3-bdb4-3f01a7e550b9",
+      "subtopicId": "9cd63786-505e-46e3-a9b2-d4b4ac8fd07b",
+      "difficulty": "simple",
+      "contentType": "standard",
+      "isPublished": true,
+      "generatedByAi": true,
+      "createdAt": "2026-03-28T09:44:27.748Z"
+    },
+    {
+      "id": "91000000-0000-0000-0000-100000000001",
+      "subtopicId": "60000000-0000-0000-0000-100000000001",
+      "difficulty": "simple",
+      "contentType": "standard",
+      "isPublished": true,
+      "generatedByAi": false,
+      "createdAt": "2026-03-28T23:02:35.310Z"
+    },
+    {
+      "id": "91000000-0000-0000-0000-100000000002",
+      "subtopicId": "60000000-0000-0000-0000-100000000001",
+      "difficulty": "mixed",
+      "contentType": "standard",
+      "isPublished": true,
+      "generatedByAi": false,
+      "createdAt": "2026-03-28T23:02:35.722Z"
+    },
+    {
+      "id": "91000000-0000-0000-0000-100000000003",
+      "subtopicId": "60000000-0000-0000-0000-100000000001",
+      "difficulty": "intermediate",
+      "contentType": "standard",
+      "isPublished": true,
+      "generatedByAi": false,
+      "createdAt": "2026-03-28T23:02:36.131Z"
+    },
+    {
+      "id": "91000000-0000-0000-0000-100000000004",
+      "subtopicId": "60000000-0000-0000-0000-100000000001",
+      "difficulty": "expert",
+      "contentType": "standard",
+      "isPublished": true,
+      "generatedByAi": false,
+      "createdAt": "2026-03-28T23:02:36.538Z"
+    }
+  ],
+  "mappings": [
+    {
+      "contentId": "8d231612-fdcb-49d3-bdb4-3f01a7e550b9",
+      "oldSubtopicId": "9cd63786-505e-46e3-a9b2-d4b4ac8fd07b",
+      "newSubtopicId": "6fb97ae5-9b8c-4ae1-9702-a2b7956fa64b",
+      "subtopicName": "Variables and Literals",
+      "mappingMethod": "external_id_lookup"
+    },
+    {
+      "contentId": "91000000-0000-0000-0000-100000000001",
+      "oldSubtopicId": "60000000-0000-0000-0000-100000000001",
+      "newSubtopicId": "90000000-0000-0000-0000-100000000004",
+      "subtopicName": "Looping",
+      "mappingMethod": "external_id_lookup"
+    },
+    {
+      "contentId": "91000000-0000-0000-0000-100000000002",
+      "oldSubtopicId": "60000000-0000-0000-0000-100000000001",
+      "newSubtopicId": "90000000-0000-0000-0000-100000000004",
+      "subtopicName": "Looping",
+      "mappingMethod": "external_id_lookup"
+    },
+    {
+      "contentId": "91000000-0000-0000-0000-100000000003",
+      "oldSubtopicId": "60000000-0000-0000-0000-100000000001",
+      "newSubtopicId": "90000000-0000-0000-0000-100000000004",
+      "subtopicName": "Looping",
+      "mappingMethod": "external_id_lookup"
+    },
+    {
+      "contentId": "91000000-0000-0000-0000-100000000004",
+      "oldSubtopicId": "60000000-0000-0000-0000-100000000001",
+      "newSubtopicId": "90000000-0000-0000-0000-100000000004",
+      "subtopicName": "Looping",
+      "mappingMethod": "external_id_lookup"
+    }
+  ],
+  "fixes": [
+    {
+      "contentId": "8d231612-fdcb-49d3-bdb4-3f01a7e550b9",
+      "status": "SUCCESS",
+      "oldSubtopicId": "9cd63786-505e-46e3-a9b2-d4b4ac8fd07b",
+      "newSubtopicId": "6fb97ae5-9b8c-4ae1-9702-a2b7956fa64b",
+      "subtopicName": "Variables and Literals"
+    },
+    {
+      "contentId": "91000000-0000-0000-0000-100000000001",
+      "status": "SUCCESS",
+      "oldSubtopicId": "60000000-0000-0000-0000-100000000001",
+      "newSubtopicId": "90000000-0000-0000-0000-100000000004",
+      "subtopicName": "Looping"
+    },
+    {
+      "contentId": "91000000-0000-0000-0000-100000000002",
+      "status": "SUCCESS",
+      "oldSubtopicId": "60000000-0000-0000-0000-100000000001",
+      "newSubtopicId": "90000000-0000-0000-0000-100000000004",
+      "subtopicName": "Looping"
+    },
+    {
+      "contentId": "91000000-0000-0000-0000-100000000003",
+      "status": "SUCCESS",
+      "oldSubtopicId": "60000000-0000-0000-0000-100000000001",
+      "newSubtopicId": "90000000-0000-0000-0000-100000000004",
+      "subtopicName": "Looping"
+    },
+    {
+      "contentId": "91000000-0000-0000-0000-100000000004",
+      "status": "SUCCESS",
+      "oldSubtopicId": "60000000-0000-0000-0000-100000000001",
+      "newSubtopicId": "90000000-0000-0000-0000-100000000004",
+      "subtopicName": "Looping"
+    }
+  ],
+  "errors": [],
+  "summary": {
+    "orphanedFound": 5,
+    "mappingsIdentified": 5,
+    "fixesApplied": 5,
+    "errors": 0,
+    "remainingOrphans": 0,
+    "fkViolations": 0
+  }
+}

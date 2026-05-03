@@ -1,0 +1,47 @@
+{
+  "timestamp": "2026-05-02T14:59:05.087Z",
+  "currentState": {
+    "appliedMigrations": 9,
+    "lastApplied": "0008_opposite_wiccan",
+    "legacySystemActive": true,
+    "modularSystemActive": false
+  },
+  "pendingMigrations": {
+    "drizzle": [
+      "0009_mv_student_weak_areas",
+      "0010_looping_demo_foundation"
+    ],
+    "manual": [
+      "001-create-modular-schema.sql",
+      "002-gap-remediation-alter.sql"
+    ]
+  },
+  "recommendedSequence": [
+    {
+      "step": 1,
+      "action": "Apply pending Drizzle migrations (if any)",
+      "migrations": [
+        "0009_mv_student_weak_areas",
+        "0010_looping_demo_foundation"
+      ],
+      "command": "pnpm --filter @quiz/db-tutorial db:migrate"
+    },
+    {
+      "step": 2,
+      "action": "Apply Phase 1 P0 modular schema",
+      "file": "001-create-modular-schema.sql",
+      "command": "psql tutorial_prod < packages/db-tutorial/src/migrations/p1-p0-foundation/001-create-modular-schema.sql"
+    },
+    {
+      "step": 3,
+      "action": "Apply Phase 1 P0 gap remediation",
+      "file": "002-gap-remediation-alter.sql",
+      "command": "psql tutorial_prod < packages/db-tutorial/src/migrations/p1-p0-foundation/002-gap-remediation-alter.sql"
+    },
+    {
+      "step": 4,
+      "action": "Validate deployment",
+      "command": "npm run validate-gap-remediation"
+    }
+  ]
+}

@@ -1,0 +1,428 @@
+{
+  "timestamp": "2026-05-02T15:31:33.337Z",
+  "deliverable": "DELIVERABLE_2",
+  "phase": "PHASE_1_LEGACY_CONTENT_AUDIT",
+  "status": "SUCCESS",
+  "legacy": {
+    "topics": {
+      "count": 10,
+      "topics": [
+        {
+          "id": "e9b27093-64b7-4882-a90e-f59cd70d69ec",
+          "externalId": "029ebe1e-1b93-4efa-a638-9aefca24a3ed",
+          "name": "JavaScript Fundamentals",
+          "slug": "javascript-fundamentals-029ebe1e",
+          "subjectId": "955eb416-343e-4cfe-a8cb-31b578a299c4",
+          "subjectName": "Frontend Development",
+          "domainId": "a23b7357-fd58-4687-9a3c-413e449b2a65",
+          "domainName": "Full Stack Development",
+          "createdAt": "2026-03-26T06:00:02.794Z",
+          "updatedAt": "2026-03-26T11:30:14.158Z"
+        },
+        {
+          "id": "446b31a7-18fd-4668-93e4-8c463346b010",
+          "externalId": "04a1273e-f5e3-4737-8291-8c01a66fe758",
+          "name": "HTML and Semantic Markup",
+          "slug": "html-and-semantic-markup-04a1273e",
+          "subjectId": "955eb416-343e-4cfe-a8cb-31b578a299c4",
+          "subjectName": "Frontend Development",
+          "domainId": "a23b7357-fd58-4687-9a3c-413e449b2a65",
+          "domainName": "Full Stack Development",
+          "createdAt": "2026-03-26T06:00:03.620Z",
+          "updatedAt": "2026-03-26T11:30:03.209Z"
+        },
+        {
+          "id": "b5ca597c-4cfd-43ac-a936-36cc4ba32cce",
+          "externalId": "24c60f3a-2433-4bc1-8ee6-d8b3f442d5e4",
+          "name": "Responsive Web Design",
+          "slug": "responsive-web-design-24c60f3a",
+          "subjectId": "955eb416-343e-4cfe-a8cb-31b578a299c4",
+          "subjectName": "Frontend Development",
+          "domainId": "a23b7357-fd58-4687-9a3c-413e449b2a65",
+          "domainName": "Full Stack Development",
+          "createdAt": "2026-03-26T06:00:04.432Z",
+          "updatedAt": "2026-03-26T11:30:04.021Z"
+        },
+        {
+          "id": "7222ee43-6020-4bc0-a641-76b36db1bb0d",
+          "externalId": "287931b9-f45d-4e2a-b7ae-cf299e6fc1be",
+          "name": "DOM Manipulation",
+          "slug": "dom-manipulation-287931b9",
+          "subjectId": "955eb416-343e-4cfe-a8cb-31b578a299c4",
+          "subjectName": "Frontend Development",
+          "domainId": "a23b7357-fd58-4687-9a3c-413e449b2a65",
+          "domainName": "Full Stack Development",
+          "createdAt": "2026-03-26T06:00:05.251Z",
+          "updatedAt": "2026-03-26T11:30:04.840Z"
+        },
+        {
+          "id": "59237c3a-3b90-4f76-b848-443aa1ee3851",
+          "externalId": "6e72b208-8a96-4627-8eb8-65a72c6ce8f1",
+          "name": "Modern JavaScript (ES6+)",
+          "slug": "modern-javascript-es6-6e72b208",
+          "subjectId": "955eb416-343e-4cfe-a8cb-31b578a299c4",
+          "subjectName": "Frontend Development",
+          "domainId": "a23b7357-fd58-4687-9a3c-413e449b2a65",
+          "domainName": "Full Stack Development",
+          "createdAt": "2026-03-26T06:00:06.071Z",
+          "updatedAt": "2026-03-26T11:30:05.659Z"
+        },
+        {
+          "id": "1a51958f-c968-47e4-b0ea-04a46f07201b",
+          "externalId": "9681ba7a-8710-446a-b6c3-1e2c92c197ef",
+          "name": "Form Handling and Validation",
+          "slug": "form-handling-and-validation-9681ba7a",
+          "subjectId": "955eb416-343e-4cfe-a8cb-31b578a299c4",
+          "subjectName": "Frontend Development",
+          "domainId": "a23b7357-fd58-4687-9a3c-413e449b2a65",
+          "domainName": "Full Stack Development",
+          "createdAt": "2026-03-26T06:00:06.890Z",
+          "updatedAt": "2026-03-26T11:30:06.478Z"
+        },
+        {
+          "id": "be2017bf-1ce7-4626-b759-def62d21bb72",
+          "externalId": "bfa5e614-57e2-4919-8f73-972feac502ef",
+          "name": "CSS Fundamentals",
+          "slug": "css-fundamentals-bfa5e614",
+          "subjectId": "955eb416-343e-4cfe-a8cb-31b578a299c4",
+          "subjectName": "Frontend Development",
+          "domainId": "a23b7357-fd58-4687-9a3c-413e449b2a65",
+          "domainName": "Full Stack Development",
+          "createdAt": "2026-03-26T06:00:07.709Z",
+          "updatedAt": "2026-03-26T11:30:07.297Z"
+        },
+        {
+          "id": "960d54e3-c292-438d-bc07-d8b0c06a19cc",
+          "externalId": "d581a890-60df-402c-b691-e9d8be7a9a03",
+          "name": "CSS Layout Systems (Flexbox & Grid)",
+          "slug": "css-layout-systems-flexbox-grid-d581a890",
+          "subjectId": "955eb416-343e-4cfe-a8cb-31b578a299c4",
+          "subjectName": "Frontend Development",
+          "domainId": "a23b7357-fd58-4687-9a3c-413e449b2a65",
+          "domainName": "Full Stack Development",
+          "createdAt": "2026-03-26T06:00:08.528Z",
+          "updatedAt": "2026-03-26T11:30:08.116Z"
+        },
+        {
+          "id": "e2cd2a9c-de12-4ad4-a5e0-bbabfa17deb1",
+          "externalId": "7202acb9-cae6-49f6-944f-9836e886b523",
+          "name": "JavaScript Advanced",
+          "slug": "javascript-advanced-7202acb9",
+          "subjectId": "955eb416-343e-4cfe-a8cb-31b578a299c4",
+          "subjectName": "Frontend Development",
+          "domainId": "a23b7357-fd58-4687-9a3c-413e449b2a65",
+          "domainName": "Full Stack Development",
+          "createdAt": "2026-03-26T06:00:09.449Z",
+          "updatedAt": "2026-03-26T11:30:15.182Z"
+        },
+        {
+          "id": "90000000-0000-0000-0000-100000000003",
+          "externalId": "50000000-0000-0000-0000-100000000001",
+          "name": "JavaScript Fundamentals",
+          "slug": "javascript-fundamentals",
+          "subjectId": "90000000-0000-0000-0000-100000000002",
+          "subjectName": "Front End Development",
+          "domainId": "a23b7357-fd58-4687-9a3c-413e449b2a65",
+          "domainName": "Full Stack Development",
+          "createdAt": "2026-03-28T22:45:25.980Z",
+          "updatedAt": "2026-03-10T04:30:00.000Z"
+        }
+      ]
+    },
+    "subtopics": {
+      "count": 7,
+      "byTopic": {
+        "90000000-0000-0000-0000-100000000003": {
+          "topicName": "JavaScript Fundamentals",
+          "count": 1,
+          "subtopics": [
+            {
+              "id": "90000000-0000-0000-0000-100000000004",
+              "externalId": "60000000-0000-0000-0000-100000000001",
+              "name": "Looping",
+              "slug": "looping",
+              "difficultyLevels": [
+                "simple",
+                "mixed",
+                "intermediate",
+                "expert"
+              ],
+              "createdAt": "2026-03-28T22:45:26.192Z",
+              "updatedAt": "2026-03-10T04:30:00.000Z"
+            }
+          ]
+        },
+        "e2cd2a9c-de12-4ad4-a5e0-bbabfa17deb1": {
+          "topicName": "JavaScript Advanced",
+          "count": 1,
+          "subtopics": [
+            {
+              "id": "8a7082dc-02bc-4731-806a-936e71b3e729",
+              "externalId": "442c006b-6456-4f72-91b8-6bd9e5a8be7c",
+              "name": "Functions",
+              "slug": "functions-442c006b",
+              "difficultyLevels": [],
+              "createdAt": "2026-03-26T06:00:15.593Z",
+              "updatedAt": "2026-03-26T11:30:15.182Z"
+            }
+          ]
+        },
+        "e9b27093-64b7-4882-a90e-f59cd70d69ec": {
+          "topicName": "JavaScript Fundamentals",
+          "count": 5,
+          "subtopics": [
+            {
+              "id": "6fb97ae5-9b8c-4ae1-9702-a2b7956fa64b",
+              "externalId": "9cd63786-505e-46e3-a9b2-d4b4ac8fd07b",
+              "name": "Variables and Literals",
+              "slug": "variables-and-literals-9cd63786",
+              "difficultyLevels": [],
+              "createdAt": "2026-03-26T06:00:10.474Z",
+              "updatedAt": "2026-03-26T11:30:10.063Z"
+            },
+            {
+              "id": "add27619-089a-4892-a7f8-f1a34c67d565",
+              "externalId": "5ace8e0e-cf02-476b-beaf-6c19847140bc",
+              "name": "Conditional Construct",
+              "slug": "conditional-construct-5ace8e0e",
+              "difficultyLevels": [],
+              "createdAt": "2026-03-26T06:00:11.498Z",
+              "updatedAt": "2026-03-26T11:30:11.086Z"
+            },
+            {
+              "id": "2fa4bbe2-3925-421d-bda9-ec22ebafa192",
+              "externalId": "01eadf6a-31c7-424c-a5e0-f8fb69e0bbee",
+              "name": "Looping",
+              "slug": "looping-01eadf6a",
+              "difficultyLevels": [],
+              "createdAt": "2026-03-26T06:00:12.521Z",
+              "updatedAt": "2026-03-26T11:30:12.110Z"
+            },
+            {
+              "id": "b9c1e4d9-a29e-4430-97fb-c6b67df87b16",
+              "externalId": "99f65aa1-f2c7-4bca-a8c8-df7f6cf985aa",
+              "name": "Type Coercion",
+              "slug": "type-coercion-99f65aa1",
+              "difficultyLevels": [],
+              "createdAt": "2026-03-26T06:00:13.547Z",
+              "updatedAt": "2026-03-26T11:30:13.135Z"
+            },
+            {
+              "id": "ee859e00-af82-42e9-9a46-d882c71912ce",
+              "externalId": "9d312047-93d5-4633-ba58-ecc378c479a3",
+              "name": "All Topics",
+              "slug": "all-topics-9d312047",
+              "difficultyLevels": [],
+              "createdAt": "2026-03-26T06:00:14.569Z",
+              "updatedAt": "2026-03-26T11:30:14.158Z"
+            }
+          ]
+        }
+      }
+    },
+    "content": {
+      "count": 5,
+      "publishedCount": 5,
+      "draftCount": 0,
+      "aiGeneratedCount": 1,
+      "aiGeneratedPercentage": 20,
+      "contentTypeDistribution": {
+        "standard": 5
+      },
+      "difficultyDistribution": {
+        "simple": 2,
+        "mixed": 1,
+        "intermediate": 1,
+        "expert": 1
+      },
+      "bySubtopic": {
+        "60000000-0000-0000-0000-100000000001": {
+          "count": 4,
+          "items": [
+            {
+              "id": "91000000-0000-0000-0000-100000000001",
+              "contentType": "standard",
+              "difficulty": "simple",
+              "isPublished": true,
+              "generatedByAi": false,
+              "aiModelUsed": null,
+              "version": 1,
+              "language": "en",
+              "regenerationCount": 0,
+              "contentSize": 2499,
+              "createdAt": "2026-03-28T23:02:35.310Z",
+              "updatedAt": "2026-03-11T02:30:00.000Z"
+            },
+            {
+              "id": "91000000-0000-0000-0000-100000000002",
+              "contentType": "standard",
+              "difficulty": "mixed",
+              "isPublished": true,
+              "generatedByAi": false,
+              "aiModelUsed": null,
+              "version": 1,
+              "language": "en",
+              "regenerationCount": 0,
+              "contentSize": 2568,
+              "createdAt": "2026-03-28T23:02:35.722Z",
+              "updatedAt": "2026-03-11T02:30:00.000Z"
+            },
+            {
+              "id": "91000000-0000-0000-0000-100000000003",
+              "contentType": "standard",
+              "difficulty": "intermediate",
+              "isPublished": true,
+              "generatedByAi": false,
+              "aiModelUsed": null,
+              "version": 1,
+              "language": "en",
+              "regenerationCount": 0,
+              "contentSize": 3008,
+              "createdAt": "2026-03-28T23:02:36.131Z",
+              "updatedAt": "2026-03-11T02:30:00.000Z"
+            },
+            {
+              "id": "91000000-0000-0000-0000-100000000004",
+              "contentType": "standard",
+              "difficulty": "expert",
+              "isPublished": true,
+              "generatedByAi": false,
+              "aiModelUsed": null,
+              "version": 1,
+              "language": "en",
+              "regenerationCount": 0,
+              "contentSize": 3091,
+              "createdAt": "2026-03-28T23:02:36.538Z",
+              "updatedAt": "2026-03-11T02:30:00.000Z"
+            }
+          ]
+        },
+        "9cd63786-505e-46e3-a9b2-d4b4ac8fd07b": {
+          "count": 1,
+          "items": [
+            {
+              "id": "8d231612-fdcb-49d3-bdb4-3f01a7e550b9",
+              "contentType": "standard",
+              "difficulty": "simple",
+              "isPublished": true,
+              "generatedByAi": true,
+              "aiModelUsed": null,
+              "version": 2,
+              "language": "en",
+              "regenerationCount": 1,
+              "contentSize": 3013,
+              "createdAt": "2026-03-28T09:44:27.748Z",
+              "updatedAt": "2026-03-28T09:51:49.653Z"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "relationships": {
+    "orphanedSubtopics": 0,
+    "orphanedContent": 5,
+    "emptySubtopics": 7,
+    "emptyTopics": 7,
+    "healthScore": 0
+  },
+  "brandAnalysis": {
+    "totalDomains": 8,
+    "domains": [
+      "Data Science",
+      "Cloud Computing",
+      "Cybersecurity",
+      "Mobile Development",
+      "DevOps",
+      "Artificial Intelligence",
+      "Database Systems",
+      "Full Stack Development"
+    ],
+    "brandInference": {
+      "realtutorialhub": 0,
+      "skillup": 0,
+      "shared": 8
+    },
+    "recommendation": "All legacy content should default to \"shared\" brand unless explicitly branded"
+  },
+  "transformationOpportunities": {
+    "constitutionalSectionMapping": {
+      "description": "Map legacy content into 12 constitutional sections",
+      "complexity": "HIGH",
+      "approach": "AI-assisted content analysis + manual review",
+      "estimatedEffort": "Medium"
+    },
+    "subsectionTaxonomy": {
+      "description": "Classify content into 24 subsection types",
+      "complexity": "MEDIUM",
+      "approach": "Content type analysis + semantic classification",
+      "estimatedEffort": "Medium"
+    },
+    "brandPartitioning": {
+      "description": "Assign brand ownership to all content",
+      "complexity": "LOW",
+      "approach": "Domain-based inference + default to shared",
+      "estimatedEffort": "Low"
+    },
+    "aiPromptGeneration": {
+      "description": "Generate prompt templates for existing content patterns",
+      "complexity": "HIGH",
+      "approach": "Content pattern analysis + template synthesis",
+      "estimatedEffort": "High"
+    },
+    "educationalArchitecture": {
+      "description": "Define learning patterns from existing content",
+      "complexity": "MEDIUM",
+      "approach": "Difficulty + time analysis + pedagogical mapping",
+      "estimatedEffort": "Medium"
+    },
+    "uiArchitecture": {
+      "description": "Extract UI patterns from content types",
+      "complexity": "LOW",
+      "approach": "Content type → component mapping",
+      "estimatedEffort": "Low"
+    }
+  },
+  "risks": [
+    {
+      "severity": "HIGH",
+      "category": "DATA_INTEGRITY",
+      "description": "5 orphaned content items without parent subtopics",
+      "mitigation": "Create placeholder subtopics or reassign to existing subtopics"
+    },
+    {
+      "severity": "LOW",
+      "category": "CONTENT_QUALITY",
+      "description": "7 subtopics without content",
+      "mitigation": "Mark for content creation or deprecation"
+    },
+    {
+      "severity": "HIGH",
+      "category": "TRANSFORMATION",
+      "description": "No existing brand attribution in legacy content",
+      "mitigation": "Default all content to \"shared\" brand, allow manual override"
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "TRANSFORMATION",
+      "description": "Legacy content lacks constitutional section structure",
+      "mitigation": "Use AI-assisted content analysis to infer section types"
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "SEO",
+      "description": "URL structure may change during transformation",
+      "mitigation": "Maintain legacy URL redirects, preserve slug patterns"
+    }
+  ],
+  "summary": {
+    "totalTopics": 10,
+    "totalSubtopics": 7,
+    "totalContent": 5,
+    "publishedContent": 5,
+    "draftContent": 0,
+    "relationshipHealth": 0,
+    "riskCount": 5,
+    "opportunityCount": 6
+  }
+}

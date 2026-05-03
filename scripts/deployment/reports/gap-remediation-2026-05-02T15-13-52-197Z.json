@@ -1,0 +1,45 @@
+{
+  "timestamp": "2026-05-02T15:13:31.030Z",
+  "migration": "002-gap-remediation-alter.sql",
+  "status": "PARTIAL",
+  "gaps": {
+    "gap2_subsection_taxonomy": "SUCCESS",
+    "gap3_fk_hardening": "SUCCESS",
+    "gap4_brand_partitioning": "SUCCESS",
+    "gap5_analytics_expansion": "PARTIAL"
+  },
+  "subsectionTypes": [
+    "definition",
+    "concept",
+    "syntax",
+    "analogy",
+    "example",
+    "visual",
+    "diagram",
+    "animation",
+    "pitfall",
+    "antipattern",
+    "gotcha",
+    "code",
+    "exercise",
+    "challenge",
+    "sandbox",
+    "checklist",
+    "cheatsheet",
+    "faq",
+    "glossary",
+    "interview_question",
+    "quiz_question",
+    "project_step",
+    "project_milestone",
+    "project_deliverable"
+  ],
+  "foreignKeyCount": 9,
+  "brandPartitionedTables": [
+    "tutorial_sections",
+    "educational_architectures",
+    "ui_architectures",
+    "tutorial_subsections"
+  ],
+  "analyticsTablesCreated": []
+}

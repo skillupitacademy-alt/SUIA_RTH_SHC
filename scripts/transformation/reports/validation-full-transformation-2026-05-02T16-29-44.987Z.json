@@ -1,0 +1,52 @@
+{
+  "timestamp": "2026-05-02T16:29:44.987Z",
+  "deliverable": "DELIVERABLE_2",
+  "phase": "PHASE_2A_VALIDATION",
+  "status": "FAILED",
+  "validations": [
+    {
+      "name": "Content Migration Completeness",
+      "maxPoints": 15,
+      "points": 0,
+      "status": "FAIL",
+      "details": {
+        "totalContent": 5,
+        "migratedContent": 1,
+        "successfulMigrations": 0,
+        "partialMigrations": 0,
+        "failedMigrations": 0,
+        "migrationRate": 20,
+        "successRate": 0
+      }
+    },
+    {
+      "name": "Constitutional Section Coverage",
+      "maxPoints": 20,
+      "points": 20,
+      "status": "PASS",
+      "details": {
+        "totalSections": 12,
+        "subtopicsWithSections": 1,
+        "expectedSubtopics": 1,
+        "sectionCoverageRate": 100,
+        "sectionTypeDistribution": {
+          "layman": 1,
+          "notes": 1,
+          "technical": 1,
+          "code": 1,
+          "real_life": 1,
+          "visual": 1,
+          "practice": 1,
+          "assignment": 1,
+          "project": 1,
+          "quiz": 1,
+          "summary": 1,
+          "interview": 1
+        }
+      }
+    }
+  ],
+  "summary": {},
+  "score": 0,
+  "error": "column \"deleted_at\" does not exist"
+}

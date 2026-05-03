@@ -1,0 +1,81 @@
+{
+  "timestamp": "2026-05-02T15:58:29.834Z",
+  "deliverable": "DELIVERABLE_2",
+  "phase": "PHASE_2_CONSTITUTIONAL_MAPPING",
+  "mode": "PILOT",
+  "status": "PARTIAL",
+  "migrations": [
+    {
+      "contentId": "8d231612-fdcb-49d3-bdb4-3f01a7e550b9",
+      "subtopicId": "6fb97ae5-9b8c-4ae1-9702-a2b7956fa64b",
+      "topicName": "JavaScript Fundamentals",
+      "subtopicName": "Variables and Literals",
+      "difficulty": "simple",
+      "sectionsCreated": 2,
+      "subsectionsCreated": 3,
+      "sections": [
+        {
+          "sectionType": "practice",
+          "sectionId": "035fc607-d41f-4047-b931-e0a11d426355",
+          "subsectionCount": 1
+        },
+        {
+          "sectionType": "summary",
+          "sectionId": "56e853db-ac99-4357-b438-a4da39e5ba8a",
+          "subsectionCount": 2
+        }
+      ],
+      "errors": [
+        {
+          "section": "overview",
+          "error": "invalid input value for enum section_type: \"overview\""
+        },
+        {
+          "section": "prerequisites",
+          "error": "invalid input value for enum section_type: \"prerequisites\""
+        },
+        {
+          "section": "core_concepts",
+          "error": "invalid input value for enum section_type: \"core_concepts\""
+        },
+        {
+          "section": "syntax",
+          "error": "invalid input value for enum section_type: \"syntax\""
+        },
+        {
+          "section": "examples",
+          "error": "invalid input value for enum section_type: \"examples\""
+        },
+        {
+          "section": "pitfalls",
+          "error": "invalid input value for enum section_type: \"pitfalls\""
+        },
+        {
+          "section": "best_practices",
+          "error": "invalid input value for enum section_type: \"best_practices\""
+        },
+        {
+          "section": "advanced_topics",
+          "error": "invalid input value for enum section_type: \"advanced_topics\""
+        },
+        {
+          "section": "interview_prep",
+          "error": "invalid input value for enum section_type: \"interview_prep\""
+        },
+        {
+          "section": "projects",
+          "error": "invalid input value for enum section_type: \"projects\""
+        }
+      ],
+      "status": "PARTIAL"
+    }
+  ],
+  "summary": {
+    "contentItemsMigrated": 1,
+    "successfulMigrations": 0,
+    "totalSections": 2,
+    "totalSubsections": 3,
+    "totalErrors": 10,
+    "successRate": 0
+  }
+}

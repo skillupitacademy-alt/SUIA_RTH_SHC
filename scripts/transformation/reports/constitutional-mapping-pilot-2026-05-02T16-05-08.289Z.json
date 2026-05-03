@@ -1,0 +1,89 @@
+{
+  "timestamp": "2026-05-02T16:05:08.289Z",
+  "deliverable": "DELIVERABLE_2",
+  "phase": "PHASE_2_CONSTITUTIONAL_MAPPING",
+  "mode": "PILOT",
+  "status": "PARTIAL",
+  "migrations": [
+    {
+      "contentId": "8d231612-fdcb-49d3-bdb4-3f01a7e550b9",
+      "subtopicId": "6fb97ae5-9b8c-4ae1-9702-a2b7956fa64b",
+      "topicName": "JavaScript Fundamentals",
+      "subtopicName": "Variables and Literals",
+      "difficulty": "simple",
+      "sectionsCreated": 10,
+      "subsectionsCreated": 19,
+      "sections": [
+        {
+          "sectionType": "layman",
+          "sectionId": "1a13ac5f-85b0-4b6e-add1-063c36d84777",
+          "subsectionCount": 2
+        },
+        {
+          "sectionType": "notes",
+          "sectionId": "49bbe6a2-839f-452b-a2ad-c40445dc7a98",
+          "subsectionCount": 1
+        },
+        {
+          "sectionType": "technical",
+          "sectionId": "f33d5f68-fa24-4548-ab06-863005d99063",
+          "subsectionCount": 3
+        },
+        {
+          "sectionType": "code",
+          "sectionId": "fe698dff-be77-4031-a8c6-033d66d031f5",
+          "subsectionCount": 2
+        },
+        {
+          "sectionType": "real_life",
+          "sectionId": "9735d034-102c-4d0d-93c0-3ef842c68c61",
+          "subsectionCount": 4
+        },
+        {
+          "sectionType": "visual",
+          "sectionId": "8ae6e6cc-b2d3-4eee-94bf-147f11bfcb87",
+          "subsectionCount": 1
+        },
+        {
+          "sectionType": "assignment",
+          "sectionId": "ce1ea07f-d88f-4b78-9f6a-c7ed58a021ea",
+          "subsectionCount": 1
+        },
+        {
+          "sectionType": "project",
+          "sectionId": "ad08b14f-5858-4e2f-a6d1-740d8965a45b",
+          "subsectionCount": 1
+        },
+        {
+          "sectionType": "quiz",
+          "sectionId": "aa83e771-e96a-4b21-9a87-acc6f05e4392",
+          "subsectionCount": 1
+        },
+        {
+          "sectionType": "interview",
+          "sectionId": "e4a4a971-f30e-48d9-bdff-5bc5d9c3f59f",
+          "subsectionCount": 3
+        }
+      ],
+      "errors": [
+        {
+          "section": "practice",
+          "error": "duplicate key value violates unique constraint \"uq_section_subtopic_type_difficulty_brand\""
+        },
+        {
+          "section": "summary",
+          "error": "duplicate key value violates unique constraint \"uq_section_subtopic_type_difficulty_brand\""
+        }
+      ],
+      "status": "PARTIAL"
+    }
+  ],
+  "summary": {
+    "contentItemsMigrated": 1,
+    "successfulMigrations": 0,
+    "totalSections": 10,
+    "totalSubsections": 19,
+    "totalErrors": 2,
+    "successRate": 0
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "timestamp": "2026-05-02T15:46:58.683Z",
+  "deliverable": "DELIVERABLE_2",
+  "phase": "PHASE_2_CONSTITUTIONAL_MAPPING",
+  "mode": "PILOT",
+  "status": "FAILED",
+  "migrations": [],
+  "summary": {},
+  "error": "syntax error at or near \"$1\""
+}

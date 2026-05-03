@@ -6,3 +6,4 @@ export * from './tutorial-content.repository';
 export * from './tutorial-progress.repository';
 export * from './live-session.repository';
 export * from './project-submission.repository';
+export * from './layman.repository';

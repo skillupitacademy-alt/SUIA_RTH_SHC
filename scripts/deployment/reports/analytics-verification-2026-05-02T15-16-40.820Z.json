@@ -1,0 +1,21 @@
+{
+  "timestamp": "2026-05-02T15:16:40.820Z",
+  "phase": "PHASE_E_ANALYTICS_VERIFICATION",
+  "status": "FAILED",
+  "analyticsTablesExpected": [
+    "tutorial_learning_metrics",
+    "subsection_engagement_metrics",
+    "educational_architecture_performance",
+    "ui_architecture_performance",
+    "prompt_template_performance",
+    "brand_performance_metrics",
+    "deployment_cohort_metrics",
+    "revenue_attribution_metrics"
+  ],
+  "analyticsTablesFound": [
+    "tutorial_learning_metrics"
+  ],
+  "analyticsTablesMissing": [],
+  "tableDetails": {},
+  "error": "syntax error at or near \"$1\""
+}

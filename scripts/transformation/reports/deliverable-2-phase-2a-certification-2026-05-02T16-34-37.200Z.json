@@ -1,0 +1,58 @@
+{
+  "timestamp": "2026-05-02T16:34:37.200Z",
+  "deliverable": "DELIVERABLE_2",
+  "phase": "PHASE_2A_HARDENED_MIGRATION",
+  "status": "FAILED",
+  "certifications": [
+    {
+      "name": "Migration Infrastructure",
+      "maxPoints": 20,
+      "points": 20,
+      "status": "PASS",
+      "details": {
+        "trackingTable": true,
+        "statusEnum": true,
+        "modeEnum": true
+      }
+    },
+    {
+      "name": "Idempotency & Duplicate Prevention",
+      "maxPoints": 20,
+      "points": 20,
+      "status": "PASS",
+      "details": {
+        "totalMigrations": 6,
+        "uniqueContent": 5,
+        "skippedDuplicates": 5,
+        "duplicateSections": 0
+      }
+    },
+    {
+      "name": "Transactional Safety",
+      "maxPoints": 15,
+      "points": 15,
+      "status": "PASS",
+      "details": {
+        "totalMigrations": 6,
+        "stuckMigrations": 0,
+        "failedMigrations": 0
+      }
+    },
+    {
+      "name": "Validation Scoring",
+      "maxPoints": 15,
+      "points": 15,
+      "status": "PASS",
+      "details": {
+        "totalMigrations": 1,
+        "avgScore": 100,
+        "excellent": 1,
+        "good": 0,
+        "poor": 0
+      }
+    }
+  ],
+  "summary": {},
+  "score": 0,
+  "error": "column \"rollback_executed_at\" does not exist"
+}

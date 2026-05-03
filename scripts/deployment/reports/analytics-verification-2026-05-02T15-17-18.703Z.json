@@ -1,0 +1,1017 @@
+{
+  "timestamp": "2026-05-02T15:17:18.703Z",
+  "phase": "PHASE_E_ANALYTICS_VERIFICATION",
+  "status": "SUCCESS",
+  "analyticsTablesExpected": [
+    "tutorial_learning_metrics",
+    "subsection_engagement_metrics",
+    "educational_architecture_performance",
+    "ui_architecture_performance",
+    "prompt_template_performance",
+    "brand_performance_metrics",
+    "deployment_cohort_metrics",
+    "revenue_attribution_metrics"
+  ],
+  "analyticsTablesFound": [
+    "tutorial_learning_metrics",
+    "subsection_engagement_metrics",
+    "educational_architecture_performance",
+    "ui_architecture_performance",
+    "prompt_template_performance",
+    "brand_performance_metrics",
+    "deployment_cohort_metrics",
+    "revenue_attribution_metrics"
+  ],
+  "analyticsTablesMissing": [],
+  "tableDetails": {
+    "tutorial_learning_metrics": {
+      "exists": true,
+      "columnCount": 23,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "date",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "hour",
+          "type": "integer",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "aggregation_level",
+          "type": "text",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "section_id",
+          "type": "uuid",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "section_type",
+          "type": "text",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "brand_id",
+          "type": "USER-DEFINED",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "total_views",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "unique_users",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "average_time_spent",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "completion_rate",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "started_count",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "completed_count",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "abandoned_count",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "drop_off_points",
+          "type": "jsonb",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "code_executions",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "practice_attempts",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "quiz_attempts",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "average_quiz_score",
+          "type": "integer",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "thumbs_up",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "thumbs_down",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "reported_issues",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "indexCount": 5,
+      "indexes": [
+        "tutorial_learning_metrics_pkey",
+        "uq_learning_metrics_date_hour_section_brand",
+        "idx_learning_section",
+        "idx_learning_brand",
+        "idx_learning_date"
+      ],
+      "rowCount": 0
+    },
+    "subsection_engagement_metrics": {
+      "exists": true,
+      "columnCount": 14,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "date",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "hour",
+          "type": "integer",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "aggregation_level",
+          "type": "text",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "subsection_id",
+          "type": "uuid",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "subsection_type",
+          "type": "text",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "brand_id",
+          "type": "USER-DEFINED",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "total_views",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "unique_users",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "average_time_spent",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "completion_rate",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "scroll_depth",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "interaction_count",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "indexCount": 4,
+      "indexes": [
+        "subsection_engagement_metrics_pkey",
+        "uq_subsection_metrics_date_hour_subsection_brand",
+        "idx_subsection_engagement",
+        "idx_subsection_brand"
+      ],
+      "rowCount": 0
+    },
+    "educational_architecture_performance": {
+      "exists": true,
+      "columnCount": 16,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "date",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "aggregation_level",
+          "type": "text",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "architecture_id",
+          "type": "uuid",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "brand_id",
+          "type": "USER-DEFINED",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "total_usages",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "unique_users",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "average_completion_rate",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "average_time_to_complete",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "average_quiz_score",
+          "type": "integer",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "average_assignment_score",
+          "type": "integer",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "average_engagement_score",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "retention_rate",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "satisfaction_score",
+          "type": "integer",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "recommendation_rate",
+          "type": "integer",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "indexCount": 4,
+      "indexes": [
+        "educational_architecture_performance_pkey",
+        "uq_educational_perf_date_arch_brand",
+        "idx_educational_perf_arch",
+        "idx_educational_perf_brand"
+      ],
+      "rowCount": 0
+    },
+    "ui_architecture_performance": {
+      "exists": true,
+      "columnCount": 16,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "date",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "aggregation_level",
+          "type": "text",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "architecture_id",
+          "type": "uuid",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "brand_id",
+          "type": "USER-DEFINED",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "total_renders",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "unique_users",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "average_load_time",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "average_render_time",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "error_rate",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "bounce_rate",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "average_session_duration",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "interaction_rate",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "accessibility_score",
+          "type": "integer",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "screen_reader_usage",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "indexCount": 4,
+      "indexes": [
+        "ui_architecture_performance_pkey",
+        "uq_ui_perf_date_arch_brand",
+        "idx_ui_perf_arch",
+        "idx_ui_perf_brand"
+      ],
+      "rowCount": 0
+    },
+    "prompt_template_performance": {
+      "exists": true,
+      "columnCount": 18,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "date",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "aggregation_level",
+          "type": "text",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "template_id",
+          "type": "uuid",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "brand_id",
+          "type": "USER-DEFINED",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "total_generations",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "successful_generations",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "failed_generations",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "average_quality_score",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "average_hallucination_score",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "validation_pass_rate",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "approval_rate",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "average_review_time",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "regeneration_rate",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "total_tokens_used",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "total_cost_usd",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "average_cost_per_generation",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "indexCount": 4,
+      "indexes": [
+        "prompt_template_performance_pkey",
+        "uq_prompt_perf_date_template_brand",
+        "idx_prompt_perf_template",
+        "idx_prompt_perf_brand"
+      ],
+      "rowCount": 0
+    },
+    "brand_performance_metrics": {
+      "exists": true,
+      "columnCount": 26,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "date",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "aggregation_level",
+          "type": "text",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "brand_id",
+          "type": "USER-DEFINED",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "total_users",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "active_users",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "new_users",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "churned_users",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "average_sessions_per_user",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "average_session_duration",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "total_content_views",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "tutorials_started",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "tutorials_completed",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "average_completion_rate",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "certificates_issued",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "day_one_retention",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "day_seven_retention",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "day_thirty_retention",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "free_to_pro_conversions",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "conversion_rate",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "total_revenue",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "subscription_revenue",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "average_revenue_per_user",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "nps_score",
+          "type": "integer",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "average_satisfaction_score",
+          "type": "integer",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "indexCount": 4,
+      "indexes": [
+        "brand_performance_metrics_pkey",
+        "uq_brand_perf_date_brand",
+        "idx_brand_perf_brand",
+        "idx_brand_perf_date"
+      ],
+      "rowCount": 0
+    },
+    "deployment_cohort_metrics": {
+      "exists": true,
+      "columnCount": 19,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "date",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "aggregation_level",
+          "type": "text",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "deployment_id",
+          "type": "uuid",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "cohort_name",
+          "type": "text",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "brand_id",
+          "type": "USER-DEFINED",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "total_users",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "active_users",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "average_completion_rate",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "average_engagement_score",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "average_time_spent",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "control_group_completion_rate",
+          "type": "integer",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "lift_vs_control",
+          "type": "integer",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "conversion_rate",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "revenue_impact",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "sample_size",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "confidence_level",
+          "type": "integer",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "is_statistically_significant",
+          "type": "text",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "indexCount": 4,
+      "indexes": [
+        "deployment_cohort_metrics_pkey",
+        "uq_deployment_cohort_date_brand",
+        "idx_deployment_cohort",
+        "idx_deployment_brand"
+      ],
+      "rowCount": 0
+    },
+    "revenue_attribution_metrics": {
+      "exists": true,
+      "columnCount": 14,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "date",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "aggregation_level",
+          "type": "text",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "brand_id",
+          "type": "USER-DEFINED",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "attribution_source",
+          "type": "text",
+          "nullable": false,
+          "default": null
+        },
+        {
+          "name": "attribution_id",
+          "type": "uuid",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "direct_revenue",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "assisted_revenue",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "total_attributed_revenue",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "conversions",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "conversion_rate",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "average_touchpoints",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "average_time_to_conversion",
+          "type": "integer",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "indexCount": 4,
+      "indexes": [
+        "revenue_attribution_metrics_pkey",
+        "uq_revenue_attr_date_source_brand",
+        "idx_revenue_attr_brand",
+        "idx_revenue_attr_source"
+      ],
+      "rowCount": 0
+    }
+  }
+}

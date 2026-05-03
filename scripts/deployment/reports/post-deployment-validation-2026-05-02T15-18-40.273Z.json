@@ -1,0 +1,405 @@
+{
+  "timestamp": "2026-05-02T15:18:40.273Z",
+  "phase": "PHASE_E_POST_DEPLOYMENT_VALIDATION",
+  "status": "FAILED",
+  "validations": {
+    "modularTables": {
+      "status": "SUCCESS",
+      "expected": 9,
+      "found": 9,
+      "missing": [],
+      "tables": [
+        {
+          "table": "tutorial_sections",
+          "rowCount": 0
+        },
+        {
+          "table": "tutorial_subsections",
+          "rowCount": 0
+        },
+        {
+          "table": "educational_architectures",
+          "rowCount": 0
+        },
+        {
+          "table": "ui_architectures",
+          "rowCount": 0
+        },
+        {
+          "table": "prompt_templates",
+          "rowCount": 0
+        },
+        {
+          "table": "ai_generation_orchestration",
+          "rowCount": 0
+        },
+        {
+          "table": "ai_section_generation_jobs",
+          "rowCount": 0
+        },
+        {
+          "table": "content_review_queue",
+          "rowCount": 0
+        },
+        {
+          "table": "content_deployments",
+          "rowCount": 0
+        }
+      ]
+    },
+    "analyticsTables": {
+      "status": "SUCCESS",
+      "expected": 8,
+      "found": 8,
+      "missing": [],
+      "tables": [
+        {
+          "table": "tutorial_learning_metrics",
+          "rowCount": 0
+        },
+        {
+          "table": "subsection_engagement_metrics",
+          "rowCount": 0
+        },
+        {
+          "table": "educational_architecture_performance",
+          "rowCount": 0
+        },
+        {
+          "table": "ui_architecture_performance",
+          "rowCount": 0
+        },
+        {
+          "table": "prompt_template_performance",
+          "rowCount": 0
+        },
+        {
+          "table": "brand_performance_metrics",
+          "rowCount": 0
+        },
+        {
+          "table": "deployment_cohort_metrics",
+          "rowCount": 0
+        },
+        {
+          "table": "revenue_attribution_metrics",
+          "rowCount": 0
+        }
+      ]
+    },
+    "enums": {
+      "status": "FAILED",
+      "expected": 9,
+      "found": 8,
+      "missing": [
+        "priority"
+      ],
+      "enums": [
+        {
+          "enum": "section_type",
+          "valueCount": 12,
+          "values": [
+            "notes",
+            "layman",
+            "visual",
+            "real_life",
+            "technical",
+            "code",
+            "practice",
+            "assignment",
+            "project",
+            "quiz",
+            "summary",
+            "interview"
+          ]
+        },
+        {
+          "enum": "section_status",
+          "valueCount": 10,
+          "values": [
+            "draft",
+            "generating",
+            "validating",
+            "pending_review",
+            "in_review",
+            "changes_requested",
+            "approved",
+            "deploying",
+            "deployed",
+            "archived"
+          ]
+        },
+        {
+          "enum": "subsection_type",
+          "valueCount": 24,
+          "values": [
+            "definition",
+            "concept",
+            "syntax",
+            "analogy",
+            "example",
+            "visual",
+            "diagram",
+            "animation",
+            "pitfall",
+            "antipattern",
+            "gotcha",
+            "code",
+            "exercise",
+            "challenge",
+            "sandbox",
+            "checklist",
+            "cheatsheet",
+            "faq",
+            "glossary",
+            "interview_question",
+            "quiz_question",
+            "project_step",
+            "project_milestone",
+            "project_deliverable"
+          ]
+        },
+        {
+          "enum": "deployment_type",
+          "valueCount": 5,
+          "values": [
+            "full",
+            "staged",
+            "canary",
+            "ab_test",
+            "dark_launch"
+          ]
+        },
+        {
+          "enum": "review_status",
+          "valueCount": 5,
+          "values": [
+            "pending_review",
+            "in_review",
+            "approved",
+            "rejected",
+            "changes_requested"
+          ]
+        },
+        {
+          "enum": "orchestration_status",
+          "valueCount": 5,
+          "values": [
+            "pending",
+            "in_progress",
+            "completed",
+            "failed",
+            "cancelled"
+          ]
+        },
+        {
+          "enum": "brand",
+          "valueCount": 3,
+          "values": [
+            "realtutorialhub",
+            "skillup",
+            "shared"
+          ]
+        },
+        {
+          "enum": "brand_visibility",
+          "valueCount": 3,
+          "values": [
+            "brand_exclusive",
+            "shared_visible",
+            "white_label"
+          ]
+        }
+      ]
+    },
+    "foreignKeys": {
+      "status": "SUCCESS",
+      "expected": 7,
+      "found": 7,
+      "missing": [],
+      "constraints": [
+        {
+          "table": "tutorial_sections",
+          "constraint": "fk_sections_prompt_template"
+        },
+        {
+          "table": "tutorial_sections",
+          "constraint": "fk_sections_educational_architecture"
+        },
+        {
+          "table": "tutorial_sections",
+          "constraint": "fk_sections_ui_architecture"
+        },
+        {
+          "table": "tutorial_subsections",
+          "constraint": "fk_subsections_prompt_template"
+        },
+        {
+          "table": "ai_generation_orchestration",
+          "constraint": "fk_orchestration_subtopic"
+        },
+        {
+          "table": "ai_generation_orchestration",
+          "constraint": "fk_orchestration_educational_architecture"
+        },
+        {
+          "table": "content_deployments",
+          "constraint": "fk_deployments_section"
+        }
+      ]
+    },
+    "brandPartitioning": {
+      "status": "SUCCESS",
+      "expected": 7,
+      "found": 7,
+      "missing": [],
+      "tables": [
+        {
+          "table": "tutorial_sections",
+          "indexed": true
+        },
+        {
+          "table": "tutorial_subsections",
+          "indexed": true
+        },
+        {
+          "table": "educational_architectures",
+          "indexed": true
+        },
+        {
+          "table": "ui_architectures",
+          "indexed": true
+        },
+        {
+          "table": "prompt_templates",
+          "indexed": true
+        },
+        {
+          "table": "ai_generation_orchestration",
+          "indexed": true
+        },
+        {
+          "table": "content_deployments",
+          "indexed": true
+        }
+      ]
+    },
+    "legacyPreservation": {
+      "status": "FAILED",
+      "expected": 4,
+      "found": 3,
+      "missing": [
+        "tutorial_content_backup_2026_04_04"
+      ],
+      "tables": [
+        {
+          "table": "tutorial_topics",
+          "rowCount": 10
+        },
+        {
+          "table": "tutorial_subtopics",
+          "rowCount": 7
+        },
+        {
+          "table": "tutorial_content",
+          "rowCount": 5
+        }
+      ]
+    },
+    "migrationTracking": {
+      "status": "SUCCESS",
+      "tableExists": true,
+      "migrationCount": 11,
+      "migrations": [
+        {
+          "id": 1,
+          "hash": "0000_t1_foundation",
+          "createdAt": "1774000000000"
+        },
+        {
+          "id": 2,
+          "hash": "0001_content_type",
+          "createdAt": "1774000001000"
+        },
+        {
+          "id": 3,
+          "hash": "0002_easy_namorita",
+          "createdAt": "1774165551232"
+        },
+        {
+          "id": 4,
+          "hash": "0003_flawless_surge",
+          "createdAt": "1774169829327"
+        },
+        {
+          "id": 5,
+          "hash": "0004_neat_greymalkin",
+          "createdAt": "1774175200154"
+        },
+        {
+          "id": 6,
+          "hash": "0005_nebulous_jane_foster",
+          "createdAt": "1774177951851"
+        },
+        {
+          "id": 7,
+          "hash": "0006_heavy_sally_floyd",
+          "createdAt": "1774181525989"
+        },
+        {
+          "id": 8,
+          "hash": "0007_tiny_bill_hollister",
+          "createdAt": "1774183908666"
+        },
+        {
+          "id": 9,
+          "hash": "0008_opposite_wiccan",
+          "createdAt": "1774217227063"
+        },
+        {
+          "id": 10,
+          "hash": "0009_mv_student_weak_areas",
+          "createdAt": "1774551051336"
+        },
+        {
+          "id": 11,
+          "hash": "0010_looping_demo_foundation",
+          "createdAt": "1774551052336"
+        }
+      ]
+    },
+    "subsectionTaxonomy": {
+      "status": "SUCCESS",
+      "enumExists": true,
+      "typeCount": 24,
+      "types": [
+        "definition",
+        "concept",
+        "syntax",
+        "analogy",
+        "example",
+        "visual",
+        "diagram",
+        "animation",
+        "pitfall",
+        "antipattern",
+        "gotcha",
+        "code",
+        "exercise",
+        "challenge",
+        "sandbox",
+        "checklist",
+        "cheatsheet",
+        "faq",
+        "glossary",
+        "interview_question",
+        "quiz_question",
+        "project_step",
+        "project_milestone",
+        "project_deliverable"
+      ],
+      "columnExists": true
+    }
+  },
+  "overallScore": 75
+}

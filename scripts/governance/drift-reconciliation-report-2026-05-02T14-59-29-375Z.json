@@ -1,0 +1,116 @@
+{
+  "timestamp": "2026-05-02T14:59:29.373Z",
+  "summary": {
+    "totalDriftIssues": 5,
+    "criticalIssues": 2,
+    "warningIssues": 2,
+    "infoIssues": 1
+  },
+  "databases": {
+    "tutorial": {
+      "missing": [
+        "tutorial_sections",
+        "tutorial_subsections",
+        "educational_architectures",
+        "ui_architectures",
+        "ai_generation_orchestration",
+        "ai_section_generation_jobs",
+        "prompt_templates",
+        "content_review_queue",
+        "content_deployments",
+        "ai_generation_metrics",
+        "analytics_learning_metrics",
+        "analytics_architecture_performance",
+        "analytics_brand_business"
+      ],
+      "unexpected": [],
+      "issues": [
+        {
+          "severity": "CRITICAL",
+          "category": "MISSING_TABLES",
+          "count": 13,
+          "description": "Phase 1 P0 modular system tables not deployed",
+          "tables": [
+            "tutorial_sections",
+            "tutorial_subsections",
+            "educational_architectures",
+            "ui_architectures",
+            "ai_generation_orchestration",
+            "ai_section_generation_jobs",
+            "prompt_templates",
+            "content_review_queue",
+            "content_deployments",
+            "ai_generation_metrics",
+            "analytics_learning_metrics",
+            "analytics_architecture_performance",
+            "analytics_brand_business"
+          ],
+          "impact": "Cannot use modular tutorial system",
+          "resolution": "Apply Phase 1 P0 migrations"
+        },
+        {
+          "severity": "CRITICAL",
+          "category": "NO_MIGRATION_TRACKING",
+          "description": "__drizzle_migrations table does not exist",
+          "impact": "No migration governance, cannot track schema changes",
+          "resolution": "Initialize migration tracking (COMPLETED in Phase B)"
+        }
+      ]
+    },
+    "people": {
+      "anomalies": [],
+      "issues": [
+        {
+          "severity": "WARNING",
+          "category": "UNEXPECTED_TABLES",
+          "tables": [
+            "domains",
+            "subjects",
+            "topics",
+            "subtopics"
+          ],
+          "rowCounts": {
+            "domains": 1,
+            "subjects": 1,
+            "topics": 1,
+            "subtopics": 1
+          },
+          "description": "Domain hierarchy tables found in people DB",
+          "impact": "Potential duplication with quiz DB, unclear ownership",
+          "resolution": "Investigate purpose, consolidate or remove"
+        }
+      ]
+    },
+    "brands": {
+      "rth": {
+        "issues": [
+          {
+            "severity": "INFO",
+            "category": "BACKUP_TABLES",
+            "tables": [
+              "roles_backup_20260404",
+              "user_roles_backup_20260404"
+            ],
+            "description": "Manual backup tables found (dated 2026-04-04)",
+            "impact": "Indicates emergency schema changes, potential tech debt",
+            "resolution": "Document what happened, archive backups if safe"
+          },
+          {
+            "severity": "WARNING",
+            "category": "SCHEMA_INCONSISTENCY",
+            "tables": [
+              "roles_backup_20260404",
+              "user_roles_backup_20260404"
+            ],
+            "description": "Tables exist in RTH but not SkillUp",
+            "impact": "Brand schema drift, potential deployment issues",
+            "resolution": "Sync schemas or document intentional differences"
+          }
+        ]
+      },
+      "skillup": {
+        "issues": []
+      }
+    }
+  }
+}
