@@ -1,0 +1,5807 @@
+[
+  {
+    "layman_section_architecture": {
+      "metadata": {
+        "section_type": "layman",
+        "version": "1.0",
+        "status": "active",
+        "brand_scope": [
+          "shared",
+          "skillup",
+          "rth"
+        ],
+        "supported_domains": [
+          "programming",
+          "cloud",
+          "cybersecurity",
+          "finance",
+          "ai_ml",
+          "business",
+          "general_education"
+        ],
+        "created_at": "ISO_TIMESTAMP",
+        "updated_at": "ISO_TIMESTAMP"
+      },
+      "hierarchy": {
+        "domain": {
+          "id": "uuid",
+          "name": "string",
+          "slug": "string"
+        },
+        "subject": {
+          "id": "uuid",
+          "name": "string",
+          "slug": "string"
+        },
+        "topic": {
+          "id": "uuid",
+          "name": "string",
+          "slug": "string"
+        },
+        "subtopic": {
+          "id": "uuid",
+          "name": "string",
+          "slug": "string"
+        }
+      },
+      "universal_architecture_fixed": {
+        "simple_overview": {
+          "enabled": true,
+          "required": true,
+          "renderer": "intro_card"
+        },
+        "everyday_analogy": {
+          "enabled": true,
+          "required": true,
+          "renderer": "analogy_card"
+        },
+        "why_it_exists": {
+          "enabled": true,
+          "required": true,
+          "renderer": "benefit_card"
+        },
+        "simple_use_cases": {
+          "enabled": true,
+          "required": true,
+          "renderer": "use_case_grid"
+        },
+        "beginner_breakdown": {
+          "enabled": true,
+          "required": true,
+          "renderer": "accordion"
+        },
+        "mental_model": {
+          "enabled": true,
+          "required": true,
+          "renderer": "diagram_renderer"
+        },
+        "common_confusions": {
+          "enabled": true,
+          "required": true,
+          "renderer": "faq_block"
+        },
+        "simple_recap": {
+          "enabled": true,
+          "required": true,
+          "renderer": "summary_card"
+        }
+      },
+      "domain_adaptations_flexible": {
+        "domain_simplification_framework": {
+          "terminology_reduction_rules": [],
+          "jargon_translation_rules": [],
+          "complexity_scaling": "beginner"
+        },
+        "analogy_pattern_library": {
+          "analogy_templates": [],
+          "real_world_mappings": [],
+          "industry_specific_examples": []
+        },
+        "storytelling_models": {
+          "narrative_templates": [],
+          "career_switcher_variants": [],
+          "beginner_story_patterns": []
+        },
+        "real_life_use_case_engine": {
+          "consumer_examples": [],
+          "career_examples": [],
+          "business_examples": []
+        },
+        "beginner_psychology_adaptation": {
+          "fear_reduction": true,
+          "confidence_boosting": true,
+          "cognitive_load_limit": "low"
+        },
+        "mental_model_engine": {
+          "visual_maps": [],
+          "conceptual_models": [],
+          "system_relationship_diagrams": []
+        },
+        "confusion_library": {
+          "common_misconceptions": [],
+          "faq_templates": [],
+          "comparison_blocks": []
+        },
+        "visualization_strategy": {
+          "diagram_rules": [],
+          "flowcharts": [],
+          "infographics": []
+        },
+        "prompt_variants": {
+          "beginner": {},
+          "visual_learner": {},
+          "career_switcher": {},
+          "fast_track": {}
+        },
+        "validation_rules": {
+          "readability_threshold": 90,
+          "analogy_quality_score": 90,
+          "confusion_prevention_score": 90
+        }
+      },
+      "renderer_mapping_engine": {
+        "layout_architecture": {
+          "desktop_layout": "multi_panel",
+          "mobile_layout": "stacked_cards",
+          "tablet_layout": "responsive_grid"
+        },
+        "component_design_system": {
+          "intro_card": {},
+          "analogy_card": {},
+          "accordion": {},
+          "faq_block": {},
+          "summary_card": {},
+          "diagram_renderer": {}
+        },
+        "interaction_design": {
+          "progressive_disclosure": true,
+          "interactive_tooltips": true,
+          "gamification_hooks": true
+        },
+        "accessibility_architecture": {
+          "wcag_compliant": true,
+          "keyboard_navigation": true,
+          "screen_reader_support": true
+        },
+        "visual_hierarchy": {
+          "font_scale": {},
+          "spacing_rules": {},
+          "color_roles": {}
+        },
+        "performance_ux": {
+          "lazy_loading": true,
+          "skeleton_loaders": true,
+          "cache_strategy": "optimized"
+        }
+      },
+      "learner_psychology_engine": {
+        "fear_reduction_model": {},
+        "motivation_system": {},
+        "confidence_progression": {},
+        "fatigue_prevention": {},
+        "reinforcement_loops": {}
+      },
+      "learning_progression_engine": {
+        "default_flow": [
+          "simple_overview",
+          "everyday_analogy",
+          "why_it_exists",
+          "simple_use_cases",
+          "beginner_breakdown",
+          "mental_model",
+          "common_confusions",
+          "simple_recap"
+        ],
+        "adaptive_progression_rules": [],
+        "domain_overrides": {}
+      },
+      "prompt_management_system": {
+        "prompt_templates": [],
+        "prompt_versions": [],
+        "prompt_integrity_hash": "sha256",
+        "export_formats": [
+          "txt",
+          "json",
+          "md"
+        ],
+        "approval_workflow": {
+          "draft": true,
+          "review": true,
+          "approved": true,
+          "published": true
+        }
+      },
+      "ai_draft_generation_system": {
+        "manual_ai_paste": true,
+        "content_parser": {},
+        "draft_validator": {},
+        "hallucination_score": {},
+        "quality_score": {},
+        "human_review_required": true
+      },
+      "layman_section_cms": {
+        "draft_management": true,
+        "subsection_editor": true,
+        "preview_engine": true,
+        "publish_controls": true,
+        "rollback_controls": true,
+        "revision_history": true
+      },
+      "validation_governance_system": {
+        "structural_validation": true,
+        "readability_validation": true,
+        "analogy_validation": true,
+        "domain_accuracy_validation": true,
+        "seo_validation": true,
+        "security_validation": true
+      },
+      "version_governance": {
+        "architecture_versions": [],
+        "prompt_versions": [],
+        "content_versions": [],
+        "audit_logs": [],
+        "rollback_points": []
+      },
+      "brand_governance": {
+        "shared_core": true,
+        "brand_overrides": {
+          "skillup": {},
+          "rth": {},
+          "skillhubcore": {}
+        },
+        "ui_theme_overrides": {},
+        "content_style_overrides": {}
+      },
+      "rbac_security": {
+        "roles": [
+          "super_admin",
+          "educational_architect",
+          "prompt_engineer",
+          "reviewer",
+          "publisher",
+          "domain_manager"
+        ],
+        "permissions_matrix": {},
+        "rate_limits": {},
+        "audit_trails": true,
+        "security_checks": {
+          "xss_protection": true,
+          "payload_limits": true,
+          "prompt_integrity": true
+        }
+      },
+      "analytics_performance": {
+        "completion_tracking": true,
+        "quality_scores": true,
+        "engagement_metrics": true,
+        "section_performance": true,
+        "optimization_controls": true
+      }
+    }
+  },
+  {
+    "layman_section_architecture": {
+      "metadata": {
+        "section_type": "layman",
+        "version": "1.0",
+        "status": "active",
+        "brand_scope": [
+          "shared",
+          "skillup",
+          "rth"
+        ],
+        "supported_domains": [
+          "programming",
+          "cloud",
+          "cybersecurity",
+          "finance",
+          "ai_ml",
+          "business",
+          "general_education"
+        ],
+        "created_at": "ISO_TIMESTAMP",
+        "updated_at": "ISO_TIMESTAMP"
+      },
+      "hierarchy": {
+        "domain": {
+          "id": "uuid",
+          "name": "string",
+          "slug": "string"
+        },
+        "subject": {
+          "id": "uuid",
+          "name": "string",
+          "slug": "string"
+        },
+        "topic": {
+          "id": "uuid",
+          "name": "string",
+          "slug": "string"
+        },
+        "subtopic": {
+          "id": "uuid",
+          "name": "string",
+          "slug": "string"
+        }
+      },
+      "universal_architecture_fixed": {
+        "simple_overview": {
+          "enabled": true,
+          "required": true,
+          "renderer": "intro_card"
+        },
+        "everyday_analogy": {
+          "enabled": true,
+          "required": true,
+          "renderer": "analogy_card"
+        },
+        "why_it_exists": {
+          "enabled": true,
+          "required": true,
+          "renderer": "benefit_card"
+        },
+        "simple_use_cases": {
+          "enabled": true,
+          "required": true,
+          "renderer": "use_case_grid"
+        },
+        "beginner_breakdown": {
+          "enabled": true,
+          "required": true,
+          "renderer": "accordion"
+        },
+        "mental_model": {
+          "enabled": true,
+          "required": true,
+          "renderer": "diagram_renderer"
+        },
+        "common_confusions": {
+          "enabled": true,
+          "required": true,
+          "renderer": "faq_block"
+        },
+        "simple_recap": {
+          "enabled": true,
+          "required": true,
+          "renderer": "summary_card"
+        }
+      },
+      "domain_adaptations_flexible": {
+        "domain_simplification_framework": {
+          "terminology_reduction_rules": [],
+          "jargon_translation_rules": [],
+          "complexity_scaling": "beginner"
+        },
+        "analogy_pattern_library": {
+          "analogy_templates": [],
+          "real_world_mappings": [],
+          "industry_specific_examples": []
+        },
+        "storytelling_models": {
+          "narrative_templates": [],
+          "career_switcher_variants": [],
+          "beginner_story_patterns": []
+        },
+        "real_life_use_case_engine": {
+          "consumer_examples": [],
+          "career_examples": [],
+          "business_examples": []
+        },
+        "beginner_psychology_adaptation": {
+          "fear_reduction": true,
+          "confidence_boosting": true,
+          "cognitive_load_limit": "low"
+        },
+        "mental_model_engine": {
+          "visual_maps": [],
+          "conceptual_models": [],
+          "system_relationship_diagrams": []
+        },
+        "confusion_library": {
+          "common_misconceptions": [],
+          "faq_templates": [],
+          "comparison_blocks": []
+        },
+        "visualization_strategy": {
+          "diagram_rules": [],
+          "flowcharts": [],
+          "infographics": []
+        },
+        "prompt_variants": {
+          "beginner": {},
+          "visual_learner": {},
+          "career_switcher": {},
+          "fast_track": {}
+        },
+        "validation_rules": {
+          "readability_threshold": 90,
+          "analogy_quality_score": 90,
+          "confusion_prevention_score": 90
+        }
+      },
+      "renderer_mapping_engine": {
+        "layout_architecture": {
+          "desktop_layout": "multi_panel",
+          "mobile_layout": "stacked_cards",
+          "tablet_layout": "responsive_grid"
+        },
+        "component_design_system": {
+          "intro_card": {},
+          "analogy_card": {},
+          "accordion": {},
+          "faq_block": {},
+          "summary_card": {},
+          "diagram_renderer": {}
+        },
+        "interaction_design": {
+          "progressive_disclosure": true,
+          "interactive_tooltips": true,
+          "gamification_hooks": true
+        },
+        "accessibility_architecture": {
+          "wcag_compliant": true,
+          "keyboard_navigation": true,
+          "screen_reader_support": true
+        },
+        "visual_hierarchy": {
+          "font_scale": {},
+          "spacing_rules": {},
+          "color_roles": {}
+        },
+        "performance_ux": {
+          "lazy_loading": true,
+          "skeleton_loaders": true,
+          "cache_strategy": "optimized"
+        }
+      },
+      "learner_psychology_engine": {
+        "fear_reduction_model": {},
+        "motivation_system": {},
+        "confidence_progression": {},
+        "fatigue_prevention": {},
+        "reinforcement_loops": {}
+      },
+      "learning_progression_engine": {
+        "default_flow": [
+          "simple_overview",
+          "everyday_analogy",
+          "why_it_exists",
+          "simple_use_cases",
+          "beginner_breakdown",
+          "mental_model",
+          "common_confusions",
+          "simple_recap"
+        ],
+        "adaptive_progression_rules": [],
+        "domain_overrides": {}
+      },
+      "prompt_management_system": {
+        "prompt_templates": [],
+        "prompt_versions": [],
+        "prompt_integrity_hash": "sha256",
+        "export_formats": [
+          "txt",
+          "json",
+          "md"
+        ],
+        "approval_workflow": {
+          "draft": true,
+          "review": true,
+          "approved": true,
+          "published": true
+        }
+      },
+      "ai_draft_generation_system": {
+        "manual_ai_paste": true,
+        "content_parser": {},
+        "draft_validator": {},
+        "hallucination_score": {},
+        "quality_score": {},
+        "human_review_required": true
+      },
+      "layman_section_cms": {
+        "draft_management": true,
+        "subsection_editor": true,
+        "preview_engine": true,
+        "publish_controls": true,
+        "rollback_controls": true,
+        "revision_history": true
+      },
+      "validation_governance_system": {
+        "structural_validation": true,
+        "readability_validation": true,
+        "analogy_validation": true,
+        "domain_accuracy_validation": true,
+        "seo_validation": true,
+        "security_validation": true
+      },
+      "version_governance": {
+        "architecture_versions": [],
+        "prompt_versions": [],
+        "content_versions": [],
+        "audit_logs": [],
+        "rollback_points": []
+      },
+      "brand_governance": {
+        "shared_core": true,
+        "brand_overrides": {
+          "skillup": {},
+          "rth": {},
+          "skillhubcore": {}
+        },
+        "ui_theme_overrides": {},
+        "content_style_overrides": {}
+      },
+      "rbac_security": {
+        "roles": [
+          "super_admin",
+          "educational_architect",
+          "prompt_engineer",
+          "reviewer",
+          "publisher",
+          "domain_manager"
+        ],
+        "permissions_matrix": {},
+        "rate_limits": {},
+        "audit_trails": true,
+        "security_checks": {
+          "xss_protection": true,
+          "payload_limits": true,
+          "prompt_integrity": true
+        }
+      },
+      "analytics_performance": {
+        "completion_tracking": true,
+        "quality_scores": true,
+        "engagement_metrics": true,
+        "section_performance": true,
+        "optimization_controls": true
+      }
+    }
+  },
+  {
+    "notes_section_architecture": {
+      "metadata": {
+        "section_type": "notes",
+        "version": "1.0",
+        "status": "active",
+        "brand_scope": [
+          "shared",
+          "skillup",
+          "rth",
+          "skillhubcore"
+        ],
+        "supported_domains": [
+          "programming",
+          "cloud",
+          "cybersecurity",
+          "finance",
+          "ai_ml",
+          "business",
+          "general_education"
+        ],
+        "created_at": "ISO_TIMESTAMP",
+        "updated_at": "ISO_TIMESTAMP"
+      },
+      "hierarchy": {
+        "domain": {
+          "id": "uuid",
+          "name": "string",
+          "slug": "string"
+        },
+        "subject": {
+          "id": "uuid",
+          "name": "string",
+          "slug": "string"
+        },
+        "topic": {
+          "id": "uuid",
+          "name": "string",
+          "slug": "string"
+        },
+        "subtopic": {
+          "id": "uuid",
+          "name": "string",
+          "slug": "string"
+        }
+      },
+      "universal_architecture_fixed": {
+        "core_definition": {
+          "enabled": true,
+          "required": true,
+          "renderer": "definition_block"
+        },
+        "concept_explanation": {
+          "enabled": true,
+          "required": true,
+          "renderer": "concept_card"
+        },
+        "key_components": {
+          "enabled": true,
+          "required": true,
+          "renderer": "component_grid"
+        },
+        "syntax_or_structure": {
+          "enabled": true,
+          "required": true,
+          "renderer": "syntax_block"
+        },
+        "examples": {
+          "enabled": true,
+          "required": true,
+          "renderer": "example_panel"
+        },
+        "best_practices": {
+          "enabled": true,
+          "required": true,
+          "renderer": "practice_card"
+        },
+        "common_errors": {
+          "enabled": true,
+          "required": true,
+          "renderer": "warning_faq"
+        },
+        "revision_summary": {
+          "enabled": true,
+          "required": true,
+          "renderer": "summary_card"
+        }
+      },
+      "domain_adaptations_flexible": {
+        "domain_depth_scaling": {
+          "beginner": {},
+          "intermediate": {},
+          "advanced": {}
+        },
+        "technical_terminology_engine": {
+          "domain_terms": [],
+          "definitions": [],
+          "complexity_adjustments": []
+        },
+        "domain_specific_examples": {
+          "practical_examples": [],
+          "industry_examples": [],
+          "career_examples": []
+        },
+        "subject_specific_structures": {
+          "code_domains": {},
+          "finance_domains": {},
+          "science_domains": {},
+          "business_domains": {}
+        },
+        "visualization_rules": {
+          "charts": [],
+          "tables": [],
+          "diagrams": [],
+          "flowcharts": []
+        },
+        "prompt_variants": {
+          "exam_focused": {},
+          "career_focused": {},
+          "quick_revision": {},
+          "deep_learning": {}
+        },
+        "validation_rules": {
+          "accuracy_threshold": 95,
+          "clarity_score": 90,
+          "technical_correctness_score": 95
+        }
+      },
+      "renderer_mapping_engine": {
+        "definition_block": {},
+        "concept_card": {},
+        "component_grid": {},
+        "syntax_block": {},
+        "example_panel": {},
+        "practice_card": {},
+        "warning_faq": {},
+        "summary_card": {},
+        "domain_overrides": {
+          "programming": {},
+          "finance": {},
+          "cybersecurity": {},
+          "cloud": {},
+          "ai_ml": {}
+        }
+      },
+      "learner_psychology_engine": {
+        "clarity_first_model": {},
+        "structured_learning": {},
+        "memory_reinforcement": {},
+        "revision_support": {},
+        "confidence_support": {}
+      },
+      "learning_progression_engine": {
+        "default_flow": [
+          "core_definition",
+          "concept_explanation",
+          "key_components",
+          "syntax_or_structure",
+          "examples",
+          "best_practices",
+          "common_errors",
+          "revision_summary"
+        ],
+        "adaptive_learning_rules": [],
+        "exam_pathways": {},
+        "career_pathways": {}
+      },
+      "prompt_management_system": {
+        "prompt_templates": [],
+        "prompt_versions": [],
+        "prompt_integrity_hash": "sha256",
+        "export_formats": [
+          "txt",
+          "json",
+          "md"
+        ],
+        "approval_workflow": {
+          "draft": true,
+          "review": true,
+          "approved": true,
+          "published": true
+        }
+      },
+      "ai_draft_generation_system": {
+        "manual_ai_paste": true,
+        "content_parser": {},
+        "draft_validator": {},
+        "quality_score": {},
+        "accuracy_score": {},
+        "human_review_required": true
+      },
+      "notes_section_cms": {
+        "draft_management": true,
+        "editor": true,
+        "syntax_editor": true,
+        "diagram_manager": true,
+        "preview_engine": true,
+        "publish_controls": true,
+        "rollback_controls": true,
+        "revision_history": true
+      },
+      "validation_governance_system": {
+        "structural_validation": true,
+        "technical_accuracy_validation": true,
+        "clarity_validation": true,
+        "domain_accuracy_validation": true,
+        "best_practice_validation": true,
+        "seo_validation": true,
+        "security_validation": true
+      },
+      "version_governance": {
+        "architecture_versions": [],
+        "prompt_versions": [],
+        "content_versions": [],
+        "audit_logs": [],
+        "rollback_points": []
+      },
+      "brand_governance": {
+        "shared_core": true,
+        "brand_overrides": {
+          "skillup": {},
+          "rth": {},
+          "skillhubcore": {}
+        },
+        "content_style_overrides": {},
+        "ui_theme_overrides": {}
+      },
+      "rbac_security": {
+        "roles": [
+          "super_admin",
+          "educational_architect",
+          "notes_architect",
+          "prompt_engineer",
+          "reviewer",
+          "publisher",
+          "domain_manager"
+        ],
+        "permissions_matrix": {},
+        "rate_limits": {},
+        "audit_trails": true,
+        "security_checks": {
+          "xss_protection": true,
+          "payload_limits": true,
+          "prompt_integrity": true
+        }
+      },
+      "analytics_performance": {
+        "completion_tracking": true,
+        "accuracy_scores": true,
+        "engagement_metrics": true,
+        "revision_frequency": true,
+        "optimization_controls": true
+      }
+    }
+  },
+  {
+    "notes_section_uiux_architecture": {
+      "metadata": {
+        "section_type": "notes",
+        "version": "1.0",
+        "status": "active",
+        "supported_brands": [
+          "shared",
+          "skillup",
+          "rth",
+          "skillhubcore"
+        ],
+        "supported_platforms": [
+          "web",
+          "mobile",
+          "tablet"
+        ],
+        "design_system_version": "1.0",
+        "created_at": "ISO_TIMESTAMP",
+        "updated_at": "ISO_TIMESTAMP"
+      },
+      "page_shell_architecture": {
+        "layout_modes": {
+          "desktop": {
+            "sidebar": true,
+            "header": true,
+            "content_grid": "knowledge_panel_layout",
+            "right_panel": true
+          },
+          "tablet": {
+            "sidebar": "collapsible",
+            "header": true,
+            "content_grid": "responsive_two_column"
+          },
+          "mobile": {
+            "sidebar": "drawer",
+            "header": true,
+            "content_grid": "single_column"
+          }
+        },
+        "navigation_system": {
+          "breadcrumb_navigation": true,
+          "topic_tree_navigation": true,
+          "sticky_table_of_contents": true,
+          "quick_jump_links": true,
+          "revision_navigation": true
+        }
+      },
+      "design_system": {
+        "color_system": {
+          "primary": {
+            "skillup": "#f54a8d",
+            "rth": "#d03f00",
+            "skillhubcore_primary": "#f54a8d",
+            "skillhubcore_secondary": "#d03f00"
+          },
+          "semantic_colors": {
+            "definition": "",
+            "example": "",
+            "warning": "",
+            "best_practice": "",
+            "summary": ""
+          },
+          "neutral_palette": {}
+        },
+        "typography_system": {
+          "font_families": {
+            "heading": "",
+            "body": "",
+            "code": "",
+            "technical": ""
+          },
+          "font_scales": {
+            "hero": "",
+            "h1": "",
+            "h2": "",
+            "h3": "",
+            "body": "",
+            "caption": "",
+            "code_block": ""
+          },
+          "readability_rules": {
+            "line_height": "",
+            "content_width": "",
+            "technical_density": ""
+          }
+        },
+        "spacing_system": {
+          "grid_unit": 8,
+          "padding_scale": {},
+          "margin_scale": {},
+          "section_spacing": {}
+        },
+        "component_library": {
+          "definition_blocks": {},
+          "concept_cards": {},
+          "syntax_panels": {},
+          "code_blocks": {},
+          "warning_cards": {},
+          "summary_panels": {},
+          "tables": {},
+          "diagram_panels": {},
+          "accordion_sections": {}
+        }
+      },
+      "renderer_mapping_engine": {
+        "core_definition": {
+          "component": "definition_block",
+          "layout": "top_priority_intro"
+        },
+        "concept_explanation": {
+          "component": "concept_card",
+          "layout": "educational_content_panel"
+        },
+        "key_components": {
+          "component": "component_grid",
+          "layout": "structured_breakdown"
+        },
+        "syntax_or_structure": {
+          "component": "syntax_block",
+          "layout": "code_or_formula_highlight"
+        },
+        "examples": {
+          "component": "example_panel",
+          "layout": "practical_example_cards"
+        },
+        "best_practices": {
+          "component": "practice_card",
+          "layout": "recommendation_block"
+        },
+        "common_errors": {
+          "component": "warning_faq",
+          "layout": "mistake_prevention"
+        },
+        "revision_summary": {
+          "component": "summary_card",
+          "layout": "exam_ready_summary"
+        },
+        "domain_renderer_overrides": {
+          "programming": {},
+          "finance": {},
+          "cybersecurity": {},
+          "cloud": {},
+          "ai_ml": {}
+        }
+      },
+      "interaction_design_system": {
+        "microinteractions": {
+          "hover_states": true,
+          "syntax_highlighting": true,
+          "expandable_sections": true,
+          "copy_code_buttons": true,
+          "interactive_tooltips": true
+        },
+        "progressive_disclosure": {
+          "stepwise_concept_expansion": true,
+          "advanced_toggle": true,
+          "beginner_mode_toggle": true
+        },
+        "engagement_features": {
+          "revision_checkpoints": true,
+          "bookmarking": true,
+          "highlighting": true,
+          "note_saving": true
+        },
+        "feedback_system": {
+          "inline_validation": true,
+          "concept_understanding_checks": true,
+          "progress_feedback": true
+        }
+      },
+      "accessibility_architecture": {
+        "wcag_compliance": {
+          "level": "AA",
+          "keyboard_navigation": true,
+          "screen_reader_support": true,
+          "contrast_ratios": true
+        },
+        "inclusive_design": {
+          "font_scaling": true,
+          "dark_mode": true,
+          "focus_indicators": true,
+          "reduced_motion": true
+        },
+        "cognitive_accessibility": {
+          "structured_readability": true,
+          "clarity_first_layout": true,
+          "low_distraction_mode": true
+        }
+      },
+      "learning_experience_ui": {
+        "knowledge_progression_ui": {
+          "section_progress_bars": true,
+          "concept_mastery_indicators": true,
+          "revision_pathways": true,
+          "learning_maps": true
+        },
+        "psychology_support_ui": {
+          "confidence_boosting_panels": true,
+          "clarity_badges": true,
+          "exam_readiness_indicators": true
+        },
+        "preview_modes": {
+          "desktop_preview": true,
+          "mobile_preview": true,
+          "brand_preview": true,
+          "domain_preview": true,
+          "print_preview": true
+        }
+      },
+      "admin_dashboard_ui": {
+        "sidebar_navigation": {
+          "dashboard": true,
+          "universal_architecture": true,
+          "domain_adaptations": true,
+          "renderer_mapping": true,
+          "prompt_management": true,
+          "cms": true,
+          "governance": true
+        },
+        "management_tabs": {
+          "universal_architecture": true,
+          "domain_adaptations": true,
+          "renderer_mapping": true,
+          "learning_progression": true,
+          "prompt_management": true,
+          "ai_drafts": true,
+          "cms": true,
+          "validation": true,
+          "versioning": true,
+          "brand_governance": true,
+          "rbac": true
+        },
+        "dashboard_widgets": {
+          "quality_scores": true,
+          "accuracy_scores": true,
+          "revision_status": true,
+          "prompt_versions": true,
+          "content_health": true,
+          "analytics_panels": true
+        }
+      },
+      "content_management_ui": {
+        "editor_system": {
+          "rich_text_editor": true,
+          "syntax_editor": true,
+          "code_editor": true,
+          "diagram_builder": true,
+          "preview_split_view": true
+        },
+        "workflow_ui": {
+          "draft_review": true,
+          "approval_queue": true,
+          "publish_controls": true,
+          "rollback_controls": true
+        },
+        "validation_ui": {
+          "accuracy_dashboard": true,
+          "readability_dashboard": true,
+          "error_resolution_panels": true,
+          "technical_correctness_dashboard": true
+        }
+      },
+      "brand_governance_ui": {
+        "theme_management": {
+          "brand_color_switching": true,
+          "logo_switching": true,
+          "brand_preview": true
+        },
+        "multi_brand_controls": {
+          "shared_resources": true,
+          "brand_overrides": true,
+          "deployment_targets": true
+        }
+      },
+      "performance_ux_architecture": {
+        "optimization": {
+          "lazy_loading": true,
+          "syntax_highlight_optimization": true,
+          "diagram_caching": true,
+          "content_prefetching": true
+        },
+        "loading_experience": {
+          "skeleton_loaders": true,
+          "progressive_loading": true,
+          "smart_prefetching": true
+        },
+        "monitoring": {
+          "render_speed_tracking": true,
+          "interaction_latency": true,
+          "page_performance_metrics": true
+        }
+      },
+      "security_ui": {
+        "session_management": {
+          "secure_auth_flows": true,
+          "role_visibility": true,
+          "audit_logs": true
+        },
+        "admin_controls": {
+          "permission_gates": true,
+          "sensitive_action_confirmations": true,
+          "security_alerts": true
+        }
+      },
+      "analytics_visualization_ui": {
+        "learning_metrics_dashboards": true,
+        "revision_heatmaps": true,
+        "engagement_charts": true,
+        "accuracy_reports": true,
+        "content_performance_reports": true
+      }
+    }
+  },
+  {
+    "real_life_example_section_architecture": {
+      "metadata": {
+        "section_type": "real_life_example",
+        "version": "1.0",
+        "status": "active",
+        "brand_scope": [
+          "shared",
+          "skillup",
+          "rth",
+          "skillhubcore"
+        ],
+        "supported_domains": [
+          "programming",
+          "cloud",
+          "cybersecurity",
+          "finance",
+          "ai_ml",
+          "business",
+          "general_education"
+        ],
+        "created_at": "ISO_TIMESTAMP",
+        "updated_at": "ISO_TIMESTAMP"
+      },
+      "hierarchy": {
+        "domain": {
+          "id": "uuid",
+          "name": "string",
+          "slug": "string"
+        },
+        "subject": {
+          "id": "uuid",
+          "name": "string",
+          "slug": "string"
+        },
+        "topic": {
+          "id": "uuid",
+          "name": "string",
+          "slug": "string"
+        },
+        "subtopic": {
+          "id": "uuid",
+          "name": "string",
+          "slug": "string"
+        }
+      },
+      "universal_architecture_fixed": {
+        "concept_to_real_world_mapping": {
+          "enabled": true,
+          "required": true,
+          "renderer": "mapping_card"
+        },
+        "industry_use_case": {
+          "enabled": true,
+          "required": true,
+          "renderer": "industry_case_block"
+        },
+        "daily_life_example": {
+          "enabled": true,
+          "required": true,
+          "renderer": "daily_life_story"
+        },
+        "career_relevance": {
+          "enabled": true,
+          "required": true,
+          "renderer": "career_path_card"
+        },
+        "problem_solution_context": {
+          "enabled": true,
+          "required": true,
+          "renderer": "scenario_block"
+        },
+        "business_application": {
+          "enabled": true,
+          "required": true,
+          "renderer": "business_case_panel"
+        },
+        "domain_specific_scenarios": {
+          "enabled": true,
+          "required": true,
+          "renderer": "scenario_grid"
+        },
+        "practical_recap": {
+          "enabled": true,
+          "required": true,
+          "renderer": "practical_summary_card"
+        }
+      },
+      "domain_adaptations_flexible": {
+        "industry_scenario_engine": {
+          "industry_case_libraries": [],
+          "sector_specific_use_cases": [],
+          "career_relevance_rules": []
+        },
+        "daily_life_translation_engine": {
+          "consumer_examples": [],
+          "household_examples": [],
+          "social_examples": []
+        },
+        "business_context_engine": {
+          "enterprise_use_cases": [],
+          "startup_examples": [],
+          "corporate_processes": []
+        },
+        "career_switcher_mapping": {
+          "entry_level_examples": [],
+          "professional_transition_cases": [],
+          "role_based_examples": []
+        },
+        "storytelling_models": {
+          "real_world_story_templates": [],
+          "industry_narratives": [],
+          "scenario_progressions": []
+        },
+        "visualization_rules": {
+          "process_diagrams": [],
+          "business_flows": [],
+          "consumer_journeys": [],
+          "case_study_maps": []
+        },
+        "prompt_variants": {
+          "career_switcher": {},
+          "business_focused": {},
+          "consumer_focused": {},
+          "enterprise_focused": {}
+        },
+        "validation_rules": {
+          "real_world_relevance_score": 95,
+          "industry_accuracy_score": 95,
+          "practical_value_score": 95
+        }
+      },
+      "renderer_mapping_engine": {
+        "mapping_card": {},
+        "industry_case_block": {},
+        "daily_life_story": {},
+        "career_path_card": {},
+        "scenario_block": {},
+        "business_case_panel": {},
+        "scenario_grid": {},
+        "practical_summary_card": {},
+        "domain_renderer_overrides": {
+          "programming": {},
+          "finance": {},
+          "cybersecurity": {},
+          "cloud": {},
+          "ai_ml": {}
+        }
+      },
+      "learner_psychology_engine": {
+        "relevance_first_model": {},
+        "career_motivation_model": {},
+        "practical_understanding_model": {},
+        "confidence_building_model": {},
+        "future_application_reinforcement": {}
+      },
+      "learning_progression_engine": {
+        "default_flow": [
+          "concept_to_real_world_mapping",
+          "industry_use_case",
+          "daily_life_example",
+          "career_relevance",
+          "problem_solution_context",
+          "business_application",
+          "domain_specific_scenarios",
+          "practical_recap"
+        ],
+        "adaptive_progression_rules": [],
+        "career_pathways": {},
+        "industry_specializations": {}
+      },
+      "prompt_management_system": {
+        "prompt_templates": [],
+        "prompt_versions": [],
+        "prompt_integrity_hash": "sha256",
+        "export_formats": [
+          "txt",
+          "json",
+          "md"
+        ],
+        "approval_workflow": {
+          "draft": true,
+          "review": true,
+          "approved": true,
+          "published": true
+        }
+      },
+      "ai_draft_generation_system": {
+        "manual_ai_paste": true,
+        "content_parser": {},
+        "draft_validator": {},
+        "practical_value_score": {},
+        "industry_relevance_score": {},
+        "human_review_required": true
+      },
+      "real_life_example_section_cms": {
+        "draft_management": true,
+        "scenario_editor": true,
+        "storytelling_editor": true,
+        "case_study_manager": true,
+        "preview_engine": true,
+        "publish_controls": true,
+        "rollback_controls": true,
+        "revision_history": true
+      },
+      "validation_governance_system": {
+        "structural_validation": true,
+        "real_world_relevance_validation": true,
+        "industry_accuracy_validation": true,
+        "career_relevance_validation": true,
+        "business_case_validation": true,
+        "seo_validation": true,
+        "security_validation": true
+      },
+      "version_governance": {
+        "architecture_versions": [],
+        "prompt_versions": [],
+        "content_versions": [],
+        "audit_logs": [],
+        "rollback_points": []
+      },
+      "brand_governance": {
+        "shared_core": true,
+        "brand_overrides": {
+          "skillup": {},
+          "rth": {},
+          "skillhubcore": {}
+        },
+        "content_style_overrides": {},
+        "ui_theme_overrides": {}
+      },
+      "rbac_security": {
+        "roles": [
+          "super_admin",
+          "educational_architect",
+          "real_life_architect",
+          "prompt_engineer",
+          "reviewer",
+          "publisher",
+          "domain_manager"
+        ],
+        "permissions_matrix": {},
+        "rate_limits": {},
+        "audit_trails": true,
+        "security_checks": {
+          "xss_protection": true,
+          "payload_limits": true,
+          "prompt_integrity": true
+        }
+      },
+      "analytics_performance": {
+        "engagement_tracking": true,
+        "practical_relevance_scores": true,
+        "career_value_metrics": true,
+        "industry_alignment_scores": true,
+        "optimization_controls": true
+      }
+    }
+  },
+  {
+    "real_life_example_section_uiux_architecture": {
+      "metadata": {
+        "section_type": "real_life_example",
+        "version": "1.0",
+        "status": "active",
+        "supported_brands": [
+          "shared",
+          "skillup",
+          "rth",
+          "skillhubcore"
+        ],
+        "supported_platforms": [
+          "web",
+          "mobile",
+          "tablet"
+        ],
+        "design_system_version": "1.0",
+        "created_at": "ISO_TIMESTAMP",
+        "updated_at": "ISO_TIMESTAMP"
+      },
+      "page_shell_architecture": {
+        "layout_modes": {
+          "desktop": {
+            "sidebar": true,
+            "header": true,
+            "content_grid": "scenario_journey_layout",
+            "right_panel": true
+          },
+          "tablet": {
+            "sidebar": "collapsible",
+            "header": true,
+            "content_grid": "responsive_story_layout"
+          },
+          "mobile": {
+            "sidebar": "drawer",
+            "header": true,
+            "content_grid": "stacked_story_cards"
+          }
+        },
+        "navigation_system": {
+          "breadcrumb_navigation": true,
+          "scenario_flow_navigation": true,
+          "sticky_use_case_navigation": true,
+          "career_path_navigation": true,
+          "quick_jump_links": true
+        }
+      },
+      "design_system": {
+        "color_system": {
+          "primary": {
+            "skillup": "#f54a8d",
+            "rth": "#d03f00",
+            "skillhubcore_primary": "#f54a8d",
+            "skillhubcore_secondary": "#d03f00"
+          },
+          "semantic_colors": {
+            "industry_case": "",
+            "daily_life": "",
+            "career": "",
+            "business": "",
+            "practical_summary": ""
+          },
+          "neutral_palette": {}
+        },
+        "typography_system": {
+          "font_families": {
+            "heading": "",
+            "body": "",
+            "storytelling": "",
+            "technical": ""
+          },
+          "font_scales": {
+            "hero": "",
+            "h1": "",
+            "h2": "",
+            "h3": "",
+            "body": "",
+            "caption": "",
+            "story_highlight": ""
+          },
+          "readability_rules": {
+            "line_height": "",
+            "story_density": "",
+            "content_width": ""
+          }
+        },
+        "spacing_system": {
+          "grid_unit": 8,
+          "padding_scale": {},
+          "margin_scale": {},
+          "section_spacing": {}
+        },
+        "component_library": {
+          "mapping_cards": {},
+          "industry_case_blocks": {},
+          "daily_life_story_cards": {},
+          "career_path_panels": {},
+          "scenario_blocks": {},
+          "business_case_panels": {},
+          "scenario_grids": {},
+          "practical_summary_cards": {}
+        }
+      },
+      "renderer_mapping_engine": {
+        "concept_to_real_world_mapping": {
+          "component": "mapping_card",
+          "layout": "concept_translation_panel"
+        },
+        "industry_use_case": {
+          "component": "industry_case_block",
+          "layout": "enterprise_case_study"
+        },
+        "daily_life_example": {
+          "component": "daily_life_story",
+          "layout": "storytelling_card"
+        },
+        "career_relevance": {
+          "component": "career_path_card",
+          "layout": "career_journey_panel"
+        },
+        "problem_solution_context": {
+          "component": "scenario_block",
+          "layout": "problem_solution_flow"
+        },
+        "business_application": {
+          "component": "business_case_panel",
+          "layout": "business_process_view"
+        },
+        "domain_specific_scenarios": {
+          "component": "scenario_grid",
+          "layout": "multi_case_dashboard"
+        },
+        "practical_recap": {
+          "component": "practical_summary_card",
+          "layout": "key_application_summary"
+        },
+        "domain_renderer_overrides": {
+          "programming": {},
+          "finance": {},
+          "cybersecurity": {},
+          "cloud": {},
+          "ai_ml": {}
+        }
+      },
+      "interaction_design_system": {
+        "microinteractions": {
+          "hover_states": true,
+          "story_expansion": true,
+          "interactive_case_navigation": true,
+          "timeline_navigation": true,
+          "tooltips": true
+        },
+        "progressive_disclosure": {
+          "story_step_reveal": true,
+          "career_path_expansion": true,
+          "industry_case_depth_toggle": true
+        },
+        "engagement_features": {
+          "career_goal_tracking": true,
+          "practical_value_badges": true,
+          "use_case_bookmarking": true,
+          "scenario_completion_tracking": true
+        },
+        "feedback_system": {
+          "practical_understanding_checks": true,
+          "career_alignment_feedback": true,
+          "scenario_validation_feedback": true
+        }
+      },
+      "accessibility_architecture": {
+        "wcag_compliance": {
+          "level": "AA",
+          "keyboard_navigation": true,
+          "screen_reader_support": true,
+          "contrast_ratios": true
+        },
+        "inclusive_design": {
+          "font_scaling": true,
+          "dark_mode": true,
+          "focus_indicators": true,
+          "reduced_motion": true
+        },
+        "cognitive_accessibility": {
+          "story_clarity_mode": true,
+          "guided_case_navigation": true,
+          "low_distraction_mode": true
+        }
+      },
+      "learning_experience_ui": {
+        "practical_relevance_ui": {
+          "career_readiness_indicators": true,
+          "industry_relevance_badges": true,
+          "real_world_value_panels": true,
+          "motivation_banners": true
+        },
+        "scenario_progression_ui": {
+          "use_case_progress_bars": true,
+          "career_path_maps": true,
+          "practical_flow_trackers": true
+        },
+        "preview_modes": {
+          "desktop_preview": true,
+          "mobile_preview": true,
+          "brand_preview": true,
+          "domain_preview": true,
+          "career_preview": true
+        }
+      },
+      "admin_dashboard_ui": {
+        "sidebar_navigation": {
+          "dashboard": true,
+          "universal_architecture": true,
+          "domain_adaptations": true,
+          "renderer_mapping": true,
+          "prompt_management": true,
+          "cms": true,
+          "governance": true
+        },
+        "management_tabs": {
+          "universal_architecture": true,
+          "domain_adaptations": true,
+          "renderer_mapping": true,
+          "learning_progression": true,
+          "prompt_management": true,
+          "ai_drafts": true,
+          "cms": true,
+          "validation": true,
+          "versioning": true,
+          "brand_governance": true,
+          "rbac": true
+        },
+        "dashboard_widgets": {
+          "practical_value_scores": true,
+          "industry_alignment_scores": true,
+          "career_readiness_scores": true,
+          "content_health": true,
+          "prompt_versions": true,
+          "analytics_panels": true
+        }
+      },
+      "content_management_ui": {
+        "editor_system": {
+          "rich_text_editor": true,
+          "scenario_editor": true,
+          "storytelling_editor": true,
+          "timeline_builder": true,
+          "diagram_builder": true,
+          "preview_split_view": true
+        },
+        "workflow_ui": {
+          "draft_review": true,
+          "approval_queue": true,
+          "publish_controls": true,
+          "rollback_controls": true
+        },
+        "validation_ui": {
+          "practical_value_dashboard": true,
+          "industry_accuracy_dashboard": true,
+          "career_alignment_dashboard": true,
+          "error_resolution_panels": true
+        }
+      },
+      "brand_governance_ui": {
+        "theme_management": {
+          "brand_color_switching": true,
+          "logo_switching": true,
+          "brand_preview": true
+        },
+        "multi_brand_controls": {
+          "shared_resources": true,
+          "brand_overrides": true,
+          "deployment_targets": true
+        }
+      },
+      "performance_ux_architecture": {
+        "optimization": {
+          "lazy_loading": true,
+          "story_asset_optimization": true,
+          "diagram_caching": true,
+          "content_prefetching": true
+        },
+        "loading_experience": {
+          "skeleton_loaders": true,
+          "progressive_loading": true,
+          "smart_prefetching": true
+        },
+        "monitoring": {
+          "render_speed_tracking": true,
+          "interaction_latency": true,
+          "story_navigation_performance": true
+        }
+      },
+      "security_ui": {
+        "session_management": {
+          "secure_auth_flows": true,
+          "role_visibility": true,
+          "audit_logs": true
+        },
+        "admin_controls": {
+          "permission_gates": true,
+          "sensitive_action_confirmations": true,
+          "security_alerts": true
+        }
+      },
+      "analytics_visualization_ui": {
+        "career_alignment_dashboards": true,
+        "practical_value_heatmaps": true,
+        "industry_relevance_charts": true,
+        "engagement_reports": true,
+        "content_performance_reports": true
+      }
+    }
+  },
+  {
+    "code_example_section_architecture": {
+      "metadata": {
+        "section_type": "code_example",
+        "version": "1.0",
+        "status": "active",
+        "brand_scope": [
+          "shared",
+          "skillup",
+          "rth",
+          "skillhubcore"
+        ],
+        "supported_domains": [
+          "programming",
+          "web_development",
+          "backend",
+          "data_structures",
+          "algorithms",
+          "ai_ml",
+          "cloud_automation",
+          "cybersecurity"
+        ],
+        "created_at": "ISO_TIMESTAMP",
+        "updated_at": "ISO_TIMESTAMP"
+      },
+      "hierarchy": {
+        "domain": {
+          "id": "uuid",
+          "name": "string",
+          "slug": "string"
+        },
+        "subject": {
+          "id": "uuid",
+          "name": "string",
+          "slug": "string"
+        },
+        "topic": {
+          "id": "uuid",
+          "name": "string",
+          "slug": "string"
+        },
+        "subtopic": {
+          "id": "uuid",
+          "name": "string",
+          "slug": "string"
+        }
+      },
+      "universal_architecture_fixed": {
+        "problem_context": {
+          "enabled": true,
+          "required": true,
+          "renderer": "problem_context_card"
+        },
+        "basic_code_example": {
+          "enabled": true,
+          "required": true,
+          "renderer": "code_block"
+        },
+        "line_by_line_explanation": {
+          "enabled": true,
+          "required": true,
+          "renderer": "annotated_code_panel"
+        },
+        "output_demonstration": {
+          "enabled": true,
+          "required": true,
+          "renderer": "output_preview"
+        },
+        "best_practice_version": {
+          "enabled": true,
+          "required": true,
+          "renderer": "optimized_code_block"
+        },
+        "common_mistakes": {
+          "enabled": true,
+          "required": true,
+          "renderer": "error_prevention_block"
+        },
+        "real_world_implementation": {
+          "enabled": true,
+          "required": true,
+          "renderer": "project_usage_panel"
+        },
+        "code_summary": {
+          "enabled": true,
+          "required": true,
+          "renderer": "code_summary_card"
+        }
+      },
+      "domain_adaptations_flexible": {
+        "language_specific_frameworks": {
+          "javascript": {},
+          "typescript": {},
+          "python": {},
+          "java": {},
+          "csharp": {},
+          "go": {},
+          "sql": {}
+        },
+        "code_complexity_scaling": {
+          "beginner": {},
+          "intermediate": {},
+          "advanced": {}
+        },
+        "syntax_adaptation_engine": {
+          "language_syntax_rules": [],
+          "framework_patterns": [],
+          "style_guides": []
+        },
+        "domain_use_case_mapping": {
+          "frontend_examples": [],
+          "backend_examples": [],
+          "automation_examples": [],
+          "ai_examples": []
+        },
+        "debugging_models": {
+          "common_errors": [],
+          "error_explanations": [],
+          "fix_patterns": []
+        },
+        "project_application_engine": {
+          "mini_projects": [],
+          "enterprise_use_cases": [],
+          "portfolio_examples": []
+        },
+        "prompt_variants": {
+          "beginner_code": {},
+          "interview_code": {},
+          "production_code": {},
+          "debugging_code": {}
+        },
+        "validation_rules": {
+          "syntax_accuracy_score": 100,
+          "execution_correctness_score": 100,
+          "best_practice_score": 95
+        }
+      },
+      "renderer_mapping_engine": {
+        "problem_context_card": {},
+        "code_block": {},
+        "annotated_code_panel": {},
+        "output_preview": {},
+        "optimized_code_block": {},
+        "error_prevention_block": {},
+        "project_usage_panel": {},
+        "code_summary_card": {},
+        "domain_renderer_overrides": {
+          "javascript": {},
+          "python": {},
+          "java": {},
+          "sql": {},
+          "cloud_automation": {}
+        }
+      },
+      "learner_psychology_engine": {
+        "fear_reduction_for_coders": {},
+        "debugging_confidence_model": {},
+        "progressive_code_complexity": {},
+        "hands_on_motivation_model": {},
+        "mistake_normalization_model": {}
+      },
+      "learning_progression_engine": {
+        "default_flow": [
+          "problem_context",
+          "basic_code_example",
+          "line_by_line_explanation",
+          "output_demonstration",
+          "best_practice_version",
+          "common_mistakes",
+          "real_world_implementation",
+          "code_summary"
+        ],
+        "adaptive_progression_rules": [],
+        "language_specific_progressions": {},
+        "career_track_progressions": {}
+      },
+      "prompt_management_system": {
+        "prompt_templates": [],
+        "prompt_versions": [],
+        "prompt_integrity_hash": "sha256",
+        "export_formats": [
+          "txt",
+          "json",
+          "md"
+        ],
+        "approval_workflow": {
+          "draft": true,
+          "review": true,
+          "approved": true,
+          "published": true
+        }
+      },
+      "ai_draft_generation_system": {
+        "manual_ai_paste": true,
+        "content_parser": {},
+        "draft_validator": {},
+        "syntax_validator": {},
+        "execution_validator": {},
+        "human_review_required": true
+      },
+      "code_example_section_cms": {
+        "draft_management": true,
+        "code_editor": true,
+        "syntax_highlighter": true,
+        "execution_preview": true,
+        "annotation_editor": true,
+        "project_mapping_editor": true,
+        "publish_controls": true,
+        "rollback_controls": true,
+        "revision_history": true
+      },
+      "validation_governance_system": {
+        "structural_validation": true,
+        "syntax_validation": true,
+        "execution_validation": true,
+        "best_practice_validation": true,
+        "security_validation": true,
+        "seo_validation": true,
+        "domain_accuracy_validation": true
+      },
+      "version_governance": {
+        "architecture_versions": [],
+        "prompt_versions": [],
+        "content_versions": [],
+        "audit_logs": [],
+        "rollback_points": []
+      },
+      "brand_governance": {
+        "shared_core": true,
+        "brand_overrides": {
+          "skillup": {},
+          "rth": {},
+          "skillhubcore": {}
+        },
+        "content_style_overrides": {},
+        "ui_theme_overrides": {}
+      },
+      "rbac_security": {
+        "roles": [
+          "super_admin",
+          "educational_architect",
+          "code_architect",
+          "prompt_engineer",
+          "reviewer",
+          "publisher",
+          "domain_manager"
+        ],
+        "permissions_matrix": {},
+        "rate_limits": {},
+        "audit_trails": true,
+        "security_checks": {
+          "xss_protection": true,
+          "payload_limits": true,
+          "prompt_integrity": true,
+          "unsafe_code_detection": true
+        }
+      },
+      "analytics_performance": {
+        "completion_tracking": true,
+        "syntax_accuracy_scores": true,
+        "execution_success_rates": true,
+        "engagement_metrics": true,
+        "optimization_controls": true
+      }
+    }
+  },
+  {
+    "code_example_section_uiux_architecture": {
+      "metadata": {
+        "section_type": "code_example",
+        "version": "1.0",
+        "status": "active",
+        "supported_brands": [
+          "shared",
+          "skillup",
+          "rth",
+          "skillhubcore"
+        ],
+        "supported_platforms": [
+          "web",
+          "mobile",
+          "tablet"
+        ],
+        "design_system_version": "1.0",
+        "created_at": "ISO_TIMESTAMP",
+        "updated_at": "ISO_TIMESTAMP"
+      },
+      "page_shell_architecture": {
+        "layout_modes": {
+          "desktop": {
+            "sidebar": true,
+            "header": true,
+            "content_grid": "developer_workspace_layout",
+            "right_panel": true,
+            "live_preview_panel": true
+          },
+          "tablet": {
+            "sidebar": "collapsible",
+            "header": true,
+            "content_grid": "responsive_code_learning_layout"
+          },
+          "mobile": {
+            "sidebar": "drawer",
+            "header": true,
+            "content_grid": "stacked_code_blocks"
+          }
+        },
+        "navigation_system": {
+          "breadcrumb_navigation": true,
+          "code_section_navigation": true,
+          "sticky_code_outline": true,
+          "syntax_jump_links": true,
+          "project_navigation": true
+        }
+      },
+      "design_system": {
+        "color_system": {
+          "primary": {
+            "skillup": "#f54a8d",
+            "rth": "#d03f00",
+            "skillhubcore_primary": "#f54a8d",
+            "skillhubcore_secondary": "#d03f00"
+          },
+          "semantic_colors": {
+            "code_block": "",
+            "syntax_highlight": "",
+            "error_state": "",
+            "success_output": "",
+            "warning": ""
+          },
+          "neutral_palette": {}
+        },
+        "typography_system": {
+          "font_families": {
+            "heading": "",
+            "body": "",
+            "code": "monospace",
+            "technical": ""
+          },
+          "font_scales": {
+            "hero": "",
+            "h1": "",
+            "h2": "",
+            "h3": "",
+            "body": "",
+            "caption": "",
+            "code_block": "",
+            "inline_code": ""
+          },
+          "readability_rules": {
+            "line_height": "",
+            "code_line_spacing": "",
+            "max_code_width": ""
+          }
+        },
+        "spacing_system": {
+          "grid_unit": 8,
+          "padding_scale": {},
+          "margin_scale": {},
+          "code_spacing": {},
+          "section_spacing": {}
+        },
+        "component_library": {
+          "problem_context_cards": {},
+          "code_blocks": {},
+          "annotated_code_panels": {},
+          "output_previews": {},
+          "best_practice_cards": {},
+          "error_prevention_blocks": {},
+          "project_usage_panels": {},
+          "summary_cards": {},
+          "copy_buttons": {},
+          "run_buttons": {}
+        }
+      },
+      "renderer_mapping_engine": {
+        "problem_context": {
+          "component": "problem_context_card",
+          "layout": "developer_intro_panel"
+        },
+        "basic_code_example": {
+          "component": "code_block",
+          "layout": "primary_code_editor"
+        },
+        "line_by_line_explanation": {
+          "component": "annotated_code_panel",
+          "layout": "interactive_code_annotation"
+        },
+        "output_demonstration": {
+          "component": "output_preview",
+          "layout": "live_output_console"
+        },
+        "best_practice_version": {
+          "component": "optimized_code_block",
+          "layout": "production_ready_code_panel"
+        },
+        "common_mistakes": {
+          "component": "error_prevention_block",
+          "layout": "debugging_warning_system"
+        },
+        "real_world_implementation": {
+          "component": "project_usage_panel",
+          "layout": "portfolio_application_dashboard"
+        },
+        "code_summary": {
+          "component": "code_summary_card",
+          "layout": "revision_summary_panel"
+        },
+        "domain_renderer_overrides": {
+          "javascript": {},
+          "python": {},
+          "java": {},
+          "sql": {},
+          "cloud_automation": {}
+        }
+      },
+      "interaction_design_system": {
+        "microinteractions": {
+          "hover_states": true,
+          "syntax_highlighting": true,
+          "copy_code_feedback": true,
+          "run_code_feedback": true,
+          "tooltip_explanations": true,
+          "expandable_code_sections": true
+        },
+        "progressive_disclosure": {
+          "step_by_step_code_reveal": true,
+          "beginner_mode_toggle": true,
+          "advanced_mode_toggle": true,
+          "line_annotation_toggle": true
+        },
+        "engagement_features": {
+          "xp_rewards": true,
+          "completion_tracking": true,
+          "code_challenge_badges": true,
+          "bookmarking": true,
+          "save_snippets": true
+        },
+        "feedback_system": {
+          "syntax_validation_feedback": true,
+          "runtime_feedback": true,
+          "debugging_guidance": true,
+          "progress_feedback": true
+        }
+      },
+      "accessibility_architecture": {
+        "wcag_compliance": {
+          "level": "AA",
+          "keyboard_navigation": true,
+          "screen_reader_support": true,
+          "contrast_ratios": true
+        },
+        "inclusive_design": {
+          "font_scaling": true,
+          "dark_mode": true,
+          "focus_indicators": true,
+          "reduced_motion": true
+        },
+        "developer_accessibility": {
+          "high_contrast_code_mode": true,
+          "keyboard_code_navigation": true,
+          "screen_reader_code_labels": true
+        }
+      },
+      "learning_experience_ui": {
+        "coding_psychology_ui": {
+          "confidence_boosting_panels": true,
+          "mistake_normalization_banners": true,
+          "debugging_motivation_panels": true,
+          "success_feedback": true
+        },
+        "learning_progression_ui": {
+          "stepper_flow": true,
+          "code_mastery_tracking": true,
+          "career_path_maps": true,
+          "project_progression": true
+        },
+        "preview_modes": {
+          "desktop_preview": true,
+          "mobile_preview": true,
+          "brand_preview": true,
+          "domain_preview": true,
+          "live_execution_preview": true
+        }
+      },
+      "admin_dashboard_ui": {
+        "sidebar_navigation": {
+          "dashboard": true,
+          "universal_architecture": true,
+          "domain_adaptations": true,
+          "renderer_mapping": true,
+          "prompt_management": true,
+          "cms": true,
+          "governance": true
+        },
+        "management_tabs": {
+          "universal_architecture": true,
+          "domain_adaptations": true,
+          "renderer_mapping": true,
+          "learning_progression": true,
+          "prompt_management": true,
+          "ai_drafts": true,
+          "cms": true,
+          "validation": true,
+          "versioning": true,
+          "brand_governance": true,
+          "rbac": true
+        },
+        "dashboard_widgets": {
+          "syntax_accuracy_scores": true,
+          "execution_success_rates": true,
+          "draft_status": true,
+          "prompt_versions": true,
+          "content_health": true,
+          "analytics_panels": true
+        }
+      },
+      "content_management_ui": {
+        "editor_system": {
+          "rich_text_editor": true,
+          "code_editor": true,
+          "syntax_highlighter": true,
+          "live_preview_engine": true,
+          "annotation_editor": true,
+          "project_mapping_editor": true,
+          "split_view_preview": true
+        },
+        "workflow_ui": {
+          "draft_review": true,
+          "approval_queue": true,
+          "publish_controls": true,
+          "rollback_controls": true
+        },
+        "validation_ui": {
+          "syntax_dashboard": true,
+          "runtime_dashboard": true,
+          "best_practice_dashboard": true,
+          "error_resolution_panels": true
+        }
+      },
+      "brand_governance_ui": {
+        "theme_management": {
+          "brand_color_switching": true,
+          "logo_switching": true,
+          "brand_preview": true
+        },
+        "multi_brand_controls": {
+          "shared_resources": true,
+          "brand_overrides": true,
+          "deployment_targets": true
+        }
+      },
+      "performance_ux_architecture": {
+        "optimization": {
+          "lazy_loading": true,
+          "syntax_highlighting_optimization": true,
+          "code_execution_caching": true,
+          "prefetching": true
+        },
+        "loading_experience": {
+          "skeleton_loaders": true,
+          "progressive_loading": true,
+          "smart_prefetching": true
+        },
+        "monitoring": {
+          "render_speed_tracking": true,
+          "interaction_latency": true,
+          "code_execution_performance": true
+        }
+      },
+      "security_ui": {
+        "session_management": {
+          "secure_auth_flows": true,
+          "role_visibility": true,
+          "audit_logs": true
+        },
+        "admin_controls": {
+          "permission_gates": true,
+          "sensitive_action_confirmations": true,
+          "security_alerts": true,
+          "unsafe_code_warnings": true
+        }
+      },
+      "analytics_visualization_ui": {
+        "syntax_accuracy_dashboards": true,
+        "execution_success_heatmaps": true,
+        "debugging_progress_charts": true,
+        "engagement_reports": true,
+        "content_performance_reports": true
+      }
+    }
+  },
+  {
+    "technical_deep_dive_section_architecture": {
+      "metadata": {
+        "section_type": "technical_deep_dive",
+        "version": "1.0",
+        "status": "active",
+        "brand_scope": [
+          "shared",
+          "skillup",
+          "rth",
+          "skillhubcore"
+        ],
+        "supported_domains": [
+          "programming",
+          "cloud",
+          "cybersecurity",
+          "ai_ml",
+          "system_design",
+          "data_engineering",
+          "devops",
+          "enterprise_architecture"
+        ],
+        "created_at": "ISO_TIMESTAMP",
+        "updated_at": "ISO_TIMESTAMP"
+      },
+      "hierarchy": {
+        "domain": {
+          "id": "uuid",
+          "name": "string",
+          "slug": "string"
+        },
+        "subject": {
+          "id": "uuid",
+          "name": "string",
+          "slug": "string"
+        },
+        "topic": {
+          "id": "uuid",
+          "name": "string",
+          "slug": "string"
+        },
+        "subtopic": {
+          "id": "uuid",
+          "name": "string",
+          "slug": "string"
+        }
+      },
+      "universal_architecture_fixed": {
+        "core_technical_definition": {
+          "enabled": true,
+          "required": true,
+          "renderer": "technical_definition_block"
+        },
+        "internal_mechanics": {
+          "enabled": true,
+          "required": true,
+          "renderer": "system_mechanics_panel"
+        },
+        "architecture_breakdown": {
+          "enabled": true,
+          "required": true,
+          "renderer": "architecture_diagram_block"
+        },
+        "performance_considerations": {
+          "enabled": true,
+          "required": true,
+          "renderer": "performance_analysis_panel"
+        },
+        "tradeoffs_limitations": {
+          "enabled": true,
+          "required": true,
+          "renderer": "tradeoff_matrix"
+        },
+        "best_practices_patterns": {
+          "enabled": true,
+          "required": true,
+          "renderer": "pattern_library"
+        },
+        "advanced_use_cases": {
+          "enabled": true,
+          "required": true,
+          "renderer": "enterprise_use_case_panel"
+        },
+        "technical_summary": {
+          "enabled": true,
+          "required": true,
+          "renderer": "technical_summary_card"
+        }
+      },
+      "domain_adaptations_flexible": {
+        "domain_specific_depth_models": {
+          "software_engineering": {},
+          "cloud_architecture": {},
+          "cybersecurity": {},
+          "ai_ml": {},
+          "enterprise_systems": {}
+        },
+        "advanced_terminology_engine": {
+          "domain_terms": [],
+          "protocol_terms": [],
+          "architecture_terms": [],
+          "optimization_terms": []
+        },
+        "system_design_mapping": {
+          "scalability_patterns": [],
+          "security_patterns": [],
+          "resilience_patterns": [],
+          "cost_patterns": []
+        },
+        "technical_visualization_rules": {
+          "architecture_diagrams": [],
+          "sequence_diagrams": [],
+          "performance_charts": [],
+          "protocol_flows": []
+        },
+        "complexity_scaling": {
+          "intermediate": {},
+          "advanced": {},
+          "expert": {}
+        },
+        "career_track_mapping": {
+          "developer": {},
+          "architect": {},
+          "devops": {},
+          "security_engineer": {}
+        },
+        "prompt_variants": {
+          "system_design": {},
+          "performance_engineering": {},
+          "security_deep_dive": {},
+          "enterprise_architecture": {}
+        },
+        "validation_rules": {
+          "technical_accuracy_score": 100,
+          "architecture_quality_score": 95,
+          "performance_accuracy_score": 95
+        }
+      },
+      "renderer_mapping_engine": {
+        "technical_definition_block": {},
+        "system_mechanics_panel": {},
+        "architecture_diagram_block": {},
+        "performance_analysis_panel": {},
+        "tradeoff_matrix": {},
+        "pattern_library": {},
+        "enterprise_use_case_panel": {},
+        "technical_summary_card": {},
+        "domain_renderer_overrides": {
+          "cloud": {},
+          "cybersecurity": {},
+          "ai_ml": {},
+          "system_design": {},
+          "devops": {}
+        }
+      },
+      "learner_psychology_engine": {
+        "advanced_confidence_model": {},
+        "complexity_management_model": {},
+        "technical_mastery_reinforcement": {},
+        "expert_pathway_motivation": {},
+        "cognitive_load_balancing": {}
+      },
+      "learning_progression_engine": {
+        "default_flow": [
+          "core_technical_definition",
+          "internal_mechanics",
+          "architecture_breakdown",
+          "performance_considerations",
+          "tradeoffs_limitations",
+          "best_practices_patterns",
+          "advanced_use_cases",
+          "technical_summary"
+        ],
+        "adaptive_progression_rules": [],
+        "expert_pathways": {},
+        "career_specialization_paths": {}
+      },
+      "prompt_management_system": {
+        "prompt_templates": [],
+        "prompt_versions": [],
+        "prompt_integrity_hash": "sha256",
+        "export_formats": [
+          "txt",
+          "json",
+          "md"
+        ],
+        "approval_workflow": {
+          "draft": true,
+          "review": true,
+          "approved": true,
+          "published": true
+        }
+      },
+      "ai_draft_generation_system": {
+        "manual_ai_paste": true,
+        "content_parser": {},
+        "technical_validator": {},
+        "architecture_validator": {},
+        "performance_validator": {},
+        "human_review_required": true
+      },
+      "technical_deep_dive_section_cms": {
+        "draft_management": true,
+        "technical_editor": true,
+        "diagram_editor": true,
+        "architecture_visualizer": true,
+        "performance_chart_manager": true,
+        "preview_engine": true,
+        "publish_controls": true,
+        "rollback_controls": true,
+        "revision_history": true
+      },
+      "validation_governance_system": {
+        "structural_validation": true,
+        "technical_accuracy_validation": true,
+        "architecture_validation": true,
+        "performance_validation": true,
+        "best_practice_validation": true,
+        "security_validation": true,
+        "seo_validation": true
+      },
+      "version_governance": {
+        "architecture_versions": [],
+        "prompt_versions": [],
+        "content_versions": [],
+        "audit_logs": [],
+        "rollback_points": []
+      },
+      "brand_governance": {
+        "shared_core": true,
+        "brand_overrides": {
+          "skillup": {},
+          "rth": {},
+          "skillhubcore": {}
+        },
+        "content_style_overrides": {},
+        "ui_theme_overrides": {}
+      },
+      "rbac_security": {
+        "roles": [
+          "super_admin",
+          "educational_architect",
+          "technical_architect",
+          "prompt_engineer",
+          "reviewer",
+          "publisher",
+          "domain_manager"
+        ],
+        "permissions_matrix": {},
+        "rate_limits": {},
+        "audit_trails": true,
+        "security_checks": {
+          "xss_protection": true,
+          "payload_limits": true,
+          "prompt_integrity": true,
+          "technical_content_integrity": true
+        }
+      },
+      "analytics_performance": {
+        "completion_tracking": true,
+        "technical_accuracy_scores": true,
+        "architecture_quality_scores": true,
+        "engagement_metrics": true,
+        "optimization_controls": true
+      }
+    }
+  },
+  {
+    "technical_deep_dive_section_uiux_architecture": {
+      "metadata": {
+        "section_type": "technical_deep_dive",
+        "version": "1.0",
+        "status": "active",
+        "supported_brands": [
+          "shared",
+          "skillup",
+          "rth",
+          "skillhubcore"
+        ],
+        "supported_platforms": [
+          "web",
+          "mobile",
+          "tablet"
+        ],
+        "design_system_version": "1.0",
+        "created_at": "ISO_TIMESTAMP",
+        "updated_at": "ISO_TIMESTAMP"
+      },
+      "page_shell_architecture": {
+        "layout_modes": {
+          "desktop": {
+            "sidebar": true,
+            "header": true,
+            "content_grid": "technical_workspace_layout",
+            "right_panel": true,
+            "diagram_panel": true,
+            "performance_panel": true
+          },
+          "tablet": {
+            "sidebar": "collapsible",
+            "header": true,
+            "content_grid": "responsive_technical_layout"
+          },
+          "mobile": {
+            "sidebar": "drawer",
+            "header": true,
+            "content_grid": "stacked_technical_cards"
+          }
+        },
+        "navigation_system": {
+          "breadcrumb_navigation": true,
+          "technical_outline_navigation": true,
+          "sticky_table_of_contents": true,
+          "diagram_jump_links": true,
+          "pattern_navigation": true
+        }
+      },
+      "design_system": {
+        "color_system": {
+          "primary": {
+            "skillup": "#f54a8d",
+            "rth": "#d03f00",
+            "skillhubcore_primary": "#f54a8d",
+            "skillhubcore_secondary": "#d03f00"
+          },
+          "semantic_colors": {
+            "technical_definition": "",
+            "performance": "",
+            "architecture": "",
+            "warning": "",
+            "best_practice": ""
+          },
+          "neutral_palette": {}
+        },
+        "typography_system": {
+          "font_families": {
+            "heading": "",
+            "body": "",
+            "technical": "",
+            "code": "monospace"
+          },
+          "font_scales": {
+            "hero": "",
+            "h1": "",
+            "h2": "",
+            "h3": "",
+            "body": "",
+            "caption": "",
+            "technical_callout": ""
+          },
+          "readability_rules": {
+            "technical_density": "",
+            "line_height": "",
+            "max_content_width": ""
+          }
+        },
+        "spacing_system": {
+          "grid_unit": 8,
+          "padding_scale": {},
+          "margin_scale": {},
+          "diagram_spacing": {},
+          "section_spacing": {}
+        },
+        "component_library": {
+          "technical_definition_blocks": {},
+          "system_mechanics_panels": {},
+          "architecture_diagram_blocks": {},
+          "performance_analysis_panels": {},
+          "tradeoff_matrices": {},
+          "pattern_libraries": {},
+          "enterprise_use_case_panels": {},
+          "technical_summary_cards": {},
+          "comparison_tables": {},
+          "interactive_diagrams": {}
+        }
+      },
+      "renderer_mapping_engine": {
+        "core_technical_definition": {
+          "component": "technical_definition_block",
+          "layout": "expert_intro_panel"
+        },
+        "internal_mechanics": {
+          "component": "system_mechanics_panel",
+          "layout": "deep_system_breakdown"
+        },
+        "architecture_breakdown": {
+          "component": "architecture_diagram_block",
+          "layout": "interactive_architecture_workspace"
+        },
+        "performance_considerations": {
+          "component": "performance_analysis_panel",
+          "layout": "benchmark_dashboard"
+        },
+        "tradeoffs_limitations": {
+          "component": "tradeoff_matrix",
+          "layout": "decision_framework_panel"
+        },
+        "best_practices_patterns": {
+          "component": "pattern_library",
+          "layout": "architecture_pattern_repository"
+        },
+        "advanced_use_cases": {
+          "component": "enterprise_use_case_panel",
+          "layout": "real_world_scaling_dashboard"
+        },
+        "technical_summary": {
+          "component": "technical_summary_card",
+          "layout": "expert_revision_summary"
+        },
+        "domain_renderer_overrides": {
+          "cloud": {},
+          "cybersecurity": {},
+          "ai_ml": {},
+          "system_design": {},
+          "devops": {}
+        }
+      },
+      "interaction_design_system": {
+        "microinteractions": {
+          "hover_states": true,
+          "interactive_diagrams": true,
+          "expandable_architecture_layers": true,
+          "tooltips": true,
+          "performance_chart_interactions": true
+        },
+        "progressive_disclosure": {
+          "layered_complexity_reveal": true,
+          "advanced_toggle": true,
+          "expert_mode_toggle": true,
+          "deep_dive_expandables": true
+        },
+        "engagement_features": {
+          "mastery_tracking": true,
+          "pattern_bookmarking": true,
+          "technical_challenge_badges": true,
+          "career_pathway_tracking": true
+        },
+        "feedback_system": {
+          "technical_understanding_checks": true,
+          "architecture_quality_feedback": true,
+          "performance_insight_feedback": true
+        }
+      },
+      "accessibility_architecture": {
+        "wcag_compliance": {
+          "level": "AA",
+          "keyboard_navigation": true,
+          "screen_reader_support": true,
+          "contrast_ratios": true
+        },
+        "inclusive_design": {
+          "font_scaling": true,
+          "dark_mode": true,
+          "focus_indicators": true,
+          "reduced_motion": true
+        },
+        "expert_accessibility": {
+          "diagram_zoom_controls": true,
+          "technical_density_controls": true,
+          "high_contrast_technical_mode": true
+        }
+      },
+      "learning_experience_ui": {
+        "technical_mastery_ui": {
+          "expert_progress_indicators": true,
+          "career_specialization_badges": true,
+          "architecture_mastery_panels": true,
+          "performance_optimization_guidance": true
+        },
+        "learning_progression_ui": {
+          "deep_dive_stepper": true,
+          "mastery_tracking": true,
+          "specialization_path_maps": true,
+          "enterprise_pathways": true
+        },
+        "preview_modes": {
+          "desktop_preview": true,
+          "mobile_preview": true,
+          "brand_preview": true,
+          "domain_preview": true,
+          "technical_diagram_preview": true
+        }
+      },
+      "admin_dashboard_ui": {
+        "sidebar_navigation": {
+          "dashboard": true,
+          "universal_architecture": true,
+          "domain_adaptations": true,
+          "renderer_mapping": true,
+          "prompt_management": true,
+          "cms": true,
+          "governance": true
+        },
+        "management_tabs": {
+          "universal_architecture": true,
+          "domain_adaptations": true,
+          "renderer_mapping": true,
+          "learning_progression": true,
+          "prompt_management": true,
+          "ai_drafts": true,
+          "cms": true,
+          "validation": true,
+          "versioning": true,
+          "brand_governance": true,
+          "rbac": true
+        },
+        "dashboard_widgets": {
+          "technical_accuracy_scores": true,
+          "architecture_quality_scores": true,
+          "performance_metrics": true,
+          "draft_status": true,
+          "content_health": true,
+          "analytics_panels": true
+        }
+      },
+      "content_management_ui": {
+        "editor_system": {
+          "rich_text_editor": true,
+          "technical_editor": true,
+          "diagram_builder": true,
+          "architecture_visualizer": true,
+          "performance_chart_builder": true,
+          "pattern_editor": true,
+          "preview_split_view": true
+        },
+        "workflow_ui": {
+          "draft_review": true,
+          "approval_queue": true,
+          "publish_controls": true,
+          "rollback_controls": true
+        },
+        "validation_ui": {
+          "technical_accuracy_dashboard": true,
+          "architecture_dashboard": true,
+          "performance_dashboard": true,
+          "error_resolution_panels": true
+        }
+      },
+      "brand_governance_ui": {
+        "theme_management": {
+          "brand_color_switching": true,
+          "logo_switching": true,
+          "brand_preview": true
+        },
+        "multi_brand_controls": {
+          "shared_resources": true,
+          "brand_overrides": true,
+          "deployment_targets": true
+        }
+      },
+      "performance_ux_architecture": {
+        "optimization": {
+          "lazy_loading": true,
+          "diagram_caching": true,
+          "chart_optimization": true,
+          "prefetching": true
+        },
+        "loading_experience": {
+          "skeleton_loaders": true,
+          "progressive_loading": true,
+          "smart_prefetching": true
+        },
+        "monitoring": {
+          "render_speed_tracking": true,
+          "interaction_latency": true,
+          "diagram_render_performance": true
+        }
+      },
+      "security_ui": {
+        "session_management": {
+          "secure_auth_flows": true,
+          "role_visibility": true,
+          "audit_logs": true
+        },
+        "admin_controls": {
+          "permission_gates": true,
+          "sensitive_action_confirmations": true,
+          "security_alerts": true,
+          "technical_integrity_alerts": true
+        }
+      },
+      "analytics_visualization_ui": {
+        "technical_accuracy_dashboards": true,
+        "architecture_quality_heatmaps": true,
+        "performance_optimization_charts": true,
+        "engagement_reports": true,
+        "content_performance_reports": true
+      }
+    }
+  },
+  {
+    "visual_explanation_section_architecture": {
+      "metadata": {
+        "section_type": "visual_explanation",
+        "version": "1.0",
+        "status": "active",
+        "brand_scope": [
+          "shared",
+          "skillup",
+          "rth",
+          "skillhubcore"
+        ],
+        "supported_domains": [
+          "programming",
+          "cloud",
+          "cybersecurity",
+          "ai_ml",
+          "business",
+          "finance",
+          "science",
+          "general_education"
+        ],
+        "created_at": "ISO_TIMESTAMP",
+        "updated_at": "ISO_TIMESTAMP"
+      },
+      "hierarchy": {
+        "domain": {
+          "id": "uuid",
+          "name": "string",
+          "slug": "string"
+        },
+        "subject": {
+          "id": "uuid",
+          "name": "string",
+          "slug": "string"
+        },
+        "topic": {
+          "id": "uuid",
+          "name": "string",
+          "slug": "string"
+        },
+        "subtopic": {
+          "id": "uuid",
+          "name": "string",
+          "slug": "string"
+        }
+      },
+      "universal_architecture_fixed": {
+        "concept_visual_intro": {
+          "enabled": true,
+          "required": true,
+          "renderer": "visual_intro_card"
+        },
+        "diagrammatic_breakdown": {
+          "enabled": true,
+          "required": true,
+          "renderer": "diagram_panel"
+        },
+        "step_by_step_visual_flow": {
+          "enabled": true,
+          "required": true,
+          "renderer": "flow_sequence_panel"
+        },
+        "comparative_visualization": {
+          "enabled": true,
+          "required": true,
+          "renderer": "comparison_diagram"
+        },
+        "mental_model_visualization": {
+          "enabled": true,
+          "required": true,
+          "renderer": "mental_model_canvas"
+        },
+        "real_world_visual_mapping": {
+          "enabled": true,
+          "required": true,
+          "renderer": "real_world_visual_block"
+        },
+        "common_confusion_visualization": {
+          "enabled": true,
+          "required": true,
+          "renderer": "confusion_resolution_diagram"
+        },
+        "visual_summary": {
+          "enabled": true,
+          "required": true,
+          "renderer": "summary_infographic"
+        }
+      },
+      "domain_adaptations_flexible": {
+        "visualization_strategy_engine": {
+          "programming_visuals": {},
+          "finance_visuals": {},
+          "cybersecurity_visuals": {},
+          "cloud_visuals": {},
+          "science_visuals": {}
+        },
+        "diagram_type_library": {
+          "flowcharts": [],
+          "mind_maps": [],
+          "timelines": [],
+          "system_diagrams": [],
+          "comparison_charts": [],
+          "infographics": []
+        },
+        "cognitive_visual_learning_models": {
+          "beginner_visualization": {},
+          "intermediate_visualization": {},
+          "advanced_visualization": {}
+        },
+        "real_world_visual_context_engine": {
+          "consumer_visuals": [],
+          "industry_visuals": [],
+          "career_visuals": []
+        },
+        "prompt_variants": {
+          "diagram_heavy": {},
+          "story_visual": {},
+          "infographic_focused": {},
+          "career_visualization": {}
+        },
+        "validation_rules": {
+          "visual_clarity_score": 95,
+          "diagram_accuracy_score": 95,
+          "learning_efficiency_score": 95
+        }
+      },
+      "renderer_mapping_engine": {
+        "visual_intro_card": {},
+        "diagram_panel": {},
+        "flow_sequence_panel": {},
+        "comparison_diagram": {},
+        "mental_model_canvas": {},
+        "real_world_visual_block": {},
+        "confusion_resolution_diagram": {},
+        "summary_infographic": {},
+        "domain_renderer_overrides": {
+          "programming": {},
+          "finance": {},
+          "cybersecurity": {},
+          "cloud": {},
+          "science": {}
+        }
+      },
+      "learner_psychology_engine": {
+        "visual_memory_reinforcement": {},
+        "diagrammatic_confidence_model": {},
+        "cognitive_load_reduction": {},
+        "pattern_recognition_model": {},
+        "visual_mastery_model": {}
+      },
+      "learning_progression_engine": {
+        "default_flow": [
+          "concept_visual_intro",
+          "diagrammatic_breakdown",
+          "step_by_step_visual_flow",
+          "comparative_visualization",
+          "mental_model_visualization",
+          "real_world_visual_mapping",
+          "common_confusion_visualization",
+          "visual_summary"
+        ],
+        "adaptive_progression_rules": [],
+        "visual_learning_paths": {},
+        "domain_specific_visual_paths": {}
+      },
+      "prompt_management_system": {
+        "prompt_templates": [],
+        "prompt_versions": [],
+        "prompt_integrity_hash": "sha256",
+        "export_formats": [
+          "txt",
+          "json",
+          "md"
+        ],
+        "approval_workflow": {
+          "draft": true,
+          "review": true,
+          "approved": true,
+          "published": true
+        }
+      },
+      "ai_draft_generation_system": {
+        "manual_ai_paste": true,
+        "content_parser": {},
+        "diagram_validator": {},
+        "visual_quality_validator": {},
+        "cognitive_efficiency_validator": {},
+        "human_review_required": true
+      },
+      "visual_explanation_section_cms": {
+        "draft_management": true,
+        "visual_editor": true,
+        "diagram_builder": true,
+        "infographic_manager": true,
+        "flowchart_editor": true,
+        "preview_engine": true,
+        "publish_controls": true,
+        "rollback_controls": true,
+        "revision_history": true
+      },
+      "validation_governance_system": {
+        "structural_validation": true,
+        "visual_clarity_validation": true,
+        "diagram_accuracy_validation": true,
+        "learning_efficiency_validation": true,
+        "real_world_mapping_validation": true,
+        "seo_validation": true,
+        "security_validation": true
+      },
+      "version_governance": {
+        "architecture_versions": [],
+        "prompt_versions": [],
+        "content_versions": [],
+        "audit_logs": [],
+        "rollback_points": []
+      },
+      "brand_governance": {
+        "shared_core": true,
+        "brand_overrides": {
+          "skillup": {},
+          "rth": {},
+          "skillhubcore": {}
+        },
+        "content_style_overrides": {},
+        "ui_theme_overrides": {}
+      },
+      "rbac_security": {
+        "roles": [
+          "super_admin",
+          "educational_architect",
+          "visual_architect",
+          "prompt_engineer",
+          "reviewer",
+          "publisher",
+          "domain_manager"
+        ],
+        "permissions_matrix": {},
+        "rate_limits": {},
+        "audit_trails": true,
+        "security_checks": {
+          "xss_protection": true,
+          "payload_limits": true,
+          "prompt_integrity": true,
+          "visual_content_integrity": true
+        }
+      },
+      "analytics_performance": {
+        "completion_tracking": true,
+        "visual_clarity_scores": true,
+        "engagement_metrics": true,
+        "diagram_effectiveness_scores": true,
+        "optimization_controls": true
+      }
+    }
+  },
+  {
+    "visual_explanation_section_uiux_architecture": {
+      "metadata": {
+        "section_type": "visual_explanation",
+        "version": "1.0",
+        "status": "active",
+        "supported_brands": [
+          "shared",
+          "skillup",
+          "rth",
+          "skillhubcore"
+        ],
+        "supported_platforms": [
+          "web",
+          "mobile",
+          "tablet"
+        ],
+        "design_system_version": "1.0",
+        "created_at": "ISO_TIMESTAMP",
+        "updated_at": "ISO_TIMESTAMP"
+      },
+      "page_shell_architecture": {
+        "layout_modes": {
+          "desktop": {
+            "sidebar": true,
+            "header": true,
+            "content_grid": "visual_learning_workspace",
+            "right_panel": true,
+            "diagram_canvas": true,
+            "infographic_panel": true
+          },
+          "tablet": {
+            "sidebar": "collapsible",
+            "header": true,
+            "content_grid": "responsive_visual_layout"
+          },
+          "mobile": {
+            "sidebar": "drawer",
+            "header": true,
+            "content_grid": "stacked_visual_cards"
+          }
+        },
+        "navigation_system": {
+          "breadcrumb_navigation": true,
+          "visual_outline_navigation": true,
+          "diagram_jump_links": true,
+          "sticky_learning_map": true,
+          "step_flow_navigation": true
+        }
+      },
+      "design_system": {
+        "color_system": {
+          "primary": {
+            "skillup": "#f54a8d",
+            "rth": "#d03f00",
+            "skillhubcore_primary": "#f54a8d",
+            "skillhubcore_secondary": "#d03f00"
+          },
+          "semantic_colors": {
+            "visual_intro": "",
+            "diagram": "",
+            "comparison": "",
+            "warning": "",
+            "summary": ""
+          },
+          "neutral_palette": {}
+        },
+        "typography_system": {
+          "font_families": {
+            "heading": "",
+            "body": "",
+            "diagram_labels": "",
+            "technical": ""
+          },
+          "font_scales": {
+            "hero": "",
+            "h1": "",
+            "h2": "",
+            "h3": "",
+            "body": "",
+            "caption": "",
+            "diagram_callout": ""
+          },
+          "readability_rules": {
+            "visual_density": "",
+            "line_height": "",
+            "content_width": ""
+          }
+        },
+        "spacing_system": {
+          "grid_unit": 8,
+          "padding_scale": {},
+          "margin_scale": {},
+          "diagram_spacing": {},
+          "section_spacing": {}
+        },
+        "component_library": {
+          "visual_intro_cards": {},
+          "diagram_panels": {},
+          "flow_sequence_panels": {},
+          "comparison_diagrams": {},
+          "mental_model_canvases": {},
+          "real_world_visual_blocks": {},
+          "confusion_resolution_diagrams": {},
+          "summary_infographics": {},
+          "interactive_maps": {},
+          "zoomable_diagrams": {}
+        }
+      },
+      "renderer_mapping_engine": {
+        "concept_visual_intro": {
+          "component": "visual_intro_card",
+          "layout": "hero_visual_learning_panel"
+        },
+        "diagrammatic_breakdown": {
+          "component": "diagram_panel",
+          "layout": "interactive_diagram_workspace"
+        },
+        "step_by_step_visual_flow": {
+          "component": "flow_sequence_panel",
+          "layout": "guided_visual_sequence"
+        },
+        "comparative_visualization": {
+          "component": "comparison_diagram",
+          "layout": "comparison_dashboard"
+        },
+        "mental_model_visualization": {
+          "component": "mental_model_canvas",
+          "layout": "conceptual_framework_canvas"
+        },
+        "real_world_visual_mapping": {
+          "component": "real_world_visual_block",
+          "layout": "practical_visual_context"
+        },
+        "common_confusion_visualization": {
+          "component": "confusion_resolution_diagram",
+          "layout": "confusion_prevention_workspace"
+        },
+        "visual_summary": {
+          "component": "summary_infographic",
+          "layout": "visual_revision_dashboard"
+        },
+        "domain_renderer_overrides": {
+          "programming": {},
+          "finance": {},
+          "cybersecurity": {},
+          "cloud": {},
+          "science": {}
+        }
+      },
+      "interaction_design_system": {
+        "microinteractions": {
+          "hover_states": true,
+          "diagram_zoom": true,
+          "interactive_labels": true,
+          "step_reveal_animations": true,
+          "comparison_toggle": true,
+          "tooltip_explanations": true
+        },
+        "progressive_disclosure": {
+          "layered_visual_reveal": true,
+          "stepwise_diagram_expansion": true,
+          "advanced_visual_toggle": true,
+          "focus_mode": true
+        },
+        "engagement_features": {
+          "visual_progress_tracking": true,
+          "concept_mastery_badges": true,
+          "diagram_bookmarking": true,
+          "interactive_checkpoints": true
+        },
+        "feedback_system": {
+          "visual_understanding_checks": true,
+          "diagram_comprehension_feedback": true,
+          "learning_path_feedback": true
+        }
+      },
+      "accessibility_architecture": {
+        "wcag_compliance": {
+          "level": "AA",
+          "keyboard_navigation": true,
+          "screen_reader_support": true,
+          "contrast_ratios": true
+        },
+        "inclusive_design": {
+          "font_scaling": true,
+          "dark_mode": true,
+          "focus_indicators": true,
+          "reduced_motion": true
+        },
+        "visual_accessibility": {
+          "high_contrast_diagrams": true,
+          "zoom_controls": true,
+          "alt_diagram_descriptions": true,
+          "cognitive_clarity_mode": true
+        }
+      },
+      "learning_experience_ui": {
+        "visual_psychology_ui": {
+          "confidence_boosting_panels": true,
+          "visual_memory_support": true,
+          "clarity_banners": true,
+          "cognitive_load_reduction": true
+        },
+        "learning_progression_ui": {
+          "visual_stepper_flow": true,
+          "diagram_mastery_tracking": true,
+          "concept_map_navigation": true,
+          "adaptive_visual_pathways": true
+        },
+        "preview_modes": {
+          "desktop_preview": true,
+          "mobile_preview": true,
+          "brand_preview": true,
+          "domain_preview": true,
+          "diagram_preview": true
+        }
+      },
+      "admin_dashboard_ui": {
+        "sidebar_navigation": {
+          "dashboard": true,
+          "universal_architecture": true,
+          "domain_adaptations": true,
+          "renderer_mapping": true,
+          "prompt_management": true,
+          "cms": true,
+          "governance": true
+        },
+        "management_tabs": {
+          "universal_architecture": true,
+          "domain_adaptations": true,
+          "renderer_mapping": true,
+          "learning_progression": true,
+          "prompt_management": true,
+          "ai_drafts": true,
+          "cms": true,
+          "validation": true,
+          "versioning": true,
+          "brand_governance": true,
+          "rbac": true
+        },
+        "dashboard_widgets": {
+          "visual_clarity_scores": true,
+          "diagram_accuracy_scores": true,
+          "engagement_metrics": true,
+          "draft_status": true,
+          "content_health": true,
+          "analytics_panels": true
+        }
+      },
+      "content_management_ui": {
+        "editor_system": {
+          "rich_text_editor": true,
+          "diagram_builder": true,
+          "flowchart_editor": true,
+          "infographic_editor": true,
+          "mental_model_canvas_builder": true,
+          "preview_split_view": true
+        },
+        "workflow_ui": {
+          "draft_review": true,
+          "approval_queue": true,
+          "publish_controls": true,
+          "rollback_controls": true
+        },
+        "validation_ui": {
+          "visual_clarity_dashboard": true,
+          "diagram_accuracy_dashboard": true,
+          "learning_efficiency_dashboard": true,
+          "error_resolution_panels": true
+        }
+      },
+      "brand_governance_ui": {
+        "theme_management": {
+          "brand_color_switching": true,
+          "logo_switching": true,
+          "brand_preview": true
+        },
+        "multi_brand_controls": {
+          "shared_resources": true,
+          "brand_overrides": true,
+          "deployment_targets": true
+        }
+      },
+      "performance_ux_architecture": {
+        "optimization": {
+          "lazy_loading": true,
+          "diagram_asset_optimization": true,
+          "canvas_render_optimization": true,
+          "prefetching": true
+        },
+        "loading_experience": {
+          "skeleton_loaders": true,
+          "progressive_loading": true,
+          "smart_prefetching": true
+        },
+        "monitoring": {
+          "render_speed_tracking": true,
+          "diagram_interaction_latency": true,
+          "canvas_performance_metrics": true
+        }
+      },
+      "security_ui": {
+        "session_management": {
+          "secure_auth_flows": true,
+          "role_visibility": true,
+          "audit_logs": true
+        },
+        "admin_controls": {
+          "permission_gates": true,
+          "sensitive_action_confirmations": true,
+          "security_alerts": true,
+          "visual_integrity_alerts": true
+        }
+      },
+      "analytics_visualization_ui": {
+        "visual_clarity_dashboards": true,
+        "diagram_effectiveness_heatmaps": true,
+        "engagement_charts": true,
+        "learning_efficiency_reports": true,
+        "content_performance_reports": true
+      }
+    }
+  },
+  {
+    "practice_test_section_architecture": {
+      "metadata": {
+        "section_type": "practice_test",
+        "version": "1.0",
+        "status": "active",
+        "brand_scope": [
+          "shared",
+          "skillup",
+          "rth",
+          "skillhubcore"
+        ],
+        "supported_domains": [
+          "programming",
+          "cloud",
+          "cybersecurity",
+          "finance",
+          "ai_ml",
+          "business",
+          "aptitude",
+          "general_education"
+        ],
+        "created_at": "ISO_TIMESTAMP",
+        "updated_at": "ISO_TIMESTAMP"
+      },
+      "hierarchy": {
+        "domain": {
+          "id": "uuid",
+          "name": "string",
+          "slug": "string"
+        },
+        "subject": {
+          "id": "uuid",
+          "name": "string",
+          "slug": "string"
+        },
+        "topic": {
+          "id": "uuid",
+          "name": "string",
+          "slug": "string"
+        },
+        "subtopic": {
+          "id": "uuid",
+          "name": "string",
+          "slug": "string"
+        }
+      },
+      "universal_architecture_fixed": {
+        "concept_recall_questions": {
+          "enabled": true,
+          "required": true,
+          "renderer": "mcq_block"
+        },
+        "scenario_based_questions": {
+          "enabled": true,
+          "required": true,
+          "renderer": "scenario_test_panel"
+        },
+        "difficulty_progression": {
+          "enabled": true,
+          "required": true,
+          "renderer": "adaptive_test_flow"
+        },
+        "instant_feedback_explanations": {
+          "enabled": true,
+          "required": true,
+          "renderer": "feedback_explanation_card"
+        },
+        "common_mistake_detection": {
+          "enabled": true,
+          "required": true,
+          "renderer": "mistake_analysis_panel"
+        },
+        "performance_analytics": {
+          "enabled": true,
+          "required": true,
+          "renderer": "score_dashboard"
+        },
+        "weakness_mapping": {
+          "enabled": true,
+          "required": true,
+          "renderer": "weakness_heatmap"
+        },
+        "revision_recommendations": {
+          "enabled": true,
+          "required": true,
+          "renderer": "remediation_path_panel"
+        }
+      },
+      "domain_adaptations_flexible": {
+        "question_type_engine": {
+          "mcq": {},
+          "coding": {},
+          "case_study": {},
+          "short_answer": {},
+          "simulation": {}
+        },
+        "difficulty_scaling": {
+          "beginner": {},
+          "intermediate": {},
+          "advanced": {},
+          "expert": {}
+        },
+        "domain_specific_assessment_models": {
+          "programming": {},
+          "finance": {},
+          "cybersecurity": {},
+          "cloud": {},
+          "business": {}
+        },
+        "adaptive_testing_engine": {
+          "performance_based_progression": true,
+          "weakness_retargeting": true,
+          "confidence_weighting": true
+        },
+        "career_exam_mapping": {
+          "certification_prep": {},
+          "interview_prep": {},
+          "job_readiness": {}
+        },
+        "prompt_variants": {
+          "certification_focused": {},
+          "interview_focused": {},
+          "quick_revision": {},
+          "deep_assessment": {}
+        },
+        "validation_rules": {
+          "question_accuracy_score": 100,
+          "difficulty_balance_score": 95,
+          "learning_effectiveness_score": 95
+        }
+      },
+      "renderer_mapping_engine": {
+        "mcq_block": {},
+        "scenario_test_panel": {},
+        "adaptive_test_flow": {},
+        "feedback_explanation_card": {},
+        "mistake_analysis_panel": {},
+        "score_dashboard": {},
+        "weakness_heatmap": {},
+        "remediation_path_panel": {},
+        "domain_renderer_overrides": {
+          "programming": {},
+          "finance": {},
+          "cybersecurity": {},
+          "cloud": {},
+          "aptitude": {}
+        }
+      },
+      "learner_psychology_engine": {
+        "confidence_based_testing_model": {},
+        "fear_reduction_testing_model": {},
+        "adaptive_motivation_engine": {},
+        "performance_reinforcement_model": {},
+        "mistake_normalization_model": {}
+      },
+      "learning_progression_engine": {
+        "default_flow": [
+          "concept_recall_questions",
+          "scenario_based_questions",
+          "difficulty_progression",
+          "instant_feedback_explanations",
+          "common_mistake_detection",
+          "performance_analytics",
+          "weakness_mapping",
+          "revision_recommendations"
+        ],
+        "adaptive_progression_rules": [],
+        "exam_prep_paths": {},
+        "career_specialization_paths": {}
+      },
+      "prompt_management_system": {
+        "prompt_templates": [],
+        "prompt_versions": [],
+        "prompt_integrity_hash": "sha256",
+        "export_formats": [
+          "txt",
+          "json",
+          "md"
+        ],
+        "approval_workflow": {
+          "draft": true,
+          "review": true,
+          "approved": true,
+          "published": true
+        }
+      },
+      "ai_draft_generation_system": {
+        "manual_ai_paste": true,
+        "question_parser": {},
+        "difficulty_validator": {},
+        "answer_validator": {},
+        "feedback_validator": {},
+        "human_review_required": true
+      },
+      "practice_test_section_cms": {
+        "draft_management": true,
+        "question_bank_editor": true,
+        "test_builder": true,
+        "difficulty_manager": true,
+        "analytics_editor": true,
+        "preview_engine": true,
+        "publish_controls": true,
+        "rollback_controls": true,
+        "revision_history": true
+      },
+      "validation_governance_system": {
+        "structural_validation": true,
+        "question_accuracy_validation": true,
+        "difficulty_validation": true,
+        "feedback_validation": true,
+        "weakness_mapping_validation": true,
+        "seo_validation": true,
+        "security_validation": true
+      },
+      "version_governance": {
+        "architecture_versions": [],
+        "prompt_versions": [],
+        "content_versions": [],
+        "audit_logs": [],
+        "rollback_points": []
+      },
+      "brand_governance": {
+        "shared_core": true,
+        "brand_overrides": {
+          "skillup": {},
+          "rth": {},
+          "skillhubcore": {}
+        },
+        "content_style_overrides": {},
+        "ui_theme_overrides": {}
+      },
+      "rbac_security": {
+        "roles": [
+          "super_admin",
+          "educational_architect",
+          "assessment_architect",
+          "prompt_engineer",
+          "reviewer",
+          "publisher",
+          "domain_manager"
+        ],
+        "permissions_matrix": {},
+        "rate_limits": {},
+        "audit_trails": true,
+        "security_checks": {
+          "xss_protection": true,
+          "payload_limits": true,
+          "prompt_integrity": true,
+          "test_integrity_protection": true
+        }
+      },
+      "analytics_performance": {
+        "completion_tracking": true,
+        "score_tracking": true,
+        "weakness_analytics": true,
+        "engagement_metrics": true,
+        "optimization_controls": true
+      }
+    }
+  },
+  {
+    "practice_test_section_uiux_architecture": {
+      "metadata": {
+        "section_type": "practice_test",
+        "version": "1.0",
+        "status": "active",
+        "supported_brands": [
+          "shared",
+          "skillup",
+          "rth",
+          "skillhubcore"
+        ],
+        "supported_platforms": [
+          "web",
+          "mobile",
+          "tablet"
+        ],
+        "design_system_version": "1.0",
+        "created_at": "ISO_TIMESTAMP",
+        "updated_at": "ISO_TIMESTAMP"
+      },
+      "page_shell_architecture": {
+        "layout_modes": {
+          "desktop": {
+            "sidebar": true,
+            "header": true,
+            "content_grid": "assessment_workspace_layout",
+            "right_panel": true,
+            "analytics_panel": true,
+            "timer_panel": true
+          },
+          "tablet": {
+            "sidebar": "collapsible",
+            "header": true,
+            "content_grid": "responsive_test_layout"
+          },
+          "mobile": {
+            "sidebar": "drawer",
+            "header": true,
+            "content_grid": "stacked_question_cards"
+          }
+        },
+        "navigation_system": {
+          "breadcrumb_navigation": true,
+          "question_navigation_palette": true,
+          "sticky_progress_tracker": true,
+          "section_jump_links": true,
+          "review_navigation": true
+        }
+      },
+      "design_system": {
+        "color_system": {
+          "primary": {
+            "skillup": "#f54a8d",
+            "rth": "#d03f00",
+            "skillhubcore_primary": "#f54a8d",
+            "skillhubcore_secondary": "#d03f00"
+          },
+          "semantic_colors": {
+            "correct_answer": "",
+            "incorrect_answer": "",
+            "warning": "",
+            "analytics": "",
+            "progress": ""
+          },
+          "neutral_palette": {}
+        },
+        "typography_system": {
+          "font_families": {
+            "heading": "",
+            "body": "",
+            "technical": "",
+            "assessment": ""
+          },
+          "font_scales": {
+            "hero": "",
+            "h1": "",
+            "h2": "",
+            "h3": "",
+            "body": "",
+            "caption": "",
+            "question_callout": ""
+          },
+          "readability_rules": {
+            "question_density": "",
+            "line_height": "",
+            "max_content_width": ""
+          }
+        },
+        "spacing_system": {
+          "grid_unit": 8,
+          "padding_scale": {},
+          "margin_scale": {},
+          "question_spacing": {},
+          "section_spacing": {}
+        },
+        "component_library": {
+          "mcq_blocks": {},
+          "scenario_test_panels": {},
+          "adaptive_test_flows": {},
+          "feedback_explanation_cards": {},
+          "mistake_analysis_panels": {},
+          "score_dashboards": {},
+          "weakness_heatmaps": {},
+          "remediation_path_panels": {},
+          "timers": {},
+          "progress_bars": {}
+        }
+      },
+      "renderer_mapping_engine": {
+        "concept_recall_questions": {
+          "component": "mcq_block",
+          "layout": "core_assessment_panel"
+        },
+        "scenario_based_questions": {
+          "component": "scenario_test_panel",
+          "layout": "real_world_assessment_workspace"
+        },
+        "difficulty_progression": {
+          "component": "adaptive_test_flow",
+          "layout": "progressive_testing_dashboard"
+        },
+        "instant_feedback_explanations": {
+          "component": "feedback_explanation_card",
+          "layout": "answer_explanation_workspace"
+        },
+        "common_mistake_detection": {
+          "component": "mistake_analysis_panel",
+          "layout": "mistake_prevention_dashboard"
+        },
+        "performance_analytics": {
+          "component": "score_dashboard",
+          "layout": "performance_command_center"
+        },
+        "weakness_mapping": {
+          "component": "weakness_heatmap",
+          "layout": "learning_gap_visualization"
+        },
+        "revision_recommendations": {
+          "component": "remediation_path_panel",
+          "layout": "improvement_path_dashboard"
+        },
+        "domain_renderer_overrides": {
+          "programming": {},
+          "finance": {},
+          "cybersecurity": {},
+          "cloud": {},
+          "aptitude": {}
+        }
+      },
+      "interaction_design_system": {
+        "microinteractions": {
+          "hover_states": true,
+          "instant_answer_feedback": true,
+          "progress_animations": true,
+          "timer_feedback": true,
+          "tooltip_explanations": true
+        },
+        "progressive_disclosure": {
+          "stepwise_question_reveal": true,
+          "difficulty_unlock_flow": true,
+          "advanced_mode_toggle": true
+        },
+        "engagement_features": {
+          "xp_rewards": true,
+          "achievement_badges": true,
+          "streak_tracking": true,
+          "leaderboards": true,
+          "confidence_scoring": true
+        },
+        "feedback_system": {
+          "instant_feedback": true,
+          "mistake_explanations": true,
+          "confidence_feedback": true,
+          "progress_feedback": true
+        }
+      },
+      "accessibility_architecture": {
+        "wcag_compliance": {
+          "level": "AA",
+          "keyboard_navigation": true,
+          "screen_reader_support": true,
+          "contrast_ratios": true
+        },
+        "inclusive_design": {
+          "font_scaling": true,
+          "dark_mode": true,
+          "focus_indicators": true,
+          "reduced_motion": true
+        },
+        "assessment_accessibility": {
+          "timer_accessibility_controls": true,
+          "question_zoom_controls": true,
+          "low_stress_mode": true
+        }
+      },
+      "learning_experience_ui": {
+        "assessment_psychology_ui": {
+          "confidence_boosting_panels": true,
+          "fear_reduction_banners": true,
+          "motivation_panels": true,
+          "mistake_normalization_panels": true
+        },
+        "learning_progression_ui": {
+          "test_progress_tracker": true,
+          "mastery_tracking": true,
+          "weakness_pathways": true,
+          "career_exam_pathways": true
+        },
+        "preview_modes": {
+          "desktop_preview": true,
+          "mobile_preview": true,
+          "brand_preview": true,
+          "domain_preview": true,
+          "exam_preview": true
+        }
+      },
+      "admin_dashboard_ui": {
+        "sidebar_navigation": {
+          "dashboard": true,
+          "universal_architecture": true,
+          "domain_adaptations": true,
+          "renderer_mapping": true,
+          "prompt_management": true,
+          "cms": true,
+          "governance": true
+        },
+        "management_tabs": {
+          "universal_architecture": true,
+          "domain_adaptations": true,
+          "renderer_mapping": true,
+          "learning_progression": true,
+          "prompt_management": true,
+          "ai_drafts": true,
+          "cms": true,
+          "validation": true,
+          "versioning": true,
+          "brand_governance": true,
+          "rbac": true
+        },
+        "dashboard_widgets": {
+          "question_accuracy_scores": true,
+          "difficulty_balance_scores": true,
+          "performance_metrics": true,
+          "draft_status": true,
+          "content_health": true,
+          "analytics_panels": true
+        }
+      },
+      "content_management_ui": {
+        "editor_system": {
+          "question_bank_editor": true,
+          "assessment_builder": true,
+          "difficulty_editor": true,
+          "feedback_editor": true,
+          "analytics_builder": true,
+          "preview_split_view": true
+        },
+        "workflow_ui": {
+          "draft_review": true,
+          "approval_queue": true,
+          "publish_controls": true,
+          "rollback_controls": true
+        },
+        "validation_ui": {
+          "question_accuracy_dashboard": true,
+          "difficulty_dashboard": true,
+          "performance_dashboard": true,
+          "error_resolution_panels": true
+        }
+      },
+      "brand_governance_ui": {
+        "theme_management": {
+          "brand_color_switching": true,
+          "logo_switching": true,
+          "brand_preview": true
+        },
+        "multi_brand_controls": {
+          "shared_resources": true,
+          "brand_overrides": true,
+          "deployment_targets": true
+        }
+      },
+      "performance_ux_architecture": {
+        "optimization": {
+          "lazy_loading": true,
+          "analytics_render_optimization": true,
+          "test_prefetching": true,
+          "timer_efficiency": true
+        },
+        "loading_experience": {
+          "skeleton_loaders": true,
+          "progressive_loading": true,
+          "smart_prefetching": true
+        },
+        "monitoring": {
+          "render_speed_tracking": true,
+          "interaction_latency": true,
+          "test_performance_metrics": true
+        }
+      },
+      "security_ui": {
+        "session_management": {
+          "secure_auth_flows": true,
+          "role_visibility": true,
+          "audit_logs": true
+        },
+        "admin_controls": {
+          "permission_gates": true,
+          "sensitive_action_confirmations": true,
+          "security_alerts": true,
+          "test_integrity_alerts": true
+        }
+      },
+      "analytics_visualization_ui": {
+        "performance_dashboards": true,
+        "weakness_heatmaps": true,
+        "confidence_charts": true,
+        "engagement_reports": true,
+        "content_performance_reports": true
+      }
+    }
+  },
+  {
+    "assignment_section_architecture": {
+      "metadata": {
+        "section_type": "assignment",
+        "version": "1.0",
+        "status": "active",
+        "brand_scope": [
+          "shared",
+          "skillup",
+          "rth",
+          "skillhubcore"
+        ],
+        "supported_domains": [
+          "programming",
+          "cloud",
+          "cybersecurity",
+          "finance",
+          "ai_ml",
+          "business",
+          "data_analysis",
+          "general_education"
+        ],
+        "created_at": "ISO_TIMESTAMP",
+        "updated_at": "ISO_TIMESTAMP"
+      },
+      "hierarchy": {
+        "domain": {
+          "id": "uuid",
+          "name": "string",
+          "slug": "string"
+        },
+        "subject": {
+          "id": "uuid",
+          "name": "string",
+          "slug": "string"
+        },
+        "topic": {
+          "id": "uuid",
+          "name": "string",
+          "slug": "string"
+        },
+        "subtopic": {
+          "id": "uuid",
+          "name": "string",
+          "slug": "string"
+        }
+      },
+      "universal_architecture_fixed": {
+        "assignment_brief": {
+          "enabled": true,
+          "required": true,
+          "renderer": "assignment_brief_card"
+        },
+        "learning_objectives": {
+          "enabled": true,
+          "required": true,
+          "renderer": "objective_panel"
+        },
+        "task_breakdown": {
+          "enabled": true,
+          "required": true,
+          "renderer": "task_flow_block"
+        },
+        "submission_requirements": {
+          "enabled": true,
+          "required": true,
+          "renderer": "submission_requirements_panel"
+        },
+        "evaluation_rubric": {
+          "enabled": true,
+          "required": true,
+          "renderer": "rubric_matrix"
+        },
+        "real_world_context": {
+          "enabled": true,
+          "required": true,
+          "renderer": "real_world_project_panel"
+        },
+        "common_mistakes_guidance": {
+          "enabled": true,
+          "required": true,
+          "renderer": "mistake_prevention_panel"
+        },
+        "assignment_summary": {
+          "enabled": true,
+          "required": true,
+          "renderer": "assignment_summary_card"
+        }
+      },
+      "domain_adaptations_flexible": {
+        "assignment_type_engine": {
+          "coding_assignment": {},
+          "research_assignment": {},
+          "case_study_assignment": {},
+          "project_assignment": {},
+          "presentation_assignment": {}
+        },
+        "difficulty_scaling": {
+          "beginner": {},
+          "intermediate": {},
+          "advanced": {},
+          "enterprise": {}
+        },
+        "domain_specific_workflows": {
+          "programming": {},
+          "finance": {},
+          "cybersecurity": {},
+          "cloud": {},
+          "business": {}
+        },
+        "career_alignment_engine": {
+          "job_readiness": {},
+          "portfolio_building": {},
+          "certification_prep": {}
+        },
+        "submission_model_engine": {
+          "code_submission": {},
+          "document_submission": {},
+          "presentation_submission": {},
+          "simulation_submission": {}
+        },
+        "prompt_variants": {
+          "portfolio_focused": {},
+          "enterprise_ready": {},
+          "certification_aligned": {},
+          "interview_prep": {}
+        },
+        "validation_rules": {
+          "task_relevance_score": 100,
+          "learning_outcome_score": 95,
+          "career_alignment_score": 95
+        }
+      },
+      "renderer_mapping_engine": {
+        "assignment_brief_card": {},
+        "objective_panel": {},
+        "task_flow_block": {},
+        "submission_requirements_panel": {},
+        "rubric_matrix": {},
+        "real_world_project_panel": {},
+        "mistake_prevention_panel": {},
+        "assignment_summary_card": {},
+        "domain_renderer_overrides": {
+          "programming": {},
+          "finance": {},
+          "cybersecurity": {},
+          "cloud": {},
+          "business": {}
+        }
+      },
+      "learner_psychology_engine": {
+        "confidence_building_assignment_model": {},
+        "task_completion_motivation_model": {},
+        "fear_reduction_submission_model": {},
+        "portfolio_value_reinforcement": {},
+        "mistake_normalization_model": {}
+      },
+      "learning_progression_engine": {
+        "default_flow": [
+          "assignment_brief",
+          "learning_objectives",
+          "task_breakdown",
+          "submission_requirements",
+          "evaluation_rubric",
+          "real_world_context",
+          "common_mistakes_guidance",
+          "assignment_summary"
+        ],
+        "adaptive_progression_rules": [],
+        "career_path_assignments": {},
+        "domain_specialization_assignments": {}
+      },
+      "prompt_management_system": {
+        "prompt_templates": [],
+        "prompt_versions": [],
+        "prompt_integrity_hash": "sha256",
+        "export_formats": [
+          "txt",
+          "json",
+          "md"
+        ],
+        "approval_workflow": {
+          "draft": true,
+          "review": true,
+          "approved": true,
+          "published": true
+        }
+      },
+      "ai_draft_generation_system": {
+        "manual_ai_paste": true,
+        "assignment_parser": {},
+        "task_validator": {},
+        "rubric_validator": {},
+        "submission_validator": {},
+        "human_review_required": true
+      },
+      "assignment_section_cms": {
+        "draft_management": true,
+        "assignment_builder": true,
+        "rubric_editor": true,
+        "submission_workflow_editor": true,
+        "portfolio_mapping_editor": true,
+        "preview_engine": true,
+        "publish_controls": true,
+        "rollback_controls": true,
+        "revision_history": true
+      },
+      "validation_governance_system": {
+        "structural_validation": true,
+        "task_accuracy_validation": true,
+        "rubric_validation": true,
+        "career_alignment_validation": true,
+        "submission_validation": true,
+        "seo_validation": true,
+        "security_validation": true
+      },
+      "version_governance": {
+        "architecture_versions": [],
+        "prompt_versions": [],
+        "content_versions": [],
+        "audit_logs": [],
+        "rollback_points": []
+      },
+      "brand_governance": {
+        "shared_core": true,
+        "brand_overrides": {
+          "skillup": {},
+          "rth": {},
+          "skillhubcore": {}
+        },
+        "content_style_overrides": {},
+        "ui_theme_overrides": {}
+      },
+      "rbac_security": {
+        "roles": [
+          "super_admin",
+          "educational_architect",
+          "assignment_architect",
+          "prompt_engineer",
+          "reviewer",
+          "publisher",
+          "domain_manager"
+        ],
+        "permissions_matrix": {},
+        "rate_limits": {},
+        "audit_trails": true,
+        "security_checks": {
+          "xss_protection": true,
+          "payload_limits": true,
+          "prompt_integrity": true,
+          "assignment_integrity_protection": true
+        }
+      },
+      "analytics_performance": {
+        "completion_tracking": true,
+        "submission_success_rates": true,
+        "career_readiness_scores": true,
+        "engagement_metrics": true,
+        "optimization_controls": true
+      }
+    }
+  },
+  {
+    "assignment_section_uiux_architecture": {
+      "metadata": {
+        "section_type": "assignment",
+        "version": "1.0",
+        "status": "active",
+        "supported_brands": [
+          "shared",
+          "skillup",
+          "rth",
+          "skillhubcore"
+        ],
+        "supported_platforms": [
+          "web",
+          "mobile",
+          "tablet"
+        ],
+        "design_system_version": "1.0",
+        "created_at": "ISO_TIMESTAMP",
+        "updated_at": "ISO_TIMESTAMP"
+      },
+      "page_shell_architecture": {
+        "layout_modes": {
+          "desktop": {
+            "sidebar": true,
+            "header": true,
+            "content_grid": "project_workspace_layout",
+            "right_panel": true,
+            "rubric_panel": true,
+            "submission_panel": true
+          },
+          "tablet": {
+            "sidebar": "collapsible",
+            "header": true,
+            "content_grid": "responsive_assignment_layout"
+          },
+          "mobile": {
+            "sidebar": "drawer",
+            "header": true,
+            "content_grid": "stacked_assignment_cards"
+          }
+        },
+        "navigation_system": {
+          "breadcrumb_navigation": true,
+          "task_navigation_flow": true,
+          "sticky_progress_tracker": true,
+          "submission_navigation": true,
+          "review_navigation": true
+        }
+      },
+      "design_system": {
+        "color_system": {
+          "primary": {
+            "skillup": "#f54a8d",
+            "rth": "#d03f00",
+            "skillhubcore_primary": "#f54a8d",
+            "skillhubcore_secondary": "#d03f00"
+          },
+          "semantic_colors": {
+            "task_brief": "",
+            "objectives": "",
+            "rubric": "",
+            "submission": "",
+            "progress": ""
+          },
+          "neutral_palette": {}
+        },
+        "typography_system": {
+          "font_families": {
+            "heading": "",
+            "body": "",
+            "technical": "",
+            "project": ""
+          },
+          "font_scales": {
+            "hero": "",
+            "h1": "",
+            "h2": "",
+            "h3": "",
+            "body": "",
+            "caption": "",
+            "task_callout": ""
+          },
+          "readability_rules": {
+            "assignment_density": "",
+            "line_height": "",
+            "max_content_width": ""
+          }
+        },
+        "spacing_system": {
+          "grid_unit": 8,
+          "padding_scale": {},
+          "margin_scale": {},
+          "task_spacing": {},
+          "section_spacing": {}
+        },
+        "component_library": {
+          "assignment_brief_cards": {},
+          "objective_panels": {},
+          "task_flow_blocks": {},
+          "submission_requirement_panels": {},
+          "rubric_matrices": {},
+          "real_world_project_panels": {},
+          "mistake_prevention_panels": {},
+          "assignment_summary_cards": {},
+          "progress_trackers": {},
+          "submission_widgets": {}
+        }
+      },
+      "renderer_mapping_engine": {
+        "assignment_brief": {
+          "component": "assignment_brief_card",
+          "layout": "project_overview_workspace"
+        },
+        "learning_objectives": {
+          "component": "objective_panel",
+          "layout": "goal_alignment_dashboard"
+        },
+        "task_breakdown": {
+          "component": "task_flow_block",
+          "layout": "project_execution_flow"
+        },
+        "submission_requirements": {
+          "component": "submission_requirements_panel",
+          "layout": "deliverable_management_panel"
+        },
+        "evaluation_rubric": {
+          "component": "rubric_matrix",
+          "layout": "grading_framework_dashboard"
+        },
+        "real_world_context": {
+          "component": "real_world_project_panel",
+          "layout": "career_project_context"
+        },
+        "common_mistakes_guidance": {
+          "component": "mistake_prevention_panel",
+          "layout": "submission_risk_prevention"
+        },
+        "assignment_summary": {
+          "component": "assignment_summary_card",
+          "layout": "completion_summary_workspace"
+        },
+        "domain_renderer_overrides": {
+          "programming": {},
+          "finance": {},
+          "cybersecurity": {},
+          "cloud": {},
+          "business": {}
+        }
+      },
+      "interaction_design_system": {
+        "microinteractions": {
+          "hover_states": true,
+          "task_progress_animations": true,
+          "submission_feedback": true,
+          "rubric_interactivity": true,
+          "tooltip_explanations": true
+        },
+        "progressive_disclosure": {
+          "stepwise_task_reveal": true,
+          "difficulty_unlock_flow": true,
+          "advanced_assignment_toggle": true
+        },
+        "engagement_features": {
+          "xp_rewards": true,
+          "achievement_badges": true,
+          "portfolio_milestones": true,
+          "career_readiness_indicators": true,
+          "deadline_tracking": true
+        },
+        "feedback_system": {
+          "submission_feedback": true,
+          "rubric_feedback": true,
+          "progress_feedback": true,
+          "career_alignment_feedback": true
+        }
+      },
+      "accessibility_architecture": {
+        "wcag_compliance": {
+          "level": "AA",
+          "keyboard_navigation": true,
+          "screen_reader_support": true,
+          "contrast_ratios": true
+        },
+        "inclusive_design": {
+          "font_scaling": true,
+          "dark_mode": true,
+          "focus_indicators": true,
+          "reduced_motion": true
+        },
+        "assignment_accessibility": {
+          "deadline_reminder_accessibility": true,
+          "task_zoom_controls": true,
+          "low_stress_mode": true
+        }
+      },
+      "learning_experience_ui": {
+        "assignment_psychology_ui": {
+          "confidence_boosting_panels": true,
+          "fear_reduction_banners": true,
+          "motivation_panels": true,
+          "portfolio_value_panels": true
+        },
+        "learning_progression_ui": {
+          "assignment_progress_tracker": true,
+          "project_mastery_tracking": true,
+          "career_pathways": true,
+          "submission_completion_paths": true
+        },
+        "preview_modes": {
+          "desktop_preview": true,
+          "mobile_preview": true,
+          "brand_preview": true,
+          "domain_preview": true,
+          "submission_preview": true
+        }
+      },
+      "admin_dashboard_ui": {
+        "sidebar_navigation": {
+          "dashboard": true,
+          "universal_architecture": true,
+          "domain_adaptations": true,
+          "renderer_mapping": true,
+          "prompt_management": true,
+          "cms": true,
+          "governance": true
+        },
+        "management_tabs": {
+          "universal_architecture": true,
+          "domain_adaptations": true,
+          "renderer_mapping": true,
+          "learning_progression": true,
+          "prompt_management": true,
+          "ai_drafts": true,
+          "cms": true,
+          "validation": true,
+          "versioning": true,
+          "brand_governance": true,
+          "rbac": true
+        },
+        "dashboard_widgets": {
+          "task_quality_scores": true,
+          "rubric_accuracy_scores": true,
+          "submission_metrics": true,
+          "draft_status": true,
+          "content_health": true,
+          "analytics_panels": true
+        }
+      },
+      "content_management_ui": {
+        "editor_system": {
+          "assignment_builder": true,
+          "task_flow_editor": true,
+          "rubric_editor": true,
+          "submission_workflow_editor": true,
+          "career_mapping_editor": true,
+          "preview_split_view": true
+        },
+        "workflow_ui": {
+          "draft_review": true,
+          "approval_queue": true,
+          "publish_controls": true,
+          "rollback_controls": true
+        },
+        "validation_ui": {
+          "task_accuracy_dashboard": true,
+          "rubric_dashboard": true,
+          "career_alignment_dashboard": true,
+          "error_resolution_panels": true
+        }
+      },
+      "brand_governance_ui": {
+        "theme_management": {
+          "brand_color_switching": true,
+          "logo_switching": true,
+          "brand_preview": true
+        },
+        "multi_brand_controls": {
+          "shared_resources": true,
+          "brand_overrides": true,
+          "deployment_targets": true
+        }
+      },
+      "performance_ux_architecture": {
+        "optimization": {
+          "lazy_loading": true,
+          "rubric_render_optimization": true,
+          "submission_prefetching": true,
+          "project_asset_optimization": true
+        },
+        "loading_experience": {
+          "skeleton_loaders": true,
+          "progressive_loading": true,
+          "smart_prefetching": true
+        },
+        "monitoring": {
+          "render_speed_tracking": true,
+          "interaction_latency": true,
+          "submission_performance_metrics": true
+        }
+      },
+      "security_ui": {
+        "session_management": {
+          "secure_auth_flows": true,
+          "role_visibility": true,
+          "audit_logs": true
+        },
+        "admin_controls": {
+          "permission_gates": true,
+          "sensitive_action_confirmations": true,
+          "security_alerts": true,
+          "assignment_integrity_alerts": true
+        }
+      },
+      "analytics_visualization_ui": {
+        "assignment_performance_dashboards": true,
+        "submission_heatmaps": true,
+        "career_readiness_charts": true,
+        "engagement_reports": true,
+        "content_performance_reports": true
+      }
+    }
+  },
+  {
+    "project_section_architecture": {
+      "metadata": {
+        "section_type": "project",
+        "version": "1.0",
+        "status": "active",
+        "brand_scope": [
+          "shared",
+          "skillup",
+          "rth",
+          "skillhubcore"
+        ],
+        "supported_domains": [
+          "programming",
+          "cloud",
+          "cybersecurity",
+          "finance",
+          "ai_ml",
+          "business",
+          "full_stack",
+          "enterprise_systems"
+        ],
+        "created_at": "ISO_TIMESTAMP",
+        "updated_at": "ISO_TIMESTAMP"
+      },
+      "hierarchy": {
+        "domain": {
+          "id": "uuid",
+          "name": "string",
+          "slug": "string"
+        },
+        "subject": {
+          "id": "uuid",
+          "name": "string",
+          "slug": "string"
+        },
+        "topic": {
+          "id": "uuid",
+          "name": "string",
+          "slug": "string"
+        },
+        "subtopic": {
+          "id": "uuid",
+          "name": "string",
+          "slug": "string"
+        }
+      },
+      "universal_architecture_fixed": {
+        "project_overview": {
+          "enabled": true,
+          "required": true,
+          "renderer": "project_overview_card"
+        },
+        "business_problem_context": {
+          "enabled": true,
+          "required": true,
+          "renderer": "problem_context_panel"
+        },
+        "architecture_planning": {
+          "enabled": true,
+          "required": true,
+          "renderer": "architecture_blueprint_block"
+        },
+        "implementation_phases": {
+          "enabled": true,
+          "required": true,
+          "renderer": "phase_execution_flow"
+        },
+        "technology_stack_mapping": {
+          "enabled": true,
+          "required": true,
+          "renderer": "tech_stack_dashboard"
+        },
+        "deployment_scaling_strategy": {
+          "enabled": true,
+          "required": true,
+          "renderer": "deployment_strategy_panel"
+        },
+        "portfolio_career_value": {
+          "enabled": true,
+          "required": true,
+          "renderer": "career_portfolio_panel"
+        },
+        "project_summary": {
+          "enabled": true,
+          "required": true,
+          "renderer": "project_summary_card"
+        }
+      },
+      "domain_adaptations_flexible": {
+        "project_type_engine": {
+          "full_stack_project": {},
+          "ai_project": {},
+          "cloud_project": {},
+          "cybersecurity_project": {},
+          "business_project": {}
+        },
+        "complexity_scaling": {
+          "beginner": {},
+          "intermediate": {},
+          "advanced": {},
+          "enterprise": {}
+        },
+        "domain_specific_architecture_models": {
+          "programming": {},
+          "cloud": {},
+          "cybersecurity": {},
+          "finance": {},
+          "business": {}
+        },
+        "career_alignment_engine": {
+          "portfolio_projects": {},
+          "enterprise_projects": {},
+          "startup_projects": {},
+          "interview_projects": {}
+        },
+        "technology_stack_rules": {
+          "frontend": [],
+          "backend": [],
+          "database": [],
+          "devops": [],
+          "ai_ml": []
+        },
+        "prompt_variants": {
+          "portfolio_focused": {},
+          "enterprise_ready": {},
+          "startup_ready": {},
+          "career_acceleration": {}
+        },
+        "validation_rules": {
+          "architecture_quality_score": 100,
+          "project_relevance_score": 95,
+          "career_value_score": 95
+        }
+      },
+      "renderer_mapping_engine": {
+        "project_overview_card": {},
+        "problem_context_panel": {},
+        "architecture_blueprint_block": {},
+        "phase_execution_flow": {},
+        "tech_stack_dashboard": {},
+        "deployment_strategy_panel": {},
+        "career_portfolio_panel": {},
+        "project_summary_card": {},
+        "domain_renderer_overrides": {
+          "full_stack": {},
+          "cloud": {},
+          "cybersecurity": {},
+          "ai_ml": {},
+          "enterprise_systems": {}
+        }
+      },
+      "learner_psychology_engine": {
+        "project_confidence_model": {},
+        "career_acceleration_motivation": {},
+        "portfolio_building_reinforcement": {},
+        "complexity_management_model": {},
+        "execution_success_model": {}
+      },
+      "learning_progression_engine": {
+        "default_flow": [
+          "project_overview",
+          "business_problem_context",
+          "architecture_planning",
+          "implementation_phases",
+          "technology_stack_mapping",
+          "deployment_scaling_strategy",
+          "portfolio_career_value",
+          "project_summary"
+        ],
+        "adaptive_progression_rules": [],
+        "career_project_paths": {},
+        "domain_specialization_projects": {}
+      },
+      "prompt_management_system": {
+        "prompt_templates": [],
+        "prompt_versions": [],
+        "prompt_integrity_hash": "sha256",
+        "export_formats": [
+          "txt",
+          "json",
+          "md"
+        ],
+        "approval_workflow": {
+          "draft": true,
+          "review": true,
+          "approved": true,
+          "published": true
+        }
+      },
+      "ai_draft_generation_system": {
+        "manual_ai_paste": true,
+        "project_parser": {},
+        "architecture_validator": {},
+        "technology_validator": {},
+        "deployment_validator": {},
+        "human_review_required": true
+      },
+      "project_section_cms": {
+        "draft_management": true,
+        "project_builder": true,
+        "architecture_editor": true,
+        "phase_manager": true,
+        "deployment_workflow_editor": true,
+        "portfolio_mapping_editor": true,
+        "preview_engine": true,
+        "publish_controls": true,
+        "rollback_controls": true,
+        "revision_history": true
+      },
+      "validation_governance_system": {
+        "structural_validation": true,
+        "architecture_validation": true,
+        "technology_stack_validation": true,
+        "deployment_validation": true,
+        "career_alignment_validation": true,
+        "seo_validation": true,
+        "security_validation": true
+      },
+      "version_governance": {
+        "architecture_versions": [],
+        "prompt_versions": [],
+        "content_versions": [],
+        "audit_logs": [],
+        "rollback_points": []
+      },
+      "brand_governance": {
+        "shared_core": true,
+        "brand_overrides": {
+          "skillup": {},
+          "rth": {},
+          "skillhubcore": {}
+        },
+        "content_style_overrides": {},
+        "ui_theme_overrides": {}
+      },
+      "rbac_security": {
+        "roles": [
+          "super_admin",
+          "educational_architect",
+          "project_architect",
+          "prompt_engineer",
+          "reviewer",
+          "publisher",
+          "domain_manager"
+        ],
+        "permissions_matrix": {},
+        "rate_limits": {},
+        "audit_trails": true,
+        "security_checks": {
+          "xss_protection": true,
+          "payload_limits": true,
+          "prompt_integrity": true,
+          "project_integrity_protection": true
+        }
+      },
+      "analytics_performance": {
+        "completion_tracking": true,
+        "project_success_rates": true,
+        "portfolio_value_scores": true,
+        "engagement_metrics": true,
+        "optimization_controls": true
+      }
+    }
+  },
+  {
+    "project_section_uiux_architecture": {
+      "metadata": {
+        "section_type": "project",
+        "version": "1.0",
+        "status": "active",
+        "supported_brands": [
+          "shared",
+          "skillup",
+          "rth",
+          "skillhubcore"
+        ],
+        "supported_platforms": [
+          "web",
+          "mobile",
+          "tablet"
+        ],
+        "design_system_version": "1.0",
+        "created_at": "ISO_TIMESTAMP",
+        "updated_at": "ISO_TIMESTAMP"
+      },
+      "page_shell_architecture": {
+        "layout_modes": {
+          "desktop": {
+            "sidebar": true,
+            "header": true,
+            "content_grid": "enterprise_project_workspace",
+            "right_panel": true,
+            "architecture_panel": true,
+            "deployment_panel": true
+          },
+          "tablet": {
+            "sidebar": "collapsible",
+            "header": true,
+            "content_grid": "responsive_project_layout"
+          },
+          "mobile": {
+            "sidebar": "drawer",
+            "header": true,
+            "content_grid": "stacked_project_cards"
+          }
+        },
+        "navigation_system": {
+          "breadcrumb_navigation": true,
+          "project_phase_navigation": true,
+          "sticky_execution_tracker": true,
+          "architecture_navigation": true,
+          "deployment_navigation": true
+        }
+      },
+      "design_system": {
+        "color_system": {
+          "primary": {
+            "skillup": "#f54a8d",
+            "rth": "#d03f00",
+            "skillhubcore_primary": "#f54a8d",
+            "skillhubcore_secondary": "#d03f00"
+          },
+          "semantic_colors": {
+            "project_overview": "",
+            "architecture": "",
+            "implementation": "",
+            "deployment": "",
+            "career": ""
+          },
+          "neutral_palette": {}
+        },
+        "typography_system": {
+          "font_families": {
+            "heading": "",
+            "body": "",
+            "technical": "",
+            "project": ""
+          },
+          "font_scales": {
+            "hero": "",
+            "h1": "",
+            "h2": "",
+            "h3": "",
+            "body": "",
+            "caption": "",
+            "project_callout": ""
+          },
+          "readability_rules": {
+            "project_density": "",
+            "line_height": "",
+            "max_content_width": ""
+          }
+        },
+        "spacing_system": {
+          "grid_unit": 8,
+          "padding_scale": {},
+          "margin_scale": {},
+          "phase_spacing": {},
+          "section_spacing": {}
+        },
+        "component_library": {
+          "project_overview_cards": {},
+          "problem_context_panels": {},
+          "architecture_blueprint_blocks": {},
+          "phase_execution_flows": {},
+          "tech_stack_dashboards": {},
+          "deployment_strategy_panels": {},
+          "career_portfolio_panels": {},
+          "project_summary_cards": {},
+          "roadmaps": {},
+          "execution_trackers": {}
+        }
+      },
+      "renderer_mapping_engine": {
+        "project_overview": {
+          "component": "project_overview_card",
+          "layout": "project_command_center"
+        },
+        "business_problem_context": {
+          "component": "problem_context_panel",
+          "layout": "business_case_workspace"
+        },
+        "architecture_planning": {
+          "component": "architecture_blueprint_block",
+          "layout": "solution_architecture_dashboard"
+        },
+        "implementation_phases": {
+          "component": "phase_execution_flow",
+          "layout": "execution_roadmap_workspace"
+        },
+        "technology_stack_mapping": {
+          "component": "tech_stack_dashboard",
+          "layout": "stack_visualization_panel"
+        },
+        "deployment_scaling_strategy": {
+          "component": "deployment_strategy_panel",
+          "layout": "deployment_operations_dashboard"
+        },
+        "portfolio_career_value": {
+          "component": "career_portfolio_panel",
+          "layout": "career_acceleration_workspace"
+        },
+        "project_summary": {
+          "component": "project_summary_card",
+          "layout": "project_completion_dashboard"
+        },
+        "domain_renderer_overrides": {
+          "full_stack": {},
+          "cloud": {},
+          "cybersecurity": {},
+          "ai_ml": {},
+          "enterprise_systems": {}
+        }
+      },
+      "interaction_design_system": {
+        "microinteractions": {
+          "hover_states": true,
+          "phase_progress_animations": true,
+          "architecture_zoom": true,
+          "deployment_feedback": true,
+          "tooltip_explanations": true
+        },
+        "progressive_disclosure": {
+          "phase_unlock_flow": true,
+          "architecture_layer_expansion": true,
+          "advanced_project_toggle": true
+        },
+        "engagement_features": {
+          "xp_rewards": true,
+          "portfolio_milestones": true,
+          "career_progress_badges": true,
+          "project_completion_tracking": true,
+          "roadmap_achievements": true
+        },
+        "feedback_system": {
+          "phase_feedback": true,
+          "architecture_feedback": true,
+          "deployment_feedback": true,
+          "career_alignment_feedback": true
+        }
+      },
+      "accessibility_architecture": {
+        "wcag_compliance": {
+          "level": "AA",
+          "keyboard_navigation": true,
+          "screen_reader_support": true,
+          "contrast_ratios": true
+        },
+        "inclusive_design": {
+          "font_scaling": true,
+          "dark_mode": true,
+          "focus_indicators": true,
+          "reduced_motion": true
+        },
+        "project_accessibility": {
+          "roadmap_zoom_controls": true,
+          "timeline_accessibility": true,
+          "low_stress_mode": true
+        }
+      },
+      "learning_experience_ui": {
+        "project_psychology_ui": {
+          "confidence_boosting_panels": true,
+          "fear_reduction_banners": true,
+          "motivation_panels": true,
+          "portfolio_value_panels": true
+        },
+        "learning_progression_ui": {
+          "project_progress_tracker": true,
+          "phase_mastery_tracking": true,
+          "career_pathways": true,
+          "enterprise_specialization_paths": true
+        },
+        "preview_modes": {
+          "desktop_preview": true,
+          "mobile_preview": true,
+          "brand_preview": true,
+          "domain_preview": true,
+          "deployment_preview": true
+        }
+      },
+      "admin_dashboard_ui": {
+        "sidebar_navigation": {
+          "dashboard": true,
+          "universal_architecture": true,
+          "domain_adaptations": true,
+          "renderer_mapping": true,
+          "prompt_management": true,
+          "cms": true,
+          "governance": true
+        },
+        "management_tabs": {
+          "universal_architecture": true,
+          "domain_adaptations": true,
+          "renderer_mapping": true,
+          "learning_progression": true,
+          "prompt_management": true,
+          "ai_drafts": true,
+          "cms": true,
+          "validation": true,
+          "versioning": true,
+          "brand_governance": true,
+          "rbac": true
+        },
+        "dashboard_widgets": {
+          "architecture_quality_scores": true,
+          "deployment_scores": true,
+          "portfolio_value_scores": true,
+          "draft_status": true,
+          "content_health": true,
+          "analytics_panels": true
+        }
+      },
+      "content_management_ui": {
+        "editor_system": {
+          "project_builder": true,
+          "architecture_editor": true,
+          "phase_manager": true,
+          "deployment_workflow_editor": true,
+          "portfolio_mapping_editor": true,
+          "preview_split_view": true
+        },
+        "workflow_ui": {
+          "draft_review": true,
+          "approval_queue": true,
+          "publish_controls": true,
+          "rollback_controls": true
+        },
+        "validation_ui": {
+          "architecture_dashboard": true,
+          "deployment_dashboard": true,
+          "career_alignment_dashboard": true,
+          "error_resolution_panels": true
+        }
+      },
+      "brand_governance_ui": {
+        "theme_management": {
+          "brand_color_switching": true,
+          "logo_switching": true,
+          "brand_preview": true
+        },
+        "multi_brand_controls": {
+          "shared_resources": true,
+          "brand_overrides": true,
+          "deployment_targets": true
+        }
+      },
+      "performance_ux_architecture": {
+        "optimization": {
+          "lazy_loading": true,
+          "architecture_render_optimization": true,
+          "deployment_asset_optimization": true,
+          "project_prefetching": true
+        },
+        "loading_experience": {
+          "skeleton_loaders": true,
+          "progressive_loading": true,
+          "smart_prefetching": true
+        },
+        "monitoring": {
+          "render_speed_tracking": true,
+          "interaction_latency": true,
+          "project_execution_metrics": true
+        }
+      },
+      "security_ui": {
+        "session_management": {
+          "secure_auth_flows": true,
+          "role_visibility": true,
+          "audit_logs": true
+        },
+        "admin_controls": {
+          "permission_gates": true,
+          "sensitive_action_confirmations": true,
+          "security_alerts": true,
+          "project_integrity_alerts": true
+        }
+      },
+      "analytics_visualization_ui": {
+        "project_success_dashboards": true,
+        "architecture_quality_heatmaps": true,
+        "career_readiness_charts": true,
+        "engagement_reports": true,
+        "content_performance_reports": true
+      }
+    }
+  },
+  {
+    "quiz_section_architecture": {
+      "metadata": {
+        "section_type": "quiz",
+        "version": "1.0",
+        "status": "active",
+        "brand_scope": [
+          "shared",
+          "skillup",
+          "rth",
+          "skillhubcore"
+        ],
+        "supported_domains": [
+          "programming",
+          "cloud",
+          "cybersecurity",
+          "finance",
+          "ai_ml",
+          "business",
+          "aptitude",
+          "general_education"
+        ],
+        "created_at": "ISO_TIMESTAMP",
+        "updated_at": "ISO_TIMESTAMP"
+      },
+      "hierarchy": {
+        "domain": {
+          "id": "uuid",
+          "name": "string",
+          "slug": "string"
+        },
+        "subject": {
+          "id": "uuid",
+          "name": "string",
+          "slug": "string"
+        },
+        "topic": {
+          "id": "uuid",
+          "name": "string",
+          "slug": "string"
+        },
+        "subtopic": {
+          "id": "uuid",
+          "name": "string",
+          "slug": "string"
+        }
+      },
+      "universal_architecture_fixed": {
+        "knowledge_check_intro": {
+          "enabled": true,
+          "required": true,
+          "renderer": "quiz_intro_panel"
+        },
+        "question_set_engine": {
+          "enabled": true,
+          "required": true,
+          "renderer": "question_block"
+        },
+        "adaptive_difficulty_progression": {
+          "enabled": true,
+          "required": true,
+          "renderer": "difficulty_progression_flow"
+        },
+        "instant_feedback_system": {
+          "enabled": true,
+          "required": true,
+          "renderer": "feedback_explanation_panel"
+        },
+        "mistake_analysis_engine": {
+          "enabled": true,
+          "required": true,
+          "renderer": "mistake_analysis_dashboard"
+        },
+        "performance_scoring": {
+          "enabled": true,
+          "required": true,
+          "renderer": "score_visualization_panel"
+        },
+        "knowledge_gap_mapping": {
+          "enabled": true,
+          "required": true,
+          "renderer": "knowledge_gap_heatmap"
+        },
+        "revision_recommendation_system": {
+          "enabled": true,
+          "required": true,
+          "renderer": "revision_path_dashboard"
+        }
+      },
+      "domain_adaptations_flexible": {
+        "quiz_type_engine": {
+          "mcq": {},
+          "true_false": {},
+          "scenario_based": {},
+          "coding_quiz": {},
+          "case_study_quiz": {}
+        },
+        "difficulty_scaling": {
+          "easy": {},
+          "medium": {},
+          "hard": {},
+          "expert": {}
+        },
+        "domain_specific_assessment_models": {
+          "programming": {},
+          "finance": {},
+          "cybersecurity": {},
+          "cloud": {},
+          "business": {}
+        },
+        "adaptive_testing_engine": {
+          "performance_weighting": true,
+          "confidence_scoring": true,
+          "weakness_targeting": true
+        },
+        "career_exam_alignment": {
+          "placement_quiz": {},
+          "certification_quiz": {},
+          "interview_quiz": {}
+        },
+        "prompt_variants": {
+          "quick_revision": {},
+          "deep_assessment": {},
+          "career_prep": {},
+          "certification_prep": {}
+        },
+        "validation_rules": {
+          "question_accuracy_score": 100,
+          "difficulty_balance_score": 95,
+          "knowledge_relevance_score": 95
+        }
+      },
+      "renderer_mapping_engine": {
+        "quiz_intro_panel": {},
+        "question_block": {},
+        "difficulty_progression_flow": {},
+        "feedback_explanation_panel": {},
+        "mistake_analysis_dashboard": {},
+        "score_visualization_panel": {},
+        "knowledge_gap_heatmap": {},
+        "revision_path_dashboard": {},
+        "domain_renderer_overrides": {
+          "programming": {},
+          "finance": {},
+          "cybersecurity": {},
+          "cloud": {},
+          "aptitude": {}
+        }
+      },
+      "learner_psychology_engine": {
+        "confidence_testing_model": {},
+        "fear_reduction_quiz_model": {},
+        "gamification_motivation_engine": {},
+        "mistake_normalization_model": {},
+        "performance_reinforcement_model": {}
+      },
+      "learning_progression_engine": {
+        "default_flow": [
+          "knowledge_check_intro",
+          "question_set_engine",
+          "adaptive_difficulty_progression",
+          "instant_feedback_system",
+          "mistake_analysis_engine",
+          "performance_scoring",
+          "knowledge_gap_mapping",
+          "revision_recommendation_system"
+        ],
+        "adaptive_progression_rules": [],
+        "exam_prep_paths": {},
+        "career_specialization_paths": {}
+      },
+      "prompt_management_system": {
+        "prompt_templates": [],
+        "prompt_versions": [],
+        "prompt_integrity_hash": "sha256",
+        "export_formats": [
+          "txt",
+          "json",
+          "md"
+        ],
+        "approval_workflow": {
+          "draft": true,
+          "review": true,
+          "approved": true,
+          "published": true
+        }
+      },
+      "ai_draft_generation_system": {
+        "manual_ai_paste": true,
+        "question_parser": {},
+        "difficulty_validator": {},
+        "answer_validator": {},
+        "feedback_validator": {},
+        "human_review_required": true
+      },
+      "quiz_section_cms": {
+        "draft_management": true,
+        "question_bank_editor": true,
+        "quiz_builder": true,
+        "difficulty_manager": true,
+        "analytics_editor": true,
+        "preview_engine": true,
+        "publish_controls": true,
+        "rollback_controls": true,
+        "revision_history": true
+      },
+      "validation_governance_system": {
+        "structural_validation": true,
+        "question_accuracy_validation": true,
+        "difficulty_validation": true,
+        "feedback_validation": true,
+        "knowledge_gap_validation": true,
+        "seo_validation": true,
+        "security_validation": true
+      },
+      "version_governance": {
+        "architecture_versions": [],
+        "prompt_versions": [],
+        "content_versions": [],
+        "audit_logs": [],
+        "rollback_points": []
+      },
+      "brand_governance": {
+        "shared_core": true,
+        "brand_overrides": {
+          "skillup": {},
+          "rth": {},
+          "skillhubcore": {}
+        },
+        "content_style_overrides": {},
+        "ui_theme_overrides": {}
+      },
+      "rbac_security": {
+        "roles": [
+          "super_admin",
+          "educational_architect",
+          "quiz_architect",
+          "prompt_engineer",
+          "reviewer",
+          "publisher",
+          "domain_manager"
+        ],
+        "permissions_matrix": {},
+        "rate_limits": {},
+        "audit_trails": true,
+        "security_checks": {
+          "xss_protection": true,
+          "payload_limits": true,
+          "prompt_integrity": true,
+          "quiz_integrity_protection": true
+        }
+      },
+      "analytics_performance": {
+        "completion_tracking": true,
+        "score_tracking": true,
+        "knowledge_gap_analytics": true,
+        "engagement_metrics": true,
+        "optimization_controls": true
+      }
+    }
+  },
+  {
+    "quiz_section_uiux_architecture": {
+      "metadata": {
+        "section_type": "quiz",
+        "version": "1.0",
+        "status": "active",
+        "supported_brands": [
+          "shared",
+          "skillup",
+          "rth",
+          "skillhubcore"
+        ],
+        "supported_platforms": [
+          "web",
+          "mobile",
+          "tablet"
+        ],
+        "design_system_version": "1.0",
+        "created_at": "ISO_TIMESTAMP",
+        "updated_at": "ISO_TIMESTAMP"
+      },
+      "page_shell_architecture": {
+        "layout_modes": {
+          "desktop": {
+            "sidebar": true,
+            "header": true,
+            "content_grid": "quiz_workspace_layout",
+            "right_panel": true,
+            "analytics_panel": true,
+            "timer_panel": true
+          },
+          "tablet": {
+            "sidebar": "collapsible",
+            "header": true,
+            "content_grid": "responsive_quiz_layout"
+          },
+          "mobile": {
+            "sidebar": "drawer",
+            "header": true,
+            "content_grid": "stacked_quiz_cards"
+          }
+        },
+        "navigation_system": {
+          "breadcrumb_navigation": true,
+          "question_palette_navigation": true,
+          "sticky_progress_tracker": true,
+          "section_navigation": true,
+          "review_navigation": true
+        }
+      },
+      "design_system": {
+        "color_system": {
+          "primary": {
+            "skillup": "#f54a8d",
+            "rth": "#d03f00",
+            "skillhubcore_primary": "#f54a8d",
+            "skillhubcore_secondary": "#d03f00"
+          },
+          "semantic_colors": {
+            "correct_answer": "",
+            "incorrect_answer": "",
+            "warning": "",
+            "analytics": "",
+            "progress": ""
+          },
+          "neutral_palette": {}
+        },
+        "typography_system": {
+          "font_families": {
+            "heading": "",
+            "body": "",
+            "technical": "",
+            "assessment": ""
+          },
+          "font_scales": {
+            "hero": "",
+            "h1": "",
+            "h2": "",
+            "h3": "",
+            "body": "",
+            "caption": "",
+            "question_callout": ""
+          },
+          "readability_rules": {
+            "quiz_density": "",
+            "line_height": "",
+            "max_content_width": ""
+          }
+        },
+        "spacing_system": {
+          "grid_unit": 8,
+          "padding_scale": {},
+          "margin_scale": {},
+          "question_spacing": {},
+          "section_spacing": {}
+        },
+        "component_library": {
+          "quiz_intro_panels": {},
+          "question_blocks": {},
+          "difficulty_progression_flows": {},
+          "feedback_explanation_panels": {},
+          "mistake_analysis_dashboards": {},
+          "score_visualization_panels": {},
+          "knowledge_gap_heatmaps": {},
+          "revision_path_dashboards": {},
+          "timers": {},
+          "progress_bars": {}
+        }
+      },
+      "renderer_mapping_engine": {
+        "knowledge_check_intro": {
+          "component": "quiz_intro_panel",
+          "layout": "quiz_launch_workspace"
+        },
+        "question_set_engine": {
+          "component": "question_block",
+          "layout": "core_quiz_assessment_panel"
+        },
+        "adaptive_difficulty_progression": {
+          "component": "difficulty_progression_flow",
+          "layout": "adaptive_quiz_dashboard"
+        },
+        "instant_feedback_system": {
+          "component": "feedback_explanation_panel",
+          "layout": "answer_review_workspace"
+        },
+        "mistake_analysis_engine": {
+          "component": "mistake_analysis_dashboard",
+          "layout": "mistake_prevention_dashboard"
+        },
+        "performance_scoring": {
+          "component": "score_visualization_panel",
+          "layout": "score_command_center"
+        },
+        "knowledge_gap_mapping": {
+          "component": "knowledge_gap_heatmap",
+          "layout": "learning_gap_dashboard"
+        },
+        "revision_recommendation_system": {
+          "component": "revision_path_dashboard",
+          "layout": "improvement_path_workspace"
+        },
+        "domain_renderer_overrides": {
+          "programming": {},
+          "finance": {},
+          "cybersecurity": {},
+          "cloud": {},
+          "aptitude": {}
+        }
+      },
+      "interaction_design_system": {
+        "microinteractions": {
+          "hover_states": true,
+          "instant_answer_feedback": true,
+          "progress_animations": true,
+          "timer_feedback": true,
+          "tooltip_explanations": true
+        },
+        "progressive_disclosure": {
+          "stepwise_question_reveal": true,
+          "difficulty_unlock_flow": true,
+          "advanced_quiz_toggle": true
+        },
+        "engagement_features": {
+          "xp_rewards": true,
+          "achievement_badges": true,
+          "streak_tracking": true,
+          "leaderboards": true,
+          "confidence_scoring": true
+        },
+        "feedback_system": {
+          "instant_feedback": true,
+          "mistake_explanations": true,
+          "confidence_feedback": true,
+          "progress_feedback": true
+        }
+      },
+      "accessibility_architecture": {
+        "wcag_compliance": {
+          "level": "AA",
+          "keyboard_navigation": true,
+          "screen_reader_support": true,
+          "contrast_ratios": true
+        },
+        "inclusive_design": {
+          "font_scaling": true,
+          "dark_mode": true,
+          "focus_indicators": true,
+          "reduced_motion": true
+        },
+        "quiz_accessibility": {
+          "timer_accessibility_controls": true,
+          "question_zoom_controls": true,
+          "low_stress_mode": true
+        }
+      },
+      "learning_experience_ui": {
+        "quiz_psychology_ui": {
+          "confidence_boosting_panels": true,
+          "fear_reduction_banners": true,
+          "motivation_panels": true,
+          "gamification_panels": true
+        },
+        "learning_progression_ui": {
+          "quiz_progress_tracker": true,
+          "mastery_tracking": true,
+          "knowledge_gap_pathways": true,
+          "career_exam_pathways": true
+        },
+        "preview_modes": {
+          "desktop_preview": true,
+          "mobile_preview": true,
+          "brand_preview": true,
+          "domain_preview": true,
+          "exam_preview": true
+        }
+      },
+      "admin_dashboard_ui": {
+        "sidebar_navigation": {
+          "dashboard": true,
+          "universal_architecture": true,
+          "domain_adaptations": true,
+          "renderer_mapping": true,
+          "prompt_management": true,
+          "cms": true,
+          "governance": true
+        },
+        "management_tabs": {
+          "universal_architecture": true,
+          "domain_adaptations": true,
+          "renderer_mapping": true,
+          "learning_progression": true,
+          "prompt_management": true,
+          "ai_drafts": true,
+          "cms": true,
+          "validation": true,
+          "versioning": true,
+          "brand_governance": true,
+          "rbac": true
+        },
+        "dashboard_widgets": {
+          "question_accuracy_scores": true,
+          "difficulty_balance_scores": true,
+          "performance_metrics": true,
+          "draft_status": true,
+          "content_health": true,
+          "analytics_panels": true
+        }
+      },
+      "content_management_ui": {
+        "editor_system": {
+          "question_bank_editor": true,
+          "quiz_builder": true,
+          "difficulty_editor": true,
+          "feedback_editor": true,
+          "analytics_builder": true,
+          "preview_split_view": true
+        },
+        "workflow_ui": {
+          "draft_review": true,
+          "approval_queue": true,
+          "publish_controls": true,
+          "rollback_controls": true
+        },
+        "validation_ui": {
+          "question_accuracy_dashboard": true,
+          "difficulty_dashboard": true,
+          "performance_dashboard": true,
+          "error_resolution_panels": true
+        }
+      },
+      "brand_governance_ui": {
+        "theme_management": {
+          "brand_color_switching": true,
+          "logo_switching": true,
+          "brand_preview": true
+        },
+        "multi_brand_controls": {
+          "shared_resources": true,
+          "brand_overrides": true,
+          "deployment_targets": true
+        }
+      },
+      "performance_ux_architecture": {
+        "optimization": {
+          "lazy_loading": true,
+          "analytics_render_optimization": true,
+          "quiz_prefetching": true,
+          "timer_efficiency": true
+        },
+        "loading_experience": {
+          "skeleton_loaders": true,
+          "progressive_loading": true,
+          "smart_prefetching": true
+        },
+        "monitoring": {
+          "render_speed_tracking": true,
+          "interaction_latency": true,
+          "quiz_performance_metrics": true
+        }
+      },
+      "security_ui": {
+        "session_management": {
+          "secure_auth_flows": true,
+          "role_visibility": true,
+          "audit_logs": true
+        },
+        "admin_controls": {
+          "permission_gates": true,
+          "sensitive_action_confirmations": true,
+          "security_alerts": true,
+          "quiz_integrity_alerts": true
+        }
+      },
+      "analytics_visualization_ui": {
+        "quiz_performance_dashboards": true,
+        "knowledge_gap_heatmaps": true,
+        "confidence_charts": true,
+        "engagement_reports": true,
+        "content_performance_reports": true
+      }
+    }
+  }
+]

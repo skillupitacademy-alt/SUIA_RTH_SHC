@@ -78,14 +78,15 @@ export default function ClientShell({ children }: { children: ReactNode }) {
               <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 px-2 whitespace-nowrap">Governance & Core</h2>
               <nav className="space-y-1">
                 {[
-                  { icon: ShieldCheck, label: 'Constitutional Center' },
-                  { icon: MessageSquare, label: 'Prompt Governance' },
-                  { icon: Box, label: 'Architecture Governance' },
-                  { icon: Settings, label: 'Brand & Deployment' },
-                  { icon: Settings, label: 'System Settings' },
-                  { icon: CheckSquare, label: 'Audit & Compliance' }
+                  { icon: ShieldCheck, label: 'Constitutional Center', href: '#' },
+                  { icon: MessageSquare, label: 'Prompt Governance', href: '#' },
+                  { icon: Box, label: 'Architecture Governance', href: '#' },
+                  { icon: Globe, label: 'Global Architecture', href: '/content-generation/global-architecture' },
+                  { icon: Settings, label: 'Brand & Deployment', href: '#' },
+                  { icon: Settings, label: 'System Settings', href: '#' },
+                  { icon: CheckSquare, label: 'Audit & Compliance', href: '#' }
                 ].map((item, i) => (
-                  <Link key={i} href="#" className="flex items-center justify-between px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors focus:ring-2 focus:ring-pink-500 outline-none">
+                  <Link key={i} href={item.href || '#'} className={`flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors focus:ring-2 focus:ring-pink-500 outline-none ${pathname === item.href ? 'bg-slate-800 text-white font-bold' : 'text-slate-300 hover:text-white hover:bg-slate-800'}`}>
                     <div className="flex items-center gap-3 overflow-hidden">
                       <item.icon size={18} className="shrink-0" />
                       <span className="whitespace-nowrap truncate">{item.label}</span>
