@@ -113,19 +113,21 @@ export default function ClientShell({ children }: { children: ReactNode }) {
               </nav>
             </div>
 
-            {/* Content Generation */}
+            {/* Platform Management */}
             <div>
-              <h2 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 px-2 whitespace-nowrap">Content Generation</h2>
+              <h2 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 px-2 whitespace-nowrap">Platform Management</h2>
               <nav className="space-y-1">
                 {[
-                  { icon: LayoutGrid, label: 'Overview', href: '#' },
-                  { icon: Cpu, label: 'Layman Generation', href: '/content-generation/layman', color: 'text-pink-400' },
-                  { icon: FileText, label: 'Notes Generation', href: '#', color: 'text-orange-400' },
-                  { icon: Compass, label: 'Technical Generation', href: '#', color: 'text-pink-400' }
+                  { icon: Layout, label: 'Domains & Subtopics', href: '#' },
+                  { icon: FileText, label: 'Content Management', href: '#' },
+                  { icon: UsersRound, label: 'Users & Roles', href: '#' },
+                  { icon: Shield, label: 'Teams & Permissions', href: '#' },
+                  { icon: Activity, label: 'Activity Logs', href: '#' },
+                  { icon: HeartPulse, label: 'System Health', href: '#' }
                 ].map((item, i) => (
-                  <Link key={i} href={item.href} className={`flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors focus:ring-2 focus:ring-pink-500 outline-none ${pathname === item.href ? 'bg-slate-800 text-white font-bold' : 'text-slate-300 hover:text-white hover:bg-slate-800'}`}>
+                  <Link key={i} href={item.href} className="flex items-center justify-between px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors focus:ring-2 focus:ring-pink-500 outline-none">
                     <div className="flex items-center gap-3 overflow-hidden">
-                      <div className={`p-1 rounded bg-slate-800/50 shrink-0 ${item.color || 'text-slate-400'}`}><item.icon size={14} /></div>
+                      <item.icon size={18} className="shrink-0" />
                       <span className="whitespace-nowrap truncate">{item.label}</span>
                     </div>
                     <ChevronRight size={14} className="text-slate-500 shrink-0" />
@@ -133,8 +135,6 @@ export default function ClientShell({ children }: { children: ReactNode }) {
                 ))}
               </nav>
             </div>
-
-            {/* Platform Management */}
           </div>
 
           {/* Bottom Links */}
