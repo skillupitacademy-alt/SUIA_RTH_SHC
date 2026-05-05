@@ -200,28 +200,6 @@ export default function EducationalArchitecturePage() {
                 Add Custom Universal Component
               </button>
 
-              {/* Architecture Details Card */}
-              <div className="bg-white/80 backdrop-blur rounded-2xl border-t border-white/60 shadow-2xl p-6 space-y-4 -translate-y-1 hover:-translate-y-3 transition-transform duration-300">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-xs font-bold text-slate-900">Universal Architecture Details</h4>
-                  <span className="bg-emerald-50 text-emerald-600 text-xs font-bold px-2 py-0.5 rounded uppercase">Active</span>
-                </div>
-                <div className="grid grid-cols-2 gap-y-3 text-xs">
-                  {[
-                    { label: 'Architecture Name', value: 'Beginner First – Universal Layman Model' },
-                    { label: 'Description', value: 'Complete beginner-friendly structure that builds confidence and clarity.' },
-                    { label: 'Difficulty Level', value: 'Beginner' },
-                    { label: 'Cognitive Load', value: 'Low' },
-                    { label: 'Created By', value: 'Super Admin' },
-                    { label: 'Updated At', value: 'May 24, 2025 11:20 AM' },
-                  ].map((detail, i) => (
-                    <React.Fragment key={i}>
-                      <span className="font-bold text-slate-400">{detail.label}</span>
-                      <span className="font-bold text-slate-700">{detail.value}</span>
-                    </React.Fragment>
-                  ))}
-                </div>
-              </div>
             </div>
           </div>
 
