@@ -1,33 +1,29 @@
 "use client";
 
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { 
   Users, ClipboardList, BookOpen, Briefcase, Calendar, ChevronDown, 
   ArrowUp, FileText, FileEdit, Bot, CheckCircle2, Archive,
   Sparkles, BookType, ClipboardCheck, UserCog
 } from 'lucide-react';
-import { ShellContext } from '../ClientShell';
+import { ShellContext } from '../ShellContext';
 
 export default function DashboardPage() {
-  const { isRightSidebarOpen, toggleRightSidebar } = useContext(ShellContext);
+  const { isRightSidebarOpen, toggleRightSidebar, setHeaderTitle, setHeaderSubtitle } = useContext(ShellContext);
+
+  useEffect(() => {
+    setHeaderTitle('Admin Dashboard');
+    setHeaderSubtitle("Here's what's happening across your educational ecosystem.");
+    return () => {
+      setHeaderTitle('');
+      setHeaderSubtitle('');
+    };
+  }, []);
 
   return (
     <div className="space-y-8">
       
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-slate-900 font-outfit tracking-tight">
-            Welcome back, Super Admin! <span className="inline-block animate-wave">👋</span>
-          </h1>
-          <p className="text-slate-500 mt-1">Here's what's happening across your educational ecosystem.</p>
-        </div>
-        <div className="flex items-center gap-2 bg-white border border-slate-200 px-4 py-2.5 rounded-lg shadow-sm cursor-pointer hover:border-slate-300 transition-colors">
-          <Calendar size={18} className="text-slate-500" />
-          <span className="text-sm font-semibold text-slate-700">15 May 2025, Thursday</span>
-          <ChevronDown size={16} className="text-slate-400 ml-2" />
-        </div>
-      </div>
+
 
       {/* Stats Cards Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">

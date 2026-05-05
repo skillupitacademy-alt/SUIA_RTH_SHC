@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import { ShellContext } from '../../ShellContext';
 import { 
   ChevronDown, Plus, Info, Edit2, MoreVertical, CheckCircle2, 
   Copy, ArrowRight, Eye, RotateCcw, Share2, Download, 
@@ -10,7 +11,19 @@ import {
 } from 'lucide-react';
 
 export default function EducationalArchitecturePage() {
+  const { setHeaderTitle, setHeaderSubtitle } = useContext(ShellContext);
   const [activeTab, setActiveTab] = useState('Universal Architecture (Fixed)');
+
+  useEffect(() => {
+    setHeaderTitle('Educational Architecture');
+    setHeaderSubtitle('Design universal beginner-friendly learning experience for every domain');
+    
+    // Cleanup on unmount (optional but good practice)
+    return () => {
+      setHeaderTitle('');
+      setHeaderSubtitle('');
+    };
+  }, []);
 
   const tabs = [
     'Universal Architecture (Fixed)',
@@ -24,33 +37,7 @@ export default function EducationalArchitecturePage() {
   return (
     <div className="space-y-6">
       
-      {/* Page Header (Matching Image) */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border-t border-white/60 shadow-xl">
-        <div className="space-y-1">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl md:text-3xl font-bold text-slate-900 font-outfit tracking-tight">
-              Educational Architecture – Layman Section
-            </h1>
-            <span className="bg-pink-50 text-pink-600 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider border border-pink-100">
-              LAYMAN ARCHITECTURE
-            </span>
-          </div>
-          <p className="text-sm text-slate-500 font-medium italic">
-            Design universal beginner-friendly learning experience for every domain
-          </p>
-        </div>
-        
-        <div className="flex items-center gap-6">
-          <div className="flex flex-col items-end">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active Brand</span>
-            <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors">
-              <div className="w-6 h-6 rounded bg-pink-500 flex items-center justify-center text-white font-bold text-xs">S</div>
-              <span className="text-sm font-bold text-slate-700">SkillUp IT Academy</span>
-              <ChevronDown size={14} className="text-slate-400" />
-            </div>
-          </div>
-        </div>
-      </div>
+
 
       {/* Step 1: Select Scope */}
       <section className="bg-white/80 backdrop-blur rounded-xl border-t border-white/60 shadow-2xl p-6 -translate-y-1 hover:-translate-y-3 transition-transform duration-300">

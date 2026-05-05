@@ -1,6 +1,7 @@
 "use client";
 
-import React from 'react';
+import React, { useContext, useEffect } from 'react';
+import { ShellContext } from '../../ShellContext';
 import { 
   ChevronRight, Search, Plus, Filter, MoreVertical, Copy, 
   Download, FileText, CheckCircle2, Clock, XCircle, AlertCircle,
@@ -9,6 +10,16 @@ import {
 } from 'lucide-react';
 
 export default function LaymanGenerationPage() {
+  const { setHeaderTitle, setHeaderSubtitle } = useContext(ShellContext);
+
+  useEffect(() => {
+    setHeaderTitle('Layman Content Studio');
+    setHeaderSubtitle('Generate high-fidelity beginner-friendly educational content');
+    return () => {
+      setHeaderTitle('');
+      setHeaderSubtitle('');
+    };
+  }, []);
   return (
     <div className="flex flex-col lg:flex-row gap-6">
       

@@ -12,18 +12,24 @@ import {
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 
-export const ShellContext = createContext({
-  isRightSidebarOpen: true,
-  toggleRightSidebar: () => { }
-});
+import { ShellContext } from './ShellContext';
 
 export default function ClientShell({ children }: { children: ReactNode }) {
   const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(false);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
+  const [headerTitle, setHeaderTitle] = useState('');
+  const [headerSubtitle, setHeaderSubtitle] = useState('');
   const pathname = usePathname();
 
   return (
-    <ShellContext.Provider value={{ isRightSidebarOpen, toggleRightSidebar: () => setIsRightSidebarOpen(!isRightSidebarOpen) }}>
+    <ShellContext.Provider value={{ 
+      isRightSidebarOpen, 
+      toggleRightSidebar: () => setIsRightSidebarOpen(!isRightSidebarOpen),
+      headerTitle,
+      setHeaderTitle,
+      headerSubtitle,
+      setHeaderSubtitle
+    }}>
       <div className="flex h-screen bg-[#f4f7fa] font-sans text-slate-800 overflow-hidden relative w-full">
 
         {/* Skip to Content */}
@@ -161,9 +167,27 @@ export default function ClientShell({ children }: { children: ReactNode }) {
               >
                 <Menu size={20} />
               </button>
-              <div className="font-outfit text-2xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-orange-500">
-                SkillHubCore
-              </div>
+
+              {headerTitle && (
+                <div className="flex flex-col ml-2">
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-lg font-bold text-slate-900 font-outfit tracking-tight leading-none">
+                      {headerTitle}
+                    </h2>
+                    {pathname === '/content-generation/layman-architecture' && (
+                      <span className="bg-pink-50 text-pink-600 text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider border border-pink-100">
+                        ARCHITECTURE
+                      </span>
+                    )}
+                  </div>
+                  {headerSubtitle && (
+                    <p className="text-[10px] text-slate-500 font-medium italic mt-0.5">
+                      {headerSubtitle}
+                    </p>
+                  )}
+                </div>
+              )}
+
               <div className="relative hidden md:block w-96 ml-4">
                 <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
