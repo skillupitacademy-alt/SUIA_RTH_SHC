@@ -2,9 +2,9 @@
 
 import React, { useState, createContext, useContext, type ReactNode } from 'react';
 import Link from 'next/link';
-import { 
-  Home, ShieldCheck, MessageSquare, Box, Settings, CheckSquare, 
-  BookOpen, ClipboardList, Briefcase, Users, Layout, FileText, 
+import {
+  Home, ShieldCheck, MessageSquare, Box, Settings, CheckSquare,
+  BookOpen, ClipboardList, Briefcase, Users, Layout, FileText,
   UsersRound, Shield, Activity, HeartPulse, GraduationCap, PlaySquare,
   Menu, Search, Bell, Mail, HelpCircle, ChevronRight, Network, PanelRight,
   Download, Sparkles, History, CheckCircle2, BarChart3, Star, LineChart,
@@ -14,7 +14,7 @@ import { usePathname } from 'next/navigation';
 
 export const ShellContext = createContext({
   isRightSidebarOpen: true,
-  toggleRightSidebar: () => {}
+  toggleRightSidebar: () => { }
 });
 
 export default function ClientShell({ children }: { children: ReactNode }) {
@@ -25,10 +25,10 @@ export default function ClientShell({ children }: { children: ReactNode }) {
   return (
     <ShellContext.Provider value={{ isRightSidebarOpen, toggleRightSidebar: () => setIsRightSidebarOpen(!isRightSidebarOpen) }}>
       <div className="flex h-screen bg-[#f4f7fa] font-sans text-slate-800 overflow-hidden relative w-full">
-        
+
         {/* Skip to Content */}
-        <a 
-          href="#main-content" 
+        <a
+          href="#main-content"
           className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100] bg-pink-600 text-white px-4 py-2 rounded-lg font-bold shadow-xl"
         >
           Skip to Content
@@ -36,17 +36,16 @@ export default function ClientShell({ children }: { children: ReactNode }) {
 
         {/* Left Sidebar Backdrop */}
         {isLeftSidebarOpen && (
-          <div 
+          <div
             className="fixed inset-0 z-40 bg-slate-900/20 backdrop-blur-sm transition-opacity"
             onClick={() => setIsLeftSidebarOpen(false)}
           />
         )}
 
         {/* Left Sidebar (Overlay) */}
-        <aside 
-          className={`fixed top-0 left-0 bottom-0 z-50 bg-[#111827] text-slate-300 flex flex-col w-[280px] overflow-y-auto hide-scrollbar transition-transform duration-300 shadow-2xl ${
-            isLeftSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-          }`}
+        <aside
+          className={`fixed top-0 left-0 bottom-0 z-50 bg-[#111827] text-slate-300 flex flex-col w-[280px] overflow-y-auto hide-scrollbar transition-transform duration-300 shadow-2xl ${isLeftSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+            }`}
         >
           <div className="p-6 pb-4 w-[280px] flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -113,21 +112,19 @@ export default function ClientShell({ children }: { children: ReactNode }) {
               </nav>
             </div>
 
-            {/* Platform Management */}
+            {/* Content Generation */}
             <div>
-              <h2 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 px-2 whitespace-nowrap">Platform Management</h2>
+              <h2 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 px-2 whitespace-nowrap">Content Generation</h2>
               <nav className="space-y-1">
                 {[
-                  { icon: Layout, label: 'Domains & Subtopics', href: '#' },
-                  { icon: FileText, label: 'Content Management', href: '#' },
-                  { icon: UsersRound, label: 'Users & Roles', href: '#' },
-                  { icon: Shield, label: 'Teams & Permissions', href: '#' },
-                  { icon: Activity, label: 'Activity Logs', href: '#' },
-                  { icon: HeartPulse, label: 'System Health', href: '#' }
+                  { icon: LayoutGrid, label: 'Overview', href: '#' },
+                  { icon: Cpu, label: 'Layman Generation', href: '/content-generation/layman', color: 'text-pink-400' },
+                  { icon: FileText, label: 'Notes Generation', href: '#', color: 'text-orange-400' },
+                  { icon: Compass, label: 'Technical Generation', href: '#', color: 'text-pink-400' }
                 ].map((item, i) => (
-                  <Link key={i} href={item.href} className="flex items-center justify-between px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors focus:ring-2 focus:ring-pink-500 outline-none">
+                  <Link key={i} href={item.href} className={`flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors focus:ring-2 focus:ring-pink-500 outline-none ${pathname === item.href ? 'bg-slate-800 text-white font-bold' : 'text-slate-300 hover:text-white hover:bg-slate-800'}`}>
                     <div className="flex items-center gap-3 overflow-hidden">
-                      <item.icon size={18} className="shrink-0" />
+                      <div className={`p-1 rounded bg-slate-800/50 shrink-0 ${item.color || 'text-slate-400'}`}><item.icon size={14} /></div>
                       <span className="whitespace-nowrap truncate">{item.label}</span>
                     </div>
                     <ChevronRight size={14} className="text-slate-500 shrink-0" />
@@ -135,6 +132,8 @@ export default function ClientShell({ children }: { children: ReactNode }) {
                 ))}
               </nav>
             </div>
+
+            {/* Platform Management */}
           </div>
 
           {/* Bottom Links */}
@@ -155,7 +154,7 @@ export default function ClientShell({ children }: { children: ReactNode }) {
           {/* Header */}
           <header className="h-[72px] bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0 z-10 shadow-sm transition-all">
             <div className="flex items-center gap-6">
-              <button 
+              <button
                 onClick={() => setIsLeftSidebarOpen(!isLeftSidebarOpen)}
                 className="text-slate-400 hover:text-slate-600 transition-colors bg-slate-50 p-2 rounded-lg hover:bg-slate-100 focus:ring-2 focus:ring-pink-500 outline-none"
                 aria-label="Toggle Left Sidebar"
@@ -167,38 +166,38 @@ export default function ClientShell({ children }: { children: ReactNode }) {
               </div>
               <div className="relative hidden md:block w-96 ml-4">
                 <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input 
-                  type="text" 
-                  placeholder="Search anything..." 
+                <input
+                  type="text"
+                  placeholder="Search anything..."
                   className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all"
                   aria-label="Search platform"
                 />
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <button 
+              <button
                 className="relative text-slate-400 hover:text-slate-600 transition-colors p-2 hover:bg-slate-50 rounded-lg focus:ring-2 focus:ring-pink-500 outline-none"
                 aria-label="View notifications"
               >
                 <Bell size={20} />
                 <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-pink-500 text-[9px] font-bold text-white border border-white">12</span>
               </button>
-              <button 
+              <button
                 className="relative text-slate-400 hover:text-slate-600 transition-colors p-2 hover:bg-slate-50 rounded-lg focus:ring-2 focus:ring-pink-500 outline-none"
                 aria-label="View messages"
               >
                 <Mail size={20} />
                 <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-pink-500 text-[9px] font-bold text-white border border-white">8</span>
               </button>
-              <button 
+              <button
                 className="text-slate-400 hover:text-slate-600 transition-colors p-2 hover:bg-slate-50 rounded-lg focus:ring-2 focus:ring-pink-500 outline-none"
                 aria-label="Get help"
               >
                 <HelpCircle size={20} />
               </button>
-              
+
               {/* Right Sidebar Toggle */}
-              <button 
+              <button
                 onClick={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
                 className={`transition-colors p-2 rounded-lg border focus:ring-2 focus:ring-pink-500 outline-none ${isRightSidebarOpen ? 'bg-pink-50 text-pink-600 border-pink-100' : 'bg-slate-50 text-slate-400 border-slate-200 hover:text-slate-600 hover:bg-slate-100'}`}
                 aria-label="Toggle Dashboard Tools"
@@ -230,25 +229,24 @@ export default function ClientShell({ children }: { children: ReactNode }) {
 
         {/* Right Sidebar Backdrop */}
         {isRightSidebarOpen && (
-          <div 
+          <div
             className="fixed inset-0 z-40 bg-slate-900/10 backdrop-blur-sm transition-opacity"
             onClick={() => setIsRightSidebarOpen(false)}
           />
         )}
 
         {/* Right Sidebar Overlay */}
-        <aside 
-          className={`fixed top-0 right-0 bottom-0 z-50 w-[360px] bg-white border-l border-slate-200 shadow-2xl flex flex-col overflow-y-auto hide-scrollbar transition-transform duration-300 ${
-            isRightSidebarOpen ? 'translate-x-0' : 'translate-x-full'
-          }`}
+        <aside
+          className={`fixed top-0 right-0 bottom-0 z-50 w-[360px] bg-white border-l border-slate-200 shadow-2xl flex flex-col overflow-y-auto hide-scrollbar transition-transform duration-300 ${isRightSidebarOpen ? 'translate-x-0' : 'translate-x-full'
+            }`}
         >
           <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 sticky top-0 z-10 backdrop-blur-xl">
             <h2 className="text-lg font-bold text-slate-900 font-outfit">Dashboard Tools</h2>
           </div>
 
           <div className="p-6 space-y-8 flex-1">
-            {/* Conditional Widgets for Layman Generation */}
-            {pathname === '/content-generation/layman' && (
+            {/* Conditional Widgets for Layman Generation & Architecture */}
+            {(pathname === '/content-generation/layman' || pathname === '/content-generation/layman-architecture') && (
               <>
                 {/* Generation Overview */}
                 <section className="space-y-4">
@@ -325,7 +323,7 @@ export default function ClientShell({ children }: { children: ReactNode }) {
             )}
 
             {/* Default Dashboard Tools (Visible on other pages) */}
-            {pathname !== '/content-generation/layman' && (
+            {pathname !== '/content-generation/layman' && pathname !== '/content-generation/layman-architecture' && (
               <>
                 {/* Platform Status */}
                 <div className="space-y-4">
@@ -359,7 +357,7 @@ export default function ClientShell({ children }: { children: ReactNode }) {
                 {/* Quick Actions */}
                 <div className="space-y-4">
                   <h2 className="text-base font-bold text-slate-800 font-outfit">Quick Actions</h2>
-                  
+
                   {/* SVG Gradients for Icons */}
                   <svg width="0" height="0" className="absolute">
                     <defs>
@@ -386,13 +384,13 @@ export default function ClientShell({ children }: { children: ReactNode }) {
                       { label: 'Subtopic Manager', icon: LayoutList, grad: 'url(#icon-orange-grad)' },
                       { label: 'Generate Report', icon: BarChart3, grad: 'url(#icon-pink-grad)' },
                     ].map((action, i) => (
-                      <button 
-                        key={i} 
+                      <button
+                        key={i}
                         className="bg-white border border-slate-100 rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group"
                       >
                         <div className="mb-3 transition-transform duration-300 group-hover:scale-110">
-                          <action.icon 
-                            size={32} 
+                          <action.icon
+                            size={32}
                             style={{ stroke: action.grad }}
                             strokeWidth={2.5}
                           />
@@ -409,8 +407,9 @@ export default function ClientShell({ children }: { children: ReactNode }) {
           </div>
         </aside>
 
-        
-        <style dangerouslySetInnerHTML={{__html: `
+
+        <style dangerouslySetInnerHTML={{
+          __html: `
           .custom-scrollbar::-webkit-scrollbar {
             width: 6px;
             height: 6px;
