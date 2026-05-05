@@ -201,7 +201,7 @@ export default function LaymanGenerationPage() {
 
               {/* Bottom Actions */}
               <div className="p-4 border-t border-slate-50 flex items-center justify-between shrink-0">
-                <button className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/10">
+                <button className="flex items-center gap-2 px-4 py-2 bg-pink-500 text-white rounded-xl text-xs font-bold hover:bg-pink-600 transition-all shadow-lg shadow-pink-500/10">
                   <Copy size={14} /> Copy Prompt
                 </button>
                 <div className="flex items-center gap-2">
