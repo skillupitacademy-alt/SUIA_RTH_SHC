@@ -74,6 +74,32 @@ export default function EducationalArchitecturePage() {
         </div>
       </section>
 
+      {/* D. Learning Flow (Recommended Sequence) */}
+      <section className="bg-white/80 backdrop-blur rounded-xl border-t border-white/60 shadow-2xl p-6 -translate-y-1 hover:-translate-y-3 transition-transform duration-300">
+        <h3 className="text-xs font-bold text-slate-900 font-outfit mb-6">D. Learning Flow (Recommended Sequence)</h3>
+        <div className="flex items-center justify-between relative px-2">
+          <div className="absolute top-1/2 left-0 w-full h-[1px] bg-slate-100 -translate-y-1/2 -z-10"></div>
+          {[
+            { icon: Layout, label: 'Overview', color: 'bg-blue-500' },
+            { icon: Zap, label: 'Analogy', color: 'bg-orange-500' },
+            { icon: Brain, label: 'Why Exists', color: 'bg-pink-500' },
+            { icon: Edit2, label: 'Use Cases', color: 'bg-emerald-500' },
+            { icon: Layers, label: 'Breakdown', color: 'bg-indigo-500' },
+            { icon: Palette, label: 'Mental Model', color: 'bg-purple-500' },
+            { icon: Info, label: 'Confusions', color: 'bg-red-500' },
+            { icon: RotateCcw, label: 'Summary', color: 'bg-teal-500' },
+          ].map((step, i) => (
+            <div key={i} className="flex flex-col items-center gap-2">
+              <div className={`w-8 h-8 rounded-full border-2 border-white shadow-sm flex items-center justify-center text-white ${step.color}`}>
+                <step.icon size={14} />
+              </div>
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-tighter">{step.label}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+
       {/* Step 2: Educational Architecture Management */}
       <section className="bg-white/80 backdrop-blur rounded-xl border-t border-white/60 shadow-2xl p-6 -translate-y-1 hover:-translate-y-3 transition-transform duration-300">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
@@ -239,31 +265,6 @@ export default function EducationalArchitecturePage() {
 
 
             </div>
-
-            {/* D. Learning Flow (Recommended Sequence) */}
-            <div className="bg-white/80 backdrop-blur rounded-2xl border-t border-white/60 shadow-2xl p-6 space-y-6 -translate-y-1 hover:-translate-y-3 transition-transform duration-300">
-              <h3 className="text-xs font-bold text-slate-900 font-outfit">D. Learning Flow (Recommended Sequence)</h3>
-              <div className="flex items-center justify-between relative px-2">
-                <div className="absolute top-1/2 left-0 w-full h-[1px] bg-slate-100 -translate-y-1/2 -z-10"></div>
-                {[
-                  { icon: Layout, label: 'Overview', color: 'bg-blue-500' },
-                  { icon: Zap, label: 'Analogy', color: 'bg-orange-500' },
-                  { icon: Brain, label: 'Why Exists', color: 'bg-pink-500' },
-                  { icon: Edit2, label: 'Use Cases', color: 'bg-emerald-500' },
-                  { icon: Layers, label: 'Breakdown', color: 'bg-indigo-500' },
-                  { icon: Palette, label: 'Mental Model', color: 'bg-purple-500' },
-                  { icon: Info, label: 'Confusions', color: 'bg-red-500' },
-                  { icon: RotateCcw, label: 'Summary', color: 'bg-teal-500' },
-                ].map((step, i) => (
-                  <div key={i} className="flex flex-col items-center gap-2">
-                    <div className={`w-8 h-8 rounded-full border-2 border-white shadow-sm flex items-center justify-center text-white ${step.color}`}>
-                      <step.icon size={14} />
-                    </div>
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-tighter">{step.label}</span>
-                  </div>
-                ))}
-            </div>
-          </div>
 
             {/* Selected Domain Preview (Matching Image) */}
             <div className="bg-white/80 backdrop-blur rounded-2xl border-t border-white/60 shadow-2xl p-6 space-y-4 -translate-y-1 hover:-translate-y-3 transition-transform duration-300 border-l-4 border-l-pink-500">
