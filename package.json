@@ -26,7 +26,7 @@
         ]
     },
     "scripts": {
-        "dev": "turbo run dev",
+        "dev": "turbo run dev --concurrency=12",
         "build": "turbo run build",
         "build:all": "turbo run build --filter=@quiz/realtutorialhub-quiz --filter=@quiz/realtutorialhub-admin --filter=@quiz/api-server --filter=@quiz/realtutorialhub-web --filter=@quiz/skillhubcore-service --filter=@quiz/api-gateway --filter=@quiz/db-people --filter=@quiz/skillup-web --filter=@quiz/skillup-admin --filter=@quiz/faculty-app --filter=@quiz/skillhubcore-admin --filter=@quiz/skillhub-placement",
         "analyze:all": "cross-env ANALYZE=true turbo run build --filter=@quiz/realtutorialhub-quiz --filter=@quiz/realtutorialhub-admin --filter=@quiz/realtutorialhub-web",

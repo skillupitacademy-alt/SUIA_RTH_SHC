@@ -1,6 +1,7 @@
 import { FetchClient } from './core/fetch-client';
 import { AuthClient } from './modules/auth-client';
 import { QuizClient } from './modules/quiz-client';
+import { TutorialClient } from './modules/tutorial-client';
 import { DashboardClient } from './modules/dashboard-client';
 import { SearchClient } from './modules/search-client';
 import { AnalyticsClient } from './modules/analytics-client';
@@ -51,6 +52,7 @@ const systemAdmin = new SystemAdminClient(baseClient);
 
 export * from './modules/auth-client';
 export * from './modules/quiz-client';
+export * from './modules/tutorial-client';
 export * from './modules/admin/content-admin-client';
 export * from './modules/admin/user-admin-client';
 export * from './modules/admin/analytics-admin-client';
@@ -73,6 +75,7 @@ export * from './lib/bff-cache';
 export const apiClient = {
   auth: new AuthClient(baseClient),
   quiz: new QuizClient(baseClient),
+  tutorial: new TutorialClient(baseClient),
   content: contentAdmin,
   user: userAdmin,
   adminAnalytics: analyticsAdmin,

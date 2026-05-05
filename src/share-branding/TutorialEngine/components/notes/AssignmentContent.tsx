@@ -50,7 +50,7 @@ render(<App />);`;
       </div>
 
       {/* Task Description Card */}
-      <section className="rounded-[32px] border border-orange-100 bg-white p-5 shadow-xl transition-all duration-300 hover:-translate-y-1 sm:p-10">
+      <section className="rounded-[32px] bg-white/80 backdrop-blur-xl p-5 shadow-2xl border-t border-white/60 transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] sm:p-10">
         <div className="space-y-8">
           <div className="flex min-w-0 items-center gap-3">
              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-orange-100 text-orange-950 border border-orange-200">
@@ -78,7 +78,7 @@ render(<App />);`;
       </section>
 
       {/* Requirements */}
-      <section className="relative overflow-hidden rounded-[32px] bg-white p-5 shadow-xl transition-all duration-300 hover:-translate-y-1 sm:p-10">
+      <section className="relative overflow-hidden rounded-[32px] bg-white/80 backdrop-blur-xl p-5 shadow-2xl border-t border-white/60 transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] sm:p-10">
         <div className="flex items-center gap-3 mb-6">
           <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-950 border border-indigo-200">
             <Icons.CheckCircle size={22} aria-hidden="true" />
@@ -117,7 +117,7 @@ render(<App />);`;
           </button>
         </div>
         
-        <div className="overflow-hidden rounded-[24px] border border-slate-200 bg-[#0f172a] shadow-2xl">
+        <div className="overflow-hidden rounded-[24px] bg-[#0f172a] shadow-2xl border-t border-white/10 transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.4)]">
           <div className="relative group min-h-[300px]">
              {/* Line Numbers */}
              <div className="absolute left-0 top-0 bottom-0 w-12 bg-slate-900/50 border-r border-slate-800/50 flex flex-col items-center py-6 text-[12px] font-mono text-slate-400 select-none">
@@ -148,7 +148,7 @@ render(<App />);`;
       </section>
 
       {/* Submission Guidelines */}
-      <section className="relative flex min-w-0 flex-col gap-8 rounded-[32px] bg-white p-5 shadow-xl transition-all duration-300 hover:-translate-y-1 sm:p-10 lg:flex-row lg:items-center lg:justify-between lg:gap-10">
+      <section className="relative flex min-w-0 flex-col gap-8 rounded-[32px] bg-white/80 backdrop-blur-xl p-5 shadow-2xl border-t border-white/60 transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] sm:p-10 lg:flex-row lg:items-center lg:justify-between lg:gap-10">
          <div className="space-y-6 relative z-10 lg:max-w-xl">
             <div className="flex items-center gap-3">
                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-100 text-sky-950 border border-sky-200">

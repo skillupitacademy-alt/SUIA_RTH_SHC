@@ -36,7 +36,7 @@ export function NotesMainContent({ data, isStandalone = true }: { data: Subtopic
 
       {/* In Simple Words Box */}
       <div
-        className="flex min-w-0 gap-4 rounded-xl p-4 shadow-xl transition-all duration-300 hover:-translate-y-1 sm:p-5"
+        className="flex min-w-0 gap-4 rounded-xl p-4 shadow-2xl transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] border-t border-white/60 sm:p-5"
         style={{ backgroundColor: `${brand.primaryColor}10` }}
       >
         <div className="shrink-0 mt-0.5">
@@ -57,7 +57,7 @@ export function NotesMainContent({ data, isStandalone = true }: { data: Subtopic
             </p>
 
             {section.keyPoint && (
-              <div className="flex gap-4 rounded-xl bg-amber-100 p-5 mt-6 shadow-xl transition-all duration-300 hover:-translate-y-1 border border-amber-200">
+              <div className="flex gap-4 rounded-xl bg-amber-100 p-5 mt-6 shadow-2xl transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] border-t border-white/60 border-amber-200">
                 <Icons.Star size={20} className="text-amber-900 shrink-0 mt-0.5" aria-hidden="true" />
                 <div>
                   <h3 className="text-[13px] font-bold text-amber-950 mb-1">Key Point</h3>
@@ -68,7 +68,7 @@ export function NotesMainContent({ data, isStandalone = true }: { data: Subtopic
 
             {section.codeExample && (
               <div className="mt-6 space-y-4">
-                <div className="relative overflow-hidden rounded-xl bg-[#1e293b] p-4 shadow-xl transition-all duration-300 hover:-translate-y-1 sm:p-5">
+                <div className="relative overflow-hidden rounded-xl bg-[#1e293b] p-4 shadow-2xl transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.3)] border-t border-white/10 sm:p-5">
                   <button className="absolute right-3 top-3 flex items-center gap-1.5 rounded-md bg-white/10 px-2.5 py-1 text-[11px] font-bold text-white hover:bg-white/20 transition-colors border border-white/10" aria-label="Copy code snippet">
                     <Icons.Copy size={12} aria-hidden="true" /> Copy
                   </button>

@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { withObservability } from '@/middleware/observability.middleware';
 import { AssignmentAuthError, requireStudent } from '@/lib/assignment-auth';
-import { TutorialProgressRepository } from '@quiz/db-tutorial';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,20 +16,11 @@ const postBodySchema = z.object({
   status: z.literal('viewed'),
 });
 
-const progressRepository = new TutorialProgressRepository();
-
-function toSnapshot(blocksCompleted: string[] | null | undefined, assignmentUnlocked: boolean) {
-  const blocksViewed = (blocksCompleted ?? []).filter((block): block is z.infer<typeof blockTypeSchema> =>
-    blockTypeSchema.safeParse(block).success
-  );
-
-  return {
-    blocksViewed,
-    completionPercent: Math.round((blocksViewed.length / 6) * 100),
-    assignmentUnlocked,
-  };
-}
-
+/**
+ * GET /api/tutorial/progress
+ * 
+ * RTH BFF - Calls centralized Tutorial Engine in API server
+ */
 async function getHandler(request: NextRequest) {
   try {
     const user = await requireStudent(request);
@@ -43,10 +32,26 @@ async function getHandler(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid subtopicId' }, { status: 400 });
     }
 
-    const progress = await progressRepository.getProgress(user.userId, parsed.data.subtopicId);
-    const snapshot = toSnapshot(progress?.blocksCompleted, progress?.status === 'completed');
+    // Call API server
+    const apiUrl = process.env.INTERNAL_API_URL || process.env.GATEWAY_URL || 'http://localhost:3000';
+    const response = await fetch(
+      `${apiUrl}/api/tutorial/progress?subtopicId=${parsed.data.subtopicId}`,
+      {
+        headers: {
+          'X-Brand': 'realtutorialhub',
+          'X-User-ID': user.userId,
+          'X-Internal-Secret': process.env.INTERNAL_API_SECRET || ''
+        },
+        cache: 'no-store'
+      }
+    );
 
-    return NextResponse.json({ data: snapshot }, { status: 200, headers: { 'Cache-Control': 'no-cache' } });
+    if (!response.ok) {
+      return NextResponse.json({ error: 'Failed to get progress' }, { status: response.status });
+    }
+
+    const data = await response.json();
+    return NextResponse.json(data, { status: 200, headers: { 'Cache-Control': 'no-cache' } });
   } catch (error) {
     if (error instanceof AssignmentAuthError) {
       return NextResponse.json({ error: error.message }, { status: error.statusCode });
@@ -56,6 +61,11 @@ async function getHandler(request: NextRequest) {
   }
 }
 
+/**
+ * POST /api/tutorial/progress
+ * 
+ * RTH BFF - Calls centralized Tutorial Engine in API server
+ */
 async function postHandler(request: NextRequest) {
   try {
     const user = await requireStudent(request);
@@ -72,10 +82,29 @@ async function postHandler(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
     }
 
-    const progress = await progressRepository.markBlockComplete(user.userId, parsed.data.subtopicId, parsed.data.blockType);
-    const snapshot = toSnapshot(progress.blocksCompleted, progress.status === 'completed');
+    // Call API server
+    const apiUrl = process.env.INTERNAL_API_URL || process.env.GATEWAY_URL || 'http://localhost:3000';
+    const response = await fetch(
+      `${apiUrl}/api/tutorial/progress`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Brand': 'realtutorialhub',
+          'X-User-ID': user.userId,
+          'X-Internal-Secret': process.env.INTERNAL_API_SECRET || ''
+        },
+        body: JSON.stringify(parsed.data),
+        cache: 'no-store'
+      }
+    );
 
-    return NextResponse.json({ data: snapshot }, { status: 200, headers: { 'Cache-Control': 'no-cache' } });
+    if (!response.ok) {
+      return NextResponse.json({ error: 'Failed to track progress' }, { status: response.status });
+    }
+
+    const data = await response.json();
+    return NextResponse.json(data, { status: 200, headers: { 'Cache-Control': 'no-cache' } });
   } catch (error) {
     if (error instanceof AssignmentAuthError) {
       return NextResponse.json({ error: error.message }, { status: error.statusCode });
@@ -85,6 +114,6 @@ async function postHandler(request: NextRequest) {
   }
 }
 
-// 🔥 OBSERVABILITY: Wrap with withObservability for full request tracing
-export const GET = withObservability(getHandler);
-export const POST = withObservability(postHandler);
+// Export handlers
+export const GET = getHandler;
+export const POST = postHandler;

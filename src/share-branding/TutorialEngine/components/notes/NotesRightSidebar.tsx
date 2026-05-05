@@ -19,7 +19,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
         {activeTab === 'assignments' && (
           <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
             {/* Assignment Info */}
-            <section className="rounded-3xl bg-white p-6 shadow-xl transition-all duration-300 hover:-translate-y-1 border border-slate-100">
+            <section className="rounded-3xl bg-white/80 backdrop-blur-xl p-6 shadow-2xl transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] border-t border-white/60">
               <div className="flex items-center gap-2 mb-6">
                 <Icons.CalendarCheck size={18} className="text-rose-950" />
                 <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Assignment Info</h2>
@@ -40,7 +40,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
             </section>
 
             {/* Deadline */}
-            <section className="rounded-3xl bg-white p-6 shadow-xl transition-all duration-300 hover:-translate-y-1 border border-slate-100">
+            <section className="rounded-3xl bg-white/80 backdrop-blur-xl p-6 shadow-2xl transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] border-t border-white/60">
               <div className="flex items-center gap-2 mb-4">
                 <Icons.Clock size={18} className="text-orange-950" />
                 <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Deadline</h2>
@@ -55,7 +55,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
             </section>
 
             {/* Rewards */}
-            <section className="rounded-3xl bg-white p-6 shadow-xl transition-all duration-300 hover:-translate-y-1 border border-slate-100">
+            <section className="rounded-3xl bg-white/80 backdrop-blur-xl p-6 shadow-2xl transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] border-t border-white/60">
               <div className="flex items-center gap-2 mb-6">
                 <Icons.Trophy size={18} className="text-amber-950" />
                 <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Rewards</h2>
@@ -80,7 +80,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
                 <Icons.UploadCloud size={18} className="text-primary-dark" aria-hidden="true" />
                 <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Submit Assignment</h2>
               </div>
-              <div className="rounded-[24px] bg-rose-50/40 p-8 flex flex-col items-center justify-center gap-3 text-center transition-all hover:bg-rose-100/60 border border-rose-200 cursor-pointer group" role="button" aria-label="Upload assignment file">
+              <div className="rounded-[24px] bg-rose-50/40 backdrop-blur-md p-8 flex flex-col items-center justify-center gap-3 text-center transition-all -translate-y-1 hover:-translate-y-3 hover:bg-rose-100/60 border-t border-white/60 cursor-pointer group shadow-2xl" role="button" aria-label="Upload assignment file">
                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-sm group-hover:scale-110 transition-transform border border-rose-100">
                     <Icons.CloudUpload size={24} className="text-slate-700 group-hover:text-rose-900" aria-hidden="true" />
                  </div>
@@ -101,7 +101,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
 
 
             {/* Helpful Resources */}
-            <section className="rounded-3xl bg-white p-6 shadow-xl transition-all duration-300 hover:-translate-y-1 border border-slate-100">
+            <section className="rounded-3xl bg-white/80 backdrop-blur-xl p-6 shadow-2xl transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] border-t border-white/60">
                <div className="flex items-center gap-2 mb-6">
                   <Icons.Link size={18} className="text-orange-950" />
                   <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Helpful Resources</h2>
@@ -131,7 +131,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
         {activeTab === 'project' && (
           <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
             {/* Your Progress */}
-            <section className="rounded-3xl bg-white p-6 shadow-xl transition-all duration-300 hover:-translate-y-1 border border-slate-100">
+            <section className="rounded-3xl bg-white/80 backdrop-blur-xl p-6 shadow-2xl transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] border-t border-white/60">
               <div className="flex items-center justify-between mb-6">
                  <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Your Progress</h2>
               </div>
@@ -174,7 +174,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
             </section>
 
             {/* Project Info */}
-            <section className="rounded-3xl bg-white p-6 shadow-xl transition-all duration-300 hover:-translate-y-1 border border-slate-100">
+            <section className="rounded-3xl bg-white/80 backdrop-blur-xl p-6 shadow-2xl transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] border-t border-white/60">
               <div className="flex items-center gap-2 mb-6">
                 <Icons.Calendar size={18} className="text-rose-950" />
                 <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Project Info</h2>
@@ -195,7 +195,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
             </section>
 
             {/* Deadline */}
-            <section className="rounded-3xl bg-white p-6 shadow-xl transition-all duration-300 hover:-translate-y-1 border border-slate-100">
+            <section className="rounded-3xl bg-white/80 backdrop-blur-xl p-6 shadow-2xl transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] border-t border-white/60">
               <div className="flex items-center gap-2 mb-4">
                 <Icons.Clock size={18} className="text-orange-950" />
                 <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Deadline</h2>
@@ -381,7 +381,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
         {activeTab === 'code-example' && (
           <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
             {/* Code Explanation */}
-            <section className="rounded-3xl bg-white p-6 shadow-xl transition-all duration-300 hover:-translate-y-1 border border-slate-100">
+            <section className="rounded-3xl bg-white/80 backdrop-blur-xl p-6 shadow-2xl transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] border-t border-white/60">
               <div className="flex items-center gap-2 mb-4">
                 <Icons.Lightbulb size={18} className="text-amber-950" aria-hidden="true" />
                 <h2 className="text-sm font-bold text-slate-950 uppercase tracking-widest">Code Explanation</h2>
@@ -423,7 +423,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
             </section>
 
             {/* Related Concepts */}
-            <section className="rounded-3xl bg-white p-6 shadow-xl transition-all duration-300 hover:-translate-y-1 border border-slate-100">
+            <section className="rounded-3xl bg-white/80 backdrop-blur-xl p-6 shadow-2xl transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] border-t border-white/60">
               <div className="flex items-center gap-2 mb-4">
                 <Icons.Link2 size={18} className="text-orange-950" aria-hidden="true" />
                 <h2 className="text-sm font-bold text-slate-950 uppercase tracking-widest">Related Concepts</h2>

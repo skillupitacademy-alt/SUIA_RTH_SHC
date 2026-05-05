@@ -23,7 +23,7 @@ export function LaymanExplanationContent({ data }: { data: SubtopicNotesViewData
       {/* Main Concept Card */}
       <div className="space-y-4">
         <h2 className="text-xl font-bold text-slate-900 tracking-tight">What is a Component?</h2>
-        <div className="flex min-w-0 flex-col gap-6 rounded-3xl bg-white p-5 shadow-xl transition-all duration-300 hover:-translate-y-1 sm:p-8 md:flex-row md:gap-8">
+        <div className="flex min-w-0 flex-col gap-6 rounded-3xl bg-white/80 backdrop-blur-xl p-5 shadow-2xl border-t border-white/60 transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] sm:p-8 md:flex-row md:gap-8">
           <div className="flex-1 flex justify-center items-center">
             <img
               src={data.mainConcept.image}
@@ -52,7 +52,7 @@ export function LaymanExplanationContent({ data }: { data: SubtopicNotesViewData
           {data.reasonGrid.map((item) => {
             const Icon = (Icons as any)[item.icon] || Icons.HelpCircle;
             return (
-              <div key={item.id} className="flex flex-col items-center text-center p-6 rounded-2xl bg-[#fff9f5] space-y-3 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
+              <div key={item.id} className="flex flex-col items-center text-center p-6 rounded-2xl bg-[#fff9f5]/80 backdrop-blur-md space-y-3 shadow-2xl transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] border-t border-white/60">
                 <div className="p-3 rounded-xl bg-white shadow-sm">
                   <Icon size={24} style={{ color: brand.primaryColor }} aria-hidden="true" />
                 </div>
@@ -69,7 +69,7 @@ export function LaymanExplanationContent({ data }: { data: SubtopicNotesViewData
         <h2 className="text-xl font-bold text-slate-900 tracking-tight">Architecture in Simple Words</h2>
         <p className="text-[13px] font-bold text-slate-800">Different layers mean different sizes of building blocks.</p>
 
-        <div className="min-w-0 rounded-2xl bg-white p-3 shadow-xl transition-all duration-300 hover:-translate-y-1">
+        <div className="min-w-0 rounded-2xl bg-white/80 backdrop-blur-xl p-3 shadow-2xl border-t border-white/60 transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)]">
           <div className="space-y-2">
             {data.typesTable.map((type) => {
               const Icon = (Icons as any)[type.icon] || Icons.HelpCircle;

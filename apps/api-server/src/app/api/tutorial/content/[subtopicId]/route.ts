@@ -1,84 +1,98 @@
-import { PERMISSIONS } from '@quiz/auth/rbac/permissions';
-import { RBACService } from '@quiz/auth/rbac/rbac.service';
-import type { Role } from '@quiz/auth/rbac/roles';
-import { TutorialContentRepository } from '@quiz/db-tutorial';
-import type { TutorialContentRecord } from '@quiz/types';
-import { NextRequest, NextResponse } from 'next/server';
+/**
+ * Tutorial Content API Endpoint
+ * 
+ * GET /api/tutorial/content/:subtopicId
+ * 
+ * Returns tutorial content with brand filtering and user progress.
+ * Replaces BFF-based tutorial content retrieval.
+ */
 
-import { withObservability } from '@/middleware/observability.middleware';
-import type { RequestContext } from '@/middleware/request-context';
-import { TokenService } from '@/modules/auth/token.service';
-import { container } from '@/modules/core/container';
+import { NextRequest, NextResponse } from 'next/server';
+import { TutorialEngine, TutorialService } from '@/modules/tutorial-engine';
+import type { TutorialBrand } from '@/modules/tutorial-engine';
 
 export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
 
-const repository = new TutorialContentRepository();
-
-function toIso(value: Date | null | undefined): string | null {
-  return value ? value.toISOString() : null;
+/**
+ * Extract brand from request headers
+ */
+function extractBrand(request: NextRequest): TutorialBrand {
+  const brandHeader = request.headers.get('x-brand');
+  
+  if (brandHeader === 'skillup') {
+    return 'skillup';
+  }
+  
+  if (brandHeader === 'realtutorialhub') {
+    return 'realtutorialhub';
+  }
+  
+  // Default to realtutorialhub for backward compatibility
+  return 'realtutorialhub';
 }
 
-function toDto(record: TutorialContentRecord) {
-  return {
-    id: record.id,
-    subtopicId: record.subtopicId,
-    difficulty: record.difficulty,
-    contentType: record.contentType,
-    content: record.content,
-    version: record.version,
-    language: record.language,
-    isPublished: record.isPublished,
-    generatedByAi: record.generatedByAi,
-    aiModelUsed: record.aiModelUsed,
-    generationJobId: record.generationJobId,
-    adminApprovedBy: record.adminApprovedBy,
-    adminApprovedAt: toIso(record.adminApprovedAt),
-    qualityScore: record.qualityScore,
-    regenerationCount: record.regenerationCount,
-    createdAt: record.createdAt.toISOString(),
-    updatedAt: record.updatedAt.toISOString(),
-    deletedAt: toIso(record.deletedAt),
-  };
+/**
+ * Extract user ID from request headers
+ */
+function extractUserId(request: NextRequest): string | null {
+  return request.headers.get('x-user-id');
 }
 
-async function handler(
-  _request: NextRequest,
-  obsCtx: RequestContext,
+/**
+ * GET /api/tutorial/content/:subtopicId
+ * 
+ * Returns tutorial content with brand filtering
+ */
+export async function GET(
+  request: NextRequest,
   context: { params: Promise<{ subtopicId: string }> }
 ) {
-  const { requestId } = obsCtx; // 🔥 Observability context
+  try {
+    const params = await context.params;
+    const { subtopicId } = params;
 
-  // 🔐 RBAC: Enforce tutorial content access permission
-  const tokenService = container.get(TokenService);
-  const token = tokenService.getAccessToken(_request, { scope: 'user' });
-  
-  if (typeof token !== 'string' || token.trim() === '') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // Extract brand and user context
+    const brandId = extractBrand(request);
+    const userId = extractUserId(request);
+
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'User ID required' },
+        { status: 401 }
+      );
+    }
+
+    // Get difficulty from query params
+    const url = new URL(request.url);
+    const difficulty = url.searchParams.get('difficulty') as 'simple' | 'mixed' | 'intermediate' | 'expert' | null;
+
+    // Call tutorial service
+    const tutorialService = new TutorialService();
+    const result = await tutorialService.getContent({
+      subtopicId,
+      userId,
+      brandId,
+      difficulty: difficulty || 'simple'
+    });
+
+    if (!result.success) {
+      return NextResponse.json(
+        { error: result.error },
+        { status: 404 }
+      );
+    }
+
+    // Set cache headers
+    const response = NextResponse.json({ data: result.data });
+    response.headers.set('Cache-Control', 'public, max-age=3600');
+    
+    return response;
+  } catch (error) {
+    console.error('[Tutorial Content API] Error:', error);
+    
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
-
-  const payload = await tokenService.verifyUserAccessToken(token);
-  
-  const roles = Array.isArray(payload.roles) ? payload.roles as Role[] : [];
-  RBACService.requirePermission(
-    roles,
-    PERMISSIONS.TUTORIAL_VIEW,
-    payload.userId,
-    requestId
-  );
-
-  const { subtopicId } = await context.params;
-  const rows = await repository.getPublished(subtopicId, 'simple');
-  const record = rows[0];
-
-  if (record === undefined || record === null) {
-    return NextResponse.json({ error: 'Tutorial content not found' }, { status: 404 });
-  }
-
-  const response = NextResponse.json({ data: toDto(record) });
-  response.headers.set('Cache-Control', 'public, max-age=3600');
-  return response;
 }
-
-// 🔥 OBSERVABILITY: Wrap with withObservability for full request tracing
-export const GET = withObservability(handler as (req: NextRequest, obsCtx: RequestContext, ...rest: unknown[]) => Promise<NextResponse>);

@@ -38,7 +38,7 @@ export function TechnicalDeepDiveContent({ data }: { data?: SubtopicNotesViewDat
          </div>
 
          {/* 0. Intro Section */}
-         <section className="rounded-[32px] bg-white p-5 shadow-xl transition-all duration-300 hover:-translate-y-1 sm:p-10">
+         <section className="rounded-[32px] bg-white/80 backdrop-blur-xl p-5 shadow-2xl border-t border-white/60 transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] sm:p-10">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                <div className="space-y-8">
                   <h2 className="break-words text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">What is a Component?</h2>
@@ -116,7 +116,7 @@ export function TechnicalDeepDiveContent({ data }: { data?: SubtopicNotesViewDat
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                {/* Left Box: Internal Structure */}
-               <div className="relative rounded-[24px] border border-slate-100 bg-slate-50/50 p-4 shadow-lg transition-all duration-300 hover:shadow-xl sm:p-8 lg:col-span-7">
+               <div className="relative rounded-[24px] border-t border-white/60 bg-slate-50/50 backdrop-blur-md p-4 shadow-2xl transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] sm:p-8 lg:col-span-7">
                   <h3 className="text-sm font-bold text-slate-800 mb-8 uppercase tracking-widest">Internal Structure:</h3>
 
                   <div className="relative flex min-w-0 flex-col gap-4 sm:h-[280px] sm:flex-row sm:items-center">
@@ -174,7 +174,7 @@ export function TechnicalDeepDiveContent({ data }: { data?: SubtopicNotesViewDat
                </div>
 
                {/* Right Box: Key Points */}
-               <div className="relative rounded-[24px] bg-white p-5 shadow-lg transition-all duration-300 hover:shadow-xl sm:p-8 lg:col-span-5">
+               <div className="relative rounded-[24px] bg-white/80 backdrop-blur-xl p-5 shadow-2xl border-t border-white/60 transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] sm:p-8 lg:col-span-5">
                   <h3 className="text-sm font-bold text-slate-900 mb-8 uppercase tracking-widest">Key Points:</h3>
                   <ul className="space-y-6">
                      {[
@@ -204,7 +204,7 @@ export function TechnicalDeepDiveContent({ data }: { data?: SubtopicNotesViewDat
             <p className="text-[14px] font-medium text-slate-800">Updates are batched and processed in the reconciliation phase.</p>
 
             <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-10">
-               <div className="flex flex-wrap items-center justify-center gap-4 rounded-[32px] bg-slate-50 p-5 shadow-sm sm:justify-between sm:gap-2 sm:p-8">
+               <div className="flex flex-wrap items-center justify-center gap-4 rounded-[32px] bg-slate-50/50 backdrop-blur-md p-5 shadow-2xl border-t border-white/60 sm:justify-between sm:gap-2 sm:p-8">
                   <div className="flex flex-col items-center gap-3">
                      <div className="relative flex h-20 w-16 flex-col items-center justify-center gap-1.5 rounded-xl bg-white p-2 shadow-sm border border-slate-200">
                         <Icons.Layout size={24} className="text-indigo-800" aria-hidden="true" />

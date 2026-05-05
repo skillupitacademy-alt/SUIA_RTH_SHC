@@ -106,7 +106,7 @@ console.log("Component rendered successfully.");`;
       {/* Main Interactive Area */}
       <div className="space-y-4">
         {/* Editor Window */}
-        <section className="flex min-w-0 flex-col overflow-hidden rounded-[32px] bg-[#1e293b] shadow-xl transition-all duration-300 hover:-translate-y-1">
+        <section className="flex min-w-0 flex-col overflow-hidden rounded-[32px] bg-[#1e293b] shadow-2xl transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.3)] border-t border-white/10">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800/50 bg-[#1e293b]/50 px-4 py-4 sm:px-6">
             <div className="flex min-w-0 items-center gap-3">
               <div className="h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400/50" aria-hidden="true" />
@@ -153,7 +153,7 @@ console.log("Component rendered successfully.");`;
         </section>
 
         {/* Output Window */}
-        <div className="rounded-[24px] overflow-hidden bg-[#0a0f1a] shadow-xl transition-all duration-300 hover:-translate-y-1">
+        <div className="rounded-[24px] overflow-hidden bg-[#0a0f1a] shadow-2xl transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.4)] border-t border-white/5">
            <div className="flex items-center justify-between bg-[#111827] px-6 py-3">
               <h2 className="text-[11px] font-bold text-slate-200 uppercase tracking-widest">Output</h2>
               <button className="text-[10px] font-bold text-slate-300 hover:text-white transition-colors uppercase tracking-widest">Clear Console</button>
@@ -182,7 +182,7 @@ console.log("Component rendered successfully.");`;
         </div>
 
         {/* Try It Yourself Box */}
-        <section className="rounded-[32px] bg-white p-8 shadow-xl transition-all duration-300 hover:-translate-y-1">
+        <section className="rounded-[32px] bg-white/80 backdrop-blur-xl p-8 shadow-2xl border-t border-white/60 transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)]">
             <div className="flex items-center gap-4">
                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-100 text-orange-950 border border-orange-200">
                   <Icons.Code size={24} aria-hidden="true" />

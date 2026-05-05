@@ -62,7 +62,7 @@ export function QuizContent({ onNext }: { onNext?: () => void }) {
       </div>
 
       {/* Question Card */}
-      <section className="relative space-y-8 rounded-[32px] bg-white p-5 shadow-xl transition-all duration-300 hover:-translate-y-1 sm:p-10">
+      <section className="relative space-y-8 rounded-[32px] bg-white/80 backdrop-blur-xl p-5 shadow-2xl border-t border-white/60 transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] sm:p-10">
          <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap items-center gap-3">
                <div className="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-bold text-white shadow-lg shadow-rose-100">Q4</div>
@@ -106,7 +106,7 @@ export function QuizContent({ onNext }: { onNext?: () => void }) {
                <button
                   key={opt.id}
                   onClick={() => setSelectedOption(opt.id)}
-                   className={`group flex items-center gap-6 rounded-2xl p-6 transition-all border ${selectedOption === opt.id ? 'border-rose-500 bg-rose-50/30 ring-4 ring-rose-500/5' : 'border-transparent bg-white hover:bg-slate-50'}`}
+                   className={`group flex items-center gap-6 rounded-2xl p-6 transition-all border-t shadow-sm hover:shadow-xl hover:-translate-y-2 ${selectedOption === opt.id ? 'border-rose-500 bg-rose-50/50 ring-4 ring-rose-500/5 shadow-rose-100/50' : 'border-white/60 bg-white/40 hover:bg-white/80'}`}
                 >
                   <div className={`flex h-6 w-6 items-center justify-center rounded-full border-2 transition-all ${selectedOption === opt.id ? 'border-rose-900 bg-rose-900' : 'border-slate-300 group-hover:border-slate-400'}`}>
                      {selectedOption === opt.id && <div className="h-2 w-2 rounded-full bg-white" />}
@@ -121,7 +121,7 @@ export function QuizContent({ onNext }: { onNext?: () => void }) {
 
          {/* Explanation Box */}
          {selectedOption === 'C' && (
-            <div className="rounded-[24px] bg-rose-50/50 p-8 flex items-start gap-6 relative overflow-hidden animate-in fade-in slide-in-from-top-4 duration-500 shadow-xl transition-all duration-300 hover:shadow-2xl border border-rose-100">
+            <div className="rounded-[24px] bg-rose-50/50 backdrop-blur-md p-8 flex items-start gap-6 relative overflow-hidden animate-in fade-in slide-in-from-top-4 duration-500 shadow-2xl transition-all duration-300 -translate-y-1 hover:-translate-y-3 border-t border-white/60">
                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white shadow-sm text-rose-600 relative z-10 border border-rose-100">
                   <Icons.Lightbulb size={24} aria-hidden="true" />
                </div>

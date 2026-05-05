@@ -160,7 +160,7 @@ export function SubtopicNotesPage({ data }: SubtopicNotesPageProps) {
                   <QuizContent />
                 )}
                 {activeTab === 'ai-tutor' && (
-                  <section className="min-w-0 space-y-6 rounded-[32px] bg-white p-5 shadow-xl sm:p-8">
+                  <section className="min-w-0 space-y-6 rounded-[32px] bg-white/80 backdrop-blur-xl p-5 shadow-2xl border-t border-white/60 transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] sm:p-8">
                     <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
                       <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-white" style={{ backgroundColor: brand.primaryColor }}>
                         <Bot size={24} aria-hidden="true" />
@@ -195,7 +195,7 @@ export function SubtopicNotesPage({ data }: SubtopicNotesPageProps) {
                   </section>
                 )}
                 {activeTab === 'progress' && (
-                  <section className="min-w-0 space-y-6 rounded-[32px] bg-white p-5 shadow-xl sm:p-8">
+                  <section className="min-w-0 space-y-6 rounded-[32px] bg-white/80 backdrop-blur-xl p-5 shadow-2xl border-t border-white/60 transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] sm:p-8">
                     <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
                       <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-white" style={{ backgroundColor: brand.primaryColor }}>
                         <TrendingUp size={24} aria-hidden="true" />

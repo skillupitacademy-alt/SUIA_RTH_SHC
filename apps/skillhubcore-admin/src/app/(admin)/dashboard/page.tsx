@@ -42,7 +42,7 @@ export default function DashboardPage() {
             { label: 'Placements', value: '3,542', increase: '14.7%', icon: Briefcase, color: 'bg-pink-500' },
             { label: 'Internships', value: '1,862', increase: '13.9%', icon: Briefcase, color: 'bg-orange-500' },
           ].map((stat, i) => (
-            <div key={i} className="bg-white rounded-xl p-5 border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.02)]">
+            <div key={i} className="bg-white/80 backdrop-blur rounded-xl p-5 shadow-2xl border-t border-white/60 -translate-y-1 hover:-translate-y-3 transition-transform cursor-pointer">
               <div className="flex items-center gap-4">
                 <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white shadow-sm shrink-0 ${stat.color}`}>
                   <stat.icon size={22} />
@@ -74,7 +74,7 @@ export default function DashboardPage() {
               { title: 'Faculty Engine', desc: 'Manage faculty, approvals, workload & access', metric: '428', metricLabel: 'Faculty', btnColor: 'bg-orange-500 hover:bg-orange-600', icon: UserCog, iconColor: 'text-orange-500' },
               { title: 'Internship Engine', desc: 'Manage internships, offers and student applications', metric: '1,862', metricLabel: 'Internships', btnColor: 'bg-pink-500 hover:bg-pink-600', icon: Briefcase, iconColor: 'text-pink-500' },
             ].map((engine, i) => (
-              <div key={i} className="bg-white rounded-xl p-5 border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.02)] flex flex-col items-center text-center">
+              <div key={i} className="bg-white/80 backdrop-blur rounded-xl p-5 shadow-2xl border-t border-white/60 -translate-y-1 hover:-translate-y-3 transition-transform cursor-pointer flex flex-col items-center text-center">
                 <engine.icon size={36} className={`mb-4 ${engine.iconColor}`} />
                 <h3 className="font-bold text-slate-900 mb-2">{engine.title}</h3>
                 <p className="text-[11px] text-slate-500 leading-relaxed mb-6 flex-1 px-1">{engine.desc}</p>
@@ -98,7 +98,7 @@ export default function DashboardPage() {
           {/* Content Workflow */}
           <div className="space-y-4">
             <h2 className="text-base font-bold text-slate-800 font-outfit">Content Workflow</h2>
-            <div className="bg-white rounded-xl p-6 border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.02)] h-[calc(100%-2rem)]">
+            <div className="bg-white/80 backdrop-blur rounded-xl p-6 shadow-2xl border-t border-white/60 -translate-y-1 hover:-translate-y-3 transition-transform cursor-pointer h-[calc(100%-2rem)]">
               <div className="space-y-5">
                 {[
                   { label: 'Pending Review', value: '156', icon: FileText, bg: 'bg-pink-100', text: 'text-pink-600' },
@@ -124,7 +124,7 @@ export default function DashboardPage() {
           {/* Content by Section (All Topics) */}
           <div className="space-y-4">
             <h2 className="text-base font-bold text-slate-800 font-outfit">Content by Section</h2>
-            <div className="bg-white rounded-xl p-6 border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.02)] h-[calc(100%-2rem)] flex flex-col xl:flex-row items-center justify-center gap-6">
+            <div className="bg-white/80 backdrop-blur rounded-xl p-6 shadow-2xl border-t border-white/60 -translate-y-1 hover:-translate-y-3 transition-transform cursor-pointer h-[calc(100%-2rem)] flex flex-col xl:flex-row items-center justify-center gap-6">
               <div className="relative w-36 h-36 shrink-0">
                 <div className="w-full h-full rounded-full" style={{
                   background: 'conic-gradient(#ec4899 0% 15%, #f97316 15% 30%, #eab308 30% 40%, #3b82f6 40% 55%, #14b8a6 55% 65%, #6366f1 65% 75%, #8b5cf6 75% 85%, #d946ef 85% 92%, #f43f5e 92% 100%)'
@@ -164,7 +164,7 @@ export default function DashboardPage() {
           {/* Recent Activities */}
           <div className="space-y-4">
             <h2 className="text-base font-bold text-slate-800 font-outfit">Recent Activities</h2>
-            <div className="bg-white rounded-xl p-6 border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.02)] h-[calc(100%-2rem)] flex flex-col">
+            <div className="bg-white/80 backdrop-blur rounded-xl p-6 shadow-2xl border-t border-white/60 -translate-y-1 hover:-translate-y-3 transition-transform cursor-pointer h-[calc(100%-2rem)] flex flex-col">
               <div className="space-y-5 flex-1">
                 {[
                   { icon: BookOpen, title: "New course 'React Advanced Topics'", desc: "created under Frontend Development", time: "2 mins ago", color: "bg-pink-500" },
@@ -235,7 +235,7 @@ export default function DashboardPage() {
           {/* System Overview */}
           <div className="space-y-4">
             <h2 className="text-base font-bold text-slate-800 font-outfit">System Overview</h2>
-            <div className="bg-white rounded-xl p-5 border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.02)]">
+            <div className="bg-white/80 backdrop-blur rounded-xl p-5 shadow-2xl border-t border-white/60 -translate-y-1 hover:-translate-y-3 transition-transform cursor-pointer">
               <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
                 <span className="text-sm font-semibold text-slate-700">Platform Status</span>
                 <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">All Systems Operational</span>
@@ -264,7 +264,7 @@ export default function DashboardPage() {
           {/* Quick Actions */}
           <div className="space-y-4">
             <h2 className="text-base font-bold text-slate-800 font-outfit">Quick Actions</h2>
-            <div className="bg-white rounded-xl p-4 border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.02)] grid grid-cols-3 gap-3">
+            <div className="bg-white/80 backdrop-blur rounded-xl p-4 shadow-2xl border-t border-white/60 -translate-y-1 hover:-translate-y-3 transition-transform cursor-pointer grid grid-cols-3 gap-3">
               {[
                 { label: 'Add New Course', icon: BookOpen, color: 'text-pink-500' },
                 { label: 'Create New Exam', icon: ClipboardList, color: 'text-orange-500' },

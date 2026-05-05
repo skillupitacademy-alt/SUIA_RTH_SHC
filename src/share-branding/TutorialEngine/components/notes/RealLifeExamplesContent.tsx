@@ -30,7 +30,7 @@ export function RealLifeExamplesContent({ data }: { data: SubtopicNotesViewData[
 
       {/* Hero Analogy Card */}
       <div 
-        className="relative overflow-hidden rounded-[32px] bg-white p-5 shadow-xl transition-all duration-300 hover:-translate-y-1 sm:p-8 md:p-10"
+        className="relative overflow-hidden rounded-[32px] bg-white/80 backdrop-blur-xl p-5 shadow-2xl border-t border-white/60 transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] sm:p-8 md:p-10"
       >
         <div className="flex flex-col md:flex-row gap-10 items-center">
           <div className="flex-1 w-full">
@@ -79,7 +79,7 @@ export function RealLifeExamplesContent({ data }: { data: SubtopicNotesViewData[
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {data.scenarios.map((item) => (
-            <div key={item.id} className="group flex flex-col rounded-3xl bg-white p-6 shadow-xl transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
+            <div key={item.id} className="group flex flex-col rounded-3xl bg-white/80 backdrop-blur-xl p-6 shadow-2xl transition-all duration-300 border-t border-white/60 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)]">
               <div 
                 className="mb-6 flex aspect-square items-center justify-center rounded-2xl bg-slate-50 p-4 transition-colors group-hover:bg-opacity-50"
                 style={{ backgroundColor: `${brand.primaryColor}05` } as any}
@@ -98,7 +98,7 @@ export function RealLifeExamplesContent({ data }: { data: SubtopicNotesViewData[
 
       {/* Walkthrough Section */}
       <div 
-        className="rounded-[32px] bg-white p-5 shadow-xl transition-all duration-300 hover:-translate-y-1 sm:p-10"
+        className="rounded-[32px] bg-white/80 backdrop-blur-xl p-5 shadow-2xl border-t border-white/60 transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] sm:p-10"
       >
         <div className="mb-10 space-y-2">
           <h2 className="text-2xl font-bold text-slate-900">{data.walkthrough.title}</h2>

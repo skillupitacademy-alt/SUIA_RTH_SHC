@@ -90,7 +90,7 @@ export function SubtopicContentGrid({ content, tasks }: SubtopicContentGridProps
               else if (card.type === 'deep-dive') tab = 'technical-deep-dive';
               window.location.href = `/start-learning/subtopic/notes?tab=${tab}`;
             }}
-            className="group relative mx-auto flex aspect-square w-full max-w-[192px] min-w-0 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-[32px] border-b-[4px] border-black/10 p-4 text-center shadow-[0_12px_40px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(0,0,0,0.12)] sm:p-5 xl:rounded-[40px]"
+            className="group relative mx-auto flex aspect-square w-full max-w-[192px] min-w-0 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-[32px] border-t border-white/40 p-4 text-center shadow-2xl transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.2)] sm:p-5 xl:rounded-[40px]"
             style={{ backgroundColor: isTaskCard(card.type) ? getTaskBgColor(card.type) : getContentBgColor(card.type) }}
           >
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/5 to-transparent" />
@@ -123,7 +123,7 @@ export function SubtopicContentGrid({ content, tasks }: SubtopicContentGridProps
           ].map((badge) => (
             <span 
               key={badge.label}
-              className={`rounded-full border px-4 py-3 text-center text-xs font-black ${badge.bg} ${badge.text} ${badge.border} shadow-sm transition-all hover:-translate-y-0.5 sm:px-8`}
+              className={`rounded-full border px-4 py-3 text-center text-xs font-black backdrop-blur-md shadow-2xl border-white/60 ${badge.bg} ${badge.text} ${badge.border} transition-all -translate-y-1 hover:-translate-y-3 sm:px-8`}
             >
               {badge.label}
             </span>

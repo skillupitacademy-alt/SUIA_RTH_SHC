@@ -45,7 +45,7 @@ export function SubtopicRightPanel({ data, isOpen }: SubtopicRightPanelProps) {
       <div className="space-y-4">
         
         {/* XP Section */}
-        <section className="rounded-3xl bg-white p-5 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+        <section className="rounded-3xl bg-white/80 backdrop-blur-xl p-5 shadow-2xl border-t border-white/60 transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.2)]"
                  style={{ boxShadow: `0 20px 50px rgba(${brand.primaryRgb || '0,0,0'}, 0.05)` }}>
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
             <div className="flex min-w-0 items-center gap-2">
@@ -82,7 +82,7 @@ export function SubtopicRightPanel({ data, isOpen }: SubtopicRightPanelProps) {
 
         {/* Achievements */}
         <section 
-          className="rounded-3xl bg-white p-5 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+          className="rounded-3xl bg-white/80 backdrop-blur-xl p-5 shadow-2xl border-t border-white/60 transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.2)]"
           style={{ boxShadow: `0 20px 50px rgba(${brand.primaryRgb || '0,0,0'}, 0.05)` }}
         >
           <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
@@ -113,7 +113,7 @@ export function SubtopicRightPanel({ data, isOpen }: SubtopicRightPanelProps) {
 
         {/* Weakness Analysis */}
         <section 
-          className="rounded-3xl p-5 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+          className="rounded-3xl p-5 shadow-2xl border-t border-white/20 backdrop-blur-xl transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.3)]"
           style={{ backgroundColor: '#1d4ed8', boxShadow: `0 20px 50px rgba(${brand.primaryRgb || '0,0,0'}, 0.08)` }}
         >
           <div className="mb-5 flex min-w-0 items-center gap-2">
@@ -157,7 +157,7 @@ export function SubtopicRightPanel({ data, isOpen }: SubtopicRightPanelProps) {
 
         {/* Tutor Chat Box */}
         <section 
-          className="rounded-3xl p-5 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+          className="rounded-3xl p-5 shadow-2xl border-t border-white/20 backdrop-blur-xl transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.3)]"
           style={{ backgroundColor: '#7e22ce', boxShadow: `0 20px 50px rgba(${brand.primaryRgb || '0,0,0'}, 0.08)` }}
         >
           <div className="mb-3 flex items-center gap-2">

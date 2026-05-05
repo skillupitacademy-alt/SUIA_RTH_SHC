@@ -50,7 +50,7 @@ export function ProjectContent({ onNext }: { onNext?: () => void }) {
       </div>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden rounded-[32px] border border-orange-100 bg-white p-5 shadow-xl transition-all duration-300 hover:-translate-y-1 sm:p-10">
+      <section className="relative overflow-hidden rounded-[32px] bg-white/80 backdrop-blur-xl p-5 shadow-2xl border-t border-white/60 transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] sm:p-10">
          
          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             <div className="lg:col-span-7 space-y-8">
@@ -124,7 +124,7 @@ export function ProjectContent({ onNext }: { onNext?: () => void }) {
       {/* Tab Content */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
          <div className="lg:col-span-7 space-y-8">
-            <div className="space-y-8 rounded-[32px] bg-white p-5 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl sm:p-10">
+            <div className="space-y-8 rounded-[32px] bg-white/80 backdrop-blur-xl p-5 shadow-2xl border-t border-white/60 transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] sm:p-10">
                <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-50 text-slate-900 border border-slate-100">
                      <Icons.Layers size={22} aria-hidden="true" />
@@ -146,7 +146,7 @@ export function ProjectContent({ onNext }: { onNext?: () => void }) {
          </div>
          
          <div className="lg:col-span-5 space-y-8">
-            <div className="space-y-8 rounded-[32px] bg-white p-5 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl sm:p-10">
+            <div className="space-y-8 rounded-[32px] bg-white/80 backdrop-blur-xl p-5 shadow-2xl border-t border-white/60 transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] sm:p-10">
                <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-100 text-rose-950 border border-rose-200">
                      <Icons.Gift size={22} aria-hidden="true" />
