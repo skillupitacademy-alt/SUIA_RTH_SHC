@@ -206,61 +206,77 @@ export default function EducationalArchitecturePage() {
           {/* Right Column (B, C, D, E, F) */}
           <div className="col-span-12 xl:col-span-6 space-y-6">
             
-            {/* B. Domain-Specific Adaptations & C. Architecture Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* B. Adaptations */}
-              <div className="bg-white/80 backdrop-blur rounded-2xl border-t border-white/60 shadow-2xl p-5 space-y-5 -translate-y-1 hover:-translate-y-3 transition-transform duration-300">
-                <h3 className="text-xs font-bold text-slate-900 font-outfit">B. Domain-Specific Adaptations (Flexible)</h3>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-400 uppercase">Domain Type</label>
-                  <div className="flex items-center justify-between bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 cursor-pointer">
+            {/* B. Domain-Specific Adaptations & Selected Domain Preview Parent Card */}
+            <div className="bg-white/80 backdrop-blur rounded-2xl border-t border-white/60 shadow-2xl p-6 space-y-10 -translate-y-1 hover:-translate-y-3 transition-transform duration-300">
+              
+              {/* B. Domain-Specific Adaptations (Flexible) */}
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-sm font-bold text-[#1E293B] font-outfit">B. Domain-Specific Adaptations (Flexible)</h3>
+                  <p className="text-xs text-slate-500 font-medium mt-1">Customize simplification methods for each domain.</p>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest px-1">Domain Type</label>
+                  <div className="flex items-center justify-between bg-white border border-slate-200 px-4 py-2.5 rounded-xl text-sm font-bold text-slate-700 cursor-pointer hover:border-pink-200 hover:bg-pink-50/10 transition-all">
                     <span>Full Stack Development</span>
-                    <ChevronDown size={14} className="text-slate-400" />
+                    <ChevronDown size={18} className="text-slate-400" />
                   </div>
                 </div>
-                <div className="space-y-3">
-                  {[
-                    { name: 'Programming Analogy Pack', count: '12 Analogies', icon: Download, color: 'text-blue-500', bg: 'bg-blue-50' },
-                    { name: 'Real World Story Pack', count: '8 Stories', icon: Globe, color: 'text-orange-500', bg: 'bg-orange-50' },
-                    { name: 'Visual Metaphor Pack', count: '15 Visuals', icon: Palette, color: 'text-purple-500', bg: 'bg-purple-50' },
-                    { name: 'Beginner Scenario Pack', count: '20 Scenarios', icon: Brain, color: 'text-pink-500', bg: 'bg-pink-50' },
-                  ].map((pack, i) => (
-                    <div key={i} className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:border-pink-200 transition-all cursor-pointer group">
-                      <div className={`w-8 h-8 rounded-lg ${pack.bg} flex items-center justify-center ${pack.color}`}>
-                        <pack.icon size={16} />
+
+                <div className="space-y-4">
+                  <p className="text-xs font-bold text-[#1E293B]">Adaptation Packs (Examples)</p>
+                  <div className="space-y-3">
+                    {[
+                      { name: 'Programming Analogy Pack', count: '12 Analogies', desc: 'Arrays as shopping lists, Functions as machines', icon: Download, color: 'text-blue-500', bg: 'bg-blue-50' },
+                      { name: 'Real World Story Pack', count: '8 Stories', desc: 'Code stories, daily life scenarios', icon: Globe, color: 'text-orange-500', bg: 'bg-orange-50' },
+                      { name: 'Visual Metaphor Pack', count: '15 Visuals', desc: 'Box model, flow model, container model', icon: Palette, color: 'text-purple-500', bg: 'bg-purple-50' },
+                      { name: 'Beginner Scenario Pack', count: '20 Scenarios', desc: 'Problem → simple solution examples', icon: Brain, color: 'text-pink-500', bg: 'bg-pink-50' },
+                    ].map((pack, i) => (
+                      <div key={i} className="flex items-center gap-4 p-4 rounded-xl border border-slate-100 bg-white/50 hover:border-pink-200 transition-all cursor-pointer group">
+                        <div className={`w-10 h-10 rounded-lg ${pack.bg} flex items-center justify-center ${pack.color} shrink-0`}>
+                          <pack.icon size={20} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="text-xs font-bold text-[#334155] truncate">{pack.name}</p>
+                            <span className="bg-purple-50 text-purple-600 text-[10px] font-bold px-2 py-0.5 rounded whitespace-nowrap">{pack.count}</span>
+                          </div>
+                          <p className="text-[11px] text-slate-400 font-medium mt-0.5 truncate">{pack.desc}</p>
+                        </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-bold text-slate-700 truncate">{pack.name}</p>
-                        <p className="text-xs font-medium text-slate-400">{pack.count}</p>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-                <button className="w-full py-2.5 border border-dashed border-slate-200 rounded-xl text-xs font-bold text-slate-400 hover:text-pink-500 transition-all">
-                  + Add New Adaptation Pack
+
+                <button className="w-full py-3 border-2 border-dashed border-pink-100 rounded-xl text-xs font-bold text-pink-500 hover:bg-pink-50/50 transition-all flex items-center justify-center gap-2">
+                  <Plus size={16} />
+                  Add New Adaptation Pack
                 </button>
               </div>
 
-
-            </div>
-
-            {/* Selected Domain Preview (Matching Image) */}
-            <div className="bg-white/80 backdrop-blur rounded-2xl border-t border-white/60 shadow-2xl p-6 space-y-4 -translate-y-1 hover:-translate-y-3 transition-transform duration-300">
-              <h4 className="text-sm font-bold text-[#1E293B] font-outfit">Selected Domain Preview</h4>
-              <p className="text-xs text-slate-500 font-medium">How the layman section will look in this domain.</p>
-              
-              <div className="bg-[#FFF1F2] border border-[#FECDD3] rounded-2xl p-6 space-y-5">
-                <p className="text-xs font-bold text-[#334155]">Example: Explaining "Variable"</p>
-                <div className="space-y-3 text-xs leading-relaxed text-[#475569] font-medium">
-                  <p><span className="font-bold text-[#334155]">Analogy:</span> A variable is like a labeled box where you can store anything.</p>
-                  <p><span className="font-bold text-[#334155]">Real Life:</span> Like a container in your kitchen where you keep sugar.</p>
-                  <p><span className="font-bold text-[#334155]">Mental Model:</span> Variable = Name + Value</p>
-                </div>
-                <div className="flex justify-center pt-2">
-                  <button className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[#F43F5E] text-white rounded-xl text-xs font-bold shadow-lg shadow-pink-200 hover:bg-[#E11D48] active:scale-95 transition-all">
-                    <Plus size={16} />
-                    Preview Full Layman Section
-                  </button>
+              <div className="border-t border-slate-100 pt-8">
+                {/* Selected Domain Preview */}
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="text-sm font-bold text-[#1E293B] font-outfit">Selected Domain Preview</h4>
+                    <p className="text-xs text-slate-500 font-medium mt-1">How the layman section will look in this domain.</p>
+                  </div>
+                  
+                  <div className="bg-[#FFF1F2] border border-[#FECDD3] rounded-2xl p-6 space-y-5">
+                    <p className="text-xs font-bold text-[#334155]">Example: Explaining "Variable"</p>
+                    <div className="space-y-3 text-xs leading-relaxed text-[#475569] font-medium">
+                      <p><span className="font-bold text-[#334155]">Analogy:</span> A variable is like a labeled box where you can store anything.</p>
+                      <p><span className="font-bold text-[#334155]">Real Life:</span> Like a container in your kitchen where you keep sugar.</p>
+                      <p><span className="font-bold text-[#334155]">Mental Model:</span> Variable = Name + Value</p>
+                    </div>
+                    <div className="flex justify-center pt-2">
+                      <button className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[#F43F5E] text-white rounded-xl text-xs font-bold shadow-lg shadow-pink-200 hover:bg-[#E11D48] active:scale-95 transition-all">
+                        <Plus size={16} />
+                        Preview Full Layman Section
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
