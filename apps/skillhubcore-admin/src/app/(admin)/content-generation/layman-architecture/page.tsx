@@ -139,54 +139,63 @@ export default function EducationalArchitecturePage() {
             <div className="bg-white/80 backdrop-blur rounded-2xl border-t border-white/60 shadow-2xl p-6 space-y-6 -translate-y-1 hover:-translate-y-3 transition-transform duration-300">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900 font-outfit">A. Universal Layman Architecture (Fixed Across All Domains)</h3>
-                  <p className="text-xs text-slate-400 mt-1 font-medium">These components remain the same sequence for every layman section.</p>
+                  <h3 className="text-sm font-bold text-[#1E293B] font-outfit">A. Universal Layman Architecture (Fixed Across All Domains)</h3>
+                  <p className="text-xs text-slate-500 mt-1 font-medium">These components remain the same sequence for every layman section.</p>
                 </div>
-                <span className="bg-emerald-50 text-emerald-600 text-xs font-bold px-2 py-0.5 rounded border border-emerald-100">Standard Structure</span>
+                <div className="flex items-center gap-3">
+                  <span className="bg-[#F0FDF4] text-[#166534] text-[10px] font-bold px-2.5 py-1 rounded-lg border border-[#DCFCE7]">Standard Structure</span>
+                  <button className="text-slate-400 hover:text-slate-600 transition-colors">
+                    <MoreVertical size={18} />
+                  </button>
+                </div>
               </div>
 
-              <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+              <div className="overflow-hidden">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-slate-50/80 border-b border-slate-200">
-                      <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">#</th>
-                      <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Component</th>
-                      <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Purpose</th>
-                      <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase text-center">Req</th>
-                      <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Status</th>
-                      <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase text-right">Actions</th>
+                    <tr className="border-b border-slate-100">
+                      <th className="px-2 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">#</th>
+                      <th className="px-2 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Component</th>
+                      <th className="px-4 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Purpose</th>
+                      <th className="px-2 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center">Required</th>
+                      <th className="px-2 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center">Status</th>
+                      <th className="px-2 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 text-xs font-medium text-slate-600">
+                  <tbody className="divide-y divide-slate-50">
                     {[
-                      { id: 1, name: 'Simple Overview', purpose: 'What this topic is in plain language', icon: Layout, color: 'text-blue-500' },
-                      { id: 2, name: 'Everyday Analogy', purpose: 'Connect concept to real life', icon: Zap, color: 'text-orange-500' },
-                      { id: 3, name: 'Why It Exists', purpose: 'Why this concept matters', icon: Brain, color: 'text-pink-500' },
-                      { id: 4, name: 'Simple Use Cases', purpose: 'Basic practical examples', icon: Edit2, color: 'text-emerald-500' },
-                      { id: 5, name: 'Beginner Breakdown', purpose: 'Explain parts simply', icon: Layers, color: 'text-indigo-500' },
-                      { id: 6, name: 'Visual Mental Model', purpose: 'Easy imagination aid', icon: Palette, color: 'text-purple-500' },
-                      { id: 7, name: 'Common Beginner Confusions', purpose: 'Reduce fear and clear doubts', icon: Info, color: 'text-red-500' },
-                      { id: 8, name: 'Simple Recap', purpose: 'Reinforce clarity and summary', icon: RotateCcw, color: 'text-teal-500' },
+                      { id: 1, name: 'Simple Overview', purpose: 'What this topic is in plain language', icon: Layout, color: 'text-blue-600', bg: 'bg-blue-50' },
+                      { id: 2, name: 'Everyday Analogy', purpose: 'Connect concept to real life', icon: Zap, color: 'text-rose-500', bg: 'bg-rose-50' },
+                      { id: 3, name: 'Why It Exists', purpose: 'Why this concept matters', icon: Brain, color: 'text-pink-600', bg: 'bg-pink-50' },
+                      { id: 4, name: 'Simple Use Cases', purpose: 'Basic practical examples', icon: Edit2, color: 'text-orange-500', bg: 'bg-orange-50' },
+                      { id: 5, name: 'Beginner Breakdown', purpose: 'Explain parts simply', icon: Layers, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                      { id: 6, name: 'Visual Mental Model', purpose: 'Easy imagination aid', icon: Palette, color: 'text-amber-500', bg: 'bg-amber-50' },
+                      { id: 7, name: 'Common Beginner Confusions', purpose: 'Reduce fear and clear doubts', icon: Info, color: 'text-purple-600', bg: 'bg-purple-50' },
+                      { id: 8, name: 'Simple Recap', purpose: 'Reinforce clarity and summary', icon: RotateCcw, color: 'text-red-500', bg: 'bg-red-50' },
                     ].map((row) => (
-                      <tr key={row.id} className="hover:bg-slate-50 transition-colors group">
-                        <td className="px-4 py-3 font-bold text-slate-400">{row.id}</td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
-                            <row.icon size={14} className={row.color} />
-                            <span className="font-bold text-slate-700">{row.name}</span>
+                      <tr key={row.id} className="hover:bg-slate-50/50 transition-colors group">
+                        <td className="px-2 py-4 text-xs font-bold text-slate-700">{row.id}</td>
+                        <td className="px-2 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-8 h-8 rounded-lg ${row.bg} flex items-center justify-center ${row.color} shrink-0`}>
+                              <row.icon size={16} />
+                            </div>
+                            <span className="font-bold text-[#1E293B] text-xs">{row.name}</span>
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-slate-500 italic">{row.purpose}</td>
-                        <td className="px-4 py-3 text-center">
-                          <CheckCircle2 size={14} className="text-emerald-500 mx-auto" />
+                        <td className="px-4 py-4 text-xs text-slate-500 font-medium">{row.purpose}</td>
+                        <td className="px-2 py-4 text-center">
+                          <div className="flex justify-center">
+                            <CheckCircle2 size={18} className="text-emerald-500" />
+                          </div>
                         </td>
-                        <td className="px-4 py-3">
-                          <span className="bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full text-xs font-bold">Active</span>
+                        <td className="px-2 py-4 text-center">
+                          <span className="bg-[#F0FDF4] text-[#166534] px-2.5 py-1 rounded-lg text-[10px] font-bold border border-[#DCFCE7]">Active</span>
                         </td>
-                        <td className="px-4 py-3 text-right">
-                          <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button className="p-1 hover:text-pink-600"><Edit2 size={12} /></button>
-                            <button className="p-1 hover:text-slate-900"><MoreVertical size={12} /></button>
+                        <td className="px-2 py-4 text-right">
+                          <div className="flex items-center justify-end gap-3 text-slate-400">
+                            <button className="hover:text-pink-600 transition-colors"><Edit2 size={16} /></button>
+                            <button className="hover:text-slate-900 transition-colors"><MoreVertical size={16} /></button>
                           </div>
                         </td>
                       </tr>
@@ -195,11 +204,10 @@ export default function EducationalArchitecturePage() {
                 </table>
               </div>
 
-              <button className="w-full py-3 border-2 border-dashed border-slate-200 rounded-xl text-xs font-bold text-slate-400 hover:border-pink-200 hover:text-pink-500 transition-all flex items-center justify-center gap-2">
-                <Plus size={14} />
+              <button className="w-full py-3 border-2 border-dashed border-slate-200 rounded-xl text-xs font-bold text-pink-500 hover:border-pink-200 hover:bg-pink-50/50 transition-all flex items-center justify-center gap-2">
+                <Plus size={16} className="text-pink-600" />
                 Add Custom Universal Component
               </button>
-
             </div>
           </div>
 
