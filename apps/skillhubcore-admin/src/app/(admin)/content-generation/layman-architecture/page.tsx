@@ -134,8 +134,8 @@ export default function EducationalArchitecturePage() {
         {/* Main Content Grid (Matching Image Sections A-F) */}
         <div className="grid grid-cols-12 gap-6">
           
-          {/* A. Universal Layman Architecture (Left Column) */}
-          <div className="col-span-12 xl:col-span-6 space-y-6">
+          {/* A. Universal Layman Architecture (Left Column - 60%) */}
+          <div className="col-span-12 xl:col-span-7 space-y-6">
             <div className="bg-white/80 backdrop-blur rounded-2xl border-t border-white/60 shadow-2xl p-6 space-y-6 -translate-y-1 hover:-translate-y-3 transition-transform duration-300">
               <div className="flex items-center justify-between">
                 <div>
@@ -211,8 +211,8 @@ export default function EducationalArchitecturePage() {
             </div>
           </div>
 
-          {/* Right Column (B, C, D, E, F) */}
-          <div className="col-span-12 xl:col-span-6 space-y-6">
+          {/* Right Column (B, C, D, E, F - 40%) */}
+          <div className="col-span-12 xl:col-span-5 space-y-6">
             
             {/* B. Domain-Specific Adaptations & Selected Domain Preview Parent Card */}
             <div className="bg-white/80 backdrop-blur rounded-2xl border-t border-white/60 shadow-2xl p-6 space-y-10 -translate-y-1 hover:-translate-y-3 transition-transform duration-300">
