@@ -288,6 +288,31 @@ export default function EducationalArchitecturePage() {
                 </div>
               </div>
             </div>
+
+            {/* H. Quick Actions Grid (Moved to Sidebar) */}
+            <div className="bg-white/80 backdrop-blur rounded-2xl border-t border-white/60 shadow-2xl p-6 space-y-6 -translate-y-1 hover:-translate-y-3 transition-transform duration-300">
+              <h3 className="text-base font-bold text-[#1E293B] font-outfit">H. Quick Actions</h3>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { label: 'Clone Architecture', icon: Copy, color: 'text-purple-600', border: 'border-purple-200', bg: 'bg-purple-50/50' },
+                  { label: 'Export Architecture', icon: FileDown, color: 'text-pink-600', border: 'border-pink-200', bg: 'bg-pink-50/50' },
+                  { label: 'Import Architecture', icon: FileUp, color: 'text-orange-600', border: 'border-orange-200', bg: 'bg-orange-50/50' },
+                  { label: 'Preview Full Layman', icon: Layout, color: 'text-blue-600', border: 'border-blue-200', bg: 'bg-blue-50/50' },
+                  { label: 'Apply to Domain', icon: Globe, color: 'text-emerald-600', border: 'border-emerald-200', bg: 'bg-emerald-50/50' },
+                  { label: 'Create New Version', icon: History, color: 'text-indigo-600', border: 'border-indigo-200', bg: 'bg-indigo-50/50' },
+                  { label: 'Deactivate', icon: XCircle, color: 'text-rose-600', border: 'border-rose-200', bg: 'bg-rose-50/50' },
+                  { label: 'Delete Architecture', icon: Trash2, color: 'text-slate-600', border: 'border-slate-200', bg: 'bg-slate-50/50' },
+                ].map((action, i) => (
+                  <button 
+                    key={i} 
+                    className={`flex items-center gap-3 p-3.5 rounded-xl border-2 ${action.border} ${action.bg} ${action.color} transition-all hover:scale-[1.02] active:scale-95 group text-left shadow-sm`}
+                  >
+                    <action.icon size={20} className="shrink-0" />
+                    <span className="text-sm font-bold leading-tight">{action.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -337,29 +362,6 @@ export default function EducationalArchitecturePage() {
           </div>
         </div>
 
-        {/* H. Quick Actions Grid */}
-        <div className="mt-8 space-y-4">
-          <h3 className="text-base font-bold text-slate-900 font-outfit">H. Quick Actions</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { label: 'Clone Architecture', icon: Copy, color: 'text-purple-600', border: 'border-purple-100', bg: 'bg-purple-50' },
-              { label: 'Export Architecture', icon: FileDown, color: 'text-pink-600', border: 'border-pink-100', bg: 'bg-pink-50' },
-              { label: 'Import Architecture', icon: FileUp, color: 'text-orange-600', border: 'border-orange-100', bg: 'bg-orange-50' },
-              { label: 'Preview Full Layman', icon: Layout, color: 'text-blue-600', border: 'border-blue-100', bg: 'bg-blue-50' },
-              { label: 'Apply to Domain', icon: Globe, color: 'text-emerald-600', border: 'border-emerald-100', bg: 'bg-emerald-50' },
-              { label: 'Create New Version', icon: History, color: 'text-indigo-600', border: 'border-indigo-100', bg: 'bg-indigo-50' },
-              { label: 'Deactivate', icon: XCircle, color: 'text-red-600', border: 'border-red-100', bg: 'bg-red-50' },
-              { label: 'Delete Architecture', icon: Trash2, color: 'text-slate-600', border: 'border-slate-100', bg: 'bg-slate-50' },
-            ].map((action, i) => (
-              <button key={i} className={`flex items-center gap-3 p-3 rounded-2xl border-t border-white/60 bg-white/80 backdrop-blur shadow-2xl -translate-y-1 hover:-translate-y-3 transition-transform duration-300 group text-left`}>
-                <div className={`w-10 h-10 rounded-xl ${action.bg} ${action.color} flex items-center justify-center shadow-sm`}>
-                  <action.icon size={20} />
-                </div>
-                <span className="text-sm font-bold text-slate-700 leading-tight">{action.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
       </section>
 
       {/* Bottom Info Bars */}
