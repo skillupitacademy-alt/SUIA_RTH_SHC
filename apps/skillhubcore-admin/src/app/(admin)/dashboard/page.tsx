@@ -264,23 +264,47 @@ export default function DashboardPage() {
           {/* Quick Actions */}
           <div className="space-y-4">
             <h2 className="text-base font-bold text-slate-800 font-outfit">Quick Actions</h2>
-            <div className="bg-white/80 backdrop-blur rounded-xl p-4 shadow-2xl border-t border-white/60 -translate-y-1 hover:-translate-y-3 transition-transform cursor-pointer grid grid-cols-3 gap-3">
+            
+            {/* SVG Gradients for Icons */}
+            <svg width="0" height="0" className="absolute">
+              <defs>
+                <linearGradient id="icon-pink-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#ec4899" />
+                  <stop offset="100%" stopColor="#be185d" />
+                </linearGradient>
+                <linearGradient id="icon-orange-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#f97316" />
+                  <stop offset="100%" stopColor="#ea580c" />
+                </linearGradient>
+              </defs>
+            </svg>
+
+            <div className="grid grid-cols-3 gap-3">
               {[
-                { label: 'Add New Course', icon: BookOpen, color: 'text-pink-500' },
-                { label: 'Create New Exam', icon: ClipboardList, color: 'text-orange-500' },
-                { label: 'Add Placement Drive', icon: Briefcase, color: 'text-pink-500' },
-                { label: 'Add Internship', icon: Briefcase, color: 'text-orange-500' },
-                { label: 'Manage Faculty', icon: UserCog, color: 'text-pink-500' },
-                { label: 'AI Content Studio', icon: Sparkles, color: 'text-orange-500' },
-                { label: 'Domain Manager', icon: Globe, color: 'text-pink-500' },
-                { label: 'Subtopic Manager', icon: LayoutList, color: 'text-orange-500' },
-                { label: 'Generate Report', icon: BarChart3, color: 'text-pink-500' },
+                { label: 'Add New Course', icon: BookOpen, grad: 'url(#icon-pink-grad)' },
+                { label: 'Create New Exam', icon: ClipboardList, grad: 'url(#icon-orange-grad)' },
+                { label: 'Add Placement Drive', icon: Briefcase, grad: 'url(#icon-pink-grad)' },
+                { label: 'Add Internship', icon: Briefcase, grad: 'url(#icon-orange-grad)' },
+                { label: 'Manage Faculty', icon: UserCog, grad: 'url(#icon-pink-grad)' },
+                { label: 'AI Content Studio', icon: Sparkles, grad: 'url(#icon-orange-grad)' },
+                { label: 'Domain Manager', icon: Globe, grad: 'url(#icon-pink-grad)' },
+                { label: 'Subtopic Manager', icon: LayoutList, grad: 'url(#icon-orange-grad)' },
+                { label: 'Generate Report', icon: BarChart3, grad: 'url(#icon-pink-grad)' },
               ].map((action, i) => (
-                <button key={i} className="flex flex-col items-center justify-center text-center p-3 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all group">
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-2 bg-slate-50 group-hover:bg-white group-hover:shadow-sm transition-all ${action.color}`}>
-                    <action.icon size={20} />
+                <button 
+                  key={i} 
+                  className="bg-white border border-slate-100 rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group"
+                >
+                  <div className="mb-3 transition-transform duration-300 group-hover:scale-110">
+                    <action.icon 
+                      size={32} 
+                      style={{ stroke: action.grad }}
+                      strokeWidth={2.5}
+                    />
                   </div>
-                  <span className="text-[10px] font-semibold text-slate-600 leading-tight">{action.label}</span>
+                  <span className="text-[10px] font-bold text-slate-700 leading-tight group-hover:text-slate-900 transition-colors">
+                    {action.label}
+                  </span>
                 </button>
               ))}
             </div>
