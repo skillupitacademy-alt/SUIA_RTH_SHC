@@ -45,7 +45,7 @@ export default function DashboardPage() {
                 <p className="text-xl font-bold text-slate-900 font-outfit tracking-tight">{stat.value}</p>
               </div>
             </div>
-            <div className="mt-4 flex items-center gap-1.5 text-[11px] font-medium text-slate-500">
+            <div className="mt-4 flex items-center gap-1.5 text-xs font-medium text-slate-500">
               <span className="flex items-center text-emerald-500 bg-emerald-50 px-1.5 py-0.5 rounded">
                 <ArrowUp size={12} className="mr-0.5" />
                 {stat.increase}
@@ -70,11 +70,11 @@ export default function DashboardPage() {
             <div key={i} className="bg-white/80 backdrop-blur rounded-xl p-5 shadow-2xl border-t border-white/60 -translate-y-1 hover:-translate-y-3 transition-transform cursor-pointer flex flex-col items-center text-center">
               <engine.icon size={36} className={`mb-4 ${engine.iconColor}`} />
               <h3 className="font-bold text-slate-900 mb-2">{engine.title}</h3>
-              <p className="text-[11px] text-slate-500 leading-relaxed mb-6 flex-1 px-1">{engine.desc}</p>
+              <p className="text-xs text-slate-500 leading-relaxed mb-6 flex-1 px-1">{engine.desc}</p>
               <div className="w-full flex items-center justify-between mt-auto">
                 <div className="text-left">
                   <p className="text-sm font-bold text-slate-900 leading-none">{engine.metric}</p>
-                  <p className="text-[10px] text-slate-500 mt-1">{engine.metricLabel}</p>
+                  <p className="text-xs text-slate-500 mt-1">{engine.metricLabel}</p>
                 </div>
                 <button className={`${engine.btnColor} text-white text-xs font-semibold px-4 py-1.5 rounded-md shadow-sm transition-colors`}>
                   Manage
@@ -123,11 +123,11 @@ export default function DashboardPage() {
                 background: 'conic-gradient(#ec4899 0% 15%, #f97316 15% 30%, #eab308 30% 40%, #3b82f6 40% 55%, #14b8a6 55% 65%, #6366f1 65% 75%, #8b5cf6 75% 85%, #d946ef 85% 92%, #f43f5e 92% 100%)'
               }}></div>
               <div className="absolute inset-[25%] bg-white rounded-full flex flex-col items-center justify-center">
-                <span className="text-[10px] text-slate-500 font-medium">Total</span>
+                <span className="text-xs text-slate-500 font-medium">Total</span>
                 <span className="text-xs font-bold text-slate-900 leading-none mt-0.5">52,360</span>
               </div>
             </div>
-            <div className="grid grid-cols-1 gap-x-4 gap-y-1.5 text-[11px] font-medium text-slate-600 w-full xl:w-auto">
+            <div className="grid grid-cols-1 gap-x-4 gap-y-1.5 text-xs font-medium text-slate-600 w-full xl:w-auto">
               {[
                 { label: 'Layman', color: 'bg-pink-500' },
                 { label: 'Notes', color: 'bg-orange-500' },
@@ -174,7 +174,7 @@ export default function DashboardPage() {
                     <p className="text-sm font-semibold text-slate-800 leading-tight truncate">{activity.title}</p>
                     <p className="text-xs text-slate-500 mt-0.5 truncate">{activity.desc}</p>
                   </div>
-                  <div className="text-[10px] font-medium text-slate-400 shrink-0 whitespace-nowrap">{activity.time}</div>
+                  <div className="text-xs font-medium text-slate-400 shrink-0 whitespace-nowrap">{activity.time}</div>
                 </div>
               ))}
             </div>

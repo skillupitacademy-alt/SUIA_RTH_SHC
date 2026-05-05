@@ -60,7 +60,7 @@ export default function ClientShell({ children }: { children: ReactNode }) {
               </div>
               <div className="overflow-hidden">
                 <h1 className="text-xl font-bold text-white tracking-tight leading-tight whitespace-nowrap">SkillHubCore</h1>
-                <p className="text-[10px] text-slate-400 font-medium tracking-wide uppercase mt-0.5 whitespace-nowrap">Admin Dashboard</p>
+                <p className="text-xs text-slate-400 font-medium tracking-wide uppercase mt-0.5 whitespace-nowrap">Admin Dashboard</p>
               </div>
             </div>
           </div>
@@ -75,7 +75,7 @@ export default function ClientShell({ children }: { children: ReactNode }) {
           <div className="flex-1 px-4 py-4 space-y-6 w-[280px]">
             {/* Governance & Core */}
             <div>
-              <h2 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 px-2 whitespace-nowrap">Governance & Core</h2>
+              <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 px-2 whitespace-nowrap">Governance & Core</h2>
               <nav className="space-y-1">
                 {[
                   { icon: ShieldCheck, label: 'Constitutional Center' },
@@ -98,7 +98,7 @@ export default function ClientShell({ children }: { children: ReactNode }) {
 
             {/* Engines */}
             <div>
-              <h2 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 px-2 whitespace-nowrap">Engines (Core Services)</h2>
+              <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 px-2 whitespace-nowrap">Engines (Core Services)</h2>
               <nav className="space-y-1">
                 {[
                   { icon: BookOpen, label: 'Tutorial Engine', color: 'text-pink-400' },
@@ -120,7 +120,7 @@ export default function ClientShell({ children }: { children: ReactNode }) {
 
             {/* Content Generation */}
             <div>
-              <h2 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 px-2 whitespace-nowrap">Content Generation</h2>
+              <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 px-2 whitespace-nowrap">Content Generation</h2>
               <nav className="space-y-1">
                 {[
                   { icon: LayoutGrid, label: 'Overview', href: '#' },
@@ -175,13 +175,13 @@ export default function ClientShell({ children }: { children: ReactNode }) {
                       {headerTitle}
                     </h2>
                     {pathname === '/content-generation/layman-architecture' && (
-                      <span className="bg-pink-50 text-pink-600 text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider border border-pink-100">
+                      <span className="bg-pink-50 text-pink-600 text-xs font-bold px-1.5 py-0.5 rounded uppercase tracking-wider border border-pink-100">
                         ARCHITECTURE
                       </span>
                     )}
                   </div>
                   {headerSubtitle && (
-                    <p className="text-[10px] text-slate-500 font-medium italic mt-0.5">
+                    <p className="text-xs text-slate-500 font-medium italic mt-0.5">
                       {headerSubtitle}
                     </p>
                   )}
@@ -204,14 +204,14 @@ export default function ClientShell({ children }: { children: ReactNode }) {
                 aria-label="View notifications"
               >
                 <Bell size={20} />
-                <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-pink-500 text-[9px] font-bold text-white border border-white">12</span>
+                <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-pink-500 text-xs font-bold text-white border border-white">12</span>
               </button>
               <button
                 className="relative text-slate-400 hover:text-slate-600 transition-colors p-2 hover:bg-slate-50 rounded-lg focus:ring-2 focus:ring-pink-500 outline-none"
                 aria-label="View messages"
               >
                 <Mail size={20} />
-                <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-pink-500 text-[9px] font-bold text-white border border-white">8</span>
+                <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-pink-500 text-xs font-bold text-white border border-white">8</span>
               </button>
               <button
                 className="text-slate-400 hover:text-slate-600 transition-colors p-2 hover:bg-slate-50 rounded-lg focus:ring-2 focus:ring-pink-500 outline-none"
@@ -280,7 +280,7 @@ export default function ClientShell({ children }: { children: ReactNode }) {
                 <section className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h3 className="text-sm font-bold text-slate-900 font-outfit">Generation Overview</h3>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase">Today</span>
+                    <span className="text-xs font-bold text-slate-400 uppercase">Today</span>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     {[
@@ -290,10 +290,10 @@ export default function ClientShell({ children }: { children: ReactNode }) {
                       { label: "Published", value: "6", change: "+20%", color: "text-emerald-500" },
                     ].map((stat, i) => (
                       <div key={i} className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase">{stat.label}</p>
+                        <p className="text-xs font-bold text-slate-400 uppercase">{stat.label}</p>
                         <div className="flex items-center gap-2 mt-1">
                           <span className="text-lg font-bold text-slate-900">{stat.value}</span>
-                          <span className={`text-[8px] font-bold ${stat.color}`}>{stat.change}</span>
+                          <span className={`text-xs font-bold ${stat.color}`}>{stat.change}</span>
                         </div>
                       </div>
                     ))}
@@ -315,7 +315,7 @@ export default function ClientShell({ children }: { children: ReactNode }) {
                       ].map((step, i) => (
                         <div key={i} className="flex flex-col items-center gap-2">
                           <div className={`w-3 h-3 rounded-full border-2 border-white shadow-sm z-10 ${step.color}`}></div>
-                          <p className="text-[9px] font-bold text-slate-500">{step.label}</p>
+                          <p className="text-xs font-bold text-slate-500">{step.label}</p>
                         </div>
                       ))}
                     </div>
@@ -326,7 +326,7 @@ export default function ClientShell({ children }: { children: ReactNode }) {
                 <section className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h3 className="text-sm font-bold text-slate-900 font-outfit">Prompt Exports</h3>
-                    <button className="text-[10px] font-bold text-pink-600 hover:underline">View All</button>
+                    <button className="text-xs font-bold text-pink-600 hover:underline">View All</button>
                   </div>
                   <div className="space-y-3">
                     {[
@@ -357,7 +357,7 @@ export default function ClientShell({ children }: { children: ReactNode }) {
                 <section className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h3 className="text-sm font-bold text-slate-900 font-outfit">Architecture Overview</h3>
-                    <span className="text-pink-600 font-black text-[10px]">v2.1</span>
+                    <span className="text-pink-600 font-black text-xs">v2.1</span>
                   </div>
                   <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 shadow-sm">
                     {[
@@ -369,7 +369,7 @@ export default function ClientShell({ children }: { children: ReactNode }) {
                       { label: 'Learner Psychology', value: 'Beginner Confidence Model' },
                       { label: 'Status', value: 'Active', isStatus: true },
                     ].map((row, i) => (
-                      <div key={i} className="flex justify-between items-center text-[10px]">
+                      <div key={i} className="flex justify-between items-center text-xs">
                         <span className="font-bold text-slate-400">{row.label}</span>
                         {row.isStatus ? (
                           <span className="text-emerald-500 font-bold">Active</span>
@@ -385,7 +385,7 @@ export default function ClientShell({ children }: { children: ReactNode }) {
                 <section className="space-y-4">
                   <h3 className="text-sm font-bold text-slate-900 font-outfit">Renderer Mapping Engine</h3>
                   <div className="bg-white border border-slate-200 rounded-2xl p-4 space-y-2 shadow-sm">
-                    <div className="flex justify-between text-[8px] font-black text-slate-400 uppercase px-1">
+                    <div className="flex justify-between text-xs font-black text-slate-400 uppercase px-1">
                       <span>Subsection</span>
                       <span>Renderer</span>
                     </div>
@@ -396,7 +396,7 @@ export default function ClientShell({ children }: { children: ReactNode }) {
                       { type: 'Simple Use Cases', renderer: 'Use Case Grid' },
                       { type: 'Beginner Breakdown', renderer: 'Accordion List' },
                     ].map((row, i) => (
-                      <div key={i} className="flex justify-between items-center bg-slate-50/50 p-2 rounded-lg text-[10px] font-bold">
+                      <div key={i} className="flex justify-between items-center bg-slate-50/50 p-2 rounded-lg text-xs font-bold">
                         <span className="text-slate-600">{row.type}</span>
                         <span className="text-slate-900">{row.renderer}</span>
                       </div>
@@ -415,7 +415,7 @@ export default function ClientShell({ children }: { children: ReactNode }) {
                       { label: 'Real World Connection', value: 'High', color: 'bg-indigo-500' },
                       { label: 'Cognitive Load', value: 'Low', color: 'bg-pink-500' },
                     ].map((item, i) => (
-                      <div key={i} className="flex items-center justify-between text-[10px] font-bold">
+                      <div key={i} className="flex items-center justify-between text-xs font-bold">
                         <div className="flex items-center gap-2">
                           <div className={`w-1.5 h-1.5 rounded-full ${item.color}`}></div>
                           <span className="text-slate-600">{item.label}</span>
@@ -437,7 +437,7 @@ export default function ClientShell({ children }: { children: ReactNode }) {
                   <div className="bg-white/80 backdrop-blur rounded-xl p-5 shadow-2xl border-t border-white/60 -translate-y-1 hover:-translate-y-3 transition-transform cursor-pointer">
                     <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
                       <span className="text-sm font-semibold text-slate-700">Platform Status</span>
-                      <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">All Systems Operational</span>
+                      <span className="bg-emerald-100 text-emerald-700 text-xs font-bold px-2 py-1 rounded uppercase tracking-wider">All Systems Operational</span>
                     </div>
                     <div className="space-y-4">
                       {[
@@ -501,7 +501,7 @@ export default function ClientShell({ children }: { children: ReactNode }) {
                             strokeWidth={2.5}
                           />
                         </div>
-                        <span className="text-[10px] font-bold text-slate-700 leading-tight group-hover:text-slate-900 transition-colors">
+                        <span className="text-xs font-bold text-slate-700 leading-tight group-hover:text-slate-900 transition-colors">
                           {action.label}
                         </span>
                       </button>

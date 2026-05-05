@@ -41,7 +41,7 @@ export default function LaymanGenerationPage() {
               { label: "Subtopic", value: "What is JavaScript?" }
             ].map((field, i) => (
               <div key={i} className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{field.label}</label>
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">{field.label}</label>
                 <div className="relative group">
                   <select className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-700 appearance-none focus:outline-none focus:ring-2 focus:ring-pink-500/10 focus:border-pink-500 transition-all cursor-pointer">
                     <option>{field.value}</option>
@@ -58,12 +58,12 @@ export default function LaymanGenerationPage() {
                 <Layers size={20} />
               </div>
               <div>
-                <p className="text-[10px] font-bold text-pink-600 uppercase tracking-widest">Selected Path</p>
+                <p className="text-xs font-bold text-pink-600 uppercase tracking-widest">Selected Path</p>
                 <p className="text-sm font-bold text-slate-700 mt-0.5">Frontend Development &nbsp;›&nbsp; JavaScript &nbsp;›&nbsp; JavaScript Basics &nbsp;›&nbsp; What is JavaScript?</p>
               </div>
             </div>
             <div className="text-right">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Subtopic ID</p>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Subtopic ID</p>
               <p className="text-xs font-mono font-bold text-slate-500 mt-0.5">sub_8f7a2e1c9d3b4a56</p>
             </div>
           </div>
@@ -79,10 +79,10 @@ export default function LaymanGenerationPage() {
             { id: 5, label: "Publish", status: "pending", color: "bg-[#10B981]", active: false },
           ].map((step, i) => (
             <div key={i} className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${step.active ? 'bg-white border-slate-200 shadow-sm' : 'bg-transparent border-transparent opacity-60'}`}>
-              <div className={`w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-black text-white shrink-0 ${step.color}`}>
+              <div className={`w-6 h-6 rounded-md flex items-center justify-center text-xs font-black text-white shrink-0 ${step.color}`}>
                 {step.id}
               </div>
-              <span className={`text-[11px] font-bold whitespace-nowrap ${step.active ? 'text-slate-900' : 'text-slate-500'}`}>{step.label}</span>
+              <span className={`text-xs font-bold whitespace-nowrap ${step.active ? 'text-slate-900' : 'text-slate-500'}`}>{step.label}</span>
             </div>
           ))}
         </div>
@@ -116,18 +116,18 @@ export default function LaymanGenerationPage() {
                   <div key={i} className={`p-3 rounded-xl border transition-all cursor-pointer group ${i === 0 ? 'bg-pink-50/30 border-pink-100' : 'border-transparent hover:bg-slate-50'}`}>
                     <div className="flex items-start justify-between gap-2 mb-1">
                       <h4 className={`text-[12px] font-bold leading-tight group-hover:text-slate-900 ${i === 0 ? 'text-pink-600' : 'text-slate-700'}`}>{tpl.name}</h4>
-                      <span className={`text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter shrink-0 border ${i === 0 ? 'bg-[#D1FAE5] text-[#065F46] border-[#A7F3D0]' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
+                      <span className={`text-xs font-black px-1.5 py-0.5 rounded uppercase tracking-tighter shrink-0 border ${i === 0 ? 'bg-[#D1FAE5] text-[#065F46] border-[#A7F3D0]' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
                         {tpl.status}
                       </span>
                     </div>
-                    <p className="text-[10px] text-slate-500 line-clamp-2 leading-relaxed">{tpl.text}</p>
-                    <p className="text-[9px] font-bold text-slate-400 mt-2 uppercase tracking-tight">Updated: {tpl.date}</p>
+                    <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">{tpl.text}</p>
+                    <p className="text-xs font-bold text-slate-400 mt-2 uppercase tracking-tight">Updated: {tpl.date}</p>
                   </div>
                 ))}
               </div>
               <div className="p-4 border-t border-slate-50 bg-slate-50/50 flex items-center justify-between">
-                <span className="text-[10px] font-bold text-slate-400">Showing 1 to 5 of 15</span>
-                <button className="text-[10px] font-bold text-pink-600 flex items-center gap-1 hover:underline">View All <ArrowRight size={10} /></button>
+                <span className="text-xs font-bold text-slate-400">Showing 1 to 5 of 15</span>
+                <button className="text-xs font-bold text-pink-600 flex items-center gap-1 hover:underline">View All <ArrowRight size={10} /></button>
               </div>
             </div>
           </div>
@@ -138,7 +138,7 @@ export default function LaymanGenerationPage() {
               <div className="p-4 border-b border-slate-50 flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 p-1 rounded-xl">
                   {["Prompt Templates", "Educational Architectures", "UI Architectures"].map((tab, i) => (
-                    <button key={i} className={`px-4 py-1.5 text-[11px] font-bold rounded-lg transition-all ${i === 0 ? 'bg-white text-pink-600 shadow-sm border border-slate-100' : 'text-slate-500 hover:text-slate-700'}`}>
+                    <button key={i} className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${i === 0 ? 'bg-white text-pink-600 shadow-sm border border-slate-100' : 'text-slate-500 hover:text-slate-700'}`}>
                       {tab}
                     </button>
                   ))}
@@ -157,7 +157,7 @@ export default function LaymanGenerationPage() {
                 {/* Header Info */}
                 <div className="space-y-1">
                   <h3 className="text-sm font-bold text-slate-900 font-outfit">Template: Layman - Beginner Friendly (v2.1)</h3>
-                  <p className="text-[11px] text-slate-500 font-medium">Architecture: Beginner First &nbsp;|&nbsp; UI: Card-Story Format</p>
+                  <p className="text-xs text-slate-500 font-medium">Architecture: Beginner First &nbsp;|&nbsp; UI: Card-Story Format</p>
                 </div>
 
                 {/* Prompt Content */}
@@ -191,7 +191,7 @@ export default function LaymanGenerationPage() {
 
                 {/* Metadata */}
                 <div className="space-y-4 pt-4 border-t border-slate-200/60">
-                   <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                   <h4 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
                      <AlertCircle size={12} /> Prompt Metadata
                    </h4>
                    <div className="grid grid-cols-2 gap-x-12 gap-y-4">
@@ -202,8 +202,8 @@ export default function LaymanGenerationPage() {
                         { label: "Created At", value: "May 24, 2025 11:24 AM" }
                       ].map((meta, i) => (
                         <div key={i} className="flex flex-col gap-0.5">
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{meta.label}</span>
-                          <span className="text-[11px] font-bold text-slate-700">{meta.value}</span>
+                          <span className="text-xs font-bold text-slate-400 uppercase tracking-tight">{meta.label}</span>
+                          <span className="text-xs font-bold text-slate-700">{meta.value}</span>
                         </div>
                       ))}
                    </div>
@@ -232,8 +232,8 @@ export default function LaymanGenerationPage() {
             <div className="bg-white/80 backdrop-blur rounded-xl border-t border-white/60 shadow-2xl overflow-hidden h-[800px] flex flex-col -translate-y-1 hover:-translate-y-3 transition-transform duration-300">
               <div className="p-4 border-b border-slate-50 space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-slate-900 font-outfit">AI Drafts <span className="text-[10px] font-medium text-slate-400 ml-1">(From Pasted Content)</span></h3>
-                  <button className="text-pink-600 bg-pink-50 px-2.5 py-1.5 rounded-lg hover:bg-[#FFE4E6] transition-colors border border-pink-100 text-[10px] font-black flex items-center gap-1">
+                  <h3 className="text-sm font-bold text-slate-900 font-outfit">AI Drafts <span className="text-xs font-medium text-slate-400 ml-1">(From Pasted Content)</span></h3>
+                  <button className="text-pink-600 bg-pink-50 px-2.5 py-1.5 rounded-lg hover:bg-[#FFE4E6] transition-colors border border-pink-100 text-xs font-black flex items-center gap-1">
                     <Plus size={12} /> New Draft
                   </button>
                 </div>
@@ -269,7 +269,7 @@ export default function LaymanGenerationPage() {
                       </span>
                     </div>
                     <div className="mt-3 flex items-center justify-between">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Model: {draft.model} &nbsp;•&nbsp; Score: <span className="text-slate-700">{draft.score}</span></p>
+                      <p className="text-xs font-bold text-slate-400 uppercase tracking-tight">Model: {draft.model} &nbsp;•&nbsp; Score: <span className="text-slate-700">{draft.score}</span></p>
                       <button className="text-slate-400 hover:text-slate-600 transition-colors">
                         <MoreVertical size={14} />
                       </button>
@@ -279,8 +279,8 @@ export default function LaymanGenerationPage() {
                 ))}
               </div>
               <div className="p-4 border-t border-slate-50 bg-slate-50/50 flex items-center justify-between">
-                <span className="text-[10px] font-bold text-slate-400">Showing 1 to 5 of 18 drafts</span>
-                <button className="text-[10px] font-bold text-pink-600 flex items-center gap-1 hover:underline">View All <ArrowRight size={10} /></button>
+                <span className="text-xs font-bold text-slate-400">Showing 1 to 5 of 18 drafts</span>
+                <button className="text-xs font-bold text-pink-600 flex items-center gap-1 hover:underline">View All <ArrowRight size={10} /></button>
               </div>
             </div>
           </div>
