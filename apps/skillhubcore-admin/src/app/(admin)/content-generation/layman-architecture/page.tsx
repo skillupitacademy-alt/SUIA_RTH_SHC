@@ -28,7 +28,7 @@ export default function EducationalArchitecturePage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border-t border-white/60 shadow-xl">
         <div className="space-y-1">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-black text-slate-900 font-outfit tracking-tight">
+            <h1 className="text-2xl md:text-3xl font-bold text-slate-900 font-outfit tracking-tight">
               Educational Architecture – Layman Section
             </h1>
             <span className="bg-pink-50 text-pink-600 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider border border-pink-100">
@@ -53,9 +53,9 @@ export default function EducationalArchitecturePage() {
       </div>
 
       {/* Step 1: Select Scope */}
-      <section className="bg-white/80 backdrop-blur rounded-2xl border-t border-white/60 shadow-2xl p-6 -translate-y-1 hover:-translate-y-2 transition-all duration-300">
+      <section className="bg-white/80 backdrop-blur rounded-xl border-t border-white/60 shadow-2xl p-6 -translate-y-1 hover:-translate-y-3 transition-transform duration-300">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-7 h-7 rounded-lg bg-pink-600 text-white flex items-center justify-center font-bold text-xs shadow-lg shadow-pink-200">1</div>
+          <div className="w-7 h-7 rounded-lg bg-orange-500 text-white flex items-center justify-center font-bold text-xs shadow-lg shadow-orange-200">1</div>
           <h2 className="text-base font-bold text-slate-900 font-outfit">Select Scope</h2>
         </div>
         
@@ -88,14 +88,14 @@ export default function EducationalArchitecturePage() {
       </section>
 
       {/* Step 2: Educational Architecture Management */}
-      <section className="bg-white/80 backdrop-blur rounded-2xl border-t border-white/60 shadow-2xl p-6 -translate-y-1 hover:-translate-y-2 transition-all duration-300">
+      <section className="bg-white/80 backdrop-blur rounded-xl border-t border-white/60 shadow-2xl p-6 -translate-y-1 hover:-translate-y-3 transition-transform duration-300">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
           <div className="flex items-center gap-3">
-            <div className="w-7 h-7 rounded-lg bg-pink-600 text-white flex items-center justify-center font-bold text-xs shadow-lg shadow-pink-200">2</div>
+            <div className="w-7 h-7 rounded-lg bg-orange-500 text-white flex items-center justify-center font-bold text-xs shadow-lg shadow-orange-200">2</div>
             <h2 className="text-base font-bold text-slate-900 font-outfit">Educational Architecture Management</h2>
           </div>
           
-          <button className="flex items-center gap-2 bg-pink-600 text-white px-5 py-2.5 rounded-xl font-bold text-xs shadow-lg shadow-pink-200 hover:bg-pink-700 transition-all active:scale-95">
+          <button className="flex items-center gap-2 bg-orange-500 text-white px-5 py-2.5 rounded-xl font-bold text-xs shadow-lg shadow-orange-200 hover:bg-pink-700 transition-all active:scale-95">
             <Plus size={16} />
             New Architecture
           </button>
@@ -373,7 +373,7 @@ export default function EducationalArchitecturePage() {
                   <p><span className="font-bold text-blue-600 uppercase text-[8px]">Real Life:</span> Like a container in your kitchen where you keep sugar.</p>
                   <p><span className="font-bold text-emerald-600 uppercase text-[8px]">Mental Model:</span> Variable = Name + Value</p>
                 </div>
-                <button className="mt-2 flex items-center justify-center gap-2 w-full py-2 bg-pink-600 text-white rounded-lg text-[10px] font-bold shadow-md shadow-pink-100 active:scale-95 transition-all">
+                <button className="mt-2 flex items-center justify-center gap-2 w-full py-2 bg-orange-500 text-white rounded-lg text-[10px] font-bold shadow-md shadow-pink-100 active:scale-95 transition-all">
                   <PlayCircle size={14} />
                   Preview Full Layman Section
                 </button>

@@ -16,9 +16,9 @@ export default function LaymanGenerationPage() {
       <div className="flex-1 space-y-6 min-w-0">
         
         {/* Step 1: Hierarchy Selection */}
-        <section className="bg-white/80 backdrop-blur rounded-2xl border-t border-white/60 shadow-2xl p-6 space-y-6 -translate-y-1 hover:-translate-y-2 transition-all duration-300">
+        <section className="bg-white/80 backdrop-blur rounded-xl border-t border-white/60 shadow-2xl p-6 space-y-6 -translate-y-1 hover:-translate-y-3 transition-transform duration-300">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-[#E11D48] text-white flex items-center justify-center font-bold text-sm">1</div>
+            <div className="w-8 h-8 rounded-lg bg-pink-500 text-white flex items-center justify-center font-bold text-sm">1</div>
             <h2 className="text-base font-bold text-slate-900 font-outfit">Hierarchy Selection</h2>
           </div>
 
@@ -32,7 +32,7 @@ export default function LaymanGenerationPage() {
               <div key={i} className="space-y-1.5">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{field.label}</label>
                 <div className="relative group">
-                  <select className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-700 appearance-none focus:outline-none focus:ring-2 focus:ring-[#E11D48]/10 focus:border-[#E11D48] transition-all cursor-pointer">
+                  <select className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-700 appearance-none focus:outline-none focus:ring-2 focus:ring-pink-500/10 focus:border-pink-500 transition-all cursor-pointer">
                     <option>{field.value}</option>
                   </select>
                   <ChevronRight size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 rotate-90 pointer-events-none group-hover:text-slate-600 transition-colors" />
@@ -41,13 +41,13 @@ export default function LaymanGenerationPage() {
             ))}
           </div>
 
-          <div className="bg-[#FFF1F2]/50 border border-[#FFE4E6] rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="bg-pink-50/50 border border-pink-100 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-lg bg-white border border-[#FFE4E6] flex items-center justify-center text-[#E11D48] shadow-sm">
+              <div className="w-10 h-10 rounded-lg bg-white border border-pink-100 flex items-center justify-center text-pink-600 shadow-sm">
                 <Layers size={20} />
               </div>
               <div>
-                <p className="text-[10px] font-bold text-[#E11D48] uppercase tracking-widest">Selected Path</p>
+                <p className="text-[10px] font-bold text-pink-600 uppercase tracking-widest">Selected Path</p>
                 <p className="text-sm font-bold text-slate-700 mt-0.5">Frontend Development &nbsp;›&nbsp; JavaScript &nbsp;›&nbsp; JavaScript Basics &nbsp;›&nbsp; What is JavaScript?</p>
               </div>
             </div>
@@ -61,8 +61,8 @@ export default function LaymanGenerationPage() {
         {/* Process Steps Stepper */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           {[
-            { id: 1, label: "Hierarchy Selection", status: "completed", color: "bg-[#E11D48]", active: false },
-            { id: 2, label: "Prompt Generation", status: "active", color: "bg-[#E11D48]", active: true },
+            { id: 1, label: "Hierarchy Selection", status: "completed", color: "bg-pink-500", active: false },
+            { id: 2, label: "Prompt Generation", status: "active", color: "bg-orange-500", active: true },
             { id: 3, label: "AI Paste (Draft)", status: "pending", color: "bg-[#8B5CF6]", active: false },
             { id: 4, label: "Validation", status: "pending", color: "bg-[#F97316]", active: false },
             { id: 5, label: "Publish", status: "pending", color: "bg-[#10B981]", active: false },
@@ -81,17 +81,17 @@ export default function LaymanGenerationPage() {
           
           {/* Column 1: Prompt Templates (xl:col-span-3) */}
           <div className="xl:col-span-3 space-y-4">
-            <div className="bg-white/80 backdrop-blur rounded-2xl border-t border-white/60 shadow-2xl overflow-hidden h-[800px] flex flex-col -translate-y-1 hover:-translate-y-2 transition-all duration-300">
+            <div className="bg-white/80 backdrop-blur rounded-xl border-t border-white/60 shadow-2xl overflow-hidden h-[800px] flex flex-col -translate-y-1 hover:-translate-y-3 transition-transform duration-300">
               <div className="p-4 border-b border-slate-50 space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-bold text-slate-900 font-outfit">Prompt Templates</h3>
-                  <button className="text-[#E11D48] bg-[#FFF1F2] p-1.5 rounded-lg hover:bg-[#FFE4E6] transition-colors border border-[#FFE4E6]">
+                  <button className="text-pink-600 bg-pink-50 p-1.5 rounded-lg hover:bg-[#FFE4E6] transition-colors border border-pink-100">
                     <Plus size={14} />
                   </button>
                 </div>
                 <div className="relative">
                   <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input type="text" placeholder="Search templates..." className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:ring-1 focus:ring-[#E11D48]" />
+                  <input type="text" placeholder="Search templates..." className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:ring-1 focus:ring-pink-500" />
                 </div>
               </div>
               <div className="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1">
@@ -102,9 +102,9 @@ export default function LaymanGenerationPage() {
                   { name: "Layman - Career Switcher (v1.4)", status: "Active", color: "#10B981", text: "For professionals switching to tech", date: "May 10, 2025" },
                   { name: "Layman - Mobile Optimized (v1.3)", status: "Draft", color: "#F97316", text: "Concise content for mobile reading", date: "May 08, 2025" },
                 ].map((tpl, i) => (
-                  <div key={i} className={`p-3 rounded-xl border transition-all cursor-pointer group ${i === 0 ? 'bg-[#FFF1F2]/30 border-[#FFE4E6]' : 'border-transparent hover:bg-slate-50'}`}>
+                  <div key={i} className={`p-3 rounded-xl border transition-all cursor-pointer group ${i === 0 ? 'bg-pink-50/30 border-pink-100' : 'border-transparent hover:bg-slate-50'}`}>
                     <div className="flex items-start justify-between gap-2 mb-1">
-                      <h4 className={`text-[12px] font-bold leading-tight group-hover:text-slate-900 ${i === 0 ? 'text-[#E11D48]' : 'text-slate-700'}`}>{tpl.name}</h4>
+                      <h4 className={`text-[12px] font-bold leading-tight group-hover:text-slate-900 ${i === 0 ? 'text-pink-600' : 'text-slate-700'}`}>{tpl.name}</h4>
                       <span className={`text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter shrink-0 border ${i === 0 ? 'bg-[#D1FAE5] text-[#065F46] border-[#A7F3D0]' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
                         {tpl.status}
                       </span>
@@ -116,24 +116,24 @@ export default function LaymanGenerationPage() {
               </div>
               <div className="p-4 border-t border-slate-50 bg-slate-50/50 flex items-center justify-between">
                 <span className="text-[10px] font-bold text-slate-400">Showing 1 to 5 of 15</span>
-                <button className="text-[10px] font-bold text-[#E11D48] flex items-center gap-1 hover:underline">View All <ArrowRight size={10} /></button>
+                <button className="text-[10px] font-bold text-pink-600 flex items-center gap-1 hover:underline">View All <ArrowRight size={10} /></button>
               </div>
             </div>
           </div>
 
           {/* Column 2: Editor/Viewer (xl:col-span-6) */}
           <div className="xl:col-span-6 space-y-6">
-            <div className="bg-white/80 backdrop-blur rounded-2xl border-t border-white/60 shadow-2xl h-[800px] flex flex-col overflow-hidden relative -translate-y-1 hover:-translate-y-2 transition-all duration-300">
+            <div className="bg-white/80 backdrop-blur rounded-xl border-t border-white/60 shadow-2xl h-[800px] flex flex-col overflow-hidden relative -translate-y-1 hover:-translate-y-3 transition-transform duration-300">
               <div className="p-4 border-b border-slate-50 flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 p-1 rounded-xl">
                   {["Prompt Templates", "Educational Architectures", "UI Architectures"].map((tab, i) => (
-                    <button key={i} className={`px-4 py-1.5 text-[11px] font-bold rounded-lg transition-all ${i === 0 ? 'bg-white text-[#E11D48] shadow-sm border border-slate-100' : 'text-slate-500 hover:text-slate-700'}`}>
+                    <button key={i} className={`px-4 py-1.5 text-[11px] font-bold rounded-lg transition-all ${i === 0 ? 'bg-white text-pink-600 shadow-sm border border-slate-100' : 'text-slate-500 hover:text-slate-700'}`}>
                       {tab}
                     </button>
                   ))}
                 </div>
                 <div className="flex items-center gap-2">
-                  <button className="bg-[#E11D48] text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg shadow-[#E11D48]/20 hover:bg-[#BE185D] transition-all">
+                  <button className="bg-pink-500 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg shadow-pink-500/20 hover:bg-pink-600 transition-all">
                     <Sparkles size={14} /> Generate Prompt
                   </button>
                   <button className="p-2 border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-400 transition-colors">
@@ -218,18 +218,18 @@ export default function LaymanGenerationPage() {
 
           {/* Column 3: AI Drafts (xl:col-span-3) */}
           <div className="xl:col-span-3 space-y-4">
-            <div className="bg-white/80 backdrop-blur rounded-2xl border-t border-white/60 shadow-2xl overflow-hidden h-[800px] flex flex-col -translate-y-1 hover:-translate-y-2 transition-all duration-300">
+            <div className="bg-white/80 backdrop-blur rounded-xl border-t border-white/60 shadow-2xl overflow-hidden h-[800px] flex flex-col -translate-y-1 hover:-translate-y-3 transition-transform duration-300">
               <div className="p-4 border-b border-slate-50 space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-bold text-slate-900 font-outfit">AI Drafts <span className="text-[10px] font-medium text-slate-400 ml-1">(From Pasted Content)</span></h3>
-                  <button className="text-[#E11D48] bg-[#FFF1F2] px-2.5 py-1.5 rounded-lg hover:bg-[#FFE4E6] transition-colors border border-[#FFE4E6] text-[10px] font-black flex items-center gap-1">
+                  <button className="text-pink-600 bg-pink-50 px-2.5 py-1.5 rounded-lg hover:bg-[#FFE4E6] transition-colors border border-pink-100 text-[10px] font-black flex items-center gap-1">
                     <Plus size={12} /> New Draft
                   </button>
                 </div>
                 <div className="flex gap-2">
                    <div className="relative flex-1">
                      <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                     <input type="text" placeholder="Search drafts..." className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:ring-1 focus:ring-[#E11D48]" />
+                     <input type="text" placeholder="Search drafts..." className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:ring-1 focus:ring-pink-500" />
                    </div>
                    <button className="p-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-400 hover:text-slate-600 transition-colors">
                       <Filter size={14} />
@@ -238,17 +238,17 @@ export default function LaymanGenerationPage() {
               </div>
               <div className="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-3">
                 {[
-                  { name: "Draft - What is JavaScript?", model: "GPT-4o", score: "78/100", status: "Draft", color: "#E11D48", date: "May 24, 2025 11:20 AM" },
+                  { name: "Draft - What is JavaScript?", model: "GPT-4o", score: "78/100", status: "Draft", color: "#ec4899", date: "May 24, 2025 11:20 AM" },
                   { name: "Draft - Variables in JS", model: "Claude 3.5", score: "82/100", status: "In Review", color: "#F97316", date: "May 24, 2025 10:45 AM" },
                   { name: "Draft - Data Types", model: "Gemini 1.5 Pro", score: "94/100", status: "Approved", color: "#10B981", date: "May 23, 2025 04:15 PM" },
                   { name: "Draft - Functions in JS", model: "GPT-4o", score: "94/100", status: "Published", color: "#6366F1", date: "May 23, 2025 02:30 PM" },
                   { name: "Draft - Operators", model: "Claude 3.5", score: "45/100", status: "Rejected", color: "#EF4444", date: "May 22, 2025 09:10 PM" },
                 ].map((draft, i) => (
-                  <div key={i} className="p-4 rounded-2xl border border-slate-100 bg-white shadow-sm hover:border-[#E11D48]/30 hover:shadow-lg transition-all group relative cursor-pointer">
+                  <div key={i} className="p-4 rounded-2xl border border-slate-100 bg-white shadow-sm hover:border-pink-500/30 hover:shadow-lg transition-all group relative cursor-pointer">
                     <div className="flex items-start justify-between gap-4">
                       <h4 className="text-[12px] font-bold text-slate-800 leading-tight group-hover:text-slate-900 transition-colors">{draft.name}</h4>
                       <span className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter shrink-0 border ${
-                        draft.status === 'Draft' ? 'bg-[#FFF1F2] text-[#E11D48] border-[#FFE4E6]' :
+                        draft.status === 'Draft' ? 'bg-pink-50 text-pink-600 border-pink-100' :
                         draft.status === 'In Review' ? 'bg-[#FFF7ED] text-[#F97316] border-[#FFEDD5]' :
                         draft.status === 'Approved' ? 'bg-[#F0FDF4] text-[#10B981] border-[#DCFCE7]' :
                         draft.status === 'Published' ? 'bg-[#EEF2FF] text-[#6366F1] border-[#E0E7FF]' :
@@ -269,7 +269,7 @@ export default function LaymanGenerationPage() {
               </div>
               <div className="p-4 border-t border-slate-50 bg-slate-50/50 flex items-center justify-between">
                 <span className="text-[10px] font-bold text-slate-400">Showing 1 to 5 of 18 drafts</span>
-                <button className="text-[10px] font-bold text-[#E11D48] flex items-center gap-1 hover:underline">View All <ArrowRight size={10} /></button>
+                <button className="text-[10px] font-bold text-pink-600 flex items-center gap-1 hover:underline">View All <ArrowRight size={10} /></button>
               </div>
             </div>
           </div>

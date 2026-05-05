@@ -196,15 +196,7 @@ export default function ClientShell({ children }: { children: ReactNode }) {
                 <HelpCircle size={20} />
               </button>
 
-              {/* Right Sidebar Toggle */}
-              <button
-                onClick={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
-                className={`transition-colors p-2 rounded-lg border focus:ring-2 focus:ring-pink-500 outline-none ${isRightSidebarOpen ? 'bg-pink-50 text-pink-600 border-pink-100' : 'bg-slate-50 text-slate-400 border-slate-200 hover:text-slate-600 hover:bg-slate-100'}`}
-                aria-label="Toggle Dashboard Tools"
-                title="Toggle Right Sidebar"
-              >
-                <PanelRight size={20} />
-              </button>
+
 
               <div className="h-8 w-[1px] bg-slate-200 mx-1"></div>
               <button className="flex items-center gap-3 text-left pl-1">
@@ -215,6 +207,18 @@ export default function ClientShell({ children }: { children: ReactNode }) {
                   <p className="text-sm font-bold text-slate-800 leading-none">Super Admin</p>
                   <p className="text-xs text-slate-500 mt-1">Administrator</p>
                 </div>
+              </button>
+
+              <div className="h-8 w-[1px] bg-slate-200 mx-1"></div>
+
+              {/* Right Sidebar Toggle */}
+              <button
+                onClick={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
+                className={`transition-colors p-2 rounded-lg border focus:ring-2 focus:ring-pink-500 outline-none ${isRightSidebarOpen ? 'bg-pink-50 text-pink-600 border-pink-100' : 'bg-slate-50 text-slate-400 border-slate-200 hover:text-slate-600 hover:bg-slate-100'}`}
+                aria-label="Toggle Dashboard Tools"
+                title="Toggle Right Sidebar"
+              >
+                <PanelRight size={20} />
               </button>
             </div>
           </header>
