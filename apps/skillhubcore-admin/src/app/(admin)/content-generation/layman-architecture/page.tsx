@@ -319,40 +319,57 @@ export default function EducationalArchitecturePage() {
         {/* G. Architecture Governance & Versioning */}
         <div className="mt-8 space-y-6">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-slate-900 font-outfit">G. Architecture Governance & Versioning</h3>
+            <h3 className="text-base font-bold text-slate-900 font-outfit">G. Architecture Governance & Versioning</h3>
           </div>
-          <div className="overflow-hidden rounded-xl border-t border-white/60 bg-white/80 backdrop-blur shadow-2xl -translate-y-1 hover:-translate-y-3 transition-transform duration-300">
+          <div className="overflow-hidden rounded-2xl border-t border-white/60 bg-white/80 backdrop-blur shadow-2xl -translate-y-1 hover:-translate-y-3 transition-transform duration-300">
             <table className="w-full text-left border-collapse text-sm font-medium text-slate-600">
-              <thead className="bg-slate-50/80 border-b border-slate-200">
+              <thead className="bg-slate-50/50 border-b border-slate-100">
                 <tr>
-                  <th className="px-6 py-4 text-sm font-bold text-slate-500 uppercase">Version</th>
-                  <th className="px-6 py-4 text-sm font-bold text-slate-500 uppercase">Changes</th>
-                  <th className="px-6 py-4 text-sm font-bold text-slate-500 uppercase">Updated By</th>
-                  <th className="px-6 py-4 text-sm font-bold text-slate-500 uppercase">Updated At</th>
-                  <th className="px-6 py-4 text-sm font-bold text-slate-500 uppercase">Status</th>
-                  <th className="px-6 py-4 text-sm font-bold text-slate-500 uppercase text-right">Actions</th>
+                  <th className="px-6 py-5 text-xs font-bold text-slate-400 uppercase tracking-wider">Version</th>
+                  <th className="px-6 py-5 text-xs font-bold text-slate-400 uppercase tracking-wider">Changes</th>
+                  <th className="px-6 py-5 text-xs font-bold text-slate-400 uppercase tracking-wider">Updated By</th>
+                  <th className="px-6 py-5 text-xs font-bold text-slate-400 uppercase tracking-wider">Updated At</th>
+                  <th className="px-6 py-5 text-xs font-bold text-slate-400 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-5 text-xs font-bold text-slate-400 uppercase tracking-wider text-center">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-50">
                 {[
-                  { v: 'v2.1 (Current)', changes: 'Added Scenario Pack + Improved Flow', user: 'Super Admin', date: 'May 24, 2025 11:20 AM', status: 'Active', isCurrent: true },
-                  { v: 'v2.0', changes: 'Added Visual Metaphor Pack', user: 'Super Admin', date: 'May 15, 2025 09:40 AM', status: 'Archived' },
-                  { v: 'v1.0', changes: 'Initial Architecture', user: 'Super Admin', date: 'Apr 28, 2025 10:10 AM', status: 'Archived' },
+                  { v: 'v2.1', current: '(Current)', changes: 'Added Scenario Pack + Improved Flow', user: 'Super Admin', date: 'May 24, 2025 11:20 AM', status: 'Active', isCurrent: true },
+                  { v: 'v2.0', current: '', changes: 'Added Visual Metaphor Pack', user: 'Super Admin', date: 'May 15, 2025 09:40 AM', status: 'Archived', isCurrent: false },
+                  { v: 'v1.0', current: '', changes: 'Initial Architecture', user: 'Super Admin', date: 'Apr 28, 2025 10:10 AM', status: 'Archived', isCurrent: false },
                 ].map((row, i) => (
-                  <tr key={i} className="hover:bg-slate-50 transition-colors">
-                    <td className={`px-6 py-4 font-bold ${row.isCurrent ? 'text-pink-600' : 'text-slate-400'}`}>{row.v}</td>
-                    <td className="px-6 py-4 font-bold text-slate-700">{row.changes}</td>
-                    <td className="px-6 py-4">{row.user}</td>
-                    <td className="px-6 py-4">{row.date}</td>
-                    <td className="px-6 py-4">
-                      <span className={`px-2.5 py-1 rounded-full text-sm font-bold ${row.status === 'Active' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-500'}`}>
+                  <tr key={i} className="hover:bg-slate-50/30 transition-colors">
+                    <td className="px-6 py-5">
+                      {row.isCurrent ? (
+                        <div className="flex items-center gap-1.5 bg-orange-50/80 border border-orange-100 px-3 py-1 rounded-lg w-fit">
+                          <span className="font-bold text-orange-600">{row.v}</span>
+                          <span className="text-orange-600/70 text-xs font-bold">{row.current}</span>
+                        </div>
+                      ) : (
+                        <span className="px-3 font-bold text-slate-400">{row.v}</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-5 font-bold text-slate-700">{row.changes}</td>
+                    <td className="px-6 py-5 text-slate-500 font-bold">{row.user}</td>
+                    <td className="px-6 py-5 text-slate-500 font-bold">{row.date}</td>
+                    <td className="px-6 py-5">
+                      <span className={`px-4 py-1.5 rounded-lg text-xs font-bold border ${
+                        row.status === 'Active' 
+                        ? 'bg-emerald-50 text-emerald-600 border-emerald-100' 
+                        : 'bg-slate-100 text-slate-500 border-slate-200'
+                      }`}>
                         {row.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-3 text-slate-400">
-                        <button className="hover:text-pink-600"><Eye size={14} /></button>
-                        <button className="hover:text-slate-900"><Download size={14} /></button>
+                    <td className="px-6 py-5">
+                      <div className="flex items-center justify-center gap-3">
+                        <button className="w-9 h-9 rounded-xl border border-slate-200 bg-white flex items-center justify-center text-slate-400 hover:text-pink-600 hover:border-pink-200 transition-all shadow-sm">
+                          <Eye size={18} />
+                        </button>
+                        <button className="w-9 h-9 rounded-xl border border-slate-200 bg-white flex items-center justify-center text-slate-400 hover:text-pink-600 hover:border-pink-200 transition-all shadow-sm">
+                          <Download size={18} />
+                        </button>
                       </div>
                     </td>
                   </tr>
