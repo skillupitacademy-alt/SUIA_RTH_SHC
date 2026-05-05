@@ -8,7 +8,7 @@ import {
   UsersRound, Shield, Activity, HeartPulse, GraduationCap, PlaySquare,
   Menu, Search, Bell, Mail, HelpCircle, ChevronRight, Network, PanelRight,
   Download, Sparkles, History, CheckCircle2, BarChart3, Star, LineChart,
-  UserCog, LayoutGrid, Cpu, Compass, Globe, LayoutList
+  UserCog, LayoutGrid, Cpu, Compass, Globe, LayoutList, Copy, FileDown, FileUp, XCircle, Trash2
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 
@@ -400,6 +400,31 @@ export default function ClientShell({ children }: { children: ReactNode }) {
                         <span className="text-slate-600">{row.type}</span>
                         <span className="text-slate-900">{row.renderer}</span>
                       </div>
+                    ))}
+                  </div>
+                </section>
+
+                {/* Quick Actions (Moved from Page Content) */}
+                <section className="space-y-4">
+                  <h3 className="text-sm font-bold text-slate-900 font-outfit">Quick Actions</h3>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { label: 'Clone Architecture', icon: Copy, color: 'text-purple-600', border: 'border-purple-100', bg: 'bg-purple-50/50' },
+                      { label: 'Export Architecture', icon: FileDown, color: 'text-pink-600', border: 'border-pink-100', bg: 'bg-pink-50/50' },
+                      { label: 'Import Architecture', icon: FileUp, color: 'text-orange-600', border: 'border-orange-100', bg: 'bg-orange-50/50' },
+                      { label: 'Preview Full Layman', icon: Layout, color: 'text-blue-600', border: 'border-blue-100', bg: 'bg-blue-50/50' },
+                      { label: 'Apply to Domain', icon: Globe, color: 'text-emerald-600', border: 'border-emerald-100', bg: 'bg-emerald-50/50' },
+                      { label: 'Create New Version', icon: History, color: 'text-indigo-600', border: 'border-indigo-100', bg: 'bg-indigo-50/50' },
+                      { label: 'Deactivate', icon: XCircle, color: 'text-rose-600', border: 'border-rose-100', bg: 'bg-rose-50/50' },
+                      { label: 'Delete Architecture', icon: Trash2, color: 'text-slate-600', border: 'border-slate-100', bg: 'bg-slate-50/50' },
+                    ].map((action, i) => (
+                      <button
+                        key={i}
+                        className={`flex flex-col items-center justify-center gap-2 p-3 rounded-xl border ${action.border} ${action.bg} ${action.color} transition-all hover:scale-[1.02] active:scale-95 group text-center shadow-sm`}
+                      >
+                        <action.icon size={18} className="shrink-0" />
+                        <span className="text-[10px] font-bold leading-tight">{action.label}</span>
+                      </button>
                     ))}
                   </div>
                 </section>
