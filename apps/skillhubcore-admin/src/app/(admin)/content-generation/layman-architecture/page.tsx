@@ -110,7 +110,7 @@ export default function EducationalArchitecturePage() {
           
           {/* A. Universal Layman Architecture (Left Column) */}
           <div className="col-span-12 xl:col-span-6 space-y-6">
-            <div className="bg-slate-50/50 rounded-2xl border border-slate-100 p-6 space-y-6">
+            <div className="bg-white/80 backdrop-blur rounded-2xl border-t border-white/60 shadow-2xl p-6 space-y-6 -translate-y-1 hover:-translate-y-3 transition-transform duration-300">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-sm font-bold text-slate-900 font-outfit">A. Universal Layman Architecture (Fixed Across All Domains)</h3>
@@ -175,7 +175,7 @@ export default function EducationalArchitecturePage() {
               </button>
 
               {/* Architecture Details Card */}
-              <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4 shadow-sm">
+              <div className="bg-white/80 backdrop-blur rounded-2xl border-t border-white/60 shadow-2xl p-6 space-y-4 -translate-y-1 hover:-translate-y-3 transition-transform duration-300">
                 <div className="flex items-center justify-between">
                   <h4 className="text-xs font-bold text-slate-900">Universal Architecture Details</h4>
                   <span className="bg-emerald-50 text-emerald-600 text-[9px] font-bold px-2 py-0.5 rounded uppercase">Active</span>
@@ -205,7 +205,7 @@ export default function EducationalArchitecturePage() {
             {/* B. Domain-Specific Adaptations & C. Architecture Overview */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* B. Adaptations */}
-              <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-5 shadow-sm">
+              <div className="bg-white/80 backdrop-blur rounded-2xl border-t border-white/60 shadow-2xl p-5 space-y-5 -translate-y-1 hover:-translate-y-3 transition-transform duration-300">
                 <h3 className="text-xs font-bold text-slate-900 font-outfit">B. Domain-Specific Adaptations (Flexible)</h3>
                 <div className="space-y-1.5">
                   <label className="text-[9px] font-bold text-slate-400 uppercase">Domain Type</label>
@@ -237,38 +237,11 @@ export default function EducationalArchitecturePage() {
                 </button>
               </div>
 
-              {/* C. Architecture Overview */}
-              <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-5 shadow-sm">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-bold text-slate-900 font-outfit">C. Architecture Overview</h3>
-                  <span className="text-pink-600 font-black text-[10px]">v2.1</span>
-                </div>
-                <div className="space-y-4">
-                  {[
-                    { label: 'Architecture Name', value: 'Beginner First Universal Model' },
-                    { label: 'Applied Domains', value: '9 Domains' },
-                    { label: 'Total Components', value: '8 Universal Components' },
-                    { label: 'Total Adaptation Packs', value: '6 Packs' },
-                    { label: 'Renderer Mappings', value: '18 Mappings' },
-                    { label: 'Learner Psychology', value: 'Beginner Confidence Model' },
-                    { label: 'Status', value: 'Active', isStatus: true },
-                    { label: 'Last Updated', value: 'May 24, 2025 11:20 AM' },
-                  ].map((row, i) => (
-                    <div key={i} className="flex justify-between items-center text-[10px]">
-                      <span className="font-bold text-slate-400">{row.label}</span>
-                      {row.isStatus ? (
-                        <span className="text-emerald-500 font-bold">Active</span>
-                      ) : (
-                        <span className="font-bold text-slate-700 text-right">{row.value}</span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
+
             </div>
 
             {/* D. Learning Flow (Recommended Sequence) */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-6 shadow-sm">
+            <div className="bg-white/80 backdrop-blur rounded-2xl border-t border-white/60 shadow-2xl p-6 space-y-6 -translate-y-1 hover:-translate-y-3 transition-transform duration-300">
               <h3 className="text-xs font-bold text-slate-900 font-outfit">D. Learning Flow (Recommended Sequence)</h3>
               <div className="flex items-center justify-between relative px-2">
                 <div className="absolute top-1/2 left-0 w-full h-[1px] bg-slate-100 -translate-y-1/2 -z-10"></div>
@@ -289,67 +262,11 @@ export default function EducationalArchitecturePage() {
                     <span className="text-[8px] font-bold text-slate-500 uppercase tracking-tighter">{step.label}</span>
                   </div>
                 ))}
-              </div>
             </div>
-
-            {/* E & F Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* E. Renderer Mapping Engine */}
-              <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4 shadow-sm">
-                <h3 className="text-xs font-bold text-slate-900 font-outfit">E. Renderer Mapping Engine</h3>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-[8px] font-black text-slate-400 uppercase px-1">
-                    <span>Subsection Type</span>
-                    <span>Renderer Type</span>
-                    <span>Domain Override</span>
-                  </div>
-                  {[
-                    { type: 'Simple Overview', renderer: 'Text + Icon Card', override: 'Default' },
-                    { type: 'Everyday Analogy', renderer: 'Analogy Card', override: 'Custom' },
-                    { type: 'Why It Exists', renderer: 'Benefit Card', override: 'Default' },
-                    { type: 'Simple Use Cases', renderer: 'Use Case Grid', override: 'Custom' },
-                    { type: 'Beginner Breakdown', renderer: 'Accordion List', override: 'Default' },
-                    { type: 'Visual Mental Model', renderer: 'Diagram / Visual', override: 'Custom' },
-                    { type: 'Common Confusions', renderer: 'FAQ / Alert Card', override: 'Default' },
-                    { type: 'Simple Recap', renderer: 'Summary Card', override: 'Default' },
-                  ].map((row, i) => (
-                    <div key={i} className="flex justify-between items-center bg-slate-50/50 p-2 rounded-lg text-[10px] font-bold">
-                      <span className="text-slate-600">{row.type}</span>
-                      <span className="text-slate-900">{row.renderer}</span>
-                      <span className={row.override === 'Custom' ? 'text-orange-500' : 'text-emerald-500'}>{row.override}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* F. Beginner Psychology Model */}
-              <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4 shadow-sm">
-                <h3 className="text-xs font-bold text-slate-900 font-outfit">F. Beginner Psychology Model</h3>
-                <div className="space-y-4">
-                  {[
-                    { label: 'Fear Reduction', value: 'High', color: 'bg-blue-500' },
-                    { label: 'Clarity Focus', value: 'Very High', color: 'bg-emerald-500' },
-                    { label: 'Analogy Usage', value: 'High', color: 'bg-orange-500' },
-                    { label: 'Real World Connection', value: 'High', color: 'bg-indigo-500' },
-                    { label: 'Cognitive Load', value: 'Low', color: 'bg-pink-500' },
-                    { label: 'Confidence Building', value: 'Very High', color: 'bg-emerald-500' },
-                    { label: 'Step by Step Flow', value: 'Enabled', color: 'bg-teal-500' },
-                    { label: 'Encouragement Tone', value: 'Friendly', color: 'bg-purple-500' },
-                  ].map((item, i) => (
-                    <div key={i} className="flex items-center justify-between text-[10px] font-bold">
-                      <div className="flex items-center gap-2">
-                        <div className={`w-1.5 h-1.5 rounded-full ${item.color}`}></div>
-                        <span className="text-slate-600">{item.label}</span>
-                      </div>
-                      <span className={item.value === 'Low' ? 'text-pink-600' : 'text-emerald-600'}>{item.value}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+          </div>
 
             {/* Selected Domain Preview (Matching Image) */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4 shadow-sm border-l-4 border-l-pink-500">
+            <div className="bg-white/80 backdrop-blur rounded-2xl border-t border-white/60 shadow-2xl p-6 space-y-4 -translate-y-1 hover:-translate-y-3 transition-transform duration-300 border-l-4 border-l-pink-500">
               <h4 className="text-xs font-bold text-slate-900">Selected Domain Preview</h4>
               <p className="text-[10px] text-slate-400 font-medium italic">How the layman section will look in this domain.</p>
               
@@ -374,7 +291,7 @@ export default function EducationalArchitecturePage() {
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-bold text-slate-900 font-outfit">G. Architecture Governance & Versioning</h3>
           </div>
-          <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div className="overflow-hidden rounded-xl border-t border-white/60 bg-white/80 backdrop-blur shadow-2xl -translate-y-1 hover:-translate-y-3 transition-transform duration-300">
             <table className="w-full text-left border-collapse text-[11px] font-medium text-slate-600">
               <thead className="bg-slate-50/80 border-b border-slate-200">
                 <tr>
@@ -429,7 +346,7 @@ export default function EducationalArchitecturePage() {
               { label: 'Deactivate', icon: XCircle, color: 'text-red-600', border: 'border-red-100', bg: 'bg-red-50' },
               { label: 'Delete Architecture', icon: Trash2, color: 'text-slate-600', border: 'border-slate-100', bg: 'bg-slate-50' },
             ].map((action, i) => (
-              <button key={i} className={`flex items-center gap-3 p-3 rounded-2xl border bg-white ${action.border} hover:shadow-lg hover:-translate-y-1 transition-all group text-left`}>
+              <button key={i} className={`flex items-center gap-3 p-3 rounded-2xl border-t border-white/60 bg-white/80 backdrop-blur shadow-2xl -translate-y-1 hover:-translate-y-3 transition-transform duration-300 group text-left`}>
                 <div className={`w-9 h-9 rounded-xl ${action.bg} ${action.color} flex items-center justify-center shadow-sm`}>
                   <action.icon size={18} />
                 </div>

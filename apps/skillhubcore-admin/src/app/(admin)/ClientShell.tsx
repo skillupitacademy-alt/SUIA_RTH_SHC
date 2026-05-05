@@ -22,8 +22,8 @@ export default function ClientShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
   return (
-    <ShellContext.Provider value={{ 
-      isRightSidebarOpen, 
+    <ShellContext.Provider value={{
+      isRightSidebarOpen,
       toggleRightSidebar: () => setIsRightSidebarOpen(!isRightSidebarOpen),
       headerTitle,
       setHeaderTitle,
@@ -274,7 +274,7 @@ export default function ClientShell({ children }: { children: ReactNode }) {
 
           <div className="p-6 space-y-8 flex-1">
             {/* Conditional Widgets for Layman Generation & Architecture */}
-            {(pathname === '/content-generation/layman' || pathname === '/content-generation/layman-architecture') && (
+            {pathname === '/content-generation/layman' && (
               <>
                 {/* Generation Overview */}
                 <section className="space-y-4">
@@ -343,6 +343,84 @@ export default function ClientShell({ children }: { children: ReactNode }) {
                           <p className="text-[9px] text-slate-400 font-medium">{file.time}</p>
                         </div>
                         <Download size={14} className="text-slate-300 group-hover:text-slate-600 transition-colors" />
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              </>
+            )}
+
+            {/* Specialized Widgets for Layman Architecture */}
+            {pathname === '/content-generation/layman-architecture' && (
+              <>
+                {/* Architecture Overview (Moved from Section C) */}
+                <section className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-bold text-slate-900 font-outfit">Architecture Overview</h3>
+                    <span className="text-pink-600 font-black text-[10px]">v2.1</span>
+                  </div>
+                  <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 shadow-sm">
+                    {[
+                      { label: 'Architecture Name', value: 'Beginner First Universal Model' },
+                      { label: 'Applied Domains', value: '9 Domains' },
+                      { label: 'Total Components', value: '8 Universal Components' },
+                      { label: 'Total Adaptation Packs', value: '6 Packs' },
+                      { label: 'Renderer Mappings', value: '18 Mappings' },
+                      { label: 'Learner Psychology', value: 'Beginner Confidence Model' },
+                      { label: 'Status', value: 'Active', isStatus: true },
+                    ].map((row, i) => (
+                      <div key={i} className="flex justify-between items-center text-[10px]">
+                        <span className="font-bold text-slate-400">{row.label}</span>
+                        {row.isStatus ? (
+                          <span className="text-emerald-500 font-bold">Active</span>
+                        ) : (
+                          <span className="font-bold text-slate-700 text-right">{row.value}</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </section>
+
+                {/* Renderer Mapping Engine (Moved from Section E) */}
+                <section className="space-y-4">
+                  <h3 className="text-sm font-bold text-slate-900 font-outfit">Renderer Mapping Engine</h3>
+                  <div className="bg-white border border-slate-200 rounded-2xl p-4 space-y-2 shadow-sm">
+                    <div className="flex justify-between text-[8px] font-black text-slate-400 uppercase px-1">
+                      <span>Subsection</span>
+                      <span>Renderer</span>
+                    </div>
+                    {[
+                      { type: 'Simple Overview', renderer: 'Text + Icon Card' },
+                      { type: 'Everyday Analogy', renderer: 'Analogy Card' },
+                      { type: 'Why It Exists', renderer: 'Benefit Card' },
+                      { type: 'Simple Use Cases', renderer: 'Use Case Grid' },
+                      { type: 'Beginner Breakdown', renderer: 'Accordion List' },
+                    ].map((row, i) => (
+                      <div key={i} className="flex justify-between items-center bg-slate-50/50 p-2 rounded-lg text-[10px] font-bold">
+                        <span className="text-slate-600">{row.type}</span>
+                        <span className="text-slate-900">{row.renderer}</span>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+
+                {/* Beginner Psychology Model (Moved from Section F) */}
+                <section className="space-y-4">
+                  <h3 className="text-sm font-bold text-slate-900 font-outfit">Beginner Psychology Model</h3>
+                  <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 shadow-sm">
+                    {[
+                      { label: 'Fear Reduction', value: 'High', color: 'bg-blue-500' },
+                      { label: 'Clarity Focus', value: 'Very High', color: 'bg-emerald-500' },
+                      { label: 'Analogy Usage', value: 'High', color: 'bg-orange-500' },
+                      { label: 'Real World Connection', value: 'High', color: 'bg-indigo-500' },
+                      { label: 'Cognitive Load', value: 'Low', color: 'bg-pink-500' },
+                    ].map((item, i) => (
+                      <div key={i} className="flex items-center justify-between text-[10px] font-bold">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-1.5 h-1.5 rounded-full ${item.color}`}></div>
+                          <span className="text-slate-600">{item.label}</span>
+                        </div>
+                        <span className={item.value === 'Low' ? 'text-pink-600' : 'text-emerald-600'}>{item.value}</span>
                       </div>
                     ))}
                   </div>
