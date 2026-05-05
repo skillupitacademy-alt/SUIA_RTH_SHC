@@ -245,21 +245,23 @@ export default function EducationalArchitecturePage() {
             </div>
 
             {/* Selected Domain Preview (Matching Image) */}
-            <div className="bg-white/80 backdrop-blur rounded-2xl border-t border-white/60 shadow-2xl p-6 space-y-4 -translate-y-1 hover:-translate-y-3 transition-transform duration-300 border-l-4 border-l-pink-500">
-              <h4 className="text-xs font-bold text-slate-900">Selected Domain Preview</h4>
-              <p className="text-xs text-slate-400 font-medium italic">How the layman section will look in this domain.</p>
+            <div className="bg-white/80 backdrop-blur rounded-2xl border-t border-white/60 shadow-2xl p-6 space-y-4 -translate-y-1 hover:-translate-y-3 transition-transform duration-300">
+              <h4 className="text-sm font-bold text-[#1E293B] font-outfit">Selected Domain Preview</h4>
+              <p className="text-xs text-slate-500 font-medium">How the layman section will look in this domain.</p>
               
-              <div className="bg-slate-50 rounded-xl p-4 space-y-3">
-                <p className="text-xs font-bold text-slate-800">Example: Explaining "Variable"</p>
-                <div className="space-y-2 text-xs leading-relaxed text-slate-600">
-                  <p><span className="font-bold text-pink-600 uppercase text-xs">Analogy:</span> A variable is like a labeled box where you can store anything.</p>
-                  <p><span className="font-bold text-blue-600 uppercase text-xs">Real Life:</span> Like a container in your kitchen where you keep sugar.</p>
-                  <p><span className="font-bold text-emerald-600 uppercase text-xs">Mental Model:</span> Variable = Name + Value</p>
+              <div className="bg-[#FFF1F2] border border-[#FECDD3] rounded-2xl p-6 space-y-5">
+                <p className="text-xs font-bold text-[#334155]">Example: Explaining "Variable"</p>
+                <div className="space-y-3 text-xs leading-relaxed text-[#475569] font-medium">
+                  <p><span className="font-bold text-[#334155]">Analogy:</span> A variable is like a labeled box where you can store anything.</p>
+                  <p><span className="font-bold text-[#334155]">Real Life:</span> Like a container in your kitchen where you keep sugar.</p>
+                  <p><span className="font-bold text-[#334155]">Mental Model:</span> Variable = Name + Value</p>
                 </div>
-                <button className="mt-2 flex items-center justify-center gap-2 w-full py-2 bg-orange-500 text-white rounded-lg text-xs font-bold shadow-md shadow-pink-100 active:scale-95 transition-all">
-                  <PlayCircle size={14} />
-                  Preview Full Layman Section
-                </button>
+                <div className="flex justify-center pt-2">
+                  <button className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[#F43F5E] text-white rounded-xl text-xs font-bold shadow-lg shadow-pink-200 hover:bg-[#E11D48] active:scale-95 transition-all">
+                    <Plus size={16} />
+                    Preview Full Layman Section
+                  </button>
+                </div>
               </div>
             </div>
           </div>
