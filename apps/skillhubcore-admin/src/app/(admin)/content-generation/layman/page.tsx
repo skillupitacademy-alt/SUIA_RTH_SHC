@@ -29,8 +29,8 @@ export default function LaymanGenerationPage() {
         {/* Step 1: Hierarchy Selection */}
         <section className="bg-white/80 backdrop-blur rounded-xl border-t border-white/60 shadow-2xl p-6 space-y-6 -translate-y-1 hover:-translate-y-3 transition-transform duration-300">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-pink-500 text-white flex items-center justify-center font-bold text-sm">1</div>
-            <h2 className="text-base font-bold text-slate-900 font-outfit">Hierarchy Selection</h2>
+            <div className="w-9 h-9 rounded-lg bg-pink-500 text-white flex items-center justify-center font-bold text-base">1</div>
+            <h2 className="text-lg font-bold text-slate-900 font-outfit">Hierarchy Selection</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
@@ -41,12 +41,12 @@ export default function LaymanGenerationPage() {
               { label: "Subtopic", value: "What is JavaScript?" }
             ].map((field, i) => (
               <div key={i} className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">{field.label}</label>
+                <label className="text-sm font-bold text-slate-400 uppercase tracking-widest ml-1">{field.label}</label>
                 <div className="relative group">
-                  <select className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-700 appearance-none focus:outline-none focus:ring-2 focus:ring-pink-500/10 focus:border-pink-500 transition-all cursor-pointer">
+                  <select className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-base font-semibold text-slate-700 appearance-none focus:outline-none focus:ring-2 focus:ring-pink-500/10 focus:border-pink-500 transition-all cursor-pointer">
                     <option>{field.value}</option>
                   </select>
-                  <ChevronRight size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 rotate-90 pointer-events-none group-hover:text-slate-600 transition-colors" />
+                  <ChevronRight size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 rotate-90 pointer-events-none group-hover:text-slate-600 transition-colors" />
                 </div>
               </div>
             ))}
@@ -58,13 +58,13 @@ export default function LaymanGenerationPage() {
                 <Layers size={20} />
               </div>
               <div>
-                <p className="text-xs font-bold text-pink-600 uppercase tracking-widest">Selected Path</p>
-                <p className="text-sm font-bold text-slate-700 mt-0.5">Frontend Development &nbsp;›&nbsp; JavaScript &nbsp;›&nbsp; JavaScript Basics &nbsp;›&nbsp; What is JavaScript?</p>
+                <p className="text-sm font-bold text-pink-600 uppercase tracking-widest">Selected Path</p>
+                <p className="text-base font-bold text-slate-700 mt-0.5">Frontend Development &nbsp;›&nbsp; JavaScript &nbsp;›&nbsp; JavaScript Basics &nbsp;›&nbsp; What is JavaScript?</p>
               </div>
             </div>
             <div className="text-right">
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Subtopic ID</p>
-              <p className="text-xs font-mono font-bold text-slate-500 mt-0.5">sub_8f7a2e1c9d3b4a56</p>
+              <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Subtopic ID</p>
+              <p className="text-sm font-mono font-bold text-slate-500 mt-0.5">sub_8f7a2e1c9d3b4a56</p>
             </div>
           </div>
         </section>
@@ -79,10 +79,10 @@ export default function LaymanGenerationPage() {
             { id: 5, label: "Publish", status: "pending", color: "bg-[#10B981]", active: false },
           ].map((step, i) => (
             <div key={i} className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${step.active ? 'bg-white border-slate-200 shadow-sm' : 'bg-transparent border-transparent opacity-60'}`}>
-              <div className={`w-6 h-6 rounded-md flex items-center justify-center text-xs font-black text-white shrink-0 ${step.color}`}>
+              <div className={`w-7 h-7 rounded-md flex items-center justify-center text-sm font-black text-white shrink-0 ${step.color}`}>
                 {step.id}
               </div>
-              <span className={`text-xs font-bold whitespace-nowrap ${step.active ? 'text-slate-900' : 'text-slate-500'}`}>{step.label}</span>
+              <span className={`text-sm font-bold whitespace-nowrap ${step.active ? 'text-slate-900' : 'text-slate-500'}`}>{step.label}</span>
             </div>
           ))}
         </div>
@@ -95,14 +95,14 @@ export default function LaymanGenerationPage() {
             <div className="bg-white/80 backdrop-blur rounded-xl border-t border-white/60 shadow-2xl overflow-hidden h-[800px] flex flex-col -translate-y-1 hover:-translate-y-3 transition-transform duration-300">
               <div className="p-4 border-b border-slate-50 space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-slate-900 font-outfit">Prompt Templates</h3>
+                  <h3 className="text-base font-bold text-slate-900 font-outfit">Prompt Templates</h3>
                   <button className="text-pink-600 bg-pink-50 p-1.5 rounded-lg hover:bg-[#FFE4E6] transition-colors border border-pink-100">
-                    <Plus size={14} />
+                    <Plus size={16} />
                   </button>
                 </div>
                 <div className="relative">
-                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input type="text" placeholder="Search templates..." className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:ring-1 focus:ring-pink-500" />
+                  <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input type="text" placeholder="Search templates..." className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-1 focus:ring-pink-500" />
                 </div>
               </div>
               <div className="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1">
@@ -115,19 +115,19 @@ export default function LaymanGenerationPage() {
                 ].map((tpl, i) => (
                   <div key={i} className={`p-3 rounded-xl border transition-all cursor-pointer group ${i === 0 ? 'bg-pink-50/30 border-pink-100' : 'border-transparent hover:bg-slate-50'}`}>
                     <div className="flex items-start justify-between gap-2 mb-1">
-                      <h4 className={`text-[12px] font-bold leading-tight group-hover:text-slate-900 ${i === 0 ? 'text-pink-600' : 'text-slate-700'}`}>{tpl.name}</h4>
+                      <h4 className={`text-sm font-bold leading-tight group-hover:text-slate-900 ${i === 0 ? 'text-pink-600' : 'text-slate-700'}`}>{tpl.name}</h4>
                       <span className={`text-xs font-black px-1.5 py-0.5 rounded uppercase tracking-tighter shrink-0 border ${i === 0 ? 'bg-[#D1FAE5] text-[#065F46] border-[#A7F3D0]' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
                         {tpl.status}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">{tpl.text}</p>
-                    <p className="text-xs font-bold text-slate-400 mt-2 uppercase tracking-tight">Updated: {tpl.date}</p>
+                    <p className="text-sm text-slate-500 line-clamp-2 leading-relaxed">{tpl.text}</p>
+                    <p className="text-sm font-bold text-slate-400 mt-2 uppercase tracking-tight">Updated: {tpl.date}</p>
                   </div>
                 ))}
               </div>
               <div className="p-4 border-t border-slate-50 bg-slate-50/50 flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-400">Showing 1 to 5 of 15</span>
-                <button className="text-xs font-bold text-pink-600 flex items-center gap-1 hover:underline">View All <ArrowRight size={10} /></button>
+                <span className="text-sm font-bold text-slate-400">Showing 1 to 5 of 15</span>
+                <button className="text-sm font-bold text-pink-600 flex items-center gap-1 hover:underline">View All <ArrowRight size={12} /></button>
               </div>
             </div>
           </div>
@@ -138,17 +138,17 @@ export default function LaymanGenerationPage() {
               <div className="p-4 border-b border-slate-50 flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 p-1 rounded-xl">
                   {["Prompt Templates", "Educational Architectures", "UI Architectures"].map((tab, i) => (
-                    <button key={i} className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${i === 0 ? 'bg-white text-pink-600 shadow-sm border border-slate-100' : 'text-slate-500 hover:text-slate-700'}`}>
+                    <button key={i} className={`px-4 py-1.5 text-sm font-bold rounded-lg transition-all ${i === 0 ? 'bg-white text-pink-600 shadow-sm border border-slate-100' : 'text-slate-500 hover:text-slate-700'}`}>
                       {tab}
                     </button>
                   ))}
                 </div>
                 <div className="flex items-center gap-2">
-                  <button className="bg-pink-500 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg shadow-pink-500/20 hover:bg-pink-600 transition-all">
-                    <Sparkles size={14} /> Generate Prompt
+                  <button className="bg-pink-500 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 shadow-lg shadow-pink-500/20 hover:bg-pink-600 transition-all">
+                    <Sparkles size={16} /> Generate Prompt
                   </button>
                   <button className="p-2 border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-400 transition-colors">
-                    <Download size={16} />
+                    <Download size={18} />
                   </button>
                 </div>
               </div>
@@ -156,19 +156,19 @@ export default function LaymanGenerationPage() {
               <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-8 bg-slate-50/20">
                 {/* Header Info */}
                 <div className="space-y-1">
-                  <h3 className="text-sm font-bold text-slate-900 font-outfit">Template: Layman - Beginner Friendly (v2.1)</h3>
-                  <p className="text-xs text-slate-500 font-medium">Architecture: Beginner First &nbsp;|&nbsp; UI: Card-Story Format</p>
+                  <h3 className="text-base font-bold text-slate-900 font-outfit">Template: Layman - Beginner Friendly (v2.1)</h3>
+                  <p className="text-sm text-slate-500 font-medium">Architecture: Beginner First &nbsp;|&nbsp; UI: Card-Story Format</p>
                 </div>
 
                 {/* Prompt Content */}
                 <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
                   <div className="space-y-4">
-                    <p className="text-sm text-slate-700 leading-relaxed font-medium italic">
+                    <p className="text-base text-slate-700 leading-relaxed font-medium italic">
                       "You are an expert educator who explains complex technical topics in the simplest possible way for absolute beginners."
                     </p>
                     <div className="space-y-2">
-                      <h4 className="text-[12px] font-bold text-slate-900 uppercase tracking-widest border-b border-slate-100 pb-2">Topic Context:</h4>
-                      <p className="text-xs text-slate-600 leading-relaxed">
+                      <h4 className="text-sm font-bold text-slate-900 uppercase tracking-widest border-b border-slate-100 pb-2">Topic Context:</h4>
+                      <p className="text-sm text-slate-600 leading-relaxed">
                         Domain: Frontend Development<br />
                         Subject: JavaScript<br />
                         Topic: JavaScript Basics<br />
@@ -176,8 +176,8 @@ export default function LaymanGenerationPage() {
                       </p>
                     </div>
                     <div className="space-y-3">
-                      <h4 className="text-[12px] font-bold text-slate-900 uppercase tracking-widest border-b border-slate-100 pb-2">Generation Rules:</h4>
-                      <ul className="text-xs text-slate-600 space-y-2 list-disc list-inside">
+                      <h4 className="text-sm font-bold text-slate-900 uppercase tracking-widest border-b border-slate-100 pb-2">Generation Rules:</h4>
+                      <ul className="text-sm text-slate-600 space-y-2 list-disc list-inside">
                         <li>1. Simple Overview - Explain the concept as if talking to a 5-year-old.</li>
                         <li>2. Real-life Analogy - Use a familiar non-tech example.</li>
                         <li>3. Why It Exists - The problem it solves in plain words.</li>
@@ -191,8 +191,8 @@ export default function LaymanGenerationPage() {
 
                 {/* Metadata */}
                 <div className="space-y-4 pt-4 border-t border-slate-200/60">
-                   <h4 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
-                     <AlertCircle size={12} /> Prompt Metadata
+                   <h4 className="text-sm font-bold text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                     <AlertCircle size={14} /> Prompt Metadata
                    </h4>
                    <div className="grid grid-cols-2 gap-x-12 gap-y-4">
                       {[
@@ -202,8 +202,8 @@ export default function LaymanGenerationPage() {
                         { label: "Created At", value: "May 24, 2025 11:24 AM" }
                       ].map((meta, i) => (
                         <div key={i} className="flex flex-col gap-0.5">
-                          <span className="text-xs font-bold text-slate-400 uppercase tracking-tight">{meta.label}</span>
-                          <span className="text-xs font-bold text-slate-700">{meta.value}</span>
+                          <span className="text-sm font-bold text-slate-400 uppercase tracking-tight">{meta.label}</span>
+                          <span className="text-sm font-bold text-slate-700">{meta.value}</span>
                         </div>
                       ))}
                    </div>
@@ -212,15 +212,15 @@ export default function LaymanGenerationPage() {
 
               {/* Bottom Actions */}
               <div className="p-4 border-t border-slate-50 flex items-center justify-between shrink-0">
-                <button className="flex items-center gap-2 px-4 py-2 bg-pink-500 text-white rounded-xl text-xs font-bold hover:bg-pink-600 transition-all shadow-lg shadow-pink-500/10">
-                  <Copy size={14} /> Copy Prompt
+                <button className="flex items-center gap-2 px-4 py-2 bg-pink-500 text-white rounded-xl text-sm font-bold hover:bg-pink-600 transition-all shadow-lg shadow-pink-500/10">
+                  <Copy size={16} /> Copy Prompt
                 </button>
                 <div className="flex items-center gap-2">
-                  <button className="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all">
-                    <Download size={14} /> Export .txt
+                  <button className="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all">
+                    <Download size={16} /> Export .txt
                   </button>
-                  <button className="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all">
-                    <FileText size={14} /> Export .json
+                  <button className="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all">
+                    <FileText size={16} /> Export .json
                   </button>
                 </div>
               </div>
@@ -232,18 +232,18 @@ export default function LaymanGenerationPage() {
             <div className="bg-white/80 backdrop-blur rounded-xl border-t border-white/60 shadow-2xl overflow-hidden h-[800px] flex flex-col -translate-y-1 hover:-translate-y-3 transition-transform duration-300">
               <div className="p-4 border-b border-slate-50 space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-slate-900 font-outfit">AI Drafts <span className="text-xs font-medium text-slate-400 ml-1">(From Pasted Content)</span></h3>
-                  <button className="text-pink-600 bg-pink-50 px-2.5 py-1.5 rounded-lg hover:bg-[#FFE4E6] transition-colors border border-pink-100 text-xs font-black flex items-center gap-1">
-                    <Plus size={12} /> New Draft
+                  <h3 className="text-base font-bold text-slate-900 font-outfit">AI Drafts <span className="text-sm font-medium text-slate-400 ml-1">(From Pasted Content)</span></h3>
+                  <button className="text-pink-600 bg-pink-50 px-2.5 py-1.5 rounded-lg hover:bg-[#FFE4E6] transition-colors border border-pink-100 text-sm font-black flex items-center gap-1">
+                    <Plus size={14} /> New Draft
                   </button>
                 </div>
                 <div className="flex gap-2">
                    <div className="relative flex-1">
-                     <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                     <input type="text" placeholder="Search drafts..." className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:ring-1 focus:ring-pink-500" />
+                     <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                     <input type="text" placeholder="Search drafts..." className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-1 focus:ring-pink-500" />
                    </div>
                    <button className="p-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-400 hover:text-slate-600 transition-colors">
-                      <Filter size={14} />
+                      <Filter size={16} />
                    </button>
                 </div>
               </div>
@@ -257,8 +257,8 @@ export default function LaymanGenerationPage() {
                 ].map((draft, i) => (
                   <div key={i} className="p-4 rounded-2xl border border-slate-100 bg-white shadow-sm hover:border-pink-500/30 hover:shadow-lg transition-all group relative cursor-pointer">
                     <div className="flex items-start justify-between gap-4">
-                      <h4 className="text-[12px] font-bold text-slate-800 leading-tight group-hover:text-slate-900 transition-colors">{draft.name}</h4>
-                      <span className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter shrink-0 border ${
+                      <h4 className="text-sm font-bold text-slate-800 leading-tight group-hover:text-slate-900 transition-colors">{draft.name}</h4>
+                      <span className={`text-xs font-black px-1.5 py-0.5 rounded uppercase tracking-tighter shrink-0 border ${
                         draft.status === 'Draft' ? 'bg-pink-50 text-pink-600 border-pink-100' :
                         draft.status === 'In Review' ? 'bg-[#FFF7ED] text-[#F97316] border-[#FFEDD5]' :
                         draft.status === 'Approved' ? 'bg-[#F0FDF4] text-[#10B981] border-[#DCFCE7]' :
@@ -269,18 +269,18 @@ export default function LaymanGenerationPage() {
                       </span>
                     </div>
                     <div className="mt-3 flex items-center justify-between">
-                      <p className="text-xs font-bold text-slate-400 uppercase tracking-tight">Model: {draft.model} &nbsp;•&nbsp; Score: <span className="text-slate-700">{draft.score}</span></p>
+                      <p className="text-sm font-bold text-slate-400 uppercase tracking-tight">Model: {draft.model} &nbsp;•&nbsp; Score: <span className="text-slate-700">{draft.score}</span></p>
                       <button className="text-slate-400 hover:text-slate-600 transition-colors">
-                        <MoreVertical size={14} />
+                        <MoreVertical size={16} />
                       </button>
                     </div>
-                    <p className="text-[9px] font-bold text-slate-300 mt-2 uppercase tracking-tight">Created: {draft.date}</p>
+                    <p className="text-xs font-bold text-slate-300 mt-2 uppercase tracking-tight">Created: {draft.date}</p>
                   </div>
                 ))}
               </div>
               <div className="p-4 border-t border-slate-50 bg-slate-50/50 flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-400">Showing 1 to 5 of 18 drafts</span>
-                <button className="text-xs font-bold text-pink-600 flex items-center gap-1 hover:underline">View All <ArrowRight size={10} /></button>
+                <span className="text-sm font-bold text-slate-400">Showing 1 to 5 of 18 drafts</span>
+                <button className="text-sm font-bold text-pink-600 flex items-center gap-1 hover:underline">View All <ArrowRight size={12} /></button>
               </div>
             </div>
           </div>
