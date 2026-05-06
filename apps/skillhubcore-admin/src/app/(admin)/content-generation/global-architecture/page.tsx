@@ -76,6 +76,11 @@ export default function GlobalArchitecturePage() {
   }, []);
 
   const activeData = architectures[activeSectionKey];
+  
+  // Find the UI/UX counterpart for the active section to sync renderer mapping
+  const uiuxKey = uiuxKeys.find(k => k.startsWith(activeSectionKey.replace('_architecture', '')));
+  const uiuxData = uiuxKey ? architectures[uiuxKey] : null;
+
   if (!activeData) return <div className="p-10 font-bold text-slate-500">Loading Architecture...</div>;
 
   const isUiUxMode = activeSectionKey.includes('uiux');
@@ -1474,7 +1479,7 @@ Writing Guidelines:
                         </div>
                      </div>
                      <div className="p-1.5 bg-slate-100/50 rounded-3xl flex gap-1 overflow-x-auto hide-scrollbar">
-                        {['Layout', 'Typography', 'Interaction', 'Performance', 'Accessibility', 'Variants'].map((tab, i) => (
+                        {['Component Linkage', 'Layout', 'Typography', 'Interaction', 'Performance', 'Accessibility', 'Variants'].map((tab, i) => (
                            <button 
                               key={tab} 
                               onClick={() => setConfigTab(tab)}
@@ -1486,15 +1491,82 @@ Writing Guidelines:
                      </div>
                   </div>
                   <div className="p-10 flex-1 overflow-y-auto custom-scrollbar space-y-12">
+                     {configTab === 'Component Linkage' && (
+                        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-12">
+                           <div>
+                              <h3 className="text-xs font-black text-slate-900 mb-8 uppercase tracking-[0.2em]">Architecture Renderer Linkage</h3>
+                              <div className="space-y-8">
+                                 <div className="p-8 bg-indigo-50 border-2 border-indigo-100 rounded-[2.5rem] relative overflow-hidden group">
+                                    <div className="relative z-10 flex flex-col md:flex-row items-center gap-10">
+                                       <div className="w-32 h-32 bg-white rounded-3xl shadow-xl flex items-center justify-center border-4 border-white ring-8 ring-indigo-50 group-hover:scale-110 transition-all duration-700">
+                                          {(() => {
+                                             const Icon = getIconForComponent(0);
+                                             return <Icon size={48} className="text-indigo-600" />;
+                                          })()}
+                                       </div>
+                                       <div className="flex-1 space-y-4">
+                                          <div className="flex items-center gap-3">
+                                             <span className="px-4 py-1 bg-indigo-600 text-white text-[10px] font-black rounded-full uppercase tracking-widest">Selected Component</span>
+                                             <ArrowRight size={14} className="text-indigo-300" />
+                                             <span className="text-lg font-black text-indigo-900">{selectedComponentKey ? formatTitle(selectedComponentKey) : 'Select a Component'}</span>
+                                          </div>
+                                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                             <div className="bg-white/60 p-5 rounded-2xl border border-indigo-100/50">
+                                                <span className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Target Renderer</span>
+                                                <span className="text-[15px] font-black text-slate-800">{selectedComponentKey && activeData.universal_architecture_fixed?.[selectedComponentKey]?.renderer || 'N/A'}</span>
+                                             </div>
+                                             <div className="bg-white/60 p-5 rounded-2xl border border-indigo-100/50">
+                                                <span className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Mapping Status</span>
+                                                <span className="text-[15px] font-black text-emerald-600 flex items-center gap-2"><CheckCircle2 size={16}/> Verified in JSON</span>
+                                             </div>
+                                          </div>
+                                       </div>
+                                    </div>
+                                 </div>
+
+                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="bg-white p-8 rounded-[2rem] border-2 border-slate-100 shadow-sm hover:border-indigo-100 transition-all">
+                                       <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-widest mb-6">Renderer Strategy</h4>
+                                       <div className="space-y-4">
+                                          {[
+                                             { label: 'Component Type', value: selectedComponentKey && (activeData.renderer_mapping_engine?.[selectedComponentKey]?.component || uiuxData?.renderer_mapping_engine?.[selectedComponentKey]?.component || 'Default') },
+                                             { label: 'Layout Model', value: selectedComponentKey && (activeData.renderer_mapping_engine?.[selectedComponentKey]?.layout || uiuxData?.renderer_mapping_engine?.[selectedComponentKey]?.layout || 'Standard') },
+                                             { label: 'Hydration Strategy', value: 'Server Side' },
+                                             { label: 'Cache Policy', value: 'Optimized' }
+                                          ].map(item => (
+                                             <div key={item.label} className="flex justify-between items-center py-3 border-b border-slate-50 last:border-0">
+                                                <span className="text-[13px] font-medium text-slate-500">{item.label}</span>
+                                                <span className="text-[13px] font-black text-slate-900 uppercase tracking-tighter">{item.value}</span>
+                                             </div>
+                                          ))}
+                                       </div>
+                                    </div>
+                                    <div className="bg-slate-900 p-8 rounded-[2rem] shadow-xl text-white">
+                                       <h4 className="text-[11px] font-black text-white/50 uppercase tracking-widest mb-6">JSON Source Preview</h4>
+                                       <div className="bg-black/30 rounded-2xl p-6 font-mono text-[10px] text-indigo-300 overflow-x-auto">
+                                          <pre>
+                                             {JSON.stringify(selectedComponentKey ? {
+                                                architecture: activeData.universal_architecture_fixed?.[selectedComponentKey],
+                                                mapping: activeData.renderer_mapping_engine?.[selectedComponentKey] || uiuxData?.renderer_mapping_engine?.[selectedComponentKey]
+                                             } : {}, null, 2)}
+                                          </pre>
+                                       </div>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                     )}
+
                      {configTab === 'Layout' && (
                         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-12">
                            <div>
                               <h3 className="text-xs font-black text-slate-900 mb-6 uppercase tracking-[0.2em]">Layout Architecture</h3>
                               <div className="grid grid-cols-3 gap-6">
                                  {[
-                                    { label: 'Desktop Layout', value: activeData.renderer_mapping_engine?.layout_architecture?.desktop_layout || 'Standard', icon: Monitor },
-                                    { label: 'Tablet Layout', value: activeData.renderer_mapping_engine?.layout_architecture?.tablet_layout || 'Compact', icon: Tablet },
-                                    { label: 'Mobile Layout', value: activeData.renderer_mapping_engine?.layout_architecture?.mobile_layout || 'Stack', icon: Smartphone }
+                                    { label: 'Desktop Layout', value: activeData.renderer_mapping_engine?.layout_architecture?.desktop_layout || uiuxData?.page_shell_architecture?.layout_modes?.desktop?.content_grid || 'Standard', icon: Monitor },
+                                    { label: 'Tablet Layout', value: activeData.renderer_mapping_engine?.layout_architecture?.tablet_layout || uiuxData?.page_shell_architecture?.layout_modes?.tablet?.content_grid || 'Compact', icon: Tablet },
+                                    { label: 'Mobile Layout', value: activeData.renderer_mapping_engine?.layout_architecture?.mobile_layout || uiuxData?.page_shell_architecture?.layout_modes?.mobile?.content_grid || 'Stack', icon: Smartphone }
                                  ].map((item, i) => (
                                     <div key={item.label} className="bg-slate-50/50 border-2 border-slate-100 p-6 rounded-[1.5rem] flex flex-col items-center gap-4 group hover:border-indigo-200 transition-all">
                                        <item.icon size={24} className="text-slate-400 group-hover:text-indigo-600 transition-colors" />
@@ -1577,6 +1649,97 @@ Writing Guidelines:
                                        </div>
                                     </div>
                                  ))}
+                              </div>
+                           </div>
+                        </div>
+                     )}
+
+                     {configTab === 'Typography' && (
+                        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-12">
+                           <div>
+                              <h3 className="text-xs font-black text-slate-900 mb-8 uppercase tracking-[0.2em]">Visual Hierarchy & Typography</h3>
+                              <div className="grid grid-cols-1 gap-8">
+                                 <div className="bg-slate-50/50 p-8 rounded-[2rem] border-2 border-slate-100">
+                                    <div className="flex items-center gap-4 mb-6">
+                                       <div className="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center"><Type size={20}/></div>
+                                       <span className="text-[13px] font-black text-slate-800 uppercase tracking-widest">Font Scale Strategy</span>
+                                    </div>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                       {(uiuxData?.design_system?.typography_system?.font_scales ? Object.entries(uiuxData.design_system.typography_system.font_scales) : ['Heading 1', 'Heading 2', 'Body Large', 'Body Small']).map(item => {
+                                          const label = Array.isArray(item) ? item[0] : item;
+                                          const value = Array.isArray(item) ? (item[1] || '1.25rem') : '1.25rem';
+                                          return (
+                                             <div key={label} className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                                                <span className="block text-[10px] font-black text-slate-400 mb-2 uppercase tracking-tighter">{formatTitle(label)}</span>
+                                                <span className="text-[15px] font-black text-slate-800">{value}</span>
+                                             </div>
+                                          );
+                                       })}
+                                    </div>
+                                 </div>
+                                 
+                                 <div className="grid grid-cols-2 gap-6">
+                                    <div className="bg-white p-8 rounded-[2rem] border-2 border-slate-100 hover:border-indigo-100 transition-all">
+                                       <div className="flex items-center gap-4 mb-6">
+                                          <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center"><Layers size={20}/></div>
+                                          <span className="text-[13px] font-black text-slate-800 uppercase tracking-widest">Spacing Rules</span>
+                                       </div>
+                                       <div className="space-y-4">
+                                          <div className="flex justify-between items-center"><span className="text-xs text-slate-500 font-bold">Base Unit</span><span className="text-xs font-black text-slate-900">4px</span></div>
+                                          <div className="flex justify-between items-center"><span className="text-xs text-slate-500 font-bold">Grid Gutter</span><span className="text-xs font-black text-slate-900">24px</span></div>
+                                          <div className="flex justify-between items-center"><span className="text-xs text-slate-500 font-bold">Container Padding</span><span className="text-xs font-black text-slate-900">32px</span></div>
+                                       </div>
+                                    </div>
+                                    <div className="bg-white p-8 rounded-[2rem] border-2 border-slate-100 hover:border-indigo-100 transition-all">
+                                       <div className="flex items-center gap-4 mb-6">
+                                          <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center"><Palette size={20}/></div>
+                                          <span className="text-[13px] font-black text-slate-800 uppercase tracking-widest">Color Roles</span>
+                                       </div>
+                                       <div className="flex gap-3">
+                                          {['#4F46E5', '#10B981', '#F59E0B', '#EF4444'].map(color => (
+                                             <div key={color} className="w-8 h-8 rounded-full border-2 border-white shadow-sm ring-1 ring-slate-200" style={{ backgroundColor: color }} />
+                                          ))}
+                                       </div>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                     )}
+
+                     {configTab === 'Variants' && (
+                        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-12">
+                           <div>
+                              <h3 className="text-xs font-black text-slate-900 mb-8 uppercase tracking-[0.2em]">Brand & Content Variants</h3>
+                              <div className="space-y-8">
+                                 <div className="p-8 bg-indigo-600 rounded-[2.5rem] shadow-xl shadow-indigo-100 text-white relative overflow-hidden group">
+                                    <div className="absolute right-[-10%] top-[-20%] w-64 h-64 bg-white/10 rounded-full blur-3xl group-hover:scale-125 transition-transform duration-1000"></div>
+                                    <div className="relative z-10 flex items-center justify-between">
+                                       <div className="space-y-2">
+                                          <h4 className="text-xl font-black">Shared Core Architecture</h4>
+                                          <p className="text-white/70 text-xs font-medium max-w-sm">When enabled, this component uses the global shared logic before applying brand-specific overrides.</p>
+                                       </div>
+                                       <div className={`w-16 h-8 bg-white/20 rounded-full relative px-1.5 flex items-center transition-all cursor-pointer border border-white/30`}>
+                                          <div className={`w-5 h-5 bg-white rounded-full ml-auto shadow-lg`}></div>
+                                       </div>
+                                    </div>
+                                 </div>
+
+                                 <div className="grid grid-cols-1 gap-5">
+                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-2">Prompt Adaptation Variants</h4>
+                                    {Object.keys(activeData.domain_adaptations_flexible?.prompt_variants || uiuxData?.design_system?.component_library || {}).map(variant => (
+                                       <div key={variant} className="flex items-center justify-between p-6 bg-white border-2 border-slate-100 rounded-3xl hover:border-indigo-100 transition-all cursor-pointer group">
+                                          <div className="flex items-center gap-5">
+                                             <div className="w-12 h-12 rounded-2xl bg-slate-50 text-slate-400 flex items-center justify-center group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-all"><Zap size={22}/></div>
+                                             <div>
+                                                <span className="block text-sm font-black text-slate-800">{formatTitle(variant)}</span>
+                                                <span className="text-[11px] text-slate-500 font-medium">Customized instruction set for {variant.replace('_', ' ')} path</span>
+                                             </div>
+                                          </div>
+                                          <ChevronRight size={18} className="text-slate-300 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" />
+                                       </div>
+                                    ))}
+                                 </div>
                               </div>
                            </div>
                         </div>
