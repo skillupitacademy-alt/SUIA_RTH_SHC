@@ -16,15 +16,19 @@ import { ProjectContent } from './TutorialEngine/components/notes/ProjectContent
 import { QuizContent } from './TutorialEngine/components/notes/QuizContent';
 import { TabFooter } from './TutorialEngine/components/notes/TabFooter';
 
+import { SubtopicViewPage } from './SubtopicViewPage';
+
 export interface SubtopicNotesPageProps {
-  data: SubtopicNotesViewData;
+  notesData: SubtopicNotesViewData;
+  overviewData: any; // SubtopicViewData type
+  subtopicId?: string;
 }
 
-export function SubtopicNotesPage({ data }: SubtopicNotesPageProps) {
+export function SubtopicNotesPage({ notesData, overviewData, subtopicId = 'component-architecture' }: SubtopicNotesPageProps) {
   const brand = useBrand();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('notes');
+  const [activeTab, setActiveTab] = useState('overview');
   
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -35,6 +39,7 @@ export function SubtopicNotesPage({ data }: SubtopicNotesPageProps) {
   }, []);
 
   const orderedTabs = [
+    { id: 'overview', label: 'Overview' },
     { id: 'notes', label: 'Full Notes' },
     { id: 'layman', label: 'Layman Explanation' },
     { id: 'real-life', label: 'Real Life Examples' },
@@ -47,12 +52,13 @@ export function SubtopicNotesPage({ data }: SubtopicNotesPageProps) {
   ];
 
   const handleTabChange = (id: string) => {
-    if (id === 'overview') {
-      window.location.href = '/start-learning/subtopic';
-      return;
-    }
     const url = new URL(window.location.href);
-    url.searchParams.set('tab', id);
+    if (id === 'overview') {
+      // Remove tab parameter for overview
+      url.searchParams.delete('tab');
+    } else {
+      url.searchParams.set('tab', id);
+    }
     window.history.pushState({}, '', url);
     setActiveTab(id);
     setIsSidebarOpen(false);
@@ -84,7 +90,7 @@ export function SubtopicNotesPage({ data }: SubtopicNotesPageProps) {
 
       {/* Top Navigation Bar */}
       <SubtopicTopBar
-        data={data.nav}
+        data={notesData.nav}
         isLeftOpen={isSidebarOpen}
         isRightOpen={isRightSidebarOpen}
         onToggleLeft={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -104,7 +110,7 @@ export function SubtopicNotesPage({ data }: SubtopicNotesPageProps) {
         )}
         {/* Left Sidebar - Learning Path */}
         <NotesLeftSidebar
-          data={data.leftSidebar}
+          data={notesData.leftSidebar}
           isOpen={isSidebarOpen}
           activeId={activeTab}
           onSelect={handleTabChange}
@@ -128,36 +134,39 @@ export function SubtopicNotesPage({ data }: SubtopicNotesPageProps) {
                   <ChevronRight size={14} className="text-slate-400" />
                   <a href="#" className="hover:text-slate-900 transition-colors">JavaScript</a>
                   <ChevronRight size={14} className="text-slate-400" />
-                  <a href="/start-learning/subtopic" className="hover:text-slate-900 transition-colors">Component Architecture</a>
+                  <a href={`/start-learning/subtopic/${subtopicId}`} className="hover:text-slate-900 transition-colors">{notesData.mainContent.title}</a>
                   <ChevronRight size={14} className="text-slate-400" />
                   <span className="break-words text-slate-950 cursor-default" style={{ color: brand.primaryColorDark }}>
-                    {orderedTabs.find(t => t.id === activeTab)?.label || 'Notes'}
+                    {orderedTabs.find(t => t.id === activeTab)?.label || 'Overview'}
                   </span>
                 </nav>
 
+                {activeTab === 'overview' && (
+                  <SubtopicViewPage data={overviewData} hideTopBar={true} hideSidebars={true} subtopicId={subtopicId} />
+                )}
                 {activeTab === 'notes' && (
-                  <NotesMainContent data={data.mainContent} isStandalone={false} />
+                  <NotesMainContent data={notesData.mainContent} isStandalone={false} />
                 )}
                 {activeTab === 'layman' && (
-                  <LaymanExplanationContent data={data.mainContent.laymanExplanation} />
+                  <LaymanExplanationContent data={notesData.mainContent.laymanExplanation} />
                 )}
                 {activeTab === 'real-life' && (
-                  <RealLifeExamplesContent data={data.mainContent.realLifeExamples} />
+                  <RealLifeExamplesContent data={notesData.mainContent.realLifeExamples} />
                 )}
                 {activeTab === 'technical-deep-dive' && (
-                  <TechnicalDeepDiveContent data={data.mainContent.technicalDeepDive} />
+                  <TechnicalDeepDiveContent data={notesData.mainContent.technicalDeepDive} />
                 )}
                 {activeTab === 'code-example' && (
-                  <CodeExampleContent />
+                  <CodeExampleContent data={notesData.mainContent.codeExample} />
                 )}
                 {activeTab === 'assignments' && (
-                  <AssignmentContent />
+                  <AssignmentContent data={notesData.mainContent.assignment} />
                 )}
                 {activeTab === 'project' && (
-                  <ProjectContent />
+                  <ProjectContent data={notesData.mainContent.project} />
                 )}
                 {activeTab === 'quiz' && (
-                  <QuizContent />
+                  <QuizContent data={notesData.mainContent.quiz} />
                 )}
                 {activeTab === 'ai-tutor' && (
                   <section className="min-w-0 space-y-6 rounded-[32px] bg-white/80 backdrop-blur-xl p-5 shadow-2xl border-t border-white/60 transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] sm:p-8">
@@ -166,12 +175,12 @@ export function SubtopicNotesPage({ data }: SubtopicNotesPageProps) {
                         <Bot size={24} aria-hidden="true" />
                       </div>
                       <div className="min-w-0">
-                        <h1 className="break-words text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">{data.rightSidebar.aiTutor.title}</h1>
+                        <h1 className="break-words text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">{notesData.rightSidebar.aiTutor.title}</h1>
                         <p className="break-words text-sm font-medium text-slate-800">Component Architecture support thread</p>
                       </div>
                     </div>
                     <div className="space-y-4">
-                      {data.rightSidebar.aiTutor.messages.map((message, index) => (
+                      {notesData.rightSidebar.aiTutor.messages.map((message, index) => (
                         <div key={index} className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
                           <div className="max-w-full rounded-2xl px-4 py-3 text-sm font-medium leading-relaxed text-slate-950 shadow-sm sm:max-w-[80%]" style={{ backgroundColor: message.sender === 'user' ? `${brand.primaryColor}15` : '#f8fafc' }}>
                             <p className="break-words">{message.text}</p>
@@ -184,7 +193,7 @@ export function SubtopicNotesPage({ data }: SubtopicNotesPageProps) {
                       <input
                         type="text"
                         aria-label={`Ask ${brand.tutorLabel}`}
-                        placeholder={data.rightSidebar.aiTutor.inputPlaceholder}
+                        placeholder={notesData.rightSidebar.aiTutor.inputPlaceholder}
                         className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-4 pr-12 text-sm font-medium text-slate-950 placeholder:text-slate-700 focus:outline-none focus:ring-2"
                         style={{ '--tw-ring-color': brand.primaryColor } as React.CSSProperties}
                       />
@@ -202,25 +211,25 @@ export function SubtopicNotesPage({ data }: SubtopicNotesPageProps) {
                       </div>
                       <div className="min-w-0">
                         <h1 className="break-words text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">Progress Tracker</h1>
-                        <p className="break-words text-sm font-medium text-slate-800">{data.leftSidebar.progress.message}</p>
+                        <p className="break-words text-sm font-medium text-slate-800">{notesData.leftSidebar.progress.message}</p>
                       </div>
                     </div>
                     <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-3">
                       <div className="rounded-2xl border border-slate-100 bg-slate-50 p-5">
                         <p className="text-[11px] font-bold uppercase tracking-wider text-slate-700">Course</p>
-                        <p className="mt-2 break-words text-lg font-bold text-slate-950">{data.rightSidebar.courseProgress.courseName}</p>
+                        <p className="mt-2 break-words text-lg font-bold text-slate-950">{notesData.rightSidebar.courseProgress.courseName}</p>
                       </div>
                       <div className="rounded-2xl border border-slate-100 bg-slate-50 p-5">
                         <p className="text-[11px] font-bold uppercase tracking-wider text-slate-700">Completion</p>
-                        <p className="mt-2 text-lg font-bold text-slate-950">{data.rightSidebar.courseProgress.label}</p>
+                        <p className="mt-2 text-lg font-bold text-slate-950">{notesData.rightSidebar.courseProgress.label}</p>
                       </div>
                       <div className="rounded-2xl border border-slate-100 bg-slate-50 p-5">
                         <p className="text-[11px] font-bold uppercase tracking-wider text-slate-700">XP</p>
-                        <p className="mt-2 flex items-center gap-2 text-lg font-bold text-emerald-800"><Star size={18} aria-hidden="true" /> +{data.rightSidebar.xpStats.earned} XP</p>
+                        <p className="mt-2 flex items-center gap-2 text-lg font-bold text-emerald-800"><Star size={18} aria-hidden="true" /> +{notesData.rightSidebar.xpStats.earned} XP</p>
                       </div>
                     </div>
                     <div className="space-y-3">
-                      {data.leftSidebar.items.filter(item => item.id !== 'overview').slice(0, 8).map((item) => (
+                      {notesData.leftSidebar.items.filter(item => item.id !== 'overview').slice(0, 8).map((item) => (
                         <div key={item.id} className="flex min-w-0 items-center gap-3 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
                           <CheckCircle2 size={18} className={item.status === 'completed' ? 'text-emerald-800' : 'text-slate-400'} aria-hidden="true" />
                           <span className="min-w-0 break-words text-sm font-bold text-slate-900">{item.label}</span>
@@ -246,7 +255,7 @@ export function SubtopicNotesPage({ data }: SubtopicNotesPageProps) {
 
         {/* Right Sidebar - Stats & Tutor */}
         <NotesRightSidebar
-          data={data.rightSidebar}
+          data={notesData.rightSidebar}
           isOpen={isRightSidebarOpen}
           activeTab={activeTab}
         />

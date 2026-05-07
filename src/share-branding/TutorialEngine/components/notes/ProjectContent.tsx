@@ -4,28 +4,48 @@ import React, { useState } from 'react';
 import * as Icons from 'lucide-react';
 import { useBrand } from '../../../PostLandingPage/app/context/BrandContext';
 
-export function ProjectContent({ onNext }: { onNext?: () => void }) {
+export function ProjectContent({ data, onNext }: { 
+  data?: {
+    title: string;
+    description: string;
+    xp: number;
+    deadline: string;
+    hero: {
+      badge: string;
+      title: string;
+      description: string;
+      image: string;
+    };
+    realWorldUse: string;
+    skills: string[];
+    buildItems: string[];
+    deliverables: string[];
+  };
+  onNext?: () => void;
+}) {
   const brand = useBrand();
   const [activeTab, setActiveTab] = useState('overview');
+
+  // Use data from props or fallback to defaults
+  const title = data?.title || 'Capstone Project';
+  const description = data?.description || 'Master concepts through this hands-on project.';
+  const xp = data?.xp || 500;
+  const deadline = data?.deadline || '2 Days Left';
+  const hero = data?.hero || {
+    badge: 'project',
+    title: 'Default Project',
+    description: 'Build something amazing.',
+    image: '/project_mockup.svg'
+  };
+  const realWorldUse = data?.realWorldUse || 'Real-world applications';
+  const skills = data?.skills || ['Skill 1', 'Skill 2'];
+  const buildItems = data?.buildItems || ['Build item 1', 'Build item 2'];
+  const deliverables = data?.deliverables || ['Deliverable 1', 'Deliverable 2'];
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: <Icons.Search size={18} /> },
     { id: 'features', label: 'Features', icon: <Icons.Zap size={18} /> },
     { id: 'resources', label: 'Resources', icon: <Icons.Link size={18} /> },
-  ];
-
-  const buildItems = [
-    'Create a Component for the User Table Header.',
-    'Build a row component that handles individual user data.',
-    'Implement a Modal component for adding new users.',
-    'Use composition to build the full Dashboard page.'
-  ];
-
-  const deliverableItems = [
-    'Fully functional React dashboard.',
-    'Source code on GitHub repository.',
-    'A short video demo of the UI interactions.',
-    'Project documentation and README.'
   ];
 
   return (
@@ -34,17 +54,17 @@ export function ProjectContent({ onNext }: { onNext?: () => void }) {
       {/* Header */}
       <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0 space-y-1">
-          <h1 className="break-words text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl lg:text-4xl">Capstone Project</h1>
-          <p className="text-[14px] font-medium text-slate-800">Master Component Architecture through this hands-on project.</p>
+          <h1 className="break-words text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl lg:text-4xl">{title}</h1>
+          <p className="text-[14px] font-medium text-slate-800">{description}</p>
         </div>
         <div className="flex shrink-0 flex-wrap items-center gap-3">
           <div className="flex items-center gap-1.5 rounded-xl bg-orange-50 px-4 py-2 border border-orange-100 shadow-sm">
              <Icons.Trophy size={16} className="text-orange-600" />
-             <span className="text-xs font-bold text-orange-950">+500 XP</span>
+             <span className="text-xs font-bold text-orange-950">+{xp} XP</span>
           </div>
           <div className="flex items-center gap-1.5 rounded-xl bg-slate-50 px-4 py-2 border border-slate-100 shadow-sm">
              <Icons.Calendar size={16} className="text-slate-600" />
-             <span className="text-xs font-bold text-slate-950">2 Days Left</span>
+             <span className="text-xs font-bold text-slate-950">{deadline}</span>
           </div>
         </div>
       </div>
@@ -58,13 +78,13 @@ export function ProjectContent({ onNext }: { onNext?: () => void }) {
                  className="inline-flex items-center rounded-full px-4 py-1 text-[11px] font-bold tracking-wide uppercase shadow-sm"
                  style={{ backgroundColor: `${brand.primaryColor}15`, color: brand.primaryColorDark }}
                >
-                 intermediate project
+                 {hero.badge}
                </div>
                <h2 className="break-words text-2xl font-bold leading-tight text-slate-900 sm:text-3xl lg:text-4xl">
-                  User Management <br/> <span style={{ color: brand.primaryColorDark }}>System Dashboard</span>
+                  {hero.title.split(' ').slice(0, -1).join(' ')} <br/> <span style={{ color: brand.primaryColorDark }}>{hero.title.split(' ').slice(-1)}</span>
                </h2>
                <p className="text-[16px] font-medium leading-relaxed text-slate-800">
-                  Build a professional User Management Dashboard where every part of the interface is a modular, reusable component. This project will test your ability to compose complex layouts from simple building blocks.
+                  {hero.description}
                </p>
                
                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -73,7 +93,7 @@ export function ProjectContent({ onNext }: { onNext?: () => void }) {
                           <Icons.Layers size={18} aria-hidden="true" />
                           <span className="text-xs font-bold uppercase tracking-widest">Real-world Use</span>
                        </div>
-                       <p className="text-[11px] font-bold text-slate-800">Admin dashboards, CRM systems, user panels</p>
+                       <p className="text-[11px] font-bold text-slate-800">{realWorldUse}</p>
                     </div>
                     <div className="rounded-2xl bg-white p-5 shadow-sm space-y-3 border border-slate-200">
                        <div className="flex items-center gap-2 text-orange-950">
@@ -81,7 +101,7 @@ export function ProjectContent({ onNext }: { onNext?: () => void }) {
                           <span className="text-xs font-bold uppercase tracking-widest">Skills You'll Use</span>
                        </div>
                        <div className="flex flex-wrap gap-1.5">
-                          {['Promises', 'async/await', 'Fetch API', 'Error Handling', 'DOM', 'JSON'].map(s => (
+                          {skills.map(s => (
                              <span key={s} className="px-2 py-0.5 rounded-md bg-slate-100 text-[9px] font-bold text-slate-800 uppercase border border-slate-200">{s}</span>
                           ))}
                        </div>
@@ -94,8 +114,8 @@ export function ProjectContent({ onNext }: { onNext?: () => void }) {
                <div className="relative transform hover:scale-105 transition-transform duration-700">
                   <div className="rounded-[32px] overflow-hidden shadow-2xl border border-rose-100/30 bg-white">
                      <img 
-                        src="/project_mockup.svg" 
-                        alt="User Management Dashboard Mockup" 
+                        src={hero.image}
+                        alt="Project Mockup" 
                         className="w-full h-auto"
                      />
                   </div>
@@ -154,7 +174,7 @@ export function ProjectContent({ onNext }: { onNext?: () => void }) {
                   <h2 className="text-xl font-bold text-slate-950 tracking-tight">Deliverables</h2>
                </div>
                <ul className="space-y-5">
-                   {deliverableItems.map((item, i) => (
+                   {deliverables.map((item, i) => (
                     <li key={i} className="flex items-center gap-4">
                        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-950 border border-emerald-200">
                           <Icons.Check size={14} aria-hidden="true" />

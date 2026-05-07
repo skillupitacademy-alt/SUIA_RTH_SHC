@@ -4,29 +4,38 @@ import React from 'react';
 import * as Icons from 'lucide-react';
 import { useBrand } from '../../../PostLandingPage/app/context/BrandContext';
 
-export function AssignmentContent({ onNext }: { onNext?: () => void }) {
+export function AssignmentContent({ data, onNext }: { 
+  data?: {
+    title: string;
+    description: string;
+    xp: number;
+    duration: string;
+    task: {
+      title: string;
+      description: string;
+      requirements: string[];
+    };
+    objectives: string[];
+    starterCode: string;
+    submissionGuidelines: string[];
+  };
+  onNext?: () => void;
+}) {
   const brand = useBrand();
 
-  const starterCode = `// 1. Define your components
-function Navbar() { return <div>Navbar</div>; }
-function Sidebar() { return <div>Sidebar</div>; }
-function ProfileCard({ user }) { 
-  return <div>{user.name}</div>; 
-}
-
-// 2. Compose them
-function App() {
-  const user = { name: "John Doe" };
-  return (
-    <div>
-      <Navbar />
-      <Sidebar />
-      <ProfileCard user={user} />
-    </div>
-  );
-}
-
-render(<App />);`;
+  // Use data from props or fallback to defaults
+  const title = data?.title || 'Assignment';
+  const description = data?.description || 'Apply concepts to a real-world task.';
+  const xp = data?.xp || 150;
+  const duration = data?.duration || '20 Mins';
+  const task = data?.task || {
+    title: 'Default Task',
+    description: 'Complete the assignment.',
+    requirements: ['Requirement 1', 'Requirement 2']
+  };
+  const objectives = data?.objectives || ['Objective 1', 'Objective 2'];
+  const starterCode = data?.starterCode || '// Starter code here';
+  const submissionGuidelines = data?.submissionGuidelines || ['Submit your code', 'Test before submitting'];
 
   return (
     <div className="min-w-0 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20 sm:space-y-12">
@@ -34,17 +43,17 @@ render(<App />);`;
       {/* Header */}
       <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0 space-y-1">
-          <h1 className="break-words text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl lg:text-4xl">Assignment</h1>
-          <p className="text-[14px] font-medium text-slate-800">Apply Component Architecture to a real-world task.</p>
+          <h1 className="break-words text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl lg:text-4xl">{title}</h1>
+          <p className="text-[14px] font-medium text-slate-800">{description}</p>
         </div>
         <div className="flex shrink-0 flex-wrap items-center gap-3">
           <div className="flex items-center gap-1.5 rounded-xl bg-emerald-50 px-4 py-2 border border-emerald-100 shadow-sm">
              <Icons.Zap size={16} className="text-emerald-600" />
-             <span className="text-xs font-bold text-emerald-950">+150 XP</span>
+             <span className="text-xs font-bold text-emerald-950">+{xp} XP</span>
           </div>
           <div className="flex items-center gap-1.5 rounded-xl bg-orange-50 px-4 py-2 border border-orange-100 shadow-sm">
              <Icons.Clock size={16} className="text-orange-600" />
-             <span className="text-xs font-bold text-orange-950">20 Mins</span>
+             <span className="text-xs font-bold text-orange-950">{duration}</span>
           </div>
         </div>
       </div>
@@ -56,18 +65,13 @@ render(<App />);`;
              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-orange-100 text-orange-950 border border-orange-200">
                 <Icons.Target size={22} aria-hidden="true" />
              </div>
-             <h2 className="break-words text-xl font-bold text-slate-900">Task: Profile Dashboard Composition</h2>
+             <h2 className="break-words text-xl font-bold text-slate-900">Task: {task.title}</h2>
           </div>
           <p className="text-[16px] font-medium leading-relaxed text-slate-800">
-            Your task is to refactor a monolithic dashboard into three clean, reusable components. The final result should:
+            {task.description}
           </p>
           <ul className="ml-0 space-y-4 sm:ml-6">
-            {[
-              'Contain a separate <Navbar /> component for branding.',
-              'Contain a <Sidebar /> component for navigation links.',
-              'Contain a <ProfileCard /> component to display user details.',
-              'Compose all three into a single cohesive layout.'
-            ].map((item, i) => (
+            {task.requirements.map((item, i) => (
               <li key={i} className="flex items-start gap-3 text-[14px] font-medium text-slate-800">
                 <div className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-rose-900" />
                 <span className="min-w-0 break-words">{item}</span>
@@ -86,13 +90,7 @@ render(<App />);`;
           <h2 className="text-xl font-bold text-slate-900">Requirements</h2>
         </div>
         <ul className="space-y-5">
-          {[
-            'Use Functional Components for all parts.',
-            'Props must be used to pass data to the ProfileCard.',
-            'Each component must be self-contained.',
-            'Maintain a clear parent-child relationship.',
-            'Code must be clean and well-commented.'
-          ].map((item, i) => (
+          {objectives.map((item, i) => (
             <li key={i} className="flex items-start gap-4 text-[14px] font-medium text-slate-700">
               <div className="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-100 text-indigo-950 border border-indigo-200">
                 <Icons.Check size={14} strokeWidth={4} aria-hidden="true" />
@@ -157,11 +155,7 @@ render(<App />);`;
                <h2 className="text-xl font-bold text-slate-900">Submission Guidelines</h2>
             </div>
             <ul className="space-y-4">
-               {[
-                 'Submit only the component architecture code.',
-                 'Do not modify the render call at the bottom.',
-                 'Test your code structure before submitting.'
-               ].map((item, i) => (
+               {submissionGuidelines.map((item, i) => (
                  <li key={i} className="flex items-start gap-3 text-[14px] font-medium text-slate-800">
                     <div className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-sky-950" />
                     <span className="min-w-0 break-words">{item}</span>

@@ -4,40 +4,33 @@ import React, { useState } from 'react';
 import * as Icons from 'lucide-react';
 import { useBrand } from '../../../PostLandingPage/app/context/BrandContext';
 
-export function CodeExampleContent() {
+export function CodeExampleContent({ data }: { 
+  data?: {
+    title: string;
+    description: string;
+    examples: Array<{
+      title: string;
+      file: string;
+    }>;
+    code: string;
+    output: string;
+    tip: string;
+  }
+}) {
   const brand = useBrand();
   const [activeExample, setActiveExample] = useState(0);
 
-  const examples = [
+  // Use data from props or fallback to defaults
+  const examples = data?.examples || [
     { title: 'Example 1: Basic Component', file: 'user-profile.tsx' },
     { title: 'Example 2: State & Lifecycle', file: 'counter.tsx' },
     { title: 'Example 3: Composition', file: 'app-layout.tsx' }
   ];
 
-  const code = `// 1. Defining a Functional Component
-const UserProfile = ({ name, role }) => {
-  return (
-    <div className="profile-card">
-      <h2>{name}</h2>
-      <p>{role}</p>
-    </div>
-  );
-};
-
-// 2. Using the Component with Props
-const App = () => {
-  return (
-    <div className="container">
-      <h1>Team Members</h1>
-      <UserProfile 
-        name="${brand.name}" 
-        role="Senior Developer" 
-      />
-    </div>
-  );
-};
-
-console.log("Component rendered successfully.");`;
+  const code = data?.code || `// Default code example`;
+  const title = data?.title || 'Code Example';
+  const description = data?.description || 'See how Component Architecture works in real code.';
+  const tip = data?.tip || 'Try modifying the code to see how it works.';
 
   const renderCode = (codeText: string) => {
     return codeText.split('\n').map((line, i) => {
@@ -63,10 +56,10 @@ console.log("Component rendered successfully.");`;
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="space-y-2">
           <div className="flex min-w-0 flex-wrap items-center gap-3">
-            <h1 className="break-words text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl lg:text-4xl">Code Example</h1>
+            <h1 className="break-words text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl lg:text-4xl">{title}</h1>
             <span className="rounded-full bg-orange-100 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-orange-950 border border-orange-200">Practical</span>
           </div>
-          <p className="text-[15px] font-medium text-slate-800">See how Component Architecture works in real code. Try it, run it, and observe the output.</p>
+          <p className="text-[15px] font-medium text-slate-800">{description}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <button className="flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-slate-800 shadow-sm transition-all hover:bg-slate-50 active:scale-95 border border-slate-200" aria-label="Bookmark this code example">
@@ -196,7 +189,7 @@ console.log("Component rendered successfully.");`;
                <Icons.Lightbulb size={18} className="text-amber-700 shrink-0 mt-0.5" aria-hidden="true" />
                 <p className="text-[12px] font-bold text-slate-900 leading-relaxed">
                   <span className="text-amber-800 uppercase tracking-tighter mr-1 font-bold">Tip:</span> 
-                  Change name = 'Your Name' on line 16 to see the component update in real-time.
+                  {tip}
                 </p>
             </div>
         </section>

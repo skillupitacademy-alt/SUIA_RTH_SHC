@@ -13,15 +13,18 @@ import { ChevronRight } from 'lucide-react';
 
 interface SubtopicViewPageProps {
   data: SubtopicViewData;
+  hideTopBar?: boolean;
+  hideSidebars?: boolean;
+  subtopicId?: string;
 }
 
-export function SubtopicViewPage({ data }: SubtopicViewPageProps) {
+export function SubtopicViewPage({ data, hideTopBar = false, hideSidebars = false, subtopicId = 'component-architecture' }: SubtopicViewPageProps) {
   const brand = useBrand();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
 
   return (
-    <div className="flex h-screen w-full flex-col overflow-hidden bg-[#F8FAFC]">
+    <div className={hideTopBar ? "w-full" : "flex h-screen w-full flex-col overflow-hidden bg-[#F8FAFC]"}>
       {/* Dynamic Branding Styles */}
       <style dangerouslySetInnerHTML={{
         __html: `
@@ -38,82 +41,119 @@ export function SubtopicViewPage({ data }: SubtopicViewPageProps) {
       `}} />
 
       {/* Top Navigation Bar */}
-      <SubtopicTopBar
-        data={data.nav}
-        isLeftOpen={isSidebarOpen}
-        isRightOpen={isRightSidebarOpen}
-        onToggleLeft={() => setIsSidebarOpen(!isSidebarOpen)}
-        onToggleRight={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
-      />
-
-      <div className="relative flex min-w-0 flex-1 overflow-hidden">
-        {/* Left Sidebar - Curriculum & Progress */}
-        <SubtopicSidebar
-          data={data.subtopic.sidebar}
-          progress={{
-            percentage: data.subtopic.overallProgress?.percentage || 0,
-            checklist: data.subtopic.overallProgress?.checklist || []
-          }}
-          isOpen={isSidebarOpen}
-          onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+      {!hideTopBar && (
+        <SubtopicTopBar
+          data={data.nav}
+          isLeftOpen={isSidebarOpen}
+          isRightOpen={isRightSidebarOpen}
+          onToggleLeft={() => setIsSidebarOpen(!isSidebarOpen)}
+          onToggleRight={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
         />
+      )}
+
+      <div className={hideTopBar ? "w-full" : "relative flex min-w-0 flex-1 overflow-hidden"}>
+        {/* Left Sidebar - Curriculum & Progress */}
+        {!hideSidebars && (
+          <SubtopicSidebar
+            data={data.subtopic.sidebar}
+            progress={{
+              percentage: data.subtopic.overallProgress?.percentage || 0,
+              checklist: data.subtopic.overallProgress?.checklist || []
+            }}
+            isOpen={isSidebarOpen}
+            onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+          />
+        )}
 
         {/* Main Scrollable Content */}
-        <main 
-          tabIndex={0} 
-          className="min-w-0 flex-1 overflow-y-auto hide-scrollbar bg-slate-50/30 focus:outline-none"
-          onClick={() => {
-            if (isSidebarOpen) setIsSidebarOpen(false);
-            if (isRightSidebarOpen) setIsRightSidebarOpen(false);
-          }}
-        >
-          <div className="mx-auto flex min-h-full w-full max-w-[1600px] min-w-0 flex-col px-4 py-6 transition-all duration-500 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
-            {/* Main Content Body */}
-            <div className="min-w-0 flex-1 space-y-8 lg:space-y-10">
-                {/* Breadcrumbs */}
-                <nav aria-label="Breadcrumbs" className="flex min-w-0 flex-wrap items-center gap-2 text-sm font-bold text-slate-600">
-                  <span className="hover:text-slate-900 cursor-pointer transition-colors">Home</span>
-                  <ChevronRight size={16} className="text-slate-400" />
-                  <span className="hover:text-slate-900 cursor-pointer transition-colors">JavaScript</span>
-                  <ChevronRight size={16} className="text-slate-400" />
-                  <span className="break-words font-black text-primary-dark">Component Architecture</span>
-                </nav>
+        {hideTopBar ? (
+          <div 
+            tabIndex={0} 
+            className="w-full"
+          >
+            <div className="w-full space-y-8">
+              {/* Main Content Body */}
+              <div className="min-w-0 flex-1 space-y-8 lg:space-y-10">
+                  {/* Header Section */}
+                  <SubtopicHeader data={{
+                    title: data.subtopic.title,
+                    description: data.subtopic.description,
+                    progress: data.subtopic.progress,
+                    progressLabel: data.subtopic.progressLabel,
+                    metadata: data.subtopic.metadata
+                  }} />
 
-                {/* Header Section */}
-                <SubtopicHeader data={{
-                  title: data.subtopic.title,
-                  description: data.subtopic.description,
-                  progress: data.subtopic.progress,
-                  progressLabel: data.subtopic.progressLabel,
-                  metadata: data.subtopic.metadata
-                }} />
-
-                {/* Content Grid Area */}
-                <div className="min-h-[400px] min-w-0">
-                  <SubtopicContentGrid
-                    content={data.subtopic.content}
-                    tasks={data.subtopic.tasks}
-                  />
-                </div>
-            </div>
-
-            {/* Standardized Navigation Footer */}
-            <div className="mt-12 pt-8">
-                <TabFooter 
-                    prevLabel={data.subtopic.navigation.prev.title}
-                    nextLabel={data.subtopic.navigation.next.title}
-                    onPrev={() => console.log('Prev Topic')}
-                    onNext={() => console.log('Next Topic')}
-                />
+                  {/* Content Grid Area */}
+                  <div className="min-h-[400px] min-w-0">
+                    <SubtopicContentGrid
+                      content={data.subtopic.content}
+                      tasks={data.subtopic.tasks}
+                      subtopicId={subtopicId}
+                    />
+                  </div>
+              </div>
             </div>
           </div>
-        </main>
+        ) : (
+          <main 
+            tabIndex={0} 
+            className="min-w-0 flex-1 overflow-y-auto hide-scrollbar bg-slate-50/30 focus:outline-none"
+            onClick={() => {
+              if (isSidebarOpen) setIsSidebarOpen(false);
+              if (isRightSidebarOpen) setIsRightSidebarOpen(false);
+            }}
+          >
+            <div className="mx-auto flex min-h-full w-full max-w-[1600px] min-w-0 flex-col px-4 py-6 transition-all duration-500 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+              {/* Main Content Body */}
+              <div className="min-w-0 flex-1 space-y-8 lg:space-y-10">
+                  {/* Breadcrumbs */}
+                  <nav aria-label="Breadcrumbs" className="flex min-w-0 flex-wrap items-center gap-2 text-sm font-bold text-slate-600">
+                    <span className="hover:text-slate-900 cursor-pointer transition-colors">Home</span>
+                    <ChevronRight size={16} className="text-slate-400" />
+                    <span className="hover:text-slate-900 cursor-pointer transition-colors">JavaScript</span>
+                    <ChevronRight size={16} className="text-slate-400" />
+                    <span className="break-words font-black text-primary-dark">Component Architecture</span>
+                  </nav>
+
+                  {/* Header Section */}
+                  <SubtopicHeader data={{
+                    title: data.subtopic.title,
+                    description: data.subtopic.description,
+                    progress: data.subtopic.progress,
+                    progressLabel: data.subtopic.progressLabel,
+                    metadata: data.subtopic.metadata
+                  }} />
+
+                  {/* Content Grid Area */}
+                  <div className="min-h-[400px] min-w-0">
+                    <SubtopicContentGrid
+                      content={data.subtopic.content}
+                      tasks={data.subtopic.tasks}
+                      subtopicId={subtopicId}
+                    />
+                  </div>
+              </div>
+
+              {/* Standardized Navigation Footer */}
+              <div className="mt-12 pt-8">
+                  <TabFooter 
+                      prevLabel={data.subtopic.navigation.prev.title}
+                      nextLabel={data.subtopic.navigation.next.title}
+                      onPrev={() => console.log('Prev Topic')}
+                      onNext={() => console.log('Next Topic')}
+                  />
+              </div>
+            </div>
+          </main>
+        )}
 
         {/* Right Sidebar - Stats & Tutor */}
-        <SubtopicRightPanel
-          data={data.rightSidebar}
-          isOpen={isRightSidebarOpen}
-        />
+        {!hideSidebars && (
+          <SubtopicRightPanel
+            data={data.rightSidebar}
+            isOpen={isRightSidebarOpen}
+          />
+        )}
       </div>
     </div>
   );

@@ -79,7 +79,30 @@ export interface SubtopicViewData {
   };
 }
 
-export async function loadTutorialData(brand: BrandConfig): Promise<SubtopicViewData> {
+export async function loadTutorialData(brand: BrandConfig, subtopicId: string = 'component-architecture'): Promise<SubtopicViewData> {
+  // Safety check for undefined subtopicId
+  if (!subtopicId) {
+    subtopicId = 'component-architecture';
+  }
+
+  // Map of subtopic metadata
+  const subtopicMap: Record<string, { title: string; description: string; level: string; topic: string }> = {
+    'component-architecture': {
+      title: 'Component Architecture',
+      description: 'Master the art of building scalable and reusable UI components using React best practices and design patterns.',
+      level: 'Intermediate',
+      topic: 'React Basics'
+    },
+    'javascript-promises': {
+      title: 'JavaScript Promises',
+      description: 'Learn how to handle asynchronous operations with promises, async/await, and error handling patterns.',
+      level: 'Beginner',
+      topic: 'JavaScript Fundamentals'
+    }
+  };
+
+  const subtopicInfo = subtopicMap[subtopicId] || subtopicMap['component-architecture'];
+
   return {
     nav: {
       courseLabel: 'Full-Stack Development',
@@ -90,12 +113,12 @@ export async function loadTutorialData(brand: BrandConfig): Promise<SubtopicView
       learnerInitials: 'AJ',
     },
     subtopic: {
-      title: 'Component Architecture',
-      description: 'Master the art of building scalable and reusable UI components using React best practices and design patterns.',
+      title: subtopicInfo.title,
+      description: subtopicInfo.description,
       progress: 65,
       progressLabel: 'Subtopic Progress',
       metadata: {
-        level: 'Intermediate',
+        level: subtopicInfo.level,
         readingTime: '45 mins',
         xp: 500,
         topicsCount: 5,

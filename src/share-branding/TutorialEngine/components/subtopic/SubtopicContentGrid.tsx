@@ -11,9 +11,10 @@ import { ContentCardData } from '../../../subtopicPageData';
 interface SubtopicContentGridProps {
   content: ContentCardData[];
   tasks: ContentCardData[];
+  subtopicId?: string;
 }
 
-export function SubtopicContentGrid({ content, tasks }: SubtopicContentGridProps) {
+export function SubtopicContentGrid({ content, tasks, subtopicId = 'component-architecture' }: SubtopicContentGridProps) {
   const brand = useBrand();
 
   const getIcon = (type: string, isWhite?: boolean) => {
@@ -88,7 +89,7 @@ export function SubtopicContentGrid({ content, tasks }: SubtopicContentGridProps
               else if (card.type === 'example') tab = 'real-life';
               else if (card.type === 'code') tab = 'code-example';
               else if (card.type === 'deep-dive') tab = 'technical-deep-dive';
-              window.location.href = `/start-learning/subtopic/notes?tab=${tab}`;
+              window.location.href = `/start-learning/subtopic/${subtopicId}?tab=${tab}`;
             }}
             className="group relative mx-auto flex aspect-square w-full max-w-[192px] min-w-0 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-[32px] border-t border-white/40 p-4 text-center shadow-2xl transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.2)] sm:p-5 xl:rounded-[40px]"
             style={{ backgroundColor: isTaskCard(card.type) ? getTaskBgColor(card.type) : getContentBgColor(card.type) }}

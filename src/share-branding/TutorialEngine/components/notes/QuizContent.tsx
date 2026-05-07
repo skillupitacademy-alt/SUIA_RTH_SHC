@@ -4,21 +4,57 @@ import React, { useState } from 'react';
 import * as Icons from 'lucide-react';
 import { useBrand } from '../../../PostLandingPage/app/context/BrandContext';
 
-export function QuizContent({ onNext }: { onNext?: () => void }) {
+export function QuizContent({ data, onNext }: { 
+  data?: {
+    title: string;
+    description: string;
+    totalQuestions: number;
+    duration: string;
+    xp: number;
+    questions: Array<{
+      id: string;
+      questionNumber: number;
+      type: string;
+      points: number;
+      question: string;
+      code?: string;
+      options: Array<{
+        id: string;
+        text: string;
+      }>;
+      correctAnswer: string;
+      explanation: string;
+    }>;
+  };
+  onNext?: () => void;
+}) {
   const brand = useBrand();
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
-  const codeSnippet = `Promise.resolve(1)
-  .then(x => x + 1)
-  .then(x => { throw new Error('Oops') })
-  .catch(err => console.log(err.message));`;
+  // Use data from props or fallback to defaults
+  const title = data?.title || 'Interactive Quiz';
+  const description = data?.description || 'Test your mastery.';
+  const totalQuestions = data?.totalQuestions || 10;
+  const duration = data?.duration || '15 min';
+  const xp = data?.xp || 100;
+  const questions = data?.questions || [];
+  
+  const currentQuestion = questions[currentQuestionIndex] || {
+    id: 'q1',
+    questionNumber: 1,
+    type: 'Single Choice',
+    points: 2,
+    question: 'Sample question?',
+    options: [
+      { id: 'A', text: 'Option A' },
+      { id: 'B', text: 'Option B' }
+    ],
+    correctAnswer: 'A',
+    explanation: 'This is the explanation.'
+  };
 
-  const options = [
-    { id: 'A', text: 'Output: 2' },
-    { id: 'B', text: 'Output: 1' },
-    { id: 'C', text: 'Output: Oops' },
-    { id: 'D', text: 'Output: Uncaught Error' }
-  ];
+  const progress = ((currentQuestionIndex + 1) / totalQuestions) * 100;
 
   return (
     <div className="min-w-0 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20 sm:space-y-12">
@@ -26,21 +62,21 @@ export function QuizContent({ onNext }: { onNext?: () => void }) {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-1">
-          <h1 className="break-words text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl lg:text-4xl">Interactive Quiz</h1>
-          <p className="text-[14px] font-medium text-slate-800">Test your mastery of Promise Chains & Error Handling.</p>
+          <h1 className="break-words text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl lg:text-4xl">{title}</h1>
+          <p className="text-[14px] font-medium text-slate-800">{description}</p>
         </div>
         <div className="flex flex-wrap items-center gap-4 sm:gap-6">
            <div className="flex items-center gap-2 text-slate-800">
               <Icons.HelpCircle size={18} aria-hidden="true" />
-              <span className="text-sm font-bold text-slate-900">10 Questions</span>
+              <span className="text-sm font-bold text-slate-900">{totalQuestions} Questions</span>
            </div>
            <div className="flex items-center gap-2 text-slate-800">
               <Icons.Clock size={18} aria-hidden="true" />
-              <span className="text-sm font-bold text-slate-900">15 min</span>
+              <span className="text-sm font-bold text-slate-900">{duration}</span>
            </div>
            <div className="flex items-center gap-2 text-rose-900">
               <Icons.Trophy size={18} fill="currentColor" aria-hidden="true" />
-              <span className="text-sm font-bold">+100 XP</span>
+              <span className="text-sm font-bold">+{xp} XP</span>
            </div>
         </div>
       </div>
@@ -49,14 +85,14 @@ export function QuizContent({ onNext }: { onNext?: () => void }) {
       <div className="space-y-4">
          <div className="flex items-center justify-between">
             <p className="text-[12px] font-bold text-slate-600 uppercase tracking-widest">Your Progress</p>
-            <p className="text-sm font-bold text-slate-950">40%</p>
+            <p className="text-sm font-bold text-slate-950">{Math.round(progress)}%</p>
          </div>
          <div className="space-y-2">
             <div className="flex items-center justify-between text-[11px] font-bold text-slate-600">
-               <span>Question 4 of 10</span>
+               <span>Question {currentQuestion.questionNumber} of {totalQuestions}</span>
             </div>
             <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden border border-slate-200">
-               <div className="h-full bg-gradient-to-r from-rose-400 to-pink-600 rounded-full" style={{ width: '40%' }} />
+               <div className="h-full bg-gradient-to-r from-rose-400 to-pink-600 rounded-full" style={{ width: `${progress}%` }} />
             </div>
          </div>
       </div>
@@ -65,12 +101,12 @@ export function QuizContent({ onNext }: { onNext?: () => void }) {
       <section className="relative space-y-8 rounded-[32px] bg-white/80 backdrop-blur-xl p-5 shadow-2xl border-t border-white/60 transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] sm:p-10">
          <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap items-center gap-3">
-               <div className="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-bold text-white shadow-lg shadow-rose-100">Q4</div>
+               <div className="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-bold text-white shadow-lg shadow-rose-100">Q{currentQuestion.questionNumber}</div>
                <div className="flex items-center gap-2 rounded-lg bg-slate-100 px-3 py-1.5 text-[10px] font-bold text-slate-800 border border-slate-200">
-                  <Icons.ListChecks size={14} aria-hidden="true" /> Single Choice
+                  <Icons.ListChecks size={14} aria-hidden="true" /> {currentQuestion.type}
                </div>
                <div className="flex items-center gap-2 rounded-lg bg-slate-100 px-3 py-1.5 text-[10px] font-bold text-slate-800 border border-slate-200">
-                  <Icons.Star size={14} className="text-amber-900" fill="currentColor" aria-hidden="true" /> 2 Points
+                  <Icons.Star size={14} className="text-amber-900" fill="currentColor" aria-hidden="true" /> {currentQuestion.points} Points
                </div>
             </div>
             <button className="flex items-center gap-2 text-[12px] font-bold text-slate-600 hover:text-slate-950 transition-colors" aria-label="Mark this question for later review">
@@ -78,31 +114,33 @@ export function QuizContent({ onNext }: { onNext?: () => void }) {
             </button>
          </div>
 
-         <h3 className="text-xl font-bold text-slate-950 leading-tight">What will be the output of the following code?</h3>
+         <h3 className="text-xl font-bold text-slate-950 leading-tight">{currentQuestion.question}</h3>
 
          {/* Code Block */}
-         <div className="relative overflow-hidden rounded-2xl bg-[#0f172a] p-4 font-mono text-[12px] leading-relaxed shadow-2xl sm:p-6 sm:text-sm">
-            <div className="absolute top-0 right-0 p-2 opacity-20">
-               <Icons.Code size={40} className="text-slate-400" aria-hidden="true" />
-            </div>
-            <pre className="whitespace-pre-wrap break-words text-indigo-100">
-               {codeSnippet.split('\n').map((line, i) => (
-                  <div key={i} className="flex min-w-0 gap-3 sm:gap-4">
-                     <span className="w-4 text-slate-600 select-none">{i + 1}</span>
-                     <span className="min-w-0 break-words">
-                        {line.includes('//') ? <span className="text-emerald-300 italic">{line}</span> :
-                         line.includes('Promise') || line.includes('Error') ? <span className="text-amber-300">{line}</span> :
-                         line.includes('then') || line.includes('catch') ? <span className="text-pink-300">{line}</span> :
-                         line}
-                     </span>
-                  </div>
-               ))}
-            </pre>
-         </div>
+         {currentQuestion.code && (
+           <div className="relative overflow-hidden rounded-2xl bg-[#0f172a] p-4 font-mono text-[12px] leading-relaxed shadow-2xl sm:p-6 sm:text-sm">
+              <div className="absolute top-0 right-0 p-2 opacity-20">
+                 <Icons.Code size={40} className="text-slate-400" aria-hidden="true" />
+              </div>
+              <pre className="whitespace-pre-wrap break-words text-indigo-100">
+                 {currentQuestion.code.split('\n').map((line, i) => (
+                    <div key={i} className="flex min-w-0 gap-3 sm:gap-4">
+                       <span className="w-4 text-slate-600 select-none">{i + 1}</span>
+                       <span className="min-w-0 break-words">
+                          {line.includes('//') ? <span className="text-emerald-300 italic">{line}</span> :
+                           line.includes('Promise') || line.includes('Error') ? <span className="text-amber-300">{line}</span> :
+                           line.includes('then') || line.includes('catch') ? <span className="text-pink-300">{line}</span> :
+                           line}
+                       </span>
+                    </div>
+                 ))}
+              </pre>
+           </div>
+         )}
 
          {/* Options Grid */}
          <div className="grid grid-cols-1 gap-4">
-            {options.map((opt) => (
+            {currentQuestion.options.map((opt) => (
                <button
                   key={opt.id}
                   onClick={() => setSelectedOption(opt.id)}
@@ -120,7 +158,7 @@ export function QuizContent({ onNext }: { onNext?: () => void }) {
          </div>
 
          {/* Explanation Box */}
-         {selectedOption === 'C' && (
+         {selectedOption === currentQuestion.correctAnswer && (
             <div className="rounded-[24px] bg-rose-50/50 backdrop-blur-md p-8 flex items-start gap-6 relative overflow-hidden animate-in fade-in slide-in-from-top-4 duration-500 shadow-2xl transition-all duration-300 -translate-y-1 hover:-translate-y-3 border-t border-white/60">
                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white shadow-sm text-rose-600 relative z-10 border border-rose-100">
                   <Icons.Lightbulb size={24} aria-hidden="true" />
@@ -128,8 +166,7 @@ export function QuizContent({ onNext }: { onNext?: () => void }) {
                <div className="space-y-2 relative z-10">
                   <h4 className="text-sm font-bold text-rose-950">Explanation</h4>
                   <p className="text-[13px] text-rose-900 leading-relaxed">
-                     The first then() returns 2, then the second then() throws an error. 
-                     The catch() block catches it and logs "Oops".
+                     {currentQuestion.explanation}
                   </p>
                </div>
                <div className="absolute -right-4 -bottom-4 opacity-10">
