@@ -61,9 +61,9 @@ export function LaymanMentalModel({ title, conceptMap, visualLabels }: LaymanMen
                   <div
                     className={`w-full ${color.bg} ${color.border} border-2 rounded-xl p-5 shadow-md transition-all duration-300 hover:scale-105 cursor-pointer`}
                   >
-                    <h3 className={`text-lg font-bold ${color.text} mb-2 text-center`}>
+                    <h4 className={`text-lg font-bold ${color.text} mb-2 text-center`}>
                       {node.label}
-                    </h3>
+                    </h4>
                     <p className="text-sm font-medium text-slate-700 text-center">
                       {node.description}
                     </p>
@@ -93,10 +93,10 @@ export function LaymanMentalModel({ title, conceptMap, visualLabels }: LaymanMen
 
         {/* Visual Labels */}
         <div className="bg-white rounded-xl p-6 border border-gray-200">
-          <h3 className="text-base font-bold text-slate-950 mb-4 flex items-center gap-2">
+          <h4 className="text-base font-bold text-slate-950 mb-4 flex items-center gap-2">
             <Icons.Layers size={18} style={{ color: brand.primaryColor }} aria-hidden="true" />
             Understanding the Hierarchy
-          </h3>
+          </h4>
           <ul className="space-y-2">
             {visualLabels.map((label, index) => (
               <li key={index} className="flex items-start gap-3">

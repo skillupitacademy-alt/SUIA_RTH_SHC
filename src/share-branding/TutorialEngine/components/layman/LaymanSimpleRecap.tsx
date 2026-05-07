@@ -117,9 +117,9 @@ export function LaymanSimpleRecap({
               aria-hidden="true"
             />
             <div>
-              <h3 className="text-base font-bold mb-2" style={{ color: brand.primaryColorDark }}>
+              <h4 className="text-base font-bold mb-2" style={{ color: brand.primaryColorDark }}>
                 You Did It!
-              </h3>
+              </h4>
               <p className="text-lg font-bold text-slate-900 leading-relaxed">
                 {confidenceBoost}
               </p>
@@ -142,9 +142,9 @@ export function LaymanSimpleRecap({
             aria-hidden="true"
           />
           <div>
-            <h3 className="text-base font-bold mb-2" style={{ color: brand.primaryColorDark }}>
+            <h4 className="text-base font-bold mb-2" style={{ color: brand.primaryColorDark }}>
               Remember This
-            </h3>
+            </h4>
             <p className="text-base font-bold text-slate-900 leading-relaxed">
               {memoryReinforcement}
             </p>

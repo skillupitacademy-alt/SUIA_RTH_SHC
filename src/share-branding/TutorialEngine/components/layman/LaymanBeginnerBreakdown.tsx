@@ -61,9 +61,9 @@ export function LaymanBeginnerBreakdown({ title, steps }: LaymanBeginnerBreakdow
                 </div>
 
                 {/* Step Title */}
-                <span className="flex-1 text-base font-bold text-slate-950 pr-4">
+                <h3 className="flex-1 text-base font-bold text-slate-950 pr-4">
                   {step.stepTitle}
-                </span>
+                </h3>
 
                 {/* Chevron */}
                 <Icons.ChevronDown

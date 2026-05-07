@@ -53,7 +53,7 @@ export function LaymanAnalogyCard({
               />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-slate-950 mb-3">The Story</h3>
+              <h4 className="text-lg font-bold text-slate-950 mb-3">The Story</h4>
               <p className="text-base font-medium text-slate-700 leading-relaxed">
                 {storyAnalogy}
               </p>
@@ -136,9 +136,9 @@ export function LaymanAnalogyCard({
                 aria-hidden="true"
               />
               <div>
-                <h4 className="text-sm font-bold mb-2" style={{ color: brand.primaryColorDark }}>
-                  Key Takeaway
-                </h4>
+              <h4 className="text-sm font-bold mb-2" style={{ color: brand.primaryColorDark }}>
+                Key Takeaway
+              </h4>
                 <p className="text-base font-bold text-slate-900">
                   {keyTakeaway}
                 </p>

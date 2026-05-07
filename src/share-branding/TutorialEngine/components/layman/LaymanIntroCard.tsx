@@ -51,9 +51,9 @@ export function LaymanIntroCard({
       </div>
 
       {/* Headline */}
-      <h1 className="text-4xl font-bold text-slate-950 mb-6 leading-tight">
+      <h2 className="text-4xl font-bold text-slate-950 mb-6 leading-tight">
         {headline}
-      </h1>
+      </h2>
 
       {/* Simple Definition */}
       <p className="text-xl font-medium text-slate-800 leading-relaxed mb-6">
@@ -80,9 +80,9 @@ export function LaymanIntroCard({
           aria-hidden="true"
         />
         <div>
-          <h3 className="text-sm font-bold mb-2" style={{ color: brand.primaryColorDark }}>
-            Why This Matters
-          </h3>
+              <h4 className="text-sm font-bold mb-2" style={{ color: brand.primaryColorDark }}>
+                Why This Matters
+              </h4>
           <p className="text-base font-medium text-slate-800 leading-relaxed">
             {importanceBlock}
           </p>
