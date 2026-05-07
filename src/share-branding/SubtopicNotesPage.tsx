@@ -145,28 +145,52 @@ export function SubtopicNotesPage({ notesData, overviewData, subtopicId = 'compo
                   <SubtopicViewPage data={overviewData} hideTopBar={true} hideSidebars={true} subtopicId={subtopicId} />
                 )}
                 {activeTab === 'notes' && (
-                  <NotesMainContent data={notesData.mainContent} isStandalone={false} />
+                  <>
+                    <h1 className="sr-only">Full Notes - {notesData.mainContent.title}</h1>
+                    <NotesMainContent data={notesData.mainContent} isStandalone={false} />
+                  </>
                 )}
                 {activeTab === 'layman' && (
-                  <LaymanExplanationContent data={notesData.mainContent.laymanExplanation} />
+                  <>
+                    <h1 className="sr-only">Layman Explanation - {notesData.mainContent.title}</h1>
+                    <LaymanExplanationContent data={notesData.mainContent.laymanExplanation} />
+                  </>
                 )}
                 {activeTab === 'real-life' && (
-                  <RealLifeExamplesContent data={notesData.mainContent.realLifeExamples} />
+                  <>
+                    <h1 className="sr-only">Real Life Examples - {notesData.mainContent.title}</h1>
+                    <RealLifeExamplesContent data={notesData.mainContent.realLifeExamples} />
+                  </>
                 )}
                 {activeTab === 'technical-deep-dive' && (
-                  <TechnicalDeepDiveContent data={notesData.mainContent.technicalDeepDive} />
+                  <>
+                    <h1 className="sr-only">Technical Deep Dive - {notesData.mainContent.title}</h1>
+                    <TechnicalDeepDiveContent data={notesData.mainContent.technicalDeepDive} />
+                  </>
                 )}
                 {activeTab === 'code-example' && (
-                  <CodeExampleContent data={notesData.mainContent.codeExample} />
+                  <>
+                    <h1 className="sr-only">Code Example - {notesData.mainContent.title}</h1>
+                    <CodeExampleContent data={notesData.mainContent.codeExample} />
+                  </>
                 )}
                 {activeTab === 'assignments' && (
-                  <AssignmentContent data={notesData.mainContent.assignment} />
+                  <>
+                    <h1 className="sr-only">Assignments - {notesData.mainContent.title}</h1>
+                    <AssignmentContent data={notesData.mainContent.assignment} />
+                  </>
                 )}
                 {activeTab === 'project' && (
-                  <ProjectContent data={notesData.mainContent.project} />
+                  <>
+                    <h1 className="sr-only">Projects - {notesData.mainContent.title}</h1>
+                    <ProjectContent data={notesData.mainContent.project} />
+                  </>
                 )}
                 {activeTab === 'quiz' && (
-                  <QuizContent data={notesData.mainContent.quiz} />
+                  <>
+                    <h1 className="sr-only">Quiz - {notesData.mainContent.title}</h1>
+                    <QuizContent data={notesData.mainContent.quiz} />
+                  </>
                 )}
                 {activeTab === 'ai-tutor' && (
                   <section className="min-w-0 space-y-6 rounded-[32px] bg-white/80 backdrop-blur-xl p-5 shadow-2xl border-t border-white/60 transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] sm:p-8">
