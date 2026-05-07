@@ -86,31 +86,93 @@ export interface SubtopicContentPattern {
     memoryReinforcement: string;
     examTips: string[];
   };
+  // Layman Explanation Section Templates (8 templates from JSON spec)
   laymanExplanation: {
-    badge: string;
-    title: string;
-    intro: string;
-    mainConcept: {
-      title: string;
-      description: string;
-      example: string;
-      image: string;
+    simpleOverview: {
+      badge: string;
+      headline: string;
+      simpleDefinition: string;
+      subExplanation: string;
+      importanceBlock: string;
+      progressIndicator?: string;
     };
-    reasonGrid: Array<{
-      id: string;
+    everydayAnalogy: {
       title: string;
-      description: string;
-      icon: string;
-    }>;
-    typesTable: Array<{
-      id: string;
-      label: string;
-      description: string;
-      example: string;
-      icon: string;
-      iconBg: string;
-    }>;
-    footerTip: string;
+      storyAnalogy: string;
+      comparisonPanel: {
+        realWorld: string;
+        technical: string;
+      };
+      visualMetaphor: string;
+      keyTakeaway: string;
+      image?: string;
+    };
+    whyItExists: {
+      sectionTitle: string;
+      benefitCards: Array<{
+        id: string;
+        title: string;
+        description: string;
+        icon: string;
+        type: 'career' | 'practical' | 'future';
+      }>;
+    };
+    simpleUseCases: {
+      gridTitle: string;
+      useCaseCards: Array<{
+        id: string;
+        title: string;
+        description: string;
+        category: 'everyday' | 'career';
+        icon: string;
+      }>;
+    };
+    beginnerBreakdown: {
+      title: string;
+      steps: Array<{
+        id: string;
+        stepTitle: string;
+        stepExplanation: string;
+        microLearningChunk: string;
+      }>;
+    };
+    mentalModel: {
+      title: string;
+      conceptMap: {
+        nodes: Array<{
+          id: string;
+          label: string;
+          description: string;
+        }>;
+        connections: Array<{
+          from: string;
+          to: string;
+          label: string;
+        }>;
+      };
+      visualLabels: string[];
+    };
+    commonConfusions: {
+      title: string;
+      confusionItems: Array<{
+        id: string;
+        confusion: string;
+        clarification: string;
+      }>;
+      faqItems: Array<{
+        id: string;
+        question: string;
+        answer: string;
+      }>;
+      misconceptionAlerts: string[];
+    };
+    simpleRecap: {
+      summaryTitle: string;
+      keyTakeaways: string[];
+      simpleRecapPoints: string[];
+      confidenceBoost: string;
+      memoryReinforcement: string;
+    };
   };
   realLifeExamples: {
     title: string;
@@ -426,29 +488,253 @@ export const subtopicContentRegistry: Record<string, SubtopicContentPattern> = {
       ]
     },
     laymanExplanation: {
-      badge: 'Layman Explanation',
-      title: 'Component Architecture in React',
-      intro: "Let's understand component architecture in the most simple way possible, without any technical jargon. Imagine you are building a castle with LEGO bricks.",
-      mainConcept: {
-        title: 'A component is like a',
-        description: 'LEGO brick.',
-        example: 'Example: A brick named "Button" can be used on the login page today and the signup page tomorrow.',
+      simpleOverview: {
+        badge: 'Beginner Friendly',
+        headline: 'Component Architecture - Explained Simply',
+        simpleDefinition: 'Component architecture is like building with LEGO bricks. Instead of creating one giant piece, you build small, reusable parts that snap together to make something amazing.',
+        subExplanation: 'Think of it as organizing your code into small boxes. Each box does one job really well, and you can use the same box in different places.',
+        importanceBlock: 'This approach makes your code easier to understand, fix, and reuse - just like how LEGO bricks can be used to build anything from a car to a castle!',
+        progressIndicator: 'Beginner Level - No coding experience needed'
+      },
+      everydayAnalogy: {
+        title: 'The LEGO Brick Story',
+        storyAnalogy: 'Imagine you want to build a LEGO castle. You don\'t create one massive block - you use small bricks. A red brick for the walls, a blue brick for the roof, and a yellow brick for the door. Each brick is independent, but together they create something beautiful.',
+        comparisonPanel: {
+          realWorld: 'LEGO bricks that snap together to build anything',
+          technical: 'React components that combine to build user interfaces'
+        },
+        visualMetaphor: 'Just like you can use the same LEGO brick in multiple places, you can use the same component (like a Button) on different pages of your website.',
+        keyTakeaway: 'Components are reusable building blocks - build once, use everywhere!',
         image: '/lego_component_architecture.png'
       },
-      reasonGrid: [
-        { id: 'rg1', title: 'Reusable Pieces', description: 'Use the same "brick" multiple times.', icon: 'Package' },
-        { id: 'rg2', title: 'Easy to Swap', description: 'Change or fix one part without breaking others.', icon: 'RefreshCw' },
-        { id: 'rg3', title: 'Better Teamwork', description: 'Everyone can build different bricks at once.', icon: 'Users' },
-        { id: 'rg4', title: 'Smart Structure', description: 'Keeps your code organized and clean.', icon: 'Zap' }
-      ],
-      typesTable: [
-        { id: 't1', label: 'Atoms', description: 'Smallest pieces (Button, Input)', example: '"Button"', icon: 'Type', iconBg: 'bg-orange-500' },
-        { id: 't2', label: 'Molecules', description: 'Groups of atoms (Search Bar)', example: 'SearchForm', icon: 'Binary', iconBg: 'bg-blue-500' },
-        { id: 't3', label: 'Organisms', description: 'Complex parts (Navbar, Sidebar)', example: 'Navbar', icon: 'CheckCircle2', iconBg: 'bg-emerald-500' },
-        { id: 't4', label: 'Templates', description: 'Page layouts (Grid, Header)', example: 'Dashboard', icon: 'LayoutList', iconBg: 'bg-purple-500' },
-        { id: 't5', label: 'Pages', description: 'The whole screen (Home Page)', example: '{ name: "Home" }', icon: 'Code2', iconBg: 'bg-rose-500' }
-      ],
-      footerTip: 'Think of components as a library of parts you can combine to build anything.'
+      whyItExists: {
+        sectionTitle: 'Why Do We Need Component Architecture?',
+        benefitCards: [
+          {
+            id: 'b1',
+            title: 'Save Time',
+            description: 'Build a button once, use it 100 times. No need to write the same code again and again.',
+            icon: 'Clock',
+            type: 'practical'
+          },
+          {
+            id: 'b2',
+            title: 'Easy to Fix',
+            description: 'If something breaks, you only fix one component instead of searching through thousands of lines of code.',
+            icon: 'Wrench',
+            type: 'practical'
+          },
+          {
+            id: 'b3',
+            title: 'Team Collaboration',
+            description: 'Different team members can work on different components at the same time without conflicts.',
+            icon: 'Users',
+            type: 'career'
+          },
+          {
+            id: 'b4',
+            title: 'Career Growth',
+            description: 'Companies like Facebook, Netflix, and Airbnb use this pattern. Learning it opens doors to top tech jobs.',
+            icon: 'TrendingUp',
+            type: 'career'
+          },
+          {
+            id: 'b5',
+            title: 'Scalable Apps',
+            description: 'Start small and grow big. Components make it easy to add new features without breaking existing ones.',
+            icon: 'Rocket',
+            type: 'future'
+          },
+          {
+            id: 'b6',
+            title: 'Clean Code',
+            description: 'Your code stays organized and readable, making it easier for you and others to understand.',
+            icon: 'Sparkles',
+            type: 'future'
+          }
+        ]
+      },
+      simpleUseCases: {
+        gridTitle: 'Where Do You See Components in Real Life?',
+        useCaseCards: [
+          {
+            id: 'uc1',
+            title: 'Social Media Feed',
+            description: 'Each post is a component. Same design, different content.',
+            category: 'everyday',
+            icon: 'MessageSquare'
+          },
+          {
+            id: 'uc2',
+            title: 'Shopping Cart',
+            description: 'Product cards that show image, price, and "Add to Cart" button.',
+            category: 'everyday',
+            icon: 'ShoppingCart'
+          },
+          {
+            id: 'uc3',
+            title: 'Navigation Menu',
+            description: 'The same menu appears on every page of a website.',
+            category: 'everyday',
+            icon: 'Menu'
+          },
+          {
+            id: 'uc4',
+            title: 'Login Form',
+            description: 'Username, password, and submit button - reused across apps.',
+            category: 'everyday',
+            icon: 'LogIn'
+          },
+          {
+            id: 'uc5',
+            title: 'Dashboard Widgets',
+            description: 'Charts, stats, and cards that display different data.',
+            category: 'career',
+            icon: 'LayoutDashboard'
+          },
+          {
+            id: 'uc6',
+            title: 'Notification Alerts',
+            description: 'Success, error, or warning messages with consistent styling.',
+            category: 'career',
+            icon: 'Bell'
+          },
+          {
+            id: 'uc7',
+            title: 'Video Player',
+            description: 'Play, pause, volume controls - same component, different videos.',
+            category: 'everyday',
+            icon: 'Play'
+          },
+          {
+            id: 'uc8',
+            title: 'Comment Section',
+            description: 'User avatar, name, timestamp, and comment text repeated for each comment.',
+            category: 'career',
+            icon: 'MessageCircle'
+          }
+        ]
+      },
+      beginnerBreakdown: {
+        title: 'Breaking It Down Step-by-Step',
+        steps: [
+          {
+            id: 'step1',
+            stepTitle: 'Step 1: Identify Repeating Parts',
+            stepExplanation: 'Look at your design and find parts that appear multiple times. For example, buttons, cards, or forms.',
+            microLearningChunk: 'If you see the same design pattern twice, it\'s a candidate for a component!'
+          },
+          {
+            id: 'step2',
+            stepTitle: 'Step 2: Create a Component',
+            stepExplanation: 'Build that repeating part as a separate, independent piece of code. Give it a clear name like "Button" or "ProductCard".',
+            microLearningChunk: 'Think of it as creating a template that you can fill with different content later.'
+          },
+          {
+            id: 'step3',
+            stepTitle: 'Step 3: Make It Flexible',
+            stepExplanation: 'Use "props" (properties) to customize the component. Like changing the button text or card image.',
+            microLearningChunk: 'Props are like function parameters - they let you pass different data to the same component.'
+          },
+          {
+            id: 'step4',
+            stepTitle: 'Step 4: Reuse Everywhere',
+            stepExplanation: 'Now use your component anywhere you need it. Change the props to show different content.',
+            microLearningChunk: 'One component, infinite possibilities! Just like one LEGO brick can be used in many builds.'
+          },
+          {
+            id: 'step5',
+            stepTitle: 'Step 5: Update Once, Change Everywhere',
+            stepExplanation: 'If you need to change the design, update the component once and it updates everywhere it\'s used.',
+            microLearningChunk: 'This is the superpower of components - centralized updates!'
+          }
+        ]
+      },
+      mentalModel: {
+        title: 'How to Think About Components',
+        conceptMap: {
+          nodes: [
+            { id: 'app', label: 'Your App', description: 'The complete application' },
+            { id: 'page', label: 'Page', description: 'A single screen or route' },
+            { id: 'section', label: 'Section', description: 'Major parts like Header, Content, Footer' },
+            { id: 'component', label: 'Component', description: 'Reusable UI pieces like Button, Card' },
+            { id: 'element', label: 'HTML Element', description: 'Basic building blocks like div, button, input' }
+          ],
+          connections: [
+            { from: 'app', to: 'page', label: 'contains' },
+            { from: 'page', to: 'section', label: 'divided into' },
+            { from: 'section', to: 'component', label: 'built with' },
+            { from: 'component', to: 'element', label: 'made of' }
+          ]
+        },
+        visualLabels: [
+          'Top Level: Your entire application',
+          'Middle Level: Pages and sections',
+          'Bottom Level: Small reusable components',
+          'Foundation: Basic HTML elements'
+        ]
+      },
+      commonConfusions: {
+        title: 'Common Beginner Confusions',
+        confusionItems: [
+          {
+            id: 'conf1',
+            confusion: 'Do I need to make EVERYTHING a component?',
+            clarification: 'No! Only make components for things you\'ll reuse or things that are complex. A simple heading doesn\'t need to be a component.'
+          },
+          {
+            id: 'conf2',
+            confusion: 'How small should a component be?',
+            clarification: 'If a component does ONE thing well, it\'s the right size. A button component just handles button behavior. A form component handles the entire form.'
+          },
+          {
+            id: 'conf3',
+            confusion: 'Can components talk to each other?',
+            clarification: 'Yes! Parent components can pass data to child components using props. Child components can send data back using callback functions.'
+          }
+        ],
+        faqItems: [
+          {
+            id: 'faq1',
+            question: 'What\'s the difference between a component and a function?',
+            answer: 'A component is a special function that returns UI (what you see on screen). Regular functions return data or perform actions.'
+          },
+          {
+            id: 'faq2',
+            question: 'Do I need to know advanced JavaScript to use components?',
+            answer: 'No! You just need to understand basic functions and how to pass parameters. Components are actually a great way to learn JavaScript!'
+          },
+          {
+            id: 'faq3',
+            question: 'Can I use components from other developers?',
+            answer: 'Absolutely! There are thousands of pre-built component libraries like Material-UI, Ant Design, and Chakra UI that you can use for free.'
+          }
+        ],
+        misconceptionAlerts: [
+          'Components are NOT just for big projects - even small apps benefit from good structure',
+          'You DON\'T need to be an expert to start using components - beginners can learn this!',
+          'Components are NOT slower than regular code - they actually help optimize performance'
+        ]
+      },
+      simpleRecap: {
+        summaryTitle: 'Let\'s Recap What You Learned',
+        keyTakeaways: [
+          'Components are like LEGO bricks - small, reusable building blocks',
+          'Build once, use everywhere - saves time and reduces errors',
+          'Each component does one job really well',
+          'Props let you customize components with different data',
+          'Update one component, and it changes everywhere it\'s used',
+          'Used by top companies like Facebook, Netflix, and Airbnb'
+        ],
+        simpleRecapPoints: [
+          'You now understand what components are and why they exist',
+          'You can identify where components are used in real apps',
+          'You know the basic steps to create and reuse components',
+          'You understand how components fit into the bigger picture'
+        ],
+        confidenceBoost: '🎉 Congratulations! You\'ve just learned a concept that professional developers use every single day. You\'re on your way to building amazing things!',
+        memoryReinforcement: 'Remember: Components = LEGO bricks. Small pieces that snap together to build anything you can imagine!'
+      }
     },
     realLifeExamples: {
       title: 'Real Life Example',

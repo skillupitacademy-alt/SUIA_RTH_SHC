@@ -112,30 +112,91 @@ export interface SubtopicNotesViewData {
       examTips: string[];
     };
     laymanExplanation?: {
-      badge: string;
-      title: string;
-      intro: string;
-      mainConcept: {
-        title: string;
-        description: string;
-        example: string;
-        image: string;
+      simpleOverview?: {
+        badge: string;
+        headline: string;
+        simpleDefinition: string;
+        subExplanation: string;
+        importanceBlock: string;
+        progressIndicator?: string;
       };
-      reasonGrid: {
-        id: string;
+      everydayAnalogy?: {
         title: string;
-        description: string;
-        icon: string;
-      }[];
-      typesTable: {
-        id: string;
-        label: string;
-        description: string;
-        example: string;
-        icon: string;
-        iconBg: string;
-      }[];
-      footerTip: string;
+        storyAnalogy: string;
+        comparisonPanel: {
+          realWorld: string;
+          technical: string;
+        };
+        visualMetaphor: string;
+        keyTakeaway: string;
+        image?: string;
+      };
+      whyItExists?: {
+        sectionTitle: string;
+        benefitCards: Array<{
+          id: string;
+          title: string;
+          description: string;
+          icon: string;
+          type: 'career' | 'practical' | 'future';
+        }>;
+      };
+      simpleUseCases?: {
+        gridTitle: string;
+        useCaseCards: Array<{
+          id: string;
+          title: string;
+          description: string;
+          category: 'everyday' | 'career';
+          icon: string;
+        }>;
+      };
+      beginnerBreakdown?: {
+        title: string;
+        steps: Array<{
+          id: string;
+          stepTitle: string;
+          stepExplanation: string;
+          microLearningChunk: string;
+        }>;
+      };
+      mentalModel?: {
+        title: string;
+        conceptMap: {
+          nodes: Array<{
+            id: string;
+            label: string;
+            description: string;
+          }>;
+          connections: Array<{
+            from: string;
+            to: string;
+            label: string;
+          }>;
+        };
+        visualLabels: string[];
+      };
+      commonConfusions?: {
+        title: string;
+        confusionItems: Array<{
+          id: string;
+          confusion: string;
+          clarification: string;
+        }>;
+        faqItems: Array<{
+          id: string;
+          question: string;
+          answer: string;
+        }>;
+        misconceptionAlerts: string[];
+      };
+      simpleRecap?: {
+        summaryTitle: string;
+        keyTakeaways: string[];
+        simpleRecapPoints: string[];
+        confidenceBoost: string;
+        memoryReinforcement: string;
+      };
     };
     realLifeExamples?: {
       title: string;

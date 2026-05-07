@@ -1,102 +1,115 @@
 import React from 'react';
-import * as Icons from 'lucide-react';
-import { useBrand } from '../../../PostLandingPage/app/context/BrandContext';
 import { SubtopicNotesViewData } from '../../../subtopicNotesData';
+import { LaymanIntroCard } from '../layman/LaymanIntroCard';
+import { LaymanAnalogyCard } from '../layman/LaymanAnalogyCard';
+import { LaymanBenefitCard } from '../layman/LaymanBenefitCard';
+import { LaymanUseCaseGrid } from '../layman/LaymanUseCaseGrid';
+import { LaymanBeginnerBreakdown } from '../layman/LaymanBeginnerBreakdown';
+import { LaymanMentalModel } from '../layman/LaymanMentalModel';
+import { LaymanCommonConfusions } from '../layman/LaymanCommonConfusions';
+import { LaymanSimpleRecap } from '../layman/LaymanSimpleRecap';
 
+/**
+ * Layman Explanation Content Component
+ * 
+ * Implements the complete Layman Section Education Architecture
+ * Based on AllSectionTutorialPage.json and AllSectionTutorialPageUIUXDetailed.json
+ * 
+ * Universal Architecture (8 templates in order):
+ * 1. simple_overview → intro_card
+ * 2. everyday_analogy → analogy_card
+ * 3. why_it_exists → benefit_card
+ * 4. simple_use_cases → use_case_grid
+ * 5. beginner_breakdown → accordion
+ * 6. mental_model → diagram_renderer
+ * 7. common_confusions → faq_block
+ * 8. simple_recap → summary_card
+ * 
+ * All data comes from props - NO hardcoded content
+ */
 export function LaymanExplanationContent({ data }: { data: SubtopicNotesViewData['mainContent']['laymanExplanation'] }) {
-  const brand = useBrand();
   if (!data) return null;
 
   return (
     <div className="min-w-0 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
 
+      {/* 1. SIMPLE OVERVIEW - intro_card (Hero-style beginner intro) */}
+      {data.simpleOverview && (
+        <LaymanIntroCard
+          badge={data.simpleOverview.badge}
+          headline={data.simpleOverview.headline}
+          simpleDefinition={data.simpleOverview.simpleDefinition}
+          subExplanation={data.simpleOverview.subExplanation}
+          importanceBlock={data.simpleOverview.importanceBlock}
+          progressIndicator={data.simpleOverview.progressIndicator}
+        />
+      )}
 
+      {/* 2. EVERYDAY ANALOGY - analogy_card (Story-based analogy) */}
+      {data.everydayAnalogy && (
+        <LaymanAnalogyCard
+          title={data.everydayAnalogy.title}
+          storyAnalogy={data.everydayAnalogy.storyAnalogy}
+          comparisonPanel={data.everydayAnalogy.comparisonPanel}
+          visualMetaphor={data.everydayAnalogy.visualMetaphor}
+          keyTakeaway={data.everydayAnalogy.keyTakeaway}
+          image={data.everydayAnalogy.image}
+        />
+      )}
 
-      {/* Title & Intro */}
-      <div className="space-y-4">
-        <h1 className="break-words text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl lg:text-4xl">{data.title}</h1>
-        <p className="text-[15px] font-medium leading-relaxed text-slate-800">
-          {data.intro}
-        </p>
-      </div>
+      {/* 3. WHY IT EXISTS - benefit_card (3-column benefit grid) */}
+      {data.whyItExists && (
+        <LaymanBenefitCard
+          sectionTitle={data.whyItExists.sectionTitle}
+          benefitCards={data.whyItExists.benefitCards}
+        />
+      )}
 
-      {/* Main Concept Card */}
-      <div className="space-y-4">
-        <h2 className="text-xl font-bold text-slate-900 tracking-tight">What is a Component?</h2>
-        <div className="flex min-w-0 flex-col gap-6 rounded-3xl bg-white/80 backdrop-blur-xl p-5 shadow-2xl border-t border-white/60 transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] sm:p-8 md:flex-row md:gap-8">
-          <div className="flex-1 flex justify-center items-center">
-            <img
-              src={data.mainConcept.image}
-              alt="Lego Component Illustration"
-              className="max-h-[220px] object-contain drop-shadow-xl"
-            />
-          </div>
-          <div className="flex-[1.5] space-y-4 flex flex-col justify-center">
-            <p className="text-xl font-bold leading-tight text-slate-900">
-              {data.mainConcept.title} <span className="font-bold" style={{ color: brand.primaryColor }}>{data.mainConcept.description}</span>
-            </p>
-            <p className="text-[15px] font-medium leading-relaxed text-slate-800">
-              You can use the same brick to build different parts of your castle, and if one brick breaks, you just replace it without destroying the whole thing.
-            </p>
-            <p className="text-[14px] font-bold" style={{ color: brand.primaryColor }}>
-              {data.mainConcept.example}
-            </p>
-          </div>
-        </div>
-      </div>
+      {/* 4. SIMPLE USE CASES - use_case_grid (4-column use case examples) */}
+      {data.simpleUseCases && (
+        <LaymanUseCaseGrid
+          gridTitle={data.simpleUseCases.gridTitle}
+          useCaseCards={data.simpleUseCases.useCaseCards}
+        />
+      )}
 
-      {/* Grid of Reasons */}
-      <div className="space-y-4">
-        <h2 className="text-xl font-bold text-slate-900 tracking-tight">Why Do We Need Components?</h2>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
-          {data.reasonGrid.map((item) => {
-            const Icon = (Icons as any)[item.icon] || Icons.HelpCircle;
-            return (
-              <div key={item.id} className="flex flex-col items-center text-center p-6 rounded-2xl bg-[#fff9f5]/80 backdrop-blur-md space-y-3 shadow-2xl transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] border-t border-white/60">
-                <div className="p-3 rounded-xl bg-white shadow-sm">
-                  <Icon size={24} style={{ color: brand.primaryColor }} aria-hidden="true" />
-                </div>
-                <h3 className="text-sm font-bold text-slate-900">{item.title}</h3>
-                <p className="text-[11px] font-medium text-slate-700 leading-relaxed">{item.description}</p>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      {/* 5. BEGINNER BREAKDOWN - accordion (Step-by-step expandable) */}
+      {data.beginnerBreakdown && (
+        <LaymanBeginnerBreakdown
+          title={data.beginnerBreakdown.title}
+          steps={data.beginnerBreakdown.steps}
+        />
+      )}
 
-      {/* Types Table */}
-      <div className="space-y-4">
-        <h2 className="text-xl font-bold text-slate-900 tracking-tight">Architecture in Simple Words</h2>
-        <p className="text-[13px] font-bold text-slate-800">Different layers mean different sizes of building blocks.</p>
+      {/* 6. MENTAL MODEL - diagram_renderer (Interactive visual) */}
+      {data.mentalModel && (
+        <LaymanMentalModel
+          title={data.mentalModel.title}
+          conceptMap={data.mentalModel.conceptMap}
+          visualLabels={data.mentalModel.visualLabels}
+        />
+      )}
 
-        <div className="min-w-0 rounded-2xl bg-white/80 backdrop-blur-xl p-3 shadow-2xl border-t border-white/60 transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)]">
-          <div className="space-y-2">
-            {data.typesTable.map((type) => {
-              const Icon = (Icons as any)[type.icon] || Icons.HelpCircle;
-              return (
-                <div key={type.id} className="grid min-w-0 grid-cols-[auto_1fr] gap-3 rounded-xl p-3 transition-colors hover:bg-slate-50/50 sm:grid-cols-[auto_110px_1fr_auto] sm:items-center">
-                  <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white ${type.iconBg}`}>
-                    <Icon size={16} aria-hidden="true" />
-                  </div>
-                  <span className="min-w-0 break-words text-sm font-bold text-slate-900">{type.label}</span>
-                  <span className="col-span-2 min-w-0 break-words text-xs font-medium text-slate-700 sm:col-span-1">{type.description}</span>
-                  <span className="col-span-2 inline-flex w-fit rounded-md border border-emerald-200 bg-emerald-100 px-2 py-1 text-[11px] font-bold text-emerald-900 sm:col-span-1">
-                    {type.example}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
+      {/* 7. COMMON CONFUSIONS - faq_block (FAQ accordion) */}
+      {data.commonConfusions && (
+        <LaymanCommonConfusions
+          title={data.commonConfusions.title}
+          confusionItems={data.commonConfusions.confusionItems}
+          faqItems={data.commonConfusions.faqItems}
+          misconceptionAlerts={data.commonConfusions.misconceptionAlerts}
+        />
+      )}
 
-      {/* Footer Tip */}
-      <div className="flex items-center gap-3 rounded-xl bg-slate-100 p-4 border border-slate-200">
-        <Icons.Lightbulb size={20} className="text-amber-800 fill-amber-50" aria-hidden="true" />
-        <p className="text-[13px] font-bold text-slate-900">
-          {data.footerTip}
-        </p>
-      </div>
+      {/* 8. SIMPLE RECAP - summary_card (Revision dashboard) */}
+      {data.simpleRecap && (
+        <LaymanSimpleRecap
+          summaryTitle={data.simpleRecap.summaryTitle}
+          keyTakeaways={data.simpleRecap.keyTakeaways}
+          simpleRecapPoints={data.simpleRecap.simpleRecapPoints}
+          confidenceBoost={data.simpleRecap.confidenceBoost}
+          memoryReinforcement={data.simpleRecap.memoryReinforcement}
+        />
+      )}
 
     </div>
   );
