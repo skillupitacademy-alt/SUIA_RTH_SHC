@@ -1,146 +1,135 @@
 'use client';
 
 import React from 'react';
-import * as Icons from 'lucide-react';
-import { useBrand } from '../../../PostLandingPage/app/context/BrandContext';
 import { SubtopicNotesViewData } from '../../../subtopicNotesData';
+import { RealLifeMappingCard } from '../reallife/RealLifeMappingCard';
+import { RealLifeIndustryCase } from '../reallife/RealLifeIndustryCase';
+import { RealLifeDailyStory } from '../reallife/RealLifeDailyStory';
+import { RealLifeCareerPath } from '../reallife/RealLifeCareerPath';
+import { RealLifeScenarioBlock } from '../reallife/RealLifeScenarioBlock';
+import { RealLifeBusinessCase } from '../reallife/RealLifeBusinessCase';
+import { RealLifeScenarioGrid } from '../reallife/RealLifeScenarioGrid';
+import { RealLifePracticalSummary } from '../reallife/RealLifePracticalSummary';
 
+/**
+ * Real Life Examples Content Component
+ * 
+ * Implements the complete Real Life Examples Section Education Architecture
+ * Based on AllSectionTutorialPage.json and AllSectionTutorialPageUIUXDetailed.json
+ * 
+ * Universal Architecture (8 templates in order):
+ * 1. concept_to_real_world_mapping → mapping_card
+ * 2. industry_use_case → industry_case_block
+ * 3. daily_life_example → daily_life_story
+ * 4. career_relevance → career_path_card
+ * 5. problem_solution_context → scenario_block
+ * 6. business_application → business_case_panel
+ * 7. domain_specific_scenarios → scenario_grid
+ * 8. practical_recap → practical_summary_card
+ * 
+ * All data comes from props - NO hardcoded content
+ */
 export function RealLifeExamplesContent({ data }: { data: SubtopicNotesViewData['mainContent']['realLifeExamples'] }) {
-  const brand = useBrand();
   if (!data) return null;
 
   return (
     <div className="min-w-0 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      
-      {/* Header */}
-      <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="min-w-0 space-y-1">
-          <h1 className="break-words text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl lg:text-4xl">{data.title}</h1>
-          <p className="text-[14px] font-medium text-slate-800">{data.intro}</p>
-        </div>
-        <div className="flex shrink-0 flex-wrap items-center gap-3">
-          <button className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-slate-800 shadow-sm border border-slate-200 hover:bg-slate-50 transition-all active:scale-95" aria-label="Bookmark this section">
-            <Icons.Bookmark size={18} aria-hidden="true" />
-          </button>
-          <button className="flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-slate-900 shadow-sm border border-slate-200 hover:bg-slate-50 transition-all active:scale-95">
-            <Icons.Share2 size={18} aria-hidden="true" /> Share
-          </button>
-        </div>
-      </div>
 
-      {/* Hero Analogy Card */}
-      <div 
-        className="relative overflow-hidden rounded-[32px] bg-white/80 backdrop-blur-xl p-5 shadow-2xl border-t border-white/60 transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] sm:p-8 md:p-10"
-      >
-        <div className="flex flex-col md:flex-row gap-10 items-center">
-          <div className="flex-1 w-full">
-            <div className="relative group">
-              <img 
-                src={data.hero.image} 
-                alt="Modular Kitchen Analogy" 
-                className="relative z-10 w-full max-h-[300px] object-contain drop-shadow-2xl transition-transform duration-700 group-hover:scale-105"
-              />
-            </div>
-          </div>
-          <div className="flex-[1.2] space-y-6">
-            <div 
-              className="inline-flex items-center rounded-full px-4 py-1 text-[11px] font-bold tracking-wide uppercase shadow-sm"
-              style={{ backgroundColor: `${brand.primaryColor}15`, color: brand.primaryColorDark }}
-            >
-              {data.hero.badge}
-            </div>
-            <h2 className="break-words text-2xl font-bold leading-tight text-slate-900 sm:text-3xl">
-              {data.hero.title}
-            </h2>
-            <p className="text-[15px] font-medium leading-relaxed text-slate-800">
-              {data.hero.description}
-            </p>
-            <div className="flex items-center gap-3 rounded-2xl bg-white p-4 shadow-lg transition-all duration-300 hover:-translate-y-1">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: `${brand.primaryColor}15` }}>
-                <Icons.Lightbulb size={20} style={{ color: brand.primaryColor }} fill={`${brand.primaryColor}33`} aria-hidden="true" />
-              </div>
-              <p className="text-[13px] font-medium italic" style={{ color: brand.primaryColor }}>
-                {data.hero.highlight}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* 1. CONCEPT TO REAL WORLD MAPPING - mapping_card (Hero intro) */}
+      {data.conceptMapping && (
+        <RealLifeMappingCard
+          badge={data.conceptMapping.badge}
+          headline={data.conceptMapping.headline}
+          conceptDefinition={data.conceptMapping.conceptDefinition}
+          realWorldTranslation={data.conceptMapping.realWorldTranslation}
+          importanceBlock={data.conceptMapping.importanceBlock}
+          careerRelevance={data.conceptMapping.careerRelevance}
+        />
+      )}
 
-      {/* Scenarios Grid */}
-      <div className="space-y-6">
-        <div className="flex items-center gap-2">
-           <div className="p-1.5 rounded-lg" style={{ backgroundColor: `${brand.primaryColor}15` }}>
-              <Icons.LayoutGrid size={18} style={{ color: brand.primaryColor }} aria-hidden="true" />
-           </div>
-           <h2 className="text-xl font-bold text-slate-900 tracking-tight">Real Life Scenarios</h2>
-        </div>
-         <p className="text-sm font-medium text-slate-800">More everyday examples to make it crystal clear.</p>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {data.scenarios.map((item) => (
-            <div key={item.id} className="group flex flex-col rounded-3xl bg-white/80 backdrop-blur-xl p-6 shadow-2xl transition-all duration-300 border-t border-white/60 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)]">
-              <div 
-                className="mb-6 flex aspect-square items-center justify-center rounded-2xl bg-slate-50 p-4 transition-colors group-hover:bg-opacity-50"
-                style={{ backgroundColor: `${brand.primaryColor}05` } as any}
-              >
-                <img src={item.image} alt={item.title} className="w-full h-full object-contain drop-shadow-lg" />
-              </div>
-              <h3 className="mb-2 text-[15px] font-bold text-slate-900">{item.title}</h3>
-              <p className="mb-6 flex-1 text-[12px] font-medium leading-relaxed text-slate-800">{item.description}</p>
-              <div className="text-[11px] font-bold uppercase tracking-widest" style={{ color: brand.primaryColor }}>
-                {item.footer}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* 2. INDUSTRY USE CASE - industry_case_block (Enterprise examples) */}
+      {data.industryUseCase && (
+        <RealLifeIndustryCase
+          title={data.industryUseCase.title}
+          industryName={data.industryUseCase.industryName}
+          scenarioDescription={data.industryUseCase.scenarioDescription}
+          businessContext={data.industryUseCase.businessContext}
+          implementation={data.industryUseCase.implementation}
+          impact={data.industryUseCase.impact}
+          keyTakeaway={data.industryUseCase.keyTakeaway}
+          image={data.industryUseCase.image}
+        />
+      )}
 
-      {/* Walkthrough Section */}
-      <div 
-        className="rounded-[32px] bg-white/80 backdrop-blur-xl p-5 shadow-2xl border-t border-white/60 transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] sm:p-10"
-      >
-        <div className="mb-10 space-y-2">
-          <h2 className="text-2xl font-bold text-slate-900">{data.walkthrough.title}</h2>
-          <p className="text-sm font-medium text-slate-800">Detailed example: {data.walkthrough.subtitle}</p>
-        </div>
+      {/* 3. DAILY LIFE EXAMPLE - daily_life_story (Storytelling approach) */}
+      {data.dailyLifeExample && (
+        <RealLifeDailyStory
+          title={data.dailyLifeExample.title}
+          storyTitle={data.dailyLifeExample.storyTitle}
+          storyNarrative={data.dailyLifeExample.storyNarrative}
+          everydayConnection={data.dailyLifeExample.everydayConnection}
+          technicalMapping={data.dailyLifeExample.technicalMapping}
+          relatableInsight={data.dailyLifeExample.relatableInsight}
+          image={data.dailyLifeExample.image}
+        />
+      )}
 
-        <div className="relative grid grid-cols-1 md:grid-cols-4 gap-8">
-          {data.walkthrough.steps.map((step, i) => {
-            const Icon = (Icons as any)[step.icon] || Icons.Circle;
-            return (
-              <React.Fragment key={step.id}>
-                <div className="relative z-10 space-y-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-md transition-transform hover:rotate-6">
-                    <Icon size={24} style={{ color: brand.primaryColor }} aria-hidden="true" />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <span className="flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white" style={{ backgroundColor: brand.primaryColor }}>{i + 1}</span>
-                      <h3 className="text-sm font-bold text-slate-900">{step.title}</h3>
-                    </div>
-                    <p className="text-[11px] font-medium leading-relaxed text-slate-800">
-                      {step.description}
-                    </p>
-                  </div>
-                </div>
-                {i < 3 && (
-                  <div className="hidden md:flex absolute top-6 h-px pointer-events-none" style={{ left: `${(i * 25) + 12.5}%`, width: '12.5%' }}>
-                     <Icons.ChevronRight className="mx-auto" size={20} style={{ color: `${brand.primaryColor}44` }} aria-hidden="true" />
-                  </div>
-                )}
-              </React.Fragment>
-            );
-          })}
-        </div>
+      {/* 4. CAREER RELEVANCE - career_path_card (Career paths) */}
+      {data.careerRelevance && (
+        <RealLifeCareerPath
+          title={data.careerRelevance.title}
+          careerPaths={data.careerRelevance.careerPaths}
+          industryDemand={data.careerRelevance.industryDemand}
+          futureGrowth={data.careerRelevance.futureGrowth}
+        />
+      )}
 
-        <div className="mt-12 flex items-center gap-3 rounded-2xl p-4 shadow-sm" style={{ backgroundColor: `${brand.primaryColor}11` }}>
-          <Icons.Star size={20} style={{ color: brand.primaryColor }} fill={`${brand.primaryColor}33`} aria-hidden="true" />
-          <p className="text-[13px] font-bold" style={{ color: brand.primaryColor }}>
-            {data.walkthrough.footer}
-          </p>
-        </div>
-      </div>
+      {/* 5. PROBLEM SOLUTION CONTEXT - scenario_block (Problem-solution flow) */}
+      {data.problemSolutionContext && (
+        <RealLifeScenarioBlock
+          title={data.problemSolutionContext.title}
+          problemStatement={data.problemSolutionContext.problemStatement}
+          context={data.problemSolutionContext.context}
+          solution={data.problemSolutionContext.solution}
+          implementation={data.problemSolutionContext.implementation}
+          outcome={data.problemSolutionContext.outcome}
+          lessonsLearned={data.problemSolutionContext.lessonsLearned}
+        />
+      )}
+
+      {/* 6. BUSINESS APPLICATION - business_case_panel (Business process) */}
+      {data.businessApplication && (
+        <RealLifeBusinessCase
+          title={data.businessApplication.title}
+          companyType={data.businessApplication.companyType}
+          businessChallenge={data.businessApplication.businessChallenge}
+          technicalApplication={data.businessApplication.technicalApplication}
+          businessProcess={data.businessApplication.businessProcess}
+          roi={data.businessApplication.roi}
+          scalability={data.businessApplication.scalability}
+          keyInsight={data.businessApplication.keyInsight}
+        />
+      )}
+
+      {/* 7. DOMAIN SPECIFIC SCENARIOS - scenario_grid (Multi-case dashboard) */}
+      {data.domainScenarios && (
+        <RealLifeScenarioGrid
+          title={data.domainScenarios.title}
+          scenarios={data.domainScenarios.scenarios}
+        />
+      )}
+
+      {/* 8. PRACTICAL RECAP - practical_summary_card (Application summary) */}
+      {data.practicalRecap && (
+        <RealLifePracticalSummary
+          summaryTitle={data.practicalRecap.summaryTitle}
+          keyApplications={data.practicalRecap.keyApplications}
+          industryRelevance={data.practicalRecap.industryRelevance}
+          careerImpact={data.practicalRecap.careerImpact}
+          nextSteps={data.practicalRecap.nextSteps}
+          practicalAdvice={data.practicalRecap.practicalAdvice}
+        />
+      )}
 
     </div>
   );

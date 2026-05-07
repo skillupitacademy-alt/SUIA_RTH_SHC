@@ -199,32 +199,91 @@ export interface SubtopicNotesViewData {
       };
     };
     realLifeExamples?: {
-      title: string;
-      intro: string;
-      hero: {
+      // 1. Concept to Real World Mapping
+      conceptMapping?: {
         badge: string;
-        title: string;
-        description: string;
-        highlight: string;
-        image: string;
+        headline: string;
+        conceptDefinition: string;
+        realWorldTranslation: string;
+        importanceBlock: string;
+        careerRelevance?: string;
       };
-      scenarios: {
-        id: string;
+      // 2. Industry Use Case
+      industryUseCase?: {
         title: string;
-        description: string;
-        footer: string;
-        image: string;
-      }[];
-      walkthrough: {
+        industryName: string;
+        scenarioDescription: string;
+        businessContext: string;
+        implementation: string;
+        impact: string;
+        keyTakeaway: string;
+        image?: string;
+      };
+      // 3. Daily Life Example
+      dailyLifeExample?: {
         title: string;
-        subtitle: string;
-        steps: {
+        storyTitle: string;
+        storyNarrative: string;
+        everydayConnection: string;
+        technicalMapping: string;
+        relatableInsight: string;
+        image?: string;
+      };
+      // 4. Career Relevance
+      careerRelevance?: {
+        title: string;
+        careerPaths: {
           id: string;
-          title: string;
+          role: string;
           description: string;
+          skillLevel: 'entry' | 'mid' | 'senior';
+          salaryRange?: string;
           icon: string;
         }[];
-        footer: string;
+        industryDemand: string;
+        futureGrowth: string;
+      };
+      // 5. Problem Solution Context
+      problemSolutionContext?: {
+        title: string;
+        problemStatement: string;
+        context: string;
+        solution: string;
+        implementation: string;
+        outcome: string;
+        lessonsLearned: string;
+      };
+      // 6. Business Application
+      businessApplication?: {
+        title: string;
+        companyType: string;
+        businessChallenge: string;
+        technicalApplication: string;
+        businessProcess: string;
+        roi: string;
+        scalability: string;
+        keyInsight: string;
+      };
+      // 7. Domain Specific Scenarios
+      domainScenarios?: {
+        title: string;
+        scenarios: {
+          id: string;
+          domain: string;
+          title: string;
+          description: string;
+          application: string;
+          icon: string;
+        }[];
+      };
+      // 8. Practical Recap
+      practicalRecap?: {
+        summaryTitle: string;
+        keyApplications: string[];
+        industryRelevance: string[];
+        careerImpact: string;
+        nextSteps: string[];
+        practicalAdvice: string;
       };
     };
     technicalDeepDive?: {
