@@ -2,18 +2,39 @@ import React from 'react';
 import * as Icons from 'lucide-react';
 import { useBrand } from '../../../PostLandingPage/app/context/BrandContext';
 import { SubtopicNotesViewData } from '../../../subtopicNotesData';
+import { NotesDefinitionBlock } from './NotesDefinitionBlock';
+import { NotesComponentGrid } from './NotesComponentGrid';
+import { NotesExamplePanel } from './NotesExamplePanel';
+import { NotesPracticeCard } from './NotesPracticeCard';
+import { NotesWarningFaq } from './NotesWarningFaq';
+import { NotesSummaryCard } from './NotesSummaryCard';
 
+/**
+ * Notes Main Content Component
+ * 
+ * Implements the complete Notes Section Education Architecture
+ * Based on AllSectionTutorialPage.json and AllSectionTutorialPageUIUXDetailed.json
+ * 
+ * Universal Architecture (8 templates in order):
+ * 1. core_definition → definition_block
+ * 2. concept_explanation → concept_card
+ * 3. key_components → component_grid
+ * 4. syntax_or_structure → syntax_block
+ * 5. examples → example_panel
+ * 6. best_practices → practice_card
+ * 7. common_errors → warning_faq
+ * 8. revision_summary → summary_card
+ * 
+ * All data comes from props - NO hardcoded content
+ */
 export function NotesMainContent({ data, isStandalone = true }: { data: SubtopicNotesViewData['mainContent']; isStandalone?: boolean }) {
   const brand = useBrand();
 
   const content = (
-    <div className={`min-w-0 space-y-8 transition-all duration-500 ${isStandalone ? 'mx-auto w-full max-w-[900px] px-4 py-8 sm:px-8 sm:py-10' : ''}`}>
+    <div className={`min-w-0 space-y-8 transition-all duration-500 ${isStandalone ? 'mx-auto w-full max-w-[1200px] px-4 py-8 sm:px-8 sm:py-10' : ''}`}>
 
-
-
-      {/* Title & Meta */}
+      {/* Page Meta Info */}
       <div className="space-y-4">
-        <h1 className="break-words text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl lg:text-4xl">{data.title}</h1>
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-gray-100 pb-6">
           <div className="flex min-w-0 flex-wrap items-center gap-2 text-xs font-bold sm:gap-4">
             <span className="flex items-center gap-1.5 text-slate-900">
@@ -34,20 +55,18 @@ export function NotesMainContent({ data, isStandalone = true }: { data: Subtopic
         </div>
       </div>
 
-      {/* In Simple Words Box */}
-      <div
-        className="flex min-w-0 gap-4 rounded-xl p-4 shadow-2xl transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] border-t border-white/60 sm:p-5"
-        style={{ backgroundColor: `${brand.primaryColor}10` }}
-      >
-        <div className="shrink-0 mt-0.5">
-          <Icons.Lightbulb size={20} style={{ color: brand.primaryColorDark }} aria-hidden="true" />
-        </div>
-        <p className="min-w-0 break-words text-sm font-medium leading-relaxed text-slate-800">
-          <strong className="font-bold" style={{ color: brand.primaryColorDark }}>In Simple Words:</strong> {data.simpleWords}
-        </p>
-      </div>
+      {/* 1. CORE DEFINITION - definition_block (Hero-style intro) */}
+      {data.definitionBlock && (
+        <NotesDefinitionBlock
+          badge={data.definitionBlock.badge}
+          headline={data.definitionBlock.headline}
+          definitionText={data.definitionBlock.definitionText}
+          importanceCallout={data.definitionBlock.importanceCallout}
+          quickSummary={data.definitionBlock.quickSummary}
+        />
+      )}
 
-      {/* Content Sections */}
+      {/* 2. CONCEPT EXPLANATION - concept_card (Educational content panels) */}
       <div className="space-y-10">
         {data.sections.map((section) => (
           <section key={section.id} className="space-y-4">
@@ -66,6 +85,7 @@ export function NotesMainContent({ data, isStandalone = true }: { data: Subtopic
               </div>
             )}
 
+            {/* 4. SYNTAX OR STRUCTURE - syntax_block (Code/formula highlight) */}
             {section.codeExample && (
               <div className="mt-6 space-y-4">
                 <div className="relative overflow-hidden rounded-xl bg-[#1e293b] p-4 shadow-2xl transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.3)] border-t border-white/10 sm:p-5">
@@ -86,6 +106,52 @@ export function NotesMainContent({ data, isStandalone = true }: { data: Subtopic
           </section>
         ))}
       </div>
+
+      {/* 3. KEY COMPONENTS - component_grid (3-column breakdown) */}
+      {data.componentGrid && (
+        <NotesComponentGrid
+          gridTitle={data.componentGrid.gridTitle}
+          componentCards={data.componentGrid.componentCards}
+        />
+      )}
+
+      {/* 5. EXAMPLES - example_panel (2-column practical examples) */}
+      {data.examplePanel && (
+        <NotesExamplePanel
+          exampleTitle={data.examplePanel.exampleTitle}
+          scenarios={data.examplePanel.scenarios}
+        />
+      )}
+
+      {/* 6. BEST PRACTICES - practice_card (Recommendations & optimization) */}
+      {data.practiceCard && (
+        <NotesPracticeCard
+          bestPracticeTitle={data.practiceCard.bestPracticeTitle}
+          recommendations={data.practiceCard.recommendations}
+          optimizationTips={data.practiceCard.optimizationTips}
+          industryStandards={data.practiceCard.industryStandards}
+        />
+      )}
+
+      {/* 7. COMMON ERRORS - warning_faq (Mistakes & FAQ accordion) */}
+      {data.warningFaq && (
+        <NotesWarningFaq
+          commonErrors={data.warningFaq.commonErrors}
+          faqItems={data.warningFaq.faqItems}
+          misconceptionAlerts={data.warningFaq.misconceptionAlerts}
+        />
+      )}
+
+      {/* 8. REVISION SUMMARY - summary_card (Exam-ready summary) */}
+      {data.summaryCard && (
+        <NotesSummaryCard
+          summaryTitle={data.summaryCard.summaryTitle}
+          keyTakeaways={data.summaryCard.keyTakeaways}
+          revisionChecklist={data.summaryCard.revisionChecklist}
+          memoryReinforcement={data.summaryCard.memoryReinforcement}
+          examTips={data.summaryCard.examTips}
+        />
+      )}
 
     </div>
   );

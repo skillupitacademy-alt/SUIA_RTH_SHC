@@ -14,6 +14,14 @@
 
 export interface SubtopicContentPattern {
   simpleWords: string;
+  // Notes Section Templates (8 templates from JSON spec)
+  definitionBlock: {
+    badge: string;
+    headline: string;
+    definitionText: string;
+    importanceCallout: string;
+    quickSummary: string[];
+  };
   sections: Array<{
     id: string;
     title: string;
@@ -24,6 +32,60 @@ export interface SubtopicContentPattern {
       output: string;
     };
   }>;
+  componentGrid: {
+    gridTitle: string;
+    componentCards: Array<{
+      id: string;
+      title: string;
+      description: string;
+      icon: string;
+      subcomponents: string[];
+    }>;
+  };
+  examplePanel: {
+    exampleTitle: string;
+    scenarios: Array<{
+      id: string;
+      title: string;
+      scenarioDescription: string;
+      practicalSolution: string;
+      industryContext: string;
+    }>;
+  };
+  practiceCard: {
+    bestPracticeTitle: string;
+    recommendations: Array<{
+      id: string;
+      title: string;
+      description: string;
+    }>;
+    optimizationTips: string[];
+    industryStandards: string[];
+  };
+  warningFaq: {
+    commonErrors: Array<{
+      id: string;
+      error: string;
+      solution: string;
+    }>;
+    faqItems: Array<{
+      id: string;
+      question: string;
+      answer: string;
+    }>;
+    misconceptionAlerts: string[];
+  };
+  summaryCard: {
+    summaryTitle: string;
+    keyTakeaways: string[];
+    revisionChecklist: Array<{
+      id: string;
+      item: string;
+      checked: boolean;
+    }>;
+    memoryReinforcement: string;
+    examTips: string[];
+  };
   laymanExplanation: {
     badge: string;
     title: string;
@@ -190,6 +252,18 @@ export const subtopicContentRegistry: Record<string, SubtopicContentPattern> = {
   // BASE PATTERN: Component Architecture
   'component-architecture': {
     simpleWords: 'Component architecture is a way to build user interfaces by assembling small, isolated, and reusable pieces of code called components, rather than building the entire page as one single chunk.',
+    definitionBlock: {
+      badge: 'Core Concept',
+      headline: 'Component Architecture in React',
+      definitionText: 'Component architecture is a design pattern where user interfaces are built by composing small, self-contained, and reusable pieces called components. Each component encapsulates its own structure, styling, and behavior, making it easier to build, test, and maintain complex applications.',
+      importanceCallout: 'This pattern is fundamental to modern React development and is used by companies like Facebook, Netflix, and Airbnb to build scalable applications.',
+      quickSummary: [
+        'Break UI into small, reusable pieces',
+        'Each component manages its own logic and state',
+        'Compose complex interfaces from simple building blocks',
+        'Easier to test, debug, and maintain code'
+      ]
+    },
     sections: [
       {
         id: 's1',
@@ -207,6 +281,150 @@ export const subtopicContentRegistry: Record<string, SubtopicContentPattern> = {
         }
       }
     ],
+    componentGrid: {
+      gridTitle: 'Breaking Down Component Architecture',
+      componentCards: [
+        {
+          id: 'cg1',
+          title: 'Presentational Components',
+          description: 'Focus purely on how things look. They receive data via props and render UI.',
+          icon: 'Eye',
+          subcomponents: ['Buttons', 'Cards', 'Forms', 'Typography']
+        },
+        {
+          id: 'cg2',
+          title: 'Container Components',
+          description: 'Handle logic, state management, and data fetching. They pass data to presentational components.',
+          icon: 'Database',
+          subcomponents: ['Data Fetchers', 'State Managers', 'Event Handlers', 'API Connectors']
+        },
+        {
+          id: 'cg3',
+          title: 'Higher-Order Components',
+          description: 'Functions that take a component and return a new enhanced component with additional functionality.',
+          icon: 'Layers',
+          subcomponents: ['Auth Wrappers', 'Data Loaders', 'Error Boundaries', 'Theme Providers']
+        }
+      ]
+    },
+    examplePanel: {
+      exampleTitle: 'Practical Examples in Real Applications',
+      scenarios: [
+        {
+          id: 'ep1',
+          title: 'E-Commerce Product Card',
+          scenarioDescription: 'A reusable product card component that displays product image, name, price, and add-to-cart button.',
+          practicalSolution: 'Create a <ProductCard /> component that accepts product data as props. Use it across homepage, search results, and category pages.',
+          industryContext: 'Used by Amazon, eBay, Shopify'
+        },
+        {
+          id: 'ep2',
+          title: 'Social Media Post Component',
+          scenarioDescription: 'A post component that shows user avatar, name, timestamp, content, and interaction buttons (like, comment, share).',
+          practicalSolution: 'Build a <Post /> component with nested <Avatar />, <PostContent />, and <ActionBar /> components for maximum reusability.',
+          industryContext: 'Used by Facebook, Twitter, LinkedIn'
+        }
+      ]
+    },
+    practiceCard: {
+      bestPracticeTitle: 'Best Practices for Component Architecture',
+      recommendations: [
+        {
+          id: 'bp1',
+          title: 'Single Responsibility Principle',
+          description: 'Each component should do one thing well. If a component grows too large, split it into smaller components.'
+        },
+        {
+          id: 'bp2',
+          title: 'Props Over State',
+          description: 'Prefer passing data via props rather than duplicating state. Lift state up to the nearest common ancestor.'
+        },
+        {
+          id: 'bp3',
+          title: 'Composition Over Inheritance',
+          description: 'Use component composition instead of class inheritance. React favors composition for code reuse.'
+        }
+      ],
+      optimizationTips: [
+        'Use React.memo() to prevent unnecessary re-renders',
+        'Implement code splitting with React.lazy() for large components',
+        'Keep component files under 250 lines of code',
+        'Use TypeScript for better type safety and autocomplete'
+      ],
+      industryStandards: [
+        'Follow Atomic Design methodology (Atoms, Molecules, Organisms)',
+        'Maintain a component library/storybook for documentation',
+        'Write unit tests for each component',
+        'Use consistent naming conventions (PascalCase for components)'
+      ]
+    },
+    warningFaq: {
+      commonErrors: [
+        {
+          id: 'ce1',
+          error: 'Prop Drilling (passing props through many levels)',
+          solution: 'Use Context API or state management libraries like Redux or Zustand to avoid passing props through multiple levels.'
+        },
+        {
+          id: 'ce2',
+          error: 'Mutating Props Directly',
+          solution: 'Props are read-only. Never modify props directly. Instead, use state or callbacks to handle changes.'
+        },
+        {
+          id: 'ce3',
+          error: 'Too Many Props (more than 5-7 props)',
+          solution: 'If a component has too many props, consider splitting it into smaller components or grouping related props into objects.'
+        }
+      ],
+      faqItems: [
+        {
+          id: 'faq1',
+          question: 'When should I split a component into smaller components?',
+          answer: 'Split when: (1) Component exceeds 250 lines, (2) Component has multiple responsibilities, (3) Parts of the component are reused elsewhere, (4) Component becomes hard to test or understand.'
+        },
+        {
+          id: 'faq2',
+          question: 'Should I use functional or class components?',
+          answer: 'Use functional components with hooks. They are simpler, more concise, and recommended by React team. Class components are legacy but still supported.'
+        },
+        {
+          id: 'faq3',
+          question: 'How do I share logic between components?',
+          answer: 'Use custom hooks to extract and share stateful logic. Custom hooks are functions that start with "use" and can call other hooks.'
+        }
+      ],
+      misconceptionAlerts: [
+        'Components are NOT just about splitting code - they are about creating reusable, testable units',
+        'More components does NOT always mean better code - balance reusability with complexity',
+        'Component architecture is NOT only for large apps - even small apps benefit from good structure'
+      ]
+    },
+    summaryCard: {
+      summaryTitle: 'Key Takeaways & Revision Checklist',
+      keyTakeaways: [
+        'Component architecture breaks UI into small, reusable, self-contained pieces',
+        'Presentational components handle UI, container components handle logic',
+        'Props flow down (parent to child), events flow up (child to parent)',
+        'Composition is preferred over inheritance in React',
+        'Follow Single Responsibility Principle for each component',
+        'Use hooks to share logic between components'
+      ],
+      revisionChecklist: [
+        { id: 'rc1', item: 'Understand the difference between presentational and container components', checked: false },
+        { id: 'rc2', item: 'Know when to split a component into smaller components', checked: false },
+        { id: 'rc3', item: 'Can explain props vs state', checked: false },
+        { id: 'rc4', item: 'Understand component composition patterns', checked: false },
+        { id: 'rc5', item: 'Know common mistakes and how to avoid them', checked: false },
+        { id: 'rc6', item: 'Can implement a reusable component from scratch', checked: false }
+      ],
+      memoryReinforcement: 'Remember: Components are like LEGO bricks - small, reusable, and composable. Master this pattern and you master React.',
+      examTips: [
+        'Be ready to explain the difference between smart and dumb components',
+        'Practice writing a component that accepts props and renders UI',
+        'Understand when to use state vs props',
+        'Know the component lifecycle and when re-renders occur'
+      ]
+    },
     laymanExplanation: {
       badge: 'Layman Explanation',
       title: 'Component Architecture in React',

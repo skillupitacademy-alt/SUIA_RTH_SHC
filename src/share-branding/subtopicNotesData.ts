@@ -40,6 +40,13 @@ export interface SubtopicNotesViewData {
       xp: number;
     };
     simpleWords: string;
+    definitionBlock?: {
+      badge: string;
+      headline: string;
+      definitionText: string;
+      importanceCallout: string;
+      quickSummary: string[];
+    };
     sections: {
       id: string;
       title: string;
@@ -50,6 +57,60 @@ export interface SubtopicNotesViewData {
         output: string;
       };
     }[];
+    componentGrid?: {
+      gridTitle: string;
+      componentCards: Array<{
+        id: string;
+        title: string;
+        description: string;
+        icon: string;
+        subcomponents: string[];
+      }>;
+    };
+    examplePanel?: {
+      exampleTitle: string;
+      scenarios: Array<{
+        id: string;
+        title: string;
+        scenarioDescription: string;
+        practicalSolution: string;
+        industryContext: string;
+      }>;
+    };
+    practiceCard?: {
+      bestPracticeTitle: string;
+      recommendations: Array<{
+        id: string;
+        title: string;
+        description: string;
+      }>;
+      optimizationTips: string[];
+      industryStandards: string[];
+    };
+    warningFaq?: {
+      commonErrors: Array<{
+        id: string;
+        error: string;
+        solution: string;
+      }>;
+      faqItems: Array<{
+        id: string;
+        question: string;
+        answer: string;
+      }>;
+      misconceptionAlerts: string[];
+    };
+    summaryCard?: {
+      summaryTitle: string;
+      keyTakeaways: string[];
+      revisionChecklist: Array<{
+        id: string;
+        item: string;
+        checked: boolean;
+      }>;
+      memoryReinforcement: string;
+      examTips: string[];
+    };
     laymanExplanation?: {
       badge: string;
       title: string;
@@ -306,7 +367,13 @@ export async function loadSubtopicNotesData(brand: BrandConfig, subtopicId: stri
         xp: 50
       },
       simpleWords: content.simpleWords,
+      definitionBlock: content.definitionBlock,
       sections: content.sections,
+      componentGrid: content.componentGrid,
+      examplePanel: content.examplePanel,
+      practiceCard: content.practiceCard,
+      warningFaq: content.warningFaq,
+      summaryCard: content.summaryCard,
       laymanExplanation: content.laymanExplanation,
       realLifeExamples: content.realLifeExamples,
       technicalDeepDive: content.technicalDeepDive,
