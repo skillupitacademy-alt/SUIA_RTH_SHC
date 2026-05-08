@@ -107,11 +107,12 @@ function ContentManagerContent() {
     }
 
     try {
-      const parsed = JSON.parse(jsonInput);
+      JSON.parse(jsonInput);
       showMessage('✓ Valid JSON!', 'success');
       return true;
-    } catch (error: any) {
-      showMessage(`Invalid JSON: ${error.message}`, 'error');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      showMessage(`Invalid JSON: ${errorMessage}`, 'error');
       return false;
     }
   };
@@ -140,8 +141,9 @@ function ContentManagerContent() {
       } else {
         showMessage(`Error: ${result.error}`, 'error');
       }
-    } catch (error: any) {
-      showMessage(`Error: ${error.message}`, 'error');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      showMessage(`Error: ${errorMessage}`, 'error');
     }
   };
 
@@ -182,10 +184,11 @@ function ContentManagerContent() {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label htmlFor="subtopicId" className="block text-sm font-semibold text-gray-700 mb-2">
                   Subtopic ID <span className="text-red-500">*</span>
                 </label>
                 <input
+                  id="subtopicId"
                   type="text"
                   value={subtopicInfo.subtopicId}
                   onChange={(e) => setSubtopicInfo(prev => ({ ...prev, subtopicId: e.target.value.toLowerCase() }))}
@@ -196,10 +199,11 @@ function ContentManagerContent() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label htmlFor="domain" className="block text-sm font-semibold text-gray-700 mb-2">
                   Domain <span className="text-red-500">*</span>
                 </label>
                 <input
+                  id="domain"
                   type="text"
                   value={subtopicInfo.domain}
                   onChange={(e) => setSubtopicInfo(prev => ({ ...prev, domain: e.target.value }))}
@@ -209,10 +213,11 @@ function ContentManagerContent() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label htmlFor="subject" className="block text-sm font-semibold text-gray-700 mb-2">
                   Subject <span className="text-red-500">*</span>
                 </label>
                 <input
+                  id="subject"
                   type="text"
                   value={subtopicInfo.subject}
                   onChange={(e) => setSubtopicInfo(prev => ({ ...prev, subject: e.target.value }))}
@@ -222,10 +227,11 @@ function ContentManagerContent() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label htmlFor="topic" className="block text-sm font-semibold text-gray-700 mb-2">
                   Topic <span className="text-red-500">*</span>
                 </label>
                 <input
+                  id="topic"
                   type="text"
                   value={subtopicInfo.topic}
                   onChange={(e) => setSubtopicInfo(prev => ({ ...prev, topic: e.target.value }))}
@@ -235,10 +241,11 @@ function ContentManagerContent() {
               </div>
 
               <div className="md:col-span-2">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label htmlFor="subtopicName" className="block text-sm font-semibold text-gray-700 mb-2">
                   Subtopic Name <span className="text-red-500">*</span>
                 </label>
                 <input
+                  id="subtopicName"
                   type="text"
                   value={subtopicInfo.subtopic}
                   onChange={(e) => setSubtopicInfo(prev => ({ ...prev, subtopic: e.target.value }))}
@@ -306,10 +313,11 @@ function ContentManagerContent() {
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Step 2: Add Content Section</h2>
 
               <div className="mb-6">
-                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                <label htmlFor="sectionSelect" className="block text-sm font-semibold text-gray-700 mb-3">
                   Select Section to Add
                 </label>
                 <select
+                  id="sectionSelect"
                   value={selectedSection}
                   onChange={(e) => setSelectedSection(e.target.value as SectionType)}
                   className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-base"
@@ -323,10 +331,11 @@ function ContentManagerContent() {
               </div>
 
               <div className="mb-6">
-                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                <label htmlFor="jsonInput" className="block text-sm font-semibold text-gray-700 mb-3">
                   Paste AI-Generated JSON
                 </label>
                 <textarea
+                  id="jsonInput"
                   value={jsonInput}
                   onChange={(e) => setJsonInput(e.target.value)}
                   placeholder='{"notes": {"coreDefinition": {...}}}'

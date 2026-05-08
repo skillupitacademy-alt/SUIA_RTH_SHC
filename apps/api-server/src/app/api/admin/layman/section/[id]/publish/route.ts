@@ -5,12 +5,11 @@
  * POST /api/admin/layman/section/:id/publish - Publish section
  */
 
+import { 
+  LaymanAuditService,
+  LaymanService} from '@quiz/db-tutorial';
 import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
-import { 
-  LaymanService,
-  LaymanAuditService
-} from '@quiz/db-tutorial';
 
 import { badRequest, notFound } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
@@ -18,8 +17,8 @@ import { withCorrelationId } from '@/lib/correlation-id.middleware';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
-import { requireAdminRouteAccess } from '@/modules/auth/admin-audience.util';
 import { withRateLimit } from '@/middleware/rate-limit.middleware';
+import { requireAdminRouteAccess } from '@/modules/auth/admin-audience.util';
 
 export const dynamic = 'force-dynamic';
 
@@ -51,7 +50,7 @@ async function postHandler(
     const laymanService = new LaymanService();
     const existingSection = await laymanService.getLaymanSectionById(sectionId);
     
-    if (!existingSection) {
+    if (existingSection === null || existingSection === undefined) {
       return ApiResponse.error(notFound('Layman section', sectionId));
     }
     
@@ -66,8 +65,8 @@ async function postHandler(
       userId: payload.userId,
       userRole: 'admin',
       brandId: publishedSection.brandId,
-      ipAddress: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || undefined,
-      userAgent: req.headers.get('user-agent') || undefined,
+      ipAddress: (req.headers.get('x-forwarded-for') ?? req.headers.get('x-real-ip') ?? undefined),
+      userAgent: (req.headers.get('user-agent') ?? undefined),
     };
     
     const auditService = new LaymanAuditService();

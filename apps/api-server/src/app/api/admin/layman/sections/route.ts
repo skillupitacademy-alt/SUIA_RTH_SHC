@@ -5,16 +5,16 @@
  * GET /api/admin/layman/sections - List all Layman sections with filters
  */
 
+import { LaymanService } from '@quiz/db-tutorial';
 import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
-import { LaymanService } from '@quiz/db-tutorial';
 
 import { ApiResponse } from '@/lib/api-response';
 import { withCorrelationId } from '@/lib/correlation-id.middleware';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
-import { requireAdminRouteAccess } from '@/modules/auth/admin-audience.util';
 import { withRateLimit } from '@/middleware/rate-limit.middleware';
+import { requireAdminRouteAccess } from '@/modules/auth/admin-audience.util';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,7 +31,7 @@ async function getHandler(req: NextRequest) {
     const searchParams = req.nextUrl.searchParams;
     
     // Build filters
-    const filters: any = {};
+    const filters: Record<string, string> = {};
     
     if (searchParams.has('subtopicId')) {
       filters.subtopicId = searchParams.get('subtopicId')!;

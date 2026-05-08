@@ -13,6 +13,7 @@ export class AssignmentAuthError extends Error {
 
 export async function requireStudent(request: Request) {
   const token = tokenService.getAccessToken(request, { scope: 'user' });
+  
   if (token == null || token.trim() === '') {
     throw new AssignmentAuthError('Unauthorized', 401);
   }

@@ -8,8 +8,9 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { TutorialEngine, TutorialService } from '@/modules/tutorial-engine';
+
 import type { TutorialBrand } from '@/modules/tutorial-engine';
+import { TutorialService } from '@/modules/tutorial-engine';
 
 export const dynamic = 'force-dynamic';
 
@@ -55,7 +56,7 @@ export async function GET(
     const brandId = extractBrand(request);
     const userId = extractUserId(request);
 
-    if (!userId) {
+    if (userId === null || userId === undefined || userId === '') {
       return NextResponse.json(
         { error: 'User ID required' },
         { status: 401 }

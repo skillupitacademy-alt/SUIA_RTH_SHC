@@ -5,16 +5,16 @@
  * GET /api/admin/layman/section/:id/audit - Get audit logs for section
  */
 
+import { LaymanAuditService } from '@quiz/db-tutorial';
 import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
-import { LaymanAuditService } from '@quiz/db-tutorial';
 
 import { ApiResponse } from '@/lib/api-response';
 import { withCorrelationId } from '@/lib/correlation-id.middleware';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
-import { requireAdminRouteAccess } from '@/modules/auth/admin-audience.util';
 import { withRateLimit } from '@/middleware/rate-limit.middleware';
+import { requireAdminRouteAccess } from '@/modules/auth/admin-audience.util';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,7 +33,8 @@ async function getHandler(
     
     const { id: sectionId } = await params;
     const searchParams = req.nextUrl.searchParams;
-    const limit = parseInt(searchParams.get('limit') || '50');
+    const limitParam = searchParams.get('limit');
+    const limit = parseInt((limitParam !== null && limitParam !== '') ? limitParam : '50');
     
     // Get audit logs
     const auditService = new LaymanAuditService();

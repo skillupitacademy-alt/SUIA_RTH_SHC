@@ -7,21 +7,16 @@
  * @module tutorial-engine
  */
 
-export { TutorialEngine } from './tutorial.engine';
-export { TutorialService } from './tutorial.service';
-
 export type {
-  TutorialBrand,
   BlockType,
+  TutorialBrand,
+  TutorialContent,
   TutorialContentOptions,
-  TutorialProgressOptions,
-  TutorialContent
-} from './tutorial.engine';
-
-export type { TutorialDifficulty } from '@quiz/types';
-
+  TutorialProgressOptions} from './tutorial.engine';
+export { TutorialEngine } from './tutorial.engine';
 export type {
   GetContentRequest,
-  TrackProgressRequest,
-  ServiceResponse
-} from './tutorial.service';
+  ServiceResponse,
+  TrackProgressRequest} from './tutorial.service';
+export { TutorialService } from './tutorial.service';
+export type { TutorialDifficulty } from '@quiz/types';

@@ -8,15 +8,16 @@
  */
 
 import type { NextRequest } from 'next/server';
-import { ApiResponse } from '@/lib/api-response';
+
 import { badRequest } from '@/lib/api-error';
+import { ApiResponse } from '@/lib/api-response';
 
 const MAX_BODY_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
 
 /**
  * Wraps a route handler to validate payload size before processing
  */
-export function withPayloadSizeLimit<T extends (...args: any[]) => Promise<Response>>(
+export function withPayloadSizeLimit<T extends (req: NextRequest, ...args: any[]) => Promise<Response>>(
   handler: T,
   maxBytes: number = MAX_BODY_SIZE_BYTES
 ): T {
@@ -24,7 +25,7 @@ export function withPayloadSizeLimit<T extends (...args: any[]) => Promise<Respo
     // Check Content-Length header
     const contentLength = req.headers.get('content-length');
     
-    if (contentLength) {
+    if (contentLength !== null && contentLength !== '') {
       const size = parseInt(contentLength, 10);
       
       if (isNaN(size)) {

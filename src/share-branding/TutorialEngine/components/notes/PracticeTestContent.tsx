@@ -201,10 +201,10 @@ export function PracticeTestContent({
           <h3 className="text-xl font-bold text-slate-950 leading-tight">{currentQuestion.question}</h3>
 
           {/* Code Block (if applicable) */}
-          {currentQuestion.code && (
+          {(currentQuestion as any).code && (
             <div className="relative overflow-hidden rounded-2xl bg-[#0f172a] p-4 font-mono text-[12px] leading-relaxed shadow-2xl sm:p-6 sm:text-sm">
               <pre className="whitespace-pre-wrap break-words text-indigo-100">
-                {currentQuestion.code.split('\n').map((line, i) => (
+                {(currentQuestion as any).code.split('\n').map((line: string, i: number) => (
                   <div key={i} className="flex min-w-0 gap-3 sm:gap-4">
                     <span className="w-4 text-slate-600 select-none">{i + 1}</span>
                     <span className="min-w-0 break-words">{line}</span>

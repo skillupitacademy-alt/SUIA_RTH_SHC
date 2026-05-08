@@ -1,12 +1,23 @@
-import type { examBlueprints } from '@quiz/db';
-import { db, exams } from '@quiz/db';
-import { and, eq } from 'drizzle-orm';
+import { db, examBlueprints, exams } from '@quiz/db';
+import { and, eq, type InferSelectModel } from 'drizzle-orm';
 
 import { logger } from '@/lib/logger';
 import { cacheService } from '@/modules/core/cache.service';
 import { container } from '@/modules/core/container';
 import { getDisplayType, normalizeQuestionOptions, normalizeQuestionType } from '@/modules/question/question-contract';
 import { ScoringEngine } from '@/modules/scoring-engine/scoring.engine';
+
+type ExamModel = InferSelectModel<typeof exams>;
+type BlueprintModel = InferSelectModel<typeof examBlueprints>;
+type SyncExam = ExamModel & { blueprint?: BlueprintModel | null };
+
+type FullExam = ExamModel & {
+  examQuestions: {
+    order: number;
+    userAnswer: string | null;
+    question: Record<string, unknown>;
+  }[];
+};
 
 
 export class SessionService {
@@ -15,7 +26,7 @@ export class SessionService {
    */
   static async syncSession(examId: string, userId: string) {
     const cacheKey = `exam-header:${userId}:${examId}`;
-    let exam: (Awaited<ReturnType<typeof db.query.exams.findFirst>> & { blueprint?: typeof examBlueprints.$inferSelect | null }) | null = null;
+    let exam: SyncExam | null = null;
 
     try {
       exam = await cacheService.get(cacheKey) as typeof exam;
@@ -49,13 +60,13 @@ export class SessionService {
 
     if (exam.status === 'completed') return exam;
 
-    const startTime = new Date(exam.startedAt).getTime();
+    const startTime = new Date(exam.startedAt as string | number | Date).getTime();
     const timeElapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
     
     // Task D: Prioritize durationSeconds
-    const durationSeconds = (exam.durationSeconds !== null && exam.durationSeconds !== undefined) ? exam.durationSeconds : ((exam.blueprint?.timeLimit !== undefined && exam.blueprint?.timeLimit !== null) ? (exam.blueprint.timeLimit * 60) : 3600);
+    const durationSeconds = (exam.durationSeconds !== null && exam.durationSeconds !== undefined) ? (exam.durationSeconds as number) : ((exam.blueprint?.timeLimit !== undefined && exam.blueprint?.timeLimit !== null) ? (exam.blueprint.timeLimit * 60) : 3600);
 
-    if (timeElapsedSeconds > durationSeconds) {
+    if (timeElapsedSeconds > (durationSeconds as number)) {
       // Auto-submit: Mark as processing and trigger scoring (non-blocking)
       await db.update(exams)
         .set({ status: 'processing' as 'started' | 'processing' | 'completed' | 'abandoned' | 'failed' })
@@ -80,27 +91,42 @@ export class SessionService {
     const exam = await this.syncSession(examId, userId);
     
     // Fetch full state for internal calculations but sanitize before returning
-    const fullExam = await db.query.exams.findFirst({
+    const fullExam = (await db.query.exams.findFirst({
       where: and(eq(exams.id, examId), eq(exams.userId, userId)),
       with: {
         examQuestions: {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          orderBy: (eqAny: any, helpers: any) => [helpers.asc(eqAny.order)],
+          orderBy: (f: any, { asc }: any) => [asc(f.order)],
           with: { question: true }
         }
       }
-    });
+    })) as FullExam | undefined;
 
     if (!fullExam) throw new Error('Exam state lost');
 
+    interface ExamQuestion {
+      userAnswer: string | null;
+      order: number;
+      question: {
+        id: string;
+        questionText: string;
+        options: unknown;
+        codeSnippet: string | null;
+        type: string;
+        difficulty: string;
+        topicId: string;
+        subtopicId: string | null;
+      };
+    }
+
+    const examQuestionsTyped = fullExam.examQuestions as unknown as ExamQuestion[];
+
     // Calculate progress
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const answeredCount = fullExam.examQuestions.filter((q: any) => q.userAnswer !== null).length;
+    const answeredCount = examQuestionsTyped.filter((q) => q.userAnswer !== null).length;
     
     // Find first unanswered question
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const firstUnanswered = fullExam.examQuestions.find((q: any) => q.userAnswer === null);
-    const currentEq = firstUnanswered ?? (fullExam.examQuestions.length > 0 ? fullExam.examQuestions[fullExam.examQuestions.length - 1] : null);
+    const firstUnanswered = examQuestionsTyped.find((q) => q.userAnswer === null);
+    const currentEq = firstUnanswered ?? (examQuestionsTyped.length > 0 ? examQuestionsTyped[examQuestionsTyped.length - 1] : null);
 
     const startTime = new Date(fullExam.startedAt).getTime();
     const timeElapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
@@ -118,8 +144,7 @@ export class SessionService {
         answeredCount,
       },
       // Full question list (sanitized)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      questions: fullExam.examQuestions.map((eq: any) => ({
+      questions: examQuestionsTyped.map((eq) => ({
         id: eq.question.id,
         questionId: eq.question.id, // Explicitly provide questionId for ExamInterface mapping
         text: eq.question.questionText, 

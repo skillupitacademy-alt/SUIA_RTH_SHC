@@ -5,16 +5,16 @@
  * GET /api/admin/layman/review/queue - Get sections pending review
  */
 
+import { type LaymanSectionStatus,LaymanService } from '@quiz/db-tutorial';
 import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
-import { LaymanService } from '@quiz/db-tutorial';
 
 import { ApiResponse } from '@/lib/api-response';
 import { withCorrelationId } from '@/lib/correlation-id.middleware';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
-import { requireAdminRouteAccess } from '@/modules/auth/admin-audience.util';
 import { withRateLimit } from '@/middleware/rate-limit.middleware';
+import { requireAdminRouteAccess } from '@/modules/auth/admin-audience.util';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,15 +36,15 @@ async function getHandler(req: NextRequest) {
     const laymanService = new LaymanService();
     
     // Get draft sections
-    const draftFilters: any = { status: 'draft' };
-    if (brandId) {
+    const draftFilters: { status: LaymanSectionStatus; brandId?: string } = { status: 'draft' };
+    if (brandId !== null && brandId !== '') {
       draftFilters.brandId = brandId;
     }
     const draftSections = await laymanService.queryLaymanSections(draftFilters);
     
     // Get in_review sections
-    const reviewFilters: any = { status: 'in_review' };
-    if (brandId) {
+    const reviewFilters: { status: LaymanSectionStatus; brandId?: string } = { status: 'in_review' };
+    if (brandId !== null && brandId !== '') {
       reviewFilters.brandId = brandId;
     }
     const reviewSections = await laymanService.queryLaymanSections(reviewFilters);
@@ -91,7 +91,7 @@ async function getHandler(req: NextRequest) {
         in_review: reviewSections.length,
       },
       filters: {
-        brandId: brandId || 'all',
+        brandId: (brandId !== null && brandId !== '') ? brandId : 'all',
       },
     }, 200, { 'X-Duration-Ms': durationMs.toString() });
     

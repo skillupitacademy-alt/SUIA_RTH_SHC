@@ -5,20 +5,17 @@
  * GET /api/admin/layman/prompt/:id/export - Export prompt with instructions
  */
 
+import { LaymanPromptBuilderService } from '@quiz/db-tutorial';
 import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
-import { 
-  LaymanPromptBuilderService,
-  LaymanAuditService 
-} from '@quiz/db-tutorial';
 
 import { badRequest } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { withCorrelationId } from '@/lib/correlation-id.middleware';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
-import { requireAdminRouteAccess } from '@/modules/auth/admin-audience.util';
 import { withRateLimit } from '@/middleware/rate-limit.middleware';
+import { requireAdminRouteAccess } from '@/modules/auth/admin-audience.util';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,7 +34,7 @@ async function getHandler(
     
     const { id: promptId } = await params;
     const searchParams = req.nextUrl.searchParams;
-    const format = (searchParams.get('format') || 'plain') as 'plain' | 'markdown' | 'json';
+    const format = (searchParams.get('format') ?? 'plain') as 'plain' | 'markdown' | 'json';
     
     // Validate format
     if (!['plain', 'markdown', 'json'].includes(format)) {
@@ -50,9 +47,9 @@ async function getHandler(
     const auditContext = {
       userId: payload.userId,
       userRole: 'admin',
-      brandId: searchParams.get('brandId') || 'shared',
-      ipAddress: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || undefined,
-      userAgent: req.headers.get('user-agent') || undefined,
+      brandId: searchParams.get('brandId') ?? 'shared',
+      ipAddress: (req.headers.get('x-forwarded-for') ?? req.headers.get('x-real-ip') ?? undefined),
+      userAgent: (req.headers.get('user-agent') ?? undefined),
     };
     
     // Export prompt

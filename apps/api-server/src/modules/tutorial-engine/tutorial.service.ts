@@ -7,9 +7,10 @@
  * @module tutorial-engine
  */
 
-import { TutorialEngine } from './tutorial.engine';
-import type { TutorialBrand, BlockType } from './tutorial.engine';
 import type { TutorialDifficulty } from '@quiz/types';
+
+import type { BlockType, TutorialBrand, TutorialContent } from './tutorial.engine';
+import { TutorialEngine } from './tutorial.engine';
 
 export interface GetContentRequest {
   subtopicId: string;
@@ -39,11 +40,11 @@ export interface ServiceResponse<T> {
  */
 export class TutorialService {
   /**
-   * Get tutorial content for a subtopic
-   * 
-   * Handles brand filtering and customizations
-   */
-  async getContent(request: GetContentRequest): Promise<ServiceResponse<any>> {
+    * Get tutorial content for a subtopic
+    * 
+    * Handles brand filtering and customizations
+    */
+  async getContent(request: GetContentRequest): Promise<ServiceResponse<TutorialContent>> {
     const { subtopicId, userId, brandId, difficulty } = request;
 
     try {
@@ -75,11 +76,15 @@ export class TutorialService {
   }
 
   /**
-   * Track user progress on a tutorial block
-   * 
-   * Updates progress and checks for remediation needs
-   */
-  async trackProgress(request: TrackProgressRequest): Promise<ServiceResponse<any>> {
+    * Track user progress on a tutorial block
+    * 
+    * Updates progress and checks for remediation needs
+    */
+  async trackProgress(request: TrackProgressRequest): Promise<ServiceResponse<{
+    blocksCompleted: string[];
+    completionPercent: number;
+    assignmentUnlocked: boolean;
+  }>> {
     const { userId, subtopicId, blockType, brandId } = request;
 
     try {

@@ -2349,9 +2349,9 @@ Output in this EXACT JSON format with 30 total questions:
             </div>
 
             <div className="mb-6">
-              <label className="block text-lg font-semibold text-gray-800 mb-3">
+              <div className="block text-lg font-semibold text-gray-800 mb-3">
                 Select Section
-              </label>
+              </div>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {sections.map((section) => (
                   <button

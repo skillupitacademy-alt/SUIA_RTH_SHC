@@ -2,14 +2,14 @@
 
 import React, { useContext, useEffect } from 'react';
 import { 
-  Users, ClipboardList, BookOpen, Briefcase, Calendar, ChevronDown, 
+  Users, ClipboardList, BookOpen, Briefcase,
   ArrowUp, FileText, FileEdit, Bot, CheckCircle2, Archive,
-  Sparkles, BookType, ClipboardCheck, UserCog
+  BookType, ClipboardCheck, UserCog
 } from 'lucide-react';
 import { ShellContext } from '../ShellContext';
 
 export default function DashboardPage() {
-  const { isRightSidebarOpen, toggleRightSidebar, setHeaderTitle, setHeaderSubtitle } = useContext(ShellContext);
+  const { setHeaderTitle, setHeaderSubtitle } = useContext(ShellContext);
 
   useEffect(() => {
     setHeaderTitle('Admin Dashboard');
@@ -18,7 +18,7 @@ export default function DashboardPage() {
       setHeaderTitle('');
       setHeaderSubtitle('');
     };
-  }, []);
+  }, [setHeaderSubtitle, setHeaderTitle]);
 
   return (
     <div className="space-y-8">
@@ -192,7 +192,7 @@ export default function DashboardPage() {
         <div>Version 1.0.0 &nbsp;|&nbsp; Build 2025.05.15</div>
       </footer>
 
-      <style dangerouslySetInnerHTML={{__html: `
+      <style>{`
         @keyframes wave {
           0%, 100% { transform: rotate(0deg); }
           25% { transform: rotate(-10deg); }
@@ -203,7 +203,7 @@ export default function DashboardPage() {
           transform-origin: 70% 70%;
           animation: wave 2s infinite ease-in-out;
         }
-      `}} />
+      `}</style>
     </div>
   );
 }

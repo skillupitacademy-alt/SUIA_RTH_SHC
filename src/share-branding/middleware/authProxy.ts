@@ -23,6 +23,7 @@ const PUBLIC_PREFIXES = ['/verify', '/api/programs', '/api/certificates/verify/'
 
 const PROTECTED_PREFIXES = [
   '/learn/',
+  '/start-learning/',
   '/api/tutorial/',
   '/api/ai-tutor/',
   '/remediation/',
@@ -141,7 +142,16 @@ function addUserHeaders(response: NextResponse, payload: UserPayload): NextRespo
 
 async function resolveUser(request: NextRequest): Promise<UserPayload | null> {
   const token = getAccessToken(request);
+  
+  console.log('[BFF_AUTH_DEBUG]', JSON.stringify({
+    pathname: request.nextUrl.pathname,
+    hasToken: token !== undefined && token.trim().length > 0,
+    tokenLength: token?.length ?? 0,
+    tokenPrefix: token?.substring(0, 20),
+  }));
+  
   if (token === undefined || token.trim().length === 0) {
+    console.log('[BFF_AUTH_DEBUG] No token found');
     return null;
   }
 
@@ -149,15 +159,23 @@ async function resolveUser(request: NextRequest): Promise<UserPayload | null> {
     const payload = await TokenService.verifyUserAccessToken(token, { audience: 'user' });
     const userIds = getTokenIds(payload);
     if (userIds === null) {
+      console.log('[BFF_AUTH_DEBUG] Invalid user IDs in token');
       return null;
     }
+    
+    console.log('[BFF_AUTH_DEBUG] Token verified successfully', JSON.stringify({
+      userId: userIds.shadowUserId.substring(0, 8),
+      roles: payload.roles,
+    }));
+    
     return {
       sub: userIds.shadowUserId,
       roles: payload.roles ?? [],
       shadowUserId: userIds.shadowUserId,
       originalUserId: userIds.originalUserId,
     };
-  } catch {
+  } catch (error) {
+    console.log('[BFF_AUTH_DEBUG] Token verification failed:', error instanceof Error ? error.message : 'Unknown error');
     return null;
   }
 }
@@ -207,7 +225,8 @@ export async function createAuthProxy(options: AuthProxyOptions = {}) {
       pathname.startsWith('/api/profile') ||
       pathname.startsWith('/api/user/') ||
       pathname.startsWith('/api/dashboard/') ||
-      pathname.startsWith('/api/onboarding/')
+      pathname.startsWith('/api/onboarding/') ||
+      pathname.startsWith('/api/tutorial/sections/')
     );
     
     if (isApiRoute && !isBffInternalRoute && hasValidGatewaySecret(request) === false && isPublicRoute(pathname) === false) {

@@ -6,7 +6,7 @@ export const ShellContext = createContext({
   isRightSidebarOpen: false,
   toggleRightSidebar: () => { },
   headerTitle: '',
-  setHeaderTitle: (title: string) => { },
+  setHeaderTitle: (_title: string) => { }, // eslint-disable-line @typescript-eslint/no-unused-vars
   headerSubtitle: '',
-  setHeaderSubtitle: (subtitle: string) => { }
+  setHeaderSubtitle: (_subtitle: string) => { } // eslint-disable-line @typescript-eslint/no-unused-vars
 });

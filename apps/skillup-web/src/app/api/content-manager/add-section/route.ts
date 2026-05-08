@@ -2,9 +2,268 @@ import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 
+interface SectionContent {
+  [key: string]: unknown;
+}
+
+interface RequestBody {
+  subtopicId: string;
+  subtopicInfo: {
+    subtopic: string;
+    subject: string;
+  };
+  section: string;
+  content: string | SectionContent;
+}
+
+interface TransformedData {
+  [key: string]: unknown;
+}
+
+interface NotesAIJson {
+  notes: {
+    coreDefinition: {
+      badge: string;
+      headline: string;
+      definition: string;
+      whyItMatters: string;
+      simpleExplanation: string;
+      keyTakeaway: string;
+    };
+    conceptExplanation: {
+      title: string;
+      introduction: string;
+      mainConcept: string;
+      detailedBreakdown: string;
+      visualAnalogy: string;
+    };
+    keyComponents: {
+      title: string;
+      components: {
+        id: string;
+        name: string;
+        description: string;
+        icon: string;
+        purpose: string;
+      }[];
+    };
+    syntaxStructure?: {
+      title: string;
+      syntaxTitle: string;
+      explanation: string;
+      code: string;
+    };
+    examples?: {
+      exampleCards: {
+        title: string;
+        scenario: string;
+        code: string;
+        explanation: string;
+      }[];
+    };
+    bestPractices: {
+      title: string;
+      practices: {
+        id: string;
+        title: string;
+        description: string;
+        doExample: string;
+        dontExample: string;
+      }[];
+    };
+    commonErrors: {
+      errors: {
+        id: string;
+        error: string;
+        why: string;
+        fix: string;
+      }[];
+      faqItems: {
+        id: string;
+        question: string;
+        answer: string;
+      }[];
+    };
+    revisionSummary: {
+      title: string;
+      keyPoints: string[];
+      quickRecap: string[];
+      rememberThis: string;
+      examTips: string[];
+    };
+  };
+}
+
+interface LaymanAIJson {
+  laymanExplanation: {
+    simpleOverview: unknown;
+    everydayAnalogy: unknown;
+    whyItExists: unknown;
+    simpleUseCases: unknown;
+    beginnerBreakdown: unknown;
+    mentalModel: {
+      title: string;
+      visualLabels?: unknown[];
+    };
+    commonConfusions: unknown;
+    simpleRecap: unknown;
+  };
+}
+
+interface CodeAIJson {
+  codeExample: {
+    problemContext?: {
+      title: string;
+      scenario: string;
+      requirements: string[];
+      constraints: string;
+    };
+    basicCodeExample?: {
+      title: string;
+      description: string;
+      code: string;
+      language: string;
+      explanation: string;
+    };
+    lineByLineExplanation?: {
+      title: string;
+      lines: unknown[];
+    };
+    outputDemonstration?: {
+      title: string;
+      input: string;
+      output: string;
+      explanation: string;
+      visualRepresentation: string;
+    };
+    bestPracticeVersion?: {
+      title: string;
+      improvements: string[];
+      code: string;
+      explanation: string;
+      benefits: string[];
+    };
+    commonMistakes?: {
+      title: string;
+      mistakes: unknown[];
+    };
+    realWorldImplementation?: {
+      title: string;
+      scenario: string;
+      code: string;
+      features: string[];
+      explanation: string;
+      scalability: string;
+    };
+    codeSummary?: {
+      title: string;
+      keyTakeaways: string[];
+      practiceExercise: string;
+      nextSteps: string[];
+    };
+  };
+}
+
+interface AssignmentAIJson {
+  assignment: {
+    assignmentOverview?: {
+      title?: string;
+      description?: string;
+      xpReward?: number;
+      estimatedTime?: string;
+    };
+    learningObjectives?: {
+      objectives?: string[];
+    };
+    taskRequirements?: {
+      title?: string;
+      description?: string;
+      requirements?: { requirement: string; details?: string }[];
+    };
+    starterCode?: string | { code: string };
+    submissionFeedback?: {
+      guidelines?: string[];
+    };
+    initialCode?: string | { code: string };
+    title?: string;
+    description?: string;
+    xp?: number;
+    duration?: string;
+    task?: {
+      title: string;
+      description: string;
+      requirements: string[];
+    };
+    objectives?: string[];
+    submissionGuidelines?: string[];
+    guidelines?: string[];
+  };
+}
+
+interface ProjectAIJson {
+  project: {
+    projectOverview?: {
+      title?: string;
+      description?: string;
+      xpReward?: number;
+      estimatedTime?: string;
+      badge?: string;
+      difficulty?: string;
+    };
+    projectGoals?: {
+      learningOutcomes?: string[];
+      mainGoal?: string;
+      realWorldRelevance?: string;
+    };
+    featureRequirements?: {
+      features?: { feature?: string; title?: string; description?: string }[];
+    };
+    technicalSpecifications?: {
+      technologies?: string[];
+    };
+    implementationGuide?: {
+      phases?: { phase?: string; title?: string; description?: string }[];
+    };
+    title?: string;
+    description?: string;
+    xp?: number;
+    deadline?: string;
+    hero?: unknown;
+    image?: string;
+    realWorldUse?: string;
+    applications?: string;
+    skills?: string[];
+    buildItems?: string[];
+    tasks?: string[];
+    deliverables?: string[];
+  };
+}
+
+interface QuizAIJson {
+  quiz: {
+    questions?: QuizQuestion[];
+    multipleChoice?: { questions: QuizQuestion[] };
+    trueFalse?: { questions: { id: string; correctAnswer: boolean; statement?: string; question?: string; explanation?: string }[] };
+    codeOutput?: { questions: QuizQuestion[] };
+    fillInBlank?: { questions: QuizQuestion[] };
+    codeDebugging?: { questions: QuizQuestion[] };
+    scenarioBased?: { questions: { id: string; scenario: string; question: string; options: { id: string; text: string }[]; correctAnswer: string; explanation: string }[] };
+    quizOverview?: {
+      title?: string;
+      description?: string;
+      timeLimit?: string;
+      xpReward?: number;
+    };
+    title?: string;
+    description?: string;
+    duration?: string;
+    xp?: number;
+  };
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const { subtopicId, subtopicInfo, section, content } = await request.json();
+    const { subtopicId, subtopicInfo, section, content } = await request.json() as RequestBody;
 
     if (!subtopicId || !section || !content) {
       return NextResponse.json(
@@ -17,7 +276,7 @@ export async function POST(request: NextRequest) {
     const parsedContent = typeof content === 'string' ? JSON.parse(content) : content;
 
     // Transform the AI JSON to registry format
-    const transformedData = transformAIJsonToRegistry(section, parsedContent);
+    const transformedData = transformAIJsonToRegistry(section, parsedContent as Record<string, unknown>);
 
     if (!transformedData) {
       return NextResponse.json(
@@ -62,10 +321,11 @@ export async function POST(request: NextRequest) {
       url: `/start-learning/subtopic/${subtopicId}?tab=${section}`
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error adding section:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Failed to add section';
     return NextResponse.json(
-      { error: error.message || 'Failed to add section' },
+      { error: errorMessage },
       { status: 500 }
     );
   }
@@ -74,23 +334,23 @@ export async function POST(request: NextRequest) {
 /**
  * Transform AI-generated JSON to registry format
  */
-function transformAIJsonToRegistry(section: string, aiJson: any): any {
+function transformAIJsonToRegistry(section: string, aiJson: Record<string, unknown>): TransformedData | null {
   if (section === 'notes') {
-    return transformNotesSection(aiJson);
+    return transformNotesSection(aiJson as unknown as NotesAIJson);
   } else if (section === 'layman') {
-    return transformLaymanSection(aiJson);
+    return transformLaymanSection(aiJson as unknown as LaymanAIJson);
   } else if (section === 'reallife') {
     return transformRealLifeSection(aiJson);
   } else if (section === 'technical') {
     return transformTechnicalSection(aiJson);
   } else if (section === 'code') {
-    return transformCodeSection(aiJson);
+    return transformCodeSection(aiJson as unknown as CodeAIJson);
   } else if (section === 'assignment') {
-    return transformAssignmentSection(aiJson);
+    return transformAssignmentSection(aiJson as unknown as AssignmentAIJson);
   } else if (section === 'project') {
-    return transformProjectSection(aiJson);
+    return transformProjectSection(aiJson as unknown as ProjectAIJson);
   } else if (section === 'quiz') {
-    return transformQuizSection(aiJson);
+    return transformQuizSection(aiJson as unknown as QuizAIJson);
   }
   // visual and practice sections - return as-is for now
   return { [section]: aiJson };
@@ -99,8 +359,8 @@ function transformAIJsonToRegistry(section: string, aiJson: any): any {
 /**
  * Transform Notes section AI JSON to registry format
  */
-function transformNotesSection(aiJson: any) {
-  const notes = aiJson.notes || aiJson;
+function transformNotesSection(aiJson: NotesAIJson) {
+  const notes = aiJson.notes;
   
   return {
     definitionBlock: {
@@ -123,7 +383,7 @@ function transformNotesSection(aiJson: any) {
     ],
     componentGrid: {
       gridTitle: notes.keyComponents.title,
-      componentCards: notes.keyComponents.components.map((comp: any) => ({
+      componentCards: notes.keyComponents.components.map((comp: { id: string; name: string; description: string; icon: string; purpose: string }) => ({
         id: comp.id,
         title: comp.name,
         description: comp.description,
@@ -141,7 +401,7 @@ function transformNotesSection(aiJson: any) {
           practicalSolution: notes.syntaxStructure.code,
           industryContext: 'Basic syntax pattern used in modern applications'
         }] : []),
-        ...(notes.examples?.exampleCards || []).map((ex: any, idx: number) => ({
+        ...(notes.examples?.exampleCards || []).map((ex: { title: string; scenario: string; code: string; explanation: string }, idx: number) => ({
           id: `sc${idx + 2}`,
           title: ex.title,
           scenarioDescription: ex.scenario,
@@ -152,7 +412,7 @@ function transformNotesSection(aiJson: any) {
     },
     practiceCard: {
       bestPracticeTitle: notes.bestPractices.title,
-      recommendations: notes.bestPractices.practices.map((bp: any) => ({
+      recommendations: notes.bestPractices.practices.map((bp: { id: string; title: string; description: string; doExample: string; dontExample: string }) => ({
         id: bp.id,
         title: bp.title,
         description: `${bp.description} Do: ${bp.doExample} Don't: ${bp.dontExample}`
@@ -161,7 +421,7 @@ function transformNotesSection(aiJson: any) {
       industryStandards: ['Use consistent naming conventions', 'Follow best practices']
     },
     warningFaq: {
-      commonErrors: notes.commonErrors.errors.map((err: any) => ({
+      commonErrors: notes.commonErrors.errors.map((err: { id: string; error: string; why: string; fix: string }) => ({
         id: err.id,
         error: err.error,
         solution: `${err.why} ${err.fix}`
@@ -186,8 +446,8 @@ function transformNotesSection(aiJson: any) {
 /**
  * Transform Layman Explanation section AI JSON to registry format
  */
-function transformLaymanSection(aiJson: any) {
-  const layman = aiJson.laymanExplanation || aiJson;
+function transformLaymanSection(aiJson: LaymanAIJson) {
+  const layman = aiJson.laymanExplanation;
   
   return {
     laymanExplanation: {
@@ -213,8 +473,8 @@ function transformLaymanSection(aiJson: any) {
 /**
  * Transform Real Life Examples section AI JSON to registry format
  */
-function transformRealLifeSection(aiJson: any) {
-  const reallife = aiJson.realLifeExamples || aiJson;
+function transformRealLifeSection(aiJson: Record<string, unknown>) {
+  const reallife = (aiJson.realLifeExamples || aiJson) as Record<string, unknown>;
   
   return {
     realLifeExamples: reallife
@@ -224,8 +484,8 @@ function transformRealLifeSection(aiJson: any) {
 /**
  * Transform Technical Deep Dive section AI JSON to registry format
  */
-function transformTechnicalSection(aiJson: any) {
-  const technical = aiJson.technicalDeepDive || aiJson;
+function transformTechnicalSection(aiJson: Record<string, unknown>) {
+  const technical = (aiJson.technicalDeepDive || aiJson) as { title?: string; badge?: string; intro?: string; sections?: unknown[] };
   
   return {
     technicalDeepDive: {
@@ -239,8 +499,8 @@ function transformTechnicalSection(aiJson: any) {
 
 function generateNewSubtopicEntry(
   subtopicId: string,
-  subtopicInfo: any,
-  transformedData: any
+  subtopicInfo: { subtopic: string; subject: string },
+  transformedData: TransformedData
 ): string {
   const dataString = JSON.stringify(transformedData, null, 4)
     .replace(/"([^"]+)":/g, '$1:'); // Remove quotes from keys
@@ -254,7 +514,7 @@ function generateNewSubtopicEntry(
 function updateSubtopicSection(
   registryContent: string,
   subtopicId: string,
-  transformedData: any
+  transformedData: TransformedData
 ): string {
   // Find the subtopic entry
   const subtopicStart = registryContent.indexOf(`'${subtopicId}':`);
@@ -298,8 +558,8 @@ function updateSubtopicSection(
 /**
  * Transform Code Example section AI JSON to registry format
  */
-function transformCodeSection(aiJson: any) {
-  const code = aiJson.codeExample || aiJson;
+function transformCodeSection(aiJson: CodeAIJson) {
+  const code = aiJson.codeExample;
   
   return {
     codeExample: {
@@ -359,8 +619,8 @@ function transformCodeSection(aiJson: any) {
 /**
  * Transform Assignment section AI JSON to registry format
  */
-function transformAssignmentSection(aiJson: any) {
-  const assignment = aiJson.assignment || aiJson;
+function transformAssignmentSection(aiJson: AssignmentAIJson) {
+  const assignment = aiJson.assignment;
   
   // Extract from nested structure
   const overview = assignment.assignmentOverview || {};
@@ -373,12 +633,12 @@ function transformAssignmentSection(aiJson: any) {
   let starterCodeString = '';
   if (typeof assignment.starterCode === 'string') {
     starterCodeString = assignment.starterCode;
-  } else if (starterCodeObj.code) {
-    starterCodeString = starterCodeObj.code;
+  } else if (starterCodeObj && typeof starterCodeObj === 'object' && 'code' in starterCodeObj) {
+    starterCodeString = (starterCodeObj as { code: string }).code;
   } else if (assignment.initialCode) {
     starterCodeString = typeof assignment.initialCode === 'string' 
       ? assignment.initialCode 
-      : assignment.initialCode.code || '';
+      : (assignment.initialCode as { code: string }).code || '';
   }
   
   // Build task object from taskRequirements
@@ -386,7 +646,7 @@ function transformAssignmentSection(aiJson: any) {
     title: taskReqs.title || 'Assignment Task',
     description: taskReqs.description || '',
     requirements: taskReqs.requirements 
-      ? taskReqs.requirements.map((req: any) => 
+      ? taskReqs.requirements.map((req: { requirement: string; details?: string }) => 
           `${req.requirement}: ${req.details || ''}`
         )
       : []
@@ -415,8 +675,8 @@ function transformAssignmentSection(aiJson: any) {
 /**
  * Transform Project section AI JSON to registry format
  */
-function transformProjectSection(aiJson: any) {
-  const project = aiJson.project || aiJson;
+function transformProjectSection(aiJson: ProjectAIJson) {
+  const project = aiJson.project;
   
   // Extract from nested structure
   const overview = project.projectOverview || {};
@@ -436,12 +696,12 @@ function transformProjectSection(aiJson: any) {
   // Build items array from implementation phases or features
   let buildItems: string[] = [];
   if (implementation.phases && Array.isArray(implementation.phases)) {
-    buildItems = implementation.phases.map((phase: any) => 
-      phase.phase || phase.title || phase.description
+    buildItems = implementation.phases.map((phase: { phase?: string; title?: string; description?: string }) => 
+      phase.phase || phase.title || phase.description || ''
     );
   } else if (features.features && Array.isArray(features.features)) {
-    buildItems = features.features.map((feat: any) => 
-      feat.feature || feat.title || feat.description
+    buildItems = features.features.map((feat: { feature?: string; title?: string; description?: string }) => 
+      feat.feature || feat.title || feat.description || ''
     );
   } else if (project.buildItems) {
     buildItems = project.buildItems;
@@ -477,14 +737,26 @@ function transformProjectSection(aiJson: any) {
   };
 }
 
+interface QuizQuestion {
+  id: string;
+  questionNumber: number;
+  type: string;
+  points: number;
+  question: string;
+  options: { id: string; text: string }[];
+  correctAnswer: string;
+  explanation: string;
+  code?: string;
+}
+
 /**
  * Transform Quiz section AI JSON to registry format
  */
-function transformQuizSection(aiJson: any) {
-  const quiz = aiJson.quiz || aiJson;
+function transformQuizSection(aiJson: QuizAIJson) {
+  const quiz = aiJson.quiz;
   
   // Handle nested question structure from AI prompt
-  let allQuestions: any[] = [];
+  let allQuestions: QuizQuestion[] = [];
   
   // If questions is already a flat array, use it
   if (Array.isArray(quiz.questions)) {
@@ -495,7 +767,7 @@ function transformQuizSection(aiJson: any) {
     
     // Multiple Choice questions
     if (quiz.multipleChoice?.questions) {
-      allQuestions.push(...quiz.multipleChoice.questions.map((q: any) => ({
+      allQuestions.push(...quiz.multipleChoice.questions.map((q: QuizQuestion) => ({
         id: q.id,
         questionNumber: questionNumber++,
         type: 'Multiple Choice',
@@ -510,12 +782,12 @@ function transformQuizSection(aiJson: any) {
     
     // True/False questions
     if (quiz.trueFalse?.questions) {
-      allQuestions.push(...quiz.trueFalse.questions.map((q: any) => ({
+      allQuestions.push(...quiz.trueFalse.questions.map((q: { id: string; correctAnswer: boolean; statement?: string; question?: string; explanation?: string }) => ({
         id: q.id,
         questionNumber: questionNumber++,
         type: 'True/False',
         points: 1,
-        question: q.statement || q.question,
+        question: q.statement || q.question || '',
         options: [
           { id: 'true', text: 'True' },
           { id: 'false', text: 'False' }
@@ -527,7 +799,7 @@ function transformQuizSection(aiJson: any) {
     
     // Code Output questions
     if (quiz.codeOutput?.questions) {
-      allQuestions.push(...quiz.codeOutput.questions.map((q: any) => ({
+      allQuestions.push(...quiz.codeOutput.questions.map((q: QuizQuestion) => ({
         id: q.id,
         questionNumber: questionNumber++,
         type: 'Code Output',
@@ -542,7 +814,7 @@ function transformQuizSection(aiJson: any) {
     
     // Fill in the Blank questions
     if (quiz.fillInBlank?.questions) {
-      allQuestions.push(...quiz.fillInBlank.questions.map((q: any) => ({
+      allQuestions.push(...quiz.fillInBlank.questions.map((q: QuizQuestion) => ({
         id: q.id,
         questionNumber: questionNumber++,
         type: 'Fill in the Blank',
@@ -556,7 +828,7 @@ function transformQuizSection(aiJson: any) {
     
     // Code Debugging questions
     if (quiz.codeDebugging?.questions) {
-      allQuestions.push(...quiz.codeDebugging.questions.map((q: any) => ({
+      allQuestions.push(...quiz.codeDebugging.questions.map((q: QuizQuestion) => ({
         id: q.id,
         questionNumber: questionNumber++,
         type: 'Debug the Code',
@@ -571,7 +843,7 @@ function transformQuizSection(aiJson: any) {
     
     // Scenario-Based questions
     if (quiz.scenarioBased?.questions) {
-      allQuestions.push(...quiz.scenarioBased.questions.map((q: any) => ({
+      allQuestions.push(...quiz.scenarioBased.questions.map((q: { id: string; scenario: string; question: string; options: { id: string; text: string }[]; correctAnswer: string; explanation: string }) => ({
         id: q.id,
         questionNumber: questionNumber++,
         type: 'Scenario-Based',
@@ -598,3 +870,4 @@ function transformQuizSection(aiJson: any) {
     }
   };
 }
+

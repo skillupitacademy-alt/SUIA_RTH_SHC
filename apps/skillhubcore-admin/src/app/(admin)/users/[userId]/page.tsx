@@ -54,7 +54,7 @@ export default async function UserDetailPage({ params }: UserDetailPageProps) {
           <div className="mt-6 rounded-3xl border border-slate-200 bg-slate-50 p-4">
             <p className="text-sm font-semibold text-slate-800">Platform access</p>
             <div className="mt-3 flex flex-wrap gap-2">
-              {user.platforms.map((platform) => (
+              {user.platforms.map((platform: string) => (
                 <span key={platform} className="rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1 text-xs font-semibold text-cyan-700">
                   {platform}
                 </span>

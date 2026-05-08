@@ -35,8 +35,8 @@ function JsonValidatorContent() {
         message: '✓ Valid JSON! Your content is properly formatted.',
         formatted: formatted
       });
-    } catch (error: any) {
-      const errorMessage = error.message || 'Unknown error';
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       const errors = [errorMessage];
       
       // Try to provide helpful error messages

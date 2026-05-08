@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { TotpActionModal } from '@/components/totp-action-modal';
-import { adminAuditLogs, findAdminSubscription, findAdminUser, formatCurrency, formatDateTime } from '@/lib/skillhubcore-admin-data';
+import { AdminAuditEntry, adminAuditLogs, findAdminSubscription, findAdminUser, formatCurrency, formatDateTime } from '@/lib/skillhubcore-admin-data';
 
 type SubscriptionDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -17,7 +17,7 @@ export default async function SubscriptionDetailPage({ params }: SubscriptionDet
   }
 
   const user = findAdminUser(subscription.userId);
-  const auditTrail = adminAuditLogs.filter((entry) => entry.action.includes('subscription.') || entry.actor === subscription.userName);
+  const auditTrail = adminAuditLogs.filter((entry: AdminAuditEntry) => entry.action.includes('subscription.') || entry.actor === subscription.userName);
   const monthlyValue = subscription.plan === 'combo' ? 4999 : subscription.plan === 'premium' ? 2999 : subscription.plan === 'training' ? 2499 : 999;
 
   return (
@@ -59,7 +59,7 @@ export default async function SubscriptionDetailPage({ params }: SubscriptionDet
           <div className="mt-6 rounded-3xl border border-slate-200 bg-slate-50 p-4">
             <p className="text-sm font-semibold text-slate-800">Entitled features</p>
             <div className="mt-3 flex flex-wrap gap-2">
-              {subscription.features.map((feature) => (
+              {subscription.features.map((feature: string) => (
                 <span key={feature} className="rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1 text-xs font-semibold text-cyan-700">
                   {feature}
                 </span>
@@ -104,7 +104,7 @@ export default async function SubscriptionDetailPage({ params }: SubscriptionDet
           <div className="mt-6 rounded-3xl border border-slate-200 bg-slate-50 p-4">
             <p className="text-sm font-semibold text-slate-800">Recent audit trail</p>
             <div className="mt-3 space-y-3">
-              {auditTrail.slice(0, 3).map((entry) => (
+              {auditTrail.slice(0, 3).map((entry: AdminAuditEntry) => (
                 <div key={entry.id} className="rounded-2xl border border-slate-200 bg-white p-4">
                   <p className="text-sm font-semibold text-slate-800">{entry.action}</p>
                   <p className="mt-1 text-sm text-slate-600">{entry.details}</p>

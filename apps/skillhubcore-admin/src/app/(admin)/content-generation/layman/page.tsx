@@ -4,9 +4,8 @@ import React, { useContext, useEffect } from 'react';
 import { ShellContext } from '../../ShellContext';
 import { 
   ChevronRight, Search, Plus, Filter, MoreVertical, Copy, 
-  Download, FileText, CheckCircle2, Clock, XCircle, AlertCircle,
-  BarChart3, History, MessageSquare, Sparkles, Wand2, ArrowRight,
-  Database, Layers, Cpu, Globe, LayoutList, Share2, Eye
+  Download, FileText, Sparkles, ArrowRight,
+  Layers, AlertCircle
 } from 'lucide-react';
 
 export default function LaymanGenerationPage() {
@@ -19,7 +18,7 @@ export default function LaymanGenerationPage() {
       setHeaderTitle('');
       setHeaderSubtitle('');
     };
-  }, []);
+  }, [setHeaderTitle, setHeaderSubtitle]);
   return (
     <div className="flex flex-col lg:flex-row gap-6">
       
@@ -34,22 +33,21 @@ export default function LaymanGenerationPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-            {[
-              { label: "Domain", value: "Frontend Development" },
-              { label: "Subject", value: "JavaScript" },
-              { label: "Topic", value: "JavaScript Basics" },
-              { label: "Subtopic", value: "What is JavaScript?" }
-            ].map((field, i) => (
-              <div key={i} className="space-y-1.5">
-                <label className="text-sm font-bold text-slate-400 uppercase tracking-widest ml-1">{field.label}</label>
-                <div className="relative group">
-                  <select className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-base font-semibold text-slate-700 appearance-none focus:outline-none focus:ring-2 focus:ring-pink-500/10 focus:border-pink-500 transition-all cursor-pointer">
-                    <option>{field.value}</option>
-                  </select>
-                  <ChevronRight size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 rotate-90 pointer-events-none group-hover:text-slate-600 transition-colors" />
-                </div>
+          {[{ label: "Domain", value: "Frontend Development", id: "layman-domain" },
+            { label: "Subject", value: "JavaScript", id: "layman-subject" },
+            { label: "Topic", value: "JavaScript Basics", id: "layman-topic" },
+            { label: "Subtopic", value: "What is JavaScript?", id: "layman-subtopic" }
+          ].map((field, i) => (
+            <div key={i} className="space-y-1.5">
+              <label htmlFor={field.id} className="text-sm font-bold text-slate-400 uppercase tracking-widest ml-1">{field.label}</label>
+              <div className="relative group">
+                <select id={field.id} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-base font-semibold text-slate-700 appearance-none focus:outline-none focus:ring-2 focus:ring-pink-500/10 focus:border-pink-500 transition-all cursor-pointer">
+                  <option>{field.value}</option>
+                </select>
+                <ChevronRight size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 rotate-90 pointer-events-none group-hover:text-slate-600 transition-colors" />
               </div>
-            ))}
+            </div>
+          ))}
           </div>
 
           <div className="bg-pink-50/50 border border-pink-100 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -164,7 +162,7 @@ export default function LaymanGenerationPage() {
                 <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
                   <div className="space-y-4">
                     <p className="text-base text-slate-700 leading-relaxed font-medium italic">
-                      "You are an expert educator who explains complex technical topics in the simplest possible way for absolute beginners."
+                      &quot;You are an expert educator who explains complex technical topics in the simplest possible way for absolute beginners.&quot;
                     </p>
                     <div className="space-y-2">
                       <h4 className="text-sm font-bold text-slate-900 uppercase tracking-widest border-b border-slate-100 pb-2">Topic Context:</h4>

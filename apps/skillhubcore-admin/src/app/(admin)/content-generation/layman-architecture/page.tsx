@@ -4,10 +4,9 @@ import React, { useState, useEffect, useContext } from 'react';
 import { ShellContext } from '../../ShellContext';
 import {
   ChevronDown, Plus, Info, Edit2, MoreVertical, CheckCircle2,
-  Copy, ArrowRight, Eye, RotateCcw, Share2, Download,
-  Trash2, Globe, Layout, Palette, Brain, Layers, History,
-  FileText, Zap, ShieldCheck, ClipboardList, BookOpen, Search,
-  PlayCircle, FileDown, FileUp, Settings, ExternalLink, XCircle
+  Copy, Eye, RotateCcw, Download,
+  Palette, Brain, Layers, 
+  Zap, ShieldCheck, Layout, Globe
 } from 'lucide-react';
 
 export default function EducationalArchitecturePage() {
@@ -23,7 +22,7 @@ export default function EducationalArchitecturePage() {
       setHeaderTitle('');
       setHeaderSubtitle('');
     };
-  }, []);
+  }, [setHeaderTitle, setHeaderSubtitle]);
 
   const tabs = [
     'Universal Architecture (Fixed)',
@@ -47,18 +46,17 @@ export default function EducationalArchitecturePage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {[
-            { label: 'Domain', value: 'Frontend Development' },
-            { label: 'Subject', value: 'JavaScript' },
-            { label: 'Topic', value: 'JavaScript Basics' },
-            { label: 'Subtopic', value: 'What is JavaScript?' }
+          {[{ label: 'Domain', value: 'Frontend Development', id: 'domain-select' },
+            { label: 'Subject', value: 'JavaScript', id: 'subject-select' },
+            { label: 'Topic', value: 'JavaScript Basics', id: 'topic-select' },
+            { label: 'Subtopic', value: 'What is JavaScript?', id: 'subtopic-select' }
           ].map((item, i) => (
             <div key={i} className="space-y-1.5">
-              <label className="text-sm font-bold text-slate-400 uppercase tracking-widest px-1">{item.label}</label>
-              <div className="flex items-center justify-between bg-white border border-slate-200 px-4 py-2.5 rounded-xl text-base font-bold text-slate-700 cursor-pointer hover:border-pink-200 hover:bg-pink-50/10 transition-all">
+              <label htmlFor={item.id} className="text-sm font-bold text-slate-400 uppercase tracking-widest px-1">{item.label}</label>
+              <button id={item.id} type="button" className="flex items-center justify-between bg-white border border-slate-200 px-4 py-2.5 rounded-xl text-base font-bold text-slate-700 cursor-pointer hover:border-pink-200 hover:bg-pink-50/10 transition-all w-full text-left">
                 <span className="truncate">{item.value}</span>
                 <ChevronDown size={18} className="text-slate-400 shrink-0" />
-              </div>
+              </button>
             </div>
           ))}
         </div>
@@ -221,11 +219,11 @@ export default function EducationalArchitecturePage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-slate-400 uppercase tracking-widest px-1">Domain Type</label>
-                  <div className="flex items-center justify-between bg-white border border-slate-200 px-4 py-2.5 rounded-xl text-base font-bold text-slate-700 cursor-pointer hover:border-pink-200 hover:bg-pink-50/10 transition-all">
+                  <label htmlFor="domain-type" className="text-sm font-bold text-slate-400 uppercase tracking-widest px-1">Domain Type</label>
+                  <button id="domain-type" type="button" className="flex items-center justify-between bg-white border border-slate-200 px-4 py-2.5 rounded-xl text-base font-bold text-slate-700 cursor-pointer hover:border-pink-200 hover:bg-pink-50/10 transition-all w-full text-left">
                     <span>Full Stack Development</span>
                     <ChevronDown size={20} className="text-slate-400" />
-                  </div>
+                  </button>
                 </div>
 
                 <div className="space-y-4">
@@ -268,7 +266,7 @@ export default function EducationalArchitecturePage() {
                   </div>
 
                   <div className="bg-[#FFF1F2] border border-[#FECDD3] rounded-2xl p-6 space-y-5">
-                    <p className="text-sm font-bold text-[#334155]">Example: Explaining "Variable"</p>
+                    <p className="text-sm font-bold text-[#334155]">Example: Explaining &quot;Variable&quot;</p>
                     <div className="space-y-3 text-sm leading-relaxed text-[#475569] font-medium">
                       <p><span className="font-bold text-[#334155]">Analogy:</span> A variable is like a labeled box where you can store anything.</p>
                       <p><span className="font-bold text-[#334155]">Real Life:</span> Like a container in your kitchen where you keep sugar.</p>
@@ -363,7 +361,7 @@ export default function EducationalArchitecturePage() {
         <div className="bg-amber-50 border border-amber-100 p-4 rounded-xl flex items-center gap-3">
           <Brain size={20} className="text-amber-500 shrink-0" />
           <p className="text-sm font-bold text-amber-800 leading-relaxed">
-            This Educational Architecture system ensures universal beginner psychology is maintained while giving flexibility to adapt to any domain's unique teaching style.
+            This Educational Architecture system ensures universal beginner psychology is maintained while giving flexibility to adapt to any domain&apos;s unique teaching style.
           </p>
         </div>
         <div className="bg-blue-50 border border-blue-100 p-4 rounded-xl flex items-center gap-3">

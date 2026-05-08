@@ -55,6 +55,12 @@
       ],
       "@quiz/db-placement/*": [
         "../../packages/db-placement/src/*"
+      ],
+      "@quiz/db-tutorial": [
+        "../../packages/db-tutorial/src/index.ts"
+      ],
+      "@quiz/db-tutorial/*": [
+        "../../packages/db-tutorial/src/*"
       ]
     },
     "jsx": "preserve",

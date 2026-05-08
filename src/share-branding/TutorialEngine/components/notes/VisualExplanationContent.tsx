@@ -129,7 +129,7 @@ export function VisualExplanationContent({ data }: { data?: SubtopicNotesViewDat
                     </div>
                   </div>
                 </div>
-                {idx < data.stepByStepVisualFlow.steps.length - 1 && (
+                {idx < (data.stepByStepVisualFlow?.steps.length || 0) - 1 && (
                   <div className="flex justify-center my-3">
                     <Icons.ArrowDown size={24} className="text-emerald-600" aria-hidden="true" />
                   </div>

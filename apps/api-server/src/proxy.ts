@@ -47,6 +47,7 @@ export async function proxy(request: NextRequest) {
   const isAuthRoute = request.nextUrl.pathname.startsWith('/api/auth') || 
                       request.nextUrl.pathname.startsWith('/api/admin/auth');
 
+  const isTutorialRoute = request.nextUrl.pathname.startsWith('/api/tutorial');
   const isSecurityReport = pathname.toLowerCase().includes('security/report');
   const isClientLogsRoute = pathname === '/api/logs/client';
   const isWorkflowRoute = pathname.startsWith('/api/workflows') || pathname.startsWith('/api/api/workflows') || pathname.startsWith('/api/export/workflow') || pathname.startsWith('/api/api/export/workflow');
@@ -60,6 +61,7 @@ export async function proxy(request: NextRequest) {
     isHealthRoute ||
     isWorkflowRoute ||
     isAuthRoute ||
+    isTutorialRoute ||
     isSearchRoute ||
     isTelemetryRoute ||
     isSecurityReport ||

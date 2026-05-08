@@ -4,7 +4,7 @@ import { acquireJobLock, releaseJobLock } from "@/lib/job-lock";
 import { logger } from "@/lib/logger";
 import { verifyQStashSignature } from "@/lib/qstash-verify";
 import { withLogging } from "@/lib/withLogging";
-import { AdminQuestionEngine } from "@/modules/admin-engine/admin.engine";
+import { AdminQuestionEngine, type CreateQuestionInput } from "@/modules/admin-engine/admin.engine";
 
 export const dynamic = "force-dynamic";
 
@@ -48,8 +48,7 @@ async function getWorkflowHandler() {
                     await context.run(`process-batch-${batchNum}`, async () => {
                         logger.info({ batch: batchNum, total: totalBatches, size: batch.length }, "[Workflow] Processing batch");
 
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        await AdminQuestionEngine.bulkCreateQuestionsWithContext(batch as any, contextMeta, adminId);
+                        await AdminQuestionEngine.bulkCreateQuestionsWithContext(batch as unknown as CreateQuestionInput[], contextMeta, adminId);
                     });
                 }
 

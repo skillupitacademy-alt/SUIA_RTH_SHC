@@ -349,9 +349,9 @@ export function NotesRightSidebar({
                        quizData?.questions 
                          ? (index === currentQuestionIndex ? 'bg-rose-950 shadow-rose-200 text-white' : 'bg-slate-100 text-slate-900 border border-slate-200 hover:bg-slate-200')
                          : (
-                           q.status === 'answered' ? 'bg-emerald-100 text-emerald-950 border border-emerald-200' :
-                           q.status === 'current' ? 'bg-rose-950 shadow-rose-200 text-white' :
-                           q.status === 'marked' ? 'bg-amber-100 text-amber-950 border border-amber-200' :
+                           (q as any).status === 'answered' ? 'bg-emerald-100 text-emerald-950 border border-emerald-200' :
+                           (q as any).status === 'current' ? 'bg-rose-950 shadow-rose-200 text-white' :
+                           (q as any).status === 'marked' ? 'bg-amber-100 text-amber-950 border border-amber-200' :
                            'bg-slate-100 text-slate-900 border border-slate-200'
                          )
                      }`}

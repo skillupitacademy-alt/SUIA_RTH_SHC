@@ -85,6 +85,13 @@
       "when": 1774551053336,
       "tag": "0011_add_layman_hardening_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1778202643367,
+      "tag": "0012_futuristic_pepper_potts",
+      "breakpoints": true
     }
   ]
 }

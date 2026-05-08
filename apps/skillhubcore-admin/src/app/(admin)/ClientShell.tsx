@@ -1,13 +1,14 @@
 "use client";
 
-import React, { useState, createContext, useContext, type ReactNode } from 'react';
+import React, { useState, type ReactNode } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   Home, ShieldCheck, MessageSquare, Box, Settings, CheckSquare,
   BookOpen, ClipboardList, Briefcase, Users, Layout, FileText,
-  UsersRound, Shield, Activity, HeartPulse, GraduationCap, PlaySquare,
+  GraduationCap, PlaySquare,
   Menu, Search, Bell, Mail, HelpCircle, ChevronRight, Network, PanelRight,
-  Download, Sparkles, History, CheckCircle2, BarChart3, Star, LineChart,
+  Download, Sparkles, History, BarChart3, LineChart,
   UserCog, LayoutGrid, Cpu, Compass, Globe, LayoutList, Copy, FileDown, FileUp, XCircle, Trash2
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
@@ -42,9 +43,11 @@ export default function ClientShell({ children }: { children: ReactNode }) {
 
         {/* Left Sidebar Backdrop */}
         {isLeftSidebarOpen && (
-          <div
-            className="fixed inset-0 z-40 bg-slate-900/20 backdrop-blur-sm transition-opacity"
+          <button
+            type="button"
+            className="fixed inset-0 z-40 bg-slate-900/20 backdrop-blur-sm transition-opacity w-full h-full border-none p-0 m-0"
             onClick={() => setIsLeftSidebarOpen(false)}
+            aria-label="Close Left Sidebar"
           />
         )}
 
@@ -224,15 +227,15 @@ export default function ClientShell({ children }: { children: ReactNode }) {
 
 
               <div className="h-8 w-[1px] bg-slate-200 mx-1"></div>
-              <button className="flex items-center gap-3 text-left pl-1">
-                <div className="h-9 w-9 rounded-full bg-slate-200 overflow-hidden border border-slate-200 shrink-0">
-                  <img src="https://i.pravatar.cc/150?u=superadmin" alt="Super Admin" className="h-full w-full object-cover" />
+              <div className="flex items-center gap-3 text-left pl-1">
+                <div className="h-9 w-9 rounded-full bg-slate-200 overflow-hidden border border-slate-200 shrink-0 relative">
+                  <Image src="https://i.pravatar.cc/150?u=superadmin" alt="Super Admin" width={36} height={36} className="h-full w-full object-cover" />
                 </div>
                 <div className="hidden sm:block">
                   <p className="text-sm font-bold text-slate-800 leading-none">Super Admin</p>
                   <p className="text-xs text-slate-500 mt-1">Administrator</p>
                 </div>
-              </button>
+              </div>
 
               <div className="h-8 w-[1px] bg-slate-200 mx-1"></div>
 
@@ -258,9 +261,11 @@ export default function ClientShell({ children }: { children: ReactNode }) {
 
         {/* Right Sidebar Backdrop */}
         {isRightSidebarOpen && (
-          <div
-            className="fixed inset-0 z-40 bg-slate-900/10 backdrop-blur-sm transition-opacity"
+          <button
+            type="button"
+            className="fixed inset-0 z-40 bg-slate-900/10 backdrop-blur-sm transition-opacity w-full h-full border-none p-0 m-0"
             onClick={() => setIsRightSidebarOpen(false)}
+            aria-label="Close Right Sidebar"
           />
         )}
 
@@ -540,8 +545,7 @@ export default function ClientShell({ children }: { children: ReactNode }) {
         </aside>
 
 
-        <style dangerouslySetInnerHTML={{
-          __html: `
+        <style>{`
           .custom-scrollbar::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -563,7 +567,7 @@ export default function ClientShell({ children }: { children: ReactNode }) {
             -ms-overflow-style: none;
             scrollbar-width: none;
           }
-        `}} />
+        `}</style>
       </div>
     </ShellContext.Provider>
   );

@@ -5,16 +5,16 @@
  * POST /api/admin/layman/content/ingest - Ingest AI response
  */
 
-import { METRICS } from '@quiz/observability';
-import type { NextRequest } from 'next/server';
 import { 
+  LaymanAuditService,
   LaymanContentParserService,
   LaymanContentValidationService,
-  LaymanAuditService,
   LaymanPromptIntegrityService,
   LaymanRevisionService,
   LaymanService
 } from '@quiz/db-tutorial';
+import { METRICS } from '@quiz/observability';
+import type { NextRequest } from 'next/server';
 
 import { badRequest } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
@@ -22,9 +22,9 @@ import { withCorrelationId } from '@/lib/correlation-id.middleware';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
-import { requireAdminRouteAccess } from '@/modules/auth/admin-audience.util';
-import { withRateLimit } from '@/middleware/rate-limit.middleware';
 import { withPayloadSizeLimit } from '@/middleware/payload-size.middleware';
+import { withRateLimit } from '@/middleware/rate-limit.middleware';
+import { requireAdminRouteAccess } from '@/modules/auth/admin-audience.util';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,18 +44,20 @@ async function postHandler(req: NextRequest) {
       return ApiResponse.error(badRequest('Payload too deep or large'));
     }
     
-    const sanitizedBody = sanitizeJsonField(rawBody);
-    const { 
-      rawAIResponse, 
-      promptId, 
-      subtopicId, 
-      brandId,
-      educationalArchitectureName,
-      uiArchitectureName,
-      verifyPrompt 
-    } = sanitizedBody;
+    const sanitizedBody = sanitizeJsonField(rawBody) as Record<string, unknown>;
+    const rawAIResponse = sanitizedBody.rawAIResponse;
+    const promptId = sanitizedBody.promptId as string | undefined;
+    const subtopicId = sanitizedBody.subtopicId;
+    const brandId = sanitizedBody.brandId;
+    const educationalArchitectureName = sanitizedBody.educationalArchitectureName as string | undefined;
+    const uiArchitectureName = sanitizedBody.uiArchitectureName as string | undefined;
+    const verifyPrompt = sanitizedBody.verifyPrompt;
     
-    if (!rawAIResponse || !subtopicId || !brandId) {
+    if (
+      typeof rawAIResponse !== 'string' || rawAIResponse === '' ||
+      typeof subtopicId !== 'string' || subtopicId === '' ||
+      typeof brandId !== 'string' || brandId === ''
+    ) {
       return ApiResponse.error(
         badRequest('Missing required fields: rawAIResponse, subtopicId, brandId')
       );
@@ -66,16 +68,16 @@ async function postHandler(req: NextRequest) {
       userId: payload.userId,
       userRole: 'admin',
       brandId,
-      ipAddress: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || undefined,
-      userAgent: req.headers.get('user-agent') || undefined,
+      ipAddress: (req.headers.get('x-forwarded-for') ?? req.headers.get('x-real-ip') ?? undefined),
+      userAgent: (req.headers.get('user-agent') ?? undefined),
     };
     
     // Verify prompt integrity if promptId provided and verification requested
-    if (promptId && verifyPrompt !== false) {
+    if (promptId !== undefined && promptId !== null && promptId !== '' && verifyPrompt !== false) {
       const integrityService = new LaymanPromptIntegrityService();
       const promptHistory = await integrityService.getPromptHistory(promptId);
       
-      if (promptHistory) {
+      if (promptHistory !== null && promptHistory !== undefined) {
         const verification = await integrityService.verifyPromptIntegrity(
           promptId, 
           promptHistory.fullPrompt
@@ -143,7 +145,7 @@ async function postHandler(req: NextRequest) {
     let sectionId: string;
     let isNewSection = false;
     
-    if (!section) {
+    if (section === null || section === undefined) {
       // Create new section
       section = await laymanService.createLaymanSection({
         subtopicId,
@@ -205,7 +207,7 @@ async function postHandler(req: NextRequest) {
     }
     
     // Mark prompt as used
-    if (promptId) {
+    if (promptId !== undefined && promptId !== null && promptId !== '') {
       const integrityService = new LaymanPromptIntegrityService();
       await integrityService.markPromptAsUsed(promptId, sectionId);
     }

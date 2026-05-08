@@ -5,12 +5,11 @@
  * POST /api/admin/layman/prompt/:id/verify - Verify prompt integrity
  */
 
+import { 
+  LaymanAuditService, 
+  LaymanPromptIntegrityService} from '@quiz/db-tutorial';
 import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
-import { 
-  LaymanPromptIntegrityService,
-  LaymanAuditService 
-} from '@quiz/db-tutorial';
 
 import { badRequest } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
@@ -18,8 +17,8 @@ import { withCorrelationId } from '@/lib/correlation-id.middleware';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
-import { requireAdminRouteAccess } from '@/modules/auth/admin-audience.util';
 import { withRateLimit } from '@/middleware/rate-limit.middleware';
+import { requireAdminRouteAccess } from '@/modules/auth/admin-audience.util';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,10 +43,11 @@ async function postHandler(
       return ApiResponse.error(badRequest('Payload too deep or large'));
     }
     
-    const sanitizedBody = sanitizeJsonField(rawBody);
-    const { providedPrompt, brandId } = sanitizedBody;
+    const sanitizedBody = sanitizeJsonField(rawBody) as Record<string, unknown>;
+    const providedPrompt = sanitizedBody.providedPrompt;
+    const brandId = sanitizedBody.brandId;
     
-    if (!providedPrompt) {
+    if (typeof providedPrompt !== 'string' || providedPrompt === '') {
       return ApiResponse.error(badRequest('Missing required field: providedPrompt'));
     }
     
@@ -55,9 +55,9 @@ async function postHandler(
     const auditContext = {
       userId: payload.userId,
       userRole: 'admin',
-      brandId: brandId || 'shared',
-      ipAddress: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || undefined,
-      userAgent: req.headers.get('user-agent') || undefined,
+      brandId: (typeof brandId === 'string' && brandId !== '') ? brandId : 'shared',
+      ipAddress: (req.headers.get('x-forwarded-for') ?? req.headers.get('x-real-ip') ?? undefined),
+      userAgent: (req.headers.get('user-agent') ?? undefined),
     };
     
     // Verify prompt integrity

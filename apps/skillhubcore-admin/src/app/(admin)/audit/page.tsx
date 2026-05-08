@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
-import { adminAuditLogs, formatDateTime, formatPlatform } from '@/lib/skillhubcore-admin-data';
+import { AdminAuditEntry, adminAuditLogs, formatDateTime, formatPlatform } from '@/lib/skillhubcore-admin-data';
 
 const PAGE_SIZE = 50;
 
@@ -27,7 +27,7 @@ export default function AuditPage() {
   const [page, setPage] = useState(1);
 
   const filteredLogs = useMemo(() => {
-    return adminAuditLogs.filter((entry) => {
+    return adminAuditLogs.filter((entry: AdminAuditEntry) => {
       const actorMatches = filters.actor.trim().length === 0 || entry.actor.toLowerCase().includes(filters.actor.toLowerCase());
       const actionMatches = filters.action.trim().length === 0 || entry.action.toLowerCase().includes(filters.action.toLowerCase());
       const platformMatches =

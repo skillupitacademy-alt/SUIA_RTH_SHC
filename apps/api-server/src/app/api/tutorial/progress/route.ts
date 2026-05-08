@@ -7,11 +7,12 @@
  * Handles tutorial progress tracking with brand context.
  */
 
+import { TutorialProgressRepository } from '@quiz/db-tutorial';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { TutorialEngine, TutorialService } from '@/modules/tutorial-engine';
-import type { TutorialBrand, BlockType } from '@/modules/tutorial-engine';
-import { TutorialProgressRepository } from '@quiz/db-tutorial';
+
+import type { BlockType,TutorialBrand } from '@/modules/tutorial-engine';
+import { TutorialService } from '@/modules/tutorial-engine';
 
 export const dynamic = 'force-dynamic';
 
@@ -56,7 +57,7 @@ export async function GET(request: NextRequest) {
   try {
     const userId = extractUserId(request);
 
-    if (!userId) {
+    if (userId === null || userId === undefined || userId === '') {
       return NextResponse.json(
         { error: 'User ID required' },
         { status: 401 }
@@ -66,7 +67,7 @@ export async function GET(request: NextRequest) {
     const url = new URL(request.url);
     const subtopicId = url.searchParams.get('subtopicId');
 
-    if (!subtopicId) {
+    if (subtopicId === null || subtopicId === undefined || subtopicId === '') {
       return NextResponse.json(
         { error: 'subtopicId required' },
         { status: 400 }
@@ -115,7 +116,7 @@ export async function POST(request: NextRequest) {
     const userId = extractUserId(request);
     const brandId = extractBrand(request);
 
-    if (!userId) {
+    if (userId === null || userId === undefined || userId === '') {
       return NextResponse.json(
         { error: 'User ID required' },
         { status: 401 }

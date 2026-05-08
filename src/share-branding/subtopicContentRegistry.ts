@@ -285,20 +285,20 @@ export interface SubtopicContentPattern {
     }>;
   };
   codeExample?: {
-    problemContext: {
+    problemContext?: {
       title: string;
       scenario: string;
       requirements: string[];
       constraints: string;
     };
-    basicCodeExample: {
+    basicCodeExample?: {
       title: string;
       description: string;
       code: string;
       language: string;
       explanation: string;
     };
-    lineByLineExplanation: {
+    lineByLineExplanation?: {
       title: string;
       lines: Array<{
         id: string;
@@ -307,21 +307,21 @@ export interface SubtopicContentPattern {
         explanation: string;
       }>;
     };
-    outputDemonstration: {
+    outputDemonstration?: {
       title: string;
       input: string;
       output: string;
       explanation: string;
       visualRepresentation: string;
     };
-    bestPracticeVersion: {
+    bestPracticeVersion?: {
       title: string;
       improvements: string[];
       code: string;
       explanation: string;
       benefits: string[];
     };
-    commonMistakes: {
+    commonMistakes?: {
       title: string;
       mistakes: Array<{
         id: string;
@@ -332,7 +332,7 @@ export interface SubtopicContentPattern {
         lesson: string;
       }>;
     };
-    realWorldImplementation: {
+    realWorldImplementation?: {
       title: string;
       scenario: string;
       code: string;
@@ -340,7 +340,7 @@ export interface SubtopicContentPattern {
       explanation: string;
       scalability: string;
     };
-    codeSummary: {
+    codeSummary?: {
       title: string;
       keyTakeaways: string[];
       practiceExercise: string;
@@ -1314,14 +1314,11 @@ export const subtopicContentRegistry: Record<string, SubtopicContentPattern> = {
       ]
     },
     codeExample: {
-      title: 'Code Example',
-      description: 'See how Component Architecture works in real code. Try it, run it, and observe the output.',
-      examples: [
-        { title: 'Example 1: Basic Component', file: 'user-profile.tsx' },
-        { title: 'Example 2: State & Lifecycle', file: 'counter.tsx' },
-        { title: 'Example 3: Composition', file: 'app-layout.tsx' }
-      ],
-      code: `// 1. Defining a Functional Component
+      basicCodeExample: {
+        title: 'Code Example',
+        description: 'See how Component Architecture works in real code. Try it, run it, and observe the output.',
+        language: 'jsx',
+        code: `// 1. Defining a Functional Component
 const UserProfile = ({ name, role }) => {
   return (
     <div className="profile-card">
@@ -1336,17 +1333,17 @@ const App = () => {
   return (
     <div className="container">
       <h1>Team Members</h1>
-      <UserProfile 
-        name="React Developer" 
-        role="Senior Developer" 
+      <UserProfile
+        name="React Developer"
+        role="Senior Developer"
       />
     </div>
   );
 };
 
 console.log("Component rendered successfully.");`,
-      output: 'Component rendered successfully.',
-      tip: 'Change name = "Your Name" on line 16 to see the component update in real-time.'
+        explanation: 'Change name = "Your Name" on line 16 to see the component update in real-time.'
+      }
     },
     assignment: {
       title: 'Assignment',
@@ -3049,166 +3046,6 @@ const App = () => <Button label="Click Me" />;`,
         }
     }
   ,
-    realLifeExamples: {
-        conceptMapping: {
-            badge: "Real World Connection",
-            headline: "How Variables and Data Type Works in Real Life",
-            conceptDefinition: "Variables store important pieces of information in software systems, while data types define what kind of information is being stored and how it should be processed. Together, they form the backbone of digital applications.",
-            realWorldTranslation: "In real life, variables are like digital storage labels for customer names, payment amounts, or product details. Data types ensure each piece of information is handled correctly, whether it is text, numbers, or true/false values.",
-            importanceBlock: "Every major industry depends on structured data handling to power websites, apps, and automation systems. Without variables and data types, modern software could not function efficiently.",
-            careerRelevance: "Mastering this concept is essential for web developers, software engineers, and technology professionals building real-world systems."
-        },
-        industryUseCase: {
-            title: "Industry Use Case",
-            industryName: "E-Commerce",
-            scenarioDescription: "Amazon manages millions of product listings, customer profiles, and payment transactions every day. Each product price, customer name, and stock level must be stored accurately.",
-            businessContext: "The platform needs to process huge amounts of user and product data quickly. Errors in data handling could lead to pricing mistakes or failed transactions.",
-            implementation: "Variables store customer names, product prices, order IDs, and shipping details. Data types ensure prices remain numbers for calculations, names stay as strings, and stock availability is stored as boolean values. JavaScript on Amazon's front-end uses this system to dynamically display product pages and update carts in real time.",
-            impact: "This structured approach improves customer experience, reduces operational errors, and supports billions in annual sales. Accurate data management directly supports business growth.",
-            keyTakeaway: "Variables and data types enable scalable, reliable online business systems."
-        },
-        dailyLifeExample: {
-            title: "Daily Life Example",
-            storyTitle: "Ordering Food Through a Delivery App",
-            storyNarrative: "When you order food on Uber Eats or Swiggy, the app stores your name, delivery address, selected items, and payment amount. Your name is stored as text, item count as numbers, and delivery status as true or false values. These pieces of information update constantly as your order progresses. Without organized storage, the app would not know where to send your meal.",
-            everydayConnection: "People interact with variables and data types every time they use apps for shopping, booking rides, or online payments. These systems silently manage user information behind the scenes.",
-            technicalMapping: "Variables hold the user's order information, while data types ensure each value behaves correctly. This allows apps to calculate totals, track deliveries, and personalize experiences.",
-            relatableInsight: "Every digital service you use depends on organized data storage."
-        },
-        careerRelevance: {
-            title: "Career Paths Using Variables and Data Type",
-            careerPaths: [
-                {
-                    id: "career1",
-                    role: "Frontend Developer",
-                    description: "Builds websites and interfaces that manage user input, forms, and dynamic content using JavaScript variables. Uses data types daily for interactive applications.",
-                    skillLevel: "entry",
-                    salaryRange: "$55,000 - $85,000",
-                    icon: "Code"
-                },
-                {
-                    id: "career2",
-                    role: "Full Stack Engineer",
-                    description: "Handles both front-end and back-end systems, managing user data across entire applications. Relies heavily on variables for databases, APIs, and interfaces.",
-                    skillLevel: "mid",
-                    salaryRange: "$90,000 - $140,000",
-                    icon: "Layers"
-                },
-                {
-                    id: "career3",
-                    role: "Solutions Architect",
-                    description: "Designs enterprise systems where data structure and type management are critical. Ensures scalable architecture for business platforms.",
-                    skillLevel: "mid",
-                    salaryRange: "$120,000 - $170,000",
-                    icon: "Briefcase"
-                },
-                {
-                    id: "career4",
-                    role: "Tech Lead",
-                    description: "Leads software teams and oversees code quality, architecture, and performance. Strong foundational understanding of variables and data systems is essential.",
-                    skillLevel: "senior",
-                    salaryRange: "$150,000 - $220,000",
-                    icon: "Award"
-                }
-            ],
-            industryDemand: "According to global developer job trends, JavaScript remains one of the most in-demand programming languages, with millions of active job postings worldwide. Front-end and full-stack roles continue to grow strongly.",
-            futureGrowth: "As web applications expand, demand for JavaScript developers is expected to remain strong through the next decade. Foundational programming concepts like variables will remain essential."
-        },
-        problemSolutionContext: {
-            title: "Real Problem, Real Solution",
-            problemStatement: "A banking app must securely process balances, transactions, and customer identities while preventing calculation errors. Incorrect data handling could cause serious financial issues.",
-            context: "Financial systems require precise and structured data management because even small mistakes can impact thousands of users.",
-            solution: "Variables store account balances, user IDs, and transaction histories. Numbers are stored as numeric types for accurate calculations, while customer names remain strings. Boolean values manage account status, such as active or suspended. This ensures financial systems remain reliable and secure.",
-            implementation: "JavaScript front-end systems validate user input before processing. Proper data typing reduces errors and supports secure banking workflows.",
-            outcome: "This improves reliability, customer trust, and transaction accuracy. Strong variable and type management directly reduces operational risk.",
-            lessonsLearned: "Accurate data organization is critical for trust-heavy industries like finance."
-        },
-        businessApplication: {
-            title: "Business Application",
-            companyType: "SaaS Company",
-            businessChallenge: "Companies like Salesforce manage large-scale customer relationship data for thousands of organizations. Each client requires personalized, structured data systems.",
-            technicalApplication: "Variables store customer records, subscription plans, and usage metrics. Strings manage names, numbers track subscriptions, and booleans handle feature activation. This allows SaaS platforms to automate business operations efficiently.",
-            businessProcess: "Variables and data types are used across dashboards, analytics, and reporting systems. They support automation, customer segmentation, and billing.",
-            roi: "Efficient data systems reduce manual work, improve scalability, and increase customer retention. SaaS businesses rely on these efficiencies for recurring revenue growth.",
-            scalability: "As customer bases grow, structured variable management supports expansion without system breakdown. Proper architecture ensures long-term business success.",
-            keyInsight: "Scalable software begins with reliable data management fundamentals."
-        },
-        domainScenarios: {
-            title: "Where You'll Use This",
-            scenarios: [
-                {
-                    id: "scenario1",
-                    domain: "E-Commerce",
-                    title: "Dynamic Product Management",
-                    description: "Amazon and Flipkart use variables to manage product names, prices, discounts, and stock. Data types ensure accurate shopping experiences.",
-                    application: "Cart totals and personalized recommendations rely on structured variables.",
-                    icon: "ShoppingCart"
-                },
-                {
-                    id: "scenario2",
-                    domain: "Healthcare",
-                    title: "Patient Data Systems",
-                    description: "Hospitals use software to store patient names, age, prescriptions, and appointment dates. Correct data typing ensures patient safety.",
-                    application: "Healthcare portals manage medical records securely and efficiently.",
-                    icon: "Heart"
-                },
-                {
-                    id: "scenario3",
-                    domain: "Finance",
-                    title: "Secure Banking Applications",
-                    description: "Banks use variables for balances, transfers, and customer profiles. Accurate number handling prevents costly mistakes.",
-                    application: "Mobile banking apps process transactions in real time.",
-                    icon: "DollarSign"
-                },
-                {
-                    id: "scenario4",
-                    domain: "Education",
-                    title: "Learning Platforms",
-                    description: "Platforms like Coursera or Udemy track student names, progress percentages, and certifications. Variables power personalized dashboards.",
-                    application: "Course systems use structured data to guide learners.",
-                    icon: "BookOpen"
-                },
-                {
-                    id: "scenario5",
-                    domain: "Entertainment",
-                    title: "Streaming Personalization",
-                    description: "Netflix stores watch history, ratings, and profile settings. Variables help create tailored recommendations.",
-                    application: "Streaming services improve user retention through smart personalization.",
-                    icon: "Film"
-                },
-                {
-                    id: "scenario6",
-                    domain: "Social Media",
-                    title: "User Engagement Systems",
-                    description: "Instagram and Facebook track likes, usernames, and posts. Variables help platforms update content instantly.",
-                    application: "Social apps rely on structured data for engagement algorithms.",
-                    icon: "Share2"
-                }
-            ]
-        },
-        practicalRecap: {
-            summaryTitle: "Real-World Impact Summary",
-            keyApplications: [
-                "Managing user profiles and customer data",
-                "Supporting real-time app functionality",
-                "Powering business automation systems",
-                "Ensuring reliable software scalability"
-            ],
-            industryRelevance: [
-                "Essential in nearly every software industry",
-                "Foundational for all web and app development",
-                "Critical for data-driven business operations"
-            ],
-            careerImpact: "Understanding variables and data types gives you the technical foundation needed for modern development roles. This skill directly supports employability in software engineering careers.",
-            nextSteps: [
-                "Practice building JavaScript projects",
-                "Learn functions and control flow",
-                "Explore APIs and full-stack systems"
-            ],
-            practicalAdvice: "Focus on mastering variables early because they are used everywhere in programming. Real-world success in coding starts with strong fundamentals."
-        }
-    }
-  ,
     technicalDeepDive: {
         title: "Technical Deep Dive: Variables and Data Type",
         badge: "Advanced",
@@ -3466,155 +3303,6 @@ const App = () => <Button label="Click Me" />;`,
         }
     }
   ,
-    technicalDeepDive: {
-        title: "Technical Deep Dive: Variables and Data Type",
-        badge: "Advanced",
-        intro: "Variables and data types in JavaScript are deeply connected to execution contexts, lexical environments, memory allocation, and runtime optimization. Understanding these internal mechanics helps developers write more efficient, maintainable, and secure applications.",
-        sections: [
-            {
-                id: "section1",
-                title: "Architecture Overview",
-                content: "JavaScript uses execution contexts to manage variable creation and lifecycle during code execution. Each context contains lexical environments that store variable bindings and scope references. Primitive data types such as strings, numbers, and booleans are stored directly in stack memory, while objects, arrays, and functions are stored as references in heap memory. Scope chains determine variable accessibility across nested contexts. JavaScript engines such as V8 optimize variable access using hidden classes, inline caching, and just-in-time compilation.",
-                keyPoints: [
-                    "Execution contexts define scope, memory allocation, and variable lifecycle.",
-                    "Primitive values are stored by value, while objects are stored by reference.",
-                    "Modern engines optimize variable access for speed and efficiency."
-                ]
-            },
-            {
-                id: "section2",
-                title: "Internal Mechanics",
-                content: "During parsing, JavaScript performs a creation phase where memory is allocated for variables and function declarations. Variables declared with var are hoisted and initialized with undefined, while let and const are hoisted but remain inaccessible in the temporal dead zone until execution reaches their declaration. Runtime execution assigns values dynamically, allowing variables to change types. The engine tracks references through environment records and manages unused memory with garbage collection. This dynamic model provides flexibility but can introduce runtime unpredictability.",
-                steps: [
-                    {
-                        id: "step1",
-                        text: "Step 1: Parse source code and allocate memory for declarations."
-                    },
-                    {
-                        id: "step2",
-                        text: "Step 2: Execute code line by line while assigning runtime values."
-                    },
-                    {
-                        id: "step3",
-                        text: "Step 3: Optimize execution and reclaim unused memory."
-                    }
-                ],
-                code: {
-                    language: "javascript",
-                    code: "console.log(user);\nvar user = \"Alice\";\n\nlet age = 25;\nconst active = true;",
-                    output: "The var variable logs undefined due to hoisting, while let and const are inaccessible before declaration."
-                }
-            },
-            {
-                id: "section3",
-                title: "Performance Optimization",
-                content: "Efficient variable usage improves runtime performance and memory predictability. Using const for immutable values allows engines to make safer optimization assumptions. Avoiding unnecessary type mutation prevents deoptimization in JIT-compiled code paths. Maintaining consistent object shapes improves hidden class generation in V8. Performance profiling tools such as Chrome DevTools help monitor memory allocation, variable retention, and execution bottlenecks.",
-                keyPoints: [
-                    "Prefer const for stable values to improve optimization opportunities.",
-                    "Avoid frequent variable type changes to reduce JIT deoptimization.",
-                    "Use profiling tools to identify memory leaks and performance bottlenecks."
-                ],
-                code: {
-                    language: "javascript",
-                    code: "const taxRate = 0.18;\nlet total = 1000;\ntotal += total * taxRate;",
-                    output: "Stable variable types improve predictability and execution efficiency."
-                }
-            },
-            {
-                id: "section4",
-                title: "Advanced Concepts",
-                content: "Advanced JavaScript variable management includes closures, destructuring, symbols, and explicit type control strategies. Closures preserve access to lexical variables beyond their original execution context, enabling encapsulation and private state. Destructuring syntax improves readability when extracting structured data. Symbols create unique property identifiers that avoid collisions. Advanced projects often integrate TypeScript for static type safety and improved maintainability.",
-                keyPoints: [
-                    "Closures support stateful functions and encapsulation.",
-                    "Destructuring simplifies structured data extraction.",
-                    "Symbols provide collision-resistant object properties."
-                ],
-                code: {
-                    language: "javascript",
-                    code: "function counter() {\n  let count = 0;\n  return function() {\n    count++;\n    return count;\n  };\n}"
-                }
-            },
-            {
-                id: "section5",
-                title: "Edge Cases and Gotchas",
-                content: "JavaScript dynamic typing can create confusing edge cases due to implicit type coercion. Loose equality comparisons may trigger automatic conversions that produce unexpected outcomes. Null and undefined represent different absence states but are often confused. NaN is a unique numeric value that does not equal itself. Developers must also guard against accidental global variable creation and scope leakage.",
-                keyPoints: [
-                    "Use strict equality operators to avoid implicit coercion issues.",
-                    "Treat null and undefined as distinct values with separate meanings.",
-                    "Enable strict mode to prevent accidental global scope pollution."
-                ],
-                highlight: "Type coercion and poor scope management are major sources of bugs in JavaScript applications."
-            },
-            {
-                id: "section6",
-                title: "Design Patterns",
-                content: "Strong variable design often relies on proven architectural patterns such as module patterns, factory functions, and immutable state management. Module patterns use closures to protect private variables. Factory functions simplify reusable object generation with controlled state. Immutable data patterns are widely used in frameworks like React to improve predictability and debugging. Clear naming conventions and separation of concerns improve long-term maintainability.",
-                keyPoints: [
-                    "Module patterns encapsulate internal state securely.",
-                    "Factory functions improve object reuse and flexibility.",
-                    "Immutable state patterns enhance UI consistency and debugging."
-                ],
-                code: {
-                    language: "javascript",
-                    code: "function createUser(name) {\n  return {\n    getName() {\n      return name;\n    }\n  };\n}"
-                }
-            },
-            {
-                id: "section7",
-                title: "Security Considerations",
-                content: "Improper variable handling can expose sensitive information or create exploitable vulnerabilities. Global variables increase attack surfaces by exposing state to unintended contexts. Type confusion may introduce validation flaws when processing user input. Secure code uses scoped declarations, sanitizes external data, and enforces strict type checking. Defensive variable management reduces both security and reliability risks.",
-                keyPoints: [
-                    "Minimize global state to reduce exposure risks.",
-                    "Validate and sanitize all external input before assignment.",
-                    "Use strict mode and predictable typing for safer applications."
-                ],
-                highlight: "Never trust user input without validation, regardless of expected type.",
-                code: {
-                    language: "javascript",
-                    code: "\"use strict\";\nconst username = sanitizeInput(userInput);\nif (typeof username === \"string\") {\n  processUser(username);\n}"
-                }
-            },
-            {
-                id: "section8",
-                title: "Technical Summary",
-                content: "Variables and data types are foundational to JavaScript architecture, influencing memory management, scope control, optimization, and security. Advanced mastery requires understanding execution models, dynamic typing behavior, and scalable design patterns. Strong technical knowledge in this area leads to more performant, secure, and maintainable software systems.",
-                keyPoints: [
-                    "Execution contexts govern variable lifecycle and scope.",
-                    "Memory behavior differs significantly between primitive and reference types.",
-                    "Performance optimization depends on predictable type usage.",
-                    "Advanced patterns improve scalability and maintainability.",
-                    "Security depends on strict validation and scope discipline.",
-                    "Profiling and optimization are essential for production-grade applications."
-                ]
-            }
-        ]
-    }
-  ,
-    assignment: {
-        title: "Assignment",
-        description: "",
-        xp: 150,
-        duration: "20 Mins",
-        task: {
-            title: "",
-            description: "",
-            requirements: []
-        },
-        objectives: [],
-        starterCode: {
-            title: "Starter Code",
-            description: "This starter code provides a structure for the assignment with placeholders. Students must complete the missing variable declarations and outputs.",
-            code: "// TODO: Create variables for user name, age, and active status\n\n// Example:\n// const userName = \"Your Name\";\n\n// TODO: Display each variable using console.log()\n\n// TODO: Bonus - Create an object called userProfile",
-            language: "javascript",
-            instructions: [
-                "Replace placeholder values with your own sample data",
-                "Use correct data types for each variable",
-                "Test your code in the browser console or Node.js"
-            ]
-        },
-        submissionGuidelines: []
-    }
-  ,
     assignment: {
         title: "Assignment",
         description: "",
@@ -3628,35 +3316,6 @@ const App = () => <Button label="Click Me" />;`,
         objectives: [],
         starterCode: "// TODO: Create variables for user name, age, and active status\n\n// Example:\n// const userName = \"Your Name\";\n\n// TODO: Display each variable using console.log()\n\n// TODO: Bonus - Create an object called userProfile",
         submissionGuidelines: []
-    }
-  ,
-    assignment: {
-        title: "Variables and Data Type - Hands-On Assignment",
-        description: "Students will build a simple user profile program that stores and displays personal information using JavaScript variables. This project helps learners practice variable declaration, data type selection, and structured output.",
-        xp: 100,
-        duration: "30-45 minutes",
-        task: {
-            title: "Assignment Requirements",
-            description: "Create a JavaScript program that stores a user's profile details and displays them clearly in the console. Your solution should demonstrate proper variable naming and correct data type usage.",
-            requirements: [
-                "Create variables for user details: Store the user's name, age, and active status. Use appropriate data types for each value.",
-                "Use modern JavaScript syntax: Use let or const instead of var. Choose const for fixed values.",
-                "Display all stored information: Use console.log statements to show each variable clearly. Format output for readability.",
-                "Create a profile object: Group all variables into one object for better organization. This introduces structured programming concepts."
-            ]
-        },
-        objectives: [
-            "Understand how to declare variables using let and const",
-            "Practice using strings, numbers, and booleans",
-            "Learn how to store and display structured data",
-            "Improve confidence in writing basic JavaScript code"
-        ],
-        starterCode: "// TODO: Create variables for user name, age, and active status\n\n// Example:\n// const userName = \"Your Name\";\n\n// TODO: Display each variable using console.log()\n\n// TODO: Bonus - Create an object called userProfile",
-        submissionGuidelines: [
-            "Ensure all required variables are included",
-            "Use correct syntax and formatting",
-            "Test your code before submission"
-        ]
     }
   ,
     project: {
@@ -4115,522 +3774,6 @@ const App = () => <Button label="Click Me" />;`,
                 explanation: "Login status only requires true or false values. Boolean is the ideal choice for state tracking."
             }
         ]
-    }
-  ,
-    visual: {
-        visualExplanation: {
-            visualOverview: {
-                title: "Visual Guide to Variables and Data Type",
-                description: "Visuals make abstract JavaScript concepts easier to understand by showing how variables store data and how different data types behave. Diagrams and flowcharts help learners see relationships, processes, and structures clearly.",
-                learningStyle: "Visual learners will love this section!"
-            },
-            conceptDiagram: {
-                title: "Concept Diagram",
-                description: "This diagram shows how variables act as storage containers, data types define stored values, and JavaScript processes them. It visually connects declaration, storage, and usage.",
-                components: [
-                    {
-                        id: "comp1",
-                        name: "Variable Declaration",
-                        description: "Represents creating a named storage container using let, const, or var.",
-                        position: "top"
-                    },
-                    {
-                        id: "comp2",
-                        name: "Data Type Assignment",
-                        description: "Represents assigning a value such as string, number, or boolean.",
-                        position: "middle"
-                    },
-                    {
-                        id: "comp3",
-                        name: "Program Usage",
-                        description: "Represents using stored data in calculations, logic, or output.",
-                        position: "bottom"
-                    }
-                ],
-                connections: [
-                    {
-                        from: "comp1",
-                        to: "comp2",
-                        label: "Stores"
-                    },
-                    {
-                        from: "comp2",
-                        to: "comp3",
-                        label: "Processes"
-                    }
-                ],
-                explanation: "Start from variable declaration at the top, then follow how data types define the stored value, and finally observe how the application uses that data. This creates a full concept lifecycle."
-            },
-            flowchartExplanation: {
-                title: "Process Flowchart",
-                description: "This flowchart shows the step-by-step process of creating and using variables in JavaScript. It explains how data moves from declaration to program output.",
-                steps: [
-                    {
-                        id: "step1",
-                        type: "start",
-                        label: "Start Program",
-                        description: "Begin writing JavaScript code."
-                    },
-                    {
-                        id: "step2",
-                        type: "process",
-                        label: "Declare Variable",
-                        description: "Create a variable using let, const, or var."
-                    },
-                    {
-                        id: "step3",
-                        type: "decision",
-                        label: "Choose Correct Data Type?",
-                        description: "Determine if the value should be text, number, or boolean.",
-                        branches: [
-                            "Yes",
-                            "No"
-                        ]
-                    },
-                    {
-                        id: "step4",
-                        type: "process",
-                        label: "Assign and Use Value",
-                        description: "Store data and apply it in logic or output."
-                    },
-                    {
-                        id: "step5",
-                        type: "end",
-                        label: "Display Result",
-                        description: "Show final output to user or system."
-                    }
-                ],
-                explanation: "The process begins with declaration, checks for correct type usage, then moves to assignment and practical use. Proper data type decisions prevent future logic errors."
-            },
-            comparisonChart: {
-                title: "Comparison Chart",
-                description: "This chart compares var, let, and const to help learners choose the right declaration method. Understanding these differences improves code quality.",
-                items: [
-                    {
-                        id: "item1",
-                        name: "var",
-                        pros: [
-                            "Function scoped",
-                            "Older browser support",
-                            "Simple syntax"
-                        ],
-                        cons: [
-                            "Can cause scope confusion",
-                            "Allows redeclaration"
-                        ],
-                        useCase: "Use mainly for legacy code maintenance."
-                    },
-                    {
-                        id: "item2",
-                        name: "let",
-                        pros: [
-                            "Block scoped",
-                            "Allows reassignment",
-                            "Modern standard"
-                        ],
-                        cons: [
-                            "Cannot redeclare in same scope",
-                            "Slightly stricter behavior"
-                        ],
-                        useCase: "Use when values may change."
-                    },
-                    {
-                        id: "item3",
-                        name: "const",
-                        pros: [
-                            "Block scoped",
-                            "Prevents reassignment",
-                            "Improves code safety"
-                        ],
-                        cons: [
-                            "Cannot be reassigned",
-                            "Requires initialization"
-                        ],
-                        useCase: "Use for stable, fixed values."
-                    }
-                ]
-            },
-            timelineVisualization: {
-                title: "Timeline Visualization",
-                description: "This timeline shows the lifecycle of a variable from creation to execution. It helps learners understand runtime progression.",
-                events: [
-                    {
-                        id: "event1",
-                        time: "Phase 1",
-                        event: "Declaration",
-                        description: "The variable is created in memory. JavaScript reserves storage space."
-                    },
-                    {
-                        id: "event2",
-                        time: "Phase 2",
-                        event: "Initialization",
-                        description: "A value is assigned to the variable. Data type is determined."
-                    },
-                    {
-                        id: "event3",
-                        time: "Phase 3",
-                        event: "Execution",
-                        description: "The variable is used in logic, calculations, or display. Program functionality depends on this stage."
-                    },
-                    {
-                        id: "event4",
-                        time: "Phase 4",
-                        event: "Memory Cleanup",
-                        description: "Unused variables are removed by garbage collection. This optimizes memory."
-                    }
-                ]
-            },
-            architectureDiagram: {
-                title: "Architecture Diagram",
-                description: "This architecture shows how variables and data types interact across front-end application layers. It demonstrates storage, logic, and user presentation.",
-                layers: [
-                    {
-                        id: "layer1",
-                        name: "Input Layer",
-                        description: "Collects user or system input values.",
-                        components: [
-                            "Forms",
-                            "User Input Fields"
-                        ]
-                    },
-                    {
-                        id: "layer2",
-                        name: "Logic Layer",
-                        description: "Processes variables, validates data types, and performs calculations.",
-                        components: [
-                            "JavaScript Variables",
-                            "Validation Functions"
-                        ]
-                    },
-                    {
-                        id: "layer3",
-                        name: "Presentation Layer",
-                        description: "Displays processed information to the user.",
-                        components: [
-                            "DOM Rendering",
-                            "Console Output"
-                        ]
-                    }
-                ],
-                dataFlow: "Data enters through user input, gets processed by JavaScript logic, and is displayed through UI or console outputs. Each layer depends on accurate variable management."
-            },
-            mindMap: {
-                title: "Mind Map",
-                description: "This mind map organizes the major concepts related to JavaScript variables and data types. It provides a structured overview for easier revision.",
-                centralConcept: "Variables and Data Type",
-                branches: [
-                    {
-                        id: "branch1",
-                        title: "Variable Types",
-                        subtopics: [
-                            "var",
-                            "let",
-                            "const"
-                        ]
-                    },
-                    {
-                        id: "branch2",
-                        title: "Primitive Data Types",
-                        subtopics: [
-                            "String",
-                            "Number",
-                            "Boolean"
-                        ]
-                    },
-                    {
-                        id: "branch3",
-                        title: "Advanced Types",
-                        subtopics: [
-                            "Object",
-                            "Array",
-                            "Null"
-                        ]
-                    },
-                    {
-                        id: "branch4",
-                        title: "Best Practices",
-                        subtopics: [
-                            "Naming",
-                            "Scope",
-                            "Optimization"
-                        ]
-                    }
-                ]
-            },
-            visualSummary: {
-                title: "Visual Summary",
-                keyVisualTakeaways: [
-                    "Variables act as labeled storage boxes.",
-                    "Data types define what kind of data is stored.",
-                    "Correct declaration improves code safety.",
-                    "Structured variable management supports scalable applications."
-                ],
-                visualLearningTips: [
-                    "Use diagrams to connect declaration and execution flow.",
-                    "Compare var, let, and const visually for easier recall.",
-                    "Practice drawing your own variable lifecycle maps."
-                ],
-                nextSteps: "Apply these visuals while building real JavaScript projects. Continue exploring objects, arrays, and functions for deeper understanding."
-            }
-        }
-    }
-  ,
-    visual: {
-        visualExplanation: {
-            visualOverview: {
-                title: "Visual Guide to Variables and Data Type",
-                description: "Visuals make abstract JavaScript concepts easier to understand by showing how variables store data and how different data types behave. Diagrams and flowcharts help learners see relationships, processes, and structures clearly.",
-                learningStyle: "Visual learners will love this section!"
-            },
-            conceptDiagram: {
-                title: "Concept Diagram",
-                description: "This diagram shows how variables act as storage containers, data types define stored values, and JavaScript processes them. It visually connects declaration, storage, and usage.",
-                components: [
-                    {
-                        id: "comp1",
-                        name: "Variable Declaration",
-                        description: "Represents creating a named storage container using let, const, or var.",
-                        position: "top"
-                    },
-                    {
-                        id: "comp2",
-                        name: "Data Type Assignment",
-                        description: "Represents assigning a value such as string, number, or boolean.",
-                        position: "middle"
-                    },
-                    {
-                        id: "comp3",
-                        name: "Program Usage",
-                        description: "Represents using stored data in calculations, logic, or output.",
-                        position: "bottom"
-                    }
-                ],
-                connections: [
-                    {
-                        from: "comp1",
-                        to: "comp2",
-                        label: "Stores"
-                    },
-                    {
-                        from: "comp2",
-                        to: "comp3",
-                        label: "Processes"
-                    }
-                ],
-                explanation: "Start from variable declaration at the top, then follow how data types define the stored value, and finally observe how the application uses that data. This creates a full concept lifecycle."
-            },
-            flowchartExplanation: {
-                title: "Process Flowchart",
-                description: "This flowchart shows the step-by-step process of creating and using variables in JavaScript. It explains how data moves from declaration to program output.",
-                steps: [
-                    {
-                        id: "step1",
-                        type: "start",
-                        label: "Start Program",
-                        description: "Begin writing JavaScript code."
-                    },
-                    {
-                        id: "step2",
-                        type: "process",
-                        label: "Declare Variable",
-                        description: "Create a variable using let, const, or var."
-                    },
-                    {
-                        id: "step3",
-                        type: "decision",
-                        label: "Choose Correct Data Type?",
-                        description: "Determine if the value should be text, number, or boolean.",
-                        branches: [
-                            "Yes",
-                            "No"
-                        ]
-                    },
-                    {
-                        id: "step4",
-                        type: "process",
-                        label: "Assign and Use Value",
-                        description: "Store data and apply it in logic or output."
-                    },
-                    {
-                        id: "step5",
-                        type: "end",
-                        label: "Display Result",
-                        description: "Show final output to user or system."
-                    }
-                ],
-                explanation: "The process begins with declaration, checks for correct type usage, then moves to assignment and practical use. Proper data type decisions prevent future logic errors."
-            },
-            comparisonChart: {
-                title: "Comparison Chart",
-                description: "This chart compares var, let, and const to help learners choose the right declaration method. Understanding these differences improves code quality.",
-                items: [
-                    {
-                        id: "item1",
-                        name: "var",
-                        pros: [
-                            "Function scoped",
-                            "Older browser support",
-                            "Simple syntax"
-                        ],
-                        cons: [
-                            "Can cause scope confusion",
-                            "Allows redeclaration"
-                        ],
-                        useCase: "Use mainly for legacy code maintenance."
-                    },
-                    {
-                        id: "item2",
-                        name: "let",
-                        pros: [
-                            "Block scoped",
-                            "Allows reassignment",
-                            "Modern standard"
-                        ],
-                        cons: [
-                            "Cannot redeclare in same scope",
-                            "Slightly stricter behavior"
-                        ],
-                        useCase: "Use when values may change."
-                    },
-                    {
-                        id: "item3",
-                        name: "const",
-                        pros: [
-                            "Block scoped",
-                            "Prevents reassignment",
-                            "Improves code safety"
-                        ],
-                        cons: [
-                            "Cannot be reassigned",
-                            "Requires initialization"
-                        ],
-                        useCase: "Use for stable, fixed values."
-                    }
-                ]
-            },
-            timelineVisualization: {
-                title: "Timeline Visualization",
-                description: "This timeline shows the lifecycle of a variable from creation to execution. It helps learners understand runtime progression.",
-                events: [
-                    {
-                        id: "event1",
-                        time: "Phase 1",
-                        event: "Declaration",
-                        description: "The variable is created in memory. JavaScript reserves storage space."
-                    },
-                    {
-                        id: "event2",
-                        time: "Phase 2",
-                        event: "Initialization",
-                        description: "A value is assigned to the variable. Data type is determined."
-                    },
-                    {
-                        id: "event3",
-                        time: "Phase 3",
-                        event: "Execution",
-                        description: "The variable is used in logic, calculations, or display. Program functionality depends on this stage."
-                    },
-                    {
-                        id: "event4",
-                        time: "Phase 4",
-                        event: "Memory Cleanup",
-                        description: "Unused variables are removed by garbage collection. This optimizes memory."
-                    }
-                ]
-            },
-            architectureDiagram: {
-                title: "Architecture Diagram",
-                description: "This architecture shows how variables and data types interact across front-end application layers. It demonstrates storage, logic, and user presentation.",
-                layers: [
-                    {
-                        id: "layer1",
-                        name: "Input Layer",
-                        description: "Collects user or system input values.",
-                        components: [
-                            "Forms",
-                            "User Input Fields"
-                        ]
-                    },
-                    {
-                        id: "layer2",
-                        name: "Logic Layer",
-                        description: "Processes variables, validates data types, and performs calculations.",
-                        components: [
-                            "JavaScript Variables",
-                            "Validation Functions"
-                        ]
-                    },
-                    {
-                        id: "layer3",
-                        name: "Presentation Layer",
-                        description: "Displays processed information to the user.",
-                        components: [
-                            "DOM Rendering",
-                            "Console Output"
-                        ]
-                    }
-                ],
-                dataFlow: "Data enters through user input, gets processed by JavaScript logic, and is displayed through UI or console outputs. Each layer depends on accurate variable management."
-            },
-            mindMap: {
-                title: "Mind Map",
-                description: "This mind map organizes the major concepts related to JavaScript variables and data types. It provides a structured overview for easier revision.",
-                centralConcept: "Variables and Data Type",
-                branches: [
-                    {
-                        id: "branch1",
-                        title: "Variable Types",
-                        subtopics: [
-                            "var",
-                            "let",
-                            "const"
-                        ]
-                    },
-                    {
-                        id: "branch2",
-                        title: "Primitive Data Types",
-                        subtopics: [
-                            "String",
-                            "Number",
-                            "Boolean"
-                        ]
-                    },
-                    {
-                        id: "branch3",
-                        title: "Advanced Types",
-                        subtopics: [
-                            "Object",
-                            "Array",
-                            "Null"
-                        ]
-                    },
-                    {
-                        id: "branch4",
-                        title: "Best Practices",
-                        subtopics: [
-                            "Naming",
-                            "Scope",
-                            "Optimization"
-                        ]
-                    }
-                ]
-            },
-            visualSummary: {
-                title: "Visual Summary",
-                keyVisualTakeaways: [
-                    "Variables act as labeled storage boxes.",
-                    "Data types define what kind of data is stored.",
-                    "Correct declaration improves code safety.",
-                    "Structured variable management supports scalable applications."
-                ],
-                visualLearningTips: [
-                    "Use diagrams to connect declaration and execution flow.",
-                    "Compare var, let, and const visually for easier recall.",
-                    "Practice drawing your own variable lifecycle maps."
-                ],
-                nextSteps: "Apply these visuals while building real JavaScript projects. Continue exploring objects, arrays, and functions for deeper understanding."
-            }
-        }
     }
   ,
     visualExplanation: {

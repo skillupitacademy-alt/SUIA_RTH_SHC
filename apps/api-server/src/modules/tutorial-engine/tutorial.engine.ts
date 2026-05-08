@@ -9,6 +9,7 @@
 
 import { TutorialContentRepository, TutorialProgressRepository } from '@quiz/db-tutorial';
 import type { TutorialDifficulty } from '@quiz/types';
+
 import { logger } from '@/lib/logger';
 import { container } from '@/modules/core/container';
 
@@ -40,8 +41,8 @@ export interface TutorialContent {
   subtopicId: string;
   brandId: TutorialBrand;
   difficulty: string;
-  content: any;
-  brandCustomizations?: any;
+  content: Record<string, unknown>;
+  brandCustomizations?: Record<string, unknown>;
   progress?: {
     blocksCompleted: string[];
     completionPercent: number;
@@ -113,7 +114,7 @@ export class TutorialEngine {
 
       // 2. Get tutorial content with brand filtering
       const content = await this.contentRepo.getPublished(subtopicId, difficulty || undefined);
-      if (!content || content.length === 0) {
+      if (content === undefined || content === null || content.length === 0) {
         this.log.warn({ subtopicId, difficulty }, 'Tutorial content not found');
         return null;
       }
@@ -121,13 +122,13 @@ export class TutorialEngine {
       const tutorialContent = content[0];
 
       // 3. Apply brand-specific customizations
-      const customized = this.applyBrandCustomizations(tutorialContent, brandId);
+      const customized = this.applyBrandCustomizations(tutorialContent as unknown as TutorialContent, brandId);
 
       // 4. Get user progress if requested
       let progress;
       if (includeProgress) {
         const progressData = await this.progressRepo.getProgress(userId, subtopicId);
-        progress = this.formatProgress(progressData);
+        progress = this.formatProgress(progressData as unknown as Record<string, unknown>);
       }
 
       this.log.info({ subtopicId, brandId, hasProgress: !!progress }, 'Tutorial content retrieved');
@@ -153,7 +154,11 @@ export class TutorialEngine {
    * @param options - Progress tracking options
    * @returns Updated progress information
    */
-  async trackProgress(options: TutorialProgressOptions) {
+  async trackProgress(options: TutorialProgressOptions): Promise<{
+    blocksCompleted: string[];
+    completionPercent: number;
+    assignmentUnlocked: boolean;
+  }> {
     const { userId, subtopicId, blockType, brandId } = options;
 
     this.log.info({ userId, subtopicId, blockType, brandId }, 'Tracking progress');
@@ -170,13 +175,13 @@ export class TutorialEngine {
       const progress = await this.progressRepo.markBlockComplete(userId, subtopicId, blockType);
 
       // 3. Check if remediation needed
-      if (this.needsRemediation(progress)) {
+      if (this.needsRemediation(progress as unknown as Record<string, unknown>)) {
         this.log.info({ userId, subtopicId }, 'Triggering remediation');
         await this.triggerRemediation(userId, subtopicId, brandId);
       }
 
       // 4. Format and return progress
-      const formatted = this.formatProgress(progress);
+      const formatted = this.formatProgress(progress as unknown as Record<string, unknown>);
       
       this.log.info({ userId, subtopicId, completionPercent: formatted.completionPercent }, 'Progress tracked');
 
@@ -196,8 +201,8 @@ export class TutorialEngine {
    * - Brand visibility rules are enforced
    */
   private async validateBrandAccess(
-    subtopicId: string,
-    brandId: TutorialBrand
+    _subtopicId: string,
+    _brandId: TutorialBrand
   ): Promise<boolean> {
     // For now, allow all access
     // TODO: Implement proper brand visibility checks using tutorial_sections.brandId
@@ -218,14 +223,14 @@ export class TutorialEngine {
    * 
    * Merges brand customizations from brandCustomizations JSON field
    */
-  private applyBrandCustomizations(content: any, brandId: TutorialBrand) {
+  private applyBrandCustomizations(content: TutorialContent, brandId: TutorialBrand): TutorialContent {
     // If content has brand customizations, apply them
-    if (content.brandCustomizations && Array.isArray(content.brandCustomizations)) {
+    if (content.brandCustomizations !== undefined && Array.isArray(content.brandCustomizations)) {
       const brandCustomization = content.brandCustomizations.find(
-        (custom: any) => custom.brandId === brandId
+        (custom: Record<string, unknown>) => custom.brandId === brandId
       );
 
-      if (brandCustomization) {
+      if (brandCustomization !== undefined) {
         this.log.debug({ brandId, hasCustomization: true }, 'Applying brand customizations');
         
         return {
@@ -245,7 +250,11 @@ export class TutorialEngine {
   /**
    * Format progress data for API response
    */
-  private formatProgress(progress: any) {
+  private formatProgress(progress: Record<string, unknown> | null | undefined): {
+    blocksCompleted: string[];
+    completionPercent: number;
+    assignmentUnlocked: boolean;
+  } {
     if (!progress) {
       return {
         blocksCompleted: [],
@@ -254,7 +263,7 @@ export class TutorialEngine {
       };
     }
 
-    const blocksCompleted = progress.blocksCompleted || [];
+    const blocksCompleted = (progress.blocksCompleted as string[] | undefined) ?? [];
     const requiredBlocks = 6; // notes, layman, real_life, technical, code, ai_tutor
     const completionPercent = Math.round((blocksCompleted.length / requiredBlocks) * 100);
     const assignmentUnlocked = progress.status === 'completed';
@@ -269,7 +278,7 @@ export class TutorialEngine {
   /**
    * Check if user needs remediation
    */
-  private needsRemediation(progress: any): boolean {
+  private needsRemediation(_progress: Record<string, unknown> | null | undefined): boolean {
     // TODO: Implement remediation logic
     // Check if user is struggling based on progress patterns
     return false;

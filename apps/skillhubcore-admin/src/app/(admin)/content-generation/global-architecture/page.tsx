@@ -5,12 +5,21 @@ import { ShellContext } from '../../ShellContext';
 import {
   ChevronDown, Info, CheckCircle2, Download, Layers,
   Grid, Globe, Calendar, Layout, Zap, Brain, Edit2, Palette,
-  RotateCcw, Code, ShieldCheck, Activity, Users, Settings,
-  ArrowRight, FileJson, CheckSquare, ExternalLink, Plus, FileText, History,
-  MonitorSmartphone, Type, Paintbrush, GripVertical, ListOrdered, Copy, Archive,
-  ChevronRight, Eye, Search, Monitor, Tablet, Smartphone, Sun, Moon, FileCode, Trash2, MousePointer2, Box,
-  Columns, Maximize, Heart
+  RotateCcw, ShieldCheck, Plus, ChevronRight, Eye, Search, Monitor, Tablet, Smartphone, Box,
+  Settings, ArrowRight, Copy, GripVertical, Type, Archive, History, FileText, CheckSquare,
+  Sun, Moon, Trash2, MonitorSmartphone, Code, ExternalLink, ListOrdered, Activity, Users, Heart
 } from 'lucide-react';
+
+interface ComponentArchitecture {
+  purpose?: string;
+  required?: boolean;
+  renderer?: string;
+  style_variant?: string;
+  animation_type?: string;
+  interactive_elements?: string[];
+  enabled?: boolean;
+  [key: string]: unknown;
+}
 
 // Import the JSON data
 import allSectionsData from '../../../../data/AllSectionTutorialPage.json';
@@ -42,7 +51,7 @@ export default function GlobalArchitecturePage() {
   const { setHeaderTitle, setHeaderSubtitle } = useContext(ShellContext);
   
   const architectures = React.useMemo(() => {
-    return (allSectionsData as any[]).reduce((acc: any, curr: any) => {
+    return (allSectionsData as Record<string, unknown>[]).reduce((acc: Record<string, Record<string, any>>, curr: Record<string, any>) => { // eslint-disable-line @typescript-eslint/no-explicit-any
       const key = Object.keys(curr)[0];
       if (key && !acc[key]) {
         acc[key] = curr[key];
@@ -63,20 +72,20 @@ export default function GlobalArchitecturePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedComponentKey, setSelectedComponentKey] = useState<string | null>(null);
 
+  const activeData = architectures[activeSectionKey];
+  
   useEffect(() => {
     if (activeData?.universal_architecture_fixed) {
       const keys = Object.keys(activeData.universal_architecture_fixed);
       if (keys.length > 0) setSelectedComponentKey(keys[0]);
     }
-  }, [activeSectionKey]);
+  }, [activeSectionKey, activeData?.universal_architecture_fixed]);
 
   useEffect(() => {
     setHeaderTitle('');
     setHeaderSubtitle('');
-  }, []);
+  }, [setHeaderTitle, setHeaderSubtitle]);
 
-  const activeData = architectures[activeSectionKey];
-  
   // Find the UI/UX counterpart for the active section to sync renderer mapping
   const uiuxKey = uiuxKeys.find(k => k.startsWith(activeSectionKey.replace('_architecture', '')));
   const uiuxData = uiuxKey ? architectures[uiuxKey] : null;
@@ -84,7 +93,7 @@ export default function GlobalArchitecturePage() {
   if (!activeData) return <div className="p-10 font-bold text-slate-500">Loading Architecture...</div>;
 
   const isUiUxMode = activeSectionKey.includes('uiux');
-  const universalComponents = isUiUxMode ? [] : Object.entries(activeData.universal_architecture_fixed || {});
+  const universalComponents = isUiUxMode ? [] : Object.entries(activeData.universal_architecture_fixed || {}) as [string, ComponentArchitecture][];
   const totalComponents = isUiUxMode ? Object.keys(activeData.component_design_system || {}).length : universalComponents.length;
   const jsonString = JSON.stringify({ [activeSectionKey]: activeData }, null, 2);
 
@@ -118,8 +127,9 @@ export default function GlobalArchitecturePage() {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         
         {/* Educational Section Dropdown Card */}
-        <div 
-          className={`bg-white border ${!isUiUxMode ? 'border-indigo-300 shadow-md ring-2 ring-indigo-50' : 'border-slate-200 shadow-sm'} rounded-xl p-4 flex items-center gap-3 relative cursor-pointer transition-all`} 
+        <button 
+          type="button"
+          className={`bg-white border ${!isUiUxMode ? 'border-indigo-300 shadow-md ring-2 ring-indigo-50' : 'border-slate-200 shadow-sm'} rounded-xl p-4 flex items-center gap-3 relative cursor-pointer transition-all w-full text-left`} 
           onClick={(e) => { e.stopPropagation(); setIsEduDropdownOpen(!isEduDropdownOpen); setIsUiuxDropdownOpen(false); }}
         >
           <div className={`w-10 h-10 rounded-full ${!isUiUxMode ? 'bg-indigo-600 text-white' : 'bg-indigo-50 text-indigo-600'} flex items-center justify-center shrink-0 transition-colors`}>
@@ -132,27 +142,35 @@ export default function GlobalArchitecturePage() {
               <ChevronDown size={14} className="text-slate-400 ml-1 shrink-0" />
             </div>
           </div>
-          {isEduDropdownOpen && (
+        </button>  {isEduDropdownOpen && (
             <>
-              <div className="fixed inset-0 z-40 cursor-default" onClick={(e) => { e.stopPropagation(); setIsEduDropdownOpen(false); }} />
+              <div 
+                className="fixed inset-0 z-40 cursor-default" 
+                onClick={(e) => { e.stopPropagation(); setIsEduDropdownOpen(false); }} 
+                onKeyDown={(e) => { if (e.key === 'Escape') setIsEduDropdownOpen(false); }}
+                role="button"
+                tabIndex={-1}
+                aria-label="Close dropdown"
+              />
               <div className="absolute top-full left-0 mt-2 w-[250px] bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden z-50">
                 {eduKeys.map((key) => (
-                  <div 
+                  <button 
                     key={key}
+                    type="button"
                     onClick={(e) => { e.stopPropagation(); setActiveSectionKey(key); setIsEduDropdownOpen(false); }}
-                    className={`px-4 py-3 text-sm font-bold cursor-pointer transition-colors relative z-50 ${activeSectionKey === key ? 'bg-indigo-50 text-indigo-700' : 'text-slate-700 hover:bg-slate-50'}`}
+                    className={`px-4 py-3 text-sm font-bold cursor-pointer transition-colors relative z-50 w-full text-left ${activeSectionKey === key ? 'bg-indigo-50 text-indigo-700' : 'text-slate-700 hover:bg-slate-50'}`}
                   >
                     {formatTitle(key)}
-                  </div>
+                  </button>
                 ))}
               </div>
             </>
           )}
-        </div>
 
         {/* UI/UX Section Dropdown Card (Replaces Brand Scope) */}
-        <div 
-          className={`bg-white border ${isUiUxMode ? 'border-pink-300 shadow-md ring-2 ring-pink-50' : 'border-slate-200 shadow-sm'} rounded-xl p-4 flex items-center gap-3 relative cursor-pointer transition-all`} 
+        <button 
+          type="button"
+          className={`bg-white border ${isUiUxMode ? 'border-pink-300 shadow-md ring-2 ring-pink-50' : 'border-slate-200 shadow-sm'} rounded-xl p-4 flex items-center gap-3 relative cursor-pointer transition-all w-full text-left`} 
           onClick={(e) => { e.stopPropagation(); setIsUiuxDropdownOpen(!isUiuxDropdownOpen); setIsEduDropdownOpen(false); }}
         >
           <div className={`w-10 h-10 rounded-full ${isUiUxMode ? 'bg-pink-600 text-white' : 'bg-pink-50 text-pink-600'} flex items-center justify-center shrink-0 transition-colors`}>
@@ -165,23 +183,30 @@ export default function GlobalArchitecturePage() {
               <ChevronDown size={14} className="text-slate-400 ml-1 shrink-0" />
             </div>
           </div>
-          {isUiuxDropdownOpen && (
+        </button>  {isUiuxDropdownOpen && (
             <>
-              <div className="fixed inset-0 z-40 cursor-default" onClick={(e) => { e.stopPropagation(); setIsUiuxDropdownOpen(false); }} />
+              <div 
+                className="fixed inset-0 z-40 cursor-default" 
+                onClick={(e) => { e.stopPropagation(); setIsUiuxDropdownOpen(false); }} 
+                onKeyDown={(e) => { if (e.key === 'Escape') setIsUiuxDropdownOpen(false); }}
+                role="button"
+                tabIndex={-1}
+                aria-label="Close dropdown"
+              />
               <div className="absolute top-full left-0 mt-2 w-[250px] bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden z-50">
                 {uiuxKeys.map((key) => (
-                  <div 
+                  <button 
                     key={key}
+                    type="button"
                     onClick={(e) => { e.stopPropagation(); setActiveSectionKey(key); setIsUiuxDropdownOpen(false); }}
-                    className={`px-4 py-3 text-sm font-bold cursor-pointer transition-colors relative z-50 ${activeSectionKey === key ? 'bg-pink-50 text-pink-700' : 'text-slate-700 hover:bg-slate-50'}`}
+                    className={`px-4 py-3 text-sm font-bold cursor-pointer transition-colors relative z-50 w-full text-left ${activeSectionKey === key ? 'bg-pink-50 text-pink-700' : 'text-slate-700 hover:bg-slate-50'}`}
                   >
                     {formatTitle(key)}
-                  </div>
+                  </button>
                 ))}
               </div>
             </>
           )}
-        </div>
 
         <div className="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-3 shadow-sm">
           <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0">
@@ -257,7 +282,7 @@ export default function GlobalArchitecturePage() {
                   </div>
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {universalComponents.map(([key, item]: [string, any], index) => {
+                    {universalComponents.map(([key, item]: [string, ComponentArchitecture], index) => {
                       const Icon = getIconForComponent(index);
                       const color = getColorForComponent(index);
                       return (
@@ -294,7 +319,7 @@ export default function GlobalArchitecturePage() {
                   </div>
                   
                   <div className="flex items-center flex-wrap gap-y-4 px-2">
-                    {universalComponents.map(([key, item]: [string, any], index) => {
+                    {universalComponents.map(([key], index) => {
                       const isLast = index === universalComponents.length - 1;
                       const color = getColorForComponent(index);
                       return (
@@ -338,7 +363,7 @@ export default function GlobalArchitecturePage() {
                   </div>
 
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {Object.entries(activeData.component_design_system || {}).map(([key, item]: [string, any], index) => {
+                    {(Object.entries(activeData.component_design_system || {}) as [string, ComponentArchitecture][]).map(([key, item], index) => {
                       const color = getColorForComponent(index);
                       return (
                         <div key={key} className="border border-slate-200 rounded-xl p-4 flex flex-col hover:shadow-md transition-shadow bg-slate-50/50">
@@ -584,7 +609,7 @@ export default function GlobalArchitecturePage() {
                  <div className="flex-1 space-y-3 overflow-y-auto pr-2 custom-scrollbar">
                    {((activeData.learning_progression_engine && activeData.learning_progression_engine[0]?.default_flow) || Object.keys(activeData.universal_architecture_fixed || {})).map((key: string, index: number) => {
                      const Icon = getIconForComponent(index);
-                     const componentData = activeData.universal_architecture_fixed?.[key] || {};
+                     const componentData = (activeData.universal_architecture_fixed?.[key] || {}) as ComponentArchitecture;
                      return (
                        <div key={key} className="flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-xl hover:border-indigo-200 shadow-sm transition-all group cursor-pointer">
                          <div className="w-6 h-6 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center text-[10px] font-black shrink-0">
@@ -826,7 +851,7 @@ ${(((activeData.learning_progression_engine && activeData.learning_progression_e
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                      {Object.entries(activeData.universal_architecture_fixed || {}).map(([key, item]: [string, any], index) => {
+                      {(Object.entries(activeData.universal_architecture_fixed || {}) as [string, ComponentArchitecture][]).map(([key, item], index) => {
                         const Icon = getIconForComponent(index);
                         const color = getColorForComponent(index);
                         return (
@@ -881,7 +906,7 @@ ${(((activeData.learning_progression_engine && activeData.learning_progression_e
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50 text-[10px] font-medium text-slate-600">
-                          {Object.entries(activeData.universal_architecture_fixed || {}).slice(0, 8).map(([key, item]: [string, any], index) => {
+                          {(Object.entries(activeData.universal_architecture_fixed || {}) as [string, ComponentArchitecture][]).slice(0, 8).map(([key, item], index) => {
                              const color = getColorForComponent(index);
                              const interactions = ['Static + Icons', 'Visual + Text', 'Icon + Points', 'Hover + Cards', 'Expand/Collapse', 'Zoom + Pan', 'Expand/Collapse', 'Highlights'];
                              const layouts = ['Card', 'Card', 'Card', 'Grid', 'Accordion', 'Diagram', 'FAQ', 'Card'];
@@ -959,7 +984,7 @@ ${(((activeData.learning_progression_engine && activeData.learning_progression_e
   "version": "${activeData.metadata?.version || '1.0'}",
   "status": "active",
   "components": [
-${Object.entries(activeData.universal_architecture_fixed || {}).map(([key, item]: [string, any], index) => `    {
+${(Object.entries(activeData.universal_architecture_fixed || {}) as [string, ComponentArchitecture][]).map(([key, item], index) => `    {
       "key": "${key}",
       "name": "${formatTitle(key)}",
       "required": ${item.required !== false},
@@ -1042,35 +1067,35 @@ ${Object.entries(activeData.universal_architecture_fixed || {}).map(([key, item]
                     <h2 className="text-sm font-bold text-slate-900 mb-4">1. Prompt Metadata</h2>
                     <div className="space-y-3">
                       <div>
-                        <label className="text-[10px] font-bold text-slate-500 mb-1 block uppercase tracking-wider">Prompt Name <span className="text-rose-500">*</span></label>
-                        <input type="text" className="w-full border border-slate-200 rounded p-2 text-xs font-bold text-slate-800" value="Layman Explanation - Beginner Friendly" readOnly/>
+                        <label htmlFor="prompt-name" className="text-[10px] font-bold text-slate-500 mb-1 block uppercase tracking-wider">Prompt Name <span className="text-rose-500">*</span></label>
+                        <input id="prompt-name" type="text" className="w-full border border-slate-200 rounded p-2 text-xs font-bold text-slate-800" value="Layman Explanation - Beginner Friendly" readOnly/>
                       </div>
                       <div>
-                        <label className="text-[10px] font-bold text-slate-500 mb-1 block uppercase tracking-wider">Prompt Slug</label>
-                        <input type="text" className="w-full border border-slate-200 rounded p-2 text-[10px] font-mono text-slate-500 bg-slate-50" value="layman-beginner-explanation-v2.3" readOnly/>
+                        <label htmlFor="prompt-slug" className="text-[10px] font-bold text-slate-500 mb-1 block uppercase tracking-wider">Prompt Slug</label>
+                        <input id="prompt-slug" type="text" className="w-full border border-slate-200 rounded p-2 text-[10px] font-mono text-slate-500 bg-slate-50" value="layman-beginner-explanation-v2.3" readOnly/>
                       </div>
                       <div>
-                        <label className="text-[10px] font-bold text-slate-500 mb-1 block uppercase tracking-wider">Learning Objective</label>
-                        <textarea className="w-full border border-slate-200 rounded p-2 text-xs text-slate-600 h-16 resize-none" readOnly defaultValue="Explain the concept in simplest terms using real-life analogies." />
+                        <label htmlFor="learning-objective" className="text-[10px] font-bold text-slate-500 mb-1 block uppercase tracking-wider">Learning Objective</label>
+                        <textarea id="learning-objective" className="w-full border border-slate-200 rounded p-2 text-xs text-slate-600 h-16 resize-none" readOnly defaultValue="Explain the concept in simplest terms using real-life analogies." />
                       </div>
                       <div className="grid grid-cols-2 gap-2">
                          <div>
-                            <label className="text-[9px] font-bold text-slate-500 mb-1 block uppercase tracking-wider">Est. Time</label>
-                            <select className="w-full border border-slate-200 rounded p-1.5 text-xs text-slate-700 bg-slate-50"><option>5 - 7 min</option></select>
+                            <label htmlFor="est-time" className="text-[9px] font-bold text-slate-500 mb-1 block uppercase tracking-wider">Est. Time</label>
+                            <select id="est-time" className="w-full border border-slate-200 rounded p-1.5 text-xs text-slate-700 bg-slate-50"><option>5 - 7 min</option></select>
                          </div>
                          <div>
-                            <label className="text-[9px] font-bold text-slate-500 mb-1 block uppercase tracking-wider">Target Audience</label>
-                            <select className="w-full border border-slate-200 rounded p-1.5 text-xs text-slate-700 bg-slate-50"><option>Beginners</option></select>
+                            <label htmlFor="target-audience" className="text-[9px] font-bold text-slate-500 mb-1 block uppercase tracking-wider">Target Audience</label>
+                            <select id="target-audience" className="w-full border border-slate-200 rounded p-1.5 text-xs text-slate-700 bg-slate-50"><option>Beginners</option></select>
                          </div>
                       </div>
                       <div className="grid grid-cols-2 gap-2">
                          <div>
-                            <label className="text-[9px] font-bold text-slate-500 mb-1 block uppercase tracking-wider">AI Model</label>
-                            <select className="w-full border border-slate-200 rounded p-1.5 text-xs text-slate-700 bg-slate-50"><option>GPT-4o</option></select>
+                            <label htmlFor="ai-model" className="text-[9px] font-bold text-slate-500 mb-1 block uppercase tracking-wider">AI Model</label>
+                            <select id="ai-model" className="w-full border border-slate-200 rounded p-1.5 text-xs text-slate-700 bg-slate-50"><option>GPT-4o</option></select>
                          </div>
                          <div>
-                            <label className="text-[9px] font-bold text-slate-500 mb-1 block uppercase tracking-wider">Status</label>
-                            <select className="w-full border border-slate-200 rounded p-1.5 text-xs font-bold text-amber-600 bg-amber-50"><option>Draft</option></select>
+                            <label htmlFor="prompt-status" className="text-[9px] font-bold text-slate-500 mb-1 block uppercase tracking-wider">Status</label>
+                            <select id="prompt-status" className="w-full border border-slate-200 rounded p-1.5 text-xs font-bold text-amber-600 bg-amber-50"><option>Draft</option></select>
                          </div>
                       </div>
                       <div className="pt-2 border-t border-slate-100 flex justify-between text-[9px]">
@@ -1084,8 +1109,8 @@ ${Object.entries(activeData.universal_architecture_fixed || {}).map(([key, item]
                          </div>
                       </div>
                       <div className="pt-1">
-                         <label className="text-[9px] font-bold text-slate-400 mb-1.5 block">Tags</label>
-                         <div className="flex flex-wrap gap-1.5">
+                         <label htmlFor="prompt-tags" className="text-[9px] font-bold text-slate-400 mb-1.5 block">Tags</label>
+                         <div id="prompt-tags" className="flex flex-wrap gap-1.5">
                             <span className="text-[9px] font-bold text-blue-600 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-full">Beginner</span>
                             <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full">Layman</span>
                             <span className="text-[9px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full">Analogy</span>
@@ -1106,7 +1131,7 @@ ${Object.entries(activeData.universal_architecture_fixed || {}).map(([key, item]
                            </tr>
                          </thead>
                          <tbody className="divide-y divide-slate-50">
-                           {Object.entries(activeData.universal_architecture_fixed || {}).slice(0,5).map(([key, item]: [string, any], index) => {
+                           {(Object.entries(activeData.universal_architecture_fixed || {}) as [string, ComponentArchitecture][]).slice(0,5).map(([key, item], index) => {
                              const color = getColorForComponent(index);
                              return (
                                <tr key={key}>
@@ -1150,14 +1175,14 @@ ${Object.entries(activeData.universal_architecture_fixed || {}).map(([key, item]
                     <h2 className="text-sm font-bold text-slate-900 mb-4">2. Prompt Instruction Builder</h2>
                     
                     <div className="space-y-4">
-                       <div>
-                         <label className="text-[10px] font-bold text-slate-500 mb-1 block uppercase tracking-wider">Educational Goal</label>
-                         <p className="text-xs text-slate-700 bg-blue-50 border border-blue-100 p-2 rounded leading-relaxed font-medium">Break down complex topics into simple terms. Use everyday examples.</p>
+                        <div>
+                         <label htmlFor="edu-goal" className="text-[10px] font-bold text-slate-500 mb-1 block uppercase tracking-wider">Educational Goal</label>
+                         <p id="edu-goal" className="text-xs text-slate-700 bg-blue-50 border border-blue-100 p-2 rounded leading-relaxed font-medium">Break down complex topics into simple terms. Use everyday examples.</p>
                        </div>
                        
-                       <div>
-                         <label className="text-[10px] font-bold text-slate-500 mb-2 block uppercase tracking-wider">Audience Psychology</label>
-                         <div className="flex items-center gap-4 mb-2">
+                        <div>
+                         <label htmlFor="audience-psychology" className="text-[10px] font-bold text-slate-500 mb-2 block uppercase tracking-wider">Audience Psychology</label>
+                         <div id="audience-psychology" className="flex items-center gap-4 mb-2">
                            <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-700">
                              <div className="w-6 h-3.5 bg-emerald-500 rounded-full relative"><div className="absolute right-0.5 top-0.5 w-2.5 h-2.5 bg-white rounded-full"></div></div>
                              Fear Reduction
@@ -1169,9 +1194,9 @@ ${Object.entries(activeData.universal_architecture_fixed || {}).map(([key, item]
                          </div>
                        </div>
 
-                       <div>
-                         <label className="text-[10px] font-bold text-slate-500 mb-2 block uppercase tracking-wider">Teaching Style</label>
-                         <div className="flex flex-wrap gap-2">
+                        <div>
+                         <label htmlFor="teaching-style" className="text-[10px] font-bold text-slate-500 mb-2 block uppercase tracking-wider">Teaching Style</label>
+                         <div id="teaching-style" className="flex flex-wrap gap-2">
                            <span className="text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-200 px-2 py-1 rounded flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-blue-500"></div> Analogy First</span>
                            <span className="text-[10px] font-medium text-slate-500 border border-slate-200 px-2 py-1 rounded">Storytelling</span>
                            <span className="text-[10px] font-bold text-purple-600 bg-purple-50 border border-purple-200 px-2 py-1 rounded flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-purple-500"></div> Step-by-Step</span>
@@ -1179,9 +1204,9 @@ ${Object.entries(activeData.universal_architecture_fixed || {}).map(([key, item]
                          </div>
                        </div>
 
-                       <div>
-                         <label className="text-[10px] font-bold text-slate-500 mb-3 block uppercase tracking-wider">Complexity Controls</label>
-                         <div className="space-y-3">
+                        <div>
+                         <label htmlFor="complexity-controls" className="text-[10px] font-bold text-slate-500 mb-3 block uppercase tracking-wider">Complexity Controls</label>
+                         <div id="complexity-controls" className="space-y-3">
                             <div className="flex items-center gap-3">
                               <span className="w-24 text-[10px] font-medium text-slate-600">Beginner Focus</span>
                               <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden"><div className="h-full bg-indigo-500 w-[90%]"></div></div>
@@ -1352,9 +1377,9 @@ Writing Guidelines:
                          <div className="flex justify-between items-center mb-1 text-[10px] font-bold text-slate-500 uppercase tracking-tighter"><span>Temperature</span><span className="text-slate-800">0.7</span></div>
                          <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden"><div className="h-full bg-indigo-500 w-[70%]"></div></div>
                        </div>
-                       <div>
-                         <label className="text-[10px] font-bold text-slate-500 mb-1 block uppercase tracking-wider">Creativity Level</label>
-                         <select className="w-full border border-slate-200 rounded p-1.5 text-[10px] font-bold text-slate-700 bg-slate-50"><option>Balanced</option></select>
+                        <div>
+                         <label htmlFor="creativity-level" className="text-[10px] font-bold text-slate-500 mb-1 block uppercase tracking-wider">Creativity Level</label>
+                         <select id="creativity-level" className="w-full border border-slate-200 rounded p-1.5 text-[10px] font-bold text-slate-700 bg-slate-50"><option>Balanced</option></select>
                        </div>
                        <div className="space-y-2">
                          <div className="flex justify-between items-center text-[10px] font-bold text-slate-600"><span>Educational Strictness</span><div className="w-10 h-1.5 bg-slate-200 rounded-full"><div className="w-2/3 h-full bg-indigo-500 rounded-full"></div></div></div>
@@ -1383,7 +1408,7 @@ Writing Guidelines:
                        </div>
                        <div>
                          <strong className="text-slate-900 block mb-1">Everyday Analogy</strong>
-                         Think of a variable like a labeled box. You write something on the label (the variable name), put something inside the box (the value), and later you can open the box, see what's inside, or even replace it with something new.
+                          Think of a variable like a labeled box. You write something on the label (the variable name), put something inside the box (the value), and later you can open the box, see what&apos;s inside, or even replace it with something new.
                        </div>
                        <div className="text-slate-400 italic">... (more content)</div>
                     </div>
@@ -1440,7 +1465,7 @@ Writing Guidelines:
                            'Key takeaways'
                         ];
                         return (
-                           <div key={key} onClick={() => setSelectedComponentKey(key)} className={`p-5 rounded-[1.5rem] border-2 transition-all cursor-pointer group ${isSelected ? 'bg-indigo-50/50 border-indigo-200 shadow-indigo-100/50 shadow-lg' : 'bg-white border-transparent hover:bg-slate-50'}`}>
+                           <button type="button" key={key} onClick={() => setSelectedComponentKey(key)} className={`p-5 rounded-[1.5rem] border-2 transition-all cursor-pointer group w-full text-left ${isSelected ? 'bg-indigo-50/50 border-indigo-200 shadow-indigo-100/50 shadow-lg' : 'bg-white border-transparent hover:bg-slate-50'}`}>
                               <div className="flex items-center gap-5">
                                  <div className={`w-12 h-12 rounded-full border-2 ${isSelected ? 'border-indigo-300 bg-white' : 'border-slate-100 bg-slate-50'} ${color.text} flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover:scale-110`}>
                                     <Icon size={22} />
@@ -1454,7 +1479,7 @@ Writing Guidelines:
                                     {isSelected && <ChevronRight size={16} className="text-indigo-600 group-hover:translate-x-1 transition-transform"/>}
                                  </div>
                               </div>
-                           </div>
+                           </button>
                         )
                      })}
                   </div>
@@ -1567,7 +1592,7 @@ Writing Guidelines:
                                     { label: 'Desktop Layout', value: activeData.renderer_mapping_engine?.layout_architecture?.desktop_layout || uiuxData?.page_shell_architecture?.layout_modes?.desktop?.content_grid || 'Standard', icon: Monitor },
                                     { label: 'Tablet Layout', value: activeData.renderer_mapping_engine?.layout_architecture?.tablet_layout || uiuxData?.page_shell_architecture?.layout_modes?.tablet?.content_grid || 'Compact', icon: Tablet },
                                     { label: 'Mobile Layout', value: activeData.renderer_mapping_engine?.layout_architecture?.mobile_layout || uiuxData?.page_shell_architecture?.layout_modes?.mobile?.content_grid || 'Stack', icon: Smartphone }
-                                 ].map((item, i) => (
+                                 ].map((item) => (
                                     <div key={item.label} className="bg-slate-50/50 border-2 border-slate-100 p-6 rounded-[1.5rem] flex flex-col items-center gap-4 group hover:border-indigo-200 transition-all">
                                        <item.icon size={24} className="text-slate-400 group-hover:text-indigo-600 transition-colors" />
                                        <div className="text-center">
@@ -1586,7 +1611,7 @@ Writing Guidelines:
                            <div>
                               <h3 className="text-xs font-black text-slate-900 mb-8 uppercase tracking-[0.2em]">Interaction Design</h3>
                               <div className="grid grid-cols-1 gap-6">
-                                 {Object.entries(activeData.renderer_mapping_engine?.interaction_design || {}).map(([key, val]) => (
+                                 {(Object.entries(activeData.renderer_mapping_engine?.interaction_design || {}) as [string, boolean][]).map(([key, val]) => (
                                     <div key={key} className="flex items-center justify-between p-6 bg-slate-50/50 rounded-3xl border-2 border-slate-100 group hover:border-indigo-200 transition-all">
                                        <div>
                                           <span className="block text-sm font-black text-slate-800 mb-1">{formatTitle(key)}</span>
@@ -1607,7 +1632,7 @@ Writing Guidelines:
                            <div>
                               <h3 className="text-xs font-black text-slate-900 mb-8 uppercase tracking-[0.2em]">Performance UX</h3>
                               <div className="grid grid-cols-2 gap-8">
-                                 {Object.entries(activeData.renderer_mapping_engine?.performance_ux || {}).map(([key, val]) => (
+                                 {(Object.entries(activeData.renderer_mapping_engine?.performance_ux || {}) as [string, boolean][]).map(([key, val]) => (
                                     key !== 'cache_strategy' ? (
                                        <div key={key} className="p-6 bg-white border-2 border-slate-100 rounded-3xl flex items-center justify-between group hover:border-indigo-100 transition-all">
                                           <span className="text-xs font-black text-slate-700 uppercase tracking-wider">{formatTitle(key)}</span>
@@ -1635,7 +1660,7 @@ Writing Guidelines:
                            <div>
                               <h3 className="text-xs font-black text-slate-900 mb-8 uppercase tracking-[0.2em]">Accessibility Architecture</h3>
                               <div className="grid grid-cols-1 gap-5">
-                                 {Object.entries(activeData.renderer_mapping_engine?.accessibility_architecture || {}).map(([key, val]) => (
+                                 {(Object.entries(activeData.renderer_mapping_engine?.accessibility_architecture || {}) as [string, boolean][]).map(([key, val]) => (
                                     <div key={key} className="flex items-center gap-6 p-5 bg-white border-2 border-slate-100 rounded-3xl hover:border-indigo-100 transition-all group">
                                        <div className={`w-12 h-12 rounded-2xl ${val ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-50 text-slate-400'} flex items-center justify-center transition-all group-hover:scale-110`}>
                                           <CheckCircle2 size={24} />
@@ -1665,13 +1690,13 @@ Writing Guidelines:
                                        <span className="text-[13px] font-black text-slate-800 uppercase tracking-widest">Font Scale Strategy</span>
                                     </div>
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                       {(uiuxData?.design_system?.typography_system?.font_scales ? Object.entries(uiuxData.design_system.typography_system.font_scales) : ['Heading 1', 'Heading 2', 'Body Large', 'Body Small']).map(item => {
+                                       {(uiuxData?.design_system?.typography_system?.font_scales ? (Object.entries(uiuxData.design_system.typography_system.font_scales) as [string, string][]) : ['Heading 1', 'Heading 2', 'Body Large', 'Body Small']).map(item => {
                                           const label = Array.isArray(item) ? item[0] : item;
                                           const value = Array.isArray(item) ? (item[1] || '1.25rem') : '1.25rem';
                                           return (
                                              <div key={label} className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
                                                 <span className="block text-[10px] font-black text-slate-400 mb-2 uppercase tracking-tighter">{formatTitle(label)}</span>
-                                                <span className="text-[15px] font-black text-slate-800">{value}</span>
+                                                <span className="text-[15px] font-black text-slate-800">{String(value)}</span>
                                              </div>
                                           );
                                        })}
@@ -1837,7 +1862,7 @@ Writing Guidelines:
                            { name: 'AI / ML', status: 'Default' },
                            { name: 'Cloud', status: 'Default' },
                            { name: 'Cybersecurity', status: 'Custom' }
-                        ].map((d, i) => (
+                        ].map((d) => (
                            <div key={d.name} className="flex justify-between items-center p-4 bg-slate-50/50 rounded-2xl border border-slate-100/50 hover:bg-white hover:shadow-sm transition-all">
                               <span className="text-[13px] font-bold text-slate-700">{d.name}</span>
                               <span className={`px-4 py-1.5 rounded-xl font-black uppercase text-[10px] border shadow-sm ${d.status === 'Custom' ? 'text-indigo-600 bg-indigo-50 border-indigo-100' : 'text-slate-400 bg-white border-slate-200'}`}>{d.status}</span>

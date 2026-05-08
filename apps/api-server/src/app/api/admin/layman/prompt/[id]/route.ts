@@ -5,17 +5,17 @@
  * GET /api/admin/layman/prompt/:id - Get prompt details
  */
 
+import { LaymanPromptIntegrityService } from '@quiz/db-tutorial';
 import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
-import { LaymanPromptIntegrityService } from '@quiz/db-tutorial';
 
 import { notFound } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { withCorrelationId } from '@/lib/correlation-id.middleware';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
-import { requireAdminRouteAccess } from '@/modules/auth/admin-audience.util';
 import { withRateLimit } from '@/middleware/rate-limit.middleware';
+import { requireAdminRouteAccess } from '@/modules/auth/admin-audience.util';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,7 +38,7 @@ async function getHandler(
     const integrityService = new LaymanPromptIntegrityService();
     const promptHistory = await integrityService.getPromptHistory(promptId);
     
-    if (!promptHistory) {
+    if (promptHistory === null || promptHistory === undefined) {
       return ApiResponse.error(notFound('Prompt', promptId));
     }
     
