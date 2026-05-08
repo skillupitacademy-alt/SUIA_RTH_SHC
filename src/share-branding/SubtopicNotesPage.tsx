@@ -11,6 +11,8 @@ import { LaymanExplanationContent } from './TutorialEngine/components/notes/Laym
 import { RealLifeExamplesContent } from './TutorialEngine/components/notes/RealLifeExamplesContent';
 import { TechnicalDeepDiveContent } from './TutorialEngine/components/notes/TechnicalDeepDiveContent';
 import { CodeExampleContent } from './TutorialEngine/components/notes/CodeExampleContent';
+import { VisualExplanationContent } from './TutorialEngine/components/notes/VisualExplanationContent';
+import { PracticeTestContent } from './TutorialEngine/components/notes/PracticeTestContent';
 import { AssignmentContent } from './TutorialEngine/components/notes/AssignmentContent';
 import { ProjectContent } from './TutorialEngine/components/notes/ProjectContent';
 import { QuizContent } from './TutorialEngine/components/notes/QuizContent';
@@ -29,12 +31,19 @@ export function SubtopicNotesPage({ notesData, overviewData, subtopicId = 'compo
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0); // Add shared quiz state
   
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const tab = params.get('tab');
-      if (tab) setActiveTab(tab);
+      if (tab) {
+        setActiveTab(tab);
+        // Reset question index when switching to quiz tab
+        if (tab === 'quiz') {
+          setCurrentQuestionIndex(0);
+        }
+      }
     }
   }, []);
 
@@ -45,6 +54,8 @@ export function SubtopicNotesPage({ notesData, overviewData, subtopicId = 'compo
     { id: 'real-life', label: 'Real Life Examples' },
     { id: 'technical-deep-dive', label: 'Technical Deep Dive' },
     { id: 'code-example', label: 'Code Example' },
+    { id: 'visual-explanation', label: 'Visual Explanation' },
+    { id: 'practice-test', label: 'Practice Test' },
     { id: 'assignments', label: 'Assignments' },
     { id: 'project', label: 'Projects' },
     { id: 'quiz', label: 'Quiz' },
@@ -168,28 +179,44 @@ export function SubtopicNotesPage({ notesData, overviewData, subtopicId = 'compo
                     <TechnicalDeepDiveContent data={notesData.mainContent.technicalDeepDive} />
                   </>
                 )}
-                {activeTab === 'code-example' && (
+                {activeTab === 'code-example' && notesData.mainContent.codeExample && (
                   <>
                     <h1 className="sr-only">Code Example - {notesData.mainContent.title}</h1>
                     <CodeExampleContent data={notesData.mainContent.codeExample} />
                   </>
                 )}
-                {activeTab === 'assignments' && (
+                {activeTab === 'visual-explanation' && notesData.mainContent.visualExplanation && (
+                  <>
+                    <h1 className="sr-only">Visual Explanation - {notesData.mainContent.title}</h1>
+                    <VisualExplanationContent data={notesData.mainContent.visualExplanation} />
+                  </>
+                )}
+                {activeTab === 'practice-test' && notesData.mainContent.practiceTest && (
+                  <>
+                    <h1 className="sr-only">Practice Test - {notesData.mainContent.title}</h1>
+                    <PracticeTestContent data={notesData.mainContent.practiceTest} />
+                  </>
+                )}
+                {activeTab === 'assignments' && notesData.mainContent.assignment && (
                   <>
                     <h1 className="sr-only">Assignments - {notesData.mainContent.title}</h1>
                     <AssignmentContent data={notesData.mainContent.assignment} />
                   </>
                 )}
-                {activeTab === 'project' && (
+                {activeTab === 'project' && notesData.mainContent.project && (
                   <>
                     <h1 className="sr-only">Projects - {notesData.mainContent.title}</h1>
                     <ProjectContent data={notesData.mainContent.project} />
                   </>
                 )}
-                {activeTab === 'quiz' && (
+                {activeTab === 'quiz' && notesData.mainContent.quiz && (
                   <>
                     <h1 className="sr-only">Quiz - {notesData.mainContent.title}</h1>
-                    <QuizContent data={notesData.mainContent.quiz} />
+                    <QuizContent 
+                      data={notesData.mainContent.quiz} 
+                      currentQuestionIndex={currentQuestionIndex}
+                      onQuestionChange={setCurrentQuestionIndex}
+                    />
                   </>
                 )}
                 {activeTab === 'ai-tutor' && (
@@ -282,6 +309,9 @@ export function SubtopicNotesPage({ notesData, overviewData, subtopicId = 'compo
           data={notesData.rightSidebar}
           isOpen={isRightSidebarOpen}
           activeTab={activeTab}
+          quizData={notesData.mainContent.quiz}
+          currentQuestionIndex={currentQuestionIndex}
+          onQuestionChange={setCurrentQuestionIndex}
         />
       </div>
     </div>

@@ -32,6 +32,8 @@ export function LaymanExplanationContent({ data }: { data: SubtopicNotesViewData
 
   return (
     <div className="min-w-0 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      {/* Main Section Title */}
+      <h2 className="sr-only">Layman Explanation</h2>
 
       {/* 1. SIMPLE OVERVIEW - intro_card (Hero-style beginner intro) */}
       {data.simpleOverview && (

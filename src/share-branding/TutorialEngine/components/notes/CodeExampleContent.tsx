@@ -1,199 +1,297 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import * as Icons from 'lucide-react';
 import { useBrand } from '../../../PostLandingPage/app/context/BrandContext';
+import { SubtopicNotesViewData } from '../../../subtopicNotesData';
 
-export function CodeExampleContent({ data }: { 
-  data?: {
-    title: string;
-    description: string;
-    examples: Array<{
-      title: string;
-      file: string;
-    }>;
-    code: string;
-    output: string;
-    tip: string;
-  }
-}) {
+export function CodeExampleContent({ data }: { data?: SubtopicNotesViewData['mainContent']['codeExample'] }) {
   const brand = useBrand();
-  const [activeExample, setActiveExample] = useState(0);
-
-  // Use data from props or fallback to defaults
-  const examples = data?.examples || [
-    { title: 'Example 1: Basic Component', file: 'user-profile.tsx' },
-    { title: 'Example 2: State & Lifecycle', file: 'counter.tsx' },
-    { title: 'Example 3: Composition', file: 'app-layout.tsx' }
-  ];
-
-  const code = data?.code || `// Default code example`;
-  const title = data?.title || 'Code Example';
-  const description = data?.description || 'See how Component Architecture works in real code.';
-  const tip = data?.tip || 'Try modifying the code to see how it works.';
-
-  const renderCode = (codeText: string) => {
-    return codeText.split('\n').map((line, i) => {
-      // Very basic highlighter for demonstration
-      const parts = line.split(/(\/\/.*|const |return |".*?"|'.*?'|`.*?`|\d+)/g);
-      return (
-        <div key={i} className="min-h-6 whitespace-pre-wrap break-words">
-          {parts.map((part, j) => {
-            if (part.startsWith('//')) return <span key={j} className="text-slate-300 italic">{part}</span>;
-            if (part === 'const ' || part === 'return ') return <span key={j} className="text-pink-300 font-bold">{part}</span>;
-            if (part.startsWith('"') || part.startsWith("'")) return <span key={j} className="text-emerald-300 font-bold">{part}</span>;
-            if (/^\d+$/.test(part)) return <span key={j} className="text-rose-300 font-bold">{part}</span>;
-            return <span key={j} className="break-words text-indigo-50">{part}</span>;
-          })}
-        </div>
-      );
-    });
-  };
+  
+  if (!data) return null;
 
   return (
-    <div className="min-w-0 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      {/* Header */}
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div className="space-y-2">
-          <div className="flex min-w-0 flex-wrap items-center gap-3">
-            <h1 className="break-words text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl lg:text-4xl">{title}</h1>
-            <span className="rounded-full bg-orange-100 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-orange-950 border border-orange-200">Practical</span>
+    <div className="min-w-0 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20 sm:space-y-12">
+
+      {/* 1. Problem Context */}
+      {data.problemContext && (
+        <section aria-label="Problem context and requirements" className="rounded-[32px] bg-gradient-to-br from-blue-50 to-indigo-50 p-5 shadow-xl border border-blue-100 sm:p-10">
+          <div className="flex items-center gap-3 mb-6">
+            <Icons.Target size={24} className="text-blue-600" aria-hidden="true" />
+            <h2 className="text-2xl font-bold text-slate-950">{data.problemContext.title}</h2>
           </div>
-          <p className="text-[15px] font-medium text-slate-800">{description}</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <button className="flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-slate-800 shadow-sm transition-all hover:bg-slate-50 active:scale-95 border border-slate-200" aria-label="Bookmark this code example">
-            <Icons.Bookmark size={16} aria-hidden="true" /> Bookmark
-          </button>
-          <button className="flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-slate-800 shadow-sm transition-all hover:bg-slate-50 active:scale-95 border border-slate-200" aria-label="Share this code example">
-            <Icons.Share2 size={16} aria-hidden="true" /> Share
-          </button>
-        </div>
-      </div>
+          <p className="text-[15px] font-medium text-slate-800 leading-relaxed mb-6">{data.problemContext.scenario}</p>
+          
+          <div className="space-y-4">
+            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Requirements:</h3>
+            <ul className="space-y-3">
+              {data.problemContext.requirements.map((req, idx) => (
+                <li key={idx} className="flex items-start gap-3">
+                  <Icons.CheckCircle size={18} className="text-blue-600 shrink-0 mt-0.5" aria-hidden="true" />
+                  <span className="text-[14px] font-medium text-slate-800">{req}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
 
-      {/* Navigation Tabs */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-gray-100 pb-2">
-        <div className="flex min-w-0 flex-wrap items-center gap-3 sm:gap-6">
-          {examples.map((ex, i) => (
-            <button
-              key={i}
-              onClick={() => setActiveExample(i)}
-              className={`relative pb-3 text-left text-sm font-bold transition-all ${activeExample === i ? 'text-orange-900' : 'text-slate-700 hover:text-slate-950'}`}
-            >
-              {ex.title}
-              {activeExample === i && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-800 rounded-full" />
-              )}
-            </button>
-          ))}
-        </div>
-        <div className="relative group">
-            <button className="flex items-center gap-3 rounded-xl bg-white px-4 py-2 text-sm font-bold text-slate-800 shadow-sm border border-slate-200" aria-label="Select Programming Language">
-               <span className="flex h-5 w-5 items-center justify-center rounded bg-amber-600 text-[10px] font-bold text-slate-950" aria-hidden="true">JS</span>
-               JavaScript
-               <Icons.ChevronDown size={14} className="text-slate-700" aria-hidden="true" />
-            </button>
-        </div>
-      </div>
-
-      {/* Main Interactive Area */}
-      <div className="space-y-4">
-        {/* Editor Window */}
-        <section className="flex min-w-0 flex-col overflow-hidden rounded-[32px] bg-[#1e293b] shadow-2xl transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.3)] border-t border-white/10">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800/50 bg-[#1e293b]/50 px-4 py-4 sm:px-6">
-            <div className="flex min-w-0 items-center gap-3">
-              <div className="h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400/50" aria-hidden="true" />
-              <span className="min-w-0 break-words font-mono text-[13px] font-bold text-slate-200">{examples[activeExample].file}</span>
+          {data.problemContext.constraints && (
+            <div className="mt-6 p-4 rounded-xl bg-amber-50 border border-amber-200">
+              <p className="text-[13px] font-medium text-amber-900">
+                <strong>Constraints:</strong> {data.problemContext.constraints}
+              </p>
             </div>
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-              <button className="flex items-center gap-2 rounded-lg bg-orange-800 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-orange-900/20 hover:bg-orange-900 transition-all active:scale-95">
-                <Icons.Play size={14} fill="currentColor" aria-hidden="true" /> Run Code
-              </button>
-              <button className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-800 text-slate-200 hover:text-white transition-colors" aria-label="Copy code to clipboard">
+          )}
+        </section>
+      )}
+
+      {/* 2. Basic Code Example */}
+      {data.basicCodeExample && (
+        <section aria-label="Basic code example" className="space-y-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold text-white" style={{ backgroundColor: brand.primaryColor }}>1</div>
+            <h2 className="text-xl font-bold text-slate-950">{data.basicCodeExample.title}</h2>
+          </div>
+          <p className="text-[14px] font-medium text-slate-800">{data.basicCodeExample.description}</p>
+
+          <div className="rounded-[24px] overflow-hidden bg-[#0f172a] shadow-2xl">
+            <div className="flex items-center justify-between px-6 py-3 bg-slate-800 border-b border-slate-700">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">{data.basicCodeExample.language}</span>
+              <button className="flex items-center gap-2 text-[11px] font-medium text-slate-400 hover:text-white transition-colors">
                 <Icons.Copy size={14} aria-hidden="true" />
-              </button>
-              <button className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-800 text-slate-200 hover:text-white transition-colors" aria-label="Download code file">
-                <Icons.Download size={14} aria-hidden="true" />
+                Copy
               </button>
             </div>
+            <div className="p-6 overflow-auto">
+              <pre className="text-[13px] leading-relaxed text-indigo-100 font-mono whitespace-pre-wrap break-words">{data.basicCodeExample.code}</pre>
+            </div>
           </div>
-          <div className="relative group min-h-[400px]">
-             {/* Line Numbers */}
-             <div className="absolute left-0 top-0 bottom-0 w-12 bg-[#020617] border-r border-slate-800/50 flex flex-col items-center py-6 text-[12px] font-mono text-slate-400 select-none">
-                {Array.from({ length: 24 }).map((_, i) => (
-                   <div key={i} className="h-6 leading-6">{i + 1}</div>
-                ))}
-             </div>
-             {/* Code Content */}
-             <div 
-               className="min-w-0 py-6 pl-14 pr-4 font-mono text-[12px] leading-6 sm:pl-16 sm:text-[14px]"
-               tabIndex={0}
-               role="region"
-               aria-label="Code Editor Content"
-             >
-                <pre className="whitespace-pre-wrap break-words">
-                   {renderCode(code)}
-                </pre>
-             </div>
-             {/* Minimap Placeholder */}
-             <div className="absolute right-4 top-8 w-16 h-32 bg-slate-800/20 rounded border border-slate-700/30 overflow-hidden pointer-events-none hidden lg:block opacity-40">
-                <div className="w-full h-2 bg-emerald-500/20 mb-1" />
-                <div className="w-full h-4 bg-pink-500/20 mb-1" />
-                <div className="w-2/3 h-2 bg-indigo-500/20 mb-1" />
-                <div className="w-full h-2 bg-orange-500/20 mb-1" />
-             </div>
-          </div>
-        </section>
 
-        {/* Output Window */}
-        <div className="rounded-[24px] overflow-hidden bg-[#0a0f1a] shadow-2xl transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.4)] border-t border-white/5">
-           <div className="flex items-center justify-between bg-[#111827] px-6 py-3">
-              <h2 className="text-[11px] font-bold text-slate-200 uppercase tracking-widest">Output</h2>
-              <button className="text-[10px] font-bold text-slate-300 hover:text-white transition-colors uppercase tracking-widest">Clear Console</button>
-           </div>
-           <div 
-             className="p-6 font-mono text-[13px] leading-relaxed text-slate-300 overflow-y-auto max-h-[300px] hide-scrollbar"
-             tabIndex={0}
-             role="region"
-             aria-label="Code Output Console"
-           >
-              <p className="flex items-center gap-3 text-slate-300 mb-2">
-                 <Icons.Loader2 size={14} className="animate-spin" aria-hidden="true" /> Running code...
-              </p>
-              <p className="flex items-center gap-3 text-emerald-400 font-bold mb-4">
-                 <Icons.CheckCircle size={14} aria-hidden="true" /> Success! Component rendered:
-              </p>
-              <div className="rounded-xl bg-slate-900/50 p-6 space-y-2">
-                 <p>{`{`}</p>
-                 <p className="ml-4">id: <span className="text-rose-400">101</span>,</p>
-                 <p className="ml-4">name: <span className="text-emerald-400">'{brand.name}'</span>,</p>
-                 <p className="ml-4">role: <span className="text-emerald-400">'Senior Developer'</span></p>
-                 <p>{`}`}</p>
+          <p className="text-[14px] font-medium text-slate-700 leading-relaxed">{data.basicCodeExample.explanation}</p>
+        </section>
+      )}
+
+      {/* 3. Line-by-Line Explanation */}
+      {data.lineByLineExplanation && data.lineByLineExplanation.lines.length > 0 && (
+        <section aria-label="Line-by-line code explanation" className="rounded-[32px] bg-white p-5 shadow-xl sm:p-10">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold text-white" style={{ backgroundColor: brand.primaryColor }}>2</div>
+            <h2 className="text-xl font-bold text-slate-950">{data.lineByLineExplanation.title}</h2>
+          </div>
+
+          <div className="space-y-6">
+            {data.lineByLineExplanation.lines.map((line) => (
+              <div key={line.id} className="flex gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-100 text-[11px] font-bold text-blue-900">
+                  {line.lineNumber}
+                </div>
+                <div className="space-y-2 min-w-0">
+                  <code className="block text-[13px] font-mono text-slate-900 bg-slate-100 px-3 py-2 rounded border border-slate-200 break-words">{line.code}</code>
+                  <p className="text-[13px] font-medium text-slate-700">{line.explanation}</p>
+                </div>
               </div>
-              <p className="text-[11px] text-slate-400 mt-4 italic font-bold">(took 42ms)</p>
-           </div>
-        </div>
-
-        {/* Try It Yourself Box */}
-        <section className="rounded-[32px] bg-white/80 backdrop-blur-xl p-8 shadow-2xl border-t border-white/60 transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)]">
-            <div className="flex items-center gap-4">
-               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-100 text-orange-950 border border-orange-200">
-                  <Icons.Code size={24} aria-hidden="true" />
-               </div>
-               <div>
-                  <h2 className="text-lg font-bold text-slate-900">Try It Yourself</h2>
-                  <p className="text-[14px] font-medium text-slate-800">Edit the code above and click Run Code to see how it works.</p>
-               </div>
-            </div>
-             <div className="rounded-2xl bg-slate-50 p-4 shadow-sm flex items-start gap-3 max-w-md border border-slate-200">
-               <Icons.Lightbulb size={18} className="text-amber-700 shrink-0 mt-0.5" aria-hidden="true" />
-                <p className="text-[12px] font-bold text-slate-900 leading-relaxed">
-                  <span className="text-amber-800 uppercase tracking-tighter mr-1 font-bold">Tip:</span> 
-                  {tip}
-                </p>
-            </div>
+            ))}
+          </div>
         </section>
-      </div>
+      )}
+
+      {/* 4. Output Demonstration */}
+      {data.outputDemonstration && (
+        <section aria-label="Output demonstration" className="rounded-[32px] bg-gradient-to-br from-emerald-50 to-teal-50 p-5 shadow-xl border border-emerald-100 sm:p-10">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold text-white" style={{ backgroundColor: brand.primaryColor }}>3</div>
+            <h2 className="text-xl font-bold text-slate-950">{data.outputDemonstration.title}</h2>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 mb-3 uppercase tracking-widest">Input:</h3>
+              <div className="p-4 rounded-xl bg-white border border-emerald-200">
+                <code className="text-[13px] font-mono text-slate-800 break-words">{data.outputDemonstration.input}</code>
+              </div>
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 mb-3 uppercase tracking-widest">Output:</h3>
+              <div className="p-4 rounded-xl bg-slate-900 border border-slate-700">
+                <pre className="text-[13px] font-mono text-emerald-400 whitespace-pre-wrap break-words">{data.outputDemonstration.output}</pre>
+              </div>
+            </div>
+          </div>
+
+          <p className="mt-6 text-[14px] font-medium text-slate-800">{data.outputDemonstration.explanation}</p>
+          <p className="mt-3 text-[13px] font-medium text-slate-700 italic">{data.outputDemonstration.visualRepresentation}</p>
+        </section>
+      )}
+
+      {/* 5. Best Practice Version */}
+      {data.bestPracticeVersion && (
+        <section aria-label="Best practice code version" className="space-y-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold text-white" style={{ backgroundColor: brand.primaryColor }}>4</div>
+            <h2 className="text-xl font-bold text-slate-950">{data.bestPracticeVersion.title}</h2>
+          </div>
+
+          <div className="rounded-xl bg-green-50 border border-green-200 p-5">
+            <h3 className="text-sm font-bold text-green-900 mb-3 uppercase tracking-widest">Improvements:</h3>
+            <ul className="space-y-2">
+              {data.bestPracticeVersion.improvements.map((improvement, idx) => (
+                <li key={idx} className="flex items-start gap-2">
+                  <Icons.CheckCircle size={16} className="text-green-600 shrink-0 mt-0.5" aria-hidden="true" />
+                  <span className="text-[13px] font-medium text-green-900">{improvement}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="rounded-[24px] overflow-hidden bg-[#0f172a] shadow-2xl">
+            <div className="flex items-center justify-between px-6 py-3 bg-slate-800 border-b border-slate-700">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Best Practice Code</span>
+              <button className="flex items-center gap-2 text-[11px] font-medium text-slate-400 hover:text-white transition-colors">
+                <Icons.Copy size={14} aria-hidden="true" />
+                Copy
+              </button>
+            </div>
+            <div className="p-6 overflow-auto">
+              <pre className="text-[13px] leading-relaxed text-indigo-100 font-mono whitespace-pre-wrap break-words">{data.bestPracticeVersion.code}</pre>
+            </div>
+          </div>
+
+          <p className="text-[14px] font-medium text-slate-800">{data.bestPracticeVersion.explanation}</p>
+
+          <div className="rounded-xl bg-blue-50 border border-blue-200 p-5">
+            <h3 className="text-sm font-bold text-blue-900 mb-3 uppercase tracking-widest">Benefits:</h3>
+            <ul className="space-y-2">
+              {data.bestPracticeVersion.benefits.map((benefit, idx) => (
+                <li key={idx} className="flex items-start gap-2">
+                  <Icons.Star size={16} className="text-blue-600 shrink-0 mt-0.5" aria-hidden="true" />
+                  <span className="text-[13px] font-medium text-blue-900">{benefit}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )}
+
+      {/* 6. Common Mistakes */}
+      {data.commonMistakes && data.commonMistakes.mistakes.length > 0 && (
+        <section aria-label="Common coding mistakes" className="rounded-[32px] bg-white p-5 shadow-xl sm:p-10">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold text-white" style={{ backgroundColor: brand.primaryColor }}>5</div>
+            <h2 className="text-xl font-bold text-slate-950">{data.commonMistakes.title}</h2>
+          </div>
+
+          <div className="space-y-8">
+            {data.commonMistakes.mistakes.map((mistake) => (
+              <div key={mistake.id} className="space-y-4">
+                <h3 className="text-[15px] font-bold text-red-900">{mistake.mistake}</h3>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Icons.XCircle size={16} className="text-red-600" aria-hidden="true" />
+                      <span className="text-[12px] font-bold text-red-900 uppercase tracking-wider">Bad Code</span>
+                    </div>
+                    <div className="p-4 rounded-xl bg-red-50 border border-red-200">
+                      <pre className="text-[12px] font-mono text-red-900 whitespace-pre-wrap break-words">{mistake.badCode}</pre>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Icons.CheckCircle size={16} className="text-green-600" aria-hidden="true" />
+                      <span className="text-[12px] font-bold text-green-900 uppercase tracking-wider">Good Code</span>
+                    </div>
+                    <div className="p-4 rounded-xl bg-green-50 border border-green-200">
+                      <pre className="text-[12px] font-mono text-green-900 whitespace-pre-wrap break-words">{mistake.goodCode}</pre>
+                    </div>
+                  </div>
+                </div>
+
+                <p className="text-[13px] font-medium text-slate-700">{mistake.why}</p>
+                <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
+                  <p className="text-[13px] font-bold text-blue-900">💡 {mistake.lesson}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* 7. Real-World Implementation */}
+      {data.realWorldImplementation && (
+        <section aria-label="Real-world implementation example" className="rounded-[32px] bg-gradient-to-br from-purple-50 to-pink-50 p-5 shadow-xl border border-purple-100 sm:p-10">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold text-white" style={{ backgroundColor: brand.primaryColor }}>6</div>
+            <h2 className="text-xl font-bold text-slate-950">{data.realWorldImplementation.title}</h2>
+          </div>
+
+          <p className="text-[14px] font-medium text-slate-800 mb-6">{data.realWorldImplementation.scenario}</p>
+
+          <div className="rounded-[24px] overflow-hidden bg-[#0f172a] shadow-2xl mb-6">
+            <div className="flex items-center justify-between px-6 py-3 bg-slate-800 border-b border-slate-700">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Production Code</span>
+              <button className="flex items-center gap-2 text-[11px] font-medium text-slate-400 hover:text-white transition-colors">
+                <Icons.Copy size={14} aria-hidden="true" />
+                Copy
+              </button>
+            </div>
+            <div className="p-6 overflow-auto">
+              <pre className="text-[13px] leading-relaxed text-indigo-100 font-mono whitespace-pre-wrap break-words">{data.realWorldImplementation.code}</pre>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            {data.realWorldImplementation.features.map((feature, idx) => (
+              <div key={idx} className="p-4 rounded-xl bg-white border border-purple-200">
+                <p className="text-[13px] font-medium text-slate-800">{feature}</p>
+              </div>
+            ))}
+          </div>
+
+          <p className="text-[14px] font-medium text-slate-800 mb-4">{data.realWorldImplementation.explanation}</p>
+          <p className="text-[13px] font-medium text-slate-700 italic">{data.realWorldImplementation.scalability}</p>
+        </section>
+      )}
+
+      {/* 8. Code Summary */}
+      {data.codeSummary && (
+        <section aria-label="Code summary and next steps" className="rounded-[32px] bg-gradient-to-br from-slate-50 to-slate-100 p-5 shadow-xl border border-slate-200 sm:p-10">
+          <div className="flex items-center gap-3 mb-6">
+            <Icons.BookOpen size={24} className="text-slate-700" aria-hidden="true" />
+            <h2 className="text-2xl font-bold text-slate-950">{data.codeSummary.title}</h2>
+          </div>
+
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 mb-3 uppercase tracking-widest">Key Takeaways:</h3>
+              <ul className="space-y-2">
+                {data.codeSummary.keyTakeaways.map((takeaway, idx) => (
+                  <li key={idx} className="flex items-start gap-3">
+                    <Icons.CheckCircle size={18} className="text-green-600 shrink-0 mt-0.5" aria-hidden="true" />
+                    <span className="text-[14px] font-medium text-slate-800">{takeaway}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="p-5 rounded-xl bg-amber-50 border border-amber-200">
+              <h3 className="text-sm font-bold text-amber-900 mb-2 uppercase tracking-widest">Practice Exercise:</h3>
+              <p className="text-[14px] font-medium text-amber-900">{data.codeSummary.practiceExercise}</p>
+            </div>
+
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 mb-3 uppercase tracking-widest">Next Steps:</h3>
+              <ul className="space-y-2">
+                {data.codeSummary.nextSteps.map((step, idx) => (
+                  <li key={idx} className="flex items-start gap-3">
+                    <Icons.ArrowRight size={18} className="text-blue-600 shrink-0 mt-0.5" aria-hidden="true" />
+                    <span className="text-[14px] font-medium text-slate-800">{step}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </section>
+      )}
 
     </div>
   );

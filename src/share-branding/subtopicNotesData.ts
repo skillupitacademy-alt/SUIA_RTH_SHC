@@ -308,8 +308,7 @@ export interface SubtopicNotesViewData {
         highlight?: string;
       }[];
     };
-  };
-  codeExample?: {
+    codeExample?: {
     title: string;
     description: string;
     examples: Array<{
@@ -371,6 +370,244 @@ export interface SubtopicNotesViewData {
       explanation: string;
     }>;
   };
+  visualExplanation?: {
+    // 1. Core Concept Visualization
+    conceptVisualIntro?: {
+      badge: string;
+      headline: string;
+      visualDefinition: string;
+      heroDiagramPreview?: string;
+      importanceBlock: string;
+      progressIndicator?: string;
+    };
+    // 2. Diagrammatic Breakdown
+    diagrammaticBreakdown?: {
+      title: string;
+      diagramTitle: string;
+      componentLabels: Array<{
+        id: string;
+        label: string;
+        description: string;
+      }>;
+      stepMarkers: string[];
+      technicalTooltips: Array<{
+        id: string;
+        term: string;
+        explanation: string;
+      }>;
+    };
+    // 3. Step-by-Step Visual Flow
+    stepByStepVisualFlow?: {
+      title: string;
+      sequenceTitle: string;
+      steps: Array<{
+        id: string;
+        stepNumber: number;
+        title: string;
+        description: string;
+        visualCue: string;
+      }>;
+      phaseExplanations: string[];
+    };
+    // 4. Comparative Visualization
+    comparativeVisualization?: {
+      title: string;
+      comparisonTitle: string;
+      sideBySideVisuals: {
+        option1: {
+          title: string;
+          description: string;
+          pros: string[];
+          cons: string[];
+        };
+        option2: {
+          title: string;
+          description: string;
+          pros: string[];
+          cons: string[];
+        };
+      };
+      differenceHighlights: string[];
+    };
+    // 5. Mental Model Visualization
+    mentalModelVisualization?: {
+      title: string;
+      frameworkMap: {
+        nodes: Array<{
+          id: string;
+          label: string;
+          description: string;
+          type: 'core' | 'supporting' | 'related';
+        }>;
+        connections: Array<{
+          from: string;
+          to: string;
+          label: string;
+          type: 'primary' | 'secondary';
+        }>;
+      };
+      memoryLabels: string[];
+    };
+    // 6. Real-World Visual Mapping
+    realWorldVisualMapping?: {
+      title: string;
+      practicalScenarios: Array<{
+        id: string;
+        title: string;
+        description: string;
+        industryContext: string;
+        visualRepresentation: string;
+        icon: string;
+      }>;
+      careerRelevance: string;
+    };
+    // 7. Common Confusion Visualization
+    commonConfusionVisualization?: {
+      title: string;
+      confusionItems: Array<{
+        id: string;
+        confusion: string;
+        visualClarification: string;
+        correctVisualization: string;
+      }>;
+      faqItems: Array<{
+        id: string;
+        question: string;
+        answer: string;
+      }>;
+      misconceptionDiagrams: string[];
+    };
+    // 8. Visual Summary
+    visualSummary?: {
+      summaryTitle: string;
+      keyVisualTakeaways: string[];
+      revisionInfographic: string;
+      memoryReinforcement: string;
+      examVisualChecklist: string[];
+    };
+  };
+  practiceTest?: {
+    // 1. Assessment Intro
+    assessmentIntro?: {
+      badge: string;
+      headline: string;
+      testDescription: string;
+      difficultyOverview: string;
+      learningGoals: string[];
+      readinessIndicator: string;
+    };
+    // 2. Concept Recall Questions (MCQ)
+    conceptRecallQuestions?: {
+      title: string;
+      questions: Array<{
+        id: string;
+        questionNumber: number;
+        type: 'single-choice' | 'multiple-choice';
+        points: number;
+        question: string;
+        code?: string;
+        options: Array<{
+          id: string;
+          text: string;
+        }>;
+        correctAnswer: string | string[];
+        explanation: string;
+        difficulty: 'easy' | 'medium' | 'hard';
+      }>;
+    };
+    // 3. Scenario-Based Questions
+    scenarioBasedQuestions?: {
+      title: string;
+      scenarios: Array<{
+        id: string;
+        scenarioTitle: string;
+        realWorldProblem: string;
+        businessContext: string;
+        decisionQuestion: string;
+        options: Array<{
+          id: string;
+          text: string;
+        }>;
+        correctAnswer: string;
+        explanation: string;
+        difficulty: 'medium' | 'hard';
+      }>;
+    };
+    // 4. Difficulty Progression
+    difficultyProgression?: {
+      title: string;
+      levels: Array<{
+        id: string;
+        level: 'beginner' | 'intermediate' | 'advanced';
+        description: string;
+        questionCount: number;
+        passingScore: number;
+      }>;
+      adaptiveLogic: boolean;
+    };
+    // 5. Instant Feedback
+    instantFeedback?: {
+      enabled: boolean;
+      feedbackType: 'immediate' | 'end-of-test';
+    };
+    // 6. Common Mistake Detection
+    commonMistakeDetection?: {
+      title: string;
+      mistakeCategories: Array<{
+        id: string;
+        category: string;
+        description: string;
+        frequency: number;
+      }>;
+      weaknessHeatmap: {
+        topics: Array<{
+          id: string;
+          topic: string;
+          score: number;
+          status: 'strong' | 'moderate' | 'weak';
+        }>;
+      };
+    };
+    // 7. Performance Analytics
+    performanceAnalytics?: {
+      title: string;
+      scoreDisplay: {
+        currentScore: number;
+        maxScore: number;
+        percentage: number;
+      };
+      performanceGraphs: {
+        accuracyTrend: number[];
+        speedTrend: number[];
+      };
+      benchmarkComparison: {
+        userScore: number;
+        averageScore: number;
+        topScore: number;
+      };
+      masteryPercentage: number;
+      examReadinessScore: number;
+    };
+    // 8. Revision Recommendations
+    revisionRecommendations?: {
+      title: string;
+      personalizedLearningPath: Array<{
+        id: string;
+        topic: string;
+        priority: 'high' | 'medium' | 'low';
+        estimatedTime: string;
+        resources: string[];
+      }>;
+      weaknessRecoverySteps: string[];
+      recommendedResources: Array<{
+        id: string;
+        title: string;
+        type: 'video' | 'article' | 'practice';
+        link: string;
+      }>;
+      futureGoals: string[];
+    };
+  };
   progress?: {
     title: string;
     description: string;
@@ -387,6 +624,7 @@ export interface SubtopicNotesViewData {
       status: 'completed' | 'current' | 'locked';
       xp: number;
     }>;
+  };
   };
   rightSidebar: {
     aiTutor: {
@@ -451,9 +689,9 @@ export async function loadSubtopicNotesData(brand: BrandConfig, subtopicId: stri
 
   return {
     nav: {
-      courseLabel: brand.courseLabel || 'Course',
-      lessonLabel: brand.lessonLabel || 'Lesson',
-      dashboardCtaLabel: brand.dashboardCtaLabel || 'Dashboard',
+      courseLabel: 'Course',
+      lessonLabel: 'Lesson',
+      dashboardCtaLabel: 'Dashboard',
       streak: 7,
       xpPoints: 2450,
       learnerInitials: 'JD'
@@ -467,6 +705,8 @@ export async function loadSubtopicNotesData(brand: BrandConfig, subtopicId: stri
         { id: 'real-life', label: 'Real Life Examples', status: 'pending', icon: 'Globe' },
         { id: 'technical-deep-dive', label: 'Technical Deep Dive', status: 'pending', icon: 'Palette' },
         { id: 'code-example', label: 'Code Example', status: 'pending', icon: 'Monitor' },
+        { id: 'visual-explanation', label: 'Visual Explanation', status: 'pending', icon: 'Eye' },
+        { id: 'practice-test', label: 'Practice Test', status: 'pending', icon: 'Pencil' },
         { id: 'assignments', label: 'Assignments', status: 'pending', icon: 'ClipboardList' },
         { id: 'project', label: 'Projects', status: 'pending', icon: 'Rocket' },
         { id: 'quiz', label: 'Quiz', status: 'pending', icon: 'HelpCircle' },
@@ -494,14 +734,16 @@ export async function loadSubtopicNotesData(brand: BrandConfig, subtopicId: stri
       practiceCard: content.practiceCard,
       warningFaq: content.warningFaq,
       summaryCard: content.summaryCard,
-      laymanExplanation: content.laymanExplanation,
-      realLifeExamples: content.realLifeExamples,
-      technicalDeepDive: content.technicalDeepDive,
-      codeExample: content.codeExample,
-      assignment: content.assignment,
-      project: content.project,
-      quiz: content.quiz,
-      progress: content.progress
+      ...(content.laymanExplanation && { laymanExplanation: content.laymanExplanation }),
+      ...(content.realLifeExamples && { realLifeExamples: content.realLifeExamples }),
+      ...(content.technicalDeepDive && { technicalDeepDive: content.technicalDeepDive }),
+      ...(content.codeExample && { codeExample: content.codeExample }),
+      ...(content.visualExplanation && { visualExplanation: content.visualExplanation }),
+      ...(content.practiceTest && { practiceTest: content.practiceTest }),
+      ...(content.assignment && { assignment: content.assignment }),
+      ...(content.project && { project: content.project }),
+      ...(content.quiz && { quiz: content.quiz }),
+      ...(content.progress && { progress: content.progress })
     },
     rightSidebar: {
       aiTutor: {

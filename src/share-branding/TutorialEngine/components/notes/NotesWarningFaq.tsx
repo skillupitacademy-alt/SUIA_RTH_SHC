@@ -44,10 +44,10 @@ export function NotesWarningFaq({
     <div className="w-full mb-8">
       {/* Common Errors Section */}
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-slate-950 mb-6 flex items-center gap-2">
+        <h3 className="text-2xl font-bold text-slate-950 mb-6 flex items-center gap-2">
           <Icons.AlertTriangle size={24} className="text-amber-600" aria-hidden="true" />
           Common Errors to Avoid
-        </h2>
+        </h3>
         <div className="space-y-4">
           {commonErrors.map((error) => (
             <div 
@@ -83,10 +83,10 @@ export function NotesWarningFaq({
 
       {/* FAQ Accordion Section */}
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-slate-950 mb-6 flex items-center gap-2">
+        <h3 className="text-2xl font-bold text-slate-950 mb-6 flex items-center gap-2">
           <Icons.HelpCircle size={24} className="text-blue-600" aria-hidden="true" />
           Frequently Asked Questions
-        </h2>
+        </h3>
         <div className="space-y-3">
           {faqItems.map((faq) => {
             const isOpen = openFaqId === faq.id;
@@ -129,10 +129,10 @@ export function NotesWarningFaq({
 
       {/* Misconception Alerts */}
       <div>
-        <h2 className="text-2xl font-bold text-slate-950 mb-6 flex items-center gap-2">
+        <h3 className="text-2xl font-bold text-slate-950 mb-6 flex items-center gap-2">
           <Icons.AlertCircle size={24} className="text-rose-600" aria-hidden="true" />
           Common Misconceptions
-        </h2>
+        </h3>
         <div className="space-y-3">
           {misconceptionAlerts.map((alert, index) => (
             <div 

@@ -51,9 +51,9 @@ export function LaymanIntroCard({
       </div>
 
       {/* Headline */}
-      <h2 className="text-4xl font-bold text-slate-950 mb-6 leading-tight">
+      <h3 className="text-4xl font-bold text-slate-950 mb-6 leading-tight">
         {headline}
-      </h2>
+      </h3>
 
       {/* Simple Definition */}
       <p className="text-xl font-medium text-slate-800 leading-relaxed mb-6">

@@ -34,7 +34,7 @@ export function NotesPracticeCard({
   return (
     <div className="w-full mb-8">
       {/* Title */}
-      <h2 className="text-2xl font-bold text-slate-950 mb-6">{bestPracticeTitle}</h2>
+      <h3 className="text-2xl font-bold text-slate-950 mb-6">{bestPracticeTitle}</h3>
 
       <div className="bg-gradient-to-br from-emerald-50 to-green-50 rounded-2xl p-8 border-2 border-emerald-200 shadow-lg">
         {/* Recommendations */}

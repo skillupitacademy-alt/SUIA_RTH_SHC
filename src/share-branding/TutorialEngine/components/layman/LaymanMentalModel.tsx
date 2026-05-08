@@ -37,7 +37,7 @@ export function LaymanMentalModel({ title, conceptMap, visualLabels }: LaymanMen
   return (
     <div className="w-full mb-8">
       {/* Title */}
-      <h2 className="text-2xl font-bold text-slate-950 mb-6">{title}</h2>
+      <h3 className="text-2xl font-bold text-slate-950 mb-6">{title}</h3>
 
       <div className="bg-gradient-to-br from-slate-50 to-gray-100 rounded-2xl p-8 border border-gray-200 shadow-lg">
         {/* Concept Map - Hierarchical Visual */}

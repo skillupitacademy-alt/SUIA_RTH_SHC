@@ -35,7 +35,7 @@ export function LaymanAnalogyCard({
   return (
     <div className="w-full mb-8">
       {/* Title */}
-      <h2 className="text-2xl font-bold text-slate-950 mb-6">{title}</h2>
+      <h3 className="text-2xl font-bold text-slate-950 mb-6">{title}</h3>
 
       {/* Split Panel Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 bg-white rounded-2xl p-8 shadow-lg border border-gray-200">
@@ -87,7 +87,7 @@ export function LaymanAnalogyCard({
 
         {/* Comparison Panel */}
         <div className="space-y-6">
-          <h3 className="text-lg font-bold text-slate-950">Real World vs Technical</h3>
+          <h4 className="text-lg font-bold text-slate-950">Real World vs Technical</h4>
 
           {/* Real World */}
           <div className="bg-blue-50 rounded-xl p-5 border border-blue-200">

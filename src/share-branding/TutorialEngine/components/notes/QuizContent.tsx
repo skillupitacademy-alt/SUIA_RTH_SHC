@@ -4,7 +4,12 @@ import React, { useState } from 'react';
 import * as Icons from 'lucide-react';
 import { useBrand } from '../../../PostLandingPage/app/context/BrandContext';
 
-export function QuizContent({ data, onNext }: { 
+export function QuizContent({ 
+  data, 
+  onNext,
+  currentQuestionIndex = 0,
+  onQuestionChange
+}: { 
   data?: {
     title: string;
     description: string;
@@ -27,10 +32,16 @@ export function QuizContent({ data, onNext }: {
     }>;
   };
   onNext?: () => void;
+  currentQuestionIndex?: number;
+  onQuestionChange?: (index: number) => void;
 }) {
   const brand = useBrand();
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+
+  // Clear selected option when question changes
+  React.useEffect(() => {
+    setSelectedOption(null);
+  }, [currentQuestionIndex]);
 
   // Use data from props or fallback to defaults
   const title = data?.title || 'Interactive Quiz';
@@ -62,7 +73,7 @@ export function QuizContent({ data, onNext }: {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-1">
-          <h1 className="break-words text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl lg:text-4xl">{title}</h1>
+          <h2 className="break-words text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl lg:text-4xl">{title}</h2>
           <p className="text-[14px] font-medium text-slate-800">{description}</p>
         </div>
         <div className="flex flex-wrap items-center gap-4 sm:gap-6">
@@ -98,7 +109,7 @@ export function QuizContent({ data, onNext }: {
       </div>
 
       {/* Question Card */}
-      <section className="relative space-y-8 rounded-[32px] bg-white/80 backdrop-blur-xl p-5 shadow-2xl border-t border-white/60 transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] sm:p-10">
+      <section aria-label={`Quiz question ${currentQuestion.questionNumber} of ${totalQuestions}`} className="relative space-y-8 rounded-[32px] bg-white/80 backdrop-blur-xl p-5 shadow-2xl border-t border-white/60 transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] sm:p-10">
          <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap items-center gap-3">
                <div className="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-bold text-white shadow-lg shadow-rose-100">Q{currentQuestion.questionNumber}</div>

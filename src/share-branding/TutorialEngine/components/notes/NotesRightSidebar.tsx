@@ -3,7 +3,41 @@ import * as Icons from 'lucide-react';
 import { useBrand } from '../../../PostLandingPage/app/context/BrandContext';
 import { SubtopicNotesViewData } from '../../../subtopicNotesData';
 
-export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicNotesViewData['rightSidebar']; isOpen: boolean; activeTab: string }) {
+export function NotesRightSidebar({ 
+  data, 
+  isOpen, 
+  activeTab, 
+  quizData,
+  currentQuestionIndex = 0,
+  onQuestionChange
+}: { 
+  data: SubtopicNotesViewData['rightSidebar']; 
+  isOpen: boolean; 
+  activeTab: string;
+  quizData?: {
+    title: string;
+    description: string;
+    totalQuestions: number;
+    duration: string;
+    xp: number;
+    questions: Array<{
+      id: string;
+      questionNumber: number;
+      type: string;
+      points: number;
+      question: string;
+      code?: string;
+      options: Array<{
+        id: string;
+        text: string;
+      }>;
+      correctAnswer: string;
+      explanation: string;
+    }>;
+  };
+  currentQuestionIndex?: number;
+  onQuestionChange?: (index: number) => void;
+}) {
   const brand = useBrand();
 
   return (
@@ -19,7 +53,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
         {activeTab === 'assignments' && (
           <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
             {/* Assignment Info */}
-            <section className="rounded-3xl bg-white/80 backdrop-blur-xl p-6 shadow-2xl transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] border-t border-white/60">
+            <section aria-label="Assignment information" className="rounded-3xl bg-white/80 backdrop-blur-xl p-6 shadow-2xl transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] border-t border-white/60">
               <div className="flex items-center gap-2 mb-6">
                 <Icons.CalendarCheck size={18} className="text-rose-950" />
                 <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Assignment Info</h2>
@@ -40,7 +74,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
             </section>
 
             {/* Deadline */}
-            <section className="rounded-3xl bg-white/80 backdrop-blur-xl p-6 shadow-2xl transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] border-t border-white/60">
+            <section aria-label="Assignment deadline" className="rounded-3xl bg-white/80 backdrop-blur-xl p-6 shadow-2xl transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] border-t border-white/60">
               <div className="flex items-center gap-2 mb-4">
                 <Icons.Clock size={18} className="text-orange-950" />
                 <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Deadline</h2>
@@ -55,7 +89,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
             </section>
 
             {/* Rewards */}
-            <section className="rounded-3xl bg-white/80 backdrop-blur-xl p-6 shadow-2xl transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] border-t border-white/60">
+            <section aria-label="Assignment rewards" className="rounded-3xl bg-white/80 backdrop-blur-xl p-6 shadow-2xl transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] border-t border-white/60">
               <div className="flex items-center gap-2 mb-6">
                 <Icons.Trophy size={18} className="text-amber-950" />
                 <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Rewards</h2>
@@ -75,7 +109,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
             </section>
 
             {/* Submit Assignment */}
-            <section className="rounded-3xl bg-white p-6 shadow-xl space-y-6 transition-all duration-300 hover:-translate-y-1 border border-slate-100">
+            <section aria-label="Assignment submission" className="rounded-3xl bg-white p-6 shadow-xl space-y-6 transition-all duration-300 hover:-translate-y-1 border border-slate-100">
               <div className="flex items-center gap-2">
                 <Icons.UploadCloud size={18} className="text-primary-dark" aria-hidden="true" />
                 <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Submit Assignment</h2>
@@ -195,7 +229,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
             </section>
 
             {/* Deadline */}
-            <section className="rounded-3xl bg-white/80 backdrop-blur-xl p-6 shadow-2xl transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] border-t border-white/60">
+            <section aria-label="Project deadline" className="rounded-3xl bg-white/80 backdrop-blur-xl p-6 shadow-2xl transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] border-t border-white/60">
               <div className="flex items-center gap-2 mb-4">
                 <Icons.Clock size={18} className="text-orange-950" />
                 <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Deadline</h2>
@@ -291,7 +325,7 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
                  <div className="flex items-center gap-1.5"><div className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Unanswered</div>
               </div>
               <div className="grid grid-cols-5 gap-3">
-                 {[
+                 {(quizData?.questions || [
                    { id: 1, status: 'answered' },
                    { id: 2, status: 'answered' },
                    { id: 3, status: 'answered' },
@@ -302,20 +336,35 @@ export function NotesRightSidebar({ data, isOpen, activeTab }: { data: SubtopicN
                    { id: 8, status: 'unanswered' },
                    { id: 9, status: 'unanswered' },
                    { id: 10, status: 'unanswered' },
-                 ].map((q) => (
-                   <div 
-                     key={q.id} 
-                     className={`flex h-10 items-center justify-center rounded-xl text-sm font-bold transition-all ${
-                       q.status === 'answered' ? 'bg-emerald-100 text-emerald-950 border border-emerald-200' :
-                       q.status === 'current' ? 'bg-rose-950 shadow-rose-200 text-white' :
-                       q.status === 'marked' ? 'bg-amber-100 text-amber-950 border border-amber-200' :
-                       'bg-slate-100 text-slate-900 border border-slate-200'
+                 ]).map((q, index) => (
+                   <button 
+                     key={quizData?.questions ? q.id : q.id} 
+                     onClick={() => {
+                       if (quizData?.questions && onQuestionChange) {
+                         onQuestionChange(index);
+                       }
+                     }}
+                     className={`flex h-10 items-center justify-center rounded-xl text-sm font-bold transition-all hover:scale-105 ${
+                       // For real quiz data, use currentQuestionIndex to determine current question
+                       quizData?.questions 
+                         ? (index === currentQuestionIndex ? 'bg-rose-950 shadow-rose-200 text-white' : 'bg-slate-100 text-slate-900 border border-slate-200 hover:bg-slate-200')
+                         : (
+                           q.status === 'answered' ? 'bg-emerald-100 text-emerald-950 border border-emerald-200' :
+                           q.status === 'current' ? 'bg-rose-950 shadow-rose-200 text-white' :
+                           q.status === 'marked' ? 'bg-amber-100 text-amber-950 border border-amber-200' :
+                           'bg-slate-100 text-slate-900 border border-slate-200'
+                         )
                      }`}
                    >
-                     {q.id}
-                   </div>
+                     {quizData?.questions ? (index + 1) : q.id}
+                   </button>
                  ))}
               </div>
+              {quizData?.questions && (
+                <div className="text-xs text-slate-600 text-center">
+                  {quizData.questions.length} questions total
+                </div>
+              )}
             </section>
 
 

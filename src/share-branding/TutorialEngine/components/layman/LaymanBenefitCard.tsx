@@ -47,7 +47,7 @@ export function LaymanBenefitCard({ sectionTitle, benefitCards }: LaymanBenefitC
   return (
     <div className="w-full mb-8">
       {/* Section Title */}
-      <h2 className="text-2xl font-bold text-slate-950 mb-6">{sectionTitle}</h2>
+      <h3 className="text-2xl font-bold text-slate-950 mb-6">{sectionTitle}</h3>
 
       {/* 3-Column Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -34,7 +34,7 @@ export function LaymanUseCaseGrid({ gridTitle, useCaseCards }: LaymanUseCaseGrid
   return (
     <div className="w-full mb-8">
       {/* Grid Title */}
-      <h2 className="text-2xl font-bold text-slate-950 mb-6">{gridTitle}</h2>
+      <h3 className="text-2xl font-bold text-slate-950 mb-6">{gridTitle}</h3>
 
       {/* 4-Column Responsive Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -67,9 +67,9 @@ export function LaymanUseCaseGrid({ gridTitle, useCaseCards }: LaymanUseCaseGrid
               </div>
 
               {/* Title */}
-              <h3 className="text-base font-bold text-slate-950 mb-2">
+              <h4 className="text-base font-bold text-slate-950 mb-2">
                 {card.title}
-              </h3>
+              </h4>
 
               {/* Description */}
               <p className="text-xs font-medium text-slate-700 leading-relaxed mb-3">

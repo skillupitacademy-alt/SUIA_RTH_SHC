@@ -45,14 +45,14 @@ export function LaymanCommonConfusions({
   return (
     <div className="w-full mb-8">
       {/* Title */}
-      <h2 className="text-2xl font-bold text-slate-950 mb-6">{title}</h2>
+      <h3 className="text-2xl font-bold text-slate-950 mb-6">{title}</h3>
 
       {/* Confusion Items */}
       <div className="mb-8">
-        <h3 className="text-lg font-bold text-slate-950 mb-4 flex items-center gap-2">
+        <h4 className="text-lg font-bold text-slate-950 mb-4 flex items-center gap-2">
           <Icons.HelpCircle size={20} className="text-amber-600" aria-hidden="true" />
           Common Questions Beginners Ask
-        </h3>
+        </h4>
         <div className="space-y-4">
           {confusionItems.map((item) => (
             <div
@@ -81,10 +81,10 @@ export function LaymanCommonConfusions({
 
       {/* FAQ Accordion */}
       <div className="mb-8">
-        <h3 className="text-lg font-bold text-slate-950 mb-4 flex items-center gap-2">
+        <h4 className="text-lg font-bold text-slate-950 mb-4 flex items-center gap-2">
           <Icons.MessageCircle size={20} className="text-blue-600" aria-hidden="true" />
           Frequently Asked Questions
-        </h3>
+        </h4>
         <div className="space-y-3">
           {faqItems.map((faq) => {
             const isOpen = openFaqId === faq.id;
@@ -127,10 +127,10 @@ export function LaymanCommonConfusions({
 
       {/* Misconception Alerts */}
       <div>
-        <h3 className="text-lg font-bold text-slate-950 mb-4 flex items-center gap-2">
+        <h4 className="text-lg font-bold text-slate-950 mb-4 flex items-center gap-2">
           <Icons.AlertTriangle size={20} className="text-rose-600" aria-hidden="true" />
           Important: Don't Believe These Myths!
-        </h3>
+        </h4>
         <div className="space-y-3">
           {misconceptionAlerts.map((alert, index) => (
             <div

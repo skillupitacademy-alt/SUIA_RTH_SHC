@@ -48,15 +48,15 @@ export function LaymanSimpleRecap({
               aria-hidden="true"
             />
           </div>
-          <h2 className="text-3xl font-bold text-slate-950">{summaryTitle}</h2>
+          <h3 className="text-3xl font-bold text-slate-950">{summaryTitle}</h3>
         </div>
 
         {/* Key Takeaways */}
         <div className="mb-8">
-          <h3 className="text-xl font-bold text-slate-950 mb-4 flex items-center gap-2">
+          <h4 className="text-xl font-bold text-slate-950 mb-4 flex items-center gap-2">
             <Icons.Star size={20} style={{ color: brand.primaryColor }} aria-hidden="true" />
             Key Takeaways
-          </h3>
+          </h4>
           <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-gray-200">
             <ul className="space-y-3">
               {keyTakeaways.map((takeaway, index) => (
@@ -78,10 +78,10 @@ export function LaymanSimpleRecap({
 
         {/* Simple Recap Points */}
         <div className="mb-8">
-          <h3 className="text-xl font-bold text-slate-950 mb-4 flex items-center gap-2">
+          <h4 className="text-xl font-bold text-slate-950 mb-4 flex items-center gap-2">
             <Icons.BookOpen size={20} style={{ color: brand.primaryColor }} aria-hidden="true" />
             What You've Learned
-          </h3>
+          </h4>
           <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-gray-200">
             <ul className="space-y-3">
               {simpleRecapPoints.map((point, index) => (

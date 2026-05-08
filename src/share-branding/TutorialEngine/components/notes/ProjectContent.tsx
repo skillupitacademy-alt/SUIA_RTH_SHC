@@ -54,7 +54,7 @@ export function ProjectContent({ data, onNext }: {
       {/* Header */}
       <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0 space-y-1">
-          <h1 className="break-words text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl lg:text-4xl">{title}</h1>
+          <h2 className="break-words text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl lg:text-4xl">{title}</h2>
           <p className="text-[14px] font-medium text-slate-800">{description}</p>
         </div>
         <div className="flex shrink-0 flex-wrap items-center gap-3">
@@ -70,7 +70,7 @@ export function ProjectContent({ data, onNext }: {
       </div>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden rounded-[32px] bg-white/80 backdrop-blur-xl p-5 shadow-2xl border-t border-white/60 transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] sm:p-10">
+      <section aria-label="Project overview and details" className="relative overflow-hidden rounded-[32px] bg-white/80 backdrop-blur-xl p-5 shadow-2xl border-t border-white/60 transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] sm:p-10">
          
          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             <div className="lg:col-span-7 space-y-8">
@@ -80,9 +80,9 @@ export function ProjectContent({ data, onNext }: {
                >
                  {hero.badge}
                </div>
-               <h2 className="break-words text-2xl font-bold leading-tight text-slate-900 sm:text-3xl lg:text-4xl">
+               <h3 className="break-words text-2xl font-bold leading-tight text-slate-900 sm:text-3xl lg:text-4xl">
                   {hero.title.split(' ').slice(0, -1).join(' ')} <br/> <span style={{ color: brand.primaryColorDark }}>{hero.title.split(' ').slice(-1)}</span>
-               </h2>
+               </h3>
                <p className="text-[16px] font-medium leading-relaxed text-slate-800">
                   {hero.description}
                </p>
@@ -149,7 +149,7 @@ export function ProjectContent({ data, onNext }: {
                   <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-50 text-slate-900 border border-slate-100">
                      <Icons.Layers size={22} aria-hidden="true" />
                   </div>
-                  <h2 className="break-words text-xl font-bold tracking-tight text-slate-950">What You Need To Build</h2>
+                  <h3 className="break-words text-xl font-bold tracking-tight text-slate-950">What You Need To Build</h3>
                </div>
                <ul className="space-y-6">
                    {buildItems.map((item, i) => (
@@ -171,7 +171,7 @@ export function ProjectContent({ data, onNext }: {
                   <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-100 text-rose-950 border border-rose-200">
                      <Icons.Gift size={22} aria-hidden="true" />
                   </div>
-                  <h2 className="text-xl font-bold text-slate-950 tracking-tight">Deliverables</h2>
+                  <h3 className="text-xl font-bold text-slate-950 tracking-tight">Deliverables</h3>
                </div>
                <ul className="space-y-5">
                    {deliverables.map((item, i) => (

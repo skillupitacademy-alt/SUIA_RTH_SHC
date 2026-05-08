@@ -50,9 +50,9 @@ export function NotesDefinitionBlock({
       </div>
 
       {/* Headline */}
-      <h1 className="text-4xl font-bold text-slate-950 mb-6 leading-tight">
+      <h3 className="text-4xl font-bold text-slate-950 mb-6 leading-tight">
         {headline}
-      </h1>
+      </h3>
 
       {/* Definition Text */}
       <p className="text-lg font-medium text-slate-800 leading-relaxed mb-8">
@@ -74,9 +74,9 @@ export function NotesDefinitionBlock({
           aria-hidden="true"
         />
         <div>
-          <h3 className="text-sm font-bold mb-1" style={{ color: brand.primaryColorDark }}>
+          <h4 className="text-sm font-bold mb-1" style={{ color: brand.primaryColorDark }}>
             Why This Matters
-          </h3>
+          </h4>
           <p className="text-sm font-medium text-slate-800">
             {importanceCallout}
           </p>
@@ -85,10 +85,10 @@ export function NotesDefinitionBlock({
 
       {/* Quick Summary */}
       <div className="bg-white/60 backdrop-blur-sm rounded-xl p-6 border border-gray-100">
-        <h3 className="text-base font-bold text-slate-950 mb-4 flex items-center gap-2">
+        <h4 className="text-base font-bold text-slate-950 mb-4 flex items-center gap-2">
           <Icons.Zap size={18} style={{ color: brand.primaryColor }} aria-hidden="true" />
           Quick Summary
-        </h3>
+        </h4>
         <ul className="space-y-3">
           {quickSummary.map((item, index) => (
             <li key={index} className="flex items-start gap-3">

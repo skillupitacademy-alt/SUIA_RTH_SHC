@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Content Prompt Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .input-section {
+            margin-bottom: 30px;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .section-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .section-btn {
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        .section-btn:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+        
+        .section-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .generate-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .generate-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .generate-btn:active {
+            transform: translateY(0);
+        }
+        
+        .output-section {
+            margin-top: 30px;
+            display: none;
+        }
+        
+        .output-section.show {
+            display: block;
+        }
+        
+        .output-box {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            position: relative;
+        }
+        
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .output-header h3 {
+            color: #333;
+        }
+        
+        .copy-btn {
+            padding: 8px 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .copy-btn:hover {
+            background: #5568d3;
+        }
+        
+        .copy-btn.copied {
+            background: #10b981;
+        }
+        
+        .prompt-text {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .info-box {
+            background: #e0f2fe;
+            border-left: 4px solid #0284c7;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .info-box p {
+            color: #0c4a6e;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AI Content Prompt Generator</h1>
+            <p>Generate perfect prompts for ChatGPT, Claude, Gemini, or DeepSeek</p>
+        </div>
+        
+        <div class="content">
+            <div class="info-box">
+                <p><strong>How to use:</strong> Enter your subtopic name, select a section, and click Generate. Copy the prompt and paste it into any AI model to get perfectly formatted JSON content.</p>
+            </div>
+            
+            <div class="input-section">
+                <div class="input-group">
+                    <label for="subtopic">Subtopic Name</label>
+                    <input type="text" id="subtopic" placeholder="e.g., JavaScript Promises, React Hooks, CSS Flexbox" value="JavaScript Promises">
+                </div>
+                
+                <label>Select Section</label>
+                <div class="section-selector">
+                    <button class="section-btn" data-section="master">Master Prompt</button>
+                    <button class="section-btn" data-section="notes">1. Notes</button>
+                    <button class="section-btn" data-section="layman">2. Layman</button>
+                    <button class="section-btn" data-section="reallife">3. Real Life</button>
+                    <button class="section-btn" data-section="technical">4. Technical</button>
+                    <button class="section-btn" data-section="code">5. Code Example</button>
+                    <button class="section-btn" data-section="assignment">6. Assignment</button>
+                    <button class="section-btn" data-section="project">7. Project</button>
+                    <button class="section-btn" data-section="quiz">8. Quiz</button>
+                    <button class="section-btn" data-section="visual">9. Visual</button>
+                    <button class="section-btn" data-section="practice">10. Practice Test</button>
+                </div>
+                
+                <button class="generate-btn" onclick="generatePrompt()">Generate Prompt</button>
+            </div>
+            
+            <div class="output-section" id="output">
+                <div class="output-box">
+                    <div class="output-header">
+                        <h3>Generated Prompt</h3>
+                        <button class="copy-btn" onclick="copyPrompt()">Copy to Clipboard</button>
+                    </div>
+                    <div class="prompt-text" id="promptText"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let selectedSection = null;
+        
+        // Section button click handler
+        document.querySelectorAll('.section-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.section-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                selectedSection = this.dataset.section;
+            });
+        });
+        
+        function generatePrompt() {
+            const subtopic = document.getElementById('subtopic').value.trim();
+            
+            if (!subtopic) {
+                alert('Please enter a subtopic name');
+                return;
+            }
+            
+            if (!selectedSection) {
+                alert('Please select a section');
+                return;
+            }
+            
+            const prompt = getPromptForSection(selectedSection, subtopic);
+            document.getElementById('promptText').textContent = prompt;
+            document.getElementById('output').classList.add('show');
+            
+            // Scroll to output
+            document.getElementById('output').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        
+        function copyPrompt() {
+            const text = document.getElementById('promptText').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.querySelector('.copy-btn');
+                btn.textContent = '✓ Copied!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = 'Copy to Clipboard';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+        
+        function getPromptForSection(section, subtopic) {
+            const prompts = {
+                master: `I need you to generate educational content for a subtopic in a structured format.
+
+**SUBTOPIC**: ${subtopic}
+**TARGET AUDIENCE**: Beginners to intermediate learners
+**TONE**: Clear, friendly, educational, practical
+
+**IMPORTANT RULES**:
+1. Output MUST be in valid JSON format
+2. Use double quotes for all strings
+3. Escape special characters properly
+4. Keep explanations clear and concise
+5. Use real-world examples
+6. Avoid jargon unless explained
+7. Include practical applications
+
+I will ask you to generate content for different sections one by one. Each section has 8 templates. Please follow the exact structure I provide.
+
+Are you ready? Reply "Ready" and I'll give you the first section.`,
+                
+                notes: `Generate content for the NOTES SECTION of the subtopic: "${subtopic}"
+
+This section has 8 templates. Output in this EXACT JSON format:
+
+{
+  "notes": {
+    "coreDefinition": {
+      "badge": "Core Concept",
+      "headline": "[What is ${subtopic}?]",
+      "definition": "[Technical definition in 1-2 sentences]",
+      "simpleExplanation": "[Explain in simple terms, 2-3 sentences]",
+      "whyItMatters": "[Why is this important? 2-3 sentences]",
+      "keyTakeaway": "[One sentence summary]"
+    },
+    "conceptExplanation": {
+      "title": "Understanding ${subtopic}",
+      "introduction": "[2-3 sentences introducing the concept]",
+      "mainConcept": "[Detailed explanation, 4-5 sentences]",
+      "detailedBreakdown": "[Break down the concept into parts, 4-5 sentences]",
+      "visualAnalogy": "[A simple analogy to understand this, 2-3 sentences]"
+    },
+    "keyComponents": {
+      "title": "Key Components of ${subtopic}",
+      "components": [
+        {
+          "id": "comp1",
+          "name": "[Component 1 name]",
+          "description": "[What it does, 2 sentences]",
+          "purpose": "[Why it's needed, 1 sentence]",
+          "icon": "Box"
+        },
+        {
+          "id": "comp2",
+          "name": "[Component 2 name]",
+          "description": "[What it does, 2 sentences]",
+          "purpose": "[Why it's needed, 1 sentence]",
+          "icon": "Layers"
+        },
+        {
+          "id": "comp3",
+          "name": "[Component 3 name]",
+          "description": "[What it does, 2 sentences]",
+          "purpose": "[Why it's needed, 1 sentence]",
+          "icon": "Zap"
+        }
+      ]
+    },
+    "syntaxStructure": {
+      "title": "Syntax and Structure",
+      "syntaxTitle": "Basic Syntax",
+      "code": "[Actual code example with \\\\n for newlines]",
+      "language": "javascript",
+      "explanation": "[Explain the syntax, 3-4 sentences]",
+      "breakdown": [
+        {
+          "line": "[Code line 1]",
+          "explanation": "[What this line does]"
+        },
+        {
+          "line": "[Code line 2]",
+          "explanation": "[What this line does]"
+        },
+        {
+          "line": "[Code line 3]",
+          "explanation": "[What this line does]"
+        }
+      ]
+    },
+    "examples": {
+      "title": "Practical Examples",
+      "exampleCards": [
+        {
+          "id": "ex1",
+          "title": "[Example 1 title]",
+          "scenario": "[Real-world scenario, 2 sentences]",
+          "code": "[Code example with \\\\n for newlines]",
+          "explanation": "[How it works, 2-3 sentences]"
+        },
+        {
+          "id": "ex2",
+          "title": "[Example 2 title]",
+          "scenario": "[Real-world scenario, 2 sentences]",
+          "code": "[Code example with \\\\n for newlines]",
+          "explanation": "[How it works, 2-3 sentences]"
+        }
+      ]
+    },
+    "bestPractices": {
+      "title": "Best Practices",
+      "practices": [
+        {
+          "id": "bp1",
+          "title": "[Practice 1 title]",
+          "description": "[Why this is important, 2 sentences]",
+          "doExample": "[Good example, 1 sentence]",
+          "dontExample": "[Bad example to avoid, 1 sentence]"
+        },
+        {
+          "id": "bp2",
+          "title": "[Practice 2 title]",
+          "description": "[Why this is important, 2 sentences]",
+          "doExample": "[Good example, 1 sentence]",
+          "dontExample": "[Bad example to avoid, 1 sentence]"
+        },
+        {
+          "id": "bp3",
+          "title": "[Practice 3 title]",
+          "description": "[Why this is important, 2 sentences]",
+          "doExample": "[Good example, 1 sentence]",
+          "dontExample": "[Bad example to avoid, 1 sentence]"
+        }
+      ]
+    },
+    "commonErrors": {
+      "title": "Common Mistakes and FAQs",
+      "errors": [
+        {
+          "id": "err1",
+          "error": "[Common mistake 1]",
+          "why": "[Why this happens]",
+          "fix": "[How to fix it]"
+        },
+        {
+          "id": "err2",
+          "error": "[Common mistake 2]",
+          "why": "[Why this happens]",
+          "fix": "[How to fix it]"
+        },
+        {
+          "id": "err3",
+          "error": "[Common mistake 3]",
+          "why": "[Why this happens]",
+          "fix": "[How to fix it]"
+        }
+      ],
+      "faqItems": [
+        {
+          "id": "faq1",
+          "question": "[Common question 1]",
+          "answer": "[Clear answer, 2-3 sentences]"
+        },
+        {
+          "id": "faq2",
+          "question": "[Common question 2]",
+          "answer": "[Clear answer, 2-3 sentences]"
+        },
+        {
+          "id": "faq3",
+          "question": "[Common question 3]",
+          "answer": "[Clear answer, 2-3 sentences]"
+        }
+      ]
+    },
+    "revisionSummary": {
+      "title": "Quick Revision Summary",
+      "keyPoints": [
+        "[Key point 1]",
+        "[Key point 2]",
+        "[Key point 3]",
+        "[Key point 4]",
+        "[Key point 5]"
+      ],
+      "quickRecap": [
+        "[Recap point 1]",
+        "[Recap point 2]",
+        "[Recap point 3]"
+      ],
+      "examTips": [
+        "[Exam tip 1]",
+        "[Exam tip 2]"
+      ],
+      "rememberThis": "[One memorable sentence to remember this concept]"
+    }
+  }
+}
+
+**IMPORTANT**: 
+- Replace ALL [...] placeholders with actual content
+- Use \\\\n for newlines in code
+- Use \\\\" for quotes in code
+- Icon names: Box, Layers, Zap, Code2, CheckCircle, AlertCircle, Lightbulb, Rocket`,
+                
+                layman: `Generate content for the LAYMAN EXPLANATION SECTION of the subtopic: "${subtopic}"
+
+This section explains the concept to absolute beginners using simple language and analogies.
+
+Output in this EXACT JSON format:
+
+{
+  "laymanExplanation": {
+    "simpleOverview": {
+      "badge": "Beginner Friendly",
+      "headline": "${subtopic} Explained Simply",
+      "simpleDefinition": "[Explain in the simplest possible terms, like explaining to a 10-year-old, 2 sentences]",
+      "subExplanation": "[Expand a bit more, still very simple, 2-3 sentences]",
+      "importanceBlock": "[Why should a beginner care? 2 sentences]",
+      "progressIndicator": "Perfect for beginners - no prior knowledge needed"
+    },
+    "everydayAnalogy": {
+      "title": "Think of It Like This",
+      "storyAnalogy": "[Tell a story using everyday objects/situations that everyone knows, 3-4 sentences]",
+      "comparisonPanel": {
+        "realWorld": "[Real-world example everyone can relate to, 2 sentences]",
+        "technical": "[How the technical concept maps to that real-world example, 2 sentences]"
+      },
+      "visualMetaphor": "[A memorable metaphor or comparison, 1 sentence]",
+      "keyTakeaway": "[The main insight from this analogy, 1 sentence]"
+    },
+    "whyItExists": {
+      "sectionTitle": "Why Does This Exist?",
+      "benefitCards": [
+        {
+          "id": "benefit1",
+          "title": "[Career benefit title]",
+          "description": "[How this helps in career/work, 2 sentences]",
+          "icon": "Briefcase",
+          "type": "career"
+        },
+        {
+          "id": "benefit2",
+          "title": "[Practical benefit title]",
+          "description": "[Practical everyday benefit, 2 sentences]",
+          "icon": "Zap",
+          "type": "practical"
+        },
+        {
+          "id": "benefit3",
+          "title": "[Future benefit title]",
+          "description": "[Future learning benefit, 2 sentences]",
+          "icon": "TrendingUp",
+          "type": "future"
+        }
+      ]
+    },
+    "simpleUseCases": {
+      "gridTitle": "Where You'll See This",
+      "useCaseCards": [
+        {
+          "id": "use1",
+          "title": "[Use case 1 title]",
+          "description": "[Simple example, 1-2 sentences]",
+          "example": "[Specific example like 'Netflix uses this for...']",
+          "icon": "Monitor"
+        },
+        {
+          "id": "use2",
+          "title": "[Use case 2 title]",
+          "description": "[Simple example, 1-2 sentences]",
+          "example": "[Specific example]",
+          "icon": "Smartphone"
+        },
+        {
+          "id": "use3",
+          "title": "[Use case 3 title]",
+          "description": "[Simple example, 1-2 sentences]",
+          "example": "[Specific example]",
+          "icon": "Globe"
+        },
+        {
+          "id": "use4",
+          "title": "[Use case 4 title]",
+          "description": "[Simple example, 1-2 sentences]",
+          "example": "[Specific example]",
+          "icon": "ShoppingCart"
+        }
+      ]
+    },
+    "beginnerBreakdown": {
+      "title": "Step-by-Step Breakdown",
+      "steps": [
+        {
+          "id": "step1",
+          "stepTitle": "Step 1: [Title]",
+          "stepExplanation": "[Explain this step in simple terms, 2 sentences]",
+          "microLearningChunk": "[One key thing to remember from this step]"
+        },
+        {
+          "id": "step2",
+          "stepTitle": "Step 2: [Title]",
+          "stepExplanation": "[Explain this step in simple terms, 2 sentences]",
+          "microLearningChunk": "[One key thing to remember from this step]"
+        },
+        {
+          "id": "step3",
+          "stepTitle": "Step 3: [Title]",
+          "stepExplanation": "[Explain this step in simple terms, 2 sentences]",
+          "microLearningChunk": "[One key thing to remember from this step]"
+        },
+        {
+          "id": "step4",
+          "stepTitle": "Step 4: [Title]",
+          "stepExplanation": "[Explain this step in simple terms, 2 sentences]",
+          "microLearningChunk": "[One key thing to remember from this step]"
+        }
+      ]
+    },
+    "mentalModel": {
+      "title": "Mental Model",
+      "conceptMap": "[Describe a simple visual mental model, like 'Think of it as a tree with branches' - 2-3 sentences]",
+      "visualLabels": [
+        {
+          "id": "label1",
+          "label": "[Part 1]",
+          "description": "[What this part does]"
+        },
+        {
+          "id": "label2",
+          "label": "[Part 2]",
+          "description": "[What this part does]"
+        },
+        {
+          "id": "label3",
+          "label": "[Part 3]",
+          "description": "[What this part does]"
+        }
+      ]
+    },
+    "commonConfusions": {
+      "title": "Common Beginner Confusions",
+      "confusionItems": [
+        {
+          "id": "conf1",
+          "confusion": "[What beginners often get confused about]",
+          "clarification": "[Clear explanation to remove confusion, 2 sentences]"
+        },
+        {
+          "id": "conf2",
+          "confusion": "[What beginners often get confused about]",
+          "clarification": "[Clear explanation to remove confusion, 2 sentences]"
+        },
+        {
+          "id": "conf3",
+          "confusion": "[What beginners often get confused about]",
+          "clarification": "[Clear explanation to remove confusion, 2 sentences]"
+        }
+      ],
+      "faqItems": [
+        {
+          "id": "faq1",
+          "question": "[Simple beginner question]",
+          "answer": "[Simple answer, 2 sentences]"
+        },
+        {
+          "id": "faq2",
+          "question": "[Simple beginner question]",
+          "answer": "[Simple answer, 2 sentences]"
+        },
+        {
+          "id": "faq3",
+          "question": "[Simple beginner question]",
+          "answer": "[Simple answer, 2 sentences]"
+        }
+      ],
+      "misconceptionAlerts": [
+        "[Common misconception 1]",
+        "[Common misconception 2]",
+        "[Common misconception 3]"
+      ]
+    },
+    "simpleRecap": {
+      "summaryTitle": "Let's Recap What You Learned",
+      "keyTakeaways": [
+        "[Simple takeaway 1]",
+        "[Simple takeaway 2]",
+        "[Simple takeaway 3]",
+        "[Simple takeaway 4]",
+        "[Simple takeaway 5]",
+        "[Simple takeaway 6]"
+      ],
+      "simpleRecapPoints": [
+        "[What you now understand, point 1]",
+        "[What you now understand, point 2]",
+        "[What you now understand, point 3]",
+        "[What you now understand, point 4]"
+      ],
+      "confidenceBoost": "[Encouraging message to boost confidence, 1-2 sentences with emoji]",
+      "memoryReinforcement": "[One memorable sentence to remember this concept forever]"
+    }
+  }
+}
+
+**IMPORTANT**: 
+- Use VERY simple language - no jargon
+- Use everyday analogies (LEGO, kitchen, traffic, etc.)
+- Make it relatable and encouraging
+- Icon names: Briefcase, Zap, TrendingUp, Monitor, Smartphone, Globe, ShoppingCart, Heart, Lightbulb`,
+                
+                reallife: `Generate content for the REAL LIFE EXAMPLES SECTION of the subtopic: "${subtopic}"
+
+This section shows how this concept is used in real companies and industries.
+
+Include all 8 templates:
+- conceptMapping
+- industryUseCase
+- dailyLifeExample
+- careerRelevance (with 4 career paths: entry, mid, mid, senior)
+- problemSolutionContext
+- businessApplication
+- domainScenarios (6 scenarios: E-Commerce, Healthcare, Finance, Education, Entertainment, Social Media)
+- practicalRecap
+
+Use real company names (Amazon, Netflix, Google, etc.). Include actual statistics and salary ranges.`,
+                
+                technical: `Generate content for the TECHNICAL DEEP DIVE SECTION of the subtopic: "${subtopic}"
+
+This section is for intermediate to advanced learners who want to understand the internal mechanics.
+
+Include all 8 templates:
+- architectureOverview
+- internalMechanics
+- advancedConcepts
+- performanceOptimization
+- edgeCases
+- designPatterns
+- securityConsiderations
+- technicalSummary
+
+Use technical terminology appropriately. Include actual code examples with proper escaping. Focus on implementation details.`,
+                
+                code: `Generate content for the CODE EXAMPLE SECTION of the subtopic: "${subtopic}"
+
+This section provides hands-on code examples with detailed explanations.
+
+Include all 8 templates:
+- problemContext
+- basicCodeExample
+- lineByLineExplanation
+- outputDemonstration
+- bestPracticeVersion
+- commonMistakes
+- realWorldImplementation
+- codeSummary
+
+All code must be valid and runnable. Use proper JSON escaping: \\n for newlines, \\" for quotes.`,
+                
+                assignment: `Generate content for the ASSIGNMENT SECTION of the subtopic: "${subtopic}"
+
+This section provides a hands-on assignment for learners to practice.
+
+Include all 8 templates:
+- assignmentOverview (difficulty: beginner/intermediate/advanced, estimatedTime, xpReward)
+- learningObjectives
+- taskRequirements
+- starterCode
+- hintsAndTips
+- testCases
+- solutionApproach
+- submissionFeedback
+
+Make it practical and achievable. Provide clear requirements. Include starter code with TODOs.`,
+                
+                project: `Generate content for the PROJECT SECTION of the subtopic: "${subtopic}"
+
+This section provides a larger, more comprehensive project to build.
+
+Include all 8 templates:
+- projectOverview (difficulty, estimatedTime 3-5 hours, xpReward 500)
+- projectGoals
+- featureRequirements (5 features: 3 must-have, 2 nice-to-have)
+- technicalSpecifications
+- implementationGuide (4 phases)
+- codeStructure
+- testingDeployment
+- projectShowcase
+
+Make it a real, portfolio-worthy project. Provide clear phases and milestones.`,
+                
+                quiz: `Generate content for the QUIZ SECTION of the subtopic: "${subtopic}"
+
+This section tests the learner's understanding with various question types.
+
+Include all 8 templates:
+- quizOverview (totalQuestions: 20, passingScore: 70, timeLimit: 20 minutes)
+- multipleChoice (3 questions)
+- trueFalse (3 questions)
+- codeOutput (3 questions)
+- fillInBlank (3 questions)
+- codeDebugging (3 questions)
+- scenarioBased (3 questions)
+- quizResults
+
+Create 20 total questions. Make questions test understanding, not just memorization.`,
+                
+                visual: `Generate content for the VISUAL EXPLANATION SECTION of the subtopic: "${subtopic}"
+
+This section uses diagrams, flowcharts, and visual aids to explain concepts.
+
+Include all 8 templates:
+- visualOverview
+- conceptDiagram (with components and connections)
+- flowchartExplanation (5 steps: start, process, decision, process, end)
+- comparisonChart (3 items with pros/cons)
+- timelineVisualization (4 events)
+- architectureDiagram (3 layers)
+- mindMap (4 branches)
+- interactiveDemo
+- visualSummary
+
+Describe visuals in text format. Use clear, descriptive language.`,
+                
+                practice: `Generate content for the PRACTICE TEST SECTION of the subtopic: "${subtopic}"
+
+This section provides a comprehensive practice test similar to real exams.
+
+Include all 8 templates:
+- testOverview (totalQuestions: 30, passingScore: 75, timeLimit: 45 minutes)
+- theoryQuestions (3 questions: easy, medium, hard)
+- practicalQuestions (2 questions: medium, hard)
+- codeAnalysisQuestions (2 questions: medium, hard)
+- debuggingQuestions (2 questions: hard, medium)
+- bestPracticeQuestions (2 questions: medium, hard)
+- performanceQuestions (1 question: hard)
+- comprehensiveScenarios (2 questions: hard, hard)
+- testResults (4 score ranges with messages)
+
+Create 30 total questions. Mix difficulty levels: easy (30%), medium (40%), hard (30%).`
+            };
+            
+            return prompts[section] || 'Invalid section selected';
+        }
+    </script>
+</body>
+</html>

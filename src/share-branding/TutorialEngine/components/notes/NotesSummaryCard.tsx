@@ -67,7 +67,7 @@ export function NotesSummaryCard({
               aria-hidden="true"
             />
           </div>
-          <h2 className="text-3xl font-bold text-slate-950">{summaryTitle}</h2>
+          <h3 className="text-3xl font-bold text-slate-950">{summaryTitle}</h3>
         </div>
 
         {/* Key Takeaways */}

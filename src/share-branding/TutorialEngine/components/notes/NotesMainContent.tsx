@@ -55,6 +55,12 @@ export function NotesMainContent({ data, isStandalone = true }: { data: Subtopic
         </div>
       </div>
 
+      {/* Main Title */}
+      <div className="mb-8">
+        <h2 className="break-words text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">{data.title}</h2>
+        <p className="mt-2 text-lg font-medium text-slate-600">{data.simpleWords}</p>
+      </div>
+
       {/* 1. CORE DEFINITION - definition_block (Hero-style intro) */}
       {data.definitionBlock && (
         <NotesDefinitionBlock
@@ -70,7 +76,7 @@ export function NotesMainContent({ data, isStandalone = true }: { data: Subtopic
       <div className="space-y-10">
         {data.sections.map((section) => (
           <section key={section.id} className="space-y-4">
-            <h2 className="text-xl font-bold text-slate-950">{section.title}</h2>
+            <h3 className="text-xl font-bold text-slate-950">{section.title}</h3>
             <p className="text-[15px] font-medium leading-relaxed text-slate-800 whitespace-pre-wrap">
               {section.content}
             </p>
@@ -79,7 +85,7 @@ export function NotesMainContent({ data, isStandalone = true }: { data: Subtopic
               <div className="flex gap-4 rounded-xl bg-amber-100 p-5 mt-6 shadow-2xl transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] border-t border-white/60 border-amber-200">
                 <Icons.Star size={20} className="text-amber-900 shrink-0 mt-0.5" aria-hidden="true" />
                 <div>
-                  <h3 className="text-[13px] font-bold text-amber-950 mb-1">Key Point</h3>
+                  <h4 className="text-[13px] font-bold text-amber-950 mb-1">Key Point</h4>
                   <p className="text-[13px] font-medium text-amber-950">{section.keyPoint}</p>
                 </div>
               </div>
