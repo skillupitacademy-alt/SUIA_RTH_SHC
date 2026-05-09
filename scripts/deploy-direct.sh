@@ -85,12 +85,14 @@ REGISTRY="asia-southeast1-docker.pkg.dev"
 SERVICE_API="quiz-api-server"
 SERVICE_RTH="realtutorialhub-web"
 SERVICE_SKILLUP="skillup-web"
+SERVICE_SHC_ADMIN="skillhubcore-admin"
 
 GIT_SHA=$(git rev-parse --short HEAD)
 
 IMAGE_API="${REGISTRY}/${PROJECT_ID}/quiz-platform/quiz-api-server:${GIT_SHA}"
 IMAGE_RTH="${REGISTRY}/${PROJECT_ID}/quiz-platform/realtutorialhub-web:${GIT_SHA}"
 IMAGE_SKILLUP="${REGISTRY}/${PROJECT_ID}/quiz-platform/skillup-web:${GIT_SHA}"
+IMAGE_SHC_ADMIN="${REGISTRY}/${PROJECT_ID}/quiz-platform/skillhubcore-admin:${GIT_SHA}"
 
 #############################################
 # 🔐 RBAC TEST USER CREDENTIALS
@@ -250,11 +252,13 @@ capture_revision() {
 PREV_API=$(capture_revision $SERVICE_API)
 PREV_RTH=$(capture_revision $SERVICE_RTH)
 PREV_SKILLUP=$(capture_revision $SERVICE_SKILLUP)
+PREV_SHC_ADMIN=$(capture_revision $SERVICE_SHC_ADMIN)
 
 echo "📌 Previous revisions:"
 echo "API: $PREV_API"
 echo "RTH: $PREV_RTH"
 echo "SkillUp: $PREV_SKILLUP"
+echo "SHC Admin: $PREV_SHC_ADMIN"
 
 #############################################
 # 🚀 BUILD + PUSH IMAGES
@@ -265,12 +269,14 @@ echo "🐳 Building images..."
 docker build -f apps/api-server/Dockerfile -t $IMAGE_API .
 docker build -f apps/realtutorialhub-web/Dockerfile -t $IMAGE_RTH .
 docker build -f apps/skillup-web/Dockerfile -t $IMAGE_SKILLUP .
+docker build -f apps/skillhubcore-admin/Dockerfile -t $IMAGE_SHC_ADMIN .
 
 echo "📦 Pushing images..."
 
 docker push $IMAGE_API
 docker push $IMAGE_RTH
 docker push $IMAGE_SKILLUP
+docker push $IMAGE_SHC_ADMIN
 
 #############################################
 # 🚀 DEPLOY API FIRST (NO TRAFFIC)
@@ -330,6 +336,15 @@ deploy_bff() {
 
 deploy_bff $SERVICE_RTH $IMAGE_RTH
 deploy_bff $SERVICE_SKILLUP $IMAGE_SKILLUP
+
+echo "🚀 Deploying SHC Admin (Identity-First via People DB)..."
+
+gcloud run deploy $SERVICE_SHC_ADMIN \
+  --image $IMAGE_SHC_ADMIN \
+  --region $REGION \
+  --no-traffic \
+  --set-env-vars "INTERNAL_API_URL=${INTERNAL_API_URL},GATEWAY_URL=https://api.realtutorialhub.com,GATEWAY_URL_SKILLUP=https://api.skillupitacademy.com" \
+  --update-secrets "DATABASE_URL=DATABASE_URL_PEOPLE:latest,DATABASE_DIRECT_URL=DATABASE_DIRECT_URL_PEOPLE:latest,INTERNAL_API_SECRET=INTERNAL_API_SECRET:latest,INTERNAL_GATEWAY_SECRET=INTERNAL_GATEWAY_SECRET:latest,JWT_SECRET=JWT_SECRET:latest,JWT_REFRESH_SECRET=JWT_REFRESH_SECRET:latest,ADMIN_JWT_SECRET=ADMIN_JWT_SECRET:latest"
 
 echo "✅ All services deployed (no traffic)"
 
@@ -476,6 +491,10 @@ gcloud run services update-traffic $SERVICE_RTH \
   --to-latest
 
 gcloud run services update-traffic $SERVICE_SKILLUP \
+  --region $REGION \
+  --to-latest
+
+gcloud run services update-traffic $SERVICE_SHC_ADMIN \
   --region $REGION \
   --to-latest
 
