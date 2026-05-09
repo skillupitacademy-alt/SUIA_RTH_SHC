@@ -147,6 +147,7 @@ export const priorityLevelEnum = pgEnum('priority_level', [
 export const brandEnum = pgEnum('brand', [
   'realtutorialhub',
   'skillup',
+  'skillhubcore', // Central Content Factory
   'shared', // For shared/universal content
 ]);
 

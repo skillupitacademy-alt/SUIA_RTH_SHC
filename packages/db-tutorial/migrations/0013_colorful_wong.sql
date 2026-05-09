@@ -1,0 +1,1 @@
+ALTER TYPE "public"."brand" ADD VALUE 'skillhubcore' BEFORE 'shared';
