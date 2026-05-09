@@ -63,7 +63,7 @@ export interface BrandConfig {
   tutorialDashboardSearchPlaceholder: string;
 }
 
-export type SharedBrandId = 'realtutorialhub' | 'skillup';
+export type SharedBrandId = 'realtutorialhub' | 'skillup' | 'skillhubcore';
 
 export const rthConfig: BrandConfig = {
   name: 'RealTutorialHub',

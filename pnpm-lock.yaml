@@ -924,6 +924,12 @@ importers:
       '@quiz/auth':
         specifier: workspace:*
         version: link:../../packages/auth
+      '@quiz/db-tutorial':
+        specifier: workspace:*
+        version: link:../../packages/db-tutorial
+      '@quiz/observability':
+        specifier: workspace:*
+        version: link:../../packages/observability
       '@quiz/types':
         specifier: workspace:*
         version: link:../../packages/types
@@ -952,8 +958,8 @@ importers:
         specifier: 15.2.0
         version: 15.2.0(eslint@8.57.1)(typescript@5.9.3)
       lucide-react:
-        specifier: ^0.563.0
-        version: 0.563.0(react@19.2.4)
+        specifier: ^0.359.0
+        version: 0.359.0(react@19.2.4)
       next:
         specifier: 16.1.6
         version: 16.1.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -7609,6 +7615,11 @@ packages:
 
   lru_map@0.3.3:
     resolution: {integrity: sha512-Pn9cox5CsMYngeDbmChANltQl+5pi6XmTrraMSzhPmMBbmgcxmqWry0U3PGapCU1yB4/LqCcom7qhHZiF/jGfQ==}
+
+  lucide-react@0.359.0:
+    resolution: {integrity: sha512-bxVL+rM/wacjpT0BKShA6r5IIKb6LCRg+ltFG9pnnIwaRX8kK3hq8v5JwMpT7RC6XeqB5cSaaV6GapPWWmtliw==}
+    peerDependencies:
+      react: ^16.5.1 || ^17.0.0 || ^18.0.0
 
   lucide-react@0.474.0:
     resolution: {integrity: sha512-CmghgHkh0OJNmxGKWc0qfPJCYHASPMVSyGY8fj3xgk4v84ItqDg64JNKFZn5hC6E0vHi6gxnbCgwhyVB09wQtA==}
@@ -16146,6 +16157,10 @@ snapshots:
   lru-cache@7.18.3: {}
 
   lru_map@0.3.3: {}
+
+  lucide-react@0.359.0(react@19.2.4):
+    dependencies:
+      react: 19.2.4
 
   lucide-react@0.474.0(react@19.2.4):
     dependencies:
