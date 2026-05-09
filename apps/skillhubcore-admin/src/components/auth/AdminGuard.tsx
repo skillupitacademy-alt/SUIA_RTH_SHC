@@ -1,3 +1,5 @@
+'use client';
+
 import { apiClient } from '@quiz/api-client';
 import { recordCounter } from '@quiz/observability';
 import { useAuthSync,ZLoader } from '@quiz/ui';
