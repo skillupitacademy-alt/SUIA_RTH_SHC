@@ -5,8 +5,8 @@
  */
 
 async function testSkillHubCoreLogin() {
-  // SkillHub Core uses the API Gateway for authentication
-  const apiGatewayUrl = 'https://api.realtutorialhub.com';
+  // SkillHub Core uses its own API Gateway for authentication
+  const apiGatewayUrl = 'https://api.skillhubcore.in';
   const adminUrl = 'https://admin.skillhubcore.in';
   
   const credentials = {
