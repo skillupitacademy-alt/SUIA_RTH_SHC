@@ -1,6 +1,7 @@
 import { auditLogs, db } from '@quiz/db';
 
 import { logger } from '@/lib/logger';
+import type { RequestBrand } from '@/lib/request-brand';
 import { getAuthBrandContext, shouldUseBrandBinding } from '@/modules/auth/brand-db';
 
 export interface AuditLogEntry {
@@ -8,7 +9,7 @@ export interface AuditLogEntry {
   action: string;
   ip?: string;
   device?: string;
-  brand?: 'realtutorialhub' | 'skillup';
+  brand?: RequestBrand;
   metadata?: Record<string, unknown> | string;
 }
 

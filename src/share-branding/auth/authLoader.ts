@@ -53,24 +53,30 @@ export async function signupUser(data: SignupRequestData): Promise<LoginResultVi
 
 export async function fetchCurrentUserState(): Promise<{ onboardingCompleted: boolean }> {
   // 🔥 CRITICAL FIX: Use lightweight validation instead of heavy /api/profile
-  console.log('[AUTH_LOADER] Using lightweight auth validation');
+  console.log('[AUTH_LOADER] 🔍 Fetching current user state via validateAuthState');
   
   const auth = await validateAuthState();
   
   if (!auth) {
     // Not authenticated
+    console.log('[AUTH_LOADER] ❌ Not authenticated - returning onboardingCompleted: false');
     return { onboardingCompleted: false };
   }
   
-  console.log('[AUTH_LOADER] Auth validation success:', {
+  console.log('[AUTH_LOADER] ✅ Auth validation success:', {
     userId: auth.id.slice(0, 8),
+    email: auth.email,
     onboardingCompleted: auth.onboardingCompleted,
     roles: auth.roles,
   });
   
-  return {
+  const result = {
     onboardingCompleted: auth.onboardingCompleted === true,
   };
+  
+  console.log('[AUTH_LOADER] 🎯 Returning onboardingCompleted:', result.onboardingCompleted);
+  
+  return result;
 }
 
 export async function logoutUser() {

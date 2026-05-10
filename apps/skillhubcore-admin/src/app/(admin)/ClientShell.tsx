@@ -9,9 +9,10 @@ import {
   GraduationCap, PlaySquare,
   Menu, Search, Bell, Mail, HelpCircle, ChevronRight, Network, PanelRight,
   Download, Sparkles, History, BarChart3, LineChart,
-  UserCog, LayoutGrid, Cpu, Compass, Globe, LayoutList, Copy, FileDown, FileUp, XCircle, Trash2
+  UserCog, LayoutGrid, Cpu, Compass, Globe, LayoutList, Copy, FileDown, FileUp, XCircle, Trash2, LogOut
 } from 'lucide-react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useAuthStore } from '@/store/auth-store';
 
 import { ShellContext } from './ShellContext';
 
@@ -20,7 +21,40 @@ export default function ClientShell({ children }: { children: ReactNode }) {
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
   const [headerTitle, setHeaderTitle] = useState('');
   const [headerSubtitle, setHeaderSubtitle] = useState('');
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+  const { logout } = useAuthStore();
+
+  const handleLogout = async () => {
+    if (isLoggingOut) return;
+    
+    setIsLoggingOut(true);
+    console.log('[SHC_LOGOUT] Starting logout process...');
+
+    try {
+      // Call logout API
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+      
+      console.log('[SHC_LOGOUT] Logout API called, clearing auth store...');
+      
+      // Clear Zustand auth store
+      logout();
+      
+      console.log('[SHC_LOGOUT] Auth store cleared, redirecting to login...');
+      
+      // Redirect to login
+      router.push('/login');
+    } catch (error) {
+      console.error('[SHC_LOGOUT] Logout failed:', error);
+      // Even if API fails, clear local state and redirect
+      logout();
+      router.push('/login');
+    }
+  };
 
   return (
     <ShellContext.Provider value={{
@@ -236,6 +270,18 @@ export default function ClientShell({ children }: { children: ReactNode }) {
                   <p className="text-xs text-slate-500 mt-1">Administrator</p>
                 </div>
               </div>
+
+              {/* Logout Button */}
+              <button
+                onClick={handleLogout}
+                disabled={isLoggingOut}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-100 text-slate-700 hover:bg-red-50 hover:text-red-600 transition-colors font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-pink-500 outline-none"
+                aria-label="Logout"
+                title="Logout from SkillHubCore Admin"
+              >
+                <LogOut size={18} />
+                <span className="hidden md:inline">{isLoggingOut ? 'Logging out...' : 'Logout'}</span>
+              </button>
 
               <div className="h-8 w-[1px] bg-slate-200 mx-1"></div>
 

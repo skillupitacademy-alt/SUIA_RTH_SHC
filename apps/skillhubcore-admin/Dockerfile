@@ -35,11 +35,11 @@ RUN pnpm --filter @quiz/skillhubcore-admin build
 
 FROM base AS runner
 ENV NODE_ENV=production
-ENV PORT=3007
+ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 WORKDIR /app
 COPY --from=builder /app/apps/skillhubcore-admin/.next/standalone ./
 COPY --from=builder /app/apps/skillhubcore-admin/.next/static ./apps/skillhubcore-admin/.next/static
 COPY --from=builder /app/apps/skillhubcore-admin/public ./apps/skillhubcore-admin/public
-EXPOSE 3007
+EXPOSE 3000
 CMD ["node", "apps/skillhubcore-admin/server.js"]

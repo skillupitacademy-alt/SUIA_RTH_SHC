@@ -23,11 +23,17 @@ const HOP_BY_HOP_HEADERS = new Set([
 function getGatewayUrl(hostname?: string): string {
   // Determine brand from hostname
   const isSkillUp = hostname?.includes('skillup') ?? false;
+  const isSkillHubCore = hostname?.includes('skillhubcore') ?? false;
   
   // Use brand-specific gateway URL
-  const gatewayUrl = isSkillUp 
-    ? process.env.GATEWAY_URL_SKILLUP 
-    : process.env.GATEWAY_URL;
+  let gatewayUrl: string | undefined;
+  if (isSkillHubCore) {
+    gatewayUrl = process.env.GATEWAY_URL_SKILLHUBCORE;
+  } else if (isSkillUp) {
+    gatewayUrl = process.env.GATEWAY_URL_SKILLUP;
+  } else {
+    gatewayUrl = process.env.GATEWAY_URL;
+  }
   
   if (!gatewayUrl || gatewayUrl.trim().length === 0) {
     throw new Error('GATEWAY_URL not configured - all requests must go through API Gateway');
@@ -162,7 +168,14 @@ export function createForwardHeaders(request: NextRequest): Headers {
   if (!headers.has('x-brand')) {
     const hostname = getRequestHost(request);
     if (hostname) {
-      const brand = hostname.includes('skillup') ? 'skillup' : 'realtutorialhub';
+      let brand: string;
+      if (hostname.includes('skillhubcore')) {
+        brand = 'skillhubcore';
+      } else if (hostname.includes('skillup')) {
+        brand = 'skillup';
+      } else {
+        brand = 'realtutorialhub';
+      }
       headers.set('x-brand', brand);
       
       // 📊 OBSERVABILITY: Log brand resolution and internal secret status
@@ -305,7 +318,14 @@ export async function proxyAuthRequest(
 ) {
   // 📊 OBSERVABILITY: Log auth proxy request and current mode
   const hostname = getRequestHost(request);
-  const brand = hostname?.includes('skillup') ? 'skillup' : 'realtutorialhub';
+  let brand: string;
+  if (hostname?.includes('skillhubcore')) {
+    brand = 'skillhubcore';
+  } else if (hostname?.includes('skillup')) {
+    brand = 'skillup';
+  } else {
+    brand = 'realtutorialhub';
+  }
   
   console.log(JSON.stringify({
     tag: 'AUTH_FLOW',

@@ -1,4 +1,4 @@
-export type RequestBrand = 'realtutorialhub' | 'skillup';
+export type RequestBrand = 'realtutorialhub' | 'skillup' | 'skillhubcore';
 
 export function resolveRequestBrand(value?: string | null): RequestBrand | undefined {
   if (typeof value !== 'string' || value.trim().length === 0) return undefined;
@@ -6,6 +6,7 @@ export function resolveRequestBrand(value?: string | null): RequestBrand | undef
   const normalized = value.trim().toLowerCase();
   if (normalized === 'skillup') return 'skillup';
   if (normalized === 'realtutorialhub') return 'realtutorialhub';
+  if (normalized === 'skillhubcore') return 'skillhubcore';
 
   return undefined;
 }

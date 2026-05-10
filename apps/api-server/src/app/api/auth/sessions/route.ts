@@ -5,6 +5,7 @@ import type { Role } from '@quiz/auth/rbac/roles';
 import { type NextRequest } from 'next/server';
 
 import { ApiResponse } from '@/lib/api-response';
+import type { RequestBrand } from '@/lib/request-brand';
 import { resolveRequestHostnameFromHeaders } from '@/lib/request-brand';
 import { withLogging } from '@/lib/withLogging';
 import { withObservability } from '@/middleware/observability.middleware';
@@ -33,7 +34,7 @@ async function getHandler(_req: NextRequest) {
     const payload = await tokenService.verifyAccessToken(accessToken);
     // CRITICAL: Use the original user ID (not shadow) for session operations
     const userId = payload.userId; // This is the original user ID used for storing tokens
-    const brand = (typeof payload.brand === 'string' && payload.brand.length > 0 ? payload.brand : 'realtutorialhub') as 'skillup' | 'realtutorialhub';
+    const brand = (typeof payload.brand === 'string' && payload.brand.length > 0 ? payload.brand : 'realtutorialhub') as RequestBrand;
 
     // 🔐 BRAND VALIDATION (defense in depth)
     try {
@@ -54,7 +55,7 @@ async function getHandler(_req: NextRequest) {
       originalUserId: payload.userId,
       shadowUserId: payload.userId,
       roles: normalizedRoles,
-      brand: brand as 'realtutorialhub' | 'skillup',
+      brand: (brand === 'skillup' ? 'skillup' : 'realtutorialhub') as 'realtutorialhub' | 'skillup',
       email: payload.email,
     });
 
@@ -115,7 +116,7 @@ async function deleteHandler(_req: NextRequest) {
     // CRITICAL: Use the original user ID (not shadow) for session operations
     const userId = payload.userId; // This is the original user ID used for storing tokens
     const requestHostname = resolveRequestHostnameFromHeaders(_req.headers, _req.nextUrl.hostname);
-    const brand = (typeof requestHostname === 'string' && requestHostname.includes('skillup')) ? 'skillup' : 'realtutorialhub';
+    const brand = (typeof requestHostname === 'string' && requestHostname.includes('skillup')) ? 'skillup' : (typeof requestHostname === 'string' && requestHostname.includes('skillhubcore')) ? 'skillhubcore' : 'realtutorialhub';
 
     // 🔐 BRAND VALIDATION (defense in depth)
     try {
@@ -136,7 +137,7 @@ async function deleteHandler(_req: NextRequest) {
       originalUserId: payload.userId,
       shadowUserId: payload.userId,
       roles: normalizedRoles,
-      brand: brand as 'realtutorialhub' | 'skillup',
+      brand: (brand === 'skillup' ? 'skillup' : 'realtutorialhub') as 'realtutorialhub' | 'skillup',
       email: payload.email,
     });
 

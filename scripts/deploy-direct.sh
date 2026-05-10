@@ -110,6 +110,10 @@ export SKILLUP_TEST_PASSWORD="${SKILLUP_TEST_PASSWORD:-testing}"
 export RBAC_SKILLUP_STUDENT_EMAIL="${RBAC_SKILLUP_STUDENT_EMAIL:-student@skillupitacademy.com}"
 export RBAC_SKILLUP_STUDENT_PASSWORD="${RBAC_SKILLUP_STUDENT_PASSWORD:-testing}"
 
+# SkillHubCore infrastructure admin users
+export SHC_ADMIN_EMAIL="${SHC_ADMIN_EMAIL:-admin@skillhubcore.in}"
+export SHC_ADMIN_PASSWORD="${SHC_ADMIN_PASSWORD:-testing}"
+
 #############################################
 # 🔐 SET PROJECT
 #############################################
@@ -296,7 +300,7 @@ gcloud run deploy $SERVICE_API \
   --concurrency 1000 \
   --max-instances 10 \
   --min-instances 0 \
-  --set-env-vars "NODE_ENV=production,CLOUD_RUN_BUILD=true,GATEWAY_URL=https://api.realtutorialhub.com,GATEWAY_URL_SKILLUP=https://api.skillupitacademy.com" \
+  --set-env-vars "NODE_ENV=production,CLOUD_RUN_BUILD=true,GATEWAY_URL=https://api.realtutorialhub.com,GATEWAY_URL_SKILLUP=https://api.skillupitacademy.com,GATEWAY_URL_SKILLHUBCORE=https://api.skillhubcore.in" \
   --update-secrets "DATABASE_URL=DATABASE_URL:latest,DATABASE_DIRECT_URL=DATABASE_DIRECT_URL:latest,DATABASE_URL_RTH=DATABASE_URL_RTH:latest,DATABASE_DIRECT_URL_RTH=DATABASE_DIRECT_URL_RTH:latest,DATABASE_URL_SKILLUP=DATABASE_URL_SKILLUP:latest,DATABASE_DIRECT_URL_SKILLUP=DATABASE_DIRECT_URL_SKILLUP:latest,DATABASE_URL_PEOPLE=DATABASE_URL_PEOPLE:latest,DATABASE_DIRECT_URL_PEOPLE=DATABASE_DIRECT_URL_PEOPLE:latest,DATABASE_URL_TUTORIAL=DATABASE_URL_TUTORIAL:latest,DATABASE_DIRECT_URL_TUTORIAL=DATABASE_DIRECT_URL_TUTORIAL:latest,DATABASE_URL_PAYMENT=DATABASE_URL_PAYMENT:latest,DATABASE_DIRECT_URL_PAYMENT=DATABASE_DIRECT_URL_PAYMENT:latest,DATABASE_URL_PLACEMENT=DATABASE_URL_PLACEMENT:latest,DATABASE_DIRECT_URL_PLACEMENT=DATABASE_DIRECT_URL_PLACEMENT:latest,INTERNAL_API_SECRET=INTERNAL_API_SECRET:latest,JWT_SECRET=JWT_SECRET:latest,JWT_REFRESH_SECRET=JWT_REFRESH_SECRET:latest,ADMIN_JWT_SECRET=ADMIN_JWT_SECRET:latest,UPSTASH_REDIS_REST_URL=UPSTASH_REDIS_REST_URL:latest,UPSTASH_REDIS_REST_TOKEN=UPSTASH_REDIS_REST_TOKEN:latest,QSTASH_TOKEN=QSTASH_TOKEN:latest,QSTASH_CURRENT_SIGNING_KEY=QSTASH_CURRENT_SIGNING_KEY:latest,QSTASH_NEXT_SIGNING_KEY=QSTASH_NEXT_SIGNING_KEY:latest,RESEND_API_KEY=RESEND_API_KEY:latest,CSRF_SECRET=CSRF_SECRET:latest,INTERNAL_API_KEY=INTERNAL_API_KEY:latest,INTERNAL_GATEWAY_SECRET=INTERNAL_GATEWAY_SECRET:latest,COOKIE_DOMAIN=COOKIE_DOMAIN:latest,ALLOWED_ORIGINS=ALLOWED_ORIGINS:latest"
 
 #############################################
@@ -330,7 +334,7 @@ deploy_bff() {
     --image $IMAGE_NAME \
     --region $REGION \
     --no-traffic \
-    --set-env-vars "INTERNAL_API_URL=${INTERNAL_API_URL},GATEWAY_URL=https://api.realtutorialhub.com,GATEWAY_URL_SKILLUP=https://api.skillupitacademy.com" \
+    --set-env-vars "INTERNAL_API_URL=${INTERNAL_API_URL},GATEWAY_URL=https://api.realtutorialhub.com,GATEWAY_URL_SKILLUP=https://api.skillupitacademy.com,GATEWAY_URL_SKILLHUBCORE=https://api.skillhubcore.in" \
     --update-secrets "INTERNAL_API_SECRET=INTERNAL_API_SECRET:latest,INTERNAL_GATEWAY_SECRET=INTERNAL_GATEWAY_SECRET:latest,JWT_SECRET=JWT_SECRET:latest,JWT_REFRESH_SECRET=JWT_REFRESH_SECRET:latest"
 }
 
@@ -343,7 +347,7 @@ gcloud run deploy $SERVICE_SHC_ADMIN \
   --image $IMAGE_SHC_ADMIN \
   --region $REGION \
   --no-traffic \
-  --set-env-vars "INTERNAL_API_URL=${INTERNAL_API_URL},GATEWAY_URL=https://api.realtutorialhub.com,GATEWAY_URL_SKILLUP=https://api.skillupitacademy.com" \
+  --set-env-vars "INTERNAL_API_URL=${INTERNAL_API_URL},GATEWAY_URL=https://api.realtutorialhub.com,GATEWAY_URL_SKILLUP=https://api.skillupitacademy.com,GATEWAY_URL_SKILLHUBCORE=https://api.skillhubcore.in" \
   --update-secrets "DATABASE_URL=DATABASE_URL_PEOPLE:latest,DATABASE_DIRECT_URL=DATABASE_DIRECT_URL_PEOPLE:latest,INTERNAL_API_SECRET=INTERNAL_API_SECRET:latest,INTERNAL_GATEWAY_SECRET=INTERNAL_GATEWAY_SECRET:latest,JWT_SECRET=JWT_SECRET:latest,JWT_REFRESH_SECRET=JWT_REFRESH_SECRET:latest,ADMIN_JWT_SECRET=ADMIN_JWT_SECRET:latest"
 
 echo "✅ All services deployed (no traffic)"
@@ -772,6 +776,7 @@ else
       rollback $SERVICE_API $PREV_API
       rollback $SERVICE_RTH $PREV_RTH
       rollback $SERVICE_SKILLUP $PREV_SKILLUP
+      rollback $SERVICE_SHC_ADMIN $PREV_SHC_ADMIN
 
       echo ""
       echo "🔁 Rollback complete"
@@ -798,10 +803,93 @@ fi
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 #############################################
+# 🧪 SHC ADMIN VALIDATION (INFRASTRUCTURE)
+#############################################
+
+echo ""
+echo "🧪 Running SkillHubCore Admin validation..."
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# SHC Admin test credentials
+export SHC_ADMIN_EMAIL="${SHC_ADMIN_EMAIL:-admin@skillhubcore.in}"
+export SHC_ADMIN_PASSWORD="${SHC_ADMIN_PASSWORD:-testing}"
+
+echo "🔐 Testing SHC Admin authentication..."
+echo "   Email: $SHC_ADMIN_EMAIL"
+
+# Test SHC Admin browser flow
+node ./scripts/test-shc-browser-flow.mjs
+
+SHC_EXIT_CODE=$?
+
+if [ $SHC_EXIT_CODE -ne 0 ]; then
+  echo ""
+  echo "❌ SHC ADMIN VALIDATION FAILED"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo ""
+  echo "🚨 SkillHubCore Admin authentication is broken!"
+  echo "   Infrastructure admins cannot access the admin console!"
+  echo ""
+  echo "🔍 Checking SHC Admin logs..."
+  gcloud logging read "resource.type=cloud_run_revision AND resource.labels.service_name=skillhubcore-admin" --limit=5 --format="value(textPayload)" 2>/dev/null || echo "  (no logs available)"
+  echo ""
+  echo "🔁 INITIATING ROLLBACK..."
+
+  rollback() {
+    SERVICE=$1
+    REV=$2
+
+    if [ -n "$REV" ]; then
+      echo "  Rolling back $SERVICE to $REV..."
+      gcloud run services update-traffic $SERVICE \
+        --region $REGION \
+        --to-revisions ${REV}=100 2>/dev/null || echo "  ⚠️  Rollback failed for $SERVICE"
+    else
+      echo "  ⚠️  No previous revision for $SERVICE"
+    fi
+  }
+
+  rollback $SERVICE_API $PREV_API
+  rollback $SERVICE_RTH $PREV_RTH
+  rollback $SERVICE_SKILLUP $PREV_SKILLUP
+  rollback $SERVICE_SHC_ADMIN $PREV_SHC_ADMIN
+
+  echo ""
+  echo "🔁 Rollback complete"
+  echo ""
+  echo "❌ DEPLOYMENT BLOCKED - SHC Admin validation failed"
+  echo "   Fix SHC Admin authentication before deploying again"
+  exit 1
+fi
+
+echo ""
+echo "✅ SHC Admin validation passed"
+echo "   ✅ Login flow working"
+echo "   ✅ Dashboard accessible"
+echo "   ✅ Authentication cookies set correctly"
+echo "   ✅ Infrastructure admin console operational"
+echo ""
+
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+#############################################
 # 🎉 DONE
 #############################################
 
 echo ""
 echo "🎉 DEPLOYMENT SUCCESSFUL (FAANG MODE)"
-echo "🔗 RTH: https://user.realtutorialhub.com"
-echo "🔗 SkillUp: https://user.skillupitacademy.com"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+echo "🔗 User Portals:"
+echo "   RTH: https://user.realtutorialhub.com"
+echo "   SkillUp: https://user.skillupitacademy.com"
+echo ""
+echo "🔗 Admin Consoles:"
+echo "   SHC Infrastructure: https://admin.skillhubcore.in"
+echo ""
+echo "✅ All services deployed and validated"
+echo "✅ Authentication flows working"
+echo "✅ RBAC enforcement verified"
+echo "✅ Infrastructure admin console operational"
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

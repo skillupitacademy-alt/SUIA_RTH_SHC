@@ -2,7 +2,8 @@
 
 import { apiClient } from '@quiz/api-client';
 import { recordCounter } from '@quiz/observability';
-import { useAuthSync,ZLoader } from '@quiz/ui';
+import { useAuthSync } from '@quiz/ui';
+import { Network } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
@@ -17,15 +18,13 @@ const isAdminEquivalentRole = (value: string | null | undefined) => {
 };
 
 export function AdminGuard({ children }: { children: React.ReactNode }) {
-  const { user, isAuthenticated, login, logout, isLocked, setAccessDenied, setSessionExpired } = useAuthStore(
+  const { user, isAuthenticated, login, logout, isLocked } = useAuthStore(
     useShallow((s) => ({
       user: s.user,
       isAuthenticated: s.isAuthenticated,
       login: s.login,
       logout: s.logout,
       isLocked: s.isLocked,
-      setAccessDenied: s.setAccessDenied,
-      setSessionExpired: s.setSessionExpired,
     })),
   );
   const pathname = usePathname();
@@ -44,11 +43,9 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
     );
   }, []);
 
-  // Circuit Breaker: Custom handler for Admin
+  // Circuit Breaker: Custom handler for unauthorized requests
   const handleUnauthorized = useCallback((e: Event) => {
-    // PATIENCE PROTOCOL: If the terminal is locked, the user is still at their desk (or pause-mode)
-    // We should NOT trigger a hard logout/redirect in the background.
-    // The AdminLockScreen will handle re-authentication when the user attempts to unlock.
+    // If locked, defer to lock screen for re-authentication
     if (isLocked === true) {
       clientLogger.warn('Circuit Breaker: 401 detected while LOCKED. Deferring to Lock Protocol.');
       recordCounter('admin.ui.auth.unauthorized_locked', 1, { route: pathname });
@@ -57,22 +54,26 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
     }
 
     e.preventDefault();
-    clientLogger.warn('Circuit Breaker: Global 401 detected. Transitioning to session-expired modal.');
+    clientLogger.warn('Circuit Breaker: Global 401 detected. Redirecting to login.');
     recordCounter('admin.ui.auth.unauthorized', 1, { route: pathname });
-    setAccessDenied(false);
-    setSessionExpired(true);
     setIsCheckingSession(false);
-  }, [isLocked, pathname, setAccessDenied, setSessionExpired]);
+    // Redirect to login - no legacy modals or query params
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login';
+    }
+  }, [isLocked, pathname]);
 
   const handleForbidden = useCallback(
     (e: Event) => {
       e.preventDefault();
-      clientLogger.warn('Circuit Breaker: Global 403 detected. Transitioning to access-denied modal.');
+      clientLogger.warn('Circuit Breaker: Global 403 detected. Redirecting to login.');
       recordCounter('admin.ui.auth.forbidden', 1, { route: pathname });
-      setSessionExpired(false);
-      setAccessDenied(true);
+      // Redirect to login - no legacy modals or query params
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
     },
-    [pathname, setAccessDenied, setSessionExpired],
+    [pathname],
   );
 
   // Centralized Auth Sync Hook
@@ -93,10 +94,17 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
 
     const hasAdminRole = isAdminEquivalentRole(user?.role);
 
+    // Skip revalidation if user is already authenticated and has admin role
+    // Only revalidate on initial mount (when user is null)
+    if (isAuthenticated === true && hasAdminRole === true && user !== null) {
+      setIsCheckingSession(false);
+      return;
+    }
+
     const revalidate = async () => {
       setIsCheckingSession(true);
       try {
-        const { user: validatedUser, expiresAt: validatedExpiresAt } = await apiClient.auth.getAdminSession();
+        const { user: validatedUser } = await apiClient.auth.getAdminSession();
         const validatedHasAdminRole = isAdminEquivalentRole(validatedUser?.role);
         if (validatedUser === null || validatedUser === undefined) {
           throw new Error('Unauthorized');
@@ -104,14 +112,13 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
 
         if (validatedHasAdminRole === false) {
           recordCounter('admin.ui.auth.revalidate_forbidden', 1, { route: pathname });
-          setAccessDenied(true);
-          setSessionExpired(false);
-          setIsCheckingSession(false);
+          // Redirect to login - no legacy query params
+          window.location.href = '/login';
           return;
         }
 
         if (isSameAuthSession(user, validatedUser) === false) {
-          login(validatedUser, validatedExpiresAt);
+          login(validatedUser);
         }
       } catch (err: unknown) {
         clientLogger.error('Session revalidation failed', { error: err instanceof Error ? err.message : 'unknown' });
@@ -119,8 +126,8 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
           route: pathname,
           reason: err instanceof Error ? err.message : 'unknown',
         });
-        setAccessDenied(false);
-        setSessionExpired(true);
+        // Redirect to login - no legacy query params
+        window.location.href = '/login';
       } finally {
         setIsCheckingSession(false);
       }
@@ -132,7 +139,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
     }
 
     void revalidate();
-  }, [isAuthenticated, isLocked, isSameAuthSession, login, pathname, setAccessDenied, setSessionExpired, user]);
+  }, [isAuthenticated, isLocked, isSameAuthSession, login, user]); // Removed pathname from dependencies
 
   // Bypass guard for login page
   if (pathname === '/login') {
@@ -141,13 +148,30 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
 
   const hasAdminRole = isAdminEquivalentRole(user?.role);
 
-  if (isCheckingSession || isAuthenticated === false || hasAdminRole === false) {
+  // If user is authenticated and has admin role, show content immediately
+  // The revalidation happens in the background
+  if (isAuthenticated === true && hasAdminRole === true) {
+    return <>{children}</>;
+  }
+
+  // Only show loading spinner if we're actively checking and don't have auth state yet
+  if (isCheckingSession) {
     return (
-      <div className="h-screen w-screen bg-background flex flex-col items-center justify-center">
-        <ZLoader size="lg" text="Authenticating Admin Session" />
+      <div className="h-screen w-screen bg-slate-50 flex flex-col items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-pink-500 to-orange-500 shadow-lg animate-pulse">
+            <Network size={32} className="text-white" />
+          </div>
+          <p className="text-sm font-semibold text-slate-600">Loading SkillHubCore Admin...</p>
+        </div>
       </div>
     );
   }
 
-  return <>{children}</>;
+  // If not authenticated, redirect to login
+  if (typeof window !== 'undefined') {
+    window.location.href = '/login';
+  }
+
+  return null;
 }

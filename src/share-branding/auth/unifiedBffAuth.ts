@@ -201,8 +201,11 @@ export function createInternalHeaders(auth: BffAuthResult): Record<string, strin
 /**
  * Get brand from request hostname (fallback for brand detection)
  */
-export function getBrandFromHostname(req: NextRequest): 'realtutorialhub' | 'skillup' {
+export function getBrandFromHostname(req: NextRequest): 'realtutorialhub' | 'skillup' | 'skillhubcore' {
   const hostname = req.headers.get('host') || req.nextUrl.hostname;
+  if (hostname.includes('skillhubcore')) {
+    return 'skillhubcore';
+  }
   return hostname.includes('skillup') ? 'skillup' : 'realtutorialhub';
 }
 

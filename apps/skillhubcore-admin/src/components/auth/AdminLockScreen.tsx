@@ -45,7 +45,7 @@ export function AdminLockScreen() {
                 step: 'submit',
                 emailDomain: email.includes('@') ? email.split('@')[1] : 'unknown',
             });
-            const { user: refreshedUser, expiresAt } = await loginPortalSession({
+            const { user: refreshedUser } = await loginPortalSession({
                 email,
                 password,
                 platform: 'realtutorialhub',
@@ -57,7 +57,6 @@ export function AdminLockScreen() {
             clientLogger.warn('[AUTH_FLOW][ADMIN_LOCK_SCREEN][UNLOCK_RESPONSE]', {
                 step: 'response',
                 hasUser: refreshedUser !== null && refreshedUser !== undefined,
-                expiresAt: expiresAt ?? null,
             });
 
             // 2. Update local state
@@ -69,7 +68,7 @@ export function AdminLockScreen() {
                     isAdmin: refreshedUser.isAdmin ?? true,
                     role: refreshedUser.role ?? 'admin',
                     onboarded: refreshedUser.onboarded ?? true,
-                }, expiresAt);
+                });
             }
 
             setPassword('');

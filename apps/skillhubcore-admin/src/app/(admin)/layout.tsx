@@ -6,12 +6,10 @@ const ClientShell = dynamic(() => import('./ClientShell'), {
 });
 
 import { AdminGuard } from '@/components/auth/AdminGuard';
-import { SessionExpiryModal } from '@/components/auth/SessionExpiryModal';
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
     <AdminGuard>
-      <SessionExpiryModal />
       <ClientShell>{children}</ClientShell>
     </AdminGuard>
   );

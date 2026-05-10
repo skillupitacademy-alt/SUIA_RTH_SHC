@@ -173,11 +173,13 @@ export const skillUpConfig: BrandConfig = {
   tutorialDashboardSearchPlaceholder: 'Search courses, topics, mentors...',
 };
 
-export const brands: Record<'rth' | 'skillup', BrandConfig> = {
+export const brands: Record<'rth' | 'skillup' | 'skillhubcore', BrandConfig> = {
   rth: rthConfig,
   skillup: skillUpConfig,
+  skillhubcore: skillUpConfig, // Temporarily use SkillUp config for SHC
 };
 
 export function getBrandConfig(brand: SharedBrandId): BrandConfig {
+  if (brand === 'skillhubcore') return skillUpConfig; // Temporarily use SkillUp config
   return brand === 'skillup' ? skillUpConfig : rthConfig;
 }

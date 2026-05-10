@@ -76,7 +76,7 @@ async function handler(req: NextRequest) {
     }
 
     // 🔐 RBAC CHECK
-    const brand: RequestBrand = (payload.brand === 'skillup' ? 'skillup' : 'realtutorialhub');
+    const brand: RequestBrand = (payload.brand === 'skillup' ? 'skillup' : payload.brand === 'skillhubcore' ? 'skillhubcore' : 'realtutorialhub');
     const normalizedRoles = (Array.isArray(payload.roles) ? payload.roles : []).map(r => r.toLowerCase().trim()).filter((r): r is Role => r.length > 0);
     const rbacUser = createRBACUser({
       isAuthenticated: true,
@@ -84,7 +84,7 @@ async function handler(req: NextRequest) {
       originalUserId: payload.userId,
       shadowUserId: payload.userId,
       roles: normalizedRoles,
-      brand: brand as 'realtutorialhub' | 'skillup',
+      brand: (brand === 'skillup' ? 'skillup' : 'realtutorialhub') as 'realtutorialhub' | 'skillup',
       email: payload.email,
     });
 

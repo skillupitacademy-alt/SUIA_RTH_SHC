@@ -5,7 +5,7 @@ import { db, platformAccess, users } from '@quiz/db-people';
 import { logger } from './logger';
 import type { SyncUserInput, SyncUserResult } from './types';
 
-type SupportedPlatform = 'realtutorialhub' | 'skillup';
+type SupportedPlatform = 'realtutorialhub' | 'skillup' | 'skillhubcore';
 
 export class UserIdentityBridgeService {
   constructor(private readonly database = db) {}

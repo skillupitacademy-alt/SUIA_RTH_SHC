@@ -1,6 +1,6 @@
 import { decodeJwt, jwtVerify, SignJWT, type JWTPayload } from 'jose';
 
-const ACCESS_TOKEN_EXPIRE = '15m';
+const ACCESS_TOKEN_EXPIRE = '8h'; // 8 hours for admin sessions
 const REFRESH_TOKEN_EXPIRE = '7d';
 
 function readEnv(name: string): string | undefined {

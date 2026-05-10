@@ -139,6 +139,17 @@ export async function validateAuthState(): Promise<AuthValidationState | null> {
 
       clearTimeout(timeout);
 
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[AUTH_VALIDATE] Response received:', {
+          status: res.status,
+          ok: res.ok,
+          headers: {
+            contentType: res.headers.get('content-type'),
+            cacheControl: res.headers.get('cache-control'),
+          },
+        });
+      }
+
       // ✅ CRITICAL: 401 = not authenticated (expected)
       if (res.status === 401) {
         if (process.env.NODE_ENV === 'development') {
@@ -165,21 +176,32 @@ export async function validateAuthState(): Promise<AuthValidationState | null> {
 
       const data = await res.json();
       
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[AUTH_VALIDATE] Success:', {
-          userId: data.user?.id?.slice(0, 8),
-          email: data.user?.email,
-          onboarded: data.user?.onboardingCompleted,
-        });
-      }
+      console.log('[AUTH_VALIDATE] ✅ Success - Raw response data:', {
+        userId: data.user?.id?.slice(0, 8),
+        email: data.user?.email,
+        onboardingCompleted: data.user?.onboardingCompleted,
+        role: data.user?.role,
+        roles: data.user?.roles,
+        isAdmin: data.user?.isAdmin,
+        brand: data.user?.brand,
+      });
 
       // ✅ STANDARDIZED RESPONSE
-      return {
+      const result = {
         id: data.user.id,
         email: data.user.email,
         onboardingCompleted: data.user.onboardingCompleted,
         roles: data.user.roles || (data.user.role ? [data.user.role] : ['user']), // Handle both formats
       };
+      
+      console.log('[AUTH_VALIDATE] 🎯 Returning standardized auth state:', {
+        userId: result.id.slice(0, 8),
+        email: result.email,
+        onboardingCompleted: result.onboardingCompleted,
+        roles: result.roles,
+      });
+      
+      return result;
     } catch (err) {
       lastError = err;
 

@@ -45,7 +45,8 @@ export async function proxy(request: NextRequest) {
   }
 
   const isAuthRoute = request.nextUrl.pathname.startsWith('/api/auth') || 
-                      request.nextUrl.pathname.startsWith('/api/admin/auth');
+                      request.nextUrl.pathname.startsWith('/api/admin/auth') ||
+                      request.nextUrl.pathname.startsWith('/api/shc/auth');
 
   const isTutorialRoute = request.nextUrl.pathname.startsWith('/api/tutorial');
   const isSecurityReport = pathname.toLowerCase().includes('security/report');

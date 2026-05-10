@@ -83,11 +83,17 @@ function AuthContent({ brand, initialMode = 'login' }: AuthPageProps) {
 
       try {
         // ✅ STEP 1: Authenticate user (sets cookies)
+        console.log('[AUTH_PAGE] 🔐 Step 1: Calling loginUser...');
         await loginUser({ email, password, brand });
+        console.log('[AUTH_PAGE] ✅ Step 1: Login successful');
         
         // ✅ STEP 2: Fetch fresh session state (cache: 'no-store' guarantees fresh data)
         // NO router.refresh() needed - we fetch directly with cache bypass
+        console.log('[AUTH_PAGE] 🔍 Step 2: Fetching current user state...');
         const sessionState = await fetchCurrentUserState();
+        console.log('[AUTH_PAGE] ✅ Step 2: Session state retrieved:', {
+          onboardingCompleted: sessionState.onboardingCompleted,
+        });
         
         // 🔥 PRODUCTION FIX: Set flag to skip initial token refresh
         // This prevents race conditions when navigating to dashboard/profile
@@ -98,11 +104,16 @@ function AuthContent({ brand, initialMode = 'login' }: AuthPageProps) {
         // ✅ STEP 3: Navigate based on fresh state
         // Server component will re-fetch and verify (double-check pattern)
         const redirectTarget = searchParams.get('redirect');
-        router.push(
-          sessionState.onboardingCompleted === true
-            ? redirectTarget || '/dashboard'
-            : '/onboarding',
-        );
+        const destination = sessionState.onboardingCompleted === true
+          ? redirectTarget || '/dashboard'
+          : '/onboarding';
+        
+        console.log('[AUTH_PAGE] 🎯 Step 3: Redirecting to:', destination, {
+          onboardingCompleted: sessionState.onboardingCompleted,
+          hasRedirectParam: !!redirectTarget,
+        });
+        
+        router.push(destination);
       } catch (error) {
         setSubmitError(error instanceof Error ? error.message : 'Authentication failed');
       } finally {

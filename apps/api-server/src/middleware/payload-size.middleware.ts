@@ -17,10 +17,12 @@ const MAX_BODY_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
 /**
  * Wraps a route handler to validate payload size before processing
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function withPayloadSizeLimit<T extends (req: NextRequest, ...args: any[]) => Promise<Response>>(
   handler: T,
   maxBytes: number = MAX_BODY_SIZE_BYTES
 ): T {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (async (req: NextRequest, ...args: any[]) => {
     // Check Content-Length header
     const contentLength = req.headers.get('content-length');

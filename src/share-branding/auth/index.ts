@@ -40,6 +40,7 @@ export {
 // BFF route helpers
 export {
   proxyAuthRequest,
+  proxyUpstreamRequest,
   fetchAuthUpstream,
   createForwardHeaders,
   extractCookieValue,
