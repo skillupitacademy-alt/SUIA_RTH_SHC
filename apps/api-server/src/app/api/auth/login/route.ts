@@ -92,7 +92,7 @@ async function handler(req: NextRequest, obsCtx: { requestId: string }) {
       deviceName: deviceContext.deviceName,
     });
 
-    if (brand !== 'skillup' && brand !== 'realtutorialhub') {
+    if (brand !== 'skillup' && brand !== 'realtutorialhub' && brand !== 'skillhubcore') {
       console.log('[LOGIN_ROUTE_DEBUG] FAILURE: Invalid brand');
       return ApiResponse.error(badRequest('Brand is required'));
     }

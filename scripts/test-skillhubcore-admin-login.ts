@@ -10,8 +10,8 @@ async function testSkillHubCoreLogin() {
   const adminUrl = 'https://admin.skillhubcore.in';
   
   const credentials = {
-    email: 'admin@test.com',
-    password: 'admin123',
+    email: 'admin@skillhubcore.in',
+    password: 'testing',
     platform: 'skillhubcore',
     brand: 'SkillHub Core'
   };
