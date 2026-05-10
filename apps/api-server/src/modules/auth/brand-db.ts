@@ -96,6 +96,12 @@ export function getAuthBrandContext(brand: RequestBrand = 'realtutorialhub') {
     return { db: skillupDb as any, tables: skillupTables as BrandAuthTables };
   }
 
+  if (brand === 'skillhubcore') {
+    // SkillHub Core uses people_db (unified auth database)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return { db: defaultDb as any, tables: defaultTables as BrandAuthTables };
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return { db: realtutorialhubDb as any, tables: realtutorialhubTables as BrandAuthTables };
 }
