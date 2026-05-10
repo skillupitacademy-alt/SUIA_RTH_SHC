@@ -31,11 +31,34 @@
       ],
       "@quiz/api-client/*": [
         "../../packages/api-client/src/*"
+      ],
+      "@quiz/db-tutorial": [
+        "../../packages/db-tutorial/src/index.ts"
+      ],
+      "@quiz/db-tutorial/*": [
+        "../../packages/db-tutorial/src/*"
+      ],
+      "@quiz/db/*": [
+        "../../packages/db/src/*"
+      ],
+      "@quiz/ui": [
+        "../../packages/ui/src/index.ts"
+      ],
+      "@quiz/ui/*": [
+        "../../packages/ui/src/*"
+      ],
+      "@quiz/observability": [
+        "../../packages/observability/src/index.ts"
+      ],
+      "@quiz/observability/*": [
+        "../../packages/observability/src/*"
       ]
     },
     "jsx": "preserve",
     "types": [
-      "node"
+      "node",
+      "react",
+      "react-dom"
     ]
   },
   "include": [

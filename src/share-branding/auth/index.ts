@@ -51,6 +51,7 @@ export {
 export {
   FALLBACK_API_BASE_RTH,
   FALLBACK_API_BASE_SKILLUP,
+  FALLBACK_API_BASE_SKILLHUBCORE,
 } from './constants';
 
 // Configuration and feature flags

@@ -34,6 +34,30 @@
       ],
       "@quiz/types/*": [
         "../../packages/types/src/*"
+      ],
+      "@quiz/api-client": [
+        "../../packages/api-client/src/index.ts"
+      ],
+      "@quiz/api-client/*": [
+        "../../packages/api-client/src/*"
+      ],
+      "@quiz/ui": [
+        "../../packages/ui/src/index.ts"
+      ],
+      "@quiz/ui/*": [
+        "../../packages/ui/src/*"
+      ],
+      "@quiz/observability": [
+        "../../packages/observability/src/index.ts"
+      ],
+      "@quiz/observability/*": [
+        "../../packages/observability/src/*"
+      ],
+      "@quiz/db-tutorial": [
+        "../../packages/db-tutorial/src/index.ts"
+      ],
+      "@quiz/db-tutorial/*": [
+        "../../packages/db-tutorial/src/*"
       ]
     },
     "jsx": "preserve",

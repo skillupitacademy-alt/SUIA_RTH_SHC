@@ -11,3 +11,4 @@
  */
 export const FALLBACK_API_BASE_RTH = 'https://api.realtutorialhub.com/api';
 export const FALLBACK_API_BASE_SKILLUP = 'https://api.skillupitacademy.com/api';
+export const FALLBACK_API_BASE_SKILLHUBCORE = 'https://api.skillhubcore.in/api';

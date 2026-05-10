@@ -14,25 +14,40 @@
     "@quiz/auth": "workspace:*",
     "@quiz/ui": "workspace:*",
     "@quiz/types": "workspace:*",
+    "@quiz/db-tutorial": "workspace:*",
+    "@quiz/observability": "workspace:*",
+    "@quiz/api-client": "workspace:*",
+    "@tanstack/react-query": "^5.90.21",
     "@types/node": "^20",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "@upstash/qstash": "^2.9.1",
+    "@upstash/vector": "^1.2.3",
     "autoprefixer": "^10.4.23",
+    "clsx": "^2.1.1",
     "cross-env": "^7.0.3",
+    "drizzle-orm": "^0.45.1",
     "eslint": "^8.57.0",
     "eslint-config-next": "15.2.0",
-    "lucide-react": "^0.359.0",
+    "framer-motion": "^12.34.3",
+    "lucide-react": "0.563.0",
     "next": "16.1.6",
+    "pino": "^10.3.1",
     "postcss": "^8",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "tailwind-merge": "^3.4.0",
     "tailwindcss": "^3.4.1",
     "typescript": "^5",
     "zod": "^3.24.1",
-    "@quiz/db-tutorial": "workspace:*",
-    "@quiz/observability": "workspace:*"
+    "zustand": "^5.0.10"
   },
   "engines": {
     "node": "20.x"
+  },
+  "devDependencies": {
+    "vitest": "^4.0.18",
+    "@vitest/coverage-v8": "^4.0.18",
+    "vite-tsconfig-paths": "^6.1.1"
   }
 }

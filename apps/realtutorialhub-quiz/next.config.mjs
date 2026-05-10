@@ -12,7 +12,7 @@ const apiUrlClean = (process.env.NEXT_PUBLIC_API_URL || "https://api.realtutoria
 const nextConfig = {
     compress: true,
     output: process.env.CLOUD_RUN_BUILD === 'true' ? 'standalone' : undefined,
-    transpilePackages: ['@quiz/api-client', '@quiz/db', '@quiz/ui', 'lucide-react'],
+    transpilePackages: ['@quiz/api-client', '@quiz/db', '@quiz/ui', '@quiz/auth', '@quiz/types', '@quiz/db-tutorial', '@quiz/observability', 'lucide-react'],
     serverExternalPackages: ['jsdom', 'html-encoding-sniffer', '@exodus/bytes', 'isomorphic-dompurify'],
     async headers() {
         const isDev = process.env.NODE_ENV === 'development';
