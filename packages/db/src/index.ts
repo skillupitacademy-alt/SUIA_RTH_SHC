@@ -13,16 +13,16 @@ import * as reportSchema from './schema/reports';
 import * as relationsSchema from './schema/relations';
 
 const schema = {
-  ...authSchema,
-  ...domainSchema,
-  ...questionSchema,
-  ...examSchema,
-  ...enumsSchema,
-  ...jobsSchema,
-  ...notificationSchema,
-  ...tutorSchema,
-  ...reportSchema,
-  ...relationsSchema,
+    ...authSchema,
+    ...domainSchema,
+    ...questionSchema,
+    ...examSchema,
+    ...enumsSchema,
+    ...jobsSchema,
+    ...notificationSchema,
+    ...tutorSchema,
+    ...reportSchema,
+    ...relationsSchema,
 };
 
 type Schema = typeof schema;
@@ -34,40 +34,40 @@ let replicaDbInstance: DbClient | null = null;
 
 // Lightweight no-op Drizzle-like stub to keep unit tests running without a real DB connection.
 const createTestDb = (): DbClient => {
-  const resolved = <T>(value: T) => Promise.resolve(value);
-  const simpleWhere = () => resolved(undefined);
+    const resolved = <T>(value: T) => Promise.resolve(value);
+    const simpleWhere = () => resolved(undefined);
 
-  const tableFns = {
-    findFirst: () => resolved(null as any),
-    findMany: () => resolved([] as any),
-  };
+    const tableFns = {
+        findFirst: () => resolved(null as any),
+        findMany: () => resolved([] as any),
+    };
 
-  return {
-    query: {
-      exams: { ...tableFns },
-      topics: { ...tableFns },
-      subtopics: { ...tableFns },
-      questions: { ...tableFns },
-      resultsByDimension: { ...tableFns },
-      examBlueprints: { ...tableFns },
-      users: { ...tableFns },
-    } as any,
-    select: () => ({
-      from: () => ({ where: simpleWhere }),
-      where: simpleWhere,
-    }) as any,
-    insert: () => ({ values: () => ({ returning: async () => [] }) }) as any,
-    update: () => ({ set: () => ({ where: async () => undefined }) }) as any,
-    delete: () => ({ where: async () => undefined }) as any,
-    execute: async () => ({ rows: [] }),
-  } as unknown as DbClient;
+    return {
+        query: {
+            exams: { ...tableFns },
+            topics: { ...tableFns },
+            subtopics: { ...tableFns },
+            questions: { ...tableFns },
+            resultsByDimension: { ...tableFns },
+            examBlueprints: { ...tableFns },
+            users: { ...tableFns },
+        } as any,
+        select: () => ({
+            from: () => ({ where: simpleWhere }),
+            where: simpleWhere,
+        }) as any,
+        insert: () => ({ values: () => ({ returning: async () => [] }) }) as any,
+        update: () => ({ set: () => ({ where: async () => undefined }) }) as any,
+        delete: () => ({ where: async () => undefined }) as any,
+        execute: async () => ({ rows: [] }),
+    } as unknown as DbClient;
 };
 
 export const getDb = (type: 'primary' | 'replica' = 'primary'): DbClient => {
     // 1. Check if we should use the replica
     if (type === 'replica' && process.env.DATABASE_URL_REPLICA) {
         if (!replicaDbInstance) {
-            const pool = new Pool({ 
+            const pool = new Pool({
                 connectionString: process.env.DATABASE_URL_REPLICA,
                 max: 10,
                 idleTimeoutMillis: 30000,
@@ -80,7 +80,7 @@ export const getDb = (type: 'primary' | 'replica' = 'primary'): DbClient => {
 
     // 2. Fallback to Primary
     if (!primaryDbInstance) {
-        const databaseUrl = process.env.DATABASE_SKILLHUBCORE_URL || process.env.DATABASE_URL;
+        const databaseUrl = process.env.DATABASE_URL_PEOPLE || process.env.DATABASE_URL;
         if (!databaseUrl) {
             if (process.env.NODE_ENV === 'test') {
                 primaryDbInstance = createTestDb();
@@ -89,7 +89,7 @@ export const getDb = (type: 'primary' | 'replica' = 'primary'): DbClient => {
             throw new Error('DATABASE_URL environment variable is required');
         }
 
-        const pool = new Pool({ 
+        const pool = new Pool({
             connectionString: databaseUrl,
             max: 15, // Higher limit for primary writes
             idleTimeoutMillis: 30000,
@@ -99,8 +99,8 @@ export const getDb = (type: 'primary' | 'replica' = 'primary'): DbClient => {
         });
 
         pool.on('error', (err) => console.error('[DB Pool Error]', err));
-        pool.on('connect', (client) => { 
-            if (process.env.DEBUG_DB) console.log('[DB Pool] New connection created'); 
+        pool.on('connect', (client) => {
+            if (process.env.DEBUG_DB) console.log('[DB Pool] New connection created');
             // Task 37: Enforce server-side timeouts
             client.query('SET statement_timeout = 30000'); // 30s
             client.query('SET idle_in_transaction_session_timeout = 30000'); // 30s

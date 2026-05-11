@@ -30,7 +30,7 @@ interface SectionStatus {
 
 function ContentManagerContent() {
   const brand = useBrand();
-  
+
   // Step 1: Basic Info
   const [subtopicInfo, setSubtopicInfo] = useState<SubtopicInfo>({
     subtopicId: '',
@@ -39,9 +39,9 @@ function ContentManagerContent() {
     topic: '',
     subtopic: ''
   });
-  
+
   const [isSubtopicCreated, setIsSubtopicCreated] = useState(false);
-  
+
   // Step 2: Section Management
   const [selectedSection, setSelectedSection] = useState<SectionType>('notes');
   const [jsonInput, setJsonInput] = useState('');
@@ -58,7 +58,7 @@ function ContentManagerContent() {
     visual: false,
     practice: false
   });
-  
+
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState<'success' | 'error' | 'info'>('info');
 
@@ -83,8 +83,8 @@ function ContentManagerContent() {
   };
 
   const createSubtopic = () => {
-    if (!subtopicInfo.subtopicId || !subtopicInfo.domain || !subtopicInfo.subject || 
-        !subtopicInfo.topic || !subtopicInfo.subtopic) {
+    if (!subtopicInfo.subtopicId || !subtopicInfo.domain || !subtopicInfo.subject ||
+      !subtopicInfo.topic || !subtopicInfo.subtopic) {
       showMessage('Please fill in all fields', 'error');
       return;
     }
@@ -148,7 +148,7 @@ function ContentManagerContent() {
   };
 
   const getPageUrl = () => {
-    return `http://localhost:3003/start-learning/subtopic/${subtopicInfo.subtopicId}`;
+    return `https://user.realtutorialhub.com/start-learning/subtopic/${subtopicInfo.subtopicId}`;
   };
 
   const openPreview = () => {
@@ -168,11 +168,10 @@ function ContentManagerContent() {
 
         {/* Message Alert */}
         {message && (
-          <div className={`mb-6 p-4 rounded-lg ${
-            messageType === 'success' ? 'bg-green-50 border-l-4 border-green-500 text-green-800' :
-            messageType === 'error' ? 'bg-red-50 border-l-4 border-red-500 text-red-800' :
-            'bg-blue-50 border-l-4 border-blue-500 text-blue-800'
-          }`}>
+          <div className={`mb-6 p-4 rounded-lg ${messageType === 'success' ? 'bg-green-50 border-l-4 border-green-500 text-green-800' :
+              messageType === 'error' ? 'bg-red-50 border-l-4 border-red-500 text-red-800' :
+                'b  g-blue-50 border-l-4 border-blue-500 text-blue-800'
+            }`}>
             <p className="font-medium">{message}</p>
           </div>
         )}
@@ -181,7 +180,7 @@ function ContentManagerContent() {
         {!isSubtopicCreated && (
           <section className="bg-white rounded-2xl shadow-lg p-8 mb-8">
             <h2 className="text-2xl font-bold text-gray-800 mb-6">Step 1: Create New Subtopic</h2>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div>
                 <label htmlFor="subtopicId" className="block text-sm font-semibold text-gray-700 mb-2">
@@ -271,16 +270,15 @@ function ContentManagerContent() {
             {/* Progress Status */}
             <section className="bg-white rounded-2xl shadow-lg p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Content Progress</h2>
-              
+
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
                 {sections.map(section => (
                   <div
                     key={section.id}
-                    className={`p-4 rounded-lg border-2 ${
-                      sectionStatus[section.id]
+                    className={`p-4 rounded-lg border-2 ${sectionStatus[section.id]
                         ? 'bg-green-50 border-green-500'
                         : 'bg-gray-50 border-gray-300'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-2">
                       <span className="text-2xl">{section.icon}</span>

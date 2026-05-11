@@ -139,6 +139,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
     }
 
     void revalidate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, isLocked, isSameAuthSession, login, user]); // Removed pathname from dependencies
 
   // Bypass guard for login page
