@@ -1,0 +1,17 @@
+{
+  "totalSections": 10,
+  "missingRenderers": [],
+  "missingDirectories": [],
+  "componentCounts": {
+    "notes": 9,
+    "layman": 8,
+    "reallife": 9,
+    "technical": 9,
+    "visual": 9,
+    "code": 9,
+    "quiz": 9,
+    "practice": 9,
+    "assignment": 9,
+    "project": 9
+  }
+}

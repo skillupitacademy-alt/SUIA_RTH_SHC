@@ -13,6 +13,17 @@ export interface DomainTheme {
   blockAITutor: string;
   blockAITutorHeader: string;
   blockNotes: string;
+  blockNotesHeader: string;
+  blockPractice: string;
+  blockPracticeHeader: string;
+  blockAssignment: string;
+  blockAssignmentHeader: string;
+  blockProject: string;
+  blockProjectHeader: string;
+  blockQuiz: string;
+  blockQuizHeader: string;
+  blockVisual: string;
+  blockVisualHeader: string;
   progressFill: string;
   quizBtn: string;
   domainIcon: string;
@@ -37,7 +48,18 @@ export const DOMAIN_THEMES: Record<'indigo' | 'blue' | 'teal' | 'steel', DomainT
     progressFill: '#f9a825',
     quizBtn: 'linear-gradient(135deg, #f57c00 0%, #ef6c00 100%)',
     domainIcon: 'globe',
-  },
+      blockNotesHeader: '#3d5a9e',
+    blockPractice: 'linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%)',
+    blockPracticeHeader: '#3d5a9e',
+    blockAssignment: 'linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%)',
+    blockAssignmentHeader: '#c53030',
+    blockProject: 'linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%)',
+    blockProjectHeader: '#276749',
+    blockQuiz: 'linear-gradient(135deg, #ebf8ff 0%, #bee3f8 100%)',
+    blockQuizHeader: '#2b6cb0',
+    blockVisual: 'linear-gradient(135deg, #faf5ff 0%, #e9d8fd 100%)',
+    blockVisualHeader: '#6b46c1',
+},
   blue: {
     breadcrumbBg: 'linear-gradient(135deg, #1a3a6b 0%, #2557a7 50%, #4472c4 100%)',
     sidebarAccent: '#2557a7',
@@ -56,7 +78,18 @@ export const DOMAIN_THEMES: Record<'indigo' | 'blue' | 'teal' | 'steel', DomainT
     progressFill: '#f9a825',
     quizBtn: 'linear-gradient(135deg, #f57c00 0%, #e65100 100%)',
     domainIcon: 'chart',
-  },
+      blockNotesHeader: '#2557a7',
+    blockPractice: 'linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%)',
+    blockPracticeHeader: '#2557a7',
+    blockAssignment: 'linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%)',
+    blockAssignmentHeader: '#c53030',
+    blockProject: 'linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%)',
+    blockProjectHeader: '#276749',
+    blockQuiz: 'linear-gradient(135deg, #ebf8ff 0%, #bee3f8 100%)',
+    blockQuizHeader: '#2b6cb0',
+    blockVisual: 'linear-gradient(135deg, #faf5ff 0%, #e9d8fd 100%)',
+    blockVisualHeader: '#6b46c1',
+},
   teal: {
     breadcrumbBg: 'linear-gradient(135deg, #1a5c5c 0%, #2e7d72 50%, #4caf9f 100%)',
     sidebarAccent: '#2e7d72',
@@ -75,7 +108,18 @@ export const DOMAIN_THEMES: Record<'indigo' | 'blue' | 'teal' | 'steel', DomainT
     progressFill: '#f9a825',
     quizBtn: 'linear-gradient(135deg, #f57c00 0%, #e65100 100%)',
     domainIcon: 'brain',
-  },
+      blockNotesHeader: '#2e7d72',
+    blockPractice: 'linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%)',
+    blockPracticeHeader: '#2e7d72',
+    blockAssignment: 'linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%)',
+    blockAssignmentHeader: '#c53030',
+    blockProject: 'linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%)',
+    blockProjectHeader: '#276749',
+    blockQuiz: 'linear-gradient(135deg, #ebf8ff 0%, #bee3f8 100%)',
+    blockQuizHeader: '#2b6cb0',
+    blockVisual: 'linear-gradient(135deg, #faf5ff 0%, #e9d8fd 100%)',
+    blockVisualHeader: '#6b46c1',
+},
   steel: {
     breadcrumbBg: 'linear-gradient(135deg, #1c2833 0%, #2e4057 50%, #485e76 100%)',
     sidebarAccent: '#2e4057',
@@ -94,7 +138,18 @@ export const DOMAIN_THEMES: Record<'indigo' | 'blue' | 'teal' | 'steel', DomainT
     progressFill: '#f9a825',
     quizBtn: 'linear-gradient(135deg, #f57c00 0%, #e65100 100%)',
     domainIcon: 'gear',
-  },
+      blockNotesHeader: '#2e4057',
+    blockPractice: 'linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%)',
+    blockPracticeHeader: '#2e4057',
+    blockAssignment: 'linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%)',
+    blockAssignmentHeader: '#c53030',
+    blockProject: 'linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%)',
+    blockProjectHeader: '#276749',
+    blockQuiz: 'linear-gradient(135deg, #ebf8ff 0%, #bee3f8 100%)',
+    blockQuizHeader: '#2b6cb0',
+    blockVisual: 'linear-gradient(135deg, #faf5ff 0%, #e9d8fd 100%)',
+    blockVisualHeader: '#6b46c1',
+},
 };
 
 export function getDomainTheme(domainSlug: string): DomainTheme {
