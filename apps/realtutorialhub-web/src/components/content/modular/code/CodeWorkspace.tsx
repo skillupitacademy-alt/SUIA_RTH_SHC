@@ -11,10 +11,9 @@ interface CodeWorkspaceProps {
     codeSnippet: string;
     explanation?: string;
   };
-  themeColor: string;
-}
+  }
 
-export function CodeWorkspace({ data, themeColor }: CodeWorkspaceProps) {
+export function CodeWorkspace({ data }: CodeWorkspaceProps) {
   const [copied, setCopied] = useState(false);
 
   if (!data) return null;

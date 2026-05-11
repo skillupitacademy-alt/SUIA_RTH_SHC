@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface ConceptComparisonProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function ConceptComparison({ data, themeColor }: ConceptComparisonProps) {
+export function ConceptComparison({ data }: ConceptComparisonProps) {
   if (!data) return null;
 
   return (

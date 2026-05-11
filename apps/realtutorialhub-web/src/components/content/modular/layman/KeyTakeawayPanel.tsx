@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface KeyTakeawayPanelProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function KeyTakeawayPanel({ data, themeColor }: KeyTakeawayPanelProps) {
+export function KeyTakeawayPanel({ data }: KeyTakeawayPanelProps) {
   if (!data) return null;
 
   return (

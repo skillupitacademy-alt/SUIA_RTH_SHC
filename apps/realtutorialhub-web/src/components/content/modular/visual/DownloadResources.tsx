@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface DownloadResourcesProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function DownloadResources({ data, themeColor }: DownloadResourcesProps) {
+export function DownloadResources({ data }: DownloadResourcesProps) {
   if (!data) return null;
 
   return (

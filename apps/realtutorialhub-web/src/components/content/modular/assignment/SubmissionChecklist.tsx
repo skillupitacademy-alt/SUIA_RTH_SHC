@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface SubmissionChecklistProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function SubmissionChecklist({ data, themeColor }: SubmissionChecklistProps) {
+export function SubmissionChecklist({ data }: SubmissionChecklistProps) {
   if (!data) return null;
 
   return (

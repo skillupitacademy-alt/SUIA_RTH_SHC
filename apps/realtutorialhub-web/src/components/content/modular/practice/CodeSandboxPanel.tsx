@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface CodeSandboxPanelProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function CodeSandboxPanel({ data, themeColor }: CodeSandboxPanelProps) {
+export function CodeSandboxPanel({ data }: CodeSandboxPanelProps) {
   if (!data) return null;
 
   return (

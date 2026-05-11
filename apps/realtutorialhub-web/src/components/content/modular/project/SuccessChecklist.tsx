@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface SuccessChecklistProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function SuccessChecklist({ data, themeColor }: SuccessChecklistProps) {
+export function SuccessChecklist({ data }: SuccessChecklistProps) {
   if (!data) return null;
 
   return (

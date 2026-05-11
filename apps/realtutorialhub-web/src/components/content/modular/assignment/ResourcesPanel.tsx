@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface ResourcesPanelProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function ResourcesPanel({ data, themeColor }: ResourcesPanelProps) {
+export function ResourcesPanel({ data }: ResourcesPanelProps) {
   if (!data) return null;
 
   return (

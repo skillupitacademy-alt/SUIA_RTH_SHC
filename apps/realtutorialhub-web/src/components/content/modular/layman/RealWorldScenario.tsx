@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface RealWorldScenarioProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function RealWorldScenario({ data, themeColor }: RealWorldScenarioProps) {
+export function RealWorldScenario({ data }: RealWorldScenarioProps) {
   if (!data) return null;
 
   return (

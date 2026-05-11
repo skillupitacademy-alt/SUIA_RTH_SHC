@@ -140,7 +140,7 @@ const maybeMarkAiTutorComplete = async (userId: string, subtopicId: string) => {
   }
 };
 
-export async function processAiTutorQuery(
+async function processAiTutorQuery(
   request: Request,
   deps: QueryDeps = defaultDeps
 ): Promise<Response> {

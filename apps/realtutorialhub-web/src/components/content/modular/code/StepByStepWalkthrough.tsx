@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface StepByStepWalkthroughProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function StepByStepWalkthrough({ data, themeColor }: StepByStepWalkthroughProps) {
+export function StepByStepWalkthrough({ data }: StepByStepWalkthroughProps) {
   if (!data) return null;
 
   return (

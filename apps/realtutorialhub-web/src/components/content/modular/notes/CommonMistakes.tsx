@@ -12,10 +12,9 @@ interface CommonMistakesProps {
       fix: string;
     }>;
   };
-  themeColor: string;
-}
+  }
 
-export function CommonMistakes({ data, themeColor }: CommonMistakesProps) {
+export function CommonMistakes({ data }: CommonMistakesProps) {
   if (!data) return null;
 
   return (

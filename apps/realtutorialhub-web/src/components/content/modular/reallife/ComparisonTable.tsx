@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface ComparisonTableProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function ComparisonTable({ data, themeColor }: ComparisonTableProps) {
+export function ComparisonTable({ data }: ComparisonTableProps) {
   if (!data) return null;
 
   return (

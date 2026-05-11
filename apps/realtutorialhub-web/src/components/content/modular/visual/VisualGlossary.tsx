@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface VisualGlossaryProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function VisualGlossary({ data, themeColor }: VisualGlossaryProps) {
+export function VisualGlossary({ data }: VisualGlossaryProps) {
   if (!data) return null;
 
   return (

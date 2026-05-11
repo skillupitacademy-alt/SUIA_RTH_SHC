@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface PracticeTasksProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function PracticeTasks({ data, themeColor }: PracticeTasksProps) {
+export function PracticeTasks({ data }: PracticeTasksProps) {
   if (!data) return null;
 
   return (

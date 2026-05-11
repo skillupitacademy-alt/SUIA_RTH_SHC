@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface KeyComponentsProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function KeyComponents({ data, themeColor }: KeyComponentsProps) {
+export function KeyComponents({ data }: KeyComponentsProps) {
   if (!data) return null;
 
   return (

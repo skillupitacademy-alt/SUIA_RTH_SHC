@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Settings, Cpu, Zap } from 'lucide-react';
+import { Settings } from 'lucide-react';
 
 interface SystemMechanicsProps {
   data: {

@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface PortfolioStrategyProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function PortfolioStrategy({ data, themeColor }: PortfolioStrategyProps) {
+export function PortfolioStrategy({ data }: PortfolioStrategyProps) {
   if (!data) return null;
 
   return (

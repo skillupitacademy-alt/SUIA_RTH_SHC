@@ -47,7 +47,7 @@ export function CoreDefinition({ data, themeColor }: CoreDefinitionProps) {
             <div>
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">In Simple Terms</p>
               <p className="text-slate-300 text-sm italic leading-relaxed">
-                "{data.simpleExplanation}"
+                {`"${data.simpleExplanation}"`}
               </p>
             </div>
           </div>

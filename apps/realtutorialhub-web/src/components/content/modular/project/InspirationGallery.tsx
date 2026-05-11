@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface InspirationGalleryProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function InspirationGallery({ data, themeColor }: InspirationGalleryProps) {
+export function InspirationGallery({ data }: InspirationGalleryProps) {
   if (!data) return null;
 
   return (

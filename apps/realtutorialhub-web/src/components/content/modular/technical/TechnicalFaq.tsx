@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface TechnicalFaqProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function TechnicalFaq({ data, themeColor }: TechnicalFaqProps) {
+export function TechnicalFaq({ data }: TechnicalFaqProps) {
   if (!data) return null;
 
   return (

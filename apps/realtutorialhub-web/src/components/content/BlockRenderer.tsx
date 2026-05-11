@@ -1,6 +1,5 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 
 import type { ContentBlockType, TutorialContentJSON } from '@quiz/types';
@@ -33,14 +32,8 @@ export function BlockRenderer({
   type, 
   activeBlockType, 
   content, 
-  theme,
-  subtopicId,
-  subtopicName,
-  simulateSlowLoad,
-  simulateError
+  theme
 }: BlockRendererProps) {
-  const t = useTranslations('blocks');
-
   // Use activeBlockType if type is not provided
   const targetType = type || activeBlockType || 'notes';
 

@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface NextStepsCardProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function NextStepsCard({ data, themeColor }: NextStepsCardProps) {
+export function NextStepsCard({ data }: NextStepsCardProps) {
   if (!data) return null;
 
   return (

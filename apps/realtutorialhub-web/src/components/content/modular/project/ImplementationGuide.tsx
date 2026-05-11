@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface ImplementationGuideProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function ImplementationGuide({ data, themeColor }: ImplementationGuideProps) {
+export function ImplementationGuide({ data }: ImplementationGuideProps) {
   if (!data) return null;
 
   return (

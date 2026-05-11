@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface ChallengeVariationProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function ChallengeVariation({ data, themeColor }: ChallengeVariationProps) {
+export function ChallengeVariation({ data }: ChallengeVariationProps) {
   if (!data) return null;
 
   return (

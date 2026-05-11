@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { Maximize2, Share2 } from 'lucide-react';
 
 interface MainDiagramProps {
@@ -40,9 +41,11 @@ export function MainDiagram({ data, themeColor }: MainDiagramProps) {
         <div className="relative aspect-[16/9] overflow-hidden bg-[#0a0c14] flex items-center justify-center p-8">
           <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at center, #1e293b 0%, transparent 70%)' }} />
           
-          <img 
+          <Image 
             src={data.imageUrl} 
             alt={data.altText} 
+            width={1200}
+            height={675}
             className="relative z-10 max-w-full max-h-full object-contain rounded-xl shadow-2xl transition-transform duration-700 group-hover:scale-[1.02]"
           />
 

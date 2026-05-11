@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface HelpfulTipsProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function HelpfulTips({ data, themeColor }: HelpfulTipsProps) {
+export function HelpfulTips({ data }: HelpfulTipsProps) {
   if (!data) return null;
 
   return (

@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use client';
 
 import { type TutorialContentJSON, TutorialContentSchema } from '@quiz/types';
@@ -61,6 +60,26 @@ type ContentPayload = {
     generatedByAi: boolean;
 };
 
+function getRecord(value: unknown): Record<string, unknown> | null {
+    return value !== null && typeof value === 'object' && !Array.isArray(value)
+        ? (value as Record<string, unknown>)
+        : null;
+}
+
+function getStringField(value: unknown, key: string): string {
+    const field = getRecord(value)?.[key];
+    return typeof field === 'string' ? field : '';
+}
+
+function getArrayField(value: unknown, key: string): unknown[] {
+    const field = getRecord(value)?.[key];
+    return Array.isArray(field) ? field : [];
+}
+
+function getNestedStringField(value: unknown, key: string, nestedKey: string): string {
+    return getStringField(getRecord(value)?.[key], nestedKey);
+}
+
 const DIFFICULTIES: Array<{ key: ContentDifficulty; label: string; description: string }> = [
     { key: 'simple', label: 'Simple', description: 'Friendly, concise, first-pass review' },
     { key: 'mixed', label: 'Mixed', description: 'Balanced depth with practical detail' },
@@ -74,6 +93,11 @@ const BLOCK_DEFINITIONS: Array<{ key: BlockKey; label: string; description: stri
     { key: 'real_life', label: 'Real Life', description: 'Practical scenario and workflow' },
     { key: 'technical', label: 'Technical', description: 'Definitions and precise mechanics' },
     { key: 'code', label: 'Code', description: 'Runnable example and steps' },
+    { key: 'visual', label: 'Visual', description: 'Diagrams and flowcharts' },
+    { key: 'quiz', label: 'Quiz', description: 'Assessments and MCQs' },
+    { key: 'practice', label: 'Practice', description: 'Hands-on practice blocks' },
+    { key: 'assignment', label: 'Assignment', description: 'Detailed project tasks' },
+    { key: 'project', label: 'Project', description: 'Full business project architecture' },
     { key: 'ai_tutor', label: 'AI Tutor', description: 'Conversational guidance and QA' },
 ];
 
@@ -893,46 +917,89 @@ export default function ContentFactoryPage({ embedded = false }: ContentFactoryP
 
                                             <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4">
                                                 {block.key === 'notes' && typeof data === 'object' && data != null ? (
-                                                    <p className="text-sm text-slate-700 leading-7">
-                                                        {(data as TutorialContentJSON['notes']).markdown.slice(0, 140)}
-                                                        {(data as TutorialContentJSON['notes']).markdown.length > 140 ? '...' : ''}
-                                                    </p>
+                                                    <div className="text-sm text-slate-700 leading-7">
+                                                        {'markdown' in data ? (
+                                                            <>
+                                                                {getStringField(data, 'markdown').slice(0, 140)}
+                                                                {getStringField(data, 'markdown').length > 140 ? '...' : ''}
+                                                            </>
+                                                        ) : (
+                                                            <p className="font-semibold">Modular Notes Content</p>
+                                                        )}
+                                                    </div>
                                                 ) : null}
 
                                                 {block.key === 'layman' && typeof data === 'object' && data != null ? (
                                                     <div className="space-y-2 text-sm text-slate-700">
-                                                        <p className="font-semibold">{(data as TutorialContentJSON['layman']).simpleExplanation.slice(0, 120)}...</p>
-                                                        <p className="text-slate-500">
-                                                            {(data as TutorialContentJSON['layman']).example1.company} / {(data as TutorialContentJSON['layman']).example2.company}
-                                                        </p>
+                                                        {'simpleExplanation' in data ? (
+                                                            <>
+                                                                <p className="font-semibold">{getStringField(data, 'simpleExplanation').slice(0, 120)}...</p>
+                                                                <p className="text-slate-500">
+                                                                    {getNestedStringField(data, 'example1', 'company')} / {getNestedStringField(data, 'example2', 'company')}
+                                                                </p>
+                                                            </>
+                                                        ) : (
+                                                            <p className="font-semibold">Modular Layman Content</p>
+                                                        )}
                                                     </div>
                                                 ) : null}
 
                                                 {block.key === 'real_life' && typeof data === 'object' && data != null ? (
                                                     <div className="space-y-2 text-sm text-slate-700">
-                                                        <p className="font-semibold">{(data as TutorialContentJSON['real_life']).title}</p>
-                                                        <p className="text-slate-500">{(data as TutorialContentJSON['real_life']).bullets[0]?.label ?? 'Workflow'}</p>
+                                                        {'title' in data ? (
+                                                            <>
+                                                                <p className="font-semibold">{getStringField(data, 'title')}</p>
+                                                                <p className="text-slate-500">{getStringField(getArrayField(data, 'bullets')[0], 'label') || 'Workflow'}</p>
+                                                            </>
+                                                        ) : (
+                                                            <p className="font-semibold">Modular Real Life Content</p>
+                                                        )}
                                                     </div>
                                                 ) : null}
 
                                                 {block.key === 'technical' && typeof data === 'object' && data != null ? (
                                                     <div className="space-y-2 text-sm text-slate-700">
-                                                        <p className="font-semibold">{(data as TutorialContentJSON['technical']).bullets.length} technical bullets</p>
-                                                        <p className="text-slate-500">{(data as TutorialContentJSON['technical']).tip}</p>
+                                                        {'bullets' in data ? (
+                                                            <>
+                                                                <p className="font-semibold">{getArrayField(data, 'bullets').length} technical bullets</p>
+                                                                <p className="text-slate-500">{getStringField(data, 'tip')}</p>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <p className="font-semibold">Modular Technical Content</p>
+                                                                <p className="text-slate-500">Advanced layout enabled</p>
+                                                            </>
+                                                        )}
                                                     </div>
                                                 ) : null}
 
                                                 {block.key === 'code' && typeof data === 'object' && data != null ? (
                                                     <div className="space-y-2 text-sm text-slate-700">
-                                                        <p className="font-semibold">{(data as TutorialContentJSON['code']).language.toUpperCase()}</p>
-                                                        <p className="text-slate-500">{(data as TutorialContentJSON['code']).steps.length} guided steps</p>
+                                                        {'language' in data ? (
+                                                            <>
+                                                                <p className="font-semibold">{getStringField(data, 'language').toUpperCase()}</p>
+                                                                <p className="text-slate-500">{getArrayField(data, 'steps').length} guided steps</p>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <p className="font-semibold">Modular Code Content</p>
+                                                                <p className="text-slate-500">Advanced layout enabled</p>
+                                                            </>
+                                                        )}
                                                     </div>
                                                 ) : null}
 
                                                 {block.key === 'ai_tutor' && typeof data === 'object' && data != null ? (
                                                     <div className="space-y-2 text-sm text-slate-700">
-                                                        <p className="font-semibold">{(data as TutorialContentJSON['ai_tutor']).greeting}</p>
-                                                        <p className="text-slate-500">{(data as TutorialContentJSON['ai_tutor']).qa_pairs.length} tutor prompts</p>
+                                                        <p className="font-semibold">{(data as NonNullable<TutorialContentJSON['ai_tutor']>).greeting}</p>
+                                                        <p className="text-slate-500">{(data as NonNullable<TutorialContentJSON['ai_tutor']>).qa_pairs.length} tutor prompts</p>
+                                                    </div>
+                                                ) : null}
+
+                                                {['visual', 'quiz', 'practice', 'assignment', 'project'].includes(block.key) && typeof data === 'object' && data != null ? (
+                                                    <div className="space-y-2 text-sm text-slate-700">
+                                                        <p className="font-semibold capitalize">{block.key} content ready</p>
+                                                        <p className="text-slate-500 text-xs">Modular rendering enabled</p>
                                                     </div>
                                                 ) : null}
 

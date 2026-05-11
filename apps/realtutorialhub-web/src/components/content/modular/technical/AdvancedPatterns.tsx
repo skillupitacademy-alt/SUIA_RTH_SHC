@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface AdvancedPatternsProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function AdvancedPatterns({ data, themeColor }: AdvancedPatternsProps) {
+export function AdvancedPatterns({ data }: AdvancedPatternsProps) {
   if (!data) return null;
 
   return (

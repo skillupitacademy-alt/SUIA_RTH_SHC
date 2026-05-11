@@ -1,19 +1,30 @@
 /// <reference lib="webworker" />
 
+export {};
+
 const CACHE_NAME = 'skillup-app-shell-v1';
 
+type PrecacheEntry = string | { url: string; revision: string | null };
 type SkillupWorkerEventMap = {
   install: ExtendableEvent;
   activate: ExtendableEvent;
   fetch: FetchEvent;
 };
 
+declare const self: ServiceWorkerGlobalScope & { __SW_MANIFEST: PrecacheEntry[] };
+
+const precacheManifest = self.__SW_MANIFEST;
 const sw = self as unknown as ServiceWorkerGlobalScope & {
   addEventListener<K extends keyof SkillupWorkerEventMap>(type: K, listener: (event: SkillupWorkerEventMap[K]) => void): void;
 };
 
 sw.addEventListener('install', (event) => {
-  event.waitUntil(sw.skipWaiting());
+  event.waitUntil(
+    (async () => {
+      void precacheManifest;
+      await sw.skipWaiting();
+    })()
+  );
 });
 
 sw.addEventListener('activate', (event) => {

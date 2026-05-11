@@ -1,7 +1,7 @@
 'use client';
 
+import { type TutorialContentJSON } from '@quiz/types';
 import React from 'react';
-import type { TutorialContentJSON } from '@quiz/types';
 
 import { SimpleOverview } from './SimpleOverview';
 import { AnalogyHero } from './AnalogyHero';
@@ -10,35 +10,47 @@ import { ConceptComparison } from './ConceptComparison';
 import { MistakeToAvoid } from './MistakeToAvoid';
 import { KeyTakeawayPanel } from './KeyTakeawayPanel';
 import { LaymanVisual } from './LaymanVisual';
+import { getLayoutStyle, pickSection, pickString, toRecord } from '../utils';
 
 interface LaymanModularRendererProps {
-  data: any;
+  data: NonNullable<TutorialContentJSON['layman']>;
   themeColor: string;
 }
 
 export function LaymanModularRenderer({ data, themeColor }: LaymanModularRendererProps) {
   if (!data || typeof data !== 'object') return null;
 
-    // Dynamic Layout Support
-  const layoutStyle = data.layout || {};
-  const spacing = data.spacing || "2rem";
+  const m = toRecord(data);
 
-return (
-    <div className="flex flex-col" style={{ gap: spacing, padding: layoutStyle.padding, margin: layoutStyle.margin, ...layoutStyle.customStyles }}>
-      {data.analogyHero && <AnalogyHero data={data.analogyHero} themeColor={themeColor} />}
+  // Dynamic Layout Support
+  const layoutStyle = getLayoutStyle(m);
+  const spacing = pickString(m, 'spacing', '2rem');
+
+  // Map schema keys
+  const hero = pickSection(m, ['analogyHero', 'analogy_card', 'intro_card']);
+  const overview = pickSection(m, ['simpleOverview', 'beginner_breakdown', 'mental_model']);
+  const scenario = pickSection(m, ['realWorldScenario', 'use_case']);
+  const comparison = pickSection(m, ['conceptComparison', 'faq']);
+  const mistake = pickSection(m, ['mistakeToAvoid', 'summary']);
+  const visual = pickSection(m, ['laymanVisual', 'mental_model']);
+  const takeaway = pickSection(m, ['keyTakeawayPanel', 'summary']);
+
+  return (
+    <div className="flex flex-col" style={{ gap: spacing, ...layoutStyle }}>
+      {hero && <AnalogyHero data={hero} />}
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {data.simpleOverview && <SimpleOverview data={data.simpleOverview} themeColor={themeColor} />}
-        {data.realWorldScenario && <RealWorldScenario data={data.realWorldScenario} themeColor={themeColor} />}
+        {overview && <SimpleOverview data={overview} themeColor={themeColor} />}
+        {scenario && <RealWorldScenario data={scenario} />}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {data.conceptComparison && <ConceptComparison data={data.conceptComparison} themeColor={themeColor} />}
-        {data.mistakeToAvoid && <MistakeToAvoid data={data.mistakeToAvoid} themeColor={themeColor} />}
+        {comparison && <ConceptComparison data={comparison} />}
+        {mistake && <MistakeToAvoid data={mistake} />}
       </div>
 
-      {data.laymanVisual && <LaymanVisual data={data.laymanVisual} themeColor={themeColor} />}
-      {data.keyTakeawayPanel && <KeyTakeawayPanel data={data.keyTakeawayPanel} themeColor={themeColor} />}
+      {visual && <LaymanVisual data={visual} />}
+      {takeaway && <KeyTakeawayPanel data={takeaway} />}
     </div>
   );
 }

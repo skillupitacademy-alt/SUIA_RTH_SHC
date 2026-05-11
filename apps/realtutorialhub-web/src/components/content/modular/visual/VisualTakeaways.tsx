@@ -8,10 +8,9 @@ interface VisualTakeawaysProps {
     takeawayTitle: string;
     points: string[];
   };
-  themeColor: string;
-}
+  }
 
-export function VisualTakeaways({ data, themeColor }: VisualTakeawaysProps) {
+export function VisualTakeaways({ data }: VisualTakeawaysProps) {
   if (!data) return null;
 
   return (

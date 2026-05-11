@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface SolutionPanelProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function SolutionPanel({ data, themeColor }: SolutionPanelProps) {
+export function SolutionPanel({ data }: SolutionPanelProps) {
   if (!data) return null;
 
   return (

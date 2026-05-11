@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface TechnicalSummaryProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function TechnicalSummary({ data, themeColor }: TechnicalSummaryProps) {
+export function TechnicalSummary({ data }: TechnicalSummaryProps) {
   if (!data) return null;
 
   return (

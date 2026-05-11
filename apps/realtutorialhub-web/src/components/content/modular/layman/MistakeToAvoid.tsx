@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface MistakeToAvoidProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function MistakeToAvoid({ data, themeColor }: MistakeToAvoidProps) {
+export function MistakeToAvoid({ data }: MistakeToAvoidProps) {
   if (!data) return null;
 
   return (

@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface APISpecificationProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function APISpecification({ data, themeColor }: APISpecificationProps) {
+export function APISpecification({ data }: APISpecificationProps) {
   if (!data) return null;
 
   return (

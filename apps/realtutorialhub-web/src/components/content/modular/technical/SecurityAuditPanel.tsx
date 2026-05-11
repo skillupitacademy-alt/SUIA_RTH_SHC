@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface SecurityAuditPanelProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function SecurityAuditPanel({ data, themeColor }: SecurityAuditPanelProps) {
+export function SecurityAuditPanel({ data }: SecurityAuditPanelProps) {
   if (!data) return null;
 
   return (

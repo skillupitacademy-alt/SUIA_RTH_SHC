@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface ProjectSpecsProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function ProjectSpecs({ data, themeColor }: ProjectSpecsProps) {
+export function ProjectSpecs({ data }: ProjectSpecsProps) {
   if (!data) return null;
 
   return (

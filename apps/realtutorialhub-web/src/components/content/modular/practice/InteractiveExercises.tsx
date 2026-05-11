@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface InteractiveExercisesProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function InteractiveExercises({ data, themeColor }: InteractiveExercisesProps) {
+export function InteractiveExercises({ data }: InteractiveExercisesProps) {
   if (!data) return null;
 
   return (

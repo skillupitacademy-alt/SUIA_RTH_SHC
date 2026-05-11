@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface QuizBadgeProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function QuizBadge({ data, themeColor }: QuizBadgeProps) {
+export function QuizBadge({ data }: QuizBadgeProps) {
   if (!data) return null;
 
   return (

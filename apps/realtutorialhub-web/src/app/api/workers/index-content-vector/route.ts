@@ -94,7 +94,7 @@ const defaultDeps: WorkerDeps = {
 
 const buildErrorMessage = (error: unknown) => (error instanceof Error ? error.message : String(error));
 
-export async function processIndexContentEnvelope(
+async function processIndexContentEnvelope(
   envelope: IndexContentEnvelope,
   deps: WorkerDeps = defaultDeps
 ): Promise<Response> {
@@ -176,7 +176,7 @@ export async function processIndexContentEnvelope(
   }
 }
 
-export function buildIndexContentVectorHandler() {
+function buildIndexContentVectorHandler() {
   return createQStashHandler(
     PlatformEventTypes.CONTENT_APPROVED_AND_PUBLISHED,
     async (envelope: unknown) => processIndexContentEnvelope(envelope as IndexContentEnvelope),

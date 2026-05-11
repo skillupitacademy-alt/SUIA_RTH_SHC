@@ -8,10 +8,9 @@ interface OutputPreviewProps {
     expectedOutput: string;
     description: string;
   };
-  themeColor: string;
-}
+  }
 
-export function OutputPreview({ data, themeColor }: OutputPreviewProps) {
+export function OutputPreview({ data }: OutputPreviewProps) {
   if (!data) return null;
 
   return (

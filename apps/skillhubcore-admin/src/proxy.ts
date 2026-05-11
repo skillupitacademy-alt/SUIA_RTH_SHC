@@ -1,14 +1,13 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Log all API requests
   if (pathname.startsWith('/api/')) {
     console.log(JSON.stringify({
-      tag: 'MIDDLEWARE',
-      message: '🔍 API Request intercepted',
+      tag: 'PROXY',
+      message: 'API request intercepted',
       timestamp: new Date().toISOString(),
       method: request.method,
       pathname,

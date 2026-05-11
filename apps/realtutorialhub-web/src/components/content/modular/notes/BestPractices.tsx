@@ -12,10 +12,9 @@ interface BestPracticesProps {
       tip: string;
     }>;
   };
-  themeColor: string;
-}
+  }
 
-export function BestPractices({ data, themeColor }: BestPracticesProps) {
+export function BestPractices({ data }: BestPracticesProps) {
   if (!data) return null;
 
   return (
@@ -32,7 +31,7 @@ export function BestPractices({ data, themeColor }: BestPracticesProps) {
             <div>
               <p className="text-xs font-bold text-slate-200 mb-1">{item.label}</p>
               <p className="text-[11px] text-slate-400 leading-normal italic">
-                "{item.tip}"
+                {`"${item.tip}"`}
               </p>
             </div>
           </div>

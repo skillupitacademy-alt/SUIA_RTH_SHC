@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface AnalogyHeroProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function AnalogyHero({ data, themeColor }: AnalogyHeroProps) {
+export function AnalogyHero({ data }: AnalogyHeroProps) {
   if (!data) return null;
 
   return (

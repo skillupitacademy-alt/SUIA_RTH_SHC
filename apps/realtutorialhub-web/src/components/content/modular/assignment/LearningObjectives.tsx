@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface LearningObjectivesProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function LearningObjectives({ data, themeColor }: LearningObjectivesProps) {
+export function LearningObjectives({ data }: LearningObjectivesProps) {
   if (!data) return null;
 
   return (

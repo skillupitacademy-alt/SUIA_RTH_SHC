@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface DeadlineBannerProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function DeadlineBanner({ data, themeColor }: DeadlineBannerProps) {
+export function DeadlineBanner({ data }: DeadlineBannerProps) {
   if (!data) return null;
 
   return (

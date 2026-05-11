@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface AssignmentHeroProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function AssignmentHero({ data, themeColor }: AssignmentHeroProps) {
+export function AssignmentHero({ data }: AssignmentHeroProps) {
   if (!data) return null;
 
   return (

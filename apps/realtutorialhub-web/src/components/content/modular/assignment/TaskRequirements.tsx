@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface TaskRequirementsProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function TaskRequirements({ data, themeColor }: TaskRequirementsProps) {
+export function TaskRequirements({ data }: TaskRequirementsProps) {
   if (!data) return null;
 
   return (

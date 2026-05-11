@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface TimerPanelProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function TimerPanel({ data, themeColor }: TimerPanelProps) {
+export function TimerPanel({ data }: TimerPanelProps) {
   if (!data) return null;
 
   return (

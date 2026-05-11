@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface MentorshipNoteProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function MentorshipNote({ data, themeColor }: MentorshipNoteProps) {
+export function MentorshipNote({ data }: MentorshipNoteProps) {
   if (!data) return null;
 
   return (

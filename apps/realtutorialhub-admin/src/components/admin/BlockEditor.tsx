@@ -24,7 +24,7 @@ interface StatusState {
     text: string;
 }
 
-const BLOCK_ORDER = ['notes', 'layman', 'real_life', 'technical', 'code', 'ai_tutor'] as const;
+const BLOCK_ORDER = ['notes', 'layman', 'real_life', 'technical', 'code', 'visual', 'quiz', 'practice', 'assignment', 'project', 'ai_tutor'] as const;
 type BasicBlockType = (typeof BLOCK_ORDER)[number];
 
 const BLOCK_LABELS: Record<BasicBlockType, string> = {
@@ -33,6 +33,11 @@ const BLOCK_LABELS: Record<BasicBlockType, string> = {
     real_life: 'Real Life',
     technical: 'Technical',
     code: 'Code',
+    visual: 'Visual',
+    quiz: 'Quiz',
+    practice: 'Practice',
+    assignment: 'Assignment',
+    project: 'Project',
     ai_tutor: 'AI Tutor',
 };
 
@@ -42,6 +47,11 @@ const BLOCK_HELPERS: Record<BasicBlockType, string> = {
     real_life: 'Scenario-driven framing that maps the idea to a real-world workflow.',
     technical: 'Precise explanation with terminology, bullets, and a practical tip.',
     code: 'Executable example with steps and a short outcome note.',
+    visual: 'Visual diagrams, flowcharts, and infographics.',
+    quiz: 'Interactive multiple choice questions and assessments.',
+    practice: 'Practical scenarios and remediation paths.',
+    assignment: 'Actionable tasks and submission requirements.',
+    project: 'Complex projects and business vision architecture.',
     ai_tutor: 'Chat-ready prompts and answers for follow-up learning.',
 };
 
@@ -601,17 +611,17 @@ export function BlockEditor({
                                 <div key={`${index}-real-life`} className="grid gap-3 rounded-2xl border border-slate-100 bg-slate-50/80 p-4 md:grid-cols-[180px_1fr_auto]">
                                     {renderInputField(`Label ${index + 1}`, bullet.label, (next) => updateContent('real_life', (current) => ({
                                         ...current,
-                                        bullets: current.bullets.map((item: any, itemIndex: number) => (itemIndex === index ? { ...item, label: next } : item)),
+                                        bullets: current.bullets.map((item: { label: string; detail: string }, itemIndex: number) => (itemIndex === index ? { ...item, label: next } : item)),
                                     })), `real_life.bullets.${index}.label`, 'Label')}
                                     {renderInputField(`Detail ${index + 1}`, bullet.detail, (next) => updateContent('real_life', (current) => ({
                                         ...current,
-                                        bullets: current.bullets.map((item: any, itemIndex: number) => (itemIndex === index ? { ...item, detail: next } : item)),
+                                        bullets: current.bullets.map((item: { label: string; detail: string }, itemIndex: number) => (itemIndex === index ? { ...item, detail: next } : item)),
                                     })), `real_life.bullets.${index}.detail`, 'Detail')}
                                     <button
                                         type="button"
                                         onClick={() => updateContent('real_life', (current) => ({
                                             ...current,
-                                            bullets: current.bullets.length > 1 ? current.bullets.filter((_: any, itemIndex: number) => itemIndex !== index) : current.bullets,
+                                            bullets: current.bullets.length > 1 ? current.bullets.filter((_: unknown, itemIndex: number) => itemIndex !== index) : current.bullets,
                                         }))}
                                         className="self-end rounded-xl border border-slate-200 bg-white px-3 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-rose-600"
                                     >
@@ -651,17 +661,17 @@ export function BlockEditor({
                                 <div key={`${index}-technical`} className="grid gap-3 rounded-2xl border border-slate-100 bg-slate-50/80 p-4 md:grid-cols-[180px_1fr_auto]">
                                     {renderInputField(`Term ${index + 1}`, bullet.term, (next) => updateContent('technical', (current) => ({
                                         ...current,
-                                        bullets: current.bullets.map((item: any, itemIndex: number) => (itemIndex === index ? { ...item, term: next } : item)),
+                                        bullets: current.bullets.map((item: { term: string; detail: string }, itemIndex: number) => (itemIndex === index ? { ...item, term: next } : item)),
                                     })), `technical.bullets.${index}.term`, 'Term')}
                                     {renderInputField(`Detail ${index + 1}`, bullet.detail, (next) => updateContent('technical', (current) => ({
                                         ...current,
-                                        bullets: current.bullets.map((item: any, itemIndex: number) => (itemIndex === index ? { ...item, detail: next } : item)),
+                                        bullets: current.bullets.map((item: { term: string; detail: string }, itemIndex: number) => (itemIndex === index ? { ...item, detail: next } : item)),
                                     })), `technical.bullets.${index}.detail`, 'Detail')}
                                     <button
                                         type="button"
                                         onClick={() => updateContent('technical', (current) => ({
                                             ...current,
-                                            bullets: current.bullets.length > 1 ? current.bullets.filter((_: any, itemIndex: number) => itemIndex !== index) : current.bullets,
+                                            bullets: current.bullets.length > 1 ? current.bullets.filter((_: unknown, itemIndex: number) => itemIndex !== index) : current.bullets,
                                         }))}
                                         className="self-end rounded-xl border border-slate-200 bg-white px-3 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-rose-600"
                                     >
@@ -686,7 +696,7 @@ export function BlockEditor({
                             value={contentBasic.code.language}
                             onChange={(e) => {
                                 const nextLanguage = e.target.value as BasicTutorialContent['code']['language'];
-                                updateContent('code', (current: any) => ({ ...(current as any), language: nextLanguage }));
+                                updateContent('code', (current: BasicTutorialContent['code']) => ({ ...current, language: nextLanguage }));
                             }}
                             className="h-12 rounded-2xl border border-slate-200 bg-white px-4 text-sm outline-none focus:border-indigo-300"
                         >
@@ -724,7 +734,7 @@ export function BlockEditor({
                                         value={step}
                                         onChange={(e) => updateContent('code', (current) => ({
                                             ...current,
-                                            steps: current.steps.map((item: any, itemIndex: number) => (itemIndex === index ? e.target.value : item)),
+                                            steps: current.steps.map((item: string, itemIndex: number) => (itemIndex === index ? e.target.value : item)),
                                         }))}
                                         className={cn(
                                             'h-11 flex-1 rounded-xl border px-3 text-sm outline-none',

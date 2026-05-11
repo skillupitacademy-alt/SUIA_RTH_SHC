@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface ProjectHeroProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function ProjectHero({ data, themeColor }: ProjectHeroProps) {
+export function ProjectHero({ data }: ProjectHeroProps) {
   if (!data) return null;
 
   return (

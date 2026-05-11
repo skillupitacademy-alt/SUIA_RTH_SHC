@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface ComparisonSliderProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function ComparisonSlider({ data, themeColor }: ComparisonSliderProps) {
+export function ComparisonSlider({ data }: ComparisonSliderProps) {
   if (!data) return null;
 
   return (

@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface BestPracticesProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function BestPractices({ data, themeColor }: BestPracticesProps) {
+export function BestPractices({ data }: BestPracticesProps) {
   if (!data) return null;
 
   return (

@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface ExplanationPanelProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function ExplanationPanel({ data, themeColor }: ExplanationPanelProps) {
+export function ExplanationPanel({ data }: ExplanationPanelProps) {
   if (!data) return null;
 
   return (

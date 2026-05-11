@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface HintPanelProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function HintPanel({ data, themeColor }: HintPanelProps) {
+export function HintPanel({ data }: HintPanelProps) {
   if (!data) return null;
 
   return (

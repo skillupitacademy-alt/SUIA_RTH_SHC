@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface ArchitectureDiagramProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function ArchitectureDiagram({ data, themeColor }: ArchitectureDiagramProps) {
+export function ArchitectureDiagram({ data }: ArchitectureDiagramProps) {
   if (!data) return null;
 
   return (

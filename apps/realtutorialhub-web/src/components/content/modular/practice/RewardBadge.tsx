@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface RewardBadgeProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function RewardBadge({ data, themeColor }: RewardBadgeProps) {
+export function RewardBadge({ data }: RewardBadgeProps) {
   if (!data) return null;
 
   return (

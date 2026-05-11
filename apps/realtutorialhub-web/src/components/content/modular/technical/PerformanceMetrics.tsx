@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface PerformanceMetricsProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function PerformanceMetrics({ data, themeColor }: PerformanceMetricsProps) {
+export function PerformanceMetrics({ data }: PerformanceMetricsProps) {
   if (!data) return null;
 
   return (

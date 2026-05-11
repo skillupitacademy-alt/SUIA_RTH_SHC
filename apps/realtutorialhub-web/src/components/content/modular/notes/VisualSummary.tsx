@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { Eye, Info } from 'lucide-react';
 
 interface VisualSummaryProps {
@@ -56,7 +57,13 @@ export function VisualSummary({ data, themeColor }: VisualSummaryProps) {
           <div className="relative group">
             <div className="absolute -inset-1 bg-gradient-to-r opacity-20 blur group-hover:opacity-30 transition-opacity" style={{ backgroundImage: `linear-gradient(to right, ${themeColor}, #fb923c)` }} />
             <div className="relative rounded-xl overflow-hidden border border-slate-700 bg-slate-950">
-              <img src={data.image.url} alt={data.image.alt} className="w-full h-auto object-cover" />
+              <Image 
+                src={data.image.url} 
+                alt={data.image.alt} 
+                width={800} 
+                height={450} 
+                className="w-full h-auto object-cover" 
+              />
               {data.image.caption && (
                 <div className="absolute bottom-0 left-0 right-0 p-3 bg-black/60 backdrop-blur-sm text-[10px] text-slate-300 border-t border-slate-800">
                   {data.image.caption}

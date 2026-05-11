@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface CodeProblemIntroProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function CodeProblemIntro({ data, themeColor }: CodeProblemIntroProps) {
+export function CodeProblemIntro({ data }: CodeProblemIntroProps) {
   if (!data) return null;
 
   return (

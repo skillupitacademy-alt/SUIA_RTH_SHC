@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface TechStackPanelProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function TechStackPanel({ data, themeColor }: TechStackPanelProps) {
+export function TechStackPanel({ data }: TechStackPanelProps) {
   if (!data) return null;
 
   return (

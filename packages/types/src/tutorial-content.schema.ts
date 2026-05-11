@@ -23,6 +23,12 @@ export const ContentImageSchema = z
 
 export type ContentImage = z.infer<typeof ContentImageSchema>;
 
+
+const BaseModularSchema = z.object({
+  layout: z.any().optional(),
+  spacing: z.any().optional(),
+});
+
 // --- SECTION-SPECIFIC MODULAR SCHEMAS (Sync with UI/UX Spec Templates) ---
 
 const NotesModularSchema = z.object({
@@ -42,7 +48,7 @@ const NotesModularSchema = z.object({
   bestPractices: z.any().optional(),
   commonErrors: z.any().optional(),
   revisionSummary: z.any().optional(),
-});
+}).merge(BaseModularSchema);
 
 const LaymanModularSchema = z.object({
   intro_card: z.any().optional(),
@@ -69,7 +75,7 @@ const LaymanModularSchema = z.object({
   mentalModel: z.any().optional(),
   commonConfusions: z.any().optional(),
   simpleRecap: z.any().optional(),
-});
+}).merge(BaseModularSchema);
 
 const VisualModularSchema = z.object({
   visual_intro_card: z.any().optional(),
@@ -95,7 +101,7 @@ const VisualModularSchema = z.object({
   mentalModelVisualization: z.any().optional(),
   realWorldVisualMapping: z.any().optional(),
   commonConfusionVisualization: z.any().optional(),
-});
+}).merge(BaseModularSchema);
 
 const RealLifeModularSchema = z.object({
   context_intro_card: z.any().optional(),
@@ -121,7 +127,7 @@ const RealLifeModularSchema = z.object({
   domainScenarios: z.any().optional(),
   practicalRecap: z.any().optional(),
   careerRelevance: z.any().optional(),
-});
+}).merge(BaseModularSchema);
 
 const TechnicalModularSchema = z.object({
   technical_definition_block: z.any().optional(),
@@ -151,7 +157,7 @@ const TechnicalModularSchema = z.object({
   decisionFrameworkPanel: z.any().optional(),
   architecturePatternRepository: z.any().optional(),
   realWorldScalingDashboard: z.any().optional(),
-});
+}).merge(BaseModularSchema);
 
 const CodeModularSchema = z.object({
   problem_context_card: z.any().optional(),
@@ -192,7 +198,7 @@ const CodeModularSchema = z.object({
   commonMistakes: z.any().optional(),
   realWorldImplementation: z.any().optional(),
   codeSummary: z.any().optional(),
-});
+}).merge(BaseModularSchema);
 
 const QuizModularSchema = z.object({
   quiz_intro_card: z.any().optional(),
@@ -206,7 +212,7 @@ const QuizModularSchema = z.object({
   quizOverview: z.any().optional(),
   questions: z.array(z.any()).optional(),
   quizResults: z.any().optional(),
-});
+}).merge(BaseModularSchema);
 
 const PracticeModularSchema = z.object({
   assessment_intro_card: z.any().optional(),
@@ -221,7 +227,7 @@ const PracticeModularSchema = z.object({
   theoryQuestions: z.any().optional(),
   practicalQuestions: z.any().optional(),
   testResults: z.any().optional(),
-});
+}).merge(BaseModularSchema);
 
 const AssignmentModularSchema = z.object({
   assignment_brief_card: z.any().optional(),
@@ -235,7 +241,7 @@ const AssignmentModularSchema = z.object({
   assignmentOverview: z.any().optional(),
   taskRequirements: z.any().optional(),
   starterCode: z.any().optional(),
-});
+}).merge(BaseModularSchema);
 
 const ProjectModularSchema = z.object({
   project_vision_card: z.any().optional(),
@@ -249,20 +255,20 @@ const ProjectModularSchema = z.object({
   projectOverview: z.any().optional(),
   featureRequirements: z.any().optional(),
   implementationGuide: z.any().optional(),
-});
+}).merge(BaseModularSchema);
 
 // --- MAIN WRAPPER SCHEMA ---
 
 export const TutorialContentSchema = z.object({
   notes: z.union([
-    z.object({ markdown: z.string().min(1), image: ContentImageSchema.optional().nullable() }),
+    z.object({ markdown: z.string().min(1), image: ContentImageSchema.optional().nullable() }).merge(BaseModularSchema),
     NotesModularSchema
   ]),
   layman: z.union([
     z.object({
       simpleExplanation: z.string().min(1),
       analogyOrStory: z.string().min(1),
-      example1: z.object({ company: z.string().min(1), content: z.string().min(1) }),
+      example1: z.object({ company: z.string().min(1), content: z.string().min(1) }).merge(BaseModularSchema),
       example2: z.object({ company: z.string().min(1), content: z.string().min(1) }),
       image: ContentImageSchema.optional().nullable(),
     }),
@@ -275,7 +281,7 @@ export const TutorialContentSchema = z.object({
       bullets: z.array(z.object({ label: z.string().min(1), detail: z.string().min(1) })),
       tip: z.string().min(1),
       image: ContentImageSchema.optional().nullable(),
-    }),
+    }).merge(BaseModularSchema),
     RealLifeModularSchema
   ]),
   technical: z.union([
@@ -284,7 +290,7 @@ export const TutorialContentSchema = z.object({
       bullets: z.array(z.object({ term: z.string().min(1), detail: z.string().min(1) })),
       tip: z.string().min(1),
       image: ContentImageSchema.optional().nullable(),
-    }),
+    }).merge(BaseModularSchema),
     TechnicalModularSchema
   ]),
   code: z.union([
@@ -294,7 +300,7 @@ export const TutorialContentSchema = z.object({
       code: z.string().min(1),
       steps: z.array(z.string().min(1)),
       image: ContentImageSchema.optional().nullable(),
-    }),
+    }).merge(BaseModularSchema),
     CodeModularSchema
   ]),
   visual: VisualModularSchema.optional(),

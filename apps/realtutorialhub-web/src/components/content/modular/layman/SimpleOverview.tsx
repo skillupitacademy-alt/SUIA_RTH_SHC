@@ -27,7 +27,7 @@ export function SimpleOverview({ data, themeColor }: SimpleOverviewProps) {
 
       <div className="space-y-5">
         <p className="text-sm font-bold text-slate-200 bg-slate-800/50 p-3 rounded-lg border-l-4" style={{ borderColor: themeColor }}>
-          "{data.oneSentenceSummary}"
+          {`"${data.oneSentenceSummary}"`}
         </p>
 
         <div>

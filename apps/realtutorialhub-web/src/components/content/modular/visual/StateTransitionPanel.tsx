@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface StateTransitionPanelProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function StateTransitionPanel({ data, themeColor }: StateTransitionPanelProps) {
+export function StateTransitionPanel({ data }: StateTransitionPanelProps) {
   if (!data) return null;
 
   return (

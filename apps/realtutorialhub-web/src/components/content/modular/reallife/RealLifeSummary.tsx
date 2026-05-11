@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface RealLifeSummaryProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function RealLifeSummary({ data, themeColor }: RealLifeSummaryProps) {
+export function RealLifeSummary({ data }: RealLifeSummaryProps) {
   if (!data) return null;
 
   return (

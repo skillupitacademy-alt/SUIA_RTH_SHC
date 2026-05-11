@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Eye, Image as ImageIcon, Sparkles } from 'lucide-react';
+import { Eye, Sparkles } from 'lucide-react';
 
 interface VisualHeroProps {
   data: {
@@ -46,7 +46,7 @@ export function VisualHero({ data, themeColor }: VisualHeroProps) {
               <Sparkles size={16} className="absolute top-4 right-4 text-orange-500/50 group-hover:text-orange-500 transition-colors" />
               <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-3">Key Observation</h4>
               <p className="text-sm font-bold text-slate-200 leading-relaxed italic">
-                "{data.keyObservation}"
+                {`"${data.keyObservation}"`}
               </p>
             </div>
           </div>

@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface LaymanVisualProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function LaymanVisual({ data, themeColor }: LaymanVisualProps) {
+export function LaymanVisual({ data }: LaymanVisualProps) {
   if (!data) return null;
 
   return (

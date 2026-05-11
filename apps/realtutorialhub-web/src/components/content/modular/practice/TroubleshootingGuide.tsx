@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface TroubleshootingGuideProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function TroubleshootingGuide({ data, themeColor }: TroubleshootingGuideProps) {
+export function TroubleshootingGuide({ data }: TroubleshootingGuideProps) {
   if (!data) return null;
 
   return (

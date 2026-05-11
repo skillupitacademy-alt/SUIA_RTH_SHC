@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface ProTipsPanelProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function ProTipsPanel({ data, themeColor }: ProTipsPanelProps) {
+export function ProTipsPanel({ data }: ProTipsPanelProps) {
   if (!data) return null;
 
   return (

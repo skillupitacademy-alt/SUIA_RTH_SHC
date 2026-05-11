@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface ExpertInsightProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function ExpertInsight({ data, themeColor }: ExpertInsightProps) {
+export function ExpertInsight({ data }: ExpertInsightProps) {
   if (!data) return null;
 
   return (

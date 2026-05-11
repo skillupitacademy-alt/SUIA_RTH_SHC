@@ -3,11 +3,10 @@
 import React from 'react';
 
 interface ScoreBoardProps {
-  data: any;
-  themeColor: string;
-}
+  data: Record<string, unknown> /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+  }
 
-export function ScoreBoard({ data, themeColor }: ScoreBoardProps) {
+export function ScoreBoard({ data }: ScoreBoardProps) {
   if (!data) return null;
 
   return (

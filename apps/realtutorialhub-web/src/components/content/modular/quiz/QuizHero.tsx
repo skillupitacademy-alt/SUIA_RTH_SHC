@@ -11,10 +11,9 @@ interface QuizHeroProps {
     estimatedTime: string;
     totalQuestions: number;
   };
-  themeColor: string;
-}
+  }
 
-export function QuizHero({ data, themeColor }: QuizHeroProps) {
+export function QuizHero({ data }: QuizHeroProps) {
   if (!data) return null;
 
   return (
