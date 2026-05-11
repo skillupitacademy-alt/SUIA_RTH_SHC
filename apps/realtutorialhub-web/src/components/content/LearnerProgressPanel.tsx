@@ -1,14 +1,12 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { AssignmentDifficulty } from '@quiz/types';
+import type { AssignmentDifficulty, ContentBlockType } from '@quiz/types';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 import type { DomainTheme } from '@/lib/domain-themes';
 import { getTutorialProgress, reportTutorialBlockViewed } from '@/lib/tutorial-progress';
-
-type BlockType = 'notes' | 'layman' | 'real_life' | 'technical' | 'code' | 'ai_tutor';
 
 type AssignmentTierStatus = {
   status: 'not_started' | 'in_progress' | 'self_completed';
@@ -41,7 +39,7 @@ interface LearnerProgressPanelProps {
   subtopicId: string;
   subtopicName: string;
   theme: DomainTheme;
-  blockOrder: BlockType[];
+  blockOrder: ContentBlockType[];
   assignmentsHref?: string;
   showContentProgress?: boolean;
 }
@@ -54,7 +52,7 @@ function getStorageKey(subtopicId: string): string {
   return `tutorial-progress:${subtopicId}`;
 }
 
-function loadCompletedBlocks(subtopicId: string): BlockType[] {
+function loadCompletedBlocks(subtopicId: string): ContentBlockType[] {
   if (typeof window === 'undefined') return [];
 
   try {
@@ -64,7 +62,7 @@ function loadCompletedBlocks(subtopicId: string): BlockType[] {
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return [];
 
-    return parsed.filter((item): item is BlockType => typeof item === 'string');
+    return parsed.filter((item): item is ContentBlockType => typeof item === 'string');
   } catch {
     return [];
   }
@@ -131,14 +129,15 @@ function titleCase(value: string): string {
 function getTierCopy(
   difficulty: AssignmentDifficulty,
   tier: AssignmentTierStatus,
-  contentComplete: boolean
+  contentComplete: boolean,
+  totalBlocks: number
 ): { detail: string; badge: string; ready: boolean } {
   const label = titleCase(difficulty);
 
   if (!tier.isUnlocked) {
     if (difficulty === 'simple' && !contentComplete) {
       return {
-        detail: 'Complete all 6 content blocks to unlock the Simple assignments.',
+        detail: `Complete all ${totalBlocks} content blocks to unlock the Simple assignments.`,
         badge: 'Locked',
         ready: false,
       };
@@ -184,7 +183,7 @@ export function LearnerProgressPanel({
   showContentProgress = true,
 }: LearnerProgressPanelProps) {
   const queryClient = useQueryClient();
-  const [completedBlocks, setCompletedBlocks] = useState<BlockType[]>([]);
+  const [completedBlocks, setCompletedBlocks] = useState<ContentBlockType[]>([]);
   const [visible, setVisible] = useState(false);
   const [helpQuestion, setHelpQuestion] = useState('');
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -194,7 +193,7 @@ export function LearnerProgressPanel({
   const completionPct = showContentProgress && blockOrder.length > 0 ? Math.round((completedCount / blockOrder.length) * 100) : 0;
   const allBlocksComplete = showContentProgress && completedCount === blockOrder.length && blockOrder.length > 0;
   const introCopy = showContentProgress
-    ? 'Complete the six blocks in order, track your progress as you scroll, and unlock the Simple assignment path after completion.'
+    ? `Complete the ${blockOrder.length} blocks in order, track your progress as you scroll, and unlock the Simple assignment path after completion.`
     : 'Use this compact practice view to work through the tier cards and help flow after you complete the lesson blocks on the main page.';
 
   const assignmentQuery = useQuery({
@@ -274,7 +273,7 @@ export function LearnerProgressPanel({
       setCompletedBlocks((current) => {
         const merged = new Set([...current, ...progressQuery.data!.blocksViewed]);
         if (merged.size === current.length) return current;
-        return Array.from(merged) as BlockType[];
+        return Array.from(merged) as ContentBlockType[];
       });
     }
   }, [progressQuery.data, subtopicId]);
@@ -288,10 +287,10 @@ export function LearnerProgressPanel({
     if (!showContentProgress) return;
     if (typeof window === 'undefined') return;
 
-    const timers = new Map<BlockType, ReturnType<typeof globalThis.setTimeout>>();
+    const timers = new Map<ContentBlockType, ReturnType<typeof globalThis.setTimeout>>();
     const selectors = blockOrder.map((blockType) => ({ blockType, element: window.document.getElementById(`block-${blockType}`) }));
 
-    const clearTimer = (blockType: BlockType) => {
+    const clearTimer = (blockType: ContentBlockType) => {
       const timer = timers.get(blockType);
       if (timer) {
         globalThis.clearTimeout(timer);
@@ -299,7 +298,7 @@ export function LearnerProgressPanel({
       }
     };
 
-    const markComplete = (blockType: BlockType) => {
+    const markComplete = (blockType: ContentBlockType) => {
       setVisible(true);
       setCompletedBlocks((current) => (current.includes(blockType) ? current : [...current, blockType]));
       void reportTutorialBlockViewed(subtopicId, blockType).catch(() => undefined);
@@ -310,7 +309,7 @@ export function LearnerProgressPanel({
       (entries) => {
         entries.forEach((entry) => {
           const target = entry.target as HTMLElement;
-          const blockType = target.dataset.blockType as BlockType | undefined;
+          const blockType = target.dataset.blockType as ContentBlockType | undefined;
           if (!blockType || completedBlocks.includes(blockType)) return;
 
           if (entry.isIntersecting && entry.intersectionRatio >= TRACKING_THRESHOLD) {
@@ -544,7 +543,7 @@ export function LearnerProgressPanel({
               <div style={{ marginTop: 16, display: 'grid', gap: 12 }}>
                 {ASSIGNMENT_TIERS.map((difficulty) => {
                   const tier = tierStatus[difficulty];
-                  const copy = getTierCopy(difficulty, tier, contentFlowUnlocked);
+                  const copy = getTierCopy(difficulty, tier, contentFlowUnlocked, blockOrder.length);
                   const actionLabel =
                     tier.status === 'self_completed'
                       ? 'Completed'
@@ -719,7 +718,7 @@ export function LearnerProgressPanel({
         >
           <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 6 }}>Subtopic complete</div>
           <div style={{ fontSize: 13, lineHeight: 1.7 }}>
-            You finished all six blocks. The Simple assignment path is now available, and the next tier unlock sequence is ready for T3-B.
+            You finished all {blockOrder.length} blocks. The Simple assignment path is now available, and the next tier unlock sequence is ready.
           </div>
         </div>
       ) : null}

@@ -5803,5 +5803,15 @@
         "content_performance_reports": true
       }
     }
+  },
+  {
+    "ai_tutor_section_architecture": {
+      "metadata": {
+        "section": "AI Tutor",
+        "version": "1.0"
+      },
+      "greeting": true,
+      "qa_pairs": true
+    }
   }
 ]

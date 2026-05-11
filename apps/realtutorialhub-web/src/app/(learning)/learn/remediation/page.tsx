@@ -38,12 +38,22 @@ function truncateNotes(value: string, maxLength = 220): string {
 }
 
 function getNotesExcerpt(content: TutorialContentJSON | null | undefined, fallback: string): string {
-  const notes = content?.notes?.markdown ?? '';
-  if (notes.trim().length === 0) {
+  if (!content?.notes) {
     return `Revisit the tutorial notes for ${fallback}.`;
   }
 
-  return truncateNotes(notes);
+  let excerpt = '';
+  if ('markdown' in content.notes) {
+    excerpt = content.notes.markdown;
+  } else if ('coreDefinition' in content.notes) {
+    excerpt = `${content.notes.coreDefinition.definition} ${content.notes.conceptExplanation.mainConcept}`;
+  }
+
+  if (excerpt.trim().length === 0) {
+    return `Revisit the tutorial notes for ${fallback}.`;
+  }
+
+  return truncateNotes(excerpt);
 }
 
 export default async function RemediationPage() {

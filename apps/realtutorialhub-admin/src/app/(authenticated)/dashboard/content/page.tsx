@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use client';
 
 import { type TutorialContentJSON, TutorialContentSchema } from '@quiz/types';

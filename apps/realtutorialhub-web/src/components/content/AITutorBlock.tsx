@@ -45,6 +45,7 @@ export function AITutorBlock({
 }: AITutorBlockProps) {
   const t = useTranslations('blocks.aiTutor');
   const common = useTranslations('common');
+  
   const safeData = data ?? { greeting: '', qa_pairs: [] };
 
   const initialMessages = useMemo<AiTutorMessage[]>(

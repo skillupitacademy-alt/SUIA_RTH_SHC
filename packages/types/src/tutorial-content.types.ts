@@ -1,50 +1,9 @@
-export interface ContentImage {
-  type: 'svg_standard' | 'r2_custom';
-  svgKey: string | null;
-  url: string | null;
-  alt: string;
-  caption: string | null;
-  position: 'right' | 'bottom' | 'inline';
-  width: number;
-}
+// This file contains legacy types and shared interfaces.
+// The main TutorialContentJSON type is now derived from Zod in tutorial-content.schema.ts
 
-export interface TutorialContentJSON {
-  notes: {
-    markdown: string;
-    image?: ContentImage | null;
-  };
-  layman: {
-    simpleExplanation: string;
-    analogyOrStory: string;
-    example1: { company: string; content: string };
-    example2: { company: string; content: string };
-    image?: ContentImage | null;
-  };
-  real_life: {
-    title: string;
-    scenario: string;
-    bullets: Array<{ label: string; detail: string }>;
-    tip: string;
-    image?: ContentImage | null;
-  };
-  technical: {
-    markdown: string;
-    bullets: Array<{ term: string; detail: string }>;
-    tip: string;
-    image?: ContentImage | null;
-  };
-  code: {
-    language: 'javascript' | 'typescript' | 'python' | 'sql' | 'scala' | 'java' | 'bash';
-    intro: string;
-    code: string;
-    steps: string[];
-    image?: ContentImage | null;
-  };
-  ai_tutor: {
-    greeting: string;
-    qa_pairs: Array<{ question: string; answer: string }>;
-  };
-}
+import { TutorialContentJSON } from './tutorial-content.schema';
+
+// Do NOT export TutorialContentJSON from here to avoid conflict with schema.ts export
 
 export type ContentBlockType = keyof TutorialContentJSON;
 

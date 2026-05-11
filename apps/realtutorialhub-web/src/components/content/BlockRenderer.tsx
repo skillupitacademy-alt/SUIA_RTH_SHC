@@ -15,6 +15,11 @@ import { LaymanBlock } from './LaymanBlock';
 import { RealLifeBlock } from './RealLifeBlock';
 import { TechnicalBlock } from './TechnicalBlock';
 import { CodeBlock } from './CodeBlock';
+import { VisualBlock } from './VisualBlock';
+import { QuizBlock } from './QuizBlock';
+import { PracticeBlock } from './PracticeBlock';
+import { AssignmentBlock } from './AssignmentBlock';
+import { ProjectBlock } from './ProjectBlock';
 import { AITutorBlock } from './AITutorBlock';
 
 interface BlockRendererProps {
@@ -28,7 +33,19 @@ interface BlockRendererProps {
   simulateError?: boolean;
 }
 
-const BLOCK_ORDER: ContentBlockType[] = ['notes', 'layman', 'real_life', 'technical', 'code', 'ai_tutor'];
+const BLOCK_ORDER: ContentBlockType[] = [
+  'notes',
+  'layman',
+  'real_life',
+  'technical',
+  'visual',
+  'code',
+  'quiz',
+  'practice',
+  'assignment',
+  'project',
+  'ai_tutor',
+];
 
 function BlockShell({
   blockType,
@@ -71,6 +88,10 @@ export function BlockRenderer({
   }, [activeBlockType, blocksToRender]);
 
   const renderBlock = (blockType: ContentBlockType) => {
+    // Return null if data for the section is missing
+    const sectionData = content[blockType as keyof TutorialContentJSON];
+    if (!sectionData && blockType !== 'ai_tutor') return null;
+
     switch (blockType) {
       case 'notes':
         return <NotesBlock data={content.notes} theme={{ blockNotes: theme.blockNotes, blockNotesHeader: theme.sidebarAccent }} />;
@@ -82,6 +103,16 @@ export function BlockRenderer({
         return <TechnicalBlock data={content.technical} theme={theme} />;
       case 'code':
         return <CodeBlock data={content.code} theme={theme} />;
+      case 'visual':
+        return <VisualBlock data={content.visual} theme={theme} />;
+      case 'quiz':
+        return <QuizBlock data={content.quiz} theme={theme} />;
+      case 'practice':
+        return <PracticeBlock data={content.practice} theme={theme} />;
+      case 'assignment':
+        return <AssignmentBlock data={content.assignment} theme={theme} />;
+      case 'project':
+        return <ProjectBlock data={content.project} theme={theme} />;
       case 'ai_tutor':
         return <AITutorBlock data={content.ai_tutor} theme={theme} subtopicId={subtopicId} subtopicName={subtopicName} />;
       default:

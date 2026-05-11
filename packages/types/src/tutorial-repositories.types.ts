@@ -2,10 +2,10 @@ import type {
   ContentBlockType,
   TutorialContentAuditCreateInput,
   TutorialContentAuditRecord,
-  TutorialContentJSON,
   TutorialContentVersionCreateInput,
   TutorialContentVersionRecord,
 } from './tutorial-content.types';
+import type { TutorialContentJSON } from './tutorial-content.schema';
 import type {
   AssignmentDifficulty,
   AssignmentHelpRequestCreateInput,

@@ -1,6 +1,6 @@
 'use client';
 
-import { type ContentBlockType, type ContentImage, type TutorialContentJSON,TutorialContentSchema } from '@quiz/types';
+import { type ContentBlockType, type ContentImage, type TutorialContentJSON, TutorialContentSchema } from '@quiz/types';
 import { CheckCircle2, ChevronDown, ChevronRight, ImagePlus, Plus, Save, Sparkles, Wand2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -16,7 +16,7 @@ interface BlockEditorProps {
     subtopicName?: string;
     domainName?: string;
     domainSlug?: string;
-    initialActiveBlock?: ContentBlockType;
+    initialActiveBlock?: BasicBlockType;
 }
 
 interface StatusState {
@@ -24,9 +24,10 @@ interface StatusState {
     text: string;
 }
 
-const BLOCK_ORDER: ContentBlockType[] = ['notes', 'layman', 'real_life', 'technical', 'code', 'ai_tutor'];
+const BLOCK_ORDER = ['notes', 'layman', 'real_life', 'technical', 'code', 'ai_tutor'] as const;
+type BasicBlockType = (typeof BLOCK_ORDER)[number];
 
-const BLOCK_LABELS: Record<ContentBlockType, string> = {
+const BLOCK_LABELS: Record<BasicBlockType, string> = {
     notes: 'Notes',
     layman: 'Layman',
     real_life: 'Real Life',
@@ -35,7 +36,7 @@ const BLOCK_LABELS: Record<ContentBlockType, string> = {
     ai_tutor: 'AI Tutor',
 };
 
-const BLOCK_HELPERS: Record<ContentBlockType, string> = {
+const BLOCK_HELPERS: Record<BasicBlockType, string> = {
     notes: 'Short reference notes that help the learner orient quickly.',
     layman: 'Beginner-first explanation with examples and a relatable story.',
     real_life: 'Scenario-driven framing that maps the idea to a real-world workflow.',
@@ -57,7 +58,7 @@ const SVG_KEYS_BY_DOMAIN: Record<string, Array<{ key: string; label: string }>> 
     ],
 };
 
-const DEFAULT_IMAGE_BY_BLOCK: Record<Exclude<ContentBlockType, 'ai_tutor'>, ContentImage> = {
+const DEFAULT_IMAGE_BY_BLOCK: Partial<Record<Exclude<ContentBlockType, 'ai_tutor'>, ContentImage>> = {
     notes: {
         type: 'svg_standard',
         svgKey: 'promise-chain',
@@ -123,20 +124,65 @@ function buildValidationErrors(content: TutorialContentJSON) {
     return errors;
 }
 
+// Narrow each block to the *simple object* variant that this editor UI is editing.
+// The Zod schema uses unions, so the previous extracts were too loose and dropped
+// properties like `steps` / `bullets` / `example1`.
+type BasicTutorialContent = TutorialContentJSON & {
+    notes: Extract<TutorialContentJSON['notes'], { markdown: string }>;
+    layman: Extract<
+        TutorialContentJSON['layman'],
+        {
+            simpleExplanation: string;
+            analogyOrStory: string;
+            example1: { company: string; content: string };
+            example2: { company: string; content: string };
+        }
+    >;
+    real_life: Extract<
+        TutorialContentJSON['real_life'],
+        {
+            title: string;
+            scenario: string;
+            bullets: Array<{ label: string; detail: string }>;
+            tip: string;
+        }
+    >;
+    technical: Extract<
+        TutorialContentJSON['technical'],
+        {
+            markdown: string;
+            bullets: Array<{ term: string; detail: string }>;
+            tip: string;
+        }
+    >;
+    code: Extract<
+        TutorialContentJSON['code'],
+        {
+            language: 'javascript' | 'typescript' | 'python' | 'sql' | 'scala' | 'java' | 'bash';
+            intro: string;
+            code: string;
+            steps: string[];
+        }
+    >;
+    ai_tutor?: NonNullable<TutorialContentJSON['ai_tutor']>;
+};
+
 function getPreviewSummary(content: TutorialContentJSON, block: ContentBlockType) {
+    const contentBasic = content as unknown as BasicTutorialContent;
+
     switch (block) {
         case 'notes':
-            return content.notes.markdown.slice(0, 180);
+            return contentBasic.notes.markdown.slice(0, 180);
         case 'layman':
-            return content.layman.simpleExplanation.slice(0, 180);
+            return contentBasic.layman.simpleExplanation.slice(0, 180);
         case 'real_life':
-            return content.real_life.scenario.slice(0, 180);
+            return contentBasic.real_life.scenario.slice(0, 180);
         case 'technical':
-            return content.technical.markdown.slice(0, 180);
+            return contentBasic.technical.markdown.slice(0, 180);
         case 'code':
-            return content.code.intro.slice(0, 180);
+            return contentBasic.code.intro.slice(0, 180);
         case 'ai_tutor':
-            return content.ai_tutor.greeting.slice(0, 180);
+            return contentBasic.ai_tutor?.greeting.slice(0, 180) ?? '';
         default:
             return '';
     }
@@ -173,7 +219,7 @@ export function BlockEditor({
 
     const [content, setContent] = useState<TutorialContentJSON>(cloneContent(initialContent));
     const [versions, setVersions] = useState<ContentVersionEntry[]>(seededVersions);
-    const [activeBlock, setActiveBlock] = useState<ContentBlockType>(initialActiveBlock);
+    const [activeBlock, setActiveBlock] = useState<BasicBlockType>(initialActiveBlock ?? 'layman');
     const [status, setStatus] = useState<StatusState>({ tone: 'neutral', text: 'Ready for review.' });
 
     useEffect(() => {
@@ -184,28 +230,33 @@ export function BlockEditor({
         setVersions(seededVersions);
     }, [seededVersions]);
 
-    const validationErrors = useMemo(() => buildValidationErrors(content), [content]);
+    const validationErrors = useMemo(() => buildValidationErrors(content), [content]) as Record<string, string>;
+    const contentBasic = content as BasicTutorialContent;
     const isValid = Object.keys(validationErrors).length === 0;
-    const publishReady = [
-        content.notes.markdown,
-        content.layman.simpleExplanation,
-        content.real_life.scenario,
-        content.technical.markdown,
-        content.code.code,
-        content.ai_tutor.greeting,
-    ].every((value) => value.trim().length > 10) && content.ai_tutor.qa_pairs.length >= 3;
+    const publishReady =
+        contentBasic.notes.markdown.trim().length > 10 &&
+        contentBasic.layman.simpleExplanation.trim().length > 10 &&
+        contentBasic.real_life.scenario.trim().length > 10 &&
+        contentBasic.technical.markdown.trim().length > 10 &&
+        contentBasic.code.code.trim().length > 10 &&
+        contentBasic.ai_tutor != null &&
+        contentBasic.ai_tutor.greeting.trim().length > 10 &&
+        contentBasic.ai_tutor.qa_pairs.length >= 3;
     const currentVersionId = versions[0]?.id ?? 'seed-v1';
     const currentVersion = versions[0];
     const svgOptions = SVG_KEYS_BY_DOMAIN[domainSlug] ?? SVG_KEYS_BY_DOMAIN['full-stack'];
 
-    const updateContent = <K extends keyof TutorialContentJSON>(
-        block: K,
-        updater: (value: TutorialContentJSON[K]) => TutorialContentJSON[K],
-    ) => {
-        setContent((prev) => ({
-            ...prev,
-            [block]: updater(prev[block]),
-        }));
+    // UI editing is intentionally permissive: TutorialContentJSON is built from many unions.
+    // We accept/return `any` here to keep the editor working without fighting Zod union inference.
+    const updateContent = <K extends keyof BasicTutorialContent>(block: K, updater: (current: BasicTutorialContent[K]) => BasicTutorialContent[K]) => {
+        setContent((prev) => {
+            const current = (prev as unknown as BasicTutorialContent)[block];
+            const next = updater(current);
+            return {
+                ...prev,
+                [block]: next,
+            } as unknown as TutorialContentJSON;
+        });
     };
 
     const commitVersion = (statusType: 'draft' | 'published') => {
@@ -313,10 +364,15 @@ export function BlockEditor({
         );
     };
 
-    const renderImagePanel = (block: Exclude<ContentBlockType, 'ai_tutor'>, image: ContentImage | null) => {
+    type ImageBlockType = Exclude<BasicBlockType, 'ai_tutor'>;
+    const renderImagePanel = (block: ImageBlockType, image: ContentImage | null) => {
         const enabled = image != null;
-        const defaultImage = DEFAULT_IMAGE_BY_BLOCK[block];
-        const selectImage = (next: ContentImage | null) => updateContent(block, (value) => ({ ...value, image: next } as TutorialContentJSON[typeof block]));
+        const defaultImage = DEFAULT_IMAGE_BY_BLOCK[block]!;
+        const selectImage = (next: ContentImage | null) =>
+            updateContent(block as keyof BasicTutorialContent, (value) => ({
+                ...value,
+                image: next,
+            } as unknown as typeof value));
 
         return (
             <div className="mt-5 rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-sm">
@@ -496,8 +552,8 @@ export function BlockEditor({
         if (activeBlock === 'notes') {
             return (
                 <div className="grid gap-5">
-                    {renderTextField('Markdown', content.notes.markdown, (next) => updateContent('notes', (current) => ({ ...current, markdown: next })), 'notes.markdown', 6, 'Short notes markdown...')}
-                    {renderImagePanel('notes', content.notes.image ?? null)}
+                    {renderTextField('Markdown', contentBasic.notes.markdown, (next) => updateContent('notes', (current) => ({ ...current, markdown: next })), 'notes.markdown', 6, 'Short notes markdown...')}
+                    {renderImagePanel('notes', contentBasic.notes.image ?? null)}
                 </div>
             );
         }
@@ -505,17 +561,17 @@ export function BlockEditor({
         if (activeBlock === 'layman') {
             return (
                 <div className="grid gap-5">
-                    {renderTextField('Simple explanation', content.layman.simpleExplanation, (next) => updateContent('layman', (current) => ({ ...current, simpleExplanation: next })), 'layman.simpleExplanation', 5, 'Beginner-friendly explanation...')}
-                    {renderTextField('Analogy or story', content.layman.analogyOrStory, (next) => updateContent('layman', (current) => ({ ...current, analogyOrStory: next })), 'layman.analogyOrStory', 3, 'A short story or analogy...')}
+                    {renderTextField('Simple explanation', contentBasic.layman.simpleExplanation, (next) => updateContent('layman', (current) => ({ ...current, simpleExplanation: next })), 'layman.simpleExplanation', 5, 'Beginner-friendly explanation...')}
+                    {renderTextField('Analogy or story', contentBasic.layman.analogyOrStory, (next) => updateContent('layman', (current) => ({ ...current, analogyOrStory: next })), 'layman.analogyOrStory', 3, 'A short story or analogy...')}
                     <div className="grid gap-4 md:grid-cols-2">
-                        {renderInputField('Example 1 - company', content.layman.example1.company, (next) => updateContent('layman', (current) => ({ ...current, example1: { ...current.example1, company: next } })), 'layman.example1.company', 'Zomato')}
-                        {renderInputField('Example 2 - company', content.layman.example2.company, (next) => updateContent('layman', (current) => ({ ...current, example2: { ...current.example2, company: next } })), 'layman.example2.company', 'Uber')}
+                        {renderInputField('Example 1 - company', contentBasic.layman.example1.company, (next) => updateContent('layman', (current) => ({ ...current, example1: { ...current.example1, company: next } })), 'layman.example1.company', 'Zomato')}
+                        {renderInputField('Example 2 - company', contentBasic.layman.example2.company, (next) => updateContent('layman', (current) => ({ ...current, example2: { ...current.example2, company: next } })), 'layman.example2.company', 'Uber')}
                     </div>
                     <div className="grid gap-4 md:grid-cols-2">
-                        {renderTextField('Example 1 - content', content.layman.example1.content, (next) => updateContent('layman', (current) => ({ ...current, example1: { ...current.example1, content: next } })), 'layman.example1.content', 4, 'How this works in real life...')}
-                        {renderTextField('Example 2 - content', content.layman.example2.content, (next) => updateContent('layman', (current) => ({ ...current, example2: { ...current.example2, content: next } })), 'layman.example2.content', 4, 'Another company example...')}
+                        {renderTextField('Example 1 - content', contentBasic.layman.example1.content, (next) => updateContent('layman', (current) => ({ ...current, example1: { ...current.example1, content: next } })), 'layman.example1.content', 4, 'How this works in real life...')}
+                        {renderTextField('Example 2 - content', contentBasic.layman.example2.content, (next) => updateContent('layman', (current) => ({ ...current, example2: { ...current.example2, content: next } })), 'layman.example2.content', 4, 'Another company example...')}
                     </div>
-                    {renderImagePanel('layman', content.layman.image ?? null)}
+                    {renderImagePanel('layman', contentBasic.layman.image ?? null)}
                 </div>
             );
         }
@@ -523,8 +579,8 @@ export function BlockEditor({
         if (activeBlock === 'real_life') {
             return (
                 <div className="grid gap-5">
-                    {renderTextField('Title', content.real_life.title, (next) => updateContent('real_life', (current) => ({ ...current, title: next })), 'real_life.title', 2, 'Scenario title...')}
-                    {renderTextField('Scenario', content.real_life.scenario, (next) => updateContent('real_life', (current) => ({ ...current, scenario: next })), 'real_life.scenario', 5, 'Tell the story in plain language...')}
+                    {renderTextField('Title', contentBasic.real_life.title, (next) => updateContent('real_life', (current) => ({ ...current, title: next })), 'real_life.title', 2, 'Scenario title...')}
+                    {renderTextField('Scenario', contentBasic.real_life.scenario, (next) => updateContent('real_life', (current) => ({ ...current, scenario: next })), 'real_life.scenario', 5, 'Tell the story in plain language...')}
                     <div className="rounded-2xl border border-slate-200 bg-white p-4">
                         <div className="flex items-center justify-between gap-3">
                             <div>
@@ -541,21 +597,21 @@ export function BlockEditor({
                             </button>
                         </div>
                         <div className="mt-4 grid gap-4">
-                            {content.real_life.bullets.map((bullet, index) => (
+                            {contentBasic.real_life.bullets.map((bullet, index) => (
                                 <div key={`${index}-real-life`} className="grid gap-3 rounded-2xl border border-slate-100 bg-slate-50/80 p-4 md:grid-cols-[180px_1fr_auto]">
                                     {renderInputField(`Label ${index + 1}`, bullet.label, (next) => updateContent('real_life', (current) => ({
                                         ...current,
-                                        bullets: current.bullets.map((item, itemIndex) => (itemIndex === index ? { ...item, label: next } : item)),
+                                        bullets: current.bullets.map((item: any, itemIndex: number) => (itemIndex === index ? { ...item, label: next } : item)),
                                     })), `real_life.bullets.${index}.label`, 'Label')}
                                     {renderInputField(`Detail ${index + 1}`, bullet.detail, (next) => updateContent('real_life', (current) => ({
                                         ...current,
-                                        bullets: current.bullets.map((item, itemIndex) => (itemIndex === index ? { ...item, detail: next } : item)),
+                                        bullets: current.bullets.map((item: any, itemIndex: number) => (itemIndex === index ? { ...item, detail: next } : item)),
                                     })), `real_life.bullets.${index}.detail`, 'Detail')}
                                     <button
                                         type="button"
                                         onClick={() => updateContent('real_life', (current) => ({
                                             ...current,
-                                            bullets: current.bullets.length > 1 ? current.bullets.filter((_, itemIndex) => itemIndex !== index) : current.bullets,
+                                            bullets: current.bullets.length > 1 ? current.bullets.filter((_: any, itemIndex: number) => itemIndex !== index) : current.bullets,
                                         }))}
                                         className="self-end rounded-xl border border-slate-200 bg-white px-3 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-rose-600"
                                     >
@@ -565,8 +621,8 @@ export function BlockEditor({
                             ))}
                         </div>
                     </div>
-                    {renderTextField('Tip', content.real_life.tip, (next) => updateContent('real_life', (current) => ({ ...current, tip: next })), 'real_life.tip', 3, 'A concise learning tip...')}
-                    {renderImagePanel('real_life', content.real_life.image ?? null)}
+                    {renderTextField('Tip', contentBasic.real_life.tip, (next) => updateContent('real_life', (current) => ({ ...current, tip: next })), 'real_life.tip', 3, 'A concise learning tip...')}
+                    {renderImagePanel('real_life', contentBasic.real_life.image ?? null)}
                 </div>
             );
         }
@@ -574,7 +630,7 @@ export function BlockEditor({
         if (activeBlock === 'technical') {
             return (
                 <div className="grid gap-5">
-                    {renderTextField('Markdown', content.technical.markdown, (next) => updateContent('technical', (current) => ({ ...current, markdown: next })), 'technical.markdown', 6, 'Technical explanation markdown...')}
+                    {renderTextField('Markdown', contentBasic.technical.markdown, (next) => updateContent('technical', (current) => ({ ...current, markdown: next })), 'technical.markdown', 6, 'Technical explanation markdown...')}
                     <div className="rounded-2xl border border-slate-200 bg-white p-4">
                         <div className="flex items-center justify-between gap-3">
                             <div>
@@ -591,21 +647,21 @@ export function BlockEditor({
                             </button>
                         </div>
                         <div className="mt-4 grid gap-4">
-                            {content.technical.bullets.map((bullet, index) => (
+                            {contentBasic.technical.bullets.map((bullet, index) => (
                                 <div key={`${index}-technical`} className="grid gap-3 rounded-2xl border border-slate-100 bg-slate-50/80 p-4 md:grid-cols-[180px_1fr_auto]">
                                     {renderInputField(`Term ${index + 1}`, bullet.term, (next) => updateContent('technical', (current) => ({
                                         ...current,
-                                        bullets: current.bullets.map((item, itemIndex) => (itemIndex === index ? { ...item, term: next } : item)),
+                                        bullets: current.bullets.map((item: any, itemIndex: number) => (itemIndex === index ? { ...item, term: next } : item)),
                                     })), `technical.bullets.${index}.term`, 'Term')}
                                     {renderInputField(`Detail ${index + 1}`, bullet.detail, (next) => updateContent('technical', (current) => ({
                                         ...current,
-                                        bullets: current.bullets.map((item, itemIndex) => (itemIndex === index ? { ...item, detail: next } : item)),
+                                        bullets: current.bullets.map((item: any, itemIndex: number) => (itemIndex === index ? { ...item, detail: next } : item)),
                                     })), `technical.bullets.${index}.detail`, 'Detail')}
                                     <button
                                         type="button"
                                         onClick={() => updateContent('technical', (current) => ({
                                             ...current,
-                                            bullets: current.bullets.length > 1 ? current.bullets.filter((_, itemIndex) => itemIndex !== index) : current.bullets,
+                                            bullets: current.bullets.length > 1 ? current.bullets.filter((_: any, itemIndex: number) => itemIndex !== index) : current.bullets,
                                         }))}
                                         className="self-end rounded-xl border border-slate-200 bg-white px-3 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-rose-600"
                                     >
@@ -615,8 +671,8 @@ export function BlockEditor({
                             ))}
                         </div>
                     </div>
-                    {renderTextField('Tip', content.technical.tip, (next) => updateContent('technical', (current) => ({ ...current, tip: next })), 'technical.tip', 3, 'Technical tip...')}
-                    {renderImagePanel('technical', content.technical.image ?? null)}
+                    {renderTextField('Tip', contentBasic.technical.tip, (next) => updateContent('technical', (current) => ({ ...current, tip: next })), 'technical.tip', 3, 'Technical tip...')}
+                    {renderImagePanel('technical', contentBasic.technical.image ?? null)}
                 </div>
             );
         }
@@ -627,8 +683,11 @@ export function BlockEditor({
                     <label className="grid gap-2">
                         <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Language</span>
                         <select
-                            value={content.code.language}
-                            onChange={(e) => updateContent('code', (current) => ({ ...current, language: e.target.value as TutorialContentJSON['code']['language'] }))}
+                            value={contentBasic.code.language}
+                            onChange={(e) => {
+                                const nextLanguage = e.target.value as BasicTutorialContent['code']['language'];
+                                updateContent('code', (current: any) => ({ ...(current as any), language: nextLanguage }));
+                            }}
                             className="h-12 rounded-2xl border border-slate-200 bg-white px-4 text-sm outline-none focus:border-indigo-300"
                         >
                             {['javascript', 'typescript', 'python', 'sql', 'scala', 'java', 'bash'].map((language) => (
@@ -638,8 +697,8 @@ export function BlockEditor({
                             ))}
                         </select>
                     </label>
-                    {renderTextField('Intro', content.code.intro, (next) => updateContent('code', (current) => ({ ...current, intro: next })), 'code.intro', 3, 'Short introduction to the code sample...')}
-                    {renderTextField('Code', content.code.code, (next) => updateContent('code', (current) => ({ ...current, code: next })), 'code.code', 8, 'Write the code sample here...')}
+                    {renderTextField('Intro', contentBasic.code.intro, (next) => updateContent('code', (current) => ({ ...current, intro: next })), 'code.intro', 3, 'Short introduction to the code sample...')}
+                    {renderTextField('Code', contentBasic.code.code, (next) => updateContent('code', (current) => ({ ...current, code: next })), 'code.code', 8, 'Write the code sample here...')}
                     <div className="rounded-2xl border border-slate-200 bg-white p-4">
                         <div className="flex items-center justify-between gap-3">
                             <div>
@@ -656,7 +715,7 @@ export function BlockEditor({
                             </button>
                         </div>
                         <div className="mt-4 grid gap-3">
-                            {content.code.steps.map((step, index) => (
+                            {contentBasic.code.steps.map((step, index) => (
                                 <div key={`${index}-code`} className="flex items-center gap-3">
                                     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-[11px] font-black text-slate-700">
                                         {index + 1}
@@ -665,7 +724,7 @@ export function BlockEditor({
                                         value={step}
                                         onChange={(e) => updateContent('code', (current) => ({
                                             ...current,
-                                            steps: current.steps.map((item, itemIndex) => (itemIndex === index ? e.target.value : item)),
+                                            steps: current.steps.map((item: any, itemIndex: number) => (itemIndex === index ? e.target.value : item)),
                                         }))}
                                         className={cn(
                                             'h-11 flex-1 rounded-xl border px-3 text-sm outline-none',
@@ -676,7 +735,7 @@ export function BlockEditor({
                                         type="button"
                                         onClick={() => updateContent('code', (current) => ({
                                             ...current,
-                                            steps: current.steps.length > 1 ? current.steps.filter((_, itemIndex) => itemIndex !== index) : current.steps,
+                                            steps: current.steps.length > 1 ? current.steps.filter((_: unknown, itemIndex: number) => itemIndex !== index) : current.steps,
                                         }))}
                                         className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-rose-600"
                                     >
@@ -686,14 +745,14 @@ export function BlockEditor({
                             ))}
                         </div>
                     </div>
-                    {renderImagePanel('code', content.code.image ?? null)}
+                    {renderImagePanel('code', contentBasic.code.image ?? null)}
                 </div>
             );
         }
 
         return (
             <div className="grid gap-5">
-                {renderTextField('Greeting', content.ai_tutor.greeting, (next) => updateContent('ai_tutor', (current) => ({ ...current, greeting: next })), 'ai_tutor.greeting', 3, 'Friendly tutor greeting...')}
+                {renderTextField('Greeting', contentBasic.ai_tutor?.greeting ?? '', (next) => updateContent('ai_tutor', (current) => ({ ...(current ?? { greeting: '', qa_pairs: [] }), greeting: next } as NonNullable<BasicTutorialContent['ai_tutor']>)), 'ai_tutor.greeting', 3, 'Friendly tutor greeting...')}
                 <div className="rounded-2xl border border-slate-200 bg-white p-4">
                     <div className="flex items-center justify-between gap-3">
                         <div>
@@ -702,7 +761,10 @@ export function BlockEditor({
                         </div>
                         <button
                             type="button"
-                            onClick={() => updateContent('ai_tutor', (current) => ({ ...current, qa_pairs: [...current.qa_pairs, { question: '', answer: '' }] }))}
+                            onClick={() => updateContent('ai_tutor', (current) => {
+                                const base = current ?? { greeting: '', qa_pairs: [] };
+                                return { ...base, qa_pairs: [...base.qa_pairs, { question: '', answer: '' }] } as NonNullable<BasicTutorialContent['ai_tutor']>;
+                            })}
                             className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-slate-700"
                         >
                             <Plus size={12} />
@@ -710,22 +772,31 @@ export function BlockEditor({
                         </button>
                     </div>
                     <div className="mt-4 grid gap-4">
-                        {ensureArrayItem(content.ai_tutor.qa_pairs, { question: '', answer: '' }).map((pair, index) => (
+                        {ensureArrayItem(contentBasic.ai_tutor?.qa_pairs ?? [], { question: '', answer: '' }).map((pair, index) => (
                             <div key={`${index}-ai-tutor`} className="grid gap-3 rounded-2xl border border-slate-100 bg-slate-50/80 p-4 md:grid-cols-[1fr_1fr_auto]">
-                                {renderInputField(`Question ${index + 1}`, pair.question, (next) => updateContent('ai_tutor', (current) => ({
-                                    ...current,
-                                    qa_pairs: current.qa_pairs.map((item, itemIndex) => (itemIndex === index ? { ...item, question: next } : item)),
-                                })), `ai_tutor.qa_pairs.${index}.question`, 'Question')}
-                                {renderInputField(`Answer ${index + 1}`, pair.answer, (next) => updateContent('ai_tutor', (current) => ({
-                                    ...current,
-                                    qa_pairs: current.qa_pairs.map((item, itemIndex) => (itemIndex === index ? { ...item, answer: next } : item)),
-                                })), `ai_tutor.qa_pairs.${index}.answer`, 'Answer')}
+                                {renderInputField(`Question ${index + 1}`, pair.question, (next) => updateContent('ai_tutor', (current) => {
+                                    const base = current ?? { greeting: '', qa_pairs: [] };
+                                    return {
+                                        ...base,
+                                        qa_pairs: base.qa_pairs.map((item, itemIndex) => (itemIndex === index ? { ...item, question: next } : item)),
+                                    } as NonNullable<BasicTutorialContent['ai_tutor']>;
+                                }), `ai_tutor.qa_pairs.${index}.question`, 'Question')}
+                                {renderInputField(`Answer ${index + 1}`, pair.answer, (next) => updateContent('ai_tutor', (current) => {
+                                    const base = current ?? { greeting: '', qa_pairs: [] };
+                                    return {
+                                        ...base,
+                                        qa_pairs: base.qa_pairs.map((item, itemIndex) => (itemIndex === index ? { ...item, answer: next } : item)),
+                                    } as NonNullable<BasicTutorialContent['ai_tutor']>;
+                                }), `ai_tutor.qa_pairs.${index}.answer`, 'Answer')}
                                 <button
                                     type="button"
-                                    onClick={() => updateContent('ai_tutor', (current) => ({
-                                        ...current,
-                                        qa_pairs: current.qa_pairs.length > 3 ? current.qa_pairs.filter((_, itemIndex) => itemIndex !== index) : current.qa_pairs,
-                                    }))}
+                                    onClick={() => updateContent('ai_tutor', (current) => {
+                                        const base = current ?? { greeting: '', qa_pairs: [] };
+                                        return {
+                                            ...base,
+                                            qa_pairs: base.qa_pairs.length > 3 ? base.qa_pairs.filter((_, itemIndex) => itemIndex !== index) : base.qa_pairs,
+                                        } as NonNullable<BasicTutorialContent['ai_tutor']>;
+                                    })}
                                     className="self-end rounded-xl border border-slate-200 bg-white px-3 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-rose-600"
                                 >
                                     Remove
@@ -745,8 +816,8 @@ export function BlockEditor({
         error: 'border-rose-200 bg-rose-50 text-rose-800',
     }[status.tone];
 
-        return (
-            <section className="overflow-hidden rounded-[3rem] border border-white/40 bg-white/60 shadow-sm backdrop-blur-2xl">
+    return (
+        <section className="overflow-hidden rounded-[3rem] border border-white/40 bg-white/60 shadow-sm backdrop-blur-2xl">
             <div className="border-b border-slate-100 bg-white/75 px-8 py-6">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                     <div>
@@ -821,10 +892,10 @@ export function BlockEditor({
                                     >
                                         <div>
                                             <div className="flex items-center gap-2">
-                                                <span className="text-sm font-black">{BLOCK_LABELS[block]}</span>
+                                                <span className="text-sm font-black">{BLOCK_LABELS[block as BasicBlockType]}</span>
                                                 {block === 'ai_tutor' ? <Wand2 size={12} /> : null}
                                             </div>
-                                            <p className="mt-1 text-[11px] leading-5 text-slate-500">{BLOCK_HELPERS[block]}</p>
+                                            <p className="mt-1 text-[11px] leading-5 text-slate-500">{BLOCK_HELPERS[block as BasicBlockType]}</p>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             {hasError ? <span className="rounded-full bg-rose-500/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.18em] text-rose-700">Fix</span> : null}

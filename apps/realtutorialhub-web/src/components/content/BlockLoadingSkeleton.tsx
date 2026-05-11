@@ -11,7 +11,12 @@ const SKELETON_STYLES: Record<ContentBlockType, { accent: string }> = {
   layman: { accent: 'rgba(61, 90, 158, 0.5)' },
   real_life: { accent: 'rgba(46, 125, 70, 0.5)' },
   technical: { accent: 'rgba(230, 81, 0, 0.5)' },
+  visual: { accent: 'rgba(37, 99, 235, 0.5)' },
   code: { accent: 'rgba(84, 110, 122, 0.5)' },
+  quiz: { accent: 'rgba(244, 63, 94, 0.5)' },
+  practice: { accent: 'rgba(79, 70, 229, 0.5)' },
+  assignment: { accent: 'rgba(15, 23, 42, 0.5)' },
+  project: { accent: 'rgba(124, 58, 237, 0.5)' },
   ai_tutor: { accent: 'rgba(106, 27, 154, 0.5)' },
 };
 
@@ -31,7 +36,7 @@ function SkeletonLine({ width, height = 12 }: { width: string; height?: number }
 }
 
 export function BlockLoadingSkeleton({ blockType }: BlockLoadingSkeletonProps) {
-  const { accent } = SKELETON_STYLES[blockType];
+  const { accent } = SKELETON_STYLES[blockType] || { accent: 'rgba(148, 163, 184, 0.2)' };
 
   return (
     <section

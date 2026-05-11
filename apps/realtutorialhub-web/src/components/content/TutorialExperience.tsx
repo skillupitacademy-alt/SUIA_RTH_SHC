@@ -36,7 +36,19 @@ interface TutorialExperienceProps {
   simulateError?: boolean;
 }
 
-const blockOrder: ContentBlockType[] = ['notes', 'layman', 'real_life', 'technical', 'code', 'ai_tutor'];
+const blockOrder: ContentBlockType[] = [
+  'notes',
+  'layman',
+  'real_life',
+  'technical',
+  'visual',
+  'code',
+  'quiz',
+  'practice',
+  'assignment',
+  'project',
+  'ai_tutor',
+];
 
 export function TutorialExperience({ params, subtopicId, content, theme, mode, projects = [], blockType, simulateSlowLoad = false, simulateError = false }: TutorialExperienceProps) {
   const [isAiTutorOpen, setIsAiTutorOpen] = useState(false);
@@ -127,7 +139,7 @@ export function TutorialExperience({ params, subtopicId, content, theme, mode, p
           />
         </div>
       ) : (
-        <SubtopicHeader subtopicName={subtopicName} completedBlocks={0} totalBlocks={6} theme={theme} />
+        <SubtopicHeader subtopicName={subtopicName} completedBlocks={0} totalBlocks={blockOrder.length} theme={theme} />
       )}
 
       {mode === 'detail' && blockType ? (
@@ -171,7 +183,7 @@ export function TutorialExperience({ params, subtopicId, content, theme, mode, p
             subtopicId={subtopicId ?? params.subtopicSlug}
             subtopicName={subtopicName}
             theme={theme}
-            greeting={content.ai_tutor.greeting}
+            greeting={content.ai_tutor?.greeting || 'Hello! How can I help you today?'}
             isOpen={isAiTutorOpen}
             onOpenChange={setIsAiTutorOpen}
           />

@@ -132,9 +132,30 @@ export async function POST(req: NextRequest) {
       .from(tutorialContent)
       .where(and(eq(tutorialContent.subtopicId, subtopic.id), eq(tutorialContent.difficulty, 'simple')));
 
+    // Normalize section names (UI labels vs Database keys)
+    const sectionMap: Record<string, string> = {
+      'reallife': 'real_life',
+      'visual': 'visual',
+      'practice': 'practice'
+    };
+    
+    const dbSectionKey = sectionMap[section] || section;
+
+    // Auto-Unwrap: If user pasted a JSON that has the section name as a root key
+    // (Common with AI generated prompts like {"notes": {...}})
+    let normalizedContent = content;
+    const rootKeys = ['notes', 'layman', 'laymanExplanation', 'real_life', 'reallife', 'realLifeExamples', 'technical', 'technicalDeepDive', 'code', 'codeExample', 'assignment', 'project', 'quiz', 'visual', 'visualExplanation', 'practice', 'practiceTest'];
+    
+    for (const key of rootKeys) {
+      if (content && typeof content === 'object' && key in content && Object.keys(content).length === 1) {
+        normalizedContent = content[key];
+        break;
+      }
+    }
+
     // Merge: start with empty shell, layer existing, then apply the new section
     const base = existingContent?.content ?? createEmptyContent();
-    const mergedContent = { ...base, [section]: content };
+    const mergedContent = { ...base, [dbSectionKey]: normalizedContent };
 
     // Validate against schema (partial sections use 'pending' placeholders)
     const validatedContent = TutorialContentSchema.parse(mergedContent);

@@ -53,7 +53,7 @@ const defaultDeps: QueryDeps = {
 
 const RATE_LIMIT = 10;
 const RATE_LIMIT_WINDOW_SECONDS = 60 * 60;
-const aiTutorQaPairs = DEFAULT_TUTORIAL_CONTENT.ai_tutor.qa_pairs;
+const aiTutorQaPairs = DEFAULT_TUTORIAL_CONTENT.ai_tutor?.qa_pairs ?? [];
 
 const toErrorMessage = (error: unknown) => (error instanceof Error ? error.message : String(error));
 

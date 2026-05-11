@@ -4,7 +4,17 @@ import { Index, type QueryResult } from '@upstash/vector';
 import { STANDARD_QUERY_TIMEOUT, withTimeout } from '@quiz/db';
 import type { TutorialContentJSON, TutorialDifficulty } from '@quiz/types';
 
-export type AiTutorBlockType = 'notes' | 'layman' | 'real_life' | 'technical' | 'code';
+export type AiTutorBlockType = 
+  | 'notes' 
+  | 'layman' 
+  | 'real_life' 
+  | 'technical' 
+  | 'code'
+  | 'quiz'
+  | 'practice'
+  | 'assignment'
+  | 'project'
+  | 'visual';
 
 export type AiTutorVectorMetadata = Record<string, unknown> & {
   subtopicId: string;
@@ -44,18 +54,79 @@ export function createAiTutorVectorIndex() {
   });
 }
 
+function extractNotesText(notes: any): string {
+  if (notes.coreDefinition) {
+    return `${notes.coreDefinition.badge || ''}: ${notes.coreDefinition.headline || ''}\n${notes.coreDefinition.definition || ''}\n${notes.coreDefinition.simpleExplanation || ''}\n${notes.coreDefinition.whyItMatters || ''}\n${notes.conceptExplanation?.mainConcept || ''}`;
+  }
+  return (notes as any).markdown || '';
+}
+
+function extractLaymanText(layman: any): string {
+  if (layman.everydayAnalogy || layman.simpleOverview) {
+    return `${layman.simpleOverview || ''}\n${layman.everydayAnalogy || ''}\n${layman.whyItExists || ''}\n${layman.beginnerBreakdown || ''}`;
+  }
+  return `${(layman as any).simpleExplanation || ''}\n\n${(layman as any).analogyOrStory || ''}`;
+}
+
+function extractRealLifeText(reallife: any): string {
+  if (reallife.conceptMapping || reallife.industryScenario) {
+    return `${reallife.industryScenario?.headline || ''}\n${reallife.industryScenario?.context || ''}\n${reallife.conceptMapping?.analogy || ''}\n${reallife.proExecutionTips?.strategy || ''}`;
+  }
+  return `${(reallife as any).title || ''}\n\n${(reallife as any).scenario || ''}\n\n${((reallife as any).bullets || []).map((item: any) => `${item.label}: ${item.detail}`).join('\n')}\n\n${(reallife as any).tip || ''}`;
+}
+
+function extractTechnicalText(technical: any): string {
+  if (technical.coreTechnicalDefinition || technical.expertIntroPanel) {
+    return `${technical.coreTechnicalDefinition?.headline || technical.expertIntroPanel?.headline || ''}\n${technical.coreTechnicalDefinition?.technicalDefinition || technical.expertIntroPanel?.advanced_definition || ''}\n${technical.mechanismBreakdown?.logicFlow || ''}\n${technical.performanceTradeoffs?.analysis || ''}`;
+  }
+  return `${(technical as any).markdown || ''}\n\n${((technical as any).bullets || []).map((item: any) => `${item.term}: ${item.detail}`).join('\n')}\n\n${(technical as any).tip || ''}`;
+}
+
+function extractCodeText(code: any): string {
+  if (code.problemContext || code.basicCodeExample) {
+    return `${code.problemContext?.title || ''}\n${code.problemContext?.scenario || ''}\n${code.basicCodeExample?.code || ''}\n${(code.codeSummary?.keyTakeaways || []).join('\n')}`;
+  }
+  return `${(code as any).intro || ''}\n\n${(code as any).code || ''}\n\n${((code as any).steps || []).join('\n')}`;
+}
+
+function extractVisualText(visual: any): string {
+  if (!visual) return '';
+  return `${visual.visualOverview?.title || visual.visual_intro_card?.headline || ''}\n${visual.visualOverview?.description || visual.visual_intro_card?.visual_definition || ''}\n${visual.conceptDiagram?.title || visual.diagram_panel?.diagram_title || ''}`;
+}
+
+function extractQuizText(quiz: any): string {
+  if (!quiz) return '';
+  const questionsText = (quiz.questions || []).map((q: any) => `${q.question || ''}\n${q.explanation || ''}`).join('\n\n');
+  return `${quiz.quizOverview?.title || quiz.title || ''}\n${quiz.quizOverview?.description || quiz.description || ''}\n\n${questionsText}`;
+}
+
+function extractAssignmentText(assignment: any): string {
+  if (!assignment) return '';
+  return `${assignment.assignmentOverview?.title || assignment.title || ''}\n${assignment.assignmentOverview?.description || assignment.description || ''}\n${(assignment.taskRequirements?.requirements || []).map((r: any) => r.requirement || '').join('\n')}`;
+}
+
+function extractProjectText(project: any): string {
+  if (!project) return '';
+  return `${project.projectOverview?.title || project.title || ''}\n${project.projectOverview?.description || project.description || ''}\n${project.projectGoals?.mainGoal || ''}`;
+}
+
 export function buildAiTutorVectorChunks(
   content: TutorialContentJSON,
   subtopicId: string,
   difficulty: TutorialDifficulty
 ): AiTutorVectorChunk[] {
-  const chunks: Array<[AiTutorBlockType, string]> = [
-    ['notes', content.notes.markdown],
-    ['layman', `${content.layman.simpleExplanation}\n\n${content.layman.analogyOrStory}`],
-    ['real_life', `${content.real_life.title}\n\n${content.real_life.scenario}\n\n${content.real_life.bullets.map((item) => `${item.label}: ${item.detail}`).join('\n')}\n\n${content.real_life.tip}`],
-    ['technical', `${content.technical.markdown}\n\n${content.technical.bullets.map((item) => `${item.term}: ${item.detail}`).join('\n')}\n\n${content.technical.tip}`],
-    ['code', `${content.code.intro}\n\n${content.code.code}\n\n${content.code.steps.join('\n')}`],
-  ];
+  const chunks: Array<[AiTutorBlockType, string]> = [];
+
+  if (content.notes) chunks.push(['notes', extractNotesText(content.notes)]);
+  if (content.layman) chunks.push(['layman', extractLaymanText(content.layman)]);
+  if (content.real_life) chunks.push(['real_life', extractRealLifeText(content.real_life)]);
+  if (content.technical) chunks.push(['technical', extractTechnicalText(content.technical)]);
+  if (content.code) chunks.push(['code', extractCodeText(content.code)]);
+  if (content.visual) chunks.push(['visual', extractVisualText(content.visual)]);
+  if (content.quiz) chunks.push(['quiz', extractQuizText(content.quiz)]);
+  if (content.practice) chunks.push(['practice', extractQuizText(content.practice)]);
+  if (content.assignment) chunks.push(['assignment', extractAssignmentText(content.assignment)]);
+  if (content.project) chunks.push(['project', extractProjectText(content.project)]);
 
   return chunks.map(([blockType, data]) => ({
     id: `${subtopicId}:${difficulty}:${blockType}`,
@@ -158,4 +229,3 @@ export async function deleteSubtopicContent(subtopicId: string, difficulty: Tuto
     difficulty,
   });
 }
-

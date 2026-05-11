@@ -1,10 +1,12 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import type React from 'react';
 import type { TutorialContentJSON } from '@quiz/types';
 
 import { BlockHeader } from './BlockHeader';
 import { ContentImage } from './ContentImage';
+import { LaymanModularRenderer } from './modular/layman/LaymanModularRenderer';
 
 interface LaymanBlockProps {
   data: TutorialContentJSON['layman'] | null | undefined;
@@ -18,12 +20,46 @@ interface LaymanBlockProps {
 export function LaymanBlock({ data, theme, isCompleted = false }: LaymanBlockProps) {
   const t = useTranslations('blocks.layman');
   const common = useTranslations('common');
-  const safeData = data ?? {
-    simpleExplanation: '',
-    analogyOrStory: '',
-    example1: { company: '', content: '' },
-    example2: { company: '', content: '' },
-    image: null,
+
+  if (!data) return null;
+
+  // Check for Modular Format
+  const isModular = 'simpleOverview' in data;
+
+  if (isModular) {
+    return (
+      <section className="design-panel" aria-label={t('ariaLabel')}>
+        <BlockHeader
+          icon="L"
+          title={t('title')}
+          accentColor={theme.blockLaymanHeader}
+          badge={isCompleted ? common('completed') : common('plainEnglish')}
+          badgeTone={isCompleted ? 'success' : 'neutral'}
+          headingId="block-layman-heading"
+        />
+        <div
+          style={{
+            padding: 18,
+            background: 'var(--design-content-surface)',
+            borderTop: 'var(--design-content-border)',
+          }}
+        >
+          <LaymanModularRenderer
+            data={data as React.ComponentProps<typeof LaymanModularRenderer>['data']}
+            themeColor={theme.blockLaymanHeader}
+          />
+        </div>
+      </section>
+    );
+  }
+
+  // Legacy Fallback (typed view to avoid explicit `any`)
+  const safeData = data as unknown as {
+    simpleExplanation?: string;
+    image?: import('@quiz/types').ContentImage;
+    analogyOrStory?: string;
+    example1?: { company?: string; content?: string };
+    example2?: { company?: string; content?: string };
   };
 
   return (
@@ -93,7 +129,7 @@ export function LaymanBlock({ data, theme, isCompleted = false }: LaymanBlockPro
         >
           {[safeData.example1, safeData.example2].map((example, index) => (
             <article
-              key={example.company}
+              key={example?.company}
               style={{
                 padding: '14px 16px',
                 borderRadius: 12,
@@ -103,9 +139,9 @@ export function LaymanBlock({ data, theme, isCompleted = false }: LaymanBlockPro
               }}
             >
               <div style={{ fontSize: 12.5, fontWeight: 800, color: theme.blockLaymanHeader, marginBottom: 6 }}>
-                {common('example', { index: index + 1 })}: {example.company}
+                {common('example', { index: index + 1 })}: {example?.company}
               </div>
-              <div style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--block-text-secondary)' }}>{example.content}</div>
+              <div style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--block-text-secondary)' }}>{example?.content}</div>
             </article>
           ))}
         </div>
