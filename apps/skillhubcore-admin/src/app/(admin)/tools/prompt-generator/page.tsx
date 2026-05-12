@@ -3,8 +3,12 @@
 import React, { useState } from 'react';
 import { useBrand, BrandProvider } from '@/share-branding/PostLandingPage/app/context/BrandContext';
 import { rthConfig } from '@/share-branding/brandConfig';
-
-type SectionType = 'master' | 'notes' | 'layman' | 'reallife' | 'technical' | 'code' | 'assignment' | 'project' | 'quiz' | 'visual' | 'practice';
+import {
+  buildTutorialSectionSourceNote,
+  getTutorialSectionContractByPromptId,
+  TUTORIAL_PROMPT_SECTION_OPTIONS,
+  type TutorialPromptSectionId,
+} from '@quiz/types';
 
 function PromptGeneratorContent() {
   const brand = useBrand();
@@ -12,23 +16,11 @@ function PromptGeneratorContent() {
   const [subject, setSubject] = useState('JavaScript');
   const [topic, setTopic] = useState('Asynchronous Programming');
   const [subtopic, setSubtopic] = useState('JavaScript Promises');
-  const [selectedSection, setSelectedSection] = useState<SectionType | null>(null);
+  const [selectedSection, setSelectedSection] = useState<TutorialPromptSectionId | null>(null);
   const [generatedPrompt, setGeneratedPrompt] = useState('');
   const [copied, setCopied] = useState(false);
 
-  const sections: { id: SectionType; label: string }[] = [
-    { id: 'master', label: 'Master Prompt' },
-    { id: 'notes', label: '1. Notes' },
-    { id: 'layman', label: '2. Layman' },
-    { id: 'reallife', label: '3. Real Life' },
-    { id: 'technical', label: '4. Technical' },
-    { id: 'code', label: '5. Code Example' },
-    { id: 'assignment', label: '6. Assignment' },
-    { id: 'project', label: '7. Project' },
-    { id: 'quiz', label: '8. Quiz' },
-    { id: 'visual', label: '9. Visual' },
-    { id: 'practice', label: '10. Practice Test' },
-  ];
+  const sections = TUTORIAL_PROMPT_SECTION_OPTIONS;
 
   const generatePrompt = () => {
     if (!domain.trim() || !subject.trim() || !topic.trim() || !subtopic.trim()) {
@@ -41,7 +33,8 @@ function PromptGeneratorContent() {
     }
 
     const prompt = getPromptForSection(selectedSection, domain, subject, topic, subtopic);
-    setGeneratedPrompt(prompt);
+    const contract = getTutorialSectionContractByPromptId(selectedSection);
+    setGeneratedPrompt(contract ? `${buildTutorialSectionSourceNote(contract)}\n\n${prompt}` : prompt);
   };
 
   const copyToClipboard = () => {
@@ -51,9 +44,10 @@ function PromptGeneratorContent() {
     });
   };
 
-  const getPromptForSection = (section: SectionType, domainName: string, subjectName: string, topicName: string, subtopicName: string): string => {
-    const prompts: Record<SectionType, string> = {
+  const getPromptForSection = (section: TutorialPromptSectionId, domainName: string, subjectName: string, topicName: string, subtopicName: string): string => {
+    const prompts: Record<TutorialPromptSectionId, string> = {
       master: getMasterPrompt(domainName, subjectName, topicName, subtopicName),
+      overview: getOverviewPrompt(domainName, subjectName, topicName, subtopicName),
       notes: getNotesPrompt(domainName, subjectName, topicName, subtopicName),
       layman: getLaymanPrompt(domainName, subjectName, topicName, subtopicName),
       reallife: getRealLifePrompt(domainName, subjectName, topicName, subtopicName),
@@ -64,6 +58,9 @@ function PromptGeneratorContent() {
       quiz: getQuizPrompt(domainName, subjectName, topicName, subtopicName),
       visual: getVisualPrompt(domainName, subjectName, topicName, subtopicName),
       practice: getPracticePrompt(domainName, subjectName, topicName, subtopicName),
+      summary: getSummaryPrompt(domainName, subjectName, topicName, subtopicName),
+      interview: getInterviewPrompt(domainName, subjectName, topicName, subtopicName),
+      ai_tutor: getAiTutorPrompt(domainName, subjectName, topicName, subtopicName),
     };
 
     return prompts[section];
@@ -93,9 +90,155 @@ Generate detailed content specifically for the subtopic: "${subtopicName}"
 6. Avoid jargon unless explained
 7. Include practical applications
 
-I will ask you to generate content for different sections one by one. Each section has 8 templates. Please follow the exact structure I provide.
+I will ask you to generate content for the tutorial page sections one by one. Please follow the exact JSON structure I provide for each section.
 
 Are you ready? Reply "Ready" and I'll give you the first section.`;
+
+  const getOverviewPrompt = (domainName: string, subjectName: string, topicName: string, subtopicName: string) => `Generate content for the OVERVIEW SECTION
+
+**Educational Hierarchy:**
+- Domain: ${domainName}
+- Subject: ${subjectName}
+- Topic: ${topicName}
+- Subtopic: ${subtopicName}
+
+Generate the top landing/overview content for the subtopic page. This is the first tab learners see before Notes, Layman, Real Life, Technical, Code, Visual, Practice, Assignment, Project, Quiz, Summary, Interview, and AI Tutor.
+
+Output in this EXACT JSON format:
+
+{
+  "overview": {
+    "hero": {
+      "iconLabel": "[1-3 character label, for example JS, AI, DB]",
+      "title": "${subtopicName}",
+      "description": "[Subtopic-specific overview in 1-2 sentences. Do not mention another subtopic.]",
+      "difficulty": "Beginner",
+      "estimatedReadTime": "45 mins",
+      "xp": 500,
+      "topicsCount": 10,
+      "lastUpdated": "Today"
+    },
+    "progressSummary": {
+      "percentage": 0,
+      "checklist": [
+        { "label": "Notes", "completed": false },
+        { "label": "Practice", "completed": false },
+        { "label": "Assignment", "completed": false },
+        { "label": "Quiz", "completed": false }
+      ]
+    },
+    "learningOutcomes": [
+      "[Outcome 1: what learner will understand]",
+      "[Outcome 2: what learner will apply]",
+      "[Outcome 3: what learner can verify]"
+    ],
+    "learningRoadmap": {
+      "contentCards": [
+        {
+          "id": "notes",
+          "title": "Notes",
+          "type": "notes",
+          "content": "[What the Notes section teaches about ${subtopicName}]",
+          "ctaLabel": "Read Full Notes"
+        },
+        {
+          "id": "layman",
+          "title": "Layman Explanation",
+          "type": "layman",
+          "content": "[Simple beginner-friendly angle for ${subtopicName}]",
+          "ctaLabel": "Read Simply"
+        },
+        {
+          "id": "real-life",
+          "title": "Real-Life Example",
+          "type": "example",
+          "content": "[Real-world use of ${subtopicName}]",
+          "ctaLabel": "View Examples"
+        },
+        {
+          "id": "code",
+          "title": "Code Example",
+          "type": "code",
+          "code": "[Small code or pseudo-code snippet if relevant, with \\\\n for newlines]",
+          "ctaLabel": "Run Code"
+        },
+        {
+          "id": "technical",
+          "title": "Technical Deep Dive",
+          "type": "deep-dive",
+          "content": "[Technical depth covered for ${subtopicName}]",
+          "ctaLabel": "Read Details"
+        },
+        {
+          "id": "visual",
+          "title": "Visual Explanation",
+          "type": "visual",
+          "content": "[What the visual section will show]",
+          "ctaLabel": "View Visual"
+        }
+      ],
+      "taskCards": [
+        {
+          "id": "practice",
+          "title": "Practice Tasks",
+          "type": "practice",
+          "content": "[What learners will practice]",
+          "ctaLabel": "Start Practice"
+        },
+        {
+          "id": "assignment",
+          "title": "Assignment",
+          "type": "assignment",
+          "content": "[Assignment task summary]",
+          "badge": { "text": "Easy", "type": "success" },
+          "ctaLabel": "Start Assignment"
+        },
+        {
+          "id": "project",
+          "title": "Project",
+          "type": "project",
+          "content": "[Project learners will build]",
+          "badge": { "text": "Beginner", "type": "success" },
+          "ctaLabel": "View Project"
+        },
+        {
+          "id": "quiz",
+          "title": "Quiz",
+          "type": "quiz",
+          "content": "[Quiz scope, number of questions, passing score]",
+          "ctaLabel": "Start Quiz"
+        }
+      ]
+    },
+    "recommendedFlow": [
+      "Read Notes",
+      "Review Layman Explanation",
+      "Try Code Example",
+      "Complete Practice",
+      "Take Quiz"
+    ],
+    "readinessContext": {
+      "prerequisites": [
+        "[Prerequisite 1]",
+        "[Prerequisite 2]"
+      ],
+      "successCriteria": [
+        "[How learner knows they understood it]",
+        "[What learner can now do]"
+      ]
+    },
+    "navigation": {
+      "prevTitle": "[Previous subtopic name or Start]",
+      "nextTitle": "[Next subtopic name]"
+    }
+  }
+}
+
+**IMPORTANT**:
+- The title and description must be specific to ${subtopicName}
+- Do not reuse Component Architecture text unless the subtopic is actually Component Architecture
+- Keep roadmap cards aligned with the exact section types shown above
+- Keep all JSON valid and use double quotes only`;
 
 
   // Notes Section Prompt
@@ -2255,6 +2398,269 @@ Output in this EXACT JSON format with 30 total questions:
 - Mix difficulty: easy (30%), medium (40%), hard (30%)
 - Points: easy=5, medium=10, hard=15-20`;
 
+  const getSummaryPrompt = (domainName: string, subjectName: string, topicName: string, subtopicName: string) => `Generate content for the SUMMARY SECTION
+
+**Educational Hierarchy:**
+- Domain: ${domainName}
+- Subject: ${subjectName}
+- Topic: ${topicName}
+- Subtopic: ${subtopicName}
+
+Generate detailed content specifically for the subtopic: "${subtopicName}"
+
+Output in this EXACT JSON format:
+
+{
+  "summary": {
+    "title": "${subtopicName} Summary",
+    "description": "[2-3 sentence recap of what the learner has mastered]",
+    "masteryRecapCard": {
+      "headline": "What You Should Know Now",
+      "recap": "[Concise mastery recap, 3-4 sentences]",
+      "confidenceSignal": "[How the learner knows they understood this]"
+    },
+    "keyTakeawayGrid": [
+      {
+        "id": "takeaway1",
+        "title": "[Takeaway title]",
+        "description": "[Clear takeaway explanation, 2 sentences]",
+        "importance": "[Why it matters]"
+      },
+      {
+        "id": "takeaway2",
+        "title": "[Takeaway title]",
+        "description": "[Clear takeaway explanation, 2 sentences]",
+        "importance": "[Why it matters]"
+      },
+      {
+        "id": "takeaway3",
+        "title": "[Takeaway title]",
+        "description": "[Clear takeaway explanation, 2 sentences]",
+        "importance": "[Why it matters]"
+      }
+    ],
+    "revisionChecklist": [
+      {
+        "id": "check1",
+        "item": "[Specific concept to revise]",
+        "checked": false
+      },
+      {
+        "id": "check2",
+        "item": "[Specific skill to verify]",
+        "checked": false
+      },
+      {
+        "id": "check3",
+        "item": "[Common mistake to avoid]",
+        "checked": false
+      }
+    ],
+    "nextStepPanel": {
+      "title": "Recommended Next Step",
+      "description": "[What to learn or practice next, 2 sentences]",
+      "actions": [
+        "[Action 1]",
+        "[Action 2]",
+        "[Action 3]"
+      ]
+    }
+  }
+}
+
+**IMPORTANT**:
+- Make the summary specific to ${subtopicName}
+- Do not provide generic course advice
+- Keep every checklist item actionable`;
+
+  const getInterviewPrompt = (domainName: string, subjectName: string, topicName: string, subtopicName: string) => `Generate content for the INTERVIEW PREP SECTION
+
+**Educational Hierarchy:**
+- Domain: ${domainName}
+- Subject: ${subjectName}
+- Topic: ${topicName}
+- Subtopic: ${subtopicName}
+
+Generate detailed content specifically for the subtopic: "${subtopicName}"
+
+Output in this EXACT JSON format:
+
+{
+  "interview": {
+    "title": "${subtopicName} Interview Prep",
+    "description": "[2-3 sentences explaining what interviewers test in this subtopic]",
+    "interviewIntroCard": {
+      "badge": "Interview Ready",
+      "headline": "How ${subtopicName} Appears in Interviews",
+      "overview": "[Practical overview, 3-4 sentences]",
+      "evaluationFocus": [
+        "[What interviewers evaluate 1]",
+        "[What interviewers evaluate 2]",
+        "[What interviewers evaluate 3]"
+      ]
+    },
+    "questionBankPanel": {
+      "title": "Common Interview Questions",
+      "questions": [
+        {
+          "id": "iq1",
+          "difficulty": "easy",
+          "question": "[Interview question]",
+          "idealAnswer": "[Strong answer, 4-5 sentences]",
+          "followUps": [
+            "[Follow-up question 1]",
+            "[Follow-up question 2]"
+          ],
+          "mistakesToAvoid": [
+            "[Mistake 1]",
+            "[Mistake 2]"
+          ]
+        },
+        {
+          "id": "iq2",
+          "difficulty": "medium",
+          "question": "[Interview question]",
+          "idealAnswer": "[Strong answer, 4-5 sentences]",
+          "followUps": [
+            "[Follow-up question 1]",
+            "[Follow-up question 2]"
+          ],
+          "mistakesToAvoid": [
+            "[Mistake 1]",
+            "[Mistake 2]"
+          ]
+        },
+        {
+          "id": "iq3",
+          "difficulty": "hard",
+          "question": "[Interview question]",
+          "idealAnswer": "[Strong answer, 5-6 sentences]",
+          "followUps": [
+            "[Follow-up question 1]",
+            "[Follow-up question 2]"
+          ],
+          "mistakesToAvoid": [
+            "[Mistake 1]",
+            "[Mistake 2]"
+          ]
+        }
+      ]
+    },
+    "answerFrameworkCard": {
+      "title": "Answer Framework",
+      "framework": [
+        "Define the concept clearly",
+        "Explain why it matters",
+        "Give a practical example",
+        "Mention tradeoffs or mistakes"
+      ],
+      "sampleStructure": "[A reusable answer structure for this subtopic]"
+    },
+    "mockInterviewFlow": {
+      "title": "Mock Interview Flow",
+      "rounds": [
+        {
+          "id": "round1",
+          "focus": "Concept clarity",
+          "prompt": "[Mock interviewer prompt]",
+          "expectedSignal": "[What a good answer should demonstrate]"
+        },
+        {
+          "id": "round2",
+          "focus": "Applied reasoning",
+          "prompt": "[Mock interviewer prompt]",
+          "expectedSignal": "[What a good answer should demonstrate]"
+        }
+      ]
+    }
+  }
+}
+
+**IMPORTANT**:
+- Make questions realistic for technical interviews
+- Include both beginner and senior-style reasoning
+- Keep answers concise but complete`;
+
+  const getAiTutorPrompt = (domainName: string, subjectName: string, topicName: string, subtopicName: string) => `Generate content for the AI TUTOR SECTION
+
+**Educational Hierarchy:**
+- Domain: ${domainName}
+- Subject: ${subjectName}
+- Topic: ${topicName}
+- Subtopic: ${subtopicName}
+
+Generate detailed tutor content specifically for the subtopic: "${subtopicName}"
+
+Output in this EXACT JSON format:
+
+{
+  "ai_tutor": {
+    "greeting": "Hi! Ask me anything about ${subtopicName}.",
+    "qa_pairs": [
+      {
+        "question": "[Likely student question 1]",
+        "answer": "[Clear tutor answer, 3-4 sentences]"
+      },
+      {
+        "question": "[Likely student question 2]",
+        "answer": "[Clear tutor answer, 3-4 sentences]"
+      },
+      {
+        "question": "[Likely student question 3]",
+        "answer": "[Clear tutor answer, 3-4 sentences]"
+      }
+    ],
+    "tutor_prompt_card": {
+      "title": "Tutor Guidance",
+      "systemPrompt": "[How the tutor should explain ${subtopicName}, including tone and teaching approach]",
+      "starterQuestions": [
+        "[Starter question 1]",
+        "[Starter question 2]",
+        "[Starter question 3]"
+      ]
+    },
+    "misconception_detector": {
+      "title": "Common Misconceptions",
+      "misconceptions": [
+        {
+          "id": "mis1",
+          "wrongBelief": "[Common wrong belief]",
+          "correction": "[Correct explanation]",
+          "example": "[Short example]"
+        },
+        {
+          "id": "mis2",
+          "wrongBelief": "[Common wrong belief]",
+          "correction": "[Correct explanation]",
+          "example": "[Short example]"
+        }
+      ]
+    },
+    "adaptive_hint_panel": {
+      "title": "Adaptive Hints",
+      "hints": [
+        {
+          "level": 1,
+          "hint": "[Small hint]"
+        },
+        {
+          "level": 2,
+          "hint": "[More direct hint]"
+        },
+        {
+          "level": 3,
+          "hint": "[Almost-solution explanation]"
+        }
+      ]
+    }
+  }
+}
+
+**IMPORTANT**:
+- The tutor answers should sound conversational but technically accurate
+- Include misconceptions that beginners actually have
+- Keep hints progressive from subtle to direct`;
+
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -2262,7 +2668,7 @@ Output in this EXACT JSON format with 30 total questions:
         {/* Header */}
         <header className="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
           <div className="p-8 text-center" style={{ backgroundColor: brand.primaryColor }}>
-            <h1 className="text-4xl font-bold text-white mb-3">🤖 AI Content Prompt Generator</h1>
+            <h1 className="text-4xl font-bold text-white mb-3">AI Content Prompt Generator</h1>
             <p className="text-white text-lg font-semibold">Generate perfect prompts for ChatGPT, Claude, Gemini, or DeepSeek</p>
           </div>
 
@@ -2383,7 +2789,7 @@ Output in this EXACT JSON format with 30 total questions:
                   copied ? 'bg-green-500' : 'bg-blue-600 hover:bg-blue-700'
                 } text-white`}
               >
-                {copied ? '✓ Copied!' : 'Copy to Clipboard'}
+                {copied ? 'Copied' : 'Copy to Clipboard'}
               </button>
             </div>
             <div className="p-6">

@@ -23,13 +23,13 @@ export function PracticeTestContent({
   // Combine all questions from different sections
   const allQuestions = [
     ...(data.conceptRecallQuestions?.questions || []),
-    ...(data.scenarioBasedQuestions?.scenarios.map(s => ({
+    ...(data.scenarioBasedQuestions?.scenarios || []).map(s => ({
       id: s.id,
       questionNumber: 0, // Will be set below
       type: 'scenario',
       points: 5,
       question: s.decisionQuestion,
-      options: s.options,
+      options: s.options || [],
       correctAnswer: s.correctAnswer,
       explanation: s.explanation,
       difficulty: s.difficulty,
@@ -38,7 +38,7 @@ export function PracticeTestContent({
         problem: s.realWorldProblem,
         businessContext: s.businessContext
       }
-    })) || [])
+    }))
   ].map((q, idx) => ({ ...q, questionNumber: idx + 1 }));
 
   const totalQuestions = allQuestions.length;

@@ -69,7 +69,7 @@ export function SubtopicContentGrid({ content, tasks, subtopicId = 'component-ar
           Mastery Learning Roadmap
         </h2>
         <p className="mx-auto max-w-2xl text-sm font-bold leading-6 text-slate-500 sm:text-base lg:text-lg">
-          Click each card to complete all 10 modules, master this topic, and earn up to 500 XP.
+          Click each card to move through the core modules, master this topic, and earn progress.
         </p>
       </div>
 
@@ -117,7 +117,7 @@ export function SubtopicContentGrid({ content, tasks, subtopicId = 'component-ar
         </p>
         <div className="flex max-w-full flex-wrap justify-center gap-3 sm:gap-4">
           {[
-            { label: '6-Block Content System', bg: 'bg-pink-50/50', text: 'text-pink-500', border: 'border-pink-100' },
+            { label: `${content.length}-Block Content System`, bg: 'bg-pink-50/50', text: 'text-pink-500', border: 'border-pink-100' },
             { label: 'Difficulty Progression', bg: 'bg-purple-50/50', text: 'text-purple-500', border: 'border-purple-100' },
             { label: `${brand.tutorLabel} Integration`, bg: 'bg-blue-50/50', text: 'text-blue-500', border: 'border-blue-100' },
             { label: 'Smart Remediation', bg: 'bg-indigo-50/50', text: 'text-indigo-500', border: 'border-indigo-100' }

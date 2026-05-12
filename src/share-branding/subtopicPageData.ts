@@ -40,8 +40,9 @@ export interface SubtopicViewData {
   subtopic: {
     title: string;
     description: string;
-    progress: number; // For Header
-    progressLabel: string; // For Header
+    iconLabel?: string;
+    progress: number;
+    progressLabel: string;
     metadata: {
       level: string;
       readingTime: string;
@@ -79,76 +80,345 @@ export interface SubtopicViewData {
   };
 }
 
-export async function loadTutorialData(brand: BrandConfig, subtopicId: string = 'component-architecture'): Promise<SubtopicViewData> {
-  // Safety check for undefined subtopicId
-  if (!subtopicId) {
-    subtopicId = 'component-architecture';
-  }
+type JsonRecord = Record<string, unknown>;
 
-  // Map of subtopic metadata
-  const subtopicMap: Record<string, { title: string; description: string; level: string; topic: string }> = {
-    'component-architecture': {
-      title: 'Component Architecture',
-      description: 'Master the art of building scalable and reusable UI components using React best practices and design patterns.',
-      level: 'Intermediate',
-      topic: 'React Basics'
-    },
-    'javascript-promises': {
-      title: 'JavaScript Promises',
-      description: 'Learn how to handle asynchronous operations with promises, async/await, and error handling patterns.',
-      level: 'Beginner',
-      topic: 'JavaScript Fundamentals'
+interface TutorialSectionsResponse {
+  subtopicName?: string;
+  difficulty?: string;
+  totalSections?: number;
+  sections?: Record<string, unknown>;
+}
+
+const contentCardTypes = ['notes', 'layman', 'example', 'code', 'deep-dive', 'visual', 'task', 'practice', 'assignment', 'project', 'quiz'] as const;
+
+function isRecord(value: unknown): value is JsonRecord {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+function asRecord(value: unknown): JsonRecord {
+  return isRecord(value) ? value : {};
+}
+
+function asString(value: unknown, fallback = ''): string {
+  return typeof value === 'string' && value.trim().length > 0 ? value : fallback;
+}
+
+function asNumber(value: unknown, fallback: number): number {
+  return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+}
+
+function asArray<T = unknown>(value: unknown): T[] {
+  return Array.isArray(value) ? value as T[] : [];
+}
+
+function getPath(source: unknown, path: Array<string | number>): unknown {
+  let current: unknown = source;
+  for (const segment of path) {
+    if (typeof segment === 'number') {
+      if (!Array.isArray(current)) return undefined;
+      current = current[segment];
+      continue;
     }
-  };
 
-  const subtopicInfo = subtopicMap[subtopicId] || subtopicMap['component-architecture'];
+    if (!isRecord(current)) return undefined;
+    current = current[segment];
+  }
+  return current;
+}
+
+function firstText(...values: unknown[]): string {
+  for (const value of values) {
+    const text = asString(value);
+    if (text) return text;
+  }
+  return '';
+}
+
+function titleFromSlug(slug: string): string {
+  return slug
+    .split('-')
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ') || 'Tutorial';
+}
+
+function difficultyLabel(value: unknown): string {
+  const text = asString(value, 'Beginner').toLowerCase();
+  if (text === 'simple') return 'Beginner';
+  if (text === 'mixed') return 'Mixed';
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+function iconLabelFromTitle(title: string): string {
+  if (/javascript/i.test(title)) return 'JS';
+  const words = title.match(/[a-zA-Z0-9]+/g) ?? [];
+  if (words.length === 0) return 'RT';
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+  return words.slice(0, 2).map((word) => word[0]).join('').toUpperCase();
+}
+
+function normalizeChecklist(value: unknown): Array<{ label: string; completed: boolean }> {
+  return asArray<JsonRecord>(value)
+    .map((item, index) => ({
+      label: asString(item.label, `Step ${index + 1}`),
+      completed: typeof item.completed === 'boolean' ? item.completed : false,
+    }))
+    .filter((item) => item.label.length > 0);
+}
+
+function normalizeContentCard(value: unknown, fallback: ContentCardData): ContentCardData {
+  const card = asRecord(value);
+  const rawType = asString(card.type, fallback.type);
+  const type = contentCardTypes.includes(rawType as ContentCardData['type'])
+    ? rawType as ContentCardData['type']
+    : fallback.type;
+  const badge = asRecord(card.badge);
+  const badgeType = asString(badge.type, 'info');
+
+  return {
+    id: asString(card.id, fallback.id),
+    title: asString(card.title, fallback.title),
+    type,
+    content: asString(card.content, fallback.content),
+    code: asString(card.code, fallback.code),
+    ctaLabel: asString(card.ctaLabel, fallback.ctaLabel),
+    ...(Object.keys(badge).length > 0 && {
+      badge: {
+        text: asString(badge.text, fallback.badge?.text ?? 'Task'),
+        type: (['success', 'warning', 'info'].includes(badgeType) ? badgeType : 'info') as 'success' | 'warning' | 'info',
+      },
+    }),
+  };
+}
+
+async function fetchTutorialSections(subtopicId: string): Promise<TutorialSectionsResponse | null> {
+  if (typeof window === 'undefined') return null;
+
+  try {
+    const response = await fetch(`/api/tutorial/sections/${encodeURIComponent(subtopicId)}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      cache: 'no-store',
+    });
+
+    if (!response.ok) return null;
+    return await response.json() as TutorialSectionsResponse;
+  } catch (error) {
+    console.error('[loadTutorialData] Failed to load overview sections:', error);
+    return null;
+  }
+}
+
+function deriveOverviewContent(sections: Record<string, unknown>, title: string): ContentCardData[] {
+  const notes = asRecord(sections.notes);
+  const layman = asRecord(sections.layman);
+  const realLife = asRecord(sections.real_life);
+  const technical = asRecord(sections.technical);
+  const code = asRecord(sections.code);
+  const visual = asRecord(sections.visual);
+
+  return [
+    {
+      id: 'notes',
+      title: 'Notes',
+      type: 'notes',
+      content: firstText(
+        notes.simpleWords,
+        getPath(notes, ['definitionBlock', 'definitionText']),
+        getPath(notes, ['coreDefinition', 'simpleExplanation']),
+        `Learn the core definition, structure, and examples for ${title}.`
+      ),
+      ctaLabel: 'Read Full Notes',
+    },
+    {
+      id: 'layman',
+      title: 'Layman Explanation',
+      type: 'layman',
+      content: firstText(
+        getPath(layman, ['simpleOverview', 'simpleDefinition']),
+        getPath(layman, ['simpleOverview', 'subExplanation']),
+        `Understand ${title} in simple beginner-friendly language.`
+      ),
+      ctaLabel: 'Read Simply',
+    },
+    {
+      id: 'real-life',
+      title: 'Real-Life Example',
+      type: 'example',
+      content: firstText(
+        getPath(realLife, ['conceptMapping', 'realWorldTranslation']),
+        getPath(realLife, ['industryUseCase', 'scenarioDescription']),
+        `See how ${title} is used in real-world work.`
+      ),
+      ctaLabel: 'View Examples',
+    },
+    {
+      id: 'code',
+      title: 'Code Example',
+      type: 'code',
+      code: firstText(
+        getPath(code, ['basicCodeExample', 'code']),
+        getPath(code, ['primaryCodeWorkspace', 'code']),
+        getPath(code, ['codeBlock', 'code']),
+        `// ${title}\nconsole.log("${title}");`
+      ),
+      ctaLabel: 'Run Code',
+    },
+    {
+      id: 'technical',
+      title: 'Technical Deep Dive',
+      type: 'deep-dive',
+      content: firstText(
+        technical.intro,
+        getPath(technical, ['coreTechnicalDefinition', 'definition']),
+        `Review the deeper mechanics and tradeoffs behind ${title}.`
+      ),
+      ctaLabel: 'Read Details',
+    },
+    {
+      id: 'visual',
+      title: 'Visual Explanation',
+      type: 'visual',
+      content: firstText(
+        getPath(visual, ['conceptVisualIntro', 'visualDefinition']),
+        getPath(visual, ['visualSummary', 'summaryTitle']),
+        `Visualize how ${title} works step by step.`
+      ),
+      ctaLabel: 'View Visual',
+    },
+  ];
+}
+
+function deriveTaskCards(sections: Record<string, unknown>, title: string): ContentCardData[] {
+  const practice = asRecord(sections.practice);
+  const assignment = asRecord(sections.assignment);
+  const project = asRecord(sections.project);
+  const quiz = asRecord(sections.quiz);
+  const quizQuestions = asArray(getPath(quiz, ['questions']));
+
+  return [
+    {
+      id: 'practice',
+      title: 'Practice Tasks',
+      type: 'practice',
+      content: firstText(
+        getPath(practice, ['assessmentIntro', 'testDescription']),
+        `Practice recall, scenario questions, and application checks for ${title}.`
+      ),
+      ctaLabel: 'Start Practice',
+    },
+    {
+      id: 'assignment',
+      title: 'Assignment',
+      type: 'assignment',
+      content: firstText(assignment.description, getPath(assignment, ['task', 'description']), `Apply ${title} in a focused assignment.`),
+      badge: { text: 'Easy', type: 'success' },
+      ctaLabel: 'Start Assignment',
+    },
+    {
+      id: 'project',
+      title: 'Project',
+      type: 'project',
+      content: firstText(project.description, getPath(project, ['hero', 'description']), `Build a small project that uses ${title}.`),
+      badge: { text: 'Project', type: 'success' },
+      ctaLabel: 'View Project',
+    },
+    {
+      id: 'quiz',
+      title: 'Quiz',
+      type: 'quiz',
+      content: firstText(quiz.description, `${quizQuestions.length || asNumber(quiz.totalQuestions, 10)} Questions\nPassing Score: 70%`),
+      ctaLabel: 'Start Quiz',
+    },
+  ];
+}
+
+function buildOverviewFromSections(brand: BrandConfig, subtopicId: string, apiData: TutorialSectionsResponse | null): SubtopicViewData {
+  const sections = apiData?.sections ?? {};
+  const overview = asRecord(sections.overview);
+  const hero = asRecord(overview.hero);
+  const progressSummary = asRecord(overview.progressSummary);
+  const roadmap = asRecord(overview.learningRoadmap);
+  const title = firstText(hero.title, overview.title, apiData?.subtopicName, titleFromSlug(subtopicId));
+  const description = firstText(
+    hero.description,
+    overview.description,
+    getPath(sections.notes, ['definitionBlock', 'definitionText']),
+    getPath(sections.notes, ['coreDefinition', 'definition']),
+    getPath(sections.notes, ['simpleWords']),
+    getPath(sections.layman, ['simpleOverview', 'simpleDefinition']),
+    `Start learning ${title} with notes, examples, practice, projects, and assessment.`
+  );
+  const sectionCount = Math.max(1, Object.keys(sections).filter((key) => key !== 'overview').length);
+  const topicsCount = asNumber(hero.topicsCount, sectionCount >= 3 ? sectionCount : 10);
+  const progress = asNumber(progressSummary.percentage, 0);
+  const checklist = normalizeChecklist(progressSummary.checklist);
+  const fallbackChecklist = [
+    { label: 'Notes', completed: false },
+    { label: 'Practice', completed: false },
+    { label: 'Assignment', completed: false },
+    { label: 'Quiz', completed: false },
+  ];
+  const contentCards = asArray(roadmap.contentCards);
+  const taskCards = asArray(roadmap.taskCards);
+  const navigation = asRecord(overview.navigation);
+  const derivedContentCards = deriveOverviewContent(sections, title);
+  const derivedTaskCards = deriveTaskCards(sections, title);
+  const contentFallback = derivedContentCards[0] ?? {
+    id: 'notes',
+    title: 'Notes',
+    type: 'notes' as const,
+    content: `Learn the core ideas behind ${title}.`,
+    ctaLabel: 'Read Full Notes',
+  };
+  const taskFallback = derivedTaskCards[0] ?? {
+    id: 'practice',
+    title: 'Practice Tasks',
+    type: 'practice' as const,
+    content: `Practice ${title}.`,
+    ctaLabel: 'Start Practice',
+  };
 
   return {
     nav: {
-      courseLabel: 'Full-Stack Development',
-      lessonLabel: 'React Basics',
+      courseLabel: 'Course',
+      lessonLabel: 'Lesson',
       dashboardCtaLabel: 'Dashboard',
       streak: 12,
       xpPoints: 12450,
       learnerInitials: 'AJ',
     },
     subtopic: {
-      title: subtopicInfo.title,
-      description: subtopicInfo.description,
-      progress: 65,
+      title,
+      description,
+      iconLabel: firstText(hero.iconLabel, iconLabelFromTitle(title)),
+      progress,
       progressLabel: 'Subtopic Progress',
       metadata: {
-        level: subtopicInfo.level,
-        readingTime: '45 mins',
-        xp: 500,
-        topicsCount: 5,
-        lastUpdated: 'Today',
+        level: difficultyLabel(firstText(hero.difficulty, apiData?.difficulty)),
+        readingTime: firstText(hero.estimatedReadTime, `${Math.max(15, topicsCount * 5)} mins`),
+        xp: asNumber(hero.xp, 500),
+        topicsCount,
+        lastUpdated: firstText(hero.lastUpdated, 'Today'),
       },
       stats: [
-        { id: 'time', label: 'Est. Time', value: '45 mins', icon: 'Clock' },
-        { id: 'level', label: 'Difficulty', value: 'Intermediate', icon: 'BarChart' },
-        { id: 'xp', label: 'Reward', value: '500 XP', icon: 'Zap' },
+        { id: 'time', label: 'Est. Time', value: firstText(hero.estimatedReadTime, `${Math.max(15, topicsCount * 5)} mins`), icon: 'Clock' },
+        { id: 'level', label: 'Difficulty', value: difficultyLabel(firstText(hero.difficulty, apiData?.difficulty)), icon: 'BarChart' },
+        { id: 'xp', label: 'Reward', value: `${asNumber(hero.xp, 500)} XP`, icon: 'Zap' },
       ],
       overallProgress: {
-        percentage: 65,
-        checklist: [
-          { label: 'Introduction to Components', completed: true },
-          { label: 'Functional vs Class Components', completed: true },
-          { label: 'State Management Basics', completed: false },
-          { label: 'Component Lifecycle', completed: false },
-        ],
+        percentage: progress,
+        checklist: checklist.length > 0 ? checklist : fallbackChecklist,
       },
       sidebar: {
-        subtopicsTitle: 'React Fundamentals',
+        subtopicsTitle: firstText(getPath(overview, ['sidebar', 'title']), 'Learning Path'),
         items: [
-          { id: 'st1', title: 'What is JSX?', status: 'completed' },
-          { id: 'st2', title: 'Components & Props', status: 'completed' },
-          { id: 'st3', title: 'Component Architecture', status: 'active', isCurrent: true },
-          { id: 'st4', title: 'State & Lifecycle', status: 'locked' },
-          { id: 'st5', title: 'Hooks Introduction', status: 'locked' },
+          { id: subtopicId, title, status: 'active', isCurrent: true },
         ],
       },
       tabs: [
+        { id: 'overview', label: 'Overview', icon: 'LayoutDashboard' },
         { id: 'learn', label: 'Learn', icon: 'BookOpen' },
         { id: 'practice', label: 'Practice', icon: 'Rocket' },
         { id: 'assignment', label: 'Assignment', icon: 'ClipboardList' },
@@ -159,98 +429,51 @@ export async function loadTutorialData(brand: BrandConfig, subtopicId: string = 
         { id: 'interview', label: 'Interview', icon: 'Presentation' },
         { id: 'remediation', label: 'Remediation', icon: 'Activity' },
       ],
-      content: [
-        {
-          id: 'c1', title: 'Notes', type: 'notes',
-          content: 'Learn how to break down complex UIs into smaller, independent, and reusable pieces for better scalability.',
-          ctaLabel: 'Read Full Notes'
-        },
-        {
-          id: 'c2', title: 'Layman Explanation', type: 'layman',
-          content: 'Think of Component Architecture like building with LEGO bricks. Mix and match pieces to build anything!',
-          ctaLabel: 'Read More'
-        },
-        {
-          id: 'c3', title: 'Real-Life Example', type: 'example',
-          content: 'From navbars to profile cards, reusable components are the building blocks of every modern web application.',
-          ctaLabel: 'Read Examples'
-        },
-        {
-          id: 'c4', title: 'Code Example', type: 'code',
-          code: '// Simple UI Component\nconst Card = ({ title }) => (\n  <div className="card">\n    <h2>{title}</h2>\n  </div>\n);',
-          ctaLabel: 'Run Code'
-        },
-        {
-          id: 'c5', title: 'Technical Deep Dive', type: 'deep-dive',
-          content: 'Master advanced patterns like Container/Presentational, Atomic Design, and Prop Composition.',
-          ctaLabel: 'Read Details'
-        },
-        {
-          id: 'c6', title: 'Visual Explanation', type: 'visual',
-          content: 'Flowchart: Logic vs UI',
-          ctaLabel: 'Watch Video'
-        }
-      ],
-      tasks: [
-        {
-          id: 't1', title: 'Practice Tasks', type: 'practice',
-          content: '- Identify container vs presentational components\n- Break a complex UI into a component tree\n- Implement the children prop',
-          ctaLabel: 'View All (10)'
-        },
-        {
-          id: 't2', title: 'Assignment', type: 'assignment',
-          content: 'Refactor a monolithic React component into 3 smaller, reusable functional components using props.',
-          badge: { text: 'Easy', type: 'success' },
-          ctaLabel: 'Start Assignment'
-        },
-        {
-          id: 't3', title: 'Project', type: 'project',
-          content: 'Build a modular E-commerce Dashboard using Atomic Design principles and strict component separation.',
-          badge: { text: 'Intermediate', type: 'success' },
-          ctaLabel: 'View Project'
-        },
-        {
-          id: 't4', title: 'Quiz', type: 'quiz',
-          content: '10 Questions\nPassing Score: 70%\nBest Score: 8/10',
-          ctaLabel: 'Start Quiz'
-        }
-      ],
+      content: contentCards.length > 0
+        ? contentCards.map((card, index) => normalizeContentCard(card, derivedContentCards[index] ?? contentFallback))
+        : derivedContentCards,
+      tasks: taskCards.length > 0
+        ? taskCards.map((card, index) => normalizeContentCard(card, derivedTaskCards[index] ?? taskFallback))
+        : derivedTaskCards,
       navigation: {
-        prev: { title: 'Components & Props' },
-        next: { title: 'State & Lifecycle' },
+        prev: { title: firstText(navigation.prevTitle, 'Previous Topic') },
+        next: { title: firstText(navigation.nextTitle, 'Next Topic') },
       },
     },
     rightSidebar: {
       xpSection: {
         title: 'XP & Badges',
-        earnedXp: 80,
-        totalXp: 120,
-        xpMessage: 'for completing this subtopic'
+        earnedXp: 0,
+        totalXp: asNumber(hero.xp, 500),
+        xpMessage: 'for completing this subtopic',
       },
       achievements: {
         title: 'Achievements',
         items: [
-          { id: 'a1', title: 'Architecture Novice', description: 'Build your first reusable component', icon: 'Award', color: 'blue' },
-          { id: 'a2', title: 'State Lifter', description: 'Successfully lift state to a parent component', icon: 'Award', color: 'red' },
-          { id: 'a3', title: 'Atomic Thinker', description: 'Apply atomic design to a feature', icon: 'Award', color: 'blue' },
-        ]
+          { id: 'a1', title: `${title} Starter`, description: 'Review the core overview and notes', icon: 'Award', color: 'blue' },
+          { id: 'a2', title: 'Practice Ready', description: 'Complete practice and quiz modules', icon: 'Award', color: 'red' },
+        ],
       },
       weaknessAnalysis: {
         title: 'Weakness Analysis',
-        score: 68,
-        scoreLabel: 'Needs Improvement',
+        score: 0,
+        scoreLabel: 'Not started',
         items: [
-          { id: 'w1', topic: 'Prop Drilling', status: 'Weak', color: 'rose' },
-          { id: 'w2', topic: 'State Colocation', status: 'Weak', color: 'rose' },
-          { id: 'w3', topic: 'Component Reusability', status: 'Medium', color: 'amber' },
-        ]
+          { id: 'w1', topic: title, status: 'Pending', color: 'amber' },
+        ],
       },
       aiTutor: {
         title: `Ask ${brand.tutorLabel}`,
-        subtitle: `Got doubts about this topic?\nAsk our ${brand.tutorLabel} anytime.`,
+        subtitle: `Got doubts about ${title}?\nAsk our ${brand.tutorLabel} anytime.`,
         inputPlaceholder: 'Ask anything...',
-        examples: ['Examples', 'Explain like I\'m 5', 'Interview Q']
-      }
-    }
+        examples: ['Examples', 'Explain simply', 'Interview questions'],
+      },
+    },
   };
+}
+
+export async function loadTutorialData(brand: BrandConfig, subtopicId: string = 'component-architecture'): Promise<SubtopicViewData> {
+  const resolvedSubtopicId = subtopicId || 'component-architecture';
+  const apiData = await fetchTutorialSections(resolvedSubtopicId);
+  return buildOverviewFromSections(brand, resolvedSubtopicId, apiData);
 }

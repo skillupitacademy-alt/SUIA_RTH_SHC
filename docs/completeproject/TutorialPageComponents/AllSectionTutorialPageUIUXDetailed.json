@@ -1,0 +1,4365 @@
+[
+    {
+        "notes_section_default_templates": {
+            "metadata": {
+                "section_type": "notes_section",
+                "default_device": "desktop",
+                "wcag_compliance": "AA",
+                "template_version": "1.0"
+            },
+            "definition_block": {
+                "layout": {
+                    "template_type": "top_priority_intro",
+                    "width": "full",
+                    "max_width": "1200px",
+                    "padding": "40px",
+                    "margin_bottom": "32px",
+                    "border_radius": "20px",
+                    "shadow": "large",
+                    "background_color": "#ffffff",
+                    "border_color": "#d1d5db"
+                },
+                "content_structure": {
+                    "section_badge": true,
+                    "headline": true,
+                    "definition_text": true,
+                    "importance_callout": true,
+                    "quick_summary": true
+                },
+                "typography": {
+                    "headline_size": "36px",
+                    "subheading_size": "22px",
+                    "body_size": "18px",
+                    "line_height": 1.6,
+                    "font_family": "Inter"
+                },
+                "visual_style": {
+                    "badge_style": "soft_pill",
+                    "surface_style": "hero_card",
+                    "focus_outline": "#2563eb"
+                },
+                "accessibility": {
+                    "keyboard_navigation": true,
+                    "screen_reader_support": true,
+                    "contrast_ratio": "4.5:1"
+                }
+            },
+            "concept_card": {
+                "layout": {
+                    "template_type": "educational_content_panel",
+                    "width": "full",
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px",
+                    "shadow": "medium"
+                },
+                "content_structure": {
+                    "title": true,
+                    "concept_explanation": true,
+                    "supporting_examples": true,
+                    "deep_dive_notes": true,
+                    "mental_model": true
+                },
+                "typography": {
+                    "title_size": "28px",
+                    "body_size": "16px",
+                    "font_family": "Inter"
+                },
+                "visual_style": {
+                    "content_panels": true,
+                    "highlight_boxes": true
+                },
+                "accessibility": {
+                    "wcag_level": "AA"
+                }
+            },
+            "component_grid": {
+                "layout": {
+                    "template_type": "structured_breakdown",
+                    "columns": 3,
+                    "card_gap": "24px",
+                    "padding": "32px"
+                },
+                "content_structure": {
+                    "grid_title": true,
+                    "component_cards": true,
+                    "subcomponent_explanations": true,
+                    "icons": true
+                },
+                "typography": {
+                    "card_title_size": "20px",
+                    "body_size": "16px"
+                },
+                "visual_style": {
+                    "icon_cards": true,
+                    "hover_effect": true
+                },
+                "accessibility": {
+                    "keyboard_navigation": true
+                }
+            },
+            "syntax_block": {
+                "layout": {
+                    "template_type": "code_or_formula_highlight",
+                    "width": "full",
+                    "padding": "24px",
+                    "border_radius": "16px",
+                    "background_color": "#111827",
+                    "text_color": "#f9fafb"
+                },
+                "content_structure": {
+                    "syntax_title": true,
+                    "code_block": true,
+                    "line_numbers": true,
+                    "copy_button": true,
+                    "syntax_explanation": true
+                },
+                "typography": {
+                    "code_font": "JetBrains Mono",
+                    "code_size": "15px",
+                    "body_size": "16px"
+                },
+                "interaction_design": {
+                    "copy_button": true,
+                    "syntax_highlighting": true
+                },
+                "accessibility": {
+                    "aria_labels": true,
+                    "contrast_ratio": "7:1"
+                }
+            },
+            "example_panel": {
+                "layout": {
+                    "template_type": "practical_example_cards",
+                    "columns": 2,
+                    "padding": "32px",
+                    "card_gap": "24px"
+                },
+                "content_structure": {
+                    "example_title": true,
+                    "scenario_description": true,
+                    "practical_solution": true,
+                    "industry_context": true
+                },
+                "typography": {
+                    "title_size": "24px",
+                    "body_size": "16px"
+                },
+                "visual_style": {
+                    "scenario_cards": true,
+                    "context_badges": true
+                }
+            },
+            "practice_card": {
+                "layout": {
+                    "template_type": "recommendation_block",
+                    "padding": "32px",
+                    "border_radius": "16px"
+                },
+                "content_structure": {
+                    "best_practice_title": true,
+                    "recommendations": true,
+                    "optimization_tips": true,
+                    "industry_standards": true
+                },
+                "visual_style": {
+                    "success_panels": true,
+                    "green_semantic_highlights": true
+                }
+            },
+            "warning_faq": {
+                "layout": {
+                    "template_type": "mistake_prevention",
+                    "width": "full",
+                    "padding": "32px",
+                    "border_radius": "16px"
+                },
+                "content_structure": {
+                    "common_errors": true,
+                    "faq_items": true,
+                    "misconception_alerts": true,
+                    "clarifications": true
+                },
+                "interaction_design": {
+                    "accordion_expand": true,
+                    "default_first_open": true
+                },
+                "visual_style": {
+                    "warning_panels": true,
+                    "semantic_warning_colors": true
+                },
+                "accessibility": {
+                    "aria_expanded": true,
+                    "keyboard_navigation": true
+                }
+            },
+            "summary_card": {
+                "layout": {
+                    "template_type": "exam_ready_summary",
+                    "width": "full",
+                    "padding": "40px",
+                    "border_radius": "20px",
+                    "shadow": "medium"
+                },
+                "content_structure": {
+                    "summary_title": true,
+                    "key_takeaways": true,
+                    "revision_checklist": true,
+                    "memory_reinforcement": true,
+                    "exam_tips": true
+                },
+                "typography": {
+                    "title_size": "28px",
+                    "body_size": "16px"
+                },
+                "visual_style": {
+                    "revision_dashboard": true,
+                    "checklist_mode": true
+                },
+                "accessibility": {
+                    "print_ready": true,
+                    "font_scaling_supported": true
+                }
+            }
+        }
+    },
+    {
+        "notes_section_layout_template_defaults": {
+            "top_priority_intro": {
+                "purpose": "Hero-style foundational definition section",
+                "layout": {
+                    "width": "full",
+                    "max_width": "1200px",
+                    "min_height": "420px",
+                    "padding": "40px",
+                    "margin_bottom": "32px",
+                    "border_radius": "20px",
+                    "shadow": "large",
+                    "background_style": "hero_gradient_surface",
+                    "border": "1px solid #d1d5db",
+                    "content_alignment": "left"
+                },
+                "content_slots": {
+                    "section_badge": true,
+                    "headline": true,
+                    "definition_text": true,
+                    "importance_callout": true,
+                    "quick_summary": true
+                },
+                "typography": {
+                    "headline_size": "36px",
+                    "subheading_size": "22px",
+                    "body_size": "18px",
+                    "line_height": 1.6,
+                    "font_family": "Inter"
+                },
+                "visual_style": {
+                    "badge_style": "soft_pill",
+                    "surface_theme": "educational_hero",
+                    "highlight_box": true
+                }
+            },
+            "educational_content_panel": {
+                "purpose": "Structured concept explanation card",
+                "layout": {
+                    "width": "full",
+                    "max_width": "1200px",
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px",
+                    "shadow": "medium",
+                    "background_style": "clean_surface",
+                    "content_alignment": "left"
+                },
+                "content_slots": {
+                    "title": true,
+                    "concept_explanation": true,
+                    "supporting_examples": true,
+                    "mental_model": true,
+                    "deep_dive_notes": true
+                },
+                "typography": {
+                    "title_size": "28px",
+                    "body_size": "16px",
+                    "font_family": "Inter"
+                },
+                "visual_style": {
+                    "content_panels": true,
+                    "highlight_boxes": true
+                }
+            },
+            "structured_breakdown": {
+                "purpose": "Grid-based breakdown of subcomponents",
+                "layout": {
+                    "width": "full",
+                    "columns": 3,
+                    "card_gap": "24px",
+                    "padding": "32px",
+                    "margin_bottom": "32px"
+                },
+                "content_slots": {
+                    "grid_title": true,
+                    "component_cards": true,
+                    "subcomponent_explanations": true,
+                    "icons": true
+                },
+                "typography": {
+                    "card_title_size": "20px",
+                    "body_size": "16px"
+                },
+                "visual_style": {
+                    "icon_cards": true,
+                    "hover_effect": true,
+                    "card_surface": "modular_grid"
+                }
+            },
+            "code_or_formula_highlight": {
+                "purpose": "Code, formula, or syntax display block",
+                "layout": {
+                    "width": "full",
+                    "padding": "24px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px",
+                    "background_color": "#111827",
+                    "text_color": "#f9fafb",
+                    "overflow_scroll": true
+                },
+                "content_slots": {
+                    "syntax_title": true,
+                    "code_block": true,
+                    "line_numbers": true,
+                    "copy_button": true,
+                    "syntax_explanation": true
+                },
+                "typography": {
+                    "code_font": "JetBrains Mono",
+                    "code_size": "15px",
+                    "body_size": "16px"
+                },
+                "interaction_design": {
+                    "copy_button": true,
+                    "syntax_highlighting": true
+                }
+            },
+            "practical_example_cards": {
+                "purpose": "Practical real-world example cards",
+                "layout": {
+                    "width": "full",
+                    "columns": 2,
+                    "card_gap": "24px",
+                    "padding": "32px",
+                    "margin_bottom": "32px"
+                },
+                "content_slots": {
+                    "example_title": true,
+                    "scenario_description": true,
+                    "practical_solution": true,
+                    "industry_context": true
+                },
+                "typography": {
+                    "title_size": "24px",
+                    "body_size": "16px"
+                },
+                "visual_style": {
+                    "scenario_cards": true,
+                    "context_badges": true
+                }
+            },
+            "recommendation_block": {
+                "purpose": "Best practices and optimization guidance",
+                "layout": {
+                    "width": "full",
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px",
+                    "shadow": "medium"
+                },
+                "content_slots": {
+                    "best_practice_title": true,
+                    "recommendations": true,
+                    "optimization_tips": true,
+                    "industry_standards": true
+                },
+                "visual_style": {
+                    "success_panels": true,
+                    "green_semantic_highlights": true
+                }
+            },
+            "mistake_prevention": {
+                "purpose": "Common mistakes, FAQ, and misconception prevention",
+                "layout": {
+                    "width": "full",
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px",
+                    "shadow": "medium"
+                },
+                "content_slots": {
+                    "common_errors": true,
+                    "faq_items": true,
+                    "misconception_alerts": true,
+                    "clarifications": true
+                },
+                "interaction_design": {
+                    "accordion_expand": true,
+                    "default_first_open": true
+                },
+                "visual_style": {
+                    "warning_panels": true,
+                    "semantic_warning_colors": true
+                }
+            },
+            "exam_ready_summary": {
+                "purpose": "Revision summary and exam-preparation dashboard",
+                "layout": {
+                    "width": "full",
+                    "max_width": "1200px",
+                    "padding": "40px",
+                    "margin_bottom": "32px",
+                    "border_radius": "20px",
+                    "shadow": "large",
+                    "background_style": "revision_surface"
+                },
+                "content_slots": {
+                    "summary_title": true,
+                    "key_takeaways": true,
+                    "revision_checklist": true,
+                    "memory_reinforcement": true,
+                    "exam_tips": true
+                },
+                "typography": {
+                    "title_size": "28px",
+                    "body_size": "16px"
+                },
+                "visual_style": {
+                    "revision_dashboard": true,
+                    "checklist_mode": true,
+                    "print_ready": true
+                }
+            }
+        }
+    },
+    {
+        "layman_section_default_templates": {
+            "metadata": {
+                "section_type": "layman_section",
+                "default_device": "desktop",
+                "wcag_compliance": "AA",
+                "template_version": "1.0"
+            },
+            "intro_card": {
+                "layout": {
+                    "template_type": "hero_card",
+                    "width": "full",
+                    "max_width": "1200px",
+                    "min_height": "460px",
+                    "padding": "40px",
+                    "margin_bottom": "32px",
+                    "border_radius": "20px",
+                    "shadow": "large",
+                    "background_style": "confidence_gradient_surface",
+                    "border_color": "#d1d5db",
+                    "content_alignment": "left"
+                },
+                "content_structure": {
+                    "section_badge": true,
+                    "headline": true,
+                    "simple_definition": true,
+                    "sub_explanation": true,
+                    "importance_block": true,
+                    "progress_indicator": true
+                },
+                "typography": {
+                    "headline_size": "38px",
+                    "subheading_size": "22px",
+                    "body_size": "18px",
+                    "line_height": 1.6,
+                    "font_family": "Inter"
+                },
+                "visual_style": {
+                    "badge_style": "soft_pill",
+                    "surface_theme": "beginner_safe",
+                    "highlight_boxes": true
+                },
+                "accessibility": {
+                    "keyboard_navigation": true,
+                    "screen_reader_support": true,
+                    "contrast_ratio": "4.5:1"
+                }
+            },
+            "analogy_card": {
+                "layout": {
+                    "template_type": "split_panel",
+                    "width": "full",
+                    "max_width": "1200px",
+                    "columns": 2,
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px",
+                    "shadow": "medium"
+                },
+                "content_structure": {
+                    "title": true,
+                    "story_analogy": true,
+                    "comparison_panel": true,
+                    "visual_metaphor": true,
+                    "key_takeaway": true
+                },
+                "typography": {
+                    "title_size": "28px",
+                    "body_size": "16px",
+                    "font_family": "Inter"
+                },
+                "visual_style": {
+                    "story_panel": true,
+                    "illustration_support": true,
+                    "comparison_highlights": true
+                }
+            },
+            "benefit_card": {
+                "layout": {
+                    "template_type": "benefit_grid",
+                    "width": "full",
+                    "columns": 3,
+                    "padding": "32px",
+                    "card_gap": "24px",
+                    "margin_bottom": "32px"
+                },
+                "content_structure": {
+                    "section_title": true,
+                    "benefit_cards": true,
+                    "career_value": true,
+                    "practical_value": true,
+                    "future_learning_bridge": true
+                },
+                "typography": {
+                    "card_title_size": "20px",
+                    "body_size": "16px"
+                },
+                "visual_style": {
+                    "icon_cards": true,
+                    "motivation_panels": true,
+                    "hover_effect": true
+                }
+            },
+            "use_case_grid": {
+                "layout": {
+                    "template_type": "responsive_grid",
+                    "width": "full",
+                    "columns": 4,
+                    "padding": "32px",
+                    "card_gap": "24px",
+                    "margin_bottom": "32px"
+                },
+                "content_structure": {
+                    "grid_title": true,
+                    "use_case_cards": true,
+                    "everyday_examples": true,
+                    "career_examples": true
+                },
+                "typography": {
+                    "card_title_size": "18px",
+                    "body_size": "16px"
+                },
+                "visual_style": {
+                    "scenario_cards": true,
+                    "context_badges": true
+                }
+            },
+            "accordion": {
+                "layout": {
+                    "template_type": "expandable_sections",
+                    "width": "full",
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_structure": {
+                    "step_titles": true,
+                    "step_explanations": true,
+                    "micro_learning_chunks": true,
+                    "progressive_learning": true
+                },
+                "interaction_design": {
+                    "accordion_expand": true,
+                    "default_first_open": true,
+                    "multi_expand": false
+                },
+                "visual_style": {
+                    "stepper_icons": true,
+                    "focus_mode": true
+                }
+            },
+            "diagram_renderer": {
+                "layout": {
+                    "template_type": "interactive_visual_canvas",
+                    "width": "full",
+                    "height": "600px",
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_structure": {
+                    "mental_model_title": true,
+                    "concept_map": true,
+                    "visual_labels": true,
+                    "flow_arrows": true,
+                    "tooltips": true
+                },
+                "interaction_design": {
+                    "zoom_controls": true,
+                    "hover_explanations": true
+                },
+                "visual_style": {
+                    "educational_infographic": true,
+                    "animated_connections": true
+                }
+            },
+            "faq_block": {
+                "layout": {
+                    "template_type": "faq_accordion",
+                    "width": "full",
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_structure": {
+                    "common_confusions": true,
+                    "faq_items": true,
+                    "misconception_alerts": true,
+                    "clarification_notes": true
+                },
+                "interaction_design": {
+                    "accordion_expand": true,
+                    "default_first_open": true
+                },
+                "visual_style": {
+                    "warning_panels": true,
+                    "semantic_warning_colors": true
+                },
+                "accessibility": {
+                    "aria_expanded": true,
+                    "keyboard_navigation": true
+                }
+            },
+            "summary_card": {
+                "layout": {
+                    "template_type": "revision_dashboard",
+                    "width": "full",
+                    "max_width": "1200px",
+                    "padding": "40px",
+                    "margin_bottom": "32px",
+                    "border_radius": "20px",
+                    "shadow": "large",
+                    "background_style": "revision_surface"
+                },
+                "content_structure": {
+                    "summary_title": true,
+                    "key_takeaways": true,
+                    "simple_recap_points": true,
+                    "confidence_boost": true,
+                    "memory_reinforcement": true
+                },
+                "typography": {
+                    "title_size": "28px",
+                    "body_size": "16px"
+                },
+                "visual_style": {
+                    "checklist_mode": true,
+                    "revision_dashboard": true,
+                    "print_ready": true
+                },
+                "accessibility": {
+                    "font_scaling_supported": true,
+                    "contrast_ratio": "4.5:1"
+                }
+            }
+        }
+    },
+    {
+        "layman_section_layout_template_defaults": {
+            "hero_card": {
+                "purpose": "Large beginner-friendly foundational intro section",
+                "layout": {
+                    "width": "full",
+                    "max_width": "1200px",
+                    "min_height": "460px",
+                    "padding": "40px",
+                    "margin_bottom": "32px",
+                    "border_radius": "20px",
+                    "shadow": "large",
+                    "background_style": "confidence_gradient_surface",
+                    "border": "1px solid #d1d5db",
+                    "content_alignment": "left"
+                },
+                "content_slots": {
+                    "section_badge": true,
+                    "headline": true,
+                    "simple_definition": true,
+                    "sub_explanation": true,
+                    "importance_block": true,
+                    "progress_indicator": true
+                },
+                "typography": {
+                    "headline_size": "38px",
+                    "subheading_size": "22px",
+                    "body_size": "18px",
+                    "line_height": 1.6,
+                    "font_family": "Inter"
+                },
+                "visual_style": {
+                    "badge_style": "soft_pill",
+                    "surface_theme": "beginner_safe",
+                    "highlight_boxes": true
+                }
+            },
+            "split_panel": {
+                "purpose": "Everyday analogy + visual comparison learning panel",
+                "layout": {
+                    "width": "full",
+                    "max_width": "1200px",
+                    "columns": 2,
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px",
+                    "shadow": "medium",
+                    "content_alignment": "split"
+                },
+                "content_slots": {
+                    "title": true,
+                    "story_analogy": true,
+                    "comparison_panel": true,
+                    "visual_metaphor": true,
+                    "key_takeaway": true
+                },
+                "typography": {
+                    "title_size": "28px",
+                    "body_size": "16px",
+                    "font_family": "Inter"
+                },
+                "visual_style": {
+                    "story_panel": true,
+                    "illustration_support": true,
+                    "comparison_highlights": true
+                }
+            },
+            "benefit_grid": {
+                "purpose": "Benefits, motivation, and value explanation grid",
+                "layout": {
+                    "width": "full",
+                    "columns": 3,
+                    "padding": "32px",
+                    "card_gap": "24px",
+                    "margin_bottom": "32px"
+                },
+                "content_slots": {
+                    "section_title": true,
+                    "benefit_cards": true,
+                    "career_value": true,
+                    "practical_value": true,
+                    "future_learning_bridge": true
+                },
+                "typography": {
+                    "card_title_size": "20px",
+                    "body_size": "16px"
+                },
+                "visual_style": {
+                    "icon_cards": true,
+                    "motivation_panels": true,
+                    "hover_effect": true
+                }
+            },
+            "responsive_grid": {
+                "purpose": "Practical beginner use-case examples",
+                "layout": {
+                    "width": "full",
+                    "columns": 4,
+                    "padding": "32px",
+                    "card_gap": "24px",
+                    "margin_bottom": "32px"
+                },
+                "content_slots": {
+                    "grid_title": true,
+                    "use_case_cards": true,
+                    "everyday_examples": true,
+                    "career_examples": true
+                },
+                "typography": {
+                    "card_title_size": "18px",
+                    "body_size": "16px"
+                },
+                "visual_style": {
+                    "scenario_cards": true,
+                    "context_badges": true
+                }
+            },
+            "expandable_sections": {
+                "purpose": "Step-by-step progressive beginner breakdown",
+                "layout": {
+                    "width": "full",
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_slots": {
+                    "step_titles": true,
+                    "step_explanations": true,
+                    "micro_learning_chunks": true,
+                    "progressive_learning": true
+                },
+                "interaction_design": {
+                    "accordion_expand": true,
+                    "default_first_open": true,
+                    "multi_expand": false
+                },
+                "visual_style": {
+                    "stepper_icons": true,
+                    "focus_mode": true
+                }
+            },
+            "interactive_visual_canvas": {
+                "purpose": "Mental model and conceptual visual system",
+                "layout": {
+                    "width": "full",
+                    "height": "600px",
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_slots": {
+                    "mental_model_title": true,
+                    "concept_map": true,
+                    "visual_labels": true,
+                    "flow_arrows": true,
+                    "tooltips": true
+                },
+                "interaction_design": {
+                    "zoom_controls": true,
+                    "hover_explanations": true
+                },
+                "visual_style": {
+                    "educational_infographic": true,
+                    "animated_connections": true
+                }
+            },
+            "faq_accordion": {
+                "purpose": "Confusion prevention, FAQ, misconception system",
+                "layout": {
+                    "width": "full",
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px",
+                    "shadow": "medium"
+                },
+                "content_slots": {
+                    "common_confusions": true,
+                    "faq_items": true,
+                    "misconception_alerts": true,
+                    "clarification_notes": true
+                },
+                "interaction_design": {
+                    "accordion_expand": true,
+                    "default_first_open": true,
+                    "multi_expand": false
+                },
+                "visual_style": {
+                    "warning_panels": true,
+                    "semantic_warning_colors": true
+                },
+                "accessibility": {
+                    "aria_expanded": true,
+                    "keyboard_navigation": true
+                }
+            },
+            "revision_dashboard": {
+                "purpose": "Beginner recap, reinforcement, and revision dashboard",
+                "layout": {
+                    "width": "full",
+                    "max_width": "1200px",
+                    "padding": "40px",
+                    "margin_bottom": "32px",
+                    "border_radius": "20px",
+                    "shadow": "large",
+                    "background_style": "revision_surface"
+                },
+                "content_slots": {
+                    "summary_title": true,
+                    "key_takeaways": true,
+                    "simple_recap_points": true,
+                    "confidence_boost": true,
+                    "memory_reinforcement": true
+                },
+                "typography": {
+                    "title_size": "28px",
+                    "body_size": "16px"
+                },
+                "visual_style": {
+                    "checklist_mode": true,
+                    "revision_dashboard": true,
+                    "print_ready": true
+                },
+                "accessibility": {
+                    "font_scaling_supported": true,
+                    "contrast_ratio": "4.5:1"
+                }
+            }
+        }
+    },
+    {
+        "real_life_example_section_default_templates": {
+            "metadata": {
+                "section_type": "real_life_example_section",
+                "default_device": "desktop",
+                "wcag_compliance": "AA",
+                "template_version": "1.0"
+            },
+            "context_intro_card": {
+                "layout": {
+                    "template_type": "real_world_hero_panel",
+                    "width": "full",
+                    "max_width": "1200px",
+                    "min_height": "460px",
+                    "padding": "40px",
+                    "margin_bottom": "32px",
+                    "border_radius": "20px",
+                    "shadow": "large",
+                    "background_style": "career_gradient_surface",
+                    "border_color": "#d1d5db",
+                    "content_alignment": "left"
+                },
+                "content_structure": {
+                    "industry_badge": true,
+                    "headline": true,
+                    "real_world_context": true,
+                    "importance_block": true,
+                    "career_relevance": true,
+                    "progress_indicator": true
+                },
+                "typography": {
+                    "headline_size": "38px",
+                    "subheading_size": "22px",
+                    "body_size": "18px",
+                    "font_family": "Inter",
+                    "line_height": 1.6
+                },
+                "visual_style": {
+                    "surface_theme": "practical_safe",
+                    "highlight_boxes": true,
+                    "badge_style": "professional_pill"
+                }
+            },
+            "industry_example_card": {
+                "layout": {
+                    "template_type": "scenario_split_panel",
+                    "width": "full",
+                    "columns": 2,
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px",
+                    "shadow": "medium"
+                },
+                "content_structure": {
+                    "industry_title": true,
+                    "scenario_description": true,
+                    "business_context": true,
+                    "visual_example": true,
+                    "key_takeaway": true
+                },
+                "typography": {
+                    "title_size": "28px",
+                    "body_size": "16px"
+                },
+                "visual_style": {
+                    "scenario_panels": true,
+                    "industry_icons": true,
+                    "context_highlights": true
+                }
+            },
+            "career_use_case_grid": {
+                "layout": {
+                    "template_type": "career_grid_dashboard",
+                    "width": "full",
+                    "columns": 4,
+                    "padding": "32px",
+                    "card_gap": "24px",
+                    "margin_bottom": "32px"
+                },
+                "content_structure": {
+                    "career_title": true,
+                    "professional_use_cases": true,
+                    "industry_roles": true,
+                    "salary_relevance": true,
+                    "future_growth": true
+                },
+                "typography": {
+                    "card_title_size": "18px",
+                    "body_size": "16px"
+                },
+                "visual_style": {
+                    "career_cards": true,
+                    "professional_badges": true,
+                    "hover_effect": true
+                }
+            },
+            "problem_solution_panel": {
+                "layout": {
+                    "template_type": "solution_framework_block",
+                    "width": "full",
+                    "columns": 2,
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_structure": {
+                    "problem_statement": true,
+                    "challenge_context": true,
+                    "solution_mapping": true,
+                    "business_impact": true,
+                    "practical_result": true
+                },
+                "visual_style": {
+                    "solution_flow_diagrams": true,
+                    "problem_highlight_panels": true
+                }
+            },
+            "workflow_renderer": {
+                "layout": {
+                    "template_type": "practical_process_flow",
+                    "width": "full",
+                    "height": "620px",
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_structure": {
+                    "workflow_title": true,
+                    "step_sequence": true,
+                    "execution_paths": true,
+                    "decision_nodes": true,
+                    "tooltips": true
+                },
+                "interaction_design": {
+                    "interactive_steps": true,
+                    "zoom_controls": true,
+                    "hover_explanations": true
+                },
+                "visual_style": {
+                    "enterprise_process_flow": true,
+                    "animated_connections": true
+                }
+            },
+            "decision_framework_card": {
+                "layout": {
+                    "template_type": "decision_matrix_panel",
+                    "width": "full",
+                    "columns": 3,
+                    "padding": "32px",
+                    "margin_bottom": "32px"
+                },
+                "content_structure": {
+                    "decision_title": true,
+                    "criteria_matrix": true,
+                    "tradeoff_analysis": true,
+                    "professional_recommendations": true
+                },
+                "visual_style": {
+                    "matrix_dashboard": true,
+                    "comparison_panels": true
+                }
+            },
+            "mistake_prevention_block": {
+                "layout": {
+                    "template_type": "real_world_warning_system",
+                    "width": "full",
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_structure": {
+                    "common_failures": true,
+                    "faq_items": true,
+                    "risk_alerts": true,
+                    "clarification_notes": true,
+                    "prevention_tips": true
+                },
+                "interaction_design": {
+                    "accordion_expand": true,
+                    "default_first_open": true
+                },
+                "visual_style": {
+                    "warning_panels": true,
+                    "risk_semantic_colors": true
+                },
+                "accessibility": {
+                    "aria_expanded": true,
+                    "keyboard_navigation": true
+                }
+            },
+            "practical_summary_card": {
+                "layout": {
+                    "template_type": "career_ready_summary",
+                    "width": "full",
+                    "max_width": "1200px",
+                    "padding": "40px",
+                    "margin_bottom": "32px",
+                    "border_radius": "20px",
+                    "shadow": "large",
+                    "background_style": "career_revision_surface"
+                },
+                "content_structure": {
+                    "summary_title": true,
+                    "career_takeaways": true,
+                    "practical_checklist": true,
+                    "professional_memory_reinforcement": true,
+                    "industry_tips": true
+                },
+                "typography": {
+                    "title_size": "28px",
+                    "body_size": "16px"
+                },
+                "visual_style": {
+                    "career_dashboard": true,
+                    "checklist_mode": true,
+                    "print_ready": true
+                },
+                "accessibility": {
+                    "font_scaling_supported": true,
+                    "contrast_ratio": "4.5:1"
+                }
+            }
+        }
+    },
+    {
+        "real_life_example_section_layout_template_defaults": {
+            "real_world_hero_panel": {
+                "purpose": "Practical real-world foundational intro section",
+                "layout": {
+                    "width": "full",
+                    "max_width": "1200px",
+                    "min_height": "460px",
+                    "padding": "40px",
+                    "margin_bottom": "32px",
+                    "border_radius": "20px",
+                    "shadow": "large",
+                    "background_style": "career_gradient_surface",
+                    "border": "1px solid #d1d5db",
+                    "content_alignment": "left"
+                },
+                "content_slots": {
+                    "industry_badge": true,
+                    "headline": true,
+                    "real_world_context": true,
+                    "importance_block": true,
+                    "career_relevance": true,
+                    "progress_indicator": true
+                },
+                "typography": {
+                    "headline_size": "38px",
+                    "subheading_size": "22px",
+                    "body_size": "18px",
+                    "line_height": 1.6,
+                    "font_family": "Inter"
+                },
+                "visual_style": {
+                    "surface_theme": "practical_safe",
+                    "highlight_boxes": true,
+                    "badge_style": "professional_pill"
+                }
+            },
+            "scenario_split_panel": {
+                "purpose": "Industry scenario + business case study panel",
+                "layout": {
+                    "width": "full",
+                    "max_width": "1200px",
+                    "columns": 2,
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px",
+                    "shadow": "medium",
+                    "content_alignment": "split"
+                },
+                "content_slots": {
+                    "industry_title": true,
+                    "scenario_description": true,
+                    "business_context": true,
+                    "visual_example": true,
+                    "key_takeaway": true
+                },
+                "typography": {
+                    "title_size": "28px",
+                    "body_size": "16px",
+                    "font_family": "Inter"
+                },
+                "visual_style": {
+                    "scenario_panels": true,
+                    "industry_icons": true,
+                    "context_highlights": true
+                }
+            },
+            "career_grid_dashboard": {
+                "purpose": "Professional/career use-case dashboard",
+                "layout": {
+                    "width": "full",
+                    "columns": 4,
+                    "padding": "32px",
+                    "card_gap": "24px",
+                    "margin_bottom": "32px"
+                },
+                "content_slots": {
+                    "career_title": true,
+                    "professional_use_cases": true,
+                    "industry_roles": true,
+                    "salary_relevance": true,
+                    "future_growth": true
+                },
+                "typography": {
+                    "card_title_size": "18px",
+                    "body_size": "16px"
+                },
+                "visual_style": {
+                    "career_cards": true,
+                    "professional_badges": true,
+                    "hover_effect": true
+                }
+            },
+            "solution_framework_block": {
+                "purpose": "Problem-to-solution practical framework",
+                "layout": {
+                    "width": "full",
+                    "columns": 2,
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px",
+                    "shadow": "medium"
+                },
+                "content_slots": {
+                    "problem_statement": true,
+                    "challenge_context": true,
+                    "solution_mapping": true,
+                    "business_impact": true,
+                    "practical_result": true
+                },
+                "typography": {
+                    "title_size": "28px",
+                    "body_size": "16px"
+                },
+                "visual_style": {
+                    "solution_flow_diagrams": true,
+                    "problem_highlight_panels": true
+                }
+            },
+            "practical_process_flow": {
+                "purpose": "Operational workflow and execution system",
+                "layout": {
+                    "width": "full",
+                    "height": "620px",
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_slots": {
+                    "workflow_title": true,
+                    "step_sequence": true,
+                    "execution_paths": true,
+                    "decision_nodes": true,
+                    "tooltips": true
+                },
+                "interaction_design": {
+                    "interactive_steps": true,
+                    "zoom_controls": true,
+                    "hover_explanations": true
+                },
+                "visual_style": {
+                    "enterprise_process_flow": true,
+                    "animated_connections": true
+                }
+            },
+            "decision_matrix_panel": {
+                "purpose": "Strategic professional decision-making matrix",
+                "layout": {
+                    "width": "full",
+                    "columns": 3,
+                    "padding": "32px",
+                    "card_gap": "24px",
+                    "margin_bottom": "32px"
+                },
+                "content_slots": {
+                    "decision_title": true,
+                    "criteria_matrix": true,
+                    "tradeoff_analysis": true,
+                    "professional_recommendations": true
+                },
+                "typography": {
+                    "title_size": "28px",
+                    "body_size": "16px"
+                },
+                "visual_style": {
+                    "matrix_dashboard": true,
+                    "comparison_panels": true
+                }
+            },
+            "real_world_warning_system": {
+                "purpose": "Practical warning, FAQ, and failure prevention",
+                "layout": {
+                    "width": "full",
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px",
+                    "shadow": "medium"
+                },
+                "content_slots": {
+                    "common_failures": true,
+                    "faq_items": true,
+                    "risk_alerts": true,
+                    "clarification_notes": true,
+                    "prevention_tips": true
+                },
+                "interaction_design": {
+                    "accordion_expand": true,
+                    "default_first_open": true,
+                    "multi_expand": false
+                },
+                "visual_style": {
+                    "warning_panels": true,
+                    "risk_semantic_colors": true
+                },
+                "accessibility": {
+                    "aria_expanded": true,
+                    "keyboard_navigation": true
+                }
+            },
+            "career_ready_summary": {
+                "purpose": "Career-oriented practical recap dashboard",
+                "layout": {
+                    "width": "full",
+                    "max_width": "1200px",
+                    "padding": "40px",
+                    "margin_bottom": "32px",
+                    "border_radius": "20px",
+                    "shadow": "large",
+                    "background_style": "career_revision_surface"
+                },
+                "content_slots": {
+                    "summary_title": true,
+                    "career_takeaways": true,
+                    "practical_checklist": true,
+                    "professional_memory_reinforcement": true,
+                    "industry_tips": true
+                },
+                "typography": {
+                    "title_size": "28px",
+                    "body_size": "16px"
+                },
+                "visual_style": {
+                    "career_dashboard": true,
+                    "checklist_mode": true,
+                    "print_ready": true
+                },
+                "accessibility": {
+                    "font_scaling_supported": true,
+                    "contrast_ratio": "4.5:1"
+                }
+            }
+        }
+    },
+    {
+        "code_example_section_default_templates": {
+            "metadata": {
+                "section_type": "code_example_section",
+                "default_device": "desktop",
+                "wcag_compliance": "AA",
+                "template_version": "1.0"
+            },
+            "problem_context_card": {
+                "layout": {
+                    "template_type": "problem_intro_workspace",
+                    "width": "full",
+                    "max_width": "1200px",
+                    "min_height": "440px",
+                    "padding": "40px",
+                    "margin_bottom": "32px",
+                    "border_radius": "20px",
+                    "shadow": "large",
+                    "background_style": "developer_gradient_surface",
+                    "border_color": "#d1d5db"
+                },
+                "content_structure": {
+                    "problem_badge": true,
+                    "headline": true,
+                    "challenge_description": true,
+                    "requirements_list": true,
+                    "difficulty_indicator": true,
+                    "learning_objective": true
+                },
+                "typography": {
+                    "headline_size": "36px",
+                    "subheading_size": "22px",
+                    "body_size": "18px",
+                    "font_family": "Inter"
+                },
+                "visual_style": {
+                    "developer_theme": true,
+                    "challenge_highlight_box": true,
+                    "difficulty_badges": true
+                }
+            },
+            "code_block": {
+                "layout": {
+                    "template_type": "primary_code_workspace",
+                    "width": "full",
+                    "max_width": "1200px",
+                    "padding": "24px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px",
+                    "background_color": "#111827",
+                    "text_color": "#f9fafb",
+                    "overflow_scroll": true
+                },
+                "content_structure": {
+                    "code_title": true,
+                    "language_badge": true,
+                    "code_block": true,
+                    "line_numbers": true,
+                    "copy_button": true,
+                    "run_button": true
+                },
+                "typography": {
+                    "code_font": "JetBrains Mono",
+                    "code_size": "15px",
+                    "line_height": 1.7
+                },
+                "interaction_design": {
+                    "syntax_highlighting": true,
+                    "copy_button": true,
+                    "run_preview": true
+                },
+                "accessibility": {
+                    "aria_labels": true,
+                    "contrast_ratio": "7:1"
+                }
+            },
+            "annotated_code_panel": {
+                "layout": {
+                    "template_type": "guided_code_breakdown",
+                    "width": "full",
+                    "columns": 2,
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_structure": {
+                    "annotated_code": true,
+                    "line_explanations": true,
+                    "logic_flow_notes": true,
+                    "beginner_tips": true,
+                    "visual_guidance": true
+                },
+                "typography": {
+                    "body_size": "16px",
+                    "code_font": "JetBrains Mono"
+                },
+                "visual_style": {
+                    "annotation_panels": true,
+                    "stepwise_guidance": true
+                }
+            },
+            "output_preview": {
+                "layout": {
+                    "template_type": "live_execution_preview",
+                    "width": "full",
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px",
+                    "background_style": "execution_surface"
+                },
+                "content_structure": {
+                    "output_title": true,
+                    "live_output_window": true,
+                    "input_output_mapping": true,
+                    "scenario_examples": true
+                },
+                "visual_style": {
+                    "terminal_preview": true,
+                    "browser_preview": true,
+                    "real_time_feedback": true
+                }
+            },
+            "optimized_code_block": {
+                "layout": {
+                    "template_type": "best_practice_code_workspace",
+                    "width": "full",
+                    "padding": "24px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px",
+                    "background_color": "#0f172a",
+                    "text_color": "#f8fafc"
+                },
+                "content_structure": {
+                    "optimized_title": true,
+                    "optimized_code": true,
+                    "performance_notes": true,
+                    "best_practice_highlights": true,
+                    "comparison_notes": true
+                },
+                "visual_style": {
+                    "optimization_badges": true,
+                    "performance_panels": true
+                }
+            },
+            "error_prevention_block": {
+                "layout": {
+                    "template_type": "mistake_prevention_dashboard",
+                    "width": "full",
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_structure": {
+                    "common_errors": true,
+                    "debugging_tips": true,
+                    "error_examples": true,
+                    "faq_items": true,
+                    "prevention_checklist": true
+                },
+                "interaction_design": {
+                    "accordion_expand": true,
+                    "default_first_open": true
+                },
+                "visual_style": {
+                    "warning_panels": true,
+                    "error_semantic_colors": true
+                }
+            },
+            "project_usage_panel": {
+                "layout": {
+                    "template_type": "career_application_workspace",
+                    "width": "full",
+                    "columns": 3,
+                    "padding": "32px",
+                    "margin_bottom": "32px"
+                },
+                "content_structure": {
+                    "project_title": true,
+                    "portfolio_examples": true,
+                    "career_relevance": true,
+                    "industry_use_cases": true,
+                    "deployment_examples": true
+                },
+                "visual_style": {
+                    "career_cards": true,
+                    "project_showcase": true
+                }
+            },
+            "code_summary_card": {
+                "layout": {
+                    "template_type": "developer_revision_summary",
+                    "width": "full",
+                    "max_width": "1200px",
+                    "padding": "40px",
+                    "margin_bottom": "32px",
+                    "border_radius": "20px",
+                    "shadow": "large",
+                    "background_style": "developer_revision_surface"
+                },
+                "content_structure": {
+                    "summary_title": true,
+                    "key_code_takeaways": true,
+                    "revision_checklist": true,
+                    "debugging_memory_reinforcement": true,
+                    "developer_best_practices": true
+                },
+                "typography": {
+                    "title_size": "28px",
+                    "body_size": "16px"
+                },
+                "visual_style": {
+                    "developer_dashboard": true,
+                    "checklist_mode": true,
+                    "print_ready": true
+                }
+            }
+        }
+    },
+    {
+        "code_example_section_layout_template_defaults": {
+            "problem_intro_workspace": {
+                "purpose": "Coding problem introduction and objective framing",
+                "layout": {
+                    "width": "full",
+                    "max_width": "1200px",
+                    "min_height": "440px",
+                    "padding": "40px",
+                    "margin_bottom": "32px",
+                    "border_radius": "20px",
+                    "shadow": "large",
+                    "background_style": "developer_gradient_surface",
+                    "border": "1px solid #d1d5db",
+                    "content_alignment": "left"
+                },
+                "content_slots": {
+                    "problem_badge": true,
+                    "headline": true,
+                    "challenge_description": true,
+                    "requirements_list": true,
+                    "difficulty_indicator": true,
+                    "learning_objective": true
+                },
+                "typography": {
+                    "headline_size": "36px",
+                    "subheading_size": "22px",
+                    "body_size": "18px",
+                    "font_family": "Inter",
+                    "line_height": 1.6
+                },
+                "visual_style": {
+                    "developer_theme": true,
+                    "challenge_highlight_box": true,
+                    "difficulty_badges": true
+                }
+            },
+            "primary_code_workspace": {
+                "purpose": "Main executable code display workspace",
+                "layout": {
+                    "width": "full",
+                    "max_width": "1200px",
+                    "padding": "24px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px",
+                    "background_color": "#111827",
+                    "text_color": "#f9fafb",
+                    "overflow_scroll": true
+                },
+                "content_slots": {
+                    "code_title": true,
+                    "language_badge": true,
+                    "code_block": true,
+                    "line_numbers": true,
+                    "copy_button": true,
+                    "run_button": true
+                },
+                "typography": {
+                    "code_font": "JetBrains Mono",
+                    "code_size": "15px",
+                    "line_height": 1.7
+                },
+                "interaction_design": {
+                    "syntax_highlighting": true,
+                    "copy_button": true,
+                    "run_preview": true
+                },
+                "accessibility": {
+                    "aria_labels": true,
+                    "contrast_ratio": "7:1"
+                }
+            },
+            "guided_code_breakdown": {
+                "purpose": "Step-by-step annotated code explanation",
+                "layout": {
+                    "width": "full",
+                    "columns": 2,
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_slots": {
+                    "annotated_code": true,
+                    "line_explanations": true,
+                    "logic_flow_notes": true,
+                    "beginner_tips": true,
+                    "visual_guidance": true
+                },
+                "typography": {
+                    "body_size": "16px",
+                    "code_font": "JetBrains Mono"
+                },
+                "visual_style": {
+                    "annotation_panels": true,
+                    "stepwise_guidance": true
+                }
+            },
+            "live_execution_preview": {
+                "purpose": "Live output and execution result visualization",
+                "layout": {
+                    "width": "full",
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px",
+                    "background_style": "execution_surface"
+                },
+                "content_slots": {
+                    "output_title": true,
+                    "live_output_window": true,
+                    "input_output_mapping": true,
+                    "scenario_examples": true
+                },
+                "visual_style": {
+                    "terminal_preview": true,
+                    "browser_preview": true,
+                    "real_time_feedback": true
+                }
+            },
+            "best_practice_code_workspace": {
+                "purpose": "Optimized professional-grade code presentation",
+                "layout": {
+                    "width": "full",
+                    "padding": "24px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px",
+                    "background_color": "#0f172a",
+                    "text_color": "#f8fafc"
+                },
+                "content_slots": {
+                    "optimized_title": true,
+                    "optimized_code": true,
+                    "performance_notes": true,
+                    "best_practice_highlights": true,
+                    "comparison_notes": true
+                },
+                "typography": {
+                    "code_font": "JetBrains Mono",
+                    "code_size": "15px"
+                },
+                "visual_style": {
+                    "optimization_badges": true,
+                    "performance_panels": true
+                }
+            },
+            "mistake_prevention_dashboard": {
+                "purpose": "Debugging, error prevention, and coding caution",
+                "layout": {
+                    "width": "full",
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px",
+                    "shadow": "medium"
+                },
+                "content_slots": {
+                    "common_errors": true,
+                    "debugging_tips": true,
+                    "error_examples": true,
+                    "faq_items": true,
+                    "prevention_checklist": true
+                },
+                "interaction_design": {
+                    "accordion_expand": true,
+                    "default_first_open": true
+                },
+                "visual_style": {
+                    "warning_panels": true,
+                    "error_semantic_colors": true
+                }
+            },
+            "career_application_workspace": {
+                "purpose": "Real-world project and portfolio implementation",
+                "layout": {
+                    "width": "full",
+                    "columns": 3,
+                    "padding": "32px",
+                    "card_gap": "24px",
+                    "margin_bottom": "32px"
+                },
+                "content_slots": {
+                    "project_title": true,
+                    "portfolio_examples": true,
+                    "career_relevance": true,
+                    "industry_use_cases": true,
+                    "deployment_examples": true
+                },
+                "typography": {
+                    "card_title_size": "20px",
+                    "body_size": "16px"
+                },
+                "visual_style": {
+                    "career_cards": true,
+                    "project_showcase": true
+                }
+            },
+            "developer_revision_summary": {
+                "purpose": "Coding lesson recap and developer revision dashboard",
+                "layout": {
+                    "width": "full",
+                    "max_width": "1200px",
+                    "padding": "40px",
+                    "margin_bottom": "32px",
+                    "border_radius": "20px",
+                    "shadow": "large",
+                    "background_style": "developer_revision_surface"
+                },
+                "content_slots": {
+                    "summary_title": true,
+                    "key_code_takeaways": true,
+                    "revision_checklist": true,
+                    "debugging_memory_reinforcement": true,
+                    "developer_best_practices": true
+                },
+                "typography": {
+                    "title_size": "28px",
+                    "body_size": "16px"
+                },
+                "visual_style": {
+                    "developer_dashboard": true,
+                    "checklist_mode": true,
+                    "print_ready": true
+                },
+                "accessibility": {
+                    "font_scaling_supported": true,
+                    "contrast_ratio": "4.5:1"
+                }
+            }
+        }
+    },
+    {
+        "technical_deep_dive_section_default_templates": {
+            "metadata": {
+                "section_type": "technical_deep_dive_section",
+                "default_device": "desktop",
+                "wcag_compliance": "AA",
+                "template_version": "1.0"
+            },
+            "technical_definition_block": {
+                "layout": {
+                    "template_type": "expert_intro_panel",
+                    "width": "full",
+                    "max_width": "1280px",
+                    "min_height": "460px",
+                    "padding": "40px",
+                    "margin_bottom": "32px",
+                    "border_radius": "20px",
+                    "shadow": "large",
+                    "background_style": "technical_gradient_surface",
+                    "border_color": "#d1d5db"
+                },
+                "content_structure": {
+                    "technical_badge": true,
+                    "headline": true,
+                    "advanced_definition": true,
+                    "system_scope": true,
+                    "importance_block": true,
+                    "complexity_indicator": true
+                },
+                "typography": {
+                    "headline_size": "38px",
+                    "subheading_size": "22px",
+                    "body_size": "18px",
+                    "font_family": "IBM Plex Sans",
+                    "line_height": 1.7
+                },
+                "visual_style": {
+                    "technical_theme": true,
+                    "expert_badges": true,
+                    "architecture_highlights": true
+                }
+            },
+            "system_mechanics_panel": {
+                "layout": {
+                    "template_type": "deep_system_breakdown",
+                    "width": "full",
+                    "columns": 2,
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px",
+                    "shadow": "medium"
+                },
+                "content_structure": {
+                    "mechanics_title": true,
+                    "internal_flow": true,
+                    "system_layers": true,
+                    "technical_notes": true,
+                    "component_interactions": true
+                },
+                "typography": {
+                    "title_size": "30px",
+                    "body_size": "16px",
+                    "font_family": "IBM Plex Sans"
+                },
+                "visual_style": {
+                    "system_layers_visualization": true,
+                    "technical_panels": true
+                }
+            },
+            "architecture_diagram_block": {
+                "layout": {
+                    "template_type": "interactive_architecture_workspace",
+                    "width": "full",
+                    "height": "700px",
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_structure": {
+                    "architecture_title": true,
+                    "blueprint_diagram": true,
+                    "component_labels": true,
+                    "system_connections": true,
+                    "technical_tooltips": true
+                },
+                "interaction_design": {
+                    "zoom_controls": true,
+                    "hover_explanations": true,
+                    "expandable_layers": true
+                },
+                "visual_style": {
+                    "enterprise_blueprint_theme": true,
+                    "animated_system_paths": true
+                }
+            },
+            "performance_analysis_panel": {
+                "layout": {
+                    "template_type": "benchmark_dashboard",
+                    "width": "full",
+                    "columns": 3,
+                    "padding": "32px",
+                    "card_gap": "24px",
+                    "margin_bottom": "32px"
+                },
+                "content_structure": {
+                    "benchmark_title": true,
+                    "performance_metrics": true,
+                    "latency_analysis": true,
+                    "throughput_charts": true,
+                    "comparison_panels": true
+                },
+                "typography": {
+                    "title_size": "28px",
+                    "body_size": "16px"
+                },
+                "visual_style": {
+                    "chart_dashboards": true,
+                    "metric_highlights": true
+                }
+            },
+            "tradeoff_matrix": {
+                "layout": {
+                    "template_type": "decision_framework_panel",
+                    "width": "full",
+                    "columns": 3,
+                    "padding": "32px",
+                    "margin_bottom": "32px"
+                },
+                "content_structure": {
+                    "decision_title": true,
+                    "tradeoff_categories": true,
+                    "cost_benefit_matrix": true,
+                    "engineering_recommendations": true
+                },
+                "visual_style": {
+                    "decision_tables": true,
+                    "comparison_panels": true
+                }
+            },
+            "pattern_library": {
+                "layout": {
+                    "template_type": "architecture_pattern_repository",
+                    "width": "full",
+                    "columns": 4,
+                    "padding": "32px",
+                    "card_gap": "24px",
+                    "margin_bottom": "32px"
+                },
+                "content_structure": {
+                    "pattern_title": true,
+                    "pattern_cards": true,
+                    "reusability_notes": true,
+                    "enterprise_examples": true
+                },
+                "visual_style": {
+                    "pattern_repository_theme": true,
+                    "pattern_badges": true
+                }
+            },
+            "enterprise_use_case_panel": {
+                "layout": {
+                    "template_type": "real_world_scaling_dashboard",
+                    "width": "full",
+                    "columns": 3,
+                    "padding": "32px",
+                    "margin_bottom": "32px"
+                },
+                "content_structure": {
+                    "enterprise_title": true,
+                    "production_examples": true,
+                    "scaling_architecture": true,
+                    "security_considerations": true,
+                    "deployment_models": true
+                },
+                "visual_style": {
+                    "enterprise_dashboards": true,
+                    "scaling_panels": true
+                }
+            },
+            "technical_summary_card": {
+                "layout": {
+                    "template_type": "expert_revision_summary",
+                    "width": "full",
+                    "max_width": "1280px",
+                    "padding": "40px",
+                    "margin_bottom": "32px",
+                    "border_radius": "20px",
+                    "shadow": "large",
+                    "background_style": "technical_revision_surface"
+                },
+                "content_structure": {
+                    "summary_title": true,
+                    "technical_takeaways": true,
+                    "architecture_checklist": true,
+                    "engineering_memory_reinforcement": true,
+                    "advanced_best_practices": true
+                },
+                "typography": {
+                    "title_size": "30px",
+                    "body_size": "16px",
+                    "font_family": "IBM Plex Sans"
+                },
+                "visual_style": {
+                    "expert_dashboard": true,
+                    "checklist_mode": true,
+                    "print_ready": true
+                },
+                "accessibility": {
+                    "font_scaling_supported": true,
+                    "contrast_ratio": "4.5:1"
+                }
+            }
+        }
+    },
+    {
+        "technical_deep_dive_section_layout_template_defaults": {
+            "expert_intro_panel": {
+                "purpose": "Expert-level technical concept introduction",
+                "layout": {
+                    "width": "full",
+                    "max_width": "1280px",
+                    "min_height": "460px",
+                    "padding": "40px",
+                    "margin_bottom": "32px",
+                    "border_radius": "20px",
+                    "shadow": "large",
+                    "background_style": "technical_gradient_surface",
+                    "border": "1px solid #d1d5db",
+                    "content_alignment": "left"
+                },
+                "content_slots": {
+                    "technical_badge": true,
+                    "headline": true,
+                    "advanced_definition": true,
+                    "system_scope": true,
+                    "importance_block": true,
+                    "complexity_indicator": true
+                },
+                "typography": {
+                    "headline_size": "38px",
+                    "subheading_size": "22px",
+                    "body_size": "18px",
+                    "font_family": "IBM Plex Sans",
+                    "line_height": 1.7
+                },
+                "visual_style": {
+                    "technical_theme": true,
+                    "expert_badges": true,
+                    "architecture_highlights": true
+                }
+            },
+            "deep_system_breakdown": {
+                "purpose": "Internal system mechanics and deep technical analysis",
+                "layout": {
+                    "width": "full",
+                    "columns": 2,
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px",
+                    "shadow": "medium"
+                },
+                "content_slots": {
+                    "mechanics_title": true,
+                    "internal_flow": true,
+                    "system_layers": true,
+                    "technical_notes": true,
+                    "component_interactions": true
+                },
+                "typography": {
+                    "title_size": "30px",
+                    "body_size": "16px",
+                    "font_family": "IBM Plex Sans"
+                },
+                "visual_style": {
+                    "system_layers_visualization": true,
+                    "technical_panels": true
+                }
+            },
+            "interactive_architecture_workspace": {
+                "purpose": "System blueprint and architecture visualization",
+                "layout": {
+                    "width": "full",
+                    "height": "700px",
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_slots": {
+                    "architecture_title": true,
+                    "blueprint_diagram": true,
+                    "component_labels": true,
+                    "system_connections": true,
+                    "technical_tooltips": true
+                },
+                "interaction_design": {
+                    "zoom_controls": true,
+                    "hover_explanations": true,
+                    "expandable_layers": true
+                },
+                "visual_style": {
+                    "enterprise_blueprint_theme": true,
+                    "animated_system_paths": true
+                }
+            },
+            "benchmark_dashboard": {
+                "purpose": "Metrics, performance benchmarks, and optimization dashboard",
+                "layout": {
+                    "width": "full",
+                    "columns": 3,
+                    "padding": "32px",
+                    "card_gap": "24px",
+                    "margin_bottom": "32px"
+                },
+                "content_slots": {
+                    "benchmark_title": true,
+                    "performance_metrics": true,
+                    "latency_analysis": true,
+                    "throughput_charts": true,
+                    "comparison_panels": true
+                },
+                "typography": {
+                    "title_size": "28px",
+                    "body_size": "16px"
+                },
+                "visual_style": {
+                    "chart_dashboards": true,
+                    "metric_highlights": true
+                }
+            },
+            "decision_framework_panel": {
+                "purpose": "Strategic technical trade-off and engineering decision matrix",
+                "layout": {
+                    "width": "full",
+                    "columns": 3,
+                    "padding": "32px",
+                    "margin_bottom": "32px"
+                },
+                "content_slots": {
+                    "decision_title": true,
+                    "tradeoff_categories": true,
+                    "cost_benefit_matrix": true,
+                    "engineering_recommendations": true
+                },
+                "visual_style": {
+                    "decision_tables": true,
+                    "comparison_panels": true
+                }
+            },
+            "architecture_pattern_repository": {
+                "purpose": "Reusable design patterns and architecture repository",
+                "layout": {
+                    "width": "full",
+                    "columns": 4,
+                    "padding": "32px",
+                    "card_gap": "24px",
+                    "margin_bottom": "32px"
+                },
+                "content_slots": {
+                    "pattern_title": true,
+                    "pattern_cards": true,
+                    "reusability_notes": true,
+                    "enterprise_examples": true
+                },
+                "visual_style": {
+                    "pattern_repository_theme": true,
+                    "pattern_badges": true
+                }
+            },
+            "real_world_scaling_dashboard": {
+                "purpose": "Production-scale enterprise implementation dashboard",
+                "layout": {
+                    "width": "full",
+                    "columns": 3,
+                    "padding": "32px",
+                    "margin_bottom": "32px"
+                },
+                "content_slots": {
+                    "enterprise_title": true,
+                    "production_examples": true,
+                    "scaling_architecture": true,
+                    "security_considerations": true,
+                    "deployment_models": true
+                },
+                "visual_style": {
+                    "enterprise_dashboards": true,
+                    "scaling_panels": true
+                }
+            },
+            "expert_revision_summary": {
+                "purpose": "Expert recap, advanced revision, and technical memory reinforcement",
+                "layout": {
+                    "width": "full",
+                    "max_width": "1280px",
+                    "padding": "40px",
+                    "margin_bottom": "32px",
+                    "border_radius": "20px",
+                    "shadow": "large",
+                    "background_style": "technical_revision_surface"
+                },
+                "content_slots": {
+                    "summary_title": true,
+                    "technical_takeaways": true,
+                    "architecture_checklist": true,
+                    "engineering_memory_reinforcement": true,
+                    "advanced_best_practices": true
+                },
+                "typography": {
+                    "title_size": "30px",
+                    "body_size": "16px",
+                    "font_family": "IBM Plex Sans"
+                },
+                "visual_style": {
+                    "expert_dashboard": true,
+                    "checklist_mode": true,
+                    "print_ready": true
+                },
+                "accessibility": {
+                    "font_scaling_supported": true,
+                    "contrast_ratio": "4.5:1"
+                }
+            }
+        }
+    },
+    {
+        "visual_explanation_section_default_templates": {
+            "metadata": {
+                "section_type": "visual_explanation_section",
+                "default_device": "desktop",
+                "wcag_compliance": "AA",
+                "template_version": "1.0"
+            },
+            "visual_intro_card": {
+                "layout": {
+                    "template_type": "visual_hero_panel",
+                    "width": "full",
+                    "max_width": "1280px",
+                    "min_height": "460px",
+                    "padding": "40px",
+                    "margin_bottom": "32px",
+                    "border_radius": "20px",
+                    "shadow": "large",
+                    "background_style": "visual_gradient_surface",
+                    "border_color": "#d1d5db"
+                },
+                "content_structure": {
+                    "visual_badge": true,
+                    "headline": true,
+                    "visual_definition": true,
+                    "hero_diagram_preview": true,
+                    "importance_block": true,
+                    "progress_indicator": true
+                },
+                "typography": {
+                    "headline_size": "38px",
+                    "subheading_size": "22px",
+                    "body_size": "18px",
+                    "font_family": "Inter",
+                    "line_height": 1.6
+                },
+                "visual_style": {
+                    "visual_theme": true,
+                    "hero_graphics": true,
+                    "diagram_preview_support": true
+                }
+            },
+            "diagram_panel": {
+                "layout": {
+                    "template_type": "interactive_diagram_workspace",
+                    "width": "full",
+                    "height": "700px",
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_structure": {
+                    "diagram_title": true,
+                    "interactive_diagram": true,
+                    "component_labels": true,
+                    "step_markers": true,
+                    "technical_tooltips": true
+                },
+                "interaction_design": {
+                    "zoom_controls": true,
+                    "hover_explanations": true,
+                    "expandable_layers": true
+                },
+                "visual_style": {
+                    "diagram_blueprint_theme": true,
+                    "animated_paths": true
+                }
+            },
+            "flow_sequence_panel": {
+                "layout": {
+                    "template_type": "guided_visual_sequence",
+                    "width": "full",
+                    "height": "620px",
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_structure": {
+                    "sequence_title": true,
+                    "stepwise_flow": true,
+                    "directional_arrows": true,
+                    "phase_explanations": true,
+                    "tooltips": true
+                },
+                "interaction_design": {
+                    "interactive_steps": true,
+                    "hover_guidance": true
+                },
+                "visual_style": {
+                    "process_flow_theme": true,
+                    "animated_progression": true
+                }
+            },
+            "comparison_diagram": {
+                "layout": {
+                    "template_type": "comparison_dashboard",
+                    "width": "full",
+                    "columns": 2,
+                    "padding": "32px",
+                    "card_gap": "24px",
+                    "margin_bottom": "32px"
+                },
+                "content_structure": {
+                    "comparison_title": true,
+                    "side_by_side_visuals": true,
+                    "difference_highlights": true,
+                    "pros_cons_matrix": true
+                },
+                "typography": {
+                    "title_size": "28px",
+                    "body_size": "16px"
+                },
+                "visual_style": {
+                    "comparison_panels": true,
+                    "difference_badges": true
+                }
+            },
+            "mental_model_canvas": {
+                "layout": {
+                    "template_type": "conceptual_framework_canvas",
+                    "width": "full",
+                    "height": "700px",
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_structure": {
+                    "mental_model_title": true,
+                    "framework_map": true,
+                    "concept_nodes": true,
+                    "relationship_arrows": true,
+                    "memory_labels": true
+                },
+                "interaction_design": {
+                    "interactive_navigation": true,
+                    "zoom_controls": true
+                },
+                "visual_style": {
+                    "framework_visualization": true,
+                    "memory_anchor_design": true
+                }
+            },
+            "real_world_visual_block": {
+                "layout": {
+                    "template_type": "practical_visual_context",
+                    "width": "full",
+                    "columns": 3,
+                    "padding": "32px",
+                    "margin_bottom": "32px"
+                },
+                "content_structure": {
+                    "real_world_title": true,
+                    "practical_visual_scenarios": true,
+                    "industry_context_images": true,
+                    "career_relevance": true
+                },
+                "visual_style": {
+                    "scenario_visual_cards": true,
+                    "practical_context_badges": true
+                }
+            },
+            "confusion_resolution_diagram": {
+                "layout": {
+                    "template_type": "confusion_prevention_workspace",
+                    "width": "full",
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_structure": {
+                    "common_confusions": true,
+                    "visual_clarifications": true,
+                    "faq_items": true,
+                    "misconception_diagrams": true,
+                    "clarification_notes": true
+                },
+                "interaction_design": {
+                    "accordion_expand": true,
+                    "default_first_open": true
+                },
+                "visual_style": {
+                    "warning_visual_panels": true,
+                    "clarification_highlights": true
+                }
+            },
+            "summary_infographic": {
+                "layout": {
+                    "template_type": "visual_revision_dashboard",
+                    "width": "full",
+                    "max_width": "1280px",
+                    "padding": "40px",
+                    "margin_bottom": "32px",
+                    "border_radius": "20px",
+                    "shadow": "large",
+                    "background_style": "visual_revision_surface"
+                },
+                "content_structure": {
+                    "summary_title": true,
+                    "key_visual_takeaways": true,
+                    "revision_infographic": true,
+                    "memory_reinforcement": true,
+                    "exam_visual_checklist": true
+                },
+                "typography": {
+                    "title_size": "30px",
+                    "body_size": "16px"
+                },
+                "visual_style": {
+                    "visual_dashboard": true,
+                    "checklist_mode": true,
+                    "print_ready": true
+                },
+                "accessibility": {
+                    "font_scaling_supported": true,
+                    "contrast_ratio": "4.5:1"
+                }
+            }
+        }
+    },
+    {
+        "practice_test_section_default_templates": {
+            "metadata": {
+                "section_type": "practice_test_section",
+                "default_device": "desktop",
+                "wcag_compliance": "AA",
+                "template_version": "1.0"
+            },
+            "assessment_intro_card": {
+                "layout": {
+                    "template_type": "assessment_hero_panel",
+                    "width": "full",
+                    "max_width": "1280px",
+                    "min_height": "440px",
+                    "padding": "40px",
+                    "margin_bottom": "32px",
+                    "border_radius": "20px",
+                    "shadow": "large",
+                    "background_style": "assessment_gradient_surface",
+                    "border_color": "#d1d5db"
+                },
+                "content_structure": {
+                    "assessment_badge": true,
+                    "headline": true,
+                    "test_description": true,
+                    "difficulty_overview": true,
+                    "learning_goals": true,
+                    "readiness_indicator": true
+                },
+                "typography": {
+                    "headline_size": "38px",
+                    "subheading_size": "22px",
+                    "body_size": "18px",
+                    "font_family": "Inter"
+                }
+            },
+            "mcq_block": {
+                "layout": {
+                    "template_type": "core_assessment_panel",
+                    "width": "full",
+                    "max_width": "1200px",
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px",
+                    "background_style": "quiz_surface"
+                },
+                "content_structure": {
+                    "question_title": true,
+                    "question_prompt": true,
+                    "answer_options": true,
+                    "timer": true,
+                    "progress_bar": true,
+                    "submit_button": true
+                },
+                "interaction_design": {
+                    "single_select": true,
+                    "instant_feedback_optional": true,
+                    "navigation_controls": true
+                }
+            },
+            "scenario_test_panel": {
+                "layout": {
+                    "template_type": "real_world_assessment_workspace",
+                    "width": "full",
+                    "columns": 2,
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_structure": {
+                    "scenario_title": true,
+                    "real_world_problem": true,
+                    "decision_question": true,
+                    "answer_options": true,
+                    "business_context": true
+                }
+            },
+            "adaptive_test_flow": {
+                "layout": {
+                    "template_type": "progressive_testing_dashboard",
+                    "width": "full",
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_structure": {
+                    "difficulty_levels": true,
+                    "progression_tracker": true,
+                    "adaptive_question_flow": true,
+                    "performance_gates": true
+                },
+                "interaction_design": {
+                    "adaptive_logic": true,
+                    "live_difficulty_adjustment": true
+                }
+            },
+            "feedback_explanation_card": {
+                "layout": {
+                    "template_type": "answer_explanation_workspace",
+                    "width": "full",
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_structure": {
+                    "correct_answer": true,
+                    "detailed_explanation": true,
+                    "mistake_reasoning": true,
+                    "learning_tip": true,
+                    "concept_linkback": true
+                }
+            },
+            "mistake_analysis_panel": {
+                "layout": {
+                    "template_type": "mistake_prevention_dashboard",
+                    "width": "full",
+                    "columns": 3,
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_structure": {
+                    "mistake_categories": true,
+                    "weakness_heatmap": true,
+                    "gap_analysis": true,
+                    "improvement_recommendations": true
+                }
+            },
+            "score_dashboard": {
+                "layout": {
+                    "template_type": "performance_command_center",
+                    "width": "full",
+                    "columns": 4,
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_structure": {
+                    "score_display": true,
+                    "performance_graphs": true,
+                    "benchmark_comparison": true,
+                    "mastery_percentage": true,
+                    "exam_readiness_score": true
+                }
+            },
+            "remediation_path_panel": {
+                "layout": {
+                    "template_type": "improvement_path_dashboard",
+                    "width": "full",
+                    "max_width": "1280px",
+                    "padding": "40px",
+                    "margin_bottom": "32px",
+                    "border_radius": "20px",
+                    "shadow": "large"
+                },
+                "content_structure": {
+                    "improvement_title": true,
+                    "personalized_learning_path": true,
+                    "weakness_recovery_steps": true,
+                    "recommended_resources": true,
+                    "future_goals": true
+                },
+                "visual_style": {
+                    "growth_dashboards": true,
+                    "progress_recovery_map": true
+                }
+            }
+        }
+    },
+    {
+        "practice_test_section_layout_template_defaults": {
+            "assessment_hero_panel": {
+                "purpose": "Practice test introduction and learner readiness framing",
+                "layout": {
+                    "width": "full",
+                    "max_width": "1280px",
+                    "min_height": "440px",
+                    "padding": "40px",
+                    "margin_bottom": "32px",
+                    "border_radius": "20px",
+                    "shadow": "large",
+                    "background_style": "assessment_gradient_surface",
+                    "border": "1px solid #d1d5db",
+                    "content_alignment": "left"
+                },
+                "content_slots": {
+                    "assessment_badge": true,
+                    "headline": true,
+                    "test_description": true,
+                    "difficulty_overview": true,
+                    "learning_goals": true,
+                    "readiness_indicator": true
+                },
+                "typography": {
+                    "headline_size": "38px",
+                    "subheading_size": "22px",
+                    "body_size": "18px",
+                    "font_family": "Inter",
+                    "line_height": 1.6
+                },
+                "visual_style": {
+                    "assessment_theme": true,
+                    "progress_readiness_panels": true,
+                    "motivation_highlights": true
+                }
+            },
+            "core_assessment_panel": {
+                "purpose": "MCQ engine for conceptual validation",
+                "layout": {
+                    "width": "full",
+                    "max_width": "1200px",
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px",
+                    "background_style": "quiz_surface",
+                    "shadow": "medium"
+                },
+                "content_slots": {
+                    "question_title": true,
+                    "question_prompt": true,
+                    "answer_options": true,
+                    "timer": true,
+                    "progress_bar": true,
+                    "submit_button": true
+                },
+                "interaction_design": {
+                    "single_select": true,
+                    "instant_feedback_optional": true,
+                    "navigation_controls": true
+                },
+                "visual_style": {
+                    "quiz_cards": true,
+                    "option_highlights": true
+                }
+            },
+            "real_world_assessment_workspace": {
+                "purpose": "Scenario-based practical application testing",
+                "layout": {
+                    "width": "full",
+                    "columns": 2,
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_slots": {
+                    "scenario_title": true,
+                    "real_world_problem": true,
+                    "decision_question": true,
+                    "answer_options": true,
+                    "business_context": true
+                },
+                "visual_style": {
+                    "scenario_panels": true,
+                    "practical_context_badges": true
+                }
+            },
+            "progressive_testing_dashboard": {
+                "purpose": "Adaptive difficulty scaling and progression system",
+                "layout": {
+                    "width": "full",
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px",
+                    "background_style": "progression_surface"
+                },
+                "content_slots": {
+                    "difficulty_levels": true,
+                    "progression_tracker": true,
+                    "adaptive_question_flow": true,
+                    "performance_gates": true
+                },
+                "interaction_design": {
+                    "adaptive_logic": true,
+                    "live_difficulty_adjustment": true
+                },
+                "visual_style": {
+                    "difficulty_meter": true,
+                    "progress_visualization": true
+                }
+            },
+            "answer_explanation_workspace": {
+                "purpose": "Feedback, correction, and answer explanation engine",
+                "layout": {
+                    "width": "full",
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_slots": {
+                    "correct_answer": true,
+                    "detailed_explanation": true,
+                    "mistake_reasoning": true,
+                    "learning_tip": true,
+                    "concept_linkback": true
+                },
+                "visual_style": {
+                    "feedback_panels": true,
+                    "corrective_learning_highlights": true
+                }
+            },
+            "mistake_prevention_dashboard": {
+                "purpose": "Weakness analysis and learning gap detection",
+                "layout": {
+                    "width": "full",
+                    "columns": 3,
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_slots": {
+                    "mistake_categories": true,
+                    "weakness_heatmap": true,
+                    "gap_analysis": true,
+                    "improvement_recommendations": true
+                },
+                "visual_style": {
+                    "analytics_dashboards": true,
+                    "warning_panels": true
+                }
+            },
+            "performance_command_center": {
+                "purpose": "Score tracking, analytics, and mastery measurement",
+                "layout": {
+                    "width": "full",
+                    "columns": 4,
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px",
+                    "background_style": "performance_surface"
+                },
+                "content_slots": {
+                    "score_display": true,
+                    "performance_graphs": true,
+                    "benchmark_comparison": true,
+                    "mastery_percentage": true,
+                    "exam_readiness_score": true
+                },
+                "visual_style": {
+                    "score_dashboards": true,
+                    "metric_highlights": true
+                }
+            },
+            "improvement_path_dashboard": {
+                "purpose": "Personalized remediation and growth roadmap",
+                "layout": {
+                    "width": "full",
+                    "max_width": "1280px",
+                    "padding": "40px",
+                    "margin_bottom": "32px",
+                    "border_radius": "20px",
+                    "shadow": "large",
+                    "background_style": "improvement_surface"
+                },
+                "content_slots": {
+                    "improvement_title": true,
+                    "personalized_learning_path": true,
+                    "weakness_recovery_steps": true,
+                    "recommended_resources": true,
+                    "future_goals": true
+                },
+                "typography": {
+                    "title_size": "30px",
+                    "body_size": "16px"
+                },
+                "visual_style": {
+                    "growth_dashboards": true,
+                    "progress_recovery_map": true,
+                    "print_ready": true
+                },
+                "accessibility": {
+                    "font_scaling_supported": true,
+                    "contrast_ratio": "4.5:1"
+                }
+            }
+        }
+    },
+    {
+        "assignment_section_default_templates": {
+            "metadata": {
+                "section_type": "assignment_section",
+                "default_device": "desktop",
+                "wcag_compliance": "AA",
+                "template_version": "1.0"
+            },
+            "assignment_brief_card": {
+                "layout": {
+                    "template_type": "project_overview_workspace",
+                    "width": "full",
+                    "max_width": "1280px",
+                    "min_height": "460px",
+                    "padding": "40px",
+                    "margin_bottom": "32px",
+                    "border_radius": "20px",
+                    "shadow": "large",
+                    "background_style": "project_gradient_surface",
+                    "border_color": "#d1d5db"
+                },
+                "content_structure": {
+                    "assignment_badge": true,
+                    "headline": true,
+                    "project_summary": true,
+                    "difficulty_indicator": true,
+                    "estimated_time": true,
+                    "learning_outcomes": true
+                },
+                "typography": {
+                    "headline_size": "38px",
+                    "subheading_size": "22px",
+                    "body_size": "18px",
+                    "font_family": "Inter"
+                }
+            },
+            "objective_panel": {
+                "layout": {
+                    "template_type": "goal_alignment_dashboard",
+                    "width": "full",
+                    "columns": 3,
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_structure": {
+                    "objective_title": true,
+                    "learning_goals": true,
+                    "skill_targets": true,
+                    "success_metrics": true
+                },
+                "visual_style": {
+                    "goal_cards": true,
+                    "progress_alignment_indicators": true
+                }
+            },
+            "task_flow_block": {
+                "layout": {
+                    "template_type": "project_execution_flow",
+                    "width": "full",
+                    "height": "650px",
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_structure": {
+                    "task_title": true,
+                    "phase_sequence": true,
+                    "execution_steps": true,
+                    "dependencies": true,
+                    "tooltips": true
+                },
+                "interaction_design": {
+                    "interactive_steps": true,
+                    "progress_tracking": true
+                }
+            },
+            "submission_requirements_panel": {
+                "layout": {
+                    "template_type": "deliverable_management_panel",
+                    "width": "full",
+                    "columns": 2,
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_structure": {
+                    "submission_title": true,
+                    "deliverables_checklist": true,
+                    "file_requirements": true,
+                    "format_standards": true,
+                    "deadline_info": true
+                },
+                "visual_style": {
+                    "checklist_dashboard": true,
+                    "submission_badges": true
+                }
+            },
+            "rubric_matrix": {
+                "layout": {
+                    "template_type": "grading_framework_dashboard",
+                    "width": "full",
+                    "columns": 4,
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_structure": {
+                    "rubric_title": true,
+                    "grading_categories": true,
+                    "score_weights": true,
+                    "performance_levels": true,
+                    "evaluation_notes": true
+                },
+                "visual_style": {
+                    "grading_tables": true,
+                    "score_highlights": true
+                }
+            },
+            "real_world_project_panel": {
+                "layout": {
+                    "template_type": "career_project_context",
+                    "width": "full",
+                    "columns": 3,
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_structure": {
+                    "career_title": true,
+                    "industry_use_cases": true,
+                    "portfolio_relevance": true,
+                    "professional_skills_mapping": true
+                },
+                "visual_style": {
+                    "career_cards": true,
+                    "project_showcase": true
+                }
+            },
+            "mistake_prevention_panel": {
+                "layout": {
+                    "template_type": "submission_risk_prevention",
+                    "width": "full",
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_structure": {
+                    "common_submission_errors": true,
+                    "risk_alerts": true,
+                    "faq_items": true,
+                    "quality_checklist": true,
+                    "clarification_notes": true
+                },
+                "interaction_design": {
+                    "accordion_expand": true,
+                    "default_first_open": true
+                },
+                "visual_style": {
+                    "warning_panels": true,
+                    "risk_semantic_colors": true
+                }
+            },
+            "assignment_summary_card": {
+                "layout": {
+                    "template_type": "completion_summary_workspace",
+                    "width": "full",
+                    "max_width": "1280px",
+                    "padding": "40px",
+                    "margin_bottom": "32px",
+                    "border_radius": "20px",
+                    "shadow": "large",
+                    "background_style": "completion_surface"
+                },
+                "content_structure": {
+                    "summary_title": true,
+                    "completion_checklist": true,
+                    "key_project_takeaways": true,
+                    "career_readiness_notes": true,
+                    "confidence_boost": true
+                },
+                "visual_style": {
+                    "completion_dashboard": true,
+                    "checklist_mode": true,
+                    "print_ready": true
+                }
+            }
+        }
+    },
+    {
+        "assignment_section_layout_template_defaults": {
+            "project_overview_workspace": {
+                "purpose": "Assignment/project overview and initial briefing",
+                "layout": {
+                    "width": "full",
+                    "max_width": "1280px",
+                    "min_height": "460px",
+                    "padding": "40px",
+                    "margin_bottom": "32px",
+                    "border_radius": "20px",
+                    "shadow": "large",
+                    "background_style": "project_gradient_surface",
+                    "border": "1px solid #d1d5db",
+                    "content_alignment": "left"
+                },
+                "content_slots": {
+                    "assignment_badge": true,
+                    "headline": true,
+                    "project_summary": true,
+                    "difficulty_indicator": true,
+                    "estimated_time": true,
+                    "learning_outcomes": true
+                },
+                "typography": {
+                    "headline_size": "38px",
+                    "subheading_size": "22px",
+                    "body_size": "18px",
+                    "font_family": "Inter"
+                },
+                "visual_style": {
+                    "project_theme": true,
+                    "overview_panels": true,
+                    "difficulty_badges": true
+                }
+            },
+            "goal_alignment_dashboard": {
+                "purpose": "Learning objective and goal alignment system",
+                "layout": {
+                    "width": "full",
+                    "columns": 3,
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_slots": {
+                    "objective_title": true,
+                    "learning_goals": true,
+                    "skill_targets": true,
+                    "success_metrics": true
+                },
+                "visual_style": {
+                    "goal_cards": true,
+                    "progress_alignment_indicators": true
+                }
+            },
+            "project_execution_flow": {
+                "purpose": "Sequential task execution and project workflow",
+                "layout": {
+                    "width": "full",
+                    "height": "650px",
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_slots": {
+                    "task_title": true,
+                    "phase_sequence": true,
+                    "execution_steps": true,
+                    "dependencies": true,
+                    "tooltips": true
+                },
+                "interaction_design": {
+                    "interactive_steps": true,
+                    "progress_tracking": true
+                },
+                "visual_style": {
+                    "workflow_map": true,
+                    "progress_connectors": true
+                }
+            },
+            "deliverable_management_panel": {
+                "purpose": "Submission requirements and deliverables management",
+                "layout": {
+                    "width": "full",
+                    "columns": 2,
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_slots": {
+                    "submission_title": true,
+                    "deliverables_checklist": true,
+                    "file_requirements": true,
+                    "format_standards": true,
+                    "deadline_info": true
+                },
+                "visual_style": {
+                    "checklist_dashboard": true,
+                    "submission_badges": true
+                }
+            },
+            "grading_framework_dashboard": {
+                "purpose": "Evaluation criteria and grading matrix",
+                "layout": {
+                    "width": "full",
+                    "columns": 4,
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_slots": {
+                    "rubric_title": true,
+                    "grading_categories": true,
+                    "score_weights": true,
+                    "performance_levels": true,
+                    "evaluation_notes": true
+                },
+                "visual_style": {
+                    "grading_tables": true,
+                    "score_highlights": true
+                }
+            },
+            "career_project_context": {
+                "purpose": "Real-world career/project relevance dashboard",
+                "layout": {
+                    "width": "full",
+                    "columns": 3,
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_slots": {
+                    "career_title": true,
+                    "industry_use_cases": true,
+                    "portfolio_relevance": true,
+                    "professional_skills_mapping": true
+                },
+                "visual_style": {
+                    "career_cards": true,
+                    "project_showcase": true
+                }
+            },
+            "submission_risk_prevention": {
+                "purpose": "Assignment mistake prevention and risk management",
+                "layout": {
+                    "width": "full",
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px",
+                    "shadow": "medium"
+                },
+                "content_slots": {
+                    "common_submission_errors": true,
+                    "risk_alerts": true,
+                    "faq_items": true,
+                    "quality_checklist": true,
+                    "clarification_notes": true
+                },
+                "interaction_design": {
+                    "accordion_expand": true,
+                    "default_first_open": true
+                },
+                "visual_style": {
+                    "warning_panels": true,
+                    "risk_semantic_colors": true
+                }
+            },
+            "completion_summary_workspace": {
+                "purpose": "Final completion, recap, and readiness dashboard",
+                "layout": {
+                    "width": "full",
+                    "max_width": "1280px",
+                    "padding": "40px",
+                    "margin_bottom": "32px",
+                    "border_radius": "20px",
+                    "shadow": "large",
+                    "background_style": "completion_surface"
+                },
+                "content_slots": {
+                    "summary_title": true,
+                    "completion_checklist": true,
+                    "key_project_takeaways": true,
+                    "career_readiness_notes": true,
+                    "confidence_boost": true
+                },
+                "typography": {
+                    "title_size": "30px",
+                    "body_size": "16px"
+                },
+                "visual_style": {
+                    "completion_dashboard": true,
+                    "checklist_mode": true,
+                    "print_ready": true
+                },
+                "accessibility": {
+                    "font_scaling_supported": true,
+                    "contrast_ratio": "4.5:1"
+                }
+            }
+        }
+    },
+    {
+        "project_section_default_templates": {
+            "metadata": {
+                "section_type": "project_section",
+                "default_device": "desktop",
+                "wcag_compliance": "AA",
+                "template_version": "1.0"
+            },
+            "project_vision_card": {
+                "layout": {
+                    "template_type": "enterprise_project_overview",
+                    "width": "full",
+                    "max_width": "1440px",
+                    "min_height": "500px",
+                    "padding": "48px",
+                    "margin_bottom": "32px",
+                    "border_radius": "24px",
+                    "shadow": "large",
+                    "background_style": "enterprise_gradient_surface",
+                    "border_color": "#d1d5db"
+                },
+                "content_structure": {
+                    "project_badge": true,
+                    "headline": true,
+                    "mission_statement": true,
+                    "scope_overview": true,
+                    "business_impact": true,
+                    "complexity_indicator": true
+                },
+                "typography": {
+                    "headline_size": "42px",
+                    "subheading_size": "24px",
+                    "body_size": "18px",
+                    "font_family": "Inter"
+                }
+            },
+            "business_objective_panel": {
+                "layout": {
+                    "template_type": "goal_execution_dashboard",
+                    "width": "full",
+                    "columns": 4,
+                    "padding": "36px",
+                    "margin_bottom": "32px",
+                    "border_radius": "18px"
+                },
+                "content_structure": {
+                    "objective_title": true,
+                    "business_goals": true,
+                    "kpi_targets": true,
+                    "success_metrics": true,
+                    "strategic_alignment": true
+                }
+            },
+            "architecture_master_block": {
+                "layout": {
+                    "template_type": "system_blueprint_workspace",
+                    "width": "full",
+                    "height": "800px",
+                    "padding": "40px",
+                    "margin_bottom": "32px",
+                    "border_radius": "20px"
+                },
+                "content_structure": {
+                    "architecture_title": true,
+                    "blueprint_diagram": true,
+                    "component_layers": true,
+                    "system_connections": true,
+                    "security_layers": true,
+                    "technical_tooltips": true
+                },
+                "interaction_design": {
+                    "zoom_controls": true,
+                    "expandable_layers": true,
+                    "hover_explanations": true
+                }
+            },
+            "module_breakdown_grid": {
+                "layout": {
+                    "template_type": "modular_execution_framework",
+                    "width": "full",
+                    "columns": 4,
+                    "padding": "36px",
+                    "card_gap": "24px",
+                    "margin_bottom": "32px"
+                },
+                "content_structure": {
+                    "module_title": true,
+                    "functional_units": true,
+                    "dependencies": true,
+                    "ownership_mapping": true
+                }
+            },
+            "development_workflow_panel": {
+                "layout": {
+                    "template_type": "project_lifecycle_flow",
+                    "width": "full",
+                    "height": "720px",
+                    "padding": "36px",
+                    "margin_bottom": "32px",
+                    "border_radius": "18px"
+                },
+                "content_structure": {
+                    "workflow_title": true,
+                    "phase_progression": true,
+                    "milestones": true,
+                    "sprint_cycles": true,
+                    "delivery_checkpoints": true
+                },
+                "interaction_design": {
+                    "interactive_timeline": true,
+                    "phase_expansion": true
+                }
+            },
+            "deployment_scaling_panel": {
+                "layout": {
+                    "template_type": "production_scaling_dashboard",
+                    "width": "full",
+                    "columns": 3,
+                    "padding": "36px",
+                    "margin_bottom": "32px",
+                    "border_radius": "18px"
+                },
+                "content_structure": {
+                    "deployment_title": true,
+                    "infrastructure_map": true,
+                    "scaling_strategy": true,
+                    "availability_targets": true,
+                    "security_compliance": true
+                }
+            },
+            "risk_management_panel": {
+                "layout": {
+                    "template_type": "governance_risk_matrix",
+                    "width": "full",
+                    "columns": 3,
+                    "padding": "36px",
+                    "margin_bottom": "32px",
+                    "border_radius": "18px"
+                },
+                "content_structure": {
+                    "risk_title": true,
+                    "risk_categories": true,
+                    "governance_controls": true,
+                    "compliance_matrix": true,
+                    "mitigation_plans": true
+                }
+            },
+            "project_summary_card": {
+                "layout": {
+                    "template_type": "portfolio_mastery_dashboard",
+                    "width": "full",
+                    "max_width": "1440px",
+                    "padding": "48px",
+                    "margin_bottom": "32px",
+                    "border_radius": "24px",
+                    "shadow": "large",
+                    "background_style": "portfolio_surface"
+                },
+                "content_structure": {
+                    "summary_title": true,
+                    "portfolio_outcomes": true,
+                    "career_readiness": true,
+                    "system_mastery_checklist": true,
+                    "executive_recap": true
+                },
+                "visual_style": {
+                    "portfolio_dashboard": true,
+                    "print_ready": true,
+                    "executive_summary_mode": true
+                }
+            }
+        }
+    },
+    {
+        "project_section_layout_template_defaults": {
+            "enterprise_project_overview": {
+                "purpose": "Full project vision, mission, and strategic overview",
+                "layout": {
+                    "width": "full",
+                    "max_width": "1440px",
+                    "min_height": "500px",
+                    "padding": "48px",
+                    "margin_bottom": "32px",
+                    "border_radius": "24px",
+                    "shadow": "large",
+                    "background_style": "enterprise_gradient_surface",
+                    "border": "1px solid #d1d5db",
+                    "content_alignment": "left"
+                },
+                "content_slots": {
+                    "project_badge": true,
+                    "headline": true,
+                    "mission_statement": true,
+                    "scope_overview": true,
+                    "business_impact": true,
+                    "complexity_indicator": true
+                },
+                "typography": {
+                    "headline_size": "42px",
+                    "subheading_size": "24px",
+                    "body_size": "18px",
+                    "font_family": "Inter"
+                },
+                "visual_style": {
+                    "enterprise_theme": true,
+                    "executive_panels": true,
+                    "strategic_highlights": true
+                }
+            },
+            "goal_execution_dashboard": {
+                "purpose": "Business objective alignment and strategic KPI dashboard",
+                "layout": {
+                    "width": "full",
+                    "columns": 4,
+                    "padding": "36px",
+                    "margin_bottom": "32px",
+                    "border_radius": "18px"
+                },
+                "content_slots": {
+                    "objective_title": true,
+                    "business_goals": true,
+                    "kpi_targets": true,
+                    "success_metrics": true,
+                    "strategic_alignment": true
+                },
+                "visual_style": {
+                    "goal_cards": true,
+                    "kpi_dashboards": true
+                }
+            },
+            "system_blueprint_workspace": {
+                "purpose": "Enterprise-scale technical architecture blueprint",
+                "layout": {
+                    "width": "full",
+                    "height": "800px",
+                    "padding": "40px",
+                    "margin_bottom": "32px",
+                    "border_radius": "20px"
+                },
+                "content_slots": {
+                    "architecture_title": true,
+                    "blueprint_diagram": true,
+                    "component_layers": true,
+                    "system_connections": true,
+                    "security_layers": true,
+                    "technical_tooltips": true
+                },
+                "interaction_design": {
+                    "zoom_controls": true,
+                    "expandable_layers": true,
+                    "hover_explanations": true
+                },
+                "visual_style": {
+                    "enterprise_blueprint_theme": true,
+                    "animated_system_paths": true
+                }
+            },
+            "modular_execution_framework": {
+                "purpose": "Functional module decomposition and execution system",
+                "layout": {
+                    "width": "full",
+                    "columns": 4,
+                    "padding": "36px",
+                    "card_gap": "24px",
+                    "margin_bottom": "32px"
+                },
+                "content_slots": {
+                    "module_title": true,
+                    "functional_units": true,
+                    "dependencies": true,
+                    "ownership_mapping": true
+                },
+                "visual_style": {
+                    "module_cards": true,
+                    "dependency_maps": true
+                }
+            },
+            "project_lifecycle_flow": {
+                "purpose": "Full development lifecycle and implementation roadmap",
+                "layout": {
+                    "width": "full",
+                    "height": "720px",
+                    "padding": "36px",
+                    "margin_bottom": "32px",
+                    "border_radius": "18px"
+                },
+                "content_slots": {
+                    "workflow_title": true,
+                    "phase_progression": true,
+                    "milestones": true,
+                    "sprint_cycles": true,
+                    "delivery_checkpoints": true
+                },
+                "interaction_design": {
+                    "interactive_timeline": true,
+                    "phase_expansion": true
+                },
+                "visual_style": {
+                    "lifecycle_maps": true,
+                    "progress_connectors": true
+                }
+            },
+            "production_scaling_dashboard": {
+                "purpose": "Deployment readiness, infrastructure, and scaling dashboard",
+                "layout": {
+                    "width": "full",
+                    "columns": 3,
+                    "padding": "36px",
+                    "margin_bottom": "32px",
+                    "border_radius": "18px"
+                },
+                "content_slots": {
+                    "deployment_title": true,
+                    "infrastructure_map": true,
+                    "scaling_strategy": true,
+                    "availability_targets": true,
+                    "security_compliance": true
+                },
+                "visual_style": {
+                    "infrastructure_dashboards": true,
+                    "scaling_maps": true
+                }
+            },
+            "governance_risk_matrix": {
+                "purpose": "Governance, compliance, and enterprise risk management",
+                "layout": {
+                    "width": "full",
+                    "columns": 3,
+                    "padding": "36px",
+                    "margin_bottom": "32px",
+                    "border_radius": "18px"
+                },
+                "content_slots": {
+                    "risk_title": true,
+                    "risk_categories": true,
+                    "governance_controls": true,
+                    "compliance_matrix": true,
+                    "mitigation_plans": true
+                },
+                "visual_style": {
+                    "risk_dashboards": true,
+                    "compliance_panels": true
+                }
+            },
+            "portfolio_mastery_dashboard": {
+                "purpose": "Portfolio mastery, completion summary, and executive recap",
+                "layout": {
+                    "width": "full",
+                    "max_width": "1440px",
+                    "padding": "48px",
+                    "margin_bottom": "32px",
+                    "border_radius": "24px",
+                    "shadow": "large",
+                    "background_style": "portfolio_surface"
+                },
+                "content_slots": {
+                    "summary_title": true,
+                    "portfolio_outcomes": true,
+                    "career_readiness": true,
+                    "system_mastery_checklist": true,
+                    "executive_recap": true
+                },
+                "typography": {
+                    "title_size": "32px",
+                    "body_size": "16px"
+                },
+                "visual_style": {
+                    "portfolio_dashboard": true,
+                    "print_ready": true,
+                    "executive_summary_mode": true
+                },
+                "accessibility": {
+                    "font_scaling_supported": true,
+                    "contrast_ratio": "4.5:1"
+                }
+            }
+        }
+    },
+    {
+        "quiz_section_default_templates": {
+            "metadata": {
+                "section_type": "quiz_section",
+                "default_device": "desktop",
+                "wcag_compliance": "AA",
+                "template_version": "1.0"
+            },
+            "quiz_intro_card": {
+                "layout": {
+                    "template_type": "quiz_hero_panel",
+                    "width": "full",
+                    "max_width": "1280px",
+                    "min_height": "420px",
+                    "padding": "40px",
+                    "margin_bottom": "32px",
+                    "border_radius": "20px",
+                    "shadow": "large",
+                    "background_style": "quiz_gradient_surface",
+                    "border_color": "#d1d5db"
+                },
+                "content_structure": {
+                    "quiz_badge": true,
+                    "headline": true,
+                    "quiz_summary": true,
+                    "difficulty_indicator": true,
+                    "estimated_time": true,
+                    "readiness_prompt": true
+                }
+            },
+            "question_block": {
+                "layout": {
+                    "template_type": "rapid_assessment_workspace",
+                    "width": "full",
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px",
+                    "background_style": "quiz_surface"
+                },
+                "content_structure": {
+                    "question_prompt": true,
+                    "answer_options": true,
+                    "progress_bar": true,
+                    "submit_button": true
+                },
+                "interaction_design": {
+                    "single_select": true,
+                    "navigation_controls": true
+                }
+            },
+            "timed_challenge_panel": {
+                "layout": {
+                    "template_type": "challenge_mode_dashboard",
+                    "width": "full",
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_structure": {
+                    "challenge_title": true,
+                    "countdown_timer": true,
+                    "speed_metrics": true,
+                    "challenge_questions": true
+                },
+                "visual_style": {
+                    "timer_highlights": true,
+                    "urgency_indicators": true
+                }
+            },
+            "adaptive_quiz_flow": {
+                "layout": {
+                    "template_type": "dynamic_progression_system",
+                    "width": "full",
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_structure": {
+                    "difficulty_levels": true,
+                    "adaptive_progression": true,
+                    "performance_adjustment": true
+                }
+            },
+            "instant_feedback_card": {
+                "layout": {
+                    "template_type": "rapid_feedback_workspace",
+                    "width": "full",
+                    "padding": "28px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_structure": {
+                    "correct_answer": true,
+                    "quick_explanation": true,
+                    "mistake_reasoning": true,
+                    "improvement_tip": true
+                }
+            },
+            "performance_snapshot_panel": {
+                "layout": {
+                    "template_type": "quiz_analytics_dashboard",
+                    "width": "full",
+                    "columns": 4,
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_structure": {
+                    "score_display": true,
+                    "accuracy_rate": true,
+                    "speed_metrics": true,
+                    "readiness_score": true
+                }
+            },
+            "weakness_detection_block": {
+                "layout": {
+                    "template_type": "knowledge_gap_matrix",
+                    "width": "full",
+                    "columns": 3,
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_structure": {
+                    "weakness_categories": true,
+                    "knowledge_heatmap": true,
+                    "improvement_focus": true
+                }
+            },
+            "next_step_recommendation_card": {
+                "layout": {
+                    "template_type": "learning_path_optimizer",
+                    "width": "full",
+                    "max_width": "1280px",
+                    "padding": "40px",
+                    "margin_bottom": "32px",
+                    "border_radius": "20px",
+                    "shadow": "large"
+                },
+                "content_structure": {
+                    "recommendation_title": true,
+                    "next_learning_steps": true,
+                    "resource_links": true,
+                    "mastery_goals": true
+                }
+            }
+        }
+    },
+    {
+        "quiz_section_layout_template_defaults": {
+            "quiz_hero_panel": {
+                "purpose": "Quiz introduction, readiness, and fast-assessment framing",
+                "layout": {
+                    "width": "full",
+                    "max_width": "1280px",
+                    "min_height": "420px",
+                    "padding": "40px",
+                    "margin_bottom": "32px",
+                    "border_radius": "20px",
+                    "shadow": "large",
+                    "background_style": "quiz_gradient_surface",
+                    "border": "1px solid #d1d5db",
+                    "content_alignment": "left"
+                },
+                "content_slots": {
+                    "quiz_badge": true,
+                    "headline": true,
+                    "quiz_summary": true,
+                    "difficulty_indicator": true,
+                    "estimated_time": true,
+                    "readiness_prompt": true
+                },
+                "typography": {
+                    "headline_size": "38px",
+                    "subheading_size": "22px",
+                    "body_size": "18px",
+                    "font_family": "Inter"
+                },
+                "visual_style": {
+                    "quiz_theme": true,
+                    "motivation_panels": true,
+                    "readiness_badges": true
+                }
+            },
+            "rapid_assessment_workspace": {
+                "purpose": "Core rapid quiz engine for knowledge validation",
+                "layout": {
+                    "width": "full",
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px",
+                    "background_style": "quiz_surface"
+                },
+                "content_slots": {
+                    "question_prompt": true,
+                    "answer_options": true,
+                    "progress_bar": true,
+                    "submit_button": true
+                },
+                "interaction_design": {
+                    "single_select": true,
+                    "navigation_controls": true
+                },
+                "visual_style": {
+                    "quiz_cards": true,
+                    "answer_highlights": true
+                }
+            },
+            "challenge_mode_dashboard": {
+                "purpose": "Timed challenge mode for speed-based mastery",
+                "layout": {
+                    "width": "full",
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_slots": {
+                    "challenge_title": true,
+                    "countdown_timer": true,
+                    "speed_metrics": true,
+                    "challenge_questions": true
+                },
+                "visual_style": {
+                    "timer_highlights": true,
+                    "urgency_indicators": true
+                }
+            },
+            "dynamic_progression_system": {
+                "purpose": "Adaptive difficulty progression system",
+                "layout": {
+                    "width": "full",
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_slots": {
+                    "difficulty_levels": true,
+                    "adaptive_progression": true,
+                    "performance_adjustment": true
+                },
+                "interaction_design": {
+                    "adaptive_logic": true,
+                    "dynamic_scaling": true
+                },
+                "visual_style": {
+                    "progression_maps": true,
+                    "difficulty_visualization": true
+                }
+            },
+            "rapid_feedback_workspace": {
+                "purpose": "Instant answer correction and learning reinforcement",
+                "layout": {
+                    "width": "full",
+                    "padding": "28px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_slots": {
+                    "correct_answer": true,
+                    "quick_explanation": true,
+                    "mistake_reasoning": true,
+                    "improvement_tip": true
+                },
+                "visual_style": {
+                    "feedback_panels": true,
+                    "reinforcement_highlights": true
+                }
+            },
+            "quiz_analytics_dashboard": {
+                "purpose": "Performance snapshot, metrics, and score analytics",
+                "layout": {
+                    "width": "full",
+                    "columns": 4,
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_slots": {
+                    "score_display": true,
+                    "accuracy_rate": true,
+                    "speed_metrics": true,
+                    "readiness_score": true
+                },
+                "visual_style": {
+                    "analytics_dashboards": true,
+                    "metric_highlights": true
+                }
+            },
+            "knowledge_gap_matrix": {
+                "purpose": "Knowledge gap and weakness detection dashboard",
+                "layout": {
+                    "width": "full",
+                    "columns": 3,
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_slots": {
+                    "weakness_categories": true,
+                    "knowledge_heatmap": true,
+                    "improvement_focus": true
+                },
+                "visual_style": {
+                    "gap_dashboards": true,
+                    "heatmaps": true
+                }
+            },
+            "learning_path_optimizer": {
+                "purpose": "Personalized next-step recommendations and growth roadmap",
+                "layout": {
+                    "width": "full",
+                    "max_width": "1280px",
+                    "padding": "40px",
+                    "margin_bottom": "32px",
+                    "border_radius": "20px",
+                    "shadow": "large"
+                },
+                "content_slots": {
+                    "recommendation_title": true,
+                    "next_learning_steps": true,
+                    "resource_links": true,
+                    "mastery_goals": true
+                },
+                "typography": {
+                    "title_size": "30px",
+                    "body_size": "16px"
+                },
+                "visual_style": {
+                    "growth_dashboards": true,
+                    "learning_path_maps": true,
+                    "print_ready": true
+                },
+                "accessibility": {
+                    "font_scaling_supported": true,
+                    "contrast_ratio": "4.5:1"
+                }
+            }
+        }
+    },
+    {
+        "ai_tutor_section_default_templates": {
+            "metadata": {
+                "section_type": "ai_tutor",
+                "template_version": "1.0"
+            },
+            "greeting": {
+                "type": "text"
+            },
+            "qa_pairs": {
+                "type": "list"
+            },
+            "tutor_prompt_card": {
+                "type": "prompt_examples"
+            },
+            "misconception_detector": {
+                "type": "diagnostic_support"
+            },
+            "adaptive_hint_panel": {
+                "type": "contextual_hints"
+            }
+        }
+    },
+    {
+        "summary_section_default_templates": {
+            "metadata": {
+                "section_type": "summary",
+                "template_version": "1.0"
+            },
+            "mastery_recap_card": {
+                "type": "recap_panel"
+            },
+            "key_takeaway_grid": {
+                "type": "takeaway_cards"
+            },
+            "revision_checklist": {
+                "type": "checklist"
+            },
+            "next_step_panel": {
+                "type": "recommendation_panel"
+            }
+        }
+    },
+    {
+        "summary_section_layout_template_defaults": {
+            "mastery_recap_card": {
+                "layout": {
+                    "padding": "40px",
+                    "border_radius": "24px",
+                    "max_width": "1280px"
+                }
+            },
+            "key_takeaway_grid": {
+                "layout": {
+                    "columns": 3,
+                    "gap": "20px"
+                }
+            },
+            "revision_checklist": {
+                "layout": {
+                    "padding": "32px",
+                    "background": "subtle"
+                }
+            },
+            "next_step_panel": {
+                "layout": {
+                    "padding": "32px",
+                    "border_radius": "20px"
+                }
+            }
+        }
+    },
+    {
+        "interview_section_default_templates": {
+            "metadata": {
+                "section_type": "interview",
+                "template_version": "1.0"
+            },
+            "interview_intro_card": {
+                "type": "intro_panel"
+            },
+            "question_bank_panel": {
+                "type": "question_bank"
+            },
+            "answer_framework_card": {
+                "type": "answer_framework"
+            },
+            "mock_interview_flow": {
+                "type": "guided_practice_flow"
+            }
+        }
+    },
+    {
+        "interview_section_layout_template_defaults": {
+            "interview_intro_card": {
+                "layout": {
+                    "padding": "40px",
+                    "border_radius": "24px"
+                }
+            },
+            "question_bank_panel": {
+                "layout": {
+                    "columns": 1,
+                    "gap": "18px"
+                }
+            },
+            "answer_framework_card": {
+                "layout": {
+                    "padding": "32px",
+                    "background": "contrast"
+                }
+            },
+            "mock_interview_flow": {
+                "layout": {
+                    "padding": "32px",
+                    "border_radius": "20px"
+                }
+            }
+        }
+    },
+    {
+        "ai_tutor_section_layout_template_defaults": {
+            "greeting": {
+                "layout": {
+                    "padding": "24px",
+                    "border_radius": "20px"
+                }
+            },
+            "qa_pairs": {
+                "layout": {
+                    "gap": "16px",
+                    "max_width": "960px"
+                }
+            },
+            "tutor_prompt_card": {
+                "layout": {
+                    "padding": "24px",
+                    "background": "subtle"
+                }
+            },
+            "adaptive_hint_panel": {
+                "layout": {
+                    "padding": "24px",
+                    "border_radius": "18px"
+                }
+            }
+        }
+    },
+    {
+        "visual_explanation_section_layout_template_defaults": {
+            "visual_intro_card": {
+                "layout": {
+                    "padding": "40px",
+                    "border_radius": "24px"
+                }
+            },
+            "diagram_panel": {
+                "layout": {
+                    "padding": "32px",
+                    "background": "glass"
+                }
+            },
+            "flow_sequence_panel": {
+                "layout": {
+                    "gap": "24px"
+                }
+            },
+            "mental_model_canvas": {
+                "layout": {
+                    "margin": "20px"
+                }
+            },
+            "summary_infographic": {
+                "layout": {
+                    "padding": "40px",
+                    "border_radius": "30px"
+                }
+            }
+        }
+    },
+    {
+        "overview_section_default_templates": {
+            "metadata": {
+                "section_type": "overview",
+                "default_device": "desktop",
+                "wcag_compliance": "AA",
+                "template_version": "1.0"
+            },
+            "overview_hero_card": {
+                "layout": {
+                    "template_type": "subtopic_identity_hero",
+                    "width": "full",
+                    "max_width": "1440px",
+                    "padding": "32px",
+                    "margin_bottom": "40px",
+                    "border_radius": "16px",
+                    "shadow": "large",
+                    "background_color": "#ffffff",
+                    "content_alignment": "left"
+                },
+                "content_structure": {
+                    "icon_label": true,
+                    "title": true,
+                    "description": true,
+                    "difficulty": true,
+                    "estimated_read_time": true,
+                    "xp": true,
+                    "topics_count": true,
+                    "last_updated": true
+                },
+                "typography": {
+                    "title_size": "32px",
+                    "description_size": "16px",
+                    "metadata_size": "13px",
+                    "font_family": "Inter"
+                },
+                "visual_style": {
+                    "icon_tile": true,
+                    "quiet_surface": true,
+                    "brand_accent_progress": true
+                },
+                "accessibility": {
+                    "semantic_heading": true,
+                    "keyboard_navigation": true,
+                    "contrast_ratio": "4.5:1"
+                }
+            },
+            "outcome_summary_strip": {
+                "layout": {
+                    "template_type": "learning_outcome_summary",
+                    "width": "full",
+                    "columns": 3,
+                    "padding": "24px",
+                    "card_gap": "16px",
+                    "margin_bottom": "32px"
+                },
+                "content_structure": {
+                    "outcome_title": true,
+                    "outcome_points": true,
+                    "readiness_signal": true
+                },
+                "visual_style": {
+                    "compact_metric_cards": true,
+                    "neutral_surfaces": true
+                }
+            },
+            "module_roadmap_grid": {
+                "layout": {
+                    "template_type": "clickable_section_roadmap",
+                    "width": "full",
+                    "columns": 5,
+                    "card_gap": "24px",
+                    "padding": "24px",
+                    "margin_bottom": "40px"
+                },
+                "content_structure": {
+                    "content_cards": true,
+                    "task_cards": true,
+                    "section_type": true,
+                    "cta_label": true
+                },
+                "interaction_design": {
+                    "card_click_navigation": true,
+                    "hover_elevation": true,
+                    "focus_visible": true
+                },
+                "visual_style": {
+                    "stable_square_cards": true,
+                    "section_color_mapping": true,
+                    "icon_supported": true
+                }
+            },
+            "progress_ring_checklist": {
+                "layout": {
+                    "template_type": "progress_summary_panel",
+                    "width": "fixed",
+                    "max_width": "320px",
+                    "padding": "24px"
+                },
+                "content_structure": {
+                    "percentage": true,
+                    "checklist": true,
+                    "completed_state": true,
+                    "pending_state": true
+                },
+                "visual_style": {
+                    "ring_progress": true,
+                    "check_icons": true,
+                    "pending_icons": true
+                },
+                "accessibility": {
+                    "aria_progress": true,
+                    "screen_reader_checklist": true
+                }
+            },
+            "guided_path_panel": {
+                "layout": {
+                    "template_type": "recommended_learning_flow",
+                    "width": "full",
+                    "padding": "32px",
+                    "margin_bottom": "32px",
+                    "border_radius": "16px"
+                },
+                "content_structure": {
+                    "recommended_order": true,
+                    "next_best_action": true,
+                    "completion_goal": true
+                },
+                "visual_style": {
+                    "path_badges": true,
+                    "subtle_guidance": true
+                }
+            },
+            "readiness_context_card": {
+                "layout": {
+                    "template_type": "learner_readiness_context",
+                    "width": "full",
+                    "padding": "28px",
+                    "border_radius": "16px"
+                },
+                "content_structure": {
+                    "prerequisites": true,
+                    "what_you_will_build": true,
+                    "success_criteria": true
+                },
+                "visual_style": {
+                    "checklist_mode": true,
+                    "supportive_context": true
+                }
+            }
+        }
+    },
+    {
+        "overview_section_layout_template_defaults": {
+            "subtopic_identity_hero": {
+                "purpose": "Top overview header that identifies the current subtopic and never uses fallback hardcoded text",
+                "layout": {
+                    "width": "full",
+                    "max_width": "1440px",
+                    "padding": "32px",
+                    "margin_bottom": "40px",
+                    "border_radius": "16px",
+                    "shadow": "large",
+                    "background_style": "clean_surface",
+                    "content_alignment": "left"
+                },
+                "content_slots": {
+                    "icon_label": true,
+                    "title": true,
+                    "description": true,
+                    "metadata_badges": true,
+                    "progress_summary": true
+                }
+            },
+            "learning_outcome_summary": {
+                "purpose": "Short outcome summary for what the learner will understand after this subtopic",
+                "layout": {
+                    "width": "full",
+                    "columns": 3,
+                    "gap": "16px",
+                    "padding": "24px",
+                    "margin_bottom": "32px"
+                },
+                "content_slots": {
+                    "outcome_title": true,
+                    "outcome_points": true,
+                    "readiness_signal": true
+                }
+            },
+            "clickable_section_roadmap": {
+                "purpose": "Core module grid linking to each tutorial section",
+                "layout": {
+                    "width": "full",
+                    "columns": 5,
+                    "card_gap": "24px",
+                    "padding": "24px",
+                    "margin_bottom": "40px"
+                },
+                "content_slots": {
+                    "content_cards": true,
+                    "task_cards": true,
+                    "cta_label": true
+                },
+                "interaction_design": {
+                    "card_navigation": true,
+                    "keyboard_focus": true
+                }
+            },
+            "progress_summary_panel": {
+                "purpose": "Overall progress ring and checklist in the overview header",
+                "layout": {
+                    "width": "320px",
+                    "padding": "24px"
+                },
+                "content_slots": {
+                    "percentage": true,
+                    "checklist": true
+                }
+            },
+            "recommended_learning_flow": {
+                "purpose": "Guides the learner through the recommended section order",
+                "layout": {
+                    "width": "full",
+                    "padding": "32px",
+                    "border_radius": "16px",
+                    "margin_bottom": "32px"
+                },
+                "content_slots": {
+                    "recommended_order": true,
+                    "next_best_action": true,
+                    "completion_goal": true
+                }
+            },
+            "learner_readiness_context": {
+                "purpose": "Prerequisites, success criteria, and what the learner should be ready to do",
+                "layout": {
+                    "width": "full",
+                    "padding": "28px",
+                    "border_radius": "16px"
+                },
+                "content_slots": {
+                    "prerequisites": true,
+                    "what_you_will_build": true,
+                    "success_criteria": true
+                }
+            }
+        }
+    }
+]

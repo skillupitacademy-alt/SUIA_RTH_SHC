@@ -23,8 +23,8 @@ export function LaymanBlock({ data, theme, isCompleted = false }: LaymanBlockPro
 
   if (!data) return null;
 
-  // Check for Modular Format
-  const isModular = 'simpleOverview' in data;
+  // Check for Modular Format (support both snake_case from DB and camelCase)
+  const isModular = 'simpleOverview' in data || 'simple_overview' in data || 'analogy_card' in data || 'intro_card' in data;
 
   if (isModular) {
     return (

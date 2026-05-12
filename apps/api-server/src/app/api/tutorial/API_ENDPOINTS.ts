@@ -17,7 +17,7 @@ export const TUTORIAL_API_ENDPOINTS = {
    * Get all sections for a subtopic from database
    * 
    * Query Parameters:
-   * - sectionType (optional): Specific section type (notes, layman, visual, etc.)
+   * - sectionType (optional): Specific section type (overview, notes, layman, visual, etc.)
    * - difficulty (optional): Difficulty level (default: 'simple')
    * 
    * Response:
@@ -26,6 +26,7 @@ export const TUTORIAL_API_ENDPOINTS = {
    *   subtopicName: string,
    *   difficulty: string,
    *   sections: {
+   *     overview: {...},
    *     notes: {...},
    *     layman: {...},
    *     visual: {...},

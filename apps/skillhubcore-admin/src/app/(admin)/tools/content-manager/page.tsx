@@ -1,10 +1,15 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useBrand, BrandProvider } from '@/share-branding/PostLandingPage/app/context/BrandContext';
+import { BrandProvider, useBrand } from '@/share-branding/PostLandingPage/app/context/BrandContext';
 import { rthConfig } from '@/share-branding/brandConfig';
+import {
+  TUTORIAL_CONTENT_MANAGER_SECTION_OPTIONS,
+  TUTORIAL_SECTION_TABS,
+  type TutorialContentManagerSectionId,
+} from '@quiz/types';
 
-type SectionType = 'overview' | 'notes' | 'layman' | 'reallife' | 'technical' | 'code' | 'assignment' | 'project' | 'quiz' | 'visual' | 'practice';
+type SectionType = TutorialContentManagerSectionId;
 
 interface SubtopicInfo {
   subtopicId: string;
@@ -14,67 +19,38 @@ interface SubtopicInfo {
   subtopic: string;
 }
 
-interface SectionStatus {
-  overview: boolean;
-  notes: boolean;
-  layman: boolean;
-  reallife: boolean;
-  technical: boolean;
-  code: boolean;
-  assignment: boolean;
-  project: boolean;
-  quiz: boolean;
-  visual: boolean;
-  practice: boolean;
+interface AddSectionResponse {
+  error?: string;
+  url?: string;
 }
+
+type SectionStatus = Record<SectionType, boolean>;
+
+const sections = TUTORIAL_CONTENT_MANAGER_SECTION_OPTIONS;
+const sectionTabs = TUTORIAL_SECTION_TABS;
+
+const initialSectionStatus = sections.reduce((status, section) => ({
+  ...status,
+  [section.id]: false,
+}), {} as SectionStatus);
 
 function ContentManagerContent() {
   const brand = useBrand();
-
-  // Step 1: Basic Info
   const [subtopicInfo, setSubtopicInfo] = useState<SubtopicInfo>({
     subtopicId: '',
     domain: '',
     subject: '',
     topic: '',
-    subtopic: ''
+    subtopic: '',
   });
-
   const [isSubtopicCreated, setIsSubtopicCreated] = useState(false);
-
-  // Step 2: Section Management
   const [selectedSection, setSelectedSection] = useState<SectionType>('notes');
   const [jsonInput, setJsonInput] = useState('');
-  const [sectionStatus, setSectionStatus] = useState<SectionStatus>({
-    overview: false,
-    notes: false,
-    layman: false,
-    reallife: false,
-    technical: false,
-    code: false,
-    assignment: false,
-    project: false,
-    quiz: false,
-    visual: false,
-    practice: false
-  });
-
+  const [sectionStatus, setSectionStatus] = useState<SectionStatus>(initialSectionStatus);
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState<'success' | 'error' | 'info'>('info');
 
-  const sections = [
-    { id: 'overview' as SectionType, label: 'Overview/Main Content', icon: '📋' },
-    { id: 'notes' as SectionType, label: 'Notes Section', icon: '📝' },
-    { id: 'layman' as SectionType, label: 'Layman Explanation', icon: '💡' },
-    { id: 'reallife' as SectionType, label: 'Real Life Examples', icon: '🌍' },
-    { id: 'technical' as SectionType, label: 'Technical Deep Dive', icon: '🔧' },
-    { id: 'code' as SectionType, label: 'Code Example', icon: '💻' },
-    { id: 'assignment' as SectionType, label: 'Assignment', icon: '📚' },
-    { id: 'project' as SectionType, label: 'Project', icon: '🚀' },
-    { id: 'quiz' as SectionType, label: 'Quiz', icon: '❓' },
-    { id: 'visual' as SectionType, label: 'Visual Explanation', icon: '📊' },
-    { id: 'practice' as SectionType, label: 'Practice Test', icon: '✍️' }
-  ];
+  const selectedSectionLabel = sections.find((section) => section.id === selectedSection)?.label ?? selectedSection;
 
   const showMessage = (msg: string, type: 'success' | 'error' | 'info') => {
     setMessage(msg);
@@ -83,21 +59,26 @@ function ContentManagerContent() {
   };
 
   const createSubtopic = () => {
-    if (!subtopicInfo.subtopicId || !subtopicInfo.domain || !subtopicInfo.subject ||
-      !subtopicInfo.topic || !subtopicInfo.subtopic) {
+    const hasRequiredFields = Boolean(
+      subtopicInfo.subtopicId &&
+      subtopicInfo.domain &&
+      subtopicInfo.subject &&
+      subtopicInfo.topic &&
+      subtopicInfo.subtopic
+    );
+    if (!hasRequiredFields) {
       showMessage('Please fill in all fields', 'error');
       return;
     }
 
-    // Validate subtopic ID format (lowercase, hyphens only)
     const idRegex = /^[a-z0-9-]+$/;
     if (!idRegex.test(subtopicInfo.subtopicId)) {
-      showMessage('Subtopic ID must be lowercase with hyphens only (e.g., javascript-promises)', 'error');
+      showMessage('Subtopic ID must be lowercase with hyphens only, for example javascript-promises', 'error');
       return;
     }
 
     setIsSubtopicCreated(true);
-    showMessage('Subtopic created! Now add content sections one by one.', 'success');
+    showMessage('Subtopic ready. Add content one section at a time.', 'success');
   };
 
   const validateJSON = () => {
@@ -108,7 +89,7 @@ function ContentManagerContent() {
 
     try {
       JSON.parse(jsonInput);
-      showMessage('✓ Valid JSON!', 'success');
+      showMessage('Valid JSON', 'success');
       return true;
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -124,22 +105,23 @@ function ContentManagerContent() {
       const response = await fetch('/api/content-manager/add-section', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           subtopicId: subtopicInfo.subtopicId,
-          subtopicInfo: subtopicInfo,
+          subtopicInfo,
           section: selectedSection,
-          content: JSON.parse(jsonInput)
-        })
+          content: JSON.parse(jsonInput),
+        }),
       });
 
-      const result = await response.json();
+      const result = await response.json() as AddSectionResponse;
 
       if (response.ok) {
-        setSectionStatus(prev => ({ ...prev, [selectedSection]: true }));
+        setSectionStatus((prev) => ({ ...prev, [selectedSection]: true }));
         setJsonInput('');
-        showMessage(`✓ ${sections.find(s => s.id === selectedSection)?.label} added successfully!`, 'success');
+        showMessage(`${selectedSectionLabel} saved to tutorial_sections.`, 'success');
       } else {
-        showMessage(`Error: ${result.error}`, 'error');
+        showMessage(`Error: ${result.error ?? 'Failed to save section'}`, 'error');
       }
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -147,145 +129,145 @@ function ContentManagerContent() {
     }
   };
 
-  const getPageUrl = () => {
-    return `https://user.realtutorialhub.com/start-learning/subtopic/${subtopicInfo.subtopicId}`;
+  const getPageUrl = (section?: SectionType) => {
+    const baseUrl = `https://user.realtutorialhub.com/start-learning/subtopic/${subtopicInfo.subtopicId}`;
+    return section ? `${baseUrl}?tab=${sectionTabs[section]}` : baseUrl;
   };
 
-  const openPreview = () => {
-    window.open(getPageUrl(), '_blank');
+  const openPreview = (section?: SectionType) => {
+    window.open(getPageUrl(section), '_blank');
   };
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
-        {/* Header */}
-        <header className="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
+      <div className="container mx-auto max-w-7xl px-4 py-8">
+        <header className="mb-8 overflow-hidden rounded-2xl bg-white shadow-lg">
           <div className="p-8 text-center" style={{ backgroundColor: brand.primaryColor }}>
-            <h1 className="text-4xl font-bold text-white mb-3">📝 Content Manager</h1>
-            <p className="text-white text-lg font-semibold">Add AI-generated content phase by phase</p>
+            <h1 className="mb-3 text-4xl font-bold text-white">Content Manager</h1>
+            <p className="text-lg font-semibold text-white">Add AI-generated tutorial content one section at a time</p>
           </div>
         </header>
 
-        {/* Message Alert */}
-        {message && (
-          <div className={`mb-6 p-4 rounded-lg ${messageType === 'success' ? 'bg-green-50 border-l-4 border-green-500 text-green-800' :
-              messageType === 'error' ? 'bg-red-50 border-l-4 border-red-500 text-red-800' :
-                'b  g-blue-50 border-l-4 border-blue-500 text-blue-800'
-            }`}>
+        {message ? (
+          <div
+            className={`mb-6 rounded-lg p-4 ${
+              messageType === 'success'
+                ? 'border-l-4 border-green-500 bg-green-50 text-green-800'
+                : messageType === 'error'
+                  ? 'border-l-4 border-red-500 bg-red-50 text-red-800'
+                  : 'border-l-4 border-blue-500 bg-blue-50 text-blue-800'
+            }`}
+          >
             <p className="font-medium">{message}</p>
           </div>
-        )}
+        ) : null}
 
-        {/* Step 1: Basic Info */}
-        {!isSubtopicCreated && (
-          <section className="bg-white rounded-2xl shadow-lg p-8 mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Step 1: Create New Subtopic</h2>
+        {!isSubtopicCreated ? (
+          <section className="mb-8 rounded-2xl bg-white p-8 shadow-lg">
+            <h2 className="mb-6 text-2xl font-bold text-gray-800">Step 1: Create New Subtopic</h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-2">
               <div>
-                <label htmlFor="subtopicId" className="block text-sm font-semibold text-gray-700 mb-2">
+                <label htmlFor="subtopicId" className="mb-2 block text-sm font-semibold text-gray-700">
                   Subtopic ID <span className="text-red-500">*</span>
                 </label>
                 <input
                   id="subtopicId"
                   type="text"
                   value={subtopicInfo.subtopicId}
-                  onChange={(e) => setSubtopicInfo(prev => ({ ...prev, subtopicId: e.target.value.toLowerCase() }))}
+                  onChange={(event) => setSubtopicInfo((prev) => ({ ...prev, subtopicId: event.target.value.toLowerCase() }))}
                   placeholder="javascript-promises"
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                  className="w-full rounded-lg border-2 border-gray-300 px-4 py-3 focus:border-blue-500 focus:outline-none"
                 />
-                <p className="text-xs text-gray-500 mt-1">Lowercase with hyphens (used in URL)</p>
+                <p className="mt-1 text-xs text-gray-500">Lowercase with hyphens, used in the learner URL</p>
               </div>
 
               <div>
-                <label htmlFor="domain" className="block text-sm font-semibold text-gray-700 mb-2">
+                <label htmlFor="domain" className="mb-2 block text-sm font-semibold text-gray-700">
                   Domain <span className="text-red-500">*</span>
                 </label>
                 <input
                   id="domain"
                   type="text"
                   value={subtopicInfo.domain}
-                  onChange={(e) => setSubtopicInfo(prev => ({ ...prev, domain: e.target.value }))}
+                  onChange={(event) => setSubtopicInfo((prev) => ({ ...prev, domain: event.target.value }))}
                   placeholder="Programming"
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                  className="w-full rounded-lg border-2 border-gray-300 px-4 py-3 focus:border-blue-500 focus:outline-none"
                 />
               </div>
 
               <div>
-                <label htmlFor="subject" className="block text-sm font-semibold text-gray-700 mb-2">
+                <label htmlFor="subject" className="mb-2 block text-sm font-semibold text-gray-700">
                   Subject <span className="text-red-500">*</span>
                 </label>
                 <input
                   id="subject"
                   type="text"
                   value={subtopicInfo.subject}
-                  onChange={(e) => setSubtopicInfo(prev => ({ ...prev, subject: e.target.value }))}
+                  onChange={(event) => setSubtopicInfo((prev) => ({ ...prev, subject: event.target.value }))}
                   placeholder="JavaScript"
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                  className="w-full rounded-lg border-2 border-gray-300 px-4 py-3 focus:border-blue-500 focus:outline-none"
                 />
               </div>
 
               <div>
-                <label htmlFor="topic" className="block text-sm font-semibold text-gray-700 mb-2">
+                <label htmlFor="topic" className="mb-2 block text-sm font-semibold text-gray-700">
                   Topic <span className="text-red-500">*</span>
                 </label>
                 <input
                   id="topic"
                   type="text"
                   value={subtopicInfo.topic}
-                  onChange={(e) => setSubtopicInfo(prev => ({ ...prev, topic: e.target.value }))}
+                  onChange={(event) => setSubtopicInfo((prev) => ({ ...prev, topic: event.target.value }))}
                   placeholder="Asynchronous Programming"
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                  className="w-full rounded-lg border-2 border-gray-300 px-4 py-3 focus:border-blue-500 focus:outline-none"
                 />
               </div>
 
               <div className="md:col-span-2">
-                <label htmlFor="subtopicName" className="block text-sm font-semibold text-gray-700 mb-2">
+                <label htmlFor="subtopicName" className="mb-2 block text-sm font-semibold text-gray-700">
                   Subtopic Name <span className="text-red-500">*</span>
                 </label>
                 <input
                   id="subtopicName"
                   type="text"
                   value={subtopicInfo.subtopic}
-                  onChange={(e) => setSubtopicInfo(prev => ({ ...prev, subtopic: e.target.value }))}
+                  onChange={(event) => setSubtopicInfo((prev) => ({ ...prev, subtopic: event.target.value }))}
                   placeholder="JavaScript Promises"
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                  className="w-full rounded-lg border-2 border-gray-300 px-4 py-3 focus:border-blue-500 focus:outline-none"
                 />
               </div>
             </div>
 
             <button
               onClick={createSubtopic}
-              className="w-full py-4 text-white text-lg font-bold rounded-xl shadow-lg hover:shadow-xl transition-all"
+              className="w-full rounded-xl py-4 text-lg font-bold text-white shadow-lg transition-all hover:shadow-xl"
               style={{ backgroundColor: brand.primaryColor }}
             >
-              Create Subtopic
+              Continue to Sections
             </button>
           </section>
-        )}
-
-        {/* Step 2: Add Sections */}
-        {isSubtopicCreated && (
+        ) : (
           <>
-            {/* Progress Status */}
-            <section className="bg-white rounded-2xl shadow-lg p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Content Progress</h2>
+            <section className="mb-8 rounded-2xl bg-white p-8 shadow-lg">
+              <h2 className="mb-6 text-2xl font-bold text-gray-800">Content Progress</h2>
 
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
-                {sections.map(section => (
+              <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+                {sections.map((section) => (
                   <div
                     key={section.id}
-                    className={`p-4 rounded-lg border-2 ${sectionStatus[section.id]
-                        ? 'bg-green-50 border-green-500'
-                        : 'bg-gray-50 border-gray-300'
-                      }`}
+                    className={`rounded-lg border-2 p-4 ${
+                      sectionStatus[section.id] ? 'border-green-500 bg-green-50' : 'border-gray-300 bg-gray-50'
+                    }`}
                   >
                     <div className="flex items-center gap-2">
-                      <span className="text-2xl">{section.icon}</span>
-                      <div className="flex-1">
+                      <span className="flex h-8 min-w-8 items-center justify-center rounded bg-white px-2 text-xs font-bold text-gray-700 shadow-sm">
+                        {section.marker}
+                      </span>
+                      <div className="min-w-0 flex-1">
                         <p className="text-sm font-semibold text-gray-800">{section.label}</p>
                         <p className={`text-xs ${sectionStatus[section.id] ? 'text-green-600' : 'text-gray-500'}`}>
-                          {sectionStatus[section.id] ? '✓ Added' : '⏳ Pending'}
+                          {sectionStatus[section.id] ? 'Saved' : 'Pending'}
                         </p>
                       </div>
                     </div>
@@ -293,67 +275,77 @@ function ContentManagerContent() {
                 ))}
               </div>
 
-              <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
-                <p className="text-blue-900 font-medium">
-                  🔗 Page URL: <a href={getPageUrl()} target="_blank" rel="noopener noreferrer" className="underline">{getPageUrl()}</a>
+              <div className="rounded border-l-4 border-blue-500 bg-blue-50 p-4">
+                <p className="font-medium text-blue-900">
+                  Page URL:{' '}
+                  <a href={getPageUrl()} target="_blank" rel="noopener noreferrer" className="underline">
+                    {getPageUrl()}
+                  </a>
                 </p>
-                <button
-                  onClick={openPreview}
-                  className="mt-3 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
-                >
-                  Preview Page in New Tab
-                </button>
+                <div className="mt-3 flex flex-wrap gap-3">
+                  <button
+                    onClick={() => openPreview()}
+                    className="rounded-lg bg-blue-600 px-6 py-2 font-semibold text-white transition-colors hover:bg-blue-700"
+                  >
+                    Preview Page
+                  </button>
+                  <button
+                    onClick={() => openPreview(selectedSection)}
+                    className="rounded-lg bg-slate-800 px-6 py-2 font-semibold text-white transition-colors hover:bg-slate-900"
+                  >
+                    Preview Selected Section
+                  </button>
+                </div>
               </div>
             </section>
 
-            {/* Add Section Form */}
-            <section className="bg-white rounded-2xl shadow-lg p-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Step 2: Add Content Section</h2>
+            <section className="rounded-2xl bg-white p-8 shadow-lg">
+              <h2 className="mb-6 text-2xl font-bold text-gray-800">Step 2: Add Content Section</h2>
 
               <div className="mb-6">
-                <label htmlFor="sectionSelect" className="block text-sm font-semibold text-gray-700 mb-3">
+                <label htmlFor="sectionSelect" className="mb-3 block text-sm font-semibold text-gray-700">
                   Select Section to Add
                 </label>
                 <select
                   id="sectionSelect"
                   value={selectedSection}
-                  onChange={(e) => setSelectedSection(e.target.value as SectionType)}
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-base"
+                  onChange={(event) => setSelectedSection(event.target.value as SectionType)}
+                  className="w-full rounded-lg border-2 border-gray-300 px-4 py-3 text-base focus:border-blue-500 focus:outline-none"
                 >
-                  {sections.map(section => (
+                  {sections.map((section) => (
                     <option key={section.id} value={section.id}>
-                      {section.icon} {section.label} {sectionStatus[section.id] ? '(✓ Added)' : ''}
+                      {section.marker} {section.label} {sectionStatus[section.id] ? '(Saved)' : ''}
                     </option>
                   ))}
                 </select>
               </div>
 
               <div className="mb-6">
-                <label htmlFor="jsonInput" className="block text-sm font-semibold text-gray-700 mb-3">
+                <label htmlFor="jsonInput" className="mb-3 block text-sm font-semibold text-gray-700">
                   Paste AI-Generated JSON
                 </label>
                 <textarea
                   id="jsonInput"
                   value={jsonInput}
-                  onChange={(e) => setJsonInput(e.target.value)}
+                  onChange={(event) => setJsonInput(event.target.value)}
                   placeholder='{"notes": {"coreDefinition": {...}}}'
-                  className="w-full h-96 px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 font-mono text-sm"
+                  className="h-96 w-full rounded-lg border-2 border-gray-300 px-4 py-3 font-mono text-sm focus:border-blue-500 focus:outline-none"
                 />
               </div>
 
               <div className="flex gap-4">
                 <button
                   onClick={validateJSON}
-                  className="flex-1 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-semibold"
+                  className="flex-1 rounded-lg bg-gray-600 py-3 font-semibold text-white transition-colors hover:bg-gray-700"
                 >
                   Validate JSON
                 </button>
                 <button
                   onClick={addSection}
-                  className="flex-1 py-3 text-white rounded-lg hover:shadow-xl transition-all font-semibold"
+                  className="flex-1 rounded-lg py-3 font-semibold text-white transition-all hover:shadow-xl"
                   style={{ backgroundColor: brand.primaryColor }}
                 >
-                  Add This Section
+                  Save This Section
                 </button>
               </div>
             </section>

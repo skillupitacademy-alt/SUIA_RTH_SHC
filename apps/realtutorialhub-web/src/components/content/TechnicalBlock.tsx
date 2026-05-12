@@ -29,8 +29,8 @@ export function TechnicalBlock({ data, theme }: TechnicalBlockProps) {
 
   if (!data) return null;
 
-  // Check for Modular Format
-  const isModular = 'coreTechnicalDefinition' in data;
+  // Check for Modular Format (support both snake_case and camelCase)
+  const isModular = 'coreTechnicalDefinition' in data || 'technical_definition_block' in data;
 
   if (isModular) {
     return (

@@ -21,8 +21,8 @@ export function CodeBlock({ data, theme }: CodeBlockProps) {
 
   if (!data) return null;
 
-  // Check for Modular Format
-  const isModular = 'problemContext' in data;
+  // Check for Modular Format (support both snake_case and camelCase)
+  const isModular = 'problemContext' in data || 'problem_context' in data || 'problem_context_card' in data;
 
   if (isModular) {
     return (

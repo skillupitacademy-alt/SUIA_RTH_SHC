@@ -11,6 +11,7 @@ import { pgEnum } from 'drizzle-orm/pg-core';
  * Section Types - 12 Universal Sections (IMMUTABLE CONSTITUTIONAL FRAMEWORK)
  */
 export const sectionTypeEnum = pgEnum('section_type', [
+  'overview',
   'notes',
   'layman',
   'visual',
@@ -23,6 +24,7 @@ export const sectionTypeEnum = pgEnum('section_type', [
   'quiz',
   'summary',
   'interview',
+  'ai_tutor',
 ]);
 
 /**

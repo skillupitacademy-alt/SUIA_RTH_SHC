@@ -99,6 +99,27 @@
       "when": 1778315289541,
       "tag": "0013_colorful_wong",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1778315289542,
+      "tag": "0014_add_ai_tutor_section_type",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1778315289543,
+      "tag": "0015_backfill_summary_interview_ai_tutor_sections",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1778315289544,
+      "tag": "0016_add_overview_section_type",
+      "breakpoints": true
     }
   ]
 }

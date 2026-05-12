@@ -7,6 +7,7 @@ interface BlockLoadingSkeletonProps {
 }
 
 const SKELETON_STYLES: Record<ContentBlockType, { accent: string }> = {
+  overview: { accent: 'rgba(208, 63, 0, 0.5)' },
   notes: { accent: 'rgba(245, 158, 11, 0.5)' },
   layman: { accent: 'rgba(61, 90, 158, 0.5)' },
   real_life: { accent: 'rgba(46, 125, 70, 0.5)' },
@@ -17,6 +18,8 @@ const SKELETON_STYLES: Record<ContentBlockType, { accent: string }> = {
   practice: { accent: 'rgba(79, 70, 229, 0.5)' },
   assignment: { accent: 'rgba(15, 23, 42, 0.5)' },
   project: { accent: 'rgba(124, 58, 237, 0.5)' },
+  summary: { accent: 'rgba(20, 184, 166, 0.5)' },
+  interview: { accent: 'rgba(234, 88, 12, 0.5)' },
   ai_tutor: { accent: 'rgba(106, 27, 154, 0.5)' },
 };
 

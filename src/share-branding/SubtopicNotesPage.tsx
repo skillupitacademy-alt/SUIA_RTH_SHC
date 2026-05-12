@@ -1,6 +1,6 @@
 // Rebuild trigger: Centralized navigation and footer stability
 import React, { useState } from 'react';
-import { Bot, CheckCircle2, ChevronRight, Send, Star, TrendingUp } from 'lucide-react';
+import { CheckCircle2, ChevronRight, Star, TrendingUp } from 'lucide-react';
 import { useBrand } from './PostLandingPage/app/context/BrandContext';
 import { SubtopicNotesViewData } from './subtopicNotesData';
 import { SubtopicTopBar } from './TutorialEngine/components/subtopic/SubtopicTopBar';
@@ -16,6 +16,9 @@ import { PracticeTestContent } from './TutorialEngine/components/notes/PracticeT
 import { AssignmentContent } from './TutorialEngine/components/notes/AssignmentContent';
 import { ProjectContent } from './TutorialEngine/components/notes/ProjectContent';
 import { QuizContent } from './TutorialEngine/components/notes/QuizContent';
+import { SummaryContent } from './TutorialEngine/components/notes/SummaryContent';
+import { InterviewPrepContent } from './TutorialEngine/components/notes/InterviewPrepContent';
+import { AITutorContent } from './TutorialEngine/components/notes/AITutorContent';
 import { TabFooter } from './TutorialEngine/components/notes/TabFooter';
 
 import { SubtopicViewPage } from './SubtopicViewPage';
@@ -59,6 +62,8 @@ export function SubtopicNotesPage({ notesData, overviewData, subtopicId = 'compo
     { id: 'assignments', label: 'Assignments' },
     { id: 'project', label: 'Projects' },
     { id: 'quiz', label: 'Quiz' },
+    { id: 'summary', label: 'Summary' },
+    { id: 'interview', label: 'Interview Prep' },
     { id: 'ai-tutor', label: brand.tutorLabel }
   ];
 
@@ -219,40 +224,27 @@ export function SubtopicNotesPage({ notesData, overviewData, subtopicId = 'compo
                     />
                   </>
                 )}
+                {activeTab === 'summary' && notesData.mainContent.summary && (
+                  <>
+                    <h1 className="sr-only">Summary - {notesData.mainContent.title}</h1>
+                    <SummaryContent data={notesData.mainContent.summary} title={notesData.mainContent.title} />
+                  </>
+                )}
+                {activeTab === 'interview' && notesData.mainContent.interview && (
+                  <>
+                    <h1 className="sr-only">Interview Prep - {notesData.mainContent.title}</h1>
+                    <InterviewPrepContent data={notesData.mainContent.interview} title={notesData.mainContent.title} />
+                  </>
+                )}
                 {activeTab === 'ai-tutor' && (
-                  <section className="min-w-0 space-y-6 rounded-[32px] bg-white/80 backdrop-blur-xl p-5 shadow-2xl border-t border-white/60 transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] sm:p-8">
-                    <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-white" style={{ backgroundColor: brand.primaryColor }}>
-                        <Bot size={24} aria-hidden="true" />
-                      </div>
-                      <div className="min-w-0">
-                        <h1 className="break-words text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">{notesData.rightSidebar.aiTutor.title}</h1>
-                        <p className="break-words text-sm font-medium text-slate-800">Component Architecture support thread</p>
-                      </div>
-                    </div>
-                    <div className="space-y-4">
-                      {notesData.rightSidebar.aiTutor.messages.map((message, index) => (
-                        <div key={index} className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                          <div className="max-w-full rounded-2xl px-4 py-3 text-sm font-medium leading-relaxed text-slate-950 shadow-sm sm:max-w-[80%]" style={{ backgroundColor: message.sender === 'user' ? `${brand.primaryColor}15` : '#f8fafc' }}>
-                            <p className="break-words">{message.text}</p>
-                            <p className="mt-2 text-[10px] font-bold text-slate-600">{message.time}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        aria-label={`Ask ${brand.tutorLabel}`}
-                        placeholder={notesData.rightSidebar.aiTutor.inputPlaceholder}
-                        className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-4 pr-12 text-sm font-medium text-slate-950 placeholder:text-slate-700 focus:outline-none focus:ring-2"
-                        style={{ '--tw-ring-color': brand.primaryColor } as React.CSSProperties}
-                      />
-                      <button className="absolute right-3 top-2.5 rounded-xl p-1.5 text-white" style={{ backgroundColor: brand.primaryColor }} aria-label="Send message">
-                        <Send size={16} aria-hidden="true" />
-                      </button>
-                    </div>
-                  </section>
+                  <>
+                    <h1 className="sr-only">{brand.tutorLabel} - {notesData.mainContent.title}</h1>
+                    <AITutorContent
+                      data={notesData.mainContent.aiTutorContent}
+                      sidebar={notesData.rightSidebar.aiTutor}
+                      title={notesData.mainContent.title}
+                    />
+                  </>
                 )}
                 {activeTab === 'progress' && (
                   <section className="min-w-0 space-y-6 rounded-[32px] bg-white/80 backdrop-blur-xl p-5 shadow-2xl border-t border-white/60 transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] sm:p-8">

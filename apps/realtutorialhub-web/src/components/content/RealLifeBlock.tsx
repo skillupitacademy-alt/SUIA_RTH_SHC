@@ -31,8 +31,8 @@ export function RealLifeBlock({ data, theme }: RealLifeBlockProps) {
 
   if (!data) return null;
 
-  // Check for Modular Format
-  const isModular = 'conceptMapping' in data;
+  // Check for Modular Format (support both snake_case and camelCase)
+  const isModular = 'conceptMapping' in data || 'concept_mapping' in data || 'industry_scenario' in data;
 
   if (isModular) {
     return (

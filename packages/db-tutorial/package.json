@@ -13,6 +13,7 @@
     "db:migrate-orphans": "tsx src/migrate-orphan-sections.ts",
     "db:migrate-orphans:rollback": "tsx src/migrate-orphan-sections.ts rollback",
     "db:validate-governance": "tsx src/validate-governance.ts",
+    "audit:tutorial-contract": "tsx src/tutorial-contract-audit.ts",
     "test": "vitest --config vitest.config.ts run",
     "test:watch": "vitest --config vitest.config.ts",
     "test:coverage": "vitest --config vitest.config.ts run --coverage",

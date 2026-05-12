@@ -9,5 +9,6 @@ export * from './live-session.types';
 export * from './project.types';
 export * from './project-errors';
 export * from './tutorial-content.schema';
+export * from './tutorial-section-contracts';
 export * from './tutorial-repositories.types';
 export * from './portal';

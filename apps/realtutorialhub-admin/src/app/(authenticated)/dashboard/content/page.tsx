@@ -88,6 +88,7 @@ const DIFFICULTIES: Array<{ key: ContentDifficulty; label: string; description: 
 ];
 
 const BLOCK_DEFINITIONS: Array<{ key: BlockKey; label: string; description: string }> = [
+    { key: 'overview', label: 'Overview', description: 'Subtopic hero, progress, and roadmap' },
     { key: 'notes', label: 'Notes', description: 'Teacher notes and overview' },
     { key: 'layman', label: 'Layman', description: 'Relatable explanations and analogies' },
     { key: 'real_life', label: 'Real Life', description: 'Practical scenario and workflow' },
@@ -98,6 +99,8 @@ const BLOCK_DEFINITIONS: Array<{ key: BlockKey; label: string; description: stri
     { key: 'practice', label: 'Practice', description: 'Hands-on practice blocks' },
     { key: 'assignment', label: 'Assignment', description: 'Detailed project tasks' },
     { key: 'project', label: 'Project', description: 'Full business project architecture' },
+    { key: 'summary', label: 'Summary', description: 'Recap, revision checklist, and next steps' },
+    { key: 'interview', label: 'Interview', description: 'Interview questions and answer frameworks' },
     { key: 'ai_tutor', label: 'AI Tutor', description: 'Conversational guidance and QA' },
 ];
 
@@ -991,12 +994,12 @@ export default function ContentFactoryPage({ embedded = false }: ContentFactoryP
 
                                                 {block.key === 'ai_tutor' && typeof data === 'object' && data != null ? (
                                                     <div className="space-y-2 text-sm text-slate-700">
-                                                        <p className="font-semibold">{(data as NonNullable<TutorialContentJSON['ai_tutor']>).greeting}</p>
-                                                        <p className="text-slate-500">{(data as NonNullable<TutorialContentJSON['ai_tutor']>).qa_pairs.length} tutor prompts</p>
+                                                        <p className="font-semibold">{getStringField(data, 'greeting') || 'AI tutor content ready'}</p>
+                                                        <p className="text-slate-500">{getArrayField(data, 'qa_pairs').length} tutor prompts</p>
                                                     </div>
                                                 ) : null}
 
-                                                {['visual', 'quiz', 'practice', 'assignment', 'project'].includes(block.key) && typeof data === 'object' && data != null ? (
+                                                {['visual', 'quiz', 'practice', 'assignment', 'project', 'summary', 'interview'].includes(block.key) && typeof data === 'object' && data != null ? (
                                                     <div className="space-y-2 text-sm text-slate-700">
                                                         <p className="font-semibold capitalize">{block.key} content ready</p>
                                                         <p className="text-slate-500 text-xs">Modular rendering enabled</p>

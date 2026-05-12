@@ -32,6 +32,8 @@ interface AiTutorQueryResponse {
   chunks: Array<{ blockType: string; content: string; score?: number }> | null;
 }
 
+type QaPair = { question: string; answer: string };
+
 function createMessageId(prefix: string) {
   return `${prefix}-${Math.random().toString(36).slice(2, 10)}`;
 }
@@ -46,7 +48,11 @@ export function AITutorBlock({
   const t = useTranslations('blocks.aiTutor');
   const common = useTranslations('common');
   
-  const safeData = data ?? { greeting: '', qa_pairs: [] };
+  const dataWithCamelPairs = data as ({ qaPairs?: QaPair[] } & NonNullable<typeof data>) | null | undefined;
+  const safeData: { greeting: string; qa_pairs: QaPair[] } = {
+    greeting: data?.greeting ?? '',
+    qa_pairs: data?.qa_pairs ?? dataWithCamelPairs?.qaPairs ?? [],
+  };
 
   const initialMessages = useMemo<AiTutorMessage[]>(
     () => [

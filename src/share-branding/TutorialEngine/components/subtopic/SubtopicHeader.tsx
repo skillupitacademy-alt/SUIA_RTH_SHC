@@ -8,6 +8,7 @@ interface SubtopicHeaderProps {
   data: {
     title: string;
     description: string;
+    iconLabel?: string;
     progress: number;
     progressLabel: string;
     metadata: {
@@ -17,19 +18,29 @@ interface SubtopicHeaderProps {
       topicsCount: number;
       lastUpdated: string;
     };
+    checklist?: { label: string; completed: boolean }[];
   };
 }
 
 export function SubtopicHeader({ data }: SubtopicHeaderProps) {
   const brand = useBrand();
+  const iconLabel = (data.iconLabel || data.title.match(/[A-Za-z0-9]+/g)?.slice(0, 2).map((word) => word[0]).join('') || 'RT').toUpperCase();
+  const checklist = data.checklist && data.checklist.length > 0
+    ? data.checklist.slice(0, 4)
+    : [
+        { label: 'Notes', completed: false },
+        { label: 'Practice', completed: false },
+        { label: 'Assignment', completed: false },
+        { label: 'Quiz', completed: false },
+      ];
 
   return (
     <div className="flex min-w-0 flex-col gap-6 rounded-2xl bg-white p-4 shadow-xl transition-all duration-300 sm:p-6 lg:flex-row lg:items-start lg:justify-between">
       {/* Title & Meta Section */}
       <div className="flex min-w-0 flex-1 flex-col gap-4 sm:flex-row sm:gap-5">
-        {/* JS Icon */}
+        {/* Subtopic Icon */}
         <div className="flex h-[72px] w-[72px] shrink-0 items-center justify-center rounded-[20px] bg-[#FFD600] text-3xl font-bold text-black shadow-md border border-black/5">
-          JS
+          {iconLabel.slice(0, 3)}
         </div>
         
         <div className="min-w-0 space-y-3">
@@ -85,22 +96,16 @@ export function SubtopicHeader({ data }: SubtopicHeaderProps) {
           </div>
           
           <div className="flex min-w-0 flex-col space-y-2 text-[13px] font-bold text-slate-800">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 size={16} className="text-emerald-950 fill-emerald-50" aria-hidden="true" />
-              <span className="break-words">Notes Completed</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle2 size={16} className="text-emerald-950 fill-emerald-50" aria-hidden="true" />
-              <span className="break-words">Quiz Completed</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle2 size={16} className="text-emerald-950 fill-emerald-50" aria-hidden="true" />
-              <span className="break-words">Assignment Done</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Circle size={16} className="text-orange-950 fill-orange-50" aria-hidden="true" />
-              <span className="break-words">Project Pending</span>
-            </div>
+            {checklist.map((item) => (
+              <div key={item.label} className="flex items-center gap-2">
+                {item.completed ? (
+                  <CheckCircle2 size={16} className="text-emerald-950 fill-emerald-50" aria-hidden="true" />
+                ) : (
+                  <Circle size={16} className="text-orange-950 fill-orange-50" aria-hidden="true" />
+                )}
+                <span className="break-words">{item.label}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>

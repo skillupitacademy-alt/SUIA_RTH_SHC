@@ -5805,13 +5805,213 @@
     }
   },
   {
-    "ai_tutor_section_architecture": {
+    "summary_section_architecture": {
       "metadata": {
-        "section": "AI Tutor",
+        "section_type": "summary",
+        "version": "1.0",
+        "purpose": "Consolidate learner understanding, revision readiness, and next-step guidance."
+      },
+      "hierarchy": {
+        "parent": "tutorial_subtopic",
+        "db_table": "tutorial_sections",
+        "section_type_enum": "summary",
+        "stored_as": "jsonb_content"
+      },
+      "universal_architecture_fixed": {
+        "mastery_recap_card": true,
+        "key_takeaway_grid": true,
+        "revision_checklist": true,
+        "next_step_panel": true
+      },
+      "renderer_mapping_engine": {
+        "frontend_tab": "summary",
+        "runtime_content_key": "summary",
+        "snake_case_templates": [
+          "mastery_recap_card",
+          "key_takeaway_grid",
+          "revision_checklist",
+          "next_step_panel"
+        ]
+      },
+      "learner_psychology_engine": {
+        "reduces_cognitive_load": true,
+        "supports_retrieval_practice": true,
+        "reinforces_completion_confidence": true
+      },
+      "validation_governance_system": {
+        "requires_key_takeaways": true,
+        "requires_revision_checklist": true,
+        "requires_next_step": true
+      },
+      "version_governance": {
+        "stored_in_tutorial_sections": true,
+        "versioned_content": true,
+        "publish_status_required": true
+      }
+    }
+  },
+  {
+    "summary_section_uiux_architecture": {
+      "metadata": {
+        "section_type": "summary",
         "version": "1.0"
       },
-      "greeting": true,
-      "qa_pairs": true
+      "page_shell_architecture": {
+        "tab_id": "summary",
+        "layout": "single_column_revision_workspace"
+      },
+      "renderer_mapping_engine": {
+        "component": "SummaryContent",
+        "fallback_component": "GenericSectionContent",
+        "supports_json_preview": true
+      },
+      "accessibility_architecture": {
+        "semantic_headings": true,
+        "checklist_announcements": true,
+        "keyboard_navigation": true
+      },
+      "learning_experience_ui": {
+        "recap_cards": true,
+        "takeaway_grid": true,
+        "next_steps": true
+      }
+    }
+  },
+  {
+    "interview_section_architecture": {
+      "metadata": {
+        "section_type": "interview",
+        "version": "1.0",
+        "purpose": "Convert tutorial mastery into interview-ready explanations and question practice."
+      },
+      "hierarchy": {
+        "parent": "tutorial_subtopic",
+        "db_table": "tutorial_sections",
+        "section_type_enum": "interview",
+        "stored_as": "jsonb_content"
+      },
+      "universal_architecture_fixed": {
+        "interview_intro_card": true,
+        "question_bank_panel": true,
+        "answer_framework_card": true,
+        "mock_interview_flow": true
+      },
+      "renderer_mapping_engine": {
+        "frontend_tab": "interview",
+        "runtime_content_key": "interview",
+        "snake_case_templates": [
+          "interview_intro_card",
+          "question_bank_panel",
+          "answer_framework_card",
+          "mock_interview_flow"
+        ]
+      },
+      "validation_governance_system": {
+        "requires_questions": true,
+        "requires_model_answers": true,
+        "requires_evaluation_rubric": true
+      },
+      "version_governance": {
+        "stored_in_tutorial_sections": true,
+        "versioned_content": true,
+        "publish_status_required": true
+      }
+    }
+  },
+  {
+    "interview_section_uiux_architecture": {
+      "metadata": {
+        "section_type": "interview",
+        "version": "1.0"
+      },
+      "page_shell_architecture": {
+        "tab_id": "interview",
+        "layout": "question_practice_workspace"
+      },
+      "renderer_mapping_engine": {
+        "component": "InterviewContent",
+        "fallback_component": "GenericSectionContent",
+        "supports_json_preview": true
+      },
+      "interaction_design_system": {
+        "expandable_answers": true,
+        "mock_question_flow": true,
+        "self_assessment_states": true
+      },
+      "learning_experience_ui": {
+        "answer_frameworks": true,
+        "interview_tips": true,
+        "confidence_builder": true
+      }
+    }
+  },
+  {
+    "ai_tutor_section_architecture": {
+      "metadata": {
+        "section_type": "ai_tutor",
+        "version": "1.0",
+        "purpose": "Store versioned tutor prompts, starter Q&A, adaptive hints, and misconception support as content."
+      },
+      "hierarchy": {
+        "parent": "tutorial_subtopic",
+        "db_table": "tutorial_sections",
+        "section_type_enum": "ai_tutor",
+        "stored_as": "jsonb_content"
+      },
+      "universal_architecture_fixed": {
+        "greeting": true,
+        "qa_pairs": true,
+        "tutor_prompt_card": true,
+        "misconception_detector": true,
+        "adaptive_hint_panel": true
+      },
+      "renderer_mapping_engine": {
+        "frontend_tab": "ai-tutor",
+        "runtime_content_key": "aiTutorContent",
+        "snake_case_templates": [
+          "qa_pairs",
+          "tutor_prompt_card",
+          "misconception_detector",
+          "adaptive_hint_panel"
+        ]
+      },
+      "validation_governance_system": {
+        "requires_greeting": true,
+        "requires_qa_pairs": true,
+        "requires_safe_tutor_boundaries": true
+      },
+      "version_governance": {
+        "stored_in_tutorial_sections": true,
+        "versioned_content": true,
+        "publish_status_required": true
+      }
+    }
+  },
+  {
+    "ai_tutor_section_uiux_architecture": {
+      "metadata": {
+        "section_type": "ai_tutor",
+        "version": "1.0"
+      },
+      "page_shell_architecture": {
+        "tab_id": "ai-tutor",
+        "layout": "conversational_support_panel"
+      },
+      "renderer_mapping_engine": {
+        "component": "AITutorContent",
+        "fallback_component": "AITutorDrawer",
+        "uses_versioned_content": true
+      },
+      "interaction_design_system": {
+        "chat_messages": true,
+        "prompt_examples": true,
+        "safe_follow_up_input": true
+      },
+      "security_ui": {
+        "prompt_boundary_visibility": true,
+        "audit_ready_interactions": true,
+        "student_context_scoping": true
+      }
     }
   },
   {
@@ -5876,6 +6076,50 @@
           "renderer": "readiness_context_card"
         }
       },
+      "domain_adaptations_flexible": {
+        "title_strategy": {
+          "uses_subtopic_name": true,
+          "supports_domain_specific_title": true,
+          "fallback_from_notes_definition": true
+        },
+        "metadata_strategy": {
+          "difficulty_levels": [
+            "simple",
+            "intermediate",
+            "expert",
+            "mixed"
+          ],
+          "estimated_time_rules": [],
+          "xp_rules": []
+        },
+        "roadmap_strategy": {
+          "visible_sections": [
+            "notes",
+            "layman",
+            "real_life",
+            "technical",
+            "code",
+            "visual",
+            "practice",
+            "assignment",
+            "project",
+            "quiz"
+          ],
+          "supports_summary_interview_ai_tutor": true,
+          "card_generation_from_section_content": true
+        },
+        "prompt_variants": {
+          "beginner": {},
+          "career_focused": {},
+          "exam_focused": {},
+          "fast_track": {}
+        },
+        "validation_rules": {
+          "subtopic_specificity_score": 95,
+          "roadmap_completeness_score": 95,
+          "no_hardcoded_topic_score": 100
+        }
+      },
       "renderer_mapping_engine": {
         "frontend_tab": "overview",
         "runtime_content_key": "overview",
@@ -5890,7 +6134,60 @@
         "progress_ring_checklist": {
           "component": "SubtopicHeader",
           "data_source": "overview.progressSummary"
+        },
+        "guided_path_panel": {
+          "component": "SubtopicContentGrid",
+          "data_source": "overview.learningRoadmap"
         }
+      },
+      "learner_psychology_engine": {
+        "orientation_first_model": true,
+        "reduces_starting_friction": true,
+        "sets_completion_expectations": true,
+        "supports_goal_clarity": true
+      },
+      "learning_progression_engine": {
+        "default_flow": [
+          "hero_summary",
+          "learning_outcome_snapshot",
+          "section_roadmap",
+          "progress_summary",
+          "recommended_learning_flow",
+          "readiness_context"
+        ],
+        "adaptive_progression_rules": [],
+        "domain_overrides": {}
+      },
+      "prompt_management_system": {
+        "prompt_templates": [],
+        "prompt_versions": [],
+        "prompt_integrity_hash": "sha256",
+        "export_formats": [
+          "txt",
+          "json",
+          "md"
+        ],
+        "approval_workflow": {
+          "draft": true,
+          "review": true,
+          "approved": true,
+          "published": true
+        }
+      },
+      "ai_draft_generation_system": {
+        "manual_ai_paste": true,
+        "content_parser": {},
+        "draft_validator": {},
+        "quality_score": {},
+        "human_review_required": true
+      },
+      "overview_section_cms": {
+        "draft_management": true,
+        "subsection_editor": true,
+        "preview_engine": true,
+        "publish_controls": true,
+        "rollback_controls": true,
+        "revision_history": true
       },
       "validation_governance_system": {
         "structural_validation": true,
@@ -5903,6 +6200,35 @@
         "stored_in_tutorial_sections": true,
         "versioned_content": true,
         "publish_status_required": true
+      },
+      "brand_governance": {
+        "shared_core": true,
+        "brand_overrides": {
+          "skillup": {},
+          "rth": {},
+          "skillhubcore": {}
+        },
+        "ui_theme_overrides": {},
+        "content_style_overrides": {}
+      },
+      "rbac_security": {
+        "roles": [
+          "super_admin",
+          "educational_architect",
+          "prompt_engineer",
+          "reviewer",
+          "publisher",
+          "domain_manager"
+        ],
+        "permissions_matrix": {},
+        "rate_limits": {},
+        "audit_trails": true
+      },
+      "analytics_performance": {
+        "overview_views": true,
+        "roadmap_card_clicks": true,
+        "section_entry_rate": true,
+        "completion_tracking": true
       }
     }
   },
@@ -5922,7 +6248,10 @@
           "web",
           "mobile",
           "tablet"
-        ]
+        ],
+        "design_system_version": "1.0",
+        "created_at": "ISO_TIMESTAMP",
+        "updated_at": "ISO_TIMESTAMP"
       },
       "page_shell_architecture": {
         "tab_id": "overview",
@@ -5940,13 +6269,19 @@
             "header": true,
             "content_grid": "stacked_overview_cards"
           }
+        },
+        "navigation_system": {
+          "breadcrumb_navigation": true,
+          "section_card_navigation": true,
+          "tab_navigation": true
         }
       },
       "renderer_mapping_engine": {
         "component": "SubtopicViewPage",
         "header_component": "SubtopicHeader",
         "roadmap_component": "SubtopicContentGrid",
-        "fallback_component": "GeneratedOverviewContent"
+        "fallback_component": "GeneratedOverviewContent",
+        "supports_json_preview": true
       },
       "interaction_design_system": {
         "module_card_clicks": true,
@@ -5961,6 +6296,42 @@
           "keyboard_navigation": true,
           "screen_reader_support": true,
           "contrast_ratios": true
+        },
+        "inclusive_design": {
+          "font_scaling": true,
+          "focus_indicators": true,
+          "reduced_motion": true
+        }
+      },
+      "learning_experience_ui": {
+        "subtopic_identity_first": true,
+        "roadmap_preview": true,
+        "progress_orientation": true,
+        "clear_next_action": true
+      },
+      "content_management_ui": {
+        "editor_system": {
+          "hero_editor": true,
+          "roadmap_card_editor": true,
+          "progress_checklist_editor": true,
+          "preview_split_view": true
+        },
+        "workflow_ui": {
+          "draft_review": true,
+          "approval_queue": true,
+          "publish_controls": true,
+          "rollback_controls": true
+        }
+      },
+      "performance_ux_architecture": {
+        "optimization": {
+          "lazy_loading": true,
+          "smart_prefetching": true,
+          "roadmap_render_optimization": true
+        },
+        "loading_experience": {
+          "skeleton_loaders": true,
+          "progressive_loading": true
         }
       }
     }

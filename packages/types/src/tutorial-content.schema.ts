@@ -31,6 +31,20 @@ const BaseModularSchema = z.object({
 
 // --- SECTION-SPECIFIC MODULAR SCHEMAS (Sync with UI/UX Spec Templates) ---
 
+const OverviewModularSchema = z.object({
+  title: z.string().optional(),
+  description: z.string().optional(),
+  metadata: z.any().optional(),
+  hero: z.any().optional(),
+  progressSummary: z.any().optional(),
+  learningRoadmap: z.any().optional(),
+  contentCards: z.array(z.any()).optional(),
+  taskCards: z.array(z.any()).optional(),
+  sidebar: z.any().optional(),
+  navigation: z.any().optional(),
+  rightSidebar: z.any().optional(),
+}).merge(BaseModularSchema);
+
 const NotesModularSchema = z.object({
   definition_block: z.any().optional(),
   concept_card: z.any().optional(),
@@ -257,9 +271,51 @@ const ProjectModularSchema = z.object({
   implementationGuide: z.any().optional(),
 }).merge(BaseModularSchema);
 
+const SummaryModularSchema = z.object({
+  title: z.string().optional(),
+  description: z.string().optional(),
+  metadata: z.any().optional(),
+  mastery_recap_card: z.any().optional(),
+  key_takeaway_grid: z.any().optional(),
+  revision_checklist: z.any().optional(),
+  next_step_panel: z.any().optional(),
+  masteryRecapCard: z.any().optional(),
+  keyTakeawayGrid: z.any().optional(),
+  revisionChecklist: z.any().optional(),
+  nextStepPanel: z.any().optional(),
+}).merge(BaseModularSchema);
+
+const InterviewModularSchema = z.object({
+  title: z.string().optional(),
+  description: z.string().optional(),
+  metadata: z.any().optional(),
+  interview_intro_card: z.any().optional(),
+  question_bank_panel: z.any().optional(),
+  answer_framework_card: z.any().optional(),
+  mock_interview_flow: z.any().optional(),
+  interviewIntroCard: z.any().optional(),
+  questionBankPanel: z.any().optional(),
+  answerFrameworkCard: z.any().optional(),
+  mockInterviewFlow: z.any().optional(),
+}).merge(BaseModularSchema);
+
+const AITutorModularSchema = z.object({
+  greeting: z.string().optional(),
+  qa_pairs: z.array(z.object({ question: z.string().min(1), answer: z.string().min(1) })).optional(),
+  qaPairs: z.array(z.object({ question: z.string().min(1), answer: z.string().min(1) })).optional(),
+  metadata: z.any().optional(),
+  tutor_prompt_card: z.any().optional(),
+  misconception_detector: z.any().optional(),
+  adaptive_hint_panel: z.any().optional(),
+  tutorPromptCard: z.any().optional(),
+  misconceptionDetector: z.any().optional(),
+  adaptiveHintPanel: z.any().optional(),
+}).merge(BaseModularSchema);
+
 // --- MAIN WRAPPER SCHEMA ---
 
 export const TutorialContentSchema = z.object({
+  overview: OverviewModularSchema.optional(),
   notes: z.union([
     z.object({ markdown: z.string().min(1), image: ContentImageSchema.optional().nullable() }).merge(BaseModularSchema),
     NotesModularSchema
@@ -308,10 +364,15 @@ export const TutorialContentSchema = z.object({
   practice: PracticeModularSchema.optional(),
   assignment: AssignmentModularSchema.optional(),
   project: ProjectModularSchema.optional(),
-  ai_tutor: z.object({
-    greeting: z.string().min(1),
-    qa_pairs: z.array(z.object({ question: z.string().min(1), answer: z.string().min(1) })),
-  }).optional(),
+  summary: SummaryModularSchema.optional(),
+  interview: InterviewModularSchema.optional(),
+  ai_tutor: z.union([
+    z.object({
+      greeting: z.string().min(1),
+      qa_pairs: z.array(z.object({ question: z.string().min(1), answer: z.string().min(1) })),
+    }),
+    AITutorModularSchema,
+  ]).optional(),
 });
 
 export type TutorialContentJSON = z.infer<typeof TutorialContentSchema>;

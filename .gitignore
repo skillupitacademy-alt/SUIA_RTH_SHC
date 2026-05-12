@@ -46,6 +46,9 @@ apps/*/public/swe-worker-*.js.map
 
 # Helper scripts and documentation (keep locally, don't commit)
 scripts/test-*.js
+!scripts/test-phase1-fallback.js
+!scripts/test-auth-resilience.js
+!scripts/test-rbac-live.js
 scripts/audit-*.js
 scripts/compare-*.js
 scripts/debug-*.js
@@ -54,6 +57,9 @@ scripts/validate-*.js
 scripts/check-*.js
 scripts/e2e-*.js
 test-*.js
+!scripts/test-phase1-fallback.js
+!scripts/test-auth-resilience.js
+!scripts/test-rbac-live.js
 test-*.ps1
 *.backup
 temp-*.ts

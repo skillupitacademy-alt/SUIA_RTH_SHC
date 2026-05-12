@@ -1,6 +1,6 @@
 import { db } from '@quiz/db-tutorial';
 import { tutorialSections, tutorialSubtopics } from '@quiz/db-tutorial';
-import { and,eq } from 'drizzle-orm';
+import { and,eq,inArray } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
@@ -46,9 +46,9 @@ export async function GET(
         .where(
           and(
             eq(tutorialSections.subtopicId, subtopicId),
-            eq(tutorialSections.sectionType, sectionType as "technical" | "practice" | "layman" | "real_life" | "code" | "notes" | "summary" | "visual" | "assignment" | "project" | "quiz" | "interview"),
+            eq(tutorialSections.sectionType, sectionType as "overview" | "technical" | "practice" | "layman" | "real_life" | "code" | "notes" | "summary" | "visual" | "assignment" | "project" | "quiz" | "interview" | "ai_tutor"),
             eq(tutorialSections.difficulty, difficulty as "simple" | "intermediate" | "expert" | "mixed"),
-            eq(tutorialSections.status, 'approved')
+            inArray(tutorialSections.status, ['approved', 'deployed'])
           )
         )
         .limit(1);
@@ -78,7 +78,7 @@ export async function GET(
         and(
           eq(tutorialSections.subtopicId, subtopicId),
           eq(tutorialSections.difficulty, difficulty as "simple" | "intermediate" | "expert" | "mixed"),
-          eq(tutorialSections.status, 'approved')
+          inArray(tutorialSections.status, ['approved', 'deployed'])
         )
       );
     

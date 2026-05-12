@@ -24,10 +24,11 @@ interface StatusState {
     text: string;
 }
 
-const BLOCK_ORDER = ['notes', 'layman', 'real_life', 'technical', 'code', 'visual', 'quiz', 'practice', 'assignment', 'project', 'ai_tutor'] as const;
+const BLOCK_ORDER = ['overview', 'notes', 'layman', 'real_life', 'technical', 'code', 'visual', 'quiz', 'practice', 'assignment', 'project', 'summary', 'interview', 'ai_tutor'] as const;
 type BasicBlockType = (typeof BLOCK_ORDER)[number];
 
 const BLOCK_LABELS: Record<BasicBlockType, string> = {
+    overview: 'Overview',
     notes: 'Notes',
     layman: 'Layman',
     real_life: 'Real Life',
@@ -38,10 +39,13 @@ const BLOCK_LABELS: Record<BasicBlockType, string> = {
     practice: 'Practice',
     assignment: 'Assignment',
     project: 'Project',
+    summary: 'Summary',
+    interview: 'Interview',
     ai_tutor: 'AI Tutor',
 };
 
 const BLOCK_HELPERS: Record<BasicBlockType, string> = {
+    overview: 'Subtopic hero, progress checklist, and clickable learning roadmap.',
     notes: 'Short reference notes that help the learner orient quickly.',
     layman: 'Beginner-first explanation with examples and a relatable story.',
     real_life: 'Scenario-driven framing that maps the idea to a real-world workflow.',
@@ -52,6 +56,8 @@ const BLOCK_HELPERS: Record<BasicBlockType, string> = {
     practice: 'Practical scenarios and remediation paths.',
     assignment: 'Actionable tasks and submission requirements.',
     project: 'Complex projects and business vision architecture.',
+    summary: 'Recap, key takeaways, checklist, and next steps.',
+    interview: 'Interview questions, answer frameworks, and mock practice.',
     ai_tutor: 'Chat-ready prompts and answers for follow-up learning.',
 };
 
@@ -137,7 +143,11 @@ function buildValidationErrors(content: TutorialContentJSON) {
 // Narrow each block to the *simple object* variant that this editor UI is editing.
 // The Zod schema uses unions, so the previous extracts were too loose and dropped
 // properties like `steps` / `bullets` / `example1`.
+type QaPair = { question: string; answer: string };
+type EditableAITutor = { greeting: string; qa_pairs: QaPair[] };
+
 type BasicTutorialContent = TutorialContentJSON & {
+    overview?: Record<string, unknown>;
     notes: Extract<TutorialContentJSON['notes'], { markdown: string }>;
     layman: Extract<
         TutorialContentJSON['layman'],
@@ -174,13 +184,36 @@ type BasicTutorialContent = TutorialContentJSON & {
             steps: string[];
         }
     >;
-    ai_tutor?: NonNullable<TutorialContentJSON['ai_tutor']>;
+    summary?: Record<string, unknown>;
+    interview?: Record<string, unknown>;
+    ai_tutor?: EditableAITutor;
 };
+
+function normalizeAiTutor(value: unknown): EditableAITutor {
+    const record = value !== null && typeof value === 'object' ? value as Record<string, unknown> : {};
+    const qaPairs = Array.isArray(record.qa_pairs)
+        ? record.qa_pairs
+        : Array.isArray(record.qaPairs)
+            ? record.qaPairs
+            : [];
+
+    return {
+        greeting: typeof record.greeting === 'string' ? record.greeting : '',
+        qa_pairs: qaPairs
+            .filter((pair): pair is Record<string, unknown> => pair !== null && typeof pair === 'object')
+            .map((pair) => ({
+                question: typeof pair.question === 'string' ? pair.question : '',
+                answer: typeof pair.answer === 'string' ? pair.answer : '',
+            })),
+    };
+}
 
 function getPreviewSummary(content: TutorialContentJSON, block: ContentBlockType) {
     const contentBasic = content as unknown as BasicTutorialContent;
 
     switch (block) {
+        case 'overview':
+            return JSON.stringify(contentBasic.overview ?? {}).slice(0, 180);
         case 'notes':
             return contentBasic.notes.markdown.slice(0, 180);
         case 'layman':
@@ -192,7 +225,7 @@ function getPreviewSummary(content: TutorialContentJSON, block: ContentBlockType
         case 'code':
             return contentBasic.code.intro.slice(0, 180);
         case 'ai_tutor':
-            return contentBasic.ai_tutor?.greeting.slice(0, 180) ?? '';
+            return normalizeAiTutor(contentBasic.ai_tutor).greeting.slice(0, 180);
         default:
             return '';
     }
@@ -243,15 +276,15 @@ export function BlockEditor({
     const validationErrors = useMemo(() => buildValidationErrors(content), [content]) as Record<string, string>;
     const contentBasic = content as BasicTutorialContent;
     const isValid = Object.keys(validationErrors).length === 0;
+    const aiTutor = normalizeAiTutor(contentBasic.ai_tutor);
     const publishReady =
         contentBasic.notes.markdown.trim().length > 10 &&
         contentBasic.layman.simpleExplanation.trim().length > 10 &&
         contentBasic.real_life.scenario.trim().length > 10 &&
         contentBasic.technical.markdown.trim().length > 10 &&
         contentBasic.code.code.trim().length > 10 &&
-        contentBasic.ai_tutor != null &&
-        contentBasic.ai_tutor.greeting.trim().length > 10 &&
-        contentBasic.ai_tutor.qa_pairs.length >= 3;
+        aiTutor.greeting.trim().length > 10 &&
+        aiTutor.qa_pairs.length >= 3;
     const currentVersionId = versions[0]?.id ?? 'seed-v1';
     const currentVersion = versions[0];
     const svgOptions = SVG_KEYS_BY_DOMAIN[domainSlug] ?? SVG_KEYS_BY_DOMAIN['full-stack'];
@@ -374,7 +407,7 @@ export function BlockEditor({
         );
     };
 
-    type ImageBlockType = Exclude<BasicBlockType, 'ai_tutor'>;
+    type ImageBlockType = Exclude<BasicBlockType, 'ai_tutor' | 'summary' | 'interview'>;
     const renderImagePanel = (block: ImageBlockType, image: ContentImage | null) => {
         const enabled = image != null;
         const defaultImage = DEFAULT_IMAGE_BY_BLOCK[block]!;
@@ -760,9 +793,34 @@ export function BlockEditor({
             );
         }
 
+        if (activeBlock === 'overview' || activeBlock === 'summary' || activeBlock === 'interview') {
+            const currentValue = (contentBasic[activeBlock] ?? {}) as Record<string, unknown>;
+            return (
+                <div className="grid gap-5">
+                    {renderTextField(
+                        `${BLOCK_LABELS[activeBlock]} JSON`,
+                        JSON.stringify(currentValue, null, 2),
+                        (next) => {
+                            try {
+                                const parsed = JSON.parse(next) as Record<string, unknown>;
+                                updateContent(activeBlock, () => parsed as BasicTutorialContent[typeof activeBlock]);
+                            } catch {
+                                setStatus({ tone: 'error', text: `Invalid ${BLOCK_LABELS[activeBlock]} JSON.` });
+                            }
+                        },
+                        undefined,
+                        14,
+                        `Paste ${BLOCK_LABELS[activeBlock].toLowerCase()} section JSON...`,
+                    )}
+                </div>
+            );
+        }
+
+        const aiTutor = normalizeAiTutor(contentBasic.ai_tutor);
+
         return (
             <div className="grid gap-5">
-                {renderTextField('Greeting', contentBasic.ai_tutor?.greeting ?? '', (next) => updateContent('ai_tutor', (current) => ({ ...(current ?? { greeting: '', qa_pairs: [] }), greeting: next } as NonNullable<BasicTutorialContent['ai_tutor']>)), 'ai_tutor.greeting', 3, 'Friendly tutor greeting...')}
+                {renderTextField('Greeting', aiTutor.greeting, (next) => updateContent('ai_tutor', (current) => ({ ...normalizeAiTutor(current), greeting: next })), 'ai_tutor.greeting', 3, 'Friendly tutor greeting...')}
                 <div className="rounded-2xl border border-slate-200 bg-white p-4">
                     <div className="flex items-center justify-between gap-3">
                         <div>
@@ -772,7 +830,7 @@ export function BlockEditor({
                         <button
                             type="button"
                             onClick={() => updateContent('ai_tutor', (current) => {
-                                const base = current ?? { greeting: '', qa_pairs: [] };
+                                const base = normalizeAiTutor(current);
                                 return { ...base, qa_pairs: [...base.qa_pairs, { question: '', answer: '' }] } as NonNullable<BasicTutorialContent['ai_tutor']>;
                             })}
                             className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-slate-700"
@@ -782,17 +840,17 @@ export function BlockEditor({
                         </button>
                     </div>
                     <div className="mt-4 grid gap-4">
-                        {ensureArrayItem(contentBasic.ai_tutor?.qa_pairs ?? [], { question: '', answer: '' }).map((pair, index) => (
+                        {ensureArrayItem(aiTutor.qa_pairs, { question: '', answer: '' }).map((pair, index) => (
                             <div key={`${index}-ai-tutor`} className="grid gap-3 rounded-2xl border border-slate-100 bg-slate-50/80 p-4 md:grid-cols-[1fr_1fr_auto]">
                                 {renderInputField(`Question ${index + 1}`, pair.question, (next) => updateContent('ai_tutor', (current) => {
-                                    const base = current ?? { greeting: '', qa_pairs: [] };
+                                    const base = normalizeAiTutor(current);
                                     return {
                                         ...base,
                                         qa_pairs: base.qa_pairs.map((item, itemIndex) => (itemIndex === index ? { ...item, question: next } : item)),
                                     } as NonNullable<BasicTutorialContent['ai_tutor']>;
                                 }), `ai_tutor.qa_pairs.${index}.question`, 'Question')}
                                 {renderInputField(`Answer ${index + 1}`, pair.answer, (next) => updateContent('ai_tutor', (current) => {
-                                    const base = current ?? { greeting: '', qa_pairs: [] };
+                                    const base = normalizeAiTutor(current);
                                     return {
                                         ...base,
                                         qa_pairs: base.qa_pairs.map((item, itemIndex) => (itemIndex === index ? { ...item, answer: next } : item)),
@@ -801,7 +859,7 @@ export function BlockEditor({
                                 <button
                                     type="button"
                                     onClick={() => updateContent('ai_tutor', (current) => {
-                                        const base = current ?? { greeting: '', qa_pairs: [] };
+                                        const base = normalizeAiTutor(current);
                                         return {
                                             ...base,
                                             qa_pairs: base.qa_pairs.length > 3 ? base.qa_pairs.filter((_, itemIndex) => itemIndex !== index) : base.qa_pairs,

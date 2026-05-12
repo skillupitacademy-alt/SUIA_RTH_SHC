@@ -78,9 +78,11 @@ export function SubtopicViewPage({ data, hideTopBar = false, hideSidebars = fals
                   <SubtopicHeader data={{
                     title: data.subtopic.title,
                     description: data.subtopic.description,
+                    iconLabel: data.subtopic.iconLabel,
                     progress: data.subtopic.progress,
                     progressLabel: data.subtopic.progressLabel,
-                    metadata: data.subtopic.metadata
+                    metadata: data.subtopic.metadata,
+                    checklist: data.subtopic.overallProgress?.checklist
                   }} />
 
                   {/* Content Grid Area */}
@@ -110,18 +112,20 @@ export function SubtopicViewPage({ data, hideTopBar = false, hideSidebars = fals
                   <nav aria-label="Breadcrumbs" className="flex min-w-0 flex-wrap items-center gap-2 text-sm font-bold text-slate-600">
                     <span className="hover:text-slate-900 cursor-pointer transition-colors">Home</span>
                     <ChevronRight size={16} className="text-slate-400" />
-                    <span className="hover:text-slate-900 cursor-pointer transition-colors">JavaScript</span>
+                    <span className="hover:text-slate-900 cursor-pointer transition-colors">{data.nav.courseLabel}</span>
                     <ChevronRight size={16} className="text-slate-400" />
-                    <span className="break-words font-black text-primary-dark">Component Architecture</span>
+                    <span className="break-words font-black text-primary-dark">{data.subtopic.title}</span>
                   </nav>
 
                   {/* Header Section */}
                   <SubtopicHeader data={{
                     title: data.subtopic.title,
                     description: data.subtopic.description,
+                    iconLabel: data.subtopic.iconLabel,
                     progress: data.subtopic.progress,
                     progressLabel: data.subtopic.progressLabel,
-                    metadata: data.subtopic.metadata
+                    metadata: data.subtopic.metadata,
+                    checklist: data.subtopic.overallProgress?.checklist
                   }} />
 
                   {/* Content Grid Area */}

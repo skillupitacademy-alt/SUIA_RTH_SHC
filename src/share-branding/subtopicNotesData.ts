@@ -423,6 +423,24 @@ export interface SubtopicNotesViewData {
       status?: string;
     }>;
   };
+  summary?: {
+    title?: string;
+    description?: string;
+    metadata?: Record<string, unknown>;
+    [key: string]: unknown;
+  };
+  interview?: {
+    title?: string;
+    description?: string;
+    metadata?: Record<string, unknown>;
+    [key: string]: unknown;
+  };
+  aiTutorContent?: {
+    greeting?: string;
+    qaPairs?: Array<{ question: string; answer: string }>;
+    metadata?: Record<string, unknown>;
+    [key: string]: unknown;
+  };
   visualExplanation?: {
     // 1. Core Concept Visualization
     conceptVisualIntro?: {
