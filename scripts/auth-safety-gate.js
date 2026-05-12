@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 const https = require('https');
+require('./load-local-env');
 
 const REQUEST_TIMEOUT_MS = Number(process.env.AUTH_SAFETY_GATE_TIMEOUT_MS || 15000);
 

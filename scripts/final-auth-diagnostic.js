@@ -15,6 +15,7 @@
 
 const https = require('https');
 const { execSync } = require('child_process');
+require('./load-local-env');
 
 // =====================================
 // CONFIG

@@ -8,6 +8,7 @@
 
 const https = require('https');
 const { URL } = require('url');
+require('./load-local-env');
 
 const BASE_URL = 'https://user.realtutorialhub.com';
 const SKILLUP_BASE_URL = 'https://user.skillupitacademy.com';

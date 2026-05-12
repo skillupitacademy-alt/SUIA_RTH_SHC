@@ -12,6 +12,7 @@
  */
 
 const https = require('https');
+require('./load-local-env');
 
 // =============================
 // CONFIG
