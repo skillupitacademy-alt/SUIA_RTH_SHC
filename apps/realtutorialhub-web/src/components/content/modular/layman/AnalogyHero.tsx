@@ -1,8 +1,9 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
 import { ArrowRight, Lightbulb, LibraryBig, MonitorCog } from 'lucide-react';
+
+import { getTutorialAssetAlt, getTutorialAssetImageSource } from '../shared/tutorialAsset';
 
 interface AnalogyHeroProps {
   data: {
@@ -14,7 +15,7 @@ interface AnalogyHeroProps {
     };
     visualMetaphor: string;
     keyTakeaway: string;
-    image?: string;
+    image?: unknown;
   };
   themeColor: string;
   sectionNumber?: number;
@@ -22,6 +23,8 @@ interface AnalogyHeroProps {
 
 export function AnalogyHero({ data, themeColor, sectionNumber = 2 }: AnalogyHeroProps) {
   if (!data) return null;
+  const imageSource = getTutorialAssetImageSource(data.image);
+  const imageAlt = getTutorialAssetAlt(data.image, `${data.title} illustration`);
 
   return (
     <section className="rounded-[28px] border border-emerald-200 bg-white p-7 shadow-[0_20px_50px_rgba(15,23,42,0.08)] h-full">
@@ -61,13 +64,11 @@ export function AnalogyHero({ data, themeColor, sectionNumber = 2 }: AnalogyHero
         </div>
 
         <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-5">
-          {data.image ? (
-            <Image
-              src={data.image}
-              alt=""
-              width={640}
-              height={320}
-              unoptimized
+          {imageSource ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src={imageSource}
+              alt={imageAlt}
               className="mb-5 h-40 w-full rounded-2xl object-cover"
             />
           ) : (

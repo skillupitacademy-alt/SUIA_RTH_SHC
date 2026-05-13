@@ -18,7 +18,9 @@ function PromptGeneratorContent() {
   const [subtopic, setSubtopic] = useState('JavaScript Promises');
   const [selectedSection, setSelectedSection] = useState<TutorialPromptSectionId | null>(null);
   const [generatedPrompt, setGeneratedPrompt] = useState('');
+  const [generatedAssetPrompt, setGeneratedAssetPrompt] = useState('');
   const [copied, setCopied] = useState(false);
+  const [assetCopied, setAssetCopied] = useState(false);
 
   const sections = TUTORIAL_PROMPT_SECTION_OPTIONS;
 
@@ -35,12 +37,20 @@ function PromptGeneratorContent() {
     const prompt = getPromptForSection(selectedSection, domain, subject, topic, subtopic);
     const contract = getTutorialSectionContractByPromptId(selectedSection);
     setGeneratedPrompt(contract ? `${buildTutorialSectionSourceNote(contract)}\n\n${prompt}` : prompt);
+    setGeneratedAssetPrompt(getSvgAssetPromptForSection(selectedSection, domain, subject, topic, subtopic));
   };
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(generatedPrompt).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
+  const copyAssetPromptToClipboard = () => {
+    navigator.clipboard.writeText(generatedAssetPrompt).then(() => {
+      setAssetCopied(true);
+      setTimeout(() => setAssetCopied(false), 2000);
     });
   };
 
@@ -116,6 +126,106 @@ ${enumRules}
 **EXACT JSON SHAPE TO RETURN**
 
 ${JSON.stringify(template, null, 2)}`;
+  };
+
+  const getSvgAssetPromptForSection = (
+    section: TutorialPromptSectionId,
+    domainName: string,
+    subjectName: string,
+    topicName: string,
+    subtopicName: string
+  ): string => {
+    if (section === 'master' || section === 'overview' || section === 'quiz' || section === 'practice' || section === 'assignment' || section === 'project' || section === 'interview' || section === 'ai_tutor' || section === 'visual' || section === 'reallife') {
+      return '';
+    }
+
+    const subtopicSlug = subtopicName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+    const assetSpecs: Record<string, Array<{ fieldPath: string; fileName: string; width: number; height: number; purpose: string }>> = {
+      layman: [
+        {
+          fieldPath: 'everydayAnalogy.image',
+          fileName: `layman-everyday-analogy-${subtopicSlug}-v1.svg`,
+          width: 1200,
+          height: 700,
+          purpose: 'Create a clean educational analogy illustration that visually explains the everyday comparison for this subtopic.',
+        },
+      ],
+      notes: [
+        {
+          fieldPath: 'summaryCard.image',
+          fileName: `notes-summary-graphic-${subtopicSlug}-v1.svg`,
+          width: 1200,
+          height: 700,
+          purpose: 'Create a summary infographic that visually reinforces the core idea, memory hook, and revision intent of the Notes section.',
+        },
+      ],
+      code: [
+        {
+          fieldPath: 'outputDemonstration.previewAsset',
+          fileName: `code-output-preview-${subtopicSlug}-v1.svg`,
+          width: 1280,
+          height: 720,
+          purpose: 'Create a UI-style output preview showing before/after or result-state for the code example.',
+        },
+      ],
+      technical: [
+        {
+          fieldPath: 'sections.0.diagramAsset',
+          fileName: `technical-architecture-${subtopicSlug}-v1.svg`,
+          width: 1440,
+          height: 900,
+          purpose: 'Create a system or runtime architecture diagram suitable for an advanced technical explanation of the subtopic.',
+        },
+      ],
+      summary: [
+        {
+          fieldPath: 'masteryRecapCard.heroAsset',
+          fileName: `summary-hero-${subtopicSlug}-v1.svg`,
+          width: 1200,
+          height: 700,
+          purpose: 'Create a celebratory recap graphic that visually summarizes the concept and completion state without relying on external branding text.',
+        },
+      ],
+    };
+
+    const selectedAssets = assetSpecs[section] ?? [];
+    if (selectedAssets.length === 0) {
+      return '';
+    }
+
+    return `Generate SVG asset prompt specifications for the ${section.toUpperCase()} tutorial section.
+
+**Educational Hierarchy:**
+- Domain: ${domainName}
+- Subject: ${subjectName}
+- Topic: ${topicName}
+- Subtopic: ${subtopicName}
+
+**ASSET GENERATION RULES**
+1. Create pure SVG artwork only. Do not return PNG, WebP, JPG, or external URLs.
+2. Keep the artwork instructional, clean, and diagram-first. Avoid decorative gradients, stock-photo style visuals, and heavy text overlays.
+3. Match a modern tutorial UI style: light background, high contrast, clean iconography, simple shapes, restrained color palette.
+4. Use minimal embedded text. Prefer labels only where the diagram would be unclear without them.
+5. The final SVG will be stored directly in tutorial section JSON, so keep file size practical and structure deterministic.
+6. Each asset below must have a separate prompt.
+7. The final answer must be plain text, organized asset by asset.
+
+**OUTPUT FORMAT PER ASSET**
+- Asset field path
+- File name
+- Size
+- Visual objective
+- Detailed SVG generation prompt
+- Accessibility alt text
+
+**ASSETS TO GENERATE**
+${selectedAssets.map((asset, index) => `${index + 1}. Field path: ${asset.fieldPath}
+   File name: ${asset.fileName}
+   Size: ${asset.width}x${asset.height}
+   Visual objective: ${asset.purpose}`).join('\n\n')}
+
+Write the asset prompts now for "${subtopicName}".`;
   };
 
   const getStrictEnumRules = (section: string): string => {
@@ -3149,6 +3259,27 @@ Output in this EXACT JSON format:
             <div className="p-6">
               <div className="bg-gray-50 border border-gray-300 rounded-lg p-6 font-mono text-sm leading-relaxed whitespace-pre-wrap max-h-[600px] overflow-y-auto">
                 {generatedPrompt}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {generatedAssetPrompt && (
+          <section className="mt-6 bg-white rounded-2xl shadow-2xl overflow-hidden" aria-label="Generated svg asset prompt output">
+            <div className="p-6 border-b border-amber-200 bg-amber-50 flex justify-between items-center">
+              <h3 className="text-2xl font-bold text-gray-800">Generated SVG Asset Prompt</h3>
+              <button
+                onClick={copyAssetPromptToClipboard}
+                className={`px-6 py-2 rounded-lg font-semibold transition-all ${
+                  assetCopied ? 'bg-green-500' : 'bg-amber-600 hover:bg-amber-700'
+                } text-white`}
+              >
+                {assetCopied ? 'Copied' : 'Copy Asset Prompt'}
+              </button>
+            </div>
+            <div className="p-6">
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 font-mono text-sm leading-relaxed whitespace-pre-wrap max-h-[600px] overflow-y-auto">
+                {generatedAssetPrompt}
               </div>
             </div>
           </section>

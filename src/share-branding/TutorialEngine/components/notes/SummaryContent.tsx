@@ -11,6 +11,30 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
 
+function getAssetSrc(value: unknown): string | null {
+  if (typeof value === 'string' && value.trim().length > 0) {
+    return value;
+  }
+
+  if (isRecord(value)) {
+    if (value.type === 'inline_svg' && typeof value.dataUri === 'string') {
+      return value.dataUri;
+    }
+    if (typeof value.url === 'string') {
+      return value.url;
+    }
+  }
+
+  return null;
+}
+
+function getAssetAlt(value: unknown, fallback = ''): string {
+  if (isRecord(value) && typeof value.alt === 'string' && value.alt.trim().length > 0) {
+    return value.alt;
+  }
+  return fallback;
+}
+
 function text(value: unknown, fallback = ''): string {
   return typeof value === 'string' && value.trim().length > 0 ? value : fallback;
 }
@@ -32,6 +56,8 @@ export function SummaryContent({ data, title }: { data?: SummaryData; title: str
   const takeaways = records(data.keyTakeawayGrid);
   const checklist = records(data.revisionChecklist);
   const actions = strings(nextStepPanel.actions);
+  const heroAssetSrc = getAssetSrc(masteryRecap.heroAsset);
+  const heroAssetAlt = getAssetAlt(masteryRecap.heroAsset, `${title} summary illustration`);
 
   return (
     <div className="min-w-0 space-y-8 pb-20">
@@ -52,6 +78,12 @@ export function SummaryContent({ data, title }: { data?: SummaryData; title: str
               {text(data.description, `Review the most important points from ${title}.`)}
             </p>
           </div>
+          {heroAssetSrc ? (
+            <div className="sm:ml-auto sm:w-[16rem]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={heroAssetSrc} alt={heroAssetAlt} className="w-full rounded-3xl border border-emerald-100 bg-white p-3 shadow-sm" />
+            </div>
+          ) : null}
         </div>
       </section>
 

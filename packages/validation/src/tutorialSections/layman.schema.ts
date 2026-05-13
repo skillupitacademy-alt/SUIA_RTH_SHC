@@ -1,8 +1,9 @@
 import { z } from 'zod';
 import {
   NonEmptyStringSchema,
-  OptionalNonEmptyStringSchema,
   nonEmptyStringArray,
+  OptionalNonEmptyStringSchema,
+  optionalSvgAssetField,
   sectionSchema,
   strictObject,
 } from './base';
@@ -25,7 +26,7 @@ export const LaymanSectionSchema = sectionSchema('layman', {
     }),
     visualMetaphor: NonEmptyStringSchema,
     keyTakeaway: NonEmptyStringSchema,
-    image: OptionalNonEmptyStringSchema,
+    image: optionalSvgAssetField(),
   }),
   whyItExists: strictObject({
     sectionTitle: NonEmptyStringSchema,
@@ -96,4 +97,3 @@ export const LaymanSectionSchema = sectionSchema('layman', {
 });
 
 export type LaymanSection = z.infer<typeof LaymanSectionSchema>;
-

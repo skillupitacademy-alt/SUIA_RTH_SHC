@@ -3,6 +3,7 @@ import {
   NonEmptyStringSchema,
   OptionalNonEmptyStringSchema,
   nonEmptyStringArray,
+  optionalSvgAssetField,
   sectionSchema,
   strictObject,
 } from './base';
@@ -36,6 +37,7 @@ export const CodeSectionSchema = sectionSchema('code', {
     output: NonEmptyStringSchema,
     explanation: NonEmptyStringSchema,
     visualRepresentation: NonEmptyStringSchema,
+    previewAsset: optionalSvgAssetField(),
   }),
   bestPracticeVersion: strictObject({
     title: NonEmptyStringSchema,
@@ -72,4 +74,3 @@ export const CodeSectionSchema = sectionSchema('code', {
 });
 
 export type CodeSection = z.infer<typeof CodeSectionSchema>;
-

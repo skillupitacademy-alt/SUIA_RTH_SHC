@@ -3,6 +3,7 @@ import {
   JsonRecordSchema,
   NonEmptyStringSchema,
   nonEmptyStringArray,
+  optionalSvgAssetField,
   sectionSchema,
   strictObject,
 } from './base';
@@ -19,6 +20,7 @@ export const TechnicalSectionSchema = sectionSchema('technical', {
       type: z.enum(['anatomy', 'flow', 'chain']),
       data: JsonRecordSchema,
     }).optional(),
+    diagramAsset: optionalSvgAssetField(),
     code: strictObject({
       language: NonEmptyStringSchema,
       code: NonEmptyStringSchema,
@@ -34,4 +36,3 @@ export const TechnicalSectionSchema = sectionSchema('technical', {
 });
 
 export type TechnicalSection = z.infer<typeof TechnicalSectionSchema>;
-

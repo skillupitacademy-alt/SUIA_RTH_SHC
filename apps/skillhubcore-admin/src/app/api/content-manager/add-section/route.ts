@@ -76,6 +76,29 @@ function asArray<T = unknown>(value: unknown): T[] {
   return Array.isArray(value) ? value as T[] : [];
 }
 
+function normalizeSvgAsset(value: unknown) {
+  if (!isRecord(value)) return undefined;
+
+  const type = asString(value.type);
+  const name = asString(value.name);
+  const alt = asString(value.alt);
+  const dataUri = asString(value.dataUri);
+
+  if (type !== 'inline_svg' || !name || !alt || !dataUri) {
+    return undefined;
+  }
+
+  return {
+    type: 'inline_svg' as const,
+    name,
+    alt,
+    width: asNumber(value.width, 800),
+    height: asNumber(value.height, 600),
+    dataUri,
+    ...(asString(value.caption) ? { caption: asString(value.caption) } : {}),
+  };
+}
+
 function unwrapSectionContent(content: JsonRecord, config: TutorialSectionContract): JsonRecord {
   const keys = Object.keys(content);
   const matchingRootKeys = config.rootKeys.filter((key) => Object.prototype.hasOwnProperty.call(content, key));
@@ -224,6 +247,7 @@ function transformNotesSection(content: JsonRecord, subtopicName: string): JsonR
         keyTakeaways: asArray(summaryCard.keyTakeaways),
         revisionChecklist: asArray(summaryCard.revisionChecklist),
         examTips: asArray(summaryCard.examTips),
+        ...(normalizeSvgAsset(summaryCard.image) ? { image: normalizeSvgAsset(summaryCard.image) } : {}),
       },
     };
   }
@@ -319,6 +343,7 @@ function transformNotesSection(content: JsonRecord, subtopicName: string): JsonR
       revisionChecklist: toChecklist(asArray(revisionSummary.quickRecap)),
       memoryReinforcement: asString(revisionSummary.rememberThis),
       examTips: asArray(revisionSummary.examTips),
+      ...(normalizeSvgAsset(revisionSummary.image) ? { image: normalizeSvgAsset(revisionSummary.image) } : {}),
     },
   };
 }
@@ -364,7 +389,11 @@ function transformLaymanSection(content: JsonRecord, subtopicName: string): Json
       },
       visualMetaphor: asString(everydayAnalogy.visualMetaphor),
       keyTakeaway: asString(everydayAnalogy.keyTakeaway),
-      ...(asString(everydayAnalogy.image) ? { image: asString(everydayAnalogy.image) } : {}),
+      ...(normalizeSvgAsset(everydayAnalogy.image)
+        ? { image: normalizeSvgAsset(everydayAnalogy.image) }
+        : asString(everydayAnalogy.image)
+          ? { image: asString(everydayAnalogy.image) }
+          : {}),
     },
     whyItExists: {
       sectionTitle: asString(whyItExists.sectionTitle, 'Why It Exists'),

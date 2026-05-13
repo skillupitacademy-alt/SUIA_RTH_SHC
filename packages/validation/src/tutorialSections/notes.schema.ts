@@ -3,6 +3,7 @@ import {
   NonEmptyStringSchema,
   OptionalNonEmptyStringSchema,
   nonEmptyStringArray,
+  optionalSvgAssetField,
   sectionSchema,
   strictObject,
 } from './base';
@@ -79,8 +80,8 @@ export const NotesSectionSchema = sectionSchema('notes', {
     })).min(1),
     memoryReinforcement: NonEmptyStringSchema,
     examTips: nonEmptyStringArray(1),
+    image: optionalSvgAssetField(),
   }),
 });
 
 export type NotesSection = z.infer<typeof NotesSectionSchema>;
-

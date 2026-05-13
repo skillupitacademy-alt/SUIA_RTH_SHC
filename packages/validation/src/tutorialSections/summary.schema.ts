@@ -2,6 +2,7 @@ import { z } from 'zod';
 import {
   NonEmptyStringSchema,
   nonEmptyStringArray,
+  optionalSvgAssetField,
   sectionSchema,
   strictObject,
 } from './base';
@@ -13,6 +14,7 @@ export const SummarySectionSchema = sectionSchema('summary', {
     headline: NonEmptyStringSchema,
     recap: NonEmptyStringSchema,
     confidenceSignal: NonEmptyStringSchema,
+    heroAsset: optionalSvgAssetField(),
   }),
   keyTakeawayGrid: z.array(strictObject({
     id: NonEmptyStringSchema,
@@ -33,4 +35,3 @@ export const SummarySectionSchema = sectionSchema('summary', {
 });
 
 export type SummarySection = z.infer<typeof SummarySectionSchema>;
-
