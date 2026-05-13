@@ -16,6 +16,7 @@ COPY packages/db/package.json ./packages/db/
 COPY packages/db-tutorial/package.json ./packages/db-tutorial/
 COPY packages/api-client/package.json ./packages/api-client/
 COPY packages/types/package.json ./packages/types/
+COPY packages/validation/package.json ./packages/validation/
 COPY packages/observability/package.json ./packages/observability/
 COPY packages/ui/package.json ./packages/ui/
 COPY packages/events/package.json ./packages/events/

@@ -13,6 +13,7 @@ COPY apps/skillhubcore-admin/package.json ./apps/skillhubcore-admin/
 COPY packages/auth/package.json ./packages/auth/
 COPY packages/ui/package.json ./packages/ui/
 COPY packages/types/package.json ./packages/types/
+COPY packages/validation/package.json ./packages/validation/
 COPY packages/db-tutorial/package.json ./packages/db-tutorial/
 COPY packages/db/package.json ./packages/db/
 COPY packages/observability/package.json ./packages/observability/
@@ -26,6 +27,7 @@ COPY --from=deps /app/apps/skillhubcore-admin/node_modules ./apps/skillhubcore-a
 COPY --from=deps /app/packages/auth/node_modules ./packages/auth/node_modules
 COPY --from=deps /app/packages/ui/node_modules ./packages/ui/node_modules
 COPY --from=deps /app/packages/types/node_modules ./packages/types/node_modules
+COPY --from=deps /app/packages/validation/node_modules ./packages/validation/node_modules
 COPY --from=deps /app/packages/db-tutorial/node_modules ./packages/db-tutorial/node_modules
 COPY --from=deps /app/packages/db/node_modules ./packages/db/node_modules
 COPY --from=deps /app/packages/observability/node_modules ./packages/observability/node_modules
