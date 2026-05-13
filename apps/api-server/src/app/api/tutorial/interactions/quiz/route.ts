@@ -1,7 +1,10 @@
 import { db } from '@quiz/db-tutorial';
-import { quizAnswers, tutorialSections } from '@quiz/db-tutorial';
-import { and,eq } from 'drizzle-orm';
+import { quizAnswers } from '@quiz/db-tutorial';
+import { QuizInteractionRequestSchema } from '@quiz/validation';
+import { and, eq } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
+
+import { getAuthenticatedUserId, getTutorialSection, parseJsonBody, updateProgressForSection } from '../_shared';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,41 +15,15 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json() as Record<string, unknown>;
-    const userId = body.userId as string;
-    const sectionId = body.sectionId as string;
-    const questionId = body.questionId as string;
-    const selectedAnswer = body.selectedAnswer as string;
-    const correctAnswer = body.correctAnswer as string;
-    const timeSpent = body.timeSpent as number | undefined;
-    
-    // Validate required fields
-    if (
-      userId === null || userId === undefined || userId === '' ||
-      sectionId === null || sectionId === undefined || sectionId === '' ||
-      questionId === null || questionId === undefined || questionId === '' ||
-      selectedAnswer === null || selectedAnswer === undefined || selectedAnswer === '' ||
-      correctAnswer === null || correctAnswer === undefined || correctAnswer === ''
-    ) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      );
-    }
-    
-    // Verify section exists and is a quiz section
-    const section = await db
-      .select()
-      .from(tutorialSections)
-      .where(
-        and(
-          eq(tutorialSections.id, sectionId),
-          eq(tutorialSections.sectionType, 'quiz')
-        )
-      )
-      .limit(1);
-    
-    if (section.length === 0) {
+    const userId = getAuthenticatedUserId(request);
+    if (userId instanceof NextResponse) return userId;
+
+    const parsed = await parseJsonBody(request, QuizInteractionRequestSchema);
+    if (!parsed.success) return parsed.response;
+    const { sectionId, questionId, selectedAnswer, correctAnswer, timeSpent } = parsed.data;
+
+    const section = await getTutorialSection(sectionId, 'quiz');
+    if (!section) {
       return NextResponse.json(
         { error: 'Quiz section not found' },
         { status: 404 }
@@ -78,16 +55,18 @@ export async function POST(request: NextRequest) {
         selectedAnswer,
         correctAnswer,
         isCorrect,
-        timeSpent: (timeSpent !== undefined && timeSpent !== null) ? timeSpent : 0,
+        timeSpent,
         attemptNumber
       })
       .returning();
+    const progress = await updateProgressForSection(userId, section);
     
     return NextResponse.json({
       success: true,
       answerId: answer.id,
       isCorrect,
       attemptNumber,
+      progress,
       message: isCorrect ? 'Correct answer!' : 'Incorrect answer. Try again!'
     });
     
@@ -107,16 +86,17 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   try {
+    const userId = getAuthenticatedUserId(request);
+    if (userId instanceof NextResponse) return userId;
+
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
     const sectionId = searchParams.get('sectionId');
     
     if (
-      userId === null || userId === undefined || userId === '' ||
       sectionId === null || sectionId === undefined || sectionId === ''
     ) {
       return NextResponse.json(
-        { error: 'Missing userId or sectionId' },
+        { error: 'Missing sectionId' },
         { status: 400 }
       );
     }

@@ -15,6 +15,39 @@ export interface RelatedSubtopic {
 }
 
 export interface SubtopicNotesViewData {
+  sectionErrors?: Partial<Record<
+    | 'notes'
+    | 'layman'
+    | 'real_life'
+    | 'technical'
+    | 'code'
+    | 'visual'
+    | 'practice'
+    | 'assignment'
+    | 'project'
+    | 'quiz'
+    | 'summary'
+    | 'interview'
+    | 'ai_tutor',
+    string
+  >>;
+  sectionRecordIds?: Partial<Record<
+    | 'overview'
+    | 'notes'
+    | 'layman'
+    | 'real_life'
+    | 'technical'
+    | 'code'
+    | 'visual'
+    | 'practice'
+    | 'assignment'
+    | 'project'
+    | 'quiz'
+    | 'summary'
+    | 'interview'
+    | 'ai_tutor',
+    string
+  >>;
   nav: {
     courseLabel: string;
     lessonLabel: string;

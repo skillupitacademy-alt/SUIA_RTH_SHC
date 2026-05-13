@@ -13,6 +13,11 @@ import {
   type TutorialSectionContract,
   type TutorialSectionId,
 } from '@quiz/types';
+import {
+  formatTutorialSectionValidationIssues,
+  validateTutorialSection,
+  type TutorialSectionValidationIssue,
+} from '@quiz/validation';
 import { and, eq } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
 
@@ -73,6 +78,29 @@ function asArray<T = unknown>(value: unknown): T[] {
 
 function unwrapSectionContent(content: JsonRecord, config: TutorialSectionContract): JsonRecord {
   const keys = Object.keys(content);
+  const matchingRootKeys = config.rootKeys.filter((key) => Object.prototype.hasOwnProperty.call(content, key));
+
+  if (matchingRootKeys.length > 1) {
+    throw new SectionContentError(
+      `JSON contains multiple root keys for section '${config.dbType}': ${matchingRootKeys.join(', ')}. Provide exactly one root key or the direct section payload.`
+    );
+  }
+
+  if (matchingRootKeys.length === 1) {
+    if (keys.length !== 1) {
+      throw new SectionContentError(
+        `JSON root must contain only '${matchingRootKeys[0]}' for section '${config.dbType}', or provide the direct section payload.`
+      );
+    }
+
+    const value = content[matchingRootKeys[0]];
+    if (!isRecord(value)) {
+      throw new SectionContentError(`Root key '${matchingRootKeys[0]}' must contain a JSON object.`);
+    }
+
+    return value;
+  }
+
   for (const key of config.rootKeys) {
     if (Object.prototype.hasOwnProperty.call(content, key)) {
       const value = content[key];
@@ -82,6 +110,13 @@ function unwrapSectionContent(content: JsonRecord, config: TutorialSectionContra
     }
   }
   return content;
+}
+
+class SectionContentError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'SectionContentError';
+  }
 }
 
 function toChecklist(items: unknown[]): Array<{ id: string; item: string; checked: boolean }> {
@@ -691,15 +726,45 @@ export async function POST(req: NextRequest) {
     if (!subtopicSlug || !subtopicInfo || !config || !content) {
       return NextResponse.json({ error: 'Missing required fields or unsupported section' }, { status: 400 });
     }
+    if (!SECTION_TRANSFORMERS[config.dbType]) {
+      return NextResponse.json({ error: `Unsupported section transformer for ${config.dbType}` }, { status: 400 });
+    }
 
-    const parsedContent = typeof content === 'string' ? JSON.parse(content) as JsonRecord : content;
+    let parsedContent: unknown;
+    try {
+      parsedContent = typeof content === 'string' ? JSON.parse(content) : content;
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Invalid JSON';
+      return NextResponse.json({ error: `Invalid JSON: ${errorMessage}` }, { status: 400 });
+    }
+
     if (!isRecord(parsedContent)) {
       return NextResponse.json({ error: 'Section content must be a JSON object' }, { status: 400 });
     }
 
     const subtopic = await getOrCreateHierarchy(subtopicSlug, subtopicInfo);
     const unwrappedContent = unwrapSectionContent(parsedContent, config);
-    const transformedContent = SECTION_TRANSFORMERS[config.dbType](unwrappedContent, subtopicInfo.subtopic);
+    const validation = validateTutorialSection(config.dbType, unwrappedContent);
+
+    if (!validation.success) {
+      const formattedIssues = formatTutorialSectionValidationIssues(validation.issues);
+      console.error('[Content Manager API] Strict section validation failed', {
+        subtopicSlug,
+        sectionType: config.dbType,
+        issues: validation.issues,
+      });
+      return NextResponse.json(
+        {
+          error: `Section '${config.dbType}' failed strict schema validation. Regenerate or correct this section before saving.`,
+          sectionType: config.dbType,
+          issues: validation.issues satisfies TutorialSectionValidationIssue[],
+          details: formattedIssues,
+        },
+        { status: 400 }
+      );
+    }
+
+    const transformedContent = validation.data;
 
     const [existingSection] = await db
       .select()
@@ -751,6 +816,7 @@ export async function POST(req: NextRequest) {
   } catch (error: unknown) {
     console.error('[Content Manager API] Error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    const status = error instanceof SectionContentError ? 400 : 500;
+    return NextResponse.json({ error: errorMessage }, { status });
   }
 }

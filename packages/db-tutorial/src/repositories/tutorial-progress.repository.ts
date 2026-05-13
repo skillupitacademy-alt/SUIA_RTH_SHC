@@ -9,18 +9,11 @@ import type {
   TutorialDbClientLike,
   TutorialProgressRecord,
 } from '@quiz/types';
+import { calculateTutorialProgress, mergeCompletedTutorialSection } from '@quiz/validation';
 
 import { TutorialRepositoryBase } from './base.repository';
 
 const activeProgress = isNull(tutorialProgress.deletedAt);
-const REQUIRED_BLOCKS: ContentBlockType[] = [
-  'notes',
-  'layman',
-  'real_life',
-  'technical',
-  'code',
-  'ai_tutor',
-];
 
 export class TutorialProgressRepository
   extends TutorialRepositoryBase
@@ -73,18 +66,19 @@ export class TutorialProgressRepository
     const now = new Date();
 
     if (!existing) {
+      const snapshot = calculateTutorialProgress({ completedSections: [blockType] });
       const [created] = await this.runRead(
         this.dbInstance
           .insert(tutorialProgress)
           .values({
             userId,
             subtopicId,
-            status: 'in_progress',
-            blocksCompleted: [blockType],
-            remediationTriggered: false,
+            status: snapshot.status,
+            blocksCompleted: snapshot.completedSections,
+            remediationTriggered: snapshot.remediationTriggered,
             score: null,
             timeSpentSec: 0,
-            completedAt: null,
+            completedAt: snapshot.status === 'completed' ? now : null,
             version: 1,
             deletedAt: null,
           })
@@ -95,17 +89,21 @@ export class TutorialProgressRepository
       return created as TutorialProgressRecord;
     }
 
-    const mergedBlocks = Array.from(new Set([...(existing.blocksCompleted ?? []), blockType]));
-    const isComplete = REQUIRED_BLOCKS.every((block) => mergedBlocks.includes(block));
+    const mergedBlocks = mergeCompletedTutorialSection(existing.blocksCompleted ?? [], blockType);
+    const snapshot = calculateTutorialProgress({
+      completedSections: mergedBlocks,
+      assignmentCompleted: mergedBlocks.includes('assignment'),
+      projectCompleted: mergedBlocks.includes('project'),
+    });
 
     const [updated] = await this.runRead(
       this.dbInstance
         .update(tutorialProgress)
         .set({
           blocksCompleted: mergedBlocks,
-          status: isComplete ? 'completed' : 'in_progress',
-          completedAt: isComplete ? existing.completedAt ?? now : existing.completedAt,
-          remediationTriggered: existing.remediationTriggered,
+          status: snapshot.status,
+          completedAt: snapshot.status === 'completed' ? existing.completedAt ?? now : existing.completedAt,
+          remediationTriggered: snapshot.remediationTriggered,
           version: sql`${tutorialProgress.version} + 1`,
           updatedAt: now,
           deletedAt: null,
@@ -124,7 +122,7 @@ export class TutorialProgressRepository
       return false;
     }
 
-    return REQUIRED_BLOCKS.every((block) => progress.blocksCompleted.includes(block));
+    return calculateTutorialProgress({ completedSections: progress.blocksCompleted }).status === 'completed';
   }
 
   async getCompletedSubtopics(userId: string): Promise<string[]> {

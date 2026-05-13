@@ -4,13 +4,16 @@ import React, { useState } from 'react';
 import * as Icons from 'lucide-react';
 import { useBrand } from '../../../PostLandingPage/app/context/BrandContext';
 import { SubtopicNotesViewData } from '../../../subtopicNotesData';
+import { submitPracticeAnswer } from '../../../subtopicNotesDataAPI';
 
 export function PracticeTestContent({ 
   data,
-  onNext
+  onNext,
+  sectionId
 }: { 
   data?: SubtopicNotesViewData['mainContent']['practiceTest'];
   onNext?: () => void;
+  sectionId?: string;
 }) {
   const brand = useBrand();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -46,6 +49,14 @@ export function PracticeTestContent({
 
   const handleAnswerSelect = (answerId: string) => {
     setSelectedAnswer(answerId);
+    if (sectionId && currentQuestion) {
+      const correctAnswer = Array.isArray(currentQuestion.correctAnswer)
+        ? currentQuestion.correctAnswer.join(',')
+        : currentQuestion.correctAnswer;
+      submitPracticeAnswer('', sectionId, currentQuestion.id, answerId, correctAnswer, 0, false).catch((error) => {
+        console.error('[PracticeTestContent] Failed to persist practice answer:', error);
+      });
+    }
     if (data.instantFeedback?.enabled && data.instantFeedback.feedbackType === 'immediate') {
       setShowFeedback(true);
     }

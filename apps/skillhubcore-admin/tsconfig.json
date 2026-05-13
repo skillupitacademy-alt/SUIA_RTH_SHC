@@ -26,6 +26,12 @@
       "@quiz/types/*": [
         "../../packages/types/src/*"
       ],
+      "@quiz/validation": [
+        "../../packages/validation/src/index.ts"
+      ],
+      "@quiz/validation/*": [
+        "../../packages/validation/src/*"
+      ],
       "@quiz/api-client": [
         "../../packages/api-client/src/index.ts"
       ],

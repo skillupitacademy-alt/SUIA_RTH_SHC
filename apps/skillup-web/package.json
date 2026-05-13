@@ -16,6 +16,7 @@
     "@quiz/db-payment": "workspace:*",
     "@quiz/db-placement": "workspace:*",
     "@quiz/db-tutorial": "workspace:*",
+    "@quiz/validation": "workspace:*",
     "@serwist/next": "^9.5.7",
     "@types/node": "^20",
     "@types/react": "^19.0.0",

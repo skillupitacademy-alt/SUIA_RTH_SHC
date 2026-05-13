@@ -1,7 +1,10 @@
 import { db } from '@quiz/db-tutorial';
-import { sectionCompletions, tutorialProgress,tutorialSections } from '@quiz/db-tutorial';
-import { and,eq } from 'drizzle-orm';
+import { sectionCompletions } from '@quiz/db-tutorial';
+import { CompletionInteractionRequestSchema } from '@quiz/validation';
+import { and, eq, isNull } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
+
+import { getAuthenticatedUserId, getTutorialSection, parseJsonBody, updateProgressForSection } from '../_shared';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,32 +15,15 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json() as Record<string, unknown>;
-    const userId = body.userId as string;
-    const sectionId = body.sectionId as string;
-    const subsectionId = body.subsectionId as string | undefined;
-    const timeSpent = body.timeSpent as number | undefined;
-    const score = body.score as number | undefined;
-    
-    // Validate required fields
-    if (
-      userId === null || userId === undefined || userId === '' ||
-      sectionId === null || sectionId === undefined || sectionId === ''
-    ) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      );
-    }
-    
-    // Verify section exists
-    const section = await db
-      .select()
-      .from(tutorialSections)
-      .where(eq(tutorialSections.id, sectionId))
-      .limit(1);
-    
-    if (section.length === 0) {
+    const userId = getAuthenticatedUserId(request);
+    if (userId instanceof NextResponse) return userId;
+
+    const parsed = await parseJsonBody(request, CompletionInteractionRequestSchema);
+    if (!parsed.success) return parsed.response;
+    const { sectionId, subsectionId, timeSpent, score } = parsed.data;
+
+    const section = await getTutorialSection(sectionId);
+    if (!section) {
       return NextResponse.json(
         { error: 'Section not found' },
         { status: 404 }
@@ -54,17 +40,19 @@ export async function POST(request: NextRequest) {
           eq(sectionCompletions.sectionId, sectionId),
           (subsectionId !== undefined && subsectionId !== null) 
             ? eq(sectionCompletions.subsectionId, subsectionId) 
-            : eq(sectionCompletions.subsectionId, null as unknown as string)
+            : isNull(sectionCompletions.subsectionId)
         )
       )
       .limit(1);
     
     if (existing.length > 0) {
+      const progress = await updateProgressForSection(userId, section);
       return NextResponse.json({
         success: true,
         message: 'Already completed',
         completionId: existing[0].id,
-        alreadyCompleted: true
+        alreadyCompleted: true,
+        progress
       });
     }
     
@@ -75,61 +63,18 @@ export async function POST(request: NextRequest) {
         userId,
         sectionId,
         subsectionId: (subsectionId !== undefined && subsectionId !== null) ? subsectionId : null,
-        timeSpent: (timeSpent !== undefined && timeSpent !== null) ? timeSpent : 0,
+        timeSpent,
         score: (score !== undefined && score !== null) ? score : null
       })
       .returning();
-    
-    // Update tutorial_progress table
-    const subtopicId = section[0].subtopicId;
-    const sectionType = section[0].sectionType;
-    
-    // Get or create progress record
-    const progressRecord = await db
-      .select()
-      .from(tutorialProgress)
-      .where(
-        and(
-          eq(tutorialProgress.userId, userId),
-          eq(tutorialProgress.subtopicId, subtopicId)
-        )
-      )
-      .limit(1);
-    
-    if (progressRecord.length === 0) {
-      // Create new progress record
-      await db
-        .insert(tutorialProgress)
-        .values({
-          userId,
-          subtopicId,
-          status: 'in_progress',
-          blocksCompleted: [sectionType],
-          timeSpentSec: (timeSpent !== undefined && timeSpent !== null) ? timeSpent : 0
-        });
-    } else {
-      // Update existing progress
-      const currentBlocks = (progressRecord[0].blocksCompleted as string[] | null) ?? [];
-      if (!currentBlocks.includes(sectionType)) {
-        currentBlocks.push(sectionType);
-      }
-      
-      await db
-        .update(tutorialProgress)
-        .set({
-          blocksCompleted: currentBlocks,
-          timeSpentSec: ((progressRecord[0].timeSpentSec as number | null) ?? 0) + ((timeSpent as number | null) ?? 0),
-          status: currentBlocks.length >= 10 ? 'completed' : 'in_progress',
-          updatedAt: new Date()
-        })
-        .where(eq(tutorialProgress.id, progressRecord[0].id));
-    }
+    const progress = await updateProgressForSection(userId, section);
     
     return NextResponse.json({
       success: true,
       completionId: completion.id,
       message: 'Section completed successfully',
-      alreadyCompleted: false
+      alreadyCompleted: false,
+      progress
     });
     
   } catch (error) {
@@ -148,16 +93,17 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   try {
+    const userId = getAuthenticatedUserId(request);
+    if (userId instanceof NextResponse) return userId;
+
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
     const sectionId = searchParams.get('sectionId');
     
     if (
-      userId === null || userId === undefined || userId === '' ||
       sectionId === null || sectionId === undefined || sectionId === ''
     ) {
       return NextResponse.json(
-        { error: 'Missing userId or sectionId' },
+        { error: 'Missing sectionId' },
         { status: 400 }
       );
     }

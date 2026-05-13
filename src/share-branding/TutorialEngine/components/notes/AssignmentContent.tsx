@@ -23,26 +23,9 @@ export function AssignmentContent({ data, onNext }: {
 }) {
   const brand = useBrand();
 
-  // Use data from props or fallback to defaults
-  const title = data?.title || 'Assignment';
-  const description = data?.description || 'Apply concepts to a real-world task.';
-  const xp = data?.xp || 150;
-  const duration = data?.duration || '20 Mins';
-  const task = data?.task || {
-    title: 'Default Task',
-    description: 'Complete the assignment.',
-    requirements: ['Requirement 1', 'Requirement 2']
-  };
-  const objectives = data?.objectives || ['Objective 1', 'Objective 2'];
-  
-  // Ensure starterCode is always a string
-  let starterCode = data?.starterCode || '// Starter code here';
-  if (typeof starterCode !== 'string') {
-    // If it's an object with a code property, extract it
-    starterCode = (starterCode as any)?.code || '// Starter code here';
-  }
-  
-  const submissionGuidelines = data?.submissionGuidelines || ['Submit your code', 'Test before submitting'];
+  if (!data) return null;
+
+  const { title, description, xp, duration, task, objectives, starterCode, submissionGuidelines } = data;
 
   return (
     <div className="min-w-0 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20 sm:space-y-12">

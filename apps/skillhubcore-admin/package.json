@@ -15,6 +15,7 @@
     "@quiz/ui": "workspace:*",
     "@quiz/types": "workspace:*",
     "@quiz/db-tutorial": "workspace:*",
+    "@quiz/validation": "workspace:*",
     "@quiz/observability": "workspace:*",
     "@quiz/api-client": "workspace:*",
     "@tanstack/react-query": "^5.90.21",

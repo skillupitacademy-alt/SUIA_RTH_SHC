@@ -21,6 +21,7 @@
         "@quiz/events": "workspace:*",
         "@quiz/observability": "workspace:*",
         "@quiz/types": "workspace:*",
+        "@quiz/validation": "workspace:*",
         "@quiz/ui": "workspace:*",
         "@sentry/nextjs": "^10.40.0",
         "@serwist/next": "^9.5.7",

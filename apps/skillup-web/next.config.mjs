@@ -4,7 +4,7 @@ import withSerwist from '@serwist/next';
 const nextConfig = {
   compress: true,
   output: process.env.CLOUD_RUN_BUILD === 'true' ? 'standalone' : undefined,
-  transpilePackages: ['@quiz/auth', '@quiz/db-tutorial', '@quiz/types', '@quiz/ui', '@quiz/observability', '@quiz/api-client'],
+  transpilePackages: ['@quiz/auth', '@quiz/db-tutorial', '@quiz/types', '@quiz/validation', '@quiz/ui', '@quiz/observability', '@quiz/api-client'],
   turbopack: {},
 };
 

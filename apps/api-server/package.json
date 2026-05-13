@@ -27,6 +27,7 @@
         "@quiz/identity-bridge": "workspace:*",
         "@quiz/observability": "workspace:*",
         "@quiz/types": "workspace:*",
+        "@quiz/validation": "workspace:*",
         "@quiz/ui": "workspace:*",
         "@radix-ui/react-alert-dialog": "^1.1.15",
         "@sentry/nextjs": "^10.40.0",

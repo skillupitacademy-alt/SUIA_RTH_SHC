@@ -2,7 +2,7 @@
 const nextConfig = {
   compress: true,
   output: process.env.CLOUD_RUN_BUILD === 'true' ? 'standalone' : undefined,
-  transpilePackages: ['@quiz/auth', '@quiz/types', '@quiz/db-tutorial', '@quiz/observability', '@quiz/ui', '@quiz/api-client'],
+  transpilePackages: ['@quiz/auth', '@quiz/types', '@quiz/validation', '@quiz/db-tutorial', '@quiz/observability', '@quiz/ui', '@quiz/api-client'],
   images: {
     remotePatterns: [
       {

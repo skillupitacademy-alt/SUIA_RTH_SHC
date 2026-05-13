@@ -1,7 +1,10 @@
 import { db } from '@quiz/db-tutorial';
-import { practiceTestAnswers, tutorialSections } from '@quiz/db-tutorial';
-import { and,eq } from 'drizzle-orm';
+import { practiceTestAnswers } from '@quiz/db-tutorial';
+import { PracticeInteractionRequestSchema } from '@quiz/validation';
+import { and, eq } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
+
+import { getAuthenticatedUserId, getTutorialSection, parseJsonBody, updateProgressForSection } from '../_shared';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,42 +15,15 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json() as Record<string, unknown>;
-    const userId = body.userId as string;
-    const sectionId = body.sectionId as string;
-    const questionId = body.questionId as string;
-    const selectedAnswer = body.selectedAnswer as string;
-    const correctAnswer = body.correctAnswer as string;
-    const timeSpent = body.timeSpent as number | undefined;
-    const feedbackViewed = body.feedbackViewed as boolean | undefined;
-    
-    // Validate required fields
-    if (
-      userId === null || userId === undefined || userId === '' ||
-      sectionId === null || sectionId === undefined || sectionId === '' ||
-      questionId === null || questionId === undefined || questionId === '' ||
-      selectedAnswer === null || selectedAnswer === undefined || selectedAnswer === '' ||
-      correctAnswer === null || correctAnswer === undefined || correctAnswer === ''
-    ) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      );
-    }
-    
-    // Verify section exists and is a practice section
-    const section = await db
-      .select()
-      .from(tutorialSections)
-      .where(
-        and(
-          eq(tutorialSections.id, sectionId),
-          eq(tutorialSections.sectionType, 'practice')
-        )
-      )
-      .limit(1);
-    
-    if (section.length === 0) {
+    const userId = getAuthenticatedUserId(request);
+    if (userId instanceof NextResponse) return userId;
+
+    const parsed = await parseJsonBody(request, PracticeInteractionRequestSchema);
+    if (!parsed.success) return parsed.response;
+    const { sectionId, questionId, selectedAnswer, correctAnswer, timeSpent, feedbackViewed } = parsed.data;
+
+    const section = await getTutorialSection(sectionId, 'practice');
+    if (!section) {
       return NextResponse.json(
         { error: 'Practice section not found' },
         { status: 404 }
@@ -79,17 +55,19 @@ export async function POST(request: NextRequest) {
         selectedAnswer,
         correctAnswer,
         isCorrect,
-        timeSpent: (timeSpent !== undefined && timeSpent !== null) ? timeSpent : 0,
+        timeSpent,
         attemptNumber,
-        feedbackViewed: feedbackViewed === true
+        feedbackViewed
       })
       .returning();
+    const progress = await updateProgressForSection(userId, section);
     
     return NextResponse.json({
       success: true,
       answerId: answer.id,
       isCorrect,
       attemptNumber,
+      progress,
       message: isCorrect ? 'Correct! Great job!' : 'Not quite right. Review the feedback and try again.'
     });
     
@@ -109,16 +87,17 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   try {
+    const userId = getAuthenticatedUserId(request);
+    if (userId instanceof NextResponse) return userId;
+
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
     const sectionId = searchParams.get('sectionId');
     
     if (
-      userId === null || userId === undefined || userId === '' ||
       sectionId === null || sectionId === undefined || sectionId === ''
     ) {
       return NextResponse.json(
-        { error: 'Missing userId or sectionId' },
+        { error: 'Missing sectionId' },
         { status: 400 }
       );
     }

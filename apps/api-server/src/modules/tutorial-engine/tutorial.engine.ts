@@ -9,12 +9,13 @@
 
 import { TutorialContentRepository, TutorialProgressRepository } from '@quiz/db-tutorial';
 import type { TutorialDifficulty } from '@quiz/types';
+import { calculateTutorialProgress, type TutorialMasterySectionId } from '@quiz/validation';
 
 import { logger } from '@/lib/logger';
 import { container } from '@/modules/core/container';
 
 export type TutorialBrand = 'realtutorialhub' | 'skillup' | 'shared';
-export type BlockType = 'notes' | 'layman' | 'real_life' | 'technical' | 'code' | 'ai_tutor';
+export type BlockType = TutorialMasterySectionId;
 
 const TOKENS = {
   TutorialContentRepository: 'ITutorialContentRepository',
@@ -264,13 +265,12 @@ export class TutorialEngine {
     }
 
     const blocksCompleted = (progress.blocksCompleted as string[] | undefined) ?? [];
-    const requiredBlocks = 6; // notes, layman, real_life, technical, code, ai_tutor
-    const completionPercent = Math.round((blocksCompleted.length / requiredBlocks) * 100);
-    const assignmentUnlocked = progress.status === 'completed';
+    const snapshot = calculateTutorialProgress({ completedSections: blocksCompleted });
+    const assignmentUnlocked = snapshot.status === 'completed';
 
     return {
-      blocksCompleted,
-      completionPercent,
+      blocksCompleted: snapshot.completedSections,
+      completionPercent: snapshot.completionPercent,
       assignmentUnlocked
     };
   }
@@ -278,10 +278,9 @@ export class TutorialEngine {
   /**
    * Check if user needs remediation
    */
-  private needsRemediation(_progress: Record<string, unknown> | null | undefined): boolean {
-    // TODO: Implement remediation logic
-    // Check if user is struggling based on progress patterns
-    return false;
+  private needsRemediation(progress: Record<string, unknown> | null | undefined): boolean {
+    const blocksCompleted = (progress?.blocksCompleted as string[] | undefined) ?? [];
+    return calculateTutorialProgress({ completedSections: blocksCompleted }).remediationTriggered;
   }
 
   /**

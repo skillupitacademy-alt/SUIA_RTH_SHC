@@ -1,7 +1,10 @@
 import { db } from '@quiz/db-tutorial';
-import { tutorialSections,visualInteractions } from '@quiz/db-tutorial';
-import { and,eq } from 'drizzle-orm';
+import { visualInteractions } from '@quiz/db-tutorial';
+import { VisualInteractionRequestSchema } from '@quiz/validation';
+import { and, eq } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
+
+import { getAuthenticatedUserId, getTutorialSection, parseJsonBody, updateProgressForSection } from '../_shared';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,49 +15,15 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json() as Record<string, unknown>;
-    const userId = body.userId as string;
-    const sectionId = body.sectionId as string;
-    const componentId = body.componentId as string;
-    const interactionType = body.interactionType as string;
-    const interactionData = body.interactionData as Record<string, unknown> | undefined;
-    const timeSpent = body.timeSpent as number | undefined;
-    
-    // Validate required fields
-    if (
-      userId === null || userId === undefined || userId === '' ||
-      sectionId === null || sectionId === undefined || sectionId === '' ||
-      componentId === null || componentId === undefined || componentId === '' ||
-      interactionType === null || interactionType === undefined || interactionType === ''
-    ) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      );
-    }
-    
-    // Validate interaction type
-    const validTypes = ['view', 'expand', 'navigate', 'interact'];
-    if (!validTypes.includes(interactionType)) {
-      return NextResponse.json(
-        { error: 'Invalid interaction type' },
-        { status: 400 }
-      );
-    }
-    
-    // Verify section exists and is a visual section
-    const section = await db
-      .select()
-      .from(tutorialSections)
-      .where(
-        and(
-          eq(tutorialSections.id, sectionId),
-          eq(tutorialSections.sectionType, 'visual')
-        )
-      )
-      .limit(1);
-    
-    if (section.length === 0) {
+    const userId = getAuthenticatedUserId(request);
+    if (userId instanceof NextResponse) return userId;
+
+    const parsed = await parseJsonBody(request, VisualInteractionRequestSchema);
+    if (!parsed.success) return parsed.response;
+    const { sectionId, componentId, interactionType, interactionData, timeSpent } = parsed.data;
+
+    const section = await getTutorialSection(sectionId, 'visual');
+    if (!section) {
       return NextResponse.json(
         { error: 'Visual section not found' },
         { status: 404 }
@@ -70,13 +39,15 @@ export async function POST(request: NextRequest) {
         componentId,
         interactionType,
         interactionData: (interactionData !== undefined && interactionData !== null) ? interactionData : null,
-        timeSpent: (timeSpent !== undefined && timeSpent !== null) ? timeSpent : 0
+        timeSpent
       })
       .returning();
+    const progress = await updateProgressForSection(userId, section);
     
     return NextResponse.json({
       success: true,
       interactionId: interaction.id,
+      progress,
       message: 'Interaction tracked successfully'
     });
     
@@ -96,17 +67,18 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   try {
+    const userId = getAuthenticatedUserId(request);
+    if (userId instanceof NextResponse) return userId;
+
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
     const sectionId = searchParams.get('sectionId');
     const componentId = searchParams.get('componentId');
     
     if (
-      userId === null || userId === undefined || userId === '' ||
       sectionId === null || sectionId === undefined || sectionId === ''
     ) {
       return NextResponse.json(
-        { error: 'Missing userId or sectionId' },
+        { error: 'Missing sectionId' },
         { status: 400 }
       );
     }

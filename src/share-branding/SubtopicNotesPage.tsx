@@ -23,10 +23,38 @@ import { TabFooter } from './TutorialEngine/components/notes/TabFooter';
 
 import { SubtopicViewPage } from './SubtopicViewPage';
 
+const tabToSectionType = {
+  notes: 'notes',
+  layman: 'layman',
+  'real-life': 'real_life',
+  'technical-deep-dive': 'technical',
+  'code-example': 'code',
+  'visual-explanation': 'visual',
+  'practice-test': 'practice',
+  assignments: 'assignment',
+  project: 'project',
+  quiz: 'quiz',
+  summary: 'summary',
+  interview: 'interview',
+  'ai-tutor': 'ai_tutor',
+} as const;
+
 export interface SubtopicNotesPageProps {
   notesData: SubtopicNotesViewData;
   overviewData: any; // SubtopicViewData type
   subtopicId?: string;
+}
+
+function SectionValidationBlocked({ message }: { message: string }) {
+  return (
+    <section className="rounded-2xl border border-red-200 bg-red-50 p-6 shadow-sm">
+      <h1 className="text-xl font-bold text-red-900">Tutorial Section Blocked</h1>
+      <p className="mt-3 text-sm font-medium leading-6 text-red-800">{message}</p>
+      <p className="mt-4 text-sm text-red-700">
+        Regenerate and save this section through prompt-generator and content-manager, then reload this page.
+      </p>
+    </section>
+  );
 }
 
 export function SubtopicNotesPage({ notesData, overviewData, subtopicId = 'component-architecture' }: SubtopicNotesPageProps) {
@@ -87,6 +115,8 @@ export function SubtopicNotesPage({ notesData, overviewData, subtopicId = 'compo
   const currentTabIndex = orderedTabs.findIndex(t => t.id === activeTab);
   const nextTab = orderedTabs[currentTabIndex + 1];
   const prevTab = orderedTabs[currentTabIndex - 1];
+  const activeSectionType = tabToSectionType[activeTab as keyof typeof tabToSectionType];
+  const activeSectionError = activeSectionType ? notesData.sectionErrors?.[activeSectionType] : undefined;
 
   return (
     <div className="flex h-screen w-full flex-col overflow-hidden bg-[#F8FAFC]">
@@ -160,83 +190,87 @@ export function SubtopicNotesPage({ notesData, overviewData, subtopicId = 'compo
                 {activeTab === 'overview' && (
                   <SubtopicViewPage data={overviewData} hideTopBar={true} hideSidebars={true} subtopicId={subtopicId} />
                 )}
-                {activeTab === 'notes' && (
+                {activeSectionError && activeTab !== 'overview' && (
+                  <SectionValidationBlocked message={activeSectionError} />
+                )}
+                {!activeSectionError && activeTab === 'notes' && (
                   <>
                     <h1 className="sr-only">Full Notes - {notesData.mainContent.title}</h1>
                     <NotesMainContent data={notesData.mainContent} isStandalone={false} />
                   </>
                 )}
-                {activeTab === 'layman' && (
+                {!activeSectionError && activeTab === 'layman' && (
                   <>
                     <h1 className="sr-only">Layman Explanation - {notesData.mainContent.title}</h1>
                     <LaymanExplanationContent data={notesData.mainContent.laymanExplanation} />
                   </>
                 )}
-                {activeTab === 'real-life' && (
+                {!activeSectionError && activeTab === 'real-life' && (
                   <>
                     <h1 className="sr-only">Real Life Examples - {notesData.mainContent.title}</h1>
                     <RealLifeExamplesContent data={notesData.mainContent.realLifeExamples} />
                   </>
                 )}
-                {activeTab === 'technical-deep-dive' && (
+                {!activeSectionError && activeTab === 'technical-deep-dive' && (
                   <>
                     <h1 className="sr-only">Technical Deep Dive - {notesData.mainContent.title}</h1>
                     <TechnicalDeepDiveContent data={notesData.mainContent.technicalDeepDive} />
                   </>
                 )}
-                {activeTab === 'code-example' && notesData.mainContent.codeExample && (
+                {!activeSectionError && activeTab === 'code-example' && notesData.mainContent.codeExample && (
                   <>
                     <h1 className="sr-only">Code Example - {notesData.mainContent.title}</h1>
                     <CodeExampleContent data={notesData.mainContent.codeExample} />
                   </>
                 )}
-                {activeTab === 'visual-explanation' && notesData.mainContent.visualExplanation && (
+                {!activeSectionError && activeTab === 'visual-explanation' && notesData.mainContent.visualExplanation && (
                   <>
                     <h1 className="sr-only">Visual Explanation - {notesData.mainContent.title}</h1>
                     <VisualExplanationContent data={notesData.mainContent.visualExplanation} />
                   </>
                 )}
-                {activeTab === 'practice-test' && notesData.mainContent.practiceTest && (
+                {!activeSectionError && activeTab === 'practice-test' && notesData.mainContent.practiceTest && (
                   <>
                     <h1 className="sr-only">Practice Test - {notesData.mainContent.title}</h1>
-                    <PracticeTestContent data={notesData.mainContent.practiceTest} />
+                    <PracticeTestContent data={notesData.mainContent.practiceTest} sectionId={notesData.sectionRecordIds?.practice} />
                   </>
                 )}
-                {activeTab === 'assignments' && notesData.mainContent.assignment && (
+                {!activeSectionError && activeTab === 'assignments' && notesData.mainContent.assignment && (
                   <>
                     <h1 className="sr-only">Assignments - {notesData.mainContent.title}</h1>
                     <AssignmentContent data={notesData.mainContent.assignment} />
                   </>
                 )}
-                {activeTab === 'project' && notesData.mainContent.project && (
+                {!activeSectionError && activeTab === 'project' && notesData.mainContent.project && (
                   <>
                     <h1 className="sr-only">Projects - {notesData.mainContent.title}</h1>
                     <ProjectContent data={notesData.mainContent.project} />
                   </>
                 )}
-                {activeTab === 'quiz' && notesData.mainContent.quiz && (
+                {!activeSectionError && activeTab === 'quiz' && notesData.mainContent.quiz && (
                   <>
                     <h1 className="sr-only">Quiz - {notesData.mainContent.title}</h1>
                     <QuizContent 
                       data={notesData.mainContent.quiz} 
+                      sectionId={notesData.sectionRecordIds?.quiz}
                       currentQuestionIndex={currentQuestionIndex}
                       onQuestionChange={setCurrentQuestionIndex}
                     />
                   </>
                 )}
-                {activeTab === 'summary' && notesData.mainContent.summary && (
+                {!activeSectionError && activeTab === 'summary' && notesData.mainContent.summary && (
                   <>
                     <h1 className="sr-only">Summary - {notesData.mainContent.title}</h1>
                     <SummaryContent data={notesData.mainContent.summary} title={notesData.mainContent.title} />
                   </>
                 )}
-                {activeTab === 'interview' && notesData.mainContent.interview && (
+                {!activeSectionError && activeTab === 'interview' && notesData.mainContent.interview && (
                   <>
                     <h1 className="sr-only">Interview Prep - {notesData.mainContent.title}</h1>
                     <InterviewPrepContent data={notesData.mainContent.interview} title={notesData.mainContent.title} />
                   </>
                 )}
-                {activeTab === 'ai-tutor' && (
+                {!activeSectionError && activeTab === 'ai-tutor' && (
                   <>
                     <h1 className="sr-only">{brand.tutorLabel} - {notesData.mainContent.title}</h1>
                     <AITutorContent

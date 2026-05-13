@@ -7,8 +7,19 @@
 
 import { BrandConfig } from './brandConfig';
 import { SubtopicNotesViewData } from './subtopicNotesData';
+import {
+  calculateTutorialProgress,
+  formatTutorialSectionValidationIssues,
+  type TutorialMasterySectionId,
+  type ValidatedTutorialSection,
+  validateTutorialSection,
+} from '@quiz/validation';
 
 type JsonRecord = Record<string, any>;
+type LoadedSection<TSection extends TutorialMasterySectionId> = {
+  data?: ValidatedTutorialSection<TSection>;
+  error?: string;
+};
 
 function snakeToCamelKey(key: string): string {
   return key.replace(/_([a-z])/g, (_, char: string) => char.toUpperCase());
@@ -240,6 +251,33 @@ function normalizeGenericSection(raw: JsonRecord): JsonRecord {
   return camelizeDeep(raw || {});
 }
 
+function getRequiredSection(sections: Record<string, unknown>, sectionType: TutorialMasterySectionId): unknown {
+  if (!Object.prototype.hasOwnProperty.call(sections, sectionType)) {
+    throw new Error(`This tutorial section failed schema validation and must be regenerated. Section: ${sectionType}. Missing required DB section.`);
+  }
+  return sections[sectionType];
+}
+
+function strictSectionError(sectionType: TutorialMasterySectionId, detail: string): string {
+  return `This tutorial section failed schema validation and must be regenerated. Section: ${sectionType}. ${detail}`;
+}
+
+function loadStrictSection<TSection extends TutorialMasterySectionId>(
+  sections: Record<string, unknown>,
+  sectionType: TSection
+): LoadedSection<TSection> {
+  if (!Object.prototype.hasOwnProperty.call(sections, sectionType)) {
+    return { error: strictSectionError(sectionType, 'Missing required DB section.') };
+  }
+
+  const validation = validateTutorialSection(sectionType, getRequiredSection(sections, sectionType));
+  if (!validation.success) {
+    return { error: strictSectionError(sectionType, formatTutorialSectionValidationIssues(validation.issues)) };
+  }
+
+  return { data: validation.data };
+}
+
 /**
  * Load subtopic data from database via API
  * 
@@ -287,8 +325,14 @@ export async function loadSubtopicNotesDataFromAPI(
 
     const data = await response.json();
     
-    // Extract sections from API response
+    // Extract and strictly validate sections from API response.
     const sections = data.sections || {};
+    const sectionMeta = data.sectionMeta || {};
+    const sectionRecordIds = Object.fromEntries(
+      Object.entries(sectionMeta as Record<string, JsonRecord>)
+        .filter(([, meta]) => typeof meta?.id === 'string')
+        .map(([sectionType, meta]) => [sectionType, meta.id as string])
+    );
     const subtopicName = data.subtopicName || subtopicId;
     
     // Map of subtopic metadata (can be enhanced with API data later)
@@ -299,22 +343,45 @@ export async function loadSubtopicNotesDataFromAPI(
       topic: 'Programming Concepts'
     };
 
-    // Get content from API response
-    const notesContent = normalizeNotesSection(sections.notes || {});
-    const laymanContent = normalizeLaymanSection(sections.layman || {});
-    const visualContent = normalizeVisualSection(sections.visual || {});
-    const realLifeContent = normalizeRealLifeSection(sections.real_life || {});
-    const technicalContent = normalizeGenericSection(sections.technical || {});
-    const codeContent = normalizeCodeSection(sections.code || {});
-    const practiceContent = normalizePracticeSection(sections.practice || {});
-    const assignmentContent = normalizeGenericSection(sections.assignment || {});
-    const projectContent = normalizeGenericSection(sections.project || {});
-    const quizContent = normalizeGenericSection(sections.quiz || {});
-    const summaryContent = normalizeGenericSection(sections.summary || {});
-    const interviewContent = normalizeGenericSection(sections.interview || {});
-    const aiTutorContent = normalizeGenericSection(sections.ai_tutor || {});
+    const loadedSections = {
+      notes: loadStrictSection(sections, 'notes'),
+      layman: loadStrictSection(sections, 'layman'),
+      real_life: loadStrictSection(sections, 'real_life'),
+      technical: loadStrictSection(sections, 'technical'),
+      code: loadStrictSection(sections, 'code'),
+      visual: loadStrictSection(sections, 'visual'),
+      practice: loadStrictSection(sections, 'practice'),
+      assignment: loadStrictSection(sections, 'assignment'),
+      project: loadStrictSection(sections, 'project'),
+      quiz: loadStrictSection(sections, 'quiz'),
+      summary: loadStrictSection(sections, 'summary'),
+      interview: loadStrictSection(sections, 'interview'),
+      ai_tutor: loadStrictSection(sections, 'ai_tutor'),
+    };
+    const sectionErrors = Object.fromEntries(
+      Object.entries(loadedSections)
+        .filter((entry): entry is [TutorialMasterySectionId, { error: string }] => typeof entry[1].error === 'string')
+        .map(([sectionType, result]) => [sectionType, result.error])
+    );
+
+    const notesContent = loadedSections.notes.data;
+    const laymanContent = loadedSections.layman.data;
+    const visualContent = loadedSections.visual.data;
+    const realLifeContent = loadedSections.real_life.data;
+    const technicalContent = loadedSections.technical.data;
+    const codeContent = loadedSections.code.data;
+    const practiceContent = loadedSections.practice.data;
+    const assignmentContent = loadedSections.assignment.data;
+    const projectContent = loadedSections.project.data;
+    const quizContent = loadedSections.quiz.data;
+    const summaryContent = loadedSections.summary.data;
+    const interviewContent = loadedSections.interview.data;
+    const aiTutorContent = loadedSections.ai_tutor.data;
+    const progressSnapshot = calculateTutorialProgress({ completedSections: [] });
 
     return {
+      sectionErrors,
+      sectionRecordIds,
       nav: {
         courseLabel: 'Course',
         lessonLabel: 'Lesson',
@@ -343,8 +410,8 @@ export async function loadSubtopicNotesDataFromAPI(
           { id: 'progress', label: 'Progress', status: 'pending', icon: 'TrendingUp' }
         ],
         progress: {
-          percentage: 65,
-          message: '65% Complete'
+          percentage: progressSnapshot.completionPercent,
+          message: `${progressSnapshot.completionPercent}% Complete`
         }
       },
       mainContent: {
@@ -355,68 +422,52 @@ export async function loadSubtopicNotesDataFromAPI(
           level: subtopicInfo.level,
           xp: 50
         },
-        simpleWords: notesContent.simpleWords || '',
-        definitionBlock: notesContent.definitionBlock,
-        sections: notesContent.sections || [],
-        componentGrid: notesContent.componentGrid,
-        examplePanel: notesContent.examplePanel,
-        practiceCard: notesContent.practiceCard,
-        warningFaq: notesContent.warningFaq,
-        summaryCard: notesContent.summaryCard,
-        ...(laymanContent && Object.keys(laymanContent).length > 0 && { laymanExplanation: laymanContent }),
-        ...(realLifeContent && Object.keys(realLifeContent).length > 0 && { realLifeExamples: realLifeContent }),
-        ...(technicalContent && Object.keys(technicalContent).length > 0 && { technicalDeepDive: technicalContent }),
-        ...(codeContent && Object.keys(codeContent).length > 0 && { codeExample: codeContent }),
-        ...(visualContent && Object.keys(visualContent).length > 0 && { visualExplanation: visualContent }),
-        ...(practiceContent && Object.keys(practiceContent).length > 0 && { practiceTest: practiceContent }),
-        ...(assignmentContent && Object.keys(assignmentContent).length > 0 && { assignment: assignmentContent }),
-        ...(projectContent && Object.keys(projectContent).length > 0 && { project: projectContent }),
-        ...(quizContent && Object.keys(quizContent).length > 0 && { quiz: quizContent }),
-        ...(summaryContent && Object.keys(summaryContent).length > 0 && { summary: summaryContent }),
-        ...(interviewContent && Object.keys(interviewContent).length > 0 && { interview: interviewContent }),
-        ...(aiTutorContent && Object.keys(aiTutorContent).length > 0 && { aiTutorContent })
+        simpleWords: notesContent?.simpleWords ?? '',
+        definitionBlock: notesContent?.definitionBlock,
+        sections: notesContent?.sections ?? [],
+        componentGrid: notesContent?.componentGrid,
+        examplePanel: notesContent?.examplePanel,
+        practiceCard: notesContent?.practiceCard,
+        warningFaq: notesContent?.warningFaq,
+        summaryCard: notesContent?.summaryCard,
+        laymanExplanation: laymanContent,
+        realLifeExamples: realLifeContent,
+        technicalDeepDive: technicalContent,
+        codeExample: codeContent,
+        visualExplanation: visualContent,
+        practiceTest: practiceContent,
+        assignment: assignmentContent,
+        project: projectContent,
+        quiz: quizContent,
+        summary: summaryContent,
+        interview: interviewContent,
+        aiTutorContent
       } as any,
       rightSidebar: {
         aiTutor: {
           title: `${brand.tutorLabel || 'Tutor'} (Ask Anything)`,
-          messages: Array.isArray(aiTutorContent.qaPairs) && aiTutorContent.qaPairs.length > 0
-            ? aiTutorContent.qaPairs.slice(0, 3).flatMap((pair: JsonRecord) => [
+          messages: (aiTutorContent?.qaPairs ?? []).slice(0, 3).flatMap((pair) => [
                 { text: firstText(pair.question), time: '2:30 PM', sender: 'user' as const },
                 { text: firstText(pair.answer), time: '2:31 PM', sender: 'bot' as const }
-              ])
-            : [
-                { text: `What is ${subtopicInfo.title.toLowerCase()}?`, time: '2:30 PM', sender: 'user' },
-                { text: `${notesContent.simpleWords?.substring(0, 100) || firstText(aiTutorContent.greeting, 'Let me explain')}... Would you like to see an example?`, time: '2:30 PM', sender: 'bot' }
-              ],
+              ]),
           inputPlaceholder: 'Ask a follow-up...'
         },
         courseProgress: {
-          percentage: 65,
+          percentage: progressSnapshot.completionPercent,
           courseName: subtopicInfo.topic,
-          label: '65% Completed'
+          label: `${progressSnapshot.completionPercent}% Completed`
         },
         xpStats: {
           earned: 50,
           total: 2450
         },
         relatedSubtopics: [
-          { id: 'rs1', title: 'Props and State', status: 'next' },
-          { id: 'rs2', title: 'Component Lifecycle', status: 'default' },
-          { id: 'rs3', title: 'Hooks API', status: 'default' }
         ],
         laymanSidebar: {
-          quickSummary: laymanContent?.simpleOverview?.quickSummary || [
-            'Learn the basics',
-            'Understand core concepts',
-            'Apply in real projects'
-          ],
-          keyTerms: [
-            { term: 'Component', definition: 'A reusable building block' },
-            { term: 'Props', definition: 'Data passed into a component' },
-            { term: 'State', definition: 'Internal data of a component' }
-          ],
-          readingTime: '5 - 7 minutes',
-          thinkAboutIt: "Think about how you can apply these concepts in your own projects!"
+          quickSummary: notesContent?.definitionBlock.quickSummary ?? [],
+          keyTerms: [],
+          readingTime: '',
+          thinkAboutIt: ''
         },
         deepDiveSidebar: {
           onThisPage: [
@@ -443,7 +494,7 @@ export async function loadSubtopicNotesDataFromAPI(
  * Helper function to submit quiz answer
  */
 export async function submitQuizAnswer(
-  userId: string,
+  _userId: string,
   sectionId: string,
   questionId: string,
   selectedAnswer: string,
@@ -454,7 +505,6 @@ export async function submitQuizAnswer(
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      userId,
       sectionId,
       questionId,
       selectedAnswer,
@@ -474,7 +524,7 @@ export async function submitQuizAnswer(
  * Helper function to submit practice test answer
  */
 export async function submitPracticeAnswer(
-  userId: string,
+  _userId: string,
   sectionId: string,
   questionId: string,
   selectedAnswer: string,
@@ -486,7 +536,6 @@ export async function submitPracticeAnswer(
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      userId,
       sectionId,
       questionId,
       selectedAnswer,
@@ -507,7 +556,7 @@ export async function submitPracticeAnswer(
  * Helper function to track code interaction
  */
 export async function trackCodeInteraction(
-  userId: string,
+  _userId: string,
   sectionId: string,
   codeExampleId: string,
   userCode: string,
@@ -519,7 +568,6 @@ export async function trackCodeInteraction(
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      userId,
       sectionId,
       codeExampleId,
       userCode,
@@ -540,7 +588,7 @@ export async function trackCodeInteraction(
  * Helper function to track visual interaction
  */
 export async function trackVisualInteraction(
-  userId: string,
+  _userId: string,
   sectionId: string,
   componentId: string,
   interactionType: 'view' | 'expand' | 'navigate' | 'interact',
@@ -551,7 +599,6 @@ export async function trackVisualInteraction(
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      userId,
       sectionId,
       componentId,
       interactionType,
@@ -571,7 +618,7 @@ export async function trackVisualInteraction(
  * Helper function to mark section as completed
  */
 export async function markSectionComplete(
-  userId: string,
+  _userId: string,
   sectionId: string,
   subsectionId?: string,
   timeSpent: number = 0,
@@ -581,7 +628,6 @@ export async function markSectionComplete(
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      userId,
       sectionId,
       subsectionId,
       timeSpent,

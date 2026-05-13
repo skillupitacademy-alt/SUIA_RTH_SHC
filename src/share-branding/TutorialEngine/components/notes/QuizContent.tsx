@@ -3,12 +3,14 @@
 import React, { useState } from 'react';
 import * as Icons from 'lucide-react';
 import { useBrand } from '../../../PostLandingPage/app/context/BrandContext';
+import { submitQuizAnswer } from '../../../subtopicNotesDataAPI';
 
 export function QuizContent({ 
   data, 
   onNext,
   currentQuestionIndex = 0,
-  onQuestionChange
+  onQuestionChange,
+  sectionId
 }: { 
   data?: {
     title: string;
@@ -34,6 +36,7 @@ export function QuizContent({
   onNext?: () => void;
   currentQuestionIndex?: number;
   onQuestionChange?: (index: number) => void;
+  sectionId?: string;
 }) {
   const brand = useBrand();
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
@@ -43,29 +46,20 @@ export function QuizContent({
     setSelectedOption(null);
   }, [currentQuestionIndex]);
 
-  // Use data from props or fallback to defaults
-  const title = data?.title || 'Interactive Quiz';
-  const description = data?.description || 'Test your mastery.';
-  const totalQuestions = data?.totalQuestions || 10;
-  const duration = data?.duration || '15 min';
-  const xp = data?.xp || 100;
-  const questions = data?.questions || [];
-  
-  const currentQuestion = questions[currentQuestionIndex] || {
-    id: 'q1',
-    questionNumber: 1,
-    type: 'Single Choice',
-    points: 2,
-    question: 'Sample question?',
-    options: [
-      { id: 'A', text: 'Option A' },
-      { id: 'B', text: 'Option B' }
-    ],
-    correctAnswer: 'A',
-    explanation: 'This is the explanation.'
-  };
+  if (!data) return null;
+
+  const { title, description, totalQuestions, duration, xp, questions } = data;
+  const currentQuestion = questions[currentQuestionIndex];
+  if (!currentQuestion) return null;
 
   const progress = ((currentQuestionIndex + 1) / totalQuestions) * 100;
+  const handleOptionSelect = (optionId: string) => {
+    setSelectedOption(optionId);
+    if (!sectionId) return;
+    submitQuizAnswer('', sectionId, currentQuestion.id, optionId, currentQuestion.correctAnswer, 0).catch((error) => {
+      console.error('[QuizContent] Failed to persist quiz answer:', error);
+    });
+  };
 
   return (
     <div className="min-w-0 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20 sm:space-y-12">
@@ -154,7 +148,7 @@ export function QuizContent({
             {currentQuestion.options.map((opt) => (
                <button
                   key={opt.id}
-                  onClick={() => setSelectedOption(opt.id)}
+                  onClick={() => handleOptionSelect(opt.id)}
                    className={`group flex items-center gap-6 rounded-2xl p-6 transition-all border-t shadow-sm hover:shadow-xl hover:-translate-y-2 ${selectedOption === opt.id ? 'border-rose-500 bg-rose-50/50 ring-4 ring-rose-500/5 shadow-rose-100/50' : 'border-white/60 bg-white/40 hover:bg-white/80'}`}
                 >
                   <div className={`flex h-6 w-6 items-center justify-center rounded-full border-2 transition-all ${selectedOption === opt.id ? 'border-rose-900 bg-rose-900' : 'border-slate-300 group-hover:border-slate-400'}`}>

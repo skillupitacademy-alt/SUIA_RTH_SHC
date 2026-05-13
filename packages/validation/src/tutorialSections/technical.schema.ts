@@ -1,0 +1,37 @@
+import { z } from 'zod';
+import {
+  JsonRecordSchema,
+  NonEmptyStringSchema,
+  nonEmptyStringArray,
+  sectionSchema,
+  strictObject,
+} from './base';
+
+export const TechnicalSectionSchema = sectionSchema('technical', {
+  title: NonEmptyStringSchema,
+  badge: NonEmptyStringSchema,
+  intro: NonEmptyStringSchema,
+  sections: z.array(strictObject({
+    id: NonEmptyStringSchema,
+    title: NonEmptyStringSchema,
+    content: NonEmptyStringSchema,
+    diagram: strictObject({
+      type: z.enum(['anatomy', 'flow', 'chain']),
+      data: JsonRecordSchema,
+    }).optional(),
+    code: strictObject({
+      language: NonEmptyStringSchema,
+      code: NonEmptyStringSchema,
+      output: NonEmptyStringSchema.optional(),
+    }).optional(),
+    keyPoints: nonEmptyStringArray(1).optional(),
+    steps: z.array(strictObject({
+      id: NonEmptyStringSchema,
+      text: NonEmptyStringSchema,
+    })).min(1).optional(),
+    highlight: NonEmptyStringSchema.optional(),
+  })).min(1),
+});
+
+export type TechnicalSection = z.infer<typeof TechnicalSectionSchema>;
+

@@ -45,6 +45,10 @@ function PromptGeneratorContent() {
   };
 
   const getPromptForSection = (section: TutorialPromptSectionId, domainName: string, subjectName: string, topicName: string, subtopicName: string): string => {
+    if (section !== 'master') {
+      return getStrictCanonicalPrompt(section, domainName, subjectName, topicName, subtopicName);
+    }
+
     const prompts: Record<TutorialPromptSectionId, string> = {
       master: getMasterPrompt(domainName, subjectName, topicName, subtopicName),
       overview: getOverviewPrompt(domainName, subjectName, topicName, subtopicName),
@@ -64,6 +68,296 @@ function PromptGeneratorContent() {
     };
 
     return prompts[section];
+  };
+
+  const getStrictCanonicalPrompt = (
+    section: TutorialPromptSectionId,
+    domainName: string,
+    subjectName: string,
+    topicName: string,
+    subtopicName: string
+  ): string => {
+    const contract = getTutorialSectionContractByPromptId(section);
+    if (!contract) return getMasterPrompt(domainName, subjectName, topicName, subtopicName);
+
+    const template = getStrictSectionJsonTemplate(contract.dbType, subtopicName);
+
+    return `Generate STRICT CANONICAL tutorial section JSON.
+
+**Educational Hierarchy:**
+- Domain: ${domainName}
+- Subject: ${subjectName}
+- Topic: ${topicName}
+- Subtopic: ${subtopicName}
+
+**SECTION CONTRACT**
+- DB section_type: ${contract.dbType}
+- Root key: "${contract.dbType}"
+- schemaVersion: 1
+- sectionType: "${contract.dbType}"
+
+**STRICT RULES**
+1. Return valid JSON only. No markdown fences and no prose outside JSON.
+2. The top-level object must contain exactly one root key: "${contract.dbType}".
+3. Inside that root key, include "schemaVersion": 1 and "sectionType": "${contract.dbType}".
+4. Use the exact property names and object/array structure shown below.
+5. Replace every placeholder with real educational content for "${subtopicName}".
+6. Do not omit required arrays or objects.
+7. Do not add extra properties.
+8. Do not use generic filler or another subtopic's content.
+9. Use "\\n" inside code strings for newlines.
+
+**EXACT JSON SHAPE TO RETURN**
+
+${JSON.stringify(template, null, 2)}`;
+  };
+
+  const getStrictSectionJsonTemplate = (section: string, subtopicName: string): Record<string, unknown> => {
+    const base = { schemaVersion: 1, sectionType: section };
+    const templates: Record<string, Record<string, unknown>> = {
+      overview: {
+        overview: {
+          ...base,
+          hero: {
+            iconLabel: 'JS',
+            title: subtopicName,
+            description: `Clear overview of ${subtopicName}.`,
+            difficulty: 'Beginner',
+            estimatedReadTime: '45 mins',
+            xp: 500,
+            topicsCount: 10,
+            lastUpdated: 'Today',
+          },
+          progressSummary: {
+            percentage: 0,
+            checklist: [
+              { label: 'Notes', completed: false },
+              { label: 'Practice', completed: false },
+              { label: 'Assignment', completed: false },
+              { label: 'Quiz', completed: false },
+            ],
+          },
+          learningOutcomes: ['Outcome 1', 'Outcome 2', 'Outcome 3'],
+          learningRoadmap: {
+            contentCards: [
+              { id: 'notes', title: 'Notes', type: 'notes', content: 'What notes teach.', ctaLabel: 'Read Full Notes' },
+              { id: 'layman', title: 'Layman Explanation', type: 'layman', content: 'Simple explanation angle.', ctaLabel: 'Read Simply' },
+              { id: 'real-life', title: 'Real-Life Example', type: 'example', content: 'Real-world usage.', ctaLabel: 'View Examples' },
+              { id: 'code', title: 'Code Example', type: 'code', code: 'console.log("example");', ctaLabel: 'Run Code' },
+              { id: 'technical', title: 'Technical Deep Dive', type: 'deep-dive', content: 'Technical depth.', ctaLabel: 'Read Details' },
+              { id: 'visual', title: 'Visual Explanation', type: 'visual', content: 'Visual model.', ctaLabel: 'View Visual' },
+            ],
+            taskCards: [
+              { id: 'practice', title: 'Practice Tasks', type: 'practice', content: 'Practice scope.', ctaLabel: 'Start Practice' },
+              { id: 'assignment', title: 'Assignment', type: 'assignment', content: 'Assignment scope.', badge: { text: 'Easy', type: 'success' }, ctaLabel: 'Start Assignment' },
+              { id: 'project', title: 'Project', type: 'project', content: 'Project scope.', badge: { text: 'Beginner', type: 'success' }, ctaLabel: 'View Project' },
+              { id: 'quiz', title: 'Quiz', type: 'quiz', content: 'Quiz scope.', ctaLabel: 'Start Quiz' },
+            ],
+          },
+          recommendedFlow: ['Read Notes', 'Review Layman Explanation', 'Try Code Example', 'Complete Practice', 'Take Quiz'],
+          readinessContext: {
+            prerequisites: ['Prerequisite 1', 'Prerequisite 2'],
+            successCriteria: ['Success criterion 1', 'Success criterion 2'],
+          },
+          navigation: { prevTitle: 'Previous subtopic', nextTitle: 'Next subtopic' },
+        },
+      },
+      notes: {
+        notes: {
+          ...base,
+          simpleWords: `Simple explanation of ${subtopicName}.`,
+          definitionBlock: {
+            badge: 'Core Concept',
+            headline: `What is ${subtopicName}?`,
+            definitionText: 'Precise definition.',
+            importanceCallout: 'Why it matters.',
+            quickSummary: ['Summary point 1', 'Summary point 2'],
+          },
+          sections: [
+            { id: 'concept', title: 'Concept', content: 'Main explanation.', keyPoint: 'Key point.' },
+            { id: 'syntax', title: 'Syntax', content: 'Syntax explanation.', codeExample: { code: 'const value = true;', output: 'true' } },
+          ],
+          componentGrid: {
+            gridTitle: 'Key Components',
+            componentCards: [
+              { id: 'comp1', title: 'Component 1', description: 'Description.', icon: 'Box', subcomponents: ['Part 1'] },
+            ],
+          },
+          examplePanel: {
+            exampleTitle: 'Practical Examples',
+            scenarios: [
+              { id: 'ex1', title: 'Example 1', scenarioDescription: 'Scenario.', practicalSolution: 'Solution.', industryContext: 'Industry context.' },
+            ],
+          },
+          practiceCard: {
+            bestPracticeTitle: 'Best Practices',
+            recommendations: [{ id: 'bp1', title: 'Practice 1', description: 'Description.' }],
+            optimizationTips: ['Tip 1'],
+            industryStandards: ['Standard 1'],
+          },
+          warningFaq: {
+            commonErrors: [{ id: 'err1', error: 'Mistake.', solution: 'Fix.' }],
+            faqItems: [{ id: 'faq1', question: 'Question?', answer: 'Answer.' }],
+            misconceptionAlerts: ['Misconception to avoid.'],
+          },
+          summaryCard: {
+            summaryTitle: 'Quick Revision Summary',
+            keyTakeaways: ['Takeaway 1'],
+            revisionChecklist: [{ id: 'check1', item: 'Review item.', checked: false }],
+            memoryReinforcement: 'Memory hook.',
+            examTips: ['Exam tip 1'],
+          },
+        },
+      },
+      layman: {
+        layman: {
+          ...base,
+          simpleOverview: { badge: 'Beginner Friendly', headline: `${subtopicName} Explained Simply`, simpleDefinition: 'Simple definition.', subExplanation: 'Simple detail.', importanceBlock: 'Why a beginner should care.', progressIndicator: 'Beginner ready.' },
+          everydayAnalogy: { title: 'Think of It Like This', storyAnalogy: 'Analogy story.', comparisonPanel: { realWorld: 'Real-world side.', technical: 'Technical side.' }, visualMetaphor: 'Metaphor.', keyTakeaway: 'Takeaway.' },
+          whyItExists: { sectionTitle: 'Why It Exists', benefitCards: [{ id: 'benefit1', title: 'Career Benefit', description: 'Benefit.', icon: 'Briefcase', type: 'career' }] },
+          simpleUseCases: { gridTitle: 'Where You Will See This', useCaseCards: [{ id: 'use1', title: 'Use Case', description: 'Usage.', category: 'everyday', icon: 'Monitor' }] },
+          beginnerBreakdown: { title: 'Step-by-Step Breakdown', steps: [{ id: 'step1', stepTitle: 'Step 1', stepExplanation: 'Explanation.', microLearningChunk: 'Remember this.' }] },
+          mentalModel: { title: 'Mental Model', conceptMap: { nodes: [{ id: 'node1', label: 'Part', description: 'Description.' }], connections: [{ from: 'node1', to: 'node1', label: 'relates to' }] }, visualLabels: ['Label 1'] },
+          commonConfusions: { title: 'Common Confusions', confusionItems: [{ id: 'conf1', confusion: 'Confusion.', clarification: 'Clarification.' }], faqItems: [{ id: 'faq1', question: 'Question?', answer: 'Answer.' }], misconceptionAlerts: ['Misconception.'] },
+          simpleRecap: { summaryTitle: 'Simple Recap', keyTakeaways: ['Takeaway 1'], simpleRecapPoints: ['Point 1'], confidenceBoost: 'Confidence signal.', memoryReinforcement: 'Memory hook.' },
+        },
+      },
+      real_life: {
+        real_life: {
+          ...base,
+          conceptMapping: { badge: 'Real World', headline: `${subtopicName} in Real Life`, conceptDefinition: 'Concept definition.', realWorldTranslation: 'Real-world translation.', importanceBlock: 'Importance.', careerRelevance: 'Career relevance.' },
+          industryUseCase: { title: 'Industry Use Case', industryName: 'Industry', scenarioDescription: 'Scenario.', businessContext: 'Context.', implementation: 'Implementation.', impact: 'Impact.', keyTakeaway: 'Takeaway.' },
+          dailyLifeExample: { title: 'Daily Life Example', storyTitle: 'Story', storyNarrative: 'Story narrative.', everydayConnection: 'Connection.', technicalMapping: 'Mapping.', relatableInsight: 'Insight.' },
+          careerRelevance: { title: 'Career Relevance', careerPaths: [{ id: 'career1', role: 'Developer', description: 'Description.', skillLevel: 'entry', salaryRange: 'Varies', icon: 'Briefcase' }], industryDemand: 'Demand.', futureGrowth: 'Growth.' },
+          problemSolutionContext: { title: 'Problem Solution Context', problemStatement: 'Problem.', context: 'Context.', solution: 'Solution.', implementation: 'Implementation.', outcome: 'Outcome.', lessonsLearned: 'Lesson.' },
+          businessApplication: { title: 'Business Application', companyType: 'Company type.', businessChallenge: 'Challenge.', technicalApplication: 'Application.', businessProcess: 'Process.', roi: 'ROI.', scalability: 'Scalability.', keyInsight: 'Insight.' },
+          domainScenarios: { title: 'Domain Scenarios', scenarios: [{ id: 'domain1', domain: 'Domain', title: 'Scenario', description: 'Description.', application: 'Application.', icon: 'Globe' }] },
+          practicalRecap: { summaryTitle: 'Practical Recap', keyApplications: ['Application 1'], industryRelevance: ['Relevance 1'], careerImpact: 'Impact.', nextSteps: ['Next step 1'], practicalAdvice: 'Advice.' },
+        },
+      },
+      technical: {
+        technical: {
+          ...base,
+          title: `${subtopicName} Technical Deep Dive`,
+          badge: 'Technical',
+          intro: 'Technical introduction.',
+          sections: [
+            { id: 'tech1', title: 'Technical Section', content: 'Detailed technical content.', diagram: { type: 'flow', data: { label: 'Flow' } }, code: { language: 'javascript', code: 'console.log("technical");', output: 'technical' }, keyPoints: ['Key point'], steps: [{ id: 'step1', text: 'Step text.' }], highlight: 'Important highlight.' },
+          ],
+        },
+      },
+      code: {
+        code: {
+          ...base,
+          problemContext: { title: 'Problem Context', scenario: 'Scenario.', requirements: ['Requirement 1'], constraints: 'Constraint.' },
+          basicCodeExample: { title: 'Basic Code Example', description: 'Description.', code: 'const example = true;', language: 'javascript', explanation: 'Explanation.' },
+          lineByLineExplanation: { title: 'Line-by-Line Explanation', lines: [{ id: 'line1', lineNumber: 1, code: 'const example = true;', explanation: 'Line explanation.' }] },
+          outputDemonstration: { title: 'Output Demonstration', input: 'Input.', output: 'Output.', explanation: 'Explanation.', visualRepresentation: 'Visual representation.' },
+          bestPracticeVersion: { title: 'Best Practice Version', improvements: ['Improvement 1'], code: 'const example = true;', explanation: 'Explanation.', benefits: ['Benefit 1'] },
+          commonMistakes: { title: 'Common Mistakes', mistakes: [{ id: 'mistake1', mistake: 'Mistake.', badCode: 'bad();', goodCode: 'good();', why: 'Why.', lesson: 'Lesson.' }] },
+          realWorldImplementation: { title: 'Real-World Implementation', scenario: 'Scenario.', code: 'console.log("production");', features: ['Feature 1'], explanation: 'Explanation.', scalability: 'Scalability.' },
+          codeSummary: { title: 'Code Summary', keyTakeaways: ['Takeaway 1'], practiceExercise: 'Exercise.', nextSteps: ['Next step 1'] },
+        },
+      },
+      visual: {
+        visual: {
+          ...base,
+          conceptVisualIntro: { badge: 'Visual', headline: `${subtopicName} Visually`, visualDefinition: 'Visual definition.', heroDiagramPreview: 'Diagram preview.', importanceBlock: 'Importance.', progressIndicator: 'Progress note.' },
+          diagrammaticBreakdown: { title: 'Diagrammatic Breakdown', diagramTitle: 'Diagram', componentLabels: [{ id: 'A', label: 'Part A', description: 'Description.' }], stepMarkers: ['Step marker'], technicalTooltips: [{ id: 'tip1', term: 'Term', explanation: 'Explanation.' }] },
+          stepByStepVisualFlow: { title: 'Step-by-Step Visual Flow', sequenceTitle: 'Flow', steps: [{ id: 'step1', stepNumber: 1, title: 'Step', description: 'Description.', visualCue: 'Cue.' }], phaseExplanations: ['Phase explanation'] },
+          comparativeVisualization: { title: 'Comparative Visualization', comparisonTitle: 'Comparison', sideBySideVisuals: { option1: { title: 'Option 1', description: 'Description.', pros: ['Pro'], cons: ['Con'] }, option2: { title: 'Option 2', description: 'Description.', pros: ['Pro'], cons: ['Con'] } }, differenceHighlights: ['Difference'] },
+          mentalModelVisualization: { title: 'Mental Model Visualization', frameworkMap: { nodes: [{ id: 'node1', label: 'Node', description: 'Description.', type: 'core' }], connections: [{ from: 'node1', to: 'node1', label: 'relates', type: 'primary' }] }, memoryLabels: ['Memory label'] },
+          realWorldVisualMapping: { title: 'Real-World Visual Mapping', practicalScenarios: [{ id: 'scenario1', title: 'Scenario', description: 'Description.', industryContext: 'Context.', visualRepresentation: 'Representation.', icon: 'Briefcase' }], careerRelevance: 'Career relevance.' },
+          commonConfusionVisualization: { title: 'Common Confusion Visualization', confusionItems: [{ id: 'conf1', confusion: 'Confusion.', visualClarification: 'Clarification.', correctVisualization: 'Correct view.' }], faqItems: [{ id: 'faq1', question: 'Question?', answer: 'Answer.' }], misconceptionDiagrams: ['Misconception diagram'] },
+          visualSummary: { summaryTitle: 'Visual Summary', keyVisualTakeaways: ['Takeaway'], revisionInfographic: 'Infographic description.', memoryReinforcement: 'Memory hook.', examVisualChecklist: ['Checklist item'] },
+        },
+      },
+      practice: {
+        practice: {
+          ...base,
+          assessmentIntro: { badge: 'Practice', headline: `${subtopicName} Practice Test`, testDescription: 'Test description.', difficultyOverview: 'Difficulty overview.', learningGoals: ['Goal 1'], readinessIndicator: 'Readiness indicator.' },
+          conceptRecallQuestions: { title: 'Concept Recall Questions', questions: [{ id: 'q1', questionNumber: 1, type: 'single-choice', points: 5, question: 'Question?', options: [{ id: 'a', text: 'Option A' }, { id: 'b', text: 'Option B' }], correctAnswer: 'a', explanation: 'Explanation.', difficulty: 'easy' }] },
+          scenarioBasedQuestions: { title: 'Scenario-Based Questions', scenarios: [{ id: 's1', scenarioTitle: 'Scenario', realWorldProblem: 'Problem.', businessContext: 'Context.', decisionQuestion: 'Decision?', options: [{ id: 'a', text: 'Option A' }, { id: 'b', text: 'Option B' }], correctAnswer: 'a', explanation: 'Explanation.', difficulty: 'medium' }] },
+          difficultyProgression: { title: 'Difficulty Progression', levels: [{ id: 'level1', level: 'beginner', description: 'Description.', questionCount: 5, passingScore: 70 }], adaptiveLogic: false },
+          instantFeedback: { enabled: true, feedbackType: 'immediate' },
+          commonMistakeDetection: { title: 'Common Mistake Detection', mistakeCategories: [{ id: 'mistake1', category: 'Category', description: 'Description.', frequency: 1 }], weaknessHeatmap: { topics: [{ id: 'topic1', topic: subtopicName, score: 0, status: 'weak' }] } },
+          performanceAnalytics: { title: 'Performance Analytics', scoreDisplay: { currentScore: 0, maxScore: 100, percentage: 0 }, performanceGraphs: { accuracyTrend: [0], speedTrend: [0] }, benchmarkComparison: { userScore: 0, averageScore: 70, topScore: 100 }, masteryPercentage: 0, examReadinessScore: 0 },
+          revisionRecommendations: { title: 'Revision Recommendations', personalizedLearningPath: [{ id: 'path1', topic: subtopicName, priority: 'high', estimatedTime: '20 mins', resources: ['Notes'] }], weaknessRecoverySteps: ['Recovery step'], recommendedResources: [{ id: 'res1', title: 'Resource', type: 'article', link: 'https://example.com' }], futureGoals: ['Future goal'] },
+        },
+      },
+      assignment: {
+        assignment: {
+          ...base,
+          title: `${subtopicName} Assignment`,
+          description: 'Assignment description.',
+          xp: 150,
+          duration: '30 mins',
+          task: { title: 'Task title', description: 'Task description.', requirements: ['Requirement 1'] },
+          objectives: ['Objective 1'],
+          starterCode: '// starter code',
+          submissionGuidelines: ['Guideline 1'],
+        },
+      },
+      project: {
+        project: {
+          ...base,
+          title: `${subtopicName} Project`,
+          description: 'Project description.',
+          xp: 500,
+          deadline: '2 days',
+          hero: { badge: 'Project', title: `${subtopicName} Project`, description: 'Hero description.', image: '/project_mockup.svg' },
+          realWorldUse: 'Real-world use.',
+          skills: ['Skill 1'],
+          buildItems: ['Build item 1'],
+          deliverables: ['Deliverable 1'],
+        },
+      },
+      quiz: {
+        quiz: {
+          ...base,
+          title: `${subtopicName} Quiz`,
+          description: 'Quiz description.',
+          totalQuestions: 1,
+          duration: '15 min',
+          xp: 100,
+          questions: [{ id: 'q1', questionNumber: 1, type: 'Single Choice', points: 2, question: 'Question?', options: [{ id: 'a', text: 'Option A' }, { id: 'b', text: 'Option B' }], correctAnswer: 'a', explanation: 'Explanation.' }],
+        },
+      },
+      summary: {
+        summary: {
+          ...base,
+          title: `${subtopicName} Summary`,
+          description: 'Summary description.',
+          masteryRecapCard: { headline: 'What You Should Know Now', recap: 'Recap.', confidenceSignal: 'Confidence signal.' },
+          keyTakeawayGrid: [{ id: 'takeaway1', title: 'Takeaway', description: 'Description.', importance: 'Importance.' }],
+          revisionChecklist: [{ id: 'check1', item: 'Checklist item.', checked: false }],
+          nextStepPanel: { title: 'Recommended Next Step', description: 'Next step description.', actions: ['Action 1'] },
+        },
+      },
+      interview: {
+        interview: {
+          ...base,
+          title: `${subtopicName} Interview Prep`,
+          description: 'Interview prep description.',
+          interviewIntroCard: { badge: 'Interview Ready', headline: `How ${subtopicName} Appears in Interviews`, overview: 'Overview.', evaluationFocus: ['Focus 1'] },
+          questionBankPanel: { title: 'Common Interview Questions', questions: [{ id: 'iq1', difficulty: 'easy', question: 'Question?', idealAnswer: 'Ideal answer.', followUps: ['Follow-up'], mistakesToAvoid: ['Mistake'] }] },
+          answerFrameworkCard: { title: 'Answer Framework', framework: ['Define', 'Explain', 'Example'], sampleStructure: 'Sample answer structure.' },
+          mockInterviewFlow: { title: 'Mock Interview Flow', rounds: [{ id: 'round1', focus: 'Concept clarity', prompt: 'Prompt.', expectedSignal: 'Signal.' }] },
+        },
+      },
+      ai_tutor: {
+        ai_tutor: {
+          ...base,
+          greeting: `Hi! Ask me anything about ${subtopicName}.`,
+          qaPairs: [{ question: 'Question?', answer: 'Answer.' }],
+          tutorPromptCard: { title: 'Tutor Guidance', systemPrompt: 'Tutor behavior and tone.', starterQuestions: ['Starter question'] },
+          misconceptionDetector: { title: 'Common Misconceptions', misconceptions: [{ id: 'mis1', wrongBelief: 'Wrong belief.', correction: 'Correction.', example: 'Example.' }] },
+          adaptiveHintPanel: { title: 'Adaptive Hints', hints: [{ level: 1, hint: 'Hint.' }] },
+        },
+      },
+    };
+
+    return templates[section] ?? templates.notes;
   };
 
 
@@ -90,7 +384,7 @@ Generate detailed content specifically for the subtopic: "${subtopicName}"
 6. Avoid jargon unless explained
 7. Include practical applications
 
-I will ask you to generate content for the tutorial page sections one by one. Please follow the exact JSON structure I provide for each section.
+I will ask you to generate content for tutorial page sections one by one. Each section prompt will include a strict canonical DB/rendering schema with schemaVersion and sectionType. Follow that structure exactly; malformed or missing fields will be rejected by content-manager before database save.
 
 Are you ready? Reply "Ready" and I'll give you the first section.`;
 

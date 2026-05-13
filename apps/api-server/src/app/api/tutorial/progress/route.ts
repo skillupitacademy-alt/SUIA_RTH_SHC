@@ -8,6 +8,7 @@
  */
 
 import { TutorialProgressRepository } from '@quiz/db-tutorial';
+import { calculateTutorialProgress,TUTORIAL_REQUIRED_MASTERY_SECTIONS } from '@quiz/validation';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
@@ -16,7 +17,7 @@ import { TutorialService } from '@/modules/tutorial-engine';
 
 export const dynamic = 'force-dynamic';
 
-const blockTypeSchema = z.enum(['notes', 'layman', 'real_life', 'technical', 'code', 'ai_tutor']);
+const blockTypeSchema = z.enum(TUTORIAL_REQUIRED_MASTERY_SECTIONS);
 
 const postBodySchema = z.object({
   subtopicId: z.string().uuid(),
@@ -78,17 +79,17 @@ export async function GET(request: NextRequest) {
     const progressRepo = new TutorialProgressRepository();
     const progress = await progressRepo.getProgress(userId, subtopicId);
 
-    // Format progress
     const blocksCompleted = progress?.blocksCompleted || [];
-    const completionPercent = Math.round((blocksCompleted.length / 6) * 100);
-    const assignmentUnlocked = progress?.status === 'completed';
+    const snapshot = calculateTutorialProgress({ completedSections: blocksCompleted });
+    const assignmentUnlocked = snapshot.status === 'completed';
 
     return NextResponse.json(
       { 
         data: {
           blocksCompleted,
-          completionPercent,
-          assignmentUnlocked
+          completionPercent: snapshot.completionPercent,
+          assignmentUnlocked,
+          progress: snapshot
         }
       },
       { 

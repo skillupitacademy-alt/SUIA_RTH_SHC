@@ -26,21 +26,9 @@ export function ProjectContent({ data, onNext }: {
   const brand = useBrand();
   const [activeTab, setActiveTab] = useState('overview');
 
-  // Use data from props or fallback to defaults
-  const title = data?.title || 'Capstone Project';
-  const description = data?.description || 'Master concepts through this hands-on project.';
-  const xp = data?.xp || 500;
-  const deadline = data?.deadline || '2 Days Left';
-  const hero = data?.hero || {
-    badge: 'project',
-    title: 'Default Project',
-    description: 'Build something amazing.',
-    image: '/project_mockup.svg'
-  };
-  const realWorldUse = data?.realWorldUse || 'Real-world applications';
-  const skills = data?.skills || ['Skill 1', 'Skill 2'];
-  const buildItems = data?.buildItems || ['Build item 1', 'Build item 2'];
-  const deliverables = data?.deliverables || ['Deliverable 1', 'Deliverable 2'];
+  if (!data) return null;
+
+  const { title, description, xp, deadline, hero, realWorldUse, skills, buildItems, deliverables } = data;
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: <Icons.Search size={18} /> },

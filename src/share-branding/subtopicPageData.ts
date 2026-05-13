@@ -1,4 +1,9 @@
 import { BrandConfig } from './brandConfig';
+import {
+  TutorialSectionValidationError,
+  formatTutorialSectionValidationIssues,
+  parseTutorialSection,
+} from '@quiz/validation';
 
 export interface ContentCardData {
   id: string;
@@ -202,11 +207,14 @@ async function fetchTutorialSections(subtopicId: string): Promise<TutorialSectio
       cache: 'no-store',
     });
 
-    if (!response.ok) return null;
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Failed to load overview sections' }));
+      throw new Error(error.error || 'Failed to load overview sections');
+    }
     return await response.json() as TutorialSectionsResponse;
   } catch (error) {
     console.error('[loadTutorialData] Failed to load overview sections:', error);
-    return null;
+    throw error;
   }
 }
 
@@ -335,50 +343,33 @@ function deriveTaskCards(sections: Record<string, unknown>, title: string): Cont
 }
 
 function buildOverviewFromSections(brand: BrandConfig, subtopicId: string, apiData: TutorialSectionsResponse | null): SubtopicViewData {
-  const sections = apiData?.sections ?? {};
-  const overview = asRecord(sections.overview);
-  const hero = asRecord(overview.hero);
-  const progressSummary = asRecord(overview.progressSummary);
-  const roadmap = asRecord(overview.learningRoadmap);
-  const title = firstText(hero.title, overview.title, apiData?.subtopicName, titleFromSlug(subtopicId));
-  const description = firstText(
-    hero.description,
-    overview.description,
-    getPath(sections.notes, ['definitionBlock', 'definitionText']),
-    getPath(sections.notes, ['coreDefinition', 'definition']),
-    getPath(sections.notes, ['simpleWords']),
-    getPath(sections.layman, ['simpleOverview', 'simpleDefinition']),
-    `Start learning ${title} with notes, examples, practice, projects, and assessment.`
-  );
-  const sectionCount = Math.max(1, Object.keys(sections).filter((key) => key !== 'overview').length);
-  const topicsCount = asNumber(hero.topicsCount, sectionCount >= 3 ? sectionCount : 10);
-  const progress = asNumber(progressSummary.percentage, 0);
-  const checklist = normalizeChecklist(progressSummary.checklist);
-  const fallbackChecklist = [
-    { label: 'Notes', completed: false },
-    { label: 'Practice', completed: false },
-    { label: 'Assignment', completed: false },
-    { label: 'Quiz', completed: false },
-  ];
-  const contentCards = asArray(roadmap.contentCards);
-  const taskCards = asArray(roadmap.taskCards);
-  const navigation = asRecord(overview.navigation);
-  const derivedContentCards = deriveOverviewContent(sections, title);
-  const derivedTaskCards = deriveTaskCards(sections, title);
-  const contentFallback = derivedContentCards[0] ?? {
-    id: 'notes',
-    title: 'Notes',
-    type: 'notes' as const,
-    content: `Learn the core ideas behind ${title}.`,
-    ctaLabel: 'Read Full Notes',
-  };
-  const taskFallback = derivedTaskCards[0] ?? {
-    id: 'practice',
-    title: 'Practice Tasks',
-    type: 'practice' as const,
-    content: `Practice ${title}.`,
-    ctaLabel: 'Start Practice',
-  };
+  const sections = apiData?.sections;
+  if (!sections || !Object.prototype.hasOwnProperty.call(sections, 'overview')) {
+    throw new Error('This tutorial section failed schema validation and must be regenerated. Section: overview. Missing required DB section.');
+  }
+
+  let overview: ReturnType<typeof parseTutorialSection<'overview'>>;
+  try {
+    overview = parseTutorialSection('overview', sections.overview);
+  } catch (error) {
+    if (error instanceof TutorialSectionValidationError) {
+      throw new Error(
+        `This tutorial section failed schema validation and must be regenerated. Section: overview. ${formatTutorialSectionValidationIssues(error.issues)}`
+      );
+    }
+    throw error;
+  }
+
+  const hero = overview.hero;
+  const progressSummary = overview.progressSummary;
+  const title = hero.title;
+  const description = hero.description;
+  const topicsCount = hero.topicsCount;
+  const progress = progressSummary.percentage;
+  const checklist = progressSummary.checklist;
+  const contentCards = overview.learningRoadmap.contentCards;
+  const taskCards = overview.learningRoadmap.taskCards;
+  const navigation = overview.navigation;
 
   return {
     nav: {
@@ -392,27 +383,27 @@ function buildOverviewFromSections(brand: BrandConfig, subtopicId: string, apiDa
     subtopic: {
       title,
       description,
-      iconLabel: firstText(hero.iconLabel, iconLabelFromTitle(title)),
-      progress,
-      progressLabel: 'Subtopic Progress',
-      metadata: {
-        level: difficultyLabel(firstText(hero.difficulty, apiData?.difficulty)),
-        readingTime: firstText(hero.estimatedReadTime, `${Math.max(15, topicsCount * 5)} mins`),
-        xp: asNumber(hero.xp, 500),
+        iconLabel: firstText(hero.iconLabel, iconLabelFromTitle(title)),
+        progress,
+        progressLabel: 'Subtopic Progress',
+        metadata: {
+        level: difficultyLabel(hero.difficulty),
+        readingTime: hero.estimatedReadTime,
+        xp: hero.xp,
         topicsCount,
-        lastUpdated: firstText(hero.lastUpdated, 'Today'),
+        lastUpdated: hero.lastUpdated,
       },
       stats: [
-        { id: 'time', label: 'Est. Time', value: firstText(hero.estimatedReadTime, `${Math.max(15, topicsCount * 5)} mins`), icon: 'Clock' },
-        { id: 'level', label: 'Difficulty', value: difficultyLabel(firstText(hero.difficulty, apiData?.difficulty)), icon: 'BarChart' },
-        { id: 'xp', label: 'Reward', value: `${asNumber(hero.xp, 500)} XP`, icon: 'Zap' },
+        { id: 'time', label: 'Est. Time', value: hero.estimatedReadTime, icon: 'Clock' },
+        { id: 'level', label: 'Difficulty', value: difficultyLabel(hero.difficulty), icon: 'BarChart' },
+        { id: 'xp', label: 'Reward', value: `${hero.xp} XP`, icon: 'Zap' },
       ],
       overallProgress: {
         percentage: progress,
-        checklist: checklist.length > 0 ? checklist : fallbackChecklist,
+        checklist,
       },
       sidebar: {
-        subtopicsTitle: firstText(getPath(overview, ['sidebar', 'title']), 'Learning Path'),
+        subtopicsTitle: 'Learning Path',
         items: [
           { id: subtopicId, title, status: 'active', isCurrent: true },
         ],
@@ -429,22 +420,18 @@ function buildOverviewFromSections(brand: BrandConfig, subtopicId: string, apiDa
         { id: 'interview', label: 'Interview', icon: 'Presentation' },
         { id: 'remediation', label: 'Remediation', icon: 'Activity' },
       ],
-      content: contentCards.length > 0
-        ? contentCards.map((card, index) => normalizeContentCard(card, derivedContentCards[index] ?? contentFallback))
-        : derivedContentCards,
-      tasks: taskCards.length > 0
-        ? taskCards.map((card, index) => normalizeContentCard(card, derivedTaskCards[index] ?? taskFallback))
-        : derivedTaskCards,
+      content: contentCards as ContentCardData[],
+      tasks: taskCards as ContentCardData[],
       navigation: {
-        prev: { title: firstText(navigation.prevTitle, 'Previous Topic') },
-        next: { title: firstText(navigation.nextTitle, 'Next Topic') },
+        prev: { title: navigation.prevTitle },
+        next: { title: navigation.nextTitle },
       },
     },
     rightSidebar: {
       xpSection: {
         title: 'XP & Badges',
         earnedXp: 0,
-        totalXp: asNumber(hero.xp, 500),
+        totalXp: hero.xp,
         xpMessage: 'for completing this subtopic',
       },
       achievements: {

@@ -21,6 +21,7 @@ interface SubtopicInfo {
 
 interface AddSectionResponse {
   error?: string;
+  details?: string;
   url?: string;
 }
 
@@ -121,7 +122,8 @@ function ContentManagerContent() {
         setJsonInput('');
         showMessage(`${selectedSectionLabel} saved to tutorial_sections.`, 'success');
       } else {
-        showMessage(`Error: ${result.error ?? 'Failed to save section'}`, 'error');
+        const details = result.details ? ` ${result.details}` : '';
+        showMessage(`Error: ${result.error ?? 'Failed to save section'}${details}`, 'error');
       }
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -328,7 +330,7 @@ function ContentManagerContent() {
                   id="jsonInput"
                   value={jsonInput}
                   onChange={(event) => setJsonInput(event.target.value)}
-                  placeholder='{"notes": {"coreDefinition": {...}}}'
+                  placeholder='{"notes": {"schemaVersion": 1, "sectionType": "notes", "simpleWords": "...", "definitionBlock": {...}, "sections": [...]}}'
                   className="h-96 w-full rounded-lg border-2 border-gray-300 px-4 py-3 font-mono text-sm focus:border-blue-500 focus:outline-none"
                 />
               </div>

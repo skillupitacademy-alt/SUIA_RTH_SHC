@@ -93,6 +93,12 @@
             "@quiz/types/*": [
                 "./packages/types/src/*"
             ],
+            "@quiz/validation": [
+                "./packages/validation/src/index.ts"
+            ],
+            "@quiz/validation/*": [
+                "./packages/validation/src/*"
+            ],
             "@quiz/observability": [
                 "./packages/observability/src/index.ts"
             ],

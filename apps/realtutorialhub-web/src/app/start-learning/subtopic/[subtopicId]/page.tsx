@@ -13,16 +13,33 @@ interface SubtopicPageContentProps {
 function SubtopicPageContent({ subtopicId }: SubtopicPageContentProps) {
   const brand = useBrand();
   const [overviewData, setOverviewData] = useState<SubtopicViewData | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (subtopicId) {
       const fetchData = async () => {
-        const overview = await loadTutorialData(brand, subtopicId);
-        setOverviewData(overview);
+        try {
+          setError(null);
+          const overview = await loadTutorialData(brand, subtopicId);
+          setOverviewData(overview);
+        } catch (error) {
+          setError(error instanceof Error ? error.message : 'Failed to load tutorial overview');
+        }
       };
       fetchData();
     }
   }, [brand, subtopicId]);
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
+        <div className="max-w-xl rounded-lg border border-red-200 bg-red-50 p-6 text-center">
+          <h1 className="mb-3 text-xl font-semibold text-red-900">Tutorial Content Blocked</h1>
+          <p className="text-sm font-medium leading-6 text-red-800">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!overviewData) {
     return (

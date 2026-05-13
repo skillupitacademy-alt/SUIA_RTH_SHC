@@ -62,6 +62,7 @@ export async function GET(
       
       return NextResponse.json({
         subtopicId: params.subtopicId,
+        sectionId: section[0].id,
         sectionType,
         difficulty,
         content: section[0].content,
@@ -84,8 +85,14 @@ export async function GET(
     
     // Transform to frontend format
     const sectionsMap: Record<string, unknown> = {};
+    const sectionMeta: Record<string, { id: string; version: number; language: string }> = {};
     sections.forEach(section => {
       sectionsMap[section.sectionType] = section.content;
+      sectionMeta[section.sectionType] = {
+        id: section.id,
+        version: section.version,
+        language: section.language,
+      };
     });
     
     return NextResponse.json({
@@ -93,6 +100,7 @@ export async function GET(
       subtopicName: subtopic[0].name,
       difficulty,
       sections: sectionsMap,
+      sectionMeta,
       totalSections: sections.length
     });
     

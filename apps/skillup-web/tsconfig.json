@@ -38,6 +38,12 @@
       "@quiz/types/*": [
         "../../packages/types/src/*"
       ],
+      "@quiz/validation": [
+        "../../packages/validation/src/index.ts"
+      ],
+      "@quiz/validation/*": [
+        "../../packages/validation/src/*"
+      ],
       "@quiz/db-people": [
         "../../packages/db-people/src/index.ts"
       ],
