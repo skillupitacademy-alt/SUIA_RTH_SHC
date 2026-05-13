@@ -47,6 +47,8 @@ const blockOrder: ContentBlockType[] = [
   'practice',
   'assignment',
   'project',
+  'summary',
+  'interview',
   'ai_tutor',
 ];
 

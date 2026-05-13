@@ -1,67 +1,78 @@
-'use client';
+import type { Metadata } from 'next';
 
-import React, { useEffect, useState, use } from 'react';
+import { buildOverviewFromSections } from '@/share-branding/subtopicPageData';
+import { BrandProvider } from '@/share-branding/PostLandingPage/app/context/BrandContext';
 import { SubtopicNotesPageWrapper } from '@/share-branding/SubtopicNotesPageWrapper';
-import { loadTutorialData, SubtopicViewData } from '@/share-branding/subtopicPageData';
-import { useBrand, BrandProvider } from '@/share-branding/PostLandingPage/app/context/BrandContext';
+import { buildSubtopicNotesDataFromSectionsResponse } from '@/share-branding/subtopicNotesDataAPI';
 import { rthConfig } from '@/share-branding/brandConfig';
 
-interface SubtopicPageContentProps {
-  subtopicId: string;
-}
+import { getPublishedTutorialPathsForDelivery, getTutorialSectionsForDelivery } from '@/server/tutorial-delivery';
 
-function SubtopicPageContent({ subtopicId }: SubtopicPageContentProps) {
-  const brand = useBrand();
-  const [overviewData, setOverviewData] = useState<SubtopicViewData | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (subtopicId) {
-      const fetchData = async () => {
-        try {
-          setError(null);
-          const overview = await loadTutorialData(brand, subtopicId);
-          setOverviewData(overview);
-        } catch (error) {
-          setError(error instanceof Error ? error.message : 'Failed to load tutorial overview');
-        }
-      };
-      fetchData();
-    }
-  }, [brand, subtopicId]);
-
-  if (error) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
-        <div className="max-w-xl rounded-lg border border-red-200 bg-red-50 p-6 text-center">
-          <h1 className="mb-3 text-xl font-semibold text-red-900">Tutorial Content Blocked</h1>
-          <p className="text-sm font-medium leading-6 text-red-800">{error}</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!overviewData) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50">
-        <div className="h-12 w-12 animate-spin rounded-full border-4 border-slate-200" style={{ borderTopColor: brand.primaryColor }}></div>
-      </div>
-    );
-  }
-
-  return <SubtopicNotesPageWrapper subtopicId={subtopicId} overviewData={overviewData} useAPI={true} />;
-}
+export const revalidate = 1800;
 
 interface SubtopicPageProps {
   params: Promise<{ subtopicId: string }>;
 }
 
-export default function SubtopicPage({ params }: SubtopicPageProps) {
-  const resolvedParams = use(params);
-  
+function getBaseUrl() {
+  const value = process.env.NEXT_PUBLIC_SITE_URL?.trim()
+    || process.env.NEXT_PUBLIC_WEB_APP_URL?.trim()
+    || 'https://user.realtutorialhub.com';
+  return value.endsWith('/') ? value.slice(0, -1) : value;
+}
+
+export async function generateStaticParams() {
+  const paths = await getPublishedTutorialPathsForDelivery();
+  return paths.map((path) => ({ subtopicId: path.subtopicSlug }));
+}
+
+export async function generateMetadata({ params }: SubtopicPageProps): Promise<Metadata> {
+  const { subtopicId } = await params;
+  const data = await getTutorialSectionsForDelivery(subtopicId);
+  const title = data?.subtopicName ?? subtopicId.replace(/-/g, ' ');
+  const overview = data?.sections?.overview as { hero?: { description?: string } } | undefined;
+  const description = overview?.hero?.description ?? `Start learning ${title} with guided notes, practice, projects, and quiz sections.`;
+  const canonical = `${getBaseUrl()}/start-learning/subtopic/${subtopicId}`;
+
+  return {
+    title: `${title} | RealTutorialHub`,
+    description,
+    alternates: {
+      canonical,
+    },
+    openGraph: {
+      title: `${title} | RealTutorialHub`,
+      description,
+      url: canonical,
+      type: 'article',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${title} | RealTutorialHub`,
+      description,
+    },
+  };
+}
+
+export default async function SubtopicPage({ params }: SubtopicPageProps) {
+  const { subtopicId } = await params;
+  const sectionsResponse = await getTutorialSectionsForDelivery(subtopicId);
+
+  if (sectionsResponse === null) {
+    throw new Error(`This tutorial section failed schema validation and must be regenerated. Section set not found for subtopic "${subtopicId}".`);
+  }
+
+  const overviewData = buildOverviewFromSections(rthConfig, subtopicId, sectionsResponse);
+  const initialNotesData = buildSubtopicNotesDataFromSectionsResponse(rthConfig, subtopicId, sectionsResponse);
+
   return (
     <BrandProvider brand={rthConfig}>
-      <SubtopicPageContent subtopicId={resolvedParams.subtopicId} />
+      <SubtopicNotesPageWrapper
+        subtopicId={subtopicId}
+        overviewData={overviewData}
+        initialNotesData={initialNotesData}
+        useAPI={false}
+      />
     </BrandProvider>
   );
 }

@@ -342,7 +342,7 @@ function deriveTaskCards(sections: Record<string, unknown>, title: string): Cont
   ];
 }
 
-function buildOverviewFromSections(brand: BrandConfig, subtopicId: string, apiData: TutorialSectionsResponse | null): SubtopicViewData {
+export function buildOverviewFromSections(brand: BrandConfig, subtopicId: string, apiData: TutorialSectionsResponse | null): SubtopicViewData {
   const sections = apiData?.sections;
   if (!sections || !Object.prototype.hasOwnProperty.call(sections, 'overview')) {
     throw new Error('This tutorial section failed schema validation and must be regenerated. Section: overview. Missing required DB section.');

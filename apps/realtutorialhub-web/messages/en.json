@@ -26,7 +26,7 @@
     "completed": "{completed}/{total} Completed",
     "progressText": "Progress: {pct}% complete",
     "takeQuiz": "Take Quiz",
-    "unlockQuiz": "Complete all 6 blocks to unlock the quiz"
+    "unlockQuiz": "Complete all required learning blocks to unlock the quiz"
   },
   "sidebar": {
     "notes": "Notes",
@@ -36,7 +36,7 @@
     "themeLabel": "Theme",
     "theme": "Version A aesthetic styling is locked for the learner experience.",
     "assignmentsLabel": "Assignments",
-    "assignments": "Simple unlocks only after all six blocks are completed."
+    "assignments": "Assignments unlock only after the required learning blocks are completed."
   },
   "common": {
     "example": "Example {index}",
@@ -77,6 +77,34 @@
     "code": {
       "title": "Code",
       "ariaLabel": "Code example block"
+    },
+    "visual": {
+      "title": "Visual Explanation",
+      "ariaLabel": "Visual explanation block"
+    },
+    "quiz": {
+      "title": "Quiz",
+      "ariaLabel": "Quiz block"
+    },
+    "practice": {
+      "title": "Practice Test",
+      "ariaLabel": "Practice test block"
+    },
+    "assignment": {
+      "title": "Assignment",
+      "ariaLabel": "Assignment block"
+    },
+    "project": {
+      "title": "Project",
+      "ariaLabel": "Project block"
+    },
+    "summary": {
+      "title": "Summary",
+      "ariaLabel": "Summary block"
+    },
+    "interview": {
+      "title": "Interview Preparation",
+      "ariaLabel": "Interview preparation block"
     },
     "ai_tutor": {
       "title": "AI Tutor",

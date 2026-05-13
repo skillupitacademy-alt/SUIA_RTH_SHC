@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 
-import { getPublishedTutorialPaths } from '@/lib/tutorial-hierarchy';
+import { getPublishedTutorialPathsForDelivery } from '@/server/tutorial-delivery';
 
 export const revalidate = 3600;
 
@@ -14,7 +14,7 @@ const getSiteBaseUrl = () => {
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = getSiteBaseUrl();
-  const paths = await getPublishedTutorialPaths();
+  const paths = await getPublishedTutorialPathsForDelivery();
 
   return paths.map((path) => ({
     url: `${baseUrl}/learn/${path.domainSlug}/${path.subjectSlug}/${path.topicSlug}/${path.subtopicSlug}`,

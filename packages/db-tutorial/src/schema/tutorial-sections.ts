@@ -85,6 +85,8 @@ export const tutorialSections = pgTable('tutorial_sections', {
   idxSectionsStatus: index('idx_sections_status').on(table.status),
   idxSectionsType: index('idx_sections_type').on(table.sectionType),
   idxSectionsPublished: index('idx_sections_published').on(table.subtopicId, table.status),
+  idxSectionsDelivery: index('idx_sections_delivery').on(table.subtopicId, table.difficulty, table.status, table.orderIndex),
+  idxSectionsDeliveryByType: index('idx_sections_delivery_by_type').on(table.subtopicId, table.difficulty, table.sectionType, table.status),
   idxSectionsBrand: index('idx_sections_brand').on(table.brandId),
   idxSectionsArchitecture: index('idx_sections_architecture').on(table.educationalArchitectureId),
   

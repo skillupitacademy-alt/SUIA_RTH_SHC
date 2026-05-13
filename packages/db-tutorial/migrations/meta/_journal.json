@@ -120,6 +120,13 @@
       "when": 1778315289544,
       "tag": "0016_add_overview_section_type",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1778315289545,
+      "tag": "0017_tutorial_delivery_indexes",
+      "breakpoints": true
     }
   ]
 }

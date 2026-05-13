@@ -7,12 +7,14 @@ import type { ContentBlockType, TutorialContentJSON } from '@quiz/types';
 import type { DomainTheme } from '@/lib/domain-themes';
 import { AssignmentBlock } from './AssignmentBlock';
 import { CodeBlock } from './CodeBlock';
+import { InterviewBlock } from './InterviewBlock';
 import { LaymanBlock } from './LaymanBlock';
 import { NotesBlock } from './NotesBlock';
 import { PracticeBlock } from './PracticeBlock';
 import { ProjectBlock } from './ProjectBlock';
 import { QuizBlock } from './QuizBlock';
 import { RealLifeBlock } from './RealLifeBlock';
+import { SummaryBlock } from './SummaryBlock';
 import { TechnicalBlock } from './TechnicalBlock';
 import { VisualBlock } from './VisualBlock';
 import { AITutorBlock } from './AITutorBlock';
@@ -32,7 +34,8 @@ export function BlockRenderer({
   type, 
   activeBlockType, 
   content, 
-  theme
+  theme,
+  subtopicName,
 }: BlockRendererProps) {
   // Use activeBlockType if type is not provided
   const targetType = type || activeBlockType || 'notes';
@@ -59,12 +62,16 @@ export function BlockRenderer({
         return <AssignmentBlock data={content.assignment} theme={theme} />;
       case 'project':
         return <ProjectBlock data={content.project} theme={theme} />;
+      case 'summary':
+        return <SummaryBlock data={content.summary} theme={theme} subtopicName={subtopicName} />;
+      case 'interview':
+        return <InterviewBlock data={content.interview} theme={theme} subtopicName={subtopicName} />;
       case 'ai_tutor':
         return <AITutorBlock data={content.ai_tutor} theme={theme} />;
       default:
         return null;
     }
-  }, [targetType, content, theme]);
+  }, [targetType, content, theme, subtopicName]);
 
   if (!renderedBlock) return null;
 

@@ -286,46 +286,11 @@ function loadStrictSection<TSection extends TutorialMasterySectionId>(
  * @param apiBaseUrl - API base URL (default: current origin)
  * @returns Promise<SubtopicNotesViewData>
  */
-export async function loadSubtopicNotesDataFromAPI(
+export function buildSubtopicNotesDataFromSectionsResponse(
   brand: BrandConfig,
-  subtopicId: string = 'component-architecture',
-  apiBaseUrl?: string
-): Promise<SubtopicNotesViewData> {
-  
-  // Safety check for undefined subtopicId
-  if (!subtopicId) {
-    subtopicId = 'component-architecture';
-  }
-
-  // Determine API URL
-  const baseUrl = apiBaseUrl || (typeof window !== 'undefined' ? window.location.origin : '');
-  const apiUrl = `${baseUrl}/api/tutorial/sections/${subtopicId}`;
-
-  try {
-    // Fetch all sections for the subtopic from database
-    const response = await fetch(apiUrl, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include', // Include cookies for authentication (required for protected routes)
-      cache: 'no-store' // Always get fresh data
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-      console.error('[loadSubtopicNotesDataFromAPI] API Error:', {
-        status: response.status,
-        statusText: response.statusText,
-        url: apiUrl,
-        error: errorData
-      });
-      throw new Error(`Failed to fetch content: ${response.statusText} (${response.status}). ${errorData.error || ''}`);
-    }
-
-    const data = await response.json();
-    
-    // Extract and strictly validate sections from API response.
+  subtopicId: string,
+  data: { subtopicName?: string; sectionMeta?: Record<string, JsonRecord>; sections?: Record<string, unknown> }
+): SubtopicNotesViewData {
     const sections = data.sections || {};
     const sectionMeta = data.sectionMeta || {};
     const sectionRecordIds = Object.fromEntries(
@@ -334,8 +299,7 @@ export async function loadSubtopicNotesDataFromAPI(
         .map(([sectionType, meta]) => [sectionType, meta.id as string])
     );
     const subtopicName = data.subtopicName || subtopicId;
-    
-    // Map of subtopic metadata (can be enhanced with API data later)
+
     const subtopicInfo = {
       title: subtopicName,
       description: `Learn about ${subtopicName}`,
@@ -483,7 +447,43 @@ export async function loadSubtopicNotesDataFromAPI(
         }
       }
     };
-    
+}
+
+export async function loadSubtopicNotesDataFromAPI(
+  brand: BrandConfig,
+  subtopicId: string = 'component-architecture',
+  apiBaseUrl?: string
+): Promise<SubtopicNotesViewData> {
+  if (!subtopicId) {
+    subtopicId = 'component-architecture';
+  }
+
+  const baseUrl = apiBaseUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+  const apiUrl = `${baseUrl}/api/tutorial/sections/${subtopicId}`;
+
+  try {
+    const response = await fetch(apiUrl, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      cache: 'no-store'
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+      console.error('[loadSubtopicNotesDataFromAPI] API Error:', {
+        status: response.status,
+        statusText: response.statusText,
+        url: apiUrl,
+        error: errorData
+      });
+      throw new Error(`Failed to fetch content: ${response.statusText} (${response.status}). ${errorData.error || ''}`);
+    }
+
+    const data = await response.json();
+    return buildSubtopicNotesDataFromSectionsResponse(brand, subtopicId, data);
   } catch (error) {
     console.error('[loadSubtopicNotesDataFromAPI] Error:', error);
     throw new Error(`Failed to load content for subtopic: ${subtopicId}. ${error}`);

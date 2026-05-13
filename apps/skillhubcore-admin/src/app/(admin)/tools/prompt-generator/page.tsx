@@ -81,6 +81,7 @@ function PromptGeneratorContent() {
     if (!contract) return getMasterPrompt(domainName, subjectName, topicName, subtopicName);
 
     const template = getStrictSectionJsonTemplate(contract.dbType, subtopicName);
+    const enumRules = getStrictEnumRules(contract.dbType);
 
     return `Generate STRICT CANONICAL tutorial section JSON.
 
@@ -106,10 +107,53 @@ function PromptGeneratorContent() {
 7. Do not add extra properties.
 8. Do not use generic filler or another subtopic's content.
 9. Use "\\n" inside code strings for newlines.
+10. For enum fields, use only the exact quoted values listed below. Do not create synonyms or new category names.
+
+${enumRules ? `**STRICT ENUM RULES**
+${enumRules}
+` : ''}
 
 **EXACT JSON SHAPE TO RETURN**
 
 ${JSON.stringify(template, null, 2)}`;
+  };
+
+  const getStrictEnumRules = (section: string): string => {
+    const rules: Record<string, string[]> = {
+      overview: [
+        'learningRoadmap.contentCards[].type and learningRoadmap.taskCards[].type: "notes" | "layman" | "example" | "code" | "deep-dive" | "visual" | "task" | "practice" | "assignment" | "project" | "quiz"',
+        'learningRoadmap.*Cards[].badge.type: "success" | "warning" | "info"',
+      ],
+      layman: [
+        'whyItExists.benefitCards[].type: "career" | "practical" | "future"',
+        'simpleUseCases.useCaseCards[].category: "everyday" | "career"',
+      ],
+      real_life: [
+        'careerRelevance.careerPaths[].skillLevel: "entry" | "mid" | "senior"',
+      ],
+      technical: [
+        'sections[].diagram.type: "anatomy" | "flow" | "chain"',
+      ],
+      visual: [
+        'mentalModelVisualization.frameworkMap.nodes[].type: "core" | "supporting" | "related"',
+        'mentalModelVisualization.frameworkMap.connections[].type: "primary" | "secondary"',
+      ],
+      practice: [
+        'conceptRecallQuestions.questions[].type: "single-choice" | "multiple-choice"',
+        'conceptRecallQuestions.questions[].difficulty: "easy" | "medium" | "hard"',
+        'scenarioBasedQuestions.scenarios[].difficulty: "medium" | "hard"',
+        'difficultyProgression.levels[].level: "beginner" | "intermediate" | "advanced"',
+        'instantFeedback.feedbackType: "immediate" | "end-of-test"',
+        'commonMistakeDetection.weaknessHeatmap.topics[].status: "strong" | "moderate" | "weak"',
+        'revisionRecommendations.personalizedLearningPath[].priority: "high" | "medium" | "low"',
+        'revisionRecommendations.recommendedResources[].type: "video" | "article" | "practice"',
+      ],
+      interview: [
+        'questionBankPanel.questions[].difficulty: "easy" | "medium" | "hard"',
+      ],
+    };
+
+    return (rules[section] ?? []).map((rule, index) => `${index + 1}. ${rule}`).join('\n');
   };
 
   const getStrictSectionJsonTemplate = (section: string, subtopicName: string): Record<string, unknown> => {
@@ -214,8 +258,21 @@ ${JSON.stringify(template, null, 2)}`;
           ...base,
           simpleOverview: { badge: 'Beginner Friendly', headline: `${subtopicName} Explained Simply`, simpleDefinition: 'Simple definition.', subExplanation: 'Simple detail.', importanceBlock: 'Why a beginner should care.', progressIndicator: 'Beginner ready.' },
           everydayAnalogy: { title: 'Think of It Like This', storyAnalogy: 'Analogy story.', comparisonPanel: { realWorld: 'Real-world side.', technical: 'Technical side.' }, visualMetaphor: 'Metaphor.', keyTakeaway: 'Takeaway.' },
-          whyItExists: { sectionTitle: 'Why It Exists', benefitCards: [{ id: 'benefit1', title: 'Career Benefit', description: 'Benefit.', icon: 'Briefcase', type: 'career' }] },
-          simpleUseCases: { gridTitle: 'Where You Will See This', useCaseCards: [{ id: 'use1', title: 'Use Case', description: 'Usage.', category: 'everyday', icon: 'Monitor' }] },
+          whyItExists: {
+            sectionTitle: 'Why It Exists',
+            benefitCards: [
+              { id: 'benefit1', title: 'Career Benefit', description: 'Career benefit.', icon: 'Briefcase', type: 'career' },
+              { id: 'benefit2', title: 'Practical Benefit', description: 'Practical benefit.', icon: 'Zap', type: 'practical' },
+              { id: 'benefit3', title: 'Future Benefit', description: 'Future learning benefit.', icon: 'TrendingUp', type: 'future' },
+            ],
+          },
+          simpleUseCases: {
+            gridTitle: 'Where You Will See This',
+            useCaseCards: [
+              { id: 'use1', title: 'Everyday Use Case', description: 'Everyday usage.', category: 'everyday', icon: 'Monitor' },
+              { id: 'use2', title: 'Career Use Case', description: 'Career usage.', category: 'career', icon: 'Briefcase' },
+            ],
+          },
           beginnerBreakdown: { title: 'Step-by-Step Breakdown', steps: [{ id: 'step1', stepTitle: 'Step 1', stepExplanation: 'Explanation.', microLearningChunk: 'Remember this.' }] },
           mentalModel: { title: 'Mental Model', conceptMap: { nodes: [{ id: 'node1', label: 'Part', description: 'Description.' }], connections: [{ from: 'node1', to: 'node1', label: 'relates to' }] }, visualLabels: ['Label 1'] },
           commonConfusions: { title: 'Common Confusions', confusionItems: [{ id: 'conf1', confusion: 'Confusion.', clarification: 'Clarification.' }], faqItems: [{ id: 'faq1', question: 'Question?', answer: 'Answer.' }], misconceptionAlerts: ['Misconception.'] },

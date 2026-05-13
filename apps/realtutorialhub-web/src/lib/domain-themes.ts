@@ -24,6 +24,10 @@ export interface DomainTheme {
   blockQuizHeader: string;
   blockVisual: string;
   blockVisualHeader: string;
+  blockSummary: string;
+  blockSummaryHeader: string;
+  blockInterview: string;
+  blockInterviewHeader: string;
   progressFill: string;
   quizBtn: string;
   domainIcon: string;
@@ -59,6 +63,10 @@ export const DOMAIN_THEMES: Record<'indigo' | 'blue' | 'teal' | 'steel', DomainT
     blockQuizHeader: '#2b6cb0',
     blockVisual: 'linear-gradient(135deg, #faf5ff 0%, #e9d8fd 100%)',
     blockVisualHeader: '#6b46c1',
+    blockSummary: 'linear-gradient(135deg, #ecfeff 0%, #cffafe 100%)',
+    blockSummaryHeader: '#0f766e',
+    blockInterview: 'linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%)',
+    blockInterviewHeader: '#c2410c',
 },
   blue: {
     breadcrumbBg: 'linear-gradient(135deg, #1a3a6b 0%, #2557a7 50%, #4472c4 100%)',
@@ -89,6 +97,10 @@ export const DOMAIN_THEMES: Record<'indigo' | 'blue' | 'teal' | 'steel', DomainT
     blockQuizHeader: '#2b6cb0',
     blockVisual: 'linear-gradient(135deg, #faf5ff 0%, #e9d8fd 100%)',
     blockVisualHeader: '#6b46c1',
+    blockSummary: 'linear-gradient(135deg, #ecfeff 0%, #cffafe 100%)',
+    blockSummaryHeader: '#0f766e',
+    blockInterview: 'linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%)',
+    blockInterviewHeader: '#c2410c',
 },
   teal: {
     breadcrumbBg: 'linear-gradient(135deg, #1a5c5c 0%, #2e7d72 50%, #4caf9f 100%)',
@@ -119,6 +131,10 @@ export const DOMAIN_THEMES: Record<'indigo' | 'blue' | 'teal' | 'steel', DomainT
     blockQuizHeader: '#2b6cb0',
     blockVisual: 'linear-gradient(135deg, #faf5ff 0%, #e9d8fd 100%)',
     blockVisualHeader: '#6b46c1',
+    blockSummary: 'linear-gradient(135deg, #ecfeff 0%, #cffafe 100%)',
+    blockSummaryHeader: '#0f766e',
+    blockInterview: 'linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%)',
+    blockInterviewHeader: '#c2410c',
 },
   steel: {
     breadcrumbBg: 'linear-gradient(135deg, #1c2833 0%, #2e4057 50%, #485e76 100%)',
@@ -149,6 +165,10 @@ export const DOMAIN_THEMES: Record<'indigo' | 'blue' | 'teal' | 'steel', DomainT
     blockQuizHeader: '#2b6cb0',
     blockVisual: 'linear-gradient(135deg, #faf5ff 0%, #e9d8fd 100%)',
     blockVisualHeader: '#6b46c1',
+    blockSummary: 'linear-gradient(135deg, #ecfeff 0%, #cffafe 100%)',
+    blockSummaryHeader: '#0f766e',
+    blockInterview: 'linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%)',
+    blockInterviewHeader: '#c2410c',
 },
 };
 

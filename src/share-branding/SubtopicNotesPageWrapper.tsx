@@ -16,20 +16,28 @@ import { useBrand } from './PostLandingPage/app/context/BrandContext';
 export interface SubtopicNotesPageWrapperProps {
   subtopicId: string;
   overviewData: any;
+  initialNotesData?: SubtopicNotesViewData | null;
   useAPI?: boolean; // Toggle between API and static files
 }
 
 export function SubtopicNotesPageWrapper({ 
   subtopicId, 
   overviewData,
+  initialNotesData = null,
   useAPI = false // Default to static files for now, can be toggled via feature flag
 }: SubtopicNotesPageWrapperProps) {
   const brand = useBrand();
-  const [notesData, setNotesData] = useState<SubtopicNotesViewData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [notesData, setNotesData] = useState<SubtopicNotesViewData | null>(initialNotesData);
+  const [loading, setLoading] = useState(initialNotesData === null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (initialNotesData !== null) {
+      setNotesData(initialNotesData);
+      setLoading(false);
+      return;
+    }
+
     async function loadData() {
       try {
         setLoading(true);
@@ -56,8 +64,8 @@ export function SubtopicNotesPageWrapper({
       }
     }
 
-    loadData();
-  }, [subtopicId, brand, useAPI]);
+    void loadData();
+  }, [subtopicId, brand, useAPI, initialNotesData]);
 
   if (loading) {
     return (
