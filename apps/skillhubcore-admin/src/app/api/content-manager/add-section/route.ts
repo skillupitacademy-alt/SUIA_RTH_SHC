@@ -324,46 +324,107 @@ function transformNotesSection(content: JsonRecord, subtopicName: string): JsonR
 }
 
 function transformLaymanSection(content: JsonRecord, subtopicName: string): JsonRecord {
+  const simpleOverview = asRecord(content.simpleOverview);
+  const everydayAnalogy = asRecord(content.everydayAnalogy);
+  const whyItExists = asRecord(content.whyItExists);
   const simpleUseCases = asRecord(content.simpleUseCases);
   const beginnerBreakdown = asRecord(content.beginnerBreakdown);
   const mentalModel = asRecord(content.mentalModel);
   const commonConfusions = asRecord(content.commonConfusions);
   const simpleRecap = asRecord(content.simpleRecap);
+  const benefitCards = asArray<JsonRecord>(whyItExists.benefitCards).map((card, index) => ({
+    id: asString(card.id, `benefit-${index + 1}`),
+    title: asString(card.title, `Benefit ${index + 1}`),
+    description: asString(card.description),
+    icon: asString(card.icon, 'Star'),
+    type: asString(card.type, index === 0 ? 'career' : index === 1 ? 'practical' : 'future'),
+  }));
 
   return {
-    simpleOverview: content.simpleOverview ?? {
+    simpleOverview: Object.keys(simpleOverview).length > 0 ? {
+      badge: asString(simpleOverview.badge, 'Layman Section'),
+      headline: asString(simpleOverview.headline, `${subtopicName} in simple words`),
+      simpleDefinition: asString(simpleOverview.simpleDefinition, `${subtopicName} explained simply`),
+      subExplanation: asString(simpleOverview.subExplanation),
+      importanceBlock: asString(simpleOverview.importanceBlock),
+      progressIndicator: asString(simpleOverview.progressIndicator),
+    } : {
       badge: 'Simple Explanation',
       headline: `${subtopicName} in simple words`,
       simpleDefinition: asString(content.simpleExplanation, `${subtopicName} explained simply`),
       subExplanation: asString(content.analogyOrStory),
       importanceBlock: '',
-      quickSummary: [],
     },
-    everydayAnalogy: content.everydayAnalogy,
-    whyItExists: content.whyItExists,
+    everydayAnalogy: {
+      title: asString(everydayAnalogy.title, 'Everyday Analogy'),
+      storyAnalogy: asString(everydayAnalogy.storyAnalogy),
+      comparisonPanel: {
+        realWorld: asString(asRecord(everydayAnalogy.comparisonPanel).realWorld),
+        technical: asString(asRecord(everydayAnalogy.comparisonPanel).technical),
+      },
+      visualMetaphor: asString(everydayAnalogy.visualMetaphor),
+      keyTakeaway: asString(everydayAnalogy.keyTakeaway),
+      ...(asString(everydayAnalogy.image) ? { image: asString(everydayAnalogy.image) } : {}),
+    },
+    whyItExists: {
+      sectionTitle: asString(whyItExists.sectionTitle, 'Why It Exists'),
+      benefitCards,
+    },
     simpleUseCases: {
-      ...simpleUseCases,
-      useCaseCards: asArray(simpleUseCases.useCaseCards),
+      gridTitle: asString(simpleUseCases.gridTitle, 'Simple Use Cases'),
+      useCaseCards: asArray<JsonRecord>(simpleUseCases.useCaseCards).map((card, index) => ({
+        id: asString(card.id, `use-case-${index + 1}`),
+        title: asString(card.title, `Use Case ${index + 1}`),
+        description: asString(card.description),
+        category: asString(card.category, index < 2 ? 'everyday' : 'career'),
+        icon: asString(card.icon, 'Box'),
+      })),
     },
     beginnerBreakdown: {
-      ...beginnerBreakdown,
-      steps: asArray(beginnerBreakdown.steps),
+      title: asString(beginnerBreakdown.title, 'Beginner Breakdown'),
+      steps: asArray<JsonRecord>(beginnerBreakdown.steps).map((step, index) => ({
+        id: asString(step.id, `step-${index + 1}`),
+        stepTitle: asString(step.stepTitle, `Step ${index + 1}`),
+        stepExplanation: asString(step.stepExplanation),
+        microLearningChunk: asString(step.microLearningChunk),
+      })),
     },
     mentalModel: {
-      ...mentalModel,
-      conceptMap: asRecord(mentalModel.conceptMap),
+      title: asString(mentalModel.title, 'Mental Model'),
+      conceptMap: {
+        nodes: asArray<JsonRecord>(asRecord(mentalModel.conceptMap).nodes).map((node, index) => ({
+          id: asString(node.id, `node-${index + 1}`),
+          label: asString(node.label, `Node ${index + 1}`),
+          description: asString(node.description),
+        })),
+        connections: asArray<JsonRecord>(asRecord(mentalModel.conceptMap).connections).map((connection, index) => ({
+          from: asString(connection.from, `node-${index + 1}`),
+          to: asString(connection.to, `node-${index + 2}`),
+          label: asString(connection.label, 'connects to'),
+        })),
+      },
       visualLabels: asArray(mentalModel.visualLabels),
     },
     commonConfusions: {
-      ...commonConfusions,
-      confusionItems: asArray(commonConfusions.confusionItems),
-      faqItems: asArray(commonConfusions.faqItems),
+      title: asString(commonConfusions.title, 'Common Confusions'),
+      confusionItems: asArray<JsonRecord>(commonConfusions.confusionItems).map((item, index) => ({
+        id: asString(item.id, `confusion-${index + 1}`),
+        confusion: asString(item.confusion),
+        clarification: asString(item.clarification),
+      })),
+      faqItems: asArray<JsonRecord>(commonConfusions.faqItems).map((item, index) => ({
+        id: asString(item.id, `faq-${index + 1}`),
+        question: asString(item.question),
+        answer: asString(item.answer),
+      })),
       misconceptionAlerts: asArray(commonConfusions.misconceptionAlerts),
     },
     simpleRecap: {
-      ...simpleRecap,
+      summaryTitle: asString(simpleRecap.summaryTitle, 'Simple Recap'),
       keyTakeaways: asArray(simpleRecap.keyTakeaways),
       simpleRecapPoints: asArray(simpleRecap.simpleRecapPoints),
+      confidenceBoost: asString(simpleRecap.confidenceBoost),
+      memoryReinforcement: asString(simpleRecap.memoryReinforcement),
     },
   };
 }

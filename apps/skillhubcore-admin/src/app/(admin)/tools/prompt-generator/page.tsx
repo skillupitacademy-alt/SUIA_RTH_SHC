@@ -127,6 +127,7 @@ ${JSON.stringify(template, null, 2)}`;
       layman: [
         'whyItExists.benefitCards[].type: "career" | "practical" | "future"',
         'simpleUseCases.useCaseCards[].category: "everyday" | "career"',
+        'Target UI density: exactly 3 benefitCards, exactly 4 useCaseCards, exactly 4-5 beginnerBreakdown.steps, exactly 3 faqItems, exactly 3 confusionItems, and 3-5 simpleRecap.keyTakeaways so the Layman page renders as a complete guided screen.',
       ],
       real_life: [
         'careerRelevance.careerPaths[].skillLevel: "entry" | "mid" | "senior"',
@@ -253,32 +254,34 @@ ${JSON.stringify(template, null, 2)}`;
           },
         },
       },
-      layman: {
         layman: {
-          ...base,
-          simpleOverview: { badge: 'Beginner Friendly', headline: `${subtopicName} Explained Simply`, simpleDefinition: 'Simple definition.', subExplanation: 'Simple detail.', importanceBlock: 'Why a beginner should care.', progressIndicator: 'Beginner ready.' },
-          everydayAnalogy: { title: 'Think of It Like This', storyAnalogy: 'Analogy story.', comparisonPanel: { realWorld: 'Real-world side.', technical: 'Technical side.' }, visualMetaphor: 'Metaphor.', keyTakeaway: 'Takeaway.' },
-          whyItExists: {
-            sectionTitle: 'Why It Exists',
-            benefitCards: [
-              { id: 'benefit1', title: 'Career Benefit', description: 'Career benefit.', icon: 'Briefcase', type: 'career' },
-              { id: 'benefit2', title: 'Practical Benefit', description: 'Practical benefit.', icon: 'Zap', type: 'practical' },
-              { id: 'benefit3', title: 'Future Benefit', description: 'Future learning benefit.', icon: 'TrendingUp', type: 'future' },
-            ],
+          layman: {
+            ...base,
+            simpleOverview: { badge: 'Layman Section', headline: `${subtopicName} in Simple Words`, simpleDefinition: 'A clear beginner-friendly definition written in short, direct language.', subExplanation: 'A second paragraph that explains how the concept behaves in normal learning or real usage.', importanceBlock: 'Explain why understanding this concept helps a beginner make sense of later technical sections.', progressIndicator: 'Beginner-ready explanation.' },
+            everydayAnalogy: { title: 'Everyday Analogy', storyAnalogy: 'A vivid real-world comparison that makes the concept intuitive for a first-time learner.', comparisonPanel: { realWorld: 'Describe the everyday object or situation in plain language.', technical: 'Map that analogy back to the actual technical meaning of the subtopic.' }, visualMetaphor: 'Provide a strong mental image the learner can remember later.', keyTakeaway: 'One short takeaway sentence that the learner can recall quickly.', image: 'Optional illustration URL if available.' },
+            whyItExists: {
+              sectionTitle: 'Why It Exists',
+              benefitCards: [
+                { id: 'benefit1', title: 'Career Benefit', description: 'How this concept helps in interviews, job tasks, or professional growth.', icon: 'Briefcase', type: 'career' },
+                { id: 'benefit2', title: 'Practical Benefit', description: 'How this concept helps a learner understand or build something real.', icon: 'Zap', type: 'practical' },
+                { id: 'benefit3', title: 'Future Benefit', description: 'How this concept prepares the learner for the next related ideas.', icon: 'TrendingUp', type: 'future' },
+              ],
+            },
+            simpleUseCases: {
+              gridTitle: 'Simple Use Cases',
+              useCaseCards: [
+                { id: 'use1', title: 'Everyday Use Case 1', description: 'A normal beginner-friendly example from daily digital life.', category: 'everyday', icon: 'Monitor' },
+                { id: 'use2', title: 'Everyday Use Case 2', description: 'Another everyday example that feels concrete and easy to imagine.', category: 'everyday', icon: 'ShoppingCart' },
+                { id: 'use3', title: 'Career Use Case 1', description: 'A work or software-building example where this concept matters.', category: 'career', icon: 'Briefcase' },
+                { id: 'use4', title: 'Career Use Case 2', description: 'A second professional or project-oriented example.', category: 'career', icon: 'Gauge' },
+              ],
+            },
+            beginnerBreakdown: { title: 'Beginner Breakdown', steps: [{ id: 'step1', stepTitle: 'Step 1', stepExplanation: 'First small idea the learner should understand.', microLearningChunk: 'A tiny example or memory hook for step 1.' }, { id: 'step2', stepTitle: 'Step 2', stepExplanation: 'Second idea that builds naturally from the first.', microLearningChunk: 'A tiny example or memory hook for step 2.' }, { id: 'step3', stepTitle: 'Step 3', stepExplanation: 'Third idea that shows the concept in action.', microLearningChunk: 'A tiny example or memory hook for step 3.' }, { id: 'step4', stepTitle: 'Step 4', stepExplanation: 'Fourth idea that helps remove beginner confusion.', microLearningChunk: 'A tiny example or memory hook for step 4.' }] },
+            mentalModel: { title: 'Mental Model', conceptMap: { nodes: [{ id: 'node1', label: 'Start', description: 'The first thing a beginner should picture.' }, { id: 'node2', label: 'Meaning', description: 'What the main concept represents.' }, { id: 'node3', label: 'Use', description: 'How the learner will see or apply it.' }], connections: [{ from: 'node1', to: 'node2', label: 'leads to' }, { from: 'node2', to: 'node3', label: 'helps with' }] }, visualLabels: ['Visual label 1', 'Visual label 2', 'Visual label 3'] },
+            commonConfusions: { title: 'Common Confusions', confusionItems: [{ id: 'conf1', confusion: 'A beginner-style confusion question.', clarification: 'A direct clarification in simple language.' }, { id: 'conf2', confusion: 'Another likely confusion.', clarification: 'A clear correction that removes the doubt.' }, { id: 'conf3', confusion: 'A third confusion that often appears early.', clarification: 'A plain explanation that resets understanding.' }], faqItems: [{ id: 'faq1', question: 'Short practical question 1?', answer: 'Short practical answer 1.' }, { id: 'faq2', question: 'Short practical question 2?', answer: 'Short practical answer 2.' }, { id: 'faq3', question: 'Short practical question 3?', answer: 'Short practical answer 3.' }], misconceptionAlerts: ['One myth or misconception to avoid.', 'Another misconception to avoid.'] },
+            simpleRecap: { summaryTitle: 'Simple Recap', keyTakeaways: ['Takeaway 1', 'Takeaway 2', 'Takeaway 3'], simpleRecapPoints: ['Recap point 1', 'Recap point 2', 'Recap point 3'], confidenceBoost: 'A final confidence-building sentence for the learner.', memoryReinforcement: 'A short memory hook the learner should remember later.' },
           },
-          simpleUseCases: {
-            gridTitle: 'Where You Will See This',
-            useCaseCards: [
-              { id: 'use1', title: 'Everyday Use Case', description: 'Everyday usage.', category: 'everyday', icon: 'Monitor' },
-              { id: 'use2', title: 'Career Use Case', description: 'Career usage.', category: 'career', icon: 'Briefcase' },
-            ],
-          },
-          beginnerBreakdown: { title: 'Step-by-Step Breakdown', steps: [{ id: 'step1', stepTitle: 'Step 1', stepExplanation: 'Explanation.', microLearningChunk: 'Remember this.' }] },
-          mentalModel: { title: 'Mental Model', conceptMap: { nodes: [{ id: 'node1', label: 'Part', description: 'Description.' }], connections: [{ from: 'node1', to: 'node1', label: 'relates to' }] }, visualLabels: ['Label 1'] },
-          commonConfusions: { title: 'Common Confusions', confusionItems: [{ id: 'conf1', confusion: 'Confusion.', clarification: 'Clarification.' }], faqItems: [{ id: 'faq1', question: 'Question?', answer: 'Answer.' }], misconceptionAlerts: ['Misconception.'] },
-          simpleRecap: { summaryTitle: 'Simple Recap', keyTakeaways: ['Takeaway 1'], simpleRecapPoints: ['Point 1'], confidenceBoost: 'Confidence signal.', memoryReinforcement: 'Memory hook.' },
         },
-      },
       real_life: {
         real_life: {
           ...base,
