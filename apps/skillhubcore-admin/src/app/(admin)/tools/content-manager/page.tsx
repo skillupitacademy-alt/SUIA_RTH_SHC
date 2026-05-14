@@ -122,6 +122,23 @@ function getDefaultAssetFieldPath(section: SectionType) {
   }
 }
 
+function getAllowedAssetFieldPaths(section: SectionType) {
+  switch (section) {
+    case 'layman':
+      return ['everydayAnalogy.image'];
+    case 'notes':
+      return ['summaryCard.image'];
+    case 'code':
+      return ['outputDemonstration.previewAsset'];
+    case 'technical':
+      return ['sections.0.diagramAsset'];
+    case 'summary':
+      return ['masteryRecapCard.heroAsset'];
+    default:
+      return [] as string[];
+  }
+}
+
 function ContentManagerContent() {
   const brand = useBrand();
   const [subtopicInfo, setSubtopicInfo] = useState<SubtopicInfo>({
@@ -149,6 +166,7 @@ function ContentManagerContent() {
   const [isProcessingAsset, setIsProcessingAsset] = useState(false);
 
   const selectedSectionLabel = sections.find((section) => section.id === selectedSection)?.label ?? selectedSection;
+  const allowedAssetFieldPaths = getAllowedAssetFieldPaths(selectedSection);
 
   const showMessage = (msg: string, type: 'success' | 'error' | 'info') => {
     setMessage(msg);
@@ -514,14 +532,32 @@ function ContentManagerContent() {
                       <label htmlFor="assetFieldPath" className="mb-2 block text-sm font-semibold text-gray-700">
                         Target JSON field
                       </label>
-                      <input
-                        id="assetFieldPath"
-                        type="text"
-                        value={assetFieldPath}
-                        onChange={(event) => setAssetFieldPath(event.target.value)}
-                        placeholder="everydayAnalogy.image"
-                        className="w-full rounded-lg border-2 border-gray-300 px-4 py-3 text-sm focus:border-blue-500 focus:outline-none"
-                      />
+                      {allowedAssetFieldPaths.length > 0 ? (
+                        <>
+                          <select
+                            id="assetFieldPath"
+                            value={assetFieldPath}
+                            onChange={(event) => setAssetFieldPath(event.target.value)}
+                            className="w-full rounded-lg border-2 border-gray-300 px-4 py-3 text-sm focus:border-blue-500 focus:outline-none"
+                          >
+                            {allowedAssetFieldPaths.map((path) => (
+                              <option key={path} value={path}>
+                                {path}
+                              </option>
+                            ))}
+                          </select>
+                          <p className="mt-1 text-xs text-gray-500">Allowed SVG injection paths for this section are pre-configured.</p>
+                        </>
+                      ) : (
+                        <input
+                          id="assetFieldPath"
+                          type="text"
+                          value={assetFieldPath}
+                          onChange={(event) => setAssetFieldPath(event.target.value)}
+                          placeholder="everydayAnalogy.image"
+                          className="w-full rounded-lg border-2 border-gray-300 px-4 py-3 text-sm focus:border-blue-500 focus:outline-none"
+                        />
+                      )}
                     </div>
                     <div>
                       <label htmlFor="assetName" className="mb-2 block text-sm font-semibold text-gray-700">

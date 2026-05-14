@@ -35,6 +35,9 @@ interface RequestBody {
   content: string | JsonRecord;
 }
 
+const TUTORIAL_CACHE_VERSIONS = ['v1', 'v2'] as const;
+const TUTORIAL_DIFFICULTIES = ['simple'] as const;
+
 const SECTION_TRANSFORMERS: Record<TutorialSectionId, (content: JsonRecord, subtopicName: string) => JsonRecord> = {
   overview: transformOverviewSection,
   notes: transformNotesSection,
@@ -97,6 +100,37 @@ function normalizeSvgAsset(value: unknown) {
     dataUri,
     ...(asString(value.caption) ? { caption: asString(value.caption) } : {}),
   };
+}
+
+async function invalidateTutorialDeliveryCache(subtopicSlug: string) {
+  const baseUrl = process.env.UPSTASH_REDIS_REST_URL?.trim();
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN?.trim();
+
+  if (!baseUrl || !token) {
+    return;
+  }
+
+  const keys = TUTORIAL_CACHE_VERSIONS.flatMap((version) => [
+    ...TUTORIAL_DIFFICULTIES.map((difficulty) => `tutorial:${version}:sections:${subtopicSlug}:${difficulty}`),
+    `tutorial:${version}:paths`,
+  ]);
+
+  await Promise.all(
+    keys.map(async (key) => {
+      const url = `${baseUrl}/del/${encodeURIComponent(key)}`;
+      try {
+        await fetch(url, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          cache: 'no-store',
+        });
+      } catch (error) {
+        console.warn('[Content Manager API] Failed to invalidate tutorial cache key', { key, error });
+      }
+    })
+  );
 }
 
 function unwrapSectionContent(content: JsonRecord, config: TutorialSectionContract): JsonRecord {
@@ -896,6 +930,8 @@ export async function POST(req: NextRequest) {
         publishedAt: now,
       });
     }
+
+    await invalidateTutorialDeliveryCache(subtopicSlug);
 
     return NextResponse.json({
       success: true,

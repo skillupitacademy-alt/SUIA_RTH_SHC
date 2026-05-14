@@ -265,7 +265,14 @@ export async function createAuthProxy(options: AuthProxyOptions = {}) {
     // Handle protected routes with authenticated user
     if (isProtectedRoute(pathname)) {
       if (user !== null && hasRequiredRole(user) === false) {
-        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        if (isApiRoute) {
+          return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        }
+
+        const response = NextResponse.redirect(getLoginUrl(request, redirectPath, options.brandLoginUrl));
+        response.cookies.delete('accessToken');
+        response.cookies.delete('refreshToken');
+        return response;
       }
 
       const headers = new Headers(request.headers);

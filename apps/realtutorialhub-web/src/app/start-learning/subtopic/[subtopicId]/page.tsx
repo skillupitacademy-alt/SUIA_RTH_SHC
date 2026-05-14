@@ -6,12 +6,14 @@ import { SubtopicNotesPageWrapper } from '@/share-branding/SubtopicNotesPageWrap
 import { buildSubtopicNotesDataFromSectionsResponse } from '@/share-branding/subtopicNotesDataAPI';
 import { rthConfig } from '@/share-branding/brandConfig';
 
-import { getPublishedTutorialPathsForDelivery, getTutorialSectionsForDelivery } from '@/server/tutorial-delivery';
+import { getTutorialSectionsForDelivery } from '@/server/tutorial-delivery';
 
-export const revalidate = 1800;
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 interface SubtopicPageProps {
   params: Promise<{ subtopicId: string }>;
+  searchParams?: Promise<{ tab?: string }>;
 }
 
 function getBaseUrl() {
@@ -19,11 +21,6 @@ function getBaseUrl() {
     || process.env.NEXT_PUBLIC_WEB_APP_URL?.trim()
     || 'https://user.realtutorialhub.com';
   return value.endsWith('/') ? value.slice(0, -1) : value;
-}
-
-export async function generateStaticParams() {
-  const paths = await getPublishedTutorialPathsForDelivery();
-  return paths.map((path) => ({ subtopicId: path.subtopicSlug }));
 }
 
 export async function generateMetadata({ params }: SubtopicPageProps): Promise<Metadata> {
@@ -54,8 +51,10 @@ export async function generateMetadata({ params }: SubtopicPageProps): Promise<M
   };
 }
 
-export default async function SubtopicPage({ params }: SubtopicPageProps) {
+export default async function SubtopicPage({ params, searchParams }: SubtopicPageProps) {
   const { subtopicId } = await params;
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+  const initialTab = typeof resolvedSearchParams?.tab === 'string' ? resolvedSearchParams.tab : 'overview';
   const sectionsResponse = await getTutorialSectionsForDelivery(subtopicId);
 
   if (sectionsResponse === null) {
@@ -71,6 +70,7 @@ export default async function SubtopicPage({ params }: SubtopicPageProps) {
         subtopicId={subtopicId}
         overviewData={overviewData}
         initialNotesData={initialNotesData}
+        initialTab={initialTab}
         useAPI={false}
       />
     </BrandProvider>

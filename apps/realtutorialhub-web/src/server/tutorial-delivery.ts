@@ -52,7 +52,7 @@ export interface ValidatedTutorialSectionsPayload {
   invalidSections: TutorialSectionError[];
 }
 
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2';
 const SECTION_TTL_SECONDS = 900;
 const HIERARCHY_TTL_SECONDS = 1800;
 const PUBLISHED_PATHS_TTL_SECONDS = 3600;
@@ -172,24 +172,23 @@ async function fetchPublishedSectionsBySubtopicSlug(
   };
 }
 
-const getPublishedSectionsBySubtopicSlugCached = unstable_cache(
-  async (subtopicSlug: string, difficulty: TutorialDifficulty = 'simple') => {
-    const redisKey = getSectionsCacheKey(subtopicSlug, difficulty);
-    const cached = await readRedisJson<TutorialSectionsResponse>(redisKey);
-    if (cached !== null) {
-      return cached;
-    }
+async function getPublishedSectionsBySubtopicSlugCached(
+  subtopicSlug: string,
+  difficulty: TutorialDifficulty = 'simple'
+) {
+  const redisKey = getSectionsCacheKey(subtopicSlug, difficulty);
+  const cached = await readRedisJson<TutorialSectionsResponse>(redisKey);
+  if (cached !== null) {
+    return cached;
+  }
 
-    const result = await fetchPublishedSectionsBySubtopicSlug(subtopicSlug, difficulty);
-    if (result !== null) {
-      await writeRedisJson(redisKey, result, SECTION_TTL_SECONDS);
-    }
+  const result = await fetchPublishedSectionsBySubtopicSlug(subtopicSlug, difficulty);
+  if (result !== null) {
+    await writeRedisJson(redisKey, result, SECTION_TTL_SECONDS);
+  }
 
-    return result;
-  },
-  ['tutorial-delivery-sections'],
-  { revalidate: 900 }
-);
+  return result;
+}
 
 const getHierarchyBySlugsCached = unstable_cache(
   async (domainSlug: string, subjectSlug: string, topicSlug: string, subtopicSlug: string) => {

@@ -43,6 +43,7 @@ export interface SubtopicNotesPageProps {
   notesData: SubtopicNotesViewData;
   overviewData: any; // SubtopicViewData type
   subtopicId?: string;
+  initialTab?: string;
 }
 
 function SectionValidationBlocked({ message }: { message: string }) {
@@ -57,11 +58,16 @@ function SectionValidationBlocked({ message }: { message: string }) {
   );
 }
 
-export function SubtopicNotesPage({ notesData, overviewData, subtopicId = 'component-architecture' }: SubtopicNotesPageProps) {
+export function SubtopicNotesPage({
+  notesData,
+  overviewData,
+  subtopicId = 'component-architecture',
+  initialTab = 'overview',
+}: SubtopicNotesPageProps) {
   const brand = useBrand();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0); // Add shared quiz state
   
   React.useEffect(() => {
