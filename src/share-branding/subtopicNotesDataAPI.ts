@@ -378,35 +378,51 @@ export function buildSubtopicNotesDataFromSectionsResponse(
           message: `${progressSnapshot.completionPercent}% Complete`
         }
       },
-      mainContent: {
-        breadcrumbs: ['Home', subtopicInfo.topic, 'Components', subtopicInfo.title],
-        title: subtopicInfo.title,
-        meta: {
-          readTime: '10 min read',
-          level: subtopicInfo.level,
-          xp: 50
-        },
-        simpleWords: notesContent?.simpleWords ?? '',
-        definitionBlock: notesContent?.definitionBlock,
-        sections: notesContent?.sections ?? [],
-        componentGrid: notesContent?.componentGrid,
-        examplePanel: notesContent?.examplePanel,
-        practiceCard: notesContent?.practiceCard,
-        warningFaq: notesContent?.warningFaq,
-        summaryCard: notesContent?.summaryCard,
-        laymanExplanation: laymanContent,
-        realLifeExamples: realLifeContent,
-        technicalDeepDive: technicalContent,
-        codeExample: codeContent,
-        visualExplanation: visualContent,
-        practiceTest: practiceContent,
-        assignment: assignmentContent,
-        project: projectContent,
-        quiz: quizContent,
-        summary: summaryContent,
-        interview: interviewContent,
-        aiTutorContent
-      } as any,
+    mainContent: {
+      breadcrumbs: ['Home', subtopicInfo.topic, 'Components', subtopicInfo.title],
+      title: subtopicInfo.title,
+      meta: {
+        readTime: '10 min read',
+        level: subtopicInfo.level,
+        xp: 50
+      },
+      simpleWords: notesContent?.simpleWords ?? '',
+      definitionBlock: notesContent?.definitionBlock,
+      sections: notesContent?.sections ?? [],
+      componentGrid: notesContent?.componentGrid,
+      examplePanel: notesContent?.examplePanel,
+      practiceCard: notesContent?.practiceCard,
+      warningFaq: notesContent?.warningFaq,
+      summaryCard: notesContent?.summaryCard,
+
+      // Notes tab visual blocks are derived from the `visual` section payload because
+      // `sectionType=notes` doesn't include them in real authenticated data.
+      summaryHeroInfographic:
+        (visualContent as any)?.summaryInfographic ??
+        (visualContent as any)?.summary_infographic,
+      conceptMemoryMap:
+        (visualContent as any)?.mentalModelVisualization ??
+        (visualContent as any)?.mental_model_canvas,
+      comparisonSummaryChart:
+        (visualContent as any)?.comparisonDiagram ??
+        (visualContent as any)?.comparison_diagram,
+
+      laymanExplanation: laymanContent,
+      realLifeExamples: realLifeContent,
+      technicalDeepDive: technicalContent,
+      codeExample: codeContent,
+
+      // Keep existing full Visual Explanation tab as-is.
+      visualExplanation: visualContent,
+
+      practiceTest: practiceContent,
+      assignment: assignmentContent,
+      project: projectContent,
+      quiz: quizContent,
+      summary: summaryContent,
+      interview: interviewContent,
+      aiTutorContent
+    } as any,
       rightSidebar: {
         aiTutor: {
           title: `${brand.tutorLabel || 'Tutor'} (Ask Anything)`,

@@ -8,6 +8,12 @@ import { NotesExamplePanel } from './NotesExamplePanel';
 import { NotesPracticeCard } from './NotesPracticeCard';
 import { NotesWarningFaq } from './NotesWarningFaq';
 import { NotesSummaryCard } from './NotesSummaryCard';
+import { NotesHeroInfographic } from './NotesHeroInfographic';
+import { NotesFlashcardSystem } from './NotesFlashcardSystem';
+import { NotesConceptMemoryMap } from './NotesConceptMemoryMap';
+import { NotesComparisonChart } from './NotesComparisonChart';
+import { NotesMnemonicGraphic } from './NotesMnemonicGraphic';
+import { NotesCheatSheet } from './NotesCheatSheet';
 
 /**
  * Notes Main Content Component
@@ -157,6 +163,67 @@ export function NotesMainContent({ data, isStandalone = true }: { data: Subtopic
           memoryReinforcement={data.summaryCard.memoryReinforcement}
           examTips={data.summaryCard.examTips}
         />
+      )}
+
+      {/* Notes-only “visual architecture” blocks (optional) */}
+      {(data.summaryHeroInfographic != null ||
+        data.conceptMemoryMap != null ||
+        data.cheatSheetSVG != null ||
+        data.flashcardVisualSystem != null ||
+        data.comparisonSummaryChart != null ||
+        data.mnemonicRetentionGraphic != null) && (
+        <div className="space-y-12 mt-12 pt-12 border-t border-slate-100">
+          
+          {/* 1. SUMMARY HERO INFOGRAPHIC */}
+          {data.summaryHeroInfographic != null && (
+            <NotesHeroInfographic 
+              summaryTitle={data.summaryHeroInfographic.summaryTitle || data.title}
+              image={data.summaryHeroInfographic.image}
+              examTips={data.summaryHeroInfographic.examTips || []}
+              howItWorks={data.summaryHeroInfographic.howItWorks}
+            />
+          )}
+
+          {/* 2. CONCEPT MEMORY MAP */}
+          {data.conceptMemoryMap != null && (
+            <NotesConceptMemoryMap 
+              nodes={data.conceptMemoryMap.nodes || []} 
+              connections={data.conceptMemoryMap.connections || []} 
+            />
+          )}
+
+          {/* 3. CHEAT SHEET (QUICK REFERENCE) */}
+          {data.cheatSheetSVG != null && (
+            <NotesCheatSheet 
+              title={data.cheatSheetSVG.title}
+              items={data.cheatSheetSVG.sections || []}
+            />
+          )}
+
+          {/* 4. FLASHCARD SYSTEM */}
+          {data.flashcardVisualSystem != null && (
+            <NotesFlashcardSystem cards={data.flashcardVisualSystem.cards || []} />
+          )}
+
+          {/* 5. COMPARISON SUMMARY CHART */}
+          {data.comparisonSummaryChart != null && (
+            <NotesComparisonChart 
+              title={data.comparisonSummaryChart.title || "Comparison Summary"}
+              columns={data.comparisonSummaryChart.columns || []}
+              rows={data.comparisonSummaryChart.rows || []}
+            />
+          )}
+
+          {/* 6. MNEMONIC & RETENTION GRAPHIC */}
+          {data.mnemonicRetentionGraphic != null && (
+            <NotesMnemonicGraphic 
+              mnemonicTitle={data.mnemonicRetentionGraphic.mnemonicTitle}
+              memoryHook={data.mnemonicRetentionGraphic.memoryHook}
+              rememberItems={data.mnemonicRetentionGraphic.rememberItems || []}
+              keyPoints={data.mnemonicRetentionGraphic.keyPoints || []}
+            />
+          )}
+        </div>
       )}
 
     </div>

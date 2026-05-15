@@ -144,6 +144,39 @@ export interface SubtopicNotesViewData {
       memoryReinforcement: string;
       examTips: string[];
     };
+
+    // Notes-only “visual architecture” blocks (used by the screenshot/visual design).
+    // These are optional because older payloads may not include them.
+    summaryHeroInfographic?: {
+      image?: string;
+      summaryTitle?: string;
+      examTips?: string[];
+      howItWorks?: Array<{ step: number; label: string; description: string }>;
+    };
+    conceptMemoryMap?: {
+      nodes?: Array<{ id: string; label: string; description: string }>;
+      connections?: Array<{ from: string; to: string; label?: string }>;
+    };
+    cheatSheetSVG?: {
+      title?: string;
+      svgPath?: string;
+      sections?: any[];
+    };
+    flashcardVisualSystem?: {
+      cards: Array<{ id: string; question: string; answer: string }>;
+    };
+    comparisonSummaryChart?: {
+      title?: string;
+      columns: string[];
+      rows: string[][];
+    };
+    mnemonicRetentionGraphic?: {
+      mnemonicTitle?: string;
+      memoryHook?: string;
+      rememberItems: Array<{ letter: string; label: string; description: string }>;
+      keyPoints: string[];
+    };
+
     laymanExplanation?: {
       simpleOverview?: {
         badge: string;
