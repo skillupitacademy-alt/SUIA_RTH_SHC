@@ -82,6 +82,62 @@ export const NotesSectionSchema = sectionSchema('notes', {
     examTips: nonEmptyStringArray(1),
     image: optionalSvgAssetField(),
   }),
+
+  // Premium Visual Architecture Blocks (Optional)
+  summaryHeroInfographic: z.object({
+    image: z.string().optional(),
+    summaryTitle: z.string().optional(),
+    examTips: z.array(z.string()).optional(),
+    howItWorks: z.array(z.object({
+      step: z.number(),
+      label: z.string(),
+      description: z.string(),
+    })).optional(),
+  }).optional(),
+
+  conceptMemoryMap: z.object({
+    nodes: z.array(z.object({
+      id: z.string(),
+      label: z.string(),
+      description: z.string(),
+    })).optional(),
+    connections: z.array(z.object({
+      from: z.string(),
+      to: z.string(),
+      label: z.string().optional(),
+    })).optional(),
+  }).optional(),
+
+  cheatSheetSVG: z.object({
+    title: z.string().optional(),
+    svgPath: z.string().optional(),
+    sections: z.array(z.any()).optional(),
+  }).optional(),
+
+  flashcardVisualSystem: z.object({
+    cards: z.array(z.object({
+      id: z.string(),
+      question: z.string(),
+      answer: z.string(),
+    })),
+  }).optional(),
+
+  comparisonSummaryChart: z.object({
+    title: z.string().optional(),
+    columns: z.array(z.string()),
+    rows: z.array(z.array(z.string())),
+  }).optional(),
+
+  mnemonicRetentionGraphic: z.object({
+    mnemonicTitle: z.string().optional(),
+    memoryHook: z.string().optional(),
+    rememberItems: z.array(z.object({
+      letter: z.string(),
+      label: z.string(),
+      description: z.string(),
+    })),
+    keyPoints: z.array(z.string()),
+  }).optional(),
 });
 
 export type NotesSection = z.infer<typeof NotesSectionSchema>;

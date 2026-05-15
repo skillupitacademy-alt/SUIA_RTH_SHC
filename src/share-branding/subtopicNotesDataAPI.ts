@@ -378,51 +378,73 @@ export function buildSubtopicNotesDataFromSectionsResponse(
           message: `${progressSnapshot.completionPercent}% Complete`
         }
       },
-    mainContent: {
-      breadcrumbs: ['Home', subtopicInfo.topic, 'Components', subtopicInfo.title],
-      title: subtopicInfo.title,
-      meta: {
-        readTime: '10 min read',
-        level: subtopicInfo.level,
-        xp: 50
-      },
-      simpleWords: notesContent?.simpleWords ?? '',
-      definitionBlock: notesContent?.definitionBlock,
-      sections: notesContent?.sections ?? [],
-      componentGrid: notesContent?.componentGrid,
-      examplePanel: notesContent?.examplePanel,
-      practiceCard: notesContent?.practiceCard,
-      warningFaq: notesContent?.warningFaq,
-      summaryCard: notesContent?.summaryCard,
+      mainContent: {
+        breadcrumbs: ['Home', subtopicInfo.topic, 'Components', subtopicInfo.title],
+        title: subtopicInfo.title,
+        meta: {
+          readTime: '10 min read',
+          level: subtopicInfo.level,
+          xp: 50
+        },
+        simpleWords: notesContent?.simpleWords ?? '',
+        definitionBlock: notesContent?.definitionBlock,
+        sections: notesContent?.sections ?? [],
+        componentGrid: notesContent?.componentGrid,
+        examplePanel: notesContent?.examplePanel,
+        practiceCard: notesContent?.practiceCard,
+        warningFaq: notesContent?.warningFaq,
+        summaryCard: notesContent?.summaryCard,
 
-      // Notes tab visual blocks are derived from the `visual` section payload because
-      // `sectionType=notes` doesn't include them in real authenticated data.
-      summaryHeroInfographic:
-        (visualContent as any)?.summaryInfographic ??
-        (visualContent as any)?.summary_infographic,
-      conceptMemoryMap:
-        (visualContent as any)?.mentalModelVisualization ??
-        (visualContent as any)?.mental_model_canvas,
-      comparisonSummaryChart:
-        (visualContent as any)?.comparisonDiagram ??
-        (visualContent as any)?.comparison_diagram,
+        // 1. Summary Hero Infographic
+        summaryHeroInfographic:
+          notesContent?.summaryHeroInfographic ??
+          (visualContent as any)?.summaryInfographic ??
+          (visualContent as any)?.summary_infographic,
 
-      laymanExplanation: laymanContent,
-      realLifeExamples: realLifeContent,
-      technicalDeepDive: technicalContent,
-      codeExample: codeContent,
+        // 2. Concept Memory Map
+        conceptMemoryMap:
+          notesContent?.conceptMemoryMap ??
+          (visualContent as any)?.mentalModelVisualization ??
+          (visualContent as any)?.mental_model_canvas,
 
-      // Keep existing full Visual Explanation tab as-is.
-      visualExplanation: visualContent,
+        // 3. Cheat Sheet (Quick Reference)
+        cheatSheetSVG:
+          notesContent?.cheatSheetSVG ??
+          (visualContent as any)?.diagrammaticBreakdown ??
+          (visualContent as any)?.diagram_panel,
 
-      practiceTest: practiceContent,
-      assignment: assignmentContent,
-      project: projectContent,
-      quiz: quizContent,
-      summary: summaryContent,
-      interview: interviewContent,
-      aiTutorContent
-    } as any,
+        // 4. Flashcard Visual System
+        flashcardVisualSystem:
+          notesContent?.flashcardVisualSystem ??
+          (visualContent as any)?.flashcardVisualSystem,
+
+        // 5. Comparison Summary Chart
+        comparisonSummaryChart:
+          notesContent?.comparisonSummaryChart ??
+          (visualContent as any)?.comparativeVisualization ??
+          (visualContent as any)?.comparison_diagram,
+
+        // 6. Mnemonic & Retention Graphic
+        mnemonicRetentionGraphic:
+          notesContent?.mnemonicRetentionGraphic ??
+          (visualContent as any)?.mnemonicRetentionGraphic,
+
+        laymanExplanation: laymanContent,
+        realLifeExamples: realLifeContent,
+        technicalDeepDive: technicalContent,
+        codeExample: codeContent,
+
+        // Keep existing full Visual Explanation tab as-is.
+        visualExplanation: visualContent,
+
+        practiceTest: practiceContent,
+        assignment: assignmentContent,
+        project: projectContent,
+        quiz: quizContent,
+        summary: summaryContent,
+        interview: interviewContent,
+        aiTutorContent
+      } as any,
       rightSidebar: {
         aiTutor: {
           title: `${brand.tutorLabel || 'Tutor'} (Ask Anything)`,
