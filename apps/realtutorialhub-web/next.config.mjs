@@ -18,6 +18,17 @@ const nextConfig = {
   compress: true,
   output: process.env.CLOUD_RUN_BUILD === 'true' ? 'standalone' : undefined,
   transpilePackages: ['@quiz/api-client', '@quiz/auth', '@quiz/db', '@quiz/db-tutorial', '@quiz/events', '@quiz/types', '@quiz/validation', '@quiz/ui', 'lucide-react'],
+  webpack: (config) => {
+    config.ignoreWarnings = [
+      ...(config.ignoreWarnings ?? []),
+      {
+        module: /next-intl[\\/]dist[\\/]esm[\\/]production[\\/]extractor[\\/]format[\\/]index\.js$/,
+        message: /Parsing of .*next-intl.*failed at 'import\(t\)'/,
+      },
+    ];
+
+    return config;
+  },
   images: {
     remotePatterns: [
       {

@@ -1,12 +1,7 @@
 import { unstable_cache } from 'next/cache';
+import { headers } from 'next/headers';
 import { Redis } from '@upstash/redis';
-import { and, eq, inArray } from 'drizzle-orm';
 
-import {
-  db as tutorialDb,
-  tutorialSections,
-  tutorialSubtopics,
-} from '@quiz/db-tutorial';
 import type { TutorialDifficulty, TutorialSectionId, TutorialContentJSON } from '@quiz/types';
 import { TUTORIAL_SECTION_CONTRACTS } from '@quiz/types';
 import {
@@ -20,14 +15,6 @@ import {
   getPublishedTutorialPaths,
   type TutorialHierarchyPath,
 } from '@/lib/tutorial-hierarchy';
-
-type SectionRecord = {
-  id: string;
-  sectionType: TutorialSectionId;
-  content: unknown;
-  version: number;
-  language: string;
-};
 
 export interface TutorialSectionsResponse {
   subtopicId: string;
@@ -115,61 +102,52 @@ function getPathsCacheKey(): string {
   return `tutorial:${CACHE_VERSION}:paths`;
 }
 
+async function fetchSectionsViaApi(
+  subtopicSlug: string,
+  difficulty: TutorialDifficulty = 'simple'
+): Promise<TutorialSectionsResponse | null> {
+  const apiBase = process.env.INTERNAL_API_URL?.trim() || process.env.GATEWAY_URL?.trim();
+  const internalSecret = process.env.INTERNAL_API_SECRET?.trim();
+
+  if (!apiBase || !internalSecret) {
+    throw new Error('Tutorial delivery API configuration is incomplete. INTERNAL_API_URL and INTERNAL_API_SECRET are required.');
+  }
+
+  const requestHeaders = await headers();
+  const userId = requestHeaders.get('x-user-id')?.trim();
+  const originalUserId = requestHeaders.get('x-original-user-id')?.trim();
+
+  const url = new URL(`${apiBase.replace(/\/+$/, '')}/tutorial/sections/${encodeURIComponent(subtopicSlug)}`);
+  url.searchParams.set('difficulty', difficulty);
+
+  const response = await fetch(url.toString(), {
+    method: 'GET',
+    cache: 'no-store',
+    headers: {
+      'X-Brand': 'realtutorialhub',
+      'X-Internal-Secret': internalSecret,
+      ...(userId ? { 'X-User-ID': userId } : {}),
+      ...(originalUserId ? { 'X-Original-User-ID': originalUserId } : {}),
+    },
+  });
+
+  if (response.status === 404) {
+    return null;
+  }
+
+  if (!response.ok) {
+    const payload = await response.text().catch(() => '');
+    throw new Error(`Tutorial sections API failed (${response.status}): ${payload || 'Unknown error'}`);
+  }
+
+  return response.json() as Promise<TutorialSectionsResponse>;
+}
+
 async function fetchPublishedSectionsBySubtopicSlug(
   subtopicSlug: string,
   difficulty: TutorialDifficulty = 'simple'
 ): Promise<TutorialSectionsResponse | null> {
-  const [subtopic] = await tutorialDb
-    .select({
-      id: tutorialSubtopics.id,
-      name: tutorialSubtopics.name,
-      slug: tutorialSubtopics.slug,
-    })
-    .from(tutorialSubtopics)
-    .where(eq(tutorialSubtopics.slug, subtopicSlug))
-    .limit(1);
-
-  if (!subtopic) {
-    return null;
-  }
-
-  const rows = await tutorialDb
-    .select({
-      id: tutorialSections.id,
-      sectionType: tutorialSections.sectionType,
-      content: tutorialSections.content,
-      version: tutorialSections.version,
-      language: tutorialSections.language,
-    })
-    .from(tutorialSections)
-    .where(
-      and(
-        eq(tutorialSections.subtopicId, subtopic.id),
-        eq(tutorialSections.difficulty, difficulty),
-        inArray(tutorialSections.status, ['approved', 'deployed'])
-      )
-    );
-
-  const sections: Record<string, unknown> = {};
-  const sectionMeta: Record<string, { id: string; version: number; language: string }> = {};
-
-  for (const row of rows as SectionRecord[]) {
-    sections[row.sectionType] = row.content;
-    sectionMeta[row.sectionType] = {
-      id: row.id,
-      version: row.version,
-      language: row.language,
-    };
-  }
-
-  return {
-    subtopicId: subtopic.id,
-    subtopicName: subtopic.name,
-    difficulty,
-    totalSections: rows.length,
-    sections,
-    sectionMeta,
-  };
+  return fetchSectionsViaApi(subtopicSlug, difficulty);
 }
 
 async function getPublishedSectionsBySubtopicSlugCached(
