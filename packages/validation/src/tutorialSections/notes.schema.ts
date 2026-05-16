@@ -85,7 +85,7 @@ export const NotesSectionSchema = sectionSchema('notes', {
 
   // Premium Visual Architecture Blocks (Optional)
   summaryHeroInfographic: z.object({
-    image: z.string().optional(),
+    image: optionalSvgAssetField(),
     summaryTitle: z.string().optional(),
     examTips: z.array(z.string()).optional(),
     howItWorks: z.array(z.object({
@@ -96,6 +96,7 @@ export const NotesSectionSchema = sectionSchema('notes', {
   }).optional(),
 
   conceptMemoryMap: z.object({
+    image: optionalSvgAssetField(),
     nodes: z.array(z.object({
       id: z.string(),
       label: z.string(),
@@ -110,11 +111,13 @@ export const NotesSectionSchema = sectionSchema('notes', {
 
   cheatSheetSVG: z.object({
     title: z.string().optional(),
+    image: optionalSvgAssetField(),
     svgPath: z.string().optional(),
     sections: z.array(z.any()).optional(),
   }).optional(),
 
   flashcardVisualSystem: z.object({
+    image: optionalSvgAssetField(),
     cards: z.array(z.object({
       id: z.string(),
       question: z.string(),
@@ -123,12 +126,14 @@ export const NotesSectionSchema = sectionSchema('notes', {
   }).optional(),
 
   comparisonSummaryChart: z.object({
+    image: optionalSvgAssetField(),
     title: z.string().optional(),
     columns: z.array(z.string()),
     rows: z.array(z.array(z.string())),
   }).optional(),
 
   mnemonicRetentionGraphic: z.object({
+    image: optionalSvgAssetField(),
     mnemonicTitle: z.string().optional(),
     memoryHook: z.string().optional(),
     rememberItems: z.array(z.object({
@@ -137,6 +142,26 @@ export const NotesSectionSchema = sectionSchema('notes', {
       description: z.string(),
     })),
     keyPoints: z.array(z.string()),
+  }).optional(),
+
+  syntaxBlock: z.object({
+    image: optionalSvgAssetField(),
+    code: z.string(),
+    language: z.string().optional(),
+    title: z.string().optional(),
+    subtitle: z.string().optional(),
+    explanations: z.array(z.object({
+      id: z.string(),
+      term: z.string(),
+      explanation: z.string(),
+    })),
+  }).optional(),
+
+  footerBlock: z.object({
+    image: optionalSvgAssetField(),
+    finalNote: z.string(),
+    nextStepLabel: z.string(),
+    nextStepTarget: z.string(),
   }).optional(),
 });
 

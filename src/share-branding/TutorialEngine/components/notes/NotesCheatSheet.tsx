@@ -1,6 +1,7 @@
 import React from 'react';
 import * as Icons from 'lucide-react';
 import { useBrand } from '../../../PostLandingPage/app/context/BrandContext';
+import { SVGIconRenderer } from '../shared/SVGIconRenderer';
 
 interface CheatSheetItem {
   id: string;
@@ -10,6 +11,7 @@ interface CheatSheetItem {
 }
 
 interface NotesCheatSheetProps {
+  image?: any;
   title?: string;
   items: CheatSheetItem[];
 }
@@ -20,10 +22,14 @@ interface NotesCheatSheetProps {
  * Purpose: Compact reference for syntax and key commands
  */
 export function NotesCheatSheet({ 
+  image,
   title = "Cheat Sheet (Quick Reference)", 
   items 
 }: NotesCheatSheetProps) {
   const brand = useBrand();
+
+  const dataUri = typeof image === 'string' ? image : image?.dataUri;
+  const altText = typeof image === 'object' ? image?.alt : 'Cheat Sheet';
 
   return (
     <div className="w-full rounded-[24px] border border-slate-200 bg-white p-6 shadow-xl sm:p-8">
@@ -39,6 +45,16 @@ export function NotesCheatSheet({
         </div>
         <Icons.FileText className="text-slate-300" size={24} />
       </div>
+
+      {dataUri && (
+        <div className="mb-8 overflow-hidden rounded-2xl border border-slate-100 shadow-sm">
+          <SVGIconRenderer 
+            dataUri={dataUri} 
+            alt={altText} 
+            className="w-full h-auto max-h-[400px] object-cover"
+          />
+        </div>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {items.map((item) => (

@@ -251,6 +251,12 @@ function transformNotesSection(content: JsonRecord, subtopicName: string): JsonR
 
     return {
       simpleWords: asString(content.simpleWords, asString(definitionBlock.definitionText, subtopicName)),
+      summaryHeroInfographic: isRecord(content.summaryHeroInfographic) ? {
+        ...asRecord(content.summaryHeroInfographic),
+        ...(normalizeSvgAsset(asRecord(content.summaryHeroInfographic).image) ? { image: normalizeSvgAsset(asRecord(content.summaryHeroInfographic).image) } : {})
+      } : undefined,
+      conceptMemoryMap: isRecord(content.conceptMemoryMap) ? asRecord(content.conceptMemoryMap) : undefined,
+      cheatSheetSVG: isRecord(content.cheatSheetSVG) ? asRecord(content.cheatSheetSVG) : undefined,
       definitionBlock: {
         ...definitionBlock,
         quickSummary: asArray(definitionBlock.quickSummary),
@@ -260,6 +266,7 @@ function transformNotesSection(content: JsonRecord, subtopicName: string): JsonR
         ...componentGrid,
         componentCards: asArray(componentGrid.componentCards),
       },
+      syntaxBlock: isRecord(content.syntaxBlock) ? asRecord(content.syntaxBlock) : undefined,
       examplePanel: {
         ...examplePanel,
         scenarios: asArray(examplePanel.scenarios),
@@ -283,6 +290,7 @@ function transformNotesSection(content: JsonRecord, subtopicName: string): JsonR
         examTips: asArray(summaryCard.examTips),
         ...(normalizeSvgAsset(summaryCard.image) ? { image: normalizeSvgAsset(summaryCard.image) } : {}),
       },
+      footerBlock: isRecord(content.footerBlock) ? asRecord(content.footerBlock) : undefined,
     };
   }
 
@@ -391,103 +399,56 @@ function transformLaymanSection(content: JsonRecord, subtopicName: string): Json
   const mentalModel = asRecord(content.mentalModel);
   const commonConfusions = asRecord(content.commonConfusions);
   const simpleRecap = asRecord(content.simpleRecap);
-  const benefitCards = asArray<JsonRecord>(whyItExists.benefitCards).map((card, index) => ({
-    id: asString(card.id, `benefit-${index + 1}`),
-    title: asString(card.title, `Benefit ${index + 1}`),
-    description: asString(card.description),
-    icon: asString(card.icon, 'Star'),
-    type: asString(card.type, index === 0 ? 'career' : index === 1 ? 'practical' : 'future'),
-  }));
+  const footerBlock = asRecord(content.footerBlock);
 
   return {
-    simpleOverview: Object.keys(simpleOverview).length > 0 ? {
-      badge: asString(simpleOverview.badge, 'Layman Section'),
-      headline: asString(simpleOverview.headline, `${subtopicName} in simple words`),
+    simpleOverview: {
+      badge: asString(simpleOverview.badge, 'LAYMAN SECTION'),
+      headline: asString(simpleOverview.headline, `What is ${subtopicName}?`),
       simpleDefinition: asString(simpleOverview.simpleDefinition, `${subtopicName} explained simply`),
       subExplanation: asString(simpleOverview.subExplanation),
-      importanceBlock: asString(simpleOverview.importanceBlock),
-      progressIndicator: asString(simpleOverview.progressIndicator),
-    } : {
-      badge: 'Simple Explanation',
-      headline: `${subtopicName} in simple words`,
-      simpleDefinition: asString(content.simpleExplanation, `${subtopicName} explained simply`),
-      subExplanation: asString(content.analogyOrStory),
-      importanceBlock: '',
+      ...(normalizeSvgAsset(simpleOverview.image) ? { image: normalizeSvgAsset(simpleOverview.image) } : {}),
+      inShort: asString(simpleOverview.inShort),
     },
     everydayAnalogy: {
       title: asString(everydayAnalogy.title, 'Everyday Analogy'),
-      storyAnalogy: asString(everydayAnalogy.storyAnalogy),
-      comparisonPanel: {
-        realWorld: asString(asRecord(everydayAnalogy.comparisonPanel).realWorld),
-        technical: asString(asRecord(everydayAnalogy.comparisonPanel).technical),
-      },
-      visualMetaphor: asString(everydayAnalogy.visualMetaphor),
-      keyTakeaway: asString(everydayAnalogy.keyTakeaway),
-      ...(normalizeSvgAsset(everydayAnalogy.image)
-        ? { image: normalizeSvgAsset(everydayAnalogy.image) }
-        : asString(everydayAnalogy.image)
-          ? { image: asString(everydayAnalogy.image) }
-          : {}),
+      analogyTitle: asString(everydayAnalogy.analogyTitle),
+      analogyExplanation: asString(everydayAnalogy.analogyExplanation),
+      comparisonPoints: asArray(everydayAnalogy.comparisonPoints),
+      analogyInsight: asString(everydayAnalogy.analogyInsight),
+      ...(normalizeSvgAsset(everydayAnalogy.image) ? { image: normalizeSvgAsset(everydayAnalogy.image) } : {}),
     },
     whyItExists: {
       sectionTitle: asString(whyItExists.sectionTitle, 'Why It Exists'),
-      benefitCards,
+      benefitCards: asArray(whyItExists.benefitCards),
     },
     simpleUseCases: {
       gridTitle: asString(simpleUseCases.gridTitle, 'Simple Use Cases'),
-      useCaseCards: asArray<JsonRecord>(simpleUseCases.useCaseCards).map((card, index) => ({
-        id: asString(card.id, `use-case-${index + 1}`),
-        title: asString(card.title, `Use Case ${index + 1}`),
-        description: asString(card.description),
-        category: asString(card.category, index < 2 ? 'everyday' : 'career'),
-        icon: asString(card.icon, 'Box'),
-      })),
+      useCaseCards: asArray(simpleUseCases.useCaseCards),
     },
     beginnerBreakdown: {
-      title: asString(beginnerBreakdown.title, 'Beginner Breakdown'),
-      steps: asArray<JsonRecord>(beginnerBreakdown.steps).map((step, index) => ({
-        id: asString(step.id, `step-${index + 1}`),
-        stepTitle: asString(step.stepTitle, `Step ${index + 1}`),
-        stepExplanation: asString(step.stepExplanation),
-        microLearningChunk: asString(step.microLearningChunk),
-      })),
+      title: asString(beginnerBreakdown.title, 'Beginner Breakdown (How It Works)'),
+      steps: asArray(beginnerBreakdown.steps),
     },
     mentalModel: {
-      title: asString(mentalModel.title, 'Mental Model'),
-      conceptMap: {
-        nodes: asArray<JsonRecord>(asRecord(mentalModel.conceptMap).nodes).map((node, index) => ({
-          id: asString(node.id, `node-${index + 1}`),
-          label: asString(node.label, `Node ${index + 1}`),
-          description: asString(node.description),
-        })),
-        connections: asArray<JsonRecord>(asRecord(mentalModel.conceptMap).connections).map((connection, index) => ({
-          from: asString(connection.from, `node-${index + 1}`),
-          to: asString(connection.to, `node-${index + 2}`),
-          label: asString(connection.label, 'connects to'),
-        })),
-      },
-      visualLabels: asArray(mentalModel.visualLabels),
+      title: asString(mentalModel.title, 'Mental Model (Big Picture)'),
+      nodes: asArray(mentalModel.nodes),
+      connections: asArray(mentalModel.connections),
+      toolsAndServices: asArray(mentalModel.toolsAndServices),
+      footerNote: asString(mentalModel.footerNote),
     },
     commonConfusions: {
       title: asString(commonConfusions.title, 'Common Confusions'),
-      confusionItems: asArray<JsonRecord>(commonConfusions.confusionItems).map((item, index) => ({
-        id: asString(item.id, `confusion-${index + 1}`),
-        confusion: asString(item.confusion),
-        clarification: asString(item.clarification),
-      })),
-      faqItems: asArray<JsonRecord>(commonConfusions.faqItems).map((item, index) => ({
-        id: asString(item.id, `faq-${index + 1}`),
-        question: asString(item.question),
-        answer: asString(item.answer),
-      })),
-      misconceptionAlerts: asArray(commonConfusions.misconceptionAlerts),
+      faqItems: asArray(commonConfusions.faqItems),
     },
     simpleRecap: {
-      summaryTitle: asString(simpleRecap.summaryTitle, 'Simple Recap'),
+      title: asString(simpleRecap.title, 'Simple Recap'),
       keyTakeaways: asArray(simpleRecap.keyTakeaways),
-      simpleRecapPoints: asArray(simpleRecap.simpleRecapPoints),
-      confidenceBoost: asString(simpleRecap.confidenceBoost),
-      memoryReinforcement: asString(simpleRecap.memoryReinforcement),
+      rememberThis: asRecord(simpleRecap.rememberThis),
+    },
+    footerBlock: {
+      quote: asString(footerBlock.quote),
+      finalNote: asString(footerBlock.finalNote),
     },
   };
 }
@@ -839,6 +800,60 @@ async function getOrCreateHierarchy(subtopicSlug: string, subtopicInfo: RequestB
   }
 
   return subtopic;
+}
+
+export async function GET(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const subtopicSlug = searchParams.get('subtopicId');
+    const sectionAdminId = searchParams.get('section');
+    
+    if (!subtopicSlug || !sectionAdminId) {
+      return NextResponse.json({ error: 'Missing subtopicId or section' }, { status: 400 });
+    }
+
+    const config = getTutorialSectionContractByAdminId(sectionAdminId as TutorialAdminSectionId);
+    if (!config) {
+      return NextResponse.json({ error: 'Invalid section ID' }, { status: 400 });
+    }
+
+    const [subtopic] = await db
+      .select()
+      .from(tutorialSubtopics)
+      .where(eq(tutorialSubtopics.slug, subtopicSlug))
+      .limit(1);
+
+    if (!subtopic) {
+      return NextResponse.json({ error: 'Subtopic not found' }, { status: 404 });
+    }
+
+    const [section] = await db
+      .select()
+      .from(tutorialSections)
+      .where(and(
+        eq(tutorialSections.subtopicId, subtopic.id),
+        eq(tutorialSections.sectionType, config.dbType),
+        eq(tutorialSections.difficulty, 'simple'),
+        eq(tutorialSections.brandId, 'shared')
+      ))
+      .limit(1);
+
+    if (!section) {
+      return NextResponse.json({ content: null, message: 'Section not found' });
+    }
+
+    // Wrap it back in the root key for the editor
+    const rootKey = config.rootKeys[0];
+    const wrappedContent = { [rootKey]: section.content };
+
+    return NextResponse.json({
+      success: true,
+      content: wrappedContent,
+    });
+  } catch (error: unknown) {
+    console.error('[Content Manager API] GET Error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
 }
 
 export async function POST(req: NextRequest) {

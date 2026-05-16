@@ -16,15 +16,16 @@ export const LaymanSectionSchema = sectionSchema('layman', {
     subExplanation: NonEmptyStringSchema,
     importanceBlock: NonEmptyStringSchema,
     progressIndicator: OptionalNonEmptyStringSchema,
+    heroVisual: optionalSvgAssetField(),
   }),
   everydayAnalogy: strictObject({
     title: NonEmptyStringSchema,
     storyAnalogy: NonEmptyStringSchema,
-    comparisonPanel: strictObject({
-      realWorld: NonEmptyStringSchema,
-      technical: NonEmptyStringSchema,
-    }),
-    visualMetaphor: NonEmptyStringSchema,
+    comparisonPanel: NonEmptyStringSchema,
+    visualMetaphor: z.array(strictObject({
+      label: NonEmptyStringSchema,
+      comparison: NonEmptyStringSchema,
+    })).min(1),
     keyTakeaway: NonEmptyStringSchema,
     image: optionalSvgAssetField(),
   }),
@@ -59,19 +60,23 @@ export const LaymanSectionSchema = sectionSchema('layman', {
   }),
   mentalModel: strictObject({
     title: NonEmptyStringSchema,
-    conceptMap: strictObject({
-      nodes: z.array(strictObject({
-        id: NonEmptyStringSchema,
-        label: NonEmptyStringSchema,
-        description: NonEmptyStringSchema,
-      })).min(1),
-      connections: z.array(strictObject({
-        from: NonEmptyStringSchema,
-        to: NonEmptyStringSchema,
-        label: NonEmptyStringSchema,
-      })).min(1),
-    }),
-    visualLabels: nonEmptyStringArray(1),
+    conceptMap: z.array(strictObject({
+      id: NonEmptyStringSchema,
+      label: NonEmptyStringSchema,
+      type: OptionalNonEmptyStringSchema,
+    })).min(1),
+    visualLabels: z.array(strictObject({
+      from: NonEmptyStringSchema,
+      to: NonEmptyStringSchema,
+      label: NonEmptyStringSchema,
+    })).min(1),
+    flowArrows: z.array(strictObject({
+      id: NonEmptyStringSchema,
+      label: NonEmptyStringSchema,
+      icon: NonEmptyStringSchema,
+    })).optional(),
+    image: optionalSvgAssetField(),
+    tooltips: OptionalNonEmptyStringSchema,
   }),
   commonConfusions: strictObject({
     title: NonEmptyStringSchema,
@@ -90,7 +95,11 @@ export const LaymanSectionSchema = sectionSchema('layman', {
   simpleRecap: strictObject({
     summaryTitle: NonEmptyStringSchema,
     keyTakeaways: nonEmptyStringArray(1),
-    simpleRecapPoints: nonEmptyStringArray(1),
+    simpleRecapPoints: z.array(strictObject({
+      id: NonEmptyStringSchema,
+      item: NonEmptyStringSchema,
+      checked: z.boolean(),
+    })).min(1),
     confidenceBoost: NonEmptyStringSchema,
     memoryReinforcement: NonEmptyStringSchema,
   }),

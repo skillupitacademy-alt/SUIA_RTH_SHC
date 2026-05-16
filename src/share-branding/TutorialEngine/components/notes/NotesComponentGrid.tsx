@@ -19,9 +19,6 @@ interface NotesComponentGridProps {
  * Component Grid Component
  * Renderer: component_grid
  * Layout Template: structured_breakdown
- * Purpose: Grid-based breakdown of subcomponents
- * 
- * Based on AllSectionTutorialPageUIUXDetailed.json specification
  */
 export function NotesComponentGrid({ gridTitle, componentCards }: NotesComponentGridProps) {
   const brand = useBrand();
@@ -32,9 +29,12 @@ export function NotesComponentGrid({ gridTitle, componentCards }: NotesComponent
   };
 
   return (
-    <div className="w-full mb-8">
+    <div className="w-full space-y-8">
       {/* Grid Title */}
-      <h3 className="text-2xl font-bold text-slate-950 mb-6">{gridTitle}</h3>
+      <div className="flex items-center gap-3">
+         <div className="h-6 w-1 bg-indigo-500 rounded-full" />
+         <h3 className="text-xl font-bold text-slate-900 tracking-tight uppercase">{gridTitle}</h3>
+      </div>
 
       {/* 3-Column Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -44,45 +44,41 @@ export function NotesComponentGrid({ gridTitle, componentCards }: NotesComponent
           return (
             <div
               key={card.id}
-              className="bg-white rounded-2xl p-6 border border-gray-200 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl cursor-pointer"
+              className="group relative overflow-hidden rounded-[24px] border border-slate-200 bg-white p-6 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:border-indigo-100"
             >
-              {/* Icon */}
+              {/* Background Glow */}
               <div 
-                className="w-12 h-12 rounded-xl flex items-center justify-center mb-4"
-                style={{ backgroundColor: `${brand.primaryColor}15` }}
+                className="absolute -right-8 -top-8 h-24 w-24 rounded-full opacity-0 transition-opacity group-hover:opacity-10"
+                style={{ backgroundColor: brand.primaryColor }}
+              />
+
+              {/* Icon Container */}
+              <div 
+                className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl shadow-sm transition-transform group-hover:scale-110"
+                style={{ backgroundColor: `${brand.primaryColor}10` }}
               >
                 <IconComponent 
-                  size={24} 
+                  size={28} 
                   style={{ color: brand.primaryColor }}
                   aria-hidden="true"
                 />
               </div>
 
-              {/* Card Title */}
-              <h3 className="text-xl font-bold text-slate-950 mb-3">
-                {card.title}
-              </h3>
-
-              {/* Description */}
-              <p className="text-sm font-medium text-slate-700 leading-relaxed mb-4">
-                {card.description}
-              </p>
-
-              {/* Subcomponents */}
-              <div className="pt-4 border-t border-gray-100">
-                <p className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
-                  Includes:
+              {/* Content */}
+              <div className="space-y-4">
+                <h4 className="text-xl font-bold text-slate-900">
+                  {card.title}
+                </h4>
+                <p className="text-[14px] font-medium leading-relaxed text-slate-500 line-clamp-3">
+                  {card.description}
                 </p>
-                <div className="flex flex-wrap gap-2">
+
+                {/* Sub-tags */}
+                <div className="flex flex-wrap gap-2 pt-2">
                   {card.subcomponents.map((sub, idx) => (
                     <span
                       key={idx}
-                      className="px-2.5 py-1 rounded-md text-xs font-medium border"
-                      style={{ 
-                        backgroundColor: `${brand.primaryColor}08`,
-                        borderColor: `${brand.primaryColor}30`,
-                        color: brand.primaryColorDark
-                      }}
+                      className="rounded-lg bg-slate-50 px-3 py-1 text-[11px] font-bold text-slate-500 border border-slate-100 group-hover:bg-white group-hover:border-indigo-100 group-hover:text-indigo-600 transition-colors"
                     >
                       {sub}
                     </span>

@@ -7,7 +7,7 @@ import { SubtopicTopBar } from './TutorialEngine/components/subtopic/SubtopicTop
 import { NotesLeftSidebar } from './TutorialEngine/components/notes/NotesLeftSidebar';
 import { NotesMainContent } from './TutorialEngine/components/notes/NotesMainContent';
 import { NotesRightSidebar } from './TutorialEngine/components/notes/NotesRightSidebar';
-import { LaymanExplanationContent } from './TutorialEngine/components/notes/LaymanExplanationContent';
+import { LaymanMainContent } from './TutorialEngine/components/layman/LaymanMainContent';
 import { RealLifeExamplesContent } from './TutorialEngine/components/notes/RealLifeExamplesContent';
 import { TechnicalDeepDiveContent } from './TutorialEngine/components/notes/TechnicalDeepDiveContent';
 import { CodeExampleContent } from './TutorialEngine/components/notes/CodeExampleContent';
@@ -208,7 +208,7 @@ export function SubtopicNotesPage({
                 {!activeSectionError && activeTab === 'layman' && (
                   <>
                     <h1 className="sr-only">Layman Explanation - {notesData.mainContent.title}</h1>
-                    <LaymanExplanationContent data={notesData.mainContent.laymanExplanation} />
+                    <LaymanMainContent data={notesData.mainContent.laymanExplanation} />
                   </>
                 )}
                 {!activeSectionError && activeTab === 'real-life' && (

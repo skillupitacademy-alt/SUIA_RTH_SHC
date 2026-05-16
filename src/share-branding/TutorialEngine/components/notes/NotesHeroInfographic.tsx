@@ -1,10 +1,11 @@
 import React from 'react';
 import * as Icons from 'lucide-react';
 import { useBrand } from '../../../PostLandingPage/app/context/BrandContext';
+import { SVGIconRenderer } from '../shared/SVGIconRenderer';
 
 interface NotesHeroInfographicProps {
   summaryTitle: string;
-  image?: string;
+  image?: any; // String or InlineSvgAsset
   examTips: string[];
   howItWorks?: Array<{ step: number; label: string; description: string }>;
 }
@@ -22,6 +23,9 @@ export function NotesHeroInfographic({
 }: NotesHeroInfographicProps) {
   const brand = useBrand();
 
+  const dataUri = typeof image === 'string' ? image : image?.dataUri;
+  const altText = typeof image === 'object' ? image?.alt : 'Hero Infographic';
+
   return (
     <div className="w-full rounded-[24px] border border-slate-200 bg-white p-6 shadow-xl sm:p-8">
       <div className="mb-6 flex items-center justify-between">
@@ -35,6 +39,16 @@ export function NotesHeroInfographic({
           <h3 className="text-sm font-bold uppercase tracking-widest text-slate-500">Summary Hero Infographic</h3>
         </div>
       </div>
+
+      {dataUri && (
+        <div className="mb-8 overflow-hidden rounded-2xl border border-slate-100 shadow-sm">
+          <SVGIconRenderer 
+            dataUri={dataUri} 
+            alt={altText} 
+            className="w-full h-auto max-h-[400px] object-cover"
+          />
+        </div>
+      )}
 
       <div className="grid gap-8 lg:grid-cols-12">
         {/* Left Side: Identity & Meta */}

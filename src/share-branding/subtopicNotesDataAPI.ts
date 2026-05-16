@@ -112,11 +112,16 @@ function normalizeLaymanSection(raw: JsonRecord): JsonRecord {
 
   // Ensure nested objects exist to prevent "Cannot read properties of undefined"
   const everydayAnalogy = content.everydayAnalogy ?? content.analogyCard;
-  if (everydayAnalogy && !everydayAnalogy.comparisonPanel) {
-    everydayAnalogy.comparisonPanel = {
-      realWorld: everydayAnalogy.realWorld || 'Real-world example',
-      technical: everydayAnalogy.technical || 'Technical implementation'
-    };
+  if (everydayAnalogy) {
+    if (typeof everydayAnalogy.visualMetaphor === 'string') {
+      everydayAnalogy.visualMetaphor = [{ label: 'Concept', comparison: everydayAnalogy.visualMetaphor }];
+    }
+    if (!everydayAnalogy.visualMetaphor) everydayAnalogy.visualMetaphor = [];
+    
+    if (typeof everydayAnalogy.comparisonPanel === 'object' && everydayAnalogy.comparisonPanel !== null) {
+      // If it's the old object format, try to join it or take a label
+      everydayAnalogy.comparisonPanel = everydayAnalogy.comparisonPanel.realWorld || 'Comparison';
+    }
   }
 
   const whyItExists = content.whyItExists ?? content.benefitCard;
@@ -129,17 +134,46 @@ function normalizeLaymanSection(raw: JsonRecord): JsonRecord {
   if (beginnerBreakdown && !beginnerBreakdown.steps) beginnerBreakdown.steps = [];
 
   const mentalModel = content.mentalModel ?? content.diagramRenderer;
-  if (mentalModel && !mentalModel.conceptMap) {
-    mentalModel.conceptMap = { nodes: [], connections: [] };
+  if (mentalModel) {
+    if (mentalModel.conceptMap && !Array.isArray(mentalModel.conceptMap)) {
+      // If it's the old object format { nodes, connections }, extract nodes
+      if ((mentalModel.conceptMap as any).nodes) {
+        if (!mentalModel.visualLabels) mentalModel.visualLabels = (mentalModel.conceptMap as any).connections;
+        mentalModel.conceptMap = (mentalModel.conceptMap as any).nodes;
+      } else {
+        mentalModel.conceptMap = [];
+      }
+    }
+    if (!mentalModel.conceptMap) mentalModel.conceptMap = [];
+    if (!mentalModel.visualLabels) mentalModel.visualLabels = [];
+    if (!mentalModel.flowArrows) mentalModel.flowArrows = [];
+
+    // Ensure visualLabels is array of objects if it comes as array of strings
+    if (Array.isArray(mentalModel.visualLabels)) {
+      mentalModel.visualLabels = mentalModel.visualLabels.map((item: any) => {
+        if (typeof item === 'string') return { from: 'start', to: 'end', label: item };
+        return item;
+      });
+    }
   }
 
   const commonConfusions = content.commonConfusions ?? content.faqBlock;
   if (commonConfusions && !commonConfusions.confusionItems) commonConfusions.confusionItems = [];
   if (commonConfusions && !commonConfusions.faqItems) commonConfusions.faqItems = [];
+  if (commonConfusions && !commonConfusions.misconceptionAlerts) commonConfusions.misconceptionAlerts = [];
 
   const simpleRecap = content.simpleRecap ?? content.summaryCard;
-  if (simpleRecap && !simpleRecap.keyTakeaways) simpleRecap.keyTakeaways = [];
-  if (simpleRecap && !simpleRecap.simpleRecapPoints) simpleRecap.simpleRecapPoints = [];
+  if (simpleRecap) {
+    if (!simpleRecap.keyTakeaways) simpleRecap.keyTakeaways = [];
+    if (!simpleRecap.simpleRecapPoints) simpleRecap.simpleRecapPoints = [];
+    // Ensure simpleRecapPoints is array of objects if it comes as array of strings
+    if (Array.isArray(simpleRecap.simpleRecapPoints)) {
+      simpleRecap.simpleRecapPoints = simpleRecap.simpleRecapPoints.map((item: any, idx: number) => {
+        if (typeof item === 'string') return { id: `item-${idx}`, item, checked: false };
+        return item;
+      });
+    }
+  }
 
   return {
     ...content,
@@ -401,33 +435,50 @@ export function buildSubtopicNotesDataFromSectionsResponse(
           (visualContent as any)?.summaryInfographic ??
           (visualContent as any)?.summary_infographic,
 
-        // 2. Concept Memory Map
+        // 2. Concept Memory Map / Flow
         conceptMemoryMap:
           notesContent?.conceptMemoryMap ??
           (visualContent as any)?.mentalModelVisualization ??
           (visualContent as any)?.mental_model_canvas,
 
-        // 3. Cheat Sheet (Quick Reference)
+        // 3. Component Grid (Already handled in componentGrid field above)
+
+        // 4. Syntax Block
+        syntaxBlock:
+          notesContent?.syntaxBlock ??
+          (visualContent as any)?.syntaxBlock ??
+          (visualContent as any)?.lineByLineExplanation,
+
+        // 5. Example Panel (Already handled in examplePanel field above)
+
+        // 6. Practice Card (Already handled in practiceCard field above)
+
+        // 7. Cheat Sheet (Quick Reference)
         cheatSheetSVG:
           notesContent?.cheatSheetSVG ??
           (visualContent as any)?.diagrammaticBreakdown ??
           (visualContent as any)?.diagram_panel,
 
-        // 4. Flashcard Visual System
+        // 8. Flashcard Visual System
         flashcardVisualSystem:
           notesContent?.flashcardVisualSystem ??
           (visualContent as any)?.flashcardVisualSystem,
 
-        // 5. Comparison Summary Chart
+        // 9. Comparison Summary Chart
         comparisonSummaryChart:
           notesContent?.comparisonSummaryChart ??
           (visualContent as any)?.comparativeVisualization ??
           (visualContent as any)?.comparison_diagram,
 
-        // 6. Mnemonic & Retention Graphic
+        // 10. Mnemonic & Retention Graphic
         mnemonicRetentionGraphic:
           notesContent?.mnemonicRetentionGraphic ??
           (visualContent as any)?.mnemonicRetentionGraphic,
+
+        // Final Footer
+        footerBlock:
+          notesContent?.footerBlock ??
+          (visualContent as any)?.footerBlock,
 
         laymanExplanation: laymanContent,
         realLifeExamples: realLifeContent,

@@ -7,6 +7,7 @@ interface Step {
   stepTitle: string;
   stepExplanation: string;
   microLearningChunk: string;
+  progressiveLearning?: string;
 }
 
 interface LaymanBeginnerBreakdownProps {

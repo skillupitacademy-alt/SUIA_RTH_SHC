@@ -85,91 +85,138 @@ export interface SubtopicContentPattern {
     }>;
     memoryReinforcement: string;
     examTips: string[];
+    image?: any;
   };
-  // Layman Explanation Section Templates (8 templates from JSON spec) - OPTIONAL for phase-by-phase addition
+  summaryHeroInfographic?: {
+    image?: any;
+    summaryTitle?: string;
+    examTips?: string[];
+    howItWorks?: Array<{ step: number; label: string; description: string }>;
+  };
+  conceptMemoryMap?: {
+    image?: any;
+    nodes?: Array<{ id: string; label: string; description: string }>;
+    connections?: Array<{ from: string; to: string; label?: string }>;
+  };
+  cheatSheetSVG?: {
+    title?: string;
+    image?: any;
+    svgPath?: string;
+    sections?: any[];
+  };
+  footerBlock?: {
+    image?: any;
+    finalNote?: string;
+    nextStepLabel?: string;
+    nextStepTarget?: string;
+    quote?: string;
+  };
+  syntaxBlock?: {
+    image?: any;
+    code: string;
+    language?: string;
+    title?: string;
+    subtitle?: string;
+    explanations: Array<{ id: string; term: string; explanation: string }>;
+  };
+  flashcardVisualSystem?: {
+    image?: any;
+    cards: Array<{ id: string; question: string; answer: string }>;
+  };
+  comparisonSummaryChart?: {
+    image?: any;
+    title?: string;
+    columns: string[];
+    rows: string[][];
+  };
+  mnemonicRetentionGraphic?: {
+    image?: any;
+    mnemonicTitle?: string;
+    memoryHook?: string;
+    rememberItems: Array<{ letter: string; label: string; description: string }>;
+    keyPoints: string[];
+  };
+  // Layman Explanation Section Templates (8 templates from JSON spec)
   laymanExplanation?: {
-    simpleOverview: {
+    simpleOverview?: {
       badge: string;
       headline: string;
       simpleDefinition: string;
       subExplanation: string;
       importanceBlock: string;
-      progressIndicator?: string;
+      heroVisual?: {
+        type: 'inline_svg';
+        dataUri: string;
+        width?: number;
+        height?: number;
+        alt?: string;
+      };
     };
-    everydayAnalogy: {
+    everydayAnalogy?: {
       title: string;
       storyAnalogy: string;
-      comparisonPanel: {
-        realWorld: string;
-        technical: string;
-      };
-      visualMetaphor: string;
+      comparisonPanel: string;
+      visualMetaphor: Array<{ label: string; comparison: string }>;
       keyTakeaway: string;
-      image?: string;
+      analogyVisual?: {
+        type: 'inline_svg';
+        dataUri: string;
+        width?: number;
+        height?: number;
+        alt?: string;
+      };
     };
-    whyItExists: {
+    whyItExists?: {
       sectionTitle: string;
       benefitCards: Array<{
         id: string;
         title: string;
         description: string;
         icon: string;
-        type: 'career' | 'practical' | 'future';
+        type?: string;
       }>;
     };
-    simpleUseCases: {
+    simpleUseCases?: {
       gridTitle: string;
       useCaseCards: Array<{
         id: string;
         title: string;
         description: string;
-        category: 'everyday' | 'career';
+        category?: string;
         icon: string;
       }>;
     };
-    beginnerBreakdown: {
+    beginnerBreakdown?: {
       title: string;
       steps: Array<{
         id: string;
         stepTitle: string;
         stepExplanation: string;
         microLearningChunk: string;
+        progressiveLearning?: string;
       }>;
     };
-    mentalModel: {
+    mentalModel?: {
       title: string;
-      conceptMap: {
-        nodes: Array<{
-          id: string;
-          label: string;
-          description: string;
-        }>;
-        connections: Array<{
-          from: string;
-          to: string;
-          label: string;
-        }>;
-      };
-      visualLabels: string[];
+      conceptMap: Array<{ id: string; label: string; type?: string }>;
+      visualLabels: Array<{ from: string; to: string; label: string }>;
+      flowArrows?: Array<{ id: string; label: string; icon: string }>;
+      tooltips?: string;
     };
-    commonConfusions: {
+    commonConfusions?: {
       title: string;
-      confusionItems: Array<{
-        id: string;
-        confusion: string;
-        clarification: string;
-      }>;
-      faqItems: Array<{
-        id: string;
-        question: string;
-        answer: string;
-      }>;
+      confusionItems: Array<{ id: string; confusion: string; clarification: string }>;
+      faqItems?: Array<{ id: string; question: string; answer: string }>;
       misconceptionAlerts: string[];
     };
-    simpleRecap: {
+    simpleRecap?: {
       summaryTitle: string;
       keyTakeaways: string[];
-      simpleRecapPoints: string[];
+      simpleRecapPoints: Array<{
+        id: string;
+        item: string;
+        checked: boolean;
+      }>;
       confidenceBoost: string;
       memoryReinforcement: string;
     };
@@ -827,18 +874,26 @@ export const subtopicContentRegistry: Record<string, SubtopicContentPattern> = {
         simpleDefinition: 'Component architecture is like building with LEGO bricks. Instead of creating one giant piece, you build small, reusable parts that snap together to make something amazing.',
         subExplanation: 'Think of it as organizing your code into small boxes. Each box does one job really well, and you can use the same box in different places.',
         importanceBlock: 'This approach makes your code easier to understand, fix, and reuse - just like how LEGO bricks can be used to build anything from a car to a castle!',
-        progressIndicator: 'Beginner Level - No coding experience needed'
+        heroVisual: {
+          type: 'inline_svg',
+          dataUri: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgdmlld0JveD0iMCAwIDgwMCA2MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjgwMCIgaGVpZ2h0PSI2MDAiIHJ4PSI0MCIgZmlsbD0idXJsKCNwYWludDBfbGluZWFyKSIvPjxkZWZzPjxsaW5lYXJHcmFkaWVudCBpZD0icGFpbnQwX2xpbmVhciIgeDE9IjAiIHkxPSIwIiB4Mj0iODAwIiB5Mj0iNjAwIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agc3RvcC1jb2xvcj0iI0ZGRUEwMCIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI0ZGOTUwMCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjwvc3ZnPg==',
+          alt: 'Component Architecture Overview'
+        }
       },
       everydayAnalogy: {
         title: 'The LEGO Brick Story',
-        storyAnalogy: 'Imagine you want to build a LEGO castle. You don\'t create one massive block - you use small bricks. A red brick for the walls, a blue brick for the roof, and a yellow brick for the door. Each brick is independent, but together they create something beautiful.',
-        comparisonPanel: {
-          realWorld: 'LEGO bricks that snap together to build anything',
-          technical: 'React components that combine to build user interfaces'
-        },
-        visualMetaphor: 'Just like you can use the same LEGO brick in multiple places, you can use the same component (like a Button) on different pages of your website.',
-        keyTakeaway: 'Components are reusable building blocks - build once, use everywhere!',
-        image: '/lego_component_architecture.png'
+        storyAnalogy: 'Snap-Together Building Blocks',
+        comparisonPanel: 'Imagine you want to build a LEGO castle. You don\'t create one massive block - you use small bricks. A red brick for the walls, a blue brick for the roof, and a yellow brick for the door. Each brick is independent, but together they create something beautiful.',
+        visualMetaphor: [
+          { label: 'Real World', comparison: 'LEGO bricks that snap together to build anything' },
+          { label: 'Technical', comparison: 'React components that combine to build user interfaces' }
+        ],
+        keyTakeaway: 'Just like you can use the same LEGO brick in multiple places, you can use the same component (like a Button) on different pages of your website.',
+        analogyVisual: {
+          type: 'inline_svg',
+          dataUri: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgdmlld0JveD0iMCAwIDgwMCA2MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjgwMCIgaGVpZ2h0PSI2MDAiIHJ4PSI0MCIgZmlsbD0idXJsKCNwYWludDBfbGluZWFyKSIvPjxkZWZzPjxsaW5lYXJHcmFkaWVudCBpZD0icGFpbnQwX2xpbmVhciIgeDE9IjAiIHkxPSIwIiB4Mj0iODAwIiB5Mj0iNjAwIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agc3RvcC1jb2xvcj0iI0ZGRUEwMCIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI0ZGOTUwMCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjwvc3ZnPg==',
+          alt: 'LEGO Analogy'
+        }
       },
       whyItExists: {
         sectionTitle: 'Why Do We Need Component Architecture?',
@@ -985,27 +1040,26 @@ export const subtopicContentRegistry: Record<string, SubtopicContentPattern> = {
       },
       mentalModel: {
         title: 'How to Think About Components',
-        conceptMap: {
-          nodes: [
-            { id: 'app', label: 'Your App', description: 'The complete application' },
-            { id: 'page', label: 'Page', description: 'A single screen or route' },
-            { id: 'section', label: 'Section', description: 'Major parts like Header, Content, Footer' },
-            { id: 'component', label: 'Component', description: 'Reusable UI pieces like Button, Card' },
-            { id: 'element', label: 'HTML Element', description: 'Basic building blocks like div, button, input' }
-          ],
-          connections: [
-            { from: 'app', to: 'page', label: 'contains' },
-            { from: 'page', to: 'section', label: 'divided into' },
-            { from: 'section', to: 'component', label: 'built with' },
-            { from: 'component', to: 'element', label: 'made of' }
-          ]
-        },
+        conceptMap: [
+          { id: 'app', label: 'Your App', type: 'output' },
+          { id: 'page', label: 'Page', type: 'concept' },
+          { id: 'section', label: 'Section', type: 'concept' },
+          { id: 'component', label: 'Component', type: 'concept' },
+          { id: 'element', label: 'HTML Element', type: 'concept' }
+        ],
         visualLabels: [
-          'Top Level: Your entire application',
-          'Middle Level: Pages and sections',
-          'Bottom Level: Small reusable components',
-          'Foundation: Basic HTML elements'
-        ]
+          { from: 'app', to: 'page', label: 'contains' },
+          { from: 'page', to: 'section', label: 'divided into' },
+          { from: 'section', to: 'component', label: 'built with' },
+          { from: 'component', to: 'element', label: 'made of' }
+        ],
+        flowArrows: [
+          { id: 't1', label: 'React', icon: 'Cpu' },
+          { id: 't2', label: 'Figma', icon: 'PenTool' },
+          { id: 't3', label: 'VS Code', icon: 'Code' },
+          { id: 't4', label: 'Chrome', icon: 'Globe' }
+        ],
+        tooltips: 'Small components combine to create complex applications.'
       },
       commonConfusions: {
         title: 'Common Beginner Confusions',
@@ -1050,23 +1104,21 @@ export const subtopicContentRegistry: Record<string, SubtopicContentPattern> = {
         ]
       },
       simpleRecap: {
-        summaryTitle: 'Let\'s Recap What You Learned',
+        summaryTitle: 'Component Recap',
         keyTakeaways: [
           'Components are like LEGO bricks - small, reusable building blocks',
           'Build once, use everywhere - saves time and reduces errors',
           'Each component does one job really well',
           'Props let you customize components with different data',
-          'Update one component, and it changes everywhere it\'s used',
-          'Used by top companies like Facebook, Netflix, and Airbnb'
+          'Update one component, and it changes everywhere it\'s used'
         ],
         simpleRecapPoints: [
-          'You now understand what components are and why they exist',
-          'You can identify where components are used in real apps',
-          'You know the basic steps to create and reuse components',
-          'You understand how components fit into the bigger picture'
+          { id: 'rp1', item: 'Components are reusable', checked: true },
+          { id: 'rp2', item: 'Props flow downwards', checked: true },
+          { id: 'rp3', item: 'Templates + Data = UI', checked: true }
         ],
-        confidenceBoost: '🎉 Congratulations! You\'ve just learned a concept that professional developers use every single day. You\'re on your way to building amazing things!',
-        memoryReinforcement: 'Remember: Components = LEGO bricks. Small pieces that snap together to build anything you can imagine!'
+        confidenceBoost: 'The Component Formula',
+        memoryReinforcement: 'Use small, reusable pieces of code to build large, complex user interfaces that are easy to maintain.'
       }
     },
     realLifeExamples: {
@@ -2348,17 +2400,16 @@ const App = () => <Button label="Click Me" />;`,
             headline: "What is JavaScript? Explained Simply",
             simpleDefinition: "JavaScript is a tool that makes websites interactive and responsive when you use them. It helps websites react when you click buttons, type in forms, or play videos.",
             subExplanation: "Without JavaScript, websites would mostly just sit there showing information like digital posters. JavaScript adds action, movement, and smart features so websites feel alive and useful.",
-            importanceBlock: "Beginners should care because JavaScript is one of the main building blocks of modern websites. Learning it opens the door to creating websites, apps, and digital tools.",
-            progressIndicator: "Perfect for beginners - no prior knowledge needed"
+            importanceBlock: "Beginners should care because JavaScript is one of the main building blocks of modern websites. Learning it opens the door to creating websites, apps, and digital tools."
         },
         everydayAnalogy: {
             title: "Think of It Like This",
-            storyAnalogy: "Imagine building a toy car. HTML creates the body, CSS paints and decorates it, and JavaScript is the engine that makes it drive, honk, and move. Without the engine, the car may look nice, but it cannot actually do anything.",
-            comparisonPanel: {
-                realWorld: "Think about a TV remote. Pressing buttons changes channels, volume, or settings instantly.",
-                technical: "JavaScript acts like the remote control for websites, allowing users to trigger actions and make things happen."
-            },
-            visualMetaphor: "JavaScript is like the electricity that powers all the smart features in a home.",
+            storyAnalogy: "The TV Remote Analogy",
+            comparisonPanel: "Imagine building a toy car. HTML creates the body, CSS paints and decorates it, and JavaScript is the engine that makes it drive, honk, and move. Without the engine, the car may look nice, but it cannot actually do anything.",
+            visualMetaphor: [
+                { label: "Real World", comparison: "A TV remote controls channels, volume, and settings instantly." },
+                { label: "Technical", comparison: "JavaScript acts like the remote control for websites, allowing users to trigger actions and make things happen." }
+            ],
             keyTakeaway: "JavaScript gives websites the power to respond, move, and interact."
         },
         whyItExists: {
@@ -2451,15 +2502,18 @@ const App = () => <Button label="Click Me" />;`,
         },
         mentalModel: {
             title: "Mental Model",
-            conceptMap: {
-                nodes: [],
-                connections: []
-            },
+            conceptMap: [
+                { id: "html", label: "HTML", type: "concept" },
+                { id: "css", label: "CSS", type: "concept" },
+                { id: "js", label: "JavaScript", type: "output" },
+                { id: "user", label: "User", type: "actor" }
+            ],
             visualLabels: [
-                "Structure: The webpage's content and layout.",
-                "Design: The colors, styling, and appearance.",
-                "Interaction: The smart actions and responses."
-            ]
+                { from: "user", to: "js", label: "Interacts" },
+                { from: "js", to: "html", label: "Manipulates" },
+                { from: "js", to: "css", label: "Modifies" }
+            ],
+            tooltips: "JavaScript is the engine that turns static HTML/CSS into interactive experiences."
         },
         commonConfusions: {
             title: "Common Beginner Confusions",
@@ -2504,23 +2558,21 @@ const App = () => <Button label="Click Me" />;`,
             ]
         },
         simpleRecap: {
-            summaryTitle: "Let's Recap What You Learned",
+            summaryTitle: "JavaScript Recap",
             keyTakeaways: [
                 "JavaScript makes websites interactive.",
                 "It helps websites respond to users.",
                 "It works with HTML and CSS.",
                 "It powers many real-world digital platforms.",
-                "It is an essential skill for web developers.",
-                "Beginners can learn JavaScript step by step."
+                "It is an essential skill for web developers."
             ],
             simpleRecapPoints: [
-                "You now understand what JavaScript does.",
-                "You know why websites need JavaScript.",
-                "You can relate it to everyday examples.",
-                "You see its importance for your learning journey."
+                { id: "rp1", item: "JS makes pages alive", checked: true },
+                { id: "rp2", item: "JS reacts to clicks", checked: true },
+                { id: "rp3", item: "JS is a core skill", checked: true }
             ],
-            confidenceBoost: "You are building an amazing foundation in web development. JavaScript may seem big now, but with practice, you can absolutely master it! 💡",
-            memoryReinforcement: "JavaScript is the engine that turns websites into smart, interactive experiences."
+            confidenceBoost: "The JavaScript Formula",
+            memoryReinforcement: "JavaScript is the engine that turns static pages into interactive, smart digital experiences."
         }
     }
   ,
@@ -2871,17 +2923,26 @@ const App = () => <Button label="Click Me" />;`,
             simpleDefinition: "A variable is like a box where you store information, such as your name or age. A data type tells what kind of thing is inside that box, like words, numbers, or true/false answers.",
             subExplanation: "When you build websites or apps, you need places to keep important information. Variables help store that information, and data types help the computer understand how to use it correctly.",
             importanceBlock: "Learning this helps you understand how programs remember and use information. It is one of the first building blocks of coding.",
-            progressIndicator: "Perfect for beginners - no prior knowledge needed"
+            heroVisual: {
+              type: 'inline_svg',
+              dataUri: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgdmlld0JveD0iMCAwIDgwMCA2MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjgwMCIgaGVpZ2h0PSI2MDAiIHJ4PSI0MCIgZmlsbD0idXJsKCNwYWludDBfbGluZWFyKSIvPjxkZWZzPjxsaW5lYXJHcmFkaWVudCBpZD0icGFpbnQwX2xpbmVhciIgeDE9IjAiIHkxPSIwIiB4Mj0iODAwIiB5Mj0iNjAwIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agc3RvcC1jb2xvcj0iI0ZGRUEwMCIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI0ZGOTUwMCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjwvc3ZnPg==',
+              alt: 'Variables and Data Types Overview'
+            }
         },
         everydayAnalogy: {
             title: "Think of It Like This",
-            storyAnalogy: "Imagine you have different labeled containers in your kitchen. One jar says Sugar, another says Rice, and another says Salt. The label is like the variable name, and what is inside is the data type. This helps you quickly know what each container holds and how to use it.",
-            comparisonPanel: {
-                realWorld: "A school bag has different pockets for books, pencils, and lunch boxes. Each pocket stores a specific type of item.",
-                technical: "Variables are like those pockets, and data types are the type of items stored inside them, such as text, numbers, or yes/no values."
-            },
-            visualMetaphor: "Variables are labeled boxes, and data types are the kind of treasure inside each box.",
-            keyTakeaway: "Variables organize information, and data types explain what that information is."
+            storyAnalogy: "The Labeled Kitchen Containers",
+            comparisonPanel: "Imagine you have different labeled containers in your kitchen. One jar says Sugar, another says Rice, and another says Salt. The label is like the variable name, and what is inside is the data type. This helps you quickly know what each container holds and how to use it.",
+            visualMetaphor: [
+                { label: "Real World", comparison: "A school bag has different pockets for books, pencils, and lunch boxes. Each pocket stores a specific type of item." },
+                { label: "Technical", comparison: "Variables are like those pockets, and data types are the type of items stored inside them, such as text, numbers, or yes/no values." }
+            ],
+            keyTakeaway: "Variables organize information, and data types explain what that information is.",
+            analogyVisual: {
+              type: 'inline_svg',
+              dataUri: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgdmlld0JveD0iMCAwIDgwMCA2MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjgwMCIgaGVpZ2h0PSI2MDAiIHJ4PSI0MCIgZmlsbD0idXJsKCNwYWludDBfbGluZWFyKSIvPjxkZWZzPjxsaW5lYXJHcmFkaWVudCBpZD0icGFpbnQwX2xpbmVhciIgeDE9IjAiIHkxPSIwIiB4Mj0iODAwIiB5Mj0iNjAwIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agc3RvcC1jb2xvcj0iI0ZGRUEwMCIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI0ZGOTUwMCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjwvc3ZnPg==',
+              alt: 'Kitchen Container Analogy'
+            }
         },
         whyItExists: {
             sectionTitle: "Why Does This Exist?",
@@ -2973,15 +3034,18 @@ const App = () => <Button label="Click Me" />;`,
         },
         mentalModel: {
             title: "Mental Model",
-            conceptMap: {
-                nodes: [],
-                connections: []
-            },
+            conceptMap: [
+                { id: "var", label: "Variable", type: "concept" },
+                { id: "str", label: "String", type: "concept" },
+                { id: "num", label: "Number", type: "concept" },
+                { id: "bool", label: "Boolean", type: "concept" }
+            ],
             visualLabels: [
-                "Variable Name: The label on the shelf",
-                "Stored Value: The item placed on the shelf",
-                "Data Type: The category of item stored"
-            ]
+                { from: "var", to: "str", label: "can hold" },
+                { from: "var", to: "num", label: "can hold" },
+                { from: "var", to: "bool", label: "can hold" }
+            ],
+            tooltips: "A variable is the box; the data type is what goes inside it."
         },
         commonConfusions: {
             title: "Common Beginner Confusions",
@@ -3026,23 +3090,21 @@ const App = () => <Button label="Click Me" />;`,
             ]
         },
         simpleRecap: {
-            summaryTitle: "Let's Recap What You Learned",
+            summaryTitle: "Variables Recap",
             keyTakeaways: [
                 "Variables are storage boxes for information.",
                 "Data types describe what kind of information is stored.",
                 "Variables can hold names, ages, prices, and more.",
                 "Data types help computers use information correctly.",
-                "This concept is essential for all programming.",
-                "Learning variables makes future coding easier."
+                "This concept is essential for all programming."
             ],
             simpleRecapPoints: [
-                "You now know what variables are.",
-                "You understand why data types matter.",
-                "You can connect coding ideas to real life.",
-                "You are building a strong programming foundation."
+                { id: "rp1", item: "Variable = Labeled Box", checked: true },
+                { id: "rp2", item: "Data Type = Content Kind", checked: true },
+                { id: "rp3", item: "Information is stored", checked: true }
             ],
-            confidenceBoost: "Great job! You are learning one of the most important parts of JavaScript. Keep going—you are building real coding skills. 🚀",
-            memoryReinforcement: "Think of variables as labeled boxes and data types as what is stored inside them."
+            confidenceBoost: "The Variable Formula",
+            memoryReinforcement: "Variables are labeled boxes that store data. Data types define what kind of data each box holds."
         }
     }
   ,
@@ -4465,7 +4527,8 @@ const App = () => <Button label="Click Me" />;`,
             ]
         }
     }
-  }};
+  }
+};
 
 /**
  * Get content for a subtopic

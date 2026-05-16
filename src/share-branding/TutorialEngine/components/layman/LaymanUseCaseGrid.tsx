@@ -6,7 +6,7 @@ interface UseCaseCard {
   id: string;
   title: string;
   description: string;
-  category: 'everyday' | 'career';
+  category?: string;
   icon: string;
 }
 

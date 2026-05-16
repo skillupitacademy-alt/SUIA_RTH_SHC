@@ -14,61 +14,47 @@ import { NotesConceptMemoryMap } from './NotesConceptMemoryMap';
 import { NotesComparisonChart } from './NotesComparisonChart';
 import { NotesMnemonicGraphic } from './NotesMnemonicGraphic';
 import { NotesCheatSheet } from './NotesCheatSheet';
+import { NotesSyntaxBlock } from './NotesSyntaxBlock';
+import { NotesFooter } from './NotesFooter';
 
-/**
- * Notes Main Content Component
- * 
- * Implements the complete Notes Section Education Architecture
- * Based on AllSectionTutorialPage.json and AllSectionTutorialPageUIUXDetailed.json
- * 
- * Universal Architecture (8 templates in order):
- * 1. core_definition → definition_block
- * 2. concept_explanation → concept_card
- * 3. key_components → component_grid
- * 4. syntax_or_structure → syntax_block
- * 5. examples → example_panel
- * 6. best_practices → practice_card
- * 7. common_errors → warning_faq
- * 8. revision_summary → summary_card
- * 
- * All data comes from props - NO hardcoded content
- */
 export function NotesMainContent({ data, isStandalone = true }: { data: SubtopicNotesViewData['mainContent']; isStandalone?: boolean }) {
   const brand = useBrand();
 
   const content = (
-    <div className={`min-w-0 space-y-8 transition-all duration-500 ${isStandalone ? 'mx-auto w-full max-w-[1200px] px-4 py-8 sm:px-8 sm:py-10' : ''}`}>
+    <div className={`min-w-0 space-y-12 transition-all duration-500 ${isStandalone ? 'mx-auto w-full max-w-[1200px] px-4 py-8 sm:px-8 sm:py-10' : ''}`}>
 
-      {/* Page Meta Info */}
+      {/* Page Meta Info (Breadcrumbs & Stats) */}
       <div className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-gray-100 pb-6">
           <div className="flex min-w-0 flex-wrap items-center gap-2 text-xs font-bold sm:gap-4">
-            <span className="flex items-center gap-1.5 text-slate-900">
-              <Icons.Clock size={14} aria-hidden="true" /> {data.meta.readTime}
+             <span className="flex items-center gap-1.5 text-slate-400">
+               <Icons.Home size={14} /> {data.breadcrumbs.join(' / ')}
+             </span>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="flex items-center gap-1.5 text-slate-500 text-xs font-bold">
+              <Icons.Clock size={14} /> {data.meta.readTime}
             </span>
-            <span className="flex items-center gap-1.5 text-amber-950 bg-amber-100 px-2.5 py-1 rounded-md border border-amber-200">
-              <Icons.BarChart2 size={14} aria-hidden="true" /> {data.meta.level}
-            </span>
-            <span className="flex items-center gap-1.5 text-emerald-950 bg-emerald-100 px-2.5 py-1 rounded-md border border-emerald-200">
-              <Icons.Star size={14} aria-hidden="true" /> +{data.meta.xp} XP
+            <span className="flex items-center gap-1.5 text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100 text-xs font-bold">
+              <Icons.Star size={14} /> +{data.meta.xp} XP
             </span>
           </div>
-          <button
-            className="flex items-center gap-1.5 text-[11px] font-bold transition-colors hover:underline text-primary-dark"
-          >
-            <Icons.Download size={14} /> Download PDF
-          </button>
         </div>
       </div>
 
-      {/* Main Title */}
-      <div className="mb-8">
-        <h2 className="break-words text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">{data.title}</h2>
-        <p className="mt-2 text-lg font-medium text-slate-600">{data.simpleWords}</p>
-      </div>
+      {/* -------------------------------------------------------------------------- */}
+      {/* UNIVERSAL VISUAL ARCHITECTURE SEQUENCE (1-8)                                */}
+      {/* -------------------------------------------------------------------------- */}
 
-      {/* 1. CORE DEFINITION - definition_block (Hero-style intro) */}
-      {data.definitionBlock && (
+      {/* 1. DEFINITION BLOCK / HERO INFOGRAPHIC */}
+      {data.summaryHeroInfographic != null ? (
+        <NotesHeroInfographic 
+          summaryTitle={data.summaryHeroInfographic.summaryTitle || data.title}
+          image={data.summaryHeroInfographic.image}
+          examTips={data.summaryHeroInfographic.examTips || []}
+          howItWorks={data.summaryHeroInfographic.howItWorks}
+        />
+      ) : data.definitionBlock && (
         <NotesDefinitionBlock
           badge={data.definitionBlock.badge}
           headline={data.definitionBlock.headline}
@@ -78,48 +64,16 @@ export function NotesMainContent({ data, isStandalone = true }: { data: Subtopic
         />
       )}
 
-      {/* 2. CONCEPT EXPLANATION - concept_card (Educational content panels) */}
-      <div className="space-y-10">
-        {data.sections.map((section) => (
-          <section key={section.id} className="space-y-4">
-            <h3 className="text-xl font-bold text-slate-950">{section.title}</h3>
-            <p className="text-[15px] font-medium leading-relaxed text-slate-800 whitespace-pre-wrap">
-              {section.content}
-            </p>
+      {/* 2. CONCEPT CARD / MEMORY MAP */}
+      {data.conceptMemoryMap != null && (
+        <NotesConceptMemoryMap 
+          image={data.conceptMemoryMap.image}
+          nodes={data.conceptMemoryMap.nodes || []} 
+          connections={data.conceptMemoryMap.connections || []} 
+        />
+      )}
 
-            {section.keyPoint && (
-              <div className="flex gap-4 rounded-xl bg-amber-100 p-5 mt-6 shadow-2xl transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] border-t border-white/60 border-amber-200">
-                <Icons.Star size={20} className="text-amber-900 shrink-0 mt-0.5" aria-hidden="true" />
-                <div>
-                  <h4 className="text-[13px] font-bold text-amber-950 mb-1">Key Point</h4>
-                  <p className="text-[13px] font-medium text-amber-950">{section.keyPoint}</p>
-                </div>
-              </div>
-            )}
-
-            {/* 4. SYNTAX OR STRUCTURE - syntax_block (Code/formula highlight) */}
-            {section.codeExample && (
-              <div className="mt-6 space-y-4">
-                <div className="relative overflow-hidden rounded-xl bg-[#1e293b] p-4 shadow-2xl transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.3)] border-t border-white/10 sm:p-5">
-                  <button className="absolute right-3 top-3 flex items-center gap-1.5 rounded-md bg-white/10 px-2.5 py-1 text-[11px] font-bold text-white hover:bg-white/20 transition-colors border border-white/10" aria-label="Copy code snippet">
-                    <Icons.Copy size={12} aria-hidden="true" /> Copy
-                  </button>
-                  <pre className="whitespace-pre-wrap break-words pr-16 font-mono text-[12px] leading-relaxed text-slate-200 sm:text-[13px]">
-                    <code className="break-words">{section.codeExample.code}</code>
-                  </pre>
-                </div>
-                <div className="rounded-xl bg-slate-100 p-4 border border-slate-200">
-                  <p className="text-[13px] font-medium text-slate-900 font-mono whitespace-pre-wrap">
-                    {section.codeExample.output}
-                  </p>
-                </div>
-              </div>
-            )}
-          </section>
-        ))}
-      </div>
-
-      {/* 3. KEY COMPONENTS - component_grid (3-column breakdown) */}
+      {/* 3. COMPONENT GRID */}
       {data.componentGrid && (
         <NotesComponentGrid
           gridTitle={data.componentGrid.gridTitle}
@@ -127,7 +81,18 @@ export function NotesMainContent({ data, isStandalone = true }: { data: Subtopic
         />
       )}
 
-      {/* 5. EXAMPLES - example_panel (2-column practical examples) */}
+      {/* 4. SYNTAX BLOCK */}
+      {data.syntaxBlock != null && (
+        <NotesSyntaxBlock
+          code={data.syntaxBlock.code}
+          language={data.syntaxBlock.language}
+          title={data.syntaxBlock.title}
+          subtitle={data.syntaxBlock.subtitle}
+          explanations={data.syntaxBlock.explanations || []}
+        />
+      )}
+
+      {/* 5. EXAMPLE PANEL */}
       {data.examplePanel && (
         <NotesExamplePanel
           exampleTitle={data.examplePanel.exampleTitle}
@@ -135,7 +100,7 @@ export function NotesMainContent({ data, isStandalone = true }: { data: Subtopic
         />
       )}
 
-      {/* 6. BEST PRACTICES - practice_card (Recommendations & optimization) */}
+      {/* 6. PRACTICE CARD */}
       {data.practiceCard && (
         <NotesPracticeCard
           bestPracticeTitle={data.practiceCard.bestPracticeTitle}
@@ -145,18 +110,17 @@ export function NotesMainContent({ data, isStandalone = true }: { data: Subtopic
         />
       )}
 
-      {/* 7. COMMON ERRORS - warning_faq (Mistakes & FAQ accordion) */}
+      {/* 7. WARNING FAQ (COMMON MISTAKES) */}
       {data.warningFaq && (
         <NotesWarningFaq
-          commonErrors={data.warningFaq.commonErrors}
           faqItems={data.warningFaq.faqItems}
-          misconceptionAlerts={data.warningFaq.misconceptionAlerts}
         />
       )}
 
-      {/* 8. REVISION SUMMARY - summary_card (Exam-ready summary) */}
+      {/* 8. SUMMARY CARD (REVISION DASHBOARD) */}
       {data.summaryCard && (
         <NotesSummaryCard
+          image={data.summaryCard.image}
           summaryTitle={data.summaryCard.summaryTitle}
           keyTakeaways={data.summaryCard.keyTakeaways}
           revisionChecklist={data.summaryCard.revisionChecklist}
@@ -165,47 +129,20 @@ export function NotesMainContent({ data, isStandalone = true }: { data: Subtopic
         />
       )}
 
-      {/* Notes-only “visual architecture” blocks (optional) */}
-      {(data.summaryHeroInfographic != null ||
-        data.conceptMemoryMap != null ||
-        data.cheatSheetSVG != null ||
-        data.flashcardVisualSystem != null ||
-        data.comparisonSummaryChart != null ||
-        data.mnemonicRetentionGraphic != null) && (
-        <div className="space-y-12 mt-12 pt-12 border-t border-slate-100">
-          
-          {/* 1. SUMMARY HERO INFOGRAPHIC */}
-          {data.summaryHeroInfographic != null && (
-            <NotesHeroInfographic 
-              summaryTitle={data.summaryHeroInfographic.summaryTitle || data.title}
-              image={data.summaryHeroInfographic.image}
-              examTips={data.summaryHeroInfographic.examTips || []}
-              howItWorks={data.summaryHeroInfographic.howItWorks}
-            />
-          )}
-
-          {/* 2. CONCEPT MEMORY MAP */}
-          {data.conceptMemoryMap != null && (
-            <NotesConceptMemoryMap 
-              nodes={data.conceptMemoryMap.nodes || []} 
-              connections={data.conceptMemoryMap.connections || []} 
-            />
-          )}
-
-          {/* 3. CHEAT SHEET (QUICK REFERENCE) */}
+      {/* ADDITIONAL VISUALS (If any) */}
+      <div className="space-y-12">
           {data.cheatSheetSVG != null && (
             <NotesCheatSheet 
+              image={data.cheatSheetSVG.image}
               title={data.cheatSheetSVG.title}
               items={data.cheatSheetSVG.sections || []}
             />
           )}
 
-          {/* 4. FLASHCARD SYSTEM */}
           {data.flashcardVisualSystem != null && (
             <NotesFlashcardSystem cards={data.flashcardVisualSystem.cards || []} />
           )}
 
-          {/* 5. COMPARISON SUMMARY CHART */}
           {data.comparisonSummaryChart != null && (
             <NotesComparisonChart 
               title={data.comparisonSummaryChart.title || "Comparison Summary"}
@@ -214,16 +151,24 @@ export function NotesMainContent({ data, isStandalone = true }: { data: Subtopic
             />
           )}
 
-          {/* 6. MNEMONIC & RETENTION GRAPHIC */}
           {data.mnemonicRetentionGraphic != null && (
             <NotesMnemonicGraphic 
-              mnemonicTitle={data.mnemonicRetentionGraphic.mnemonicTitle}
-              memoryHook={data.mnemonicRetentionGraphic.memoryHook}
+              mnemonicTitle={data.mnemonicRetentionGraphic.mnemonicTitle || ''}
+              memoryHook={data.mnemonicRetentionGraphic.memoryHook || ''}
               rememberItems={data.mnemonicRetentionGraphic.rememberItems || []}
               keyPoints={data.mnemonicRetentionGraphic.keyPoints || []}
             />
           )}
-        </div>
+      </div>
+
+      {/* FOOTER SECTION */}
+      {data.footerBlock != null && (
+        <NotesFooter 
+          image={data.footerBlock.image}
+          finalNote={data.footerBlock.finalNote || ''}
+          nextStepLabel={data.footerBlock.nextStepLabel || ''}
+          nextStepTarget={data.footerBlock.nextStepTarget || ''}
+        />
       )}
 
     </div>
