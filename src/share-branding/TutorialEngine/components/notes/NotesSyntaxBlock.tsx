@@ -1,6 +1,7 @@
 import React from 'react';
 import * as Icons from 'lucide-react';
 import { useBrand } from '../../../PostLandingPage/app/context/BrandContext';
+import { SVGIconRenderer } from '../shared/SVGIconRenderer';
 
 interface SyntaxExplanation {
   id: string;
@@ -9,6 +10,7 @@ interface SyntaxExplanation {
 }
 
 interface NotesSyntaxBlockProps {
+  image?: any;
   code: string;
   language?: string;
   title?: string;
@@ -21,6 +23,7 @@ interface NotesSyntaxBlockProps {
  * Premium Code Editor with Explanation List
  */
 export function NotesSyntaxBlock({ 
+  image,
   code, 
   language = "javascript", 
   title = "SYNTAX BLOCK",
@@ -51,6 +54,17 @@ export function NotesSyntaxBlock({
         </div>
         <span className="text-xs font-bold text-slate-400">{subtitle}</span>
       </div>
+
+      {/* Optional Visual Architecture Diagram */}
+      {image && (
+        <div className="mb-8 overflow-hidden rounded-2xl border border-slate-100 shadow-sm">
+           <SVGIconRenderer 
+             dataUri={typeof image === 'string' ? image : image?.dataUri} 
+             alt={typeof image === 'object' ? image?.alt : 'Syntax Visual'} 
+             className="w-full h-auto max-h-[350px] object-cover"
+           />
+        </div>
+      )}
 
       {/* Code Editor Mockup */}
       <div className="relative mb-8 overflow-hidden rounded-2xl bg-[#1e293b] shadow-2xl">

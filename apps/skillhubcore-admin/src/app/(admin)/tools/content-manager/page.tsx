@@ -117,6 +117,8 @@ function getDefaultAssetFieldPath(section: SectionType) {
       return 'sections.0.diagramAsset';
     case 'summary':
       return 'masteryRecapCard.heroAsset';
+    case 'visual':
+      return 'conceptVisualIntro.image';
     default:
       return '';
   }
@@ -125,15 +127,26 @@ function getDefaultAssetFieldPath(section: SectionType) {
 function getAllowedAssetFieldPaths(section: SectionType) {
   switch (section) {
     case 'layman':
-      return ['everydayAnalogy.image'];
+      return ['everydayAnalogy.image', 'simpleOverview.image'];
     case 'notes':
-      return ['summaryCard.image'];
+      return ['summaryCard.image', 'summaryHeroInfographic.image', 'conceptMemoryMap.image', 'syntaxBlock.image'];
     case 'code':
       return ['outputDemonstration.previewAsset'];
     case 'technical':
       return ['sections.0.diagramAsset'];
     case 'summary':
       return ['masteryRecapCard.heroAsset'];
+    case 'visual':
+      return [
+        'conceptVisualIntro.image',
+        'diagrammaticBreakdown.image',
+        'stepByStepVisualFlow.image',
+        'comparativeVisualization.image',
+        'mentalModelVisualization.image',
+        'realWorldVisualMapping.image',
+        'commonConfusionVisualization.image',
+        'visualSummary.image'
+      ];
     default:
       return [] as string[];
   }

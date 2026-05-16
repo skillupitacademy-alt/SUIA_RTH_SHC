@@ -10,6 +10,91 @@ import {
   type TutorialPromptSectionId,
 } from '@quiz/types';
 
+const ASSET_SPECS: Record<string, Array<{ id: string; label: string; fieldPath: string; width: number; height: number; purpose: string }>> = {
+  layman: [
+    {
+      id: 'layman-analogy',
+      label: 'Everyday Analogy',
+      fieldPath: 'everydayAnalogy.image',
+      width: 1200,
+      height: 700,
+      purpose: 'Create a clean educational analogy illustration that visually explains the everyday comparison for this subtopic.',
+    },
+    {
+      id: 'layman-overview',
+      label: 'Concept Overview',
+      fieldPath: 'simpleOverview.image',
+      width: 1200,
+      height: 700,
+      purpose: 'Create a simple, welcoming visual that introduces the concept to a complete beginner.',
+    },
+  ],
+  notes: [
+    {
+      id: 'notes-summary',
+      label: 'Revision Summary',
+      fieldPath: 'summaryCard.image',
+      width: 1200,
+      height: 700,
+      purpose: 'Create a summary infographic that visually reinforces the core idea, memory hook, and revision intent of the Notes section.',
+    },
+    {
+      id: 'notes-hero',
+      label: 'Hero Infographic',
+      fieldPath: 'summaryHeroInfographic.image',
+      width: 1440,
+      height: 800,
+      purpose: 'A large, premium hero infographic that explains "How it Works" at a glance for this subtopic.',
+    },
+    {
+      id: 'notes-memory-map',
+      label: 'Concept Memory Map',
+      fieldPath: 'conceptMemoryMap.image',
+      width: 1200,
+      height: 900,
+      purpose: 'A node-and-connection diagram showing the relationships between different parts of the concept.',
+    },
+    {
+      id: 'notes-syntax',
+      label: 'Syntax Diagram',
+      fieldPath: 'syntaxBlock.image',
+      width: 1200,
+      height: 600,
+      purpose: 'A visual diagram that points out and explains specific parts of the code syntax.',
+    },
+  ],
+  code: [
+    {
+      id: 'code-preview',
+      label: 'Output Preview',
+      fieldPath: 'outputDemonstration.previewAsset',
+      width: 1280,
+      height: 720,
+      purpose: 'Create a UI-style output preview showing before/after or result-state for the code example.',
+    },
+  ],
+  technical: [
+    {
+      id: 'tech-architecture',
+      label: 'System Architecture',
+      fieldPath: 'sections.0.diagramAsset',
+      width: 1440,
+      height: 900,
+      purpose: 'Create a system or runtime architecture diagram suitable for an advanced technical explanation of the subtopic.',
+    },
+  ],
+  summary: [
+    {
+      id: 'summary-mastery',
+      label: 'Mastery Recap',
+      fieldPath: 'masteryRecapCard.heroAsset',
+      width: 1200,
+      height: 700,
+      purpose: 'Create a celebratory recap graphic that visually summarizes the concept and completion state.',
+    },
+  ],
+};
+
 function PromptGeneratorContent() {
   const brand = useBrand();
   const [domain, setDomain] = useState('Programming');
@@ -19,12 +104,13 @@ function PromptGeneratorContent() {
   const [selectedSection, setSelectedSection] = useState<TutorialPromptSectionId | null>(null);
   const [generatedPrompt, setGeneratedPrompt] = useState('');
   const [generatedAssetPrompt, setGeneratedAssetPrompt] = useState('');
+  const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [assetCopied, setAssetCopied] = useState(false);
 
   const sections = TUTORIAL_PROMPT_SECTION_OPTIONS;
 
-  const generatePrompt = () => {
+    const generatePrompt = (assetId?: string) => {
     if (!domain.trim() || !subject.trim() || !topic.trim() || !subtopic.trim()) {
       alert('Please fill in all fields: Domain, Subject, Topic, and Subtopic');
       return;
@@ -34,10 +120,30 @@ function PromptGeneratorContent() {
       return;
     }
 
+    if (assetId) {
+      const assetPrompt = getSvgAssetPromptForSection(
+        selectedSection,
+        domain,
+        subject,
+        topic,
+        subtopic,
+        assetId
+      );
+      setGeneratedAssetPrompt(assetPrompt);
+      setSelectedAssetId(assetId);
+      setAssetCopied(false);
+      return;
+    }
+
     const prompt = getPromptForSection(selectedSection, domain, subject, topic, subtopic);
     const contract = getTutorialSectionContractByPromptId(selectedSection);
     setGeneratedPrompt(contract ? `${buildTutorialSectionSourceNote(contract)}\n\n${prompt}` : prompt);
-    setGeneratedAssetPrompt(getSvgAssetPromptForSection(selectedSection, domain, subject, topic, subtopic));
+    setCopied(false);
+
+    const assetPrompt = getSvgAssetPromptForSection(selectedSection, domain, subject, topic, subtopic);
+    setGeneratedAssetPrompt(assetPrompt);
+    setSelectedAssetId(null);
+    setAssetCopied(false);
   };
 
   const copyToClipboard = () => {
@@ -133,66 +239,19 @@ ${JSON.stringify(template, null, 2)}`;
     domainName: string,
     subjectName: string,
     topicName: string,
-    subtopicName: string
+    subtopicName: string,
+    assetId?: string
   ): string => {
-    if (section === 'master' || section === 'overview' || section === 'quiz' || section === 'practice' || section === 'assignment' || section === 'project' || section === 'interview' || section === 'ai_tutor' || section === 'visual' || section === 'reallife') {
+    const selectedAssets = ASSET_SPECS[section] ?? [];
+    const assetsToGenerate = assetId 
+      ? selectedAssets.filter(a => a.id === assetId)
+      : selectedAssets;
+
+    if (assetsToGenerate.length === 0) {
       return '';
     }
 
     const subtopicSlug = subtopicName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-
-    const assetSpecs: Record<string, Array<{ fieldPath: string; fileName: string; width: number; height: number; purpose: string }>> = {
-      layman: [
-        {
-          fieldPath: 'everydayAnalogy.image',
-          fileName: `layman-everyday-analogy-${subtopicSlug}-v1.svg`,
-          width: 1200,
-          height: 700,
-          purpose: 'Create a clean educational analogy illustration that visually explains the everyday comparison for this subtopic.',
-        },
-      ],
-      notes: [
-        {
-          fieldPath: 'summaryCard.image',
-          fileName: `notes-summary-graphic-${subtopicSlug}-v1.svg`,
-          width: 1200,
-          height: 700,
-          purpose: 'Create a summary infographic that visually reinforces the core idea, memory hook, and revision intent of the Notes section.',
-        },
-      ],
-      code: [
-        {
-          fieldPath: 'outputDemonstration.previewAsset',
-          fileName: `code-output-preview-${subtopicSlug}-v1.svg`,
-          width: 1280,
-          height: 720,
-          purpose: 'Create a UI-style output preview showing before/after or result-state for the code example.',
-        },
-      ],
-      technical: [
-        {
-          fieldPath: 'sections.0.diagramAsset',
-          fileName: `technical-architecture-${subtopicSlug}-v1.svg`,
-          width: 1440,
-          height: 900,
-          purpose: 'Create a system or runtime architecture diagram suitable for an advanced technical explanation of the subtopic.',
-        },
-      ],
-      summary: [
-        {
-          fieldPath: 'masteryRecapCard.heroAsset',
-          fileName: `summary-hero-${subtopicSlug}-v1.svg`,
-          width: 1200,
-          height: 700,
-          purpose: 'Create a celebratory recap graphic that visually summarizes the concept and completion state without relying on external branding text.',
-        },
-      ],
-    };
-
-    const selectedAssets = assetSpecs[section] ?? [];
-    if (selectedAssets.length === 0) {
-      return '';
-    }
 
     return `Generate SVG asset prompt specifications for the ${section.toUpperCase()} tutorial section.
 
@@ -220,12 +279,12 @@ ${JSON.stringify(template, null, 2)}`;
 - Accessibility alt text
 
 **ASSETS TO GENERATE**
-${selectedAssets.map((asset, index) => `${index + 1}. Field path: ${asset.fieldPath}
-   File name: ${asset.fileName}
+${assetsToGenerate.map((asset, index) => `${index + 1}. Field path: ${asset.fieldPath}
+   File name: ${section}-${asset.id}-${subtopicSlug}-v1.svg
    Size: ${asset.width}x${asset.height}
    Visual objective: ${asset.purpose}`).join('\n\n')}
 
-Write the asset prompts now for "${subtopicName}".`;
+Write the asset prompt(s) now for "${subtopicName}".`;
   };
 
   const getStrictEnumRules = (section: string): string => {
@@ -3210,80 +3269,118 @@ Output in this EXACT JSON format:
               <div className="block text-lg font-semibold text-gray-800 mb-3">
                 Select Section
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
                 {sections.map((section) => (
                   <button
                     key={section.id}
-                    onClick={() => setSelectedSection(section.id)}
-                    className={`p-4 border-2 rounded-xl font-semibold text-sm transition-all ${
+                    onClick={() => {
+                      setSelectedSection(section.id);
+                      setGeneratedPrompt('');
+                      setGeneratedAssetPrompt('');
+                      setSelectedAssetId(null);
+                    }}
+                    className={`px-6 py-4 rounded-xl font-bold text-lg transition-all border-2 ${
                       selectedSection === section.id
-                        ? 'text-white shadow-lg'
-                        : 'bg-white border-gray-300 text-gray-700 hover:border-blue-500 hover:bg-blue-50'
+                        ? 'bg-blue-600 border-blue-700 text-white shadow-lg scale-105'
+                        : 'bg-white border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-50'
                     }`}
-                    style={
-                      selectedSection === section.id
-                        ? { backgroundColor: brand.primaryColor, borderColor: brand.primaryColor }
-                        : {}
-                    }
                   >
                     {section.label}
                   </button>
                 ))}
               </div>
-            </div>
 
-            <button
-              onClick={generatePrompt}
-              className="w-full py-4 text-white text-xl font-bold rounded-xl shadow-lg hover:shadow-xl transition-all hover:-translate-y-1"
-              style={{ backgroundColor: brand.primaryColor }}
-            >
-              Generate Prompt
-            </button>
-          </section>
-        </header>
-
-        {/* Output Section */}
-        {generatedPrompt && (
-          <section className="bg-white rounded-2xl shadow-2xl overflow-hidden" aria-label="Generated prompt output">
-            <div className="p-6 border-b border-gray-200 flex justify-between items-center">
-              <h3 className="text-2xl font-bold text-gray-800">Generated Prompt</h3>
               <button
+                onClick={() => generatePrompt()}
+                className="w-full py-4 text-white text-xl font-black rounded-xl shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
+                style={{ backgroundColor: brand.primaryColor }}
+              >
+                Generate Core JSON Prompt
+              </button>
+
+              {/* Asset Buttons Row */}
+              {selectedSection && ASSET_SPECS[selectedSection] && (
+                <div className="mt-8 pt-6 border-t border-gray-100">
+                  <div className="block text-lg font-semibold text-gray-800 mb-3">
+                    Select Visual Asset (SVG) Prompt
+                  </div>
+                  <div className="flex flex-wrap gap-3">
+                    {ASSET_SPECS[selectedSection].map((asset) => (
+                      <button
+                        key={asset.id}
+                        onClick={() => generatePrompt(asset.id)}
+                        className={`px-5 py-3 rounded-xl font-bold text-sm transition-all border-2 ${
+                          selectedAssetId === asset.id
+                            ? 'bg-amber-500 border-amber-600 text-white shadow-md scale-105'
+                            : 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100'
+                        }`}
+                      >
+                        {asset.label}
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => generatePrompt()}
+                      className={`px-5 py-3 rounded-xl font-bold text-sm transition-all border-2 ${
+                        selectedAssetId === null && generatedAssetPrompt
+                          ? 'bg-slate-700 border-slate-800 text-white shadow-md'
+                          : 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200'
+                      }`}
+                    >
+                      All Assets
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+            </section>
+          </header>
+
+                {/* Combined Dual Output Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+          {/* Content Column */}
+          <section className="bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col h-full" aria-label="Generated content prompt output">
+            <div className="p-6 border-b border-gray-200 flex justify-between items-center bg-gray-50/50">
+              <h3 className="text-xl font-bold text-gray-800">1. Content Structure</h3>
+              <button
+                disabled={!generatedPrompt}
                 onClick={copyToClipboard}
-                className={`px-6 py-2 rounded-lg font-semibold transition-all ${
-                  copied ? 'bg-green-500' : 'bg-blue-600 hover:bg-blue-700'
-                } text-white`}
+                className={`px-4 py-2 rounded-lg font-semibold transition-all text-sm ${
+                  !generatedPrompt ? 'bg-gray-200 text-gray-400' :
+                  copied ? 'bg-green-500 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'
+                }`}
               >
-                {copied ? 'Copied' : 'Copy to Clipboard'}
+                {copied ? '✓ Copied' : 'Copy JSON Prompt'}
               </button>
             </div>
-            <div className="p-6">
-              <div className="bg-gray-50 border border-gray-300 rounded-lg p-6 font-mono text-sm leading-relaxed whitespace-pre-wrap max-h-[600px] overflow-y-auto">
-                {generatedPrompt}
+            <div className="p-6 flex-1 min-h-[400px]">
+              <div className="h-full bg-gray-50 border border-gray-200 rounded-lg p-6 font-mono text-sm leading-relaxed whitespace-pre-wrap overflow-y-auto">
+                {generatedPrompt || <span className="text-gray-400 italic">Content architecture will appear here...</span>}
               </div>
             </div>
           </section>
-        )}
 
-        {generatedAssetPrompt && (
-          <section className="mt-6 bg-white rounded-2xl shadow-2xl overflow-hidden" aria-label="Generated svg asset prompt output">
-            <div className="p-6 border-b border-amber-200 bg-amber-50 flex justify-between items-center">
-              <h3 className="text-2xl font-bold text-gray-800">Generated SVG Asset Prompt</h3>
+          {/* Asset Column */}
+          <section className="bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col h-full" aria-label="Generated svg asset prompt output">
+            <div className="p-6 border-b border-amber-200 flex justify-between items-center bg-amber-50">
+              <h3 className="text-xl font-bold text-gray-800">2. SVG Visual Assets</h3>
               <button
+                disabled={!generatedAssetPrompt}
                 onClick={copyAssetPromptToClipboard}
-                className={`px-6 py-2 rounded-lg font-semibold transition-all ${
-                  assetCopied ? 'bg-green-500' : 'bg-amber-600 hover:bg-amber-700'
-                } text-white`}
+                className={`px-4 py-2 rounded-lg font-semibold transition-all text-sm ${
+                  !generatedAssetPrompt ? 'bg-amber-100 text-amber-300' :
+                  assetCopied ? 'bg-green-500 text-white' : 'bg-amber-600 hover:bg-amber-700 text-white'
+                }`}
               >
-                {assetCopied ? 'Copied' : 'Copy Asset Prompt'}
+                {assetCopied ? '✓ Copied' : 'Copy SVG Prompts'}
               </button>
             </div>
-            <div className="p-6">
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 font-mono text-sm leading-relaxed whitespace-pre-wrap max-h-[600px] overflow-y-auto">
-                {generatedAssetPrompt}
+            <div className="p-6 flex-1 min-h-[400px]">
+              <div className="h-full bg-amber-50/30 border border-amber-100 rounded-lg p-6 font-mono text-sm leading-relaxed whitespace-pre-wrap overflow-y-auto">
+                {generatedAssetPrompt || <span className="text-amber-400 italic">SVG generation prompts will appear here...</span>}
               </div>
             </div>
           </section>
-        )}
+        </div>
       </div>
     </main>
   );

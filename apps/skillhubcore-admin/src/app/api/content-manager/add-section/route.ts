@@ -482,13 +482,19 @@ function transformTechnicalSection(content: JsonRecord, subtopicName: string): J
     title: asString(content.title, `Technical Deep Dive: ${subtopicName}`),
     badge: asString(content.badge, 'Advanced'),
     intro: asString(content.intro),
-    sections: asArray(content.sections),
+    sections: asArray<JsonRecord>(content.sections).map((section) => ({
+      ...section,
+      steps: asArray(section.steps),
+      keyPoints: asArray(section.keyPoints),
+      ...(normalizeSvgAsset(section.diagramAsset) ? { diagramAsset: normalizeSvgAsset(section.diagramAsset) } : {}),
+    })),
   };
 }
 
 function transformCodeSection(content: JsonRecord): JsonRecord {
   const problemContext = asRecord(content.problemContext);
   const lineByLineExplanation = asRecord(content.lineByLineExplanation);
+  const outputDemonstration = asRecord(content.outputDemonstration);
   const bestPracticeVersion = asRecord(content.bestPracticeVersion);
   const commonMistakes = asRecord(content.commonMistakes);
   const realWorldImplementation = asRecord(content.realWorldImplementation);
@@ -503,6 +509,10 @@ function transformCodeSection(content: JsonRecord): JsonRecord {
     lineByLineExplanation: {
       ...lineByLineExplanation,
       lines: asArray(lineByLineExplanation.lines),
+    },
+    outputDemonstration: {
+      ...outputDemonstration,
+      ...(normalizeSvgAsset(outputDemonstration.previewAsset) ? { previewAsset: normalizeSvgAsset(outputDemonstration.previewAsset) } : {}),
     },
     bestPracticeVersion: {
       ...bestPracticeVersion,
@@ -526,32 +536,61 @@ function transformCodeSection(content: JsonRecord): JsonRecord {
 }
 
 function transformVisualSection(content: JsonRecord): JsonRecord {
+  const conceptVisualIntro = asRecord(content.conceptVisualIntro);
   const diagrammaticBreakdown = asRecord(content.diagrammaticBreakdown);
   const stepByStepVisualFlow = asRecord(content.stepByStepVisualFlow);
   const comparativeVisualization = asRecord(content.comparativeVisualization);
+  const mentalModelVisualization = asRecord(content.mentalModelVisualization);
+  const realWorldVisualMapping = asRecord(content.realWorldVisualMapping);
+  const commonConfusionVisualization = asRecord(content.commonConfusionVisualization);
   const visualSummary = asRecord(content.visualSummary);
 
   return {
     ...content,
+    conceptVisualIntro: {
+      ...conceptVisualIntro,
+      ...(normalizeSvgAsset(conceptVisualIntro.image) ? { image: normalizeSvgAsset(conceptVisualIntro.image) } : {}),
+    },
     diagrammaticBreakdown: {
       ...diagrammaticBreakdown,
       componentLabels: asArray(diagrammaticBreakdown.componentLabels),
       stepMarkers: asArray(diagrammaticBreakdown.stepMarkers),
       technicalTooltips: asArray(diagrammaticBreakdown.technicalTooltips),
+      ...(normalizeSvgAsset(diagrammaticBreakdown.image) ? { image: normalizeSvgAsset(diagrammaticBreakdown.image) } : {}),
     },
     stepByStepVisualFlow: {
       ...stepByStepVisualFlow,
       steps: asArray(stepByStepVisualFlow.steps),
       phaseExplanations: asArray(stepByStepVisualFlow.phaseExplanations),
+      ...(normalizeSvgAsset(stepByStepVisualFlow.image) ? { image: normalizeSvgAsset(stepByStepVisualFlow.image) } : {}),
     },
     comparativeVisualization: {
       ...comparativeVisualization,
       differenceHighlights: asArray(comparativeVisualization.differenceHighlights),
+      ...(normalizeSvgAsset(comparativeVisualization.image) ? { image: normalizeSvgAsset(comparativeVisualization.image) } : {}),
+    },
+    mentalModelVisualization: {
+      ...mentalModelVisualization,
+      nodes: asArray(asRecord(mentalModelVisualization.frameworkMap).nodes),
+      connections: asArray(asRecord(mentalModelVisualization.frameworkMap).connections),
+      ...(normalizeSvgAsset(mentalModelVisualization.image) ? { image: normalizeSvgAsset(mentalModelVisualization.image) } : {}),
+    },
+    realWorldVisualMapping: {
+      ...realWorldVisualMapping,
+      practicalScenarios: asArray(realWorldVisualMapping.practicalScenarios),
+      ...(normalizeSvgAsset(realWorldVisualMapping.image) ? { image: normalizeSvgAsset(realWorldVisualMapping.image) } : {}),
+    },
+    commonConfusionVisualization: {
+      ...commonConfusionVisualization,
+      confusionItems: asArray(commonConfusionVisualization.confusionItems),
+      faqItems: asArray(commonConfusionVisualization.faqItems),
+      ...(normalizeSvgAsset(commonConfusionVisualization.image) ? { image: normalizeSvgAsset(commonConfusionVisualization.image) } : {}),
     },
     visualSummary: {
       ...visualSummary,
       keyVisualTakeaways: asArray(visualSummary.keyVisualTakeaways),
       examVisualChecklist: asArray(visualSummary.examVisualChecklist),
+      ...(normalizeSvgAsset(visualSummary.image) ? { image: normalizeSvgAsset(visualSummary.image) } : {}),
     },
   };
 }
