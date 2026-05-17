@@ -53,6 +53,7 @@ export function NotesMainContent({ data, isStandalone = true }: { data: Subtopic
           image={data.summaryHeroInfographic.image}
           examTips={data.summaryHeroInfographic.examTips || []}
           howItWorks={data.summaryHeroInfographic.howItWorks}
+          topicName={data.breadcrumbs?.[1]}
         />
       ) : data.definitionBlock && (
         <NotesDefinitionBlock
@@ -87,7 +88,7 @@ export function NotesMainContent({ data, isStandalone = true }: { data: Subtopic
           code={data.syntaxBlock.code}
           language={data.syntaxBlock.language}
           title={data.syntaxBlock.title}
-          subtitle={data.syntaxBlock.subtitle}
+          subtitle={data.syntaxBlock.subtitle || (data.breadcrumbs?.[1] ? `${data.breadcrumbs[1]} Basic Syntax` : undefined)}
           explanations={data.syntaxBlock.explanations || []}
         />
       )}

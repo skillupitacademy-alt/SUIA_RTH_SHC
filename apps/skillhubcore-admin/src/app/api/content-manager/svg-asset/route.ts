@@ -48,6 +48,19 @@ export async function POST(request: NextRequest) {
     }
 
     if (!svgMarkup.includes('<svg')) {
+      // Try to extract SVG from AI-returned JSON wrapper { "svg": "<svg>..." }
+      try {
+        const parsed = JSON.parse(svgMarkup);
+        const unwrapped = parsed?.svg ?? parsed?.content ?? parsed?.data;
+        if (typeof unwrapped === 'string' && unwrapped.includes('<svg')) {
+          svgMarkup = unwrapped;
+        }
+      } catch {
+        // Not JSON, leave as-is
+      }
+    }
+
+    if (!svgMarkup.includes('<svg')) {
       return NextResponse.json({ error: 'The uploaded content is not a valid SVG document.' }, { status: 400 });
     }
 

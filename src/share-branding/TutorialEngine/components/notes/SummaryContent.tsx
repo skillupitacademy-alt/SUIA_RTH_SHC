@@ -2,6 +2,7 @@
 
 import React from 'react';
 import * as Icons from 'lucide-react';
+import { SVGIconRenderer } from '../shared/SVGIconRenderer';
 import { useBrand } from '../../../PostLandingPage/app/context/BrandContext';
 import { SubtopicNotesViewData } from '../../../subtopicNotesData';
 
@@ -80,8 +81,11 @@ export function SummaryContent({ data, title }: { data?: SummaryData; title: str
           </div>
           {heroAssetSrc ? (
             <div className="sm:ml-auto sm:w-[16rem]">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={heroAssetSrc} alt={heroAssetAlt} className="w-full rounded-3xl border border-emerald-100 bg-white p-3 shadow-sm" />
+              <SVGIconRenderer
+                dataUri={heroAssetSrc}
+                alt={heroAssetAlt}
+                className="w-full rounded-3xl border border-emerald-100 bg-white p-3 shadow-sm"
+              />
             </div>
           ) : null}
         </div>

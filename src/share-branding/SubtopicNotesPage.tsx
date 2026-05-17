@@ -184,7 +184,7 @@ export function SubtopicNotesPage({
                 <nav aria-label="Breadcrumbs" className="mb-8 flex min-w-0 flex-wrap items-center gap-2 text-[13px] font-bold text-slate-500">
                   <a href="#" className="hover:text-slate-900 transition-colors">Home</a>
                   <ChevronRight size={14} className="text-slate-400" />
-                  <a href="#" className="hover:text-slate-900 transition-colors">JavaScript</a>
+                  <a href="#" className="hover:text-slate-900 transition-colors">{notesData.mainContent.breadcrumbs?.[1] || 'JavaScript'}</a>
                   <ChevronRight size={14} className="text-slate-400" />
                   <a href={`/start-learning/subtopic/${subtopicId}`} className="hover:text-slate-900 transition-colors">{notesData.mainContent.title}</a>
                   <ChevronRight size={14} className="text-slate-400" />

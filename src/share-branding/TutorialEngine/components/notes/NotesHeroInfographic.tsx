@@ -8,6 +8,7 @@ interface NotesHeroInfographicProps {
   image?: any; // String or InlineSvgAsset
   examTips: string[];
   howItWorks?: Array<{ step: number; label: string; description: string }>;
+  topicName?: string; // Dynamically passed topicName to prevent fallbacks
 }
 
 /**
@@ -19,12 +20,56 @@ export function NotesHeroInfographic({
   summaryTitle, 
   image, 
   examTips,
-  howItWorks 
+  howItWorks,
+  topicName
 }: NotesHeroInfographicProps) {
   const brand = useBrand();
 
   const dataUri = typeof image === 'string' ? image : image?.dataUri;
   const altText = typeof image === 'object' ? image?.alt : 'Hero Infographic';
+
+  // Deduce topic configuration dynamically
+  const resolvedTopic = (topicName || (summaryTitle.toLowerCase().includes('python') ? 'Python' : 'JavaScript')).trim();
+  const lowerTopic = resolvedTopic.toLowerCase();
+
+  let iconLabel = 'JS';
+  let iconBg = 'bg-amber-400';
+  let iconTextColor = 'text-white';
+  let runsIn = 'Web Browsers';
+  let worksWith = 'HTML / CSS';
+  let mainPower = 'Interactivity';
+  let usedFor = 'Web Apps';
+
+  if (lowerTopic.includes('python')) {
+    iconLabel = 'PY';
+    iconBg = 'bg-[#3776AB]'; // Python brand blue
+    runsIn = 'Python VM / OS';
+    worksWith = 'Libraries / APIs';
+    mainPower = 'Data & Scripting';
+    usedFor = 'Backend & AI';
+  } else if (lowerTopic.includes('react')) {
+    iconLabel = 'RE';
+    iconBg = 'bg-slate-950 border border-cyan-500/25';
+    iconTextColor = 'text-cyan-400 font-extrabold';
+    runsIn = 'Browsers / V8';
+    worksWith = 'VDOM / JSX';
+    mainPower = 'Component State';
+    usedFor = 'Modern UIs';
+  } else if (lowerTopic.includes('html')) {
+    iconLabel = 'HT';
+    iconBg = 'bg-orange-600';
+    runsIn = 'Web Browsers';
+    worksWith = 'DOM / CSS';
+    mainPower = 'Semantic Layout';
+    usedFor = 'Web Structure';
+  } else if (lowerTopic.includes('css')) {
+    iconLabel = 'CS';
+    iconBg = 'bg-blue-600';
+    runsIn = 'Web Browsers';
+    worksWith = 'DOM / HTML';
+    mainPower = 'Visual Styling';
+    usedFor = 'Responsive UI';
+  }
 
   return (
     <div className="w-full rounded-[24px] border border-slate-200 bg-white p-6 shadow-xl sm:p-8">
@@ -54,9 +99,8 @@ export function NotesHeroInfographic({
         {/* Left Side: Identity & Meta */}
         <div className="lg:col-span-7 space-y-6">
           <div className="flex items-start gap-6">
-            <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl bg-amber-400 p-4 shadow-lg text-white">
-               {/* JS Logo Placeholder */}
-               <span className="text-4xl font-black">JS</span>
+            <div className={`flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl ${iconBg} p-4 shadow-lg ${iconTextColor}`}>
+               <span className="text-4xl font-black">{iconLabel}</span>
             </div>
             <div className="space-y-2">
               <h4 className="text-3xl font-bold text-slate-900">{summaryTitle}</h4>
@@ -68,10 +112,10 @@ export function NotesHeroInfographic({
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {[
-              { icon: Icons.Globe, label: 'Runs In', value: 'Web Browsers' },
-              { icon: Icons.Code2, label: 'Works With', value: 'HTML / CSS' },
-              { icon: Icons.Zap, label: 'Main Power', value: 'Interactivity' },
-              { icon: Icons.Target, label: 'Used For', value: 'Web Apps' }
+              { icon: Icons.Globe, label: 'Runs In', value: runsIn },
+              { icon: Icons.Code2, label: 'Works With', value: worksWith },
+              { icon: Icons.Zap, label: 'Main Power', value: mainPower },
+              { icon: Icons.Target, label: 'Used For', value: usedFor }
             ].map((item, i) => (
               <div key={i} className="flex flex-col items-center justify-center rounded-xl border border-slate-100 bg-slate-50/50 p-4 text-center">
                 <item.icon size={20} className="mb-2 text-slate-400" />
@@ -92,7 +136,18 @@ export function NotesHeroInfographic({
                  <div className="flex flex-col items-center gap-3 text-center">
                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-md border border-slate-100">
                       {i === 0 && <Icons.MousePointer2 size={20} className="text-slate-900" />}
-                      {i === 1 && <span className="text-xl font-bold text-amber-500">JS</span>}
+                      {i === 1 && (
+                         <span className={`text-xl font-bold ${
+                           iconLabel === 'JS' ? 'text-amber-500' :
+                           iconLabel === 'PY' ? 'text-[#3776AB]' :
+                           iconLabel === 'RE' ? 'text-cyan-500' :
+                           iconLabel === 'HT' ? 'text-orange-500' :
+                           iconLabel === 'CS' ? 'text-blue-500' :
+                           'text-slate-700'
+                         }`}>
+                           {iconLabel}
+                         </span>
+                       )}
                       {i === 2 && <Icons.Layout size={20} className="text-emerald-500" />}
                    </div>
                    <div>
@@ -113,7 +168,7 @@ export function NotesHeroInfographic({
               <div>
                 <h6 className="text-[12px] font-bold text-indigo-900 mb-0.5">Key Takeaway</h6>
                 <p className="text-[12px] font-medium text-indigo-800 leading-snug">
-                  {examTips[1] || 'JavaScript is the core engine for modern interactivity.'}
+                  {examTips[1] || `${resolvedTopic} is powerful, highly versatile, and essential in modern software development.`}
                 </p>
               </div>
             </div>

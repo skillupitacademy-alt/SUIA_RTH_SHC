@@ -249,7 +249,21 @@ function ContentManagerContent() {
       if (svgFile) {
         formData.append('file', svgFile);
       } else {
-        formData.append('svgMarkup', svgMarkup);
+        // Sanitize AI output: strip markdown fences, unwrap JSON {"svg":"..."} wrapper
+        let sanitized = svgMarkup.trim();
+        sanitized = sanitized.replace(/^```(?:svg|xml)?\s*/i, '').replace(/\s*```$/, '').trim();
+        if (sanitized.startsWith('{')) {
+          try {
+            const parsed = JSON.parse(sanitized);
+            const inner = parsed?.svg ?? parsed?.content ?? parsed?.data;
+            if (typeof inner === 'string' && inner.includes('<svg')) {
+              sanitized = inner.trim();
+            }
+          } catch {
+            // Not JSON, leave as-is
+          }
+        }
+        formData.append('svgMarkup', sanitized);
       }
 
       const response = await fetch('/api/content-manager/svg-asset', {

@@ -63,6 +63,15 @@ export const getStrictSectionJsonTemplate = (section: string, subtopicName: stri
           { id: 'concept', title: 'Concept', content: 'Main explanation.', keyPoint: 'Key point.' },
           { id: 'syntax', title: 'Syntax', content: 'Syntax explanation.', codeExample: { code: 'const value = true;', output: 'true' } },
         ],
+        syntaxBlock: {
+          code: 'Code snippet here',
+          language: 'python',
+          title: 'Syntax Example',
+          subtitle: `${subtopicName} Basic Syntax`,
+          explanations: [
+            { id: 'exp1', term: 'Line 1', explanation: 'Explanation of this line or term.' }
+          ]
+        },
         componentGrid: {
           gridTitle: 'Key Components',
           componentCards: [
@@ -93,13 +102,53 @@ export const getStrictSectionJsonTemplate = (section: string, subtopicName: stri
           memoryReinforcement: 'Memory hook.',
           examTips: ['Exam tip 1'],
         },
+        summaryHeroInfographic: {
+          summaryTitle: `Quick Revision: What is ${subtopicName}?`,
+          examTips: [
+            `Top core point about ${subtopicName}.`,
+            `Important takeaway regarding ${subtopicName} implementation.`
+          ],
+          howItWorks: [
+            { step: 1, label: 'Trigger', description: 'Setup environment.' },
+            { step: 2, label: 'Process', description: 'Execution logic.' },
+            { step: 3, label: 'Render', description: 'Display result.' }
+          ]
+        },
+        conceptMemoryMap: {
+          nodes: [
+            { id: 'node-1', label: `${subtopicName} Core`, description: 'Primary learning objective.' },
+            { id: 'node-2', label: 'Context Integration', description: 'How it relates to parent architecture.' }
+          ],
+          connections: [
+            { from: 'node-1', to: 'node-2', label: 'connects to' }
+          ]
+        },
+        flashcardVisualSystem: {
+          cards: [{ id: 'card1', question: 'Question?', answer: 'Answer.' }]
+        },
+        comparisonSummaryChart: {
+          title: 'Comparison Chart',
+          columns: ['Column 1', 'Column 2'],
+          rows: [['Row 1 Col 1', 'Row 1 Col 2']]
+        },
+        mnemonicRetentionGraphic: {
+          mnemonicTitle: 'Mnemonic',
+          memoryHook: 'Hook.',
+          rememberItems: [{ letter: 'A', label: 'Apple', description: 'Desc.' }],
+          keyPoints: ['Key point 1']
+        },
+        footerBlock: {
+          finalNote: 'Final note.',
+          nextStepLabel: 'Next Step',
+          nextStepTarget: 'next-subtopic'
+        }
       },
     },
     layman: {
       layman: {
         ...base,
         simpleOverview: { badge: 'Layman Section', headline: `${subtopicName} in Simple Words`, simpleDefinition: 'A clear beginner-friendly definition written in short, direct language.', subExplanation: 'A second paragraph that explains how the concept behaves in normal learning or real usage.', importanceBlock: 'Explain why understanding this concept helps a beginner make sense of later technical sections.', progressIndicator: 'Beginner-ready explanation.' },
-        everydayAnalogy: { title: 'Everyday Analogy', storyAnalogy: 'A vivid real-world comparison that makes the concept intuitive for a first-time learner.', comparisonPanel: { realWorld: 'Describe the everyday object or situation in plain language.', technical: 'Map that analogy back to the actual technical meaning of the subtopic.' }, visualMetaphor: 'Provide a strong mental image the learner can remember later.', keyTakeaway: 'One short takeaway sentence that the learner can recall quickly.', image: 'Optional illustration URL if available.' },
+        everydayAnalogy: { title: 'Everyday Analogy', storyAnalogy: 'A vivid real-world comparison that makes the concept intuitive for a first-time learner.', comparisonPanel: 'Describe the everyday object or situation in plain language.', visualMetaphor: [{ label: 'Real World', comparison: 'Technical Mapping' }], keyTakeaway: 'One short takeaway sentence that the learner can recall quickly.', image: 'Optional illustration URL if available.' },
         whyItExists: {
           sectionTitle: 'Why It Exists',
           benefitCards: [
@@ -118,9 +167,9 @@ export const getStrictSectionJsonTemplate = (section: string, subtopicName: stri
           ],
         },
         beginnerBreakdown: { title: 'Beginner Breakdown', steps: [{ id: 'step1', stepTitle: 'Step 1', stepExplanation: 'First small idea the learner should understand.', microLearningChunk: 'A tiny example or memory hook for step 1.' }, { id: 'step2', stepTitle: 'Step 2', stepExplanation: 'Second idea that builds naturally from the first.', microLearningChunk: 'A tiny example or memory hook for step 2.' }, { id: 'step3', stepTitle: 'Step 3', stepExplanation: 'Third idea that shows the concept in action.', microLearningChunk: 'A tiny example or memory hook for step 3.' }, { id: 'step4', stepTitle: 'Step 4', stepExplanation: 'Fourth idea that helps remove beginner confusion.', microLearningChunk: 'A tiny example or memory hook for step 4.' }] },
-        mentalModel: { title: 'Mental Model', conceptMap: { nodes: [{ id: 'node1', label: 'Start', description: 'The first thing a beginner should picture.' }, { id: 'node2', label: 'Meaning', description: 'What the main concept represents.' }, { id: 'node3', label: 'Use', description: 'How the learner will see or apply it.' }], connections: [{ from: 'node1', to: 'node2', label: 'leads to' }, { from: 'node2', to: 'node3', label: 'helps with' }] }, visualLabels: ['Visual label 1', 'Visual label 2', 'Visual label 3'] },
+        mentalModel: { title: 'Mental Model', conceptMap: [{ id: 'node1', label: 'Start', type: 'core' }], visualLabels: [{ from: 'node1', to: 'node2', label: 'leads to' }] },
         commonConfusions: { title: 'Common Confusions', confusionItems: [{ id: 'conf1', confusion: 'A beginner-style confusion question.', clarification: 'A direct clarification in simple language.' }, { id: 'conf2', confusion: 'Another likely confusion.', clarification: 'A clear correction that removes the doubt.' }, { id: 'conf3', confusion: 'A third confusion that often appears early.', clarification: 'A plain explanation that resets understanding.' }], faqItems: [{ id: 'faq1', question: 'Short practical question 1?', answer: 'Short practical answer 1.' }, { id: 'faq2', question: 'Short practical question 2?', answer: 'Short practical answer 2.' }, { id: 'faq3', question: 'Short practical question 3?', answer: 'Short practical answer 3.' }], misconceptionAlerts: ['One myth or misconception to avoid.', 'Another misconception to avoid.'] },
-        simpleRecap: { summaryTitle: 'Simple Recap', keyTakeaways: ['Takeaway 1', 'Takeaway 2', 'Takeaway 3'], simpleRecapPoints: ['Recap point 1', 'Recap point 2', 'Recap point 3'], confidenceBoost: 'A final confidence-building sentence for the learner.', memoryReinforcement: 'A short memory hook the learner should remember later.' },
+        simpleRecap: { summaryTitle: 'Simple Recap', keyTakeaways: ['Takeaway 1', 'Takeaway 2', 'Takeaway 3'], simpleRecapPoints: [{ id: 'recap1', item: 'Recap point 1', checked: false }], confidenceBoost: 'A final confidence-building sentence for the learner.', memoryReinforcement: 'A short memory hook the learner should remember later.' },
       },
     },
     real_life: {

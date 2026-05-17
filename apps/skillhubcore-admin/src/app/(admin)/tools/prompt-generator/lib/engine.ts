@@ -75,22 +75,32 @@ export const getSvgAssetPromptForSection = (
   const targetSpecs = assetId ? specs.filter((s) => s.id === assetId) : specs;
   if (targetSpecs.length === 0) return '';
 
-  let prompt = `**SVG DIAGRAM GENERATION REQUEST (STRICT SCHEMA)**\n`;
+  let prompt = `**SVG DIAGRAM GENERATION REQUEST (STRICT OUTPUT FORMAT)**\n`;
   prompt += `Topic: ${subtopic}\n`;
   prompt += `Section: ${section}\n\n`;
-  prompt += `**RULES**:\n`;
-  prompt += `1. Output ONLY the raw SVG code inside a JSON object with a single "svg" key.\n`;
-  prompt += `2. Style: Modern, Minimalist, Tech-focused (FAANG Style).\n`;
-  prompt += `3. Colors: Use #f8fafc (slate-50), #3b82f6 (blue-500), #ef4444 (red-500), #22c55e (green-500).\n`;
-  prompt += `4. Typography: Use "Inter" or sans-serif fonts.\n\n`;
+  prompt += `**CRITICAL OUTPUT RULES (Non-negotiable)**:\n`;
+  prompt += `1. Output ONLY the raw SVG markup. Start your response with \`<svg\` and end with \`</svg>\`.\n`;
+  prompt += `2. Do NOT wrap the SVG in JSON, markdown code fences (\`\`\`), or any other container.\n`;
+  prompt += `3. Do NOT output \`{"svg": "..."}\` or any JSON object. Output the SVG element directly.\n`;
+  prompt += `4. Do NOT include any text, explanation, or comments before or after the SVG tag.\n`;
+  prompt += `5. Style: Modern, Minimalist, Tech-focused (FAANG Style).\n`;
+  prompt += `6. Colors: Use #f8fafc (slate-50), #3b82f6 (blue-500), #ef4444 (red-500), #22c55e (green-500).\n`;
+  prompt += `7. Typography: Use "Inter" or sans-serif fonts.\n`;
+  prompt += `8. All text must be embedded inside the SVG using <text> or <foreignObject> elements.\n\n`;
+  prompt += `**CORRECT output format example**:\n`;
+  prompt += `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700">...</svg>\n\n`;
+  prompt += `**WRONG output formats (will cause a system error)**:\n`;
+  prompt += `- {"svg": "<svg ...>"} ← JSON wrapper is FORBIDDEN\n`;
+  prompt += `- \`\`\`svg\\n<svg ...>\\n\`\`\` ← Markdown fences are FORBIDDEN\n\n`;
 
   targetSpecs.forEach((spec) => {
     prompt += `--- ASSET: ${spec.label} ---\n`;
     prompt += `ID: ${spec.id}\n`;
-    prompt += `Dimensions: ${spec.width}x${spec.height}\n`;
+    prompt += `Dimensions: ${spec.width}x${spec.height}px (set width and height attributes on <svg>)\n`;
     prompt += `Target Field Path: ${spec.fieldPath}\n`;
     prompt += `Purpose: ${spec.purpose}\n\n`;
   });
 
   return prompt;
 };
+
