@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { 
   Eye, Sparkles, Edit, List, Map, 
   ArrowRight, Cpu, Compass, CheckCircle2, 
-  AlertTriangle, Terminal, Layers
+  AlertTriangle, Terminal, Layers, X, Save, Plus, Trash2
 } from 'lucide-react';
 import { BrandProvider } from '@/share-branding/PostLandingPage/app/context/BrandContext';
 import { rthConfig } from '@/share-branding/brandConfig';
@@ -206,11 +206,14 @@ const SECTIONS_SPECS: SectionSpec[] = [
 ];
 
 export function VisualGuideUI() {
+  const [sections, setSections] = useState<SectionSpec[]>(SECTIONS_SPECS);
   const [selectedSectionId, setSelectedSectionId] = useState<string>('notes');
   const [selectedSubsectionId, setSelectedSubsectionId] = useState<string>('definitionBlock');
   const [highlightedElement, setHighlightedElement] = useState<string | null>(null);
+  const [isEditingSubsection, setIsEditingSubsection] = useState<boolean>(false);
+  const [editForm, setEditForm] = useState<SubsectionInfo | null>(null);
 
-  const activeSection = SECTIONS_SPECS.find(s => s.id === selectedSectionId) || SECTIONS_SPECS[1];
+  const activeSection = sections.find(s => s.id === selectedSectionId) || sections[1];
   const activeSubsection = activeSection.subsections.find(sub => sub.id === selectedSubsectionId) || activeSection.subsections[0];
 
   const wireframeCanvasRef = useRef<HTMLDivElement>(null);
@@ -218,9 +221,28 @@ export function VisualGuideUI() {
   // Sync subsection when section changes
   const handleSectionChange = (sectionId: string) => {
     setSelectedSectionId(sectionId);
-    const sect = SECTIONS_SPECS.find(s => s.id === sectionId) || SECTIONS_SPECS[1];
+    const sect = sections.find(s => s.id === sectionId) || sections[1];
     setSelectedSubsectionId(sect.subsections[0].id);
     scrollToWireframeSegment(sectionId);
+  };
+
+  const handleEditClick = () => {
+    setEditForm({ ...activeSubsection, components: [...activeSubsection.components] });
+    setIsEditingSubsection(true);
+  };
+
+  const handleSaveEdit = () => {
+    if (!editForm) return;
+    setSections(prev => prev.map(sect => {
+      if (sect.id === activeSection.id) {
+        return {
+          ...sect,
+          subsections: sect.subsections.map(sub => sub.id === editForm.id ? editForm : sub)
+        };
+      }
+      return sect;
+    }));
+    setIsEditingSubsection(false);
   };
 
   const scrollToWireframeSegment = (sectionId: string) => {
@@ -289,7 +311,7 @@ export function VisualGuideUI() {
               11 Educational Sections
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-              {SECTIONS_SPECS.map((sect) => (
+              {sections.map((sect) => (
                 <button
                   key={sect.id}
                   onClick={() => handleSectionChange(sect.id)}
@@ -334,8 +356,14 @@ export function VisualGuideUI() {
             </div>
 
             {/* Subsection Details Dashboard */}
-            <div className="flex-1 bg-slate-50 border border-slate-200/60 rounded-2xl p-5 space-y-4">
-              <div>
+            <div className="flex-1 bg-slate-50 border border-slate-200/60 rounded-2xl p-5 space-y-4 relative">
+              <button 
+                onClick={handleEditClick}
+                className="absolute top-4 right-4 bg-white border border-slate-200 text-slate-500 hover:text-purple-600 hover:border-purple-200 hover:bg-purple-50 px-3 py-1.5 rounded-lg transition-all shadow-sm flex items-center gap-1 text-[11px] font-bold"
+              >
+                <Edit size={14} /> Edit Component
+              </button>
+              <div className="pr-32">
                 <span className="text-[10px] font-black uppercase bg-purple-100 text-purple-700 px-2 py-0.5 rounded-md tracking-wider">
                   Subsection Role
                 </span>
@@ -408,7 +436,7 @@ export function VisualGuideUI() {
 
           {/* Tab Selector Bar inside the Simulated Canvas representing the 11 Educational Sections */}
           <div className="flex items-center gap-1.5 bg-slate-900 text-white px-4 py-3 overflow-x-auto text-[11px] font-bold hide-scrollbar select-none border-b border-slate-800">
-            {SECTIONS_SPECS.map((sect) => (
+            {sections.map((sect) => (
               <button
                 key={sect.id}
                 onClick={() => handleSectionChange(sect.id)}
@@ -1702,6 +1730,183 @@ export function VisualGuideUI() {
         </section>
 
       </div>
+
+      {/* Full-width Edit Mode Overlay */}
+      {isEditingSubsection && editForm && (
+        <div className="fixed inset-0 z-[100] bg-white flex flex-col animate-in fade-in slide-in-from-right-8 duration-300">
+          {/* Header */}
+          <header className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800 shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="bg-gradient-to-br from-pink-500 to-orange-500 w-10 h-10 rounded-lg flex items-center justify-center shadow-lg">
+                <Edit size={20} className="text-white" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold font-outfit tracking-tight">Edit Component: {activeSubsection.label}</h2>
+                <p className="text-[11px] text-slate-400 font-medium tracking-wider uppercase">Live Visual Architecture Editor</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={() => setIsEditingSubsection(false)}
+                className="px-4 py-2 text-sm font-bold text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors flex items-center gap-2"
+              >
+                <X size={16} /> Cancel
+              </button>
+              <button 
+                onClick={handleSaveEdit}
+                className="px-5 py-2 text-sm font-bold bg-white text-slate-900 hover:bg-slate-100 rounded-lg transition-all flex items-center gap-2 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
+              >
+                <Save size={16} /> Save Changes
+              </button>
+            </div>
+          </header>
+
+          {/* Split Content */}
+          <div className="flex-1 flex overflow-hidden">
+            {/* Left Column: Form (1/3 width) */}
+            <div className="w-1/3 bg-slate-50 border-r border-slate-200 overflow-y-auto p-6 space-y-6">
+              <div className="space-y-4">
+                <div>
+                  <span className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Component Label</span>
+                  <input 
+                    type="text" 
+                    value={editForm.label}
+                    onChange={e => setEditForm({ ...editForm, label: e.target.value })}
+                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-bold focus:ring-2 focus:ring-purple-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <span className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Purpose</span>
+                  <textarea 
+                    value={editForm.purpose}
+                    onChange={e => setEditForm({ ...editForm, purpose: e.target.value })}
+                    rows={3}
+                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 outline-none resize-none"
+                  />
+                </div>
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="block text-xs font-bold text-slate-500 uppercase tracking-wider">UI Elements (Components)</span>
+                    <button 
+                      onClick={() => setEditForm({ ...editForm, components: [...editForm.components, 'New Element'] })}
+                      className="text-[10px] font-bold text-purple-600 hover:bg-purple-50 px-2 py-0.5 rounded flex items-center gap-1 transition-colors border border-transparent hover:border-purple-200"
+                    >
+                      <Plus size={12} /> Add
+                    </button>
+                  </div>
+                  <div className="space-y-2">
+                    {editForm.components.map((comp, idx) => (
+                      <div key={idx} className="flex gap-2">
+                        <input 
+                          type="text" 
+                          value={comp}
+                          onChange={e => {
+                            const newComps = [...editForm.components];
+                            newComps[idx] = e.target.value;
+                            setEditForm({ ...editForm, components: newComps });
+                          }}
+                          className="flex-1 px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-medium focus:ring-2 focus:ring-purple-500 outline-none"
+                        />
+                        <button 
+                          onClick={() => {
+                            const newComps = editForm.components.filter((_, i) => i !== idx);
+                            setEditForm({ ...editForm, components: newComps });
+                          }}
+                          className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors border border-transparent hover:border-rose-100"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="pt-4 border-t border-slate-200">
+                  <h4 className="text-[10px] font-black uppercase text-amber-600 mb-3 flex items-center gap-1"><Compass size={14} /> SVG Asset Mapping (Optional)</h4>
+                  <div className="space-y-3">
+                    <div>
+                      <span className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wider">SVG Asset ID</span>
+                      <input 
+                        type="text" 
+                        value={editForm.svgId || ''}
+                        onChange={e => setEditForm({ ...editForm, svgId: e.target.value })}
+                        placeholder="e.g. overview-hero"
+                        className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-medium focus:ring-2 focus:ring-amber-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <span className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wider">SVG Asset Label</span>
+                      <input 
+                        type="text" 
+                        value={editForm.svgLabel || ''}
+                        onChange={e => setEditForm({ ...editForm, svgLabel: e.target.value })}
+                        placeholder="e.g. Hero Dashboard Diagram"
+                        className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-medium focus:ring-2 focus:ring-amber-500 outline-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column: Live Preview Dashboard (2/3 width) */}
+            <div className="w-2/3 bg-[#f4f7fa] p-8 overflow-y-auto flex items-start justify-center relative">
+              {/* Pattern Background */}
+              <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#94a3b8 1px, transparent 1px)', backgroundSize: '24px 24px' }}></div>
+              
+              <div className="w-full max-w-2xl bg-white border border-slate-200 rounded-2xl p-8 shadow-2xl relative z-10 scale-[1.02]">
+                <div className="absolute -top-3 -right-3 bg-emerald-500 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider shadow-lg flex items-center gap-1 animate-pulse">
+                  <Eye size={12} /> Live Preview
+                </div>
+                
+                <span className="text-[10px] font-black uppercase bg-purple-100 text-purple-700 px-2 py-0.5 rounded-md tracking-wider">
+                  Subsection Role
+                </span>
+                <h3 className="text-2xl font-extrabold text-slate-800 mt-3 font-outfit">
+                  {editForm.label}
+                </h3>
+                <p className="text-sm text-slate-600 font-medium leading-relaxed mt-2">
+                  {editForm.purpose}
+                </p>
+
+                <div className="mt-8 pt-6 border-t border-slate-100">
+                  <span className="text-[10px] font-black uppercase bg-orange-100 text-orange-700 px-2 py-0.5 rounded-md tracking-wider">
+                    Visible UI Elements Inside
+                  </span>
+                  <div className="flex flex-wrap gap-2 mt-4">
+                    {editForm.components.length === 0 && (
+                      <span className="text-sm text-slate-400 italic font-medium px-2 py-1">No components added yet. Add elements on the left.</span>
+                    )}
+                    {editForm.components.map((comp, idx) => (
+                      <span key={idx} className="bg-slate-50 border border-slate-200/80 text-slate-700 text-sm font-bold px-4 py-2 rounded-xl flex items-center gap-2 shadow-sm transition-all hover:border-emerald-300">
+                        <CheckCircle2 size={16} className="text-emerald-500" />
+                        {comp}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {editForm.svgId && (
+                  <div className="mt-8 pt-6 border-t border-slate-100">
+                    <span className="text-[10px] font-black uppercase bg-amber-100 text-amber-700 px-2 py-0.5 rounded-md tracking-wider flex w-fit items-center gap-1 mb-4">
+                      <Compass size={11} /> Associated SVG Image Asset
+                    </span>
+                    <div className="bg-amber-50/80 border border-amber-200/60 rounded-2xl p-5 flex items-center justify-between">
+                      <div>
+                        <p className="font-extrabold text-amber-900 text-lg leading-tight">{editForm.svgLabel || 'Unnamed Asset'}</p>
+                        <p className="text-[11px] text-amber-600 font-bold mt-1.5 font-mono bg-amber-200/40 w-fit px-2 py-0.5 rounded">ID: {editForm.svgId}</p>
+                      </div>
+                      <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm border border-amber-100 shrink-0 text-amber-500">
+                        <Map size={24} />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
