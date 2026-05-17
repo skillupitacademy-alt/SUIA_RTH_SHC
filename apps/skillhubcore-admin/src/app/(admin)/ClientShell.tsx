@@ -9,7 +9,7 @@ import {
   GraduationCap, PlaySquare,
   Menu, Search, Bell, Mail, HelpCircle, ChevronRight, Network, PanelRight,
   Download, Sparkles, History, BarChart3, LineChart,
-  UserCog, LayoutGrid, Cpu, Compass, Globe, LayoutList, Copy, FileDown, FileUp, XCircle, Trash2, LogOut
+  UserCog, LayoutGrid, Cpu, Compass, Globe, LayoutList, Copy, FileDown, FileUp, XCircle, Trash2, LogOut, Edit
 } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth-store';
@@ -176,8 +176,26 @@ export default function ClientShell({ children }: { children: ReactNode }) {
                 ))}
               </nav>
             </div>
-
-            {/* Platform Management */}
+            
+            {/* AI Content Workspace Tools */}
+            <div>
+              <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 px-2 whitespace-nowrap">AI Content Workspace</h2>
+              <nav className="space-y-1">
+                {[
+                  { icon: Layout, label: 'Visual Guide Directory', href: '/tools/visual-guide', color: 'text-rose-400' },
+                  { icon: Sparkles, label: 'Prompt Generator UI', href: '/tools/prompt-generator', color: 'text-amber-400' },
+                  { icon: Edit, label: 'Granular Content Manager', href: '/tools/content-manager', color: 'text-sky-400' }
+                ].map((item, i) => (
+                  <Link key={i} href={item.href} className={`flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors focus:ring-2 focus:ring-pink-500 outline-none ${pathname === item.href ? 'bg-slate-800 text-white font-bold' : 'text-slate-300 hover:text-white hover:bg-slate-800'}`}>
+                    <div className="flex items-center gap-3 overflow-hidden">
+                      <div className={`p-1 rounded bg-slate-800/50 shrink-0 ${item.color || 'text-slate-400'}`}><item.icon size={14} /></div>
+                      <span className="whitespace-nowrap truncate">{item.label}</span>
+                    </div>
+                    <ChevronRight size={14} className="text-slate-500 shrink-0" />
+                  </Link>
+                ))}
+              </nav>
+            </div>
           </div>
 
           {/* Bottom Links */}

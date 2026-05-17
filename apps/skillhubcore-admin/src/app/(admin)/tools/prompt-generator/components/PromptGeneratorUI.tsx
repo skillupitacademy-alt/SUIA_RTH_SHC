@@ -1,6 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { Sparkles, ArrowRight, Compass } from 'lucide-react';
 import { useBrand } from '@/share-branding/PostLandingPage/app/context/BrandContext';
 import { ASSET_SPECS } from '../lib/asset-specs';
 import { getPromptForSection, getSvgAssetPromptForSection } from '../lib/engine';
@@ -151,8 +154,57 @@ const SUBSECTIONS_MAP: Record<string, Array<{ id: string; label: string }>> = {
   ],
 };
 
+const findMatchingAsset = (section: string, subsection: string) => {
+  const specs = ASSET_SPECS[section];
+  if (!specs) return null;
+  
+  const exactMap: Record<string, string> = {
+    'conceptMemoryMap': 'notes-memory-map',
+    'syntaxBlock': 'notes-syntax',
+    'summaryCard': 'notes-summary',
+    'footerBlock': 'notes-footer',
+    'everydayAnalogy': 'layman-analogy',
+    'mentalModel': 'layman-mental-model',
+    'industryUseCase': 'reallife-workflow',
+    'careerRelevance': 'reallife-career',
+    'businessApplication': 'reallife-business-case',
+    'practicalRecap': 'reallife-user-journey',
+    'outputDemonstration': 'code-preview',
+    'diagrammaticBreakdown': 'visual-hero',
+    'stepByStepVisualFlow': 'visual-process-flow',
+    'comparativeVisualization': 'visual-comparison',
+    'mentalModelVisualization': 'visual-mental-model',
+    'realWorldVisualMapping': 'visual-architecture',
+    'commonConfusionVisualization': 'visual-timeline',
+    'visualSummary': 'visual-summary',
+    'assessmentIntro': 'practice-hero',
+    'instantFeedback': 'practice-benchmark',
+    'task': 'assignment-workflow'
+  };
+
+  if (section === 'overview' && subsection === 'hero') return specs.find(a => a.id === 'overview-hero');
+  if (section === 'assignment' && subsection === 'title') return specs.find(a => a.id === 'assignment-hero');
+  if (section === 'project' && subsection === 'title') return specs.find(a => a.id === 'project-hero');
+  if (section === 'project' && subsection === 'buildItems') return specs.find(a => a.id === 'project-roadmap');
+  if (section === 'project' && subsection === 'deliverables') return specs.find(a => a.id === 'project-architecture');
+  if (section === 'quiz' && subsection === 'title') return specs.find(a => a.id === 'quiz-hero');
+  if (section === 'summary' && subsection === 'title') return specs.find(a => a.id === 'summary-mastery');
+  if (section === 'interview' && subsection === 'title') return specs.find(a => a.id === 'interview-hero');
+  if (section === 'ai_tutor' && subsection === 'title') return specs.find(a => a.id === 'ai-tutor-hero');
+  if (section === 'technical' && subsection === 'sections') return specs.find(a => a.id === 'tech-architecture');
+
+  const mappedId = exactMap[subsection];
+  if (mappedId) {
+    return specs.find(a => a.id === mappedId);
+  }
+
+  return specs.find(a => a.fieldPath.toLowerCase().includes(subsection.toLowerCase())) || null;
+};
+
 export function PromptGeneratorUI() {
   const brand = useBrand();
+  const searchParams = useSearchParams();
+
   const [domain, setDomain] = useState('Programming');
   const [subject, setSubject] = useState('Next.js');
   const [topic, setTopic] = useState('App Router');
@@ -164,6 +216,25 @@ export function PromptGeneratorUI() {
   const [copied, setCopied] = useState(false);
   const [assetCopied, setAssetCopied] = useState(false);
   const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const sectParam = searchParams.get('section');
+    const subParam = searchParams.get('subsection');
+    const assetParam = searchParams.get('asset');
+
+    if (sectParam) {
+      setSelectedSection(sectParam);
+    }
+    if (subParam) {
+      setSelectedSubsection(subParam);
+    }
+    if (assetParam) {
+      setSelectedAssetId(assetParam);
+      // Generate prompt for visual asset
+      const assetPrompt = getSvgAssetPromptForSection(sectParam || selectedSection, subtopic, assetParam);
+      setGeneratedAssetPrompt(assetPrompt);
+    }
+  }, [searchParams, subtopic, selectedSection]);
 
   const handleGeneratePrompt = (assetId: string | null = null) => {
     if (assetId) {
@@ -309,6 +380,68 @@ export function PromptGeneratorUI() {
                     </option>
                   ))}
                 </select>
+
+                {/* Inline Subsection Visual Mapping Card */}
+                {selectedSubsection && (() => {
+                  const matchingAsset = findMatchingAsset(selectedSection, selectedSubsection);
+                  return (
+                    <div className="mt-4 p-4 rounded-xl border border-blue-150 bg-blue-50/30 flex flex-col sm:flex-row justify-between gap-4 items-start sm:items-center">
+                      <div className="flex gap-3 items-start">
+                        <div className="p-2 bg-blue-100 text-blue-650 rounded-lg shrink-0 mt-0.5">
+                          <Compass size={20} />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-black uppercase bg-blue-100 text-blue-705 px-2 py-0.5 rounded tracking-wider">
+                              Mapped Visual Component
+                            </span>
+                            {matchingAsset && (
+                              <span className="text-[10px] font-black uppercase bg-amber-100 text-amber-705 px-2 py-0.5 rounded tracking-wider flex items-center gap-1">
+                                <Sparkles size={10} strokeWidth={3} /> Associated SVG Image
+                              </span>
+                            )}
+                          </div>
+                          
+                          <h4 className="text-base font-extrabold text-slate-800 mt-1">
+                            {SUBSECTIONS_MAP[selectedSection].find(s => s.id === selectedSubsection)?.label || selectedSubsection}
+                          </h4>
+                          
+                          {matchingAsset ? (
+                            <div className="space-y-1.5 mt-2">
+                              <p className="text-xs text-slate-700 font-semibold leading-relaxed">
+                                <strong className="text-slate-800">Visual Blueprint: </strong> {matchingAsset.label} ({matchingAsset.width}x{matchingAsset.height}px)
+                              </p>
+                              <p className="text-xs text-slate-500 italic max-w-xl">
+                                &ldquo;{matchingAsset.purpose}&rdquo;
+                              </p>
+                            </div>
+                          ) : (
+                            <p className="text-xs text-slate-500 mt-1">
+                              This subsection consists of structured text blocks and layout metadata (no custom illustration SVG required).
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col sm:items-end gap-2 w-full sm:w-auto shrink-0">
+                        {matchingAsset && (
+                          <button
+                            onClick={() => handleGeneratePrompt(matchingAsset.id)}
+                            className="px-3.5 py-2 text-xs font-black bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors shadow-sm w-full sm:w-auto text-center"
+                          >
+                            Load SVG Prompt
+                          </button>
+                        )}
+                        <Link
+                          href={`/tools/visual-guide?section=${selectedSection}&subsection=${selectedSubsection}`}
+                          className="px-3.5 py-2 text-xs font-black border border-blue-200 bg-white text-blue-600 rounded-lg hover:bg-blue-50 transition-colors text-center w-full sm:w-auto flex items-center justify-center gap-1"
+                        >
+                          View Guide Map <ArrowRight size={12} />
+                        </Link>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             )}
 
