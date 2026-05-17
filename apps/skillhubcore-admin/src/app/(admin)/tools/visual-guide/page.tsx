@@ -445,15 +445,15 @@ export function VisualGuideUI() {
               </div>
               
               {/* Header Wireframe */}
-              <div className="flex flex-col gap-2 mb-4">
+              <div className="flex flex-col gap-2 mb-6">
                 <div className="h-6 w-48 rounded bg-slate-200"></div>
                 <div className="h-3 w-72 rounded bg-slate-100"></div>
               </div>
 
-              {/* Hero Banner Grid Layout Mockup */}
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4">
+              {/* Grid 1: Hero and Outcomes */}
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mb-6">
+                {/* hero */}
                 <div className="md:col-span-8 p-4 rounded-xl bg-slate-50 border border-slate-200/60 flex flex-col gap-2 relative overflow-hidden">
-                  {/* Neon indicator for subsection hero */}
                   <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
                     selectedSectionId === 'overview' && selectedSubsectionId === 'hero' 
                       ? 'border-pink-500 bg-pink-500/5 scale-100' 
@@ -462,10 +462,10 @@ export function VisualGuideUI() {
                   <div className="h-4 w-32 rounded bg-slate-200"></div>
                   <div className="h-3 w-56 rounded bg-slate-100"></div>
                   <div className="h-2 w-48 rounded bg-slate-100"></div>
-                  <span className="text-[9px] font-black text-slate-400 mt-2">Hero Block (hero)</span>
+                  <span className="text-[9px] font-black text-slate-400 mt-2 block">Hero Block (hero)</span>
                 </div>
                 
-                {/* Outcomes */}
+                {/* learningOutcomes */}
                 <div className="md:col-span-4 p-4 rounded-xl bg-slate-50 border border-slate-200/60 flex flex-col gap-2 relative">
                   <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
                     selectedSectionId === 'overview' && selectedSubsectionId === 'learningOutcomes' 
@@ -478,12 +478,13 @@ export function VisualGuideUI() {
                     <div className="h-2 w-[90%] rounded bg-slate-100"></div>
                     <div className="h-2 w-[80%] rounded bg-slate-100"></div>
                   </div>
-                  <span className="text-[9px] font-black text-slate-400 mt-2">Outcomes</span>
+                  <span className="text-[9px] font-black text-slate-400 mt-2 block">Learning Outcomes (learningOutcomes)</span>
                 </div>
               </div>
 
-              {/* Progress and Roadmap */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Grid 2: Progress and Roadmap */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                {/* progressSummary */}
                 <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 flex flex-col gap-2 relative">
                   <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
                     selectedSectionId === 'overview' && selectedSubsectionId === 'progressSummary' 
@@ -497,9 +498,10 @@ export function VisualGuideUI() {
                   <div className="h-2 w-full rounded bg-slate-200 overflow-hidden">
                     <div className="h-full w-[45%] bg-pink-500 rounded"></div>
                   </div>
-                  <span className="text-[9px] font-black text-slate-400 mt-1">Progress Block (progressSummary)</span>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Progress Block (progressSummary)</span>
                 </div>
 
+                {/* learningRoadmap */}
                 <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 flex flex-col gap-2 relative">
                   <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
                     selectedSectionId === 'overview' && selectedSubsectionId === 'learningRoadmap' 
@@ -514,9 +516,59 @@ export function VisualGuideUI() {
                     <div className="h-[2px] w-8 bg-slate-200"></div>
                     <div className="w-5 h-5 rounded-full bg-slate-200 shrink-0"></div>
                   </div>
-                  <span className="text-[9px] font-black text-slate-400 mt-1">Roadmap Block (learningRoadmap)</span>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Roadmap Block (learningRoadmap)</span>
                 </div>
               </div>
+
+              {/* Grid 3: Recommended Flow and Readiness */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                {/* recommendedFlow */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 flex flex-col gap-2 relative">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'overview' && selectedSubsectionId === 'recommendedFlow' 
+                      ? 'border-pink-500 bg-pink-500/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-36 rounded bg-slate-200 mb-1"></div>
+                  <div className="flex flex-col gap-1.5">
+                    <div className="h-6 w-full rounded-lg bg-pink-50 border border-pink-100 flex items-center px-2 text-[10px] font-bold text-pink-600">
+                      👉 1. Overview → 2. Notes → 3. Layman Explanation
+                    </div>
+                  </div>
+                  <span className="text-[9px] font-black text-slate-400 mt-2 block">Recommended Flow (recommendedFlow)</span>
+                </div>
+
+                {/* readinessContext */}
+                <div className="p-4 rounded-xl bg-amber-50/50 border border-amber-200 flex gap-2 relative">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'overview' && selectedSubsectionId === 'readinessContext' 
+                      ? 'border-pink-500 bg-pink-500/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="p-1 rounded bg-amber-100 text-amber-600 shrink-0"><AlertTriangle size={14} /></div>
+                  <div className="flex-1 flex flex-col gap-1">
+                    <div className="h-3 w-28 rounded bg-amber-200"></div>
+                    <div className="h-2 w-full rounded bg-amber-100"></div>
+                  </div>
+                  <span className="text-[9px] font-black text-slate-400 absolute right-3 bottom-1">Readiness Context (readinessContext)</span>
+                </div>
+              </div>
+
+              {/* Navigation Links */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative">
+                <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                  selectedSectionId === 'overview' && selectedSubsectionId === 'navigation' 
+                    ? 'border-pink-500 bg-pink-500/5 scale-100' 
+                    : 'border-transparent'
+                }`} />
+                <div className="h-3.5 w-32 rounded bg-slate-200 mb-2"></div>
+                <div className="flex gap-2">
+                  <span className="bg-white border border-slate-200 text-slate-500 text-[9px] font-bold px-2 py-1 rounded">← Previous Subtopic</span>
+                  <span className="bg-white border border-slate-200 text-slate-500 text-[9px] font-bold px-2 py-1 rounded">Next Subtopic →</span>
+                </div>
+                <span className="text-[9px] font-black text-slate-400 mt-2 block">Navigation Links (navigation)</span>
+              </div>
+
             </div>
             )}
 
@@ -547,9 +599,9 @@ export function VisualGuideUI() {
                 <span className="text-[9px] font-black text-slate-400 mt-2 block">Simple Words (simpleWords)</span>
               </div>
 
-              {/* Grid block for Hero and Definition */}
+              {/* Grid block for Memory and Definition */}
               <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4">
-                {/* Definition Block Wireframe (Aesthetic definition block) */}
+                {/* Definition Block Wireframe */}
                 <div className="md:col-span-6 p-4 rounded-xl bg-slate-50 border border-slate-200/60 flex flex-col gap-2 relative">
                   <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
                     selectedSectionId === 'notes' && selectedSubsectionId === 'definitionBlock' 
@@ -590,7 +642,7 @@ export function VisualGuideUI() {
                 }`} />
                 <div className="flex justify-between items-center mb-2">
                   <div className="h-4 w-36 rounded bg-slate-300"></div>
-                  <span className="bg-slate-200 text-[8px] font-mono px-2 py-0.5 rounded uppercase">Python Basic Syntax</span>
+                  <span className="bg-slate-200 text-[8px] font-mono px-2 py-0.5 rounded uppercase">Basic Syntax</span>
                 </div>
                 <div className="h-20 rounded bg-slate-900 p-3 font-mono text-xs text-emerald-400 flex flex-col gap-1">
                   <div><span className="text-pink-400">if</span> condition:</div>
@@ -599,8 +651,56 @@ export function VisualGuideUI() {
                 <span className="text-[9px] font-black text-slate-400 mt-2 block">Syntax Block (syntaxBlock)</span>
               </div>
 
+              {/* Component Grid */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 mb-4 relative">
+                <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                  selectedSectionId === 'notes' && selectedSubsectionId === 'componentGrid' 
+                    ? 'border-orange-500 bg-orange-500/5 scale-100' 
+                    : 'border-transparent'
+                }`} />
+                <div className="h-3.5 w-40 rounded bg-slate-350 mb-3"></div>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="h-12 bg-white rounded border border-slate-200 p-2"><div className="h-2.5 w-12 bg-slate-200 rounded"></div></div>
+                  <div className="h-12 bg-white rounded border border-slate-200 p-2"><div className="h-2.5 w-12 bg-slate-200 rounded"></div></div>
+                  <div className="h-12 bg-white rounded border border-slate-200 p-2"><div className="h-2.5 w-12 bg-slate-200 rounded"></div></div>
+                </div>
+                <span className="text-[9px] font-black text-slate-400 mt-2 block">Component Grid (componentGrid)</span>
+              </div>
+
+              {/* Example Panel & Practice Card Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                {/* examplePanel */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'notes' && selectedSubsectionId === 'examplePanel' 
+                      ? 'border-orange-500 bg-orange-500/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-28 rounded bg-slate-300"></div>
+                  <div className="h-16 rounded bg-slate-100 border border-slate-200 p-2 flex flex-col gap-1.5">
+                    <div className="h-2 w-full bg-slate-250 rounded"></div>
+                    <div className="h-2 w-[70%] bg-slate-200 rounded"></div>
+                  </div>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Example Panel (examplePanel)</span>
+                </div>
+
+                {/* practiceCard */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'notes' && selectedSubsectionId === 'practiceCard' 
+                      ? 'border-orange-500 bg-orange-500/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-28 rounded bg-slate-355"></div>
+                  <div className="h-16 rounded border border-dashed border-slate-300 flex items-center justify-center text-[10px] font-bold text-slate-400">
+                    Interactive Recall Prompt
+                  </div>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Practice Card (practiceCard)</span>
+                </div>
+              </div>
+
               {/* Warning gotchas list */}
-              <div className="p-4 rounded-xl border border-amber-200 bg-amber-50/50 flex gap-3 relative">
+              <div className="p-4 rounded-xl border border-amber-200 bg-amber-50/50 flex gap-3 mb-4 relative">
                 <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
                   selectedSectionId === 'notes' && selectedSubsectionId === 'warningFaq' 
                     ? 'border-orange-500 bg-orange-500/5 scale-100' 
@@ -613,6 +713,35 @@ export function VisualGuideUI() {
                 </div>
                 <span className="text-[9px] font-black text-slate-400 absolute right-3 bottom-1">Warning (warningFaq)</span>
               </div>
+
+              {/* Summary Card */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 mb-4 relative">
+                <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                  selectedSectionId === 'notes' && selectedSubsectionId === 'summaryCard' 
+                    ? 'border-orange-500 bg-orange-500/5 scale-100' 
+                    : 'border-transparent'
+                }`} />
+                <div className="h-3.5 w-32 rounded bg-slate-300 mb-2"></div>
+                <div className="h-14 rounded bg-slate-200 border border-dashed border-slate-300 flex items-center justify-center">
+                  <span className="text-[10px] font-bold text-slate-400">Summary Infographic SVG (summaryCard.image)</span>
+                </div>
+                <span className="text-[9px] font-black text-slate-400 mt-2 block">Summary Card (summaryCard)</span>
+              </div>
+
+              {/* Footer Block */}
+              <div className="p-4 rounded-xl bg-slate-905 border border-slate-800 relative">
+                <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                  selectedSectionId === 'notes' && selectedSubsectionId === 'footerBlock' 
+                    ? 'border-orange-500 bg-orange-500/5 scale-100' 
+                    : 'border-transparent'
+                }`} />
+                <div className="h-3.5 w-40 rounded bg-slate-700 mb-2"></div>
+                <div className="h-10 rounded bg-slate-800 border border-dashed border-slate-700 flex items-center justify-center">
+                  <span className="text-[10px] font-bold text-slate-500">Footer Illustration SVG (footerBlock.image)</span>
+                </div>
+                <span className="text-[9px] font-black text-slate-400 mt-2 block">Footer Block (footerBlock)</span>
+              </div>
+
             </div>
             )}
 
@@ -631,8 +760,22 @@ export function VisualGuideUI() {
                 3. LAYMAN
               </div>
 
+              {/* simpleOverview */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 mb-4 relative">
+                <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                  selectedSectionId === 'layman' && selectedSubsectionId === 'simpleOverview' 
+                    ? 'border-amber-500 bg-amber-500/5 scale-100' 
+                    : 'border-transparent'
+                }`} />
+                <div className="h-4 w-40 rounded bg-slate-350 mb-2"></div>
+                <div className="h-12 bg-white rounded border border-slate-200/65 border-dashed flex items-center justify-center text-[10px] font-bold text-slate-400">
+                  Layman Intro Illustration SVG
+                </div>
+                <span className="text-[9px] font-black text-slate-400 mt-2 block">Simple Overview (simpleOverview)</span>
+              </div>
+
               {/* Analogy block */}
-              <div className="p-5 rounded-2xl border border-slate-200 bg-slate-50 flex flex-col gap-3 relative">
+              <div className="p-5 rounded-2xl border border-slate-200 bg-slate-50 flex flex-col gap-3 mb-4 relative">
                 <div className={`absolute inset-0 border-2 rounded-2xl transition-all ${
                   selectedSectionId === 'layman' && selectedSubsectionId === 'everydayAnalogy' 
                     ? 'border-amber-500 bg-amber-500/5 scale-100' 
@@ -648,12 +791,96 @@ export function VisualGuideUI() {
                     <div className="h-3 w-[95%] rounded bg-slate-100"></div>
                     <div className="h-3 w-[88%] rounded bg-slate-100"></div>
                   </div>
-                  <div className="md:col-span-5 h-20 rounded bg-slate-200 border border-slate-355 flex items-center justify-center">
+                  <div className="md:col-span-5 h-20 rounded bg-slate-200 border border-slate-300 flex items-center justify-center">
                     <span className="text-[10px] font-bold text-slate-400">Analogy SVG diagram</span>
                   </div>
                 </div>
                 <span className="text-[9px] font-black text-slate-400 mt-2 block">Everyday Analogy (everydayAnalogy)</span>
               </div>
+
+              {/* whyItExists & simpleUseCases Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                {/* whyItExists */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'layman' && selectedSubsectionId === 'whyItExists' 
+                      ? 'border-amber-500 bg-amber-500/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-32 rounded bg-slate-300"></div>
+                  <div className="h-10 w-full rounded bg-slate-150 border border-slate-200/60"></div>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Why It Exists (whyItExists)</span>
+                </div>
+
+                {/* simpleUseCases */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'layman' && selectedSubsectionId === 'simpleUseCases' 
+                      ? 'border-amber-500 bg-amber-500/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-32 rounded bg-slate-350"></div>
+                  <div className="h-10 w-full rounded bg-slate-150 border border-slate-200/60"></div>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Simple Use Cases (simpleUseCases)</span>
+                </div>
+              </div>
+
+              {/* beginnerBreakdown */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 mb-4 relative">
+                <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                  selectedSectionId === 'layman' && selectedSubsectionId === 'beginnerBreakdown' 
+                    ? 'border-amber-500 bg-amber-500/5 scale-100' 
+                    : 'border-transparent'
+                }`} />
+                <div className="h-3.5 w-44 rounded bg-slate-300 mb-2"></div>
+                <div className="flex flex-col gap-1.5">
+                  <div className="h-2 w-full bg-slate-200 rounded"></div>
+                  <div className="h-2 w-[90%] bg-slate-200 rounded"></div>
+                </div>
+                <span className="text-[9px] font-black text-slate-400 mt-2 block">Beginner Breakdown (beginnerBreakdown)</span>
+              </div>
+
+              {/* mentalModel */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 mb-4 relative">
+                <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                  selectedSectionId === 'layman' && selectedSubsectionId === 'mentalModel' 
+                    ? 'border-amber-500 bg-amber-500/5 scale-100' 
+                    : 'border-transparent'
+                }`} />
+                <div className="h-3.5 w-48 rounded bg-slate-350 mb-2"></div>
+                <div className="h-20 bg-white rounded border border-dashed border-slate-300 flex items-center justify-center text-[10px] font-bold text-slate-400">
+                  Mental Model Diagram SVG
+                </div>
+                <span className="text-[9px] font-black text-slate-400 mt-2 block">Mental Model Framework (mentalModel)</span>
+              </div>
+
+              {/* commonConfusions & simpleRecap Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative">
+                {/* commonConfusions */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'layman' && selectedSubsectionId === 'commonConfusions' 
+                      ? 'border-amber-500 bg-amber-500/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-32 rounded bg-slate-305 bg-slate-300"></div>
+                  <div className="h-10 bg-slate-200 border border-slate-300 rounded flex items-center px-2 text-[10px] font-bold text-slate-550">Confusion Traps</div>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Common Confusions (commonConfusions)</span>
+                </div>
+
+                {/* simpleRecap */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'layman' && selectedSubsectionId === 'simpleRecap' 
+                      ? 'border-amber-500 bg-amber-500/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-32 rounded bg-slate-350"></div>
+                  <div className="h-10 bg-slate-200 border border-slate-300 rounded flex items-center px-2 text-[10px] font-bold text-slate-550">Layman Summary Card</div>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Simple Recap (simpleRecap)</span>
+                </div>
+              </div>
+
             </div>
             )}
 
@@ -668,8 +895,20 @@ export function VisualGuideUI() {
                   : 'border-slate-200/80 bg-white'
               } ${highlightedElement === 'real_life' ? 'animate-pulse' : ''}`}
             >
-              <div className="absolute top-3 right-3 bg-blue-50 border border-blue-100 text-blue-605 text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-wider">
+              <div className="absolute top-3 right-3 bg-blue-50 border border-blue-100 text-blue-600 text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-wider">
                 4. REAL LIFE
+              </div>
+
+              {/* conceptMapping */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 mb-4 relative">
+                <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                  selectedSectionId === 'real_life' && selectedSubsectionId === 'conceptMapping' 
+                    ? 'border-blue-500 bg-blue-500/5 scale-100' 
+                    : 'border-transparent'
+                }`} />
+                <div className="h-4 w-36 rounded bg-slate-350 mb-2"></div>
+                <div className="h-10 bg-slate-250 border border-slate-200 rounded flex items-center px-2 text-[10px] font-bold text-slate-500">Mapping real software concepts</div>
+                <span className="text-[9px] font-black text-slate-400 mt-2 block">Concept Mapping (conceptMapping)</span>
               </div>
 
               {/* Industry use case banner */}
@@ -689,20 +928,87 @@ export function VisualGuideUI() {
                 <span className="text-[9px] font-black text-slate-400 mt-2 block">Industry Use Case (industryUseCase)</span>
               </div>
 
-              {/* Career relevance */}
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative">
+              {/* dailyLifeExample */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 mb-4 relative">
                 <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
-                  selectedSectionId === 'real_life' && selectedSubsectionId === 'careerRelevance' 
+                  selectedSectionId === 'real_life' && selectedSubsectionId === 'dailyLifeExample' 
                     ? 'border-blue-500 bg-blue-500/5 scale-100' 
                     : 'border-transparent'
                 }`} />
-                <div className="h-3.5 w-32 rounded bg-slate-200 mb-2"></div>
-                <div className="flex gap-2">
-                  <span className="bg-white border border-slate-200 text-slate-600 text-[9px] font-bold px-2.5 py-1 rounded">DevOps Engineer</span>
-                  <span className="bg-white border border-slate-200 text-slate-600 text-[9px] font-bold px-2.5 py-1 rounded">Backend Developer</span>
-                </div>
-                <span className="text-[9px] font-black text-slate-400 mt-2 block">Career Relevance (careerRelevance)</span>
+                <div className="h-4 w-44 rounded bg-slate-350 mb-2"></div>
+                <div className="h-10 bg-slate-200 border border-slate-300 rounded flex items-center px-2 text-[10px] font-bold text-slate-500">Developer day-to-day log simulation</div>
+                <span className="text-[9px] font-black text-slate-400 mt-2 block">Daily Life Example (dailyLifeExample)</span>
               </div>
+
+              {/* careerRelevance & businessApplication Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                {/* careerRelevance */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'real_life' && selectedSubsectionId === 'careerRelevance' 
+                      ? 'border-blue-500 bg-blue-500/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-32 rounded bg-slate-250 mb-2"></div>
+                  <div className="flex gap-2">
+                    <span className="bg-white border border-slate-200 text-slate-650 text-[9px] font-bold px-2 py-1 rounded">Backend</span>
+                    <span className="bg-white border border-slate-200 text-slate-650 text-[9px] font-bold px-2 py-1 rounded">DevOps</span>
+                  </div>
+                  <span className="text-[9px] font-black text-slate-400 mt-2 block">Career Relevance (careerRelevance)</span>
+                </div>
+
+                {/* businessApplication */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'real_life' && selectedSubsectionId === 'businessApplication' 
+                      ? 'border-blue-500 bg-blue-500/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-32 rounded bg-slate-350"></div>
+                  <div className="h-10 bg-slate-200 border border-slate-300 rounded flex items-center px-2 text-[10px] font-bold text-slate-550">ROI / Operations impact SVG</div>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Business Case (businessApplication)</span>
+                </div>
+              </div>
+
+              {/* problemSolutionContext */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 mb-4 relative">
+                <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                  selectedSectionId === 'real_life' && selectedSubsectionId === 'problemSolutionContext' 
+                    ? 'border-blue-500 bg-blue-500/5 scale-100' 
+                    : 'border-transparent'
+                }`} />
+                <div className="h-4 w-44 rounded bg-slate-350 mb-2"></div>
+                <div className="h-10 bg-slate-250 border border-slate-200 rounded flex items-center px-2 text-[10px] font-bold text-slate-500">Operational problems statement</div>
+                <span className="text-[9px] font-black text-slate-400 mt-2 block">Problem & Solution (problemSolutionContext)</span>
+              </div>
+
+              {/* domainScenarios & practicalRecap Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative">
+                {/* domainScenarios */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'real_life' && selectedSubsectionId === 'domainScenarios' 
+                      ? 'border-blue-500 bg-blue-500/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-32 rounded bg-slate-300"></div>
+                  <div className="h-10 bg-slate-200 border border-slate-300 rounded flex items-center px-2 text-[10px] font-bold text-slate-500">Healthcare Scenarios</div>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Domain Scenarios (domainScenarios)</span>
+                </div>
+
+                {/* practicalRecap */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'real_life' && selectedSubsectionId === 'practicalRecap' 
+                      ? 'border-blue-500 bg-blue-500/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-32 rounded bg-slate-350"></div>
+                  <div className="h-10 bg-slate-200 border border-slate-300 rounded flex items-center px-2 text-[10px] font-bold text-slate-550">Practical Recap Timeline SVG</div>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Practical Recap (practicalRecap)</span>
+                </div>
+              </div>
+
             </div>
             )}
 
@@ -721,6 +1027,45 @@ export function VisualGuideUI() {
                 5. TECHNICAL
               </div>
 
+              {/* Title & Badge Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                {/* title */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'technical' && selectedSubsectionId === 'title' 
+                      ? 'border-purple-500 bg-purple-500/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-4.5 w-40 rounded bg-slate-350"></div>
+                  <span className="text-[9px] font-black text-slate-400 mt-2 block">Technical Title (title)</span>
+                </div>
+
+                {/* badge */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'technical' && selectedSubsectionId === 'badge' 
+                      ? 'border-purple-500 bg-purple-500/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="flex gap-2">
+                    <span className="bg-purple-100 text-purple-600 text-[9px] font-bold px-2 py-1 rounded">ADVANCED LEVEL</span>
+                  </div>
+                  <span className="text-[9px] font-black text-slate-400 mt-2 block">Concept Badge (badge)</span>
+                </div>
+              </div>
+
+              {/* intro */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 mb-4 relative">
+                <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                  selectedSectionId === 'technical' && selectedSubsectionId === 'intro' 
+                    ? 'border-purple-500 bg-purple-500/5 scale-100' 
+                    : 'border-transparent'
+                }`} />
+                <div className="h-3 w-full bg-slate-250 rounded"></div>
+                <div className="h-3 w-[90%] bg-slate-200 rounded mt-1.5"></div>
+                <span className="text-[9px] font-black text-slate-400 mt-2 block">Introduction Brief (intro)</span>
+              </div>
+
               {/* Architecture sequence block */}
               <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative">
                 <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
@@ -729,11 +1074,12 @@ export function VisualGuideUI() {
                     : 'border-transparent'
                 }`} />
                 <div className="h-4 w-44 rounded bg-slate-350 mb-3"></div>
-                <div className="h-24 rounded bg-slate-900 border border-slate-800 flex items-center justify-center relative overflow-hidden">
+                <div className="h-28 rounded bg-slate-900 border border-slate-800 flex items-center justify-center relative overflow-hidden">
                   <span className="text-[10px] font-bold text-slate-555">System Architecture SVG (diagramAsset)</span>
                 </div>
                 <span className="text-[9px] font-black text-slate-400 mt-2 block">Technical Sections & Diagrams (sections)</span>
               </div>
+
             </div>
             )}
 
@@ -750,6 +1096,18 @@ export function VisualGuideUI() {
             >
               <div className="absolute top-3 right-3 bg-emerald-50 border border-emerald-100 text-emerald-600 text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-wider">
                 6. CODE
+              </div>
+
+              {/* problemContext */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 mb-4 relative">
+                <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                  selectedSectionId === 'code' && selectedSubsectionId === 'problemContext' 
+                    ? 'border-emerald-500 bg-emerald-500/5 scale-100' 
+                    : 'border-transparent'
+                }`} />
+                <div className="h-4 w-44 rounded bg-slate-350 mb-2"></div>
+                <div className="h-10 bg-slate-200 border border-slate-300 rounded flex items-center px-2 text-[10px] font-bold text-slate-550">Problem statement and code design constraints</div>
+                <span className="text-[9px] font-black text-slate-400 mt-2 block">Problem Context (problemContext)</span>
               </div>
 
               {/* Editor mockup */}
@@ -770,8 +1128,20 @@ export function VisualGuideUI() {
                 <span className="text-[9px] font-black text-slate-400 absolute right-3 bottom-1">Code block (basicCodeExample)</span>
               </div>
 
+              {/* lineByLineExplanation */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 mb-4 relative">
+                <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                  selectedSectionId === 'code' && selectedSubsectionId === 'lineByLineExplanation' 
+                    ? 'border-emerald-500 bg-emerald-500/5 scale-100' 
+                    : 'border-transparent'
+                }`} />
+                <div className="h-4 w-48 rounded bg-slate-350 mb-2"></div>
+                <div className="h-10 bg-slate-200 border border-slate-300 rounded flex items-center px-2 text-[10px] font-bold text-slate-550">Line breakdown table showing key execution flows</div>
+                <span className="text-[9px] font-black text-slate-400 mt-2 block">Line Breakdown (lineByLineExplanation)</span>
+              </div>
+
               {/* Output Preview */}
-              <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 relative">
+              <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 mb-4 relative">
                 <div className={`absolute inset-0 border-2 rounded-xl transition-all z-20 ${
                   selectedSectionId === 'code' && selectedSubsectionId === 'outputDemonstration' 
                     ? 'border-emerald-500 bg-emerald-500/5 scale-100' 
@@ -781,11 +1151,66 @@ export function VisualGuideUI() {
                   <Terminal size={14} className="text-slate-400" />
                   <span className="text-[9px] font-mono text-slate-400">Terminal Output</span>
                 </div>
-                <div className="h-10 bg-slate-900 rounded p-2 font-mono text-xs text-slate-400">
+                <div className="h-10 bg-slate-950 rounded p-2 font-mono text-xs text-slate-400">
                   &gt; 5
                 </div>
                 <span className="text-[9px] font-black text-slate-400 absolute right-3 bottom-1">Console (outputDemonstration)</span>
               </div>
+
+              {/* bestPracticeVersion & commonMistakes Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                {/* bestPracticeVersion */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'code' && selectedSubsectionId === 'bestPracticeVersion' 
+                      ? 'border-emerald-500 bg-emerald-500/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-32 rounded bg-slate-300"></div>
+                  <div className="h-10 bg-emerald-50 border border-emerald-200 rounded flex items-center px-2 text-[10px] font-bold text-emerald-700">Clean caching/DRY pattern</div>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Best Practices (bestPracticeVersion)</span>
+                </div>
+
+                {/* commonMistakes */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'code' && selectedSubsectionId === 'commonMistakes' 
+                      ? 'border-emerald-500 bg-emerald-500/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-32 rounded bg-slate-350"></div>
+                  <div className="h-10 bg-rose-50 border border-rose-200 rounded flex items-center px-2 text-[10px] font-bold text-rose-700">Buggy vs Corrected comparison</div>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Common Mistakes (commonMistakes)</span>
+                </div>
+              </div>
+
+              {/* realWorldImplementation & codeSummary Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative">
+                {/* realWorldImplementation */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'code' && selectedSubsectionId === 'realWorldImplementation' 
+                      ? 'border-emerald-500 bg-emerald-500/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-32 rounded bg-slate-300"></div>
+                  <div className="h-10 bg-slate-200 border border-slate-300 rounded flex items-center px-2 text-[10px] font-bold text-slate-550">Production config files</div>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Real World Block (realWorldImplementation)</span>
+                </div>
+
+                {/* codeSummary */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'code' && selectedSubsectionId === 'codeSummary' 
+                      ? 'border-emerald-500 bg-emerald-500/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-32 rounded bg-slate-350"></div>
+                  <div className="h-10 bg-slate-200 border border-slate-300 rounded flex items-center px-2 text-[10px] font-bold text-slate-550">Code Checklist summary</div>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Code Summary (codeSummary)</span>
+                </div>
+              </div>
+
             </div>
             )}
 
@@ -804,19 +1229,113 @@ export function VisualGuideUI() {
                 7. SYSTEM DIAGRAM
               </div>
 
+              {/* conceptVisualIntro */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 mb-4 relative">
+                <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                  selectedSectionId === 'visual' && selectedSubsectionId === 'conceptVisualIntro' 
+                    ? 'border-teal-500 bg-teal-500/5 scale-100' 
+                    : 'border-transparent'
+                }`} />
+                <div className="h-4 w-44 rounded bg-slate-355 mb-2"></div>
+                <div className="h-2 bg-slate-200 w-full rounded"></div>
+                <span className="text-[9px] font-black text-slate-400 mt-2 block">Visual Intro (conceptVisualIntro)</span>
+              </div>
+
               {/* Diagrammatic breakdown */}
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative">
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 mb-4 relative">
                 <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
                   selectedSectionId === 'visual' && selectedSubsectionId === 'diagrammaticBreakdown' 
                     ? 'border-teal-500 bg-teal-500/5 scale-100' 
                     : 'border-transparent'
                 }`} />
                 <div className="h-4 w-48 rounded bg-slate-350 mb-3"></div>
-                <div className="h-28 rounded bg-slate-200 border border-slate-350 flex items-center justify-center">
+                <div className="h-28 rounded bg-slate-200 border border-slate-300 flex items-center justify-center">
                   <span className="text-[10px] font-bold text-slate-400">Full Concept Visualization SVG (image)</span>
                 </div>
                 <span className="text-[9px] font-black text-slate-400 mt-2 block">Ecosystem Diagram (diagrammaticBreakdown)</span>
               </div>
+
+              {/* stepByStepVisualFlow & comparativeVisualization Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                {/* stepByStepVisualFlow */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'visual' && selectedSubsectionId === 'stepByStepVisualFlow' 
+                      ? 'border-teal-500 bg-teal-500/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-32 rounded bg-slate-300"></div>
+                  <div className="h-16 bg-slate-200 border border-dashed border-slate-300 rounded flex items-center justify-center text-[9px] text-slate-450 font-bold">Step Flowchart SVG</div>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Process Flow (stepByStepVisualFlow)</span>
+                </div>
+
+                {/* comparativeVisualization */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'visual' && selectedSubsectionId === 'comparativeVisualization' 
+                      ? 'border-teal-500 bg-teal-500/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-32 rounded bg-slate-350"></div>
+                  <div className="h-16 bg-slate-200 border border-dashed border-slate-300 rounded flex items-center justify-center text-[9px] text-slate-450 font-bold">Comparison Matrix SVG</div>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Comparison Matrix (comparativeVisualization)</span>
+                </div>
+              </div>
+
+              {/* mentalModelVisualization & realWorldVisualMapping Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                {/* mentalModelVisualization */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'visual' && selectedSubsectionId === 'mentalModelVisualization' 
+                      ? 'border-teal-500 bg-teal-500/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-32 rounded bg-slate-300"></div>
+                  <div className="h-16 bg-slate-200 border border-dashed border-slate-300 rounded flex items-center justify-center text-[9px] text-slate-450 font-bold">Layman translation graph SVG</div>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Mental Model (mentalModelVisualization)</span>
+                </div>
+
+                {/* realWorldVisualMapping */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'visual' && selectedSubsectionId === 'realWorldVisualMapping' 
+                      ? 'border-teal-500 bg-teal-500/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-32 rounded bg-slate-350"></div>
+                  <div className="h-16 bg-slate-200 border border-dashed border-slate-300 rounded flex items-center justify-center text-[9px] text-slate-450 font-bold">Pipeline deployment SVG</div>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Deployment Map (realWorldVisualMapping)</span>
+                </div>
+              </div>
+
+              {/* commonConfusionVisualization & visualSummary Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative">
+                {/* commonConfusionVisualization */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'visual' && selectedSubsectionId === 'commonConfusionVisualization' 
+                      ? 'border-teal-500 bg-teal-500/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-32 rounded bg-slate-300"></div>
+                  <div className="h-16 bg-slate-200 border border-dashed border-slate-300 rounded flex items-center justify-center text-[9px] text-slate-450 font-bold">State lifecycle graph SVG</div>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Confusion Graph (commonConfusionVisualization)</span>
+                </div>
+
+                {/* visualSummary */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'visual' && selectedSubsectionId === 'visualSummary' 
+                      ? 'border-teal-500 bg-teal-500/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-32 rounded bg-slate-350"></div>
+                  <div className="h-16 bg-slate-200 border border-dashed border-slate-300 rounded flex items-center justify-center text-[9px] text-slate-450 font-bold">Rapid revision infographic SVG</div>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Visual Summary (visualSummary)</span>
+                </div>
+              </div>
+
             </div>
             )}
 
@@ -835,14 +1354,26 @@ export function VisualGuideUI() {
                 8. PRACTICE
               </div>
 
+              {/* assessmentIntro */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 mb-4 relative">
+                <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                  selectedSectionId === 'practice' && selectedSubsectionId === 'assessmentIntro' 
+                    ? 'border-violet-500 bg-violet-500/5 scale-100' 
+                    : 'border-transparent'
+                }`} />
+                <div className="h-4 w-44 rounded bg-slate-350 mb-2"></div>
+                <div className="h-10 bg-slate-200 border border-slate-300 rounded flex items-center px-2 text-[10px] font-bold text-slate-500">Practice motivation title dashboard</div>
+                <span className="text-[9px] font-black text-slate-400 mt-2 block">Assessment Intro (assessmentIntro)</span>
+              </div>
+
               {/* Concept recall questions */}
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative">
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 mb-4 relative">
                 <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
                   selectedSectionId === 'practice' && selectedSubsectionId === 'conceptRecallQuestions' 
                     ? 'border-violet-500 bg-violet-500/5 scale-100' 
                     : 'border-transparent'
                 }`} />
-                <div className="h-3 w-56 rounded bg-slate-355 mb-3"></div>
+                <div className="h-3 w-56 rounded bg-slate-350 mb-3"></div>
                 <div className="space-y-2">
                   <div className="h-8 w-full rounded border border-slate-200 bg-white p-2.5 text-xs font-bold text-slate-500 hover:border-violet-300 cursor-pointer flex items-center gap-2">
                     <div className="w-3.5 h-3.5 rounded-full border border-slate-300"></div> Option A
@@ -851,8 +1382,36 @@ export function VisualGuideUI() {
                     <div className="w-3.5 h-3.5 rounded-full border border-violet-400 bg-violet-400 flex items-center justify-center"><CheckCircle2 size={10} className="text-white" /></div> Correct Option B
                   </div>
                 </div>
-                <span className="text-[9px] font-black text-slate-400 mt-2 block">Practice Quiz (conceptRecallQuestions)</span>
+                <span className="text-[9px] font-black text-slate-400 mt-2 block">Recall Questions (conceptRecallQuestions)</span>
               </div>
+
+              {/* scenarioBasedQuestions & instantFeedback Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative">
+                {/* scenarioBasedQuestions */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'practice' && selectedSubsectionId === 'scenarioBasedQuestions' 
+                      ? 'border-violet-500 bg-violet-500/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-32 rounded bg-slate-300"></div>
+                  <div className="h-10 bg-slate-200 border border-slate-300 rounded flex items-center px-2 text-[10px] font-bold text-slate-500">Developer scenario-based questions</div>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Scenario Questions (scenarioBasedQuestions)</span>
+                </div>
+
+                {/* instantFeedback */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'practice' && selectedSubsectionId === 'instantFeedback' 
+                      ? 'border-violet-500 bg-violet-500/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-32 rounded bg-slate-350"></div>
+                  <div className="h-10 bg-slate-200 border border-slate-300 rounded flex items-center px-2 text-[10px] font-bold text-slate-550">Readiness advice recommendation dashboard SVG</div>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Feedback Config (instantFeedback)</span>
+                </div>
+              </div>
+
             </div>
             )}
 
@@ -871,8 +1430,8 @@ export function VisualGuideUI() {
                 9. ASSIGNMENT
               </div>
 
-              {/* Assignment spec */}
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative">
+              {/* Assignment title spec */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 mb-4 relative">
                 <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
                   selectedSectionId === 'assignment' && selectedSubsectionId === 'title' 
                     ? 'border-rose-500 bg-rose-500/5 scale-100' 
@@ -885,6 +1444,87 @@ export function VisualGuideUI() {
                 <div className="h-3 w-full rounded bg-slate-200"></div>
                 <span className="text-[9px] font-black text-slate-400 mt-2 block">Assignment Dashboard (title)</span>
               </div>
+
+              {/* description & duration Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                {/* description */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'assignment' && selectedSubsectionId === 'description' 
+                      ? 'border-rose-500 bg-rose-500/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-32 rounded bg-slate-300"></div>
+                  <div className="h-10 bg-slate-200 border border-slate-300 rounded flex items-center px-2 text-[10px] font-bold text-slate-500">Problem context details</div>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Description (description)</span>
+                </div>
+
+                {/* duration */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'assignment' && selectedSubsectionId === 'duration' 
+                      ? 'border-rose-500 bg-rose-500/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-32 rounded bg-slate-350"></div>
+                  <div className="h-10 bg-slate-200 border border-slate-300 rounded flex items-center px-2 text-[10px] font-bold text-slate-550">Estimated hours specification</div>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Duration Spec (duration)</span>
+                </div>
+              </div>
+
+              {/* task */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 mb-4 relative">
+                <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                  selectedSectionId === 'assignment' && selectedSubsectionId === 'task' 
+                    ? 'border-rose-500 bg-rose-500/5 scale-100' 
+                    : 'border-transparent'
+                }`} />
+                <div className="h-4 w-44 rounded bg-slate-350 mb-2"></div>
+                <div className="h-16 bg-slate-200 border border-dashed border-slate-300 rounded flex items-center justify-center text-[10px] font-bold text-slate-400">
+                  Task flow SVG infographic
+                </div>
+                <span className="text-[9px] font-black text-slate-400 mt-2 block">Task Steps (task)</span>
+              </div>
+
+              {/* objectives & starterCode Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                {/* objectives */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'assignment' && selectedSubsectionId === 'objectives' 
+                      ? 'border-rose-500 bg-rose-500/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-32 rounded bg-slate-300"></div>
+                  <div className="h-10 bg-slate-200 border border-slate-300 rounded flex items-center px-2 text-[10px] font-bold text-slate-500">Milestone checklists</div>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Objectives (objectives)</span>
+                </div>
+
+                {/* starterCode */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'assignment' && selectedSubsectionId === 'starterCode' 
+                      ? 'border-rose-500 bg-rose-500/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-32 rounded bg-slate-350"></div>
+                  <div className="h-10 bg-slate-200 border border-slate-300 rounded flex items-center px-2 text-[10px] font-bold text-slate-550">Template starting code block</div>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Starter Code (starterCode)</span>
+                </div>
+              </div>
+
+              {/* submissionGuidelines */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative">
+                <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                  selectedSectionId === 'assignment' && selectedSubsectionId === 'submissionGuidelines' 
+                    ? 'border-rose-500 bg-rose-500/5 scale-100' 
+                    : 'border-transparent'
+                }`} />
+                <div className="h-3.5 w-44 rounded bg-slate-350 mb-2"></div>
+                <div className="h-10 bg-slate-250 border border-slate-200 rounded flex items-center px-2 text-[10px] font-bold text-slate-500">Submission steps and test checks</div>
+                <span className="text-[9px] font-black text-slate-400 mt-2 block">Submission Rules (submissionGuidelines)</span>
+              </div>
+
             </div>
             )}
 
@@ -903,8 +1543,8 @@ export function VisualGuideUI() {
                 10. PROJECT
               </div>
 
-              {/* Project spec */}
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative">
+              {/* Project title spec */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 mb-4 relative">
                 <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
                   selectedSectionId === 'project' && selectedSubsectionId === 'title' 
                     ? 'border-indigo-500 bg-indigo-500/5 scale-100' 
@@ -916,6 +1556,46 @@ export function VisualGuideUI() {
                 </div>
                 <span className="text-[9px] font-black text-slate-400 mt-2 block">Project Dashboard (title)</span>
               </div>
+
+              {/* description */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 mb-4 relative">
+                <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                  selectedSectionId === 'project' && selectedSubsectionId === 'description' 
+                    ? 'border-indigo-500 bg-indigo-500/5 scale-100' 
+                    : 'border-transparent'
+                }`} />
+                <div className="h-3.5 w-32 rounded bg-slate-300 mb-2"></div>
+                <div className="h-10 bg-slate-200 border border-slate-300 rounded flex items-center px-2 text-[10px] font-bold text-slate-500">Capstone complete spec details</div>
+                <span className="text-[9px] font-black text-slate-400 mt-2 block">Description (description)</span>
+              </div>
+
+              {/* buildItems & deliverables Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative">
+                {/* buildItems */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'project' && selectedSubsectionId === 'buildItems' 
+                      ? 'border-indigo-500 bg-indigo-500/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-32 rounded bg-slate-300"></div>
+                  <div className="h-16 bg-slate-200 border border-dashed border-slate-300 rounded flex items-center justify-center text-[9px] text-slate-450 font-bold">Phased roadmap SVG diagram</div>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Build Phases (buildItems)</span>
+                </div>
+
+                {/* deliverables */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'project' && selectedSubsectionId === 'deliverables' 
+                      ? 'border-indigo-500 bg-indigo-500/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-32 rounded bg-slate-355"></div>
+                  <div className="h-16 bg-slate-200 border border-dashed border-slate-300 rounded flex items-center justify-center text-[9px] text-slate-450 font-bold">System layers blueprint SVG</div>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Deliverables List (deliverables)</span>
+                </div>
+              </div>
+
             </div>
             )}
 
@@ -934,8 +1614,46 @@ export function VisualGuideUI() {
                 11. INTERVIEW PREP
               </div>
 
+              {/* Title & Description Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                {/* title */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'interview' && selectedSubsectionId === 'title' 
+                      ? 'border-pink-600 bg-pink-600/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-4.5 w-40 rounded bg-slate-350"></div>
+                  <span className="text-[9px] font-black text-slate-400 mt-2 block">Interview Prep Hero (title)</span>
+                </div>
+
+                {/* description */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'interview' && selectedSubsectionId === 'description' 
+                      ? 'border-pink-600 bg-pink-600/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-32 rounded bg-slate-300"></div>
+                  <div className="h-10 bg-slate-200 border border-slate-300 rounded flex items-center px-2 text-[10px] font-bold text-slate-500">Job seeker targeting context</div>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Description (description)</span>
+                </div>
+              </div>
+
+              {/* interviewIntroCard */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 mb-4 relative">
+                <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                  selectedSectionId === 'interview' && selectedSubsectionId === 'interviewIntroCard' 
+                    ? 'border-pink-600 bg-pink-600/5 scale-100' 
+                    : 'border-transparent'
+                }`} />
+                <div className="h-4 w-44 rounded bg-slate-350 mb-2"></div>
+                <div className="h-10 bg-slate-250 border border-slate-200 rounded flex items-center px-2 text-[10px] font-bold text-slate-500">Common questions types and tips</div>
+                <span className="text-[9px] font-black text-slate-400 mt-2 block">Interview Intro (interviewIntroCard)</span>
+              </div>
+
               {/* Question Bank */}
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative">
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 mb-4 relative">
                 <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
                   selectedSectionId === 'interview' && selectedSubsectionId === 'questionBankPanel' 
                     ? 'border-pink-600 bg-pink-600/5 scale-100' 
@@ -948,6 +1666,34 @@ export function VisualGuideUI() {
                 </div>
                 <span className="text-[9px] font-black text-slate-400 mt-2 block">Q&A Bank (questionBankPanel)</span>
               </div>
+
+              {/* answerFrameworkCard & mockInterviewFlow Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative">
+                {/* answerFrameworkCard */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'interview' && selectedSubsectionId === 'answerFrameworkCard' 
+                      ? 'border-pink-600 bg-pink-600/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-32 rounded bg-slate-300"></div>
+                  <div className="h-10 bg-slate-200 border border-slate-300 rounded flex items-center px-2 text-[10px] font-bold text-slate-500">Perfect STAR answer structure</div>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Answer Framework (answerFrameworkCard)</span>
+                </div>
+
+                {/* mockInterviewFlow */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'interview' && selectedSubsectionId === 'mockInterviewFlow' 
+                      ? 'border-pink-600 bg-pink-600/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-32 rounded bg-slate-350"></div>
+                  <div className="h-10 bg-slate-200 border border-slate-300 rounded flex items-center px-2 text-[10px] font-bold text-slate-550">Dialogue conversation bubbles</div>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Mock Interview Flow (mockInterviewFlow)</span>
+                </div>
+              </div>
+
             </div>
             )}
 
