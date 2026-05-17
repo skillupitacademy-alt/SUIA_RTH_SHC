@@ -23,6 +23,7 @@ interface AddSectionResponse {
   error?: string;
   details?: string;
   url?: string;
+  message?: string;
 }
 
 interface InlineSvgAsset {
@@ -49,6 +50,140 @@ const initialSectionStatus = sections.reduce((status, section) => ({
   ...status,
   [section.id]: false,
 }), {} as SectionStatus);
+
+const SUBSECTIONS_MAP: Record<string, Array<{ id: string; label: string; type: 'json' | 'svg' }>> = {
+  notes: [
+    { id: 'simpleWords', label: 'Simple Words (Text)', type: 'json' },
+    { id: 'definitionBlock', label: 'Definition Block (JSON)', type: 'json' },
+    { id: 'sections', label: 'Detailed Sections List (JSON)', type: 'json' },
+    { id: 'syntaxBlock', label: 'Syntax Block (JSON)', type: 'json' },
+    { id: 'componentGrid', label: 'Component Grid (JSON)', type: 'json' },
+    { id: 'examplePanel', label: 'Example Panel (JSON)', type: 'json' },
+    { id: 'practiceCard', label: 'Practice Card (JSON)', type: 'json' },
+    { id: 'warningFaq', label: 'Warning FAQ (JSON)', type: 'json' },
+    { id: 'summaryCard', label: 'Summary Card (JSON)', type: 'json' },
+    { id: 'footerBlock', label: 'Footer Block (JSON)', type: 'json' },
+    { id: 'summaryHeroSvg', label: 'Summary Hero (SVG)', type: 'svg' },
+    { id: 'conceptMemoryMapSvg', label: 'Concept Memory Map (SVG)', type: 'svg' },
+    { id: 'cheatSheetSVG', label: 'Cheat Sheet (SVG)', type: 'svg' },
+  ],
+  layman: [
+    { id: 'simpleOverview', label: 'Simple Overview (JSON)', type: 'json' },
+    { id: 'everydayAnalogy', label: 'Everyday Analogy (JSON)', type: 'json' },
+    { id: 'whyItExists', label: 'Why It Exists (JSON)', type: 'json' },
+    { id: 'simpleUseCases', label: 'Simple Use Cases (JSON)', type: 'json' },
+    { id: 'beginnerBreakdown', label: 'Beginner Breakdown (JSON)', type: 'json' },
+    { id: 'mentalModel', label: 'Mental Model framework (JSON)', type: 'json' },
+    { id: 'commonConfusions', label: 'Common Confusions (JSON)', type: 'json' },
+    { id: 'simpleRecap', label: 'Simple Recap (JSON)', type: 'json' },
+    { id: 'heroVisualSvg', label: 'Hero Visual (SVG)', type: 'svg' },
+    { id: 'analogySvg', label: 'Analogy Graphic (SVG)', type: 'svg' },
+    { id: 'mentalModelSvg', label: 'Mental Model diagram (SVG)', type: 'svg' },
+  ],
+  overview: [
+    { id: 'hero', label: 'Hero Block (JSON)', type: 'json' },
+    { id: 'progressSummary', label: 'Progress Summary (JSON)', type: 'json' },
+    { id: 'learningOutcomes', label: 'Learning Outcomes (JSON)', type: 'json' },
+    { id: 'learningRoadmap', label: 'Learning Roadmap (JSON)', type: 'json' },
+    { id: 'recommendedFlow', label: 'Recommended Flow (JSON)', type: 'json' },
+    { id: 'readinessContext', label: 'Readiness Context (JSON)', type: 'json' },
+    { id: 'navigation', label: 'Navigation Links (JSON)', type: 'json' },
+  ],
+  real_life: [
+    { id: 'conceptMapping', label: 'Concept Mapping (JSON)', type: 'json' },
+    { id: 'industryUseCase', label: 'Industry Use Case (JSON)', type: 'json' },
+    { id: 'dailyLifeExample', label: 'Daily Life Example (JSON)', type: 'json' },
+    { id: 'careerRelevance', label: 'Career Relevance (JSON)', type: 'json' },
+    { id: 'problemSolutionContext', label: 'Problem & Solution (JSON)', type: 'json' },
+    { id: 'businessApplication', label: 'Business Application (JSON)', type: 'json' },
+    { id: 'domainScenarios', label: 'Domain Scenarios (JSON)', type: 'json' },
+    { id: 'practicalRecap', label: 'Practical Recap (JSON)', type: 'json' },
+  ],
+  technical: [
+    { id: 'title', label: 'Title (Text)', type: 'json' },
+    { id: 'badge', label: 'Badge (Text)', type: 'json' },
+    { id: 'intro', label: 'Introduction (Text)', type: 'json' },
+    { id: 'sections', label: 'Technical Sections (JSON)', type: 'json' },
+  ],
+  code: [
+    { id: 'problemContext', label: 'Problem Context (JSON)', type: 'json' },
+    { id: 'basicCodeExample', label: 'Basic Code Example (JSON)', type: 'json' },
+    { id: 'lineByLineExplanation', label: 'Line-by-Line Explanation (JSON)', type: 'json' },
+    { id: 'outputDemonstration', label: 'Output Demonstration (JSON)', type: 'json' },
+    { id: 'bestPracticeVersion', label: 'Best Practice Version (JSON)', type: 'json' },
+    { id: 'commonMistakes', label: 'Common Mistakes (JSON)', type: 'json' },
+    { id: 'realWorldImplementation', label: 'Real World Implementation (JSON)', type: 'json' },
+    { id: 'codeSummary', label: 'Code Summary (JSON)', type: 'json' },
+  ],
+  visual: [
+    { id: 'conceptVisualIntro', label: 'Concept Visual Intro (JSON)', type: 'json' },
+    { id: 'diagrammaticBreakdown', label: 'Diagrammatic Breakdown (JSON)', type: 'json' },
+    { id: 'stepByStepVisualFlow', label: 'Step-by-Step Flow (JSON)', type: 'json' },
+    { id: 'comparativeVisualization', label: 'Comparative Visualization (JSON)', type: 'json' },
+    { id: 'mentalModelVisualization', label: 'Mental Model Visualization (JSON)', type: 'json' },
+    { id: 'realWorldVisualMapping', label: 'Real World Visual Mapping (JSON)', type: 'json' },
+    { id: 'commonConfusionVisualization', label: 'Common Confusion Visual (JSON)', type: 'json' },
+    { id: 'visualSummary', label: 'Visual Summary (JSON)', type: 'json' },
+  ],
+  practice: [
+    { id: 'assessmentIntro', label: 'Assessment Intro (JSON)', type: 'json' },
+    { id: 'conceptRecallQuestions', label: 'Concept Recall Questions (JSON)', type: 'json' },
+    { id: 'scenarioBasedQuestions', label: 'Scenario Based Questions (JSON)', type: 'json' },
+    { id: 'instantFeedback', label: 'Instant Feedback Config (JSON)', type: 'json' },
+  ],
+  assignment: [
+    { id: 'title', label: 'Title (Text)', type: 'json' },
+    { id: 'description', label: 'Description (Text)', type: 'json' },
+    { id: 'xp', label: 'XP Reward (Number)', type: 'json' },
+    { id: 'duration', label: 'Duration (Text)', type: 'json' },
+    { id: 'task', label: 'Task Instructions (JSON)', type: 'json' },
+    { id: 'objectives', label: 'Learning Objectives (JSON)', type: 'json' },
+    { id: 'starterCode', label: 'Starter Code (Text)', type: 'json' },
+    { id: 'submissionGuidelines', label: 'Submission Guidelines (JSON)', type: 'json' },
+  ],
+  project: [
+    { id: 'title', label: 'Title (Text)', type: 'json' },
+    { id: 'description', label: 'Description (Text)', type: 'json' },
+    { id: 'xp', label: 'XP Reward (Number)', type: 'json' },
+    { id: 'deadline', label: 'Deadline (Text)', type: 'json' },
+    { id: 'hero', label: 'Hero Config (JSON)', type: 'json' },
+    { id: 'realWorldUse', label: 'Real World Use (Text)', type: 'json' },
+    { id: 'skills', label: 'Skills Addressed (JSON)', type: 'json' },
+    { id: 'buildItems', label: 'Build Phases (JSON)', type: 'json' },
+    { id: 'deliverables', label: 'Deliverables List (JSON)', type: 'json' },
+  ],
+  quiz: [
+    { id: 'title', label: 'Title (Text)', type: 'json' },
+    { id: 'description', label: 'Description (Text)', type: 'json' },
+    { id: 'totalQuestions', label: 'Total Questions Count (Number)', type: 'json' },
+    { id: 'duration', label: 'Time Limit (Text)', type: 'json' },
+    { id: 'xp', label: 'XP Reward (Number)', type: 'json' },
+    { id: 'questions', label: 'Questions Pool (JSON)', type: 'json' },
+  ],
+  summary: [
+    { id: 'title', label: 'Title (Text)', type: 'json' },
+    { id: 'description', label: 'Description (Text)', type: 'json' },
+    { id: 'masteryRecapCard', label: 'Mastery Recap Card (JSON)', type: 'json' },
+    { id: 'keyTakeawayGrid', label: 'Key Takeaway Grid (JSON)', type: 'json' },
+    { id: 'revisionChecklist', label: 'Revision Checklist (JSON)', type: 'json' },
+    { id: 'nextStepPanel', label: 'Next Step Panel (JSON)', type: 'json' },
+  ],
+  interview: [
+    { id: 'title', label: 'Title (Text)', type: 'json' },
+    { id: 'description', label: 'Description (Text)', type: 'json' },
+    { id: 'interviewIntroCard', label: 'Interview Intro Card (JSON)', type: 'json' },
+    { id: 'questionBankPanel', label: 'Question Bank Panel (JSON)', type: 'json' },
+    { id: 'answerFrameworkCard', label: 'Answer Framework Card (JSON)', type: 'json' },
+    { id: 'mockInterviewFlow', label: 'Mock Interview Flow (JSON)', type: 'json' },
+  ],
+  ai_tutor: [
+    { id: 'greeting', label: 'Greeting (Text)', type: 'json' },
+    { id: 'qa_pairs', label: 'Q&A Pairs (JSON)', type: 'json' },
+    { id: 'tutor_prompt_card', label: 'Tutor Prompt Card (JSON)', type: 'json' },
+    { id: 'misconception_detector', label: 'Misconception Detector (JSON)', type: 'json' },
+    { id: 'adaptive_hint_panel', label: 'Adaptive Hint Panel (JSON)', type: 'json' },
+  ],
+};
 
 function setNestedJsonValue(target: Record<string, unknown>, path: string, value: unknown) {
   const parts = path.split('.').map((part) => part.trim()).filter(Boolean);
@@ -163,6 +298,8 @@ function ContentManagerContent() {
   });
   const [isSubtopicCreated, setIsSubtopicCreated] = useState(false);
   const [selectedSection, setSelectedSection] = useState<SectionType>('notes');
+  const [selectedSubsection, setSelectedSubsection] = useState<string>('');
+  const [isFetchingSubsection, setIsFetchingSubsection] = useState(false);
   const [jsonInput, setJsonInput] = useState('');
   const [sectionStatus, setSectionStatus] = useState<SectionStatus>(initialSectionStatus);
   const [message, setMessage] = useState('');
@@ -208,6 +345,102 @@ function ContentManagerContent() {
 
     setIsSubtopicCreated(true);
     showMessage('Subtopic ready. Add content one section at a time.', 'success');
+  };
+
+  const loadSubtopic = async () => {
+    if (!subtopicInfo.subtopicId.trim()) {
+      showMessage('Please enter a Subtopic ID to load', 'error');
+      return;
+    }
+
+    try {
+      setIsFetchingSubsection(true);
+      const response = await fetch(`/api/content-manager/add-section?subtopicId=${subtopicInfo.subtopicId.trim()}&section=${selectedSection}`);
+      const result = await response.json();
+
+      if (!response.ok) {
+        showMessage(result.error || 'Subtopic not found', 'error');
+        return;
+      }
+
+      if (result.subtopicInfo) {
+        setSubtopicInfo(result.subtopicInfo);
+        setIsSubtopicCreated(true);
+        showMessage('Existing subtopic loaded successfully!', 'success');
+      } else {
+        setIsSubtopicCreated(true);
+        showMessage('Subtopic metadata active. Pasting content allowed.', 'success');
+      }
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      showMessage(`Failed to load subtopic: ${errorMessage}`, 'error');
+    } finally {
+      setIsFetchingSubsection(false);
+    }
+  };
+
+  const fetchSubsection = async () => {
+    if (!subtopicInfo.subtopicId.trim()) {
+      showMessage('Please enter a Subtopic ID first.', 'error');
+      return;
+    }
+
+    try {
+      setIsFetchingSubsection(true);
+      const url = `/api/content-manager/add-section?subtopicId=${subtopicInfo.subtopicId.trim()}&section=${selectedSection}${
+        selectedSubsection ? `&subsection=${selectedSubsection}` : ''
+      }`;
+      const response = await fetch(url);
+      const result = await response.json();
+
+      if (!response.ok) {
+        showMessage(result.error || 'Failed to fetch content from database', 'error');
+        return;
+      }
+
+      if (result.content === null) {
+        setJsonInput('');
+        showMessage(result.message || 'No existing content found for this selection in database.', 'info');
+        return;
+      }
+
+      const contentVal = result.content;
+
+      if (selectedSubsection) {
+        const subSecConfig = SUBSECTIONS_MAP[selectedSection]?.find((s) => s.id === selectedSubsection);
+        if (subSecConfig?.type === 'svg') {
+          // It's an InlineSvgAsset! Automatically decode base64 back into SVG markup for seamless editing!
+          if (contentVal && typeof contentVal === 'object' && contentVal.dataUri) {
+            const dataUri: string = contentVal.dataUri;
+            if (dataUri.startsWith('data:image/svg+xml;base64,')) {
+              const base64Str = dataUri.substring('data:image/svg+xml;base64,'.length);
+              try {
+                const decoded = atob(base64Str);
+                setJsonInput(decoded);
+                showMessage(`Loaded and decoded SVG '${selectedSubsection}' successfully.`, 'success');
+                return;
+              } catch {
+                // Keep dataUri
+              }
+            }
+          }
+        }
+      }
+
+      // Default stringifying
+      if (typeof contentVal === 'object' && contentVal !== null) {
+        setJsonInput(JSON.stringify(contentVal, null, 2));
+      } else {
+        setJsonInput(String(contentVal));
+      }
+
+      showMessage(`Loaded current content from database successfully.`, 'success');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      showMessage(`Failed to load content: ${errorMessage}`, 'error');
+    } finally {
+      setIsFetchingSubsection(false);
+    }
   };
 
   const validateJSON = () => {
@@ -321,7 +554,31 @@ function ContentManagerContent() {
   };
 
   const addSection = async () => {
-    if (!validateJSON()) return;
+    let finalContent: unknown;
+    const trimmedInput = jsonInput.trim();
+
+    if (!trimmedInput) {
+      showMessage('Please provide content in the editor.', 'error');
+      return;
+    }
+
+    if (selectedSubsection) {
+      const subSecConfig = SUBSECTIONS_MAP[selectedSection]?.find((s) => s.id === selectedSubsection);
+      if (subSecConfig?.type === 'svg' && (trimmedInput.startsWith('<svg') || trimmedInput.startsWith('<?xml') || trimmedInput.includes('<svg'))) {
+        // Raw SVG payload - sent directly as text, the API handles wrapping as InlineSvgAsset!
+        finalContent = trimmedInput;
+      } else {
+        try {
+          finalContent = JSON.parse(trimmedInput);
+        } catch {
+          // Treat as raw text
+          finalContent = trimmedInput;
+        }
+      }
+    } else {
+      if (!validateJSON()) return;
+      finalContent = JSON.parse(trimmedInput);
+    }
 
     try {
       const response = await fetch('/api/content-manager/add-section', {
@@ -332,16 +589,19 @@ function ContentManagerContent() {
           subtopicId: subtopicInfo.subtopicId,
           subtopicInfo,
           section: selectedSection,
-          content: JSON.parse(jsonInput),
+          subsection: selectedSubsection || undefined,
+          content: finalContent,
         }),
       });
 
-      const result = await response.json() as AddSectionResponse;
+      const result = await response.json() as AddSectionResponse & { subsection?: string };
 
       if (response.ok) {
-        setSectionStatus((prev) => ({ ...prev, [selectedSection]: true }));
-        setJsonInput('');
-        showMessage(`${selectedSectionLabel} saved to tutorial_sections.`, 'success');
+        if (!selectedSubsection) {
+          setSectionStatus((prev) => ({ ...prev, [selectedSection]: true }));
+          setJsonInput('');
+        }
+        showMessage(result.message || `${selectedSectionLabel} saved to database.`, 'success');
       } else {
         const details = result.details ? ` ${result.details}` : '';
         showMessage(`Error: ${result.error ?? 'Failed to save section'}${details}`, 'error');
@@ -462,13 +722,22 @@ function ContentManagerContent() {
               </div>
             </div>
 
-            <button
-              onClick={createSubtopic}
-              className="w-full rounded-xl py-4 text-lg font-bold text-white shadow-lg transition-all hover:shadow-xl"
-              style={{ backgroundColor: brand.primaryColor }}
-            >
-              Continue to Sections
-            </button>
+            <div className="flex gap-4">
+              <button
+                onClick={loadSubtopic}
+                className="flex-1 rounded-xl bg-slate-800 py-4 text-lg font-bold text-white shadow-lg transition-all hover:bg-slate-900"
+                disabled={isFetchingSubsection}
+              >
+                {isFetchingSubsection ? 'Loading...' : 'Load Existing Subtopic'}
+              </button>
+              <button
+                onClick={createSubtopic}
+                className="flex-1 rounded-xl py-4 text-lg font-bold text-white shadow-lg transition-all hover:shadow-xl"
+                style={{ backgroundColor: brand.primaryColor }}
+              >
+                Continue to Sections
+              </button>
+            </div>
           </section>
         ) : (
           <>
@@ -535,6 +804,7 @@ function ContentManagerContent() {
                   onChange={(event) => {
                     const nextSection = event.target.value as SectionType;
                     setSelectedSection(nextSection);
+                    setSelectedSubsection('');
                     setAssetFieldPath(getDefaultAssetFieldPath(nextSection));
                   }}
                   className="w-full rounded-lg border-2 border-gray-300 px-4 py-3 text-base focus:border-blue-500 focus:outline-none"
@@ -545,6 +815,37 @@ function ContentManagerContent() {
                     </option>
                   ))}
                 </select>
+              </div>
+
+              <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div>
+                  <label htmlFor="subsectionSelect" className="mb-3 block text-sm font-semibold text-gray-700">
+                    Edit Level (Select Subsection to target, or edit Whole Section)
+                  </label>
+                  <select
+                    id="subsectionSelect"
+                    value={selectedSubsection}
+                    onChange={(event) => setSelectedSubsection(event.target.value)}
+                    className="w-full rounded-lg border-2 border-gray-300 px-4 py-3 text-base focus:border-blue-500 focus:outline-none"
+                  >
+                    <option value="">Whole Section (Full JSON schema)</option>
+                    {SUBSECTIONS_MAP[selectedSection]?.map((sub) => (
+                      <option key={sub.id} value={sub.id}>
+                        Subsection: {sub.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex items-end">
+                  <button
+                    onClick={fetchSubsection}
+                    className="w-full rounded-lg bg-blue-600 py-3 font-semibold text-white transition-colors hover:bg-blue-700 shadow-md"
+                    disabled={isFetchingSubsection}
+                  >
+                    {isFetchingSubsection ? 'Fetching from DB...' : 'Fetch Current Value from DB'}
+                  </button>
+                </div>
               </div>
 
               <div className="mb-6">

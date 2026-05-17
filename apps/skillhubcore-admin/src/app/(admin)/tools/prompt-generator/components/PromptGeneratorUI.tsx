@@ -23,6 +23,134 @@ const sections = [
   { id: 'ai_tutor', label: 'AI Tutor' },
 ];
 
+const SUBSECTIONS_MAP: Record<string, Array<{ id: string; label: string }>> = {
+  notes: [
+    { id: 'simpleWords', label: 'Simple Words' },
+    { id: 'definitionBlock', label: 'Definition Block' },
+    { id: 'sections', label: 'Detailed Sections List' },
+    { id: 'syntaxBlock', label: 'Syntax Block' },
+    { id: 'componentGrid', label: 'Component Grid' },
+    { id: 'examplePanel', label: 'Example Panel' },
+    { id: 'practiceCard', label: 'Practice Card' },
+    { id: 'warningFaq', label: 'Warning FAQ' },
+    { id: 'summaryCard', label: 'Summary Card' },
+    { id: 'footerBlock', label: 'Footer Block' },
+  ],
+  layman: [
+    { id: 'simpleOverview', label: 'Simple Overview' },
+    { id: 'everydayAnalogy', label: 'Everyday Analogy' },
+    { id: 'whyItExists', label: 'Why It Exists' },
+    { id: 'simpleUseCases', label: 'Simple Use Cases' },
+    { id: 'beginnerBreakdown', label: 'Beginner Breakdown' },
+    { id: 'mentalModel', label: 'Mental Model framework' },
+    { id: 'commonConfusions', label: 'Common Confusions' },
+    { id: 'simpleRecap', label: 'Simple Recap' },
+  ],
+  overview: [
+    { id: 'hero', label: 'Hero Block' },
+    { id: 'progressSummary', label: 'Progress Summary' },
+    { id: 'learningOutcomes', label: 'Learning Outcomes' },
+    { id: 'learningRoadmap', label: 'Learning Roadmap' },
+    { id: 'recommendedFlow', label: 'Recommended Flow' },
+    { id: 'readinessContext', label: 'Readiness Context' },
+    { id: 'navigation', label: 'Navigation Links' },
+  ],
+  real_life: [
+    { id: 'conceptMapping', label: 'Concept Mapping' },
+    { id: 'industryUseCase', label: 'Industry Use Case' },
+    { id: 'dailyLifeExample', label: 'Daily Life Example' },
+    { id: 'careerRelevance', label: 'Career Relevance' },
+    { id: 'problemSolutionContext', label: 'Problem & Solution' },
+    { id: 'businessApplication', label: 'Business Application' },
+    { id: 'domainScenarios', label: 'Domain Scenarios' },
+    { id: 'practicalRecap', label: 'Practical Recap' },
+  ],
+  technical: [
+    { id: 'title', label: 'Title' },
+    { id: 'badge', label: 'Badge' },
+    { id: 'intro', label: 'Introduction' },
+    { id: 'sections', label: 'Technical Sections' },
+  ],
+  code: [
+    { id: 'problemContext', label: 'Problem Context' },
+    { id: 'basicCodeExample', label: 'Basic Code Example' },
+    { id: 'lineByLineExplanation', label: 'Line-by-Line Explanation' },
+    { id: 'outputDemonstration', label: 'Output Demonstration' },
+    { id: 'bestPracticeVersion', label: 'Best Practice Version' },
+    { id: 'commonMistakes', label: 'Common Mistakes' },
+    { id: 'realWorldImplementation', label: 'Real World Implementation' },
+    { id: 'codeSummary', label: 'Code Summary' },
+  ],
+  visual: [
+    { id: 'conceptVisualIntro', label: 'Concept Visual Intro' },
+    { id: 'diagrammaticBreakdown', label: 'Diagrammatic Breakdown' },
+    { id: 'stepByStepVisualFlow', label: 'Step-by-Step Flow' },
+    { id: 'comparativeVisualization', label: 'Comparative Visualization' },
+    { id: 'mentalModelVisualization', label: 'Mental Model Visualization' },
+    { id: 'realWorldVisualMapping', label: 'Real World Visual Mapping' },
+    { id: 'commonConfusionVisualization', label: 'Common Confusion Visual' },
+    { id: 'visualSummary', label: 'Visual Summary' },
+  ],
+  practice: [
+    { id: 'assessmentIntro', label: 'Assessment Intro' },
+    { id: 'conceptRecallQuestions', label: 'Concept Recall Questions' },
+    { id: 'scenarioBasedQuestions', label: 'Scenario Based Questions' },
+    { id: 'instantFeedback', label: 'Instant Feedback Config' },
+  ],
+  assignment: [
+    { id: 'title', label: 'Title' },
+    { id: 'description', label: 'Description' },
+    { id: 'xp', label: 'XP Reward' },
+    { id: 'duration', label: 'Duration' },
+    { id: 'task', label: 'Task Instructions' },
+    { id: 'objectives', label: 'Learning Objectives' },
+    { id: 'starterCode', label: 'Starter Code' },
+    { id: 'submissionGuidelines', label: 'Submission Guidelines' },
+  ],
+  project: [
+    { id: 'title', label: 'Title' },
+    { id: 'description', label: 'Description' },
+    { id: 'xp', label: 'XP Reward' },
+    { id: 'deadline', label: 'Deadline' },
+    { id: 'hero', label: 'Hero Config' },
+    { id: 'realWorldUse', label: 'Real World Use' },
+    { id: 'skills', label: 'Skills Addressed' },
+    { id: 'buildItems', label: 'Build Phases' },
+    { id: 'deliverables', label: 'Deliverables List' },
+  ],
+  quiz: [
+    { id: 'title', label: 'Title' },
+    { id: 'description', label: 'Description' },
+    { id: 'totalQuestions', label: 'Total Questions Count' },
+    { id: 'duration', label: 'Time Limit' },
+    { id: 'xp', label: 'XP Reward' },
+    { id: 'questions', label: 'Questions Pool' },
+  ],
+  summary: [
+    { id: 'title', label: 'Title' },
+    { id: 'description', label: 'Description' },
+    { id: 'masteryRecapCard', label: 'Mastery Recap Card' },
+    { id: 'keyTakeawayGrid', label: 'Key Takeaway Grid' },
+    { id: 'revisionChecklist', label: 'Revision Checklist' },
+    { id: 'nextStepPanel', label: 'Next Step Panel' },
+  ],
+  interview: [
+    { id: 'title', label: 'Title' },
+    { id: 'description', label: 'Description' },
+    { id: 'interviewIntroCard', label: 'Interview Intro Card' },
+    { id: 'questionBankPanel', label: 'Question Bank Panel' },
+    { id: 'answerFrameworkCard', label: 'Answer Framework Card' },
+    { id: 'mockInterviewFlow', label: 'Mock Interview Flow' },
+  ],
+  ai_tutor: [
+    { id: 'greeting', label: 'Greeting' },
+    { id: 'qa_pairs', label: 'Q&A Pairs' },
+    { id: 'tutor_prompt_card', label: 'Tutor Prompt Card' },
+    { id: 'misconception_detector', label: 'Misconception Detector' },
+    { id: 'adaptive_hint_panel', label: 'Adaptive Hint Panel' },
+  ],
+};
+
 export function PromptGeneratorUI() {
   const brand = useBrand();
   const [domain, setDomain] = useState('Programming');
@@ -30,6 +158,7 @@ export function PromptGeneratorUI() {
   const [topic, setTopic] = useState('App Router');
   const [subtopic, setSubtopic] = useState('Server Components');
   const [selectedSection, setSelectedSection] = useState('notes');
+  const [selectedSubsection, setSelectedSubsection] = useState<string>('');
   const [generatedPrompt, setGeneratedPrompt] = useState('');
   const [generatedAssetPrompt, setGeneratedAssetPrompt] = useState('');
   const [copied, setCopied] = useState(false);
@@ -42,7 +171,7 @@ export function PromptGeneratorUI() {
       setGeneratedAssetPrompt(assetPrompt);
       setSelectedAssetId(assetId);
     } else {
-      const prompt = getPromptForSection(selectedSection, domain, subject, topic, subtopic);
+      const prompt = getPromptForSection(selectedSection, domain, subject, topic, subtopic, selectedSubsection || undefined);
       setGeneratedPrompt(prompt);
 
       // Also generate all assets prompt for this section if not a specific asset
@@ -143,6 +272,7 @@ export function PromptGeneratorUI() {
                   key={section.id}
                   onClick={() => {
                     setSelectedSection(section.id);
+                    setSelectedSubsection('');
                     setGeneratedPrompt('');
                     setGeneratedAssetPrompt('');
                     setSelectedAssetId(null);
@@ -157,6 +287,30 @@ export function PromptGeneratorUI() {
                 </button>
               ))}
             </div>
+
+            {selectedSection && SUBSECTIONS_MAP[selectedSection] && (
+              <div className="mb-6">
+                <label htmlFor="subsectionSelect" className="block text-lg font-semibold text-gray-800 mb-3">
+                  Target Subsection (Optional - select to generate prompt for a single subsection block)
+                </label>
+                <select
+                  id="subsectionSelect"
+                  value={selectedSubsection}
+                  onChange={(e) => {
+                    setSelectedSubsection(e.target.value);
+                    setGeneratedPrompt('');
+                  }}
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors bg-white text-gray-700"
+                >
+                  <option value="">Whole Section (Monolithic full JSON prompt)</option>
+                  {SUBSECTIONS_MAP[selectedSection].map((sub) => (
+                    <option key={sub.id} value={sub.id}>
+                      Subsection: {sub.label} ({sub.id})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             <button
               onClick={() => handleGeneratePrompt()}

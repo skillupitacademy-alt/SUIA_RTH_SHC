@@ -6,6 +6,20 @@ import {
   tutorialSubjects,
   tutorialSubtopics,
   tutorialTopics,
+  tutorialSectionOverview,
+  tutorialSectionNotes,
+  tutorialSectionLayman,
+  tutorialSectionRealLife,
+  tutorialSectionTechnical,
+  tutorialSectionCode,
+  tutorialSectionVisual,
+  tutorialSectionPractice,
+  tutorialSectionAssignment,
+  tutorialSectionProject,
+  tutorialSectionQuiz,
+  tutorialSectionSummary,
+  tutorialSectionInterview,
+  tutorialSectionAITutor,
 } from '@quiz/db-tutorial';
 import {
   getTutorialSectionContractByAdminId,
@@ -22,6 +36,203 @@ import { and, eq } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
 
 type JsonRecord = Record<string, unknown>;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const DOMAIN_TABLE_MAP: Record<string, any> = {
+  overview: tutorialSectionOverview,
+  notes: tutorialSectionNotes,
+  layman: tutorialSectionLayman,
+  real_life: tutorialSectionRealLife,
+  technical: tutorialSectionTechnical,
+  code: tutorialSectionCode,
+  visual: tutorialSectionVisual,
+  practice: tutorialSectionPractice,
+  assignment: tutorialSectionAssignment,
+  project: tutorialSectionProject,
+  quiz: tutorialSectionQuiz,
+  summary: tutorialSectionSummary,
+  interview: tutorialSectionInterview,
+  ai_tutor: tutorialSectionAITutor,
+};
+
+const COLUMN_TO_PARENT_KEY: Record<string, string> = {
+  summaryHeroSvg: 'summaryHeroInfographic',
+  conceptMemoryMapSvg: 'conceptMemoryMap',
+  heroVisualSvg: 'simpleOverview.heroVisual',
+  analogySvg: 'everydayAnalogy.image',
+  mentalModelSvg: 'mentalModel.image',
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function upsertChildDomainTable(tx: any, sectionId: string, sectionType: string, content: any) {
+  const table = DOMAIN_TABLE_MAP[sectionType];
+  if (!table) return;
+
+  const [existing] = await tx
+    .select()
+    .from(table)
+    .where(eq(table.sectionId, sectionId))
+    .limit(1);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const values: Record<string, any> = { sectionId };
+
+  switch (sectionType) {
+    case 'overview':
+      values.hero = content.hero || {};
+      values.progressSummary = content.progressSummary || {};
+      values.learningOutcomes = content.learningOutcomes || [];
+      values.learningRoadmap = content.learningRoadmap || {};
+      values.recommendedFlow = content.recommendedFlow || [];
+      values.readinessContext = content.readinessContext || {};
+      values.navigation = content.navigation || {};
+      break;
+
+    case 'notes':
+      values.simpleWords = content.simpleWords || '';
+      values.definitionBlock = content.definitionBlock || {};
+      values.sections = content.sections || [];
+      values.componentGrid = content.componentGrid || {};
+      values.examplePanel = content.examplePanel || {};
+      values.practiceCard = content.practiceCard || {};
+      values.warningFaq = content.warningFaq || {};
+      values.summaryCard = content.summaryCard || {};
+      values.syntaxBlock = content.syntaxBlock || null;
+      values.footerBlock = content.footerBlock || null;
+      values.summaryHeroSvg = content.summaryHeroInfographic || null;
+      values.conceptMemoryMapSvg = content.conceptMemoryMap || null;
+      values.cheatSheetSVG = content.cheatSheetSVG || null;
+      break;
+
+    case 'layman':
+      values.simpleOverview = content.simpleOverview || {};
+      values.everydayAnalogy = content.everydayAnalogy || {};
+      values.whyItExists = content.whyItExists || {};
+      values.simpleUseCases = content.simpleUseCases || {};
+      values.beginnerBreakdown = content.beginnerBreakdown || {};
+      values.mentalModel = content.mentalModel || {};
+      values.commonConfusions = content.commonConfusions || {};
+      values.simpleRecap = content.simpleRecap || {};
+      values.heroVisualSvg = content.simpleOverview?.heroVisual || null;
+      values.analogySvg = content.everydayAnalogy?.image || null;
+      values.mentalModelSvg = content.mentalModel?.image || null;
+      break;
+
+    case 'real_life':
+      values.conceptMapping = content.conceptMapping || {};
+      values.industryUseCase = content.industryUseCase || {};
+      values.dailyLifeExample = content.dailyLifeExample || {};
+      values.careerRelevance = content.careerRelevance || {};
+      values.problemSolutionContext = content.problemSolutionContext || {};
+      values.businessApplication = content.businessApplication || {};
+      values.domainScenarios = content.domainScenarios || {};
+      values.practicalRecap = content.practicalRecap || {};
+      break;
+
+    case 'technical':
+      values.title = content.title || '';
+      values.badge = content.badge || '';
+      values.intro = content.intro || '';
+      values.sections = content.sections || [];
+      break;
+
+    case 'code':
+      values.problemContext = content.problemContext || {};
+      values.basicCodeExample = content.basicCodeExample || {};
+      values.lineByLineExplanation = content.lineByLineExplanation || {};
+      values.outputDemonstration = content.outputDemonstration || {};
+      values.bestPracticeVersion = content.bestPracticeVersion || {};
+      values.commonMistakes = content.commonMistakes || {};
+      values.realWorldImplementation = content.realWorldImplementation || {};
+      values.codeSummary = content.codeSummary || {};
+      break;
+
+    case 'visual':
+      values.conceptVisualIntro = content.conceptVisualIntro || {};
+      values.diagrammaticBreakdown = content.diagrammaticBreakdown || {};
+      values.stepByStepVisualFlow = content.stepByStepVisualFlow || {};
+      values.comparativeVisualization = content.comparativeVisualization || {};
+      values.mentalModelVisualization = content.mentalModelVisualization || {};
+      values.realWorldVisualMapping = content.realWorldVisualMapping || {};
+      values.commonConfusionVisualization = content.commonConfusionVisualization || {};
+      values.visualSummary = content.visualSummary || {};
+      break;
+
+    case 'practice':
+      values.assessmentIntro = content.assessmentIntro || {};
+      values.conceptRecallQuestions = content.conceptRecallQuestions || {};
+      values.scenarioBasedQuestions = content.scenarioBasedQuestions || {};
+      values.instantFeedback = content.instantFeedback || {};
+      break;
+
+    case 'assignment':
+      values.title = content.title || '';
+      values.description = content.description || '';
+      values.xp = content.xp || 150;
+      values.duration = content.duration || '20 Mins';
+      values.task = content.task || {};
+      values.objectives = content.objectives || [];
+      values.starterCode = content.starterCode || '';
+      values.submissionGuidelines = content.submissionGuidelines || [];
+      break;
+
+    case 'project':
+      values.title = content.title || '';
+      values.description = content.description || '';
+      values.xp = content.xp || 500;
+      values.deadline = content.deadline || '2 Days Left';
+      values.hero = content.hero || {};
+      values.realWorldUse = content.realWorldUse || '';
+      values.skills = content.skills || [];
+      values.buildItems = content.buildItems || [];
+      values.deliverables = content.deliverables || [];
+      break;
+
+    case 'quiz':
+      values.title = content.title || '';
+      values.description = content.description || '';
+      values.totalQuestions = content.totalQuestions || 0;
+      values.duration = content.duration || '15 min';
+      values.xp = content.xp || 100;
+      values.questions = content.questions || [];
+      break;
+
+    case 'summary':
+      values.title = content.title || '';
+      values.description = content.description || '';
+      values.masteryRecapCard = content.masteryRecapCard || {};
+      values.keyTakeawayGrid = content.keyTakeawayGrid || [];
+      values.revisionChecklist = content.revisionChecklist || [];
+      values.nextStepPanel = content.nextStepPanel || {};
+      break;
+
+    case 'interview':
+      values.title = content.title || '';
+      values.description = content.description || '';
+      values.interviewIntroCard = content.interviewIntroCard || {};
+      values.questionBankPanel = content.questionBankPanel || {};
+      values.answerFrameworkCard = content.answerFrameworkCard || {};
+      values.mockInterviewFlow = content.mockInterviewFlow || {};
+      break;
+
+    case 'ai_tutor':
+      values.greeting = content.greeting || '';
+      values.qaPairs = content.qa_pairs || [];
+      values.tutorPromptCard = content.tutor_prompt_card || {};
+      values.misconceptionDetector = content.misconception_detector || {};
+      values.adaptiveHintPanel = content.adaptive_hint_panel || {};
+      break;
+  }
+
+  if (existing) {
+    await tx
+      .update(table)
+      .set(values)
+      .where(eq(table.sectionId, sectionId));
+  } else {
+    await tx.insert(table).values(values);
+  }
+}
 
 interface RequestBody {
   subtopicId: string;
@@ -846,6 +1057,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const subtopicSlug = searchParams.get('subtopicId');
     const sectionAdminId = searchParams.get('section');
+    const subsection = searchParams.get('subsection');
     
     if (!subtopicSlug || !sectionAdminId) {
       return NextResponse.json({ error: 'Missing subtopicId or section' }, { status: 400 });
@@ -866,6 +1078,18 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Subtopic not found' }, { status: 404 });
     }
 
+    const [topic] = await db.select().from(tutorialTopics).where(eq(tutorialTopics.id, subtopic.topicId)).limit(1);
+    const [subject] = topic ? await db.select().from(tutorialSubjects).where(eq(tutorialSubjects.id, topic.subjectId)).limit(1) : [null];
+    const [domain] = subject ? await db.select().from(tutorialDomains).where(eq(tutorialDomains.id, subject.domainId)).limit(1) : [null];
+
+    const subtopicInfo = {
+      subtopicId: subtopic.slug,
+      domain: domain?.name || '',
+      subject: subject?.name || '',
+      topic: topic?.name || '',
+      subtopic: subtopic.name || '',
+    };
+
     const [section] = await db
       .select()
       .from(tutorialSections)
@@ -878,7 +1102,36 @@ export async function GET(req: NextRequest) {
       .limit(1);
 
     if (!section) {
-      return NextResponse.json({ content: null, message: 'Section not found' });
+      return NextResponse.json({ content: null, subtopicInfo, message: 'Section not found' });
+    }
+
+    if (subsection) {
+      const table = DOMAIN_TABLE_MAP[config.dbType];
+      if (!table) {
+        return NextResponse.json({ error: `Unsupported domain table for ${config.dbType}` }, { status: 400 });
+      }
+
+      const [domainRecord] = await db
+        .select()
+        .from(table)
+        .where(eq(table.sectionId, section.id))
+        .limit(1);
+
+      if (!domainRecord) {
+        return NextResponse.json({ content: null, subtopicInfo, message: 'Subsection not found in domain table' });
+      }
+
+      // Check if raw field matches or map column to camelCase
+      const value = domainRecord[subsection];
+      if (value === undefined) {
+        return NextResponse.json({ error: `Subsection column '${subsection}' does not exist on table` }, { status: 400 });
+      }
+
+      return NextResponse.json({
+        success: true,
+        subtopicInfo,
+        content: value,
+      });
     }
 
     // Wrap it back in the root key for the editor
@@ -887,6 +1140,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
+      subtopicInfo,
       content: wrappedContent,
     });
   } catch (error: unknown) {
@@ -897,13 +1151,137 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json() as RequestBody;
-    const { subtopicId: subtopicSlug, subtopicInfo, section, content } = body;
+    const body = await req.json() as RequestBody & { subsection?: string };
+    const { subtopicId: subtopicSlug, subtopicInfo, section, subsection, content } = body;
     const config = getTutorialSectionContractByAdminId(section);
 
-    if (!subtopicSlug || !subtopicInfo || !config || !content) {
+    if (!subtopicSlug || !subtopicInfo || !config || content === undefined) {
       return NextResponse.json({ error: 'Missing required fields or unsupported section' }, { status: 400 });
     }
+
+    const subtopic = await getOrCreateHierarchy(subtopicSlug, subtopicInfo);
+    const now = new Date();
+
+    // Fetch or create the parent section record
+    let [sectionRecord] = await db
+      .select()
+      .from(tutorialSections)
+      .where(and(
+        eq(tutorialSections.subtopicId, subtopic.id),
+        eq(tutorialSections.sectionType, config.dbType),
+        eq(tutorialSections.difficulty, 'simple'),
+        eq(tutorialSections.brandId, 'shared')
+      ))
+      .limit(1);
+
+    if (!sectionRecord && subsection) {
+      // If updating a subsection but parent doesn't exist, create an empty parent first
+      [sectionRecord] = await db.insert(tutorialSections).values({
+        subtopicId: subtopic.id,
+        sectionType: config.dbType,
+        difficulty: 'simple',
+        orderIndex: config.orderIndex,
+        content: {},
+        version: 1,
+        language: 'en',
+        status: 'approved',
+        generatedByAi: true,
+        brandId: 'shared',
+        brandVisibility: 'shared_visible',
+        publishedAt: now,
+      }).returning();
+    }
+
+    if (subsection) {
+      // SUBSECTION surgical update
+      let processedContent: unknown;
+      if (typeof content === 'string') {
+        const trimmed = content.trim();
+        if (trimmed.startsWith('<svg') || trimmed.startsWith('<?xml') || trimmed.includes('<svg')) {
+          // Automatic raw SVG serialization into InlineSvgAsset!
+          processedContent = {
+            type: 'inline_svg',
+            name: `${config.dbType}-${subsection}-${subtopicSlug}-svg`,
+            alt: `${config.dbType} ${subsection} diagram`,
+            width: 1200,
+            height: 700,
+            dataUri: `data:image/svg+xml;base64,${Buffer.from(trimmed).toString('base64')}`,
+          };
+        } else {
+          try {
+            processedContent = JSON.parse(trimmed);
+          } catch {
+            // Treat as raw text
+            processedContent = trimmed;
+          }
+        }
+      } else {
+        processedContent = content;
+      }
+
+      // 1. Update the child domain table column
+      const table = DOMAIN_TABLE_MAP[config.dbType];
+      if (!table) {
+        return NextResponse.json({ error: `Unsupported child domain table for section ${config.dbType}` }, { status: 400 });
+      }
+
+      const [existingChild] = await db
+        .select()
+        .from(table)
+        .where(eq(table.sectionId, sectionRecord.id))
+        .limit(1);
+
+      if (existingChild) {
+        await db
+          .update(table)
+          .set({
+            [subsection]: processedContent,
+            updatedAt: now,
+          })
+          .where(eq(table.sectionId, sectionRecord.id));
+      } else {
+        await db.insert(table).values({
+          sectionId: sectionRecord.id,
+          [subsection]: processedContent,
+        });
+      }
+
+      // 2. Synchronize parent tutorialSections.content JSONB
+      const targetParentKey = COLUMN_TO_PARENT_KEY[subsection] || subsection;
+      const updatedParentContent = { ...(sectionRecord.content as Record<string, unknown>) };
+
+      if (targetParentKey.includes('.')) {
+        const [parentKey, childKey] = targetParentKey.split('.');
+        updatedParentContent[parentKey] = {
+          ...(updatedParentContent[parentKey] as Record<string, unknown>),
+          [childKey]: processedContent,
+        };
+      } else {
+        updatedParentContent[targetParentKey] = processedContent;
+      }
+
+      await db
+        .update(tutorialSections)
+        .set({
+          content: updatedParentContent,
+          updatedAt: now,
+        })
+        .where(eq(tutorialSections.id, sectionRecord.id));
+
+      await invalidateTutorialDeliveryCache(subtopicSlug);
+
+      return NextResponse.json({
+        success: true,
+        sectionType: config.dbType,
+        subsection,
+        message: `Subsection '${subsection}' of Section '${config.dbType}' saved successfully with complete parent parity.`,
+        url: `/start-learning/subtopic/${subtopicSlug}?tab=${config.tab}`,
+      });
+    }
+
+
+
+
     if (!SECTION_TRANSFORMERS[config.dbType]) {
       return NextResponse.json({ error: `Unsupported section transformer for ${config.dbType}` }, { status: 400 });
     }
@@ -920,7 +1298,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Section content must be a JSON object' }, { status: 400 });
     }
 
-    const subtopic = await getOrCreateHierarchy(subtopicSlug, subtopicInfo);
+
     const unwrappedContent = unwrapSectionContent(parsedContent, config);
     const validation = validateTutorialSection(config.dbType, unwrappedContent);
 
@@ -955,7 +1333,8 @@ export async function POST(req: NextRequest) {
       ))
       .limit(1);
 
-    const now = new Date();
+
+    let savedSectionId = existingSection?.id;
     if (existingSection) {
       await db
         .update(tutorialSections)
@@ -969,7 +1348,7 @@ export async function POST(req: NextRequest) {
         })
         .where(eq(tutorialSections.id, existingSection.id));
     } else {
-      await db.insert(tutorialSections).values({
+      const [newSec] = await db.insert(tutorialSections).values({
         subtopicId: subtopic.id,
         sectionType: config.dbType,
         difficulty: 'simple',
@@ -982,8 +1361,13 @@ export async function POST(req: NextRequest) {
         brandId: 'shared',
         brandVisibility: 'shared_visible',
         publishedAt: now,
-      });
+      }).returning();
+      savedSectionId = newSec.id;
     }
+
+    await db.transaction(async (tx) => {
+      await upsertChildDomainTable(tx, savedSectionId, config.dbType, transformedContent);
+    });
 
     await invalidateTutorialDeliveryCache(subtopicSlug);
 

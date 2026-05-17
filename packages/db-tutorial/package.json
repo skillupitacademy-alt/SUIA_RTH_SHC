@@ -12,6 +12,8 @@
     "db:seed-layman": "tsx src/seed-layman-config.ts",
     "db:migrate-orphans": "tsx src/migrate-orphan-sections.ts",
     "db:migrate-orphans:rollback": "tsx src/migrate-orphan-sections.ts rollback",
+    "db:migrate-sections-to-domains": "tsx src/migrate-sections-to-domains.ts",
+    "db:run-raw-migration": "tsx src/run-raw-migration.ts",
     "db:validate-governance": "tsx src/validate-governance.ts",
     "audit:tutorial-contract": "tsx src/tutorial-contract-audit.ts",
     "test": "vitest --config vitest.config.ts run",

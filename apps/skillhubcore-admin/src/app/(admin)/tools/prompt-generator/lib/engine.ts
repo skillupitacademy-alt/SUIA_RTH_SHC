@@ -21,13 +21,46 @@ ${getStrictEnumRules()}
 **MANDATORY**: Ensure all internal IDs (id) are unique within their arrays. Use lowercase-kebab-case for IDs.`;
 };
 
+export const getStrictCanonicalSubsectionPrompt = (section: string, subtopicName: string, subsection: string) => {
+  const fullTemplate = getStrictSectionJsonTemplate(section, subtopicName);
+  const rootKeys = Object.keys(fullTemplate);
+  const rootKey = rootKeys[0];
+  const rootVal = (fullTemplate as Record<string, Record<string, unknown>>)[rootKey] || {};
+  const subsectionVal = rootVal[subsection];
+
+  if (subsectionVal === undefined) {
+    return ``;
+  }
+
+  return `**STRICT CANONICAL DATA STRUCTURE FOR SUBSECTION "${subsection}"**:
+The following JSON structure is the ONLY accepted format for the subsection "${subsection}" of the section "${section}".
+Ensure you only return a JSON block or value matching this canonical format:
+
+${JSON.stringify(subsectionVal, null, 2)}
+
+**STRICT ENUM RULES FOR PERSISTENCE**:
+- Use valid JSON formatting. Do not wrap in extra nested objects unless specified.
+- Use lowercase-kebab-case for all internal IDs.`;
+};
+
 export const getPromptForSection = (
   section: string,
   domain: string,
   subject: string,
   topic: string,
-  subtopic: string
+  subtopic: string,
+  subsection?: string
 ) => {
+  if (subsection) {
+    const basePrompt = `Generate ONLY the JSON content for the subsection "${subsection}" of the "${section}" section on the subtopic "${subtopic}".
+Domain: ${domain}
+Subject: ${subject}
+Topic: ${topic}
+
+Ensure you only return the JSON block for the "${subsection}" field. The output must be educational, extremely high quality, clear, and perfectly tailored for the subtopic.`;
+    return `${basePrompt}\n\n${getStrictCanonicalSubsectionPrompt(section, subtopic, subsection)}`;
+  }
+
   switch (section) {
     case 'master':
       return prompts.getMasterPrompt(domain, subject, topic, subtopic);
