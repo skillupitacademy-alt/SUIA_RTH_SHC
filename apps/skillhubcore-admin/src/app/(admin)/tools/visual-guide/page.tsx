@@ -224,12 +224,10 @@ export function VisualGuideUI() {
   };
 
   const scrollToWireframeSegment = (sectionId: string) => {
-    if (!wireframeCanvasRef.current) return;
-    const element = wireframeCanvasRef.current.querySelector(`#wireframe-${sectionId}`);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      setHighlightedElement(sectionId);
-      setTimeout(() => setHighlightedElement(null), 2500);
+    setHighlightedElement(sectionId);
+    setTimeout(() => setHighlightedElement(null), 2500);
+    if (wireframeCanvasRef.current) {
+      wireframeCanvasRef.current.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -408,6 +406,23 @@ export function VisualGuideUI() {
             </span>
           </div>
 
+          {/* Tab Selector Bar inside the Simulated Canvas representing the 11 Educational Sections */}
+          <div className="flex items-center gap-1.5 bg-slate-900 text-white px-4 py-3 overflow-x-auto text-[11px] font-bold hide-scrollbar select-none border-b border-slate-800">
+            {SECTIONS_SPECS.map((sect) => (
+              <button
+                key={sect.id}
+                onClick={() => handleSectionChange(sect.id)}
+                className={`px-3 py-2 rounded-xl whitespace-nowrap transition-all duration-200 ${
+                  selectedSectionId === sect.id 
+                    ? 'bg-gradient-to-r from-pink-500 via-purple-500 to-orange-500 text-white shadow-lg shadow-pink-500/20 scale-[1.02] border border-white/10' 
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800 border border-transparent'
+                }`}
+              >
+                {sect.label.replace(/^\d+\.\s*/, '')}
+              </button>
+            ))}
+          </div>
+
           {/* Simulated Educational Page Wireframe Content Canvas */}
           <div 
             ref={wireframeCanvasRef}
@@ -415,6 +430,7 @@ export function VisualGuideUI() {
           >
             
             {/* 1. OVERVIEW WIREFRAME SECTION */}
+            {selectedSectionId === 'overview' && (
             <div 
               id="wireframe-overview"
               onClick={() => handleSectionChange('overview')}
@@ -502,8 +518,10 @@ export function VisualGuideUI() {
                 </div>
               </div>
             </div>
+            )}
 
             {/* 2. NOTES WIREFRAME SECTION */}
+            {selectedSectionId === 'notes' && (
             <div 
               id="wireframe-notes"
               onClick={() => handleSectionChange('notes')}
@@ -596,8 +614,10 @@ export function VisualGuideUI() {
                 <span className="text-[9px] font-black text-slate-400 absolute right-3 bottom-1">Warning (warningFaq)</span>
               </div>
             </div>
+            )}
 
             {/* 3. LAYMAN WIREFRAME SECTION */}
+            {selectedSectionId === 'layman' && (
             <div 
               id="wireframe-layman"
               onClick={() => handleSectionChange('layman')}
@@ -635,8 +655,10 @@ export function VisualGuideUI() {
                 <span className="text-[9px] font-black text-slate-400 mt-2 block">Everyday Analogy (everydayAnalogy)</span>
               </div>
             </div>
+            )}
 
             {/* 4. REAL LIFE WIREFRAME SECTION */}
+            {selectedSectionId === 'real_life' && (
             <div 
               id="wireframe-real_life"
               onClick={() => handleSectionChange('real_life')}
@@ -682,8 +704,10 @@ export function VisualGuideUI() {
                 <span className="text-[9px] font-black text-slate-400 mt-2 block">Career Relevance (careerRelevance)</span>
               </div>
             </div>
+            )}
 
             {/* 5. TECHNICAL WIREFRAME SECTION */}
+            {selectedSectionId === 'technical' && (
             <div 
               id="wireframe-technical"
               onClick={() => handleSectionChange('technical')}
@@ -706,13 +730,15 @@ export function VisualGuideUI() {
                 }`} />
                 <div className="h-4 w-44 rounded bg-slate-350 mb-3"></div>
                 <div className="h-24 rounded bg-slate-900 border border-slate-800 flex items-center justify-center relative overflow-hidden">
-                  <span className="text-[10px] font-bold text-slate-550">System Architecture SVG (diagramAsset)</span>
+                  <span className="text-[10px] font-bold text-slate-555">System Architecture SVG (diagramAsset)</span>
                 </div>
                 <span className="text-[9px] font-black text-slate-400 mt-2 block">Technical Sections & Diagrams (sections)</span>
               </div>
             </div>
+            )}
 
             {/* 6. CODE WIREFRAME SECTION */}
+            {selectedSectionId === 'code' && (
             <div 
               id="wireframe-code"
               onClick={() => handleSectionChange('code')}
@@ -755,14 +781,16 @@ export function VisualGuideUI() {
                   <Terminal size={14} className="text-slate-400" />
                   <span className="text-[9px] font-mono text-slate-400">Terminal Output</span>
                 </div>
-                <div className="h-10 bg-slate-950 rounded p-2 font-mono text-xs text-slate-400">
+                <div className="h-10 bg-slate-900 rounded p-2 font-mono text-xs text-slate-400">
                   &gt; 5
                 </div>
-                <span className="text-[9px] font-black text-slate-505 absolute right-3 bottom-1">Console (outputDemonstration)</span>
+                <span className="text-[9px] font-black text-slate-400 absolute right-3 bottom-1">Console (outputDemonstration)</span>
               </div>
             </div>
+            )}
 
             {/* 7. VISUAL WIREFRAME SECTION */}
+            {selectedSectionId === 'visual' && (
             <div 
               id="wireframe-visual"
               onClick={() => handleSectionChange('visual')}
@@ -790,8 +818,10 @@ export function VisualGuideUI() {
                 <span className="text-[9px] font-black text-slate-400 mt-2 block">Ecosystem Diagram (diagrammaticBreakdown)</span>
               </div>
             </div>
+            )}
 
             {/* 8. PRACTICE WIREFRAME SECTION */}
+            {selectedSectionId === 'practice' && (
             <div 
               id="wireframe-practice"
               onClick={() => handleSectionChange('practice')}
@@ -824,8 +854,10 @@ export function VisualGuideUI() {
                 <span className="text-[9px] font-black text-slate-400 mt-2 block">Practice Quiz (conceptRecallQuestions)</span>
               </div>
             </div>
+            )}
 
             {/* 9. ASSIGNMENT WIREFRAME SECTION */}
+            {selectedSectionId === 'assignment' && (
             <div 
               id="wireframe-assignment"
               onClick={() => handleSectionChange('assignment')}
@@ -854,8 +886,10 @@ export function VisualGuideUI() {
                 <span className="text-[9px] font-black text-slate-400 mt-2 block">Assignment Dashboard (title)</span>
               </div>
             </div>
+            )}
 
             {/* 10. PROJECT WIREFRAME SECTION */}
+            {selectedSectionId === 'project' && (
             <div 
               id="wireframe-project"
               onClick={() => handleSectionChange('project')}
@@ -883,8 +917,10 @@ export function VisualGuideUI() {
                 <span className="text-[9px] font-black text-slate-400 mt-2 block">Project Dashboard (title)</span>
               </div>
             </div>
+            )}
 
             {/* 11. INTERVIEW PREP WIREFRAME SECTION */}
+            {selectedSectionId === 'interview' && (
             <div 
               id="wireframe-interview"
               onClick={() => handleSectionChange('interview')}
@@ -913,6 +949,7 @@ export function VisualGuideUI() {
                 <span className="text-[9px] font-black text-slate-400 mt-2 block">Q&A Bank (questionBankPanel)</span>
               </div>
             </div>
+            )}
 
           </div>
 
