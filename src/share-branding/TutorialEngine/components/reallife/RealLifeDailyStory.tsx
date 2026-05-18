@@ -1,6 +1,7 @@
 import React from 'react';
 import * as Icons from 'lucide-react';
 import { useBrand } from '../../../PostLandingPage/app/context/BrandContext';
+import { SVGIconRenderer } from '../shared/SVGIconRenderer';
 
 interface RealLifeDailyStoryProps {
   title: string;
@@ -60,11 +61,11 @@ export function RealLifeDailyStory({
 
         {/* Image if provided */}
         {image && (
-          <div className="mb-6 flex justify-center p-4 bg-gray-50 rounded-xl">
-            <img
-              src={image}
+          <div className="mb-6 overflow-hidden rounded-2xl border border-slate-100 shadow-sm bg-slate-50/50 p-3 mx-auto max-w-full">
+            <SVGIconRenderer
+              dataUri={image}
               alt="Daily life illustration"
-              className="max-h-[240px] object-contain drop-shadow-lg"
+              className="w-full h-auto max-h-[240px] object-contain mx-auto"
             />
           </div>
         )}

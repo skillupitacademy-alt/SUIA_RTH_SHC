@@ -80,11 +80,11 @@ export function SummaryContent({ data, title }: { data?: SummaryData; title: str
             </p>
           </div>
           {heroAssetSrc ? (
-            <div className="sm:ml-auto sm:w-[16rem]">
+            <div className="sm:ml-auto sm:w-[16rem] shrink-0">
               <SVGIconRenderer
                 dataUri={heroAssetSrc}
                 alt={heroAssetAlt}
-                className="w-full rounded-3xl border border-emerald-100 bg-white p-3 shadow-sm"
+                className="w-full h-auto max-h-[220px] object-contain mx-auto rounded-3xl border border-emerald-100 bg-white p-3 shadow-sm"
               />
             </div>
           ) : null}

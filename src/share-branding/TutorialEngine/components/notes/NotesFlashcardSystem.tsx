@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import * as Icons from 'lucide-react';
 import { useBrand } from '../../../PostLandingPage/app/context/BrandContext';
+import { SVGIconRenderer } from '../shared/SVGIconRenderer';
 
 interface Flashcard {
   id: string;
@@ -9,6 +10,7 @@ interface Flashcard {
 }
 
 interface NotesFlashcardSystemProps {
+  image?: any;
   cards: Flashcard[];
 }
 
@@ -17,7 +19,7 @@ interface NotesFlashcardSystemProps {
  * Renderer: flashcard_visual_system
  * Purpose: Interactive Q&A system for active recall
  */
-export function NotesFlashcardSystem({ cards }: NotesFlashcardSystemProps) {
+export function NotesFlashcardSystem({ image, cards }: NotesFlashcardSystemProps) {
   const brand = useBrand();
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -30,6 +32,9 @@ export function NotesFlashcardSystem({ cards }: NotesFlashcardSystemProps) {
   };
 
   if (!cards || cards.length === 0) return null;
+
+  const dataUri = typeof image === 'string' ? image : image?.dataUri;
+  const altText = typeof image === 'object' ? image?.alt : 'Flashcard System Visual';
 
   return (
     <div className="w-full rounded-[24px] border border-slate-200 bg-white p-6 shadow-xl sm:p-8">
@@ -67,6 +72,16 @@ export function NotesFlashcardSystem({ cards }: NotesFlashcardSystemProps) {
           </div>
         </div>
       </div>
+
+      {dataUri && (
+        <div className="mb-8 overflow-hidden rounded-2xl border border-slate-100 shadow-sm bg-slate-50/50 p-3">
+          <SVGIconRenderer 
+            dataUri={dataUri} 
+            alt={altText} 
+            className="w-full h-auto max-h-[450px] object-contain mx-auto"
+          />
+        </div>
+      )}
 
       {/* Grid of Flashcards (showing 4 at a time on desktop, or a slider) */}
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">

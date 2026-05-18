@@ -47,11 +47,11 @@ export function NotesCheatSheet({
       </div>
 
       {dataUri && (
-        <div className="mb-8 overflow-hidden rounded-2xl border border-slate-100 shadow-sm">
+        <div className="mb-8 overflow-hidden rounded-2xl border border-slate-100 shadow-sm bg-slate-50/50 p-3">
           <SVGIconRenderer 
             dataUri={dataUri} 
             alt={altText} 
-            className="w-full h-auto max-h-[400px] object-cover"
+            className="w-full h-auto max-h-[450px] object-contain mx-auto"
           />
         </div>
       )}

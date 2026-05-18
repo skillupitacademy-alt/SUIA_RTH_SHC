@@ -28,11 +28,11 @@ export function NotesFooter({
   return (
     <div className="w-full space-y-4">
       {dataUri && (
-        <div className="overflow-hidden rounded-2xl border border-slate-100 shadow-sm">
+        <div className="overflow-hidden rounded-2xl border border-slate-100 shadow-sm bg-slate-50/50 p-3">
           <SVGIconRenderer 
             dataUri={dataUri} 
             alt={altText} 
-            className="w-full h-auto max-h-[250px] object-cover"
+            className="w-full h-auto max-h-[250px] object-contain mx-auto"
           />
         </div>
       )}

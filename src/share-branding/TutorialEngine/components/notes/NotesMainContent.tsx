@@ -200,6 +200,7 @@ export function NotesMainContent({ data, isStandalone = true }: { data: Subtopic
       {/* 4. SYNTAX BLOCK */}
       {data.syntaxBlock != null && (
         <NotesSyntaxBlock
+          image={data.syntaxBlock.image}
           code={data.syntaxBlock.code}
           language={data.syntaxBlock.language}
           title={data.syntaxBlock.title}
@@ -256,11 +257,15 @@ export function NotesMainContent({ data, isStandalone = true }: { data: Subtopic
         )}
 
         {data.flashcardVisualSystem != null && (
-          <NotesFlashcardSystem cards={data.flashcardVisualSystem.cards || []} />
+          <NotesFlashcardSystem
+            image={data.flashcardVisualSystem.image}
+            cards={data.flashcardVisualSystem.cards || []}
+          />
         )}
 
         {data.comparisonSummaryChart != null && (
           <NotesComparisonChart
+            image={data.comparisonSummaryChart.image}
             title={data.comparisonSummaryChart.title || "Comparison Summary"}
             columns={data.comparisonSummaryChart.columns || []}
             rows={data.comparisonSummaryChart.rows || []}
@@ -269,6 +274,7 @@ export function NotesMainContent({ data, isStandalone = true }: { data: Subtopic
 
         {data.mnemonicRetentionGraphic != null && (
           <NotesMnemonicGraphic
+            image={data.mnemonicRetentionGraphic.image}
             mnemonicTitle={data.mnemonicRetentionGraphic.mnemonicTitle || ''}
             memoryHook={data.mnemonicRetentionGraphic.memoryHook || ''}
             rememberItems={data.mnemonicRetentionGraphic.rememberItems || []}

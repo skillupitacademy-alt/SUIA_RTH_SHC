@@ -4,9 +4,20 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, Sparkles, Info, AlertCircle } from 'lucide-react';
 import { SectionType } from './types';
+import { OverviewPreview } from './previewers/OverviewPreview';
 import { NotesPreview } from './previewers/NotesPreview';
 import { LaymanPreview } from './previewers/LaymanPreview';
+import { RealLifePreview } from './previewers/RealLifePreview';
+import { TechnicalPreview } from './previewers/TechnicalPreview';
 import { CodePreview } from './previewers/CodePreview';
+import { VisualPreview } from './previewers/VisualPreview';
+import { PracticePreview } from './previewers/PracticePreview';
+import { AssignmentPreview } from './previewers/AssignmentPreview';
+import { ProjectPreview } from './previewers/ProjectPreview';
+import { QuizPreview } from './previewers/QuizPreview';
+import { SummaryPreview } from './previewers/SummaryPreview';
+import { InterviewPreview } from './previewers/InterviewPreview';
+import { AiTutorPreview } from './previewers/AiTutorPreview';
 
 interface LiveVisualizerPreviewProps {
   section: SectionType;
@@ -61,7 +72,7 @@ export function LiveVisualizerPreview({ section, subsection, rawData }: LiveVisu
       <div className="flex flex-col items-center justify-center h-full text-center p-8 text-rose-400">
         <AlertCircle className="w-12 h-12 mb-4 text-rose-500" />
         <h3 className="text-lg font-bold text-rose-300">Syntax Alert</h3>
-        <p className="text-xs text-rose-500/80 max-w-xs mt-2 font-mono bg-rose-950/40 p-3 rounded-xl border border-rose-900/50">
+        <p className="text-xs text-rose-500/80 max-w-xs mt-2 font-mono bg-rose-955/40 p-3 rounded-xl border border-rose-900/50">
           {error}
         </p>
         <p className="text-[10px] text-slate-500 mt-4">
@@ -78,7 +89,7 @@ export function LiveVisualizerPreview({ section, subsection, rawData }: LiveVisu
           <span className="text-[10px] font-black uppercase bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded tracking-wider flex items-center gap-1">
             <Sparkles size={12} /> Live SVG Illustration Preview
           </span>
-          <span className="text-[10px] font-mono text-slate-500">Vector Render Mode</span>
+          <span className="text-[10px] font-mono text-slate-550 text-slate-500">Vector Render Mode</span>
         </div>
         <div className="flex-1 flex items-center justify-center bg-white rounded-xl p-4 min-h-[300px] shadow-inner overflow-auto">
           <div 
@@ -95,28 +106,36 @@ export function LiveVisualizerPreview({ section, subsection, rawData }: LiveVisu
 
   const renderComponentBody = () => {
     switch (section) {
+      case 'overview':
+        return <OverviewPreview subsection={subsection} content={content} />;
       case 'notes':
         return <NotesPreview subsection={subsection} content={content} />;
       case 'layman':
         return <LaymanPreview subsection={subsection} content={content} />;
+      case 'reallife':
+        return <RealLifePreview subsection={subsection} content={content} />;
+      case 'technical':
+        return <TechnicalPreview subsection={subsection} content={content} />;
       case 'code':
         return <CodePreview subsection={subsection} content={content} />;
+      case 'visual':
+        return <VisualPreview subsection={subsection} content={content} />;
+      case 'practice':
+        return <PracticePreview subsection={subsection} content={content} />;
+      case 'assignment':
+        return <AssignmentPreview subsection={subsection} content={content} />;
+      case 'project':
+        return <ProjectPreview subsection={subsection} content={content} />;
+      case 'quiz':
+        return <QuizPreview subsection={subsection} content={content} />;
+      case 'summary':
+        return <SummaryPreview subsection={subsection} content={content} />;
+      case 'interview':
+        return <InterviewPreview subsection={subsection} content={content} />;
+      case 'ai_tutor':
+        return <AiTutorPreview subsection={subsection} content={content} />;
       default:
-        return (
-          <div className="space-y-4">
-            <div className="bg-slate-800/60 border border-slate-700 p-4 rounded-xl flex items-center justify-between">
-              <span className="text-[10px] font-black uppercase bg-slate-700 text-slate-300 px-2 py-0.5 rounded">
-                Section: {section.toUpperCase()}
-              </span>
-              <span className="text-[10px] font-mono text-slate-500">
-                {subsection ? `Subsection: ${subsection}` : 'Whole Block Render'}
-              </span>
-            </div>
-            <pre className="overflow-auto bg-slate-955 rounded-xl p-4 text-[11px] text-slate-300 max-h-[450px] border border-slate-850 font-mono">
-              {JSON.stringify(content, null, 2)}
-            </pre>
-          </div>
-        );
+        return null;
     }
   };
 
@@ -135,7 +154,7 @@ export function LiveVisualizerPreview({ section, subsection, rawData }: LiveVisu
           <Eye size={12} /> Active Preview Map
         </span>
       </div>
-      <div className="flex-1 overflow-y-auto custom-scrollbar pr-1 py-1">
+      <div className="flex-1 overflow-y-auto custom-scrollbar pr-1 py-1 font-sans text-slate-300">
         {renderComponentBody()}
       </div>
     </div>

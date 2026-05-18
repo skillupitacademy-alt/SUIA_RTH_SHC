@@ -6,6 +6,7 @@ export interface TechnicalSectionPattern {
     id: string;
     title: string;
     content: string;
+    diagramAsset?: any;
     diagram?: {
       type: 'anatomy' | 'flow' | 'chain';
       data: any;

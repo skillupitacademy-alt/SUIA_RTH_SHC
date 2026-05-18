@@ -57,11 +57,11 @@ export function NotesSyntaxBlock({
 
       {/* Optional Visual Architecture Diagram */}
       {image && (
-        <div className="mb-8 overflow-hidden rounded-2xl border border-slate-100 shadow-sm">
+        <div className="mb-8 overflow-hidden rounded-2xl border border-slate-100 shadow-sm bg-slate-50/50 p-3">
            <SVGIconRenderer 
              dataUri={typeof image === 'string' ? image : image?.dataUri} 
              alt={typeof image === 'object' ? image?.alt : 'Syntax Visual'} 
-             className="w-full h-auto max-h-[350px] object-cover"
+             className="w-full h-auto max-h-[450px] object-contain mx-auto"
            />
         </div>
       )}

@@ -18,7 +18,6 @@ import {
   initialSectionStatus,
   SUBSECTIONS_MAP,
   getDefaultAssetFieldPath,
-  getAllowedAssetFieldPaths,
 } from './types';
 
 function setNestedJsonValue(target: Record<string, unknown>, path: string, value: unknown) {

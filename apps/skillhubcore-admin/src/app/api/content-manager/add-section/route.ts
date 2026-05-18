@@ -683,8 +683,14 @@ function transformNotesSection(content: JsonRecord, subtopicName: string): JsonR
         ...asRecord(content.summaryHeroInfographic),
         ...(normalizeSvgAsset(asRecord(content.summaryHeroInfographic).image) ? { image: normalizeSvgAsset(asRecord(content.summaryHeroInfographic).image) } : {})
       } : undefined,
-      conceptMemoryMap: isRecord(content.conceptMemoryMap) ? asRecord(content.conceptMemoryMap) : undefined,
-      cheatSheetSVG: isRecord(content.cheatSheetSVG) ? asRecord(content.cheatSheetSVG) : undefined,
+      conceptMemoryMap: isRecord(content.conceptMemoryMap) ? {
+        ...asRecord(content.conceptMemoryMap),
+        ...(normalizeSvgAsset(asRecord(content.conceptMemoryMap).image) ? { image: normalizeSvgAsset(asRecord(content.conceptMemoryMap).image) } : {})
+      } : undefined,
+      cheatSheetSVG: isRecord(content.cheatSheetSVG) ? {
+        ...asRecord(content.cheatSheetSVG),
+        ...(normalizeSvgAsset(asRecord(content.cheatSheetSVG).image) ? { image: normalizeSvgAsset(asRecord(content.cheatSheetSVG).image) } : {})
+      } : undefined,
       definitionBlock: {
         ...definitionBlock,
         quickSummary: asArray(definitionBlock.quickSummary),
@@ -694,7 +700,10 @@ function transformNotesSection(content: JsonRecord, subtopicName: string): JsonR
         ...componentGrid,
         componentCards: asArray(componentGrid.componentCards),
       },
-      syntaxBlock: isRecord(content.syntaxBlock) ? asRecord(content.syntaxBlock) : undefined,
+      syntaxBlock: isRecord(content.syntaxBlock) ? {
+        ...asRecord(content.syntaxBlock),
+        ...(normalizeSvgAsset(asRecord(content.syntaxBlock).image) ? { image: normalizeSvgAsset(asRecord(content.syntaxBlock).image) } : {})
+      } : undefined,
       examplePanel: {
         ...examplePanel,
         scenarios: asArray(examplePanel.scenarios),

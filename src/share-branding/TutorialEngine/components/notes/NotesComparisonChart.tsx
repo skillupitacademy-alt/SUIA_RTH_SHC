@@ -1,8 +1,10 @@
 import React from 'react';
 import * as Icons from 'lucide-react';
 import { useBrand } from '../../../PostLandingPage/app/context/BrandContext';
+import { SVGIconRenderer } from '../shared/SVGIconRenderer';
 
 interface NotesComparisonChartProps {
+  image?: any;
   title: string;
   columns: string[];
   rows: string[][];
@@ -13,8 +15,11 @@ interface NotesComparisonChartProps {
  * Renderer: comparison_summary_chart
  * Purpose: Side-by-side comparison of technical concepts
  */
-export function NotesComparisonChart({ title, columns, rows }: NotesComparisonChartProps) {
+export function NotesComparisonChart({ image, title, columns, rows }: NotesComparisonChartProps) {
   const brand = useBrand();
+
+  const dataUri = typeof image === 'string' ? image : image?.dataUri;
+  const altText = typeof image === 'object' ? image?.alt : 'Comparison Diagram';
 
   return (
     <div className="w-full rounded-[24px] border border-slate-200 bg-white p-6 shadow-xl sm:p-8 overflow-hidden">
@@ -27,6 +32,16 @@ export function NotesComparisonChart({ title, columns, rows }: NotesComparisonCh
         </div>
         <h3 className="text-sm font-bold uppercase tracking-widest text-slate-500">Comparison Summary Chart</h3>
       </div>
+
+      {dataUri && (
+        <div className="mb-8 overflow-hidden rounded-2xl border border-slate-100 shadow-sm bg-slate-50/50 p-3">
+          <SVGIconRenderer 
+            dataUri={dataUri} 
+            alt={altText} 
+            className="w-full h-auto max-h-[450px] object-contain mx-auto"
+          />
+        </div>
+      )}
 
       <div className="overflow-x-auto rounded-xl border border-slate-100 shadow-sm">
         <table className="w-full text-left text-sm">

@@ -27,6 +27,7 @@ export interface CodeSectionPattern {
     output: string;
     explanation: string;
     visualRepresentation: string;
+    previewAsset?: any;
   };
   bestPracticeVersion?: {
     title: string;

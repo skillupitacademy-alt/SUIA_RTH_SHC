@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { 
   Eye, Sparkles, Edit, List, Map, 
   ArrowRight, Compass, CheckCircle2, 
-  Layers, X, Save, Plus, Trash2, AlertTriangle
+  Layers, X, Save, Plus, Trash2
 } from 'lucide-react';
 import { SubsectionInfo, SectionSpec } from './types';
 import { SECTIONS_SPECS } from './sections-specs';
