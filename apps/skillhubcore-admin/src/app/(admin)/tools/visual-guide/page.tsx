@@ -75,14 +75,16 @@ export function VisualGuideUI() {
       if (!wireframeCanvasRef.current) return;
       
       const overlays = wireframeCanvasRef.current.querySelectorAll('.absolute.inset-0');
-      let activeOverlay: Element | null = null;
+      let activeOverlay: HTMLElement | null = null;
       
-      overlays.forEach((el) => {
-        const className = el.className;
+      for (const el of Array.from(overlays)) {
+        const htmlEl = el as HTMLElement;
+        const className = htmlEl.className;
         if (className.includes('scale-100') && !className.includes('border-transparent')) {
-          activeOverlay = el;
+          activeOverlay = htmlEl;
+          break;
         }
-      });
+      }
       
       if (activeOverlay && activeOverlay.parentElement) {
         activeOverlay.parentElement.scrollIntoView({
