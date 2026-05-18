@@ -55,14 +55,20 @@ const SECTIONS_SPECS: SectionSpec[] = [
     subsections: [
       { id: 'simpleWords', label: 'Simple Words', purpose: 'Friendly 2-sentence description of the concept', components: ['Intro text block'] },
       { id: 'definitionBlock', label: 'Definition Block', purpose: 'Canonical, dictionary-style term glossary card', components: ['Term badge', 'Formal definition', 'Key traits', 'Memory hook'] },
-      { id: 'conceptMemoryMap', label: 'Memory Map Graphic', purpose: 'SVG node diagram illustrating relationship connections', components: ['Memory map title', 'SVG node chart'], svgId: 'notes-memory-map', svgLabel: 'Concept Memory Map' },
+      { id: 'sections', label: 'Detailed Sections List', purpose: 'Bullet points detailing sub-topics', components: ['Detailed headings list'] },
       { id: 'syntaxBlock', label: 'Syntax Block', purpose: 'Syntax diagram with highlights pointing out code elements', components: ['Syntax Title Block', 'Visual pointing SVG diagram'], svgId: 'notes-syntax', svgLabel: 'Syntax Diagram' },
       { id: 'componentGrid', label: 'Component Grid', purpose: 'A layout grid detailing major sub-elements', components: ['3-column cards', 'Hover animations'] },
       { id: 'examplePanel', label: 'Example Panel', purpose: 'A detailed example of syntax with explanation', components: ['Code card', 'Protip note'] },
       { id: 'practiceCard', label: 'Practice Card', purpose: 'A quick recall block to test immediate learning', components: ['Quick recall quiz options'] },
       { id: 'warningFaq', label: 'Warning FAQ', purpose: 'Critical common traps and FAQs', components: ['Warning Banner', 'Gotchas list'] },
-      { id: 'summaryCard', label: 'Summary Card', purpose: 'An aesthetic summary graphic for rapid revision', components: ['Revision intent', 'SVG summary infographic'], svgId: 'notes-summary', svgLabel: 'Revision Summary' },
-      { id: 'footerBlock', label: 'Footer Block', purpose: 'Closing section call-to-action banner', components: ['Closing line', 'SVG Footer Illustration'], svgId: 'notes-footer', svgLabel: 'Footer Visual' }
+      { id: 'summaryCard', label: 'Summary Card', purpose: 'An aesthetic summary graphic for rapid revision', components: ['Revision intent', 'SVG summary infographic'] },
+      { id: 'footerBlock', label: 'Footer Block', purpose: 'Closing section call-to-action banner', components: ['Closing line', 'SVG Footer Illustration'] },
+      { id: 'flashcardVisualSystem', label: 'Flashcard Visual System', purpose: 'Visual flashcard quiz system with question-answer pairs', components: ['Flashcard container', 'Show answer flip interaction'], svgId: 'notes-flashcard', svgLabel: 'Flashcard Visual' },
+      { id: 'comparisonSummaryChart', label: 'Comparison Summary Chart', purpose: 'Detailed system comparison table with key metrics', components: ['Side-by-side grid', 'Feature checkmarks'], svgId: 'notes-comparison', svgLabel: 'Comparison Chart' },
+      { id: 'mnemonicRetentionGraphic', label: 'Mnemonic Retention Graphic', purpose: 'Creative memory hook visualization for long-term storage', components: ['Visual anchor illustration', 'Text explanation block'], svgId: 'notes-mnemonic', svgLabel: 'Mnemonic Graphic' },
+      { id: 'summaryHeroSvg', label: 'Summary Hero (SVG)', purpose: 'Large hero blueprint visual', components: ['SVG Hero Banner'], svgId: 'notes-hero', svgLabel: 'Hero Infographic' },
+      { id: 'conceptMemoryMapSvg', label: 'Concept Memory Map (SVG)', purpose: 'SVG node relationship blueprint graphic', components: ['SVG Relationship Chart'], svgId: 'notes-memory-map', svgLabel: 'Concept Memory Map' },
+      { id: 'cheatSheetSVG', label: 'Cheat Sheet (SVG)', purpose: 'Cheat sheet reference blueprint diagram', components: ['SVG reference cheat sheet'], svgId: 'notes-cheatsheet', svgLabel: 'Cheat Sheet' }
     ]
   },
   {
@@ -72,14 +78,17 @@ const SECTIONS_SPECS: SectionSpec[] = [
     color: 'from-amber-500 to-orange-500',
     glowColor: 'rgba(245, 158, 11, 0.4)',
     subsections: [
-      { id: 'simpleOverview', label: 'Simple Overview', purpose: 'Welcoming non-technical introduction banner', components: ['Friendly title', 'Illustrative overview SVG'], svgId: 'layman-overview', svgLabel: 'Concept Overview' },
-      { id: 'everydayAnalogy', label: 'Everyday Analogy', purpose: 'The core comparison card detailing a real-life analog', components: ['Analogy card title', 'Real-world analog story', 'Analogy SVG Graphic'], svgId: 'layman-analogy', svgLabel: 'Everyday Analogy' },
+      { id: 'simpleOverview', label: 'Simple Overview', purpose: 'Welcoming non-technical introduction banner', components: ['Friendly title'] },
+      { id: 'everydayAnalogy', label: 'Everyday Analogy', purpose: 'The core comparison card detailing a real-life analog', components: ['Analogy card title', 'Real-world analog story'] },
       { id: 'whyItExists', label: 'Why It Exists', purpose: 'Highlights historical reasons for creation', components: ['Problem solved cards', 'Before-and-after grid'] },
       { id: 'simpleUseCases', label: 'Simple Use Cases', purpose: 'Simple situations where this tool is standard', components: ['Layman Use Case cards'] },
       { id: 'beginnerBreakdown', label: 'Beginner Breakdown', purpose: 'Step-by-step plain English breakdown of components', components: ['Accordion cards', 'No-code process flow'] },
-      { id: 'mentalModel', label: 'Mental Model Framework', purpose: 'A structured mental model connection diagram', components: ['Mental model mapping', 'SVG connection graph'], svgId: 'layman-mental-model', svgLabel: 'Mental Model Diagram' },
+      { id: 'mentalModel', label: 'Mental Model Framework', purpose: 'A structured mental model connection diagram', components: ['Mental model mapping'] },
       { id: 'commonConfusions', label: 'Common Confusions', purpose: 'Common layman-level misconceptions clarified', components: ['Myth vs Fact cards'] },
-      { id: 'simpleRecap', label: 'Simple Recap', purpose: 'A short, cheerful closing summary card', components: ['Recap bullet points'] }
+      { id: 'simpleRecap', label: 'Simple Recap', purpose: 'A short, cheerful closing summary card', components: ['Recap bullet points'] },
+      { id: 'heroVisualSvg', label: 'Hero Visual (SVG)', purpose: 'A simple, welcoming hero visual introducing the concept to a complete beginner', components: ['SVG Concept Overview'], svgId: 'layman-overview', svgLabel: 'Concept Overview' },
+      { id: 'analogySvg', label: 'Analogy Graphic (SVG)', purpose: 'A clean educational analogy illustration that visually explains the everyday comparison', components: ['SVG Analogy Graphic'], svgId: 'layman-analogy', svgLabel: 'Everyday Analogy' },
+      { id: 'mentalModelSvg', label: 'Mental Model diagram (SVG)', purpose: 'A concept-map style diagram that shows how the key ideas connect', components: ['SVG Mental Model Diagram'], svgId: 'layman-mental-model', svgLabel: 'Mental Model Diagram' }
     ]
   },
   {
@@ -156,7 +165,11 @@ const SECTIONS_SPECS: SectionSpec[] = [
       { id: 'assessmentIntro', label: 'Assessment Intro', purpose: 'Motivation prompt card for practice test', components: ['Motivational tagline', 'Ready badge', 'XP potential banner'], svgId: 'practice-hero', svgLabel: 'Practice Test Hero Dashboard' },
       { id: 'conceptRecallQuestions', label: 'Recall Questions', purpose: 'Core pool of basic conceptual MCQs', components: ['Question label', 'Option grids'] },
       { id: 'scenarioBasedQuestions', label: 'Scenario Questions', purpose: 'Advanced scenario-based developer questions', components: ['Scenario paragraph', 'Complex options'] },
-      { id: 'instantFeedback', label: 'Feedback Config', purpose: 'Configuration detailing explanations and readiness charts', components: ['Score meter', 'Recommendation advice SVG'], svgId: 'practice-benchmark', svgLabel: 'Readiness Benchmark' }
+      { id: 'difficultyProgression', label: 'Difficulty Progression', purpose: 'Visual progression showing easy, medium, hard paths', components: ['Difficulty slider', 'Adaptive route path'] },
+      { id: 'instantFeedback', label: 'Feedback Config', purpose: 'Configuration detailing explanations and readiness charts', components: ['Score meter', 'Recommendation advice SVG'], svgId: 'practice-benchmark', svgLabel: 'Readiness Benchmark' },
+      { id: 'commonMistakeDetection', label: 'Common Mistake Detection', purpose: 'A system to scan student answers for typical misunderstandings', components: ['Misconception prompt', 'Dynamic help hint'] },
+      { id: 'performanceAnalytics', label: 'Performance Analytics', purpose: 'Radar or bar charts charting student strength across subtopics', components: ['Radar chart', 'Strength breakdown'] },
+      { id: 'revisionRecommendations', label: 'Revision Recommendations', purpose: 'Smart revision resources recommended based on quiz performance', components: ['Recommended resources links'] }
     ]
   },
   {
@@ -770,6 +783,106 @@ export function VisualGuideUI() {
                 <span className="text-[9px] font-black text-slate-400 mt-2 block">Footer Block (footerBlock)</span>
               </div>
 
+              {/* Detailed Sections List */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 mb-4 relative mt-4">
+                <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                  selectedSectionId === 'notes' && selectedSubsectionId === 'sections' 
+                    ? 'border-orange-500 bg-orange-500/5 scale-100' 
+                    : 'border-transparent'
+                }`} />
+                <div className="h-4 w-44 rounded bg-slate-300 mb-2"></div>
+                <div className="flex flex-col gap-2">
+                  <div className="h-2.5 w-full rounded bg-slate-200"></div>
+                  <div className="h-2.5 w-[90%] rounded bg-slate-150"></div>
+                  <div className="h-2.5 w-[95%] rounded bg-slate-100"></div>
+                </div>
+                <span className="text-[9px] font-black text-slate-400 mt-2 block">Detailed Sections List (sections)</span>
+              </div>
+
+              {/* Flashcard Visual System */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 mb-4 relative">
+                <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                  selectedSectionId === 'notes' && selectedSubsectionId === 'flashcardVisualSystem' 
+                    ? 'border-orange-500 bg-orange-500/5 scale-100' 
+                    : 'border-transparent'
+                }`} />
+                <div className="h-3.5 w-40 rounded bg-slate-350 mb-2"></div>
+                <div className="h-16 rounded border border-dashed border-slate-300 bg-slate-100/50 flex items-center justify-center text-[10px] font-extrabold text-slate-500">
+                  ⚡ Flashcard SVG Visual System (flashcardVisualSystem.image)
+                </div>
+                <span className="text-[9px] font-black text-slate-400 mt-2 block">Flashcard Visual System (flashcardVisualSystem)</span>
+              </div>
+
+              {/* Comparison Summary Chart */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 mb-4 relative">
+                <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                  selectedSectionId === 'notes' && selectedSubsectionId === 'comparisonSummaryChart' 
+                    ? 'border-orange-500 bg-orange-500/5 scale-100' 
+                    : 'border-transparent'
+                }`} />
+                <div className="h-3.5 w-44 rounded bg-slate-350 mb-2"></div>
+                <div className="h-16 rounded border border-dashed border-slate-300 bg-slate-100/50 flex items-center justify-center text-[10px] font-extrabold text-slate-500">
+                  📊 Comparison Chart SVG (comparisonSummaryChart.image)
+                </div>
+                <span className="text-[9px] font-black text-slate-400 mt-2 block">Comparison Summary Chart (comparisonSummaryChart)</span>
+              </div>
+
+              {/* Mnemonic Retention Graphic */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 mb-4 relative">
+                <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                  selectedSectionId === 'notes' && selectedSubsectionId === 'mnemonicRetentionGraphic' 
+                    ? 'border-orange-500 bg-orange-500/5 scale-100' 
+                    : 'border-transparent'
+                }`} />
+                <div className="h-3.5 w-48 rounded bg-slate-350 mb-2"></div>
+                <div className="h-16 rounded border border-dashed border-slate-300 bg-slate-100/50 flex items-center justify-center text-[10px] font-extrabold text-slate-500">
+                  🧠 Mnemonic Graphic SVG (mnemonicRetentionGraphic.image)
+                </div>
+                <span className="text-[9px] font-black text-slate-400 mt-2 block">Mnemonic Retention Graphic (mnemonicRetentionGraphic)</span>
+              </div>
+
+              {/* Summary Hero SVG */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 mb-4 relative">
+                <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                  selectedSectionId === 'notes' && selectedSubsectionId === 'summaryHeroSvg' 
+                    ? 'border-orange-500 bg-orange-500/5 scale-100' 
+                    : 'border-transparent'
+                }`} />
+                <div className="h-3.5 w-36 rounded bg-slate-300 mb-2"></div>
+                <div className="h-20 rounded border border-dashed border-slate-300 bg-slate-100/50 flex items-center justify-center text-[10px] font-extrabold text-slate-500">
+                  ✨ Summary Hero Infographic SVG (notes-hero)
+                </div>
+                <span className="text-[9px] font-black text-slate-400 mt-2 block">Summary Hero SVG (summaryHeroSvg)</span>
+              </div>
+
+              {/* Concept Memory Map SVG */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 mb-4 relative">
+                <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                  selectedSectionId === 'notes' && selectedSubsectionId === 'conceptMemoryMapSvg' 
+                    ? 'border-orange-500 bg-orange-500/5 scale-100' 
+                    : 'border-transparent'
+                }`} />
+                <div className="h-3.5 w-44 rounded bg-slate-350 mb-2"></div>
+                <div className="h-20 rounded border border-dashed border-slate-300 bg-slate-100/50 flex items-center justify-center text-[10px] font-extrabold text-slate-500">
+                  🗺️ Concept Relationship Node Diagram SVG (notes-memory-map)
+                </div>
+                <span className="text-[9px] font-black text-slate-400 mt-2 block">Concept Memory Map SVG (conceptMemoryMapSvg)</span>
+              </div>
+
+              {/* Cheat Sheet SVG */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 mb-4 relative">
+                <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                  selectedSectionId === 'notes' && selectedSubsectionId === 'cheatSheetSVG' 
+                    ? 'border-orange-500 bg-orange-500/5 scale-100' 
+                    : 'border-transparent'
+                }`} />
+                <div className="h-3.5 w-32 rounded bg-slate-300 mb-2"></div>
+                <div className="h-20 rounded border border-dashed border-slate-300 bg-slate-100/50 flex items-center justify-center text-[10px] font-extrabold text-slate-500">
+                  📋 Quick-Reference Cheat Sheet SVG (notes-cheatsheet)
+                </div>
+                <span className="text-[9px] font-black text-slate-400 mt-2 block">Cheat Sheet SVG (cheatSheetSVG)</span>
+              </div>
+
             </div>
             )}
 
@@ -906,6 +1019,51 @@ export function VisualGuideUI() {
                   <div className="h-3.5 w-32 rounded bg-slate-350"></div>
                   <div className="h-10 bg-slate-200 border border-slate-300 rounded flex items-center px-2 text-[10px] font-bold text-slate-550">Layman Summary Card</div>
                   <span className="text-[9px] font-black text-slate-400 mt-1 block">Simple Recap (simpleRecap)</span>
+                </div>
+              </div>
+
+              {/* Layman SVG Visuals */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                {/* heroVisualSvg */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'layman' && selectedSubsectionId === 'heroVisualSvg' 
+                      ? 'border-amber-500 bg-amber-500/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-32 rounded bg-slate-350"></div>
+                  <div className="h-20 bg-white rounded border border-dashed border-slate-300 flex items-center justify-center text-[10px] font-extrabold text-slate-500 text-center px-2">
+                    🎨 Concept Overview Hero (layman-overview)
+                  </div>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Hero Visual SVG (heroVisualSvg)</span>
+                </div>
+
+                {/* analogySvg */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'layman' && selectedSubsectionId === 'analogySvg' 
+                      ? 'border-amber-500 bg-amber-500/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-32 rounded bg-slate-350"></div>
+                  <div className="h-20 bg-white rounded border border-dashed border-slate-300 flex items-center justify-center text-[10px] font-extrabold text-slate-500 text-center px-2">
+                    💡 Analogy Graphic SVG (layman-analogy)
+                  </div>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Analogy Graphic SVG (analogySvg)</span>
+                </div>
+
+                {/* mentalModelSvg */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'layman' && selectedSubsectionId === 'mentalModelSvg' 
+                      ? 'border-amber-500 bg-amber-500/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-32 rounded bg-slate-350"></div>
+                  <div className="h-20 bg-white rounded border border-dashed border-slate-300 flex items-center justify-center text-[10px] font-extrabold text-slate-500 text-center px-2">
+                    🗺️ Mental Model Diagram SVG (layman-mental-model)
+                  </div>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Mental Model SVG (mentalModelSvg)</span>
                 </div>
               </div>
 
@@ -1434,9 +1592,63 @@ export function VisualGuideUI() {
                       ? 'border-violet-500 bg-violet-500/5 scale-100' 
                       : 'border-transparent'
                   }`} />
-                  <div className="h-3.5 w-32 rounded bg-slate-350"></div>
+                  <div className="h-3.5 w-32 rounded bg-slate-355 bg-slate-350"></div>
                   <div className="h-10 bg-slate-200 border border-slate-300 rounded flex items-center px-2 text-[10px] font-bold text-slate-550">Readiness advice recommendation dashboard SVG</div>
                   <span className="text-[9px] font-black text-slate-400 mt-1 block">Feedback Config (instantFeedback)</span>
+                </div>
+              </div>
+
+              {/* Difficulty Progression & Common Mistake Detection */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative mt-4">
+                {/* difficultyProgression */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'practice' && selectedSubsectionId === 'difficultyProgression' 
+                      ? 'border-violet-500 bg-violet-500/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-32 rounded bg-slate-300"></div>
+                  <div className="h-10 bg-slate-200 border border-slate-300 rounded flex items-center px-2 text-[10px] font-bold text-slate-500">Visual easy, medium, hard paths slider</div>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Difficulty Path (difficultyProgression)</span>
+                </div>
+
+                {/* commonMistakeDetection */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'practice' && selectedSubsectionId === 'commonMistakeDetection' 
+                      ? 'border-violet-500 bg-violet-500/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-35 rounded bg-slate-350"></div>
+                  <div className="h-10 bg-slate-200 border border-slate-300 rounded flex items-center px-2 text-[10px] font-bold text-slate-550">Typical student misunderstandings helper</div>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Mistake Detection (commonMistakeDetection)</span>
+                </div>
+              </div>
+
+              {/* Performance Analytics & Smart Recommendations */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative mt-4">
+                {/* performanceAnalytics */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'practice' && selectedSubsectionId === 'performanceAnalytics' 
+                      ? 'border-violet-500 bg-violet-500/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-32 rounded bg-slate-300"></div>
+                  <div className="h-10 bg-slate-200 border border-slate-300 rounded flex items-center px-2 text-[10px] font-bold text-slate-500">Radar or bar strength analytics chart</div>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Analytics Chart (performanceAnalytics)</span>
+                </div>
+
+                {/* revisionRecommendations */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'practice' && selectedSubsectionId === 'revisionRecommendations' 
+                      ? 'border-violet-500 bg-violet-500/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-32 rounded bg-slate-350"></div>
+                  <div className="h-10 bg-slate-200 border border-slate-300 rounded flex items-center px-2 text-[10px] font-bold text-slate-550">Smart recommended revision links</div>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Revision Recommendations (revisionRecommendations)</span>
                 </div>
               </div>
 
