@@ -31,15 +31,7 @@ export interface SubtopicContentPattern extends NotesSectionPattern {
   progress?: ProgressSectionPattern;
 }
 
-import { componentArchitectureContent } from './subtopics/component-architecture';
-import { whatIsJavaScriptContent } from './subtopics/whatisjavascript';
-import { variableContent } from './subtopics/variable';
-
-export const subtopicContentRegistry: Record<string, SubtopicContentPattern> = {
-  'component-architecture': componentArchitectureContent,
-  'whatisjavascript': whatIsJavaScriptContent,
-  'variable': variableContent
-};
+export const subtopicContentRegistry: Record<string, SubtopicContentPattern> = {};
 
 /**
  * Get content for a subtopic
