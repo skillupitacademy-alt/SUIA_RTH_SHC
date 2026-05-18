@@ -38,6 +38,12 @@ const SUBSECTIONS_MAP: Record<string, Array<{ id: string; label: string }>> = {
     { id: 'warningFaq', label: 'Warning FAQ' },
     { id: 'summaryCard', label: 'Summary Card' },
     { id: 'footerBlock', label: 'Footer Block' },
+    { id: 'flashcardVisualSystem', label: 'Flashcard Visual System' },
+    { id: 'comparisonSummaryChart', label: 'Comparison Summary Chart' },
+    { id: 'mnemonicRetentionGraphic', label: 'Mnemonic Retention Graphic' },
+    { id: 'summaryHeroSvg', label: 'Summary Hero (SVG)' },
+    { id: 'conceptMemoryMapSvg', label: 'Concept Memory Map (SVG)' },
+    { id: 'cheatSheetSVG', label: 'Cheat Sheet (SVG)' },
   ],
   layman: [
     { id: 'simpleOverview', label: 'Simple Overview' },
@@ -48,6 +54,9 @@ const SUBSECTIONS_MAP: Record<string, Array<{ id: string; label: string }>> = {
     { id: 'mentalModel', label: 'Mental Model framework' },
     { id: 'commonConfusions', label: 'Common Confusions' },
     { id: 'simpleRecap', label: 'Simple Recap' },
+    { id: 'heroVisualSvg', label: 'Hero Visual (SVG)' },
+    { id: 'analogySvg', label: 'Analogy Graphic (SVG)' },
+    { id: 'mentalModelSvg', label: 'Mental Model diagram (SVG)' },
   ],
   overview: [
     { id: 'hero', label: 'Hero Block' },
@@ -98,7 +107,11 @@ const SUBSECTIONS_MAP: Record<string, Array<{ id: string; label: string }>> = {
     { id: 'assessmentIntro', label: 'Assessment Intro' },
     { id: 'conceptRecallQuestions', label: 'Concept Recall Questions' },
     { id: 'scenarioBasedQuestions', label: 'Scenario Based Questions' },
+    { id: 'difficultyProgression', label: 'Difficulty Progression' },
     { id: 'instantFeedback', label: 'Instant Feedback Config' },
+    { id: 'commonMistakeDetection', label: 'Common Mistake Detection' },
+    { id: 'performanceAnalytics', label: 'Performance Analytics' },
+    { id: 'revisionRecommendations', label: 'Revision Recommendations' },
   ],
   assignment: [
     { id: 'title', label: 'Title' },
@@ -142,10 +155,10 @@ const SUBSECTIONS_MAP: Record<string, Array<{ id: string; label: string }>> = {
   ],
   ai_tutor: [
     { id: 'greeting', label: 'Greeting' },
-    { id: 'qa_pairs', label: 'Q&A Pairs' },
-    { id: 'tutor_prompt_card', label: 'Tutor Prompt Card' },
-    { id: 'misconception_detector', label: 'Misconception Detector' },
-    { id: 'adaptive_hint_panel', label: 'Adaptive Hint Panel' },
+    { id: 'qaPairs', label: 'Q&A Pairs' },
+    { id: 'tutorPromptCard', label: 'Tutor Prompt Card' },
+    { id: 'misconceptionDetector', label: 'Misconception Detector' },
+    { id: 'adaptiveHintPanel', label: 'Adaptive Hint Panel' },
   ],
 };
 
