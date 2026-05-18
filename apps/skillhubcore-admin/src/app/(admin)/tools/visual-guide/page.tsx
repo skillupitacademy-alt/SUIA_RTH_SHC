@@ -315,6 +315,32 @@ export function VisualGuideUI() {
     }
   }, [highlightedElement]);
 
+  useEffect(() => {
+    // Scroll the selected subsection in the Simulated Canvas into view smoothly
+    const timer = setTimeout(() => {
+      if (!wireframeCanvasRef.current) return;
+      
+      const overlays = wireframeCanvasRef.current.querySelectorAll('.absolute.inset-0');
+      let activeOverlay: any = null;
+      
+      overlays.forEach((el) => {
+        const className = el.className;
+        if (className.includes('scale-100') && !className.includes('border-transparent')) {
+          activeOverlay = el;
+        }
+      });
+      
+      if (activeOverlay && activeOverlay.parentElement) {
+        activeOverlay.parentElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest'
+        });
+      }
+    }, 80); // Small delay to let React finish rendering state classes
+    
+    return () => clearTimeout(timer);
+  }, [selectedSectionId, selectedSubsectionId]);
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       {/* Upper Title Block */}
