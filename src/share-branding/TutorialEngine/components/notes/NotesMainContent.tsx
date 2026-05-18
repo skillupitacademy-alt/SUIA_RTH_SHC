@@ -26,7 +26,7 @@ function NotesSimpleWords({ simpleWords }: { simpleWords: string }) {
         <Icons.HelpCircle size={220} />
       </div>
       <div className="flex gap-4 sm:gap-6 items-start relative z-10">
-        <div 
+        <div
           className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-white shadow-md shadow-blue-500/20"
           style={{ backgroundColor: brand.primaryColor }}
         >
@@ -60,14 +60,14 @@ function NotesConceptSections({ sections }: { sections: SectionItem[] }) {
   return (
     <div className="w-full space-y-10">
       {sections.map((section, idx) => (
-        <div 
+        <div
           key={section.id || idx}
           className="w-full rounded-[24px] border border-slate-200 bg-white p-6 shadow-xl sm:p-10 transition-all hover:shadow-2xl"
         >
           {/* Section Indicator */}
           <div className="mb-6 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div 
+              <div
                 className="flex h-8 w-8 items-center justify-center rounded-lg text-white"
                 style={{ backgroundColor: brand.primaryColor }}
               >
@@ -84,7 +84,7 @@ function NotesConceptSections({ sections }: { sections: SectionItem[] }) {
             <h3 className="text-2xl font-bold leading-tight text-slate-900 sm:text-3xl">
               {section.title}
             </h3>
-            
+
             <p className="text-base font-medium leading-relaxed text-slate-600 whitespace-pre-line">
               {section.content}
             </p>
@@ -117,14 +117,14 @@ function NotesConceptSections({ sections }: { sections: SectionItem[] }) {
                   </div>
                   <Icons.Code2 className="text-slate-400" size={16} />
                 </div>
-                
+
                 {/* Code Body */}
                 <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-800 font-mono text-[13px]">
                   {/* Input Code */}
                   <pre className="p-4 overflow-x-auto text-slate-300 leading-relaxed whitespace-pre subtopic-code-wrap">
                     <code>{section.codeExample.code}</code>
                   </pre>
-                  
+
                   {/* Console Output */}
                   <div className="p-4 bg-slate-900/60 font-sans">
                     <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Console Output</div>
@@ -148,14 +148,9 @@ export function NotesMainContent({ data, isStandalone = true }: { data: Subtopic
   const content = (
     <div className={`min-w-0 space-y-12 transition-all duration-500 ${isStandalone ? 'mx-auto w-full max-w-[1200px] px-4 py-8 sm:px-8 sm:py-10' : ''}`}>
 
-      {/* Page Meta Info (Breadcrumbs & Stats) */}
+      {/* Page Meta Info (Stats) */}
       <div className="space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-gray-100 pb-6">
-          <div className="flex min-w-0 flex-wrap items-center gap-2 text-xs font-bold sm:gap-4">
-             <span className="flex items-center gap-1.5 text-slate-400">
-               <Icons.Home size={14} /> {data.breadcrumbs.join(' / ')}
-             </span>
-          </div>
+        <div className="flex flex-wrap items-center justify-end gap-4 border-b border-gray-100 pb-6">
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1.5 text-slate-500 text-xs font-bold">
               <Icons.Clock size={14} /> {data.meta.readTime}
@@ -188,7 +183,7 @@ export function NotesMainContent({ data, isStandalone = true }: { data: Subtopic
       )}
 
       {data.summaryHeroInfographic != null && (
-        <NotesHeroInfographic 
+        <NotesHeroInfographic
           summaryTitle={data.summaryHeroInfographic.summaryTitle || data.title}
           image={data.summaryHeroInfographic.image}
           examTips={data.summaryHeroInfographic.examTips || []}
@@ -204,10 +199,10 @@ export function NotesMainContent({ data, isStandalone = true }: { data: Subtopic
 
       {/* 2. CONCEPT CARD / MEMORY MAP */}
       {data.conceptMemoryMap != null && (
-        <NotesConceptMemoryMap 
+        <NotesConceptMemoryMap
           image={data.conceptMemoryMap.image}
-          nodes={data.conceptMemoryMap.nodes || []} 
-          connections={data.conceptMemoryMap.connections || []} 
+          nodes={data.conceptMemoryMap.nodes || []}
+          connections={data.conceptMemoryMap.connections || []}
         />
       )}
 
@@ -269,39 +264,39 @@ export function NotesMainContent({ data, isStandalone = true }: { data: Subtopic
 
       {/* ADDITIONAL VISUALS (If any) */}
       <div className="space-y-12">
-          {data.cheatSheetSVG != null && (
-            <NotesCheatSheet 
-              image={data.cheatSheetSVG.image}
-              title={data.cheatSheetSVG.title}
-              items={data.cheatSheetSVG.sections || []}
-            />
-          )}
+        {data.cheatSheetSVG != null && (
+          <NotesCheatSheet
+            image={data.cheatSheetSVG.image}
+            title={data.cheatSheetSVG.title}
+            items={data.cheatSheetSVG.sections || []}
+          />
+        )}
 
-          {data.flashcardVisualSystem != null && (
-            <NotesFlashcardSystem cards={data.flashcardVisualSystem.cards || []} />
-          )}
+        {data.flashcardVisualSystem != null && (
+          <NotesFlashcardSystem cards={data.flashcardVisualSystem.cards || []} />
+        )}
 
-          {data.comparisonSummaryChart != null && (
-            <NotesComparisonChart 
-              title={data.comparisonSummaryChart.title || "Comparison Summary"}
-              columns={data.comparisonSummaryChart.columns || []}
-              rows={data.comparisonSummaryChart.rows || []}
-            />
-          )}
+        {data.comparisonSummaryChart != null && (
+          <NotesComparisonChart
+            title={data.comparisonSummaryChart.title || "Comparison Summary"}
+            columns={data.comparisonSummaryChart.columns || []}
+            rows={data.comparisonSummaryChart.rows || []}
+          />
+        )}
 
-          {data.mnemonicRetentionGraphic != null && (
-            <NotesMnemonicGraphic 
-              mnemonicTitle={data.mnemonicRetentionGraphic.mnemonicTitle || ''}
-              memoryHook={data.mnemonicRetentionGraphic.memoryHook || ''}
-              rememberItems={data.mnemonicRetentionGraphic.rememberItems || []}
-              keyPoints={data.mnemonicRetentionGraphic.keyPoints || []}
-            />
-          )}
+        {data.mnemonicRetentionGraphic != null && (
+          <NotesMnemonicGraphic
+            mnemonicTitle={data.mnemonicRetentionGraphic.mnemonicTitle || ''}
+            memoryHook={data.mnemonicRetentionGraphic.memoryHook || ''}
+            rememberItems={data.mnemonicRetentionGraphic.rememberItems || []}
+            keyPoints={data.mnemonicRetentionGraphic.keyPoints || []}
+          />
+        )}
       </div>
 
       {/* FOOTER SECTION */}
       {data.footerBlock != null && (
-        <NotesFooter 
+        <NotesFooter
           image={data.footerBlock.image}
           finalNote={data.footerBlock.finalNote || ''}
           nextStepLabel={data.footerBlock.nextStepLabel || ''}
