@@ -71,7 +71,7 @@ export default async function SubtopicPage({ params, searchParams }: SubtopicPag
         overviewData={overviewData}
         initialNotesData={initialNotesData}
         initialTab={initialTab}
-        useAPI={false}
+        useAPI={true}
       />
     </BrandProvider>
   );

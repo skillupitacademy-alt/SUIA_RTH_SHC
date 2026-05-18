@@ -26,7 +26,7 @@ export function SubtopicNotesPageWrapper({
   overviewData,
   initialNotesData = null,
   initialTab = 'overview',
-  useAPI = false // Default to static files for now, can be toggled via feature flag
+  useAPI = true // Default to API mode forever
 }: SubtopicNotesPageWrapperProps) {
   const brand = useBrand();
   const [notesData, setNotesData] = useState<SubtopicNotesViewData | null>(initialNotesData);

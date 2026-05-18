@@ -1,7 +1,6 @@
 import { SubtopicContentPattern } from '../subtopicContentRegistry';
 
 export const whatIsJavaScriptContent: SubtopicContentPattern = {
-  'whatisjavascript': {
     simpleWords: 'What is JavaScript in Front End Development',
     definitionBlock: {
         badge: "Core Concept",
@@ -521,5 +520,4 @@ export const whatIsJavaScriptContent: SubtopicContentPattern = {
             practicalAdvice: "Focus on hands-on projects that simulate real business applications. Practical JavaScript experience is highly valued by employers."
         }
     }
-  },
 };

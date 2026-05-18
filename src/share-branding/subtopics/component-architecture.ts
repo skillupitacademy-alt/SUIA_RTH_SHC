@@ -1,7 +1,6 @@
 import { SubtopicContentPattern } from '../subtopicContentRegistry';
 
 export const componentArchitectureContent: SubtopicContentPattern = {
-  'component-architecture': {
     simpleWords: 'Component architecture is a way to build user interfaces by assembling small, isolated, and reusable pieces of code called components, rather than building the entire page as one single chunk.',
     definitionBlock: {
       badge: 'Core Concept',
@@ -1518,5 +1517,4 @@ const App = () => <Button label="Click Me" />;`,
         ]
       }
     }
-  },
 };

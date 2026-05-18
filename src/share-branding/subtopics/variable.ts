@@ -1,7 +1,6 @@
 import { SubtopicContentPattern } from '../subtopicContentRegistry';
 
 export const variableContent: SubtopicContentPattern = {
-  'variable': {
     simpleWords: 'Variables and Data Types in Front End Development',
     definitionBlock: {
         badge: "Core Concept",
@@ -1791,5 +1790,4 @@ export const variableContent: SubtopicContentPattern = {
             ]
         }
     }
-  }
 };
