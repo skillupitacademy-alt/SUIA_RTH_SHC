@@ -297,7 +297,7 @@ export function SubtopicNotesPage({
                         <p className="break-words text-sm font-medium text-slate-800">{notesData.leftSidebar.progress.message}</p>
                       </div>
                     </div>
-                    <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-3">
+                    <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2">
                       <div className="rounded-2xl border border-slate-100 bg-slate-50 p-5">
                         <p className="text-[11px] font-bold uppercase tracking-wider text-slate-700">Course</p>
                         <p className="mt-2 break-words text-lg font-bold text-slate-950">{notesData.rightSidebar.courseProgress.courseName}</p>
@@ -305,10 +305,6 @@ export function SubtopicNotesPage({
                       <div className="rounded-2xl border border-slate-100 bg-slate-50 p-5">
                         <p className="text-[11px] font-bold uppercase tracking-wider text-slate-700">Completion</p>
                         <p className="mt-2 text-lg font-bold text-slate-950">{notesData.rightSidebar.courseProgress.label}</p>
-                      </div>
-                      <div className="rounded-2xl border border-slate-100 bg-slate-50 p-5">
-                        <p className="text-[11px] font-bold uppercase tracking-wider text-slate-700">XP</p>
-                        <p className="mt-2 flex items-center gap-2 text-lg font-bold text-emerald-800"><Star size={18} aria-hidden="true" /> +{notesData.rightSidebar.xpStats.earned} XP</p>
                       </div>
                     </div>
                     <div className="space-y-3">

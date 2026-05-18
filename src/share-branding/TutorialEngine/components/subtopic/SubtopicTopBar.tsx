@@ -62,19 +62,7 @@ export function SubtopicTopBar({ data, isLeftOpen, isRightOpen, onToggleLeft, on
         </Link>
 
         <div className="flex min-w-0 items-center gap-2 sm:gap-4 lg:pl-2">
-          {/* Streak */}
-          <div className="hidden items-center gap-1.5 min-[420px]:flex">
-            <Flame size={18} fill="currentColor" style={{ color: brand.primaryColor }} aria-hidden="true" />
-            <span className="text-sm font-bold text-slate-950">{data.streak}</span>
-          </div>
 
-          {/* XP */}
-          <div className="hidden flex-col items-end md:flex">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-800 leading-none">Total XP</span>
-            <span className="text-sm font-bold text-primary leading-none" style={{ color: brand.primaryColor }}>
-              {data.xpPoints.toLocaleString()}
-            </span>
-          </div>
 
           {/* Profile Circle */}
           <div 
