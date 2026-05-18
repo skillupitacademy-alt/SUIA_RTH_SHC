@@ -55,6 +55,144 @@ const DOMAIN_TABLE_MAP: Record<string, any> = {
   ai_tutor: tutorialSectionAITutor,
 };
 
+const DOMAIN_TABLE_DEFAULTS: Record<string, Record<string, unknown>> = {
+  overview: {
+    hero: {},
+    progressSummary: {},
+    learningOutcomes: [],
+    learningRoadmap: {},
+    recommendedFlow: [],
+    readinessContext: {},
+    navigation: {},
+  },
+  notes: {
+    simpleWords: '',
+    definitionBlock: {},
+    sections: [],
+    componentGrid: {},
+    examplePanel: {},
+    practiceCard: {},
+    warningFaq: {},
+    summaryCard: {},
+    syntaxBlock: null,
+    footerBlock: null,
+    summaryHeroSvg: null,
+    conceptMemoryMapSvg: null,
+    cheatSheetSVG: null,
+  },
+  layman: {
+    simpleOverview: {},
+    everydayAnalogy: {},
+    whyItExists: {},
+    simpleUseCases: {},
+    beginnerBreakdown: {},
+    mentalModel: {},
+    commonConfusions: {},
+    simpleRecap: {},
+    heroVisualSvg: null,
+    analogySvg: null,
+    mentalModelSvg: null,
+  },
+  real_life: {
+    conceptMapping: {},
+    industryUseCase: {},
+    dailyLifeExample: {},
+    careerRelevance: {},
+    problemSolutionContext: {},
+    businessApplication: {},
+    domainScenarios: {},
+    practicalRecap: {},
+  },
+  technical: {
+    title: '',
+    badge: '',
+    intro: '',
+    sections: [],
+  },
+  code: {
+    problemContext: {},
+    basicCodeExample: {},
+    lineByLineExplanation: {},
+    outputDemonstration: {},
+    bestPracticeVersion: {},
+    commonMistakes: {},
+    realWorldImplementation: {},
+    codeSummary: {},
+  },
+  visual: {
+    conceptVisualIntro: {},
+    diagrammaticBreakdown: {},
+    stepByStepVisualFlow: {},
+    comparativeVisualization: {},
+    mentalModelVisualization: {},
+    realWorldVisualMapping: {},
+    commonConfusionVisualization: {},
+    visualSummary: {},
+  },
+  practice: {
+    assessmentIntro: {},
+    conceptRecallQuestions: {},
+    scenarioBasedQuestions: {},
+    instantFeedback: {},
+    difficultyProgression: {},
+    commonMistakeDetection: {},
+    performanceAnalytics: {},
+    revisionRecommendations: {},
+  },
+  assignment: {
+    title: '',
+    description: '',
+    xp: 150,
+    duration: '20 Mins',
+    task: {},
+    objectives: [],
+    starterCode: '',
+    submissionGuidelines: [],
+  },
+  project: {
+    title: '',
+    description: '',
+    xp: 500,
+    deadline: '2 Days Left',
+    hero: {},
+    realWorldUse: '',
+    skills: [],
+    buildItems: [],
+    deliverables: [],
+  },
+  quiz: {
+    title: '',
+    description: '',
+    totalQuestions: 0,
+    duration: '15 min',
+    xp: 100,
+    questions: [],
+  },
+  summary: {
+    title: '',
+    description: '',
+    masteryRecapCard: {},
+    keyTakeawayGrid: [],
+    revisionChecklist: [],
+    nextStepPanel: {},
+  },
+  interview: {
+    title: '',
+    description: '',
+    interviewIntroCard: {},
+    questionBankPanel: {},
+    answerFrameworkCard: {},
+    mockInterviewFlow: {},
+  },
+  ai_tutor: {
+    greeting: '',
+    qaPairs: [],
+    tutorPromptCard: {},
+    misconceptionDetector: {},
+    adaptiveHintPanel: {},
+  },
+};
+
 const COLUMN_TO_PARENT_KEY: Record<string, string> = {
   summaryHeroSvg: 'summaryHeroInfographic',
   conceptMemoryMapSvg: 'conceptMemoryMap',
@@ -407,16 +545,97 @@ function transformOverviewSection(content: JsonRecord, subtopicName: string): Js
     completed: typeof item.completed === 'boolean' ? item.completed : false,
   }));
 
+  const rawOutcomes = asArray(content.learningOutcomes).map((o) => asString(o)).filter(Boolean);
+  const outcomes = rawOutcomes.length > 0 ? rawOutcomes : ['Understand the core concepts', 'Explore key use cases', 'Apply practical skills'];
+
+  const rawPre = asArray(readinessContext.prerequisites).map((p) => asString(p)).filter(Boolean);
+  const prerequisites = rawPre.length > 0 ? rawPre : ['Basic computer skills'];
+
+  const rawSuccess = asArray(readinessContext.successCriteria).map((s) => asString(s)).filter(Boolean);
+  const successCriteria = rawSuccess.length > 0 ? rawSuccess : ['Score 80% on the quiz', 'Submit assignments'];
+
+  const rawFlow = asArray(content.recommendedFlow).map((f) => asString(f)).filter(Boolean);
+  const recommendedFlow = rawFlow.length > 0 ? rawFlow : ['Learn basic syntax', 'Review code examples', 'Solve practice questions'];
+
+  const defaultContentCardTypes = ['notes', 'layman', 'example', 'code', 'deep-dive', 'visual', 'task', 'practice', 'assignment', 'project', 'quiz'];
+
+  const rawContentCards = asArray(learningRoadmap.contentCards ?? content.contentCards).map((card, idx) => {
+    const c = asRecord(card);
+    const rawType = asString(c.type, 'notes');
+    const type = defaultContentCardTypes.includes(rawType) ? rawType : 'notes';
+    return {
+      id: asString(c.id, `cc${idx + 1}`),
+      title: asString(c.title, `Topic ${idx + 1}`),
+      type,
+      content: asString(c.content, 'Review notes.'),
+      ctaLabel: asString(c.ctaLabel, 'Start'),
+      badge: c.badge ? {
+        text: asString(asRecord(c.badge).text, 'Topic'),
+        type: ['success', 'warning', 'info'].includes(asString(asRecord(c.badge).type))
+          ? asString(asRecord(c.badge).type)
+          : 'info',
+      } : undefined,
+    };
+  });
+  const contentCards = rawContentCards.length > 0 ? rawContentCards : [
+    {
+      id: 'cc1',
+      title: 'Core Notes',
+      type: 'notes',
+      content: 'Get started with high-quality academic summaries.',
+      ctaLabel: 'Read Notes',
+    },
+    {
+      id: 'cc2',
+      title: 'Layman Summary',
+      type: 'layman',
+      content: 'Learn through simple visual and everyday analogies.',
+      ctaLabel: 'Read Layman',
+    },
+  ];
+
+  const rawTaskCards = asArray(learningRoadmap.taskCards ?? content.taskCards).map((card, idx) => {
+    const c = asRecord(card);
+    const rawType = asString(c.type, 'task');
+    const type = defaultContentCardTypes.includes(rawType) ? rawType : 'task';
+    return {
+      id: asString(c.id, `tc${idx + 1}`),
+      title: asString(c.title, `Task ${idx + 1}`),
+      type,
+      content: asString(c.content, 'Complete task.'),
+      ctaLabel: asString(c.ctaLabel, 'Go'),
+      badge: c.badge ? {
+        text: asString(asRecord(c.badge).text, 'Task'),
+        type: ['success', 'warning', 'info'].includes(asString(asRecord(c.badge).type))
+          ? asString(asRecord(c.badge).type)
+          : 'info',
+      } : undefined,
+    };
+  });
+  const taskCards = rawTaskCards.length > 0 ? rawTaskCards : [
+    {
+      id: 'tc1',
+      title: 'Practice Challenge',
+      type: 'practice',
+      content: 'Solve interactive multiple-choice questions.',
+      ctaLabel: 'Start Practice',
+    },
+    {
+      id: 'tc2',
+      title: 'Interactive Quiz',
+      type: 'quiz',
+      content: 'Test your understanding with active feedback.',
+      ctaLabel: 'Start Quiz',
+    },
+  ];
+
   return {
-    title: asString(content.title, asString(hero.title, subtopicName)),
-    description: asString(
-      content.description,
-      asString(hero.description, `Start learning ${subtopicName} with a guided roadmap, examples, practice, and assessment.`)
-    ),
+    schemaVersion: 1,
+    sectionType: 'overview',
     hero: {
-      iconLabel: asString(hero.iconLabel),
+      iconLabel: asString(hero.iconLabel, 'LayoutDashboard'),
       title: asString(hero.title, subtopicName),
-      description: asString(hero.description, asString(content.description)),
+      description: asString(hero.description, asString(content.description, `Start learning ${subtopicName}.`)),
       difficulty: asString(hero.difficulty, 'Beginner'),
       estimatedReadTime: asString(hero.estimatedReadTime, '45 mins'),
       xp: asNumber(hero.xp, 500),
@@ -432,22 +651,20 @@ function transformOverviewSection(content: JsonRecord, subtopicName: string): Js
         { label: 'Quiz', completed: false },
       ],
     },
-    learningOutcomes: asArray(content.learningOutcomes),
+    learningOutcomes: outcomes,
     learningRoadmap: {
-      contentCards: asArray(learningRoadmap.contentCards ?? content.contentCards),
-      taskCards: asArray(learningRoadmap.taskCards ?? content.taskCards),
+      contentCards,
+      taskCards,
     },
-    recommendedFlow: asArray(content.recommendedFlow),
+    recommendedFlow,
     readinessContext: {
-      prerequisites: asArray(readinessContext.prerequisites),
-      successCriteria: asArray(readinessContext.successCriteria),
+      prerequisites,
+      successCriteria,
     },
-    sidebar: content.sidebar ?? {},
     navigation: {
       prevTitle: asString(navigation.prevTitle, 'Previous Topic'),
       nextTitle: asString(navigation.nextTitle, 'Next Topic'),
     },
-    rightSidebar: content.rightSidebar ?? {},
   };
 }
 
@@ -610,58 +827,105 @@ function transformLaymanSection(content: JsonRecord, subtopicName: string): Json
   const mentalModel = asRecord(content.mentalModel);
   const commonConfusions = asRecord(content.commonConfusions);
   const simpleRecap = asRecord(content.simpleRecap);
-  const footerBlock = asRecord(content.footerBlock);
 
   return {
+    schemaVersion: 1,
+    sectionType: 'layman',
     simpleOverview: {
-      badge: asString(simpleOverview.badge, 'LAYMAN SECTION'),
-      headline: asString(simpleOverview.headline, `What is ${subtopicName}?`),
-      simpleDefinition: asString(simpleOverview.simpleDefinition, `${subtopicName} explained simply`),
+      badge: asString(simpleOverview.badge, 'Layman Section'),
+      headline: asString(simpleOverview.headline, `What is ${subtopicName}? in Simple Words`),
+      simpleDefinition: asString(simpleOverview.simpleDefinition),
       subExplanation: asString(simpleOverview.subExplanation),
-      ...(normalizeSvgAsset(simpleOverview.image) ? { image: normalizeSvgAsset(simpleOverview.image) } : {}),
-      inShort: asString(simpleOverview.inShort),
+      importanceBlock: asString(simpleOverview.importanceBlock),
+      progressIndicator: asString(simpleOverview.progressIndicator, 'Beginner-ready explanation.'),
+      ...(normalizeSvgAsset(simpleOverview.heroVisual || simpleOverview.image) ? { heroVisual: normalizeSvgAsset(simpleOverview.heroVisual || simpleOverview.image) } : {}),
     },
-    everydayAnalogy: {
+    everydayAnalogy: Object.keys(everydayAnalogy).length > 0 ? {
       title: asString(everydayAnalogy.title, 'Everyday Analogy'),
-      analogyTitle: asString(everydayAnalogy.analogyTitle),
-      analogyExplanation: asString(everydayAnalogy.analogyExplanation),
-      comparisonPoints: asArray(everydayAnalogy.comparisonPoints),
-      analogyInsight: asString(everydayAnalogy.analogyInsight),
+      storyAnalogy: asString(everydayAnalogy.storyAnalogy),
+      comparisonPanel: asString(everydayAnalogy.comparisonPanel),
+      visualMetaphor: asArray<JsonRecord>(everydayAnalogy.visualMetaphor).map((item) => ({
+        label: asString(item.label),
+        comparison: asString(item.comparison),
+      })),
+      keyTakeaway: asString(everydayAnalogy.keyTakeaway),
       ...(normalizeSvgAsset(everydayAnalogy.image) ? { image: normalizeSvgAsset(everydayAnalogy.image) } : {}),
-    },
-    whyItExists: {
+    } : undefined,
+    whyItExists: Object.keys(whyItExists).length > 0 ? {
       sectionTitle: asString(whyItExists.sectionTitle, 'Why It Exists'),
-      benefitCards: asArray(whyItExists.benefitCards),
-    },
-    simpleUseCases: {
+      benefitCards: asArray<JsonRecord>(whyItExists.benefitCards).map((card) => ({
+        id: asString(card.id),
+        title: asString(card.title),
+        description: asString(card.description),
+        icon: asString(card.icon),
+        type: asString(card.type, 'career') as 'career' | 'practical' | 'future',
+      })),
+    } : undefined,
+    simpleUseCases: Object.keys(simpleUseCases).length > 0 ? {
       gridTitle: asString(simpleUseCases.gridTitle, 'Simple Use Cases'),
-      useCaseCards: asArray(simpleUseCases.useCaseCards),
-    },
-    beginnerBreakdown: {
-      title: asString(beginnerBreakdown.title, 'Beginner Breakdown (How It Works)'),
-      steps: asArray(beginnerBreakdown.steps),
-    },
-    mentalModel: {
-      title: asString(mentalModel.title, 'Mental Model (Big Picture)'),
-      nodes: asArray(mentalModel.nodes),
-      connections: asArray(mentalModel.connections),
-      toolsAndServices: asArray(mentalModel.toolsAndServices),
-      footerNote: asString(mentalModel.footerNote),
-    },
-    commonConfusions: {
+      useCaseCards: asArray<JsonRecord>(simpleUseCases.useCaseCards).map((card) => ({
+        id: asString(card.id),
+        title: asString(card.title),
+        description: asString(card.description),
+        category: asString(card.category, 'everyday') as 'everyday' | 'career',
+        icon: asString(card.icon),
+      })),
+    } : undefined,
+    beginnerBreakdown: Object.keys(beginnerBreakdown).length > 0 ? {
+      title: asString(beginnerBreakdown.title, 'Beginner Breakdown'),
+      steps: asArray<JsonRecord>(beginnerBreakdown.steps).map((step) => ({
+        id: asString(step.id),
+        stepTitle: asString(step.stepTitle),
+        stepExplanation: asString(step.stepExplanation),
+        microLearningChunk: asString(step.microLearningChunk),
+      })),
+    } : undefined,
+    mentalModel: Object.keys(mentalModel).length > 0 ? {
+      title: asString(mentalModel.title, 'Mental Model'),
+      conceptMap: asArray<JsonRecord>(mentalModel.conceptMap).map((node) => ({
+        id: asString(node.id),
+        label: asString(node.label),
+        type: asString(node.type),
+      })),
+      visualLabels: asArray<JsonRecord>(mentalModel.visualLabels).map((edge) => ({
+        from: asString(edge.from),
+        to: asString(edge.to),
+        label: asString(edge.label),
+      })),
+      flowArrows: asArray<JsonRecord>(mentalModel.flowArrows).length > 0 ? asArray<JsonRecord>(mentalModel.flowArrows).map((arrow) => ({
+        id: asString(arrow.id),
+        label: asString(arrow.label),
+        icon: asString(arrow.icon),
+      })) : undefined,
+      ...(normalizeSvgAsset(mentalModel.image) ? { image: normalizeSvgAsset(mentalModel.image) } : {}),
+      tooltips: asString(mentalModel.tooltips) || undefined,
+    } : undefined,
+    commonConfusions: Object.keys(commonConfusions).length > 0 ? {
       title: asString(commonConfusions.title, 'Common Confusions'),
-      faqItems: asArray(commonConfusions.faqItems),
-    },
-    simpleRecap: {
-      title: asString(simpleRecap.title, 'Simple Recap'),
-      keyTakeaways: asArray(simpleRecap.keyTakeaways),
-      rememberThis: asRecord(simpleRecap.rememberThis),
-    },
-    footerBlock: {
-      quote: asString(footerBlock.quote),
-      finalNote: asString(footerBlock.finalNote),
-    },
-  };
+      confusionItems: asArray<JsonRecord>(commonConfusions.confusionItems).map((item) => ({
+        id: asString(item.id),
+        confusion: asString(item.confusion),
+        clarification: asString(item.clarification),
+      })),
+      faqItems: asArray<JsonRecord>(commonConfusions.faqItems).map((item) => ({
+        id: asString(item.id),
+        question: asString(item.question),
+        answer: asString(item.answer),
+      })),
+      misconceptionAlerts: asArray<string>(commonConfusions.misconceptionAlerts),
+    } : undefined,
+    simpleRecap: Object.keys(simpleRecap).length > 0 ? {
+      summaryTitle: asString(simpleRecap.summaryTitle, 'Simple Recap'),
+      keyTakeaways: asArray<string>(simpleRecap.keyTakeaways),
+      simpleRecapPoints: asArray<JsonRecord>(simpleRecap.simpleRecapPoints).map((point) => ({
+        id: asString(point.id),
+        item: asString(point.item),
+        checked: typeof point.checked === 'boolean' ? point.checked : false,
+      })),
+      confidenceBoost: asString(simpleRecap.confidenceBoost),
+      memoryReinforcement: asString(simpleRecap.memoryReinforcement),
+    } : undefined,
+  } as unknown as JsonRecord;
 }
 
 function transformRealLifeSection(content: JsonRecord): JsonRecord {
@@ -1149,6 +1413,52 @@ export async function GET(req: NextRequest) {
   }
 }
 
+function sanitizeRawContent(content: unknown): unknown {
+  if (content === null || typeof content !== 'object') {
+    return content;
+  }
+
+  if (Array.isArray(content)) {
+    return content.map(sanitizeRawContent);
+  }
+
+  const obj = { ...content } as Record<string, unknown>;
+  for (const key of Object.keys(obj)) {
+    const val = obj[key];
+    if (
+      key === 'image' ||
+      key === 'heroVisual' ||
+      key === 'analogySvg' ||
+      key === 'mentalModelSvg' ||
+      key === 'summaryHeroSvg' ||
+      key === 'conceptMemoryMapSvg' ||
+      key === 'cheatSheetSVG'
+    ) {
+      if (typeof val === 'string') {
+        const trimmed = val.trim();
+        if (
+          !trimmed.startsWith('<svg') &&
+          !trimmed.startsWith('data:image/svg') &&
+          !trimmed.startsWith('<?xml') &&
+          !trimmed.includes('<svg')
+        ) {
+          obj[key] = undefined;
+        }
+      } else if (val && typeof val === 'object') {
+        const isInlineSvg =
+          (val as Record<string, unknown>).type === 'inline_svg' ||
+          typeof (val as Record<string, unknown>).dataUri === 'string';
+        if (!isInlineSvg) {
+          obj[key] = undefined;
+        }
+      }
+    } else {
+      obj[key] = sanitizeRawContent(val);
+    }
+  }
+  return obj;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json() as RequestBody & { subsection?: string };
@@ -1240,15 +1550,21 @@ export async function POST(req: NextRequest) {
           })
           .where(eq(table.sectionId, sectionRecord.id));
       } else {
+        const defaults = DOMAIN_TABLE_DEFAULTS[config.dbType] || {};
         await db.insert(table).values({
           sectionId: sectionRecord.id,
+          ...defaults,
           [subsection]: processedContent,
         });
       }
 
       // 2. Synchronize parent tutorialSections.content JSONB
       const targetParentKey = COLUMN_TO_PARENT_KEY[subsection] || subsection;
-      const updatedParentContent = { ...(sectionRecord.content as Record<string, unknown>) };
+      const updatedParentContent: Record<string, unknown> = {
+        schemaVersion: 1,
+        sectionType: config.dbType,
+        ...(sectionRecord.content as Record<string, unknown>),
+      };
 
       if (targetParentKey.includes('.')) {
         const [parentKey, childKey] = targetParentKey.split('.');
@@ -1300,7 +1616,8 @@ export async function POST(req: NextRequest) {
 
 
     const unwrappedContent = unwrapSectionContent(parsedContent, config);
-    const validation = validateTutorialSection(config.dbType, unwrappedContent);
+    const sanitizedContent = sanitizeRawContent(unwrappedContent);
+    const validation = validateTutorialSection(config.dbType, sanitizedContent);
 
     if (!validation.success) {
       const formattedIssues = formatTutorialSectionValidationIssues(validation.issues);

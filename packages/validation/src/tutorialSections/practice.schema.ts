@@ -30,11 +30,11 @@ export const PracticeSectionSchema = sectionSchema('practice', {
     difficultyOverview: NonEmptyStringSchema,
     learningGoals: nonEmptyStringArray(1),
     readinessIndicator: NonEmptyStringSchema,
-  }),
+  }).optional(),
   conceptRecallQuestions: strictObject({
     title: NonEmptyStringSchema,
     questions: z.array(PracticeQuestionSchema).min(1),
-  }),
+  }).optional(),
   scenarioBasedQuestions: strictObject({
     title: NonEmptyStringSchema,
     scenarios: z.array(strictObject({
@@ -48,7 +48,7 @@ export const PracticeSectionSchema = sectionSchema('practice', {
       explanation: NonEmptyStringSchema,
       difficulty: z.enum(['medium', 'hard']),
     })).min(1),
-  }),
+  }).optional(),
   difficultyProgression: strictObject({
     title: NonEmptyStringSchema,
     levels: z.array(strictObject({
@@ -59,11 +59,11 @@ export const PracticeSectionSchema = sectionSchema('practice', {
       passingScore: PercentageSchema,
     })).min(1),
     adaptiveLogic: z.boolean(),
-  }),
+  }).optional(),
   instantFeedback: strictObject({
     enabled: z.boolean(),
     feedbackType: z.enum(['immediate', 'end-of-test']),
-  }),
+  }).optional(),
   commonMistakeDetection: strictObject({
     title: NonEmptyStringSchema,
     mistakeCategories: z.array(strictObject({
@@ -80,7 +80,7 @@ export const PracticeSectionSchema = sectionSchema('practice', {
         status: z.enum(['strong', 'moderate', 'weak']),
       })).min(1),
     }),
-  }),
+  }).optional(),
   performanceAnalytics: strictObject({
     title: NonEmptyStringSchema,
     scoreDisplay: strictObject({
@@ -99,7 +99,7 @@ export const PracticeSectionSchema = sectionSchema('practice', {
     }),
     masteryPercentage: PercentageSchema,
     examReadinessScore: PercentageSchema,
-  }),
+  }).optional(),
   revisionRecommendations: strictObject({
     title: NonEmptyStringSchema,
     personalizedLearningPath: z.array(strictObject({
@@ -117,7 +117,7 @@ export const PracticeSectionSchema = sectionSchema('practice', {
       link: NonEmptyStringSchema,
     })).min(1),
     futureGoals: nonEmptyStringArray(1),
-  }),
+  }).optional(),
 });
 
 export type PracticeSection = z.infer<typeof PracticeSectionSchema>;

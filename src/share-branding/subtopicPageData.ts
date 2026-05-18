@@ -383,10 +383,10 @@ export function buildOverviewFromSections(brand: BrandConfig, subtopicId: string
     subtopic: {
       title,
       description,
-        iconLabel: firstText(hero.iconLabel, iconLabelFromTitle(title)),
-        progress,
-        progressLabel: 'Subtopic Progress',
-        metadata: {
+      iconLabel: firstText(hero.iconLabel, iconLabelFromTitle(title)),
+      progress,
+      progressLabel: 'Subtopic Progress',
+      metadata: {
         level: difficultyLabel(hero.difficulty),
         readingTime: hero.estimatedReadTime,
         xp: hero.xp,

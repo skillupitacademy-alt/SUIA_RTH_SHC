@@ -15,7 +15,7 @@ export const VisualSectionSchema = sectionSchema('visual', {
     heroDiagramPreview: OptionalNonEmptyStringSchema,
     importanceBlock: NonEmptyStringSchema,
     progressIndicator: OptionalNonEmptyStringSchema,
-  }),
+  }).optional(),
   diagrammaticBreakdown: strictObject({
     title: NonEmptyStringSchema,
     diagramTitle: NonEmptyStringSchema,
@@ -30,7 +30,7 @@ export const VisualSectionSchema = sectionSchema('visual', {
       term: NonEmptyStringSchema,
       explanation: NonEmptyStringSchema,
     })).min(1),
-  }),
+  }).optional(),
   stepByStepVisualFlow: strictObject({
     title: NonEmptyStringSchema,
     sequenceTitle: NonEmptyStringSchema,
@@ -42,7 +42,7 @@ export const VisualSectionSchema = sectionSchema('visual', {
       visualCue: NonEmptyStringSchema,
     })).min(1),
     phaseExplanations: nonEmptyStringArray(1),
-  }),
+  }).optional(),
   comparativeVisualization: strictObject({
     title: NonEmptyStringSchema,
     comparisonTitle: NonEmptyStringSchema,
@@ -61,7 +61,7 @@ export const VisualSectionSchema = sectionSchema('visual', {
       }),
     }),
     differenceHighlights: nonEmptyStringArray(1),
-  }),
+  }).optional(),
   mentalModelVisualization: strictObject({
     title: NonEmptyStringSchema,
     frameworkMap: strictObject({
@@ -79,7 +79,7 @@ export const VisualSectionSchema = sectionSchema('visual', {
       })).min(1),
     }),
     memoryLabels: nonEmptyStringArray(1),
-  }),
+  }).optional(),
   realWorldVisualMapping: strictObject({
     title: NonEmptyStringSchema,
     practicalScenarios: z.array(strictObject({
@@ -91,7 +91,7 @@ export const VisualSectionSchema = sectionSchema('visual', {
       icon: NonEmptyStringSchema,
     })).min(1),
     careerRelevance: NonEmptyStringSchema,
-  }),
+  }).optional(),
   commonConfusionVisualization: strictObject({
     title: NonEmptyStringSchema,
     confusionItems: z.array(strictObject({
@@ -106,14 +106,14 @@ export const VisualSectionSchema = sectionSchema('visual', {
       answer: NonEmptyStringSchema,
     })).min(1),
     misconceptionDiagrams: nonEmptyStringArray(1),
-  }),
+  }).optional(),
   visualSummary: strictObject({
     summaryTitle: NonEmptyStringSchema,
     keyVisualTakeaways: nonEmptyStringArray(1),
     revisionInfographic: NonEmptyStringSchema,
     memoryReinforcement: NonEmptyStringSchema,
     examVisualChecklist: nonEmptyStringArray(1),
-  }),
+  }).optional(),
 });
 
 export type VisualSection = z.infer<typeof VisualSectionSchema>;

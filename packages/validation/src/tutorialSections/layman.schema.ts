@@ -17,7 +17,7 @@ export const LaymanSectionSchema = sectionSchema('layman', {
     importanceBlock: NonEmptyStringSchema,
     progressIndicator: OptionalNonEmptyStringSchema,
     heroVisual: optionalSvgAssetField(),
-  }),
+  }).optional(),
   everydayAnalogy: strictObject({
     title: NonEmptyStringSchema,
     storyAnalogy: NonEmptyStringSchema,
@@ -28,7 +28,7 @@ export const LaymanSectionSchema = sectionSchema('layman', {
     })).min(1),
     keyTakeaway: NonEmptyStringSchema,
     image: optionalSvgAssetField(),
-  }),
+  }).optional(),
   whyItExists: strictObject({
     sectionTitle: NonEmptyStringSchema,
     benefitCards: z.array(strictObject({
@@ -38,7 +38,7 @@ export const LaymanSectionSchema = sectionSchema('layman', {
       icon: NonEmptyStringSchema,
       type: z.enum(['career', 'practical', 'future']),
     })).min(1),
-  }),
+  }).optional(),
   simpleUseCases: strictObject({
     gridTitle: NonEmptyStringSchema,
     useCaseCards: z.array(strictObject({
@@ -48,7 +48,7 @@ export const LaymanSectionSchema = sectionSchema('layman', {
       category: z.enum(['everyday', 'career']),
       icon: NonEmptyStringSchema,
     })).min(1),
-  }),
+  }).optional(),
   beginnerBreakdown: strictObject({
     title: NonEmptyStringSchema,
     steps: z.array(strictObject({
@@ -57,7 +57,7 @@ export const LaymanSectionSchema = sectionSchema('layman', {
       stepExplanation: NonEmptyStringSchema,
       microLearningChunk: NonEmptyStringSchema,
     })).min(1),
-  }),
+  }).optional(),
   mentalModel: strictObject({
     title: NonEmptyStringSchema,
     conceptMap: z.array(strictObject({
@@ -77,7 +77,7 @@ export const LaymanSectionSchema = sectionSchema('layman', {
     })).optional(),
     image: optionalSvgAssetField(),
     tooltips: OptionalNonEmptyStringSchema,
-  }),
+  }).optional(),
   commonConfusions: strictObject({
     title: NonEmptyStringSchema,
     confusionItems: z.array(strictObject({
@@ -91,7 +91,7 @@ export const LaymanSectionSchema = sectionSchema('layman', {
       answer: NonEmptyStringSchema,
     })).min(1),
     misconceptionAlerts: nonEmptyStringArray(1),
-  }),
+  }).optional(),
   simpleRecap: strictObject({
     summaryTitle: NonEmptyStringSchema,
     keyTakeaways: nonEmptyStringArray(1),
@@ -102,7 +102,7 @@ export const LaymanSectionSchema = sectionSchema('layman', {
     })).min(1),
     confidenceBoost: NonEmptyStringSchema,
     memoryReinforcement: NonEmptyStringSchema,
-  }),
+  }).optional(),
 });
 
 export type LaymanSection = z.infer<typeof LaymanSectionSchema>;

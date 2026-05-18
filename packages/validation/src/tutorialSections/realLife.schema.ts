@@ -15,7 +15,7 @@ export const RealLifeSectionSchema = sectionSchema('real_life', {
     realWorldTranslation: NonEmptyStringSchema,
     importanceBlock: NonEmptyStringSchema,
     careerRelevance: OptionalNonEmptyStringSchema,
-  }),
+  }).optional(),
   industryUseCase: strictObject({
     title: NonEmptyStringSchema,
     industryName: NonEmptyStringSchema,
@@ -25,7 +25,7 @@ export const RealLifeSectionSchema = sectionSchema('real_life', {
     impact: NonEmptyStringSchema,
     keyTakeaway: NonEmptyStringSchema,
     image: OptionalNonEmptyStringSchema,
-  }),
+  }).optional(),
   dailyLifeExample: strictObject({
     title: NonEmptyStringSchema,
     storyTitle: NonEmptyStringSchema,
@@ -34,7 +34,7 @@ export const RealLifeSectionSchema = sectionSchema('real_life', {
     technicalMapping: NonEmptyStringSchema,
     relatableInsight: NonEmptyStringSchema,
     image: OptionalNonEmptyStringSchema,
-  }),
+  }).optional(),
   careerRelevance: strictObject({
     title: NonEmptyStringSchema,
     careerPaths: z.array(strictObject({
@@ -47,7 +47,7 @@ export const RealLifeSectionSchema = sectionSchema('real_life', {
     })).min(1),
     industryDemand: NonEmptyStringSchema,
     futureGrowth: NonEmptyStringSchema,
-  }),
+  }).optional(),
   problemSolutionContext: strictObject({
     title: NonEmptyStringSchema,
     problemStatement: NonEmptyStringSchema,
@@ -56,7 +56,7 @@ export const RealLifeSectionSchema = sectionSchema('real_life', {
     implementation: NonEmptyStringSchema,
     outcome: NonEmptyStringSchema,
     lessonsLearned: NonEmptyStringSchema,
-  }),
+  }).optional(),
   businessApplication: strictObject({
     title: NonEmptyStringSchema,
     companyType: NonEmptyStringSchema,
@@ -66,7 +66,7 @@ export const RealLifeSectionSchema = sectionSchema('real_life', {
     roi: NonEmptyStringSchema,
     scalability: NonEmptyStringSchema,
     keyInsight: NonEmptyStringSchema,
-  }),
+  }).optional(),
   domainScenarios: strictObject({
     title: NonEmptyStringSchema,
     scenarios: z.array(strictObject({
@@ -77,7 +77,7 @@ export const RealLifeSectionSchema = sectionSchema('real_life', {
       application: NonEmptyStringSchema,
       icon: NonEmptyStringSchema,
     })).min(1),
-  }),
+  }).optional(),
   practicalRecap: strictObject({
     summaryTitle: NonEmptyStringSchema,
     keyApplications: nonEmptyStringArray(1),
@@ -85,7 +85,7 @@ export const RealLifeSectionSchema = sectionSchema('real_life', {
     careerImpact: NonEmptyStringSchema,
     nextSteps: nonEmptyStringArray(1),
     practicalAdvice: NonEmptyStringSchema,
-  }),
+  }).optional(),
 });
 
 export type RealLifeSection = z.infer<typeof RealLifeSectionSchema>;

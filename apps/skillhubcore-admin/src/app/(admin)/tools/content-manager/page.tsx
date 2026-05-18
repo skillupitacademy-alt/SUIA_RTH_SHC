@@ -13,6 +13,7 @@ import {
   TUTORIAL_SECTION_TABS,
   type TutorialContentManagerSectionId,
 } from '@quiz/types';
+import { ASSET_SPECS } from '../prompt-generator/lib/asset-specs';
 
 type SectionType = TutorialContentManagerSectionId;
 
@@ -68,6 +69,9 @@ const SUBSECTIONS_MAP: Record<string, Array<{ id: string; label: string; type: '
     { id: 'warningFaq', label: 'Warning FAQ (JSON)', type: 'json' },
     { id: 'summaryCard', label: 'Summary Card (JSON)', type: 'json' },
     { id: 'footerBlock', label: 'Footer Block (JSON)', type: 'json' },
+    { id: 'flashcardVisualSystem', label: 'Flashcard Visual System (JSON)', type: 'json' },
+    { id: 'comparisonSummaryChart', label: 'Comparison Summary Chart (JSON)', type: 'json' },
+    { id: 'mnemonicRetentionGraphic', label: 'Mnemonic Retention Graphic (JSON)', type: 'json' },
     { id: 'summaryHeroSvg', label: 'Summary Hero (SVG)', type: 'svg' },
     { id: 'conceptMemoryMapSvg', label: 'Concept Memory Map (SVG)', type: 'svg' },
     { id: 'cheatSheetSVG', label: 'Cheat Sheet (SVG)', type: 'svg' },
@@ -134,7 +138,11 @@ const SUBSECTIONS_MAP: Record<string, Array<{ id: string; label: string; type: '
     { id: 'assessmentIntro', label: 'Assessment Intro (JSON)', type: 'json' },
     { id: 'conceptRecallQuestions', label: 'Concept Recall Questions (JSON)', type: 'json' },
     { id: 'scenarioBasedQuestions', label: 'Scenario Based Questions (JSON)', type: 'json' },
+    { id: 'difficultyProgression', label: 'Difficulty Progression (JSON)', type: 'json' },
     { id: 'instantFeedback', label: 'Instant Feedback Config (JSON)', type: 'json' },
+    { id: 'commonMistakeDetection', label: 'Common Mistake Detection (JSON)', type: 'json' },
+    { id: 'performanceAnalytics', label: 'Performance Analytics (JSON)', type: 'json' },
+    { id: 'revisionRecommendations', label: 'Revision Recommendations (JSON)', type: 'json' },
   ],
   assignment: [
     { id: 'title', label: 'Title (Text)', type: 'json' },
@@ -183,10 +191,10 @@ const SUBSECTIONS_MAP: Record<string, Array<{ id: string; label: string; type: '
   ],
   ai_tutor: [
     { id: 'greeting', label: 'Greeting (Text)', type: 'json' },
-    { id: 'qa_pairs', label: 'Q&A Pairs (JSON)', type: 'json' },
-    { id: 'tutor_prompt_card', label: 'Tutor Prompt Card (JSON)', type: 'json' },
-    { id: 'misconception_detector', label: 'Misconception Detector (JSON)', type: 'json' },
-    { id: 'adaptive_hint_panel', label: 'Adaptive Hint Panel (JSON)', type: 'json' },
+    { id: 'qaPairs', label: 'Q&A Pairs (JSON)', type: 'json' },
+    { id: 'tutorPromptCard', label: 'Tutor Prompt Card (JSON)', type: 'json' },
+    { id: 'misconceptionDetector', label: 'Misconception Detector (JSON)', type: 'json' },
+    { id: 'adaptiveHintPanel', label: 'Adaptive Hint Panel (JSON)', type: 'json' },
   ],
 };
 
@@ -705,6 +713,42 @@ function ContentManagerContent() {
 
   const selectedSectionLabel = sections.find((section) => section.id === selectedSection)?.label ?? selectedSection;
   const allowedAssetFieldPaths = getAllowedAssetFieldPaths(selectedSection);
+
+  const activeSpecs = React.useMemo(() => {
+    const specs = ASSET_SPECS[selectedSection] || [];
+    
+    if (selectedSubsection) {
+      let filtered = specs.filter((spec) => {
+        const subLower = selectedSubsection.toLowerCase().replace('svg', '');
+        const pathLower = spec.fieldPath.toLowerCase();
+        return pathLower.includes(subLower) || subLower.includes(pathLower.split('.')[0]);
+      });
+      
+      // Special mappings for specific subsections
+      if (filtered.length === 0) {
+        if (selectedSubsection === 'summaryHeroSvg') filtered = specs.filter(s => s.fieldPath.includes('summaryHeroInfographic'));
+        if (selectedSubsection === 'analogySvg') filtered = specs.filter(s => s.fieldPath.includes('everydayAnalogy'));
+        if (selectedSubsection === 'heroVisualSvg') filtered = specs.filter(s => s.fieldPath.includes('heroVisual') || s.fieldPath.includes('simpleOverview'));
+      }
+
+      return filtered;
+    }
+
+    return specs;
+  }, [selectedSection, selectedSubsection]);
+
+  useEffect(() => {
+    if (activeSpecs.length > 0) {
+      const match = activeSpecs.find((s) => s.fieldPath === assetFieldPath) || activeSpecs[0];
+      setAssetFieldPath(match.fieldPath);
+      setAssetWidth(String(match.width));
+      setAssetHeight(String(match.height));
+      setAssetName(match.id);
+    } else {
+      setAssetFieldPath(getDefaultAssetFieldPath(selectedSection));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedSection, selectedSubsection, activeSpecs]);
 
   const searchParams = useSearchParams();
 
@@ -1269,21 +1313,34 @@ function ContentManagerContent() {
                         <label htmlFor="assetFieldPath" className="mb-2 block text-sm font-semibold text-gray-700">
                           Target JSON field
                         </label>
-                        {allowedAssetFieldPaths.length > 0 ? (
+                        {selectedSubsection && activeSpecs.length === 0 ? (
+                          <div className="w-full rounded-lg border border-slate-200 bg-slate-100/50 p-3 text-xs text-slate-500 italic">
+                            This subsection consists of structured text blocks and layout metadata (no custom illustration SVG required).
+                          </div>
+                        ) : activeSpecs.length > 0 ? (
                           <>
                             <select
                               id="assetFieldPath"
                               value={assetFieldPath}
-                              onChange={(event) => setAssetFieldPath(event.target.value)}
+                              onChange={(event) => {
+                                const nextPath = event.target.value;
+                                setAssetFieldPath(nextPath);
+                                const match = activeSpecs.find((s) => s.fieldPath === nextPath);
+                                if (match) {
+                                  setAssetWidth(String(match.width));
+                                  setAssetHeight(String(match.height));
+                                  setAssetName(match.id);
+                                }
+                              }}
                               className="w-full rounded-lg border-2 border-gray-300 px-4 py-3 text-sm focus:border-blue-500 focus:outline-none"
                             >
-                              {allowedAssetFieldPaths.map((path) => (
-                                <option key={path} value={path}>
-                                  {path}
+                              {activeSpecs.map((spec) => (
+                                <option key={spec.fieldPath} value={spec.fieldPath}>
+                                  {spec.label} ({spec.fieldPath})
                                 </option>
                               ))}
                             </select>
-                            <p className="mt-1 text-xs text-gray-500">Allowed SVG injection paths for this section are pre-configured.</p>
+                            <p className="mt-1 text-xs text-gray-500">Allowed SVG injection paths for this selection are pre-configured.</p>
                           </>
                         ) : (
                           <input

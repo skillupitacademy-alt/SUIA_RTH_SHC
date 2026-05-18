@@ -9,14 +9,14 @@ import {
 } from './base';
 
 export const NotesSectionSchema = sectionSchema('notes', {
-  simpleWords: NonEmptyStringSchema,
+  simpleWords: NonEmptyStringSchema.optional(),
   definitionBlock: strictObject({
     badge: NonEmptyStringSchema,
     headline: NonEmptyStringSchema,
     definitionText: NonEmptyStringSchema,
     importanceCallout: NonEmptyStringSchema,
     quickSummary: nonEmptyStringArray(1),
-  }),
+  }).optional(),
   sections: z.array(strictObject({
     id: NonEmptyStringSchema,
     title: NonEmptyStringSchema,
@@ -26,7 +26,7 @@ export const NotesSectionSchema = sectionSchema('notes', {
       code: NonEmptyStringSchema,
       output: NonEmptyStringSchema,
     }).optional(),
-  })).min(1),
+  })).min(1).optional(),
   componentGrid: strictObject({
     gridTitle: NonEmptyStringSchema,
     componentCards: z.array(strictObject({
@@ -36,7 +36,7 @@ export const NotesSectionSchema = sectionSchema('notes', {
       icon: NonEmptyStringSchema,
       subcomponents: nonEmptyStringArray(1),
     })).min(1),
-  }),
+  }).optional(),
   examplePanel: strictObject({
     exampleTitle: NonEmptyStringSchema,
     scenarios: z.array(strictObject({
@@ -46,7 +46,7 @@ export const NotesSectionSchema = sectionSchema('notes', {
       practicalSolution: NonEmptyStringSchema,
       industryContext: NonEmptyStringSchema,
     })).min(1),
-  }),
+  }).optional(),
   practiceCard: strictObject({
     bestPracticeTitle: NonEmptyStringSchema,
     recommendations: z.array(strictObject({
@@ -56,7 +56,7 @@ export const NotesSectionSchema = sectionSchema('notes', {
     })).min(1),
     optimizationTips: nonEmptyStringArray(1),
     industryStandards: nonEmptyStringArray(1),
-  }),
+  }).optional(),
   warningFaq: strictObject({
     commonErrors: z.array(strictObject({
       id: NonEmptyStringSchema,
@@ -69,7 +69,7 @@ export const NotesSectionSchema = sectionSchema('notes', {
       answer: NonEmptyStringSchema,
     })).min(1),
     misconceptionAlerts: nonEmptyStringArray(1),
-  }),
+  }).optional(),
   summaryCard: strictObject({
     summaryTitle: NonEmptyStringSchema,
     keyTakeaways: nonEmptyStringArray(1),
@@ -81,7 +81,7 @@ export const NotesSectionSchema = sectionSchema('notes', {
     memoryReinforcement: NonEmptyStringSchema,
     examTips: nonEmptyStringArray(1),
     image: optionalSvgAssetField(),
-  }),
+  }).optional(),
 
   // Premium Visual Architecture Blocks (Optional)
   summaryHeroInfographic: z.object({

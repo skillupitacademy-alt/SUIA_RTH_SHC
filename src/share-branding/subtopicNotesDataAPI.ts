@@ -21,24 +21,6 @@ type LoadedSection<TSection extends TutorialMasterySectionId> = {
   error?: string;
 };
 
-function snakeToCamelKey(key: string): string {
-  return key.replace(/_([a-z])/g, (_, char: string) => char.toUpperCase());
-}
-
-function camelizeDeep<T>(value: T): T {
-  if (Array.isArray(value)) {
-    return value.map((item) => camelizeDeep(item)) as T;
-  }
-
-  if (value !== null && typeof value === 'object') {
-    return Object.fromEntries(
-      Object.entries(value as JsonRecord).map(([key, child]) => [snakeToCamelKey(key), camelizeDeep(child)])
-    ) as T;
-  }
-
-  return value;
-}
-
 function firstText(...values: unknown[]): string {
   for (const value of values) {
     if (typeof value === 'string' && value.trim().length > 0) {
@@ -46,250 +28,6 @@ function firstText(...values: unknown[]): string {
     }
   }
   return '';
-}
-
-function normalizeNotesSection(raw: JsonRecord): JsonRecord {
-  const content = camelizeDeep(raw || {});
-  const definitionBlock = content.definitionBlock;
-  const conceptCard = content.conceptCard;
-  const syntaxBlock = content.syntaxBlock;
-
-  const sections = Array.isArray(content.sections)
-    ? content.sections
-    : [
-        conceptCard && {
-          id: 'concept-card',
-          title: firstText(conceptCard.title, conceptCard.headline, 'Concept Explanation'),
-          content: firstText(conceptCard.content, conceptCard.description, conceptCard.body),
-          keyPoint: firstText(conceptCard.keyPoint, conceptCard.callout),
-        },
-        syntaxBlock && {
-          id: 'syntax-block',
-          title: firstText(syntaxBlock.title, syntaxBlock.headline, 'Syntax Structure'),
-          content: firstText(syntaxBlock.content, syntaxBlock.description, syntaxBlock.explanation),
-          codeExample: syntaxBlock.code || syntaxBlock.codeExample
-            ? {
-                code: firstText(syntaxBlock.code, syntaxBlock.codeExample?.code),
-                output: firstText(syntaxBlock.output, syntaxBlock.codeExample?.output),
-              }
-            : undefined,
-        },
-      ].filter(Boolean);
-
-  // Deep normalization for complex panels
-  const componentGrid = content.componentGrid || {};
-  if (componentGrid && !componentGrid.componentCards) componentGrid.componentCards = [];
-
-  const examplePanel = content.examplePanel || {};
-  if (examplePanel && !examplePanel.scenarios) examplePanel.scenarios = [];
-
-  const practiceCard = content.practiceCard || {};
-  if (practiceCard && !practiceCard.recommendations) practiceCard.recommendations = [];
-
-  const warningFaq = content.warningFaq || {};
-  if (warningFaq && !warningFaq.commonErrors) warningFaq.commonErrors = [];
-  if (warningFaq && !warningFaq.faqItems) warningFaq.faqItems = [];
-
-  const summaryCard = content.summaryCard || {};
-  if (summaryCard && !summaryCard.keyTakeaways) summaryCard.keyTakeaways = [];
-  if (summaryCard && !summaryCard.revisionChecklist) summaryCard.revisionChecklist = [];
-
-  return {
-    ...content,
-    simpleWords: firstText(content.simpleWords, content.metadata?.summary, definitionBlock?.quickSummary?.[0], definitionBlock?.definitionText),
-    definitionBlock,
-    sections,
-    componentGrid,
-    examplePanel,
-    practiceCard,
-    warningFaq,
-    summaryCard,
-  };
-}
-
-function normalizeLaymanSection(raw: JsonRecord): JsonRecord {
-  const content = camelizeDeep(raw || {});
-
-  // Ensure nested objects exist to prevent "Cannot read properties of undefined"
-  const everydayAnalogy = content.everydayAnalogy ?? content.analogyCard;
-  if (everydayAnalogy) {
-    if (typeof everydayAnalogy.visualMetaphor === 'string') {
-      everydayAnalogy.visualMetaphor = [{ label: 'Concept', comparison: everydayAnalogy.visualMetaphor }];
-    }
-    if (!everydayAnalogy.visualMetaphor) everydayAnalogy.visualMetaphor = [];
-    
-    if (typeof everydayAnalogy.comparisonPanel === 'object' && everydayAnalogy.comparisonPanel !== null) {
-      // If it's the old object format, try to join it or take a label
-      everydayAnalogy.comparisonPanel = everydayAnalogy.comparisonPanel.realWorld || 'Comparison';
-    }
-  }
-
-  const whyItExists = content.whyItExists ?? content.benefitCard;
-  if (whyItExists && !whyItExists.benefitCards) whyItExists.benefitCards = [];
-
-  const simpleUseCases = content.simpleUseCases ?? content.useCaseGrid;
-  if (simpleUseCases && !simpleUseCases.useCaseCards) simpleUseCases.useCaseCards = [];
-
-  const beginnerBreakdown = content.beginnerBreakdown ?? content.accordion;
-  if (beginnerBreakdown && !beginnerBreakdown.steps) beginnerBreakdown.steps = [];
-
-  const mentalModel = content.mentalModel ?? content.diagramRenderer;
-  if (mentalModel) {
-    if (mentalModel.conceptMap && !Array.isArray(mentalModel.conceptMap)) {
-      // If it's the old object format { nodes, connections }, extract nodes
-      if ((mentalModel.conceptMap as any).nodes) {
-        if (!mentalModel.visualLabels) mentalModel.visualLabels = (mentalModel.conceptMap as any).connections;
-        mentalModel.conceptMap = (mentalModel.conceptMap as any).nodes;
-      } else {
-        mentalModel.conceptMap = [];
-      }
-    }
-    if (!mentalModel.conceptMap) mentalModel.conceptMap = [];
-    if (!mentalModel.visualLabels) mentalModel.visualLabels = [];
-    if (!mentalModel.flowArrows) mentalModel.flowArrows = [];
-
-    // Ensure visualLabels is array of objects if it comes as array of strings
-    if (Array.isArray(mentalModel.visualLabels)) {
-      mentalModel.visualLabels = mentalModel.visualLabels.map((item: any) => {
-        if (typeof item === 'string') return { from: 'start', to: 'end', label: item };
-        return item;
-      });
-    }
-  }
-
-  const commonConfusions = content.commonConfusions ?? content.faqBlock;
-  if (commonConfusions && !commonConfusions.confusionItems) commonConfusions.confusionItems = [];
-  if (commonConfusions && !commonConfusions.faqItems) commonConfusions.faqItems = [];
-  if (commonConfusions && !commonConfusions.misconceptionAlerts) commonConfusions.misconceptionAlerts = [];
-
-  const simpleRecap = content.simpleRecap ?? content.summaryCard;
-  if (simpleRecap) {
-    if (!simpleRecap.keyTakeaways) simpleRecap.keyTakeaways = [];
-    if (!simpleRecap.simpleRecapPoints) simpleRecap.simpleRecapPoints = [];
-    // Ensure simpleRecapPoints is array of objects if it comes as array of strings
-    if (Array.isArray(simpleRecap.simpleRecapPoints)) {
-      simpleRecap.simpleRecapPoints = simpleRecap.simpleRecapPoints.map((item: any, idx: number) => {
-        if (typeof item === 'string') return { id: `item-${idx}`, item, checked: false };
-        return item;
-      });
-    }
-  }
-
-  return {
-    ...content,
-    simpleOverview: content.simpleOverview ?? content.introCard,
-    everydayAnalogy,
-    whyItExists,
-    simpleUseCases,
-    beginnerBreakdown,
-    mentalModel,
-    commonConfusions,
-    simpleRecap,
-  };
-}
-
-function normalizeRealLifeSection(raw: JsonRecord): JsonRecord {
-  const content = camelizeDeep(raw || {});
-
-  const careerRelevance = content.careerRelevance ?? content.careerUseCaseGrid;
-  if (careerRelevance && !careerRelevance.careerPaths) careerRelevance.careerPaths = [];
-
-  const domainScenarios = content.domainScenarios ?? content.workflowRenderer;
-  if (domainScenarios && !domainScenarios.scenarios) domainScenarios.scenarios = [];
-
-  const practicalRecap = content.practicalRecap ?? content.practicalSummaryCard;
-  if (practicalRecap && !practicalRecap.keyApplications) practicalRecap.keyApplications = [];
-
-  return {
-    ...content,
-    conceptMapping: content.conceptMapping ?? content.contextIntroCard,
-    industryUseCase: content.industryUseCase ?? content.industryExampleCard,
-    dailyLifeExample: content.dailyLifeExample,
-    careerRelevance,
-    problemSolutionContext: content.problemSolutionContext ?? content.problemSolutionPanel,
-    businessApplication: content.businessApplication ?? content.decisionFrameworkCard,
-    domainScenarios,
-    practicalRecap,
-  };
-}
-
-function normalizeCodeSection(raw: JsonRecord): JsonRecord {
-  const content = camelizeDeep(raw || {});
-  return {
-    ...content,
-    problemContext: content.problemContext ?? content.problemContextCard,
-    basicCodeExample: content.basicCodeExample ?? content.codeBlock,
-    lineByLineExplanation: content.lineByLineExplanation ?? content.annotatedCodePanel,
-    outputDemonstration: content.outputDemonstration ?? content.outputPreview,
-    bestPracticeVersion: content.bestPracticeVersion ?? content.optimizedCodeBlock,
-    commonMistakes: content.commonMistakes ?? content.errorPreventionBlock,
-    realWorldImplementation: content.realWorldImplementation ?? content.projectUsagePanel,
-    codeSummary: content.codeSummary ?? content.codeSummaryCard,
-  };
-}
-
-function normalizeVisualSection(raw: JsonRecord): JsonRecord {
-  const content = camelizeDeep(raw || {});
-
-  // Ensure nested objects exist
-  const realWorldVisualMapping = content.realWorldVisualMapping ?? content.realWorldVisualBlock;
-  if (realWorldVisualMapping && !realWorldVisualMapping.practicalScenarios) {
-    realWorldVisualMapping.practicalScenarios = [];
-  }
-
-  return {
-    ...content,
-    conceptVisualIntro: content.conceptVisualIntro ?? content.visualIntroCard,
-    diagrammaticBreakdown: content.diagrammaticBreakdown ?? content.diagramPanel,
-    stepByStepVisualFlow: content.stepByStepVisualFlow ?? content.flowSequencePanel,
-    comparativeVisualization: content.comparativeVisualization ?? content.comparisonDiagram,
-    mentalModelVisualization: content.mentalModelVisualization ?? content.mentalModelCanvas,
-    realWorldVisualMapping,
-    commonConfusionVisualization: content.commonConfusionVisualization ?? content.confusionResolutionDiagram,
-    visualSummary: content.visualSummary ?? content.summaryInfographic,
-  };
-}
-
-function normalizePracticeSection(raw: JsonRecord): JsonRecord {
-  const content = camelizeDeep(raw || {});
-
-  const assessmentIntro = content.assessmentIntro ?? content.assessmentIntroCard;
-  if (assessmentIntro && !assessmentIntro.learningGoals) assessmentIntro.learningGoals = [];
-
-  const performanceAnalytics = content.performanceAnalytics || {};
-  if (performanceAnalytics) {
-    if (!performanceAnalytics.scoreDisplay) performanceAnalytics.scoreDisplay = { currentScore: 0, maxScore: 0, percentage: 0 };
-    if (!performanceAnalytics.benchmarkComparison) performanceAnalytics.benchmarkComparison = { userScore: 0, averageScore: 0, topScore: 0 };
-  }
-
-  const revisionRecommendations = content.revisionRecommendations || {};
-  if (revisionRecommendations) {
-    if (!revisionRecommendations.personalizedLearningPath) revisionRecommendations.personalizedLearningPath = [];
-    if (!revisionRecommendations.weaknessRecoverySteps) revisionRecommendations.weaknessRecoverySteps = [];
-  }
-
-  return {
-    ...content,
-    assessmentIntro,
-    conceptRecallQuestions: content.conceptRecallQuestions ?? content.mcqBlock,
-    scenarioBasedQuestions: content.scenarioBasedQuestions ?? content.scenarioTestPanel,
-    difficultyProgression: content.difficultyProgression ?? content.adaptiveTestFlow,
-    instantFeedback: content.instantFeedback ?? content.feedbackExplanationCard,
-    commonMistakeDetection: content.commonMistakeDetection ?? content.mistakeAnalysisPanel,
-    performanceAnalytics,
-    revisionRecommendations,
-  };
-}
-
-function normalizeGenericSection(raw: JsonRecord): JsonRecord {
-  return camelizeDeep(raw || {});
-}
-
-function getRequiredSection(sections: Record<string, unknown>, sectionType: TutorialMasterySectionId): unknown {
-  if (!Object.prototype.hasOwnProperty.call(sections, sectionType)) {
-    throw new Error(`This tutorial section failed schema validation and must be regenerated. Section: ${sectionType}. Missing required DB section.`);
-  }
-  return sections[sectionType];
 }
 
 function strictSectionError(sectionType: TutorialMasterySectionId, detail: string): string {
@@ -304,7 +42,8 @@ function loadStrictSection<TSection extends TutorialMasterySectionId>(
     return { error: strictSectionError(sectionType, 'Missing required DB section.') };
   }
 
-  const validation = validateTutorialSection(sectionType, getRequiredSection(sections, sectionType));
+  const rawSection = sections[sectionType];
+  const validation = validateTutorialSection(sectionType, rawSection);
   if (!validation.success) {
     return { error: strictSectionError(sectionType, formatTutorialSectionValidationIssues(validation.issues)) };
   }
@@ -325,217 +64,217 @@ export function buildSubtopicNotesDataFromSectionsResponse(
   subtopicId: string,
   data: { subtopicName?: string; sectionMeta?: Record<string, JsonRecord>; sections?: Record<string, unknown> }
 ): SubtopicNotesViewData {
-    const sections = data.sections || {};
-    const sectionMeta = data.sectionMeta || {};
-    const sectionRecordIds = Object.fromEntries(
-      Object.entries(sectionMeta as Record<string, JsonRecord>)
-        .filter(([, meta]) => typeof meta?.id === 'string')
-        .map(([sectionType, meta]) => [sectionType, meta.id as string])
-    );
-    const subtopicName = data.subtopicName || subtopicId;
+  const sections = data.sections || {};
+  const sectionMeta = data.sectionMeta || {};
+  const sectionRecordIds = Object.fromEntries(
+    Object.entries(sectionMeta as Record<string, JsonRecord>)
+      .filter(([, meta]) => typeof meta?.id === 'string')
+      .map(([sectionType, meta]) => [sectionType, meta.id as string])
+  );
+  const subtopicName = data.subtopicName || subtopicId;
 
-    const subtopicInfo = {
-      title: subtopicName,
-      description: `Learn about ${subtopicName}`,
-      level: 'Intermediate',
-      topic: 'Programming Concepts'
-    };
+  const subtopicInfo = {
+    title: subtopicName,
+    description: `Learn about ${subtopicName}`,
+    level: 'Intermediate',
+    topic: 'Programming Concepts'
+  };
 
-    const loadedSections = {
-      notes: loadStrictSection(sections, 'notes'),
-      layman: loadStrictSection(sections, 'layman'),
-      real_life: loadStrictSection(sections, 'real_life'),
-      technical: loadStrictSection(sections, 'technical'),
-      code: loadStrictSection(sections, 'code'),
-      visual: loadStrictSection(sections, 'visual'),
-      practice: loadStrictSection(sections, 'practice'),
-      assignment: loadStrictSection(sections, 'assignment'),
-      project: loadStrictSection(sections, 'project'),
-      quiz: loadStrictSection(sections, 'quiz'),
-      summary: loadStrictSection(sections, 'summary'),
-      interview: loadStrictSection(sections, 'interview'),
-      ai_tutor: loadStrictSection(sections, 'ai_tutor'),
-    };
-    const sectionErrors = Object.fromEntries(
-      Object.entries(loadedSections)
-        .filter((entry): entry is [TutorialMasterySectionId, { error: string }] => typeof entry[1].error === 'string')
-        .map(([sectionType, result]) => [sectionType, result.error])
-    );
+  const loadedSections = {
+    notes: loadStrictSection(sections, 'notes'),
+    layman: loadStrictSection(sections, 'layman'),
+    real_life: loadStrictSection(sections, 'real_life'),
+    technical: loadStrictSection(sections, 'technical'),
+    code: loadStrictSection(sections, 'code'),
+    visual: loadStrictSection(sections, 'visual'),
+    practice: loadStrictSection(sections, 'practice'),
+    assignment: loadStrictSection(sections, 'assignment'),
+    project: loadStrictSection(sections, 'project'),
+    quiz: loadStrictSection(sections, 'quiz'),
+    summary: loadStrictSection(sections, 'summary'),
+    interview: loadStrictSection(sections, 'interview'),
+    ai_tutor: loadStrictSection(sections, 'ai_tutor'),
+  };
+  const sectionErrors = Object.fromEntries(
+    Object.entries(loadedSections)
+      .filter((entry): entry is [TutorialMasterySectionId, { error: string }] => typeof entry[1].error === 'string')
+      .map(([sectionType, result]) => [sectionType, result.error])
+  );
 
-    const notesContent = loadedSections.notes.data;
-    const laymanContent = loadedSections.layman.data;
-    const visualContent = loadedSections.visual.data;
-    const realLifeContent = loadedSections.real_life.data;
-    const technicalContent = loadedSections.technical.data;
-    const codeContent = loadedSections.code.data;
-    const practiceContent = loadedSections.practice.data;
-    const assignmentContent = loadedSections.assignment.data;
-    const projectContent = loadedSections.project.data;
-    const quizContent = loadedSections.quiz.data;
-    const summaryContent = loadedSections.summary.data;
-    const interviewContent = loadedSections.interview.data;
-    const aiTutorContent = loadedSections.ai_tutor.data;
-    const progressSnapshot = calculateTutorialProgress({ completedSections: [] });
+  const notesContent = loadedSections.notes.data;
+  const laymanContent = loadedSections.layman.data;
+  const visualContent = loadedSections.visual.data;
+  const realLifeContent = loadedSections.real_life.data;
+  const technicalContent = loadedSections.technical.data;
+  const codeContent = loadedSections.code.data;
+  const practiceContent = loadedSections.practice.data;
+  const assignmentContent = loadedSections.assignment.data;
+  const projectContent = loadedSections.project.data;
+  const quizContent = loadedSections.quiz.data;
+  const summaryContent = loadedSections.summary.data;
+  const interviewContent = loadedSections.interview.data;
+  const aiTutorContent = loadedSections.ai_tutor.data;
+  const progressSnapshot = calculateTutorialProgress({ completedSections: [] });
 
-    return {
-      sectionErrors,
-      sectionRecordIds,
-      nav: {
-        courseLabel: 'Course',
-        lessonLabel: 'Lesson',
-        dashboardCtaLabel: 'Dashboard',
-        streak: 7,
-        xpPoints: 2450,
-        learnerInitials: 'JD'
-      },
-      leftSidebar: {
-        title: 'Learning Path',
-        items: [
-          { id: 'overview', label: 'Overview', status: 'completed', icon: 'LayoutDashboard' },
-          { id: 'notes', label: 'Full Notes', status: 'active', icon: 'FileText' },
-          { id: 'layman', label: 'Layman Explanation', status: 'pending', icon: 'Lightbulb' },
-          { id: 'real-life', label: 'Real Life Examples', status: 'pending', icon: 'Globe' },
-          { id: 'technical-deep-dive', label: 'Technical Deep Dive', status: 'pending', icon: 'Palette' },
-          { id: 'code-example', label: 'Code Example', status: 'pending', icon: 'Monitor' },
-          { id: 'visual-explanation', label: 'Visual Explanation', status: 'pending', icon: 'Eye' },
-          { id: 'practice-test', label: 'Practice Test', status: 'pending', icon: 'Pencil' },
-          { id: 'assignments', label: 'Assignments', status: 'pending', icon: 'ClipboardList' },
-          { id: 'project', label: 'Projects', status: 'pending', icon: 'Rocket' },
-          { id: 'quiz', label: 'Quiz', status: 'pending', icon: 'HelpCircle' },
-          { id: 'summary', label: 'Summary', status: 'pending', icon: 'FileCheck' },
-          { id: 'interview', label: 'Interview Prep', status: 'pending', icon: 'MessagesSquare' },
-          { id: 'ai-tutor', label: brand.tutorLabel || 'AI Tutor', status: 'pending', icon: 'Bot' },
-          { id: 'progress', label: 'Progress', status: 'pending', icon: 'TrendingUp' }
-        ],
-        progress: {
-          percentage: progressSnapshot.completionPercent,
-          message: `${progressSnapshot.completionPercent}% Complete`
-        }
-      },
-      mainContent: {
-        breadcrumbs: ['Home', subtopicInfo.topic, 'Components', subtopicInfo.title],
-        title: subtopicInfo.title,
-        meta: {
-          readTime: '10 min read',
-          level: subtopicInfo.level,
-          xp: 50
-        },
-        simpleWords: notesContent?.simpleWords ?? '',
-        definitionBlock: notesContent?.definitionBlock,
-        sections: notesContent?.sections ?? [],
-        componentGrid: notesContent?.componentGrid,
-        examplePanel: notesContent?.examplePanel,
-        practiceCard: notesContent?.practiceCard,
-        warningFaq: notesContent?.warningFaq,
-        summaryCard: notesContent?.summaryCard,
-
-        // 1. Summary Hero Infographic
-        summaryHeroInfographic:
-          notesContent?.summaryHeroInfographic ??
-          (visualContent as any)?.summaryInfographic ??
-          (visualContent as any)?.summary_infographic,
-
-        // 2. Concept Memory Map / Flow
-        conceptMemoryMap:
-          notesContent?.conceptMemoryMap ??
-          (visualContent as any)?.mentalModelVisualization ??
-          (visualContent as any)?.mental_model_canvas,
-
-        // 3. Component Grid (Already handled in componentGrid field above)
-
-        // 4. Syntax Block
-        syntaxBlock:
-          notesContent?.syntaxBlock ??
-          (visualContent as any)?.syntaxBlock ??
-          (visualContent as any)?.lineByLineExplanation,
-
-        // 5. Example Panel (Already handled in examplePanel field above)
-
-        // 6. Practice Card (Already handled in practiceCard field above)
-
-        // 7. Cheat Sheet (Quick Reference)
-        cheatSheetSVG:
-          notesContent?.cheatSheetSVG ??
-          (visualContent as any)?.diagrammaticBreakdown ??
-          (visualContent as any)?.diagram_panel,
-
-        // 8. Flashcard Visual System
-        flashcardVisualSystem:
-          notesContent?.flashcardVisualSystem ??
-          (visualContent as any)?.flashcardVisualSystem,
-
-        // 9. Comparison Summary Chart
-        comparisonSummaryChart:
-          notesContent?.comparisonSummaryChart ??
-          (visualContent as any)?.comparativeVisualization ??
-          (visualContent as any)?.comparison_diagram,
-
-        // 10. Mnemonic & Retention Graphic
-        mnemonicRetentionGraphic:
-          notesContent?.mnemonicRetentionGraphic ??
-          (visualContent as any)?.mnemonicRetentionGraphic,
-
-        // Final Footer
-        footerBlock:
-          notesContent?.footerBlock ??
-          (visualContent as any)?.footerBlock,
-
-        laymanExplanation: laymanContent,
-        realLifeExamples: realLifeContent,
-        technicalDeepDive: technicalContent,
-        codeExample: codeContent,
-
-        // Keep existing full Visual Explanation tab as-is.
-        visualExplanation: visualContent,
-
-        practiceTest: practiceContent,
-        assignment: assignmentContent,
-        project: projectContent,
-        quiz: quizContent,
-        summary: summaryContent,
-        interview: interviewContent,
-        aiTutorContent
-      } as any,
-      rightSidebar: {
-        aiTutor: {
-          title: `${brand.tutorLabel || 'Tutor'} (Ask Anything)`,
-          messages: (aiTutorContent?.qaPairs ?? []).slice(0, 3).flatMap((pair) => [
-                { text: firstText(pair.question), time: '2:30 PM', sender: 'user' as const },
-                { text: firstText(pair.answer), time: '2:31 PM', sender: 'bot' as const }
-              ]),
-          inputPlaceholder: 'Ask a follow-up...'
-        },
-        courseProgress: {
-          percentage: progressSnapshot.completionPercent,
-          courseName: subtopicInfo.topic,
-          label: `${progressSnapshot.completionPercent}% Completed`
-        },
-        xpStats: {
-          earned: 50,
-          total: 2450
-        },
-        relatedSubtopics: [
-        ],
-        laymanSidebar: {
-          quickSummary: notesContent?.definitionBlock.quickSummary ?? [],
-          keyTerms: [],
-          readingTime: '',
-          thinkAboutIt: ''
-        },
-        deepDiveSidebar: {
-          onThisPage: [
-            { id: 'anatomy', label: 'Component Anatomy' },
-            { id: 'reconciliation', label: 'Reconciliation' },
-            { id: 'resolution', label: 'Component Resolution' }
-          ],
-          quickLinks: [
-            { id: 'ql1', label: 'Documentation', icon: 'ExternalLink' },
-            { id: 'ql2', label: 'Best Practices', icon: 'BookOpen' },
-            { id: 'ql3', label: 'Code Examples', icon: 'Code2' }
-          ]
-        }
+  return {
+    sectionErrors,
+    sectionRecordIds,
+    nav: {
+      courseLabel: 'Course',
+      lessonLabel: 'Lesson',
+      dashboardCtaLabel: 'Dashboard',
+      streak: 7,
+      xpPoints: 2450,
+      learnerInitials: 'JD'
+    },
+    leftSidebar: {
+      title: 'Learning Path',
+      items: [
+        { id: 'overview', label: 'Overview', status: 'completed', icon: 'LayoutDashboard' },
+        { id: 'notes', label: 'Full Notes', status: 'active', icon: 'FileText' },
+        { id: 'layman', label: 'Layman Explanation', status: 'pending', icon: 'Lightbulb' },
+        { id: 'real-life', label: 'Real Life Examples', status: 'pending', icon: 'Globe' },
+        { id: 'technical-deep-dive', label: 'Technical Deep Dive', status: 'pending', icon: 'Palette' },
+        { id: 'code-example', label: 'Code Example', status: 'pending', icon: 'Monitor' },
+        { id: 'visual-explanation', label: 'Visual Explanation', status: 'pending', icon: 'Eye' },
+        { id: 'practice-test', label: 'Practice Test', status: 'pending', icon: 'Pencil' },
+        { id: 'assignments', label: 'Assignments', status: 'pending', icon: 'ClipboardList' },
+        { id: 'project', label: 'Projects', status: 'pending', icon: 'Rocket' },
+        { id: 'quiz', label: 'Quiz', status: 'pending', icon: 'HelpCircle' },
+        { id: 'summary', label: 'Summary', status: 'pending', icon: 'FileCheck' },
+        { id: 'interview', label: 'Interview Prep', status: 'pending', icon: 'MessagesSquare' },
+        { id: 'ai-tutor', label: brand.tutorLabel || 'AI Tutor', status: 'pending', icon: 'Bot' },
+        { id: 'progress', label: 'Progress', status: 'pending', icon: 'TrendingUp' }
+      ],
+      progress: {
+        percentage: progressSnapshot.completionPercent,
+        message: `${progressSnapshot.completionPercent}% Complete`
       }
-    };
+    },
+    mainContent: {
+      breadcrumbs: ['Home', subtopicInfo.topic, 'Components', subtopicInfo.title],
+      title: subtopicInfo.title,
+      meta: {
+        readTime: '10 min read',
+        level: subtopicInfo.level,
+        xp: 50
+      },
+      simpleWords: notesContent?.simpleWords ?? '',
+      definitionBlock: notesContent?.definitionBlock,
+      sections: notesContent?.sections ?? [],
+      componentGrid: notesContent?.componentGrid,
+      examplePanel: notesContent?.examplePanel,
+      practiceCard: notesContent?.practiceCard,
+      warningFaq: notesContent?.warningFaq,
+      summaryCard: notesContent?.summaryCard,
+
+      // 1. Summary Hero Infographic
+      summaryHeroInfographic:
+        notesContent?.summaryHeroInfographic ??
+        (visualContent as any)?.summaryInfographic ??
+        (visualContent as any)?.summary_infographic,
+
+      // 2. Concept Memory Map / Flow
+      conceptMemoryMap:
+        notesContent?.conceptMemoryMap ??
+        (visualContent as any)?.mentalModelVisualization ??
+        (visualContent as any)?.mental_model_canvas,
+
+      // 3. Component Grid (Already handled in componentGrid field above)
+
+      // 4. Syntax Block
+      syntaxBlock:
+        notesContent?.syntaxBlock ??
+        (visualContent as any)?.syntaxBlock ??
+        (visualContent as any)?.lineByLineExplanation,
+
+      // 5. Example Panel (Already handled in examplePanel field above)
+
+      // 6. Practice Card (Already handled in practiceCard field above)
+
+      // 7. Cheat Sheet (Quick Reference)
+      cheatSheetSVG:
+        notesContent?.cheatSheetSVG ??
+        (visualContent as any)?.diagrammaticBreakdown ??
+        (visualContent as any)?.diagram_panel,
+
+      // 8. Flashcard Visual System
+      flashcardVisualSystem:
+        notesContent?.flashcardVisualSystem ??
+        (visualContent as any)?.flashcardVisualSystem,
+
+      // 9. Comparison Summary Chart
+      comparisonSummaryChart:
+        notesContent?.comparisonSummaryChart ??
+        (visualContent as any)?.comparativeVisualization ??
+        (visualContent as any)?.comparison_diagram,
+
+      // 10. Mnemonic & Retention Graphic
+      mnemonicRetentionGraphic:
+        notesContent?.mnemonicRetentionGraphic ??
+        (visualContent as any)?.mnemonicRetentionGraphic,
+
+      // Final Footer
+      footerBlock:
+        notesContent?.footerBlock ??
+        (visualContent as any)?.footerBlock,
+
+      laymanExplanation: laymanContent,
+      realLifeExamples: realLifeContent,
+      technicalDeepDive: technicalContent,
+      codeExample: codeContent,
+
+      // Keep existing full Visual Explanation tab as-is.
+      visualExplanation: visualContent,
+
+      practiceTest: practiceContent,
+      assignment: assignmentContent,
+      project: projectContent,
+      quiz: quizContent,
+      summary: summaryContent,
+      interview: interviewContent,
+      aiTutorContent
+    } as any,
+    rightSidebar: {
+      aiTutor: {
+        title: `${brand.tutorLabel || 'Tutor'} (Ask Anything)`,
+        messages: (aiTutorContent?.qaPairs ?? []).slice(0, 3).flatMap((pair) => [
+          { text: firstText(pair.question), time: '2:30 PM', sender: 'user' as const },
+          { text: firstText(pair.answer), time: '2:31 PM', sender: 'bot' as const }
+        ]),
+        inputPlaceholder: 'Ask a follow-up...'
+      },
+      courseProgress: {
+        percentage: progressSnapshot.completionPercent,
+        courseName: subtopicInfo.topic,
+        label: `${progressSnapshot.completionPercent}% Completed`
+      },
+      xpStats: {
+        earned: 50,
+        total: 2450
+      },
+      relatedSubtopics: [
+      ],
+      laymanSidebar: {
+        quickSummary: notesContent?.definitionBlock?.quickSummary ?? [],
+        keyTerms: [],
+        readingTime: '',
+        thinkAboutIt: ''
+      },
+      deepDiveSidebar: {
+        onThisPage: [
+          { id: 'anatomy', label: 'Component Anatomy' },
+          { id: 'reconciliation', label: 'Reconciliation' },
+          { id: 'resolution', label: 'Component Resolution' }
+        ],
+        quickLinks: [
+          { id: 'ql1', label: 'Documentation', icon: 'ExternalLink' },
+          { id: 'ql2', label: 'Best Practices', icon: 'BookOpen' },
+          { id: 'ql3', label: 'Code Examples', icon: 'Code2' }
+        ]
+      }
+    }
+  };
 }
 
 export async function loadSubtopicNotesDataFromAPI(
@@ -601,11 +340,11 @@ export async function submitQuizAnswer(
       timeSpent
     })
   });
-  
+
   if (!response.ok) {
     throw new Error('Failed to submit quiz answer');
   }
-  
+
   return response.json();
 }
 
@@ -633,11 +372,11 @@ export async function submitPracticeAnswer(
       feedbackViewed
     })
   });
-  
+
   if (!response.ok) {
     throw new Error('Failed to submit practice answer');
   }
-  
+
   return response.json();
 }
 
@@ -665,11 +404,11 @@ export async function trackCodeInteraction(
       timeSpent
     })
   });
-  
+
   if (!response.ok) {
     throw new Error('Failed to track code interaction');
   }
-  
+
   return response.json();
 }
 
@@ -695,11 +434,11 @@ export async function trackVisualInteraction(
       timeSpent
     })
   });
-  
+
   if (!response.ok) {
     throw new Error('Failed to track visual interaction');
   }
-  
+
   return response.json();
 }
 
@@ -723,10 +462,10 @@ export async function markSectionComplete(
       score
     })
   });
-  
+
   if (!response.ok) {
     throw new Error('Failed to mark section as complete');
   }
-  
+
   return response.json();
 }

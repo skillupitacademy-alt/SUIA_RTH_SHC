@@ -458,29 +458,52 @@ export function PromptGeneratorUI() {
               <div className="mt-8 pt-6 border-t border-gray-100">
                 <div className="block text-lg font-semibold text-gray-800 mb-3">Select Visual Asset (SVG) Prompt</div>
                 <div className="flex flex-wrap gap-3">
-                  {ASSET_SPECS[selectedSection].map((asset) => (
-                    <button
-                      key={asset.id}
-                      onClick={() => handleGeneratePrompt(asset.id)}
-                      className={`px-5 py-3 rounded-xl font-bold text-sm transition-all border-2 ${
-                        selectedAssetId === asset.id
-                          ? 'bg-amber-500 border-amber-600 text-white shadow-md scale-105'
-                          : 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100'
-                      }`}
-                    >
-                      {asset.label}
-                    </button>
-                  ))}
-                  <button
-                    onClick={() => handleGeneratePrompt()}
-                    className={`px-5 py-3 rounded-xl font-bold text-sm transition-all border-2 ${
-                      selectedAssetId === null && generatedAssetPrompt
-                        ? 'bg-slate-700 border-slate-800 text-white shadow-md'
-                        : 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200'
-                    }`}
-                  >
-                    All Assets
-                  </button>
+                  {(() => {
+                    const filteredAssets = selectedSubsection
+                      ? (() => {
+                          const matched = findMatchingAsset(selectedSection, selectedSubsection);
+                          return matched ? [matched] : [];
+                        })()
+                      : ASSET_SPECS[selectedSection];
+
+                    if (selectedSubsection && filteredAssets.length === 0) {
+                      return (
+                        <p className="text-sm font-medium text-slate-500 italic">
+                          This subsection consists of structured text blocks and layout metadata (no custom illustration SVG required).
+                        </p>
+                      );
+                    }
+
+                    return (
+                      <>
+                        {filteredAssets.map((asset) => (
+                          <button
+                            key={asset.id}
+                            onClick={() => handleGeneratePrompt(asset.id)}
+                            className={`px-5 py-3 rounded-xl font-bold text-sm transition-all border-2 ${
+                              selectedAssetId === asset.id
+                                ? 'bg-amber-500 border-amber-600 text-white shadow-md scale-105'
+                                : 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100'
+                            }`}
+                          >
+                            {asset.label}
+                          </button>
+                        ))}
+                        {!selectedSubsection && (
+                          <button
+                            onClick={() => handleGeneratePrompt()}
+                            className={`px-5 py-3 rounded-xl font-bold text-sm transition-all border-2 ${
+                              selectedAssetId === null && generatedAssetPrompt
+                                ? 'bg-slate-700 border-slate-800 text-white shadow-md'
+                                : 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200'
+                            }`}
+                          >
+                            All Assets
+                          </button>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
             )}

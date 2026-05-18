@@ -14,14 +14,14 @@ export const CodeSectionSchema = sectionSchema('code', {
     scenario: NonEmptyStringSchema,
     requirements: nonEmptyStringArray(1),
     constraints: OptionalNonEmptyStringSchema,
-  }),
+  }).optional(),
   basicCodeExample: strictObject({
     title: NonEmptyStringSchema,
     description: NonEmptyStringSchema,
     code: NonEmptyStringSchema,
     language: NonEmptyStringSchema,
     explanation: NonEmptyStringSchema,
-  }),
+  }).optional(),
   lineByLineExplanation: strictObject({
     title: NonEmptyStringSchema,
     lines: z.array(strictObject({
@@ -30,7 +30,7 @@ export const CodeSectionSchema = sectionSchema('code', {
       code: NonEmptyStringSchema,
       explanation: NonEmptyStringSchema,
     })).min(1),
-  }),
+  }).optional(),
   outputDemonstration: strictObject({
     title: NonEmptyStringSchema,
     input: NonEmptyStringSchema,
@@ -38,14 +38,14 @@ export const CodeSectionSchema = sectionSchema('code', {
     explanation: NonEmptyStringSchema,
     visualRepresentation: NonEmptyStringSchema,
     previewAsset: optionalSvgAssetField(),
-  }),
+  }).optional(),
   bestPracticeVersion: strictObject({
     title: NonEmptyStringSchema,
     improvements: nonEmptyStringArray(1),
     code: NonEmptyStringSchema,
     explanation: NonEmptyStringSchema,
     benefits: nonEmptyStringArray(1),
-  }),
+  }).optional(),
   commonMistakes: strictObject({
     title: NonEmptyStringSchema,
     mistakes: z.array(strictObject({
@@ -56,7 +56,7 @@ export const CodeSectionSchema = sectionSchema('code', {
       why: NonEmptyStringSchema,
       lesson: NonEmptyStringSchema,
     })).min(1),
-  }),
+  }).optional(),
   realWorldImplementation: strictObject({
     title: NonEmptyStringSchema,
     scenario: NonEmptyStringSchema,
@@ -64,13 +64,13 @@ export const CodeSectionSchema = sectionSchema('code', {
     features: nonEmptyStringArray(1),
     explanation: NonEmptyStringSchema,
     scalability: NonEmptyStringSchema,
-  }),
+  }).optional(),
   codeSummary: strictObject({
     title: NonEmptyStringSchema,
     keyTakeaways: nonEmptyStringArray(1),
     practiceExercise: NonEmptyStringSchema,
     nextSteps: nonEmptyStringArray(1),
-  }),
+  }).optional(),
 });
 
 export type CodeSection = z.infer<typeof CodeSectionSchema>;

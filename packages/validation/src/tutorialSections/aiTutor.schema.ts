@@ -7,16 +7,16 @@ import {
 } from './base';
 
 export const AITutorSectionSchema = sectionSchema('ai_tutor', {
-  greeting: NonEmptyStringSchema,
+  greeting: NonEmptyStringSchema.optional(),
   qaPairs: z.array(strictObject({
     question: NonEmptyStringSchema,
     answer: NonEmptyStringSchema,
-  })).min(1),
+  })).min(1).optional(),
   tutorPromptCard: strictObject({
     title: NonEmptyStringSchema,
     systemPrompt: NonEmptyStringSchema,
     starterQuestions: nonEmptyStringArray(1),
-  }),
+  }).optional(),
   misconceptionDetector: strictObject({
     title: NonEmptyStringSchema,
     misconceptions: z.array(strictObject({
@@ -25,14 +25,14 @@ export const AITutorSectionSchema = sectionSchema('ai_tutor', {
       correction: NonEmptyStringSchema,
       example: NonEmptyStringSchema,
     })).min(1),
-  }),
+  }).optional(),
   adaptiveHintPanel: strictObject({
     title: NonEmptyStringSchema,
     hints: z.array(strictObject({
       level: z.number().int().positive(),
       hint: NonEmptyStringSchema,
     })).min(1),
-  }),
+  }).optional(),
 });
 
 export type AITutorSection = z.infer<typeof AITutorSectionSchema>;

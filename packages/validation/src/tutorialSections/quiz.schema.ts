@@ -21,12 +21,12 @@ export const QuizQuestionSchema = strictObject({
 });
 
 export const QuizSectionSchema = sectionSchema('quiz', {
-  title: NonEmptyStringSchema,
-  description: NonEmptyStringSchema,
-  totalQuestions: z.number().int().positive(),
-  duration: NonEmptyStringSchema,
-  xp: NonNegativeNumberSchema,
-  questions: z.array(QuizQuestionSchema).min(1),
+  title: NonEmptyStringSchema.optional(),
+  description: NonEmptyStringSchema.optional(),
+  totalQuestions: z.number().int().positive().optional(),
+  duration: NonEmptyStringSchema.optional(),
+  xp: NonNegativeNumberSchema.optional(),
+  questions: z.array(QuizQuestionSchema).min(1).optional(),
 });
 
 export type QuizSection = z.infer<typeof QuizSectionSchema>;
