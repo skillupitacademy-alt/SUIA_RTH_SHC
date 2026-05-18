@@ -61,7 +61,6 @@ const SUBSECTIONS_MAP: Record<string, Array<{ id: string; label: string; type: '
   notes: [
     { id: 'simpleWords', label: 'Simple Words (Text)', type: 'json' },
     { id: 'definitionBlock', label: 'Definition Block (JSON)', type: 'json' },
-    { id: 'sections', label: 'Detailed Sections List (JSON)', type: 'json' },
     { id: 'syntaxBlock', label: 'Syntax Block (JSON)', type: 'json' },
     { id: 'componentGrid', label: 'Component Grid (JSON)', type: 'json' },
     { id: 'examplePanel', label: 'Example Panel (JSON)', type: 'json' },
@@ -69,12 +68,12 @@ const SUBSECTIONS_MAP: Record<string, Array<{ id: string; label: string; type: '
     { id: 'warningFaq', label: 'Warning FAQ (JSON)', type: 'json' },
     { id: 'summaryCard', label: 'Summary Card (JSON)', type: 'json' },
     { id: 'footerBlock', label: 'Footer Block (JSON)', type: 'json' },
-    { id: 'flashcardVisualSystem', label: 'Flashcard Visual System (JSON)', type: 'json' },
-    { id: 'comparisonSummaryChart', label: 'Comparison Summary Chart (JSON)', type: 'json' },
-    { id: 'mnemonicRetentionGraphic', label: 'Mnemonic Retention Graphic (JSON)', type: 'json' },
     { id: 'summaryHeroSvg', label: 'Summary Hero (SVG)', type: 'svg' },
     { id: 'conceptMemoryMapSvg', label: 'Concept Memory Map (SVG)', type: 'svg' },
     { id: 'cheatSheetSVG', label: 'Cheat Sheet (SVG)', type: 'svg' },
+    { id: 'flashcardVisualSystem', label: 'Flashcard Visual System (JSON)', type: 'json' },
+    { id: 'comparisonSummaryChart', label: 'Comparison Summary Chart (JSON)', type: 'json' },
+    { id: 'mnemonicRetentionGraphic', label: 'Mnemonic Retention Graphic (JSON)', type: 'json' },
   ],
   layman: [
     { id: 'simpleOverview', label: 'Simple Overview (JSON)', type: 'json' },
@@ -267,6 +266,7 @@ function getDefaultAssetFieldPath(section: SectionType) {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getAllowedAssetFieldPaths(section: SectionType) {
   switch (section) {
     case 'layman':
@@ -707,7 +707,6 @@ function ContentManagerContent() {
   const [isProcessingAsset, setIsProcessingAsset] = useState(false);
 
   const selectedSectionLabel = sections.find((section) => section.id === selectedSection)?.label ?? selectedSection;
-  const allowedAssetFieldPaths = getAllowedAssetFieldPaths(selectedSection);
 
   const activeSpecs = React.useMemo(() => {
     const specs = ASSET_SPECS[selectedSection] || [];

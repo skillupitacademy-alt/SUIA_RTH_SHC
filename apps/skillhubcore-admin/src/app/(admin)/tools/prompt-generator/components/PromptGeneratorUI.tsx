@@ -30,7 +30,6 @@ const SUBSECTIONS_MAP: Record<string, Array<{ id: string; label: string }>> = {
   notes: [
     { id: 'simpleWords', label: 'Simple Words' },
     { id: 'definitionBlock', label: 'Definition Block' },
-    { id: 'sections', label: 'Detailed Sections List' },
     { id: 'syntaxBlock', label: 'Syntax Block' },
     { id: 'componentGrid', label: 'Component Grid' },
     { id: 'examplePanel', label: 'Example Panel' },
@@ -38,12 +37,12 @@ const SUBSECTIONS_MAP: Record<string, Array<{ id: string; label: string }>> = {
     { id: 'warningFaq', label: 'Warning FAQ' },
     { id: 'summaryCard', label: 'Summary Card' },
     { id: 'footerBlock', label: 'Footer Block' },
-    { id: 'flashcardVisualSystem', label: 'Flashcard Visual System' },
-    { id: 'comparisonSummaryChart', label: 'Comparison Summary Chart' },
-    { id: 'mnemonicRetentionGraphic', label: 'Mnemonic Retention Graphic' },
     { id: 'summaryHeroSvg', label: 'Summary Hero (SVG)' },
     { id: 'conceptMemoryMapSvg', label: 'Concept Memory Map (SVG)' },
     { id: 'cheatSheetSVG', label: 'Cheat Sheet (SVG)' },
+    { id: 'flashcardVisualSystem', label: 'Flashcard Visual System' },
+    { id: 'comparisonSummaryChart', label: 'Comparison Summary Chart' },
+    { id: 'mnemonicRetentionGraphic', label: 'Mnemonic Retention Graphic' },
   ],
   layman: [
     { id: 'simpleOverview', label: 'Simple Overview' },
