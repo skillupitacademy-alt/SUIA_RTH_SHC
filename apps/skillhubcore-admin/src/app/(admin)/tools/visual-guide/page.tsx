@@ -215,6 +215,48 @@ const SECTIONS_SPECS: SectionSpec[] = [
       { id: 'answerFrameworkCard', label: 'Answer Framework', purpose: 'The structure of a perfect answer (e.g. STAR method)', components: ['STAR method cards', 'Protip badges'] },
       { id: 'mockInterviewFlow', label: 'Mock Interview Flow', purpose: 'Simulated mock interviewer-student dialogue cards', components: ['Dialog bubbles', 'Feedback ratings'] }
     ]
+  },
+  {
+    id: 'quiz',
+    label: '12. Quiz',
+    description: 'Canonical conceptual multiple choice questions to grade readiness.',
+    color: 'from-indigo-600 to-blue-600',
+    glowColor: 'rgba(79, 70, 229, 0.4)',
+    subsections: [
+      { id: 'title', label: 'Title', purpose: 'Main quiz evaluation dashboard header', components: ['Evaluation title', 'Grade requirements'], svgId: 'quiz-hero', svgLabel: 'Quiz Evaluation Hero' },
+      { id: 'description', label: 'Description', purpose: 'Rules and timing advice context', components: ['Description text'] },
+      { id: 'totalQuestions', label: 'Total Questions Count', purpose: 'Metric showing number of items to complete', components: ['Total questions badge'] },
+      { id: 'questions', label: 'Questions Pool', purpose: 'The full multiple choice questions array pool', components: ['Interactive option buttons', 'Question prompt block'] }
+    ]
+  },
+  {
+    id: 'summary',
+    label: '13. Summary',
+    description: 'Rapid revision checklist, mastery recap cards, and next step guidelines.',
+    color: 'from-teal-600 to-emerald-600',
+    glowColor: 'rgba(13, 148, 136, 0.4)',
+    subsections: [
+      { id: 'title', label: 'Title', purpose: 'Main summary review header card', components: ['Summary heading', 'Rapid revision intent'] },
+      { id: 'description', label: 'Description', purpose: 'High-level synthesis overview text', components: ['Synthesis brief'] },
+      { id: 'masteryRecapCard', label: 'Mastery Recap Card', purpose: 'Personalized recap showing confidence signal and SVG infographic', components: ['Recap list', 'SVG mastery infographic'], svgId: 'summary-hero', svgLabel: 'Mastery Summary Infographic' },
+      { id: 'keyTakeawayGrid', label: 'Key Takeaway Grid', purpose: 'Grid of most important architectural concepts', components: ['3-column takeaway cards'] },
+      { id: 'revisionChecklist', label: 'Revision Checklist', purpose: 'A detailed interactive checked milestone list', components: ['Interactive checkmark buttons'] },
+      { id: 'nextStepPanel', label: 'Next Step Panel', purpose: 'Advice on next lessons or actions to take', components: ['Action button links'] }
+    ]
+  },
+  {
+    id: 'ai_tutor',
+    label: '14. AI Tutor',
+    description: 'Adaptive hints, misconceptions detector, and interactive tutor system prompt configuration.',
+    color: 'from-fuchsia-600 to-pink-600',
+    glowColor: 'rgba(192, 38, 211, 0.4)',
+    subsections: [
+      { id: 'greeting', label: 'Greeting', purpose: 'Welcoming greeting customized to student profile', components: ['Greeting headline'] },
+      { id: 'qaPairs', label: 'Q&A Pairs', purpose: 'Pool of dialog prompts and predefined chatbot answers', components: ['Dialogue card bubble pool'] },
+      { id: 'tutorPromptCard', label: 'Tutor Prompt Card', purpose: 'AI system prompt parameters and starter prompts', components: ['System prompt layout specs'] },
+      { id: 'misconceptionDetector', label: 'Misconception Detector', purpose: 'Scans student input for common errors and corrects them', components: ['Correction cards', 'SVG misconception graph'], svgId: 'tutor-conversation', svgLabel: 'Misconception Scan Visual' },
+      { id: 'adaptiveHintPanel', label: 'Adaptive Hint Panel', purpose: 'Incremental hints guiding student to solution', components: ['Progressive hints accordion list'] }
+    ]
   }
 ];
 
@@ -1932,6 +1974,260 @@ export function VisualGuideUI() {
                   <div className="h-10 bg-slate-200 border border-slate-300 rounded flex items-center px-2 text-[10px] font-bold text-slate-550">Dialogue conversation bubbles</div>
                   <span className="text-[9px] font-black text-slate-400 mt-1 block">Mock Interview Flow (mockInterviewFlow)</span>
                 </div>
+              </div>
+
+            </div>
+            )}
+
+            {/* 12. QUIZ WIREFRAME SECTION */}
+            {selectedSectionId === 'quiz' && (
+            <div 
+              id="wireframe-quiz"
+              onClick={() => handleSectionChange('quiz')}
+              className={`p-6 rounded-2xl border-2 transition-all cursor-pointer relative shadow-sm hover:shadow-md ${
+                selectedSectionId === 'quiz' 
+                  ? 'border-indigo-600 bg-white ring-4 ring-indigo-600/10 scale-[1.01]' 
+                  : 'border-slate-200/80 bg-white'
+              } ${highlightedElement === 'quiz' ? 'animate-pulse' : ''}`}
+            >
+              <div className="absolute top-3 right-3 bg-indigo-50 border border-indigo-100 text-indigo-750 text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-wider">
+                12. QUIZ
+              </div>
+
+              {/* Title & Description Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                {/* title */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'quiz' && selectedSubsectionId === 'title' 
+                      ? 'border-indigo-600 bg-indigo-600/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-4.5 w-40 rounded bg-slate-350"></div>
+                  <span className="text-[9px] font-black text-slate-400 mt-2 block">Quiz Dashboard Hero (title)</span>
+                </div>
+
+                {/* description */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'quiz' && selectedSubsectionId === 'description' 
+                      ? 'border-indigo-600 bg-indigo-600/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-32 rounded bg-slate-300"></div>
+                  <div className="h-10 bg-slate-200 border border-slate-300 rounded flex items-center px-2 text-[10px] font-bold text-slate-500">Grading rubric and assessment guidelines</div>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Description (description)</span>
+                </div>
+              </div>
+
+              {/* totalQuestions count */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 mb-4 relative">
+                <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                  selectedSectionId === 'quiz' && selectedSubsectionId === 'totalQuestions' 
+                    ? 'border-indigo-600 bg-indigo-600/5 scale-100' 
+                    : 'border-transparent'
+                }`} />
+                <div className="h-4 w-44 rounded bg-slate-350 mb-2"></div>
+                <div className="h-10 bg-slate-250 border border-slate-200 rounded flex items-center px-2 text-[10px] font-bold text-slate-500">Total count metric dashboard indicator</div>
+                <span className="text-[9px] font-black text-slate-400 mt-2 block">Total Questions (totalQuestions)</span>
+              </div>
+
+              {/* Questions Pool */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 mb-4 relative">
+                <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                  selectedSectionId === 'quiz' && selectedSubsectionId === 'questions' 
+                    ? 'border-indigo-600 bg-indigo-600/5 scale-100' 
+                    : 'border-transparent'
+                }`} />
+                <div className="h-3.5 w-44 rounded bg-slate-350 mb-3"></div>
+                <div className="h-20 rounded border border-dashed border-slate-300 bg-slate-100/50 flex items-center justify-center text-[10px] font-extrabold text-slate-500">
+                  📝 Quiz Questions Pool SVG (quiz-hero)
+                </div>
+                <span className="text-[9px] font-black text-slate-400 mt-2 block">Questions Pool (questions)</span>
+              </div>
+
+            </div>
+            )}
+
+            {/* 13. SUMMARY WIREFRAME SECTION */}
+            {selectedSectionId === 'summary' && (
+            <div 
+              id="wireframe-summary"
+              onClick={() => handleSectionChange('summary')}
+              className={`p-6 rounded-2xl border-2 transition-all cursor-pointer relative shadow-sm hover:shadow-md ${
+                selectedSectionId === 'summary' 
+                  ? 'border-teal-600 bg-white ring-4 ring-teal-600/10 scale-[1.01]' 
+                  : 'border-slate-200/80 bg-white'
+              } ${highlightedElement === 'summary' ? 'animate-pulse' : ''}`}
+            >
+              <div className="absolute top-3 right-3 bg-teal-50 border border-teal-100 text-teal-700 text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-wider">
+                13. SUMMARY
+              </div>
+
+              {/* Title & Description Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                {/* title */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'summary' && selectedSubsectionId === 'title' 
+                      ? 'border-teal-600 bg-teal-600/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-4.5 w-40 rounded bg-slate-355 bg-slate-350"></div>
+                  <span className="text-[9px] font-black text-slate-400 mt-2 block">Summary Header (title)</span>
+                </div>
+
+                {/* description */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'summary' && selectedSubsectionId === 'description' 
+                      ? 'border-teal-600 bg-teal-600/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-32 rounded bg-slate-300"></div>
+                  <div className="h-10 bg-slate-200 border border-slate-300 rounded flex items-center px-2 text-[10px] font-bold text-slate-500">Rapid revision objectives overview</div>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Description (description)</span>
+                </div>
+              </div>
+
+              {/* masteryRecapCard */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 mb-4 relative">
+                <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                  selectedSectionId === 'summary' && selectedSubsectionId === 'masteryRecapCard' 
+                    ? 'border-teal-600 bg-teal-600/5 scale-100' 
+                    : 'border-transparent'
+                }`} />
+                <div className="h-4 w-44 rounded bg-slate-350 mb-2"></div>
+                <div className="h-20 rounded border border-dashed border-slate-300 bg-slate-100/50 flex items-center justify-center text-[10px] font-extrabold text-slate-500">
+                  ✨ Mastery Recap Infographic SVG (summary-hero)
+                </div>
+                <span className="text-[9px] font-black text-slate-400 mt-2 block">Mastery Recap Card (masteryRecapCard)</span>
+              </div>
+
+              {/* keyTakeawayGrid */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 mb-4 relative">
+                <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                  selectedSectionId === 'summary' && selectedSubsectionId === 'keyTakeawayGrid' 
+                    ? 'border-teal-600 bg-teal-600/5 scale-100' 
+                    : 'border-transparent'
+                }`} />
+                <div className="h-3.5 w-40 rounded bg-slate-350 mb-3"></div>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="h-12 bg-white rounded border border-slate-200 p-2"><div className="h-2.5 w-12 bg-slate-200 rounded"></div></div>
+                  <div className="h-12 bg-white rounded border border-slate-200 p-2"><div className="h-2.5 w-12 bg-slate-200 rounded"></div></div>
+                  <div className="h-12 bg-white rounded border border-slate-200 p-2"><div className="h-2.5 w-12 bg-slate-200 rounded"></div></div>
+                </div>
+                <span className="text-[9px] font-black text-slate-400 mt-2 block">Key Takeaway Grid (keyTakeawayGrid)</span>
+              </div>
+
+              {/* revisionChecklist & nextStepPanel Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative">
+                {/* revisionChecklist */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'summary' && selectedSubsectionId === 'revisionChecklist' 
+                      ? 'border-teal-600 bg-teal-600/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-32 rounded bg-slate-300"></div>
+                  <div className="h-10 bg-slate-200 border border-slate-300 rounded flex items-center px-2 text-[10px] font-bold text-slate-550">Target milestone checklist items</div>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Revision Checklist (revisionChecklist)</span>
+                </div>
+
+                {/* nextStepPanel */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'summary' && selectedSubsectionId === 'nextStepPanel' 
+                      ? 'border-teal-600 bg-teal-600/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-32 rounded bg-slate-350"></div>
+                  <div className="h-10 bg-slate-200 border border-slate-300 rounded flex items-center px-2 text-[10px] font-bold text-slate-550">Next lessons recommendations buttons</div>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Next Step Panel (nextStepPanel)</span>
+                </div>
+              </div>
+
+            </div>
+            )}
+
+            {/* 14. AI TUTOR WIREFRAME SECTION */}
+            {selectedSectionId === 'ai_tutor' && (
+            <div 
+              id="wireframe-ai_tutor"
+              onClick={() => handleSectionChange('ai_tutor')}
+              className={`p-6 rounded-2xl border-2 transition-all cursor-pointer relative shadow-sm hover:shadow-md ${
+                selectedSectionId === 'ai_tutor' 
+                  ? 'border-fuchsia-600 bg-white ring-4 ring-fuchsia-600/10 scale-[1.01]' 
+                  : 'border-slate-200/80 bg-white'
+              } ${highlightedElement === 'ai_tutor' ? 'animate-pulse' : ''}`}
+            >
+              <div className="absolute top-3 right-3 bg-fuchsia-50 border border-fuchsia-100 text-fuchsia-700 text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-wider">
+                14. AI TUTOR
+              </div>
+
+              {/* greeting */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 mb-4 relative">
+                <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                  selectedSectionId === 'ai_tutor' && selectedSubsectionId === 'greeting' 
+                    ? 'border-fuchsia-600 bg-fuchsia-600/5 scale-100' 
+                    : 'border-transparent'
+                }`} />
+                <div className="h-4 w-44 rounded bg-slate-350 mb-2"></div>
+                <div className="h-10 bg-slate-250 border border-slate-200 rounded flex items-center px-2 text-[10px] font-bold text-slate-500">Personalized greeting and tutor persona setup</div>
+                <span className="text-[9px] font-black text-slate-400 mt-2 block">Greeting (greeting)</span>
+              </div>
+
+              {/* qaPairs & tutorPromptCard Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                {/* qaPairs */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'ai_tutor' && selectedSubsectionId === 'qaPairs' 
+                      ? 'border-fuchsia-600 bg-fuchsia-600/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-32 rounded bg-slate-300"></div>
+                  <div className="h-10 bg-slate-200 border border-slate-300 rounded flex items-center px-2 text-[10px] font-bold text-slate-550">Interactive dialogue FAQ chat bubble pool</div>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Q&A Pairs (qaPairs)</span>
+                </div>
+
+                {/* tutorPromptCard */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative flex flex-col gap-2">
+                  <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                    selectedSectionId === 'ai_tutor' && selectedSubsectionId === 'tutorPromptCard' 
+                      ? 'border-fuchsia-600 bg-fuchsia-600/5 scale-100' 
+                      : 'border-transparent'
+                  }`} />
+                  <div className="h-3.5 w-32 rounded bg-slate-355 bg-slate-350"></div>
+                  <div className="h-10 bg-slate-200 border border-slate-300 rounded flex items-center px-2 text-[10px] font-bold text-slate-550">System prompt blueprint configurations</div>
+                  <span className="text-[9px] font-black text-slate-400 mt-1 block">Tutor Prompt (tutorPromptCard)</span>
+                </div>
+              </div>
+
+              {/* misconceptionDetector */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 mb-4 relative">
+                <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                  selectedSectionId === 'ai_tutor' && selectedSubsectionId === 'misconceptionDetector' 
+                    ? 'border-fuchsia-600 bg-fuchsia-600/5 scale-100' 
+                    : 'border-transparent'
+                }`} />
+                <div className="h-4 w-44 rounded bg-slate-350 mb-2"></div>
+                <div className="h-20 rounded border border-dashed border-slate-300 bg-slate-100/50 flex items-center justify-center text-[10px] font-extrabold text-slate-500">
+                  💬 Student Misconception Scan SVG (tutor-conversation)
+                </div>
+                <span className="text-[9px] font-black text-slate-400 mt-2 block">Misconception Detector (misconceptionDetector)</span>
+              </div>
+
+              {/* adaptiveHintPanel */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative">
+                <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
+                  selectedSectionId === 'ai_tutor' && selectedSubsectionId === 'adaptiveHintPanel' 
+                    ? 'border-fuchsia-600 bg-fuchsia-600/5 scale-100' 
+                    : 'border-transparent'
+                }`} />
+                <div className="h-3.5 w-44 rounded bg-slate-350 mb-2"></div>
+                <div className="h-10 bg-slate-250 border border-slate-200 rounded flex items-center px-2 text-[10px] font-bold text-slate-500">Step-by-step progressive hints panel</div>
+                <span className="text-[9px] font-black text-slate-400 mt-2 block">Adaptive Hint Panel (adaptiveHintPanel)</span>
               </div>
 
             </div>
