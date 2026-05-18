@@ -978,16 +978,37 @@ function ContentManagerContent() {
     try {
       const parsed = JSON.parse(jsonInput) as Record<string, unknown>;
       const rootKeys = Object.keys(parsed);
-      const rootKey = rootKeys.length === 1 ? rootKeys[0] : selectedSection;
-      const rootValue = parsed[rootKey];
+      
+      let targetContainer: Record<string, unknown> = parsed;
+      let targetPath = assetFieldPath;
+      let matchedCase = 'direct';
 
-      if (rootValue === null || typeof rootValue !== 'object' || Array.isArray(rootValue)) {
-        throw new Error(`Root key '${rootKey}' must contain a JSON object.`);
+      // 1. Check if the pasted JSON is wrapped in a single root section key (e.g. {"notes": {...}})
+      if (
+        rootKeys.length === 1 &&
+        (rootKeys[0] === selectedSection ||
+          ['notes', 'layman', 'overview', 'code', 'visual', 'practice', 'real_life', 'technical', 'assignment', 'project', 'quiz', 'summary', 'interview', 'ai_tutor'].includes(rootKeys[0]))
+      ) {
+        const rootKey = rootKeys[0];
+        const rootValue = parsed[rootKey];
+        if (rootValue !== null && typeof rootValue === 'object' && !Array.isArray(rootValue)) {
+          targetContainer = rootValue as Record<string, unknown>;
+          targetPath = assetFieldPath;
+          matchedCase = 'wrapped';
+        }
+      }
+      // 2. Check if pasting a raw subsection directly (e.g. {"code": "...", "explanations": [...]})
+      else if (selectedSubsection && assetFieldPath.startsWith(`${selectedSubsection}.`)) {
+        // Strip the subsection prefix because the user pasted the subsection directly
+        targetPath = assetFieldPath.substring(`${selectedSubsection}.`.length);
+        matchedCase = 'subsection';
       }
 
-      setNestedJsonValue(rootValue as Record<string, unknown>, assetFieldPath, processedAsset);
+      setNestedJsonValue(targetContainer, targetPath, processedAsset);
       setJsonInput(JSON.stringify(parsed, null, 2));
-      showMessage(`Injected asset into ${rootKey}.${assetFieldPath}.`, 'success');
+
+      const pathLabel = matchedCase === 'wrapped' ? `${rootKeys[0]}.${targetPath}` : targetPath;
+      showMessage(`Injected asset into ${pathLabel} successfully.`, 'success');
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       showMessage(`Unable to inject asset: ${errorMessage}`, 'error');
