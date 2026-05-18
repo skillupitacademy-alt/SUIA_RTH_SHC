@@ -117,9 +117,13 @@ export const getSvgAssetPromptForSection = (
   prompt += `3. Do NOT output \`{"svg": "..."}\` or any JSON object. Output the SVG element directly.\n`;
   prompt += `4. Do NOT include any text, explanation, or comments before or after the SVG tag.\n`;
   prompt += `5. Style: Modern, Minimalist, Tech-focused (FAANG Style).\n`;
-  prompt += `6. Colors: Use #f8fafc (slate-50), #3b82f6 (blue-500), #ef4444 (red-500), #22c55e (green-500).\n`;
+  prompt += `6. Colors: Use #f8fafc (slate-50), #3b82f6 (blue-500), #ef4444 (red-500), #22c55e (green-500), #f59e0b (amber-500), #6366f1 (indigo-500).\n`;
   prompt += `7. Typography: Use "Inter" or sans-serif fonts.\n`;
-  prompt += `8. All text must be embedded inside the SVG using <text> or <foreignObject> elements.\n\n`;
+  prompt += `8. All text must be embedded inside the SVG using <text> or <foreignObject> elements.\n`;
+  prompt += `9. DO NOT include embedded top title headers, subtitles, or background header blocks (e.g. y=0 to y=80) inside the SVG, as the parent application wrapper dynamically renders the section headers. Start the actual diagram directly at the top.\n`;
+  prompt += `10. AVOID BROKEN BLACK BOXES: EVERY single <rect> element in your SVG MUST have an explicit fill attribute (e.g., fill="none", fill="transparent", or a valid hex color). Never leave <rect> tags without a fill attribute.\n`;
+  prompt += `11. ASPECT RATIO OPTIMIZATION: Keep the height tightly bounded (prefer 450px to 500px height for 1200px width). This allows the SVG to fit and stretch to full width within the application's max-height limits without being squished or leaving vast vertical white spaces.\n`;
+  prompt += `12. HIGH-FIDELITY DESIGN DETAILS: The SVG must be a complete, highly polished, FAANG-level educational diagram. If representing code, include a modern editor panel with line numbers gutter (e.g., line numbers 1 to 10 in a left sidebar), accurate syntax highlighting, curved dotted connector lines to connect code to explanations, and uppercase/bold status badges for descriptive card panels.\n\n`;
   prompt += `**CORRECT output format example**:\n`;
   prompt += `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700">...</svg>\n\n`;
   prompt += `**WRONG output formats (will cause a system error)**:\n`;

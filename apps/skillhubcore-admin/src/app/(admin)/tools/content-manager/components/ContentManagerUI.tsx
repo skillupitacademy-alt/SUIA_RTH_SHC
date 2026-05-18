@@ -5,7 +5,8 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useBrand } from '@/share-branding/PostLandingPage/app/context/BrandContext';
 import { ASSET_SPECS } from '../../prompt-generator/lib/asset-specs';
-import { LiveVisualizerPreview } from './LiveVisualizerPreview';
+import { ShellContext } from '../../../ShellContext';
+import { InteractiveVisualEditor } from './visual-editor/InteractiveVisualEditor';
 import {
   SectionType,
   SubtopicInfo,
@@ -71,6 +72,12 @@ export function ContentManagerUI() {
   const [svgFile, setSvgFile] = useState<File | null>(null);
   const [processedAsset, setProcessedAsset] = useState<InlineSvgAsset | null>(null);
   const [isProcessingAsset, setIsProcessingAsset] = useState(false);
+
+  const { isRightSidebarOpen, toggleRightSidebar } = React.useContext(ShellContext);
+  const [editingFieldKey, setEditingFieldKey] = useState<string | null>(null);
+  const [editingFieldData, setEditingFieldData] = useState<any>(null);
+  const [isInlineSaving, setIsInlineSaving] = useState(false);
+  const [newComponentType, setNewComponentType] = useState('custom');
 
   const selectedSectionLabel = sections.find((section) => section.id === selectedSection)?.label ?? selectedSection;
 
@@ -441,6 +448,197 @@ export function ContentManagerUI() {
     window.open(getPageUrl(section), '_blank');
   };
 
+  // Background Sync function for inline edits and deletes
+  const saveJsonToDbBackground = async (updatedJson: string) => {
+    setIsInlineSaving(true);
+    let parsedVal: unknown;
+    const trimmedInput = updatedJson.trim();
+
+    if (!trimmedInput) {
+      showMessage('JSON cannot be empty.', 'error');
+      setIsInlineSaving(false);
+      return;
+    }
+
+    if (selectedSubsection) {
+      const subSecConfig = SUBSECTIONS_MAP[selectedSection]?.find((s) => s.id === selectedSubsection);
+      if (subSecConfig?.type === 'svg' && (trimmedInput.startsWith('<svg') || trimmedInput.startsWith('<?xml') || trimmedInput.includes('<svg'))) {
+        parsedVal = trimmedInput;
+      } else {
+        try {
+          parsedVal = JSON.parse(trimmedInput);
+        } catch {
+          parsedVal = trimmedInput;
+        }
+      }
+    } else {
+      try {
+        parsedVal = JSON.parse(trimmedInput);
+      } catch (e: any) {
+        showMessage(`Invalid JSON: ${e.message}`, 'error');
+        setIsInlineSaving(false);
+        return;
+      }
+    }
+
+    try {
+      const response = await fetch('/api/content-manager/add-section', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          subtopicId: subtopicInfo.subtopicId,
+          subtopicInfo,
+          section: selectedSection,
+          subsection: selectedSubsection || undefined,
+          content: parsedVal,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        showMessage(`Database synced successfully in background!`, 'success');
+      } else {
+        showMessage(`Save warning: ${result.error || 'Failed to save section'}`, 'error');
+      }
+    } catch (error: any) {
+      showMessage(`Database sync failed: ${error.message || 'Network error'}`, 'error');
+    } finally {
+      setIsInlineSaving(false);
+    }
+  };
+
+  const handleDeleteComponent = (keyToDelete: string) => {
+    if (!confirm(`Are you sure you want to delete the component "${keyToDelete}"?`)) {
+      return;
+    }
+    try {
+      const parsed = JSON.parse(jsonInput);
+      const rootKeys = Object.keys(parsed);
+      let target = parsed;
+      if (rootKeys.length === 1 && rootKeys[0] === selectedSection) {
+        target = parsed[selectedSection];
+      }
+
+      if (Array.isArray(target)) {
+        const idx = parseInt(keyToDelete, 10);
+        if (!isNaN(idx)) {
+          target.splice(idx, 1);
+        }
+      } else if (typeof target === 'object' && target !== null) {
+        delete target[keyToDelete];
+      }
+
+      const newJson = JSON.stringify(parsed, null, 2);
+      setJsonInput(newJson);
+      saveJsonToDbBackground(newJson);
+    } catch (e: any) {
+      showMessage(`Delete failed: ${e.message}`, 'error');
+    }
+  };
+
+  const handleStartEdit = (key: string, data: any) => {
+    setEditingFieldKey(key);
+    setEditingFieldData(JSON.parse(JSON.stringify(data)));
+  };
+
+  const handleSaveEdit = () => {
+    if (!editingFieldKey) return;
+    try {
+      const parsed = JSON.parse(jsonInput);
+      const rootKeys = Object.keys(parsed);
+      let target = parsed;
+      if (rootKeys.length === 1 && rootKeys[0] === selectedSection) {
+        target = parsed[selectedSection];
+      }
+
+      if (editingFieldKey.includes('.')) {
+        const [parentKey, childIndexStr] = editingFieldKey.split('.');
+        const childIdx = parseInt(childIndexStr, 10);
+        if (Array.isArray(target[parentKey]) && !isNaN(childIdx)) {
+          target[parentKey][childIdx] = editingFieldData;
+        }
+      } else if (Array.isArray(target)) {
+        const idx = parseInt(editingFieldKey, 10);
+        if (!isNaN(idx)) {
+          target[idx] = editingFieldData;
+        }
+      } else {
+        target[editingFieldKey] = editingFieldData;
+      }
+
+      const newJson = JSON.stringify(parsed, null, 2);
+      setJsonInput(newJson);
+      saveJsonToDbBackground(newJson);
+      setEditingFieldKey(null);
+      setEditingFieldData(null);
+    } catch (e: any) {
+      showMessage(`Save failed: ${e.message}`, 'error');
+    }
+  };
+
+  const handleAddComponent = () => {
+    try {
+      const parsed = jsonInput.trim() ? JSON.parse(jsonInput) : {};
+      const rootKeys = Object.keys(parsed);
+      let target = parsed;
+      if (rootKeys.length === 1 && rootKeys[0] === selectedSection) {
+        target = parsed[selectedSection];
+      } else if (rootKeys.length === 0) {
+        parsed[selectedSection] = {};
+        target = parsed[selectedSection];
+      }
+
+      let newKey = `newComponent_${Date.now()}`;
+      let newVal: any = '';
+
+      if (newComponentType === 'simpleWords') {
+        newKey = 'simpleWords';
+        newVal = 'Paste simple overview explanation here...';
+      } else if (newComponentType === 'definitionBlock') {
+        newKey = 'definitionBlock';
+        newVal = {
+          term: 'Conceptual Glossary Term',
+          definition: 'Formal description and technical definition of this concept.',
+          memoryHook: 'A simple mental model or physical hook analogy to memorize it.',
+        };
+      } else if (newComponentType === 'warningFaq') {
+        newKey = 'warningFaq';
+        newVal = {
+          warningTitle: 'Common Traps & Anti-patterns',
+          warningDescription: 'A detailed breakdown of common bugs, pitfalls, and mistakes to watch out for.',
+        };
+      } else if (newComponentType === 'syntaxBlock') {
+        newKey = 'syntaxBlock';
+        newVal = {
+          title: 'Syntax Anatomy Breakdown',
+          explanation: 'Step-by-step descriptive commentary detailing how the syntax operates.',
+          code: 'const result = await someAsyncFunction();',
+        };
+      } else {
+        newKey = `customField_${Date.now().toString().slice(-4)}`;
+        newVal = {
+          title: 'New Section Feature Card',
+          description: 'Customize this descriptive card detail according to section specifications.',
+        };
+      }
+
+      if (Array.isArray(target)) {
+        target.push(newVal);
+      } else {
+        target[newKey] = newVal;
+      }
+
+      const newJson = JSON.stringify(parsed, null, 2);
+      setJsonInput(newJson);
+      saveJsonToDbBackground(newJson);
+      showMessage(`Added component: "${newKey}"! Database synced.`, 'success');
+    } catch (e: any) {
+      showMessage(`Add failed: ${e.message}`, 'error');
+    }
+  };
+
   return (
     <div className="container mx-auto max-w-7xl px-4 py-8">
       <header className="mb-8 overflow-hidden rounded-2xl bg-white shadow-lg">
@@ -610,10 +808,8 @@ export function ContentManagerUI() {
             </div>
           </section>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            
-            {/* Left Column: Workspace Editor */}
-            <section className="lg:col-span-6 rounded-2xl bg-white p-8 shadow-lg border border-slate-100 space-y-6">
+          {/* Workspace Editor */}
+          <section className="w-full rounded-2xl bg-white p-8 shadow-lg border border-slate-100 space-y-6">
               <h2 className="text-2xl font-bold text-gray-800 border-b border-slate-100 pb-3 flex items-center justify-between font-outfit">
                 <span>Step 2: Add Content Section</span>
                 <span className="text-xs font-semibold px-3 py-1 bg-blue-50 text-blue-600 rounded-full">Workspace Editor</span>
@@ -867,16 +1063,26 @@ export function ContentManagerUI() {
               </div>
             </section>
 
-            {/* Right Column: Live visualizer container */}
-            <section className="lg:col-span-6 lg:sticky lg:top-8 self-start h-[850px] flex flex-col">
-              <LiveVisualizerPreview 
-                section={selectedSection}
-                subsection={selectedSubsection}
-                rawData={jsonInput}
-              />
-            </section>
-
-          </div>
+            {/* Right Sidebar Overlay - Full Width Interactive Page Previewer & Editor */}
+            <InteractiveVisualEditor
+              jsonInput={jsonInput}
+              selectedSection={selectedSection}
+              selectedSectionLabel={selectedSectionLabel}
+              subtopicId={subtopicInfo.subtopicId}
+              isRightSidebarOpen={isRightSidebarOpen}
+              toggleRightSidebar={toggleRightSidebar}
+              isInlineSaving={isInlineSaving}
+              newComponentType={newComponentType}
+              setNewComponentType={setNewComponentType}
+              handleAddComponent={handleAddComponent}
+              handleStartEdit={handleStartEdit}
+              handleDeleteComponent={handleDeleteComponent}
+              editingFieldKey={editingFieldKey}
+              editingFieldData={editingFieldData}
+              setEditingFieldData={setEditingFieldData}
+              handleSaveEdit={handleSaveEdit}
+              setEditingFieldKey={setEditingFieldKey}
+            />
         </>
       )}
     </div>
