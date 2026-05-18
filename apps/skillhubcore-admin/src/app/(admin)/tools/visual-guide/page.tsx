@@ -730,7 +730,7 @@ export function VisualGuideUI() {
                 {/* Concept Memory Map */}
                 <div className="md:col-span-6 p-4 rounded-xl bg-slate-50 border border-slate-200/60 flex flex-col gap-2 relative">
                   <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
-                    selectedSectionId === 'notes' && selectedSubsectionId === 'conceptMemoryMap' 
+                    selectedSectionId === 'notes' && selectedSubsectionId === 'conceptMemoryMapSvg' 
                       ? 'border-orange-500 bg-orange-500/5 scale-100' 
                       : 'border-transparent'
                   }`} />
