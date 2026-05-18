@@ -144,25 +144,8 @@ function NotesConceptSections({ sections }: { sections: SectionItem[] }) {
 
 export function NotesMainContent({ data, isStandalone = true }: { data: SubtopicNotesViewData['mainContent']; isStandalone?: boolean }) {
   const brand = useBrand();
-
   const content = (
     <div className={`min-w-0 space-y-12 transition-all duration-500 ${isStandalone ? 'mx-auto w-full max-w-[1200px] px-4 py-8 sm:px-8 sm:py-10' : ''}`}>
-
-      {/* Page Meta Info (Stats) */}
-      <div className="space-y-4">
-        <div className="flex flex-wrap items-center justify-end gap-4 border-b border-gray-100 pb-6">
-          <div className="flex items-center gap-4">
-            <span className="flex items-center gap-1.5 text-slate-500 text-xs font-bold">
-              <Icons.Clock size={14} /> {data.meta.readTime}
-            </span>
-            <span className="flex items-center gap-1.5 text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100 text-xs font-bold">
-              <Icons.Star size={14} /> +{data.meta.xp} XP
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* -------------------------------------------------------------------------- */}
       {/* UNIVERSAL VISUAL ARCHITECTURE SEQUENCE (1-8)                                */}
       {/* -------------------------------------------------------------------------- */}
 

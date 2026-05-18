@@ -57,14 +57,7 @@ export function SubtopicHeader({ data }: SubtopicHeaderProps) {
               <div className="h-2 w-2 rounded-full bg-emerald-700" aria-hidden="true" />
               {data.metadata.level}
             </div>
-            <div className="flex items-center gap-1.5">
-              <Clock size={16} className="text-slate-800" aria-hidden="true" />
-              {data.metadata.readingTime} read
-            </div>
-            <div className="flex items-center gap-1.5 font-bold" style={{ color: '#9a3412' }}>
-              <Star size={16} fill="currentColor" aria-hidden="true" />
-              {data.metadata.xp} XP
-            </div>
+
             <div className="flex items-center gap-1.5 text-slate-950 font-bold">
               <Layers size={16} className="text-blue-900" aria-hidden="true" />
               {data.metadata.topicsCount} Topics

@@ -79,10 +79,6 @@ export function QuizContent({
               <Icons.Clock size={18} aria-hidden="true" />
               <span className="text-sm font-bold text-slate-900">{duration}</span>
            </div>
-           <div className="flex items-center gap-2 text-rose-900">
-              <Icons.Trophy size={18} fill="currentColor" aria-hidden="true" />
-              <span className="text-sm font-bold">+{xp} XP</span>
-           </div>
         </div>
       </div>
 

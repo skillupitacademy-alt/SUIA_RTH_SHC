@@ -46,10 +46,6 @@ export function ProjectContent({ data, onNext }: {
           <p className="text-[14px] font-medium text-slate-800">{description}</p>
         </div>
         <div className="flex shrink-0 flex-wrap items-center gap-3">
-          <div className="flex items-center gap-1.5 rounded-xl bg-orange-50 px-4 py-2 border border-orange-100 shadow-sm">
-             <Icons.Trophy size={16} className="text-orange-600" />
-             <span className="text-xs font-bold text-orange-950">+{xp} XP</span>
-          </div>
           <div className="flex items-center gap-1.5 rounded-xl bg-slate-50 px-4 py-2 border border-slate-100 shadow-sm">
              <Icons.Calendar size={16} className="text-slate-600" />
              <span className="text-xs font-bold text-slate-950">{deadline}</span>
