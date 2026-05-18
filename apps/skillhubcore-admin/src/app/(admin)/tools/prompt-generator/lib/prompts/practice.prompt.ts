@@ -19,8 +19,6 @@ Output in this EXACT JSON format with 30 total questions:
       "description": "[What this test covers, 2-3 sentences]",
       "totalQuestions": 30,
       "passingScore": 75,
-      "timeLimit": "45 minutes",
-      "xpReward": 300,
       "difficulty": "mixed"
     },
     "theoryQuestions": {

@@ -103,8 +103,6 @@ const SUBSECTIONS_MAP: Record<string, Array<{ id: string; label: string }>> = {
   assignment: [
     { id: 'title', label: 'Title' },
     { id: 'description', label: 'Description' },
-    { id: 'xp', label: 'XP Reward' },
-    { id: 'duration', label: 'Duration' },
     { id: 'task', label: 'Task Instructions' },
     { id: 'objectives', label: 'Learning Objectives' },
     { id: 'starterCode', label: 'Starter Code' },
@@ -113,7 +111,6 @@ const SUBSECTIONS_MAP: Record<string, Array<{ id: string; label: string }>> = {
   project: [
     { id: 'title', label: 'Title' },
     { id: 'description', label: 'Description' },
-    { id: 'xp', label: 'XP Reward' },
     { id: 'deadline', label: 'Deadline' },
     { id: 'hero', label: 'Hero Config' },
     { id: 'realWorldUse', label: 'Real World Use' },
@@ -125,8 +122,6 @@ const SUBSECTIONS_MAP: Record<string, Array<{ id: string; label: string }>> = {
     { id: 'title', label: 'Title' },
     { id: 'description', label: 'Description' },
     { id: 'totalQuestions', label: 'Total Questions Count' },
-    { id: 'duration', label: 'Time Limit' },
-    { id: 'xp', label: 'XP Reward' },
     { id: 'questions', label: 'Questions Pool' },
   ],
   summary: [

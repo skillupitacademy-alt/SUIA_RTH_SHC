@@ -18,9 +18,7 @@ Output in this EXACT JSON format with 20 total questions:
       "title": "${subtopicName} - Knowledge Check",
       "description": "[What this quiz tests, 2 sentences]",
       "totalQuestions": 20,
-      "passingScore": 70,
-      "timeLimit": "20 minutes",
-      "xpReward": 150
+      "passingScore": 70
     },
     "multipleChoice": {
       "title": "Multiple Choice Questions",

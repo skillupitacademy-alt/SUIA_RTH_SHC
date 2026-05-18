@@ -147,8 +147,6 @@ const SUBSECTIONS_MAP: Record<string, Array<{ id: string; label: string; type: '
   assignment: [
     { id: 'title', label: 'Title (Text)', type: 'json' },
     { id: 'description', label: 'Description (Text)', type: 'json' },
-    { id: 'xp', label: 'XP Reward (Number)', type: 'json' },
-    { id: 'duration', label: 'Duration (Text)', type: 'json' },
     { id: 'task', label: 'Task Instructions (JSON)', type: 'json' },
     { id: 'objectives', label: 'Learning Objectives (JSON)', type: 'json' },
     { id: 'starterCode', label: 'Starter Code (Text)', type: 'json' },
@@ -157,7 +155,6 @@ const SUBSECTIONS_MAP: Record<string, Array<{ id: string; label: string; type: '
   project: [
     { id: 'title', label: 'Title (Text)', type: 'json' },
     { id: 'description', label: 'Description (Text)', type: 'json' },
-    { id: 'xp', label: 'XP Reward (Number)', type: 'json' },
     { id: 'deadline', label: 'Deadline (Text)', type: 'json' },
     { id: 'hero', label: 'Hero Config (JSON)', type: 'json' },
     { id: 'realWorldUse', label: 'Real World Use (Text)', type: 'json' },
@@ -169,8 +166,6 @@ const SUBSECTIONS_MAP: Record<string, Array<{ id: string; label: string; type: '
     { id: 'title', label: 'Title (Text)', type: 'json' },
     { id: 'description', label: 'Description (Text)', type: 'json' },
     { id: 'totalQuestions', label: 'Total Questions Count (Number)', type: 'json' },
-    { id: 'duration', label: 'Time Limit (Text)', type: 'json' },
-    { id: 'xp', label: 'XP Reward (Number)', type: 'json' },
     { id: 'questions', label: 'Questions Pool (JSON)', type: 'json' },
   ],
   summary: [

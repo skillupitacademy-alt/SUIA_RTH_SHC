@@ -388,15 +388,15 @@ export function buildOverviewFromSections(brand: BrandConfig, subtopicId: string
       progressLabel: 'Subtopic Progress',
       metadata: {
         level: difficultyLabel(hero.difficulty),
-        readingTime: hero.estimatedReadTime,
-        xp: hero.xp,
+        readingTime: hero.estimatedReadTime || '',
+        xp: hero.xp || 0,
         topicsCount,
         lastUpdated: hero.lastUpdated,
       },
       stats: [
-        { id: 'time', label: 'Est. Time', value: hero.estimatedReadTime, icon: 'Clock' },
+        { id: 'time', label: 'Est. Time', value: hero.estimatedReadTime || 'N/A', icon: 'Clock' },
         { id: 'level', label: 'Difficulty', value: difficultyLabel(hero.difficulty), icon: 'BarChart' },
-        { id: 'xp', label: 'Reward', value: `${hero.xp} XP`, icon: 'Zap' },
+        { id: 'xp', label: 'Reward', value: `${hero.xp || 0} XP`, icon: 'Zap' },
       ],
       overallProgress: {
         percentage: progress,
@@ -431,7 +431,7 @@ export function buildOverviewFromSections(brand: BrandConfig, subtopicId: string
       xpSection: {
         title: 'XP & Badges',
         earnedXp: 0,
-        totalXp: hero.xp,
+        totalXp: hero.xp || 0,
         xpMessage: 'for completing this subtopic',
       },
       achievements: {
