@@ -31,7 +31,7 @@ export function NotesWarningFaq({
           className="flex h-8 w-8 items-center justify-center rounded-lg text-white"
           style={{ backgroundColor: "#f43f5e" }} // Red for Warning
         >
-          <span className="text-sm font-bold">7</span>
+          <Icons.AlertTriangle size={16} />
         </div>
         <h3 className="text-sm font-bold uppercase tracking-widest text-slate-500">{title}</h3>
       </div>

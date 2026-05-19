@@ -41,10 +41,21 @@ export function NotesSummaryCard({
           className="flex h-8 w-8 items-center justify-center rounded-lg text-white"
           style={{ backgroundColor: brand.primaryColor }}
         >
-          <span className="text-sm font-bold">8</span>
+          <Icons.CheckSquare size={16} />
         </div>
         <h3 className="text-sm font-bold uppercase tracking-widest text-slate-500">{summaryTitle}</h3>
       </div>
+
+      {/* Optional Visual Architecture Infographic - Premium Full Width Above Content */}
+      {dataUri && (
+        <div className="mb-8 overflow-hidden rounded-2xl border border-slate-100 shadow-sm bg-slate-50/50 p-3">
+           <SVGIconRenderer 
+             dataUri={dataUri} 
+             alt={altText} 
+             className="w-full h-auto max-h-[450px] object-contain mx-auto"
+           />
+        </div>
+      )}
 
       <div className="grid gap-8 lg:grid-cols-2">
         {/* Left Side: Quick Recap */}
@@ -65,7 +76,7 @@ export function NotesSummaryCard({
           </ul>
         </div>
 
-        {/* Right Side: Pro Tip & Visual Logo */}
+        {/* Right Side: Pro Tip & Fallback Visual (if no custom SVG) */}
         <div className="space-y-6">
           {/* Pro Tip Card */}
           <div className="rounded-xl bg-amber-50 p-6 border border-amber-100 relative overflow-hidden group hover:shadow-lg transition-all">
@@ -81,31 +92,23 @@ export function NotesSummaryCard({
             </div>
           </div>
 
-          {/* Logo Summary Card or Custom SVG */}
-          <div className="flex items-center gap-6 rounded-xl border border-slate-100 bg-slate-50/50 p-6 overflow-hidden">
-             {dataUri ? (
-               <SVGIconRenderer 
-                 dataUri={dataUri} 
-                 alt={altText} 
-                 className="w-full h-auto max-h-[150px] object-contain"
-               />
-             ) : (
-               <>
-                 <div 
-                   className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl text-2xl font-bold text-slate-900 shadow-sm"
-                   style={{ backgroundColor: "#fbbf24" }} // Yellow like in image
-                 >
-                   JS
-                 </div>
-                 <div>
-                    <p className="text-[13px] font-bold text-slate-900">HTML = Structure</p>
-                    <p className="text-[13px] font-bold text-slate-900">CSS = Style</p>
-                    <p className="text-[13px] font-bold text-slate-900">JavaScript = Behavior</p>
-                    <p className="mt-2 text-[12px] font-bold text-slate-500">Keep Learning! Keep Building! 💪</p>
-                 </div>
-               </>
-             )}
-          </div>
+          {/* Fallback Summary Block (Only visible when no custom image is set) */}
+          {!dataUri && (
+            <div className="flex items-center gap-6 rounded-xl border border-slate-100 bg-slate-50/50 p-6 overflow-hidden">
+              <div 
+                className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl text-2xl font-bold text-slate-900 shadow-sm"
+                style={{ backgroundColor: "#fbbf24" }}
+              >
+                JS
+              </div>
+              <div>
+                 <p className="text-[13px] font-bold text-slate-900">HTML = Structure</p>
+                 <p className="text-[13px] font-bold text-slate-900">CSS = Style</p>
+                 <p className="text-[13px] font-bold text-slate-900">JavaScript = Behavior</p>
+                 <p className="mt-2 text-[12px] font-bold text-slate-500">Keep Learning! Keep Building! 💪</p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

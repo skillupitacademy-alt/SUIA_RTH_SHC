@@ -144,455 +144,156 @@ function NotesConceptSections({ sections }: { sections: SectionItem[] }) {
 
 export function NotesMainContent({ 
   data, 
-  isStandalone = true,
-  isEditable = false,
-  onEditComponent,
-  onDeleteComponent
+  isStandalone = true
 }: { 
   data: SubtopicNotesViewData['mainContent']; 
   isStandalone?: boolean;
-  isEditable?: boolean;
-  onEditComponent?: (key: string, data: any) => void;
-  onDeleteComponent?: (key: string) => void;
 }) {
-  const brand = useBrand();
   const content = (
     <div className={`min-w-0 space-y-12 transition-all duration-500 ${isStandalone ? 'mx-auto w-full max-w-[1200px] px-4 py-8 sm:px-8 sm:py-10' : ''}`}>
-      {/* UNIVERSAL VISUAL ARCHITECTURE SEQUENCE (1-8)                                */}
-      {/* -------------------------------------------------------------------------- */}
-
       {/* A. WELCOME / INTRO (SIMPLE WORDS) */}
       {data.simpleWords && (
-        <div className="relative group/editable-item border-2 border-transparent hover:border-pink-300 rounded-[32px] p-2 transition-all duration-300">
-          {isEditable && (
-            <div className="absolute top-4 right-4 z-40 opacity-0 group-hover/editable-item:opacity-100 transition-all duration-200 flex gap-2">
-              <button
-                onClick={() => onEditComponent?.('simpleWords', data.simpleWords)}
-                className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg border border-blue-500 hover:scale-105 transition-transform"
-              >
-                <Icons.Edit3 size={12} /> Edit
-              </button>
-              <button
-                onClick={() => onDeleteComponent?.('simpleWords')}
-                className="px-3.5 py-2 bg-red-650 hover:bg-red-750 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg border border-red-500 hover:scale-105 transition-transform"
-              >
-                <Icons.Trash2 size={12} /> Delete
-              </button>
-            </div>
-          )}
-          <NotesSimpleWords simpleWords={data.simpleWords} />
-        </div>
+        <NotesSimpleWords simpleWords={data.simpleWords} />
       )}
 
       {/* 1. DEFINITION BLOCK */}
       {data.definitionBlock && (
-        <div className="relative group/editable-item border-2 border-transparent hover:border-pink-300 rounded-[32px] p-2 transition-all duration-300">
-          {isEditable && (
-            <div className="absolute top-4 right-4 z-40 opacity-0 group-hover/editable-item:opacity-100 transition-all duration-200 flex gap-2">
-              <button
-                onClick={() => onEditComponent?.('definitionBlock', data.definitionBlock)}
-                className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg border border-blue-500 hover:scale-105 transition-transform"
-              >
-                <Icons.Edit3 size={12} /> Edit
-              </button>
-              <button
-                onClick={() => onDeleteComponent?.('definitionBlock')}
-                className="px-3.5 py-2 bg-red-650 hover:bg-red-750 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg border border-red-500 hover:scale-105 transition-transform"
-              >
-                <Icons.Trash2 size={12} /> Delete
-              </button>
-            </div>
-          )}
-          <NotesDefinitionBlock
-            badge={data.definitionBlock.badge}
-            headline={data.definitionBlock.headline}
-            definitionText={data.definitionBlock.definitionText}
-            importanceCallout={data.definitionBlock.importanceCallout}
-            quickSummary={data.definitionBlock.quickSummary}
-          />
-        </div>
+        <NotesDefinitionBlock
+          badge={data.definitionBlock.badge}
+          headline={data.definitionBlock.headline}
+          definitionText={data.definitionBlock.definitionText}
+          importanceCallout={data.definitionBlock.importanceCallout}
+          quickSummary={data.definitionBlock.quickSummary}
+        />
       )}
 
       {data.summaryHeroInfographic != null && (
-        <div className="relative group/editable-item border-2 border-transparent hover:border-pink-300 rounded-[32px] p-2 transition-all duration-300">
-          {isEditable && (
-            <div className="absolute top-4 right-4 z-40 opacity-0 group-hover/editable-item:opacity-100 transition-all duration-200 flex gap-2">
-              <button
-                onClick={() => onEditComponent?.('summaryHeroInfographic', data.summaryHeroInfographic)}
-                className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg border border-blue-500 hover:scale-105 transition-transform"
-              >
-                <Icons.Edit3 size={12} /> Edit
-              </button>
-              <button
-                onClick={() => onDeleteComponent?.('summaryHeroInfographic')}
-                className="px-3.5 py-2 bg-red-650 hover:bg-red-750 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg border border-red-500 hover:scale-105 transition-transform"
-              >
-                <Icons.Trash2 size={12} /> Delete
-              </button>
-            </div>
-          )}
-          <NotesHeroInfographic
-            summaryTitle={data.summaryHeroInfographic.summaryTitle || data.title}
-            image={data.summaryHeroInfographic.image}
-            examTips={data.summaryHeroInfographic.examTips || []}
-            howItWorks={data.summaryHeroInfographic.howItWorks}
-            topicName={data.breadcrumbs?.[1]}
-          />
-        </div>
+        <NotesHeroInfographic
+          summaryTitle={data.summaryHeroInfographic.summaryTitle || data.title}
+          image={data.summaryHeroInfographic.image}
+          examTips={data.summaryHeroInfographic.examTips || []}
+          howItWorks={data.summaryHeroInfographic.howItWorks}
+          topicName={data.breadcrumbs?.[1]}
+        />
       )}
 
       {/* B. DYNAMIC CONCEPT SECTIONS */}
       {data.sections && data.sections.length > 0 && (
-        <div className="relative group/editable-item border-2 border-transparent hover:border-pink-300 rounded-[32px] p-2 transition-all duration-300">
-          {isEditable && (
-            <div className="absolute top-4 right-4 z-40 opacity-0 group-hover/editable-item:opacity-100 transition-all duration-200 flex gap-2">
-              <button
-                onClick={() => onEditComponent?.('sections', data.sections)}
-                className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg border border-blue-500 hover:scale-105 transition-transform"
-              >
-                <Icons.Edit3 size={12} /> Edit
-              </button>
-              <button
-                onClick={() => onDeleteComponent?.('sections')}
-                className="px-3.5 py-2 bg-red-650 hover:bg-red-750 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg border border-red-500 hover:scale-105 transition-transform"
-              >
-                <Icons.Trash2 size={12} /> Delete
-              </button>
-            </div>
-          )}
-          <NotesConceptSections sections={data.sections} />
-        </div>
+        <NotesConceptSections sections={data.sections} />
       )}
 
       {/* 2. CONCEPT CARD / MEMORY MAP */}
       {data.conceptMemoryMap != null && (
-        <div className="relative group/editable-item border-2 border-transparent hover:border-pink-300 rounded-[32px] p-2 transition-all duration-300">
-          {isEditable && (
-            <div className="absolute top-4 right-4 z-40 opacity-0 group-hover/editable-item:opacity-100 transition-all duration-200 flex gap-2">
-              <button
-                onClick={() => onEditComponent?.('conceptMemoryMap', data.conceptMemoryMap)}
-                className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg border border-blue-500 hover:scale-105 transition-transform"
-              >
-                <Icons.Edit3 size={12} /> Edit
-              </button>
-              <button
-                onClick={() => onDeleteComponent?.('conceptMemoryMap')}
-                className="px-3.5 py-2 bg-red-650 hover:bg-red-750 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg border border-red-500 hover:scale-105 transition-transform"
-              >
-                <Icons.Trash2 size={12} /> Delete
-              </button>
-            </div>
-          )}
-          <NotesConceptMemoryMap
-            image={data.conceptMemoryMap.image}
-            nodes={data.conceptMemoryMap.nodes || []}
-            connections={data.conceptMemoryMap.connections || []}
-          />
-        </div>
+        <NotesConceptMemoryMap
+          image={data.conceptMemoryMap.image}
+          nodes={data.conceptMemoryMap.nodes || []}
+          connections={data.conceptMemoryMap.connections || []}
+        />
       )}
 
       {/* 3. COMPONENT GRID */}
       {data.componentGrid && (
-        <div className="relative group/editable-item border-2 border-transparent hover:border-pink-300 rounded-[32px] p-2 transition-all duration-300">
-          {isEditable && (
-            <div className="absolute top-4 right-4 z-40 opacity-0 group-hover/editable-item:opacity-100 transition-all duration-200 flex gap-2">
-              <button
-                onClick={() => onEditComponent?.('componentGrid', data.componentGrid)}
-                className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg border border-blue-500 hover:scale-105 transition-transform"
-              >
-                <Icons.Edit3 size={12} /> Edit
-              </button>
-              <button
-                onClick={() => onDeleteComponent?.('componentGrid')}
-                className="px-3.5 py-2 bg-red-650 hover:bg-red-750 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg border border-red-500 hover:scale-105 transition-transform"
-              >
-                <Icons.Trash2 size={12} /> Delete
-              </button>
-            </div>
-          )}
-          <NotesComponentGrid
-            gridTitle={data.componentGrid.gridTitle}
-            componentCards={data.componentGrid.componentCards}
-          />
-        </div>
+        <NotesComponentGrid
+          gridTitle={data.componentGrid.gridTitle}
+          componentCards={data.componentGrid.componentCards}
+        />
       )}
 
       {/* 4. SYNTAX BLOCK */}
       {data.syntaxBlock != null && (
-        <div className="relative group/editable-item border-2 border-transparent hover:border-pink-300 rounded-[32px] p-2 transition-all duration-300">
-          {isEditable && (
-            <div className="absolute top-4 right-4 z-40 opacity-0 group-hover/editable-item:opacity-100 transition-all duration-200 flex gap-2">
-              <button
-                onClick={() => onEditComponent?.('syntaxBlock', data.syntaxBlock)}
-                className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg border border-blue-500 hover:scale-105 transition-transform"
-              >
-                <Icons.Edit3 size={12} /> Edit
-              </button>
-              <button
-                onClick={() => onDeleteComponent?.('syntaxBlock')}
-                className="px-3.5 py-2 bg-red-650 hover:bg-red-750 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg border border-red-500 hover:scale-105 transition-transform"
-              >
-                <Icons.Trash2 size={12} /> Delete
-              </button>
-            </div>
-          )}
-          <NotesSyntaxBlock
-            image={data.syntaxBlock.image}
-            code={data.syntaxBlock.code}
-            language={data.syntaxBlock.language}
-            title={data.syntaxBlock.title}
-            subtitle={data.syntaxBlock.subtitle || (data.breadcrumbs?.[1] ? `${data.breadcrumbs[1]} Basic Syntax` : undefined)}
-            explanations={data.syntaxBlock.explanations || []}
-          />
-        </div>
+        <NotesSyntaxBlock
+          image={data.syntaxBlock.image}
+          code={data.syntaxBlock.code}
+          language={data.syntaxBlock.language}
+          title={data.syntaxBlock.title}
+          subtitle={data.syntaxBlock.subtitle || (data.breadcrumbs?.[1] ? `${data.breadcrumbs[1]} Basic Syntax` : undefined)}
+          explanations={data.syntaxBlock.explanations || []}
+        />
       )}
 
       {/* 5. EXAMPLE PANEL */}
       {data.examplePanel && (
-        <div className="relative group/editable-item border-2 border-transparent hover:border-pink-300 rounded-[32px] p-2 transition-all duration-300">
-          {isEditable && (
-            <div className="absolute top-4 right-4 z-40 opacity-0 group-hover/editable-item:opacity-100 transition-all duration-200 flex gap-2">
-              <button
-                onClick={() => onEditComponent?.('examplePanel', data.examplePanel)}
-                className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg border border-blue-500 hover:scale-105 transition-transform"
-              >
-                <Icons.Edit3 size={12} /> Edit
-              </button>
-              <button
-                onClick={() => onDeleteComponent?.('examplePanel')}
-                className="px-3.5 py-2 bg-red-650 hover:bg-red-750 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg border border-red-500 hover:scale-105 transition-transform"
-              >
-                <Icons.Trash2 size={12} /> Delete
-              </button>
-            </div>
-          )}
-          <NotesExamplePanel
-            exampleTitle={data.examplePanel.exampleTitle}
-            scenarios={data.examplePanel.scenarios}
-          />
-        </div>
+        <NotesExamplePanel
+          exampleTitle={data.examplePanel.exampleTitle}
+          scenarios={data.examplePanel.scenarios}
+        />
       )}
 
       {/* 6. PRACTICE CARD */}
       {data.practiceCard && (
-        <div className="relative group/editable-item border-2 border-transparent hover:border-pink-300 rounded-[32px] p-2 transition-all duration-300">
-          {isEditable && (
-            <div className="absolute top-4 right-4 z-40 opacity-0 group-hover/editable-item:opacity-100 transition-all duration-200 flex gap-2">
-              <button
-                onClick={() => onEditComponent?.('practiceCard', data.practiceCard)}
-                className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg border border-blue-500 hover:scale-105 transition-transform"
-              >
-                <Icons.Edit3 size={12} /> Edit
-              </button>
-              <button
-                onClick={() => onDeleteComponent?.('practiceCard')}
-                className="px-3.5 py-2 bg-red-650 hover:bg-red-750 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg border border-red-500 hover:scale-105 transition-transform"
-              >
-                <Icons.Trash2 size={12} /> Delete
-              </button>
-            </div>
-          )}
-          <NotesPracticeCard
-            bestPracticeTitle={data.practiceCard.bestPracticeTitle}
-            recommendations={data.practiceCard.recommendations}
-            optimizationTips={data.practiceCard.optimizationTips}
-            industryStandards={data.practiceCard.industryStandards}
-          />
-        </div>
+        <NotesPracticeCard
+          bestPracticeTitle={data.practiceCard.bestPracticeTitle}
+          recommendations={data.practiceCard.recommendations}
+          optimizationTips={data.practiceCard.optimizationTips}
+          industryStandards={data.practiceCard.industryStandards}
+        />
       )}
 
       {/* 7. WARNING FAQ (COMMON MISTAKES) */}
       {data.warningFaq && (
-        <div className="relative group/editable-item border-2 border-transparent hover:border-pink-300 rounded-[32px] p-2 transition-all duration-300">
-          {isEditable && (
-            <div className="absolute top-4 right-4 z-40 opacity-0 group-hover/editable-item:opacity-100 transition-all duration-200 flex gap-2">
-              <button
-                onClick={() => onEditComponent?.('warningFaq', data.warningFaq)}
-                className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg border border-blue-500 hover:scale-105 transition-transform"
-              >
-                <Icons.Edit3 size={12} /> Edit
-              </button>
-              <button
-                onClick={() => onDeleteComponent?.('warningFaq')}
-                className="px-3.5 py-2 bg-red-650 hover:bg-red-750 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg border border-red-500 hover:scale-105 transition-transform"
-              >
-                <Icons.Trash2 size={12} /> Delete
-              </button>
-            </div>
-          )}
-          <NotesWarningFaq
-            faqItems={data.warningFaq.faqItems}
-          />
-        </div>
+        <NotesWarningFaq
+          faqItems={data.warningFaq.faqItems}
+        />
       )}
 
       {/* 8. SUMMARY CARD (REVISION DASHBOARD) */}
       {data.summaryCard && (
-        <div className="relative group/editable-item border-2 border-transparent hover:border-pink-300 rounded-[32px] p-2 transition-all duration-300">
-          {isEditable && (
-            <div className="absolute top-4 right-4 z-40 opacity-0 group-hover/editable-item:opacity-100 transition-all duration-200 flex gap-2">
-              <button
-                onClick={() => onEditComponent?.('summaryCard', data.summaryCard)}
-                className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg border border-blue-500 hover:scale-105 transition-transform"
-              >
-                <Icons.Edit3 size={12} /> Edit
-              </button>
-              <button
-                onClick={() => onDeleteComponent?.('summaryCard')}
-                className="px-3.5 py-2 bg-red-650 hover:bg-red-750 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg border border-red-500 hover:scale-105 transition-transform"
-              >
-                <Icons.Trash2 size={12} /> Delete
-              </button>
-            </div>
-          )}
-          <NotesSummaryCard
-            image={data.summaryCard.image}
-            summaryTitle={data.summaryCard.summaryTitle}
-            keyTakeaways={data.summaryCard.keyTakeaways}
-            revisionChecklist={data.summaryCard.revisionChecklist}
-            memoryReinforcement={data.summaryCard.memoryReinforcement}
-            examTips={data.summaryCard.examTips}
-          />
-        </div>
+        <NotesSummaryCard
+          image={data.summaryCard.image}
+          summaryTitle={data.summaryCard.summaryTitle}
+          keyTakeaways={data.summaryCard.keyTakeaways}
+          revisionChecklist={data.summaryCard.revisionChecklist}
+          memoryReinforcement={data.summaryCard.memoryReinforcement}
+          examTips={data.summaryCard.examTips}
+        />
       )}
 
       {/* ADDITIONAL VISUALS (If any) */}
       <div className="space-y-12">
         {data.cheatSheetSVG != null && (
-          <div className="relative group/editable-item border-2 border-transparent hover:border-pink-300 rounded-[32px] p-2 transition-all duration-300">
-            {isEditable && (
-              <div className="absolute top-4 right-4 z-40 opacity-0 group-hover/editable-item:opacity-100 transition-all duration-200 flex gap-2">
-                <button
-                  onClick={() => onEditComponent?.('cheatSheetSVG', data.cheatSheetSVG)}
-                  className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg border border-blue-500 hover:scale-105 transition-transform"
-                >
-                  <Icons.Edit3 size={12} /> Edit
-                </button>
-                <button
-                  onClick={() => onDeleteComponent?.('cheatSheetSVG')}
-                  className="px-3.5 py-2 bg-red-650 hover:bg-red-750 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg border border-red-500 hover:scale-105 transition-transform"
-                >
-                  <Icons.Trash2 size={12} /> Delete
-                </button>
-              </div>
-            )}
-            <NotesCheatSheet
-              image={data.cheatSheetSVG.image}
-              title={data.cheatSheetSVG.title}
-              items={data.cheatSheetSVG.sections || []}
-            />
-          </div>
+          <NotesCheatSheet
+            image={data.cheatSheetSVG.image}
+            title={data.cheatSheetSVG.title}
+            items={data.cheatSheetSVG.sections || []}
+          />
         )}
 
         {data.flashcardVisualSystem != null && (
-          <div className="relative group/editable-item border-2 border-transparent hover:border-pink-300 rounded-[32px] p-2 transition-all duration-300">
-            {isEditable && (
-              <div className="absolute top-4 right-4 z-40 opacity-0 group-hover/editable-item:opacity-100 transition-all duration-200 flex gap-2">
-                <button
-                  onClick={() => onEditComponent?.('flashcardVisualSystem', data.flashcardVisualSystem)}
-                  className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg border border-blue-500 hover:scale-105 transition-transform"
-                >
-                  <Icons.Edit3 size={12} /> Edit
-                </button>
-                <button
-                  onClick={() => onDeleteComponent?.('flashcardVisualSystem')}
-                  className="px-3.5 py-2 bg-red-650 hover:bg-red-750 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg border border-red-500 hover:scale-105 transition-transform"
-                >
-                  <Icons.Trash2 size={12} /> Delete
-                </button>
-              </div>
-            )}
-            <NotesFlashcardSystem
-              image={data.flashcardVisualSystem.image}
-              cards={data.flashcardVisualSystem.cards || []}
-            />
-          </div>
+          <NotesFlashcardSystem
+            image={data.flashcardVisualSystem.image}
+            cards={data.flashcardVisualSystem.cards || []}
+          />
         )}
 
         {data.comparisonSummaryChart != null && (
-          <div className="relative group/editable-item border-2 border-transparent hover:border-pink-300 rounded-[32px] p-2 transition-all duration-300">
-            {isEditable && (
-              <div className="absolute top-4 right-4 z-40 opacity-0 group-hover/editable-item:opacity-100 transition-all duration-200 flex gap-2">
-                <button
-                  onClick={() => onEditComponent?.('comparisonSummaryChart', data.comparisonSummaryChart)}
-                  className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg border border-blue-500 hover:scale-105 transition-transform"
-                >
-                  <Icons.Edit3 size={12} /> Edit
-                </button>
-                <button
-                  onClick={() => onDeleteComponent?.('comparisonSummaryChart')}
-                  className="px-3.5 py-2 bg-red-650 hover:bg-red-750 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg border border-red-500 hover:scale-105 transition-transform"
-                >
-                  <Icons.Trash2 size={12} /> Delete
-                </button>
-              </div>
-            )}
-            <NotesComparisonChart
-              image={data.comparisonSummaryChart.image}
-              title={data.comparisonSummaryChart.title || "Comparison Summary"}
-              columns={data.comparisonSummaryChart.columns || []}
-              rows={data.comparisonSummaryChart.rows || []}
-            />
-          </div>
+          <NotesComparisonChart
+            image={data.comparisonSummaryChart.image}
+            title={data.comparisonSummaryChart.title || "Comparison Summary"}
+            columns={data.comparisonSummaryChart.columns || []}
+            rows={data.comparisonSummaryChart.rows || []}
+          />
         )}
 
         {data.mnemonicRetentionGraphic != null && (
-          <div className="relative group/editable-item border-2 border-transparent hover:border-pink-300 rounded-[32px] p-2 transition-all duration-300">
-            {isEditable && (
-              <div className="absolute top-4 right-4 z-40 opacity-0 group-hover/editable-item:opacity-100 transition-all duration-200 flex gap-2">
-                <button
-                  onClick={() => onEditComponent?.('mnemonicRetentionGraphic', data.mnemonicRetentionGraphic)}
-                  className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg border border-blue-500 hover:scale-105 transition-transform"
-                >
-                  <Icons.Edit3 size={12} /> Edit
-                </button>
-                <button
-                  onClick={() => onDeleteComponent?.('mnemonicRetentionGraphic')}
-                  className="px-3.5 py-2 bg-red-650 hover:bg-red-750 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg border border-red-500 hover:scale-105 transition-transform"
-                >
-                  <Icons.Trash2 size={12} /> Delete
-                </button>
-              </div>
-            )}
-            <NotesMnemonicGraphic
-              image={data.mnemonicRetentionGraphic.image}
-              mnemonicTitle={data.mnemonicRetentionGraphic.mnemonicTitle || ''}
-              memoryHook={data.mnemonicRetentionGraphic.memoryHook || ''}
-              rememberItems={data.mnemonicRetentionGraphic.rememberItems || []}
-              keyPoints={data.mnemonicRetentionGraphic.keyPoints || []}
-            />
-          </div>
+          <NotesMnemonicGraphic
+            image={data.mnemonicRetentionGraphic.image}
+            mnemonicTitle={data.mnemonicRetentionGraphic.mnemonicTitle || ''}
+            memoryHook={data.mnemonicRetentionGraphic.memoryHook || ''}
+            rememberItems={data.mnemonicRetentionGraphic.rememberItems || []}
+            keyPoints={data.mnemonicRetentionGraphic.keyPoints || []}
+          />
         )}
       </div>
 
       {/* FOOTER SECTION */}
       {data.footerBlock != null && (
-        <div className="relative group/editable-item border-2 border-transparent hover:border-pink-300 rounded-[32px] p-2 transition-all duration-300">
-          {isEditable && (
-            <div className="absolute top-4 right-4 z-40 opacity-0 group-hover/editable-item:opacity-100 transition-all duration-200 flex gap-2">
-              <button
-                onClick={() => onEditComponent?.('footerBlock', data.footerBlock)}
-                className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg border border-blue-500 hover:scale-105 transition-transform"
-              >
-                <Icons.Edit3 size={12} /> Edit
-              </button>
-              <button
-                onClick={() => onDeleteComponent?.('footerBlock')}
-                className="px-3.5 py-2 bg-red-650 hover:bg-red-750 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg border border-red-500 hover:scale-105 transition-transform"
-              >
-                <Icons.Trash2 size={12} /> Delete
-              </button>
-            </div>
-          )}
-          <NotesFooter
-            image={data.footerBlock.image}
-            finalNote={data.footerBlock.finalNote || ''}
-            nextStepLabel={data.footerBlock.nextStepLabel || ''}
-            nextStepTarget={data.footerBlock.nextStepTarget || ''}
-          />
-        </div>
+        <NotesFooter
+          image={data.footerBlock.image}
+          finalNote={data.footerBlock.finalNote || ''}
+          nextStepLabel={data.footerBlock.nextStepLabel || ''}
+          nextStepTarget={data.footerBlock.nextStepTarget || ''}
+        />
       )}
-
     </div>
   );
 

@@ -48,7 +48,7 @@ export function NotesSyntaxBlock({
             className="flex h-8 w-8 items-center justify-center rounded-lg text-white"
             style={{ backgroundColor: brand.primaryColor }}
           >
-            <span className="text-sm font-bold">4</span>
+             <Icons.Code size={16} />
           </div>
           <h3 className="text-sm font-bold uppercase tracking-widest text-slate-500">{title}</h3>
         </div>

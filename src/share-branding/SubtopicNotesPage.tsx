@@ -44,9 +44,6 @@ export interface SubtopicNotesPageProps {
   overviewData: any; // SubtopicViewData type
   subtopicId?: string;
   initialTab?: string;
-  isEditable?: boolean;
-  onEditComponent?: (key: string, data: any) => void;
-  onDeleteComponent?: (key: string) => void;
 }
 
 function SectionValidationBlocked({ message }: { message: string }) {
@@ -66,9 +63,6 @@ export function SubtopicNotesPage({
   overviewData,
   subtopicId = 'component-architecture',
   initialTab = 'overview',
-  isEditable = false,
-  onEditComponent,
-  onDeleteComponent,
 }: SubtopicNotesPageProps) {
   const brand = useBrand();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -211,152 +205,59 @@ export function SubtopicNotesPage({
                     <NotesMainContent 
                       data={notesData.mainContent} 
                       isStandalone={false} 
-                      isEditable={isEditable}
-                      onEditComponent={onEditComponent}
-                      onDeleteComponent={onDeleteComponent}
                     />
                   </>
                 )}
                 {!activeSectionError && activeTab === 'layman' && (
-                  <div className="relative group/editable-block border-2 border-transparent hover:border-pink-300 rounded-[32px] p-2 transition-all duration-300">
-                    {isEditable && notesData.mainContent.laymanExplanation && (
-                      <div className="absolute top-4 right-4 z-40 opacity-0 group-hover/editable-block:opacity-100 transition-all duration-200">
-                        <button
-                          onClick={() => onEditComponent?.('laymanExplanation', notesData.mainContent.laymanExplanation)}
-                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg border border-blue-500"
-                        >
-                          ✏️ Edit Explanation
-                        </button>
-                      </div>
-                    )}
+                  <>
                     <h1 className="sr-only">Layman Explanation - {notesData.mainContent.title}</h1>
                     <LaymanMainContent data={notesData.mainContent.laymanExplanation} />
-                  </div>
+                  </>
                 )}
                 {!activeSectionError && activeTab === 'real-life' && (
-                  <div className="relative group/editable-block border-2 border-transparent hover:border-pink-300 rounded-[32px] p-2 transition-all duration-300">
-                    {isEditable && notesData.mainContent.realLifeExamples && (
-                      <div className="absolute top-4 right-4 z-40 opacity-0 group-hover/editable-block:opacity-100 transition-all duration-200">
-                        <button
-                          onClick={() => onEditComponent?.('realLifeExamples', notesData.mainContent.realLifeExamples)}
-                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg border border-blue-500"
-                        >
-                          ✏️ Edit Examples
-                        </button>
-                      </div>
-                    )}
+                  <>
                     <h1 className="sr-only">Real Life Examples - {notesData.mainContent.title}</h1>
                     <RealLifeExamplesContent data={notesData.mainContent.realLifeExamples} />
-                  </div>
+                  </>
                 )}
                 {!activeSectionError && activeTab === 'technical-deep-dive' && (
-                  <div className="relative group/editable-block border-2 border-transparent hover:border-pink-300 rounded-[32px] p-2 transition-all duration-300">
-                    {isEditable && notesData.mainContent.technicalDeepDive && (
-                      <div className="absolute top-4 right-4 z-40 opacity-0 group-hover/editable-block:opacity-100 transition-all duration-200">
-                        <button
-                          onClick={() => onEditComponent?.('technicalDeepDive', notesData.mainContent.technicalDeepDive)}
-                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg border border-blue-500"
-                        >
-                          ✏️ Edit Deep Dive
-                        </button>
-                      </div>
-                    )}
+                  <>
                     <h1 className="sr-only">Technical Deep Dive - {notesData.mainContent.title}</h1>
                     <TechnicalDeepDiveContent data={notesData.mainContent.technicalDeepDive} />
-                  </div>
+                  </>
                 )}
                 {!activeSectionError && activeTab === 'code-example' && notesData.mainContent.codeExample && (
-                  <div className="relative group/editable-block border-2 border-transparent hover:border-pink-300 rounded-[32px] p-2 transition-all duration-300">
-                    {isEditable && (
-                      <div className="absolute top-4 right-4 z-40 opacity-0 group-hover/editable-block:opacity-100 transition-all duration-200">
-                        <button
-                          onClick={() => onEditComponent?.('codeExample', notesData.mainContent.codeExample)}
-                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg border border-blue-500"
-                        >
-                          ✏️ Edit Code Example
-                        </button>
-                      </div>
-                    )}
+                  <>
                     <h1 className="sr-only">Code Example - {notesData.mainContent.title}</h1>
                     <CodeExampleContent data={notesData.mainContent.codeExample} />
-                  </div>
+                  </>
                 )}
                 {!activeSectionError && activeTab === 'visual-explanation' && notesData.mainContent.visualExplanation && (
-                  <div className="relative group/editable-block border-2 border-transparent hover:border-pink-300 rounded-[32px] p-2 transition-all duration-300">
-                    {isEditable && (
-                      <div className="absolute top-4 right-4 z-40 opacity-0 group-hover/editable-block:opacity-100 transition-all duration-200">
-                        <button
-                          onClick={() => onEditComponent?.('visualExplanation', notesData.mainContent.visualExplanation)}
-                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg border border-blue-500"
-                        >
-                          ✏️ Edit Visual Explanation
-                        </button>
-                      </div>
-                    )}
+                  <>
                     <h1 className="sr-only">Visual Explanation - {notesData.mainContent.title}</h1>
                     <VisualExplanationContent data={notesData.mainContent.visualExplanation} />
-                  </div>
+                  </>
                 )}
                 {!activeSectionError && activeTab === 'practice-test' && notesData.mainContent.practiceTest && (
-                  <div className="relative group/editable-block border-2 border-transparent hover:border-pink-300 rounded-[32px] p-2 transition-all duration-300">
-                    {isEditable && (
-                      <div className="absolute top-4 right-4 z-40 opacity-0 group-hover/editable-block:opacity-100 transition-all duration-200">
-                        <button
-                          onClick={() => onEditComponent?.('practiceTest', notesData.mainContent.practiceTest)}
-                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg border border-blue-500"
-                        >
-                          ✏️ Edit Practice Test
-                        </button>
-                      </div>
-                    )}
+                  <>
                     <h1 className="sr-only">Practice Test - {notesData.mainContent.title}</h1>
                     <PracticeTestContent data={notesData.mainContent.practiceTest} sectionId={notesData.sectionRecordIds?.practice} />
-                  </div>
+                  </>
                 )}
                 {!activeSectionError && activeTab === 'assignments' && notesData.mainContent.assignment && (
-                  <div className="relative group/editable-block border-2 border-transparent hover:border-pink-300 rounded-[32px] p-2 transition-all duration-300">
-                    {isEditable && (
-                      <div className="absolute top-4 right-4 z-40 opacity-0 group-hover/editable-block:opacity-100 transition-all duration-200">
-                        <button
-                          onClick={() => onEditComponent?.('assignment', notesData.mainContent.assignment)}
-                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg border border-blue-500"
-                        >
-                          ✏️ Edit Assignment
-                        </button>
-                      </div>
-                    )}
+                  <>
                     <h1 className="sr-only">Assignments - {notesData.mainContent.title}</h1>
                     <AssignmentContent data={notesData.mainContent.assignment} />
-                  </div>
+                  </>
                 )}
                 {!activeSectionError && activeTab === 'project' && notesData.mainContent.project && (
-                  <div className="relative group/editable-block border-2 border-transparent hover:border-pink-300 rounded-[32px] p-2 transition-all duration-300">
-                    {isEditable && (
-                      <div className="absolute top-4 right-4 z-40 opacity-0 group-hover/editable-block:opacity-100 transition-all duration-200">
-                        <button
-                          onClick={() => onEditComponent?.('project', notesData.mainContent.project)}
-                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg border border-blue-500"
-                        >
-                          ✏️ Edit Project
-                        </button>
-                      </div>
-                    )}
+                  <>
                     <h1 className="sr-only">Projects - {notesData.mainContent.title}</h1>
                     <ProjectContent data={notesData.mainContent.project} />
-                  </div>
+                  </>
                 )}
                 {!activeSectionError && activeTab === 'quiz' && notesData.mainContent.quiz && (
-                  <div className="relative group/editable-block border-2 border-transparent hover:border-pink-300 rounded-[32px] p-2 transition-all duration-300">
-                    {isEditable && (
-                      <div className="absolute top-4 right-4 z-40 opacity-0 group-hover/editable-block:opacity-100 transition-all duration-200">
-                        <button
-                          onClick={() => onEditComponent?.('quiz', notesData.mainContent.quiz)}
-                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg border border-blue-500"
-                        >
-                          ✏️ Edit Quiz
-                        </button>
-                      </div>
-                    )}
+                  <>
                     <h1 className="sr-only">Quiz - {notesData.mainContent.title}</h1>
                     <QuizContent 
                       data={notesData.mainContent.quiz} 
@@ -364,39 +265,19 @@ export function SubtopicNotesPage({
                       currentQuestionIndex={currentQuestionIndex}
                       onQuestionChange={setCurrentQuestionIndex}
                     />
-                  </div>
+                  </>
                 )}
                 {!activeSectionError && activeTab === 'summary' && notesData.mainContent.summary && (
-                  <div className="relative group/editable-block border-2 border-transparent hover:border-pink-300 rounded-[32px] p-2 transition-all duration-300">
-                    {isEditable && (
-                      <div className="absolute top-4 right-4 z-40 opacity-0 group-hover/editable-block:opacity-100 transition-all duration-200">
-                        <button
-                          onClick={() => onEditComponent?.('summary', notesData.mainContent.summary)}
-                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg border border-blue-500"
-                        >
-                          ✏️ Edit Summary
-                        </button>
-                      </div>
-                    )}
+                  <>
                     <h1 className="sr-only">Summary - {notesData.mainContent.title}</h1>
                     <SummaryContent data={notesData.mainContent.summary} title={notesData.mainContent.title} />
-                  </div>
+                  </>
                 )}
                 {!activeSectionError && activeTab === 'interview' && notesData.mainContent.interview && (
-                  <div className="relative group/editable-block border-2 border-transparent hover:border-pink-300 rounded-[32px] p-2 transition-all duration-300">
-                    {isEditable && (
-                      <div className="absolute top-4 right-4 z-40 opacity-0 group-hover/editable-block:opacity-100 transition-all duration-200">
-                        <button
-                          onClick={() => onEditComponent?.('interview', notesData.mainContent.interview)}
-                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg border border-blue-500"
-                        >
-                          ✏️ Edit Interview Prep
-                        </button>
-                      </div>
-                    )}
+                  <>
                     <h1 className="sr-only">Interview Prep - {notesData.mainContent.title}</h1>
                     <InterviewPrepContent data={notesData.mainContent.interview} title={notesData.mainContent.title} />
-                  </div>
+                  </>
                 )}
                 {!activeSectionError && activeTab === 'ai-tutor' && (
                   <>
@@ -432,7 +313,7 @@ export function SubtopicNotesPage({
                     <div className="space-y-3">
                       {notesData.leftSidebar.items.filter(item => item.id !== 'overview').slice(0, 8).map((item) => (
                         <div key={item.id} className="flex min-w-0 items-center gap-3 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
-                          <CheckCircle2 size={18} className={item.status === 'completed' ? 'text-emerald-800' : 'text-slate-400'} aria-hidden="true" />
+                           <CheckCircle2 size={18} className={item.status === 'completed' ? 'text-emerald-800' : 'text-slate-400'} aria-hidden="true" />
                           <span className="min-w-0 break-words text-sm font-bold text-slate-900">{item.label}</span>
                           <span className="ml-auto shrink-0 rounded-full bg-slate-100 px-2 py-1 text-[10px] font-bold uppercase text-slate-700">{item.status}</span>
                         </div>

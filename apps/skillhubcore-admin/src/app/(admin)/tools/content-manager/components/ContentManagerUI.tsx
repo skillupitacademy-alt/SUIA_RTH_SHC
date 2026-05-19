@@ -1,12 +1,9 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any, react/no-danger */
 
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useBrand } from '@/share-branding/PostLandingPage/app/context/BrandContext';
 import { ASSET_SPECS } from '../../prompt-generator/lib/asset-specs';
-import { ShellContext } from '../../../ShellContext';
-import { InteractiveVisualEditor } from './visual-editor/InteractiveVisualEditor';
 import {
   SectionType,
   SubtopicInfo,
@@ -20,6 +17,7 @@ import {
   SUBSECTIONS_MAP,
   getDefaultAssetFieldPath,
 } from './types';
+import { ComponentPreview } from './ComponentPreview';
 
 function setNestedJsonValue(target: Record<string, unknown>, path: string, value: unknown) {
   const parts = path.split('.');
@@ -72,25 +70,21 @@ export function ContentManagerUI() {
   const [svgFile, setSvgFile] = useState<File | null>(null);
   const [processedAsset, setProcessedAsset] = useState<InlineSvgAsset | null>(null);
   const [isProcessingAsset, setIsProcessingAsset] = useState(false);
-
-  const { isRightSidebarOpen, toggleRightSidebar } = React.useContext(ShellContext);
-  const [editingFieldKey, setEditingFieldKey] = useState<string | null>(null);
-  const [editingFieldData, setEditingFieldData] = useState<any>(null);
-  const [isInlineSaving, setIsInlineSaving] = useState(false);
-  const [newComponentType, setNewComponentType] = useState('custom');
+  const [previewData, setPreviewData] = useState<any>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const selectedSectionLabel = sections.find((section) => section.id === selectedSection)?.label ?? selectedSection;
 
   const activeSpecs = React.useMemo(() => {
     const specs = ASSET_SPECS[selectedSection] || [];
-    
+
     if (selectedSubsection) {
       let filtered = specs.filter((spec) => {
         const subLower = selectedSubsection.toLowerCase().replace('svg', '');
         const pathLower = spec.fieldPath.toLowerCase();
         return pathLower.includes(subLower) || subLower.includes(pathLower.split('.')[0]);
       });
-      
+
       // Special mappings for specific subsections
       if (filtered.length === 0) {
         if (selectedSubsection === 'summaryHeroSvg') filtered = specs.filter(s => s.fieldPath.includes('summaryHeroInfographic'));
@@ -114,7 +108,7 @@ export function ContentManagerUI() {
     } else {
       setAssetFieldPath(getDefaultAssetFieldPath(selectedSection));
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedSection, selectedSubsection, activeSpecs]);
 
   const searchParams = useSearchParams();
@@ -201,9 +195,8 @@ export function ContentManagerUI() {
 
     try {
       setIsFetchingSubsection(true);
-      const url = `/api/content-manager/add-section?subtopicId=${subtopicInfo.subtopicId.trim()}&section=${selectedSection}${
-        selectedSubsection ? `&subsection=${selectedSubsection}` : ''
-      }`;
+      const url = `/api/content-manager/add-section?subtopicId=${subtopicInfo.subtopicId.trim()}&section=${selectedSection}${selectedSubsection ? `&subsection=${selectedSubsection}` : ''
+        }`;
       const response = await fetch(url);
       const result = await response.json();
 
@@ -348,7 +341,7 @@ export function ContentManagerUI() {
     try {
       const parsed = JSON.parse(jsonInput) as Record<string, unknown>;
       const rootKeys = Object.keys(parsed);
-      
+
       let targetContainer: Record<string, unknown> = parsed;
       let targetPath = assetFieldPath;
       let matchedCase = 'direct';
@@ -448,199 +441,25 @@ export function ContentManagerUI() {
     window.open(getPageUrl(section), '_blank');
   };
 
-  // Background Sync function for inline edits and deletes
-  const saveJsonToDbBackground = async (updatedJson: string) => {
-    setIsInlineSaving(true);
-    let parsedVal: unknown;
-    const trimmedInput = updatedJson.trim();
-
-    if (!trimmedInput) {
-      showMessage('JSON cannot be empty.', 'error');
-      setIsInlineSaving(false);
+  const handlePreview = () => {
+    if (!jsonInput.trim()) {
+      showMessage('Please paste JSON content first.', 'error');
       return;
     }
 
-    if (selectedSubsection) {
-      const subSecConfig = SUBSECTIONS_MAP[selectedSection]?.find((s) => s.id === selectedSubsection);
-      if (subSecConfig?.type === 'svg' && (trimmedInput.startsWith('<svg') || trimmedInput.startsWith('<?xml') || trimmedInput.includes('<svg'))) {
-        parsedVal = trimmedInput;
-      } else {
-        try {
-          parsedVal = JSON.parse(trimmedInput);
-        } catch {
-          parsedVal = trimmedInput;
-        }
-      }
-    } else {
-      try {
-        parsedVal = JSON.parse(trimmedInput);
-      } catch (e: any) {
-        showMessage(`Invalid JSON: ${e.message}`, 'error');
-        setIsInlineSaving(false);
-        return;
-      }
-    }
-
-    try {
-      const response = await fetch('/api/content-manager/add-section', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          subtopicId: subtopicInfo.subtopicId,
-          subtopicInfo,
-          section: selectedSection,
-          subsection: selectedSubsection || undefined,
-          content: parsedVal,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        showMessage(`Database synced successfully in background!`, 'success');
-      } else {
-        showMessage(`Save warning: ${result.error || 'Failed to save section'}`, 'error');
-      }
-    } catch (error: any) {
-      showMessage(`Database sync failed: ${error.message || 'Network error'}`, 'error');
-    } finally {
-      setIsInlineSaving(false);
-    }
-  };
-
-  const handleDeleteComponent = (keyToDelete: string) => {
-    if (!confirm(`Are you sure you want to delete the component "${keyToDelete}"?`)) {
-      return;
-    }
     try {
       const parsed = JSON.parse(jsonInput);
-      const rootKeys = Object.keys(parsed);
-      let target = parsed;
-      if (rootKeys.length === 1 && rootKeys[0] === selectedSection) {
-        target = parsed[selectedSection];
-      }
-
-      if (Array.isArray(target)) {
-        const idx = parseInt(keyToDelete, 10);
-        if (!isNaN(idx)) {
-          target.splice(idx, 1);
-        }
-      } else if (typeof target === 'object' && target !== null) {
-        delete target[keyToDelete];
-      }
-
-      const newJson = JSON.stringify(parsed, null, 2);
-      setJsonInput(newJson);
-      saveJsonToDbBackground(newJson);
-    } catch (e: any) {
-      showMessage(`Delete failed: ${e.message}`, 'error');
-    }
-  };
-
-  const handleStartEdit = (key: string, data: any) => {
-    setEditingFieldKey(key);
-    setEditingFieldData(JSON.parse(JSON.stringify(data)));
-  };
-
-  const handleSaveEdit = () => {
-    if (!editingFieldKey) return;
-    try {
-      const parsed = JSON.parse(jsonInput);
-      const rootKeys = Object.keys(parsed);
-      let target = parsed;
-      if (rootKeys.length === 1 && rootKeys[0] === selectedSection) {
-        target = parsed[selectedSection];
-      }
-
-      if (editingFieldKey.includes('.')) {
-        const [parentKey, childIndexStr] = editingFieldKey.split('.');
-        const childIdx = parseInt(childIndexStr, 10);
-        if (Array.isArray(target[parentKey]) && !isNaN(childIdx)) {
-          target[parentKey][childIdx] = editingFieldData;
-        }
-      } else if (Array.isArray(target)) {
-        const idx = parseInt(editingFieldKey, 10);
-        if (!isNaN(idx)) {
-          target[idx] = editingFieldData;
-        }
-      } else {
-        target[editingFieldKey] = editingFieldData;
-      }
-
-      const newJson = JSON.stringify(parsed, null, 2);
-      setJsonInput(newJson);
-      saveJsonToDbBackground(newJson);
-      setEditingFieldKey(null);
-      setEditingFieldData(null);
-    } catch (e: any) {
-      showMessage(`Save failed: ${e.message}`, 'error');
-    }
-  };
-
-  const handleAddComponent = () => {
-    try {
-      const parsed = jsonInput.trim() ? JSON.parse(jsonInput) : {};
-      const rootKeys = Object.keys(parsed);
-      let target = parsed;
-      if (rootKeys.length === 1 && rootKeys[0] === selectedSection) {
-        target = parsed[selectedSection];
-      } else if (rootKeys.length === 0) {
-        parsed[selectedSection] = {};
-        target = parsed[selectedSection];
-      }
-
-      let newKey = `newComponent_${Date.now()}`;
-      let newVal: any = '';
-
-      if (newComponentType === 'simpleWords') {
-        newKey = 'simpleWords';
-        newVal = 'Paste simple overview explanation here...';
-      } else if (newComponentType === 'definitionBlock') {
-        newKey = 'definitionBlock';
-        newVal = {
-          term: 'Conceptual Glossary Term',
-          definition: 'Formal description and technical definition of this concept.',
-          memoryHook: 'A simple mental model or physical hook analogy to memorize it.',
-        };
-      } else if (newComponentType === 'warningFaq') {
-        newKey = 'warningFaq';
-        newVal = {
-          warningTitle: 'Common Traps & Anti-patterns',
-          warningDescription: 'A detailed breakdown of common bugs, pitfalls, and mistakes to watch out for.',
-        };
-      } else if (newComponentType === 'syntaxBlock') {
-        newKey = 'syntaxBlock';
-        newVal = {
-          title: 'Syntax Anatomy Breakdown',
-          explanation: 'Step-by-step descriptive commentary detailing how the syntax operates.',
-          code: 'const result = await someAsyncFunction();',
-        };
-      } else {
-        newKey = `customField_${Date.now().toString().slice(-4)}`;
-        newVal = {
-          title: 'New Section Feature Card',
-          description: 'Customize this descriptive card detail according to section specifications.',
-        };
-      }
-
-      if (Array.isArray(target)) {
-        target.push(newVal);
-      } else {
-        target[newKey] = newVal;
-      }
-
-      const newJson = JSON.stringify(parsed, null, 2);
-      setJsonInput(newJson);
-      saveJsonToDbBackground(newJson);
-      showMessage(`Added component: "${newKey}"! Database synced.`, 'success');
-    } catch (e: any) {
-      showMessage(`Add failed: ${e.message}`, 'error');
+      setPreviewData(parsed);
+      setIsPreviewOpen(true);
+      showMessage('Loaded preview for component.', 'success');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      showMessage(`JSON parse error: ${errorMessage}. Correct it to preview.`, 'error');
     }
   };
 
   return (
-    <div className="container mx-auto max-w-7xl px-4 py-8">
+    <div className={`container mx-auto px-4 py-8 transition-all duration-300 ${isPreviewOpen ? 'max-w-[1600px]' : 'max-w-7xl'}`}>
       <header className="mb-8 overflow-hidden rounded-2xl bg-white shadow-lg">
         <div className="p-8 text-center" style={{ backgroundColor: brand.primaryColor }}>
           <h1 className="mb-3 text-4xl font-bold text-white font-outfit">Content Manager</h1>
@@ -650,13 +469,12 @@ export function ContentManagerUI() {
 
       {message ? (
         <div
-          className={`mb-6 rounded-lg p-4 ${
-            messageType === 'success'
+          className={`mb-6 rounded-lg p-4 ${messageType === 'success'
               ? 'border-l-4 border-green-500 bg-green-50 text-green-800'
               : messageType === 'error'
                 ? 'border-l-4 border-red-500 bg-red-50 text-red-800'
                 : 'border-l-4 border-blue-500 bg-blue-50 text-blue-800'
-          }`}
+            }`}
         >
           <p className="font-medium">{message}</p>
         </div>
@@ -757,59 +575,59 @@ export function ContentManagerUI() {
           </div>
         </section>
       ) : (
-        <>
-          <section className="mb-8 rounded-2xl bg-white p-8 shadow-lg border border-slate-100">
-            <h2 className="mb-6 text-2xl font-bold text-gray-800 font-outfit">Content Progress</h2>
+        <div className="flex flex-col lg:flex-row gap-8 items-start">
+          <div className="flex-1 min-w-0 space-y-8">
+            <section className="rounded-2xl bg-white p-8 shadow-lg border border-slate-100">
+              <h2 className="mb-6 text-2xl font-bold text-gray-800 font-outfit">Content Progress</h2>
 
-            <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-              {sections.map((section) => (
-                <div
-                  key={section.id}
-                  className={`rounded-lg border-2 p-4 ${
-                    sectionStatus[section.id] ? 'border-green-500 bg-green-50' : 'border-gray-300 bg-gray-50'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="flex h-8 min-w-8 items-center justify-center rounded bg-white px-2 text-xs font-bold text-gray-700 shadow-sm">
-                      {section.marker}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold text-gray-800">{section.label}</p>
-                      <p className={`text-xs ${sectionStatus[section.id] ? 'text-green-600' : 'text-gray-500'}`}>
-                        {sectionStatus[section.id] ? 'Saved' : 'Pending'}
-                      </p>
+              <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+                {sections.map((section) => (
+                  <div
+                    key={section.id}
+                    className={`rounded-lg border-2 p-4 ${sectionStatus[section.id] ? 'border-green-500 bg-green-50' : 'border-gray-300 bg-gray-50'
+                      }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="flex h-8 min-w-8 items-center justify-center rounded bg-white px-2 text-xs font-bold text-gray-700 shadow-sm">
+                        {section.marker}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-semibold text-gray-800">{section.label}</p>
+                        <p className={`text-xs ${sectionStatus[section.id] ? 'text-green-600' : 'text-gray-500'}`}>
+                          {sectionStatus[section.id] ? 'Saved' : 'Pending'}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="rounded border-l-4 border-blue-500 bg-blue-50 p-4">
-              <p className="font-medium text-blue-900">
-                Page URL:{' '}
-                <a href={getPageUrl()} target="_blank" rel="noopener noreferrer" className="underline">
-                  {getPageUrl()}
-                </a>
-              </p>
-              <div className="mt-3 flex flex-wrap gap-3">
-                <button
-                  onClick={() => openPreview()}
-                  className="rounded-lg bg-blue-600 px-6 py-2 font-semibold text-white transition-colors hover:bg-blue-700"
-                >
-                  Preview Page
-                </button>
-                <button
-                  onClick={() => openPreview(selectedSection)}
-                  className="rounded-lg bg-slate-800 px-6 py-2 font-semibold text-white transition-colors hover:bg-slate-900"
-                >
-                  Preview Selected Section
-                </button>
+                ))}
               </div>
-            </div>
-          </section>
 
-          {/* Workspace Editor */}
-          <section className="w-full rounded-2xl bg-white p-8 shadow-lg border border-slate-100 space-y-6">
+              <div className="rounded border-l-4 border-blue-500 bg-blue-50 p-4">
+                <p className="font-medium text-blue-900">
+                  Page URL:{' '}
+                  <a href={getPageUrl()} target="_blank" rel="noopener noreferrer" className="underline">
+                    {getPageUrl()}
+                  </a>
+                </p>
+                <div className="mt-3 flex flex-wrap gap-3">
+                  <button
+                    onClick={() => openPreview()}
+                    className="rounded-lg bg-blue-600 px-6 py-2 font-semibold text-white transition-colors hover:bg-blue-700"
+                  >
+                    Preview Page
+                  </button>
+                  <button
+                    onClick={() => openPreview(selectedSection)}
+                    className="rounded-lg bg-slate-800 px-6 py-2 font-semibold text-white transition-colors hover:bg-slate-900"
+                  >
+                    Preview Selected Section
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            {/* Workspace Editor */}
+            <section className="rounded-2xl bg-white p-8 shadow-lg border border-slate-100 space-y-6">
               <h2 className="text-2xl font-bold text-gray-800 border-b border-slate-100 pb-3 flex items-center justify-between font-outfit">
                 <span>Step 2: Add Content Section</span>
                 <span className="text-xs font-semibold px-3 py-1 bg-blue-50 text-blue-600 rounded-full">Workspace Editor</span>
@@ -1048,6 +866,12 @@ export function ContentManagerUI() {
 
               <div className="flex gap-4">
                 <button
+                  onClick={handlePreview}
+                  className="flex-1 rounded-lg bg-indigo-600 py-3 font-semibold text-white transition-colors hover:bg-indigo-700 shadow-md flex items-center justify-center gap-2"
+                >
+                  Preview Component
+                </button>
+                <button
                   onClick={validateJSON}
                   className="flex-1 rounded-lg bg-gray-600 py-3 font-semibold text-white transition-colors hover:bg-gray-700 shadow-md"
                 >
@@ -1062,29 +886,29 @@ export function ContentManagerUI() {
                 </button>
               </div>
             </section>
+          </div>
 
-            {/* Right Sidebar Overlay - Full Width Interactive Page Previewer & Editor */}
-            <InteractiveVisualEditor
-              jsonInput={jsonInput}
-              selectedSection={selectedSection}
-              selectedSectionLabel={selectedSectionLabel}
-              subtopicId={subtopicInfo.subtopicId}
-              isRightSidebarOpen={isRightSidebarOpen}
-              toggleRightSidebar={toggleRightSidebar}
-              isInlineSaving={isInlineSaving}
-              newComponentType={newComponentType}
-              setNewComponentType={setNewComponentType}
-              handleAddComponent={handleAddComponent}
-              handleStartEdit={handleStartEdit}
-              handleDeleteComponent={handleDeleteComponent}
-              editingFieldKey={editingFieldKey}
-              editingFieldData={editingFieldData}
-              setEditingFieldData={setEditingFieldData}
-              handleSaveEdit={handleSaveEdit}
-              setEditingFieldKey={setEditingFieldKey}
-            />
-        </>
+          {/* Live Preview Sidebar */}
+          {isPreviewOpen && (
+            <aside className="w-full lg:w-[480px] xl:w-[560px] sticky top-6 bg-white rounded-2xl p-6 shadow-lg border border-slate-150 shrink-0">
+              <div className="flex justify-between items-center mb-4 pb-2 border-b border-slate-200">
+                <h3 className="text-lg font-bold text-slate-800 font-outfit">Live Preview</h3>
+                <button
+                  onClick={() => setIsPreviewOpen(false)}
+                  className="text-xs font-semibold px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+              <div className="max-h-[80vh] overflow-y-auto pr-1">
+                <ComponentPreview section={selectedSection} subsection={selectedSubsection} data={previewData} />
+              </div>
+            </aside>
+          )}
+        </div>
       )}
     </div>
   );
 }
+
+

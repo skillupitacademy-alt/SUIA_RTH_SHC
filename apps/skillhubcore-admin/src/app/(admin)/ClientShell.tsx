@@ -300,18 +300,21 @@ export default function ClientShell({ children }: { children: ReactNode }) {
                 <LogOut size={18} />
                 <span className="hidden md:inline">{isLoggingOut ? 'Logging out...' : 'Logout'}</span>
               </button>
+              {pathname !== '/tools/content-manager' && (
+                <>
+                  <div className="h-8 w-[1px] bg-slate-200 mx-1"></div>
 
-              <div className="h-8 w-[1px] bg-slate-200 mx-1"></div>
-
-              {/* Right Sidebar Toggle */}
-              <button
-                onClick={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
-                className={`transition-colors p-2 rounded-lg border focus:ring-2 focus:ring-pink-500 outline-none ${isRightSidebarOpen ? 'bg-pink-50 text-pink-600 border-pink-100' : 'bg-slate-50 text-slate-400 border-slate-200 hover:text-slate-600 hover:bg-slate-100'}`}
-                aria-label="Toggle Dashboard Tools"
-                title="Toggle Right Sidebar"
-              >
-                <PanelRight size={20} />
-              </button>
+                  {/* Right Sidebar Toggle */}
+                  <button
+                    onClick={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
+                    className={`transition-colors p-2 rounded-lg border focus:ring-2 focus:ring-pink-500 outline-none ${isRightSidebarOpen ? 'bg-pink-50 text-pink-600 border-pink-100' : 'bg-slate-50 text-slate-400 border-slate-200 hover:text-slate-600 hover:bg-slate-100'}`}
+                    aria-label="Toggle Dashboard Tools"
+                    title="Toggle Right Sidebar"
+                  >
+                    <PanelRight size={20} />
+                  </button>
+                </>
+              )}
             </div>
           </header>
 
