@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, ReactNode } from 'react';
-import { BrandConfig } from '../../../brandConfig';
+import { BrandConfig, rthConfig } from '../../../brandConfig';
 
 const BrandContext = createContext<BrandConfig | null>(null);
 
@@ -12,7 +12,8 @@ export function BrandProvider({ brand, children }: { brand: BrandConfig; childre
 export function useBrand() {
   const brand = useContext(BrandContext);
   if (!brand) {
-    throw new Error('useBrand must be used within a BrandProvider');
+    // Graceful fallback to default RTH brand config if context is missing or duplicated by Next.js bundling
+    return rthConfig;
   }
   return brand;
 }
