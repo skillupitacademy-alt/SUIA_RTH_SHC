@@ -107,9 +107,9 @@ export function ContentManagerUI() {
                       <div className="text-sm text-orange-900 space-y-2">
                         {error.message.includes('map') || error.message.includes('Cannot read properties of undefined') ? (
                           <>
-                            <p><strong>Missing Required Array/Object:</strong> The component is trying to access data that doesn't exist in your JSON.</p>
+                            <p><strong>Missing Required Array/Object:</strong> The component is trying to access data that doesn&apos;t exist in your JSON.</p>
                             <ul className="list-disc pl-5 mt-2">
-                              <li>Did you paste JSON for a specific component (like <code>definitionBlock</code>) but leave the dropdown on <strong>"Full Section"</strong>?</li>
+                              <li>Did you paste JSON for a specific component (like <code>definitionBlock</code>) but leave the dropdown on <strong>&quot;Full Section&quot;</strong>?</li>
                               <li>Does your JSON include all required arrays (like <code>quickSummary</code>, <code>faqItems</code>, etc.)?</li>
                             </ul>
                           </>
