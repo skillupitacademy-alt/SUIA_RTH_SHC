@@ -22,10 +22,16 @@ const nextConfig = {
     config.ignoreWarnings = [
       ...(config.ignoreWarnings ?? []),
       {
-        module: /next-intl[\\/]dist[\\/]esm[\\/]production[\\/]extractor[\\/]format[\\/]index\.js$/,
+        module: /next-intl/,
         message: /Parsing of .*next-intl.*failed at 'import\(t\)'/,
       },
     ];
+
+    // Suppress the specific infrastructure logging warnings from webpack cache related to next-intl
+    config.infrastructureLogging = {
+      ...config.infrastructureLogging,
+      level: 'error',
+    };
 
     return config;
   },
