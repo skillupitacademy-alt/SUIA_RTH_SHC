@@ -44,41 +44,6 @@ export function SubtopicRightPanel({ data, isOpen }: SubtopicRightPanelProps) {
     <aside tabIndex={0} aria-label="Progress and stats sidebar" className={`fixed bottom-0 right-0 top-16 z-40 flex w-[78vw] flex-col overflow-y-auto bg-[#f8fafc] p-4 hide-scrollbar focus:outline-none transition-all duration-300 sm:p-5 min-[560px]:w-[min(400px,calc(100vw-1rem))] ${isOpen ? 'translate-x-0 shadow-2xl' : 'translate-x-full shadow-none'}`}>
       <div className="space-y-4">
         
-        {/* XP Section */}
-        <section aria-label="Experience points progress" className="rounded-3xl bg-white/80 backdrop-blur-xl p-5 shadow-2xl border-t border-white/60 transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.2)]"
-                 style={{ boxShadow: `0 20px 50px rgba(${brand.primaryRgb || '0,0,0'}, 0.05)` }}>
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-            <div className="flex min-w-0 items-center gap-2">
-              <Icons.Flame size={18} className="text-orange-700" />
-              <h2 className="break-words text-[14px] font-bold text-[#1e293b]">{data.xpSection.title}</h2>
-            </div>
-            <span className="shrink-0 rounded-full border border-emerald-200 bg-emerald-100/50 px-2 py-0.5 text-[11px] font-bold text-emerald-950">+{data.xpSection.totalXp} XP</span>
-          </div>
-          
-          <div className="mb-5 flex items-center justify-between gap-4">
-            <div className="flex min-w-0 flex-col">
-              <span className="text-[11px] font-bold text-slate-800">You will earn</span>
-              <div className="flex items-baseline gap-1 my-0.5">
-                <span className="text-[32px] font-bold text-slate-950 leading-none">{data.xpSection.totalXp}</span>
-                <span className="text-[14px] font-bold text-slate-950">XP</span>
-              </div>
-              <span className="break-words text-[11px] font-medium text-slate-800">{data.xpSection.xpMessage}</span>
-            </div>
-            <div className="flex h-[72px] w-[72px] shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-orange-700 shadow-lg shadow-orange-500/30 relative border border-orange-400">
-               <div className="absolute inset-1 rounded-full bg-white/10"></div>
-               <Icons.Star size={32} className="text-white drop-shadow-md" aria-hidden="true" />
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100 flex">
-              <div className="h-full bg-orange-500 rounded-full" style={{ width: `${(data.xpSection.earnedXp / data.xpSection.totalXp) * 100}%` }} />
-            </div>
-            <div className="text-[10px] font-bold text-slate-800">
-              <span className="text-slate-950">{data.xpSection.earnedXp}</span> / {data.xpSection.totalXp} XP
-            </div>
-          </div>
-        </section>
 
         {/* Achievements */}
         <section 

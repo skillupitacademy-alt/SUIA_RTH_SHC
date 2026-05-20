@@ -28,6 +28,20 @@ export const OptionalNonEmptyStringSchema = NonEmptyStringSchema.optional();
 export const NonNegativeNumberSchema = z.number().finite().min(0);
 export const PercentageSchema = z.number().finite().min(0).max(100);
 
+export const TutorialSvgAssetSchema = z.object({
+  type: z.literal('inline_svg'),
+  name: NonEmptyStringSchema,
+  alt: NonEmptyStringSchema,
+  width: z.number().int().min(16).max(2400),
+  height: z.number().int().min(16).max(2400),
+  dataUri: z.string().regex(/^data:image\/svg\+xml;base64,[A-Za-z0-9+/=]+$/, 'Expected a base64 SVG data URI'),
+  caption: OptionalNonEmptyStringSchema,
+}).strict();
+
+export function optionalSvgAssetField() {
+  return z.union([NonEmptyStringSchema, TutorialSvgAssetSchema]).optional();
+}
+
 export function nonEmptyStringArray(min = 1) {
   return z.array(NonEmptyStringSchema).min(min);
 }
@@ -82,4 +96,3 @@ export const ContentCardSchema = strictObject({
 });
 
 export const QuestionDifficultySchema = z.enum(['easy', 'medium', 'hard']);
-

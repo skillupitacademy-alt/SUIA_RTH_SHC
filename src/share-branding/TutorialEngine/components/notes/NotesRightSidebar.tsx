@@ -62,7 +62,6 @@ export function NotesRightSidebar({
                 {[
                   { label: 'Difficulty', value: <span className="px-2.5 py-1 rounded-full bg-amber-100 text-amber-950 text-[10px] font-bold uppercase border border-amber-200">Medium</span> },
                   { label: 'Type', value: 'Practical' },
-                  { label: 'Points', value: '+30 XP' },
                   { label: 'Submissions', value: '1 allowed' }
                 ].map((item, i) => (
                   <div key={i} className="flex items-center justify-between text-[12px] font-medium pb-2 last:pb-0">
@@ -88,25 +87,7 @@ export function NotesRightSidebar({
               </div>
             </section>
 
-            {/* Rewards */}
-            <section aria-label="Assignment rewards" className="rounded-3xl bg-white/80 backdrop-blur-xl p-6 shadow-2xl transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] border-t border-white/60">
-              <div className="flex items-center gap-2 mb-6">
-                <Icons.Trophy size={18} className="text-amber-950" />
-                <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Rewards</h2>
-              </div>
-              <div className="space-y-4">
-                {[
-                  { label: 'XP Points', value: '+30 XP' },
-                  { label: 'Streak Bonus', value: '+5 XP' },
-                  { label: 'Badges', value: <span className="flex items-center gap-1"><Icons.Shield size={12} className="text-orange-950" /> Component Pro</span> }
-                ].map((item, i) => (
-                  <div key={i} className="flex items-center justify-between text-[12px] font-medium">
-                    <span className="flex items-center gap-2 text-slate-800"><Icons.CheckCircle2 size={14} className="text-orange-950" fill="currentColor" aria-hidden="true" /> {item.label}</span>
-                    <span className="text-slate-950 font-bold">{item.value}</span>
-                  </div>
-                ))}
-              </div>
-            </section>
+
 
             {/* Submit Assignment */}
             <section aria-label="Assignment submission" className="rounded-3xl bg-white p-6 shadow-xl space-y-6 transition-all duration-300 hover:-translate-y-1 border border-slate-100">
@@ -216,8 +197,6 @@ export function NotesRightSidebar({
               <div className="space-y-4">
                 {[
                   { label: 'Difficulty', value: <span className="px-2.5 py-1 rounded-full bg-amber-100 text-amber-950 text-[10px] font-bold uppercase border border-amber-200">Intermediate</span> },
-                  { label: 'Estimated Time', value: '5-7 hrs' },
-                  { label: 'XP Reward', value: '+400 XP' },
                   { label: 'Submissions', value: '2 allowed' }
                 ].map((item, i) => (
                   <div key={i} className="flex items-center justify-between text-[12px] font-medium pb-2 last:pb-0">
@@ -532,16 +511,7 @@ export function NotesRightSidebar({
               </div>
             </section>
 
-            {/* Reading Time */}
-            <section className="flex items-center gap-3 rounded-2xl bg-white p-4 shadow-sm border border-slate-100">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-50 border border-slate-100">
-                <Icons.Clock size={20} className="text-slate-600" aria-hidden="true" />
-              </div>
-              <div>
-                <p className="text-[11px] font-bold text-slate-800">Estimated Reading Time</p>
-                <p className="text-sm font-bold text-slate-950">{data.laymanSidebar.readingTime}</p>
-              </div>
-            </section>
+
 
             {/* Think About It */}
             <section className="rounded-3xl bg-orange-50/50 p-5 border-dashed border border-orange-200">
@@ -650,18 +620,7 @@ export function NotesRightSidebar({
           </button>
         </section>
 
-        {/* XP */}
-        <section>
-          <h2 className="mb-4 text-xs font-bold text-slate-800 relative flex items-center gap-2">
-            <span className="bg-slate-200 h-px flex-1"></span>
-            XP from this Subtopic
-            <span className="bg-slate-200 h-px flex-1"></span>
-          </h2>
-          <div className="flex items-center justify-between rounded-xl bg-slate-50 p-4 border border-slate-100">
-             <span className="text-lg font-bold text-emerald-800">+{data.xpStats.earned} XP</span>
-             <span className="text-xs font-bold text-slate-800 flex items-center gap-1">Total XP: {data.xpStats.total} <Icons.Star size={12} aria-hidden="true" /></span>
-          </div>
-        </section>
+
 
         {/* Related Subtopics */}
         <section>

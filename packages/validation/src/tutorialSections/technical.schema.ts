@@ -3,14 +3,15 @@ import {
   JsonRecordSchema,
   NonEmptyStringSchema,
   nonEmptyStringArray,
+  optionalSvgAssetField,
   sectionSchema,
   strictObject,
 } from './base';
 
 export const TechnicalSectionSchema = sectionSchema('technical', {
-  title: NonEmptyStringSchema,
-  badge: NonEmptyStringSchema,
-  intro: NonEmptyStringSchema,
+  title: NonEmptyStringSchema.optional(),
+  badge: NonEmptyStringSchema.optional(),
+  intro: NonEmptyStringSchema.optional(),
   sections: z.array(strictObject({
     id: NonEmptyStringSchema,
     title: NonEmptyStringSchema,
@@ -19,6 +20,7 @@ export const TechnicalSectionSchema = sectionSchema('technical', {
       type: z.enum(['anatomy', 'flow', 'chain']),
       data: JsonRecordSchema,
     }).optional(),
+    diagramAsset: optionalSvgAssetField(),
     code: strictObject({
       language: NonEmptyStringSchema,
       code: NonEmptyStringSchema,
@@ -30,8 +32,7 @@ export const TechnicalSectionSchema = sectionSchema('technical', {
       text: NonEmptyStringSchema,
     })).min(1).optional(),
     highlight: NonEmptyStringSchema.optional(),
-  })).min(1),
+  })).min(1).optional(),
 });
 
 export type TechnicalSection = z.infer<typeof TechnicalSectionSchema>;
-

@@ -5,6 +5,7 @@ export * from './enums';
 export * from './enums-modular';
 export * from './tutorial-sections';
 export * from './tutorial-subsections';
+export * from './tutorial-section-domains';
 export * from './user-interactions'; // NEW: User interaction tracking
 export * from './educational-architectures';
 export * from './ui-architectures';
@@ -57,6 +58,7 @@ import * as enums from './enums';
 import * as enumsModular from './enums-modular';
 import * as tutorialSectionsModule from './tutorial-sections';
 import * as tutorialSubsectionsModule from './tutorial-subsections';
+import * as tutorialSectionDomainsModule from './tutorial-section-domains';
 import * as userInteractionsModule from './user-interactions'; // NEW
 import * as educationalArchitecturesModule from './educational-architectures';
 import * as uiArchitecturesModule from './ui-architectures';
@@ -108,6 +110,7 @@ export const schema = {
   ...enumsModular,
   ...tutorialSectionsModule,
   ...tutorialSubsectionsModule,
+  ...tutorialSectionDomainsModule,
   ...userInteractionsModule, // NEW
   ...educationalArchitecturesModule,
   ...uiArchitecturesModule,

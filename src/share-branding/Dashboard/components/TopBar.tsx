@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Flame, ChevronDown, LogOut } from 'lucide-react';
+import { Search, ChevronDown, LogOut } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useBrand } from '../../PostLandingPage/app/context/BrandContext';
 import { useDashboardData } from './DashboardDataContext';
@@ -26,20 +26,7 @@ export function TopBar({ mobileMenuButton }: { mobileMenuButton?: React.ReactNod
         />
       </div>
 
-      <div className="hidden h-12 shrink-0 items-center gap-3 rounded-2xl border border-gray-200 bg-white px-4 shadow-sm xs:flex sm:px-5">
-        <div
-          className="flex h-8 w-8 items-center justify-center rounded-lg"
-          style={{ backgroundColor: brand.primaryColor }}
-        >
-          <Flame className="text-white" size={18} />
-        </div>
-        <div className="flex flex-col">
-          <span className="text-xs leading-none text-gray-500">{header.streakLabel}</span>
-          <span className="mt-0.5 text-lg font-black leading-none" style={{ color: brand.primaryColor }}>
-            {header.streakCount}
-          </span>
-        </div>
-      </div>
+
 
       <button className="ml-auto flex h-12 shrink-0 items-center gap-2 rounded-2xl border border-gray-200 bg-white px-3 transition-all hover:border-gray-300 sm:ml-0 sm:gap-3 sm:px-4">
         <div

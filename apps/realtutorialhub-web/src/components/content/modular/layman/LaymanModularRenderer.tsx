@@ -5,6 +5,7 @@ import React from 'react';
 
 import { SimpleOverview } from './SimpleOverview';
 import { AnalogyHero } from './AnalogyHero';
+import { BeginnerBreakdown } from './BeginnerBreakdown';
 import { RealWorldScenario } from './RealWorldScenario';
 import { ConceptComparison } from './ConceptComparison';
 import { MistakeToAvoid } from './MistakeToAvoid';
@@ -27,30 +28,35 @@ export function LaymanModularRenderer({ data, themeColor }: LaymanModularRendere
   const spacing = pickString(m, 'spacing', '2rem');
 
   // Map schema keys
-  const hero = pickSection(m, ['analogyHero', 'analogy_card', 'intro_card']);
-  const overview = pickSection(m, ['simpleOverview', 'beginner_breakdown', 'mental_model']);
-  const scenario = pickSection(m, ['realWorldScenario', 'use_case']);
-  const comparison = pickSection(m, ['conceptComparison', 'faq']);
-  const mistake = pickSection(m, ['mistakeToAvoid', 'summary']);
-  const visual = pickSection(m, ['laymanVisual', 'mental_model']);
-  const takeaway = pickSection(m, ['keyTakeawayPanel', 'summary']);
+  const overview = pickSection(m, ['simpleOverview']);
+  const analogy = pickSection(m, ['everydayAnalogy', 'analogyHero', 'analogy_card']);
+  const whyItExists = pickSection(m, ['whyItExists', 'realWorldScenario']);
+  const useCases = pickSection(m, ['simpleUseCases', 'conceptComparison']);
+  const breakdown = pickSection(m, ['beginnerBreakdown']);
+  const visual = pickSection(m, ['mentalModel', 'laymanVisual', 'mental_model']);
+  const confusions = pickSection(m, ['commonConfusions', 'mistakeToAvoid', 'faq']);
+  const takeaway = pickSection(m, ['simpleRecap', 'keyTakeawayPanel', 'summary']);
 
   return (
     <div className="flex flex-col" style={{ gap: spacing, ...layoutStyle }}>
-      {hero && <AnalogyHero data={hero} />}
-      
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {overview && <SimpleOverview data={overview} themeColor={themeColor} />}
-        {scenario && <RealWorldScenario data={scenario} />}
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+        {overview && <SimpleOverview data={overview} themeColor={themeColor} sectionNumber={1} />}
+        {analogy && <AnalogyHero data={analogy} themeColor={themeColor} sectionNumber={2} />}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {comparison && <ConceptComparison data={comparison} />}
-        {mistake && <MistakeToAvoid data={mistake} />}
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+        {whyItExists && <RealWorldScenario data={whyItExists} sectionNumber={3} />}
+        {useCases && <ConceptComparison data={useCases} sectionNumber={4} />}
       </div>
 
-      {visual && <LaymanVisual data={visual} />}
-      {takeaway && <KeyTakeawayPanel data={takeaway} />}
+      {breakdown && <BeginnerBreakdown data={breakdown} themeColor={themeColor} sectionNumber={5} />}
+
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+        {visual && <LaymanVisual data={visual} sectionNumber={6} />}
+        {confusions && <MistakeToAvoid data={confusions} sectionNumber={7} />}
+      </div>
+
+      {takeaway && <KeyTakeawayPanel data={takeaway} themeColor={themeColor} sectionNumber={8} />}
     </div>
   );
 }

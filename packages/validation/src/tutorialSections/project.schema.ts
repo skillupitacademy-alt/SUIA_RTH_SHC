@@ -8,20 +8,20 @@ import {
 } from './base';
 
 export const ProjectSectionSchema = sectionSchema('project', {
-  title: NonEmptyStringSchema,
-  description: NonEmptyStringSchema,
-  xp: NonNegativeNumberSchema,
-  deadline: NonEmptyStringSchema,
+  title: NonEmptyStringSchema.optional(),
+  description: NonEmptyStringSchema.optional(),
+  xp: NonNegativeNumberSchema.optional(),
+  deadline: NonEmptyStringSchema.optional(),
   hero: strictObject({
     badge: NonEmptyStringSchema,
     title: NonEmptyStringSchema,
     description: NonEmptyStringSchema,
     image: NonEmptyStringSchema,
-  }),
-  realWorldUse: NonEmptyStringSchema,
-  skills: nonEmptyStringArray(1),
-  buildItems: nonEmptyStringArray(1),
-  deliverables: nonEmptyStringArray(1),
+  }).optional(),
+  realWorldUse: NonEmptyStringSchema.optional(),
+  skills: nonEmptyStringArray(1).optional(),
+  buildItems: nonEmptyStringArray(1).optional(),
+  deliverables: nonEmptyStringArray(1).optional(),
 });
 
 export type ProjectSection = z.infer<typeof ProjectSectionSchema>;

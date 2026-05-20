@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu, Bell, Flame, Star, Award, ChevronDown, Settings } from 'lucide-react';
+import { Menu, Bell, ChevronDown, Settings } from 'lucide-react';
 import { useBrand } from '../../PostLandingPage/app/context/BrandContext';
 import { useTutorialDashboardData } from './TutorialDashboardDataContext';
 
@@ -24,41 +24,7 @@ export function TutorialTopBar({ onOpenSidebar }: { onOpenSidebar: () => void })
       </div>
 
       <div className="flex min-w-0 shrink-0 items-center gap-3 sm:gap-6">
-        {/* Gamification Stats */}
-        <div className="hidden items-center gap-6 rounded-2xl border border-gray-100 bg-white px-6 py-2 shadow-md xl:flex">
-          {/* Streak */}
-          <div className="flex items-center gap-3 border-r border-gray-200 pr-6">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-50">
-              <Flame className="text-orange-700" size={20} />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-lg font-black leading-none text-gray-900">{header.streakCount}</span>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-gray-700">{header.streakLabel}</span>
-            </div>
-          </div>
 
-          {/* XP Points */}
-          <div className="flex items-center gap-3 border-r border-gray-200 pr-6">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-yellow-50">
-              <Star className="text-yellow-700" size={20} />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-lg font-black leading-none text-gray-900">{header.xpPoints}</span>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-gray-700">XP Points</span>
-            </div>
-          </div>
-
-          {/* Level */}
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-50">
-              <Award className="text-purple-700" size={20} />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-lg font-black leading-none text-gray-900">Level {header.level}</span>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-gray-700">{header.levelRole}</span>
-            </div>
-          </div>
-        </div>
 
         {/* Action Buttons */}
         <div className="flex items-center gap-3">

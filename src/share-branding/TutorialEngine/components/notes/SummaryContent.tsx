@@ -2,6 +2,7 @@
 
 import React from 'react';
 import * as Icons from 'lucide-react';
+import { SVGIconRenderer } from '../shared/SVGIconRenderer';
 import { useBrand } from '../../../PostLandingPage/app/context/BrandContext';
 import { SubtopicNotesViewData } from '../../../subtopicNotesData';
 
@@ -9,6 +10,30 @@ type SummaryData = NonNullable<SubtopicNotesViewData['mainContent']['summary']>;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+function getAssetSrc(value: unknown): string | null {
+  if (typeof value === 'string' && value.trim().length > 0) {
+    return value;
+  }
+
+  if (isRecord(value)) {
+    if (value.type === 'inline_svg' && typeof value.dataUri === 'string') {
+      return value.dataUri;
+    }
+    if (typeof value.url === 'string') {
+      return value.url;
+    }
+  }
+
+  return null;
+}
+
+function getAssetAlt(value: unknown, fallback = ''): string {
+  if (isRecord(value) && typeof value.alt === 'string' && value.alt.trim().length > 0) {
+    return value.alt;
+  }
+  return fallback;
 }
 
 function text(value: unknown, fallback = ''): string {
@@ -32,6 +57,8 @@ export function SummaryContent({ data, title }: { data?: SummaryData; title: str
   const takeaways = records(data.keyTakeawayGrid);
   const checklist = records(data.revisionChecklist);
   const actions = strings(nextStepPanel.actions);
+  const heroAssetSrc = getAssetSrc(masteryRecap.heroAsset);
+  const heroAssetAlt = getAssetAlt(masteryRecap.heroAsset, `${title} summary illustration`);
 
   return (
     <div className="min-w-0 space-y-8 pb-20">
@@ -52,6 +79,15 @@ export function SummaryContent({ data, title }: { data?: SummaryData; title: str
               {text(data.description, `Review the most important points from ${title}.`)}
             </p>
           </div>
+          {heroAssetSrc ? (
+            <div className="sm:ml-auto sm:w-[16rem] shrink-0">
+              <SVGIconRenderer
+                dataUri={heroAssetSrc}
+                alt={heroAssetAlt}
+                className="w-full h-auto max-h-[220px] object-contain mx-auto rounded-3xl border border-emerald-100 bg-white p-3 shadow-sm"
+              />
+            </div>
+          ) : null}
         </div>
       </section>
 

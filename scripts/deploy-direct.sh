@@ -57,20 +57,6 @@ fi
 GCLOUD_VERSION=$(gcloud version --format="value(version)" 2>/dev/null || echo "installed")
 echo "✅ gcloud $GCLOUD_VERSION found"
 
-# Check if Docker is installed
-if ! command -v docker &> /dev/null; then
-    echo ""
-    echo "❌ Docker is not installed"
-    echo ""
-    echo "📥 To install Docker:"
-    echo "   Download Docker Desktop from: https://www.docker.com/products/docker-desktop"
-    echo ""
-    exit 1
-fi
-
-DOCKER_VERSION=$(docker --version 2>&1 | grep -oP 'version \K[0-9.]+' || echo "installed")
-echo "✅ Docker $DOCKER_VERSION found"
-
 echo "✅ All prerequisites met"
 echo ""
 
@@ -93,6 +79,46 @@ IMAGE_API="${REGISTRY}/${PROJECT_ID}/quiz-platform/quiz-api-server:${GIT_SHA}"
 IMAGE_RTH="${REGISTRY}/${PROJECT_ID}/quiz-platform/realtutorialhub-web:${GIT_SHA}"
 IMAGE_SKILLUP="${REGISTRY}/${PROJECT_ID}/quiz-platform/skillup-web:${GIT_SHA}"
 IMAGE_SHC_ADMIN="${REGISTRY}/${PROJECT_ID}/quiz-platform/skillhubcore-admin:${GIT_SHA}"
+
+BUILD_RETRY_ATTEMPTS="${BUILD_RETRY_ATTEMPTS:-3}"
+BUILD_RETRY_DELAY_SECONDS="${BUILD_RETRY_DELAY_SECONDS:-15}"
+
+run_with_retry() {
+  local label="$1"
+  shift
+
+  local attempt=1
+  while true; do
+    echo "🔁 ${label} (attempt ${attempt}/${BUILD_RETRY_ATTEMPTS})"
+
+    if "$@"; then
+      echo "✅ ${label} succeeded"
+      return 0
+    fi
+
+    if [ "$attempt" -ge "$BUILD_RETRY_ATTEMPTS" ]; then
+      echo "❌ ${label} failed after ${BUILD_RETRY_ATTEMPTS} attempts"
+      return 1
+    fi
+
+    echo "⚠️  ${label} failed. Waiting ${BUILD_RETRY_DELAY_SECONDS}s before retry..."
+    sleep "$BUILD_RETRY_DELAY_SECONDS"
+    attempt=$((attempt + 1))
+  done
+}
+
+cloud_build_image() {
+  local dockerfile="$1"
+  local image="$2"
+
+  run_with_retry "Cloud Build ${image}" \
+    gcloud builds submit . \
+      --region="$REGION" \
+      --machine-type=e2-highcpu-8 \
+      --timeout=3600s \
+      --config=scripts/cloudbuild-docker-image.yaml \
+      --substitutions="_DOCKERFILE=${dockerfile},_IMAGE=${image}"
+}
 
 #############################################
 # 🔐 RBAC TEST USER CREDENTIALS
@@ -268,19 +294,12 @@ echo "SHC Admin: $PREV_SHC_ADMIN"
 # 🚀 BUILD + PUSH IMAGES
 #############################################
 
-echo "🐳 Building images..."
+echo "☁️  Building and pushing images with Cloud Build..."
 
-docker build -f apps/api-server/Dockerfile -t $IMAGE_API .
-docker build -f apps/realtutorialhub-web/Dockerfile -t $IMAGE_RTH .
-docker build -f apps/skillup-web/Dockerfile -t $IMAGE_SKILLUP .
-docker build -f apps/skillhubcore-admin/Dockerfile -t $IMAGE_SHC_ADMIN .
-
-echo "📦 Pushing images..."
-
-docker push $IMAGE_API
-docker push $IMAGE_RTH
-docker push $IMAGE_SKILLUP
-docker push $IMAGE_SHC_ADMIN
+cloud_build_image apps/api-server/Dockerfile $IMAGE_API
+cloud_build_image apps/realtutorialhub-web/Dockerfile $IMAGE_RTH
+cloud_build_image apps/skillup-web/Dockerfile $IMAGE_SKILLUP
+cloud_build_image apps/skillhubcore-admin/Dockerfile $IMAGE_SHC_ADMIN
 
 #############################################
 # 🚀 DEPLOY API FIRST (NO TRAFFIC)
@@ -330,12 +349,18 @@ deploy_bff() {
 
   echo "🚀 Deploying $SERVICE_NAME..."
 
+  BFF_SECRETS="INTERNAL_API_SECRET=INTERNAL_API_SECRET:latest,INTERNAL_GATEWAY_SECRET=INTERNAL_GATEWAY_SECRET:latest,JWT_SECRET=JWT_SECRET:latest,JWT_REFRESH_SECRET=JWT_REFRESH_SECRET:latest"
+
+  if [ "$SERVICE_NAME" = "$SERVICE_RTH" ]; then
+    BFF_SECRETS="${BFF_SECRETS},DATABASE_URL_TUTORIAL=DATABASE_URL_TUTORIAL:latest,DATABASE_DIRECT_URL_TUTORIAL=DATABASE_DIRECT_URL_TUTORIAL:latest"
+  fi
+
   gcloud run deploy $SERVICE_NAME \
     --image $IMAGE_NAME \
     --region $REGION \
     --no-traffic \
     --set-env-vars "INTERNAL_API_URL=${INTERNAL_API_URL},GATEWAY_URL=https://api.realtutorialhub.com,GATEWAY_URL_SKILLUP=https://api.skillupitacademy.com,GATEWAY_URL_SKILLHUBCORE=https://api.skillhubcore.in" \
-    --update-secrets "INTERNAL_API_SECRET=INTERNAL_API_SECRET:latest,INTERNAL_GATEWAY_SECRET=INTERNAL_GATEWAY_SECRET:latest,JWT_SECRET=JWT_SECRET:latest,JWT_REFRESH_SECRET=JWT_REFRESH_SECRET:latest"
+    --update-secrets "$BFF_SECRETS"
 }
 
 deploy_bff $SERVICE_RTH $IMAGE_RTH

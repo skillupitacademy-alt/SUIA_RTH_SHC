@@ -1,6 +1,7 @@
 import React from 'react';
 import * as Icons from 'lucide-react';
 import { useBrand } from '../../../PostLandingPage/app/context/BrandContext';
+import { SVGIconRenderer } from '../shared/SVGIconRenderer';
 
 interface RealLifeIndustryCaseProps {
   title: string;
@@ -85,11 +86,11 @@ export function RealLifeIndustryCase({
 
           {/* Image if provided */}
           {image && (
-            <div className="flex justify-center p-4 bg-gray-50 rounded-xl">
-              <img
-                src={image}
+            <div className="overflow-hidden rounded-2xl border border-slate-100 shadow-sm bg-slate-50/50 p-3 mx-auto max-w-full">
+              <SVGIconRenderer
+                dataUri={image}
                 alt={`${industryName} case study`}
-                className="max-h-[200px] object-contain drop-shadow-lg"
+                className="w-full h-auto max-h-[240px] object-contain mx-auto"
               />
             </div>
           )}

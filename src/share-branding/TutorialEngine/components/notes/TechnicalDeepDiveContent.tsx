@@ -1,9 +1,8 @@
-'use client';
-
 import React from 'react';
 import * as Icons from 'lucide-react';
 import { useBrand } from '../../../PostLandingPage/app/context/BrandContext';
 import { SubtopicNotesViewData } from '../../../subtopicNotesData';
+import { SVGIconRenderer } from '../shared/SVGIconRenderer';
 
 export function TechnicalDeepDiveContent({ data }: { data?: SubtopicNotesViewData['mainContent']['technicalDeepDive'] }) {
    const brand = useBrand();
@@ -47,6 +46,17 @@ export function TechnicalDeepDiveContent({ data }: { data?: SubtopicNotesViewDat
 
                {/* Content */}
                <p className="text-[14px] font-medium text-slate-800 leading-relaxed">{section.content}</p>
+
+               {/* Diagram Asset if provided */}
+               {section.diagramAsset && (
+                  <div className="overflow-hidden rounded-2xl border border-slate-100 shadow-sm bg-slate-50/50 p-3">
+                     <SVGIconRenderer 
+                        dataUri={typeof section.diagramAsset === 'string' ? section.diagramAsset : section.diagramAsset?.dataUri} 
+                        alt={typeof section.diagramAsset === 'object' ? section.diagramAsset?.alt : 'Technical Diagram'} 
+                        className="w-full h-auto max-h-[450px] object-contain mx-auto"
+                     />
+                  </div>
+               )}
 
                {/* Key Points */}
                {section.keyPoints && section.keyPoints.length > 0 && (

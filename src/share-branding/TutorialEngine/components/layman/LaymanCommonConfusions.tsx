@@ -16,9 +16,9 @@ interface FaqItem {
 
 interface LaymanCommonConfusionsProps {
   title: string;
-  confusionItems: ConfusionItem[];
-  faqItems: FaqItem[];
-  misconceptionAlerts: string[];
+  confusionItems?: ConfusionItem[];
+  faqItems?: FaqItem[];
+  misconceptionAlerts?: string[];
 }
 
 /**
@@ -26,14 +26,12 @@ interface LaymanCommonConfusionsProps {
  * Renderer: faq_block
  * Layout Template: faq_accordion
  * Purpose: Confusion prevention, FAQ, misconception system
- * 
- * Based on AllSectionTutorialPageUIUXDetailed.json specification
  */
 export function LaymanCommonConfusions({
   title,
-  confusionItems,
-  faqItems,
-  misconceptionAlerts
+  confusionItems = [],
+  faqItems = [],
+  misconceptionAlerts = []
 }: LaymanCommonConfusionsProps) {
   const brand = useBrand();
   const [openFaqId, setOpenFaqId] = useState<string>(faqItems[0]?.id || '');

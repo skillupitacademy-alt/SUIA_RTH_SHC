@@ -1,25 +1,25 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
 import { Eye, Info } from 'lucide-react';
+
+import { getTutorialAssetAlt, getTutorialAssetCaption, getTutorialAssetImageSource } from '../shared/tutorialAsset';
 
 interface VisualSummaryProps {
   data: {
     summaryTitle: string;
     conceptDiagramDescription: string;
     keyTakeaways: string[];
-    image?: {
-      url: string;
-      alt: string;
-      caption?: string;
-    };
+    image?: unknown;
   };
   themeColor: string;
 }
 
 export function VisualSummary({ data, themeColor }: VisualSummaryProps) {
   if (!data) return null;
+  const imageSource = getTutorialAssetImageSource(data.image);
+  const imageAlt = getTutorialAssetAlt(data.image, `${data.summaryTitle} visual summary`);
+  const imageCaption = getTutorialAssetCaption(data.image);
 
   return (
     <div className="rounded-2xl border border-slate-800 bg-slate-900/30 p-6 shadow-xl">
@@ -53,20 +53,19 @@ export function VisualSummary({ data, themeColor }: VisualSummaryProps) {
           </div>
         </div>
 
-        {data.image ? (
+        {imageSource ? (
           <div className="relative group">
             <div className="absolute -inset-1 bg-gradient-to-r opacity-20 blur group-hover:opacity-30 transition-opacity" style={{ backgroundImage: `linear-gradient(to right, ${themeColor}, #fb923c)` }} />
             <div className="relative rounded-xl overflow-hidden border border-slate-700 bg-slate-950">
-              <Image 
-                src={data.image.url} 
-                alt={data.image.alt} 
-                width={800} 
-                height={450} 
-                className="w-full h-auto object-cover" 
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={imageSource}
+                alt={imageAlt}
+                className="w-full h-auto object-cover"
               />
-              {data.image.caption && (
+              {imageCaption && (
                 <div className="absolute bottom-0 left-0 right-0 p-3 bg-black/60 backdrop-blur-sm text-[10px] text-slate-300 border-t border-slate-800">
-                  {data.image.caption}
+                  {imageCaption}
                 </div>
               )}
             </div>

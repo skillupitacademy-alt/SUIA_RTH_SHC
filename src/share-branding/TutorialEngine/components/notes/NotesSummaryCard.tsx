@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import * as Icons from 'lucide-react';
 import { useBrand } from '../../../PostLandingPage/app/context/BrandContext';
+import { SVGIconRenderer } from '../shared/SVGIconRenderer';
 
 interface ChecklistItem {
   id: string;
@@ -9,188 +10,105 @@ interface ChecklistItem {
 }
 
 interface NotesSummaryCardProps {
-  summaryTitle: string;
+  image?: any;
+  summaryTitle?: string;
   keyTakeaways: string[];
   revisionChecklist: ChecklistItem[];
-  memoryReinforcement: string;
+  memoryReinforcement?: string;
   examTips: string[];
 }
 
 /**
- * Summary Card Component
- * Renderer: summary_card
- * Layout Template: exam_ready_summary
- * Purpose: Revision summary and exam-preparation dashboard
- * 
- * Based on AllSectionTutorialPageUIUXDetailed.json specification
+ * Summary Card (Revision Dashboard) Component
+ * Template 8 in the Visual Architecture
  */
 export function NotesSummaryCard({ 
-  summaryTitle, 
-  keyTakeaways, 
-  revisionChecklist, 
-  memoryReinforcement, 
-  examTips 
+  image,
+  summaryTitle = "SUMMARY CARD (REVISION DASHBOARD)", 
+  revisionChecklist,
+  examTips
 }: NotesSummaryCardProps) {
   const brand = useBrand();
-  const [checklist, setChecklist] = useState(revisionChecklist);
 
-  const toggleChecklistItem = (id: string) => {
-    setChecklist(prev => 
-      prev.map(item => 
-        item.id === id ? { ...item, checked: !item.checked } : item
-      )
-    );
-  };
-
-  const completedCount = checklist.filter(item => item.checked).length;
-  const totalCount = checklist.length;
-  const completionPercentage = Math.round((completedCount / totalCount) * 100);
+  const dataUri = typeof image === 'string' ? image : image?.dataUri;
+  const altText = typeof image === 'object' ? image?.alt : 'Summary Graphic';
 
   return (
-    <div className="w-full max-w-[1200px] mb-8">
-      <div 
-        className="rounded-[20px] p-10 shadow-2xl border-2 transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)]"
-        style={{ 
-          background: `linear-gradient(135deg, ${brand.primaryColor}08 0%, ${brand.primaryColor}12 100%)`,
-          borderColor: `${brand.primaryColor}30`
-        }}
-      >
-        {/* Title */}
-        <div className="flex items-center gap-3 mb-8">
-          <div 
-            className="w-12 h-12 rounded-xl flex items-center justify-center"
-            style={{ backgroundColor: `${brand.primaryColor}20` }}
-          >
-            <Icons.BookMarked 
-              size={24} 
-              style={{ color: brand.primaryColor }}
-              aria-hidden="true"
-            />
-          </div>
-          <h3 className="text-3xl font-bold text-slate-950">{summaryTitle}</h3>
+    <div className="w-full rounded-[24px] border border-slate-200 bg-white p-6 shadow-xl sm:p-8">
+      {/* Header */}
+      <div className="mb-8 flex items-center gap-3">
+        <div 
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-white"
+          style={{ backgroundColor: brand.primaryColor }}
+        >
+          <Icons.CheckSquare size={16} />
+        </div>
+        <h3 className="text-sm font-bold uppercase tracking-widest text-slate-500">{summaryTitle}</h3>
+      </div>
+
+      {/* Optional Visual Architecture Infographic - Premium Full Width Above Content */}
+      {dataUri && (
+        <div className="mb-8 overflow-hidden rounded-2xl border border-slate-100 shadow-sm bg-slate-50/50 p-3">
+           <SVGIconRenderer 
+             dataUri={dataUri} 
+             alt={altText} 
+             className="w-full h-auto max-h-[450px] object-contain mx-auto"
+           />
+        </div>
+      )}
+
+      <div className="grid gap-8 lg:grid-cols-2">
+        {/* Left Side: Quick Recap */}
+        <div className="space-y-4">
+          <h4 className="flex items-center gap-2 text-[16px] font-bold text-slate-900">
+            <Icons.CheckCircle className="text-blue-600" size={18} />
+            Quick Recap
+          </h4>
+          <ul className="space-y-3">
+            {revisionChecklist.map((item) => (
+              <li key={item.id} className="flex items-start gap-3">
+                <div className="mt-1 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-600">
+                  <Icons.Check size={10} strokeWidth={4} />
+                </div>
+                <span className="text-[14px] font-medium text-slate-700">{item.item}</span>
+              </li>
+            ))}
+          </ul>
         </div>
 
-        {/* Key Takeaways */}
-        <div className="mb-8">
-          <h3 className="text-xl font-bold text-slate-950 mb-4 flex items-center gap-2">
-            <Icons.Star size={20} style={{ color: brand.primaryColor }} aria-hidden="true" />
-            Key Takeaways
-          </h3>
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-gray-200">
-            <ul className="space-y-3">
-              {keyTakeaways.map((takeaway, index) => (
-                <li key={index} className="flex items-start gap-3">
-                  <Icons.CheckCircle2 
-                    size={18} 
-                    className="shrink-0 mt-0.5" 
-                    style={{ color: brand.primaryColor }}
-                    aria-hidden="true"
-                  />
-                  <span className="text-sm font-medium text-slate-800 leading-relaxed">
-                    {takeaway}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
-        {/* Revision Checklist */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-bold text-slate-950 flex items-center gap-2">
-              <Icons.ClipboardCheck size={20} style={{ color: brand.primaryColor }} aria-hidden="true" />
-              Revision Checklist
-            </h3>
-            <span 
-              className="text-sm font-bold px-3 py-1 rounded-full"
-              style={{ 
-                backgroundColor: `${brand.primaryColor}20`,
-                color: brand.primaryColorDark
-              }}
-            >
-              {completedCount}/{totalCount} ({completionPercentage}%)
-            </span>
-          </div>
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-gray-200">
-            <div className="space-y-3">
-              {checklist.map((item) => (
-                <label 
-                  key={item.id}
-                  className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-                >
-                  <input
-                    type="checkbox"
-                    checked={item.checked}
-                    onChange={() => toggleChecklistItem(item.id)}
-                    className="mt-0.5 w-5 h-5 rounded border-2 cursor-pointer"
-                    style={{ 
-                      accentColor: brand.primaryColor,
-                      borderColor: brand.primaryColor
-                    }}
-                  />
-                  <span 
-                    className={`text-sm font-medium leading-relaxed ${
-                      item.checked ? 'text-slate-500 line-through' : 'text-slate-800'
-                    }`}
-                  >
-                    {item.item}
-                  </span>
-                </label>
-              ))}
+        {/* Right Side: Pro Tip & Fallback Visual (if no custom SVG) */}
+        <div className="space-y-6">
+          {/* Pro Tip Card */}
+          <div className="rounded-xl bg-amber-50 p-6 border border-amber-100 relative overflow-hidden group hover:shadow-lg transition-all">
+            <div className="flex items-center gap-2 mb-2">
+              <Icons.Star className="text-amber-500 fill-amber-500" size={16} />
+              <span className="text-[12px] font-bold text-amber-900 uppercase tracking-tight">Pro Tip</span>
+            </div>
+            <p className="text-[13px] font-medium text-amber-950 leading-relaxed">
+              {examTips[0] || "Practice small examples daily and build projects to master concepts!"}
+            </p>
+            <div className="absolute -bottom-2 -right-2 opacity-5 group-hover:opacity-10 transition-opacity">
+               <Icons.Lightbulb size={80} />
             </div>
           </div>
-        </div>
 
-        {/* Memory Reinforcement */}
-        <div className="mb-8">
-          <div 
-            className="flex gap-4 p-6 rounded-xl border-l-4"
-            style={{ 
-              backgroundColor: `${brand.primaryColor}15`,
-              borderLeftColor: brand.primaryColor
-            }}
-          >
-            <Icons.Brain 
-              size={24} 
-              className="shrink-0 mt-0.5" 
-              style={{ color: brand.primaryColorDark }}
-              aria-hidden="true"
-            />
-            <div>
-              <h3 className="text-base font-bold mb-2" style={{ color: brand.primaryColorDark }}>
-                Memory Reinforcement
-              </h3>
-              <p className="text-sm font-medium text-slate-800 leading-relaxed">
-                {memoryReinforcement}
-              </p>
+          {/* Fallback Summary Block (Only visible when no custom image is set) */}
+          {!dataUri && (
+            <div className="flex items-center gap-6 rounded-xl border border-slate-100 bg-slate-50/50 p-6 overflow-hidden">
+              <div 
+                className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl text-2xl font-bold text-slate-900 shadow-sm"
+                style={{ backgroundColor: "#fbbf24" }}
+              >
+                JS
+              </div>
+              <div>
+                 <p className="text-[13px] font-bold text-slate-900">HTML = Structure</p>
+                 <p className="text-[13px] font-bold text-slate-900">CSS = Style</p>
+                 <p className="text-[13px] font-bold text-slate-900">JavaScript = Behavior</p>
+                 <p className="mt-2 text-[12px] font-bold text-slate-500">Keep Learning! Keep Building! 💪</p>
+              </div>
             </div>
-          </div>
-        </div>
-
-        {/* Exam Tips */}
-        <div>
-          <h3 className="text-xl font-bold text-slate-950 mb-4 flex items-center gap-2">
-            <Icons.GraduationCap size={20} style={{ color: brand.primaryColor }} aria-hidden="true" />
-            Exam Tips
-          </h3>
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-gray-200">
-            <ul className="space-y-3">
-              {examTips.map((tip, index) => (
-                <li key={index} className="flex items-start gap-3">
-                  <Icons.Target 
-                    size={18} 
-                    className="shrink-0 mt-0.5" 
-                    style={{ color: brand.primaryColor }}
-                    aria-hidden="true"
-                  />
-                  <span className="text-sm font-medium text-slate-800 leading-relaxed">
-                    {tip}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
+          )}
         </div>
       </div>
     </div>

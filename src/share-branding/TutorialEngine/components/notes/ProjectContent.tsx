@@ -1,8 +1,7 @@
-'use client';
-
 import React, { useState } from 'react';
 import * as Icons from 'lucide-react';
 import { useBrand } from '../../../PostLandingPage/app/context/BrandContext';
+import { SVGIconRenderer } from '../shared/SVGIconRenderer';
 
 export function ProjectContent({ data, onNext }: { 
   data?: {
@@ -46,10 +45,6 @@ export function ProjectContent({ data, onNext }: {
           <p className="text-[14px] font-medium text-slate-800">{description}</p>
         </div>
         <div className="flex shrink-0 flex-wrap items-center gap-3">
-          <div className="flex items-center gap-1.5 rounded-xl bg-orange-50 px-4 py-2 border border-orange-100 shadow-sm">
-             <Icons.Trophy size={16} className="text-orange-600" />
-             <span className="text-xs font-bold text-orange-950">+{xp} XP</span>
-          </div>
           <div className="flex items-center gap-1.5 rounded-xl bg-slate-50 px-4 py-2 border border-slate-100 shadow-sm">
              <Icons.Calendar size={16} className="text-slate-600" />
              <span className="text-xs font-bold text-slate-950">{deadline}</span>
@@ -100,11 +95,11 @@ export function ProjectContent({ data, onNext }: {
             <div className="lg:col-span-5 relative hidden lg:block">
                {/* Proper Illustration Mockup */}
                <div className="relative transform hover:scale-105 transition-transform duration-700">
-                  <div className="rounded-[32px] overflow-hidden shadow-2xl border border-rose-100/30 bg-white">
-                     <img 
-                        src={hero.image}
+                  <div className="rounded-[32px] overflow-hidden shadow-2xl border border-rose-100/30 bg-white p-3">
+                     <SVGIconRenderer 
+                        dataUri={hero.image}
                         alt="Project Mockup" 
-                        className="w-full h-auto"
+                        className="w-full h-auto object-contain max-h-[300px] mx-auto"
                      />
                   </div>
                </div>

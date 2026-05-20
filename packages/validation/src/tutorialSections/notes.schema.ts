@@ -3,19 +3,20 @@ import {
   NonEmptyStringSchema,
   OptionalNonEmptyStringSchema,
   nonEmptyStringArray,
+  optionalSvgAssetField,
   sectionSchema,
   strictObject,
 } from './base';
 
 export const NotesSectionSchema = sectionSchema('notes', {
-  simpleWords: NonEmptyStringSchema,
+  simpleWords: NonEmptyStringSchema.optional(),
   definitionBlock: strictObject({
     badge: NonEmptyStringSchema,
     headline: NonEmptyStringSchema,
     definitionText: NonEmptyStringSchema,
     importanceCallout: NonEmptyStringSchema,
     quickSummary: nonEmptyStringArray(1),
-  }),
+  }).optional(),
   sections: z.array(strictObject({
     id: NonEmptyStringSchema,
     title: NonEmptyStringSchema,
@@ -25,7 +26,7 @@ export const NotesSectionSchema = sectionSchema('notes', {
       code: NonEmptyStringSchema,
       output: NonEmptyStringSchema,
     }).optional(),
-  })).min(1),
+  })).min(1).optional(),
   componentGrid: strictObject({
     gridTitle: NonEmptyStringSchema,
     componentCards: z.array(strictObject({
@@ -35,7 +36,7 @@ export const NotesSectionSchema = sectionSchema('notes', {
       icon: NonEmptyStringSchema,
       subcomponents: nonEmptyStringArray(1),
     })).min(1),
-  }),
+  }).optional(),
   examplePanel: strictObject({
     exampleTitle: NonEmptyStringSchema,
     scenarios: z.array(strictObject({
@@ -45,7 +46,7 @@ export const NotesSectionSchema = sectionSchema('notes', {
       practicalSolution: NonEmptyStringSchema,
       industryContext: NonEmptyStringSchema,
     })).min(1),
-  }),
+  }).optional(),
   practiceCard: strictObject({
     bestPracticeTitle: NonEmptyStringSchema,
     recommendations: z.array(strictObject({
@@ -55,7 +56,7 @@ export const NotesSectionSchema = sectionSchema('notes', {
     })).min(1),
     optimizationTips: nonEmptyStringArray(1),
     industryStandards: nonEmptyStringArray(1),
-  }),
+  }).optional(),
   warningFaq: strictObject({
     commonErrors: z.array(strictObject({
       id: NonEmptyStringSchema,
@@ -68,7 +69,7 @@ export const NotesSectionSchema = sectionSchema('notes', {
       answer: NonEmptyStringSchema,
     })).min(1),
     misconceptionAlerts: nonEmptyStringArray(1),
-  }),
+  }).optional(),
   summaryCard: strictObject({
     summaryTitle: NonEmptyStringSchema,
     keyTakeaways: nonEmptyStringArray(1),
@@ -79,8 +80,89 @@ export const NotesSectionSchema = sectionSchema('notes', {
     })).min(1),
     memoryReinforcement: NonEmptyStringSchema,
     examTips: nonEmptyStringArray(1),
-  }),
+    image: optionalSvgAssetField(),
+  }).optional(),
+
+  // Premium Visual Architecture Blocks (Optional)
+  summaryHeroInfographic: z.object({
+    image: optionalSvgAssetField(),
+    summaryTitle: z.string().optional(),
+    examTips: z.array(z.string()).optional(),
+    howItWorks: z.array(z.object({
+      step: z.number(),
+      label: z.string(),
+      description: z.string(),
+    })).optional(),
+  }).optional(),
+
+  conceptMemoryMap: z.object({
+    image: optionalSvgAssetField(),
+    nodes: z.array(z.object({
+      id: z.string(),
+      label: z.string(),
+      description: z.string(),
+    })).optional(),
+    connections: z.array(z.object({
+      from: z.string(),
+      to: z.string(),
+      label: z.string().optional(),
+    })).optional(),
+  }).optional(),
+
+  cheatSheetSVG: z.object({
+    title: z.string().optional(),
+    image: optionalSvgAssetField(),
+    svgPath: z.string().optional(),
+    sections: z.array(z.any()).optional(),
+  }).optional(),
+
+  flashcardVisualSystem: z.object({
+    image: optionalSvgAssetField(),
+    cards: z.array(z.object({
+      id: z.string(),
+      question: z.string(),
+      answer: z.string(),
+    })),
+  }).optional(),
+
+  comparisonSummaryChart: z.object({
+    image: optionalSvgAssetField(),
+    title: z.string().optional(),
+    columns: z.array(z.string()),
+    rows: z.array(z.array(z.string())),
+  }).optional(),
+
+  mnemonicRetentionGraphic: z.object({
+    image: optionalSvgAssetField(),
+    mnemonicTitle: z.string().optional(),
+    memoryHook: z.string().optional(),
+    rememberItems: z.array(z.object({
+      letter: z.string(),
+      label: z.string(),
+      description: z.string(),
+    })),
+    keyPoints: z.array(z.string()),
+  }).optional(),
+
+  syntaxBlock: z.object({
+    image: optionalSvgAssetField(),
+    code: z.string(),
+    language: z.string().optional(),
+    title: z.string().optional(),
+    subtitle: z.string().optional(),
+    explanations: z.array(z.object({
+      id: z.string(),
+      term: z.string(),
+      explanation: z.string(),
+    })),
+  }).optional(),
+
+  footerBlock: z.object({
+    image: optionalSvgAssetField(),
+    finalNote: z.string(),
+    nextStepLabel: z.string(),
+    nextStepTarget: z.string(),
+  }).optional(),
 });
 
 export type NotesSection = z.infer<typeof NotesSectionSchema>;
-

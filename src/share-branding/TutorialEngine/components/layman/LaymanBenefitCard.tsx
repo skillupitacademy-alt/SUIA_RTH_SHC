@@ -7,7 +7,7 @@ interface BenefitCard {
   title: string;
   description: string;
   icon: string;
-  type: 'career' | 'practical' | 'future';
+  type?: string;
 }
 
 interface LaymanBenefitCardProps {
@@ -53,7 +53,7 @@ export function LaymanBenefitCard({ sectionTitle, benefitCards }: LaymanBenefitC
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {benefitCards.map((card) => {
           const IconComponent = getIcon(card.icon);
-          const colors = getTypeColor(card.type);
+          const colors = getTypeColor(card.type || 'practical');
 
           return (
             <div

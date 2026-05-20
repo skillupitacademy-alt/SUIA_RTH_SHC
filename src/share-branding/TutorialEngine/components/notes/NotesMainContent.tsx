@@ -8,60 +8,155 @@ import { NotesExamplePanel } from './NotesExamplePanel';
 import { NotesPracticeCard } from './NotesPracticeCard';
 import { NotesWarningFaq } from './NotesWarningFaq';
 import { NotesSummaryCard } from './NotesSummaryCard';
+import { NotesHeroInfographic } from './NotesHeroInfographic';
+import { NotesFlashcardSystem } from './NotesFlashcardSystem';
+import { NotesConceptMemoryMap } from './NotesConceptMemoryMap';
+import { NotesComparisonChart } from './NotesComparisonChart';
+import { NotesMnemonicGraphic } from './NotesMnemonicGraphic';
+import { NotesCheatSheet } from './NotesCheatSheet';
+import { NotesSyntaxBlock } from './NotesSyntaxBlock';
+import { NotesFooter } from './NotesFooter';
 
-/**
- * Notes Main Content Component
- * 
- * Implements the complete Notes Section Education Architecture
- * Based on AllSectionTutorialPage.json and AllSectionTutorialPageUIUXDetailed.json
- * 
- * Universal Architecture (8 templates in order):
- * 1. core_definition → definition_block
- * 2. concept_explanation → concept_card
- * 3. key_components → component_grid
- * 4. syntax_or_structure → syntax_block
- * 5. examples → example_panel
- * 6. best_practices → practice_card
- * 7. common_errors → warning_faq
- * 8. revision_summary → summary_card
- * 
- * All data comes from props - NO hardcoded content
- */
-export function NotesMainContent({ data, isStandalone = true }: { data: SubtopicNotesViewData['mainContent']; isStandalone?: boolean }) {
+function NotesSimpleWords({ simpleWords }: { simpleWords: string }) {
   const brand = useBrand();
 
-  const content = (
-    <div className={`min-w-0 space-y-8 transition-all duration-500 ${isStandalone ? 'mx-auto w-full max-w-[1200px] px-4 py-8 sm:px-8 sm:py-10' : ''}`}>
-
-      {/* Page Meta Info */}
-      <div className="space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-gray-100 pb-6">
-          <div className="flex min-w-0 flex-wrap items-center gap-2 text-xs font-bold sm:gap-4">
-            <span className="flex items-center gap-1.5 text-slate-900">
-              <Icons.Clock size={14} aria-hidden="true" /> {data.meta.readTime}
-            </span>
-            <span className="flex items-center gap-1.5 text-amber-950 bg-amber-100 px-2.5 py-1 rounded-md border border-amber-200">
-              <Icons.BarChart2 size={14} aria-hidden="true" /> {data.meta.level}
-            </span>
-            <span className="flex items-center gap-1.5 text-emerald-950 bg-emerald-100 px-2.5 py-1 rounded-md border border-emerald-200">
-              <Icons.Star size={14} aria-hidden="true" /> +{data.meta.xp} XP
-            </span>
-          </div>
-          <button
-            className="flex items-center gap-1.5 text-[11px] font-bold transition-colors hover:underline text-primary-dark"
-          >
-            <Icons.Download size={14} /> Download PDF
-          </button>
+  return (
+    <div className="w-full rounded-[24px] border border-blue-200 bg-gradient-to-br from-blue-50/70 to-indigo-50/40 p-6 shadow-lg sm:p-8 transition-all hover:shadow-xl relative overflow-hidden group">
+      <div className="absolute right-0 top-0 opacity-[0.03] text-indigo-900 group-hover:scale-105 transition-transform duration-500 pointer-events-none">
+        <Icons.HelpCircle size={220} />
+      </div>
+      <div className="flex gap-4 sm:gap-6 items-start relative z-10">
+        <div
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-white shadow-md shadow-blue-500/20"
+          style={{ backgroundColor: brand.primaryColor }}
+        >
+          <Icons.Lightbulb size={24} />
+        </div>
+        <div className="space-y-2">
+          <span className="text-[12px] font-extrabold uppercase tracking-widest text-indigo-600">In Simple Words</span>
+          <p className="text-[15px] sm:text-[16px] font-semibold leading-relaxed text-slate-700">
+            {simpleWords}
+          </p>
         </div>
       </div>
+    </div>
+  );
+}
 
-      {/* Main Title */}
-      <div className="mb-8">
-        <h2 className="break-words text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">{data.title}</h2>
-        <p className="mt-2 text-lg font-medium text-slate-600">{data.simpleWords}</p>
-      </div>
+interface SectionItem {
+  id: string;
+  title: string;
+  content: string;
+  keyPoint?: string;
+  codeExample?: {
+    code: string;
+    output: string;
+  };
+}
 
-      {/* 1. CORE DEFINITION - definition_block (Hero-style intro) */}
+function NotesConceptSections({ sections }: { sections: SectionItem[] }) {
+  const brand = useBrand();
+
+  return (
+    <div className="w-full space-y-10">
+      {sections.map((section, idx) => (
+        <div
+          key={section.id || idx}
+          className="w-full rounded-[24px] border border-slate-200 bg-white p-6 shadow-xl sm:p-10 transition-all hover:shadow-2xl"
+        >
+          {/* Section Indicator */}
+          <div className="mb-6 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-white"
+                style={{ backgroundColor: brand.primaryColor }}
+              >
+                <Icons.BookOpen size={16} />
+              </div>
+              <span className="text-[12px] font-bold uppercase tracking-widest text-slate-400">Concept Details</span>
+            </div>
+            <span className="text-[11px] font-extrabold uppercase px-2.5 py-1 bg-slate-100 text-slate-500 rounded-full">
+              Part {idx + 1}
+            </span>
+          </div>
+
+          <div className="space-y-6">
+            <h3 className="text-2xl font-bold leading-tight text-slate-900 sm:text-3xl">
+              {section.title}
+            </h3>
+
+            <p className="text-base font-medium leading-relaxed text-slate-600 whitespace-pre-line">
+              {section.content}
+            </p>
+
+            {/* Key Point Callout */}
+            {section.keyPoint && (
+              <div className="rounded-xl bg-amber-50/60 p-5 border border-amber-200/80 flex gap-3.5 relative overflow-hidden group">
+                <Icons.Star className="text-amber-500 fill-amber-400 shrink-0 mt-0.5" size={20} />
+                <div className="space-y-1">
+                  <h4 className="text-[13px] font-extrabold text-amber-900 uppercase tracking-wide">Key Takeaway</h4>
+                  <p className="text-[14px] font-medium text-amber-950/80 leading-relaxed">
+                    {section.keyPoint}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Optional Code Example */}
+            {section.codeExample && (
+              <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-950 overflow-hidden shadow-md">
+                {/* Editor Tab bar */}
+                <div className="flex items-center justify-between bg-slate-900 px-4 py-3 border-b border-slate-800">
+                  <div className="flex items-center gap-2">
+                    <div className="flex gap-1.5">
+                      <div className="h-3 w-3 rounded-full bg-red-500" />
+                      <div className="h-3 w-3 rounded-full bg-amber-500" />
+                      <div className="h-3 w-3 rounded-full bg-green-500" />
+                    </div>
+                    <span className="text-xs font-bold text-slate-400 ml-2">code-example.js</span>
+                  </div>
+                  <Icons.Code2 className="text-slate-400" size={16} />
+                </div>
+
+                {/* Code Body */}
+                <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-800 font-mono text-[13px]">
+                  {/* Input Code */}
+                  <pre className="p-4 overflow-x-auto text-slate-300 leading-relaxed whitespace-pre subtopic-code-wrap">
+                    <code>{section.codeExample.code}</code>
+                  </pre>
+
+                  {/* Console Output */}
+                  <div className="p-4 bg-slate-900/60 font-sans">
+                    <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Console Output</div>
+                    <pre className="font-mono text-emerald-400 leading-relaxed whitespace-pre subtopic-code-wrap">
+                      <code>{section.codeExample.output}</code>
+                    </pre>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function NotesMainContent({ 
+  data, 
+  isStandalone = true
+}: { 
+  data: SubtopicNotesViewData['mainContent']; 
+  isStandalone?: boolean;
+}) {
+  const content = (
+    <div className={`min-w-0 space-y-12 transition-all duration-500 ${isStandalone ? 'mx-auto w-full max-w-[1200px] px-4 py-8 sm:px-8 sm:py-10' : ''}`}>
+      {/* A. WELCOME / INTRO (SIMPLE WORDS) */}
+      {data.simpleWords && (
+        <NotesSimpleWords simpleWords={data.simpleWords} />
+      )}
+
+      {/* 1. DEFINITION BLOCK */}
       {data.definitionBlock && (
         <NotesDefinitionBlock
           badge={data.definitionBlock.badge}
@@ -72,48 +167,31 @@ export function NotesMainContent({ data, isStandalone = true }: { data: Subtopic
         />
       )}
 
-      {/* 2. CONCEPT EXPLANATION - concept_card (Educational content panels) */}
-      <div className="space-y-10">
-        {data.sections.map((section) => (
-          <section key={section.id} className="space-y-4">
-            <h3 className="text-xl font-bold text-slate-950">{section.title}</h3>
-            <p className="text-[15px] font-medium leading-relaxed text-slate-800 whitespace-pre-wrap">
-              {section.content}
-            </p>
+      {data.summaryHeroInfographic != null && (
+        <NotesHeroInfographic
+          summaryTitle={data.summaryHeroInfographic.summaryTitle || data.title}
+          image={data.summaryHeroInfographic.image}
+          examTips={data.summaryHeroInfographic.examTips || []}
+          howItWorks={data.summaryHeroInfographic.howItWorks}
+          topicName={data.breadcrumbs?.[1]}
+        />
+      )}
 
-            {section.keyPoint && (
-              <div className="flex gap-4 rounded-xl bg-amber-100 p-5 mt-6 shadow-2xl transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] border-t border-white/60 border-amber-200">
-                <Icons.Star size={20} className="text-amber-900 shrink-0 mt-0.5" aria-hidden="true" />
-                <div>
-                  <h4 className="text-[13px] font-bold text-amber-950 mb-1">Key Point</h4>
-                  <p className="text-[13px] font-medium text-amber-950">{section.keyPoint}</p>
-                </div>
-              </div>
-            )}
+      {/* B. DYNAMIC CONCEPT SECTIONS */}
+      {data.sections && data.sections.length > 0 && (
+        <NotesConceptSections sections={data.sections} />
+      )}
 
-            {/* 4. SYNTAX OR STRUCTURE - syntax_block (Code/formula highlight) */}
-            {section.codeExample && (
-              <div className="mt-6 space-y-4">
-                <div className="relative overflow-hidden rounded-xl bg-[#1e293b] p-4 shadow-2xl transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.3)] border-t border-white/10 sm:p-5">
-                  <button className="absolute right-3 top-3 flex items-center gap-1.5 rounded-md bg-white/10 px-2.5 py-1 text-[11px] font-bold text-white hover:bg-white/20 transition-colors border border-white/10" aria-label="Copy code snippet">
-                    <Icons.Copy size={12} aria-hidden="true" /> Copy
-                  </button>
-                  <pre className="whitespace-pre-wrap break-words pr-16 font-mono text-[12px] leading-relaxed text-slate-200 sm:text-[13px]">
-                    <code className="break-words">{section.codeExample.code}</code>
-                  </pre>
-                </div>
-                <div className="rounded-xl bg-slate-100 p-4 border border-slate-200">
-                  <p className="text-[13px] font-medium text-slate-900 font-mono whitespace-pre-wrap">
-                    {section.codeExample.output}
-                  </p>
-                </div>
-              </div>
-            )}
-          </section>
-        ))}
-      </div>
+      {/* 2. CONCEPT CARD / MEMORY MAP */}
+      {data.conceptMemoryMap != null && (
+        <NotesConceptMemoryMap
+          image={data.conceptMemoryMap.image}
+          nodes={data.conceptMemoryMap.nodes || []}
+          connections={data.conceptMemoryMap.connections || []}
+        />
+      )}
 
-      {/* 3. KEY COMPONENTS - component_grid (3-column breakdown) */}
+      {/* 3. COMPONENT GRID */}
       {data.componentGrid && (
         <NotesComponentGrid
           gridTitle={data.componentGrid.gridTitle}
@@ -121,7 +199,19 @@ export function NotesMainContent({ data, isStandalone = true }: { data: Subtopic
         />
       )}
 
-      {/* 5. EXAMPLES - example_panel (2-column practical examples) */}
+      {/* 4. SYNTAX BLOCK */}
+      {data.syntaxBlock != null && (
+        <NotesSyntaxBlock
+          image={data.syntaxBlock.image}
+          code={data.syntaxBlock.code}
+          language={data.syntaxBlock.language}
+          title={data.syntaxBlock.title}
+          subtitle={data.syntaxBlock.subtitle || (data.breadcrumbs?.[1] ? `${data.breadcrumbs[1]} Basic Syntax` : undefined)}
+          explanations={data.syntaxBlock.explanations || []}
+        />
+      )}
+
+      {/* 5. EXAMPLE PANEL */}
       {data.examplePanel && (
         <NotesExamplePanel
           exampleTitle={data.examplePanel.exampleTitle}
@@ -129,7 +219,7 @@ export function NotesMainContent({ data, isStandalone = true }: { data: Subtopic
         />
       )}
 
-      {/* 6. BEST PRACTICES - practice_card (Recommendations & optimization) */}
+      {/* 6. PRACTICE CARD */}
       {data.practiceCard && (
         <NotesPracticeCard
           bestPracticeTitle={data.practiceCard.bestPracticeTitle}
@@ -139,18 +229,17 @@ export function NotesMainContent({ data, isStandalone = true }: { data: Subtopic
         />
       )}
 
-      {/* 7. COMMON ERRORS - warning_faq (Mistakes & FAQ accordion) */}
+      {/* 7. WARNING FAQ (COMMON MISTAKES) */}
       {data.warningFaq && (
         <NotesWarningFaq
-          commonErrors={data.warningFaq.commonErrors}
           faqItems={data.warningFaq.faqItems}
-          misconceptionAlerts={data.warningFaq.misconceptionAlerts}
         />
       )}
 
-      {/* 8. REVISION SUMMARY - summary_card (Exam-ready summary) */}
+      {/* 8. SUMMARY CARD (REVISION DASHBOARD) */}
       {data.summaryCard && (
         <NotesSummaryCard
+          image={data.summaryCard.image}
           summaryTitle={data.summaryCard.summaryTitle}
           keyTakeaways={data.summaryCard.keyTakeaways}
           revisionChecklist={data.summaryCard.revisionChecklist}
@@ -159,6 +248,52 @@ export function NotesMainContent({ data, isStandalone = true }: { data: Subtopic
         />
       )}
 
+      {/* ADDITIONAL VISUALS (If any) */}
+      <div className="space-y-12">
+        {data.cheatSheetSVG != null && (
+          <NotesCheatSheet
+            image={data.cheatSheetSVG.image}
+            title={data.cheatSheetSVG.title}
+            items={data.cheatSheetSVG.sections || []}
+          />
+        )}
+
+        {data.flashcardVisualSystem != null && (
+          <NotesFlashcardSystem
+            image={data.flashcardVisualSystem.image}
+            cards={data.flashcardVisualSystem.cards || []}
+          />
+        )}
+
+        {data.comparisonSummaryChart != null && (
+          <NotesComparisonChart
+            image={data.comparisonSummaryChart.image}
+            title={data.comparisonSummaryChart.title || "Comparison Summary"}
+            columns={data.comparisonSummaryChart.columns || []}
+            rows={data.comparisonSummaryChart.rows || []}
+          />
+        )}
+
+        {data.mnemonicRetentionGraphic != null && (
+          <NotesMnemonicGraphic
+            image={data.mnemonicRetentionGraphic.image}
+            mnemonicTitle={data.mnemonicRetentionGraphic.mnemonicTitle || ''}
+            memoryHook={data.mnemonicRetentionGraphic.memoryHook || ''}
+            rememberItems={data.mnemonicRetentionGraphic.rememberItems || []}
+            keyPoints={data.mnemonicRetentionGraphic.keyPoints || []}
+          />
+        )}
+      </div>
+
+      {/* FOOTER SECTION */}
+      {data.footerBlock != null && (
+        <NotesFooter
+          image={data.footerBlock.image}
+          finalNote={data.footerBlock.finalNote || ''}
+          nextStepLabel={data.footerBlock.nextStepLabel || ''}
+          nextStepTarget={data.footerBlock.nextStepTarget || ''}
+        />
+      )}
     </div>
   );
 

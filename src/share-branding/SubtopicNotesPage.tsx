@@ -7,7 +7,7 @@ import { SubtopicTopBar } from './TutorialEngine/components/subtopic/SubtopicTop
 import { NotesLeftSidebar } from './TutorialEngine/components/notes/NotesLeftSidebar';
 import { NotesMainContent } from './TutorialEngine/components/notes/NotesMainContent';
 import { NotesRightSidebar } from './TutorialEngine/components/notes/NotesRightSidebar';
-import { LaymanExplanationContent } from './TutorialEngine/components/notes/LaymanExplanationContent';
+import { LaymanMainContent } from './TutorialEngine/components/layman/LaymanMainContent';
 import { RealLifeExamplesContent } from './TutorialEngine/components/notes/RealLifeExamplesContent';
 import { TechnicalDeepDiveContent } from './TutorialEngine/components/notes/TechnicalDeepDiveContent';
 import { CodeExampleContent } from './TutorialEngine/components/notes/CodeExampleContent';
@@ -43,6 +43,7 @@ export interface SubtopicNotesPageProps {
   notesData: SubtopicNotesViewData;
   overviewData: any; // SubtopicViewData type
   subtopicId?: string;
+  initialTab?: string;
 }
 
 function SectionValidationBlocked({ message }: { message: string }) {
@@ -57,11 +58,16 @@ function SectionValidationBlocked({ message }: { message: string }) {
   );
 }
 
-export function SubtopicNotesPage({ notesData, overviewData, subtopicId = 'component-architecture' }: SubtopicNotesPageProps) {
+export function SubtopicNotesPage({
+  notesData,
+  overviewData,
+  subtopicId = 'component-architecture',
+  initialTab = 'overview',
+}: SubtopicNotesPageProps) {
   const brand = useBrand();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0); // Add shared quiz state
   
   React.useEffect(() => {
@@ -178,7 +184,7 @@ export function SubtopicNotesPage({ notesData, overviewData, subtopicId = 'compo
                 <nav aria-label="Breadcrumbs" className="mb-8 flex min-w-0 flex-wrap items-center gap-2 text-[13px] font-bold text-slate-500">
                   <a href="#" className="hover:text-slate-900 transition-colors">Home</a>
                   <ChevronRight size={14} className="text-slate-400" />
-                  <a href="#" className="hover:text-slate-900 transition-colors">JavaScript</a>
+                  <a href="#" className="hover:text-slate-900 transition-colors">{notesData.mainContent.breadcrumbs?.[1] || 'JavaScript'}</a>
                   <ChevronRight size={14} className="text-slate-400" />
                   <a href={`/start-learning/subtopic/${subtopicId}`} className="hover:text-slate-900 transition-colors">{notesData.mainContent.title}</a>
                   <ChevronRight size={14} className="text-slate-400" />
@@ -196,13 +202,16 @@ export function SubtopicNotesPage({ notesData, overviewData, subtopicId = 'compo
                 {!activeSectionError && activeTab === 'notes' && (
                   <>
                     <h1 className="sr-only">Full Notes - {notesData.mainContent.title}</h1>
-                    <NotesMainContent data={notesData.mainContent} isStandalone={false} />
+                    <NotesMainContent 
+                      data={notesData.mainContent} 
+                      isStandalone={false} 
+                    />
                   </>
                 )}
                 {!activeSectionError && activeTab === 'layman' && (
                   <>
                     <h1 className="sr-only">Layman Explanation - {notesData.mainContent.title}</h1>
-                    <LaymanExplanationContent data={notesData.mainContent.laymanExplanation} />
+                    <LaymanMainContent data={notesData.mainContent.laymanExplanation} />
                   </>
                 )}
                 {!activeSectionError && activeTab === 'real-life' && (
@@ -291,7 +300,7 @@ export function SubtopicNotesPage({ notesData, overviewData, subtopicId = 'compo
                         <p className="break-words text-sm font-medium text-slate-800">{notesData.leftSidebar.progress.message}</p>
                       </div>
                     </div>
-                    <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-3">
+                    <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2">
                       <div className="rounded-2xl border border-slate-100 bg-slate-50 p-5">
                         <p className="text-[11px] font-bold uppercase tracking-wider text-slate-700">Course</p>
                         <p className="mt-2 break-words text-lg font-bold text-slate-950">{notesData.rightSidebar.courseProgress.courseName}</p>
@@ -300,15 +309,11 @@ export function SubtopicNotesPage({ notesData, overviewData, subtopicId = 'compo
                         <p className="text-[11px] font-bold uppercase tracking-wider text-slate-700">Completion</p>
                         <p className="mt-2 text-lg font-bold text-slate-950">{notesData.rightSidebar.courseProgress.label}</p>
                       </div>
-                      <div className="rounded-2xl border border-slate-100 bg-slate-50 p-5">
-                        <p className="text-[11px] font-bold uppercase tracking-wider text-slate-700">XP</p>
-                        <p className="mt-2 flex items-center gap-2 text-lg font-bold text-emerald-800"><Star size={18} aria-hidden="true" /> +{notesData.rightSidebar.xpStats.earned} XP</p>
-                      </div>
                     </div>
                     <div className="space-y-3">
                       {notesData.leftSidebar.items.filter(item => item.id !== 'overview').slice(0, 8).map((item) => (
                         <div key={item.id} className="flex min-w-0 items-center gap-3 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
-                          <CheckCircle2 size={18} className={item.status === 'completed' ? 'text-emerald-800' : 'text-slate-400'} aria-hidden="true" />
+                           <CheckCircle2 size={18} className={item.status === 'completed' ? 'text-emerald-800' : 'text-slate-400'} aria-hidden="true" />
                           <span className="min-w-0 break-words text-sm font-bold text-slate-900">{item.label}</span>
                           <span className="ml-auto shrink-0 rounded-full bg-slate-100 px-2 py-1 text-[10px] font-bold uppercase text-slate-700">{item.status}</span>
                         </div>

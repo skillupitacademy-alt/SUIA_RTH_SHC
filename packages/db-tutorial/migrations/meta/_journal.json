@@ -127,6 +127,13 @@
       "when": 1778315289545,
       "tag": "0017_tutorial_delivery_indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1778979561865,
+      "tag": "0018_amused_rockslide",
+      "breakpoints": true
     }
   ]
 }

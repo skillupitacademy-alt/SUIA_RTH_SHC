@@ -1,9 +1,8 @@
-'use client';
-
 import React from 'react';
 import * as Icons from 'lucide-react';
 import { useBrand } from '../../../PostLandingPage/app/context/BrandContext';
 import { SubtopicNotesViewData } from '../../../subtopicNotesData';
+import { SVGIconRenderer } from '../shared/SVGIconRenderer';
 
 export function CodeExampleContent({ data }: { data?: SubtopicNotesViewData['mainContent']['codeExample'] }) {
   const brand = useBrand();
@@ -119,6 +118,16 @@ export function CodeExampleContent({ data }: { data?: SubtopicNotesViewData['mai
 
           <p className="mt-6 text-[14px] font-medium text-slate-800">{data.outputDemonstration.explanation}</p>
           <p className="mt-3 text-[13px] font-medium text-slate-700 italic">{data.outputDemonstration.visualRepresentation}</p>
+
+          {data.outputDemonstration.previewAsset && (
+            <div className="mt-6 overflow-hidden rounded-2xl border border-slate-100 shadow-sm bg-slate-50/50 p-3">
+              <SVGIconRenderer 
+                dataUri={typeof data.outputDemonstration.previewAsset === 'string' ? data.outputDemonstration.previewAsset : data.outputDemonstration.previewAsset?.dataUri} 
+                alt={typeof data.outputDemonstration.previewAsset === 'object' ? data.outputDemonstration.previewAsset?.alt : 'Output Visualization'} 
+                className="w-full h-auto max-h-[450px] object-contain mx-auto"
+              />
+            </div>
+          )}
         </section>
       )}
 

@@ -60,6 +60,9 @@ const IGNORE_PATTERNS = [
   /\.spec\./,
   /detect-stale-rbac-code\.js/, // Ignore this file
   /packages\/auth\/src\/rbac\//, // Ignore RBAC internal files
+  /packages\/auth\/src\/utils\/canonical-roles\.ts/, // Ignore role utility library
+  /auth-context\.ts/, // Ignore auth context (has role canonicalization)
+  /shc-auth\.service\.ts/, // Ignore SHC auth (checks DB roles during login, not permissions)
 ];
 
 function shouldIgnore(filePath) {

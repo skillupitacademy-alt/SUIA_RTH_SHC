@@ -103,7 +103,7 @@ export function SubtopicContentGrid({ content, tasks, subtopicId = 'component-ar
             </h3>
             {isTaskCard(card.type) && (
               <div className="absolute right-4 top-4 rounded-full bg-black/20 px-2.5 py-1 text-[9px] font-black text-white backdrop-blur-md">
-                {card.type === 'assignment' ? '+50 XP' : card.type === 'project' ? '+150 XP' : 'Task'}
+                Task
               </div>
             )}
           </button>
