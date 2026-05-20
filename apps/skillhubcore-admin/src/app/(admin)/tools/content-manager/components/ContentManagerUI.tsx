@@ -7,6 +7,7 @@ import { SubtopicForm } from './SubtopicForm';
 import { ContentProgress } from './ContentProgress';
 import { SectionManager } from './SectionManager';
 import { ComponentPreview } from './ComponentPreview';
+import { ErrorBoundary } from './ErrorBoundary';
 
 export function ContentManagerUI() {
   const brand = useBrand();
@@ -82,7 +83,55 @@ export function ContentManagerUI() {
           </div>
           <div className="flex-1 overflow-y-auto bg-white py-12 relative">
             <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-8">
-              <ComponentPreview section={selectedSection} subsection={selectedSubsection} data={previewData} />
+              <ErrorBoundary
+                fallback={(error, errorInfo) => (
+                  <div className="p-8 bg-red-50 border border-red-200 rounded-2xl shadow-sm">
+                    <h3 className="text-xl font-bold text-red-700 mb-4 flex items-center gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                      Component Preview Render Error
+                    </h3>
+                    
+                    <div className="mb-6 bg-white p-4 rounded-xl border border-red-100">
+                      <p className="text-red-800 font-semibold mb-2">Error Details:</p>
+                      <pre className="p-3 bg-red-50 rounded-lg text-sm font-mono text-red-900 overflow-auto border border-red-100">
+                        {error.message}
+                      </pre>
+                    </div>
+
+                    <div className="mb-6 p-5 bg-orange-50 border border-orange-200 rounded-xl">
+                      <p className="text-orange-800 font-bold mb-2 flex items-center gap-2">
+                        💡 Root Cause Analysis
+                      </p>
+                      <div className="text-sm text-orange-900 space-y-2">
+                        {error.message.includes('map') || error.message.includes('Cannot read properties of undefined') ? (
+                          <>
+                            <p><strong>Missing Required Array/Object:</strong> The component is trying to access data that doesn't exist in your JSON.</p>
+                            <ul className="list-disc pl-5 mt-2">
+                              <li>Did you paste JSON for a specific component (like <code>definitionBlock</code>) but leave the dropdown on <strong>"Full Section"</strong>?</li>
+                              <li>Does your JSON include all required arrays (like <code>quickSummary</code>, <code>faqItems</code>, etc.)?</li>
+                            </ul>
+                          </>
+                        ) : (
+                          <p>The JSON payload you provided does not match the expected structure for the selected component. Verify you selected the correct subsection in the dropdown.</p>
+                        )}
+                      </div>
+                    </div>
+
+                    {errorInfo && errorInfo.componentStack && (
+                      <div className="mt-4">
+                        <p className="text-red-800 font-semibold mb-2 text-sm">Component Stack Trace (Where it crashed):</p>
+                        <pre className="p-4 bg-slate-900 rounded-lg text-xs font-mono text-emerald-400 overflow-auto max-h-60 shadow-inner leading-relaxed">
+                          {errorInfo.componentStack}
+                        </pre>
+                      </div>
+                    )}
+                  </div>
+                )}
+              >
+                <ComponentPreview section={selectedSection} subsection={selectedSubsection} data={previewData} />
+              </ErrorBoundary>
             </div>
           </div>
         </div>
