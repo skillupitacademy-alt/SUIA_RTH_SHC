@@ -449,7 +449,7 @@ export function useContentManager() {
     try {
       const parsed = JSON.parse(jsonInput);
       setPreviewData(parsed);
-      setRightSidebarWidth('calc(100vw - 320px)');
+      setRightSidebarWidth('100vw');
       setIsRightSidebarOpen(true);
       showMessage('Loaded preview for component in Right Sidebar.', 'success');
     } catch (error: unknown) {

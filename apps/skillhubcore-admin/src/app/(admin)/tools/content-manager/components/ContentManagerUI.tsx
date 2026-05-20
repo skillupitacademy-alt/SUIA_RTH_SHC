@@ -80,8 +80,8 @@ export function ContentManagerUI() {
               Close Preview
             </button>
           </div>
-          <div className="flex-1 overflow-y-auto p-6 md:p-8">
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 max-w-4xl mx-auto">
+          <div className="flex-1 overflow-y-auto bg-white py-12 relative">
+            <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-8">
               <ComponentPreview section={selectedSection} subsection={selectedSubsection} data={previewData} />
             </div>
           </div>
