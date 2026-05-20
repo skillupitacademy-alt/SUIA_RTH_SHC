@@ -13,6 +13,7 @@ interface SectionManagerProps {
   setJsonInput: (val: string) => void;
   isFetchingSubsection: boolean;
   fetchSubsection: () => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   activeSpecs: any[];
   assetFieldPath: string;
   setAssetFieldPath: (val: string) => void;
@@ -30,7 +31,7 @@ interface SectionManagerProps {
   setSvgMarkup: (val: string) => void;
   svgFile: File | null;
   setSvgFile: (file: File | null) => void;
-  processedAsset: any;
+  processedAsset: unknown;
   isProcessingAsset: boolean;
   processSvgAsset: () => void;
   injectAssetIntoJson: () => void;
@@ -64,7 +65,6 @@ export function SectionManager({
   setAssetHeight,
   svgMarkup,
   setSvgMarkup,
-  svgFile,
   setSvgFile,
   processedAsset,
   isProcessingAsset,

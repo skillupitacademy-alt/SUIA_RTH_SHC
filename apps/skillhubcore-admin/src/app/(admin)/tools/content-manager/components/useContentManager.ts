@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useContext, useMemo } from 'react';
+import { useState, useEffect, useContext, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ShellContext } from '../../../ShellContext';
 import {
@@ -70,7 +70,7 @@ export function useContentManager() {
   const [svgFile, setSvgFile] = useState<File | null>(null);
   const [processedAsset, setProcessedAsset] = useState<InlineSvgAsset | null>(null);
   const [isProcessingAsset, setIsProcessingAsset] = useState(false);
-  const [previewData, setPreviewData] = useState<any>(null);
+  const [previewData, setPreviewData] = useState<unknown>(null);
 
   const selectedSectionLabel = sections.find((section) => section.id === selectedSection)?.label ?? selectedSection;
 
@@ -375,7 +375,7 @@ export function useContentManager() {
   };
 
   const addSection = async () => {
-    let finalContent: any;
+    let finalContent: unknown;
     const trimmedInput = jsonInput.trim();
 
     if (!trimmedInput) {
