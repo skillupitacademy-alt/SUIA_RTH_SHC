@@ -1,0 +1,182 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="500" viewBox="0 0 1200 500" font-family="'Inter', sans-serif" style="background-color: #f8fafc;">
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#0f172a" flood-opacity="0.05" />
+    </filter>
+    <filter id="shadow-heavy" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#0f172a" flood-opacity="0.1" />
+    </filter>
+    
+    <linearGradient id="primary-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ec4899" />
+      <stop offset="100%" stop-color="#f97316" />
+    </linearGradient>
+    
+    <linearGradient id="blue-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6" />
+      <stop offset="100%" stop-color="#1d4ed8" />
+    </linearGradient>
+    
+    <linearGradient id="purple-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8b5cf6" />
+      <stop offset="100%" stop-color="#6d28d9" />
+    </linearGradient>
+    
+    <linearGradient id="green-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981" />
+      <stop offset="100%" stop-color="#047857" />
+    </linearGradient>
+
+    <linearGradient id="card-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#f8fafc" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background Grids -->
+  <g stroke="#f1f5f9" stroke-width="1" opacity="0.6">
+    <path d="M 0,50 L 1200,50 M 0,100 L 1200,100 M 0,150 L 1200,150 M 0,200 L 1200,200 M 0,250 L 1200,250 M 0,300 L 1200,300 M 0,350 L 1200,350 M 0,400 L 1200,400 M 0,450 L 1200,450" />
+    <path d="M 100,0 L 100,500 M 200,0 L 200,500 M 300,0 L 300,500 M 400,0 L 400,500 M 500,0 L 500,500 M 600,0 L 600,500 M 700,0 L 700,500 M 800,0 L 800,500 M 900,0 L 900,500 M 1000,0 L 1000,500 M 1100,0 L 1100,500" />
+  </g>
+
+  <!-- Header Section -->
+  <g transform="translate(60, 50)">
+    <rect width="64" height="64" rx="16" fill="url(#primary-grad)" filter="url(#shadow)" />
+    <!-- Lucide CheckSquare style icon -->
+    <path d="M20 34 L28 42 L44 26" stroke="#ffffff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none" transform="translate(2, 2)" />
+    
+    <text x="84" y="28" font-size="22" font-weight="800" fill="#0f172a" letter-spacing="-0.5">Quick Revision Dashboard</text>
+    <text x="84" y="48" font-size="14" font-weight="500" fill="#64748b">Your ultimate conceptual checklist and memory hook for JavaScript</text>
+  </g>
+
+  <!-- Content Grid -->
+  <!-- Card 1: Core Pillars (Left) -->
+  <g transform="translate(60, 150)" filter="url(#shadow)">
+    <rect width="340" height="290" rx="20" fill="url(#card-grad)" stroke="#e2e8f0" stroke-width="1.5" />
+    
+    <!-- Header Block -->
+    <path d="M 0,20 Q 0,0 20,0 L 320,0 Q 340,0 340,20 L 340,65 L 0,65 Z" fill="#eff6ff" />
+    <circle cx="35" cy="32" r="16" fill="#dbeafe" />
+    <!-- Pillars icon -->
+    <path d="M27 24 L27 40 M35 24 L35 40 M43 24 L43 40 M23 40 L47 40 M25 24 L45 24" stroke="#1e40af" stroke-width="2.5" stroke-linecap="round" fill="none" />
+    <text x="64" y="38" font-size="15" font-weight="800" fill="#1e40af">Core Pillars</text>
+
+    <!-- Checklist items with checkmarks -->
+    <g transform="translate(25, 90)">
+      <!-- Item 1 -->
+      <circle cx="15" cy="15" r="10" fill="#10b981" />
+      <path d="M11 15 L14 18 L19 12" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+      <text x="35" y="19" font-size="13" font-weight="600" fill="#334155">Interactivity (DOM modification)</text>
+
+      <!-- Item 2 -->
+      <g transform="translate(0, 45)">
+        <circle cx="15" cy="15" r="10" fill="#10b981" />
+        <path d="M11 15 L14 18 L19 12" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+        <text x="35" y="19" font-size="13" font-weight="600" fill="#334155">Run Environments (Browser/Node)</text>
+      </g>
+
+      <!-- Item 3 -->
+      <g transform="translate(0, 90)">
+        <circle cx="15" cy="15" r="10" fill="#10b981" />
+        <path d="M11 15 L14 18 L19 12" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+        <text x="35" y="19" font-size="13" font-weight="600" fill="#334155">Script Linking (async &amp; defer)</text>
+      </g>
+
+      <!-- Item 4 -->
+      <g transform="translate(0, 135)">
+        <circle cx="15" cy="15" r="10" fill="#10b981" />
+        <path d="M11 15 L14 18 L19 12" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+        <text x="35" y="19" font-size="13" font-weight="600" fill="#334155">ECMAScript Standards (ES6+)</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- Card 2: Essential Comparison (Middle) -->
+  <g transform="translate(430, 150)" filter="url(#shadow)">
+    <rect width="340" height="290" rx="20" fill="url(#card-grad)" stroke="#e2e8f0" stroke-width="1.5" />
+    
+    <!-- Header Block -->
+    <path d="M 0,20 Q 0,0 20,0 L 320,0 Q 340,0 340,20 L 340,65 L 0,65 Z" fill="#f5f3ff" />
+    <circle cx="35" cy="32" r="16" fill="#ede9fe" />
+    <!-- Comp icon -->
+    <path d="M25 24 L45 24 M25 32 L45 32 M25 40 L45 40" stroke="#5b21b6" stroke-width="2.5" stroke-linecap="round" fill="none" />
+    <text x="64" y="38" font-size="15" font-weight="800" fill="#5b21b6">Dynamic vs Static</text>
+
+    <!-- Checklist items with checkmarks -->
+    <g transform="translate(25, 90)">
+      <!-- Item 1 -->
+      <circle cx="15" cy="15" r="10" fill="#10b981" />
+      <path d="M11 15 L14 18 L19 12" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+      <text x="35" y="19" font-size="13" font-weight="600" fill="#334155">Variables (let, const, var)</text>
+
+      <!-- Item 2 -->
+      <g transform="translate(0, 45)">
+        <circle cx="15" cy="15" r="10" fill="#10b981" />
+        <path d="M11 15 L14 18 L19 12" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+        <text x="35" y="19" font-size="13" font-weight="600" fill="#334155">Strict Equality (=== vs ==)</text>
+      </g>
+
+      <!-- Item 3 -->
+      <g transform="translate(0, 90)">
+        <circle cx="15" cy="15" r="10" fill="#10b981" />
+        <path d="M11 15 L14 18 L19 12" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+        <text x="35" y="19" font-size="13" font-weight="600" fill="#334155">Single-threaded Execution</text>
+      </g>
+
+      <!-- Item 4 -->
+      <g transform="translate(0, 135)">
+        <circle cx="15" cy="15" r="10" fill="#10b981" />
+        <path d="M11 15 L14 18 L19 12" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+        <text x="35" y="19" font-size="13" font-weight="600" fill="#334155">Asynchronous Event Loop</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- Card 3: Memory Reinforcement (Right) -->
+  <g transform="translate(800, 150)" filter="url(#shadow-heavy)">
+    <rect width="340" height="290" rx="20" fill="url(#card-grad)" stroke="#fbd38d" stroke-width="2" />
+    
+    <!-- Header Block -->
+    <path d="M 0,20 Q 0,0 20,0 L 320,0 Q 340,0 340,20 L 340,65 L 0,65 Z" fill="#fffbeb" />
+    <circle cx="35" cy="32" r="16" fill="#fef3c7" />
+    <!-- Brain icon -->
+    <path d="M28 26 C25 26 23 28 23 31 C23 35 28 39 35 41 C42 39 47 35 47 31 C47 28 45 26 42 26 C38 26 36 29 35 29 C34 29 32 26 28 26 Z" stroke="#b45309" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+    <text x="64" y="38" font-size="15" font-weight="800" fill="#b45309">Memory Hook</text>
+
+    <!-- Analogy graphic -->
+    <g transform="translate(30, 90)">
+      <!-- HTML -->
+      <rect width="80" height="70" rx="12" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.5" />
+      <text x="40" y="32" font-size="13" font-weight="800" fill="#1e40af" text-anchor="middle">HTML</text>
+      <text x="40" y="52" font-size="10" font-weight="600" fill="#60a5fa" text-anchor="middle">SKELETON</text>
+
+      <!-- Plus sign -->
+      <text x="95" y="40" font-size="20" font-weight="800" fill="#94a3b8" text-anchor="middle">+</text>
+
+      <!-- CSS -->
+      <g transform="translate(100, 0)">
+        <rect width="80" height="70" rx="12" fill="#fdf2f8" stroke="#fbcfe8" stroke-width="1.5" />
+        <text x="40" y="32" font-size="13" font-weight="800" fill="#9d174d" text-anchor="middle">CSS</text>
+        <text x="40" y="52" font-size="10" font-weight="600" fill="#f472b6" text-anchor="middle">SKIN &amp; STYLE</text>
+      </g>
+
+      <!-- Plus sign -->
+      <text x="195" y="40" font-size="20" font-weight="800" fill="#94a3b8" text-anchor="middle">+</text>
+
+      <!-- JS -->
+      <g transform="translate(200, 0)">
+        <rect width="80" height="70" rx="12" fill="#fffbeb" stroke="#fde68a" stroke-width="2" />
+        <text x="40" y="32" font-size="13" font-weight="900" fill="#b45309" text-anchor="middle">JS</text>
+        <text x="40" y="52" font-size="10" font-weight="800" fill="#fbbf24" text-anchor="middle">BRAIN &amp; ACTION</text>
+      </g>
+    </g>
+
+    <!-- Text summary -->
+    <rect x="20" y="185" width="300" height="85" rx="12" fill="#fffbeb" stroke="#fef3c7" stroke-width="1.5" />
+    <text x="35" y="210" font-size="12" font-weight="700" fill="#78350f" font-style="italic">
+      <tspan x="35" dy="0">HTML defines the page structure, CSS gives</tspan>
+      <tspan x="35" dy="18">it skin/styling, and JavaScript behaves as the</tspan>
+      <tspan x="35" dy="18">brain &amp; muscles—making pages dynamic.</tspan>
+    </text>
+  </g>
+</svg>
