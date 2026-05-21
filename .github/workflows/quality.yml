@@ -81,7 +81,7 @@ jobs:
       - run: pnpm --filter @quiz/api-server run test
       - run: pnpm --filter @quiz/api-gateway run test
       - name: Upload Coverage
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: coverage-backend
@@ -107,7 +107,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build:all
       - name: Upload Build Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: build-outputs
           path: |
@@ -160,7 +160,7 @@ jobs:
             echo "No bundle analysis output found in $REPORT_DIR"
           fi
       - name: Upload Bundle Analysis
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: bundle-analysis
           path: |
