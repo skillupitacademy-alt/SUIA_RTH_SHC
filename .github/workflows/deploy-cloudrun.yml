@@ -44,7 +44,7 @@ jobs:
       run_skillhubcore: ${{ steps.scope.outputs.run_skillhubcore }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -124,7 +124,7 @@ jobs:
     needs: plan
     if: needs.plan.outputs.run_quiz == 'true'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
@@ -170,7 +170,7 @@ jobs:
     needs: [plan, deploy-quiz-api]
     if: needs.plan.outputs.run_quiz == 'true'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
@@ -214,7 +214,7 @@ jobs:
     needs: [plan, deploy-quiz-api]
     if: needs.plan.outputs.run_quiz == 'true'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
@@ -296,7 +296,7 @@ jobs:
     if: needs.plan.outputs.run_tutorial == 'true'
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -389,7 +389,7 @@ jobs:
     if: needs.plan.outputs.run_skillup == 'true'
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -477,7 +477,7 @@ jobs:
     if: needs.plan.outputs.run_skillup == 'true'
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -548,7 +548,7 @@ jobs:
     if: needs.plan.outputs.run_skillup == 'true'
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -621,7 +621,7 @@ jobs:
     if: needs.plan.outputs.run_skillup == 'true'
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -692,7 +692,7 @@ jobs:
     if: needs.plan.outputs.run_skillhubcore == 'true'
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -763,7 +763,7 @@ jobs:
     if: needs.plan.outputs.run_skillhubcore == 'true'
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
