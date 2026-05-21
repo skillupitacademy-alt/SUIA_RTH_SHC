@@ -30,7 +30,7 @@
 
     "build": "cross-env NODE_OPTIONS=--max-old-space-size=8192 turbo run build --concurrency=2",
 
-    "build:all": "cross-env NODE_OPTIONS=--max-old-space-size=8192 turbo run build --concurrency=2 --filter=@quiz/realtutorialhub-quiz --filter=@quiz/realtutorialhub-admin --filter=@quiz/api-server --filter=@quiz/realtutorialhub-web --filter=@quiz/skillhubcore-service --filter=@quiz/api-gateway --filter=@quiz/db-people --filter=@quiz/skillup-web --filter=@quiz/skillup-admin --filter=@quiz/faculty-app --filter=@quiz/skillhubcore-admin --filter=@quiz/skillhub-placement",
+    "build:all": "cross-env NODE_OPTIONS=--max-old-space-size=8192 turbo run build --concurrency=2 --filter=@quiz/realtutorialhub-quiz --filter=@quiz/realtutorialhub-admin --filter=@quiz/api-server --filter=@quiz/realtutorialhub-web --filter=@quiz/realtutorialhub-site --filter=@quiz/skillupitacademy-site --filter=@quiz/skillhubcore-service --filter=@quiz/api-gateway --filter=@quiz/db-people --filter=@quiz/skillup-web --filter=@quiz/skillup-admin --filter=@quiz/faculty-app --filter=@quiz/skillhubcore-admin --filter=@quiz/skillhub-placement",
 
     "build:sequential": "pnpm --filter @quiz/realtutorialhub-quiz build && pnpm --filter @quiz/realtutorialhub-admin build && pnpm --filter @quiz/api-server build && pnpm --filter @quiz/realtutorialhub-web build && pnpm --filter @quiz/skillup-web build",
 
@@ -45,7 +45,7 @@
 
     "type-check": "cross-env NODE_OPTIONS=--max-old-space-size=6144 turbo run type-check --concurrency=4",
 
-    "typecheck:all": "cross-env NODE_OPTIONS=--max-old-space-size=8192 turbo run type-check --concurrency=3 --filter=@quiz/realtutorialhub-quiz --filter=@quiz/realtutorialhub-admin --filter=@quiz/api-server --filter=@quiz/realtutorialhub-web --filter=@quiz/skillhubcore-service --filter=@quiz/api-gateway --filter=@quiz/db-people --filter=@quiz/skillup-web --filter=@quiz/skillup-admin --filter=@quiz/faculty-app --filter=@quiz/skillhubcore-admin --filter=@quiz/skillhub-placement",
+    "typecheck:all": "cross-env NODE_OPTIONS=--max-old-space-size=8192 turbo run type-check --concurrency=3 --filter=@quiz/realtutorialhub-quiz --filter=@quiz/realtutorialhub-admin --filter=@quiz/api-server --filter=@quiz/realtutorialhub-web --filter=@quiz/realtutorialhub-site --filter=@quiz/skillupitacademy-site --filter=@quiz/skillhubcore-service --filter=@quiz/api-gateway --filter=@quiz/db-people --filter=@quiz/skillup-web --filter=@quiz/skillup-admin --filter=@quiz/faculty-app --filter=@quiz/skillhubcore-admin --filter=@quiz/skillhub-placement",
 
     "test": "cross-env NODE_OPTIONS=--max-old-space-size=6144 turbo run test --concurrency=4",
     "test:watch": "vitest",

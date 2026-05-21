@@ -35,6 +35,9 @@ Thumbs.db
 
 # Build and IDE artifacts
 .next/
+out/
+apps/*/out/
+.playwright-mcp/
 dist/
 .turbo/
 tmp/
