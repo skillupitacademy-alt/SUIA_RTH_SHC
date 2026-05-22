@@ -67,11 +67,14 @@ echo ""
 PROJECT_ID="project-48af6a2d-e8bb-46dd-a58"
 REGION="asia-southeast1"
 REGISTRY="asia-southeast1-docker.pkg.dev"
+MARKETING_REGION="asia-south1"
 
 SERVICE_API="quiz-api-server"
 SERVICE_RTH="realtutorialhub-web"
 SERVICE_SKILLUP="skillup-web"
 SERVICE_SHC_ADMIN="skillhubcore-admin"
+SERVICE_RTH_SITE="realtutorialhub-site"
+SERVICE_SKILLUP_SITE="skillupitacademy-site"
 
 GIT_SHA=$(git rev-parse --short HEAD)
 
@@ -118,6 +121,17 @@ cloud_build_image() {
       --timeout=3600s \
       --config=scripts/cloudbuild-docker-image.yaml \
       --substitutions="_DOCKERFILE=${dockerfile},_IMAGE=${image}"
+}
+
+deploy_marketing_site() {
+  local service_name="$1"
+  local cloudbuild_config="$2"
+
+  run_with_retry "Cloud Build ${service_name}" \
+    gcloud builds submit . \
+      --project="${PROJECT_ID}" \
+      --config="${cloudbuild_config}" \
+      --substitutions="_TAG=${GIT_SHA}"
 }
 
 #############################################
@@ -279,16 +293,31 @@ capture_revision() {
     --format="value(status.traffic[0].revisionName)" 2>/dev/null || echo ""
 }
 
+rollback_marketing_site() {
+  SERVICE=$1
+  REV=$2
+
+  if [ -n "$REV" ]; then
+    gcloud run services update-traffic $SERVICE \
+      --region $MARKETING_REGION \
+      --to-revisions ${REV}=100
+  fi
+}
+
 PREV_API=$(capture_revision $SERVICE_API)
 PREV_RTH=$(capture_revision $SERVICE_RTH)
 PREV_SKILLUP=$(capture_revision $SERVICE_SKILLUP)
 PREV_SHC_ADMIN=$(capture_revision $SERVICE_SHC_ADMIN)
+PREV_RTH_SITE=$(gcloud run services describe $SERVICE_RTH_SITE --region=$MARKETING_REGION --format="value(status.traffic[0].revisionName)" 2>/dev/null || echo "")
+PREV_SKILLUP_SITE=$(gcloud run services describe $SERVICE_SKILLUP_SITE --region=$MARKETING_REGION --format="value(status.traffic[0].revisionName)" 2>/dev/null || echo "")
 
 echo "📌 Previous revisions:"
 echo "API: $PREV_API"
 echo "RTH: $PREV_RTH"
 echo "SkillUp: $PREV_SKILLUP"
 echo "SHC Admin: $PREV_SHC_ADMIN"
+echo "RTH Site: $PREV_RTH_SITE"
+echo "SkillUp Site: $PREV_SKILLUP_SITE"
 
 #############################################
 # 🚀 BUILD + PUSH IMAGES
@@ -300,6 +329,8 @@ cloud_build_image apps/api-server/Dockerfile $IMAGE_API
 cloud_build_image apps/realtutorialhub-web/Dockerfile $IMAGE_RTH
 cloud_build_image apps/skillup-web/Dockerfile $IMAGE_SKILLUP
 cloud_build_image apps/skillhubcore-admin/Dockerfile $IMAGE_SHC_ADMIN
+deploy_marketing_site $SERVICE_RTH_SITE cloudbuild.realtutorialhub-site.yaml
+deploy_marketing_site $SERVICE_SKILLUP_SITE cloudbuild.skillupitacademy-site.yaml
 
 #############################################
 # 🚀 DEPLOY API FIRST (NO TRAFFIC)
@@ -554,6 +585,8 @@ if [ $? -ne 0 ]; then
   rollback $SERVICE_API $PREV_API
   rollback $SERVICE_RTH $PREV_RTH
   rollback $SERVICE_SKILLUP $PREV_SKILLUP
+  rollback_marketing_site $SERVICE_RTH_SITE $PREV_RTH_SITE
+  rollback_marketing_site $SERVICE_SKILLUP_SITE $PREV_SKILLUP_SITE
 
   echo "❌ ROLLBACK COMPLETE"
   exit 1
@@ -584,6 +617,8 @@ if [ $? -ne 0 ]; then
   rollback $SERVICE_API $PREV_API
   rollback $SERVICE_RTH $PREV_RTH
   rollback $SERVICE_SKILLUP $PREV_SKILLUP
+  rollback_marketing_site $SERVICE_RTH_SITE $PREV_RTH_SITE
+  rollback_marketing_site $SERVICE_SKILLUP_SITE $PREV_SKILLUP_SITE
 
   echo "❌ ROLLBACK COMPLETE"
   exit 1
@@ -615,6 +650,8 @@ if [ $? -ne 0 ]; then
   rollback $SERVICE_API $PREV_API
   rollback $SERVICE_RTH $PREV_RTH
   rollback $SERVICE_SKILLUP $PREV_SKILLUP
+  rollback_marketing_site $SERVICE_RTH_SITE $PREV_RTH_SITE
+  rollback_marketing_site $SERVICE_SKILLUP_SITE $PREV_SKILLUP_SITE
 
   echo "❌ ROLLBACK COMPLETE"
   exit 1
@@ -701,6 +738,8 @@ if [ $AUTH_EXIT_CODE -ne 0 ]; then
   rollback $SERVICE_API $PREV_API
   rollback $SERVICE_RTH $PREV_RTH
   rollback $SERVICE_SKILLUP $PREV_SKILLUP
+  rollback_marketing_site $SERVICE_RTH_SITE $PREV_RTH_SITE
+  rollback_marketing_site $SERVICE_SKILLUP_SITE $PREV_SKILLUP_SITE
 
   echo ""
   echo "🔁 Rollback complete"
@@ -802,6 +841,8 @@ else
       rollback $SERVICE_RTH $PREV_RTH
       rollback $SERVICE_SKILLUP $PREV_SKILLUP
       rollback $SERVICE_SHC_ADMIN $PREV_SHC_ADMIN
+      rollback_marketing_site $SERVICE_RTH_SITE $PREV_RTH_SITE
+      rollback_marketing_site $SERVICE_SKILLUP_SITE $PREV_SKILLUP_SITE
 
       echo ""
       echo "🔁 Rollback complete"
@@ -878,6 +919,8 @@ if [ $SHC_EXIT_CODE -ne 0 ]; then
   rollback $SERVICE_RTH $PREV_RTH
   rollback $SERVICE_SKILLUP $PREV_SKILLUP
   rollback $SERVICE_SHC_ADMIN $PREV_SHC_ADMIN
+  rollback_marketing_site $SERVICE_RTH_SITE $PREV_RTH_SITE
+  rollback_marketing_site $SERVICE_SKILLUP_SITE $PREV_SKILLUP_SITE
 
   echo ""
   echo "🔁 Rollback complete"
@@ -908,6 +951,8 @@ echo ""
 echo "🔗 User Portals:"
 echo "   RTH: https://user.realtutorialhub.com"
 echo "   SkillUp: https://user.skillupitacademy.com"
+echo "   RTH Marketing: https://www.realtutorialhub.com"
+echo "   SkillUp Marketing: https://www.skillupitacademy.com"
 echo ""
 echo "🔗 Admin Consoles:"
 echo "   SHC Infrastructure: https://admin.skillhubcore.in"

@@ -10,11 +10,14 @@ set -euo pipefail
 PROJECT_ID="project-48af6a2d-e8bb-46dd-a58"
 REGION="asia-southeast1"
 REGISTRY="asia-southeast1-docker.pkg.dev"
+MARKETING_REGION="asia-south1"
 
 SERVICE_API="quiz-api-server"
 SERVICE_RTH="realtutorialhub-web"
 SERVICE_SKILLUP="skillup-web"
 SERVICE_SHC_ADMIN="skillhubcore-admin"
+SERVICE_RTH_SITE="realtutorialhub-site"
+SERVICE_SKILLUP_SITE="skillupitacademy-site"
 
 GIT_SHA=$(git rev-parse --short HEAD)
 
@@ -22,6 +25,17 @@ IMAGE_API="${REGISTRY}/${PROJECT_ID}/quiz-platform/quiz-api-server:${GIT_SHA}"
 IMAGE_RTH="${REGISTRY}/${PROJECT_ID}/quiz-platform/realtutorialhub-web:${GIT_SHA}"
 IMAGE_SKILLUP="${REGISTRY}/${PROJECT_ID}/quiz-platform/skillup-web:${GIT_SHA}"
 IMAGE_SHC_ADMIN="${REGISTRY}/${PROJECT_ID}/quiz-platform/skillhubcore-admin:${GIT_SHA}"
+
+deploy_marketing_site() {
+  local service_name="$1"
+  local cloudbuild_config="$2"
+
+  echo "Deploying ${service_name} in ${MARKETING_REGION}..."
+  gcloud builds submit . \
+    --project="${PROJECT_ID}" \
+    --config="${cloudbuild_config}" \
+    --substitutions="_TAG=${GIT_SHA}"
+}
 
 echo "🔧 Setting GCP project..."
 gcloud config set project $PROJECT_ID
@@ -48,6 +62,10 @@ cloud_build_image apps/api-server/Dockerfile $IMAGE_API
 cloud_build_image apps/realtutorialhub-web/Dockerfile $IMAGE_RTH
 cloud_build_image apps/skillup-web/Dockerfile $IMAGE_SKILLUP
 cloud_build_image apps/skillhubcore-admin/Dockerfile $IMAGE_SHC_ADMIN
+
+echo "Cloud Build deploy for marketing sites..."
+deploy_marketing_site "$SERVICE_RTH_SITE" "cloudbuild.realtutorialhub-site.yaml"
+deploy_marketing_site "$SERVICE_SKILLUP_SITE" "cloudbuild.skillupitacademy-site.yaml"
 
 #############################################
 # 🚀 DEPLOY API
@@ -128,3 +146,6 @@ npx wrangler deploy --env production --keep-vars \
 cd ../..
 
 echo "🎉 CORE DEPLOYMENT SUCCESSFUL"
+echo "Marketing sites:"
+echo "  RTH Site: https://www.realtutorialhub.com"
+echo "  SkillUp Site: https://www.skillupitacademy.com"
