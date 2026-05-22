@@ -74,9 +74,14 @@ const CourseNavbar: React.FC<CourseNavbarProps> = ({ onLogoClick }) => {
                   onClick={() => handleNavClick(item.id)}
                   className={`px-5 py-2.5 text-sm font-semibold rounded-xl transition-all duration-300 whitespace-nowrap ${
                     activeSection === item.id
-                      ? "bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-md"
-                      : "text-gray-700 hover:text-blue-700 hover:bg-blue-50/50"
+                      ? "text-white shadow-md"
+                      : "text-gray-700 hover:bg-gray-50"
                   }`}
+                  style={
+                    activeSection === item.id
+                      ? { backgroundColor: "var(--brand-primary)" }
+                      : undefined
+                  }
                   aria-label={`Scroll to ${item.name}`}
                 >
                   {item.name}
@@ -91,9 +96,14 @@ const CourseNavbar: React.FC<CourseNavbarProps> = ({ onLogoClick }) => {
                   onMouseLeave={() => setIsDropdownOpen(false)}
                   className={`px-5 py-2.5 text-sm font-semibold rounded-xl transition-all duration-300 flex items-center gap-1 ${
                     courseNavItems.slice(5).some(item => activeSection === item.id)
-                      ? "text-blue-600 bg-blue-50"
-                      : "text-gray-700 hover:text-blue-700 hover:bg-blue-50/50"
+                      ? "bg-gray-50"
+                      : "text-gray-700 hover:bg-gray-50"
                   }`}
+                  style={
+                    courseNavItems.slice(5).some(item => activeSection === item.id)
+                      ? { color: "var(--brand-primary)" }
+                      : undefined
+                  }
                 >
                   More <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
@@ -116,11 +126,19 @@ const CourseNavbar: React.FC<CourseNavbarProps> = ({ onLogoClick }) => {
                       <button
                         key={item.id}
                         onClick={() => handleNavClick(item.id)}
-                        className={`block w-full text-left px-5 py-3.5 text-sm font-medium transition-all duration-200 hover:bg-blue-50/80 ${
+                        className={`block w-full text-left px-5 py-3.5 text-sm font-medium transition-all duration-200 hover:bg-gray-50 ${
                           activeSection === item.id
-                            ? "bg-blue-50 text-blue-700 border-l-4 border-blue-500"
+                            ? "bg-gray-50 border-l-4"
                             : "text-gray-700"
                         }`}
+                        style={
+                          activeSection === item.id
+                            ? {
+                                color: "var(--brand-primary)",
+                                borderLeftColor: "var(--brand-primary)"
+                              }
+                            : undefined
+                        }
                       >
                         {item.name}
                       </button>
@@ -140,7 +158,8 @@ const CourseNavbar: React.FC<CourseNavbarProps> = ({ onLogoClick }) => {
           <div className="flex xl:hidden items-center">
             <button
               onClick={() => setIsMobileMenuOpen((v) => !v)}
-              className="p-3 rounded-xl text-gray-700 hover:text-blue-600 hover:bg-gray-100 transition-all duration-300"
+              className="p-3 rounded-xl text-gray-700 hover:bg-gray-100 transition-all duration-300"
+              style={isMobileMenuOpen ? { color: "var(--brand-primary)" } : undefined}
               aria-label="Toggle menu"
             >
               <div className="space-y-1.5">
@@ -164,9 +183,14 @@ const CourseNavbar: React.FC<CourseNavbarProps> = ({ onLogoClick }) => {
                   onClick={() => handleNavClick(item.id)}
                   className={`px-4 py-3.5 rounded-xl text-left transition-all duration-300 flex items-center justify-between ${
                     activeSection === item.id
-                      ? "bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-md"
+                      ? "text-white shadow-md"
                       : "text-gray-700 hover:bg-gray-50"
                   }`}
+                  style={
+                    activeSection === item.id
+                      ? { backgroundColor: "var(--brand-primary)" }
+                      : undefined
+                  }
                 >
                   <span className="font-medium">{item.name}</span>
                   {activeSection === item.id && (

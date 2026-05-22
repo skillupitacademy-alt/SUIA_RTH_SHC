@@ -6,6 +6,9 @@ interface ScrollToTopProps {
   showThreshold?: number;
   position?: "bottom-right" | "bottom-left" | "top-right" | "top-left";
   size?: string;
+  /**
+   * @deprecated Kept for API compatibility. The button now uses brand primary.
+   */
   gradient?: string;
   icon?: string;
   zIndex?: number;
@@ -16,7 +19,7 @@ export default function ScrollToTop({
   showThreshold = 300,
   position = "bottom-right",
   size = "w-12 h-12",
-  gradient = "bg-gradient-to-r from-orange-500 to-orange-600",
+  gradient = "",
   icon = "↑",
   zIndex = 9999,
   hideWhenMobileFilterOpen = false,
@@ -83,8 +86,9 @@ export default function ScrollToTop({
         flex items-center justify-center
         transition-all duration-300
         hover:scale-110 active:scale-95
-        focus:outline-none focus:ring-2 focus:ring-orange-400
+        focus:outline-none focus:ring-2
       `}
+      style={{ backgroundColor: "var(--brand-primary)" }}
     >
       {icon}
     </button>

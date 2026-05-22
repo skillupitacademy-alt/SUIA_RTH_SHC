@@ -17,7 +17,10 @@ export const PhaseCard: React.FC<PhaseCardProps> = ({ phase }) => {
       <div className="relative">
         <div className={` p-6 ${phase.bgColor}`}>
           <div className='absolute right-5 top-2'>
-            <div className="bg-gradient-to-r from-orange-500 to-amber-500 text-white px-4 py-2 rounded-full text-[8px] sm:text-[10px] md:text-sm font-bold shadow-md">
+            <div
+              className="text-white px-4 py-2 rounded-full text-[8px] sm:text-[10px] md:text-sm font-bold shadow-md"
+              style={{ backgroundColor: "var(--brand-primary)" }}
+            >
               {phase.duration}
             </div>
           </div>

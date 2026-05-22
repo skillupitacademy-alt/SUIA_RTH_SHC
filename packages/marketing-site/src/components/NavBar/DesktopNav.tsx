@@ -44,8 +44,7 @@ const DesktopNav: React.FC<DesktopNavProps> = ({
             style={
               activeSection === item.id
                 ? {
-                    background:
-                      "linear-gradient(90deg, var(--brand-primary), var(--brand-secondary))",
+                    backgroundColor: "var(--brand-primary)",
                   }
                 : undefined
             }

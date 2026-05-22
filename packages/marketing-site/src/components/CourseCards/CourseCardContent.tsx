@@ -12,11 +12,15 @@ const CourseCardContent: React.FC<CourseCardContentProps> = ({
   isBlueCard,
   Icon
 }) => {
+  const accentColor = isBlueCard
+    ? "var(--brand-primary)"
+    : "var(--brand-secondary)";
+
   return (
     <div className="p-6 flex flex-col flex-1">
       <div className="mb-4">
-        <div className={`p-3 rounded-xl inline-block ${isBlueCard ? 'bg-blue-50' : 'bg-orange-50'}`}>
-          <div className={isBlueCard ? 'text-blue-600' : 'text-orange-600'}>
+        <div className="p-3 rounded-xl inline-block bg-gray-50">
+          <div style={{ color: accentColor }}>
             <Icon className="w-7 h-7" />
           </div>
         </div>
@@ -32,7 +36,7 @@ const CourseCardContent: React.FC<CourseCardContentProps> = ({
         </p>
       </div>
 
-      <div className={`h-px w-full mb-4 ${isBlueCard ? 'bg-blue-100' : 'bg-orange-100'}`}></div>
+      <div className="h-px w-full mb-4 bg-gray-100"></div>
 
       <div className="mb-6">
         <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">
@@ -42,7 +46,10 @@ const CourseCardContent: React.FC<CourseCardContentProps> = ({
         <div className="grid grid-cols-2 gap-x-4 gap-y-3">
           {course.features.slice(0, 4).map((feature, idx) => (
             <div key={idx} className="flex items-start gap-2">
-              <div className={`w-1.5 h-1.5 rounded-full mt-1.5 ${isBlueCard ? 'bg-blue-500' : 'bg-orange-500'}`}></div>
+              <div
+                className="w-1.5 h-1.5 rounded-full mt-1.5"
+                style={{ backgroundColor: accentColor }}
+              ></div>
               <span className="text-gray-700 text-sm truncate">{feature}</span>
             </div>
           ))}

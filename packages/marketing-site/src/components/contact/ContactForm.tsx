@@ -21,8 +21,8 @@ const ContactForm: React.FC<ContactFormProps> = ({
   onChange 
 }) => {
   return (
-    <div className="bg-gradient-to-br from-orange-50 to-white rounded-xl p-6 border border-orange-100 shadow-sm lg:h-[520px]" style={{boxShadow: "2px 2px 20px 0.6px #00000025"}}>
-      <h2 className="text-2xl font-bold text-orange-700 mb-6">Send Message</h2>
+    <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm lg:h-[520px]" style={{boxShadow: "2px 2px 20px 0.6px #00000025"}}>
+      <h2 className="text-2xl font-bold mb-6" style={{ color: "var(--brand-primary)" }}>Send Message</h2>
 
       <form onSubmit={onSubmit} className="space-y-5">
         <div>
@@ -35,7 +35,7 @@ const ContactForm: React.FC<ContactFormProps> = ({
             value={formData.name || ''} // Safeguard
             onChange={onChange}
             required
-            className="w-full px-4 py-3 bg-white border border-orange-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:ring-2 transition-colors"
             placeholder="Your name"
           />
         </div>
@@ -51,7 +51,7 @@ const ContactForm: React.FC<ContactFormProps> = ({
               value={formData.email || ''} // Safeguard
               onChange={onChange}
               required
-              className="w-full px-4 py-3 bg-white border border-orange-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:ring-2 transition-colors"
               placeholder="your@email.com"
             />
           </div>
@@ -66,7 +66,7 @@ const ContactForm: React.FC<ContactFormProps> = ({
               value={formData.phone || ''} // Safeguard
               onChange={onChange}
               required
-              className="w-full px-4 py-3 bg-white border border-orange-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:ring-2 transition-colors"
               placeholder="9997508801"
             />
           </div>
@@ -82,14 +82,15 @@ const ContactForm: React.FC<ContactFormProps> = ({
             onChange={onChange}
             required
             rows={4}
-            className="w-full px-4 py-3 bg-white border border-orange-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors resize-none"
+            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:ring-2 transition-colors resize-none"
             placeholder="Tell us about your learning goals..."
           />
         </div>
 
         <button
           type="submit"
-          className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-medium py-3 rounded-lg transition-all duration-300 transform hover:scale-[1.02]"
+          className="w-full text-white font-medium py-3 rounded-lg transition-all duration-300 transform hover:scale-[1.02]"
+          style={{ backgroundColor: "var(--brand-primary)" }}
         >
           Send Message
         </button>

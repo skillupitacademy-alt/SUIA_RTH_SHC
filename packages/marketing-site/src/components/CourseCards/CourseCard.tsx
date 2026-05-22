@@ -46,7 +46,14 @@ const CourseCard: React.FC<CourseCardProps> = ({
       >
         <CourseCardHeader course={course} isBlueCard={isBlueCard} />
 
-        <div className={`h-1 ${isBlueCard ? "bg-blue-500" : "bg-orange-500"}`} />
+        <div
+          className="h-1"
+          style={{
+            backgroundColor: isBlueCard
+              ? "var(--brand-primary)"
+              : "var(--brand-secondary)"
+          }}
+        />
 
         <CourseCardContent
           course={course}

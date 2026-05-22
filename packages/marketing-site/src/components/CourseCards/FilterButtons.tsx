@@ -20,10 +20,18 @@ const FilterButtons: React.FC<FilterButtonsProps> = ({
             transition-all duration-300 transform hover:scale-105
             border-2
             ${activeCategory === category
-              ? "bg-orange-500 text-white border-orange-500 shadow-lg"
-              : "bg-white text-gray-700 border-gray-300 hover:border-orange-400 hover:text-orange-600"
+              ? "text-white shadow-lg"
+              : "bg-white text-gray-700 border-gray-300 hover:border-gray-400"
             }
           `}
+          style={
+            activeCategory === category
+              ? {
+                  backgroundColor: "var(--brand-primary)",
+                  borderColor: "var(--brand-primary)"
+                }
+              : undefined
+          }
         >
           {category}
         </button>

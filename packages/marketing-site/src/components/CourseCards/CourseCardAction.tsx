@@ -27,7 +27,8 @@ const handleViewDetails = (e: React.MouseEvent) => {
         {/* VIEW DETAILS */}
         <button
           onClick={handleViewDetails}
-          className="flex-1 w-full py-3.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center gap-3 group"
+          className="flex-1 w-full py-3.5 text-white font-medium rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center gap-3 group"
+          style={{ backgroundColor: "var(--brand-primary)" }}
         >
           <span>View Details</span>
           <svg
@@ -46,7 +47,10 @@ const handleViewDetails = (e: React.MouseEvent) => {
         </button>
 
         {/* ENROLL */}
-        <button className="flex-1 py-3.5 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-medium rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl border-0">
+        <button
+          className="flex-1 py-3.5 text-white font-medium rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl border-0"
+          style={{ backgroundColor: "var(--brand-secondary)" }}
+        >
           Enroll Now
         </button>
       </div>

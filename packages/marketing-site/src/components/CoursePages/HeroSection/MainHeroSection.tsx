@@ -76,7 +76,11 @@ export const CourseHeroSection: React.FC<CourseHeroSectionProps> = ({
   ];
 
   return (
-    <div id='CourseHero' className="relative min-h-screen bg-gradient-to-br from-blue-950 via-blue-900 to-indigo-950 overflow-hidden">
+    <div
+      id='CourseHero'
+      className="relative min-h-screen overflow-hidden"
+      style={{ backgroundColor: "var(--brand-primary)" }}
+    >
       <BackgroundEffects mousePosition={mousePosition} />
       <FloatingIcons icons={floatingIcons} />
       

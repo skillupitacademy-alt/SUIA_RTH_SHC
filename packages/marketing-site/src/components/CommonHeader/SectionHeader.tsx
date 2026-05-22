@@ -4,6 +4,9 @@ import React from "react";
 interface SectionHeaderProps {
   title: string;
   description?: string;
+  /**
+   * @deprecated Section underlines now use the active brand primary color.
+   */
   accentGradient?: string;
   textColor?: string;
   size?: "sm" | "md" | "lg";
@@ -21,7 +24,6 @@ const SIZE_MAP = {
 export const SectionHeader: React.FC<SectionHeaderProps> = ({
   title,
   description,
-  accentGradient = "from-orange-500 via-orange-400 to-orange-500",
   textColor = "#4B49AC",
   size = "md",
   aos = false
@@ -44,13 +46,14 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
       {/* Animated underline */}
       <div className="flex justify-center mb-8 overflow-hidden">
         <div
-          className={`h-1.5 w-32 rounded-full bg-gradient-to-r ${accentGradient}`}
+          className="h-1.5 w-32 rounded-full"
           {...(aos && {
             "data-aos": "slide-right",
             "data-aos-duration": "600",
             "data-aos-delay": "200"
           })}
           style={{
+            backgroundColor: "var(--brand-primary)",
             animation: "underlineGrow 0.8s ease-out forwards",
             transformOrigin: "left center"
           }}

@@ -97,10 +97,8 @@ export default function HeroSlider({ onSlideChange }: HeroSliderProps) {
   );
 
   const currentSlide = HERO_SLIDES[current];
-  const gradientStart =
-    currentSlide.accent === "orange" ? brand.colors.primary : brand.colors.secondary;
-  const gradientEnd =
-    currentSlide.accent === "orange" ? brand.colors.secondary : brand.colors.primary;
+  const heroBackground =
+    current % 2 === 0 ? brand.colors.primary : brand.colors.secondary;
 
   useEffect(() => {
     onSlideChange?.(current);
@@ -193,8 +191,8 @@ export default function HeroSlider({ onSlideChange }: HeroSliderProps) {
       <div
         className="absolute inset-0"
         style={{
-          background: `linear-gradient(135deg, ${gradientStart}, ${gradientEnd})`,
-          transition: current === 0 ? "none" : "background 1s ease-in-out",
+          backgroundColor: heroBackground,
+          transition: current === 0 ? "none" : "background-color 1s ease-in-out",
         }}
       >
         {startSlider && (

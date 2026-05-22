@@ -20,7 +20,13 @@ export const HeroContent: React.FC<HeroContentProps> = ({
 }) => (
   <>
     <div className="text-center mb-8">
-      <div className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-500/20 to-pink-600/20 backdrop-blur-md rounded-full border border-orange-400/40 shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40 transition-all duration-300">
+      <div
+        className="inline-flex items-center gap-2 px-6 py-3 backdrop-blur-md rounded-full border shadow-lg transition-all duration-300"
+        style={{
+          backgroundColor: "color-mix(in srgb, var(--brand-secondary) 25%, transparent)",
+          borderColor: "color-mix(in srgb, var(--brand-secondary) 45%, transparent)"
+        }}
+      >
         <Sparkles className="w-5 h-5 text-yellow-400 animate-pulse" />
         <span className="text-white font-semibold">{badgeText}</span>
       </div>
@@ -32,7 +38,10 @@ export const HeroContent: React.FC<HeroContentProps> = ({
           {title}
         </span>
         {subtitle && (
-          <span className="bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 bg-clip-text text-transparent drop-shadow-2xl inline-block animate-pulse border border-transparent pb-2">
+          <span
+            className="drop-shadow-2xl inline-block animate-pulse border border-transparent pb-2"
+            style={{ color: "var(--brand-secondary)" }}
+          >
             {subtitle}
           </span>
         )}

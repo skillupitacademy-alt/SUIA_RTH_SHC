@@ -11,15 +11,17 @@ export const BackgroundEffects: React.FC<BackgroundEffectsProps> = ({
 }) => (
   <div className="absolute inset-0">
     <div
-      className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/30 rounded-full blur-3xl animate-pulse"
+      className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-3xl animate-pulse opacity-30"
       style={{
+        backgroundColor: "var(--brand-secondary)",
         transform: `translate(${mousePosition.x}px, ${mousePosition.y}px)`,
         transition: 'transform 0.5s ease-out',
       }}
     />
     <div
-      className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl animate-pulse"
+      className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full blur-3xl animate-pulse opacity-20"
       style={{
+        backgroundColor: "var(--brand-secondary)",
         transform: `translate(${-mousePosition.x}px, ${-mousePosition.y}px)`,
         transition: 'transform 0.5s ease-out',
         animationDelay: '1s',

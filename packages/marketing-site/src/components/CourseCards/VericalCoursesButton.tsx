@@ -24,12 +24,12 @@ const VerticalCoursesButton: React.FC<VerticalCoursesButtonProps> = ({
         h-32 w-14
         rounded-l-2xl 
         shadow-2xl
-        bg-gradient-to-b from-orange-500 to-orange-400
         flex items-center justify-center
         z-[999]
         transition-all duration-300
       "
       style={{
+        backgroundColor: "var(--brand-primary)",
         pointerEvents: "auto",
         cursor: "pointer"
       }}

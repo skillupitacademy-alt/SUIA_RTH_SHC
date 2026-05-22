@@ -45,9 +45,12 @@ const CourseCardHeader: React.FC<CourseCardHeaderProps> = ({
       {/* Category Badge */}
       <div className="absolute bottom-4 left-4">
         <span
-          className={`px-3 py-1.5 text-white text-xs font-bold rounded-full bg-opacity-90 ${
-            isBlueCard ? "bg-blue-600" : "bg-orange-600"
-          }`}
+          className="px-3 py-1.5 text-white text-xs font-bold rounded-full bg-opacity-90"
+          style={{
+            backgroundColor: isBlueCard
+              ? "var(--brand-primary)"
+              : "var(--brand-secondary)"
+          }}
           aria-label={`Course category: ${course.category}`}
         >
           {course.category}

@@ -63,10 +63,18 @@ const MobileFilterPanel: React.FC<MobileFilterPanelProps> = ({
                     w-full px-4 py-3 rounded-lg text-left text-sm font-medium 
                     border transition-all 
                     ${activeCategory === category
-                      ? "bg-orange-500 text-white border-orange-500 shadow-md"
+                      ? "text-white shadow-md"
                       : "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100"
                     }
                   `}
+                  style={
+                    activeCategory === category
+                      ? {
+                          backgroundColor: "var(--brand-primary)",
+                          borderColor: "var(--brand-primary)"
+                        }
+                      : undefined
+                  }
                 >
                   {category}
                 </button>
