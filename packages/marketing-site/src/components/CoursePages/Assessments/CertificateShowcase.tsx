@@ -1,7 +1,9 @@
 'use client';
 
 import React from 'react';
-import { Award, CheckCircle, Star } from 'lucide-react';
+import Image from 'next/image';
+import { CheckCircle, Star } from 'lucide-react';
+import { useBrand } from "@quiz/marketing-site/brand";
 
 interface CertificateShowcaseProps {
   title: string;
@@ -20,7 +22,10 @@ export const CertificateShowcase: React.FC<CertificateShowcaseProps> = ({
   description,
   benefits,
   certificateDetails
-}) => (
+}) => {
+  const brand = useBrand();
+
+  return (
   <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-10 md:p-16 text-white mb-12">
     <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
       <div className="flex-1">
@@ -50,29 +55,40 @@ export const CertificateShowcase: React.FC<CertificateShowcaseProps> = ({
 
       <div className="flex-1 flex justify-center">
         <div className="relative group">
-          <div className="absolute -inset-6 bg-gradient-to-r from-amber-500/30 to-orange-500/30 rounded-3xl blur-2xl group-hover:blur-3xl transition-all duration-700"></div>
-          <div className="relative bg-gradient-to-br from-amber-50 to-yellow-100 p-10 rounded-3xl border-4 border-amber-200 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] transform rotate-3 group-hover:rotate-0 transition-all duration-700">
+          <div 
+            className="absolute -inset-6 rounded-3xl blur-[100px] opacity-30 mix-blend-screen transition-all duration-700 group-hover:opacity-50" 
+            style={{ backgroundColor: "var(--brand-secondary)" }}
+          ></div>
+          <div className="relative bg-white/10 backdrop-blur-xl p-10 rounded-3xl border border-white/20 shadow-2xl transform rotate-3 group-hover:rotate-0 transition-all duration-700">
             <div className="text-center">
-              <div className="inline-flex p-6 bg-amber-100 rounded-3xl mb-8">
-                <Award className="w-20 h-20 text-amber-600" />
+              <div className="flex justify-center mb-8">
+                <div className="bg-white/5 p-6 rounded-2xl border border-white/10 backdrop-blur-md">
+                  <Image 
+                    src={brand.logo} 
+                    alt={brand.name} 
+                    width={200} 
+                    height={60} 
+                    className="h-14 w-auto object-contain drop-shadow-xl" 
+                  />
+                </div>
               </div>
               <div className="mb-8">
-                <div className="font-bold text-gray-900 text-3xl mb-3">
+                <div className="font-bold text-white text-3xl mb-3 drop-shadow-md">
                   {certificateDetails.title}
                 </div>
-                <div className="text-gray-600 text-xl">{certificateDetails.subtitle}</div>
-                <div className="text-gray-600 text-lg">{certificateDetails.subSubtitle}</div>
+                <div className="text-white/90 text-xl font-medium">{certificateDetails.subtitle}</div>
+                <div className="text-white/70 text-lg mt-2">{certificateDetails.subSubtitle}</div>
               </div>
-              <div className="text-gray-500 text-sm mb-6">
-                Industry-Recognized • Globally Valid • Hiring Partner Verified
+              <div className="text-white/50 text-xs mb-6 uppercase tracking-[0.2em] font-bold">
+                Industry-Recognized • Globally Valid • Verified by {brand.name}
               </div>
-              <div className="pt-8 border-t border-amber-200">
+              <div className="pt-8 border-t border-white/10">
                 <div className="flex justify-center gap-2">
                   {[...Array(certificateDetails.rating)].map((_, i) => (
-                    <Star key={i} className="w-7 h-7 text-amber-500 fill-amber-500" />
+                    <Star key={i} className="w-7 h-7 text-yellow-400 fill-yellow-400 drop-shadow-[0_0_10px_rgba(250,204,21,0.5)]" />
                   ))}
                 </div>
-                <div className="text-gray-500 text-sm mt-3">Rated {certificateDetails.rating}/5 by Industry Experts</div>
+                <div className="text-white/60 text-sm mt-3 font-medium">Rated {certificateDetails.rating}/5 by Industry Experts</div>
               </div>
             </div>
           </div>
@@ -80,4 +96,5 @@ export const CertificateShowcase: React.FC<CertificateShowcaseProps> = ({
       </div>
     </div>
   </div>
-);
+  );
+};
