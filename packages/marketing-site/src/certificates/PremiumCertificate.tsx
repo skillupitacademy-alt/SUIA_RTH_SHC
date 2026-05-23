@@ -13,101 +13,77 @@ function CertificateIcon({
   color: string;
   type: "calendar" | "clock";
 }) {
-  const bgColor = color + "18"; // Light pink fill background
+  const bgColor = `${color}10`;
+
   if (type === "calendar") {
     return (
       <svg width="52" height="52" viewBox="0 0 52 52" aria-hidden="true">
-        <circle cx="26" cy="26" r="25" fill={bgColor} stroke={color} strokeWidth="2.5" />
-        <rect x="14" y="16" width="24" height="20" rx="3" fill="none" stroke={color} strokeWidth="2.5" />
-        <path d="M14 22h24" stroke={color} strokeWidth="2.5" />
-        <path d="M20 11v8M32 11v8" stroke={color} strokeWidth="2.5" strokeLinecap="round" />
-        <path d="M19 28h3M25 28h3M19 33h3M25 33h3" stroke={color} strokeWidth="2.5" strokeLinecap="round" />
+        <circle cx="26" cy="26" r="24" fill={bgColor} stroke={color} strokeWidth="2.1" />
+        <rect x="14.5" y="16.5" width="23" height="19" rx="2.6" fill="none" stroke={color} strokeWidth="2.1" />
+        <path d="M14.5 21.5h23" stroke={color} strokeWidth="2.1" />
+        <path d="M19.5 11.5v7M31.5 11.5v7" stroke={color} strokeWidth="2.1" strokeLinecap="round" />
+        <path d="M19.5 27.5h3M25.5 27.5h3M19.5 32.5h3M25.5 32.5h3" stroke={color} strokeWidth="2.1" strokeLinecap="round" />
       </svg>
     );
   }
 
   return (
     <svg width="52" height="52" viewBox="0 0 52 52" aria-hidden="true">
-      <circle cx="26" cy="26" r="25" fill={bgColor} stroke={color} strokeWidth="2.5" />
-      <circle cx="26" cy="26" r="11" fill="none" stroke={color} strokeWidth="2.5" />
-      <path d="M26 18v9l5 4" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="26" cy="26" r="24" fill={bgColor} stroke={color} strokeWidth="2.1" />
+      <circle cx="26" cy="26" r="10.5" fill="none" stroke={color} strokeWidth="2.1" />
+      <path d="M26 18.5v8.5l4.5 4" stroke={color} strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
 
-function Laurels({
-  side,
-}: {
-  side: "left" | "right";
-  color?: string; // Kept for backwards compatibility
-}) {
+function Laurels({ side }: { side: "left" | "right" }) {
   const isLeft = side === "left";
-  const leafColor = "#e5d1b8"; // Elegant beige watermark color
+  const leafColor = "#eedfd0";
 
   return (
-    <svg 
-      width="240" 
-      height="600" 
-      viewBox="0 0 240 600" 
+    <svg
+      width="250"
+      height="650"
+      viewBox="0 0 250 650"
       style={{
         position: "absolute",
-        left: isLeft ? "90px" : "auto",
-        right: !isLeft ? "90px" : "auto",
-        top: "280px",
-        opacity: 0.35,
+        left: isLeft ? "60px" : "auto",
+        right: !isLeft ? "60px" : "auto",
+        top: "255px",
+        opacity: 0.22,
         transform: isLeft ? "none" : "scaleX(-1)",
         pointerEvents: "none",
-        userSelect: "none"
+        userSelect: "none",
       }}
     >
       <g>
-        {/* Main Stem - Deep C-Shape Curve */}
         <path
-          d="M230 580 Q40 320 210 40"
+          d="M238 626 Q30 340 218 36"
           fill="none"
           stroke={leafColor}
-          strokeWidth="5"
+          strokeWidth="4"
           strokeLinecap="round"
         />
-        
-        {/* Alternating Pointed-Ellipse Leaves */}
-        {Array.from({ length: 22 }, (_, index) => {
-          const t = index / 21; // 0 to 1
+        {Array.from({ length: 24 }, (_, index) => {
+          const t = index / 23;
           const u = 1 - t;
-          
-          // Position along quadratic bezier curve (C-shape stem)
-          const x = u * u * 230 + 2 * u * t * 40 + t * t * 210;
-          const y = u * u * 580 + 2 * u * t * 320 + t * t * 40;
-          
-          // Tangent angle calculation
-          const dx = 2 * u * (40 - 230) + 2 * t * (210 - 40);
-          const dy = 2 * u * (320 - 580) + 2 * t * (40 - 320);
-          const angle = Math.atan2(dy, dx) * (180 / Math.PI); 
-          
-          const scale = 1.05 - (t * 0.5); 
-          const isOuterLeaf = index % 2 === 0;
-          const leafRotation = isOuterLeaf ? -42 : 42;
-          
+          const x = u * u * 238 + 2 * u * t * 30 + t * t * 218;
+          const y = u * u * 626 + 2 * u * t * 340 + t * t * 36;
+          const dx = 2 * u * (30 - 238) + 2 * t * (218 - 30);
+          const dy = 2 * u * (340 - 626) + 2 * t * (36 - 340);
+          const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+          const scale = 1.08 - t * 0.46;
+          const leafRotation = index % 2 === 0 ? -40 : 40;
+
           return (
-            <g 
-              key={index} 
+            <g
+              key={index}
               transform={`translate(${x}, ${y}) rotate(${angle + 90 + leafRotation}) scale(${scale})`}
             >
-              {/* Pointed ellipse (almond shape) geometrically bending left/right */}
-              <path 
-                d="M0,0 C-16,-20 -16,-50 0,-65 C16,-50 16,-20 0,0" 
-                fill={leafColor} 
-              />
+              <path d="M0,0 C-14,-18 -14,-46 0,-62 C14,-46 14,-18 0,0" fill={leafColor} />
             </g>
           );
         })}
-        
-        {/* Terminal top leaf */}
-        <g 
-          transform={`translate(210, 40) rotate(${Math.atan2(2 * 0 * (40 - 230) + 2 * 1 * (210 - 40), 2 * 0 * (320 - 580) + 2 * 1 * (40 - 320)) * (180 / Math.PI) + 90}) scale(0.55)`}
-        >
-          <path d="M0,0 C-16,-20 -16,-50 0,-65 C16,-50 16,-20 0,0" fill={leafColor} />
-        </g>
       </g>
     </svg>
   );
@@ -132,19 +108,10 @@ function Seal({
   return (
     <div style={{ position: "relative", width: 220, height: 330 }}>
       <svg width="220" height="330" viewBox="0 0 220 330" aria-hidden="true">
-        <path
-          d={starburst}
-          fill="none"
-          stroke={primary}
-          strokeWidth="18"
-          strokeLinejoin="round"
-        />
+        <path d={starburst} fill="none" stroke={primary} strokeWidth="18" strokeLinejoin="round" />
         <circle cx="110" cy="110" r="82" fill="#ffffff" stroke={primary} strokeWidth="12" />
         <circle cx="110" cy="110" r="67" fill="#ffffff" stroke={secondary} strokeWidth="8" />
-        <path
-          d={`M80 180 L80 298 L110 ${274} L140 298 L140 180 Z`}
-          fill={secondary}
-        />
+        <path d="M80 180 L80 298 L110 274 L140 298 L140 180 Z" fill={secondary} />
       </svg>
       <div
         style={{
@@ -168,7 +135,7 @@ function Seal({
           height={96}
           style={{
             objectFit: "contain",
-            transform: branding.brandId === "skillupitacademy" ? "scale(1.5)" : "none"
+            transform: branding.brandId === "skillupitacademy" ? "scale(1.5)" : "none",
           }}
         />
       </div>
@@ -181,17 +148,17 @@ export function PremiumCertificate({
   data,
 }: PremiumCertificateProps) {
   const [scale, setScale] = useState(1);
+  const previewPadding = 24;
 
   useEffect(() => {
     function updateScale() {
-      const availableWidth = window.innerWidth;
-      // 1600px cert width + 64px total horizontal padding
-      if (availableWidth < 1664) {
-        setScale((availableWidth - 64) / 1600);
-      } else {
-        setScale(1);
-      }
+      const availableWidth = window.innerWidth - previewPadding * 2;
+      const availableHeight = window.innerHeight - previewPadding * 2;
+      const widthScale = availableWidth / 1600;
+      const heightScale = availableHeight / 1100;
+      setScale(Math.min(widthScale, heightScale, 1));
     }
+
     updateScale();
     window.addEventListener("resize", updateScale);
     return () => window.removeEventListener("resize", updateScale);
@@ -205,16 +172,18 @@ export function PremiumCertificate({
     <div
       style={{
         width: "100%",
-        minHeight: "100vh",
-        padding: "32px",
+        height: "100vh",
+        padding: `${previewPadding}px`,
         background: "#e9eef6",
         boxSizing: "border-box",
         display: "flex",
         justifyContent: "center",
+        alignItems: "center",
+        overflow: "hidden",
       }}
     >
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Inter:wght@400;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap');
       `}</style>
       <div
         style={{
@@ -236,7 +205,7 @@ export function PremiumCertificate({
             borderRadius: 10,
             boxShadow: "0 32px 70px rgba(15, 23, 42, 0.18)",
             overflow: "hidden",
-            fontFamily: "\"Times New Roman\", Georgia, serif",
+            fontFamily: "'Cormorant Garamond', Georgia, serif",
           }}
         >
           <svg
@@ -253,25 +222,17 @@ export function PremiumCertificate({
                   d="M0 42C14 26 28 26 42 42C56 58 70 58 84 42"
                   fill="none"
                   stroke={branding.secondaryColor}
-                  strokeOpacity="0.03"
-                  strokeWidth="1.0"
+                  strokeOpacity="0.017"
+                  strokeWidth="0.9"
                 />
                 <path
                   d="M0 0C14 -16 28 -16 42 0C56 16 70 16 84 0"
                   fill="none"
                   stroke={branding.secondaryColor}
-                  strokeOpacity="0.02"
-                  strokeWidth="1.0"
+                  strokeOpacity="0.012"
+                  strokeWidth="0.9"
                 />
               </pattern>
-              <linearGradient id="topArcPrimary" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor={branding.primaryColor} />
-                <stop offset="100%" stopColor={branding.primaryColor} />
-              </linearGradient>
-              <linearGradient id="topArcSecondary" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor={branding.secondaryColor} />
-                <stop offset="100%" stopColor={branding.secondaryColor} />
-              </linearGradient>
             </defs>
 
             <rect width="1600" height="1100" fill={`url(#${patternId})`} />
@@ -318,40 +279,36 @@ export function PremiumCertificate({
               boxSizing: "border-box",
             }}
           >
-
-
             <div
               style={{
                 display: "grid",
                 gridTemplateColumns: "minmax(120px, 170px) auto",
                 alignItems: "center",
-                columnGap: 20,
-                marginTop: 6,
+                columnGap: branding.brandId === "skillupitacademy" ? 8 : 12,
+                marginTop: 10,
               }}
             >
               <div
                 style={{
                   position: "relative",
-                  width: branding.brandId === "skillupitacademy" ? 230 : 155,
-                  height: branding.brandId === "skillupitacademy" ? 230 : 155,
-                  margin: branding.brandId === "skillupitacademy" ? "-36px -36px" : 0,
+                  width: branding.brandId === "skillupitacademy" ? 182 : 148,
+                  height: branding.brandId === "skillupitacademy" ? 182 : 148,
+                  marginTop: branding.brandId === "skillupitacademy" ? -2 : 0,
                 }}
               >
                 <Image
                   src={branding.sealLogoSrc}
                   alt={`${branding.brandName} logo`}
                   fill
-                  sizes={branding.brandId === "skillupitacademy" ? "230px" : "155px"}
-                  style={{
-                    objectFit: "contain"
-                  }}
+                  sizes={branding.brandId === "skillupitacademy" ? "182px" : "148px"}
+                  style={{ objectFit: "contain" }}
                 />
               </div>
               <div style={{ textAlign: "center" }}>
                 <div
                   style={{
                     fontFamily: "'Inter', sans-serif",
-                    fontSize: branding.brandId === "skillupitacademy" ? 70 : 74,
+                    fontSize: branding.brandId === "skillupitacademy" ? 66 : 72,
                     fontWeight: 800,
                     lineHeight: 1,
                     letterSpacing: 0,
@@ -375,27 +332,29 @@ export function PremiumCertificate({
                 </div>
                 <div
                   style={{
-                    width: "78%",
+                    width: branding.brandId === "skillupitacademy" ? "76%" : "74%",
                     height: 3,
-                    margin: "12px auto 14px",
+                    margin: branding.brandId === "skillupitacademy"
+                      ? "11px auto 13px"
+                      : "10px auto 13px",
                     background: branding.primaryColor,
                   }}
                 />
                 <div
                   style={{
                     fontFamily: "'Inter', sans-serif",
-                    fontSize: 20,
+                    fontSize: branding.brandId === "skillupitacademy" ? 18 : 19,
                     fontWeight: 700,
-                    letterSpacing: 5.2,
+                    letterSpacing: branding.brandId === "skillupitacademy" ? 4.4 : 4.8,
                     color: branding.secondaryColor,
                   }}
                 >
-                  {branding.tagline.split(" • ").map((word, i, arr) => (
-                    <React.Fragment key={i}>
+                  {branding.tagline.split(" • ").map((word, index, words) => (
+                    <React.Fragment key={word + index}>
                       {word}
-                      {i < arr.length - 1 && (
+                      {index < words.length - 1 ? (
                         <span style={{ color: branding.primaryColor }}> • </span>
-                      )}
+                      ) : null}
                     </React.Fragment>
                   ))}
                 </div>
@@ -404,10 +363,12 @@ export function PremiumCertificate({
 
             <div
               style={{
-                marginTop: 26,
-                fontSize: 112,
-                lineHeight: 0.95,
-                letterSpacing: 4,
+                marginTop: 22,
+                fontFamily: "'Cormorant Garamond', Georgia, serif",
+                fontSize: 126,
+                fontWeight: 600,
+                lineHeight: 0.92,
+                letterSpacing: 3.2,
                 color: branding.secondaryColor,
               }}
             >
@@ -419,21 +380,22 @@ export function PremiumCertificate({
                 display: "flex",
                 alignItems: "center",
                 gap: 18,
-                marginTop: 8,
+                marginTop: 2,
               }}
             >
-              <div style={{ width: 150, height: 3, background: branding.primaryColor }} />
+              <div style={{ width: 148, height: 2.5, background: branding.primaryColor }} />
               <div
                 style={{
+                  fontFamily: "'Cormorant Garamond', Georgia, serif",
                   color: branding.primaryColor,
-                  fontSize: 48,
-                  lineHeight: 1,
-                  letterSpacing: 4.8,
+                  fontSize: 43,
+                  lineHeight: 0.95,
+                  letterSpacing: 3.8,
                 }}
               >
                 OF COMPLETION
               </div>
-              <div style={{ width: 150, height: 3, background: branding.primaryColor }} />
+              <div style={{ width: 148, height: 2.5, background: branding.primaryColor }} />
             </div>
 
             <div
@@ -448,16 +410,16 @@ export function PremiumCertificate({
               THIS IS TO CERTIFY THAT
             </div>
 
-              <div
+            <div
               style={{
                 marginTop: 16,
                 minWidth: 740,
                 paddingBottom: 14,
                 borderBottom: `3px solid ${branding.primaryColor}`,
-                fontSize: 90,
+                fontSize: 96,
                 lineHeight: 1.04,
                 textAlign: "center",
-                fontFamily: "'Great Vibes', cursive",
+                fontFamily: "'Alex Brush', cursive",
                 color: branding.secondaryColor,
               }}
             >
@@ -490,6 +452,7 @@ export function PremiumCertificate({
               <span>★</span>
               <div
                 style={{
+                  fontFamily: "'Cormorant Garamond', Georgia, serif",
                   fontSize: 60,
                   letterSpacing: 2.4,
                   color: branding.secondaryColor,
@@ -514,7 +477,6 @@ export function PremiumCertificate({
               {data.description}
             </div>
 
-            {/* WATERMARKS */}
             <Laurels side="left" />
             <Laurels side="right" />
 
@@ -528,17 +490,15 @@ export function PremiumCertificate({
               <Seal branding={branding} />
             </div>
 
-              {/* Absolute Footer Container */}
             <div
               style={{
                 position: "absolute",
                 bottom: 48,
                 left: 0,
                 right: 0,
-                height: 104, // Height of the QR code block
+                height: 104,
               }}
             >
-              {/* QR Code and Verify Text */}
               <div
                 style={{
                   position: "absolute",
@@ -573,26 +533,48 @@ export function PremiumCertificate({
                 </div>
               </div>
 
-
-              {/* COMPLETED ON */}
-              <div style={{ position: "absolute", left: 340, bottom: 96, display: "flex", gap: 14, alignItems: "center" }}>
+              <div
+                style={{
+                  position: "absolute",
+                  left: 350,
+                  bottom: 98,
+                  display: "flex",
+                  gap: 12,
+                  alignItems: "center",
+                }}
+              >
                 <CertificateIcon color={branding.primaryColor} type="calendar" />
                 <div style={{ fontFamily: "'Inter', sans-serif" }}>
-                  <div style={{ color: branding.secondaryColor, fontSize: 16, fontWeight: 700, letterSpacing: 0.5 }}>
+                  <div
+                    style={{
+                      color: branding.secondaryColor,
+                      fontSize: 15,
+                      fontWeight: 700,
+                      letterSpacing: 0.45,
+                    }}
+                  >
                     COMPLETED ON
                   </div>
-                  <div style={{ color: branding.secondaryColor, fontSize: 16, marginTop: 6 }}>
+                  <div style={{ color: branding.secondaryColor, fontSize: 15, marginTop: 5 }}>
                     {data.completedOn}
                   </div>
                 </div>
               </div>
 
-              {/* SIGNATURE */}
-              <div style={{ position: "absolute", left: "50%", transform: "translateX(-50%)", bottom: 24, textAlign: "center", width: 340 }}>
+              <div
+                style={{
+                  position: "absolute",
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  bottom: 24,
+                  textAlign: "center",
+                  width: 340,
+                }}
+              >
                 <div
                   style={{
                     fontSize: 54,
-                    fontFamily: "'Great Vibes', cursive",
+                    fontFamily: "'Alex Brush', cursive",
                     color: "#111827",
                     marginBottom: 8,
                   }}
@@ -621,7 +603,7 @@ export function PremiumCertificate({
                 <div
                   style={{
                     marginTop: 8,
-                    fontFamily: "Arial, 'Inter', Helvetica, sans-serif",
+                    fontFamily: "'Inter', sans-serif",
                     fontWeight: 400,
                     color: branding.secondaryColor,
                     fontSize: 16,
@@ -633,7 +615,7 @@ export function PremiumCertificate({
                 <div
                   style={{
                     marginTop: 6,
-                    fontFamily: "Arial, 'Inter', Helvetica, sans-serif",
+                    fontFamily: "'Inter', sans-serif",
                     fontWeight: 400,
                     color: branding.secondaryColor,
                     fontSize: 16,
@@ -644,27 +626,40 @@ export function PremiumCertificate({
                 </div>
               </div>
 
-
-              {/* DURATION */}
-              <div style={{ position: "absolute", right: 340, bottom: 96, display: "flex", gap: 14, alignItems: "center" }}>
+              <div
+                style={{
+                  position: "absolute",
+                  right: 350,
+                  bottom: 98,
+                  display: "flex",
+                  gap: 12,
+                  alignItems: "center",
+                }}
+              >
                 <CertificateIcon color={branding.primaryColor} type="clock" />
                 <div style={{ fontFamily: "'Inter', sans-serif", textAlign: "left" }}>
-                  <div style={{ color: branding.secondaryColor, fontSize: 16, fontWeight: 700, letterSpacing: 0.5 }}>
+                  <div
+                    style={{
+                      color: branding.secondaryColor,
+                      fontSize: 15,
+                      fontWeight: 700,
+                      letterSpacing: 0.45,
+                    }}
+                  >
                     DURATION
                   </div>
-                  <div style={{ color: branding.secondaryColor, fontSize: 16, marginTop: 6 }}>
+                  <div style={{ color: branding.secondaryColor, fontSize: 15, marginTop: 5 }}>
                     {data.duration}
                   </div>
                 </div>
               </div>
 
-              {/* CERTIFICATE ID - bottom right, clear of arc */}
               <div
                 style={{
                   position: "absolute",
                   right: 320,
                   bottom: 0,
-                  fontFamily: "Arial, Helvetica, sans-serif",
+                  fontFamily: "'Inter', sans-serif",
                   fontSize: 15,
                   fontWeight: 700,
                   letterSpacing: 0.4,
