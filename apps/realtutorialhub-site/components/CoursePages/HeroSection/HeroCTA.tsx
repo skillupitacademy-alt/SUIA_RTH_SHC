@@ -1,14 +1,13 @@
 'use client';
 
 import React from 'react';
-import { ChevronRight } from 'lucide-react';
 import { CTAButtons } from './types';
 
 interface HeroCTAProps {
   buttons: CTAButtons;
 }
 
-export const HeroCTA: React.FC<HeroCTAProps> = ({ buttons }) => (
+export const HeroCTA: React.FC<HeroCTAProps> = () => (
   <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-20">
     {/* <button className="group relative px-10 py-5 bg-gradient-to-r from-orange-500 via-orange-500 to-orange-600 text-white rounded-2xl font-bold text-lg shadow-2xl hover:shadow-orange-500/60 transition-all duration-300 hover:scale-110 overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-r from-orange-600 to-orange-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />

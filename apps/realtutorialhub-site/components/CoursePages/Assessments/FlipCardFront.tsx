@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { LucideIcon, RotateCw } from 'lucide-react';
+import { RotateCw } from 'lucide-react';
 
 interface FlipCardFrontProps {
   card: {

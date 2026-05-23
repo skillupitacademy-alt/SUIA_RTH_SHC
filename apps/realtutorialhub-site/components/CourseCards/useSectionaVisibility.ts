@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getLenis } from "../Providers/LenisProvider";
 
 export const useSectionVisibility = (id: string, topThreshold = 0.2, bottomThreshold = 0.8) => {
   const [isVisible, setIsVisible] = useState(false);

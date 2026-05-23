@@ -1,7 +1,7 @@
 
 
 import React from 'react';
-import { MapPin, Phone, Mail, Link as LinkIcon } from 'lucide-react';
+import { MapPin, Phone, Mail } from 'lucide-react';
 
 const FooterContact: React.FC = () => {
   return (

@@ -28,3 +28,8 @@ export const iconMap: Record<string, LucideIcon> = {
 export const getIconComponent = (iconName: string): LucideIcon => {
   return iconMap[iconName] || FileText;
 };
+
+export const renderPlacementServiceIcon = (iconName: string, className?: string) => {
+  const Icon = getIconComponent(iconName);
+  return <Icon className={className} />;
+};

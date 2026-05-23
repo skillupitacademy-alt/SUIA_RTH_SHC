@@ -8,11 +8,10 @@ import { HeroFeatures } from './HeroFeature';
 import { HeroCTA } from './HeroCTA';
 import { HeroStats } from './HeroStats';
 import { HeroSectionProps } from '@/lib/CoursesCardData';
-import { getIcon } from '@/lib/CoursesCardData';
 
 // Import Lucide icons for display
 import { 
-  Brain, TrendingUp, Award, DollarSign, 
+  Brain, TrendingUp, DollarSign, 
   Users, Code, Target, Zap,
   Database, BarChart3, Sparkles 
 } from 'lucide-react';
@@ -25,22 +24,18 @@ interface CourseHeroSectionProps extends HeroSectionProps {
 }
 
 export const CourseHeroSection: React.FC<CourseHeroSectionProps> = ({
-  id,
   title,
   heroTitle,
   heroSubtitle,
   description,
   heroDescription,
   heroSubDescription,
-  features = [],
   companies = [],
   ctaButtons,
 }) => {
-  const [isVisible, setIsVisible] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
-    setIsVisible(true);
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({
         x: (e.clientX / window.innerWidth) * 20 - 10,

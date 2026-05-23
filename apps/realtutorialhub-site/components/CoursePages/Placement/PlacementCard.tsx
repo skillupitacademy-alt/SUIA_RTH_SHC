@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { CheckCircle, ShieldCheck } from 'lucide-react';
-import { getIconComponent } from './iconMapper';// FIXED IMPORT PATH
+import { renderPlacementServiceIcon } from './iconMapper';
 import { PlacementService } from '@/lib/CoursesCardData';
 
 interface PlacementCardProps {
@@ -10,8 +10,6 @@ interface PlacementCardProps {
 }
 
 export const PlacementCard: React.FC<PlacementCardProps> = ({ service }) => {
-  const IconComponent = getIconComponent(service.icon);
-  
   const getFeatureColor = (serviceId: number, isCompleted: boolean) => {
     if (!isCompleted) return 'bg-gray-100 text-gray-400';
     
@@ -50,7 +48,7 @@ export const PlacementCard: React.FC<PlacementCardProps> = ({ service }) => {
               bg-gradient-to-br ${service.color}
               shadow-lg
             `}>
-              <IconComponent className="w-8 h-8" />
+              {renderPlacementServiceIcon(service.icon, "w-8 h-8")}
             </div>
 
             {/* Title */}

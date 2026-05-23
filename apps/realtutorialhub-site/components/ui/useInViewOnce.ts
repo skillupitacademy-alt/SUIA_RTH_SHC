@@ -7,20 +7,22 @@ export function useInViewOnce<T extends HTMLElement>(
 ) {
   const ref = useRef<T | null>(null);
   const [visible, setVisible] = useState(false);
+  const { root, rootMargin, threshold } = options;
 
   useEffect(() => {
-    if (!ref.current) return;
+    const element = ref.current;
+    if (!element) return;
 
     const observer = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting) {
         setVisible(true);
         observer.disconnect();
       }
-    }, options);
+    }, { root, rootMargin, threshold });
 
-    observer.observe(ref.current);
+    observer.observe(element);
     return () => observer.disconnect();
-  }, []);
+  }, [root, rootMargin, threshold]);
 
   return { ref, visible };
 }

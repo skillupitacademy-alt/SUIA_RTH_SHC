@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { getReactIcon } from './reactIconsMapper';
+import { renderReactIcon } from './reactIconsMapper';
 import { PrerequisiteCard as PrerequisiteCardType } from '@/lib/CoursesCardData';
 
 interface PrerequisiteCardProps {
@@ -9,8 +9,6 @@ interface PrerequisiteCardProps {
 }
 
 export const PrerequisiteCard: React.FC<PrerequisiteCardProps> = ({ card }) => {
-  const IconComponent = getReactIcon(card.icon);
-
   return (
     <div
       data-aos="fade-up"
@@ -21,7 +19,7 @@ export const PrerequisiteCard: React.FC<PrerequisiteCardProps> = ({ card }) => {
     >
       <div className="flex items-center gap-4 mb-8">
         <div className={`p-4 bg-gradient-to-br ${card.gradient} rounded-xl shadow-lg`}>
-          <IconComponent className="w-7 h-7 text-white" />
+          {renderReactIcon(card.icon, "w-7 h-7 text-white")}
         </div>
         <h2 className="text-2xl font-bold text-gray-900">
           {card.title}
@@ -30,14 +28,12 @@ export const PrerequisiteCard: React.FC<PrerequisiteCardProps> = ({ card }) => {
 
       <div className="space-y-4 flex-grow">
         {card.items.map((item, index) => {
-          const ItemIcon = getReactIcon(item.icon);
-          
           return (
             <div 
               key={index} 
               className="flex items-center gap-4 p-3 bg-white/70 rounded-xl border border-gray-100"
             >
-              <ItemIcon className={`w-6 h-6 ${item.iconColor || 'text-gray-600'}`} />
+              {renderReactIcon(item.icon, `w-6 h-6 ${item.iconColor || 'text-gray-600'}`)}
               <div className="flex-1">
                 <div className="font-semibold text-gray-900">
                   {item.title}

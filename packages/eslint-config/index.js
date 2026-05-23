@@ -9,13 +9,20 @@ module.exports = {
   rules: {
     // Start gentle: surface `any` without failing CI; tighten in later phase
     '@typescript-eslint/no-explicit-any': 'warn',
+    // typescript-eslint v8 on legacy config can mis-handle default options here
+    '@typescript-eslint/no-unused-expressions': [
+      'error',
+      {
+        allowShortCircuit: false,
+        allowTernary: false,
+        allowTaggedTemplates: false,
+        enforceForJSX: false,
+      },
+    ],
     // Allow empty blocks during initial rollout; tighten later
     'no-empty': 'warn',
     // Avoid blocking on stylistic cleanup yet
     'no-useless-catch': 'warn',
     'no-useless-escape': 'warn',
-    // Disable: @typescript-eslint v8 implementation crashes when paired with ESLint v8
-    // (the rule passes context options incompatibly to the base ESLint rule).
-    '@typescript-eslint/no-unused-expressions': 'off',
   },
 };

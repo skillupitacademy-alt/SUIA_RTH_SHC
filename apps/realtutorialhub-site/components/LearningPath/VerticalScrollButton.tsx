@@ -4,16 +4,16 @@ import { VerticalScrollButtonProps } from "@/lib/LearningPath";
 import { useEffect, useState } from "react";
 
 export function VerticalScrollButton({ isVisible, onClick }: VerticalScrollButtonProps) {
-  const [showButton, setShowButton] = useState(false);
+  const [showButton, setShowButton] = useState(isVisible);
 
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
     
     if (isVisible) {
-      // Show button immediately when visible
-      setShowButton(true);
+      timeoutId = setTimeout(() => {
+        setShowButton(true);
+      }, 0);
     } else {
-      // Hide button after a short delay to prevent flickering
       timeoutId = setTimeout(() => {
         setShowButton(false);
       }, 20);

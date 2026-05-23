@@ -63,24 +63,25 @@ const SlideIndicator: React.FC<SlideIndicatorProps> = ({
 /* ---------------- Hero Slider ---------------- */
 
 export default function HeroSlider({ onSlideChange }: HeroSliderProps) {
-  const [hydrated, setHydrated] = useState(false);
   const [startSlider, setStartSlider] = useState(false);
+  const sliderEnabled = startSlider;
 
   useEffect(() => {
-    setHydrated(true);
+    const start = () => setStartSlider(true);
+    const idleSupported = typeof window.requestIdleCallback === "function";
+
+    if (idleSupported) {
+      const idleCallbackId = window.requestIdleCallback(start);
+      return () => {
+        window.cancelIdleCallback(idleCallbackId);
+      };
+    }
+
+    const timeoutId = window.setTimeout(start, 1);
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
   }, []);
-
-  const sliderEnabled = hydrated && startSlider;
-
-  useEffect(() => {
-    if (!hydrated) return;
-
-    requestAnimationFrame(() => {
-      requestIdleCallback(() => {
-        setStartSlider(true);
-      });
-    });
-  }, [hydrated]);
 
   const {
     index: current,

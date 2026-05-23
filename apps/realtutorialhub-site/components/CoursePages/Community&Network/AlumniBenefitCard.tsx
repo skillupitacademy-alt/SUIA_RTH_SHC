@@ -1,4 +1,3 @@
-import { IconType } from "react-icons";
 import { iconMap } from "@/lib/CoursesCardData";
 
 interface AlumniBenefitCardProps {

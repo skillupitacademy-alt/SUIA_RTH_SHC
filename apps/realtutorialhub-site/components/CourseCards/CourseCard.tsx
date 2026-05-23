@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Course } from "@/lib/CoursesCardData";
-import { CARD_STYLES, ANIMATION_DELAY } from "@/lib/CoursesCardData";
+import { ANIMATION_DELAY } from "@/lib/CoursesCardData";
 
 import CourseCardHeader from "./CourseCardHeader";
 import CourseCardContent from "./CourseCardContent";

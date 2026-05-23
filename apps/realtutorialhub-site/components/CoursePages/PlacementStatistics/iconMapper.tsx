@@ -24,3 +24,8 @@ export const placementIconMap: Record<string, LucideIcon> = {
 export const getPlacementIcon = (iconName: string): LucideIcon => {
   return placementIconMap[iconName] || Building;
 };
+
+export const renderPlacementIcon = (iconName: string, className?: string) => {
+  const Icon = getPlacementIcon(iconName);
+  return <Icon className={className} />;
+};

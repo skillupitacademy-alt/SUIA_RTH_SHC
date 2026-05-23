@@ -5,22 +5,26 @@ import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 
 export default function LogoRingLoader() {
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(() => {
+        if (typeof window === 'undefined') {
+            return false;
+        }
+
+        return sessionStorage.getItem('showCourseLoader') === 'true';
+    });
     const pathname = usePathname();
 
     useEffect(() => {
         const shouldShow = sessionStorage.getItem('showCourseLoader') === 'true';
 
-        if (shouldShow) {
-            setIsLoading(true);
+        if (!shouldShow) return;
 
-            const timer = setTimeout(() => {
-                setIsLoading(false);
-                sessionStorage.removeItem('showCourseLoader');
-            }, 2500);
+        const timer = setTimeout(() => {
+            setIsLoading(false);
+            sessionStorage.removeItem('showCourseLoader');
+        }, 2500);
 
-            return () => clearTimeout(timer);
-        }
+        return () => clearTimeout(timer);
     }, [pathname]);
 
     useEffect(() => {

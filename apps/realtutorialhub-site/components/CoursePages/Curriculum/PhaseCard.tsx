@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { getLucideIcon } from './lucideIconsMapper';
+import { renderLucideIcon } from './lucideIconsMapper';
 import { getColorClasses, getDotColor } from './curriculumUtils';
 import { CurriculumPhase } from '@/lib/CoursesCardData';
 
@@ -10,8 +10,6 @@ interface PhaseCardProps {
 }
 
 export const PhaseCard: React.FC<PhaseCardProps> = ({ phase }) => {
-  const IconComponent = getLucideIcon(phase.icon);
-
   return (
     <div className="rounded-2xl border-2 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 bg-white" style={{ borderColor: `var(--color-${phase.borderColor.replace('border-', '')})` }}>
       <div className="relative">
@@ -23,7 +21,7 @@ export const PhaseCard: React.FC<PhaseCardProps> = ({ phase }) => {
           </div>
           <div className="flex items-center gap-4">
             <div className={`p-3 rounded-xl ${phase.gradient}`}>
-              <IconComponent className="w-4 h-4 md:w-7 md:h-7 text-white" />
+              {renderLucideIcon(phase.icon, "w-4 h-4 md:w-7 md:h-7 text-white")}
             </div>
             <div className='border border-transparent'>
               <h3 className="text-[13px] md:text-2xl font-bold text-gray-900">{phase.title}</h3>

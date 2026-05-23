@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   Code, Server, Globe, Cloud, Brain, Rocket,
   Layers, Briefcase, Wrench, Target, ChevronDown,
@@ -38,4 +37,9 @@ export const lucideIconMap: Record<string, LucideIcon> = {
 
 export const getLucideIcon = (iconName: string): LucideIcon => {
   return lucideIconMap[iconName] || Code;
+};
+
+export const renderLucideIcon = (iconName: string, className?: string) => {
+  const Icon = getLucideIcon(iconName);
+  return <Icon className={className} />;
 };

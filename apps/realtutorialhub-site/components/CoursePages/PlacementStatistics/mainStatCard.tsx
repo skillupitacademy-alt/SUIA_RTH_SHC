@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { getPlacementIcon } from './iconMapper';
+import { renderPlacementIcon } from './iconMapper';
 import { formatStatValue } from './formatters';
 import { PlacementStatCard } from '@/lib/CoursesCardData';
 
@@ -14,8 +14,6 @@ export const MainStatCard: React.FC<MainStatCardProps> = ({
   stat, 
   currentValue 
 }) => {
-  const IconComponent = getPlacementIcon(stat.icon);
-
   return (
     <div
       data-aos="fade-up"
@@ -26,7 +24,7 @@ export const MainStatCard: React.FC<MainStatCardProps> = ({
     >
       <div className="flex items-center justify-between mb-6">
         <div className={`p-3 rounded-xl ${stat.bgColor} ${stat.color}`}>
-          <IconComponent className="w-8 h-8" />
+          {renderPlacementIcon(stat.icon, "w-8 h-8")}
         </div>
         <div className="text-right">
           <div className="text-4xl md:text-5xl font-bold text-gray-900">

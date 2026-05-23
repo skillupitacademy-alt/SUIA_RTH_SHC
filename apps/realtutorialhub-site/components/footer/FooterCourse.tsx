@@ -1,7 +1,7 @@
 
 
 import React from 'react';
-import { POPULAR_COURSES, FOOTER_CONFIG } from '@/lib/FooterData';
+import { POPULAR_COURSES } from '@/lib/FooterData';
 
 const FooterCourse: React.FC = () => {
     return (

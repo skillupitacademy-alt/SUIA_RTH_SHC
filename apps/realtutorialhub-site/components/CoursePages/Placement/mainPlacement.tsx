@@ -3,7 +3,6 @@
 import React from 'react';
 import { PlacementHeader } from './PlacementHeader';
 import { PlacementCard } from './PlacementCard';
-import { useAOSInit } from './useAOSInit';
 import { PlacementSupportData } from '@/lib/CoursesCardData';
 
 interface PlacementSupportProps {

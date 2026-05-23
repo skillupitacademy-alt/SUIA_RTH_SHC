@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   GraduationCap,
   Briefcase,
@@ -20,4 +19,9 @@ export const lucideIconMap: Record<string, LucideIcon> = {
 
 export const getLucideIcon = (iconName: string): LucideIcon => {
   return lucideIconMap[iconName] || GraduationCap;
+};
+
+export const renderLucideIcon = (iconName: string, className?: string) => {
+  const Icon = getLucideIcon(iconName);
+  return <Icon className={className} />;
 };

@@ -41,7 +41,7 @@ export const LazySection = ({
     observer.observe(element);
 
     return () => observer.disconnect();
-  }, []);
+  }, [rootMargin]);
 
   // 2️⃣ Delay before showing actual content
   useEffect(() => {

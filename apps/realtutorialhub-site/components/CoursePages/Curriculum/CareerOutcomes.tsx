@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { getLucideIcon } from './lucideIconsMapper';
+import { renderLucideIcon } from './lucideIconsMapper';
 
 interface CareerOutcomeProps {
   title: string;
@@ -39,16 +39,13 @@ export const CareerOutcomes: React.FC<CareerOutcomesProps> = ({
   capstoneData,
   interviewPrep
 }) => {
-  const CapstoneIcon = getLucideIcon(capstoneData.icon);
-  const InterviewIcon = getLucideIcon(interviewPrep.icon);
-
   return (
     <div className="space-y-10">
       {/* Capstone + Interview Prep */}
       <div className="rounded-2xl p-6 border-2 border-red-200 bg-gradient-to-br from-red-50 to-pink-50">
         <div className="flex items-center gap-4 mb-6">
           <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center">
-            <CapstoneIcon className="w-10 h-7 text-white" />
+            {renderLucideIcon(capstoneData.icon, "w-10 h-7 text-white")}
           </div>
           <h3 className="text-md md:text-2xl font-bold text-gray-900">{capstoneData.title}</h3>
         </div>
@@ -56,7 +53,7 @@ export const CareerOutcomes: React.FC<CareerOutcomesProps> = ({
           {/* Capstone */}
           <div className={`rounded-xl p-6 bg-white ${capstoneData.borderColor}`}>
             <h4 className="text-md md:text-xl font-bold mb-4 flex items-center gap-2">
-              <CapstoneIcon className="w-6 h-6 text-red-500" /> {capstoneData.title}
+              {renderLucideIcon(capstoneData.icon, "w-6 h-6 text-red-500")} {capstoneData.title}
             </h4>
             <ul className="space-y-2 pl-4 text-gray-700 text-sm">
               {capstoneData.projects.map((project, idx) => (
@@ -71,7 +68,7 @@ export const CareerOutcomes: React.FC<CareerOutcomesProps> = ({
           {/* Interview */}
           <div className={`rounded-xl p-6 bg-white ${interviewPrep.borderColor}`}>
             <h4 className="text-md md:text-xl font-bold mb-4 flex items-center gap-2">
-              <InterviewIcon className="w-6 h-6 text-red-500" /> {interviewPrep.title}
+              {renderLucideIcon(interviewPrep.icon, "w-6 h-6 text-red-500")} {interviewPrep.title}
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -102,12 +99,11 @@ export const CareerOutcomes: React.FC<CareerOutcomesProps> = ({
       {/* Job Roles */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {outcomes.map((outcome, idx) => {
-          const OutcomeIcon = getLucideIcon(outcome.icon);
           return (
             <div key={idx} className={`rounded-2xl p-6 border-2 ${outcome.borderColor} ${outcome.bgColor}`}>
               <div className="flex items-center gap-4 mb-4">
                 <div className={`p-3 rounded-xl ${outcome.gradient}`}>
-                  <OutcomeIcon className="w-7 h-7 text-white" />
+                  {renderLucideIcon(outcome.icon, "w-7 h-7 text-white")}
                 </div>
                 <div>
                   <h4 className="text-xl font-bold text-gray-900">{outcome.title}</h4>

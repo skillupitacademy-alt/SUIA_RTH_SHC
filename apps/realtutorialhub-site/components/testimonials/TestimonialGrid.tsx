@@ -44,7 +44,7 @@ const TestimonialGrid: React.FC<TestimonialGridProps> = ({ testimonials }) => {
       whileInView="visible"
       viewport={{ once: true, amount: 0.2 }}
     >
-      {testimonials.map((testimonial, index) => (
+      {testimonials.map((testimonial) => (
         <motion.div
           key={testimonial.id}
           variants={cardVariants}

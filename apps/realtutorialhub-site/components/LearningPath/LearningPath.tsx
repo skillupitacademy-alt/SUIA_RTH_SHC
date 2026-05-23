@@ -1,6 +1,6 @@
 "use client";
 import { AnimatePresence, motion } from "framer-motion";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useRef, useCallback } from "react";
 import { CategorySelector } from "./CategorySelector";
 import { PathwayCard } from "./PathwayCard";
 import { MobileCategoryPanel } from "./MobileCategoryPanel";
@@ -8,7 +8,6 @@ import { VerticalScrollButton } from "./VerticalScrollButton";
 import {
   getCategories,
   getLearningPaths,
-  getCategoryColor,
   createCardId,
 } from "./utils";
 import { useSectionVisibilityLenis } from "./useSectionVisibilityLenis"; // Make sure this is imported
@@ -51,7 +50,6 @@ export default function LearningPath() {
 
   // Derived values
   const currentPaths = getLearningPaths(activeCategory);
-  const colors = getCategoryColor(activeCategory);
 
   return (
     <section

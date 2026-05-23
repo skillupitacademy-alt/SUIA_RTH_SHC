@@ -51,3 +51,8 @@ export const reactIconMap: Record<string, React.ComponentType<{ className?: stri
 export const getReactIcon = (iconName: string): React.ComponentType<{ className?: string }> => {
   return reactIconMap[iconName] || FaCode;
 };
+
+export const renderReactIcon = (iconName: string, className?: string) => {
+  const Icon = getReactIcon(iconName);
+  return <Icon className={className} />;
+};

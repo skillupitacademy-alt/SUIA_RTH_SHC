@@ -10,7 +10,7 @@ interface TechnicalSupportSectionProps {
 
 
 export const TechnicalSupportSection = ({ id }: TechnicalSupportSectionProps) => {
-    const { features, supportChannels, tagline } = TechData;
+    const { features, supportChannels } = TechData;
 
     return (
         <section id={id} className="relative py-16 px-4 md:px-8 lg:px-20 bg-transparent">

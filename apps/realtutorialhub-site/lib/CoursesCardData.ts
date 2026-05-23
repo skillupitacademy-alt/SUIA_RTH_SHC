@@ -14,7 +14,7 @@ import {
   FaGraduationCap, FaNetworkWired, FaChartLine,
   FaVideo, FaUserGraduate, FaQuestionCircle,
   FaCalendarAlt, FaLaptopCode, FaCalendarDay, FaUsers,
-  FaHeadset, FaChalkboardTeacher, FaDownload, FaBug,
+  FaHeadset, FaDownload, FaBug,
   FaCodeBranch, FaWhatsapp, FaEnvelope
 } from "react-icons/fa";
 

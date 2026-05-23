@@ -2,7 +2,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { FOOTER_CONFIG } from '@/lib/FooterData';
 
 const FooterBrand: React.FC = () => {
   const [email, setEmail] = useState('');

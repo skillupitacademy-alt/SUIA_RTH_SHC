@@ -60,7 +60,7 @@ const ContactInfo: React.FC<ContactInfoProps> = ({
         <h2 className="text-2xl font-bold text-blue-700 mb-6">Get In Touch</h2>
 
         <div className="space-y-6">
-          {CONTACT_INFO.map((info: ContactInfoType, index) => {
+          {CONTACT_INFO.map((info: ContactInfoType) => {
             const colorClasses = getColorClasses(info.color);
             return (
               <div

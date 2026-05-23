@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { getLucideIcon } from './lucideIconsMapper';
+import { renderLucideIcon } from './lucideIconsMapper';
 
 interface ProjectCardProps {
   project: {
@@ -17,8 +17,6 @@ interface ProjectCardProps {
 }
 
 export const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
-  const IconComponent = getLucideIcon(project.icon);
-
   return (
     <div className={`rounded-2xl border-2 p-6 ${project.bgColor} ${project.borderColor}`}>
 
@@ -26,7 +24,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
       <div className="flex items-center justify-center mb-4">
         <div className="flex items-center flex-col md:flex-row gap-4">
           <div className={`p-3 rounded-xl ${project.gradient}`}>
-            <IconComponent className="w-7 h-7" />
+            {renderLucideIcon(project.icon, "w-7 h-7")}
           </div>
           <div>
             <h3 className="text-[18px] text-center md:text-xl font-bold text-gray-900">

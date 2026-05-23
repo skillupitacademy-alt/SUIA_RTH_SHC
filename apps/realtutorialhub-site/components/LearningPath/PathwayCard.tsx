@@ -192,7 +192,7 @@ function CardHeader({
       <h3 className="text-2xl font-black text-gray-900 mb-3">{item.title}</h3>
       <div className="flex items-center gap-3">
         <span className="text-xs text-gray-700 font-bold uppercase tracking-widest">
-          What You'll Learn:
+          What You&apos;ll Learn:
         </span>
         <div className={`flex-1 h-1 ${colors.solid} rounded-full`}></div>
       </div>

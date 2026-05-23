@@ -3,13 +3,7 @@ import { AlumniBenefitsGrid } from "./AlumniBenefitsGrid";
 import { CommunitySection } from "@/lib/CoursesCardData";
 import { SectionHeader } from "@/components/CommonHeader/SectionHeader";
 
-
-interface CommunityNetworkSectionProps {
-  id: string;
-}
-
-
-export const CommunityNetworkSection = ({ id }: CommunityNetworkSectionProps) => {
+export const CommunityNetworkSection = () => {
   const { communityFeatures, alumniBenefits } = CommunitySection;
 
   return (

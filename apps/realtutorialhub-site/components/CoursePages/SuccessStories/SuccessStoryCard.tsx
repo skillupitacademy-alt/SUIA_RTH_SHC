@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { DollarSign } from 'lucide-react';
-import { getLucideIcon } from './lucideIconsMapper';
+import { renderLucideIcon } from './lucideIconsMapper';
 import { SuccessStory } from '@/lib/CoursesCardData';
 
 interface SuccessStoryCardProps {
@@ -10,8 +10,6 @@ interface SuccessStoryCardProps {
 }
 
 export const SuccessStoryCard: React.FC<SuccessStoryCardProps> = ({ story }) => {
-  const IconComponent = getLucideIcon(story.icon);
-
   return (
     <div
       data-aos="fade-up"
@@ -26,12 +24,12 @@ export const SuccessStoryCard: React.FC<SuccessStoryCardProps> = ({ story }) => 
           <p className="text-gray-700 font-medium">{story.role}</p>
         </div>
         <div className="p-3 bg-white rounded-xl shadow-sm">
-          <IconComponent className="w-6 h-6" />
+          {renderLucideIcon(story.icon, "w-6 h-6")}
         </div>
       </div>
 
       <blockquote className="text-gray-600 italic mb-6 border-l-4 border-gray-300 pl-4 py-1">
-        "{story.quote}"
+        &quot;{story.quote}&quot;
       </blockquote>
 
       <div className="space-y-4">
