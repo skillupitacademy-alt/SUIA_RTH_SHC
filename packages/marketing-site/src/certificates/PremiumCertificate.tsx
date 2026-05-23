@@ -13,23 +13,24 @@ function CertificateIcon({
   color: string;
   type: "calendar" | "clock";
 }) {
+  const bgColor = color + "18"; // Light pink fill background
   if (type === "calendar") {
     return (
-      <svg width="42" height="42" viewBox="0 0 42 42" aria-hidden="true">
-        <circle cx="21" cy="21" r="20" fill="none" stroke={color} strokeWidth="2.5" />
-        <rect x="11" y="13" width="20" height="17" rx="3" fill="none" stroke={color} strokeWidth="2.5" />
-        <path d="M11 18h20" stroke={color} strokeWidth="2.5" />
-        <path d="M16 9v7M26 9v7" stroke={color} strokeWidth="2.5" strokeLinecap="round" />
-        <path d="M16 23h3M22 23h3M16 27h3M22 27h3" stroke={color} strokeWidth="2.5" strokeLinecap="round" />
+      <svg width="52" height="52" viewBox="0 0 52 52" aria-hidden="true">
+        <circle cx="26" cy="26" r="25" fill={bgColor} stroke={color} strokeWidth="2.5" />
+        <rect x="14" y="16" width="24" height="20" rx="3" fill="none" stroke={color} strokeWidth="2.5" />
+        <path d="M14 22h24" stroke={color} strokeWidth="2.5" />
+        <path d="M20 11v8M32 11v8" stroke={color} strokeWidth="2.5" strokeLinecap="round" />
+        <path d="M19 28h3M25 28h3M19 33h3M25 33h3" stroke={color} strokeWidth="2.5" strokeLinecap="round" />
       </svg>
     );
   }
 
   return (
-    <svg width="42" height="42" viewBox="0 0 42 42" aria-hidden="true">
-      <circle cx="21" cy="21" r="20" fill="none" stroke={color} strokeWidth="2.5" />
-      <circle cx="21" cy="21" r="9" fill="none" stroke={color} strokeWidth="2.5" />
-      <path d="M21 15v7l4 3" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+    <svg width="52" height="52" viewBox="0 0 52 52" aria-hidden="true">
+      <circle cx="26" cy="26" r="25" fill={bgColor} stroke={color} strokeWidth="2.5" />
+      <circle cx="26" cy="26" r="11" fill="none" stroke={color} strokeWidth="2.5" />
+      <path d="M26 18v9l5 4" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -326,6 +327,8 @@ export function PremiumCertificate({
                 fontSize: 18,
                 fontWeight: 700,
                 letterSpacing: 0.4,
+                paddingRight: 250,
+                boxSizing: "border-box",
               }}
             >
               <span style={{ color: branding.secondaryColor }}>CERTIFICATE ID:</span>
@@ -533,8 +536,8 @@ export function PremiumCertificate({
             <div
               style={{
                 position: "absolute",
-                top: 116,
-                right: 120,
+                top: 44,
+                right: 55,
               }}
             >
               <Seal branding={branding} />
