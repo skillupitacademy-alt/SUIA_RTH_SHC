@@ -318,22 +318,7 @@ export function PremiumCertificate({
               boxSizing: "border-box",
             }}
           >
-            <div
-              style={{
-                width: "100%",
-                display: "flex",
-                justifyContent: "flex-end",
-                fontFamily: "Arial, Helvetica, sans-serif",
-                fontSize: 18,
-                fontWeight: 700,
-                letterSpacing: 0.4,
-                paddingRight: 250,
-                boxSizing: "border-box",
-              }}
-            >
-              <span style={{ color: branding.secondaryColor }}>CERTIFICATE ID:</span>
-              <span style={{ color: branding.primaryColor, marginLeft: 6 }}>{data.certificateId}</span>
-            </div>
+
 
             <div
               style={{
@@ -636,10 +621,11 @@ export function PremiumCertificate({
                 <div
                   style={{
                     marginTop: 8,
-                    fontFamily: "'Inter', sans-serif",
+                    fontFamily: "Arial, 'Inter', Helvetica, sans-serif",
+                    fontWeight: 400,
                     color: branding.secondaryColor,
                     fontSize: 16,
-                    letterSpacing: 3,
+                    letterSpacing: 2.5,
                   }}
                 >
                   {data.instructorTitle}
@@ -647,10 +633,11 @@ export function PremiumCertificate({
                 <div
                   style={{
                     marginTop: 6,
-                    fontFamily: "'Inter', sans-serif",
+                    fontFamily: "Arial, 'Inter', Helvetica, sans-serif",
+                    fontWeight: 400,
                     color: branding.secondaryColor,
                     fontSize: 16,
-                    letterSpacing: 2.6,
+                    letterSpacing: 2.5,
                   }}
                 >
                   {data.organizationLine}
@@ -669,6 +656,25 @@ export function PremiumCertificate({
                     {data.duration}
                   </div>
                 </div>
+              </div>
+
+              {/* CERTIFICATE ID - bottom right, clear of arc */}
+              <div
+                style={{
+                  position: "absolute",
+                  right: 320,
+                  bottom: 0,
+                  fontFamily: "Arial, Helvetica, sans-serif",
+                  fontSize: 15,
+                  fontWeight: 700,
+                  letterSpacing: 0.4,
+                  display: "flex",
+                  alignItems: "flex-end",
+                  gap: 6,
+                }}
+              >
+                <span style={{ color: branding.secondaryColor }}>CERTIFICATE ID:</span>
+                <span style={{ color: branding.primaryColor }}>{data.certificateId}</span>
               </div>
             </div>
           </div>
