@@ -14,5 +14,8 @@ module.exports = {
     // Avoid blocking on stylistic cleanup yet
     'no-useless-catch': 'warn',
     'no-useless-escape': 'warn',
+    // Disable: @typescript-eslint v8 implementation crashes when paired with ESLint v8
+    // (the rule passes context options incompatibly to the base ESLint rule).
+    '@typescript-eslint/no-unused-expressions': 'off',
   },
 };
