@@ -588,14 +588,15 @@ export function PremiumCertificate({
                 </div>
               </div>
 
+
               {/* COMPLETED ON */}
-              <div style={{ position: "absolute", left: 340, bottom: 60, display: "flex", gap: 18, alignItems: "center" }}>
+              <div style={{ position: "absolute", left: 340, bottom: 96, display: "flex", gap: 14, alignItems: "center" }}>
                 <CertificateIcon color={branding.primaryColor} type="calendar" />
                 <div style={{ fontFamily: "'Inter', sans-serif" }}>
-                  <div style={{ color: branding.secondaryColor, fontSize: 22, fontWeight: 700 }}>
+                  <div style={{ color: branding.secondaryColor, fontSize: 16, fontWeight: 700, letterSpacing: 0.5 }}>
                     COMPLETED ON
                   </div>
-                  <div style={{ color: branding.secondaryColor, fontSize: 22, marginTop: 8 }}>
+                  <div style={{ color: branding.secondaryColor, fontSize: 16, marginTop: 6 }}>
                     {data.completedOn}
                   </div>
                 </div>
@@ -656,14 +657,15 @@ export function PremiumCertificate({
                 </div>
               </div>
 
+
               {/* DURATION */}
-              <div style={{ position: "absolute", right: 340, bottom: 60, display: "flex", gap: 18, alignItems: "center" }}>
+              <div style={{ position: "absolute", right: 340, bottom: 96, display: "flex", gap: 14, alignItems: "center" }}>
                 <CertificateIcon color={branding.primaryColor} type="clock" />
                 <div style={{ fontFamily: "'Inter', sans-serif", textAlign: "left" }}>
-                  <div style={{ color: branding.secondaryColor, fontSize: 22, fontWeight: 700 }}>
+                  <div style={{ color: branding.secondaryColor, fontSize: 16, fontWeight: 700, letterSpacing: 0.5 }}>
                     DURATION
                   </div>
-                  <div style={{ color: branding.secondaryColor, fontSize: 22, marginTop: 8 }}>
+                  <div style={{ color: branding.secondaryColor, fontSize: 16, marginTop: 6 }}>
                     {data.duration}
                   </div>
                 </div>
