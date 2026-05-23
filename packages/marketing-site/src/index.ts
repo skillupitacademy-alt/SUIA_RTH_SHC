@@ -11,10 +11,16 @@ export {
   CertificatePreviewFallback,
   CertificatePreviewPage,
 } from "./certificates/CertificatePreviewPage";
-export { buildPreviewCertificateData, getCertificateBranding } from "./certificates/branding";
+export { CertificateGeneratorPage } from "./certificates/CertificateGeneratorPage";
+export {
+  buildCertificateGeneratorDefaults,
+  buildPreviewCertificateData,
+  getCertificateBranding,
+} from "./certificates/branding";
 export type {
   CertificateBranding,
   CertificateData,
+  CertificateGeneratorFormValues,
   CertificatePreviewSearchParams,
   PremiumCertificateProps,
 } from "./certificates/types";

@@ -30,6 +30,25 @@ export interface PremiumCertificateProps {
   data: CertificateData;
 }
 
+export interface CertificateGeneratorFormValues {
+  brandId: MarketingBrand["id"];
+  studentName: string;
+  studentId: string;
+  email: string;
+  courseName: string;
+  courseSlug: string;
+  duration: string;
+  description: string;
+  certificateId: string;
+  completedOn: string;
+  issueDate: string;
+  instructorName: string;
+  instructorTitle: string;
+  organizationLine: string;
+  verificationUrl: string;
+  autoGenerateVerificationUrl: boolean;
+}
+
 export type CertificatePreviewSearchParams = Record<
   string,
   string | string[] | undefined

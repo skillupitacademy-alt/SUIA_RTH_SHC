@@ -7,11 +7,25 @@ import type { MarketingBrand } from "../brand";
 import { buildPreviewCertificateData, getCertificateBranding } from "./branding";
 import { PremiumCertificate } from "./PremiumCertificate";
 
+function resolveBrand(
+  brands: MarketingBrand[],
+  searchBrandId: string | null,
+): MarketingBrand {
+  const fallbackBrand = brands[0];
+
+  if (!searchBrandId) {
+    return fallbackBrand;
+  }
+
+  return brands.find((brand) => brand.id === searchBrandId) ?? fallbackBrand;
+}
+
 export function CertificatePreviewFallback({
-  brand,
+  brands,
 }: {
-  brand: MarketingBrand;
+  brands: MarketingBrand[];
 }) {
+  const brand = brands[0];
   const branding = getCertificateBranding(brand);
   const data = buildPreviewCertificateData(branding);
 
@@ -19,11 +33,15 @@ export function CertificatePreviewFallback({
 }
 
 export function CertificatePreviewPage({
-  brand,
+  brands,
 }: {
-  brand: MarketingBrand;
+  brands: MarketingBrand[];
 }) {
   const searchParams = useSearchParams();
+  const brand = useMemo(
+    () => resolveBrand(brands, searchParams.get("brand")),
+    [brands, searchParams],
+  );
   const branding = useMemo(() => getCertificateBranding(brand), [brand]);
 
   const data = useMemo(

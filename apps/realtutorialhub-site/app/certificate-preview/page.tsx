@@ -5,12 +5,12 @@ import {
   CertificatePreviewPage,
 } from "@quiz/marketing-site";
 
-import { brand } from "../../brand";
+import { certificateToolBrands } from "../certificate-tools-brands";
 
 export default function RealTutorialHubCertificatePreviewPage() {
   return (
-    <Suspense fallback={<CertificatePreviewFallback brand={brand} />}>
-      <CertificatePreviewPage brand={brand} />
+    <Suspense fallback={<CertificatePreviewFallback brands={certificateToolBrands} />}>
+      <CertificatePreviewPage brands={certificateToolBrands} />
     </Suspense>
   );
 }
