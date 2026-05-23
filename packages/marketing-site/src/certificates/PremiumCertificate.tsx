@@ -38,48 +38,52 @@ function Laurels({
   side,
 }: {
   side: "left" | "right";
-  color?: string; // Kept for backwards compatibility if passed, but ignored
+  color?: string; // Kept for backwards compatibility
 }) {
   const isLeft = side === "left";
-  // Fixed elegant beige color matching the original design watermark
-  const leafColor = "#e5d1b8";
+  const leafColor = "#e5d1b8"; // Elegant beige watermark color
 
   return (
     <svg 
-      width="300" 
-      height="470" 
-      viewBox="0 0 300 500" 
-      aria-hidden="true"
+      width="240" 
+      height="600" 
+      viewBox="0 0 240 600" 
       style={{
+        position: "absolute",
+        left: isLeft ? "90px" : "auto",
+        right: !isLeft ? "90px" : "auto",
+        top: "280px",
+        opacity: 0.35,
         transform: isLeft ? "none" : "scaleX(-1)",
-        transformOrigin: "center"
+        pointerEvents: "none",
+        userSelect: "none"
       }}
     >
-      <g opacity="0.6">
-        {/* Main Stem */}
+      <g>
+        {/* Main Stem - Deep C-Shape Curve */}
         <path
-          d="M150 480 Q110 320 180 60"
+          d="M230 580 Q40 320 210 40"
           fill="none"
           stroke={leafColor}
-          strokeWidth="6"
+          strokeWidth="5"
           strokeLinecap="round"
         />
         
-        {/* Alternating Leaves */}
+        {/* Alternating Pointed-Ellipse Leaves */}
         {Array.from({ length: 22 }, (_, index) => {
           const t = index / 21; // 0 to 1
           const u = 1 - t;
           
-          // Position along quadratic bezier curve
-          const x = u * u * 150 + 2 * u * t * 110 + t * t * 180;
-          const y = u * u * 480 + 2 * u * t * 320 + t * t * 60;
+          // Position along quadratic bezier curve (C-shape stem)
+          const x = u * u * 230 + 2 * u * t * 40 + t * t * 210;
+          const y = u * u * 580 + 2 * u * t * 320 + t * t * 40;
           
           // Tangent angle calculation
-          const dx = 2 * u * (110 - 150) + 2 * t * (180 - 110);
-          const dy = 2 * u * (320 - 480) + 2 * t * (60 - 320);
+          const dx = 2 * u * (40 - 230) + 2 * t * (210 - 40);
+          const dy = 2 * u * (320 - 580) + 2 * t * (40 - 320);
           const angle = Math.atan2(dy, dx) * (180 / Math.PI); 
           
-          const scale = 1.05 - (t * 0.65); 
+          const scale = 1.05 - (t * 0.5); 
           const isOuterLeaf = index % 2 === 0;
           const leafRotation = isOuterLeaf ? -42 : 42;
           
@@ -88,9 +92,9 @@ function Laurels({
               key={index} 
               transform={`translate(${x}, ${y}) rotate(${angle + 90 + leafRotation}) scale(${scale})`}
             >
-              {/* Elegant botanical leaf shape */}
+              {/* Pointed ellipse (almond shape) geometrically bending left/right */}
               <path 
-                d="M0,0 C-18,-25 -12,-60 0,-75 C12,-60 18,-25 0,0" 
+                d="M0,0 C-16,-20 -16,-50 0,-65 C16,-50 16,-20 0,0" 
                 fill={leafColor} 
               />
             </g>
@@ -99,9 +103,9 @@ function Laurels({
         
         {/* Terminal top leaf */}
         <g 
-          transform={`translate(180, 60) rotate(${Math.atan2(2 * 0 * (110 - 150) + 2 * 1 * (180 - 110), 2 * 0 * (320 - 480) + 2 * 1 * (60 - 320)) * (180 / Math.PI) + 90}) scale(0.45)`}
+          transform={`translate(210, 40) rotate(${Math.atan2(2 * 0 * (40 - 230) + 2 * 1 * (210 - 40), 2 * 0 * (320 - 580) + 2 * 1 * (40 - 320)) * (180 / Math.PI) + 90}) scale(0.55)`}
         >
-          <path d="M0,0 C-18,-25 -12,-60 0,-75 C12,-60 18,-25 0,0" fill={leafColor} />
+          <path d="M0,0 C-16,-20 -16,-50 0,-65 C16,-50 16,-20 0,0" fill={leafColor} />
         </g>
       </g>
     </svg>
@@ -248,15 +252,15 @@ export function PremiumCertificate({
                   d="M0 42C14 26 28 26 42 42C56 58 70 58 84 42"
                   fill="none"
                   stroke={branding.secondaryColor}
-                  strokeOpacity="0.07"
-                  strokeWidth="1.2"
+                  strokeOpacity="0.03"
+                  strokeWidth="1.0"
                 />
                 <path
                   d="M0 0C14 -16 28 -16 42 0C56 16 70 16 84 0"
                   fill="none"
                   stroke={branding.secondaryColor}
-                  strokeOpacity="0.04"
-                  strokeWidth="1.2"
+                  strokeOpacity="0.02"
+                  strokeWidth="1.0"
                 />
               </pattern>
               <linearGradient id="topArcPrimary" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -522,25 +526,9 @@ export function PremiumCertificate({
               {data.description}
             </div>
 
-            <div
-              style={{
-                position: "absolute",
-                left: 120,
-                top: 356,
-              }}
-            >
-              <Laurels side="left" color={branding.primaryColor} />
-            </div>
-
-            <div
-              style={{
-                position: "absolute",
-                right: 120,
-                top: 356,
-              }}
-            >
-              <Laurels side="right" color={branding.primaryColor} />
-            </div>
+            {/* WATERMARKS */}
+            <Laurels side="left" />
+            <Laurels side="right" />
 
             <div
               style={{

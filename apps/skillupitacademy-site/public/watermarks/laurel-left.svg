@@ -1,0 +1,170 @@
+<svg
+  width="220"
+  height="620"
+  viewBox="0 0 220 620"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <g opacity="1">
+
+    <!-- STEM -->
+    <path
+      d="
+        M120 590
+        C110 520 105 450 110 390
+        C115 320 130 250 150 180
+        C160 140 168 100 170 40
+      "
+      stroke="#d9c8b2"
+      stroke-width="10"
+      stroke-linecap="round"
+      fill="none"
+    />
+
+    <!-- LEAVES -->
+
+    <!-- Bottom -->
+    <ellipse
+      cx="88"
+      cy="540"
+      rx="24"
+      ry="54"
+      transform="rotate(-58 88 540)"
+      fill="#d9c8b2"
+    />
+
+    <ellipse
+      cx="140"
+      cy="515"
+      rx="22"
+      ry="48"
+      transform="rotate(48 140 515)"
+      fill="#d9c8b2"
+    />
+
+    <!-- Layer 2 -->
+    <ellipse
+      cx="82"
+      cy="475"
+      rx="20"
+      ry="44"
+      transform="rotate(-54 82 475)"
+      fill="#d9c8b2"
+    />
+
+    <ellipse
+      cx="148"
+      cy="450"
+      rx="18"
+      ry="40"
+      transform="rotate(44 148 450)"
+      fill="#d9c8b2"
+    />
+
+    <!-- Layer 3 -->
+    <ellipse
+      cx="92"
+      cy="410"
+      rx="18"
+      ry="38"
+      transform="rotate(-50 92 410)"
+      fill="#d9c8b2"
+    />
+
+    <ellipse
+      cx="154"
+      cy="385"
+      rx="17"
+      ry="36"
+      transform="rotate(40 154 385)"
+      fill="#d9c8b2"
+    />
+
+    <!-- Layer 4 -->
+    <ellipse
+      cx="104"
+      cy="345"
+      rx="16"
+      ry="34"
+      transform="rotate(-46 104 345)"
+      fill="#d9c8b2"
+    />
+
+    <ellipse
+      cx="160"
+      cy="320"
+      rx="15"
+      ry="32"
+      transform="rotate(36 160 320)"
+      fill="#d9c8b2"
+    />
+
+    <!-- Layer 5 -->
+    <ellipse
+      cx="115"
+      cy="285"
+      rx="14"
+      ry="30"
+      transform="rotate(-42 115 285)"
+      fill="#d9c8b2"
+    />
+
+    <ellipse
+      cx="164"
+      cy="258"
+      rx="13"
+      ry="28"
+      transform="rotate(34 164 258)"
+      fill="#d9c8b2"
+    />
+
+    <!-- Layer 6 -->
+    <ellipse
+      cx="128"
+      cy="225"
+      rx="12"
+      ry="26"
+      transform="rotate(-38 128 225)"
+      fill="#d9c8b2"
+    />
+
+    <ellipse
+      cx="168"
+      cy="200"
+      rx="11"
+      ry="24"
+      transform="rotate(30 168 200)"
+      fill="#d9c8b2"
+    />
+
+    <!-- Top -->
+    <ellipse
+      cx="145"
+      cy="155"
+      rx="10"
+      ry="22"
+      transform="rotate(-28 145 155)"
+      fill="#d9c8b2"
+    />
+
+    <ellipse
+      cx="176"
+      cy="120"
+      rx="9"
+      ry="20"
+      transform="rotate(22 176 120)"
+      fill="#d9c8b2"
+    />
+
+    <!-- Tip -->
+    <ellipse
+      cx="182"
+      cy="72"
+      rx="8"
+      ry="18"
+      transform="rotate(10 182 72)"
+      fill="#d9c8b2"
+    />
+
+  </g>
+</svg>
