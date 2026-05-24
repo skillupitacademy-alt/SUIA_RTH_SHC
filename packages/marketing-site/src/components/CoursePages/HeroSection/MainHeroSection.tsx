@@ -102,8 +102,5 @@ export const CourseHeroSection: React.FC<CourseHeroSectionProps> = ({
         <HeroStats stats={stats} />
       </div>
     </div>
-        )}
-      </div>
-    </div>
   );
 };
