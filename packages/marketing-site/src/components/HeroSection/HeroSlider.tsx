@@ -202,7 +202,7 @@ export default function HeroSlider({ onSlideChange }: HeroSliderProps) {
   );
 
   const renderDesktopImage = () => (
-    <div className="w-full max-w-lg mx-auto">
+    <div className="w-full max-w-lg ml-auto">
       <div
         className={`relative w-full aspect-[3/4] transition-all duration-700 ${
           isAnimating ? "opacity-0 translate-y-8" : "opacity-100 translate-y-0"
