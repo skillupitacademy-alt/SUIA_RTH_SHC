@@ -116,33 +116,7 @@ export default function HeroSlider({ onSlideChange }: HeroSliderProps) {
     Globe, Compass, BookOpen, Cpu, Sparkles,
   };
 
-  const renderTopCards = () => {
-    return (
-      <div className="absolute top-8 left-0 right-0 w-full hidden md:flex justify-start gap-12 px-12 lg:px-24 z-20">
-        {currentSlide.floatingIcons.map((item, idx) => {
-          const Icon = ICON_MAP[item.icon];
-          if (!Icon) return null;
-          const cardColor = idx % 2 === 0 ? "var(--brand-primary)" : "var(--brand-secondary)";
-          return (
-            <div
-              key={`top-${current}-${idx}`}
-              className="flex flex-col items-center justify-center gap-3 w-28 h-28 rounded-2xl bg-white border border-gray-100 shadow-md transition-transform hover:scale-105"
-            >
-              <div
-                className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-                style={{ backgroundColor: `color-mix(in srgb, ${cardColor} 12%, white)` }}
-              >
-                <Icon style={{ color: cardColor, width: 24, height: 24 }} />
-              </div>
-              <span className="text-xs font-semibold text-gray-700 text-center px-1">
-                {item.label}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
+  
   useEffect(() => {
     onSlideChange?.(current);
   }, [current, onSlideChange]);
@@ -281,7 +255,7 @@ export default function HeroSlider({ onSlideChange }: HeroSliderProps) {
 
       {/* Desktop */}
       <div className="hidden md:flex relative h-full items-center justify-between px-12 lg:px-24">
-        {startSlider && renderTopCards()}
+        
         
         <div className="max-w-2xl z-10 flex flex-col justify-center">
           <HeroText index={current} />
