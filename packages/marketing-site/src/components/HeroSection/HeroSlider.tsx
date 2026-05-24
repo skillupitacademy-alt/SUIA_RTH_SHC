@@ -250,11 +250,22 @@ export default function HeroSlider({ onSlideChange }: HeroSliderProps) {
 
       {/* Desktop */}
       <div className="hidden md:flex relative h-full">
-        {/* Left: Text content — fills left half, padded from navbar + sides */}
-        <div className="w-1/2 h-full flex flex-col justify-center px-12 lg:px-24 z-10">
-          <HeroText index={current} />
-          {startSlider && renderBadge()}
-          {renderButtons()}
+        {/* Left: Text content — spread across full height */}
+        <div className="w-1/2 h-full flex flex-col justify-between px-12 lg:px-24 z-10 pt-8 pb-16">
+          {/* Top zone — badge */}
+          <div className="flex items-start">
+            {startSlider && renderBadge()}
+          </div>
+
+          {/* Middle zone — main content */}
+          <div className="flex flex-col gap-4">
+            <HeroText index={current} />
+          </div>
+
+          {/* Bottom zone — CTAs */}
+          <div>
+            {renderButtons()}
+          </div>
         </div>
 
         {/* Right: Image — fills right half top-to-bottom */}
