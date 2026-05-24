@@ -28,6 +28,8 @@ export interface CertificateData {
 export interface PremiumCertificateProps {
   branding: CertificateBranding;
   data: CertificateData;
+  fitToViewport?: boolean;
+  certificateRef?: React.Ref<HTMLDivElement>;
 }
 
 export interface CertificateGeneratorFormValues {
