@@ -76,7 +76,8 @@ export const CertificateShowcase: React.FC<CertificateShowcaseProps> = ({
   const brand = useBrand();
   const branding = getCertificateBranding(brand);
   const data = buildPreviewCertificateData(branding, {
-    courseName: certificateDetails.title || "DATA ANALYST",
+    courseName: certificateDetails.subtitle || "DATA ANALYST",
+    description: description || undefined,
   });
 
   return (
