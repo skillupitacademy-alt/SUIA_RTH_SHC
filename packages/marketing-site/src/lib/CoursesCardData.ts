@@ -3914,7 +3914,7 @@ export const allCourses: Course[] = [
         certificateDetails: {
           title: 'Certificate of Completion',
           subtitle: 'Data Engineering & Cloud Integration',
-          subSubtitle: 'Covering PHP, Laravel, MySQL, REST APIs, Frontend Development, Cloud Deployment, and Real-World Full Stack Application Projects.',
+          subSubtitle: 'Covering Python, Apache Spark, Hadoop, Kafka, Airflow, ETL Pipelines, Data Warehousing, Cloud Platforms, and Real-World Data Engineering Projects.',
           rating: 5
         }
       }
