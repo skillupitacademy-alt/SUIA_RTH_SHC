@@ -1,13 +1,16 @@
-"use client";
+const fs = require('fs');
+
+const path = 'd:/onlinewebsites/quiz-platform/packages/marketing-site/src/components/CoursePages/Assessments/CertificateShowcase.tsx';
+const content = `"use client";
 
 import React, { useEffect, useRef, useState } from "react";
 import { CheckCircle } from "lucide-react";
 import { useBrand } from "@quiz/marketing-site/brand";
-import { PremiumCertificate } from "../../../certificates/PremiumCertificate";
+import { PremiumCertificate } from "@quiz/marketing-site/certificates/PremiumCertificate";
 import {
   getCertificateBranding,
   buildPreviewCertificateData,
-} from "../../../certificates/branding";
+} from "@quiz/marketing-site/certificates/branding";
 
 interface CertificateShowcaseProps {
   title: string;
@@ -53,7 +56,7 @@ function ScaledCertificate({ branding, data }: { branding: any; data: any }) {
           position: "absolute",
           top: 0,
           left: 0,
-          transform: `scale(${scale})`,
+          transform: \`scale(\${scale})\`,
           transformOrigin: "top left",
         }}
       >
@@ -124,3 +127,7 @@ export const CertificateShowcase: React.FC<CertificateShowcaseProps> = ({
     </div>
   );
 };
+`;
+
+fs.writeFileSync(path, content, 'utf8');
+console.log('CertificateShowcase modified successfully');
