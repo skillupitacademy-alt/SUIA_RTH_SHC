@@ -500,15 +500,15 @@ export const heroCommonData: HeroCommonData = {
     description: 'Learn from industry experts with real-world experience. Get personalized guidance and mentorship.',
     mentors: [
       {
-        initials: "RK",
-        name: "Rajesh Kumar",
-        title: "Senior Developer",
-        description: "By Amazon, it's a great conversation for professional development. It is a business - story to celebrate, at the end of the day.",
+        initials: "SJ",
+        name: "Suresh Joshi",
+        title: "Senior Mentor & Career Coach",
+        description: "Expert mentor specializing in placement and career roadmaps. Achieves a 100% success ratio with students who meticulously follow discussed guidance.",
         stats: [
           {
-            value: "3.6K+",
-            label: "Mentored",
-            icon: "FaUsers",
+            value: "100%",
+            label: "Success",
+            icon: "FaChartLine",
             iconColor: "text-blue-600"
           },
           {
@@ -518,26 +518,26 @@ export const heroCommonData: HeroCommonData = {
             iconColor: "text-purple-600"
           },
           {
-            value: "8yrs",
+            value: "25yrs",
             label: "Exp",
             icon: "FaGraduationCap",
             iconColor: "text-amber-600"
           }
         ],
-        tags: ["Java", "Microservices", "Cloud", "AWS", "Spring Boot"],
+        tags: ["Career Roadmap", "Placement", "Mentorship", "Interview Prep", "Guidance"],
         color: "bg-gradient-to-r from-blue-600 to-cyan-500",
         rating: 5.0
       },
       {
-        initials: "PS",
-        name: "Priya Sharma",
-        title: "Frontend Architect",
-        description: "Dr Mohseni, Dr Irene-i Rami e Choi Nambragal e Dajat in women fashion. It members and family. Specialized in modern web technologies and UX design.",
+        initials: "GJ",
+        name: "Geeta Joshi",
+        title: "Data Analyst Trainer",
+        description: "Highly competent in data analyst training, adapting seamlessly to each student's understanding level to ensure comprehensive learning and practical skill development.",
         stats: [
           {
             value: "500+",
-            label: "Projects",
-            icon: "FaCode",
+            label: "Trained",
+            icon: "FaUsers",
             iconColor: "text-indigo-600"
           },
           {
@@ -547,43 +547,130 @@ export const heroCommonData: HeroCommonData = {
             iconColor: "text-amber-600"
           },
           {
-            value: "6yrs",
+            value: "10yrs",
             label: "Exp",
             icon: "FaGraduationCap",
             iconColor: "text-emerald-600"
           }
         ],
-        tags: ["React", "TypeScript", "Next.js", "UI/UX", "GraphQL", "Design Systems"],
+        tags: ["Data Analysis", "SQL", "Excel", "Power BI", "Training", "Mentoring"],
         color: "bg-gradient-to-r from-purple-600 to-purple-500",
         rating: 4.9
       },
       {
-        initials: "AP",
-        name: "Amit Patel",
-        title: "Data Scientist",
-        description: "Dr Denis, Dr yu-sa rv@resttracts.com Ecculent exercise / Aegeza sizil v. newsyjrsk was born. Leading AI initiatives and machine learning projects.",
+        initials: "AL",
+        name: "Anupama Lawate",
+        title: "Interview & Selection Expert",
+        description: "U.S. return with sizeable experience in technical and non-technical skills related to interview processes, national and international certifications, and higher studies guidance.",
         stats: [
           {
-            value: "4.3K+",
-            label: "Trained",
-            icon: "FaUsers",
+            value: "Global",
+            label: "Reach",
+            icon: "FaGlobe",
             iconColor: "text-green-600"
           },
           {
             value: "Expert",
             label: "Level",
-            icon: "FaChartLine",
+            icon: "FaAward",
             iconColor: "text-teal-600"
           },
           {
-            value: "9yrs",
+            value: "18yrs",
             label: "Exp",
             icon: "FaGraduationCap",
             iconColor: "text-blue-600"
           }
         ],
-        tags: ["Python", "Machine Learning", "AI", "TensorFlow", "PyTorch", "NLP"],
+        tags: ["Interview Prep", "Soft Skills", "Certifications", "Higher Studies", "Technical Skills"],
         color: "bg-gradient-to-r from-emerald-600 to-green-500",
+        rating: 5.0
+      },
+      {
+        initials: "KP",
+        name: "Kamal Pandey",
+        title: "Data Scientist",
+        description: "Experienced Data Scientist with a passion for teaching. Specializes in making complex data concepts easy to grasp and practical for real-world application.",
+        stats: [
+          {
+            value: "15yrs",
+            label: "Exp",
+            icon: "FaGraduationCap",
+            iconColor: "text-amber-600"
+          },
+          {
+            value: "500+",
+            label: "Trained",
+            icon: "FaUsers",
+            iconColor: "text-blue-600"
+          },
+          {
+            value: "4.9",
+            label: "Rating",
+            icon: "FaStar",
+            iconColor: "text-purple-600"
+          }
+        ],
+        tags: ["Data Science", "Python", "Machine Learning", "Teaching"],
+        color: "bg-gradient-to-r from-cyan-600 to-blue-500",
+        rating: 4.9
+      },
+      {
+        initials: "AT",
+        name: "Anil T.",
+        title: "DevOps Engineer",
+        description: "Veteran DevOps Engineer and instructor. Focuses on cloud infrastructure, automation, and continuous integration/deployment best practices.",
+        stats: [
+          {
+            value: "15yrs",
+            label: "Exp",
+            icon: "FaGraduationCap",
+            iconColor: "text-blue-600"
+          },
+          {
+            value: "Cloud",
+            label: "Expert",
+            icon: "FaCloud",
+            iconColor: "text-emerald-600"
+          },
+          {
+            value: "24/7",
+            label: "Available",
+            icon: "FaClock",
+            iconColor: "text-indigo-600"
+          }
+        ],
+        tags: ["DevOps", "Cloud", "AWS", "CI/CD", "Automation"],
+        color: "bg-gradient-to-r from-orange-500 to-amber-500",
+        rating: 4.9
+      },
+      {
+        initials: "SC",
+        name: "Sunil C.",
+        title: "Project Manager",
+        description: "Seasoned Project Manager and educator. Brings decades of industry experience to help students understand agile methodologies, leadership, and project lifecycles.",
+        stats: [
+          {
+            value: "20yrs",
+            label: "Exp",
+            icon: "FaGraduationCap",
+            iconColor: "text-purple-600"
+          },
+          {
+            value: "Agile",
+            label: "Master",
+            icon: "FaAward",
+            iconColor: "text-rose-600"
+          },
+          {
+            value: "5.0",
+            label: "Rating",
+            icon: "FaStar",
+            iconColor: "text-amber-600"
+          }
+        ],
+        tags: ["Project Management", "Agile", "Leadership", "Scrum"],
+        color: "bg-gradient-to-r from-rose-600 to-pink-500",
         rating: 5.0
       }
     ]
