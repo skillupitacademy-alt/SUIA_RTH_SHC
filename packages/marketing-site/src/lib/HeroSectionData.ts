@@ -25,8 +25,8 @@ export interface HeroSlide {
 export const HERO_SLIDES: HeroSlide[] = [
   {
     id: 1,
-    title: "Zero Coding → Dream Tech Job in 6 Months",
-    subtitle: "Build 5+ portfolio projects • Get internship + placement assistance",
+    title: "Zero Coding → Dream Tech Job in 12 Months",
+    subtitle: "Build 15+ projects • Verified Work Experience Letter + Placement Assistance",
     bg: "from-blue-600 via-blue-500 to-blue-400",
     btn1: "Explore Courses",
     btn2: "Free master Class",
@@ -43,7 +43,7 @@ export const HERO_SLIDES: HeroSlide[] = [
   },
   {
     id: 2,
-    title: "Join 500+ Students Who Got Placed This Year",
+    title: "Start Your Tech Career with Real World Projects",
     subtitle: "Next batch in 7 days • Free demo class on WhatsApp",
     bg: "from-orange-600 via-orange-500 to-orange-400",
     btn1: "Explore Courses",
