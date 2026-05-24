@@ -116,24 +116,24 @@ export default function HeroSlider({ onSlideChange }: HeroSliderProps) {
     Globe, Compass, BookOpen, Cpu, Sparkles,
   };
 
-    const renderFixedCards = (start: number, end: number, isVertical: boolean = false) => {
+  const renderSquareCards = () => {
     return (
-      <div className={`hidden md:flex ${isVertical ? 'flex-col' : 'flex-row'} gap-4 ${!isVertical ? 'mb-6' : ''}`}>
-        {currentSlide.floatingIcons.slice(start, end).map((item, idx) => {
+      <div className="hidden md:grid grid-cols-2 gap-4">
+        {currentSlide.floatingIcons.map((item, idx) => {
           const Icon = ICON_MAP[item.icon];
           if (!Icon) return null;
           return (
             <div
-              key={`${current}-${start}-${idx}`}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-gray-100 shadow-md transition-transform hover:scale-105"
+              key={`${current}-${idx}`}
+              className="flex flex-col items-center justify-center gap-3 w-28 h-28 rounded-2xl bg-white border border-gray-100 shadow-md transition-transform hover:scale-105"
             >
               <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
                 style={{ backgroundColor: `color-mix(in srgb, ${activeColor} 12%, white)` }}
               >
-                <Icon style={{ color: activeColor, width: 18, height: 18 }} />
+                <Icon style={{ color: activeColor, width: 24, height: 24 }} />
               </div>
-              <span className="text-sm font-semibold text-gray-700 whitespace-nowrap">
+              <span className="text-xs font-semibold text-gray-700 text-center px-1">
                 {item.label}
               </span>
             </div>
