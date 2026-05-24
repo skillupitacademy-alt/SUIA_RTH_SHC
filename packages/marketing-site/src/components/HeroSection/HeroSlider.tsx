@@ -258,10 +258,24 @@ export default function HeroSlider({ onSlideChange }: HeroSliderProps) {
             {startSlider && renderBadge()}
           </div>
 
-          {/* Zone 2 — Main Heading */}
+          {/* Zone 2 — Main Heading (50% primary / 50% secondary) */}
           <div className={`transition-all duration-700 ${isAnimating ? "opacity-0 translate-y-6" : "opacity-100 translate-y-0"}`}>
-            <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight text-[var(--brand-primary)]">
-              {currentSlide.title}
+            <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight">
+              {(() => {
+                const words = currentSlide.title.split(" ");
+                const mid = Math.ceil(words.length / 2);
+                return (
+                  <>
+                    <span style={{ color: "var(--brand-primary)" }}>
+                      {words.slice(0, mid).join(" ")}
+                    </span>
+                    {" "}
+                    <span style={{ color: "var(--brand-secondary)" }}>
+                      {words.slice(mid).join(" ")}
+                    </span>
+                  </>
+                );
+              })()}
             </h1>
           </div>
 
