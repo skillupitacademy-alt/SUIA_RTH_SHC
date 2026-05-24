@@ -1275,7 +1275,7 @@ export const allCourses: Course[] = [
         certificateDetails: {
           title: 'Certificate of Completion',
           subtitle: 'Data Analytics & Business Intelligence',
-          subSubtitle: 'with AI & ML Integration',
+          subSubtitle: 'Covering Python, Machine Learning, Deep Learning, Data Visualization, Statistics, Artificial Intelligence, Predictive Modeling, and Real-World Data Science Projects.',
           rating: 5
         }
       }
@@ -1908,7 +1908,7 @@ export const allCourses: Course[] = [
         certificateDetails: {
           title: 'Certificate of Completion',
           subtitle: 'Data Science & AI Mastery',
-          subSubtitle: 'with ML, Deep Learning & MLOps',
+          subSubtitle: 'Covering Python, Machine Learning, Deep Learning, Data Visualization, Statistics, Artificial Intelligence, Predictive Modeling, and Real-World Data Science Projects.',
           rating: 5
         }
       }
@@ -2531,7 +2531,7 @@ export const allCourses: Course[] = [
         certificateDetails: {
           title: 'Certificate of Completion',
           subtitle: 'Full-Stack Development',
-          subSubtitle: 'with AI Integration',
+          subSubtitle: 'Covering Java, Spring Boot, REST APIs, Microservices, Database Management, Frontend Development, AI Integration, Cloud Deployment, and Real-World Full Stack AI Application Projects.',
           rating: 5
         }
       }
@@ -3141,7 +3141,7 @@ export const allCourses: Course[] = [
         certificateDetails: {
           title: 'Certificate of Completion',
           subtitle: 'Full-Stack Python Development',
-          subSubtitle: 'with AI Integration',
+          subSubtitle: 'Covering Python, Django, FastAPI, REST APIs, Database Management, Frontend Development, AI Integration, Machine Learning, Cloud Deployment, and Real-World Full Stack AI Application Projects.',
           rating: 5
         }
       }
@@ -3914,7 +3914,7 @@ export const allCourses: Course[] = [
         certificateDetails: {
           title: 'Certificate of Completion',
           subtitle: 'Data Engineering & Cloud Integration',
-          subSubtitle: 'with Big Data Technologies',
+          subSubtitle: 'Covering PHP, Laravel, MySQL, REST APIs, Frontend Development, Cloud Deployment, and Real-World Full Stack Application Projects.',
           rating: 5
         }
       }
