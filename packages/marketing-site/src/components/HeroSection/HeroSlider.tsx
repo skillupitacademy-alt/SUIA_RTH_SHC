@@ -118,7 +118,7 @@ export default function HeroSlider({ onSlideChange }: HeroSliderProps) {
 
   const renderTopCards = () => {
     return (
-      <div className="absolute top-8 left-0 right-0 w-full hidden md:flex justify-center gap-8 z-20">
+      <div className="absolute top-8 left-0 right-0 w-full hidden md:flex justify-start gap-12 px-12 lg:px-24 z-20">
         {currentSlide.floatingIcons.slice(0, 3).map((item, idx) => {
           const Icon = ICON_MAP[item.icon];
           if (!Icon) return null;
