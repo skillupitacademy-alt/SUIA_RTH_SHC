@@ -281,7 +281,6 @@ export default function HeroSlider({ onSlideChange }: HeroSliderProps) {
       {/* Desktop */}
       <div className="hidden md:flex relative h-full items-center justify-between px-12 lg:px-24">
         <div className="max-w-2xl z-10 flex flex-col justify-center">
-          {startSlider && renderFixedCards(0, 3, false)}
           <HeroText index={current} />
           {startSlider && renderBadge()}
           {renderButtons()}
@@ -289,7 +288,7 @@ export default function HeroSlider({ onSlideChange }: HeroSliderProps) {
 
         <div className="w-1/2 h-full flex items-center justify-end gap-8">
           {startSlider && renderDesktopImage()}
-          {startSlider && renderFixedCards(3, 6, true)}
+          {startSlider && renderSquareCards()}
         </div>
       </div>
 
