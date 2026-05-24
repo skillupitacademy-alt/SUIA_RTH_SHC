@@ -70,7 +70,7 @@ export async function CourseMarketingPage({ slug }: { slug: string }) {
       <LearningExperienceTimeline id="LearningExperienceTimeline" />
       <TechnicalSupportSection id="CourseTechnicalSupport" />
       <Prerequisites id="CoursePrerequisites" data={heroCommonData.prerequisites} />
-      <SuccessStories id="CourseSuccessStories" data={heroCommonData.successStories} />
+      <SuccessStories id="CourseSuccessStories" />
       <Companies id="CourseCompanies" data={heroCommonData.hiringCompanies} />
     </div>
   );

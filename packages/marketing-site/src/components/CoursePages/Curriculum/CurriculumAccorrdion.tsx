@@ -94,11 +94,21 @@ export const CurriculumAccordion: React.FC<CurriculumAccordionProps> = ({
     return () => observers.forEach(observer => observer.disconnect());
   }, [openSections]);
 
+  // Dynamic subtitles
+  const phasesSubtitle = `${data.phases?.length || 0} structured phases • ${data.description}`;
+  const projectsSubtitle = `${data.projects?.length || 0}+ production-grade projects • Real-world scenarios`;
+  const techStackSubtitle = data.techStack
+    ? data.techStack.flatMap(ts => ts.technologies).slice(0, 5).map(t => t.label).join(' • ')
+    : 'Modern Tools & Technologies';
+  const careerSubtitle = data.careerOutcomes
+    ? `Crack roles like ${data.careerOutcomes.slice(0, 2).map(c => c.title).join(', ')}`
+    : 'Job-ready skills • Portfolio • Industry connections';
+
   const sections = [
     {
       id: 0,
       title: 'Learning Phases',
-      subtitle: '6 structured phases • From Java fundamentals to AI & DevOps',
+      subtitle: phasesSubtitle,
       icon: 'Layers',
       bgColor: 'bg-gradient-to-br from-blue-200 to-indigo-200',
       borderColor: 'border-blue-300',
@@ -114,7 +124,7 @@ export const CurriculumAccordion: React.FC<CurriculumAccordionProps> = ({
     {
       id: 1,
       title: 'Portfolio Projects',
-      subtitle: '15+ production-grade projects • AI-powered apps • Deployed live',
+      subtitle: projectsSubtitle,
       icon: 'Briefcase',
       bgColor: 'bg-gradient-to-br from-green-50 to-emerald-50',
       borderColor: 'border-green-300',
@@ -130,7 +140,7 @@ export const CurriculumAccordion: React.FC<CurriculumAccordionProps> = ({
     {
       id: 2,
       title: 'Tools & Technologies',
-      subtitle: 'Java • Spring Boot • React • Docker • AWS • OpenAI • RAG',
+      subtitle: techStackSubtitle,
       icon: 'Wrench',
       bgColor: 'bg-gradient-to-br from-orange-50 to-amber-50',
       borderColor: 'border-orange-300',
@@ -146,7 +156,7 @@ export const CurriculumAccordion: React.FC<CurriculumAccordionProps> = ({
     {
       id: 3,
       title: 'Career Outcomes',
-      subtitle: 'Job-ready skills • Portfolio • Industry connections',
+      subtitle: careerSubtitle,
       icon: 'Target',
       bgColor: 'bg-gradient-to-br from-red-50 to-orange-50',
       borderColor: 'border-red-300',

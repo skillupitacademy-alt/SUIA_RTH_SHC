@@ -1,40 +1,24 @@
 'use client';
 
-import React, { useEffect } from 'react';
-import AOS from 'aos';
-import 'aos/dist/aos.css';
-import { SuccessStoriesHeader } from './SuccessStoriesHeader';
-import { SuccessStoryCard } from './SuccessStoryCard';
-import { SuccessStoriesData } from '@quiz/marketing-site/lib/CoursesCardData';
+import React from 'react';
+import { SectionHeader } from '@quiz/marketing-site/components/CommonHeader/SectionHeader';
+import TestimonialGrid from '@quiz/marketing-site/components/testimonials/TestimonialGrid';
+import { TESTIMONIALS_DATA, TESTIMONIAL_CONFIG } from '@quiz/marketing-site/lib/Testimonial';
 
 interface SuccessStoriesProps {
   id: string;
-  data: SuccessStoriesData;
 }
 
-export default function SuccessStories({ id, data }: SuccessStoriesProps) {
-  useEffect(() => {
-    AOS.init({
-      duration: 700,
-      once: true,
-    });
-  }, []);
-
+export default function SuccessStories({ id }: SuccessStoriesProps) {
   return (
     <section id={id} className="py-16 px-4 md:px-8 bg-transparent">
       <div className="max-w-7xl mx-auto">
-        <SuccessStoriesHeader 
-          title={data.title} 
-          description={data.description} 
+        <SectionHeader
+          title="Student Success Stories"
+          description={TESTIMONIAL_CONFIG.description}
         />
-
-        {/* Success Stories Cards */}
-        <div className="grid md:grid-cols-2 gap-6">
-          {data.stories.map((story) => (
-            <SuccessStoryCard key={story.id} story={story} />
-          ))}
-        </div>
+        <TestimonialGrid testimonials={TESTIMONIALS_DATA} />
       </div>
     </section>
   );
-}
+}

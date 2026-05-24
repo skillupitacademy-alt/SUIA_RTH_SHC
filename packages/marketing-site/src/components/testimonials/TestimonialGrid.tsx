@@ -8,16 +8,6 @@ interface TestimonialGridProps {
   testimonials: Testimonial[];
 }
 
-const gridVariants: Variants = {
-  hidden: {},
-  visible: {
-    transition: {
-      staggerChildren: 0.12,
-      delayChildren: 0.1
-    }
-  }
-};
-
 const cardVariants: Variants = {
   hidden: {
     opacity: 0,
@@ -33,31 +23,22 @@ const cardVariants: Variants = {
   }
 };
 
-
-
 const TestimonialGrid: React.FC<TestimonialGridProps> = ({ testimonials }) => {
   return (
-    <motion.div
-      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-      variants={gridVariants}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.2 }}
-    >
-      {testimonials.map((testimonial, index) => (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      {testimonials.map((testimonial) => (
         <motion.div
           key={testimonial.id}
           variants={cardVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.15 }}
         >
-          <TestimonialCard
-            testimonial={testimonial}
-          />
+          <TestimonialCard testimonial={testimonial} />
         </motion.div>
       ))}
-    </motion.div>
+    </div>
   );
 };
 
 export default TestimonialGrid;
-
-

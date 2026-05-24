@@ -27,7 +27,8 @@ export const categories = [
   "Data Analyst",
   "Data Engineering",
   "Cybersecurity",
-  "Cloud & DevOps"
+  "Cloud & DevOps",
+  "Algorithmic Trading"
 ];
 
 /* ================= ICONS ================= */
@@ -38,7 +39,8 @@ export const icons: Record<number, IconType> = {
   3: FaThLarge,
   4: FaServer,
   5: FaBolt,
-  6: FaCloudUploadAlt
+  6: FaCloudUploadAlt,
+  7: FaCode // Using FaCode as placeholder or we could import FaChartLine. For now let's just use existing.
 };
 
 /* ================= CATEGORY COLORS ================= */
@@ -101,6 +103,14 @@ export const categoryColors: Record<
     light: "bg-cyan-100",
     solid: "bg-cyan-500",
     hover: "hover:border-cyan-400 hover:shadow-cyan-100"
+  },
+  "Algorithmic Trading": {
+    primary: "from-indigo-500 to-blue-600",
+    secondary: "bg-indigo-50",
+    accent: "text-indigo-600",
+    light: "bg-indigo-100",
+    solid: "bg-indigo-600",
+    hover: "hover:border-indigo-500 hover:shadow-indigo-200"
   }
 };
 
@@ -553,6 +563,81 @@ export const learningPaths: LearningPaths = {
         "Alerting",
         "IAM",
         "Automation"
+      ]
+    }
+  ],
+
+  "Algorithmic Trading": [
+    {
+      num: 1,
+      title: "Python for Finance",
+      subtitle: "Quantitative basics",
+      points: [
+        "Python fundamentals",
+        "NumPy & Pandas",
+        "Financial data APIs",
+        "Time series analysis",
+        "Data visualization"
+      ]
+    },
+    {
+      num: 2,
+      title: "Quantitative Finance",
+      subtitle: "Financial models",
+      points: [
+        "Modern Portfolio Theory",
+        "CAPM & Beta",
+        "Risk metrics (VaR)",
+        "Options pricing",
+        "Performance ratios"
+      ]
+    },
+    {
+      num: 3,
+      title: "Trading Strategies",
+      subtitle: "Alpha generation",
+      points: [
+        "Trend following",
+        "Mean reversion",
+        "Statistical arbitrage",
+        "Pairs trading",
+        "Volatility breakout"
+      ]
+    },
+    {
+      num: 4,
+      title: "Backtesting",
+      subtitle: "Strategy validation",
+      points: [
+        "Vectorized backtesting",
+        "Event-driven systems",
+        "Handling slippage",
+        "Out-of-sample testing",
+        "QuantConnect framework"
+      ]
+    },
+    {
+      num: 5,
+      title: "Machine Learning",
+      subtitle: "Predictive models",
+      points: [
+        "Feature engineering",
+        "Tree-based models",
+        "Deep Learning (LSTMs)",
+        "NLP for sentiment",
+        "Overfitting prevention"
+      ]
+    },
+    {
+      num: 6,
+      title: "Live Trading",
+      subtitle: "Execution automation",
+      points: [
+        "Broker APIs (Interactive Brokers)",
+        "Crypto APIs (Binance)",
+        "Cloud deployment (AWS)",
+        "System monitoring",
+        "Risk management rules"
       ]
     }
   ]

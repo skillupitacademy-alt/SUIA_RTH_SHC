@@ -33,25 +33,31 @@ export const TechStackSection: React.FC<TechStackSectionProps> = ({
       </h3>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 text-[12px] md:text-[17px]">
         {technologies.map((tech, idx) => {
-          if (tech.iconSrc) {
-            return (
-              <div key={idx} className="flex flex-col items-center p-4 bg-white rounded-xl border border-gray-200">
-                <img src={tech.iconSrc} alt={tech.label} className="w-12 h-12 mb-2" />
-                <span className="font-semibold text-gray-800 text-center">{tech.label}</span>
+          let hasImage = !!tech.iconSrc;
+          let FallbackIcon = getLucideIcon(tech.icon || 'Code');
+          
+          return (
+            <div key={idx} className="flex flex-col items-center p-4 bg-white rounded-xl border border-gray-200">
+              {hasImage ? (
+                <img 
+                  src={tech.iconSrc} 
+                  alt={tech.label} 
+                  className="w-12 h-12 mb-2 object-contain" 
+                  onError={(e) => {
+                    // Fallback to text or hide if image is missing
+                    e.currentTarget.style.display = 'none';
+                    if (e.currentTarget.nextElementSibling) {
+                      (e.currentTarget.nextElementSibling as HTMLElement).style.display = 'flex';
+                    }
+                  }} 
+                />
+              ) : null}
+              <div style={{ display: hasImage ? 'none' : 'flex' }} className="mb-2 items-center justify-center w-12 h-12">
+                <FallbackIcon className="w-10 h-10 text-brand-secondary" />
               </div>
-            );
-          } else if (tech.icon) {
-            const TechIcon = getLucideIcon(tech.icon);
-            return (
-              <div key={idx} className="flex flex-col items-center p-4 bg-white rounded-xl border border-gray-200">
-                <div className="mb-2">
-                  <TechIcon className="w-10 h-10 text-green-500" />
-                </div>
-                <span className="font-semibold text-gray-800 text-center">{tech.label}</span>
-              </div>
-            );
-          }
-          return null;
+              <span className="font-semibold text-gray-800 text-center">{tech.label}</span>
+            </div>
+          );
         })}
       </div>
     </div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Quote, CheckCircle, ArrowUpRight, Star } from 'lucide-react';
+import { Quote, CheckCircle, ArrowUpRight, Star, Rocket } from 'lucide-react';
 import { Testimonial } from '@quiz/marketing-site/lib/Testimonial';
 
 interface TestimonialCardProps {
@@ -8,6 +8,48 @@ interface TestimonialCardProps {
 
 
 const TestimonialCard: React.FC<TestimonialCardProps> = ({ testimonial }) => {
+  // ── Special "You Are Next" CTA card ──────────────────────────────────────
+  if (testimonial.specialBg) {
+    return (
+      <div className={`group relative rounded-2xl ${testimonial.specialBg} p-8 h-full flex flex-col items-center justify-center text-center shadow-2xl hover:-translate-y-2 transition-all duration-300 overflow-hidden`}>
+        {/* Subtle pattern overlay */}
+        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 20% 80%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+
+        <div className="relative z-10 flex flex-col items-center gap-6">
+          {/* Icon */}
+          <div className="w-20 h-20 bg-white/20 rounded-2xl flex items-center justify-center border-2 border-white/40 shadow-lg">
+            <Rocket className="w-10 h-10 text-white" />
+          </div>
+
+          {/* Stars */}
+          <div className="flex gap-1">
+            {[...Array(5)].map((_, i) => (
+              <Star key={i} className="w-5 h-5 text-yellow-300 fill-yellow-300" />
+            ))}
+          </div>
+
+          {/* Content */}
+          <p className="text-white/90 text-lg leading-relaxed italic font-medium">
+            "Your career transformation is just one decision away. Join hundreds of students who are already living their dream tech careers."
+          </p>
+
+          {/* Highlight badge */}
+          <div className="inline-flex items-center gap-2 px-5 py-2 bg-white/20 border border-white/40 rounded-full">
+            <CheckCircle className="w-4 h-4 text-white" />
+            <span className="text-white font-bold text-sm tracking-wide">Your Success Story Awaits</span>
+          </div>
+
+          {/* Name block */}
+          <div className="pt-4 border-t border-white/30 w-full">
+            <h3 className="text-white font-extrabold text-2xl">You Could Be Next! 🚀</h3>
+            <p className="text-white/70 text-sm mt-1">Enroll today and start your journey</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Regular testimonial card ─────────────────────────────────────────────
   return (
     <div
       className="group relative"
@@ -92,4 +134,4 @@ const TestimonialCard: React.FC<TestimonialCardProps> = ({ testimonial }) => {
   );
 };
 
-export default TestimonialCard;
+export default TestimonialCard;
