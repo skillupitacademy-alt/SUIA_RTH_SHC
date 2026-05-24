@@ -111,19 +111,6 @@ export const WHY_US_CARDS: CardItem[] = [
 export const SECTION_CONFIG = {
   title: "Why Choose Us",
   description: "We're committed to your success with proven methods, industry-aligned curriculum and dedicated support to transform your career in technology.",
-  accentColor: "from-blue-600 to-purple-600",
-  textColor: "text-gray-900"
-} as const;
-
-
-export const UNDERLINE_CONFIGS = {
-  primary: 'bg-[var(--brand-primary)]',
-  secondary: 'bg-[var(--brand-secondary)]'
-} as const;
-
-export const SECTION_CONFIG = {
-  title: "Why Choose Us",
-  description: "We're committed to your success with proven methods, industry-aligned curriculum and dedicated support to transform your career in technology.",
   accentColor: "from-[var(--brand-primary)] to-[var(--brand-secondary)]",
   textColor: "text-[var(--brand-primary)]"
 } as const;
