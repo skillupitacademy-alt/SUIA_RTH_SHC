@@ -52,8 +52,8 @@ const SlideIndicator: React.FC<SlideIndicatorProps> = ({
           onClick={() => onSlideChange(index)}
           className={`h-2 rounded-full transition-all duration-300 ${
             isActive
-              ? "w-8 md:w-12 bg-white"
-              : "w-2 bg-white/40 hover:bg-white/60"
+              ? "w-8 md:w-12 bg-gray-800"
+              : "w-2 bg-gray-300 hover:bg-gray-400"
           }`}
         />
       );
@@ -97,8 +97,8 @@ export default function HeroSlider({ onSlideChange }: HeroSliderProps) {
   );
 
   const currentSlide = HERO_SLIDES[current];
-  const heroBackground =
-    current % 2 === 0 ? brand.colors.primary : brand.colors.secondary;
+  const heroBackground = "#ffffff";
+  const activeColor = current % 2 === 0 ? "var(--brand-primary)" : "var(--brand-secondary)";
 
   useEffect(() => {
     onSlideChange?.(current);
@@ -113,13 +113,13 @@ export default function HeroSlider({ onSlideChange }: HeroSliderProps) {
 
   const renderBadge = () => (
     <div
-      className={`inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm mb-8 transition-all duration-700 ${
+      className={`inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gray-100 mb-8 transition-all duration-700 ${
         isAnimating ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"
       }`}
       style={{ animation: "slideInLeft 0.8s ease-out 0.2s both" }}
     >
-      <Sparkles className="text-white" />
-      <span className="text-white text-sm font-medium">
+      <Sparkles style={{ color: activeColor }} />
+      <span className="text-sm font-medium" style={{ color: activeColor }}>
         Limited Time Offer - Enroll Now!
       </span>
     </div>
@@ -145,13 +145,14 @@ export default function HeroSlider({ onSlideChange }: HeroSliderProps) {
               ?.scrollIntoView({ behavior: "smooth" });
           }
         }}
-        className="group flex justify-center px-4 py-4 bg-white text-gray-900 rounded-lg font-semibold text-lg shadow-xl hover:scale-105 transition-all flex items-center gap-2"
+        className="group flex justify-center px-4 py-4 rounded-lg font-semibold text-lg shadow-xl hover:scale-105 transition-all flex items-center gap-2 text-white"
+        style={{ backgroundColor: activeColor }}
       >
         {currentSlide.btn1}
         <ArrowRight className="group-hover:translate-x-1 transition-transform" />
       </button>
 
-      <button className="px-8 py-4 bg-white/10 backdrop-blur-md text-white border-2 border-white rounded-lg font-semibold text-lg hover:bg-white/20 hover:scale-105 transition-all">
+      <button className="px-8 py-4 bg-transparent border-2 rounded-lg font-semibold text-lg hover:bg-gray-50 hover:scale-105 transition-all" style={{ borderColor: activeColor, color: activeColor }}>
         {currentSlide.btn2}
       </button>
     </div>
