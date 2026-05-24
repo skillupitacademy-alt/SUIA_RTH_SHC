@@ -123,20 +123,26 @@ export default function HeroSlider({ onSlideChange }: HeroSliderProps) {
       return (
         <div
           key={`${current}-${idx}`}
-          className="absolute pointer-events-none hidden md:block"
+          className="absolute pointer-events-none hidden md:flex items-center gap-2 px-3 py-2 rounded-xl bg-white border border-gray-100 shadow-lg"
           style={{
             top: item.top,
             left: item.left,
             right: item.right,
             bottom: item.bottom,
-            opacity: 0.18,
             animation: `heroFloat 6s ease-in-out infinite`,
             animationDelay: `${item.delay}s`,
+            zIndex: 5,
           }}
         >
-          <Icon
-            style={{ color: activeColor, width: 52, height: 52 }}
-          />
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+            style={{ backgroundColor: `color-mix(in srgb, ${activeColor} 12%, white)` }}
+          >
+            <Icon style={{ color: activeColor, width: 18, height: 18 }} />
+          </div>
+          <span className="text-xs font-semibold text-gray-700 whitespace-nowrap">
+            {item.label}
+          </span>
         </div>
       );
     });
