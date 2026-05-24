@@ -106,7 +106,7 @@ export default function HeroSlider({ onSlideChange }: HeroSliderProps) {
 
   const currentSlide = HERO_SLIDES[current];
   const heroBackground = "transparent";
-  const activeColor = current % 2 === 0 ? "var(--brand-primary)" : "var(--brand-secondary)";
+  
 
   const ICON_MAP: Record<string, LucideIcon> = {
     Code, Laptop, Rocket, Briefcase, Star, Zap,
@@ -122,6 +122,10 @@ export default function HeroSlider({ onSlideChange }: HeroSliderProps) {
         {currentSlide.floatingIcons.map((item, idx) => {
           const Icon = ICON_MAP[item.icon];
           if (!Icon) return null;
+          
+          // ALGORITHM: Alternate primary and secondary color per card
+          const cardColor = idx % 2 === 0 ? "var(--brand-primary)" : "var(--brand-secondary)";
+          
           return (
             <div
               key={`${current}-${idx}`}
@@ -129,9 +133,9 @@ export default function HeroSlider({ onSlideChange }: HeroSliderProps) {
             >
               <div
                 className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-                style={{ backgroundColor: `color-mix(in srgb, ${activeColor} 12%, white)` }}
+                style={{ backgroundColor: `color-mix(in srgb, ${cardColor} 12%, white)` }}
               >
-                <Icon style={{ color: activeColor, width: 24, height: 24 }} />
+                <Icon style={{ color: cardColor, width: 24, height: 24 }} />
               </div>
               <span className="text-xs font-semibold text-gray-700 text-center px-1">
                 {item.label}
@@ -160,8 +164,8 @@ export default function HeroSlider({ onSlideChange }: HeroSliderProps) {
       }`}
       style={{ animation: "slideInLeft 0.8s ease-out 0.2s both" }}
     >
-      <Sparkles style={{ color: activeColor }} />
-      <span className="text-sm font-medium" style={{ color: activeColor }}>
+      <Sparkles style={{ color: "var(--brand-primary)" }} />
+      <span className="text-sm font-medium" style={{ color: "var(--brand-primary)" }}>
         Limited Time Offer - Enroll Now!
       </span>
     </div>
@@ -188,13 +192,13 @@ export default function HeroSlider({ onSlideChange }: HeroSliderProps) {
           }
         }}
         className="group flex justify-center px-4 py-4 rounded-lg font-semibold text-lg shadow-xl hover:scale-105 transition-all flex items-center gap-2 text-white"
-        style={{ backgroundColor: activeColor }}
+        style={{ backgroundColor: "var(--brand-primary)" }}
       >
         {currentSlide.btn1}
         <ArrowRight className="group-hover:translate-x-1 transition-transform" />
       </button>
 
-      <button className="px-8 py-4 bg-transparent border-2 rounded-lg font-semibold text-lg hover:bg-gray-50 hover:scale-105 transition-all" style={{ borderColor: activeColor, color: activeColor }}>
+      <button className="px-8 py-4 bg-transparent border-2 rounded-lg font-semibold text-lg hover:bg-gray-50 hover:scale-105 transition-all" style={{ borderColor: "var(--brand-secondary)", color: "var(--brand-secondary)" }}>
         {currentSlide.btn2}
       </button>
     </div>

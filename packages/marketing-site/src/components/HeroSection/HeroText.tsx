@@ -3,15 +3,14 @@ import { HERO_SLIDES } from "@quiz/marketing-site/lib/HeroSectionData";
 
 export default function HeroText({ index = 0 }: { index?: number }) {
   const slide = HERO_SLIDES[index];
-  const textColor = index % 2 === 0 ? "text-[var(--brand-primary)]" : "text-[var(--brand-secondary)]";
 
   return (
     <>
-      <h1 className={`text-3xl md:text-5xl lg:text-6xl font-bold text-center md:text-left ${textColor}`}>
+      <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-center md:text-left text-[var(--brand-primary)]">
         {slide.title}
       </h1>
 
-      <p className={`mt-4 mb-8 text-[12px] md:text-xl opacity-90 text-center md:text-left ${textColor}`}>
+      <p className="mt-4 mb-8 text-[12px] md:text-xl opacity-90 text-center md:text-left text-[var(--brand-secondary)]">
         {slide.subtitle}
       </p>
     </>
