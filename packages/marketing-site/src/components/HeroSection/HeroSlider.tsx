@@ -116,37 +116,32 @@ export default function HeroSlider({ onSlideChange }: HeroSliderProps) {
     Globe, Compass, BookOpen, Cpu, Sparkles,
   };
 
-  const renderFloatingIcons = () =>
-    currentSlide.floatingIcons.map((item, idx) => {
-      const Icon = ICON_MAP[item.icon];
-      if (!Icon) return null;
-      return (
-        <div
-          key={`${current}-${idx}`}
-          className="absolute pointer-events-none hidden md:flex items-center gap-2 px-3 py-2 rounded-xl bg-white border border-gray-100 shadow-lg"
-          style={{
-            top: item.top,
-            left: item.left,
-            right: item.right,
-            bottom: item.bottom,
-            animation: `heroFloat 6s ease-in-out infinite`,
-            animationDelay: `${item.delay}s`,
-            zIndex: 5,
-          }}
-        >
-          <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-            style={{ backgroundColor: `color-mix(in srgb, ${activeColor} 12%, white)` }}
-          >
-            <Icon style={{ color: activeColor, width: 18, height: 18 }} />
-          </div>
-          <span className="text-xs font-semibold text-gray-700 whitespace-nowrap">
-            {item.label}
-          </span>
-        </div>
-      );
-    });
-
+    const renderFixedCards = (start: number, end: number, isVertical: boolean = false) => {
+    return (
+      <div className={`hidden md:flex ${isVertical ? 'flex-col' : 'flex-row'} gap-4 ${!isVertical ? 'mb-6' : ''}`}>
+        {currentSlide.floatingIcons.slice(start, end).map((item, idx) => {
+          const Icon = ICON_MAP[item.icon];
+          if (!Icon) return null;
+          return (
+            <div
+              key={`${current}-${start}-${idx}`}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-gray-100 shadow-md transition-transform hover:scale-105"
+            >
+              <div
+                className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                style={{ backgroundColor: `color-mix(in srgb, ${activeColor} 12%, white)` }}
+              >
+                <Icon style={{ color: activeColor, width: 18, height: 18 }} />
+              </div>
+              <span className="text-sm font-semibold text-gray-700 whitespace-nowrap">
+                {item.label}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
   useEffect(() => {
     onSlideChange?.(current);
   }, [current, onSlideChange]);
@@ -248,16 +243,7 @@ export default function HeroSlider({ onSlideChange }: HeroSliderProps) {
         )}
       </div>
 
-      {/* Floating Icons */}
-      {startSlider && renderFloatingIcons()}
-
-      {/* Float keyframe */}
-      <style>{`
-        @keyframes heroFloat {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-18px) rotate(4deg); }
-        }
-      `}</style>
+      
 
       {/* Mobile */}
       <div className="md:hidden relative h-full flex flex-col items-center justify-center px-6 mt-5 md:pt-16 lg:mt-0">
@@ -294,14 +280,16 @@ export default function HeroSlider({ onSlideChange }: HeroSliderProps) {
 
       {/* Desktop */}
       <div className="hidden md:flex relative h-full items-center justify-between px-12 lg:px-24">
-        <div className="max-w-2xl z-10">
+        <div className="max-w-2xl z-10 flex flex-col justify-center">
+          {startSlider && renderFixedCards(0, 3, false)}
           <HeroText index={current} />
           {startSlider && renderBadge()}
           {renderButtons()}
         </div>
 
-        <div className="w-1/2 h-full flex items-center justify-end">
+        <div className="w-1/2 h-full flex items-center justify-end gap-8">
           {startSlider && renderDesktopImage()}
+          {startSlider && renderFixedCards(3, 6, true)}
         </div>
       </div>
 
