@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useScrollSpy } from "../NavBar/useScrollSpy";
 import { NavItem } from "@quiz/marketing-site/lib/NavBarData";
 import NavLogo from "../NavBar/NavLogo";
@@ -44,12 +45,10 @@ const CourseNavbar: React.FC<CourseNavbarProps> = ({ onLogoClick }) => {
     setIsDropdownOpen(false);
   };
 
+  const router = useRouter();
+
   const handleLogoClick = () => {
-    if (onLogoClick) {
-      onLogoClick();
-    } else {
-      scrollToSection("CourseHero");
-    }
+    router.push("/");
   };
 
   return (

@@ -1,6 +1,7 @@
-"use client";
+"use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { navItems } from "@quiz/marketing-site/lib/NavBarData";
 import NavLogo from "./NavLogo";
 import DesktopNav from "./DesktopNav";
@@ -19,6 +20,8 @@ const Navbar: React.FC = () => {
     setIsMobileMenuOpen(false);
   };
 
+  const router = useRouter();
+
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-[999] transition-all duration-300 bg-white ${
@@ -29,7 +32,7 @@ const Navbar: React.FC = () => {
     >
       <div className="max-w-[1400px] mx-auto px-6 xl:px-10">
         <div className="flex items-center justify-between h-20 relative">
-          <NavLogo onLogoClick={() => handleNavClick("hero")} />
+          <NavLogo onLogoClick={() => router.push("/")} />
 
           {/* CENTERED DESKTOP NAV */}
           <div className="hidden xl:flex absolute left-1/2 -translate-x-1/2 px-6">
