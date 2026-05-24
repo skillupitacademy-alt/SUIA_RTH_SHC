@@ -250,25 +250,36 @@ export default function HeroSlider({ onSlideChange }: HeroSliderProps) {
 
       {/* Desktop */}
       <div className="hidden md:flex relative h-full">
-        {/* Left: Text content — spread across full height */}
-        <div className="w-[65%] h-full flex flex-col justify-between px-12 lg:px-24 z-10 pt-8 pb-16">
-          {/* Top zone — badge */}
+        {/* Left: 4 zones spread across full height */}
+        <div className="w-[65%] h-full flex flex-col justify-between px-12 lg:px-24 z-10 pt-6 pb-14">
+
+          {/* Zone 1 — Badge */}
           <div className="flex items-start">
             {startSlider && renderBadge()}
           </div>
 
-          {/* Middle zone — main content */}
-          <div className="flex flex-col gap-4">
-            <HeroText index={current} />
+          {/* Zone 2 — Main Heading */}
+          <div className={`transition-all duration-700 ${isAnimating ? "opacity-0 translate-y-6" : "opacity-100 translate-y-0"}`}>
+            <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight text-[var(--brand-primary)]">
+              {currentSlide.title}
+            </h1>
           </div>
 
-          {/* Bottom zone — CTAs */}
+          {/* Zone 3 — Sub Heading */}
+          <div className={`transition-all duration-700 delay-100 ${isAnimating ? "opacity-0 translate-y-6" : "opacity-100 translate-y-0"}`}>
+            <p className="text-lg lg:text-xl xl:text-2xl text-[var(--brand-secondary)] font-medium leading-relaxed">
+              {currentSlide.subtitle}
+            </p>
+          </div>
+
+          {/* Zone 4 — CTAs */}
           <div>
             {renderButtons()}
           </div>
+
         </div>
 
-        {/* Right: Image — fills right half top-to-bottom */}
+        {/* Right: Image — fills right 35% top-to-bottom */}
         <div className="w-[35%] h-full relative">
           {startSlider && renderDesktopImage()}
         </div>
