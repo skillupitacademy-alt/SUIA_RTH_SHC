@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { allCourses, heroCommonData } from "@quiz/marketing-site/lib/CoursesCardData";
+import { defaultAssessmentCertification, defaultCurriculum } from "@quiz/marketing-site/lib/DefaultCourseData";
 import { CourseHeroSection } from "@quiz/marketing-site/components/CoursePages/HeroSection/MainHeroSection";
 import AssessmentsCertification from "@quiz/marketing-site/components/CoursePages/Assessments/mainAssessments";
 import GradingEvaluation from "@quiz/marketing-site/components/CoursePages/GradingEvaluation/mainGradingCard";
@@ -29,6 +30,9 @@ export async function CourseMarketingPage({ slug }: { slug: string }) {
     notFound();
   }
 
+  const curriculum = course.curriculum ?? defaultCurriculum;
+  const assessmentCertification = course.assessmentCertification ?? defaultAssessmentCertification;
+
   return (
     <div>
       <div className="absolute inset-0 -z-10">
@@ -48,17 +52,15 @@ export async function CourseMarketingPage({ slug }: { slug: string }) {
         ctaButtons={course.ctaButtons || heroCommonData.ctaButtons}
       />
 
-      {course.curriculum && <Curriculum id="CourseCurriculum" data={course.curriculum} />}
+      <Curriculum id="CourseCurriculum" data={curriculum} />
 
-      {course.assessmentCertification && (
-        <AssessmentsCertification
-          id="CourseAssessments"
-          title="Assessment & Certification"
-          description="Comprehensive evaluation system ensuring mastery through multiple assessment formats"
-          assessmentCards={course.assessmentCertification.assessmentCards}
-          certificateData={course.assessmentCertification.certificateData}
-        />
-      )}
+      <AssessmentsCertification
+        id="CourseAssessments"
+        title="Assessment & Certification"
+        description="Comprehensive evaluation system ensuring mastery through multiple assessment formats"
+        assessmentCards={assessmentCertification.assessmentCards}
+        certificateData={assessmentCertification.certificateData}
+      />
 
       <GradingEvaluation id="CourseGradingCard" data={heroCommonData.gradingEvaluation} />
       <PlacementSupport id="CoursePlacement" data={heroCommonData.placementSupport} />
