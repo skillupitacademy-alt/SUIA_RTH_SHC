@@ -287,7 +287,7 @@ export default function HeroSlider({ onSlideChange }: HeroSliderProps) {
         </div>
 
         <div className="w-1/2 h-full flex justify-end gap-8 py-24">
-          <div className="flex items-center h-full">
+          <div className="flex-1 flex items-center h-full w-full">
             {startSlider && renderDesktopImage()}
           </div>
           {startSlider && renderSquareCards()}
