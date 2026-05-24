@@ -79,7 +79,7 @@ export const HERO_SLIDES: HeroSlide[] = [
   },
   {
     id: 4,
-    title: "Get Hired at 8–15 LPA with Zero Experience",
+    title: "Get Hired at 8–15 LPA with Work Experience Letter",
     subtitle: "500+ placed • 30+ hiring partners • Limited seats only",
     bg: "from-blue-700 via-blue-600 to-blue-500",
     btn1: "Explore Courses",
