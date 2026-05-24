@@ -3724,6 +3724,10 @@ export const allCourses: Course[] = [
     ],
     image: "/Third.webp",
     slug: "full-stack-php",
+    heroTitle: "Full Stack PHP with AI & Cloud Integration",
+    heroSubtitle: "with Laravel & Enterprise Architecture",
+    heroDescription: "Master PHP, Laravel, MySQL, REST APIs, Vue.js, Docker, AWS & cutting-edge AI integration.",
+    heroSubDescription: "Build production-grade full stack applications and land high-paying jobs at top companies.",
     icon: FaCode
   },
   {
@@ -3743,6 +3747,10 @@ export const allCourses: Course[] = [
     ],
     image: "/Seventh.webp",
     slug: "full-stack-mern",
+    heroTitle: "Full Stack MERN with AI & Cloud Integration",
+    heroSubtitle: "with Scalable Architecture & AI",
+    heroDescription: "Master MongoDB, Express.js, React, Node.js, REST APIs, Docker, AWS & AI integration.",
+    heroSubDescription: "Build production-grade MERN applications and land high-paying jobs at top tech companies.",
     icon: FaCode
   },
   {
@@ -3762,6 +3770,10 @@ export const allCourses: Course[] = [
     ],
     image: "/First.webp",
     slug: "cybersecurity-professional",
+    heroTitle: "Cybersecurity Professional with AI Threat Detection",
+    heroSubtitle: "with Penetration Testing & Cloud Security",
+    heroDescription: "Master Network Security, Cryptography, Penetration Testing, Cloud Security & Incident Response.",
+    heroSubDescription: "Build real-world security expertise and land high-paying cybersecurity roles at top companies.",
     icon: FaShieldAlt
   },
   {
@@ -3781,6 +3793,10 @@ export const allCourses: Course[] = [
     ],
     image: "/Second.webp",
     slug: "ethical-hacking-expert",
+    heroTitle: "Ethical Hacking Expert with Advanced Tools",
+    heroSubtitle: "with Red Team Tactics & Vulnerability Assessment",
+    heroDescription: "Master Penetration Testing, Vulnerability Assessment, Red Team Tactics & Web App Security.",
+    heroSubDescription: "Think like a hacker, defend like a pro — and land high-paying security roles at top companies.",
     icon: FaBolt
   },
   {
@@ -4398,6 +4414,10 @@ export const allCourses: Course[] = [
     ],
     image: "/Sixth.webp",
     slug: "algorithmic-trading",
+    heroTitle: "Algorithmic Trading with AI & Quantitative Analysis",
+    heroSubtitle: "with Machine Learning & Financial Modeling",
+    heroDescription: "Master Python, Trading Algorithms, Quantitative Analysis, Backtesting, Risk Management & ML in Finance.",
+    heroSubDescription: "Build profitable trading systems and land high-paying roles in top financial institutions.",
     icon: FaBrain
   },
   {
@@ -4417,6 +4437,10 @@ export const allCourses: Course[] = [
     ],
     image: "/Ninth.webp",
     slug: "devops-engineering",
+    heroTitle: "DevOps Engineering with Cloud & Automation",
+    heroSubtitle: "with Kubernetes, CI/CD & Infrastructure as Code",
+    heroDescription: "Master Docker, Kubernetes, CI/CD Pipelines, Cloud Platforms, Terraform & Monitoring tools.",
+    heroSubDescription: "Build production-grade DevOps pipelines and land high-paying roles at top tech companies.",
     icon: FaCloud,
   },
   {
@@ -4436,6 +4460,10 @@ export const allCourses: Course[] = [
     ],
     image: "/Tenth.webp",
     slug: "machine-learning-specialist",
+    heroTitle: "Machine Learning Specialist with Deep Learning & AI",
+    heroSubtitle: "with TensorFlow, PyTorch & MLOps",
+    heroDescription: "Master Python, ML Algorithms, Deep Learning, NLP, Computer Vision, TensorFlow & PyTorch.",
+    heroSubDescription: "Build and deploy production-grade ML models and land high-paying AI roles at top companies.",
     icon: FaBrain,
   }
 ];
