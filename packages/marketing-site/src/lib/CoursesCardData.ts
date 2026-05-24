@@ -1244,18 +1244,25 @@ import { devopsEngineeringCourse } from './courses/devops-engineering';
 import { machineLearningSpecialistCourse } from './courses/machine-learning-specialist';
 
 export const allCourses: Course[] = [
-  dataAnalystCourse,
+  // 1. AI & ML Related
   dataScienceAiBootcampCourse,
-  fullStackJavaCourse,
+  machineLearningSpecialistCourse,
+  dataAnalystCourse,
+  dataEngineeringCourse,
   pythonProgrammingCourse,
-  fullStackPhpCourse,
+
+  // 2. Development & DevOps
   fullStackMernCourse,
+  fullStackJavaCourse,
+  fullStackPhpCourse,
+  devopsEngineeringCourse,
+
+  // 3. Cyber Security Related
   cybersecurityProfessionalCourse,
   ethicalHackingExpertCourse,
-  dataEngineeringCourse,
+
+  // 4. Finance Related
   algorithmicTradingCourse,
-  devopsEngineeringCourse,
-  machineLearningSpecialistCourse,
 ];
 
 

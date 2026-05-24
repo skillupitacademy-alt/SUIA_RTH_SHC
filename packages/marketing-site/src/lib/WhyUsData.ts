@@ -41,7 +41,7 @@ export const WHY_US_CARDS: CardItem[] = [
     icon: Layers,
     heading: "Hands-on Projects",
     subheading: "Practical experience with real-world projects",
-    colorHex: "#047857" // emerald-700
+    colorHex: "#15803d" // green-700
   },
   {
     id: 4,
@@ -62,7 +62,7 @@ export const WHY_US_CARDS: CardItem[] = [
     icon: Briefcase,
     heading: "Assured Internship",
     subheading: "Guaranteed internship opportunities",
-    colorHex: "#0e7490" // cyan-700
+    colorHex: "#b91c1c" // red-700
   },
   {
     id: 7,
@@ -83,7 +83,7 @@ export const WHY_US_CARDS: CardItem[] = [
     icon: BookOpen,
     heading: "Structured Learning Path",
     subheading: "Personalized roadmap that adapts to your learning pace",
-    colorHex: "#0f766e" // teal-700
+    colorHex: "#334155" // slate-700
   },
   {
     id: 10,

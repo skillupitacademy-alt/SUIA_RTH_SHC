@@ -26,7 +26,7 @@ const CourseCardContent: React.FC<CourseCardContentProps> = ({
         </div>
       </div>
 
-      <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2 min-h-[56px]">
+      <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 line-clamp-2 min-h-[56px] md:min-h-[64px]">
         {course.title}
       </h3>
 
