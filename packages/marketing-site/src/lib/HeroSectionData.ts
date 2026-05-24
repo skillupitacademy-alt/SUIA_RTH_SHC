@@ -1,5 +1,14 @@
 export type AccentColor = 'blue' | 'orange';
 
+export interface FloatingIconConfig {
+  icon: string;
+  top?: string;
+  left?: string;
+  right?: string;
+  bottom?: string;
+  delay: number;
+}
+
 export interface HeroSlide {
   id: number;
   title: string;
@@ -9,6 +18,7 @@ export interface HeroSlide {
   btn2: string;
   accent: AccentColor;
   image: string;
+  floatingIcons: FloatingIconConfig[];
 }
 
 export const HERO_SLIDES: HeroSlide[] = [
@@ -21,6 +31,14 @@ export const HERO_SLIDES: HeroSlide[] = [
     btn2: "Free master Class",
     accent: "blue",
     image: "/Zero.webp",
+    floatingIcons: [
+      { icon: "Code",        top: "12%",  left: "4%",   delay: 0   },
+      { icon: "Laptop",      top: "70%",  left: "5%",   delay: 0.8 },
+      { icon: "Rocket",      top: "20%",  right: "5%",  delay: 0.4 },
+      { icon: "Briefcase",   bottom: "15%", right: "6%",  delay: 1.2 },
+      { icon: "Star",        top: "45%",  left: "2%",   delay: 1.6 },
+      { icon: "Zap",         top: "55%",  right: "4%",  delay: 2.0 },
+    ]
   },
   {
     id: 2,
@@ -31,6 +49,14 @@ export const HERO_SLIDES: HeroSlide[] = [
     btn2: "Free master Class",
     accent: "orange",
     image: "/Students.webp",
+    floatingIcons: [
+      { icon: "Users",       top: "12%",  left: "4%",   delay: 0   },
+      { icon: "Award",       top: "70%",  left: "5%",   delay: 0.8 },
+      { icon: "Trophy",      top: "20%",  right: "5%",  delay: 0.4 },
+      { icon: "ThumbsUp",    bottom: "15%", right: "6%",  delay: 1.2 },
+      { icon: "Handshake",   top: "45%",  left: "2%",   delay: 1.6 },
+      { icon: "Star",        top: "55%",  right: "4%",  delay: 2.0 },
+    ]
   },
   {
     id: 3,
@@ -41,6 +67,14 @@ export const HERO_SLIDES: HeroSlide[] = [
     btn2: "Free master Class",
     accent: "orange",
     image: "/Batch1.webp",
+    floatingIcons: [
+      { icon: "CalendarDays",  top: "12%",  left: "4%",   delay: 0   },
+      { icon: "Target",        top: "70%",  left: "5%",   delay: 0.8 },
+      { icon: "Building2",     top: "20%",  right: "5%",  delay: 0.4 },
+      { icon: "BadgeCheck",    bottom: "15%", right: "6%", delay: 1.2 },
+      { icon: "GraduationCap", top: "45%",  left: "2%",   delay: 1.6 },
+      { icon: "TrendingUp",    top: "55%",  right: "4%",  delay: 2.0 },
+    ]
   },
   {
     id: 4,
@@ -51,6 +85,14 @@ export const HERO_SLIDES: HeroSlide[] = [
     btn2: "Free master Class",
     accent: "blue",
     image: "/Hired.webp",
+    floatingIcons: [
+      { icon: "DollarSign",  top: "12%",  left: "4%",   delay: 0   },
+      { icon: "Briefcase",   top: "70%",  left: "5%",   delay: 0.8 },
+      { icon: "LineChart",   top: "20%",  right: "5%",  delay: 0.4 },
+      { icon: "Building",    bottom: "15%", right: "6%", delay: 1.2 },
+      { icon: "Award",       top: "45%",  left: "2%",   delay: 1.6 },
+      { icon: "MapPin",      top: "55%",  right: "4%",  delay: 2.0 },
+    ]
   },
   {
     id: 5,
@@ -61,8 +103,17 @@ export const HERO_SLIDES: HeroSlide[] = [
     btn2: "Free master Class",
     accent: "orange",
     image: "/Job.webp",
+    floatingIcons: [
+      { icon: "Rocket",      top: "12%",  left: "4%",   delay: 0   },
+      { icon: "Globe",       top: "70%",  left: "5%",   delay: 0.8 },
+      { icon: "Compass",     top: "20%",  right: "5%",  delay: 0.4 },
+      { icon: "BookOpen",    bottom: "15%", right: "6%", delay: 1.2 },
+      { icon: "Cpu",         top: "45%",  left: "2%",   delay: 1.6 },
+      { icon: "Sparkles",    top: "55%",  right: "4%",  delay: 2.0 },
+    ]
   },
 ];
+
 
 export interface ParticleConfig {
   delay: number;

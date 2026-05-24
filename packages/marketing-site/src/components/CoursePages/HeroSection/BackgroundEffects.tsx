@@ -9,24 +9,24 @@ interface BackgroundEffectsProps {
 export const BackgroundEffects: React.FC<BackgroundEffectsProps> = ({ 
   mousePosition 
 }) => (
-  <div className="absolute inset-0">
+  <div className="absolute inset-0 pointer-events-none">
+    {/* Ultra-subtle top-left wisp */}
     <div
-      className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-[120px] animate-pulse opacity-40 mix-blend-screen pointer-events-none"
+      className="absolute top-1/4 left-1/4 w-[600px] h-[600px] rounded-full blur-[180px] opacity-[0.06]"
       style={{
-        backgroundColor: "rgba(255, 255, 255, 0.6)",
+        backgroundColor: "#a0a0a0",
         transform: `translate(${mousePosition.x}px, ${mousePosition.y}px)`,
         transition: 'transform 0.5s ease-out',
       }}
     />
+    {/* Ultra-subtle bottom-right wisp */}
     <div
-      className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full blur-[120px] animate-pulse opacity-30 mix-blend-screen pointer-events-none"
+      className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] rounded-full blur-[180px] opacity-[0.05]"
       style={{
-        backgroundColor: "rgba(255, 255, 255, 0.6)",
+        backgroundColor: "#a0a0a0",
         transform: `translate(${-mousePosition.x}px, ${-mousePosition.y}px)`,
         transition: 'transform 0.5s ease-out',
-        animationDelay: '1s',
       }}
     />
-    <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.05)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_50%,black,transparent)]" />
   </div>
 );

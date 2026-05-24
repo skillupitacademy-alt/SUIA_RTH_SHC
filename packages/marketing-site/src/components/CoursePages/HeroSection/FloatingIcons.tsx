@@ -12,7 +12,7 @@ export const FloatingIcons: React.FC<FloatingIconsProps> = ({ icons }) => (
     {icons.map((item, idx) => (
       <div
         key={idx}
-        className="absolute opacity-20"
+        className="absolute opacity-30"
         style={{
           top: item.top,
           left: item.left,
@@ -21,7 +21,7 @@ export const FloatingIcons: React.FC<FloatingIconsProps> = ({ icons }) => (
           animationDelay: `${item.delay}s`,
         }}
       >
-        <item.Icon className="w-16 h-16 text-white" />
+        <item.Icon className="w-16 h-16" style={{ color: "var(--brand-primary)" }} />
       </div>
     ))}
     <style>{`

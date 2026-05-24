@@ -79,7 +79,7 @@ export const CourseHeroSection: React.FC<CourseHeroSectionProps> = ({
     <div
       id='CourseHero'
       className="relative min-h-screen overflow-hidden"
-      style={{ backgroundColor: "#ffffff" }}
+      style={{ backgroundColor: "transparent" }}
     >
       <BackgroundEffects mousePosition={mousePosition} />
       <FloatingIcons icons={floatingIcons} />

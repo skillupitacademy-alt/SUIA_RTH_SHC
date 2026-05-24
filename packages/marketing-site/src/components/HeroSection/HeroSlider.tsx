@@ -3,6 +3,14 @@
 import React, { useEffect, useState, Suspense } from "react";
 import Image from "next/image";
 import { useBrand } from "@quiz/marketing-site/brand";
+import {
+  Code, Laptop, Rocket, Briefcase, Star, Zap,
+  Users, Award, Trophy, ThumbsUp, Handshake,
+  CalendarDays, Target, Building2, BadgeCheck, GraduationCap, TrendingUp,
+  DollarSign, LineChart, Building, MapPin,
+  Globe, Compass, BookOpen, Cpu, Sparkles,
+  type LucideIcon
+} from "lucide-react";
 
 import {
   HERO_SLIDES,
@@ -11,7 +19,7 @@ import {
   AUTOPLAY_DELAY,
 } from "@quiz/marketing-site/lib/HeroSectionData";
 
-import { ArrowRight, Sparkles } from "./HeroIcons";
+import { ArrowRight } from "./HeroIcons";
 import { AnimatedParticle } from "./HeroParticles";
 import { useAutoSlide } from "./useAutoSlider";
 import HeroText from "./HeroText";
@@ -99,6 +107,39 @@ export default function HeroSlider({ onSlideChange }: HeroSliderProps) {
   const currentSlide = HERO_SLIDES[current];
   const heroBackground = "transparent";
   const activeColor = current % 2 === 0 ? "var(--brand-primary)" : "var(--brand-secondary)";
+
+  const ICON_MAP: Record<string, LucideIcon> = {
+    Code, Laptop, Rocket, Briefcase, Star, Zap,
+    Users, Award, Trophy, ThumbsUp, Handshake,
+    CalendarDays, Target, Building2, BadgeCheck, GraduationCap, TrendingUp,
+    DollarSign, LineChart, Building, MapPin,
+    Globe, Compass, BookOpen, Cpu, Sparkles,
+  };
+
+  const renderFloatingIcons = () =>
+    currentSlide.floatingIcons.map((item, idx) => {
+      const Icon = ICON_MAP[item.icon];
+      if (!Icon) return null;
+      return (
+        <div
+          key={`${current}-${idx}`}
+          className="absolute pointer-events-none hidden md:block"
+          style={{
+            top: item.top,
+            left: item.left,
+            right: item.right,
+            bottom: item.bottom,
+            opacity: 0.18,
+            animation: `heroFloat 6s ease-in-out infinite`,
+            animationDelay: `${item.delay}s`,
+          }}
+        >
+          <Icon
+            style={{ color: activeColor, width: 52, height: 52 }}
+          />
+        </div>
+      );
+    });
 
   useEffect(() => {
     onSlideChange?.(current);
@@ -200,6 +241,17 @@ export default function HeroSlider({ onSlideChange }: HeroSliderProps) {
           <Suspense fallback={null}>{renderParticles()}</Suspense>
         )}
       </div>
+
+      {/* Floating Icons */}
+      {startSlider && renderFloatingIcons()}
+
+      {/* Float keyframe */}
+      <style>{`
+        @keyframes heroFloat {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-18px) rotate(4deg); }
+        }
+      `}</style>
 
       {/* Mobile */}
       <div className="md:hidden relative h-full flex flex-col items-center justify-center px-6 mt-5 md:pt-16 lg:mt-0">
