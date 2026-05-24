@@ -53,7 +53,7 @@ export const HeroContent: React.FC<HeroContentProps> = ({
         {description}
       </p>
       {subDescription && (
-        <p className="text-lg md:text-xl text-[var(--brand-primary)] opacity-80 max-w-3xl mx-auto">
+        <p className="text-lg md:text-xl text-[var(--brand-secondary)] opacity-90 font-medium max-w-3xl mx-auto">
           {subDescription}
         </p>
       )}
