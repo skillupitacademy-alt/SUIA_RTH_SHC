@@ -29,7 +29,7 @@ export const HERO_SLIDES: HeroSlide[] = [
     subtitle: "Build 15+ projects • Verified Work Experience Letter + Placement Assistance",
     bg: "from-blue-600 via-blue-500 to-blue-400",
     btn1: "Explore Courses",
-    btn2: "Free master Class",
+    btn2: "Book Expert Counseling",
     accent: "blue",
     image: "/Zero.webp",
     floatingIcons: [
@@ -47,7 +47,7 @@ export const HERO_SLIDES: HeroSlide[] = [
     subtitle: "Next batch in 7 days • Free demo class on WhatsApp",
     bg: "from-orange-600 via-orange-500 to-orange-400",
     btn1: "Explore Courses",
-    btn2: "Free master Class",
+    btn2: "Book Expert Counseling",
     accent: "orange",
     image: "/Students.webp",
     floatingIcons: [
@@ -65,7 +65,7 @@ export const HERO_SLIDES: HeroSlide[] = [
     subtitle: "500+ placed • 30+ hiring partners • Limited seats only",
     bg: "from-orange-600 via-orange-500 to-orange-400",
     btn1: "Explore Courses",
-    btn2: "Free master Class",
+    btn2: "Book Expert Counseling",
     accent: "orange",
     image: "/Batch1.webp",
     floatingIcons: [
@@ -83,7 +83,7 @@ export const HERO_SLIDES: HeroSlide[] = [
     subtitle: "500+ placed • 30+ hiring partners • Limited seats only",
     bg: "from-blue-700 via-blue-600 to-blue-500",
     btn1: "Explore Courses",
-    btn2: "Free master Class",
+    btn2: "Book Expert Counseling",
     accent: "blue",
     image: "/Hired.webp",
     floatingIcons: [
@@ -101,7 +101,7 @@ export const HERO_SLIDES: HeroSlide[] = [
     subtitle: "Weekend & Weekday batches • No prior coding needed",
     bg: "from-orange-700 via-orange-600 to-orange-500",
     btn1: "Explore Courses",
-    btn2: "Free master Class",
+    btn2: "Book Expert Counseling",
     accent: "orange",
     image: "/Job.webp",
     floatingIcons: [
