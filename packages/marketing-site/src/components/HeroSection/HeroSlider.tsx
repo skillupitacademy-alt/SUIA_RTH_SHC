@@ -118,7 +118,7 @@ export default function HeroSlider({ onSlideChange }: HeroSliderProps) {
 
   const renderSquareCards = () => {
     return (
-      <div className="hidden md:grid grid-cols-2 gap-4">
+      <div className="hidden md:grid grid-cols-2 gap-x-4 gap-y-0 h-full content-between">
         {currentSlide.floatingIcons.map((item, idx) => {
           const Icon = ICON_MAP[item.icon];
           if (!Icon) return null;
@@ -286,8 +286,10 @@ export default function HeroSlider({ onSlideChange }: HeroSliderProps) {
           {renderButtons()}
         </div>
 
-        <div className="w-1/2 h-full flex items-center justify-end gap-8">
-          {startSlider && renderDesktopImage()}
+        <div className="w-1/2 h-full flex justify-end gap-8 py-24">
+          <div className="flex items-center h-full">
+            {startSlider && renderDesktopImage()}
+          </div>
           {startSlider && renderSquareCards()}
         </div>
       </div>
