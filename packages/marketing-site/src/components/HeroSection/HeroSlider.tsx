@@ -251,7 +251,7 @@ export default function HeroSlider({ onSlideChange }: HeroSliderProps) {
       {/* Desktop */}
       <div className="hidden md:flex relative h-full">
         {/* Left: Text content — spread across full height */}
-        <div className="w-1/2 h-full flex flex-col justify-between px-12 lg:px-24 z-10 pt-8 pb-16">
+        <div className="w-[65%] h-full flex flex-col justify-between px-12 lg:px-24 z-10 pt-8 pb-16">
           {/* Top zone — badge */}
           <div className="flex items-start">
             {startSlider && renderBadge()}
@@ -269,7 +269,7 @@ export default function HeroSlider({ onSlideChange }: HeroSliderProps) {
         </div>
 
         {/* Right: Image — fills right half top-to-bottom */}
-        <div className="w-1/2 h-full relative">
+        <div className="w-[35%] h-full relative">
           {startSlider && renderDesktopImage()}
         </div>
       </div>
