@@ -80,7 +80,7 @@ export const HERO_SLIDES: HeroSlide[] = [
   {
     id: 4,
     title: "Get Hired at 8–15 LPA with Verified Work Experience Letter",
-    subtitle: "500+ placed • 30+ hiring partners • Limited seats only",
+    subtitle: "Skip the fresher tag • Stand out with a verified project portfolio",
     bg: "from-blue-700 via-blue-600 to-blue-500",
     btn1: "Explore Courses",
     btn2: "Book Expert Counseling",
