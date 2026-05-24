@@ -116,19 +116,44 @@ export default function HeroSlider({ onSlideChange }: HeroSliderProps) {
     Globe, Compass, BookOpen, Cpu, Sparkles,
   };
 
-  const renderSquareCards = () => {
+  const renderTopCards = () => {
     return (
-      <div className="hidden md:grid grid-cols-2 gap-x-4 gap-y-0 h-full content-between">
-        {currentSlide.floatingIcons.map((item, idx) => {
+      <div className="hidden md:flex gap-4 mb-6">
+        {currentSlide.floatingIcons.slice(0, 3).map((item, idx) => {
           const Icon = ICON_MAP[item.icon];
           if (!Icon) return null;
-          
-          // ALGORITHM: Alternate primary and secondary color per card
           const cardColor = idx % 2 === 0 ? "var(--brand-primary)" : "var(--brand-secondary)";
-          
           return (
             <div
-              key={`${current}-${idx}`}
+              key={`top-${current}-${idx}`}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-gray-100 shadow-md transition-transform hover:scale-105"
+            >
+              <div
+                className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                style={{ backgroundColor: `color-mix(in srgb, ${cardColor} 12%, white)` }}
+              >
+                <Icon style={{ color: cardColor, width: 18, height: 18 }} />
+              </div>
+              <span className="text-sm font-semibold text-gray-700 whitespace-nowrap">
+                {item.label}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const renderRightCards = () => {
+    return (
+      <div className="hidden md:flex flex-col justify-between h-full py-4 gap-6">
+        {currentSlide.floatingIcons.slice(3, 6).map((item, idx) => {
+          const Icon = ICON_MAP[item.icon];
+          if (!Icon) return null;
+          const cardColor = idx % 2 !== 0 ? "var(--brand-primary)" : "var(--brand-secondary)";
+          return (
+            <div
+              key={`right-${current}-${idx}`}
               className="flex flex-col items-center justify-center gap-3 w-28 h-28 rounded-2xl bg-white border border-gray-100 shadow-md transition-transform hover:scale-105"
             >
               <div
@@ -285,6 +310,7 @@ export default function HeroSlider({ onSlideChange }: HeroSliderProps) {
       {/* Desktop */}
       <div className="hidden md:flex relative h-full items-center justify-between px-12 lg:px-24">
         <div className="max-w-2xl z-10 flex flex-col justify-center">
+          {startSlider && renderTopCards()}
           <HeroText index={current} />
           {startSlider && renderBadge()}
           {renderButtons()}
@@ -294,7 +320,7 @@ export default function HeroSlider({ onSlideChange }: HeroSliderProps) {
           <div className="flex-1 flex items-center h-full w-full">
             {startSlider && renderDesktopImage()}
           </div>
-          {startSlider && renderSquareCards()}
+          {startSlider && renderRightCards()}
         </div>
       </div>
 
