@@ -79,7 +79,7 @@ export const CourseHeroSection: React.FC<CourseHeroSectionProps> = ({
     <div
       id='CourseHero'
       className="relative min-h-screen overflow-hidden"
-      style={{ backgroundColor: "var(--brand-primary)" }}
+      style={{ backgroundColor: "#ffffff" }}
     >
       <BackgroundEffects mousePosition={mousePosition} />
       <FloatingIcons icons={floatingIcons} />
@@ -104,14 +104,14 @@ export const CourseHeroSection: React.FC<CourseHeroSectionProps> = ({
         {/* Trust Indicators */}
         {companies.length > 0 && (
           <div className="mt-16 text-center">
-            <p className="text-white/60 text-sm mb-4">Trusted by students from</p>
+            <p className="text-[var(--brand-primary)] opacity-70 text-sm font-medium mb-4">Trusted by students from</p>
             <div className="flex flex-wrap items-center justify-center gap-8">
               {companies.map((company, idx) => (
                 <div
                   key={idx}
-                  className="px-6 py-3 bg-white/5 backdrop-blur-md rounded-xl border border-white/10 hover:bg-white/10 transition-all duration-300"
+                  className="px-6 py-3 bg-white shadow-md rounded-xl border border-gray-100 hover:border-[var(--brand-primary)] transition-all duration-300"
                 >
-                  <span className="text-white/70 font-semibold text-lg">{company}</span>
+                  <span className="text-[var(--brand-primary)] font-semibold text-lg">{company}</span>
                 </div>
               ))}
             </div>

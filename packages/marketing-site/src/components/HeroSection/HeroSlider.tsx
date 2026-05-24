@@ -97,7 +97,7 @@ export default function HeroSlider({ onSlideChange }: HeroSliderProps) {
   );
 
   const currentSlide = HERO_SLIDES[current];
-  const heroBackground = "#ffffff";
+  const heroBackground = "transparent";
   const activeColor = current % 2 === 0 ? "var(--brand-primary)" : "var(--brand-secondary)";
 
   useEffect(() => {

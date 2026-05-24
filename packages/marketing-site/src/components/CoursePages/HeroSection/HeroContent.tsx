@@ -23,18 +23,18 @@ export const HeroContent: React.FC<HeroContentProps> = ({
       <div
         className="inline-flex items-center gap-2 px-6 py-3 backdrop-blur-md rounded-full border shadow-lg transition-all duration-300"
         style={{
-          backgroundColor: "color-mix(in srgb, var(--brand-secondary) 25%, transparent)",
+          backgroundColor: "color-mix(in srgb, var(--brand-secondary) 15%, transparent)",
           borderColor: "color-mix(in srgb, var(--brand-secondary) 45%, transparent)"
         }}
       >
-        <Sparkles className="w-5 h-5 text-yellow-400 animate-pulse" />
-        <span className="text-white font-semibold">{badgeText}</span>
+        <Sparkles className="w-5 h-5 text-[var(--brand-primary)] animate-pulse" />
+        <span className="text-[var(--brand-primary)] font-semibold">{badgeText}</span>
       </div>
     </div>
 
     <div className="text-center mb-6">
       <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-4">
-        <span className="text-white drop-shadow-2xl leading-tight block mb-2">
+        <span className="text-[var(--brand-primary)] drop-shadow-md leading-tight block mb-2">
           {title}
         </span>
         {subtitle && (
@@ -49,11 +49,11 @@ export const HeroContent: React.FC<HeroContentProps> = ({
     </div>
 
     <div className="text-center mb-8">
-      <p className="text-xl md:text-2xl text-white/90 max-w-4xl mx-auto leading-relaxed mb-4">
+      <p className="text-xl md:text-2xl text-[var(--brand-primary)] opacity-90 max-w-4xl mx-auto leading-relaxed mb-4">
         {description}
       </p>
       {subDescription && (
-        <p className="text-lg md:text-xl text-white/80 max-w-3xl mx-auto">
+        <p className="text-lg md:text-xl text-[var(--brand-primary)] opacity-80 max-w-3xl mx-auto">
           {subDescription}
         </p>
       )}
