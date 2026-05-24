@@ -44,7 +44,7 @@ export const HERO_SLIDES: HeroSlide[] = [
   {
     id: 2,
     title: "Start Your Tech Career with Real World Projects",
-    subtitle: "Next batch in 7 days • Free demo class on WhatsApp",
+    subtitle: "Next batch in 7 days • 1-on-1 expert career counseling",
     bg: "from-orange-600 via-orange-500 to-orange-400",
     btn1: "Explore Courses",
     btn2: "Book Expert Counseling",
