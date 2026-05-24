@@ -33,12 +33,12 @@ export const HERO_SLIDES: HeroSlide[] = [
     accent: "blue",
     image: "/Zero.webp",
     floatingIcons: [
-      { icon: "Code",        label: "Coding",      top: "12%",    left: "3%",    delay: 0   },
-      { icon: "Laptop",      label: "Projects",    top: "68%",    left: "4%",    delay: 0.8 },
-      { icon: "Rocket",      label: "Launch",      top: "18%",    right: "3%",   delay: 0.4 },
-      { icon: "Briefcase",   label: "Placement",   bottom: "14%", right: "4%",   delay: 1.2 },
-      { icon: "Star",        label: "Portfolio",   top: "42%",    left: "1.5%",  delay: 1.6 },
-      { icon: "Zap",         label: "Fast Track",  top: "50%",    right: "3%",   delay: 2.0 },
+      { icon: "Code",        label: "Coding",      top: "10%",    left: "4%",    delay: 0   },
+      { icon: "Laptop",      label: "Projects",    top: "16%",    left: "22%",   delay: 0.6 },
+      { icon: "Rocket",      label: "Launch",      top: "10%",    right: "4%",   delay: 0.4 },
+      { icon: "Briefcase",   label: "Placement",   bottom: "10%", left: "4%",    delay: 1.2 },
+      { icon: "Star",        label: "Portfolio",   bottom: "16%", right: "22%",  delay: 1.6 },
+      { icon: "Zap",         label: "Fast Track",  bottom: "10%", right: "4%",   delay: 2.0 },
     ]
   },
   {
@@ -51,12 +51,12 @@ export const HERO_SLIDES: HeroSlide[] = [
     accent: "orange",
     image: "/Students.webp",
     floatingIcons: [
-      { icon: "Users",       label: "500+ Alumni",  top: "12%",    left: "3%",    delay: 0   },
-      { icon: "Award",       label: "Certified",    top: "68%",    left: "4%",    delay: 0.8 },
-      { icon: "Trophy",      label: "Top Ranked",   top: "18%",    right: "3%",   delay: 0.4 },
-      { icon: "ThumbsUp",    label: "Trusted",      bottom: "14%", right: "4%",   delay: 1.2 },
-      { icon: "Handshake",   label: "Hiring",       top: "42%",    left: "1.5%",  delay: 1.6 },
-      { icon: "Star",        label: "5 Star",       top: "50%",    right: "3%",   delay: 2.0 },
+      { icon: "Users",       label: "500+ Alumni",  top: "10%",    left: "4%",    delay: 0   },
+      { icon: "Award",       label: "Certified",    top: "16%",    left: "22%",   delay: 0.6 },
+      { icon: "Trophy",      label: "Top Ranked",   top: "10%",    right: "4%",   delay: 0.4 },
+      { icon: "ThumbsUp",    label: "Trusted",      bottom: "10%", left: "4%",    delay: 1.2 },
+      { icon: "Handshake",   label: "Hiring",       bottom: "16%", right: "22%",  delay: 1.6 },
+      { icon: "Star",        label: "5 Star",       bottom: "10%", right: "4%",   delay: 2.0 },
     ]
   },
   {
@@ -69,12 +69,12 @@ export const HERO_SLIDES: HeroSlide[] = [
     accent: "orange",
     image: "/Batch1.webp",
     floatingIcons: [
-      { icon: "CalendarDays",  label: "2026 Batch",   top: "12%",    left: "3%",    delay: 0   },
-      { icon: "Target",        label: "Goal Driven",  top: "68%",    left: "4%",    delay: 0.8 },
-      { icon: "Building2",     label: "30+ Partners", top: "18%",    right: "3%",   delay: 0.4 },
-      { icon: "BadgeCheck",    label: "Certified",    bottom: "14%", right: "4%",   delay: 1.2 },
-      { icon: "GraduationCap", label: "Job Ready",    top: "42%",    left: "1.5%",  delay: 1.6 },
-      { icon: "TrendingUp",    label: "8–15 LPA",     top: "50%",    right: "3%",   delay: 2.0 },
+      { icon: "CalendarDays",  label: "2026 Batch",   top: "10%",    left: "4%",    delay: 0   },
+      { icon: "Target",        label: "Goal Driven",  top: "16%",    left: "22%",   delay: 0.6 },
+      { icon: "Building2",     label: "30+ Partners", top: "10%",    right: "4%",   delay: 0.4 },
+      { icon: "BadgeCheck",    label: "Certified",    bottom: "10%", left: "4%",    delay: 1.2 },
+      { icon: "GraduationCap", label: "Job Ready",    bottom: "16%", right: "22%",  delay: 1.6 },
+      { icon: "TrendingUp",    label: "8–15 LPA",     bottom: "10%", right: "4%",   delay: 2.0 },
     ]
   },
   {
@@ -87,12 +87,12 @@ export const HERO_SLIDES: HeroSlide[] = [
     accent: "blue",
     image: "/Hired.webp",
     floatingIcons: [
-      { icon: "DollarSign",  label: "High Salary",  top: "12%",    left: "3%",    delay: 0   },
-      { icon: "Briefcase",   label: "Dream Job",    top: "68%",    left: "4%",    delay: 0.8 },
-      { icon: "LineChart",   label: "Growth",       top: "18%",    right: "3%",   delay: 0.4 },
-      { icon: "Building",    label: "Top MNCs",     bottom: "14%", right: "4%",   delay: 1.2 },
-      { icon: "Award",       label: "Excellence",   top: "42%",    left: "1.5%",  delay: 1.6 },
-      { icon: "MapPin",      label: "Any Location", top: "50%",    right: "3%",   delay: 2.0 },
+      { icon: "DollarSign",  label: "High Salary",  top: "10%",    left: "4%",    delay: 0   },
+      { icon: "Briefcase",   label: "Dream Job",    top: "16%",    left: "22%",   delay: 0.6 },
+      { icon: "LineChart",   label: "Growth",       top: "10%",    right: "4%",   delay: 0.4 },
+      { icon: "Building",    label: "Top MNCs",     bottom: "10%", left: "4%",    delay: 1.2 },
+      { icon: "Award",       label: "Excellence",   bottom: "16%", right: "22%",  delay: 1.6 },
+      { icon: "MapPin",      label: "Any Location", bottom: "10%", right: "4%",   delay: 2.0 },
     ]
   },
   {
@@ -105,12 +105,12 @@ export const HERO_SLIDES: HeroSlide[] = [
     accent: "orange",
     image: "/Job.webp",
     floatingIcons: [
-      { icon: "Rocket",      label: "Dream Job",    top: "12%",    left: "3%",    delay: 0   },
-      { icon: "Globe",       label: "Remote Ready", top: "68%",    left: "4%",    delay: 0.8 },
-      { icon: "BookOpen",    label: "Learn Fast",   top: "18%",    right: "3%",   delay: 0.4 },
-      { icon: "Cpu",         label: "Tech Skills",  bottom: "14%", right: "4%",   delay: 1.2 },
-      { icon: "Compass",     label: "Guided Path",  top: "42%",    left: "1.5%",  delay: 1.6 },
-      { icon: "Sparkles",    label: "2026 Ready",   top: "50%",    right: "3%",   delay: 2.0 },
+      { icon: "Rocket",      label: "Dream Job",    top: "10%",    left: "4%",    delay: 0   },
+      { icon: "Globe",       label: "Remote Ready", top: "16%",    left: "22%",   delay: 0.6 },
+      { icon: "BookOpen",    label: "Learn Fast",   top: "10%",    right: "4%",   delay: 0.4 },
+      { icon: "Cpu",         label: "Tech Skills",  bottom: "10%", left: "4%",    delay: 1.2 },
+      { icon: "Compass",     label: "Guided Path",  bottom: "16%", right: "22%",  delay: 1.6 },
+      { icon: "Sparkles",    label: "2026 Ready",   bottom: "10%", right: "4%",   delay: 2.0 },
     ]
   },
 ];
