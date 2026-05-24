@@ -176,22 +176,17 @@ export default function HeroSlider({ onSlideChange }: HeroSliderProps) {
   );
 
   const renderDesktopImage = () => (
-    <div className="w-full max-w-lg ml-auto">
-      <div
-        className={`relative w-full aspect-[3/4] transition-all duration-700 ${
-          isAnimating ? "opacity-0 translate-y-8" : "opacity-100 translate-y-0"
+    <div className="relative w-full h-full">
+      <Image
+        src={currentSlide.image}
+        alt={currentSlide.title}
+        fill
+        className={`object-contain object-center transition-all duration-700 ${
+          isAnimating ? "opacity-0 scale-95" : "opacity-100 scale-100"
         }`}
-        style={{ animation: "slideInDown 0.8s ease-out 0.3s both" }}
-      >
-        <Image
-          src={currentSlide.image}
-          alt={currentSlide.title}
-          fill
-          className="object-contain scale-110 md:scale-100"
-          sizes="(max-width: 768px) 90vw"
-          priority={current === 0}
-        />
-      </div>
+        sizes="50vw"
+        priority={current === 0}
+      />
     </div>
   );
 
@@ -254,19 +249,17 @@ export default function HeroSlider({ onSlideChange }: HeroSliderProps) {
       </div>
 
       {/* Desktop */}
-      <div className="hidden md:flex relative h-full items-center justify-between px-12 lg:px-24">
-        
-        
-        <div className="max-w-2xl z-10 flex flex-col justify-center">
+      <div className="hidden md:flex relative h-full">
+        {/* Left: Text content — fills left half, padded from navbar + sides */}
+        <div className="w-1/2 h-full flex flex-col justify-center px-12 lg:px-24 z-10">
           <HeroText index={current} />
           {startSlider && renderBadge()}
           {renderButtons()}
         </div>
 
-        <div className="w-1/2 h-full flex justify-end items-center py-24">
-          <div className="flex-1 flex justify-end items-center h-full w-full">
-            {startSlider && renderDesktopImage()}
-          </div>
+        {/* Right: Image — fills right half top-to-bottom */}
+        <div className="w-1/2 h-full relative">
+          {startSlider && renderDesktopImage()}
         </div>
       </div>
 
