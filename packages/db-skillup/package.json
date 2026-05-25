@@ -15,7 +15,7 @@
   "dependencies": {
     "@neondatabase/serverless": "^0.10.4",
     "@quiz/types": "workspace:*",
-    "drizzle-orm": "^0.45.1",
+    "drizzle-orm": "^0.45.2",
     "dotenv": "^17.2.3",
     "zod": "^3.24.1"
   },
