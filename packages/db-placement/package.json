@@ -19,7 +19,7 @@
   "dependencies": {
     "@neondatabase/serverless": "^0.10.4",
     "@upstash/vector": "^1.2.3",
-    "drizzle-orm": "^0.45.1",
+    "drizzle-orm": "^0.45.2",
     "dotenv": "^17.2.3",
     "pg": "^8.18.0",
     "typescript": "^5",

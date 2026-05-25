@@ -27,7 +27,7 @@
     "autoprefixer": "^10.4.23",
     "clsx": "^2.1.1",
     "cross-env": "^7.0.3",
-    "drizzle-orm": "^0.45.1",
+    "drizzle-orm": "^0.45.2",
     "eslint": "^8.57.0",
     "eslint-config-next": "15.2.0",
     "framer-motion": "^12.34.3",
