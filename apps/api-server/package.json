@@ -47,7 +47,7 @@
         "bcryptjs": "^3.0.3",
         "clsx": "^2.1.1",
         "cookie": "^1.0.2",
-        "cross-env": "^7.0.3",
+        "cross-env": "^10.1.0",
         "date-fns": "^4.1.0",
         "drizzle-orm": "^0.45.1",
         "eslint": "^8.57.0",

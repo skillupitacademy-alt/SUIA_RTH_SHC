@@ -14,7 +14,7 @@
     "analyze": "cross-env ANALYZE=true next build"
   },
   "dependencies": {
-    "cross-env": "^7.0.3",
+    "cross-env": "^10.1.0",
     "@next/bundle-analyzer": "^16.1.6",
     "@quiz/api-client": "workspace:*",
     "@quiz/observability": "workspace:*",
