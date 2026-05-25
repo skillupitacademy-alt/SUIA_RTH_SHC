@@ -12,7 +12,7 @@
         "analyze": "cross-env ANALYZE=true next build"
     },
     "dependencies": {
-        "@axe-core/react": "^4.11.1",
+        "@axe-core/react": "^4.11.3",
         "@next/bundle-analyzer": "^16.1.6",
         "@quiz/api-client": "workspace:*",
         "@quiz/auth": "workspace:*",
