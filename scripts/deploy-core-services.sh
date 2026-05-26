@@ -29,12 +29,14 @@ IMAGE_SHC_ADMIN="${REGISTRY}/${PROJECT_ID}/quiz-platform/skillhubcore-admin:${GI
 deploy_marketing_site() {
   local service_name="$1"
   local cloudbuild_config="$2"
+  local pixel_id="$3"
+  local ga_id="$4"
 
   echo "Deploying ${service_name} in ${MARKETING_REGION}..."
   gcloud builds submit . \
     --project="${PROJECT_ID}" \
     --config="${cloudbuild_config}" \
-    --substitutions="_TAG=${GIT_SHA}"
+    --substitutions="_TAG=${GIT_SHA},_NEXT_PUBLIC_FB_PIXEL_ID=${pixel_id},_NEXT_PUBLIC_GA_ID=${ga_id}"
 }
 
 echo "🔧 Setting GCP project..."
@@ -64,8 +66,8 @@ cloud_build_image apps/skillup-web/Dockerfile $IMAGE_SKILLUP
 cloud_build_image apps/skillhubcore-admin/Dockerfile $IMAGE_SHC_ADMIN
 
 echo "Cloud Build deploy for marketing sites..."
-deploy_marketing_site "$SERVICE_RTH_SITE" "cloudbuild.realtutorialhub-site.yaml"
-deploy_marketing_site "$SERVICE_SKILLUP_SITE" "cloudbuild.skillupitacademy-site.yaml"
+deploy_marketing_site "$SERVICE_RTH_SITE" "cloudbuild.realtutorialhub-site.yaml" "" ""
+deploy_marketing_site "$SERVICE_SKILLUP_SITE" "cloudbuild.skillupitacademy-site.yaml" "980414328232946" "G-XT88G4TQKY"
 
 #############################################
 # 🚀 DEPLOY API

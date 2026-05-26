@@ -1,54 +1,25 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import ContactInfo from './ContactInfo';
-import ContactForm from './ContactForm';
 import LocationCard from './LocationCard';
-import { CONTACT_CONFIG, LOCATION_INFO } from '@quiz/marketing-site/lib/ContactData';
+import { CONTACT_CONFIG, LOCATION_INFO, WORKING_HOURS } from '@quiz/marketing-site/lib/ContactData';
+import { trackLead } from '@quiz/marketing-site/lib/tracking';
 import { SectionHeader } from '../CommonHeader/SectionHeader';
-
-// Define ContactFormData locally if import fails
-interface ContactFormData {
-  name: string;
-  email: string;
-  phone: string;
-  message: string;
-}
+import { useBrand } from '@quiz/marketing-site/brand';
 
 const ContactUs: React.FC = () => {
-  // Initialize with default values
-  const [formData, setFormData] = useState<ContactFormData>({
-    name: '',
-    email: '',
-    phone: '',
-    message: ''
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Form submitted:', formData);
-
-    // Validate form data
-    if (!formData.name || !formData.email || !formData.phone) {
-      alert('Please fill in all required fields');
-      return;
-    }
-
-    alert('Thank you for your message! We will get back to you soon.');
-    setFormData({ name: '', email: '', phone: '', message: '' });
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
+  const brand = useBrand();
 
   const handleWhatsAppClick = () => {
-    const whatsappUrl = `https://wa.me/${CONTACT_CONFIG.phoneNumber}?text=${encodeURIComponent(CONTACT_CONFIG.defaultMessage)}`;
+    trackLead('General', 'Contact Page - WhatsApp');
+    const message =
+      `Hi ${brand.name}! 👋\n\n` +
+      `💬 *General Enquiry*\n\n` +
+      `I'd like to learn more about your courses and programs. Could you please guide me on the available options, schedules, and fees?\n\n` +
+      `Thank you!`;
+    const whatsappUrl = `https://wa.me/${CONTACT_CONFIG.phoneNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
 
@@ -73,13 +44,26 @@ const ContactUs: React.FC = () => {
             onMapClick={handleMapClick}
           />
 
-          {/* Right Column - Contact Form */}
-          <div>
-            <ContactForm
-              formData={formData}
-              onSubmit={handleSubmit}
-              onChange={handleChange}
-            />
+          {/* Right Column - Working Hours & Location */}
+          <div className="flex flex-col gap-6 h-full lg:h-[520px]">
+            <div
+              className="bg-gray-50 rounded-xl p-6 flex-1 flex flex-col justify-center"
+              style={{ boxShadow: "2px 2px 20px 0.6px #00000025" }}
+            >
+              <h3 className="text-xl font-bold text-blue-700 mb-4">Working Hours</h3>
+              <div className="space-y-3 text-gray-600">
+                {WORKING_HOURS.map((hours, index: number) => (
+                  <div
+                    key={index}
+                    className="flex justify-between items-center border-b border-gray-200 pb-2 last:border-0 last:pb-0"
+                  >
+                    <span className="font-medium">{hours.day}</span>
+                    <span className="text-gray-800 font-semibold">{hours.hours}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             <LocationCard onMapClick={handleMapClick} />
           </div>
         </div>

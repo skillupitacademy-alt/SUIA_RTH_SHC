@@ -8,5 +8,5 @@ interface HeroCTAProps {
 }
 
 export const HeroCTA: React.FC<HeroCTAProps> = () => (
-  <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-20" />
+  <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-6 mb-20" />
 );

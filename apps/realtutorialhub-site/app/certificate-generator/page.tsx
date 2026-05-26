@@ -1,4 +1,4 @@
-import { CertificateGeneratorPage } from "@quiz/marketing-site";
+import { CertificateGeneratorPage } from "@quiz/marketing-site/certificates/CertificateGeneratorPage";
 
 import { certificateToolBrands } from "../certificate-tools-brands";
 

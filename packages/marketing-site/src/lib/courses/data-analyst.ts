@@ -19,8 +19,8 @@ export const dataAnalystCourse: Course =   {
     image: "/Fourth.webp",
     slug: "data-analyst",
     icon: FaChartLine,
-    heroTitle: "Data Analyst with AI & ML Integration",
-    heroSubtitle: "with AI & ML Integration",
+    heroTitle: "Data Analyst",
+    heroSubtitle: "with AI & ML",
     heroDescription: "Master Python, SQL, Tableau, Power BI, Machine Learning & cutting-edge AI tools.",
     heroSubDescription: "Build production-grade dashboards and land high-paying jobs at top companies.",
 

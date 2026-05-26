@@ -64,7 +64,7 @@ export const CONTACT_INFO: ContactInfo[] = [
   { 
     type: 'phone',
     label: 'Phone',
-    value: '9967508801',
+    value: '9967599801',
     icon: '📞'
   },
   { 

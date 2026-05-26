@@ -126,12 +126,15 @@ function PreviewShell({
       <div
         style={{
           position: "fixed",
-          top: 16,
-          right: 16,
+          top: 12,
+          left: 12,
+          right: 12,
           zIndex: 50,
           display: "flex",
+          flexWrap: "wrap",
           gap: 10,
           alignItems: "center",
+          justifyContent: "space-between",
           padding: 10,
           borderRadius: 14,
           background: "rgba(255,255,255,0.92)",
@@ -145,6 +148,7 @@ function PreviewShell({
           onClick={() => router.push("/certificate-generator")}
           style={{
             minHeight: 42,
+            flex: "1 1 140px",
             padding: "0 16px",
             borderRadius: 10,
             border: "1px solid #c7d2e8",
@@ -164,6 +168,7 @@ function PreviewShell({
           disabled={downloading !== null}
           style={{
             minHeight: 42,
+            flex: "1 1 140px",
             padding: "0 16px",
             borderRadius: 10,
             border: "1px solid #c7d2e8",
@@ -183,6 +188,7 @@ function PreviewShell({
           disabled={downloading !== null}
           style={{
             minHeight: 42,
+            flex: "1 1 140px",
             padding: "0 16px",
             borderRadius: 10,
             border: 0,

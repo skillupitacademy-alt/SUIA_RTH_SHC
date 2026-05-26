@@ -8,7 +8,7 @@ interface LocationCardProps {
 const LocationCard: React.FC<LocationCardProps> = ({ onMapClick }) => {
   return (
     <div 
-      className="mt-6 rounded-xl p-5 border border-blue-100"
+      className="rounded-xl p-5 border border-blue-100 flex-1 flex flex-col justify-center"
       style={{
         background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
         boxShadow: '2px 2px 20px 0.6px #00000025'
@@ -23,7 +23,7 @@ const LocationCard: React.FC<LocationCardProps> = ({ onMapClick }) => {
 
       <button
         onClick={onMapClick}
-        className="text-blue-600 font-medium hover:underline"
+        className="text-blue-600 font-medium hover:underline text-left self-start"
       >
         View on Google Maps →
       </button>

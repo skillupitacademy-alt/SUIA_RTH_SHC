@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import {
   CertificatePreviewFallback,
   CertificatePreviewPage,
-} from "@quiz/marketing-site";
+} from "@quiz/marketing-site/certificates/CertificatePreviewPage";
 
 import { certificateToolBrands } from "../certificate-tools-brands";
 

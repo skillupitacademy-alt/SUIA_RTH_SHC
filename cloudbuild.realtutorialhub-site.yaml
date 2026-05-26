@@ -4,6 +4,11 @@ substitutions:
   _IMAGE_NAME: realtutorialhub-site
   _SERVICE_NAME: realtutorialhub-site
   _TAG: latest
+  _NEXT_PUBLIC_RTH_META_PIXEL_ID: ""
+  _NEXT_PUBLIC_RTH_GA4_MEASUREMENT_ID: ""
+  _NEXT_PUBLIC_RTH_GTM_CONTAINER_ID: ""
+  _NEXT_PUBLIC_ANALYTICS_ENABLED: "true"
+  _NEXT_PUBLIC_ANALYTICS_ENV: "production"
 
 steps:
   - name: gcr.io/cloud-builders/docker
@@ -13,6 +18,16 @@ steps:
       - apps/realtutorialhub-site/Dockerfile
       - -t
       - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE_NAME}:${_TAG}
+      - --build-arg
+      - NEXT_PUBLIC_RTH_META_PIXEL_ID=${_NEXT_PUBLIC_RTH_META_PIXEL_ID}
+      - --build-arg
+      - NEXT_PUBLIC_RTH_GA4_MEASUREMENT_ID=${_NEXT_PUBLIC_RTH_GA4_MEASUREMENT_ID}
+      - --build-arg
+      - NEXT_PUBLIC_RTH_GTM_CONTAINER_ID=${_NEXT_PUBLIC_RTH_GTM_CONTAINER_ID}
+      - --build-arg
+      - NEXT_PUBLIC_ANALYTICS_ENABLED=${_NEXT_PUBLIC_ANALYTICS_ENABLED}
+      - --build-arg
+      - NEXT_PUBLIC_ANALYTICS_ENV=${_NEXT_PUBLIC_ANALYTICS_ENV}
       - .
 
   - name: gcr.io/cloud-builders/docker
@@ -35,6 +50,10 @@ steps:
       - --allow-unauthenticated
       - --port
       - "3004"
+      - --set-env-vars
+      - NEXT_PUBLIC_ANALYTICS_ENV=${_NEXT_PUBLIC_ANALYTICS_ENV},NEXT_PUBLIC_ANALYTICS_ENABLED=${_NEXT_PUBLIC_ANALYTICS_ENABLED}
+      - --update-secrets
+      - ANALYTICS_ADMIN_TOKEN=ANALYTICS_ADMIN_TOKEN:latest,RTH_GA4_MEASUREMENT_API_SECRET=RTH_GA4_MEASUREMENT_API_SECRET:latest,RTH_META_CAPI_TOKEN=RTH_META_CAPI_TOKEN:latest
 
 images:
   - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE_NAME}:${_TAG}

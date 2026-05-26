@@ -4,6 +4,9 @@ import { useRouter } from 'next/navigation';
 import { Course } from '@quiz/marketing-site/lib/CoursesCardData';
 import { useTransition } from 'react';
 import { Loader2 } from 'lucide-react';
+import { useBrand } from '@quiz/marketing-site/brand';
+import { CONTACT_CONFIG } from '@quiz/marketing-site/lib/ContactData';
+import { trackLead } from '@quiz/marketing-site/lib/tracking';
 
 interface CourseCardActionsProps {
   course: Course;
@@ -11,6 +14,7 @@ interface CourseCardActionsProps {
 
 const CourseCardActions: React.FC<CourseCardActionsProps> = ({ course }) => {
   const router = useRouter();
+  const brand = useBrand();
   const [isPending, startTransition] = useTransition();
 
   if (!course.slug) return null;
@@ -23,6 +27,20 @@ const CourseCardActions: React.FC<CourseCardActionsProps> = ({ course }) => {
     startTransition(() => {
       router.push(`/courses/${course.slug}`);
     });
+  };
+
+  const handleEnrollClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    trackLead(course.title, 'Course Card - Enroll Now');
+    
+    const message =
+      `Hi ${brand.name}! 👋\n\n` +
+      `I'm interested in enrolling in the *${course.title}* course.\n\n` +
+      `🎓 *Enroll Now*\n\n` +
+      `Could you please share the next batch details, fee structure, and enrollment process?\n\n` +
+      `Thank you!`;
+    const whatsappUrl = `https://wa.me/${CONTACT_CONFIG.phoneNumber}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
   };
 
   return (
@@ -59,6 +77,7 @@ const CourseCardActions: React.FC<CourseCardActionsProps> = ({ course }) => {
 
         {/* ENROLL */}
         <button
+          onClick={handleEnrollClick}
           className="flex-1 py-3.5 text-white font-medium rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl border-0"
           style={{ backgroundColor: "var(--brand-secondary)" }}
         >

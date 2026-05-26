@@ -6,6 +6,9 @@ import { loadSlim } from "@tsparticles/slim";
 import type { ISourceOptions } from "@tsparticles/engine";
 
 const ParticleBackground = () => {
+  const isTouchDevice =
+    typeof window !== "undefined" && "ontouchstart" in window;
+
   useEffect(() => {
     initParticlesEngine(async (engine) => {
       await loadSlim(engine);
@@ -19,7 +22,7 @@ const ParticleBackground = () => {
       interactivity: {
         events: {
           onHover: {
-            enable: !("ontouchstart" in window),
+            enable: !isTouchDevice,
             mode: "repulse",
           },
         },
@@ -49,7 +52,7 @@ const ParticleBackground = () => {
       },
       detectRetina: true,
     }),
-    []
+    [isTouchDevice]
   );
 
   return (

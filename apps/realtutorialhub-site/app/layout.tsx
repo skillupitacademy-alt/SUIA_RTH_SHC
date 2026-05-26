@@ -3,11 +3,13 @@ import type { CSSProperties } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-import { BrandProvider } from "@quiz/marketing-site";
+import { BrandProvider } from "@quiz/marketing-site/brand";
+import { ConsentBanner } from "@quiz/marketing-site";
 import ScrollProgressBar from "@quiz/marketing-site/components/Scroll/ScrollProgressBar";
 import ScrollToTop from "@quiz/marketing-site/components/Scroll/ScrollToTop";
 import LenisProvider from "@quiz/marketing-site/components/Providers/LenisProvider";
 import PremiumLoader from "@quiz/marketing-site/components/PremiumLoader";
+import { TrackingScripts } from "@quiz/marketing-site/components/Tracking/TrackingScripts";
 
 import { brand } from "../brand";
 
@@ -47,6 +49,8 @@ export default function RootLayout({
     >
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <BrandProvider brand={brand}>
+          <TrackingScripts />
+          <ConsentBanner />
           <PremiumLoader />
           <ScrollProgressBar />
           <main id="main-content">

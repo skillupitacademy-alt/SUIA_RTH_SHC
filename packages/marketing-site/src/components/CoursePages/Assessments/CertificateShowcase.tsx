@@ -8,6 +8,8 @@ import {
   getCertificateBranding,
   buildPreviewCertificateData,
 } from "../../../certificates/branding";
+import { CONTACT_CONFIG } from "@quiz/marketing-site/lib/ContactData";
+import { trackLead } from "@quiz/marketing-site/lib/tracking";
 
 interface CertificateShowcaseProps {
   title: string;
@@ -80,6 +82,19 @@ export const CertificateShowcase: React.FC<CertificateShowcaseProps> = ({
     description: certificateDetails.subSubtitle || undefined,
   });
 
+  const handleEnrollClick = () => {
+    const courseName = certificateDetails.subtitle || "your";
+    trackLead(courseName, 'Certificate Showcase - Enroll Now');
+    const message =
+      `Hi ${brand.name}! 👋\n\n` +
+      `I'm interested in enrolling in the *${courseName}* course.\n\n` +
+      `🏅 *Industry-Recognized Certification*\n\n` +
+      `Could you please share details about the certification program, its recognition, and the enrollment process?\n\n` +
+      `Thank you!`;
+    const whatsappUrl = `https://wa.me/${CONTACT_CONFIG.phoneNumber}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
   return (
     <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-10 md:p-16 text-white mb-12">
       <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
@@ -101,10 +116,10 @@ export const CertificateShowcase: React.FC<CertificateShowcaseProps> = ({
           </div>
 
           <div className="flex justify-center md:justify-start gap-4">
-            <button className="px-6 py-3 bg-white text-gray-900 font-bold rounded-xl hover:bg-gray-100 transition transform hover:-translate-y-1 hover:shadow-2xl">
-              View Sample Certificate
-            </button>
-            <button className="px-6 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition transform hover:-translate-y-1 hover:shadow-2xl">
+            <button 
+              onClick={handleEnrollClick}
+              className="px-6 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition transform hover:-translate-y-1 hover:shadow-2xl"
+            >
               Enroll Now
             </button>
           </div>

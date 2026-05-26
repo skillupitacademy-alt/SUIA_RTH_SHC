@@ -26,10 +26,10 @@ const FooterContact: React.FC = () => {
           <div className="flex items-center">
             <Phone aria-hidden="true" className="w-5 h-5 text-blue-500 mr-2 flex-shrink-0" />
             <a
-              href="tel:9997508801"
+              href="tel:+919967599801"
               className="hover:text-blue-600 transition-colors"
             >
-              9967508801
+              9967599801
             </a>
           </div>
 

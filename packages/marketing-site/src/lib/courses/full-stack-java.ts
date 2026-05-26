@@ -18,7 +18,7 @@ export const fullStackJavaCourse: Course =   {
     slug: "full-stack-java",
     icon: FaCode,
     heroTitle: "Full Stack Java Developer",
-    heroSubtitle: "with AI Integration",
+    heroSubtitle: "with AI",
     heroDescription: "Master Java, Spring Boot, React, Microservices, Docker, AWS & cutting-edge AI/ML integration.",
     heroSubDescription: "Build production-grade applications and land high-paying jobs at top tech companies.",
     // ADD ASSESSMENT DATA HERE

@@ -1,14 +1,6 @@
 "use client";
 
-import dynamic from "next/dynamic";
-
-const ParticleBackground = dynamic(
-  () => import("./ParticleBackground"),
-  {
-    ssr: false,
-    loading: () => null
-  }
-);
+import ParticleBackground from "./ParticleBackground";
 
 export default function ParticleClient() {
   return <ParticleBackground />;

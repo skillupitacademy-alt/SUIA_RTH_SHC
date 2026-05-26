@@ -19,7 +19,7 @@ export const pythonProgrammingCourse: Course =   {
     image: "/Eighth.webp",
     slug: "python-programming",
     icon: FaTerminal,
-    heroSubtitle: "with AI Integration",
+    heroSubtitle: "with AI",
     heroDescription: "Master Python, Django, React, FastAPI, Docker, AWS & cutting-edge AI/ML integration.",
     heroSubDescription: "Build production-grade applications and land high-paying jobs at top tech companies.",
     companies: ["Google", "Microsoft", "Amazon", "TCS", "Infosys", "Wipro"],

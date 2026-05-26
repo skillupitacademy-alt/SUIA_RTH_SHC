@@ -1,7 +1,7 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import React, { useMemo, useState } from "react";
 
 import type { MarketingBrand } from "../brand";
 import {
@@ -83,6 +83,18 @@ const inputStyle: React.CSSProperties = {
   boxSizing: "border-box",
 };
 
+const twoColumnGridStyle: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 220px), 1fr))",
+  gap: 18,
+};
+
+const threeColumnGridStyle: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 180px), 1fr))",
+  gap: 18,
+};
+
 export function CertificateGeneratorPage({
   brands,
   initialBrandId,
@@ -102,9 +114,14 @@ export function CertificateGeneratorPage({
     () => getCertificateBranding(selectedBrand),
     [selectedBrand],
   );
+  const [isMounted, setIsMounted] = useState(false);
   const [values, setValues] = useState<CertificateGeneratorFormValues>(() =>
     buildCertificateGeneratorDefaults(branding),
   );
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   function updateField<Key extends keyof CertificateGeneratorFormValues>(
     key: Key,
@@ -131,6 +148,64 @@ export function CertificateGeneratorPage({
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     router.push(buildPreviewUrl(values));
+  }
+
+  if (!isMounted) {
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          background: "#eef3fb",
+          padding: "32px 20px 48px",
+          boxSizing: "border-box",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: 1040,
+            margin: "0 auto",
+            background: "#ffffff",
+            borderRadius: 18,
+            boxShadow: "0 18px 48px rgba(15, 23, 42, 0.09)",
+            border: "1px solid #dde4f1",
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              padding: "28px 28px 20px",
+              borderBottom: "1px solid #e7edf6",
+              background:
+                selectedBrand.id === "skillupitacademy"
+                  ? "linear-gradient(135deg, rgba(245,74,141,0.08), rgba(19,50,130,0.05))"
+                  : "linear-gradient(135deg, rgba(208,63,0,0.08), rgba(18,79,214,0.05))",
+            }}
+          >
+            <div
+              style={{
+                fontFamily: "Inter, Arial, sans-serif",
+                fontSize: 28,
+                fontWeight: 800,
+                color: "#17316f",
+              }}
+            >
+              Certificate Generator
+            </div>
+            <div
+              style={{
+                marginTop: 8,
+                fontFamily: "Inter, Arial, sans-serif",
+                fontSize: 15,
+                lineHeight: 1.5,
+                color: "#52638f",
+              }}
+            >
+              Preparing certificate generator...
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -231,7 +306,7 @@ export function CertificateGeneratorPage({
             <div style={{ fontFamily: "Inter, Arial, sans-serif", fontSize: 18, fontWeight: 800, color: "#17316f" }}>
               Student Details
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 18 }}>
+            <div style={twoColumnGridStyle}>
               <Field label="Student Name">
                 <input style={inputStyle} value={values.studentName} onChange={(event) => updateField("studentName", event.target.value)} required />
               </Field>
@@ -248,7 +323,7 @@ export function CertificateGeneratorPage({
             <div style={{ fontFamily: "Inter, Arial, sans-serif", fontSize: 18, fontWeight: 800, color: "#17316f" }}>
               Course Details
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 18 }}>
+            <div style={twoColumnGridStyle}>
               <Field label="Course Name">
                 <input style={inputStyle} value={values.courseName} onChange={(event) => updateField("courseName", event.target.value)} required />
               </Field>
@@ -273,7 +348,7 @@ export function CertificateGeneratorPage({
             <div style={{ fontFamily: "Inter, Arial, sans-serif", fontSize: 18, fontWeight: 800, color: "#17316f" }}>
               Completion Details
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 18 }}>
+            <div style={threeColumnGridStyle}>
               <Field label="Certificate ID">
                 <input style={inputStyle} value={values.certificateId} onChange={(event) => updateField("certificateId", event.target.value)} required />
               </Field>
@@ -290,7 +365,7 @@ export function CertificateGeneratorPage({
             <div style={{ fontFamily: "Inter, Arial, sans-serif", fontSize: 18, fontWeight: 800, color: "#17316f" }}>
               Instructor Details
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 18 }}>
+            <div style={threeColumnGridStyle}>
               <Field label="Instructor Name">
                 <input style={inputStyle} value={values.instructorName} onChange={(event) => updateField("instructorName", event.target.value)} required />
               </Field>

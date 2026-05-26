@@ -24,8 +24,8 @@ export type ContactFormData = {
 export const CONTACT_CONFIG = {
   title: 'Contact Us',
   description: 'Get in touch to start your learning journey today',
-  phoneNumber: '9967508801',
-  defaultMessage: 'Hello, Real Tutorial Hub, I would like to learn more about your courses!',
+  phoneNumber: '9967599801',
+  defaultMessage: 'Hello! I would like to learn more about your courses.',
 };
 
 export const CONTACT_INFO: ContactInfo[] = [

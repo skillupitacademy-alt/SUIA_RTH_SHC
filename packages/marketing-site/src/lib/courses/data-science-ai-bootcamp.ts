@@ -21,8 +21,8 @@ export const dataScienceAiBootcampCourse: Course =   {
     icon: FaBrain,
 
     // Hero Section Data
-    heroTitle: "Data Science & AI Mastery Bootcamp",
-    heroSubtitle: "with ML, Deep Learning & MLOps",
+    heroTitle: "Data Science & AI",
+    heroSubtitle: "with Deep Learning",
     heroDescription: "Master Python, Statistics, Machine Learning, Deep Learning, NLP, Computer Vision, MLOps & cutting-edge AI tools.",
     heroSubDescription: "Build production-grade AI applications and land high-paying jobs at top tech companies.",
 

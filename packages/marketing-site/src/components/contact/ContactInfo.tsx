@@ -111,25 +111,6 @@ const ContactInfo: React.FC<ContactInfoProps> = ({
         </div>
       </div>
 
-      {/* Working Hours card slides in from the right */}
-      <div
-        className="mt-6 bg-gray-50 rounded-xl p-5"
-        style={{ boxShadow: "2px 2px 20px 0.6px #00000025" }}
-
-      >
-        <h3 className="font-semibold text-gray-800 mb-3">Working Hours</h3>
-        <div className="space-y-2 text-sm text-gray-600">
-          {WORKING_HOURS.map((hours, index: number) => (
-            <div
-              key={index}
-              className="flex justify-between"
-            >
-              <span>{hours.day}</span>
-              <span className="text-gray-800">{hours.hours}</span>
-            </div>
-          ))}
-        </div>
-      </div>
     </div>
   );
 };

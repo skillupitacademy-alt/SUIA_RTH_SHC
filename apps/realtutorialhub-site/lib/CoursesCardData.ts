@@ -1162,8 +1162,8 @@ export const allCourses: Course[] = [
     image: "/Fourth.webp",
     slug: "data-analyst",
     icon: FaChartLine,
-    heroTitle: "Data Analyst with AI & ML Integration",
-    heroSubtitle: "with AI & ML Integration",
+    heroTitle: "Data Analyst ",
+    heroSubtitle: "with AI & ML",
     heroDescription: "Master Python, SQL, Tableau, Power BI, Machine Learning & cutting-edge AI tools.",
     heroSubDescription: "Build production-grade dashboards and land high-paying jobs at top companies.",
 
@@ -1794,8 +1794,8 @@ export const allCourses: Course[] = [
     icon: FaBrain,
 
     // Hero Section Data
-    heroTitle: "Data Science & AI Mastery Bootcamp",
-    heroSubtitle: "with ML, Deep Learning & MLOps",
+    heroTitle: "Data Science & AI",
+    heroSubtitle: "Mastery Bootcamp",
     heroDescription: "Master Python, Statistics, Machine Learning, Deep Learning, NLP, Computer Vision, MLOps & cutting-edge AI tools.",
     heroSubDescription: "Build production-grade AI applications and land high-paying jobs at top tech companies.",
 
@@ -3031,6 +3031,7 @@ export const allCourses: Course[] = [
     image: "/Eighth.webp",
     slug: "python-programming",
     icon: FaTerminal,
+    heroTitle: "Full Stack Python Developer",
     heroSubtitle: "with AI Integration",
     heroDescription: "Master Python, Django, React, FastAPI, Docker, AWS & cutting-edge AI/ML integration.",
     heroSubDescription: "Build production-grade applications and land high-paying jobs at top tech companies.",
@@ -3801,8 +3802,8 @@ export const allCourses: Course[] = [
     image: "/Fifth.webp",
     slug: "data-engineering",
     icon: FaDatabase,
-    heroTitle: "Data Engineering with AI & Cloud Integration",
-    heroSubtitle: "with Big Data & Cloud Platforms",
+    heroTitle: "Data Engineering",
+    heroSubtitle: "with AI & Cloud",
     heroDescription: "Master Big Data, ETL/ELT, Data Warehousing, Spark, Airflow, AWS, GCP & cutting-edge AI/ML tools.",
     heroSubDescription: "Build production-grade data pipelines and land high-paying jobs at top tech companies.",
 

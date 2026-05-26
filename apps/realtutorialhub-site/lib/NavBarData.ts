@@ -37,13 +37,13 @@ export const navItems: NavItem[] = [
 export const contactButtons: ContactButton[] = [
   {
     type: 'whatsapp',
-    href: 'https://wa.me/your-number',
+    href: 'https://wa.me/919967599801?text=Hi%20Real%20Tutorial%20Hub!%20%F0%9F%91%8B%0A%0A%F0%9F%92%AC%20*General%20Enquiry*%0A%0AI%27d%20like%20to%20learn%20more%20about%20your%20courses%20and%20programs.%20Could%20you%20please%20guide%20me%20on%20the%20available%20options%2C%20schedules%2C%20and%20fees%3F%0A%0AThank%20you!',
     label: 'WhatsApp',
     icon: FaWhatsapp
   },
   {
     type: 'phone',
-    href: 'tel:your-number',
+    href: 'tel:+919967599801',
     label: 'Call Us',
     icon: FaPhoneAlt
   }

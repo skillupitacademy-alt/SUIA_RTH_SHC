@@ -5,7 +5,20 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./MarketingHome": "./src/MarketingHome.tsx",
     "./brand": "./src/brand.tsx",
+    "./config/*": "./src/config/*.ts",
+    "./lib/analytics/*": "./src/lib/analytics/*.ts",
+    "./lib/analytics/server/*": "./src/lib/analytics/server/*.ts",
+    "./lib/privacy/*": "./src/lib/privacy/*.ts",
+    "./lib/feature-flags/*": "./src/lib/feature-flags/*.ts",
+    "./lib/domain-tracking/*": "./src/lib/domain-tracking/*.ts",
+    "./lib/event-bus/*": "./src/lib/event-bus/*.ts",
+    "./lib/observability/*": "./src/lib/observability/*.ts",
+    "./course-layout": "./src/course-layout.tsx",
+    "./course-page": "./src/course-page.tsx",
+    "./certificates/CertificateGeneratorPage": "./src/certificates/CertificateGeneratorPage.tsx",
+    "./certificates/CertificatePreviewPage": "./src/certificates/CertificatePreviewPage.tsx",
     "./components/*": "./src/components/*.tsx",
     "./lib/*": "./src/lib/*.ts"
   },
@@ -27,7 +40,8 @@
     "qrcode": "^1.5.4",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "react-icons": "^5.5.0"
+    "react-icons": "^5.5.0",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@types/aos": "^3.0.7",

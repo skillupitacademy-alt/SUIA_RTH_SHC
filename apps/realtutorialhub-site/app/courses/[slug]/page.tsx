@@ -1,4 +1,7 @@
-import { CourseMarketingPage, generateCourseStaticParams } from "@quiz/marketing-site";
+import {
+  CourseMarketingPage,
+  generateCourseStaticParams,
+} from "@quiz/marketing-site/course-page";
 
 interface CoursePageProps {
   params: Promise<{
