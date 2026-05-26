@@ -1,5 +1,23 @@
 export { BrandProvider, getBrandCssVars, useBrand } from "./brand";
 export type { MarketingBrand } from "./brand";
+export { MarketingContentProvider, useMarketingContent } from "./content/provider";
+export { loadMarketingBootstrapSnapshot, loadMarketingContentSnapshot } from "./content/loader";
+export {
+  getMarketingCourseCatalogSnapshot,
+  getMarketingCoursePageSnapshot,
+  loadMarketingCourseCatalogSnapshot,
+  loadMarketingCoursePageSnapshot,
+} from "./content/courses";
+export type {
+  MarketingBootstrapSnapshot,
+  MarketingContentSnapshot,
+  MarketingControlPlaneSnapshot,
+} from "./content/contracts";
+export type {
+  MarketingCourseCatalogSnapshot,
+  MarketingCoursePageSnapshot,
+  MarketingCourseSnapshot,
+} from "./content/courses";
 export { getAnalyticsRuntimeConfig, resolveBrandAnalyticsConfig } from "./config/analytics";
 export { default as MarketingHome } from "./MarketingHome";
 export { ConsentBanner } from "./components/privacy/ConsentBanner";

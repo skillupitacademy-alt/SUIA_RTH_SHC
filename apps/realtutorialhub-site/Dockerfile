@@ -30,8 +30,9 @@ FROM node:20-alpine AS runner
 ENV NODE_ENV=production
 ENV PORT=3004
 ENV HOSTNAME=0.0.0.0
-WORKDIR /app/apps/realtutorialhub-site
-COPY --from=builder /app/apps/realtutorialhub-site/out ./out
-COPY --from=builder /app/apps/realtutorialhub-site/server.mjs ./server.mjs
+WORKDIR /app
+COPY --from=builder /app/apps/realtutorialhub-site/.next/standalone ./
+COPY --from=builder /app/apps/realtutorialhub-site/.next/static ./apps/realtutorialhub-site/.next/static
+COPY --from=builder /app/apps/realtutorialhub-site/public ./apps/realtutorialhub-site/public
 EXPOSE 3004
-CMD ["node", "server.mjs"]
+CMD ["node", "apps/realtutorialhub-site/server.js"]

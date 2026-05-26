@@ -1,20 +1,28 @@
-import { IconType } from 'react-icons';
-import { Course } from '@quiz/marketing-site/lib/CoursesCardData';
+import type { IconType } from 'react-icons';
+import { FaBolt, FaBrain, FaChartBar, FaChartLine, FaCloud, FaCode, FaDatabase, FaMicrochip, FaShieldAlt, FaTerminal } from 'react-icons/fa';
+import type { CourseIconName, MarketingCourseSnapshot } from '@quiz/marketing-site/content/courses';
 
 interface CourseCardContentProps {
-  course: Course;
+  course: MarketingCourseSnapshot;
   isBlueCard: boolean;
-  Icon: IconType;
 }
 
-const CourseCardContent: React.FC<CourseCardContentProps> = ({
-  course,
-  isBlueCard,
-  Icon
-}) => {
-  const accentColor = isBlueCard
-    ? "var(--brand-primary)"
-    : "var(--brand-secondary)";
+const iconMap: Record<CourseIconName, IconType> = {
+  shield: FaShieldAlt,
+  bolt: FaBolt,
+  code: FaCode,
+  database: FaDatabase,
+  cloud: FaCloud,
+  "chart-line": FaChartLine,
+  "chart-bar": FaChartBar,
+  microchip: FaMicrochip,
+  terminal: FaTerminal,
+  brain: FaBrain,
+};
+
+const CourseCardContent: React.FC<CourseCardContentProps> = ({ course, isBlueCard }) => {
+  const accentColor = isBlueCard ? "var(--brand-primary)" : "var(--brand-secondary)";
+  const Icon = iconMap[course.iconName];
 
   return (
     <div className="p-6 flex flex-col flex-1">
@@ -31,17 +39,13 @@ const CourseCardContent: React.FC<CourseCardContentProps> = ({
       </h3>
 
       <div className="mb-6 min-h-[72px]">
-        <p className="text-gray-600 text-sm leading-relaxed line-clamp-3">
-          {course.description}
-        </p>
+        <p className="text-gray-600 text-sm leading-relaxed line-clamp-3">{course.description}</p>
       </div>
 
       <div className="h-px w-full mb-4 bg-gray-100"></div>
 
       <div className="mb-6">
-        <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">
-          KEY LEARNING OUTCOMES
-        </h4>
+        <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">KEY LEARNING OUTCOMES</h4>
 
         <div className="grid grid-cols-2 gap-x-4 gap-y-3">
           {course.features.slice(0, 4).map((feature, idx) => (

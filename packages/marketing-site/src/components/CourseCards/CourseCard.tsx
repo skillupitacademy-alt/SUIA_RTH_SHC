@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
-import { Course } from "@quiz/marketing-site/lib/CoursesCardData";
-import { CARD_STYLES, ANIMATION_DELAY } from "@quiz/marketing-site/lib/CoursesCardData";
+import type { MarketingCourseSnapshot } from "@quiz/marketing-site/content/courses";
+import { ANIMATION_DELAY } from "@quiz/marketing-site/lib/CoursesCardData";
 
 import CourseCardHeader from "./CourseCardHeader";
 import CourseCardContent from "./CourseCardContent";
@@ -8,18 +8,13 @@ import CourseCardActions from "./CourseCardAction";
 import CourseMetadata from "./CourseMetadata";
 
 interface CourseCardProps {
-  course: Course;
+  course: MarketingCourseSnapshot;
   index: number;
   isSingleCard: boolean;
 }
 
-const CourseCard: React.FC<CourseCardProps> = ({
-  course,
-  index,
-  isSingleCard
-}) => {
+const CourseCard: React.FC<CourseCardProps> = ({ course, index, isSingleCard }) => {
   const isBlueCard = index % 2 === 0;
-  const Icon = course.icon; // ✅ icon comes from data
 
   return (
     <motion.div
@@ -30,7 +25,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
       transition={{
         duration: 0.6,
         delay: index * ANIMATION_DELAY,
-        ease: "easeOut"
+        ease: "easeOut",
       }}
       whileHover={{ y: -5 }}
     >
@@ -49,17 +44,11 @@ const CourseCard: React.FC<CourseCardProps> = ({
         <div
           className="h-1"
           style={{
-            backgroundColor: isBlueCard
-              ? "var(--brand-primary)"
-              : "var(--brand-secondary)"
+            backgroundColor: isBlueCard ? "var(--brand-primary)" : "var(--brand-secondary)",
           }}
         />
 
-        <CourseCardContent
-          course={course}
-          isBlueCard={isBlueCard}
-          Icon={Icon}
-        />
+        <CourseCardContent course={course} isBlueCard={isBlueCard} />
 
         <div className="flex-1" />
 

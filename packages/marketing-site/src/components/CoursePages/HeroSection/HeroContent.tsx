@@ -2,8 +2,7 @@
 
 import React from 'react';
 import { Sparkles, ArrowRight, Download } from 'lucide-react';
-import { useBrand } from '@quiz/marketing-site/brand';
-import { CONTACT_CONFIG } from '@quiz/marketing-site/lib/ContactData';
+import { useBrand, useMarketingContent } from '@quiz/marketing-site';
 import { trackLead } from '@quiz/marketing-site/lib/tracking';
 import { HeroStat } from './types';
 import { CTAButtons } from './types';
@@ -30,6 +29,7 @@ export const HeroContent: React.FC<HeroContentProps> = ({
   ctaButtons,
 }) => {
   const brand = useBrand();
+  const { contact } = useMarketingContent();
 
   const handleEnrollClick = () => {
     const name = courseTitle || title;
@@ -40,7 +40,7 @@ export const HeroContent: React.FC<HeroContentProps> = ({
       `📌 *Enroll Now – Limited Seats*\n\n` +
       `Could you please share the next batch details, fee structure, and enrollment process?\n\n` +
       `Thank you!`;
-    const whatsappUrl = `https://wa.me/${CONTACT_CONFIG.phoneNumber}?text=${encodeURIComponent(message)}`;
+    const whatsappUrl = `https://wa.me/${contact.config.phoneNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
 
@@ -53,7 +53,7 @@ export const HeroContent: React.FC<HeroContentProps> = ({
       `📚 *Explore Full Curriculum*\n\n` +
       `Could you please share the detailed syllabus, topics covered, and course duration?\n\n` +
       `Thank you!`;
-    const whatsappUrl = `https://wa.me/${CONTACT_CONFIG.phoneNumber}?text=${encodeURIComponent(message)}`;
+    const whatsappUrl = `https://wa.me/${contact.config.phoneNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
 

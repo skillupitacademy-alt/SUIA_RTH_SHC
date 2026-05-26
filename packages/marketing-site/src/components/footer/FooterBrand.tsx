@@ -2,12 +2,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import { FOOTER_CONFIG } from '@quiz/marketing-site/lib/FooterData';
-import { useBrand } from '@quiz/marketing-site/brand';
+import { useBrand, useMarketingContent } from '@quiz/marketing-site';
 
 const FooterBrand: React.FC = () => {
   const [email, setEmail] = useState('');
   const brand = useBrand();
+  const { footer } = useMarketingContent();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,7 +24,7 @@ const FooterBrand: React.FC = () => {
           {brand.name}
         </h2>
         <p className="text-gray-600">
-          Join <span className="font-bold" style={{ color: "var(--brand-primary)" }}>{FOOTER_CONFIG.brand.studentCount}</span> students who have successfully launched their tech careers with our expert-led programs and placement support.
+          Join <span className="font-bold" style={{ color: "var(--brand-primary)" }}>{footer.brand.studentCount}</span> students who have successfully launched their tech careers with our expert-led programs and placement support.
         </p>
       </div>
 

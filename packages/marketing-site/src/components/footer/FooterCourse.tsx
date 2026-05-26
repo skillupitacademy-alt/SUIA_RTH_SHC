@@ -1,14 +1,18 @@
 
+'use client';
+
 
 import React from 'react';
-import { POPULAR_COURSES, FOOTER_CONFIG } from '@quiz/marketing-site/lib/FooterData';
+import { useMarketingContent } from '@quiz/marketing-site';
 
 const FooterCourse: React.FC = () => {
+    const { footer } = useMarketingContent();
+
     return (
         <div>
             <h3 className="text-lg font-bold mb-4 text-gray-900">Popular Courses</h3>
             <ul className="space-y-2">
-                {POPULAR_COURSES.map((course) => (
+                {footer.popularCourses.map((course) => (
                     <li key={course.name} className="flex justify-between items-center p-2 rounded hover:bg-blue-500/10 cursor-pointer">
                         <div className="flex items-center">
                             <span className="text-green-500 mr-2">✓</span>

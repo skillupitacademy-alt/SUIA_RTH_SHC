@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 
-import { allCourses, heroCommonData } from "@quiz/marketing-site/lib/CoursesCardData";
 import { defaultAssessmentCertification, defaultCurriculum } from "@quiz/marketing-site/lib/DefaultCourseData";
 import { CourseHeroSection } from "@quiz/marketing-site/components/CoursePages/HeroSection/MainHeroSection";
 import AssessmentsCertification from "@quiz/marketing-site/components/CoursePages/Assessments/mainAssessments";
@@ -16,15 +15,18 @@ import { CommunityNetworkSection } from "@quiz/marketing-site/components/CourseP
 import { LearningExperienceTimeline } from "@quiz/marketing-site/components/CoursePages/LearningExperience/LearningExperienceTimeline";
 import { TechnicalSupportSection } from "@quiz/marketing-site/components/CoursePages/TechnicalSection/TechnicalSupportSection";
 import ParticleClient from "@quiz/marketing-site/components/Particles/ParticleClient";
+import { loadMarketingCourseCatalogSnapshot, loadMarketingCoursePageSnapshot } from "@quiz/marketing-site/content/courses";
 
 export async function generateCourseStaticParams() {
-  return allCourses.map((course) => ({
+  const catalog = await loadMarketingCourseCatalogSnapshot();
+  return catalog.courses.map((course) => ({
     slug: course.slug,
   }));
 }
 
 export async function CourseMarketingPage({ slug }: { slug: string }) {
-  const course = allCourses.find((candidate) => candidate.slug === slug);
+  const snapshot = await loadMarketingCoursePageSnapshot(slug);
+  const course = snapshot?.course;
 
   if (!course) {
     notFound();
@@ -32,6 +34,7 @@ export async function CourseMarketingPage({ slug }: { slug: string }) {
 
   const curriculum = course.curriculum ?? defaultCurriculum;
   const assessmentCertification = course.assessmentCertification ?? defaultAssessmentCertification;
+  const heroData = snapshot?.heroCommonData;
 
   return (
     <div>
@@ -48,8 +51,8 @@ export async function CourseMarketingPage({ slug }: { slug: string }) {
         heroDescription={course.heroDescription}
         heroSubDescription={course.heroSubDescription}
         features={course.features}
-        companies={course.companies || heroCommonData.companyNames}
-        ctaButtons={course.ctaButtons || heroCommonData.ctaButtons}
+        companies={course.companies || heroData?.companyNames || []}
+        ctaButtons={course.ctaButtons || heroData?.ctaButtons}
       />
 
       <Curriculum id="CourseCurriculum" data={curriculum} />
@@ -62,16 +65,16 @@ export async function CourseMarketingPage({ slug }: { slug: string }) {
         certificateData={assessmentCertification.certificateData}
       />
 
-      <GradingEvaluation id="CourseGradingCard" data={heroCommonData.gradingEvaluation} />
-      <PlacementSupport id="CoursePlacement" data={heroCommonData.placementSupport} />
-      <PlacementStatistics id="CoursePlacementStatistics" data={heroCommonData.placementStatistics} />
-      <InstructorsMentors id="CourseInstructorsMentors" data={heroCommonData.instructorsMentors} />
+      <GradingEvaluation id="CourseGradingCard" data={heroData!.gradingEvaluation} />
+      <PlacementSupport id="CoursePlacement" data={heroData!.placementSupport} />
+      <PlacementStatistics id="CoursePlacementStatistics" data={heroData!.placementStatistics} />
+      <InstructorsMentors id="CourseInstructorsMentors" data={heroData!.instructorsMentors} />
       <CommunityNetworkSection id="CourseCommunityNetwork" />
       <LearningExperienceTimeline id="LearningExperienceTimeline" />
       <TechnicalSupportSection id="CourseTechnicalSupport" />
-      <Prerequisites id="CoursePrerequisites" data={heroCommonData.prerequisites} />
+      <Prerequisites id="CoursePrerequisites" data={heroData!.prerequisites} />
       <SuccessStories id="CourseSuccessStories" />
-      <Companies id="CourseCompanies" data={heroCommonData.hiringCompanies} />
+      <Companies id="CourseCompanies" data={heroData!.hiringCompanies} />
     </div>
   );
 }

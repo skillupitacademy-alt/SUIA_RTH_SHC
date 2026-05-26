@@ -1,0 +1,42 @@
+substitutions:
+  _REGION: asia-south1
+  _REPOSITORY: quiz-platform
+  _IMAGE_NAME: analytics-collector-service
+  _SERVICE_NAME: analytics-collector-service
+  _TAG: latest
+
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -f
+      - services/analytics-collector-service/Dockerfile
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE_NAME}:${_TAG}
+      - .
+
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE_NAME}:${_TAG}
+
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - ${_SERVICE_NAME}
+      - --image
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE_NAME}:${_TAG}
+      - --region
+      - ${_REGION}
+      - --platform
+      - managed
+      - --allow-unauthenticated
+      - --port
+      - "8080"
+      - --update-secrets
+      - ANALYTICS_ADMIN_TOKEN=ANALYTICS_ADMIN_TOKEN:latest,RTH_GA4_MEASUREMENT_API_SECRET=RTH_GA4_MEASUREMENT_API_SECRET:latest,RTH_META_CAPI_TOKEN=RTH_META_CAPI_TOKEN:latest,SUIA_GA4_MEASUREMENT_API_SECRET=SUIA_GA4_MEASUREMENT_API_SECRET:latest,SUIA_META_CAPI_TOKEN=SUIA_META_CAPI_TOKEN:latest
+
+images:
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE_NAME}:${_TAG}

@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev --webpack -p 3005",
     "build": "next build",
-    "start": "node server.mjs",
+    "start": "next start -p 3005 -H 0.0.0.0",
     "lint": "eslint",
     "type-check": "tsc --noEmit -p tsconfig.json",
     "analyze": "cross-env ANALYZE=true next build --webpack"

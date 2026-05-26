@@ -4,12 +4,14 @@ const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
 });
 
+const isStaticExport = process.env.NEXT_OUTPUT_MODE === 'export';
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
+  output: isStaticExport ? 'export' : 'standalone',
   transpilePackages: ['@quiz/marketing-site'],
   images: {
-    unoptimized: true,
+    unoptimized: isStaticExport,
   },
 };
 

@@ -8,6 +8,7 @@ import { SsoService } from '@/modules/auth/sso/sso.service';
 import { createSkillhubcoreEventRoutes } from '@/modules/events';
 import { createHierarchyRoutes } from '@/modules/hierarchy/hierarchy.routes';
 import { HierarchyService } from '@/modules/hierarchy/hierarchy.service';
+import { createMarketingRoutes } from '@/modules/marketing';
 import { DrizzleUserRepository } from '@/modules/user/user.repository';
 import { SubscriptionService } from '@/modules/subscription/subscription.service';
 
@@ -18,6 +19,7 @@ export const createApp = () => {
   const ssoService = new SsoService(userRepo);
   const hierarchyService = new HierarchyService();
 
+  app.route('/public/marketing', createMarketingRoutes());
   app.use('*', requireGatewaySecret);
   app.get('/healthz', (c) => c.json({ status: 'ok', service: 'skillhubcore', ts: Date.now() }));
   app.get('/healthz/', (c) => c.json({ status: 'ok', service: 'skillhubcore', ts: Date.now() }));

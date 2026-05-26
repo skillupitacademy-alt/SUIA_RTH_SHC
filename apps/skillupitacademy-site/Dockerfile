@@ -30,8 +30,9 @@ FROM node:20-alpine AS runner
 ENV NODE_ENV=production
 ENV PORT=3005
 ENV HOSTNAME=0.0.0.0
-WORKDIR /app/apps/skillupitacademy-site
-COPY --from=builder /app/apps/skillupitacademy-site/out ./out
-COPY --from=builder /app/apps/skillupitacademy-site/server.mjs ./server.mjs
+WORKDIR /app
+COPY --from=builder /app/apps/skillupitacademy-site/.next/standalone ./
+COPY --from=builder /app/apps/skillupitacademy-site/.next/static ./apps/skillupitacademy-site/.next/static
+COPY --from=builder /app/apps/skillupitacademy-site/public ./apps/skillupitacademy-site/public
 EXPOSE 3005
-CMD ["node", "server.mjs"]
+CMD ["node", "apps/skillupitacademy-site/server.js"]

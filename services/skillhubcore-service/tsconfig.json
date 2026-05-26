@@ -25,6 +25,12 @@
       "@quiz/db-people/*": [
         "../../packages/db-people/src/*"
       ],
+      "@quiz/marketing-site": [
+        "../../packages/marketing-site/src/index.ts"
+      ],
+      "@quiz/marketing-site/*": [
+        "../../packages/marketing-site/src/*"
+      ],
       "@quiz/types": [
         "../../packages/types/src/index.ts"
       ],

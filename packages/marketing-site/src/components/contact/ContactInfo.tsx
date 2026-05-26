@@ -1,11 +1,12 @@
 
+'use client';
+
 
 import React from 'react';
 import {
-  ContactInfo as ContactInfoType,
-  CONTACT_INFO,
-  WORKING_HOURS
+  ContactInfo as ContactInfoType
 } from '@quiz/marketing-site/lib/ContactData';
+import { useMarketingContent } from '@quiz/marketing-site';
 
 interface ContactInfoProps {
   onCallClick: () => void;
@@ -18,6 +19,8 @@ const ContactInfo: React.FC<ContactInfoProps> = ({
   onWhatsAppClick,
   onMapClick,
 }) => {
+  const { contact } = useMarketingContent();
+
   const getColorClasses = (color: string) => {
     const colors = {
       blue: {
@@ -60,7 +63,7 @@ const ContactInfo: React.FC<ContactInfoProps> = ({
         <h2 className="text-2xl font-bold text-blue-700 mb-6">Get In Touch</h2>
 
         <div className="space-y-6">
-          {CONTACT_INFO.map((info: ContactInfoType, index) => {
+          {contact.info.map((info: ContactInfoType, index) => {
             const colorClasses = getColorClasses(info.color);
             return (
               <div

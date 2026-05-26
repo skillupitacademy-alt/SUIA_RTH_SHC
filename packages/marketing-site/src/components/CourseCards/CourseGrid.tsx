@@ -1,8 +1,9 @@
-import { Course } from '@quiz/marketing-site/lib/CoursesCardData';
+import type { MarketingCourseSnapshot } from '@quiz/marketing-site/content/courses';
+
 import CourseCard from './CourseCard';
 
 interface CourseGridProps {
-  courses: Course[];
+  courses: MarketingCourseSnapshot[];
   isSingleCard: boolean;
 }
 

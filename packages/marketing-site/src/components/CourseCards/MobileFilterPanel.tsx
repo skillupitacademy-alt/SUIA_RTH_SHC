@@ -1,8 +1,9 @@
 "use client";
-import { motion, AnimatePresence } from 'framer-motion';
-import { CATEGORIES } from '@quiz/marketing-site/lib/CoursesCardData';
+
+import { AnimatePresence, motion } from 'framer-motion';
 
 interface MobileFilterPanelProps {
+  categories: readonly string[];
   showMobileFilter: boolean;
   setShowMobileFilter: (show: boolean) => void;
   activeCategory: string;
@@ -10,14 +11,14 @@ interface MobileFilterPanelProps {
 }
 
 const MobileFilterPanel: React.FC<MobileFilterPanelProps> = ({
+  categories,
   showMobileFilter,
   setShowMobileFilter,
   activeCategory,
-  setActiveCategory
+  setActiveCategory,
 }) => {
   const handleCategoryClick = (category: string) => {
     setActiveCategory(category);
-    // Close panel after selection
     setTimeout(() => {
       setShowMobileFilter(false);
     }, 200);
@@ -31,9 +32,7 @@ const MobileFilterPanel: React.FC<MobileFilterPanelProps> = ({
           animate={{ x: 0 }}
           exit={{ x: "100%" }}
           transition={{ type: "spring", stiffness: 120, damping: 20 }}
-          className="md:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-[1000] flex justify-end" 
-
-          
+          className="md:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-[1000] flex justify-end"
           onClick={() => setShowMobileFilter(false)}
         >
           <motion.div
@@ -55,13 +54,13 @@ const MobileFilterPanel: React.FC<MobileFilterPanelProps> = ({
             </div>
 
             <div className="flex flex-col gap-3 flex-1 overflow-y-auto">
-              {CATEGORIES.map((category) => (
+              {categories.map((category) => (
                 <button
                   key={category}
                   onClick={() => handleCategoryClick(category)}
                   className={`
-                    w-full px-4 py-3 rounded-lg text-left text-sm font-medium 
-                    border transition-all 
+                    w-full px-4 py-3 rounded-lg text-left text-sm font-medium
+                    border transition-all
                     ${activeCategory === category
                       ? "text-white shadow-md"
                       : "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100"
@@ -71,7 +70,7 @@ const MobileFilterPanel: React.FC<MobileFilterPanelProps> = ({
                     activeCategory === category
                       ? {
                           backgroundColor: "var(--brand-primary)",
-                          borderColor: "var(--brand-primary)"
+                          borderColor: "var(--brand-primary)",
                         }
                       : undefined
                   }
@@ -80,8 +79,7 @@ const MobileFilterPanel: React.FC<MobileFilterPanelProps> = ({
                 </button>
               ))}
             </div>
-            
-            {/* Close button at bottom for better UX */}
+
             <button
               onClick={() => setShowMobileFilter(false)}
               className="mt-6 px-4 py-3 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors"

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { navItems } from "@quiz/marketing-site/lib/NavBarData";
+import { useMarketingContent } from "@quiz/marketing-site";
 import NavLogo from "./NavLogo";
 import DesktopNav from "./DesktopNav";
 import MobileMenu from "./MobileMenu";
@@ -11,6 +11,8 @@ import { useScrollSpy } from "./useScrollSpy";
 
 const Navbar: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { navigation } = useMarketingContent();
+  const navItems = navigation.navItems;
 
   const { activeSection, isScrolled, scrollToSection } =
     useScrollSpy(navItems);

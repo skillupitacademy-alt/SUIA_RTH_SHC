@@ -27,8 +27,11 @@ import FooterSkeleton from "@quiz/marketing-site/components/footer/FooterSkeleto
 import NavbarWrapper from "@quiz/marketing-site/components/NavBar/NavbarWrapper";
 
 import ParticleClient from "@quiz/marketing-site/components/Particles/ParticleClient";
+import { loadMarketingCourseCatalogSnapshot } from "@quiz/marketing-site/content/courses";
 
-export default function MarketingHome() {
+export default async function MarketingHome() {
+  const courseCatalog = await loadMarketingCourseCatalogSnapshot();
+
   return (
     <div className="relative overflow-hidden">
       <ParticleClient />
@@ -47,7 +50,7 @@ export default function MarketingHome() {
       <section id="courses">
         <LazySection skeleton={<CourseCardsSkeleton />} delay={800}>
           <ErrorBoundary fallback={<CourseCardsSkeleton />}>
-            <CourseCard />
+            <CourseCard catalog={courseCatalog} />
           </ErrorBoundary>
         </LazySection>
       </section>

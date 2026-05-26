@@ -1,18 +1,22 @@
+'use client';
+
 import React from 'react';
-import { 
-  contactButtons, 
-} from '@quiz/marketing-site/lib/NavBarData';
+import { FaPhoneAlt, FaWhatsapp } from "react-icons/fa";
+import { useMarketingContent } from "@quiz/marketing-site";
 
 interface ContactButtonsProps {
   variant: 'desktop' | 'mobile';
 }
 
 const ContactButtons: React.FC<ContactButtonsProps> = ({ variant }) => {
+  const { navigation } = useMarketingContent();
+  const contactButtons = navigation.contactButtons;
+
   if (variant === 'desktop') {
     return (
       <>
         {contactButtons.map((button) => {
-          const Icon = button.icon;
+          const Icon = button.type === "whatsapp" ? FaWhatsapp : FaPhoneAlt;
 
           return (
             <a
@@ -44,7 +48,7 @@ const ContactButtons: React.FC<ContactButtonsProps> = ({ variant }) => {
   return (
     <>
       {contactButtons.map((button) => {
-        const Icon = button.icon;
+        const Icon = button.type === "whatsapp" ? FaWhatsapp : FaPhoneAlt;
 
         return (
           <a

@@ -3,6 +3,9 @@ import {
   generateCourseStaticParams,
 } from "@quiz/marketing-site/course-page";
 
+export const revalidate = 3600;
+export const dynamicParams = true;
+
 interface CoursePageProps {
   params: Promise<{
     slug: string;

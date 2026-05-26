@@ -1,11 +1,16 @@
+'use client';
+
 
 import React from 'react';
+import { useMarketingContent } from '@quiz/marketing-site';
 
 interface LocationCardProps {
   onMapClick: () => void;
 }
 
 const LocationCard: React.FC<LocationCardProps> = ({ onMapClick }) => {
+  const { contact } = useMarketingContent();
+
   return (
     <div 
       className="rounded-xl p-5 border border-blue-100 flex-1 flex flex-col justify-center"
@@ -17,8 +22,12 @@ const LocationCard: React.FC<LocationCardProps> = ({ onMapClick }) => {
       <h3 className="font-semibold text-gray-800 mb-2">Our Location</h3>
 
       <p className="text-gray-600 text-sm mb-4">
-        Neelyog Square 205, 2nd Floor <br />
-        R. B. Mehta Road, Ghatkopar East, Mumbai
+        {contact.location.address.split('\n').map((line) => (
+          <React.Fragment key={line}>
+            {line}
+            <br />
+          </React.Fragment>
+        ))}
       </p>
 
       <button

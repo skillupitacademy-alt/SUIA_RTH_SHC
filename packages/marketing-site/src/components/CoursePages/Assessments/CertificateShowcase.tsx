@@ -3,12 +3,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import { CheckCircle } from "lucide-react";
 import { useBrand } from "@quiz/marketing-site/brand";
+import { useMarketingContent } from "@quiz/marketing-site";
 import { PremiumCertificate } from "../../../certificates/PremiumCertificate";
 import {
   getCertificateBranding,
   buildPreviewCertificateData,
 } from "../../../certificates/branding";
-import { CONTACT_CONFIG } from "@quiz/marketing-site/lib/ContactData";
 import { trackLead } from "@quiz/marketing-site/lib/tracking";
 
 interface CertificateShowcaseProps {
@@ -76,6 +76,7 @@ export const CertificateShowcase: React.FC<CertificateShowcaseProps> = ({
   certificateDetails,
 }) => {
   const brand = useBrand();
+  const { contact } = useMarketingContent();
   const branding = getCertificateBranding(brand);
   const data = buildPreviewCertificateData(branding, {
     courseName: certificateDetails.subtitle || "DATA ANALYST",
@@ -91,7 +92,7 @@ export const CertificateShowcase: React.FC<CertificateShowcaseProps> = ({
       `🏅 *Industry-Recognized Certification*\n\n` +
       `Could you please share details about the certification program, its recognition, and the enrollment process?\n\n` +
       `Thank you!`;
-    const whatsappUrl = `https://wa.me/${CONTACT_CONFIG.phoneNumber}?text=${encodeURIComponent(message)}`;
+    const whatsappUrl = `https://wa.me/${contact.config.phoneNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
 
