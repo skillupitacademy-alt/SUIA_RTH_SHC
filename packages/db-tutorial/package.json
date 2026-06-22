@@ -35,10 +35,10 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
-    "@vitest/coverage-v8": "^4.0.18",
-    "drizzle-kit": "^0.31.8",
+    "@vitest/coverage-v8": "^4.1.9",
+    "drizzle-kit": "^0.31.10",
     "vite-tsconfig-paths": "^6.1.1",
-    "vitest": "^4.0.18",
-    "tsx": "^4.8.1"
+    "vitest": "^4.1.9",
+    "tsx": "^4.22.4"
   }
 }
