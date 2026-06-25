@@ -11,13 +11,14 @@
     "type-check": "node scripts/ensure-next-types.mjs && tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
-    "@quiz/auth": "workspace:*",
-    "@quiz/ui": "workspace:*",
-    "@quiz/types": "workspace:*",
-    "@quiz/db-tutorial": "workspace:*",
-    "@quiz/validation": "workspace:*",
-    "@quiz/observability": "workspace:*",
     "@quiz/api-client": "workspace:*",
+    "@quiz/auth": "workspace:*",
+    "@quiz/db-tutorial": "workspace:*",
+    "@quiz/marketing-site": "workspace:*",
+    "@quiz/observability": "workspace:*",
+    "@quiz/types": "workspace:*",
+    "@quiz/ui": "workspace:*",
+    "@quiz/validation": "workspace:*",
     "@tanstack/react-query": "^5.90.21",
     "@types/node": "^20",
     "@types/react": "^19.0.0",
@@ -31,10 +32,13 @@
     "eslint": "^8.57.0",
     "eslint-config-next": "15.2.0",
     "framer-motion": "^12.34.3",
+    "html-to-image": "^1.11.11",
+    "jspdf": "^3.0.3",
     "lucide-react": "0.563.0",
     "next": "16.1.6",
     "pino": "^10.3.1",
     "postcss": "^8",
+    "qrcode": "^1.5.4",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "tailwind-merge": "^3.4.0",
@@ -47,8 +51,9 @@
     "node": "20.x"
   },
   "devDependencies": {
-    "vitest": "^4.0.18",
+    "@types/qrcode": "^1.5.5",
     "@vitest/coverage-v8": "^4.0.18",
-    "vite-tsconfig-paths": "^6.1.1"
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^4.0.18"
   }
 }
