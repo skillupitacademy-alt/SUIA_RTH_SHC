@@ -30,14 +30,16 @@ IMAGE_SHC_ADMIN="${REGISTRY}/${PROJECT_ID}/quiz-platform/skillhubcore-admin:${GI
 deploy_marketing_site() {
   local service_name="$1"
   local cloudbuild_config="$2"
-  local pixel_id="$3"
-  local ga_id="$4"
+  local rth_pixel_id="$3"
+  local rth_ga_id="$4"
+  local suia_pixel_id="$5"
+  local suia_ga_id="$6"
 
   echo "Deploying ${service_name} in ${MARKETING_REGION}..."
   gcloud builds submit . \
     --project="${PROJECT_ID}" \
     --config="${cloudbuild_config}" \
-    --substitutions="_TAG=${GIT_SHA},_NEXT_PUBLIC_FB_PIXEL_ID=${pixel_id},_NEXT_PUBLIC_GA_ID=${ga_id}"
+    --substitutions="_TAG=${GIT_SHA},_NEXT_PUBLIC_RTH_META_PIXEL_ID=${rth_pixel_id},_NEXT_PUBLIC_RTH_GA4_MEASUREMENT_ID=${rth_ga_id},_NEXT_PUBLIC_SUIA_META_PIXEL_ID=${suia_pixel_id},_NEXT_PUBLIC_SUIA_GA4_MEASUREMENT_ID=${suia_ga_id}"
 }
 
 deploy_collector_service() {
@@ -79,8 +81,12 @@ cloud_build_image apps/skillhubcore-admin/Dockerfile $IMAGE_SHC_ADMIN
 
 echo "Cloud Build deploy for marketing sites..."
 deploy_collector_service "$SERVICE_ANALYTICS_COLLECTOR" "cloudbuild.analytics-collector-service.yaml"
-deploy_marketing_site "$SERVICE_RTH_SITE" "cloudbuild.realtutorialhub-site.yaml" "" ""
-deploy_marketing_site "$SERVICE_SKILLUP_SITE" "cloudbuild.skillupitacademy-site.yaml" "980414328232946" "G-XT88G4TQKY"
+RTH_META_PIXEL_ID="${NEXT_PUBLIC_RTH_META_PIXEL_ID:-}"
+RTH_GA4_MEASUREMENT_ID="${NEXT_PUBLIC_RTH_GA4_MEASUREMENT_ID:-}"
+SUIA_META_PIXEL_ID="${NEXT_PUBLIC_SUIA_META_PIXEL_ID:-${NEXT_PUBLIC_FB_PIXEL_ID:-}}"
+SUIA_GA4_MEASUREMENT_ID="${NEXT_PUBLIC_SUIA_GA4_MEASUREMENT_ID:-${NEXT_PUBLIC_GA_ID:-}}"
+deploy_marketing_site "$SERVICE_RTH_SITE" "cloudbuild.realtutorialhub-site.yaml" "$RTH_META_PIXEL_ID" "$RTH_GA4_MEASUREMENT_ID" "$SUIA_META_PIXEL_ID" "$SUIA_GA4_MEASUREMENT_ID"
+deploy_marketing_site "$SERVICE_SKILLUP_SITE" "cloudbuild.skillupitacademy-site.yaml" "$RTH_META_PIXEL_ID" "$RTH_GA4_MEASUREMENT_ID" "$SUIA_META_PIXEL_ID" "$SUIA_GA4_MEASUREMENT_ID"
 
 #############################################
 # 🚀 DEPLOY API

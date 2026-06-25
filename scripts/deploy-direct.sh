@@ -73,6 +73,7 @@ SERVICE_API="quiz-api-server"
 SERVICE_RTH="realtutorialhub-web"
 SERVICE_SKILLUP="skillup-web"
 SERVICE_SHC_ADMIN="skillhubcore-admin"
+SERVICE_SHC_API="skillhubcore-service"
 SERVICE_RTH_SITE="realtutorialhub-site"
 SERVICE_SKILLUP_SITE="skillupitacademy-site"
 SERVICE_ANALYTICS_COLLECTOR="analytics-collector-service"
@@ -83,6 +84,7 @@ IMAGE_API="${REGISTRY}/${PROJECT_ID}/quiz-platform/quiz-api-server:${GIT_SHA}"
 IMAGE_RTH="${REGISTRY}/${PROJECT_ID}/quiz-platform/realtutorialhub-web:${GIT_SHA}"
 IMAGE_SKILLUP="${REGISTRY}/${PROJECT_ID}/quiz-platform/skillup-web:${GIT_SHA}"
 IMAGE_SHC_ADMIN="${REGISTRY}/${PROJECT_ID}/quiz-platform/skillhubcore-admin:${GIT_SHA}"
+IMAGE_SHC_API="${REGISTRY}/${PROJECT_ID}/quiz-platform/skillhubcore-service:${GIT_SHA}"
 
 BUILD_RETRY_ATTEMPTS="${BUILD_RETRY_ATTEMPTS:-3}"
 BUILD_RETRY_DELAY_SECONDS="${BUILD_RETRY_DELAY_SECONDS:-15}"
@@ -127,16 +129,21 @@ cloud_build_image() {
 deploy_marketing_site() {
   local service_name="$1"
   local cloudbuild_config="$2"
-  local pixel_id="$3"
-  local ga_id="$4"
-  local gtm_id="$5"
-  local analytics_env="${6:-production}"
+  local rth_pixel_id="$3"
+  local rth_ga_id="$4"
+  local rth_gtm_id="$5"
+  local suia_pixel_id="$6"
+  local suia_ga_id="$7"
+  local suia_gtm_id="$8"
+  local analytics_env="${9:-production}"
+  local content_base_url="${10}"
+  local analytics_endpoint="${11}"
 
   run_with_retry "Cloud Build ${service_name}" \
     gcloud builds submit . \
       --project="${PROJECT_ID}" \
       --config="${cloudbuild_config}" \
-      --substitutions="_TAG=${GIT_SHA},_NEXT_PUBLIC_RTH_META_PIXEL_ID=${pixel_id},_NEXT_PUBLIC_RTH_GA4_MEASUREMENT_ID=${ga_id},_NEXT_PUBLIC_RTH_GTM_CONTAINER_ID=${gtm_id},_NEXT_PUBLIC_SUIA_META_PIXEL_ID=${pixel_id},_NEXT_PUBLIC_SUIA_GA4_MEASUREMENT_ID=${ga_id},_NEXT_PUBLIC_SUIA_GTM_CONTAINER_ID=${gtm_id},_NEXT_PUBLIC_ANALYTICS_ENABLED=true,_NEXT_PUBLIC_ANALYTICS_ENV=${analytics_env}"
+      --substitutions="_TAG=${GIT_SHA},_NEXT_PUBLIC_RTH_META_PIXEL_ID=${rth_pixel_id},_NEXT_PUBLIC_RTH_GA4_MEASUREMENT_ID=${rth_ga_id},_NEXT_PUBLIC_RTH_GTM_CONTAINER_ID=${rth_gtm_id},_NEXT_PUBLIC_SUIA_META_PIXEL_ID=${suia_pixel_id},_NEXT_PUBLIC_SUIA_GA4_MEASUREMENT_ID=${suia_ga_id},_NEXT_PUBLIC_SUIA_GTM_CONTAINER_ID=${suia_gtm_id},_NEXT_PUBLIC_ANALYTICS_ENABLED=true,_NEXT_PUBLIC_ANALYTICS_ENV=${analytics_env},_NEXT_PUBLIC_SHC_CONTENT_BASE_URL=${content_base_url},_MARKETING_CONTENT_API_BASE_URL=${content_base_url},_NEXT_PUBLIC_RTH_ANALYTICS_ENDPOINT=${analytics_endpoint},_NEXT_PUBLIC_SUIA_ANALYTICS_ENDPOINT=${analytics_endpoint}"
 }
 
 deploy_collector_service() {
@@ -148,6 +155,15 @@ deploy_collector_service() {
       --project="${PROJECT_ID}" \
       --config="${cloudbuild_config}" \
       --substitutions="_TAG=${GIT_SHA}"
+}
+
+resolve_run_service_url() {
+  local service_name="$1"
+  local region="$2"
+
+  gcloud run services describe "$service_name" \
+    --region="$region" \
+    --format='value(status.url)' 2>/dev/null || true
 }
 
 #############################################
@@ -213,6 +229,11 @@ REQUIRED_SECRETS=(
   INTERNAL_API_KEY
   COOKIE_DOMAIN
   ALLOWED_ORIGINS
+  ANALYTICS_ADMIN_TOKEN
+  RTH_GA4_MEASUREMENT_API_SECRET
+  RTH_META_CAPI_TOKEN
+  SUIA_GA4_MEASUREMENT_API_SECRET
+  SUIA_META_CAPI_TOKEN
 )
 
 MISSING_SECRETS=()
@@ -324,16 +345,20 @@ PREV_API=$(capture_revision $SERVICE_API)
 PREV_RTH=$(capture_revision $SERVICE_RTH)
 PREV_SKILLUP=$(capture_revision $SERVICE_SKILLUP)
 PREV_SHC_ADMIN=$(capture_revision $SERVICE_SHC_ADMIN)
+PREV_SHC_API=$(capture_revision $SERVICE_SHC_API)
 PREV_RTH_SITE=$(gcloud run services describe $SERVICE_RTH_SITE --region=$MARKETING_REGION --format="value(status.traffic[0].revisionName)" 2>/dev/null || echo "")
 PREV_SKILLUP_SITE=$(gcloud run services describe $SERVICE_SKILLUP_SITE --region=$MARKETING_REGION --format="value(status.traffic[0].revisionName)" 2>/dev/null || echo "")
+PREV_ANALYTICS_COLLECTOR=$(gcloud run services describe $SERVICE_ANALYTICS_COLLECTOR --region=$MARKETING_REGION --format="value(status.traffic[0].revisionName)" 2>/dev/null || echo "")
 
 echo "📌 Previous revisions:"
 echo "API: $PREV_API"
 echo "RTH: $PREV_RTH"
 echo "SkillUp: $PREV_SKILLUP"
 echo "SHC Admin: $PREV_SHC_ADMIN"
+echo "SHC API: $PREV_SHC_API"
 echo "RTH Site: $PREV_RTH_SITE"
 echo "SkillUp Site: $PREV_SKILLUP_SITE"
+echo "Analytics Collector: $PREV_ANALYTICS_COLLECTOR"
 
 #############################################
 # 🚀 BUILD + PUSH IMAGES
@@ -345,9 +370,73 @@ cloud_build_image apps/api-server/Dockerfile $IMAGE_API
 cloud_build_image apps/realtutorialhub-web/Dockerfile $IMAGE_RTH
 cloud_build_image apps/skillup-web/Dockerfile $IMAGE_SKILLUP
 cloud_build_image apps/skillhubcore-admin/Dockerfile $IMAGE_SHC_ADMIN
+cloud_build_image services/skillhubcore-service/Dockerfile $IMAGE_SHC_API
 deploy_collector_service $SERVICE_ANALYTICS_COLLECTOR cloudbuild.analytics-collector-service.yaml
-deploy_marketing_site $SERVICE_RTH_SITE cloudbuild.realtutorialhub-site.yaml "${NEXT_PUBLIC_RTH_META_PIXEL_ID:-}" "${NEXT_PUBLIC_RTH_GA4_MEASUREMENT_ID:-}" "${NEXT_PUBLIC_RTH_GTM_CONTAINER_ID:-}" "${NEXT_PUBLIC_ANALYTICS_ENV:-production}"
-deploy_marketing_site $SERVICE_SKILLUP_SITE cloudbuild.skillupitacademy-site.yaml "${NEXT_PUBLIC_SUIA_META_PIXEL_ID:-}" "${NEXT_PUBLIC_SUIA_GA4_MEASUREMENT_ID:-}" "${NEXT_PUBLIC_SUIA_GTM_CONTAINER_ID:-}" "${NEXT_PUBLIC_ANALYTICS_ENV:-production}"
+
+echo "🚀 Deploying ${SERVICE_SHC_API}..."
+gcloud run deploy $SERVICE_SHC_API \
+  --image $IMAGE_SHC_API \
+  --region $REGION \
+  --platform managed \
+  --allow-unauthenticated \
+  --port 8080 \
+  --memory 512Mi \
+  --cpu 1 \
+  --concurrency 200 \
+  --max-instances 5 \
+  --min-instances 0 \
+  --set-env-vars "NODE_ENV=production,PORT=8080,GIT_SHA=${GIT_SHA}" \
+  --update-secrets "JWT_SECRET=JWT_SECRET:latest,INTERNAL_GATEWAY_SECRET=INTERNAL_GATEWAY_SECRET:latest,DATABASE_URL_PEOPLE=DATABASE_URL_PEOPLE:latest,DATABASE_DIRECT_URL_PEOPLE=DATABASE_DIRECT_URL_PEOPLE:latest"
+
+SHC_MARKETING_BASE_URL=$(resolve_run_service_url "$SERVICE_SHC_API" "$REGION")
+COLLECTOR_BASE_URL=$(resolve_run_service_url "$SERVICE_ANALYTICS_COLLECTOR" "$MARKETING_REGION")
+
+if [ -z "$SHC_MARKETING_BASE_URL" ]; then
+  echo "❌ Failed to resolve ${SERVICE_SHC_API} URL"
+  exit 1
+fi
+
+if [ -z "$COLLECTOR_BASE_URL" ]; then
+  echo "❌ Failed to resolve ${SERVICE_ANALYTICS_COLLECTOR} URL"
+  exit 1
+fi
+
+echo "🔍 Waiting for ${SERVICE_SHC_API} readiness..."
+SHC_API_READY=false
+
+for i in {1..15}; do
+  STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${SHC_MARKETING_BASE_URL}/healthz" || true)
+
+  if [ "$STATUS" = "200" ]; then
+    echo "✅ ${SERVICE_SHC_API} ready (attempt $i)"
+    SHC_API_READY=true
+    break
+  fi
+
+  echo "⏳ Waiting for ${SERVICE_SHC_API}... (attempt $i, status: $STATUS)"
+  sleep 4
+done
+
+if [ "$SHC_API_READY" = false ]; then
+  echo "❌ ${SERVICE_SHC_API} health check failed"
+  gcloud logging read "resource.type=cloud_run_revision AND resource.labels.service_name=${SERVICE_SHC_API}" --limit=5 --format="value(textPayload)" 2>/dev/null || echo "  (no logs available)"
+  exit 1
+fi
+
+COLLECTOR_TRACK_URL="${COLLECTOR_BASE_URL%/}/track"
+
+RTH_META_PIXEL_ID="${NEXT_PUBLIC_RTH_META_PIXEL_ID:-}"
+RTH_GA4_MEASUREMENT_ID="${NEXT_PUBLIC_RTH_GA4_MEASUREMENT_ID:-}"
+RTH_GTM_CONTAINER_ID="${NEXT_PUBLIC_RTH_GTM_CONTAINER_ID:-}"
+SUIA_META_PIXEL_ID="${NEXT_PUBLIC_SUIA_META_PIXEL_ID:-${NEXT_PUBLIC_FB_PIXEL_ID:-}}"
+SUIA_GA4_MEASUREMENT_ID="${NEXT_PUBLIC_SUIA_GA4_MEASUREMENT_ID:-${NEXT_PUBLIC_GA_ID:-}}"
+SUIA_GTM_CONTAINER_ID="${NEXT_PUBLIC_SUIA_GTM_CONTAINER_ID:-}"
+
+echo "🌐 SHC marketing base: $SHC_MARKETING_BASE_URL"
+echo "🌐 Collector base: $COLLECTOR_BASE_URL"
+
+deploy_marketing_site $SERVICE_RTH_SITE cloudbuild.realtutorialhub-site.yaml "$RTH_META_PIXEL_ID" "$RTH_GA4_MEASUREMENT_ID" "$RTH_GTM_CONTAINER_ID" "$SUIA_META_PIXEL_ID" "$SUIA_GA4_MEASUREMENT_ID" "$SUIA_GTM_CONTAINER_ID" "${NEXT_PUBLIC_ANALYTICS_ENV:-production}" "$SHC_MARKETING_BASE_URL" "$COLLECTOR_TRACK_URL"
+deploy_marketing_site $SERVICE_SKILLUP_SITE cloudbuild.skillupitacademy-site.yaml "$RTH_META_PIXEL_ID" "$RTH_GA4_MEASUREMENT_ID" "$RTH_GTM_CONTAINER_ID" "$SUIA_META_PIXEL_ID" "$SUIA_GA4_MEASUREMENT_ID" "$SUIA_GTM_CONTAINER_ID" "${NEXT_PUBLIC_ANALYTICS_ENV:-production}" "$SHC_MARKETING_BASE_URL" "$COLLECTOR_TRACK_URL"
 
 #############################################
 # 🚀 DEPLOY API FIRST (NO TRAFFIC)
@@ -420,7 +509,7 @@ gcloud run deploy $SERVICE_SHC_ADMIN \
   --image $IMAGE_SHC_ADMIN \
   --region $REGION \
   --no-traffic \
-  --set-env-vars "INTERNAL_API_URL=${INTERNAL_API_URL},GATEWAY_URL=https://api.realtutorialhub.com,GATEWAY_URL_SKILLUP=https://api.skillupitacademy.com,GATEWAY_URL_SKILLHUBCORE=https://api.skillhubcore.in" \
+  --set-env-vars "INTERNAL_API_URL=${INTERNAL_API_URL},GATEWAY_URL=https://api.realtutorialhub.com,GATEWAY_URL_SKILLUP=https://api.skillupitacademy.com,GATEWAY_URL_SKILLHUBCORE=https://api.skillhubcore.in,NEXT_PUBLIC_SHC_CONTENT_BASE_URL=${SHC_MARKETING_BASE_URL},MARKETING_CONTENT_API_BASE_URL=${SHC_MARKETING_BASE_URL},NEXT_PUBLIC_ANALYTICS_COLLECTOR_BASE_URL=${COLLECTOR_BASE_URL},NEXT_PUBLIC_RTH_ANALYTICS_ENDPOINT=${COLLECTOR_TRACK_URL}" \
   --update-secrets "DATABASE_URL=DATABASE_URL_PEOPLE:latest,DATABASE_DIRECT_URL=DATABASE_DIRECT_URL_PEOPLE:latest,DATABASE_URL_TUTORIAL=DATABASE_URL_TUTORIAL:latest,DATABASE_DIRECT_URL_TUTORIAL=DATABASE_DIRECT_URL_TUTORIAL:latest,INTERNAL_API_SECRET=INTERNAL_API_SECRET:latest,INTERNAL_GATEWAY_SECRET=INTERNAL_GATEWAY_SECRET:latest,JWT_SECRET=JWT_SECRET:latest,JWT_REFRESH_SECRET=JWT_REFRESH_SECRET:latest,ADMIN_JWT_SECRET=ADMIN_JWT_SECRET:latest"
 
 echo "✅ All services deployed (no traffic)"
@@ -602,8 +691,10 @@ if [ $? -ne 0 ]; then
   rollback $SERVICE_API $PREV_API
   rollback $SERVICE_RTH $PREV_RTH
   rollback $SERVICE_SKILLUP $PREV_SKILLUP
+  rollback $SERVICE_SHC_API $PREV_SHC_API
   rollback_marketing_site $SERVICE_RTH_SITE $PREV_RTH_SITE
   rollback_marketing_site $SERVICE_SKILLUP_SITE $PREV_SKILLUP_SITE
+  rollback_marketing_site $SERVICE_ANALYTICS_COLLECTOR $PREV_ANALYTICS_COLLECTOR
 
   echo "❌ ROLLBACK COMPLETE"
   exit 1
@@ -634,8 +725,10 @@ if [ $? -ne 0 ]; then
   rollback $SERVICE_API $PREV_API
   rollback $SERVICE_RTH $PREV_RTH
   rollback $SERVICE_SKILLUP $PREV_SKILLUP
+  rollback $SERVICE_SHC_API $PREV_SHC_API
   rollback_marketing_site $SERVICE_RTH_SITE $PREV_RTH_SITE
   rollback_marketing_site $SERVICE_SKILLUP_SITE $PREV_SKILLUP_SITE
+  rollback_marketing_site $SERVICE_ANALYTICS_COLLECTOR $PREV_ANALYTICS_COLLECTOR
 
   echo "❌ ROLLBACK COMPLETE"
   exit 1
@@ -667,8 +760,10 @@ if [ $? -ne 0 ]; then
   rollback $SERVICE_API $PREV_API
   rollback $SERVICE_RTH $PREV_RTH
   rollback $SERVICE_SKILLUP $PREV_SKILLUP
+  rollback $SERVICE_SHC_API $PREV_SHC_API
   rollback_marketing_site $SERVICE_RTH_SITE $PREV_RTH_SITE
   rollback_marketing_site $SERVICE_SKILLUP_SITE $PREV_SKILLUP_SITE
+  rollback_marketing_site $SERVICE_ANALYTICS_COLLECTOR $PREV_ANALYTICS_COLLECTOR
 
   echo "❌ ROLLBACK COMPLETE"
   exit 1
@@ -755,8 +850,10 @@ if [ $AUTH_EXIT_CODE -ne 0 ]; then
   rollback $SERVICE_API $PREV_API
   rollback $SERVICE_RTH $PREV_RTH
   rollback $SERVICE_SKILLUP $PREV_SKILLUP
+  rollback $SERVICE_SHC_API $PREV_SHC_API
   rollback_marketing_site $SERVICE_RTH_SITE $PREV_RTH_SITE
   rollback_marketing_site $SERVICE_SKILLUP_SITE $PREV_SKILLUP_SITE
+  rollback_marketing_site $SERVICE_ANALYTICS_COLLECTOR $PREV_ANALYTICS_COLLECTOR
 
   echo ""
   echo "🔁 Rollback complete"
@@ -857,9 +954,11 @@ else
       rollback $SERVICE_API $PREV_API
       rollback $SERVICE_RTH $PREV_RTH
       rollback $SERVICE_SKILLUP $PREV_SKILLUP
+      rollback $SERVICE_SHC_API $PREV_SHC_API
       rollback $SERVICE_SHC_ADMIN $PREV_SHC_ADMIN
       rollback_marketing_site $SERVICE_RTH_SITE $PREV_RTH_SITE
       rollback_marketing_site $SERVICE_SKILLUP_SITE $PREV_SKILLUP_SITE
+      rollback_marketing_site $SERVICE_ANALYTICS_COLLECTOR $PREV_ANALYTICS_COLLECTOR
 
       echo ""
       echo "🔁 Rollback complete"
@@ -935,9 +1034,11 @@ if [ $SHC_EXIT_CODE -ne 0 ]; then
   rollback $SERVICE_API $PREV_API
   rollback $SERVICE_RTH $PREV_RTH
   rollback $SERVICE_SKILLUP $PREV_SKILLUP
+  rollback $SERVICE_SHC_API $PREV_SHC_API
   rollback $SERVICE_SHC_ADMIN $PREV_SHC_ADMIN
   rollback_marketing_site $SERVICE_RTH_SITE $PREV_RTH_SITE
   rollback_marketing_site $SERVICE_SKILLUP_SITE $PREV_SKILLUP_SITE
+  rollback_marketing_site $SERVICE_ANALYTICS_COLLECTOR $PREV_ANALYTICS_COLLECTOR
 
   echo ""
   echo "🔁 Rollback complete"
@@ -965,7 +1066,85 @@ echo ""
 echo "🎉 DEPLOYMENT SUCCESSFUL (FAANG MODE)"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
-echo "🔗 User Portals:"
+echo "Post-deploy validation:"
+echo ""
+echo "Running hybrid marketing platform validation..."
+
+MARKETING_VALIDATION_SHC_BASE_URL=$(resolve_run_service_url "$SERVICE_SHC_API" "$REGION")
+MARKETING_VALIDATION_COLLECTOR_BASE_URL=$(resolve_run_service_url "$SERVICE_ANALYTICS_COLLECTOR" "$MARKETING_REGION")
+MARKETING_VALIDATION_RTH_SITE_URL=$(resolve_run_service_url "$SERVICE_RTH_SITE" "$MARKETING_REGION")
+MARKETING_VALIDATION_SUIA_SITE_URL=$(resolve_run_service_url "$SERVICE_SKILLUP_SITE" "$MARKETING_REGION")
+MARKETING_VALIDATION_ANALYTICS_ADMIN_TOKEN=$(gcloud secrets versions access latest --secret=ANALYTICS_ADMIN_TOKEN 2>/dev/null || echo "")
+
+if [ -z "$MARKETING_VALIDATION_SHC_BASE_URL" ] || [ -z "$MARKETING_VALIDATION_COLLECTOR_BASE_URL" ] || [ -z "$MARKETING_VALIDATION_RTH_SITE_URL" ] || [ -z "$MARKETING_VALIDATION_SUIA_SITE_URL" ] || [ -z "$MARKETING_VALIDATION_ANALYTICS_ADMIN_TOKEN" ]; then
+  echo "MARKETING VALIDATION SETUP FAILED"
+  echo "   SHC base: ${MARKETING_VALIDATION_SHC_BASE_URL:-missing}"
+  echo "   Collector base: ${MARKETING_VALIDATION_COLLECTOR_BASE_URL:-missing}"
+  echo "   RTH site: ${MARKETING_VALIDATION_RTH_SITE_URL:-missing}"
+  echo "   SUIA site: ${MARKETING_VALIDATION_SUIA_SITE_URL:-missing}"
+  if [ -n "$MARKETING_VALIDATION_ANALYTICS_ADMIN_TOKEN" ]; then
+    echo "   Analytics admin token: present"
+  else
+    echo "   Analytics admin token: missing"
+  fi
+  exit 1
+fi
+
+export MARKETING_VALIDATION_SHC_BASE_URL
+export MARKETING_VALIDATION_COLLECTOR_BASE_URL
+export MARKETING_VALIDATION_RTH_SITE_URL
+export MARKETING_VALIDATION_SUIA_SITE_URL
+export MARKETING_VALIDATION_ANALYTICS_ADMIN_TOKEN
+
+node ./scripts/test-marketing-hybrid-deployment.mjs
+
+MARKETING_VALIDATION_EXIT_CODE=$?
+
+if [ $MARKETING_VALIDATION_EXIT_CODE -ne 0 ]; then
+  echo ""
+  echo "MARKETING PLATFORM VALIDATION FAILED"
+  echo "   SHC content/control-plane, collector ingestion, or brand site proxy validation failed."
+  echo "   Initiating rollback..."
+
+  rollback() {
+    SERVICE=$1
+    REV=$2
+
+    if [ -n "$REV" ]; then
+      echo "  Rolling back $SERVICE to $REV..."
+      gcloud run services update-traffic $SERVICE \
+        --region $REGION \
+        --to-revisions ${REV}=100 2>/dev/null || echo "  Rollback failed for $SERVICE"
+    else
+      echo "  No previous revision for $SERVICE"
+    fi
+  }
+
+  rollback $SERVICE_API $PREV_API
+  rollback $SERVICE_RTH $PREV_RTH
+  rollback $SERVICE_SKILLUP $PREV_SKILLUP
+  rollback $SERVICE_SHC_API $PREV_SHC_API
+  rollback $SERVICE_SHC_ADMIN $PREV_SHC_ADMIN
+  rollback_marketing_site $SERVICE_RTH_SITE $PREV_RTH_SITE
+  rollback_marketing_site $SERVICE_SKILLUP_SITE $PREV_SKILLUP_SITE
+  rollback_marketing_site $SERVICE_ANALYTICS_COLLECTOR $PREV_ANALYTICS_COLLECTOR
+
+  echo ""
+  echo "Rollback complete"
+  echo ""
+  echo "DEPLOYMENT BLOCKED - Hybrid marketing validation failed"
+  exit 1
+fi
+
+echo ""
+echo "Hybrid marketing validation passed"
+echo "   SHC governed content and control-plane reachable"
+echo "   Collector ingestion and observability reachable"
+echo "   RTH marketing proxy headers and course route validated"
+echo "   SUIA marketing proxy headers and course route validated"
+echo ""
+
+echo "User Portals:"
 echo "   RTH: https://user.realtutorialhub.com"
 echo "   SkillUp: https://user.skillupitacademy.com"
 echo "   RTH Marketing: https://www.realtutorialhub.com"
@@ -973,6 +1152,7 @@ echo "   SkillUp Marketing: https://www.skillupitacademy.com"
 echo ""
 echo "🔗 Admin Consoles:"
 echo "   SHC Infrastructure: https://admin.skillhubcore.in"
+echo "Hybrid marketing platform validated"
 echo ""
 echo "✅ All services deployed and validated"
 echo "✅ Authentication flows working"
