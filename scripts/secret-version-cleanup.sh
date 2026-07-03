@@ -16,7 +16,7 @@ else
 fi
 
 echo "Fetching all secrets in project $PROJECT_ID..."
-SECRETS=$(gcloud secrets list --project="$PROJECT_ID" --format="value(name)")
+SECRETS=$(gcloud secrets list --project="$PROJECT_ID" --format="value(name.basename())")
 
 if [ -z "$SECRETS" ]; then
   echo "No secrets found."
@@ -41,7 +41,7 @@ for secret in $SECRETS; do
   
   # List all enabled or disabled versions (not destroyed)
   VERSIONS_TO_DESTROY=$(gcloud secrets versions list "$secret" --project="$PROJECT_ID" \
-    --filter="state!=(DESTROYED) AND name!=$LATEST_VERSION" \
+    --filter="state!=DESTROYED AND name!=$LATEST_VERSION" \
     --format="value(name)")
     
   if [ -z "$VERSIONS_TO_DESTROY" ]; then
