@@ -19,6 +19,7 @@
     "@quiz/events": "workspace:*",
     "@quiz/db": "workspace:*",
     "@quiz/db-people": "workspace:*",
+    "@quiz/marketing-site": "workspace:*",
     "@quiz/types": "workspace:*",
     "@upstash/redis": "^1.36.2",
     "bcryptjs": "^3.0.3",

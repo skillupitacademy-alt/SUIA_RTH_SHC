@@ -50,6 +50,10 @@ steps:
       - --allow-unauthenticated
       - --port
       - "8080"
+      - --memory
+      - 256Mi
+      - --cpu
+      - "1"
       - --update-secrets
       - ANALYTICS_ADMIN_TOKEN=ANALYTICS_ADMIN_TOKEN:latest,RTH_GA4_MEASUREMENT_API_SECRET=RTH_GA4_MEASUREMENT_API_SECRET:latest,RTH_META_CAPI_TOKEN=RTH_META_CAPI_TOKEN:latest,SUIA_GA4_MEASUREMENT_API_SECRET=SUIA_GA4_MEASUREMENT_API_SECRET:latest,SUIA_META_CAPI_TOKEN=SUIA_META_CAPI_TOKEN:latest
 

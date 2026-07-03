@@ -10,6 +10,7 @@ COPY packages/types/package.json ./packages/types/
 COPY packages/auth/package.json ./packages/auth/
 COPY packages/events/package.json ./packages/events/
 COPY packages/db-people/package.json ./packages/db-people/
+COPY packages/marketing-site/package.json ./packages/marketing-site/
 RUN pnpm install --frozen-lockfile
 
 FROM base AS builder
@@ -19,6 +20,7 @@ COPY --from=deps /app/packages/types/node_modules ./packages/types/node_modules
 COPY --from=deps /app/packages/auth/node_modules ./packages/auth/node_modules
 COPY --from=deps /app/packages/events/node_modules ./packages/events/node_modules
 COPY --from=deps /app/packages/db-people/node_modules ./packages/db-people/node_modules
+COPY --from=deps /app/packages/marketing-site/node_modules ./packages/marketing-site/node_modules
 COPY . .
 RUN pnpm --filter @quiz/skillhubcore-service build
 
