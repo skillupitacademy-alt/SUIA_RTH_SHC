@@ -486,7 +486,7 @@ if [ "$BUILD_SHC_API" = true ]; then
     --concurrency 200 \
     --max-instances 5 \
     --min-instances 0 \
-    --set-env-vars "NODE_ENV=production,PORT=8080,GIT_SHA=${GIT_SHA}" \
+    --set-env-vars "NODE_ENV=production,GIT_SHA=${GIT_SHA}" \
     --update-secrets "JWT_SECRET=JWT_SECRET:latest,INTERNAL_GATEWAY_SECRET=INTERNAL_GATEWAY_SECRET:latest,DATABASE_URL_PEOPLE=DATABASE_URL_PEOPLE:latest,DATABASE_DIRECT_URL_PEOPLE=DATABASE_DIRECT_URL_PEOPLE:latest"
 else
   echo "⏭️ Skipping deployment of ${SERVICE_SHC_API} (no changes)"
