@@ -37,7 +37,8 @@ COPY --from=deps /app/packages/marketing-site/node_modules ./packages/marketing-
 COPY . .
 RUN pnpm --filter @quiz/skillhubcore-admin build
 
-FROM base AS runner
+FROM node:20-alpine AS runner
+RUN apk add --no-cache libc6-compat
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0

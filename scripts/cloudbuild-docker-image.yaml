@@ -1,12 +1,23 @@
 steps:
   - name: gcr.io/cloud-builders/docker
+    entrypoint: bash
+    args:
+      - -c
+      - docker pull ${_IMAGE_LATEST} || true
+
+  - name: gcr.io/cloud-builders/docker
     args:
       - build
+      - --cache-from
+      - ${_IMAGE_LATEST}
       - -f
       - ${_DOCKERFILE}
       - -t
       - ${_IMAGE}
+      - -t
+      - ${_IMAGE_LATEST}
       - .
 
 images:
   - ${_IMAGE}
+  - ${_IMAGE_LATEST}

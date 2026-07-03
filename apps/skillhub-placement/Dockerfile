@@ -23,7 +23,8 @@ COPY --from=deps /app/packages/db-placement/node_modules ./packages/db-placement
 COPY . .
 RUN pnpm --filter @quiz/skillhub-placement build
 
-FROM base AS runner
+FROM node:20-alpine AS runner
+RUN apk add --no-cache libc6-compat
 ENV NODE_ENV=production
 ENV PORT=3008
 ENV HOSTNAME=0.0.0.0

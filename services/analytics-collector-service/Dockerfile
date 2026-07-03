@@ -16,9 +16,13 @@ COPY --from=deps /app/packages/marketing-site/node_modules ./packages/marketing-
 COPY . .
 RUN pnpm --filter @quiz/analytics-collector-service build
 
-FROM base AS runner
+FROM node:20-alpine AS runner
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
 ENV NODE_ENV=production
-COPY --from=builder /app ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/services/analytics-collector-service ./services/analytics-collector-service
+COPY --from=builder /app/packages ./packages
+COPY --from=builder /app/package.json ./package.json
 EXPOSE 8080
 CMD ["/app/services/analytics-collector-service/node_modules/.bin/tsx", "--tsconfig", "services/analytics-collector-service/tsconfig.json", "services/analytics-collector-service/src/index.ts"]

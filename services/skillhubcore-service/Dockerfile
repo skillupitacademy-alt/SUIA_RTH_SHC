@@ -22,9 +22,13 @@ COPY --from=deps /app/packages/db-people/node_modules ./packages/db-people/node_
 COPY . .
 RUN pnpm --filter @quiz/skillhubcore-service build
 
-FROM base AS runner
+FROM node:20-alpine AS runner
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
 ENV NODE_ENV=production
-COPY --from=builder /app ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/services/skillhubcore-service ./services/skillhubcore-service
+COPY --from=builder /app/packages ./packages
+COPY --from=builder /app/package.json ./package.json
 EXPOSE 3000
 CMD ["/app/services/skillhubcore-service/node_modules/.bin/tsx", "--tsconfig", "services/skillhubcore-service/tsconfig.json", "services/skillhubcore-service/src/index.ts"]

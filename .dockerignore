@@ -32,6 +32,7 @@ node_modules
 # Logs
 **/*.log
 **/npm-debug.log*
+debug.log
 
 # OS
 .DS_Store
@@ -44,3 +45,23 @@ Thumbs.db
 # Project-specific
 tests/load
 tmp
+backups
+scratch
+phasewise
+digitalmarketing
+audit-reports
+docs
+__tests__
+tests
+e2e
+k6
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+tsconfig.tsbuildinfo
+.agent
+.codex
+.kiro
+.sixth
+.playwright-mcp

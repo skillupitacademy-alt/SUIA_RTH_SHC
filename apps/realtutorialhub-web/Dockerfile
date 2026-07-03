@@ -49,7 +49,8 @@ ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
 ENV NEXT_PUBLIC_LOGIN_URL=$NEXT_PUBLIC_LOGIN_URL
 RUN pnpm --filter @quiz/realtutorialhub-web build
 
-FROM base AS runner
+FROM node:20-alpine AS runner
+RUN apk add --no-cache libc6-compat
 ENV NODE_ENV=production
 ENV PORT=3003
 ENV HOSTNAME=0.0.0.0

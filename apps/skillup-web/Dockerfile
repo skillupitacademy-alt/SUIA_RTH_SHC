@@ -33,7 +33,8 @@ COPY --from=deps /app/packages/db-tutorial/node_modules ./packages/db-tutorial/n
 COPY . .
 RUN pnpm --filter @quiz/skillup-web build
 
-FROM base AS runner
+FROM node:20-alpine AS runner
+RUN apk add --no-cache libc6-compat
 ENV NODE_ENV=production
 ENV PORT=3004
 ENV HOSTNAME=0.0.0.0

@@ -1,0 +1,22 @@
+{
+  "date": "2026-07-03",
+  "builds": {
+    "total_last_30": 30,
+    "success": 25,
+    "failed": 5,
+    "avg_duration_sec": 0
+  },
+  "registry": {
+    "images_se": 2219,
+    "images_s": 623,
+    "total_images": 2842
+  },
+  "cloud_run": {
+    "services_count": 19,
+    "total_revisions": 1868
+  },
+  "secrets": {
+    "total_secrets": 49,
+    "total_versions": 126
+  }
+}
