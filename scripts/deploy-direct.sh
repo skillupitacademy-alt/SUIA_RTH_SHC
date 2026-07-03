@@ -110,31 +110,6 @@ run_with_retry() {
     echo "⚠️  ${label} failed. Waiting ${BUILD_RETRY_DELAY_SECONDS}s before retry..."
     sleep "$BUILD_RETRY_DELAY_SECONDS"
     attempt=$((attempt + 1))
-
-BUILD_RETRY_ATTEMPTS="${BUILD_RETRY_ATTEMPTS:-3}"
-BUILD_RETRY_DELAY_SECONDS="${BUILD_RETRY_DELAY_SECONDS:-15}"
-
-run_with_retry() {
-  local label="$1"
-  shift
-
-  local attempt=1
-  while true; do
-    echo "🔁 ${label} (attempt ${attempt}/${BUILD_RETRY_ATTEMPTS})"
-
-    if "$@"; then
-      echo "✅ ${label} succeeded"
-      return 0
-    fi
-
-    if [ "$attempt" -ge "$BUILD_RETRY_ATTEMPTS" ]; then
-      echo "❌ ${label} failed after ${BUILD_RETRY_ATTEMPTS} attempts"
-      return 1
-    fi
-
-    echo "⚠️  ${label} failed. Waiting ${BUILD_RETRY_DELAY_SECONDS}s before retry..."
-    sleep "$BUILD_RETRY_DELAY_SECONDS"
-    attempt=$((attempt + 1))
   done
 }
 
@@ -242,9 +217,14 @@ detect_changes() {
     return
   fi
 
-  BUILD_API=false BUILD_RTH=false BUILD_SKILLUP=false
-  BUILD_SHC_ADMIN=false BUILD_SHC_API=false
-  BUILD_ANALYTICS=false BUILD_RTH_SITE=false BUILD_SUIA_SITE=false
+  BUILD_API="${OVERRIDE_BUILD_API:-false}"
+  BUILD_RTH="${OVERRIDE_BUILD_RTH:-false}"
+  BUILD_SKILLUP="${OVERRIDE_BUILD_SKILLUP:-false}"
+  BUILD_SHC_ADMIN="${OVERRIDE_BUILD_SHC_ADMIN:-false}"
+  BUILD_SHC_API="${OVERRIDE_BUILD_SHC_API:-false}"
+  BUILD_ANALYTICS="${OVERRIDE_BUILD_ANALYTICS:-false}"
+  BUILD_RTH_SITE="${OVERRIDE_BUILD_RTH_SITE:-false}"
+  BUILD_SUIA_SITE="${OVERRIDE_BUILD_SUIA_SITE:-false}"
 
   # Direct service changes
   echo "$CHANGED_FILES" | grep -q '^apps/api-server/'            && BUILD_API=true
@@ -271,7 +251,6 @@ detect_changes() {
   echo "$CHANGED_FILES" | grep -q '^packages/observability/' && { BUILD_API=true; BUILD_RTH=true; BUILD_SHC_ADMIN=true; }
   echo "$CHANGED_FILES" | grep -q '^packages/api-client/'    && { BUILD_API=true; BUILD_RTH=true; BUILD_SHC_ADMIN=true; }
   
-  echo ""
   echo "📋 Build plan:"
   echo "   API:               $BUILD_API"
   echo "   RTH BFF:           $BUILD_RTH"
@@ -282,6 +261,11 @@ detect_changes() {
   echo "   RTH Marketing:     $BUILD_RTH_SITE"
   echo "   SUIA Marketing:    $BUILD_SUIA_SITE"
   echo ""
+
+  if [ "${DRY_RUN:-false}" = "true" ]; then
+    echo "🔍 DRY_RUN mode: printing build plan and exiting."
+    exit 0
+  fi
 }
 
 #############################################
@@ -477,10 +461,6 @@ echo "RTH Site: $PREV_RTH_SITE"
 echo "SkillUp Site: $PREV_SKILLUP_SITE"
 echo "Analytics Collector: $PREV_ANALYTICS_COLLECTOR"
 
-#############################################
-# 🚀 BUILD + PUSH IMAGES
-#############################################
-
 detect_changes
 
 echo "☁️  Building and pushing images with Cloud Build..."
@@ -492,20 +472,25 @@ echo "☁️  Building and pushing images with Cloud Build..."
 [ "$BUILD_SHC_API" = true ]   && cloud_build_image services/skillhubcore-service/Dockerfile $IMAGE_SHC_API
 [ "$BUILD_ANALYTICS" = true ] && deploy_collector_service $SERVICE_ANALYTICS_COLLECTOR cloudbuild.analytics-collector-service.yaml
 
-echo "🚀 Deploying ${SERVICE_SHC_API}..."
-gcloud run deploy $SERVICE_SHC_API \
-  --image $IMAGE_SHC_API \
-  --region $REGION \
-  --platform managed \
-  --allow-unauthenticated \
-  --port 8080 \
-  --memory 512Mi \
-  --cpu 1 \
-  --concurrency 200 \
-  --max-instances 5 \
-  --min-instances 0 \
-  --set-env-vars "NODE_ENV=production,PORT=8080,GIT_SHA=${GIT_SHA}" \
-  --update-secrets "JWT_SECRET=JWT_SECRET:latest,INTERNAL_GATEWAY_SECRET=INTERNAL_GATEWAY_SECRET:latest,DATABASE_URL_PEOPLE=DATABASE_URL_PEOPLE:latest,DATABASE_DIRECT_URL_PEOPLE=DATABASE_DIRECT_URL_PEOPLE:latest"
+
+if [ "$BUILD_SHC_API" = true ]; then
+  echo "🚀 Deploying ${SERVICE_SHC_API}..."
+  gcloud run deploy $SERVICE_SHC_API \
+    --image $IMAGE_SHC_API \
+    --region $REGION \
+    --platform managed \
+    --allow-unauthenticated \
+    --port 8080 \
+    --memory 512Mi \
+    --cpu 1 \
+    --concurrency 200 \
+    --max-instances 5 \
+    --min-instances 0 \
+    --set-env-vars "NODE_ENV=production,PORT=8080,GIT_SHA=${GIT_SHA}" \
+    --update-secrets "JWT_SECRET=JWT_SECRET:latest,INTERNAL_GATEWAY_SECRET=INTERNAL_GATEWAY_SECRET:latest,DATABASE_URL_PEOPLE=DATABASE_URL_PEOPLE:latest,DATABASE_DIRECT_URL_PEOPLE=DATABASE_DIRECT_URL_PEOPLE:latest"
+else
+  echo "⏭️ Skipping deployment of ${SERVICE_SHC_API} (no changes)"
+fi
 
 SHC_MARKETING_BASE_URL=$(resolve_run_service_url "$SERVICE_SHC_API" "$REGION")
 COLLECTOR_BASE_URL=$(resolve_run_service_url "$SERVICE_ANALYTICS_COLLECTOR" "$MARKETING_REGION")
@@ -561,22 +546,25 @@ echo "🌐 Collector base: $COLLECTOR_BASE_URL"
 # 🚀 DEPLOY API FIRST (NO TRAFFIC)
 #############################################
 
-echo "🚀 Deploying API (no traffic)..."
-
-gcloud run deploy $SERVICE_API \
-  --image $IMAGE_API \
-  --region $REGION \
-  --no-traffic \
-  --platform managed \
-  --allow-unauthenticated \
-  --port 3000 \
-  --memory 2Gi \
-  --cpu 2 \
-  --concurrency 1000 \
-  --max-instances 10 \
-  --min-instances 0 \
-  --set-env-vars "NODE_ENV=production,CLOUD_RUN_BUILD=true,GATEWAY_URL=https://api.realtutorialhub.com,GATEWAY_URL_SKILLUP=https://api.skillupitacademy.com,GATEWAY_URL_SKILLHUBCORE=https://api.skillhubcore.in" \
-  --update-secrets "DATABASE_URL=DATABASE_URL:latest,DATABASE_DIRECT_URL=DATABASE_DIRECT_URL:latest,DATABASE_URL_RTH=DATABASE_URL_RTH:latest,DATABASE_DIRECT_URL_RTH=DATABASE_DIRECT_URL_RTH:latest,DATABASE_URL_SKILLUP=DATABASE_URL_SKILLUP:latest,DATABASE_DIRECT_URL_SKILLUP=DATABASE_DIRECT_URL_SKILLUP:latest,DATABASE_URL_PEOPLE=DATABASE_URL_PEOPLE:latest,DATABASE_DIRECT_URL_PEOPLE=DATABASE_DIRECT_URL_PEOPLE:latest,DATABASE_URL_TUTORIAL=DATABASE_URL_TUTORIAL:latest,DATABASE_DIRECT_URL_TUTORIAL=DATABASE_DIRECT_URL_TUTORIAL:latest,DATABASE_URL_PAYMENT=DATABASE_URL_PAYMENT:latest,DATABASE_DIRECT_URL_PAYMENT=DATABASE_DIRECT_URL_PAYMENT:latest,DATABASE_URL_PLACEMENT=DATABASE_URL_PLACEMENT:latest,DATABASE_DIRECT_URL_PLACEMENT=DATABASE_DIRECT_URL_PLACEMENT:latest,INTERNAL_API_SECRET=INTERNAL_API_SECRET:latest,JWT_SECRET=JWT_SECRET:latest,JWT_REFRESH_SECRET=JWT_REFRESH_SECRET:latest,ADMIN_JWT_SECRET=ADMIN_JWT_SECRET:latest,UPSTASH_REDIS_REST_URL=UPSTASH_REDIS_REST_URL:latest,UPSTASH_REDIS_REST_TOKEN=UPSTASH_REDIS_REST_TOKEN:latest,QSTASH_TOKEN=QSTASH_TOKEN:latest,QSTASH_CURRENT_SIGNING_KEY=QSTASH_CURRENT_SIGNING_KEY:latest,QSTASH_NEXT_SIGNING_KEY=QSTASH_NEXT_SIGNING_KEY:latest,RESEND_API_KEY=RESEND_API_KEY:latest,CSRF_SECRET=CSRF_SECRET:latest,INTERNAL_API_KEY=INTERNAL_API_KEY:latest,INTERNAL_GATEWAY_SECRET=INTERNAL_GATEWAY_SECRET:latest,COOKIE_DOMAIN=COOKIE_DOMAIN:latest,ALLOWED_ORIGINS=ALLOWED_ORIGINS:latest"
+if [ "$BUILD_API" = true ]; then
+  echo "🚀 Deploying API (no traffic)..."
+  gcloud run deploy $SERVICE_API \
+    --image $IMAGE_API \
+    --region $REGION \
+    --no-traffic \
+    --platform managed \
+    --allow-unauthenticated \
+    --port 3000 \
+    --memory 512Mi \
+    --cpu 1 \
+    --concurrency 1000 \
+    --max-instances 10 \
+    --min-instances 0 \
+    --set-env-vars "NODE_ENV=production,CLOUD_RUN_BUILD=true,GATEWAY_URL=https://api.realtutorialhub.com,GATEWAY_URL_SKILLUP=https://api.skillupitacademy.com,GATEWAY_URL_SKILLHUBCORE=https://api.skillhubcore.in" \
+    --update-secrets "DATABASE_URL=DATABASE_URL:latest,DATABASE_DIRECT_URL=DATABASE_DIRECT_URL:latest,DATABASE_URL_RTH=DATABASE_URL_RTH:latest,DATABASE_DIRECT_URL_RTH=DATABASE_DIRECT_URL_RTH:latest,DATABASE_URL_SKILLUP=DATABASE_URL_SKILLUP:latest,DATABASE_DIRECT_URL_SKILLUP=DATABASE_DIRECT_URL_SKILLUP:latest,DATABASE_URL_PEOPLE=DATABASE_URL_PEOPLE:latest,DATABASE_DIRECT_URL_PEOPLE=DATABASE_DIRECT_URL_PEOPLE:latest,DATABASE_URL_TUTORIAL=DATABASE_URL_TUTORIAL:latest,DATABASE_DIRECT_URL_TUTORIAL=DATABASE_DIRECT_URL_TUTORIAL:latest,DATABASE_URL_PAYMENT=DATABASE_URL_PAYMENT:latest,DATABASE_DIRECT_URL_PAYMENT=DATABASE_DIRECT_URL_PAYMENT:latest,DATABASE_URL_PLACEMENT=DATABASE_URL_PLACEMENT:latest,DATABASE_DIRECT_URL_PLACEMENT=DATABASE_DIRECT_URL_PLACEMENT:latest,INTERNAL_API_SECRET=INTERNAL_API_SECRET:latest,JWT_SECRET=JWT_SECRET:latest,JWT_REFRESH_SECRET=JWT_REFRESH_SECRET:latest,ADMIN_JWT_SECRET=ADMIN_JWT_SECRET:latest,UPSTASH_REDIS_REST_URL=UPSTASH_REDIS_REST_URL:latest,UPSTASH_REDIS_REST_TOKEN=UPSTASH_REDIS_REST_TOKEN:latest,QSTASH_TOKEN=QSTASH_TOKEN:latest,QSTASH_CURRENT_SIGNING_KEY=QSTASH_CURRENT_SIGNING_KEY:latest,QSTASH_NEXT_SIGNING_KEY=QSTASH_NEXT_SIGNING_KEY:latest,RESEND_API_KEY=RESEND_API_KEY:latest,CSRF_SECRET=CSRF_SECRET:latest,INTERNAL_API_KEY=INTERNAL_API_KEY:latest,INTERNAL_GATEWAY_SECRET=INTERNAL_GATEWAY_SECRET:latest,COOKIE_DOMAIN=COOKIE_DOMAIN:latest,ALLOWED_ORIGINS=ALLOWED_ORIGINS:latest"
+else
+  echo "⏭️ Skipping deployment of API (no changes)"
+fi
 
 #############################################
 # 🌐 GET INTERNAL API URL
@@ -615,23 +603,39 @@ deploy_bff() {
     --image $IMAGE_NAME \
     --region $REGION \
     --no-traffic \
+    --memory 256Mi \
+    --cpu 1 \
     --set-env-vars "INTERNAL_API_URL=${INTERNAL_API_URL},GATEWAY_URL=https://api.realtutorialhub.com,GATEWAY_URL_SKILLUP=https://api.skillupitacademy.com,GATEWAY_URL_SKILLHUBCORE=https://api.skillhubcore.in" \
     --update-secrets "$BFF_SECRETS"
 }
 
-deploy_bff $SERVICE_RTH $IMAGE_RTH
-deploy_bff $SERVICE_SKILLUP $IMAGE_SKILLUP
+if [ "$BUILD_RTH" = true ]; then
+  deploy_bff $SERVICE_RTH $IMAGE_RTH
+else
+  echo "⏭️ Skipping deployment of ${SERVICE_RTH} (no changes)"
+fi
 
-echo "🚀 Deploying SHC Admin (Identity-First via People DB)..."
+if [ "$BUILD_SKILLUP" = true ]; then
+  deploy_bff $SERVICE_SKILLUP $IMAGE_SKILLUP
+else
+  echo "⏭️ Skipping deployment of ${SERVICE_SKILLUP} (no changes)"
+fi
 
-gcloud run deploy $SERVICE_SHC_ADMIN \
-  --image $IMAGE_SHC_ADMIN \
-  --region $REGION \
-  --no-traffic \
-  --set-env-vars "INTERNAL_API_URL=${INTERNAL_API_URL},GATEWAY_URL=https://api.realtutorialhub.com,GATEWAY_URL_SKILLUP=https://api.skillupitacademy.com,GATEWAY_URL_SKILLHUBCORE=https://api.skillhubcore.in,NEXT_PUBLIC_SHC_CONTENT_BASE_URL=${SHC_MARKETING_BASE_URL},MARKETING_CONTENT_API_BASE_URL=${SHC_MARKETING_BASE_URL},NEXT_PUBLIC_ANALYTICS_COLLECTOR_BASE_URL=${COLLECTOR_BASE_URL},NEXT_PUBLIC_RTH_ANALYTICS_ENDPOINT=${COLLECTOR_TRACK_URL}" \
-  --update-secrets "DATABASE_URL=DATABASE_URL_PEOPLE:latest,DATABASE_DIRECT_URL=DATABASE_DIRECT_URL_PEOPLE:latest,DATABASE_URL_TUTORIAL=DATABASE_URL_TUTORIAL:latest,DATABASE_DIRECT_URL_TUTORIAL=DATABASE_DIRECT_URL_TUTORIAL:latest,INTERNAL_API_SECRET=INTERNAL_API_SECRET:latest,INTERNAL_GATEWAY_SECRET=INTERNAL_GATEWAY_SECRET:latest,JWT_SECRET=JWT_SECRET:latest,JWT_REFRESH_SECRET=JWT_REFRESH_SECRET:latest,ADMIN_JWT_SECRET=ADMIN_JWT_SECRET:latest"
+if [ "$BUILD_SHC_ADMIN" = true ]; then
+  echo "🚀 Deploying SHC Admin (Identity-First via People DB)..."
+  gcloud run deploy $SERVICE_SHC_ADMIN \
+    --image $IMAGE_SHC_ADMIN \
+    --region $REGION \
+    --no-traffic \
+    --memory 256Mi \
+    --cpu 1 \
+    --set-env-vars "INTERNAL_API_URL=${INTERNAL_API_URL},GATEWAY_URL=https://api.realtutorialhub.com,GATEWAY_URL_SKILLUP=https://api.skillupitacademy.com,GATEWAY_URL_SKILLHUBCORE=https://api.skillhubcore.in,NEXT_PUBLIC_SHC_CONTENT_BASE_URL=${SHC_MARKETING_BASE_URL},MARKETING_CONTENT_API_BASE_URL=${SHC_MARKETING_BASE_URL},NEXT_PUBLIC_ANALYTICS_COLLECTOR_BASE_URL=${COLLECTOR_BASE_URL},NEXT_PUBLIC_RTH_ANALYTICS_ENDPOINT=${COLLECTOR_TRACK_URL}" \
+    --update-secrets "DATABASE_URL=DATABASE_URL_PEOPLE:latest,DATABASE_DIRECT_URL=DATABASE_DIRECT_URL_PEOPLE:latest,DATABASE_URL_TUTORIAL=DATABASE_URL_TUTORIAL:latest,DATABASE_DIRECT_URL_TUTORIAL=DATABASE_DIRECT_URL_TUTORIAL:latest,INTERNAL_API_SECRET=INTERNAL_API_SECRET:latest,INTERNAL_GATEWAY_SECRET=INTERNAL_GATEWAY_SECRET:latest,JWT_SECRET=JWT_SECRET:latest,JWT_REFRESH_SECRET=JWT_REFRESH_SECRET:latest,ADMIN_JWT_SECRET=ADMIN_JWT_SECRET:latest"
+else
+  echo "⏭️ Skipping deployment of ${SERVICE_SHC_ADMIN} (no changes)"
+fi
 
-echo "✅ All services deployed (no traffic)"
+echo "✅ Selective services deployment complete"
 
 #############################################
 # 🔍 HEALTH CHECK LOOP (FAIL FAST)
@@ -767,21 +771,10 @@ echo "✅ Navigation stability test passed"
 
 echo "🚀 Routing traffic to new revision..."
 
-gcloud run services update-traffic $SERVICE_API \
-  --region $REGION \
-  --to-latest
-
-gcloud run services update-traffic $SERVICE_RTH \
-  --region $REGION \
-  --to-latest
-
-gcloud run services update-traffic $SERVICE_SKILLUP \
-  --region $REGION \
-  --to-latest
-
-gcloud run services update-traffic $SERVICE_SHC_ADMIN \
-  --region $REGION \
-  --to-latest
+[ "$BUILD_API" = true ] && gcloud run services update-traffic $SERVICE_API --region $REGION --to-latest || echo "⏭️ Skipping traffic update for $SERVICE_API (no changes)"
+[ "$BUILD_RTH" = true ] && gcloud run services update-traffic $SERVICE_RTH --region $REGION --to-latest || echo "⏭️ Skipping traffic update for $SERVICE_RTH (no changes)"
+[ "$BUILD_SKILLUP" = true ] && gcloud run services update-traffic $SERVICE_SKILLUP --region $REGION --to-latest || echo "⏭️ Skipping traffic update for $SERVICE_SKILLUP (no changes)"
+[ "$BUILD_SHC_ADMIN" = true ] && gcloud run services update-traffic $SERVICE_SHC_ADMIN --region $REGION --to-latest || echo "⏭️ Skipping traffic update for $SERVICE_SHC_ADMIN (no changes)"
 
 #############################################
 # 🔐 POST-DEPLOY SAFETY CHECK
@@ -1277,7 +1270,7 @@ echo "📌 Updating deployment annotation..."
 gcloud run services update $SERVICE_API \
   --region=$REGION \
   --update-annotations="deploy-sha=${GIT_SHA}" \
-  --quiet || echo "⚠️  Failed to update annotation"
+  --quiet || echo "⚠️  Failed to update annotation (non-fatal)"
 
 echo "✅ All services deployed and validated"
 echo "✅ Authentication flows working"
