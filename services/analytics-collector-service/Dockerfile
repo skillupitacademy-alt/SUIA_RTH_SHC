@@ -24,5 +24,6 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/services/analytics-collector-service ./services/analytics-collector-service
 COPY --from=builder /app/packages ./packages
 COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/tsconfig.json ./tsconfig.json
 EXPOSE 8080
 CMD ["/app/services/analytics-collector-service/node_modules/.bin/tsx", "--tsconfig", "services/analytics-collector-service/tsconfig.json", "services/analytics-collector-service/src/index.ts"]
