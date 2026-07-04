@@ -19,10 +19,12 @@ export const createApp = () => {
   const ssoService = new SsoService(userRepo);
   const hierarchyService = new HierarchyService();
 
-  app.route('/public/marketing', createMarketingRoutes());
-  app.use('*', requireGatewaySecret);
+  // Health check must be before the gateway secret middleware
   app.get('/healthz', (c) => c.json({ status: 'ok', service: 'skillhubcore', ts: Date.now() }));
   app.get('/healthz/', (c) => c.json({ status: 'ok', service: 'skillhubcore', ts: Date.now() }));
+
+  app.route('/public/marketing', createMarketingRoutes());
+  app.use('*', requireGatewaySecret);
   app.route('/admin/users', createSsoRoutes(ssoService));
   app.route('/consumers', createSkillhubcoreEventRoutes({ subscriptionService }));
   app.route('/api/hierarchy', createHierarchyRoutes(hierarchyService));
