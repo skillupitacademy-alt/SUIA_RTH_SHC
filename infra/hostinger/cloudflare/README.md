@@ -10,7 +10,11 @@ These documents describe the intended Cloudflare setup for the Hostinger migrati
 - `ssl-settings.md`
 - `cache-rules.md`
 - `waf-rules.md`
+- `export-cloudflare-state.md`
+- `export-cloudflare-state.ps1`
 
 ## Cutover Principle
 
 Cloudflare remains the public edge. API Worker routing is retained for the initial cutover unless a later ADR changes it.
+
+Before any Cloudflare change, run the read-only export helper and keep the generated `state-exports/` directory outside Git for rollback evidence.
