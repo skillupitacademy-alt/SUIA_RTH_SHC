@@ -1,82 +1,96 @@
 /**
- * 🔥 LIGHTWEIGHT AUTH VALIDATION - SSR-SAFE
- * 
- * Simple, fast auth check using /api/auth/me endpoint.
- * No heavy profile data - just authentication status.
- * 
- * Pattern: Dashboard → validateAuthState() → /api/auth/me ✅
- * 
- * 🚨 CRITICAL: SSR-safe with proper cookie forwarding
+ * Lightweight auth validation for dashboard SSR and client-side checks.
+ *
+ * Browser-side validation can use the relative BFF path. Server-side dashboard
+ * rendering must call the configured API gateway because retained-Worker VPS
+ * origins do not own `/api/auth/me`; they are frontend origins only.
  */
 
 export interface AuthValidationState {
   id: string;
   email: string;
   onboardingCompleted?: boolean;
-  roles: string[]; // ["user"] for now
+  roles: string[];
 }
 
-/**
- * 🔥 SSR-SAFE: Build base URL using incoming request headers
- * SSR MUST go through gateway (NOT localhost)
- */
-async function buildBaseUrl(): Promise<string> {
-  const isServer = typeof window === 'undefined';
-  
-  if (!isServer) {
-    // Client-side: use current origin
-    return '';
+interface AuthRequestContext {
+  publicHost?: string;
+  gatewayUrl?: string;
+}
+
+function getGatewayUrlForHost(host?: string): string | undefined {
+  const normalizedHost = host?.toLowerCase() ?? '';
+  const configured =
+    normalizedHost.includes('skillup')
+      ? process.env.GATEWAY_URL_SKILLUP
+      : normalizedHost.includes('skillhubcore')
+        ? process.env.GATEWAY_URL_SKILLHUBCORE
+        : process.env.GATEWAY_URL;
+
+  return configured?.trim().replace(/\/+$/, '') || undefined;
+}
+
+function getPublicHostFromHeaders(headerList: Headers): string | undefined {
+  const candidates = [
+    headerList.get('x-original-host'),
+    headerList.get('x-forwarded-host'),
+    headerList.get('host'),
+  ];
+
+  for (const candidate of candidates) {
+    const host = candidate?.split(',')[0]?.trim();
+    if (host) {
+      return host;
+    }
   }
 
-  // Server-side: use headers to build URL
+  return undefined;
+}
+
+async function buildAuthRequestContext(): Promise<AuthRequestContext> {
+  const isServer = typeof window === 'undefined';
+
+  if (!isServer) {
+    return {};
+  }
+
   try {
     const { headers } = await import('next/headers');
     const headerList = await headers();
-    
-    const protocol =
-      headerList.get('x-forwarded-proto') ||
-      (process.env.NODE_ENV === 'development' ? 'http' : 'https');
-    
-    const host =
-      headerList.get('x-forwarded-host') ||
-      headerList.get('host');
-    
-    if (!host) {
+    const publicHost = getPublicHostFromHeaders(headerList);
+
+    if (!publicHost) {
       throw new Error('[AUTH_VALIDATE] No host header found');
     }
-    
-    return `${protocol}://${host}`;
-  } catch (error) {
-    // Fallback for edge cases
+
+    return {
+      publicHost,
+      gatewayUrl: getGatewayUrlForHost(publicHost),
+    };
+  } catch {
     if (process.env.NODE_ENV === 'development') {
       console.warn('[AUTH_VALIDATE] Header access failed, using fallback');
     }
-    return '';
+    return {};
   }
 }
 
-/**
- * 🔥 SSR-SAFE: Build cookie header from Next.js cookies()
- */
 async function buildCookieHeader(): Promise<string> {
   const isServer = typeof window === 'undefined';
-  
+
   if (!isServer) {
-    // Client-side: cookies sent automatically
     return '';
   }
 
-  // Server-side: manually forward cookies
   try {
     const { cookies } = await import('next/headers');
     const cookieStore = await cookies();
-    
+
     return cookieStore
       .getAll()
       .map(({ name, value }: { name: string; value: string }) => `${name}=${value}`)
       .join('; ');
-  } catch (error) {
-    // Fallback for edge cases
+  } catch {
     if (process.env.NODE_ENV === 'development') {
       console.warn('[AUTH_VALIDATE] Cookie access failed');
     }
@@ -84,17 +98,11 @@ async function buildCookieHeader(): Promise<string> {
   }
 }
 
-/**
- * Lightweight auth validation - checks if user is logged in
- * Uses /api/auth/me endpoint for fast validation
- * 
- * 🚨 CRITICAL: SSR-safe with proper cookie forwarding
- */
 export async function validateAuthState(): Promise<AuthValidationState | null> {
   const MAX_RETRIES = 2;
   const TIMEOUT_MS = 3000;
-  
-  let lastError: any = null;
+
+  let lastError: unknown = null;
 
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     try {
@@ -105,25 +113,28 @@ export async function validateAuthState(): Promise<AuthValidationState | null> {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
-      // 🔥 SSR-SAFE: Build URL and headers
-      const baseUrl = await buildBaseUrl();
+      const authRequestContext = await buildAuthRequestContext();
       const cookieHeader = await buildCookieHeader();
-      const finalUrl = baseUrl ? `${baseUrl}/api/auth/me` : '/api/auth/me';
+      const finalUrl = authRequestContext.gatewayUrl ? `${authRequestContext.gatewayUrl}/auth/me` : '/api/auth/me';
 
-      // 🔥 SSR-SAFE: Prepare headers
       const headers: Record<string, string> = {
+        Accept: 'application/json',
         'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Accept': 'application/json',
       };
 
-      // Add cookies for SSR
       if (cookieHeader) {
-        headers['cookie'] = cookieHeader;
+        headers.cookie = cookieHeader;
+      }
+
+      if (authRequestContext.publicHost) {
+        headers['x-original-host'] = authRequestContext.publicHost;
       }
 
       if (process.env.NODE_ENV === 'development') {
         console.log('[AUTH_VALIDATE] Request details:', {
           url: finalUrl,
+          publicHost: authRequestContext.publicHost,
+          gatewayUrl: authRequestContext.gatewayUrl,
           hasCookies: !!cookieHeader,
           cookieLength: cookieHeader.length,
         });
@@ -133,7 +144,7 @@ export async function validateAuthState(): Promise<AuthValidationState | null> {
         method: 'GET',
         headers,
         cache: 'no-store',
-        credentials: 'include', // Still include for client-side
+        credentials: 'include',
         signal: controller.signal,
       });
 
@@ -150,7 +161,6 @@ export async function validateAuthState(): Promise<AuthValidationState | null> {
         });
       }
 
-      // ✅ CRITICAL: 401 = not authenticated (expected)
       if (res.status === 401) {
         if (process.env.NODE_ENV === 'development') {
           console.log('[AUTH_VALIDATE] Not authenticated (401)');
@@ -158,49 +168,43 @@ export async function validateAuthState(): Promise<AuthValidationState | null> {
         return null;
       }
 
-      // ⚠️ Server errors or network issues = retry (don't logout on transient failures)
       if (!res.ok) {
         const errorText = await res.text().catch(() => 'Unable to read error');
-        
-        // 🚨 CRITICAL: Only logout on real auth failure (401)
-        // For other errors (5xx, network), retry instead of logging out
         console.warn(`[AUTH_VALIDATE] Server error (attempt ${attempt + 1}):`, res.status, errorText);
         lastError = new Error(`Auth validation failed: HTTP ${res.status}`);
-        
-        // Wait before retry (exponential backoff)
+
         if (attempt < MAX_RETRIES) {
-          await new Promise(resolve => setTimeout(resolve, 100 * (attempt + 1)));
+          await new Promise((resolve) => setTimeout(resolve, 100 * (attempt + 1)));
         }
-        continue; // retry
+        continue;
       }
 
       const data = await res.json();
-      
-      console.log('[AUTH_VALIDATE] ✅ Success - Raw response data:', {
-        userId: data.user?.id?.slice(0, 8),
-        email: data.user?.email,
-        onboardingCompleted: data.user?.onboardingCompleted,
-        role: data.user?.role,
-        roles: data.user?.roles,
-        isAdmin: data.user?.isAdmin,
-        brand: data.user?.brand,
-      });
+      const user = data.user;
 
-      // ✅ STANDARDIZED RESPONSE
+      if (!user?.id || !user?.email) {
+        lastError = new Error('Auth validation returned an invalid user payload');
+
+        if (attempt < MAX_RETRIES) {
+          await new Promise((resolve) => setTimeout(resolve, 100 * (attempt + 1)));
+        }
+        continue;
+      }
+
       const result = {
-        id: data.user.id,
-        email: data.user.email,
-        onboardingCompleted: data.user.onboardingCompleted,
-        roles: data.user.roles || (data.user.role ? [data.user.role] : ['user']), // Handle both formats
+        id: user.id,
+        email: user.email,
+        onboardingCompleted: user.onboardingCompleted,
+        roles: user.roles || (user.role ? [user.role] : ['user']),
       };
-      
-      console.log('[AUTH_VALIDATE] 🎯 Returning standardized auth state:', {
+
+      console.log('[AUTH_VALIDATE] Success:', {
         userId: result.id.slice(0, 8),
         email: result.email,
         onboardingCompleted: result.onboardingCompleted,
         roles: result.roles,
       });
-      
+
       return result;
     } catch (err) {
       lastError = err;
@@ -208,40 +212,28 @@ export async function validateAuthState(): Promise<AuthValidationState | null> {
       if (err instanceof Error && err.name === 'AbortError') {
         console.warn(`[AUTH_VALIDATE] Request timeout (attempt ${attempt + 1})`);
       } else {
-        console.warn(`[AUTH_VALIDATE] Request failed (attempt ${attempt + 1}):`, err instanceof Error ? err.message : 'Unknown error');
+        console.warn(
+          `[AUTH_VALIDATE] Request failed (attempt ${attempt + 1}):`,
+          err instanceof Error ? err.message : 'Unknown error',
+        );
       }
 
-      // Wait before retry
       if (attempt < MAX_RETRIES) {
-        await new Promise(resolve => setTimeout(resolve, 100 * (attempt + 1)));
+        await new Promise((resolve) => setTimeout(resolve, 100 * (attempt + 1)));
       }
     }
   }
 
-  // 🚨 FINAL FALLBACK: All retries exhausted
-  // This should be RARE - only happens when API is completely down
   console.error('[AUTH_VALIDATE] All retries exhausted:', lastError);
   console.error('[AUTH_VALIDATE] CRITICAL: Returning null after all retries failed');
-  console.error('[AUTH_VALIDATE] This will cause logout - ensure this is correct behavior');
-  
-  // 🧠 IMPORTANT: Only return null here if you're CERTAIN the user should be logged out
-  // In most cases, transient failures should NOT log users out
-  // Consider: Should we return a "degraded auth state" instead?
+
   return null;
 }
 
-/**
- * Check if user has completed onboarding
- * Convenience function for common use case
- */
 export function hasCompletedOnboarding(auth: AuthValidationState | null): boolean {
   return auth?.onboardingCompleted === true;
 }
 
-/**
- * Get user role (always "user" for now)
- * Future-proof for RBAC expansion
- */
 export function getUserRole(auth: AuthValidationState | null): string {
   return auth?.roles?.[0] || 'user';
 }
