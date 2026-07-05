@@ -1,6 +1,6 @@
 # Production Cutover Plan
 
-Status: planning artifact only. Do not execute without explicit approval.
+Status: cutover preparation complete for review. Do not execute Cloudflare changes without explicit approval.
 
 ## Preconditions
 
@@ -19,6 +19,8 @@ Use the retained-Worker model:
 Frontend hosts -> Cloudflare -> VPS Nginx -> frontend containers
 API hosts -> Cloudflare Worker -> VPS Nginx origin hosts -> API containers
 ```
+
+Detailed execution runbook: `production-cutover-runbook-2026-07-05.md`.
 
 ## Cutover Order
 
