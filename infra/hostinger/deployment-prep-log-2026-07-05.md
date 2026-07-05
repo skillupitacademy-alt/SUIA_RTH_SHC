@@ -123,6 +123,14 @@ SkillHub admin: PASS
 
 The remaining SkillUp failure is no longer a VPS network or Nginx routing failure. It requires either a valid SkillUp test account or reseeding/updating the test user in the backing auth data store.
 
+Operational script check after correction:
+
+```text
+infra/hostinger/scripts/health.sh: PASS
+```
+
+The health script confirmed all Compose containers are healthy and only Nginx publishes public ports.
+
 ## Placement Scope Note
 
 `placement.skillhubcore.in` is not validated for user traffic in this phase.
