@@ -117,11 +117,19 @@ Browser login smoke test after correction:
 
 ```text
 RealTutorialHub user: PASS
-SkillUp user: FAIL - auth gateway reachable, returned 401 for provided test credentials
+SkillUp user with initially supplied email: FAIL - auth gateway reachable, returned 401
 SkillHub admin: PASS
 ```
 
-The remaining SkillUp failure is no longer a VPS network or Nginx routing failure. It requires either a valid SkillUp test account or reseeding/updating the test user in the backing auth data store.
+Follow-up test with the repo-documented SkillUp test account:
+
+```text
+RealTutorialHub user: PASS
+SkillUp user: PASS
+SkillHub admin: PASS
+```
+
+Conclusion: the remaining SkillUp failure was caused by using the wrong SkillUp test email, not by VPS networking, Nginx, Docker, or API routing.
 
 Operational script check after correction:
 

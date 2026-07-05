@@ -65,7 +65,7 @@ Status: partially executed against the Hostinger VPS. Remaining unchecked items 
 - [x] `skillhubcore-service` health endpoint returns expected status.
 - [ ] `placement.skillhubcore.in` user-facing homepage is validated.
 - [x] RealTutorialHub user login works against the VPS with DNS override.
-- [ ] SkillUp user login works against the VPS with DNS override.
+- [x] SkillUp user login works against the VPS with DNS override.
 - [x] SkillHub admin login works against the VPS with DNS override.
 
 ## Cutover Gates
