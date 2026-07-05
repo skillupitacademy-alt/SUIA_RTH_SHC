@@ -113,3 +113,4 @@ Cloud Run remains live during migration. If VPS validation or cutover fails, res
 - Staging validation plan: `infra/hostinger/staging-validation-plan.md`
 - Production cutover plan: `infra/hostinger/production-cutover-plan.md`
 - Future GCP decommission plan: `infra/hostinger/gcp-decommission-plan.md`
+- Local template validation: `infra/hostinger/validation/local-template-validation.md`
