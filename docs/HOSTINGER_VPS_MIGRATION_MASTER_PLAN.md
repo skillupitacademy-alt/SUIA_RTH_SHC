@@ -1,6 +1,6 @@
 # Hostinger VPS Migration Master Plan
 
-Status: Phase 1 planning source of truth.
+Status: staging stack running on Hostinger VPS; production cutover pending explicit approval.
 
 ## Objective
 
@@ -19,34 +19,28 @@ Migrate the current `asia-southeast1` application compute stack from GCP Cloud R
 - Compute: Hostinger VPS running Ubuntu 24.04 LTS.
 - Reverse proxy: Nginx.
 - TLS: Cloudflare Full (Strict) with Cloudflare Origin Certificates.
-- Containers: Docker Compose in later phases.
+- Containers: Docker Compose.
 - Network: internal Docker network for apps; only Nginx publishes public ports.
 - API routing: Cloudflare Worker retained initially for API hosts.
 
-## Phase 1 Scope
+## Current Execution State
 
-Generate planning artifacts only:
+- Planning artifacts are complete.
+- Docker Compose and Nginx infrastructure templates are complete.
+- VPS bootstrap is complete.
+- Cloudflare Origin Certificate is installed on the VPS.
+- Docker Compose stack is running on the VPS.
+- Non-placement hostnames pass outside-in HTTPS validation with DNS overridden to the VPS IP.
+- `placement.skillhubcore.in` is not part of the production cutover until placement-specific application work and validation are approved.
 
-- routing matrix
-- ADRs
-- repository layout
-- environment template
-- variable documentation
-- migration checklist
-- operational documentation
-- verification checklist
+## Remaining Non-Goals
 
-Do not generate deployment configuration yet.
-
-## Explicit Non-Goals
-
-- Do not connect to the VPS.
-- Do not modify DNS.
+- Do not modify DNS without explicit cutover approval.
 - Do not modify Cloudflare Worker routes.
 - Do not remove or modify GCP deployment artifacts.
 - Do not delete Cloud Run services.
 - Do not export production secrets into Git.
-- Do not generate runnable Docker Compose or Nginx configuration until reviewed.
+- Do not cut over `placement.skillhubcore.in` in the current migration phase.
 
 ## Routing Strategy
 
@@ -76,8 +70,9 @@ This keeps API authentication, brand resolution, rewriting, and gateway behavior
 - ADRs approved.
 - Environment template reviewed.
 - Verification checklist reviewed.
-- Compose and Nginx generation explicitly approved in a later phase.
-- No production infrastructure changed during Phase 1.
+- Compose and Nginx generation complete and validated.
+- VPS staging deployment validated for non-placement hostnames.
+- No Cloudflare production routing or GCP production deployment artifacts changed during this phase.
 
 ## Validation Gates
 
@@ -86,7 +81,7 @@ This keeps API authentication, brand resolution, rewriting, and gateway behavior
 3. Nginx design generated for review.
 4. Cloudflare design generated for review.
 5. VPS staging deployment reviewed.
-6. Production cutover approved.
+6. Production cutover approved for non-placement hostnames.
 7. GCP decommission approved separately.
 
 ## Rollback Strategy

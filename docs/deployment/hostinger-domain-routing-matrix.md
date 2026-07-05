@@ -1,6 +1,6 @@
 # Hostinger VPS Domain Routing Matrix
 
-Status: draft for review before generating Nginx or Docker Compose files.
+Status: implemented for staging validation; production cutover pending explicit approval.
 
 Target platform:
 
@@ -26,7 +26,7 @@ Target platform:
 | `api.skillupitacademy.com` | SkillUp API gateway/API surface | `api-server` or retained Cloudflare Worker | 3000 | `quiz-api-server` | Needs review: direct Nginx routing bypasses Worker gateway logic. |
 | `quiz.skillhubcore.in` | Shared quiz/exam engine | `realtutorialhub-quiz` | 3001 | `quiz-web-app` | Active Worker route exists today. |
 | `tutorial.skillhubcore.in` | Shared tutorial engine | `realtutorialhub-web` | 3003 | `realtutorialhub-web` | Same container as RTH user portal. |
-| `placement.skillhubcore.in` | Shared placement app | `skillhub-placement` | 3008 | `skillhub-placement` | Active Worker route exists today. |
+| `placement.skillhubcore.in` | Shared placement app | `skillhub-placement` | 3008 | `skillhub-placement` | Excluded from current cutover; user-facing placement behavior is not validated. |
 | `admin.skillhubcore.in` | SkillHub super admin | `skillhubcore-admin` | 3000 | `skillhubcore-admin` | Also has Cloud Run domain mapping today. |
 | `api.skillhubcore.in` | SkillHubCore API | `skillhubcore-service` or retained Cloudflare Worker | 3000 | `skillhubcore-service` | Needs review: Worker currently rewrites/authenticates several routes. |
 
@@ -60,7 +60,7 @@ Recommended first production cutover: Model B.
 
 Reason: frontend traffic moves to VPS with simpler rollback, while API gateway behavior remains stable until we intentionally port or replace Worker behavior.
 
-Phase 1 target flow:
+Initial target flow:
 
 ```text
 Frontend requests
@@ -153,4 +153,4 @@ These endpoints should be verified against the running containers before finaliz
 4. Should marketing services from `asia-south1` remain excluded for this phase?
 5. Should `admin.skillhubcore.in` use direct Nginx routing despite its existing Cloud Run domain mapping?
 
-No Nginx, Docker Compose, deployment script, or DNS automation should be generated until this matrix is reviewed.
+Nginx, Docker Compose, deployment scripts, and staging validation have been generated and executed. DNS and Worker cutover still require explicit approval.

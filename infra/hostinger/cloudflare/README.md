@@ -1,6 +1,6 @@
 # Cloudflare Planning
 
-Status: Phase 3 planning artifacts only.
+Status: cutover reference only. Do not apply Cloudflare changes without explicit production cutover approval.
 
 These documents describe the intended Cloudflare setup for the Hostinger migration. They do not change Cloudflare.
 
@@ -11,6 +11,6 @@ These documents describe the intended Cloudflare setup for the Hostinger migrati
 - `cache-rules.md`
 - `waf-rules.md`
 
-## Phase 3 Principle
+## Cutover Principle
 
 Cloudflare remains the public edge. API Worker routing is retained for the initial cutover unless a later ADR changes it.

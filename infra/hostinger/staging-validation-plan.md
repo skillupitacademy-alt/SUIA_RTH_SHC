@@ -1,6 +1,6 @@
 # Staging Validation Plan
 
-Status: Phase 6 planning artifact. Do not execute infrastructure changes from this document without approval.
+Status: executed for non-placement hostnames using VPS-local and outside-in DNS override checks.
 
 ## Goal
 
@@ -32,7 +32,6 @@ Validate the Hostinger VPS stack before production DNS or Worker routing changes
 - `staging-faculty.skillupitacademy.com`
 - `staging-quiz.skillhubcore.in`
 - `staging-tutorial.skillhubcore.in`
-- `staging-placement.skillhubcore.in`
 - `staging-api.skillhubcore.in`
 
 These are planning candidates only. DNS must not be changed until reviewed.
@@ -49,7 +48,7 @@ These are planning candidates only. DNS must not be changed until reviewed.
 8. Validate HTTPS through Cloudflare or `--resolve` testing.
 9. Validate login flows for each brand.
 10. Validate admin flows.
-11. Validate quiz, tutorial, placement, and faculty flows.
+11. Validate quiz, tutorial, and faculty flows.
 12. Validate API Worker-to-origin behavior if retained.
 13. Run monitoring checks.
 14. Record results and blockers.
@@ -64,6 +63,7 @@ These are planning candidates only. DNS must not be changed until reviewed.
 - API requests preserve Worker behavior where retained.
 - Rollback path is documented and tested at routing level.
 - Cloud Run rollback services remain healthy.
+- `placement.skillhubcore.in` remains excluded until placement-specific validation is approved.
 
 ## Stop Conditions
 

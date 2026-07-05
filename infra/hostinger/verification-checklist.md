@@ -1,44 +1,44 @@
 # Hostinger Verification Checklist
 
-Status: planning checklist only. This is the checklist a later `verify.sh` should implement.
+Status: partially executed against the Hostinger VPS. Remaining unchecked items require browser, Worker, provider, or cutover validation.
 
 ## Host
 
-- [ ] Ubuntu 24.04 LTS detected.
+- [x] Ubuntu 24.04 LTS detected.
 - [ ] Kernel and package updates reviewed.
 - [ ] Disk usage below alert threshold.
 - [ ] Memory usage below alert threshold.
 - [ ] CPU load below alert threshold.
 - [ ] Time sync active.
-- [ ] Firewall allows only required public ports.
+- [x] Firewall allows only required public ports.
 
 ## Docker
 
-- [ ] Docker service running.
-- [ ] Docker Compose plugin installed.
+- [x] Docker service running.
+- [x] Docker Compose plugin installed.
 - [ ] Expected Docker networks exist.
-- [ ] Only Nginx publishes public ports.
-- [ ] Application containers are on internal network only.
-- [ ] Containers report healthy.
-- [ ] Restart policies are configured.
+- [x] Only Nginx publishes public ports.
+- [x] Application containers are on internal network only.
+- [x] Containers report healthy.
+- [x] Restart policies are configured.
 
 ## Nginx
 
 - [ ] Nginx config syntax valid.
-- [ ] Nginx process running.
+- [x] Nginx process running.
 - [ ] Port `80` reachable through Cloudflare.
 - [ ] Port `443` reachable through Cloudflare.
-- [ ] HTTP redirects to HTTPS.
+- [x] HTTP redirects to HTTPS.
 - [ ] WebSocket upgrade headers configured.
 - [ ] Per-host access logs present.
 - [ ] Security headers present.
 
 ## Cloudflare Origin TLS
 
-- [ ] Origin certificate installed.
-- [ ] Origin private key installed.
-- [ ] Certificate covers required hostnames.
-- [ ] File permissions restrict private key access.
+- [x] Origin certificate installed.
+- [x] Origin private key installed.
+- [x] Certificate covers required hostnames.
+- [x] File permissions restrict private key access.
 - [ ] Cloudflare SSL mode is Full (Strict).
 
 ## External Services
@@ -52,16 +52,17 @@ Status: planning checklist only. This is the checklist a later `verify.sh` shoul
 
 ## Application Health
 
-- [ ] `api-server` health endpoint returns expected status.
-- [ ] `realtutorialhub-web` homepage returns expected status.
-- [ ] `realtutorialhub-admin` returns expected status or auth redirect.
-- [ ] `skillup-web` health endpoint returns expected status.
-- [ ] `skillup-admin` health endpoint returns expected status.
-- [ ] `faculty-app` health endpoint returns expected status.
-- [ ] `realtutorialhub-quiz` returns expected status.
-- [ ] `skillhub-placement` health endpoint returns expected status.
-- [ ] `skillhubcore-admin` health endpoint returns expected status.
-- [ ] `skillhubcore-service` health endpoint returns expected status.
+- [x] `api-server` health endpoint returns expected status.
+- [x] `realtutorialhub-web` homepage returns expected status.
+- [x] `realtutorialhub-admin` returns expected status or auth redirect.
+- [x] `skillup-web` health endpoint returns expected status.
+- [x] `skillup-admin` health endpoint returns expected status.
+- [x] `faculty-app` health endpoint returns expected status.
+- [x] `realtutorialhub-quiz` returns expected status.
+- [x] `skillhub-placement` health endpoint returns expected status.
+- [x] `skillhubcore-admin` health endpoint returns expected status.
+- [x] `skillhubcore-service` health endpoint returns expected status.
+- [ ] `placement.skillhubcore.in` user-facing homepage is validated.
 
 ## Cutover Gates
 

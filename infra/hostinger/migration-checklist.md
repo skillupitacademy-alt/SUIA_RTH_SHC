@@ -1,6 +1,6 @@
 # Hostinger Migration Checklist
 
-Status: planning checklist only.
+Status: staging stack running; production cutover pending explicit approval.
 
 ## Phase 1: Planning
 
@@ -10,7 +10,7 @@ Status: planning checklist only.
 - [x] Create ADRs for core architecture decisions.
 - [x] Create environment variable template.
 - [x] Create verification checklist.
-- [ ] Review API routing model.
+- [x] Review API routing model.
 - [ ] Review root/apex domain scope.
 - [ ] Review whether `asia-south1` marketing services remain excluded.
 
@@ -65,14 +65,16 @@ Status: planning checklist only.
 
 ## Phase 7: Staging Validation
 
-- [ ] Provision VPS manually or with reviewed bootstrap.
-- [ ] Install Docker and Nginx.
-- [ ] Install Cloudflare Origin Certificate.
-- [ ] Deploy containers to staging only.
-- [ ] Validate health endpoints.
+- [x] Provision VPS manually or with reviewed bootstrap.
+- [x] Install Docker and Nginx.
+- [x] Install Cloudflare Origin Certificate.
+- [x] Deploy containers to staging only.
+- [x] Validate health endpoints.
+- [x] Validate non-placement HTTPS routing with DNS override.
 - [ ] Validate login and cookie flows.
 - [ ] Validate API Worker behavior.
 - [ ] Validate rollback path.
+- [ ] Validate placement application behavior before any `placement.skillhubcore.in` cutover.
 
 ## Phase 8: Production Cutover
 

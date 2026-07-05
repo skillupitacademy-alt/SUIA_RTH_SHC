@@ -1,8 +1,8 @@
 # Hostinger VPS Migration Planning
 
-Status: Phase 1 planning artifacts only.
+Status: staging stack running on Hostinger VPS; production cutover pending explicit approval.
 
-This directory defines the reviewable planning baseline for migrating the `asia-southeast1` application stack from GCP Cloud Run to a Hostinger VPS.
+This directory defines the reviewable infrastructure baseline for migrating the `asia-southeast1` application stack from GCP Cloud Run to a Hostinger VPS.
 
 ## Scope
 
@@ -10,12 +10,22 @@ This directory defines the reviewable planning baseline for migrating the `asia-
 - Nginx reverse proxy.
 - Cloudflare Full (Strict).
 - Cloudflare Origin Certificates.
-- Docker Compose in later phases.
-- Internal Docker networking in later phases.
-- Only Nginx publicly exposed in later phases.
+- Docker Compose.
+- Internal Docker networking.
+- Only Nginx publicly exposed.
 - Cloudflare Worker retained for API routing in the initial cutover unless a later ADR changes that decision.
 
-## Phase 1 Artifacts
+## Current State
+
+- Planning artifacts are generated.
+- Docker Compose and Nginx templates are generated.
+- VPS bootstrap has been executed.
+- Cloudflare Origin Certificate has been installed on the VPS.
+- The Docker Compose stack is running on the VPS.
+- Outside-in `--resolve` validation passes for non-placement hostnames.
+- `placement.skillhubcore.in` is excluded from production cutover until placement-specific implementation and validation are approved.
+
+## Artifacts
 
 - `ADR/`: architecture decision records.
 - `env/.env.production.template`: non-secret production variable template.
@@ -25,18 +35,13 @@ This directory defines the reviewable planning baseline for migrating the `asia-
 - `migration-checklist.md`: migration phase checklist.
 - `verification-checklist.md`: pre-deployment and pre-cutover verification gates.
 
-## Hard Boundaries
+## Remaining Hard Boundaries
 
-Phase 1 must not:
-
-- connect to the VPS
-- execute remote commands
-- modify Cloudflare DNS or Worker routes
-- modify or remove GCP deployment artifacts
-- delete Cloud Run services
-- export production secrets into the repository
-- generate runnable Docker Compose or Nginx configuration
-- generate deployment automation that assumes live infrastructure
+- Do not modify Cloudflare DNS or Worker routes without explicit cutover approval.
+- Do not modify or remove GCP deployment artifacts.
+- Do not delete Cloud Run services.
+- Do not export production secrets into the repository.
+- Do not cut over `placement.skillhubcore.in` in this phase.
 
 ## Source Of Truth
 

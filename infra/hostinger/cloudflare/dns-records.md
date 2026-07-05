@@ -1,6 +1,6 @@
 # Cloudflare DNS Records
 
-Status: planning reference only. Do not apply without review.
+Status: cutover reference only. Do not apply without explicit production cutover approval.
 
 ## Direct Frontend Records
 
@@ -15,8 +15,13 @@ These records are candidates to point to the Hostinger VPS IP after review:
 | `faculty.skillupitacademy.com` | `A` | `72.61.115.49` | Proxied |
 | `quiz.skillhubcore.in` | `A` | `72.61.115.49` | Proxied |
 | `tutorial.skillhubcore.in` | `A` | `72.61.115.49` | Proxied |
-| `placement.skillhubcore.in` | `A` | `72.61.115.49` | Proxied |
 | `admin.skillhubcore.in` | `A` | `72.61.115.49` | Proxied |
+
+## Excluded From Current Cutover
+
+| Hostname | Reason |
+| --- | --- |
+| `placement.skillhubcore.in` | The placement container health endpoint is healthy, but the placement user-facing homepage is not validated for production traffic. Do not cut over until placement-specific implementation and validation are approved. |
 
 ## API Origin Records For Worker Retention
 
