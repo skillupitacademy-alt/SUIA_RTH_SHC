@@ -512,3 +512,47 @@ Remaining operational items:
 - Configure an external alert destination.
 - Review SSH root/password policy after confirming non-root sudo access.
 - Continue 7-14 days of observation before any GCP decommissioning.
+
+## Dashboard Login Redirect Fix
+
+Issue reported after retained-Worker VPS cutover:
+
+```text
+user.realtutorialhub.com/login -> dashboard returned to login
+user.skillupitacademy.com/login -> dashboard returned to login
+admin.skillhubcore.in/dashboard worked
+```
+
+Root cause:
+
+- Dashboard SSR used `validateAuthState()`.
+- `validateAuthState()` built the auth URL from incoming frontend request headers.
+- Under the retained-Worker architecture, SSR can run behind frontend `origin-*` hostnames.
+- Frontend origins do not own `/api/auth/me`; that route is handled by the Cloudflare Worker/API gateway.
+- SSR therefore received a frontend `404` for `/api/auth/me` and treated the session as unauthenticated.
+
+Fix deployed:
+
+- Updated shared `validateAuthState()` to call the configured API gateway for server-side auth validation.
+- Forwarded browser cookies and original public host to the gateway auth check.
+- Updated shared login navigation to use a full browser navigation after cookies are set, avoiding soft-navigation cache races.
+- Rebuilt and restarted only `realtutorialhub-web` and `skillup-web`.
+
+Validation:
+
+```text
+RTH login: ajayshah@gmail.com -> /dashboard 200
+RTH /api/auth/me after login: 200
+RTH dashboard content: Welcome back, Ajay
+
+SkillUp login: student@skillupitacademy.com -> /dashboard 200
+SkillUp /api/auth/me after login: 200
+SkillUp dashboard content: Welcome back, Suresh
+```
+
+Unauthenticated dashboard behavior remains correct:
+
+```text
+user.realtutorialhub.com/dashboard 307
+user.skillupitacademy.com/dashboard 307
+```

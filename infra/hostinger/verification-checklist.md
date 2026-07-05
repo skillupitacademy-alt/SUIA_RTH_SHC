@@ -86,6 +86,9 @@ Status: partially executed against the Hostinger VPS. Retained-Worker origin rou
 - [x] RealTutorialHub user login works against the VPS with DNS override.
 - [x] SkillUp user login works against the VPS with DNS override.
 - [x] SkillHub admin login works against the VPS with DNS override.
+- [x] RealTutorialHub user login redirects to `/dashboard` through live Cloudflare/Worker/VPS path.
+- [x] SkillUp user login redirects to `/dashboard` through live Cloudflare/Worker/VPS path.
+- [x] Authenticated RTH and SkillUp dashboard SSR validates sessions through the gateway.
 
 ## Cutover Gates
 
