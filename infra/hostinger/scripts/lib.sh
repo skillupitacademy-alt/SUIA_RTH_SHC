@@ -11,6 +11,7 @@ LOG_DIR="${HOSTINGER_LOG_DIR:-/opt/platform/logs}"
 BACKUP_DIR="${HOSTINGER_BACKUP_DIR:-/opt/platform/backups}"
 
 compose() {
+  export HOSTINGER_ENV_FILE="$ENV_FILE"
   docker compose --env-file "$ENV_FILE" -f "$COMPOSE_BASE" -f "$COMPOSE_PROD" "$@"
 }
 

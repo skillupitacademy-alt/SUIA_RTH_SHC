@@ -106,6 +106,23 @@ Root cause: the Compose `app_internal` network used Docker `internal: true`, whi
 
 Planned correction: keep app containers on the private Compose network with no published ports, but remove Docker `internal: true` so outbound DNS and HTTPS can work.
 
+Correction applied:
+
+- Removed Docker `internal: true` from `quiz_platform_internal`.
+- Recreated the staging Compose stack on the VPS.
+- Verified app containers can resolve external hostnames.
+- Confirmed all containers returned to healthy state.
+
+Browser login smoke test after correction:
+
+```text
+RealTutorialHub user: PASS
+SkillUp user: FAIL - auth gateway reachable, returned 401 for provided test credentials
+SkillHub admin: PASS
+```
+
+The remaining SkillUp failure is no longer a VPS network or Nginx routing failure. It requires either a valid SkillUp test account or reseeding/updating the test user in the backing auth data store.
+
 ## Placement Scope Note
 
 `placement.skillhubcore.in` is not validated for user traffic in this phase.

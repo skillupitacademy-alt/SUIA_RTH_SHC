@@ -99,11 +99,13 @@ async function runCheck(check) {
   const currentUrl = page.url();
   const title = await page.title();
   const stillOnLogin = new URL(currentUrl).pathname.toLowerCase().includes("/login");
-  const visibleError = await page
-    .locator('[role="alert"], .error, .text-red-500, .text-destructive')
-    .first()
-    .textContent({ timeout: 2000 })
-    .catch(() => "");
+  const visibleError = stillOnLogin
+    ? await page
+        .locator('[role="alert"], .error, .text-red-500, .text-destructive')
+        .first()
+        .textContent({ timeout: 2000 })
+        .catch(() => "")
+    : "";
 
   await context.close();
 

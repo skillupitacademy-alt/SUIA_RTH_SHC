@@ -21,7 +21,7 @@ Status: partially executed against the Hostinger VPS. Remaining unchecked items 
 - [x] Application containers are on internal network only.
 - [x] Containers report healthy.
 - [x] Restart policies are configured.
-- [ ] Application containers can resolve and reach required external dependencies.
+- [x] Application containers can resolve and reach required external dependencies.
 
 ## Nginx
 
@@ -64,6 +64,9 @@ Status: partially executed against the Hostinger VPS. Remaining unchecked items 
 - [x] `skillhubcore-admin` health endpoint returns expected status.
 - [x] `skillhubcore-service` health endpoint returns expected status.
 - [ ] `placement.skillhubcore.in` user-facing homepage is validated.
+- [x] RealTutorialHub user login works against the VPS with DNS override.
+- [ ] SkillUp user login works against the VPS with DNS override.
+- [x] SkillHub admin login works against the VPS with DNS override.
 
 ## Cutover Gates
 
