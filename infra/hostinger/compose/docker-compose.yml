@@ -1,0 +1,203 @@
+name: quiz-platform
+
+x-app-defaults: &app-defaults
+  restart: unless-stopped
+  env_file:
+    - ${HOSTINGER_ENV_FILE:-../env/.env.production}
+  networks:
+    - app_internal
+  security_opt:
+    - no-new-privileges:true
+
+x-next-health-defaults: &next-health-defaults
+  interval: 30s
+  timeout: 10s
+  retries: 3
+  start_period: 60s
+
+services:
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ../nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ../nginx/conf.d:/etc/nginx/conf.d:ro
+      - ../nginx/snippets:/etc/nginx/snippets:ro
+      - ${HOSTINGER_CERT_DIR:-/opt/platform/nginx/certs}:/etc/nginx/certs:ro
+      - ${HOSTINGER_LOG_DIR:-/opt/platform/logs}/nginx:/var/log/nginx
+    depends_on:
+      api-server:
+        condition: service_healthy
+      realtutorialhub-quiz:
+        condition: service_healthy
+      realtutorialhub-admin:
+        condition: service_healthy
+      realtutorialhub-web:
+        condition: service_healthy
+      skillup-web:
+        condition: service_healthy
+      skillup-admin:
+        condition: service_healthy
+      faculty-app:
+        condition: service_healthy
+      skillhubcore-admin:
+        condition: service_healthy
+      skillhub-placement:
+        condition: service_healthy
+      skillhubcore-service:
+        condition: service_healthy
+    networks:
+      - edge
+      - app_internal
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD-SHELL", "nginx -t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  api-server:
+    <<: *app-defaults
+    build:
+      context: ../../..
+      dockerfile: apps/api-server/Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NEXT_PUBLIC_WEB_APP_URL: ${NEXT_PUBLIC_WEB_APP_URL}
+        NEXT_PUBLIC_ADMIN_URL: ${NEXT_PUBLIC_ADMIN_URL}
+        NEXT_PUBLIC_SENTRY_DSN: ${NEXT_PUBLIC_SENTRY_DSN}
+    expose:
+      - "3000"
+    healthcheck:
+      <<: *next-health-defaults
+      test: ["CMD-SHELL", "wget --spider -q http://127.0.0.1:3000/api/health/live || exit 1"]
+
+  realtutorialhub-quiz:
+    <<: *app-defaults
+    build:
+      context: ../../..
+      dockerfile: apps/realtutorialhub-quiz/Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NEXT_PUBLIC_WEB_APP_URL: ${NEXT_PUBLIC_WEB_APP_URL}
+        NEXT_PUBLIC_TUTORIAL_APP_URL: ${NEXT_PUBLIC_TUTORIAL_APP_URL}
+        NEXT_PUBLIC_ADMIN_URL: ${NEXT_PUBLIC_ADMIN_URL}
+    expose:
+      - "3001"
+    healthcheck:
+      <<: *next-health-defaults
+      test: ["CMD-SHELL", "wget --spider -q http://127.0.0.1:3001/ || exit 1"]
+
+  realtutorialhub-admin:
+    <<: *app-defaults
+    build:
+      context: ../../..
+      dockerfile: apps/realtutorialhub-admin/Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NEXT_PUBLIC_WEB_APP_URL: ${NEXT_PUBLIC_WEB_APP_URL}
+        NEXT_PUBLIC_ADMIN_URL: ${NEXT_PUBLIC_ADMIN_URL}
+    expose:
+      - "3002"
+    healthcheck:
+      <<: *next-health-defaults
+      test: ["CMD-SHELL", "wget --spider -q http://127.0.0.1:3002/api/healthz || exit 1"]
+
+  realtutorialhub-web:
+    <<: *app-defaults
+    build:
+      context: ../../..
+      dockerfile: apps/realtutorialhub-web/Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NEXT_PUBLIC_WEB_APP_URL: ${NEXT_PUBLIC_WEB_APP_URL}
+        NEXT_PUBLIC_ADMIN_URL: ${NEXT_PUBLIC_ADMIN_URL}
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
+        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL}
+        NEXT_PUBLIC_LOGIN_URL: ${NEXT_PUBLIC_LOGIN_URL}
+    expose:
+      - "3003"
+    healthcheck:
+      <<: *next-health-defaults
+      test: ["CMD-SHELL", "wget --spider -q http://127.0.0.1:3003/ || exit 1"]
+
+  skillup-web:
+    <<: *app-defaults
+    build:
+      context: ../../..
+      dockerfile: apps/skillup-web/Dockerfile
+    expose:
+      - "3004"
+    healthcheck:
+      <<: *next-health-defaults
+      test: ["CMD-SHELL", "wget --spider -q http://127.0.0.1:3004/api/healthz || exit 1"]
+
+  skillup-admin:
+    <<: *app-defaults
+    build:
+      context: ../../..
+      dockerfile: apps/skillup-admin/Dockerfile
+    expose:
+      - "3005"
+    healthcheck:
+      <<: *next-health-defaults
+      test: ["CMD-SHELL", "wget --spider -q http://127.0.0.1:3005/api/healthz || exit 1"]
+
+  faculty-app:
+    <<: *app-defaults
+    build:
+      context: ../../..
+      dockerfile: apps/faculty-app/Dockerfile
+    expose:
+      - "3006"
+    healthcheck:
+      <<: *next-health-defaults
+      test: ["CMD-SHELL", "wget --spider -q http://127.0.0.1:3006/api/healthz || exit 1"]
+
+  skillhubcore-admin:
+    <<: *app-defaults
+    build:
+      context: ../../..
+      dockerfile: apps/skillhubcore-admin/Dockerfile
+    expose:
+      - "3000"
+    healthcheck:
+      <<: *next-health-defaults
+      test: ["CMD-SHELL", "wget --spider -q http://127.0.0.1:3000/api/health || exit 1"]
+
+  skillhub-placement:
+    <<: *app-defaults
+    build:
+      context: ../../..
+      dockerfile: apps/skillhub-placement/Dockerfile
+    environment:
+      SKILLHUBCORE_CALLBACK_URL: "http://skillhubcore-service:3000/auth/callback/validate"
+    expose:
+      - "3008"
+    healthcheck:
+      <<: *next-health-defaults
+      test: ["CMD-SHELL", "wget --spider -q http://127.0.0.1:3008/api/healthz || exit 1"]
+
+  skillhubcore-service:
+    <<: *app-defaults
+    build:
+      context: ../../..
+      dockerfile: services/skillhubcore-service/Dockerfile
+    environment:
+      PORT: "3000"
+    expose:
+      - "3000"
+    healthcheck:
+      <<: *next-health-defaults
+      test: ["CMD-SHELL", "wget --spider -q http://127.0.0.1:3000/healthz/ || exit 1"]
+
+networks:
+  edge:
+    name: quiz_platform_edge
+  app_internal:
+    name: quiz_platform_internal

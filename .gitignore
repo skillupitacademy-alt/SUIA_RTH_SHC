@@ -15,8 +15,15 @@ test-results/
 
 # Environment variables
 .env
+.env.production
 .env.local
 .env.*.local
+
+# Local SSH keys and host access material
+suia_rth
+suia_rth.pub
+*.pem
+*.key
 
 # IDE
 .vscode/
@@ -118,6 +125,7 @@ scripts/PHASE*.md
 backups/
 docs/completeproject/
 docs/report/
+infra/hostinger/cloudflare/state-exports/
 
 # Validation and audit outputs
 validation-report.json

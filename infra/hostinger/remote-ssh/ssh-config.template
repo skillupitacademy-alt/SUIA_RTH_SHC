@@ -1,0 +1,18 @@
+# Copy this block into: C:\Users\<you>\.ssh\config
+# Adjust User and IdentityFile if needed.
+
+Host hostinger-quiz-platform
+    HostName 72.61.115.49
+    User deploy
+    IdentityFile ~/.ssh/hostinger_quiz_platform_ed25519
+    IdentitiesOnly yes
+    ServerAliveInterval 30
+    ServerAliveCountMax 4
+
+Host hostinger-quiz-platform-root
+    HostName 72.61.115.49
+    User root
+    IdentityFile ~/.ssh/hostinger_quiz_platform_ed25519
+    IdentitiesOnly yes
+    ServerAliveInterval 30
+    ServerAliveCountMax 4
