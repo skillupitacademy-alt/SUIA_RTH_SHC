@@ -28,7 +28,7 @@ function Invoke-CfGet {
   param([string]$Path)
 
   $uri = "https://api.cloudflare.com/client/v4$Path"
-  Invoke-RestMethod -Method Get -Uri $uri -Headers $headers
+  Invoke-RestMethod -Method Get -Uri $uri -Headers $headers -ErrorAction Stop
 }
 
 function Save-Json {
@@ -38,6 +38,22 @@ function Save-Json {
   )
 
   $Value | ConvertTo-Json -Depth 50 | Set-Content -Path $Path -Encoding UTF8
+}
+
+function Try-SaveCfJson {
+  param(
+    [string]$Path,
+    [string]$OutputPath,
+    [string]$Description
+  )
+
+  try {
+    Save-Json $OutputPath (Invoke-CfGet $Path)
+    return $true
+  } catch {
+    Write-Warning "Could not export $Description`: $($_.Exception.Message)"
+    return $false
+  }
 }
 
 $accountResponse = $null
@@ -68,15 +84,15 @@ foreach ($zoneName in $Zones) {
     paused = $zone.paused
   }
 
-  Save-Json (Join-Path $exportRoot "$zoneName.dns.json") (Invoke-CfGet "/zones/$zoneId/dns_records?per_page=500")
-  Save-Json (Join-Path $exportRoot "$zoneName.settings_ssl.json") (Invoke-CfGet "/zones/$zoneId/settings/ssl")
-  Save-Json (Join-Path $exportRoot "$zoneName.settings_always_use_https.json") (Invoke-CfGet "/zones/$zoneId/settings/always_use_https")
-  Save-Json (Join-Path $exportRoot "$zoneName.settings_automatic_https_rewrites.json") (Invoke-CfGet "/zones/$zoneId/settings/automatic_https_rewrites")
-  Save-Json (Join-Path $exportRoot "$zoneName.settings_min_tls_version.json") (Invoke-CfGet "/zones/$zoneId/settings/min_tls_version")
-  Save-Json (Join-Path $exportRoot "$zoneName.settings_http2.json") (Invoke-CfGet "/zones/$zoneId/settings/http2")
-  Save-Json (Join-Path $exportRoot "$zoneName.settings_http3.json") (Invoke-CfGet "/zones/$zoneId/settings/http3")
-  Save-Json (Join-Path $exportRoot "$zoneName.settings_websockets.json") (Invoke-CfGet "/zones/$zoneId/settings/websockets")
-  Save-Json (Join-Path $exportRoot "$zoneName.rulesets.json") (Invoke-CfGet "/zones/$zoneId/rulesets")
+  Try-SaveCfJson "/zones/$zoneId/dns_records?per_page=500" (Join-Path $exportRoot "$zoneName.dns.json") "$zoneName DNS records" | Out-Null
+  Try-SaveCfJson "/zones/$zoneId/settings/ssl" (Join-Path $exportRoot "$zoneName.settings_ssl.json") "$zoneName SSL setting" | Out-Null
+  Try-SaveCfJson "/zones/$zoneId/settings/always_use_https" (Join-Path $exportRoot "$zoneName.settings_always_use_https.json") "$zoneName Always Use HTTPS setting" | Out-Null
+  Try-SaveCfJson "/zones/$zoneId/settings/automatic_https_rewrites" (Join-Path $exportRoot "$zoneName.settings_automatic_https_rewrites.json") "$zoneName Automatic HTTPS Rewrites setting" | Out-Null
+  Try-SaveCfJson "/zones/$zoneId/settings/min_tls_version" (Join-Path $exportRoot "$zoneName.settings_min_tls_version.json") "$zoneName minimum TLS setting" | Out-Null
+  Try-SaveCfJson "/zones/$zoneId/settings/http2" (Join-Path $exportRoot "$zoneName.settings_http2.json") "$zoneName HTTP/2 setting" | Out-Null
+  Try-SaveCfJson "/zones/$zoneId/settings/http3" (Join-Path $exportRoot "$zoneName.settings_http3.json") "$zoneName HTTP/3 setting" | Out-Null
+  Try-SaveCfJson "/zones/$zoneId/settings/websockets" (Join-Path $exportRoot "$zoneName.settings_websockets.json") "$zoneName WebSockets setting" | Out-Null
+  Try-SaveCfJson "/zones/$zoneId/rulesets" (Join-Path $exportRoot "$zoneName.rulesets.json") "$zoneName rulesets" | Out-Null
 }
 
 Save-Json (Join-Path $exportRoot "zones.index.json") $zoneIndex
