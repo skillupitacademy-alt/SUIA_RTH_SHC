@@ -1,10 +1,24 @@
 import type { GatewayRoute } from '@/types';
 
 export const ROUTING_TABLE: GatewayRoute[] = [
+  {
+    host: 'user.realtutorialhub.com',
+    prefix: '/auth/placement-handoff',
+    upstreamKey: 'TUTORIAL_SERVICE_URL',
+    upstreamPathPrefix: '/api/auth/placement-handoff',
+    public: true,
+  },
   { host: 'user.realtutorialhub.com', prefix: '/auth', upstreamKey: 'EXAM_SERVICE_URL', upstreamPathPrefix: '/api/auth', public: true },
   { host: 'user.realtutorialhub.com', prefix: '/health', upstreamKey: 'EXAM_SERVICE_URL', upstreamPathPrefix: '/api/health', public: true },
   { host: 'user.realtutorialhub.com', prefix: '/', upstreamKey: 'TUTORIAL_SERVICE_URL', public: true },
   { host: 'admin.realtutorialhub.com', prefix: '/', upstreamKey: 'RTH_ADMIN_URL', public: true },
+  {
+    host: 'user.skillupitacademy.com',
+    prefix: '/auth/placement-handoff',
+    upstreamKey: 'SKILLUP_WEB_URL',
+    upstreamPathPrefix: '/api/auth/placement-handoff',
+    public: true,
+  },
   { host: 'user.skillupitacademy.com', prefix: '/auth', upstreamKey: 'EXAM_SERVICE_URL', upstreamPathPrefix: '/api/auth', public: true },
   { host: 'user.skillupitacademy.com', prefix: '/health', upstreamKey: 'EXAM_SERVICE_URL', upstreamPathPrefix: '/api/health', public: true },
   { host: 'user.skillupitacademy.com', prefix: '/', upstreamKey: 'SKILLUP_WEB_URL', public: true },

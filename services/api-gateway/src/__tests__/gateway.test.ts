@@ -133,6 +133,36 @@ describe('api-gateway', () => {
     expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(env.TUTORIAL_SERVICE_URL);
   });
 
+  it('routes rth placement handoff API to the frontend app route', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
+    const response = await app.request('https://user.realtutorialhub.com/api/auth/placement-handoff', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({ redirectTo: '/profile' }),
+    }, env);
+
+    expect(response.status).toBe(200);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(`${env.TUTORIAL_SERVICE_URL}/api/auth/placement-handoff`);
+  });
+
+  it('routes skillup placement handoff API to the frontend app route', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
+    const response = await app.request('https://user.skillupitacademy.com/api/auth/placement-handoff', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({ redirectTo: '/profile' }),
+    }, env);
+
+    expect(response.status).toBe(200);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(`${env.SKILLUP_WEB_URL}/api/auth/placement-handoff`);
+  });
+
   it('routes quiz host traffic to the quiz web upstream while frontend Worker routes remain active', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
     const response = await app.request('https://quiz.skillhubcore.in/dashboard', undefined, env);
