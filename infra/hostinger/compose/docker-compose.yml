@@ -175,6 +175,8 @@ services:
     build:
       context: ../../..
       dockerfile: apps/skillhub-placement/Dockerfile
+    environment:
+      SKILLHUBCORE_CALLBACK_URL: "http://skillhubcore-service:3000/auth/callback/validate"
     expose:
       - "3008"
     healthcheck:
