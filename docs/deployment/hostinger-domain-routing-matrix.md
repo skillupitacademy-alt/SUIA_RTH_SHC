@@ -1,6 +1,6 @@
 # Hostinger VPS Domain Routing Matrix
 
-Status: implemented for staging validation; production cutover pending explicit approval.
+Status: implemented for staging validation; Worker gateway update and production DNS cutover pending explicit approval.
 
 Target platform:
 
@@ -19,33 +19,26 @@ Target platform:
 | --- | --- | --- | ---: | --- | --- |
 | `user.realtutorialhub.com` | RTH user portal and tutorial app | `realtutorialhub-web` | 3003 | `realtutorialhub-web` | Active Worker route exists today. |
 | `admin.realtutorialhub.com` | RTH admin portal | `realtutorialhub-admin` | 3002 | `quiz-admin-app` | Cloud Run service name differs from package name. |
-| `api.realtutorialhub.com` | RTH API gateway/API surface | `api-server` or retained Cloudflare Worker | 3000 | `quiz-api-server` | Needs review: direct Nginx routing bypasses Worker gateway logic. |
+| `api.realtutorialhub.com` | RTH API gateway/API surface | retained Cloudflare Worker -> `origin-api.realtutorialhub.com` -> `api-server` | 3000 | `quiz-api-server` | Keep Worker for initial cutover. |
 | `user.skillupitacademy.com` | SkillUp user portal | `skillup-web` | 3004 | `skillup-web` | Active Worker route exists today. |
 | `admin.skillupitacademy.com` | SkillUp admin portal | `skillup-admin` | 3005 | `skillup-admin` | Active Worker route exists today. |
 | `faculty.skillupitacademy.com` | SkillUp faculty portal | `faculty-app` | 3006 | `faculty-app` | Active Worker route exists today. |
-| `api.skillupitacademy.com` | SkillUp API gateway/API surface | `api-server` or retained Cloudflare Worker | 3000 | `quiz-api-server` | Needs review: direct Nginx routing bypasses Worker gateway logic. |
+| `api.skillupitacademy.com` | SkillUp API gateway/API surface | retained Cloudflare Worker -> `origin-api.realtutorialhub.com` -> `api-server` | 3000 | `quiz-api-server` | Keep Worker for initial cutover. |
 | `quiz.skillhubcore.in` | Shared quiz/exam engine | `realtutorialhub-quiz` | 3001 | `quiz-web-app` | Active Worker route exists today. |
 | `tutorial.skillhubcore.in` | Shared tutorial engine | `realtutorialhub-web` | 3003 | `realtutorialhub-web` | Same container as RTH user portal. |
 | `placement.skillhubcore.in` | Shared placement app | `skillhub-placement` | 3008 | `skillhub-placement` | Excluded from current cutover; user-facing placement behavior is not validated. |
 | `admin.skillhubcore.in` | SkillHub super admin | `skillhubcore-admin` | 3000 | `skillhubcore-admin` | Also has Cloud Run domain mapping today. |
-| `api.skillhubcore.in` | SkillHubCore API | `skillhubcore-service` or retained Cloudflare Worker | 3000 | `skillhubcore-service` | Needs review: Worker currently rewrites/authenticates several routes. |
+| `api.skillhubcore.in` | SkillHubCore API | retained Cloudflare Worker -> `origin-api.skillhubcore.in` -> `skillhubcore-service` | 3000 | `skillhubcore-service` | Keep Worker for initial cutover. |
 
 ## Cloudflare Worker Impact
 
 The active Worker configuration is `services/api-gateway/wrangler.toml`.
 
-It currently owns routes for these hosts:
+The reviewed Hostinger cutover configuration should own routes only for:
 
-- `user.realtutorialhub.com/*`
-- `admin.realtutorialhub.com/*`
-- `user.skillupitacademy.com/*`
-- `admin.skillupitacademy.com/*`
-- `faculty.skillupitacademy.com/*`
 - `api.skillupitacademy.com/*`
 - `api.realtutorialhub.com/*`
 - `api.skillhubcore.in/*`
-- `quiz.skillhubcore.in/*`
-- `tutorial.skillhubcore.in/*`
 - `placement.skillhubcore.in/*`
 
 Before cutover, choose one routing model:
@@ -56,7 +49,7 @@ Before cutover, choose one routing model:
 | B. Direct Nginx for frontend, Worker for API | DNS to VPS | Worker remains active | Preserves API gateway behavior | Requires removing Worker routes for frontend hosts only. |
 | C. Worker for all public hosts, VPS as origin | Worker proxies to VPS origin hostnames | Worker proxies to VPS origin hostnames | Minimal public routing behavior change | Requires origin-only hostnames to avoid Worker loops. |
 
-Recommended first production cutover: Model B.
+Approved first production cutover model: Model B.
 
 Reason: frontend traffic moves to VPS with simpler rollback, while API gateway behavior remains stable until we intentionally port or replace Worker behavior.
 
@@ -75,7 +68,7 @@ VPS Nginx
 API containers
 ```
 
-This preserves existing Worker authentication, route rewriting, brand resolution, and gateway forwarding behavior while moving compute away from Cloud Run.
+This preserves existing API Worker authentication, route rewriting, brand resolution, and gateway forwarding behavior while moving frontend compute away from Cloud Run. API Worker upstreams point at `origin-api.*` VPS hostnames for the retained-Worker phase.
 
 ## Proposed Nginx Responsibilities
 
@@ -147,8 +140,8 @@ These endpoints should be verified against the running containers before finaliz
 
 ## Open Review Decisions
 
-1. Should API hosts remain on Cloudflare Worker for the first cutover?
-2. Should frontend Worker routes be removed immediately, or should we introduce origin-only hostnames first?
+1. Should API hosts remain on Cloudflare Worker after the first cutover stabilization window?
+2. Should placement remain on Cloud Run until a separate placement implementation phase is completed?
 3. Which root/apex domains are in scope for this migration, if any?
 4. Should marketing services from `asia-south1` remain excluded for this phase?
 5. Should `admin.skillhubcore.in` use direct Nginx routing despite its existing Cloud Run domain mapping?

@@ -250,4 +250,13 @@ Additional live audit:
 https://<frontend-host>/internal/health returned the Worker health snapshot for all frontend/API/placement hostnames.
 ```
 
-Conclusion: frontend hostnames are still actively handled by the Cloudflare Worker. DNS-only changes will not bypass those routes. Either remove frontend Worker routes through Cloudflare API/dashboard, or manually remove them first and use the cutover script with `-SkipWorkerRoutes` for DNS-only updates.
+Conclusion: frontend hostnames are still actively handled by the Cloudflare Worker. DNS-only changes will not bypass those routes.
+
+Updated implementation direction:
+
+- Retain the Cloudflare Worker for API hostnames and excluded placement traffic.
+- Remove frontend host routes from the Worker configuration in the repository.
+- Point Worker API upstream variables at the validated `origin-api.*` VPS hostnames.
+- Deploy the Worker configuration after review.
+- Verify frontend hostnames no longer return the Worker `/internal/health` snapshot.
+- Then run frontend DNS batches with `-SkipWorkerRoutes`.

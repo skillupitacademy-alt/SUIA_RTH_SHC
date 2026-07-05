@@ -25,4 +25,4 @@ Before any Cloudflare change, run the read-only export helper and keep the gener
 
 Cutover application tooling is dry-run by default and requires `-Apply` before it mutates Cloudflare.
 
-Frontend cutover also requires Workers Routes read/edit permissions. See `token-permissions.md`.
+Preferred frontend cutover removes frontend Worker routes through the reviewed Worker deploy, then runs DNS batches with `-SkipWorkerRoutes`. See `token-permissions.md`.

@@ -21,13 +21,12 @@ import app from '../index';
   PLACEMENT_URL: 'https://placement.example.com',
 } as const;
 
-function makeToken(roles: string[] = ['student']) {
+function makeToken(roles: string[] = ['student'], brand: 'realtutorialhub' | 'skillup' = 'realtutorialhub') {
   const tokenType = roles.some((role) => role.trim().toLowerCase() === 'admin' || role.trim().toLowerCase() === 'super_admin')
     ? 'admin'
     : 'user';
   const shadowUserId = tokenType === 'admin' ? 'shadow-admin-123' : 'shadow-user-123';
   const originalUserId = tokenType === 'admin' ? 'brand-admin-123' : 'brand-user-123';
-  const brand = tokenType === 'admin' ? 'realtutorialhub' : 'skillup';
 
   return new SignJWT({
     roles,
@@ -68,7 +67,7 @@ describe('api-gateway', () => {
       }),
       routes: expect.arrayContaining([
         expect.objectContaining({
-          prefix: '/dashboard',
+          prefix: '/exam',
           upstreamKey: 'EXAM_SERVICE_URL',
           bindingStatus: 'configured',
         }),
@@ -92,7 +91,7 @@ describe('api-gateway', () => {
     expect(fetchSpy).toHaveBeenCalledTimes(1);
     const [, init] = fetchSpy.mock.calls[0] ?? [];
     const headers = new Headers((init as RequestInit | undefined)?.headers);
-    expect(headers.get('X-Gateway-Secret')).toBe(env.INTERNAL_GATEWAY_SECRET);
+    expect(headers.get('X-Internal-Secret')).toBe(env.INTERNAL_GATEWAY_SECRET);
     expect(headers.get('X-Original-Host')).toBe('quiz.skillhubcore.in');
     expect(headers.get('X-Forwarded-Host')).toBe('api.example.com');
   });
@@ -112,62 +111,24 @@ describe('api-gateway', () => {
     expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(`${env.EXAM_SERVICE_URL}/api/admin/auth/login`);
     const [, init] = fetchSpy.mock.calls[0] ?? [];
     const headers = new Headers((init as RequestInit | undefined)?.headers);
-    expect(headers.get('X-Gateway-Secret')).toBe(env.INTERNAL_GATEWAY_SECRET);
+    expect(headers.get('X-Internal-Secret')).toBe(env.INTERNAL_GATEWAY_SECRET);
     expect(headers.get('X-User-ID')).toBeNull();
   });
 
-  it('routes skillup user host traffic to the skillup web upstream', async () => {
+  it.each([
+    'user.realtutorialhub.com',
+    'admin.realtutorialhub.com',
+    'user.skillupitacademy.com',
+    'admin.skillupitacademy.com',
+    'faculty.skillupitacademy.com',
+    'quiz.skillhubcore.in',
+    'tutorial.skillhubcore.in',
+  ])('does not proxy frontend host traffic through the Worker: %s', async (hostname) => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
-    const response = await app.request('https://user.skillupitacademy.com/programs', undefined, env);
+    const response = await app.request(`https://${hostname}/dashboard`, undefined, env);
 
-    expect(response.status).toBe(200);
-    expect(fetchSpy).toHaveBeenCalledTimes(1);
-    expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(env.SKILLUP_WEB_URL);
-  });
-
-  it('routes skillup admin host traffic to the skillup admin upstream', async () => {
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
-    const response = await app.request('https://admin.skillupitacademy.com/dashboard', undefined, env);
-
-    expect(response.status).toBe(200);
-    expect(fetchSpy).toHaveBeenCalledTimes(1);
-    expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(env.SKILLUP_ADMIN_URL);
-  });
-
-  it('routes faculty host traffic to the faculty upstream', async () => {
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
-    const response = await app.request('https://faculty.skillupitacademy.com/dashboard', undefined, env);
-
-    expect(response.status).toBe(200);
-    expect(fetchSpy).toHaveBeenCalledTimes(1);
-    expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(env.FACULTY_URL);
-  });
-
-  it('routes rth user host traffic to the tutorial upstream', async () => {
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
-    const response = await app.request('https://user.realtutorialhub.com/learn/remediation', undefined, env);
-
-    expect(response.status).toBe(200);
-    expect(fetchSpy).toHaveBeenCalledTimes(1);
-    expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(env.TUTORIAL_SERVICE_URL);
-  });
-
-  it('routes quiz host traffic to the quiz web upstream', async () => {
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
-    const response = await app.request('https://quiz.skillhubcore.in/dashboard', undefined, env);
-
-    expect(response.status).toBe(200);
-    expect(fetchSpy).toHaveBeenCalledTimes(1);
-    expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(env.QUIZ_WEB_URL);
-  });
-
-  it('routes tutorial host traffic to the tutorial upstream', async () => {
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
-    const response = await app.request('https://tutorial.skillhubcore.in/learn/remediation', undefined, env);
-
-    expect(response.status).toBe(200);
-    expect(fetchSpy).toHaveBeenCalledTimes(1);
-    expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(env.TUTORIAL_SERVICE_URL);
+    expect(response.status).toBe(404);
+    expect(fetchSpy).not.toHaveBeenCalled();
   });
 
   it('routes placement host traffic to the placement upstream', async () => {
@@ -232,8 +193,8 @@ describe('api-gateway', () => {
     expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(env.SKILLHUBCORE_URL);
     const [, init] = fetchSpy.mock.calls[0] ?? [];
     const headers = new Headers((init as RequestInit | undefined)?.headers);
-    expect(headers.get('X-Brand')).toBe('skillup');
-    expect(headers.get('X-Platform')).toBe('skillup');
+    expect(headers.get('X-Brand')).toBe('realtutorialhub');
+    expect(headers.get('X-Platform')).toBe('realtutorialhub');
     expect(headers.get('X-Portal-Identity')).toBe('user');
   });
 
@@ -253,10 +214,10 @@ describe('api-gateway', () => {
   });
 
   it.each([
-    ['dashboard', 'GET', 'https://api.example.com/dashboard?range=7d&page=1&limit=3', '/api/dashboard?range=7d&page=1&limit=3'],
-    ['dashboard metadata', 'GET', 'https://api.example.com/dashboard/metadata', '/api/dashboard/metadata'],
-    ['dashboard breakdown', 'GET', 'https://api.example.com/dashboard/breakdown?range=28d', '/api/dashboard/breakdown?range=28d'],
-    ['dashboard trend', 'GET', 'https://api.example.com/dashboard/trend?range=7d', '/api/dashboard/trend?range=7d'],
+    ['exam list', 'GET', 'https://api.example.com/exam?range=7d&page=1&limit=3', '/api/exams?range=7d&page=1&limit=3'],
+    ['exam metadata', 'GET', 'https://api.example.com/exam/metadata', '/api/exams/metadata'],
+    ['exam breakdown', 'GET', 'https://api.example.com/exam/breakdown?range=28d', '/api/exams/breakdown?range=28d'],
+    ['exam trend', 'GET', 'https://api.example.com/exam/trend?range=7d', '/api/exams/trend?range=7d'],
     ['telemetry', 'POST', 'https://api.example.com/telemetry', '/api/telemetry'],
     ['reports list', 'GET', 'https://api.example.com/reports', '/api/reports'],
     ['analytics score history', 'GET', 'https://api.example.com/analytics/user/score-history', '/api/analytics/user/score-history'],
@@ -299,13 +260,13 @@ describe('api-gateway', () => {
     expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(`${upstreamBase}${expectedPath}`);
     const [, init] = fetchSpy.mock.calls[0] ?? [];
     const headers = new Headers((init as RequestInit | undefined)?.headers);
-    expect(headers.get('X-Gateway-Secret')).toBe(env.INTERNAL_GATEWAY_SECRET);
+    expect(headers.get('X-Internal-Secret')).toBe(env.INTERNAL_GATEWAY_SECRET);
     if (label === 'telemetry' || label === 'search') {
       expect(headers.get('X-User-ID')).toBeNull();
     } else if (label.includes('factory') || label === 'system flags') {
-      expect(headers.get('X-User-ID')).toBe('shadow-admin-123');
+      expect(headers.get('X-User-ID')).toBe('brand-admin-123');
     } else {
-      expect(headers.get('X-User-ID')).toBe('shadow-user-123');
+      expect(headers.get('X-User-ID')).toBe('brand-user-123');
     }
   });
 
@@ -334,15 +295,15 @@ describe('api-gateway', () => {
     const [, init] = fetchSpy.mock.calls[0] ?? [];
     const headers = new Headers((init as RequestInit | undefined)?.headers);
     expect(headers.get('X-Request-ID')).toBe('request-123');
-    expect(headers.get('X-Gateway-Secret')).toBe(env.INTERNAL_GATEWAY_SECRET);
-    expect(headers.get('X-User-ID')).toBe('shadow-user-123');
+    expect(headers.get('X-Internal-Secret')).toBe(env.INTERNAL_GATEWAY_SECRET);
+    expect(headers.get('X-User-ID')).toBe('brand-user-123');
   });
 
   it('proxies user routes with accessToken cookies', async () => {
     const token = await makeToken(['student']);
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
 
-    const response = await app.request('https://api.example.com/dashboard', {
+    const response = await app.request('https://api.example.com/exam', {
       headers: {
         cookie: `accessToken=${encodeURIComponent(token)}`,
       },
@@ -352,7 +313,7 @@ describe('api-gateway', () => {
     expect(fetchSpy).toHaveBeenCalledTimes(1);
     const [, init] = fetchSpy.mock.calls[0] ?? [];
     const headers = new Headers((init as RequestInit | undefined)?.headers);
-    expect(headers.get('X-User-ID')).toBe('shadow-user-123');
+    expect(headers.get('X-User-ID')).toBe('brand-user-123');
   });
 
   it('proxies admin routes with admin_accessToken cookies', async () => {
@@ -369,7 +330,7 @@ describe('api-gateway', () => {
     expect(fetchSpy).toHaveBeenCalledTimes(1);
     const [, init] = fetchSpy.mock.calls[0] ?? [];
     const headers = new Headers((init as RequestInit | undefined)?.headers);
-    expect(headers.get('X-User-ID')).toBe('shadow-admin-123');
+    expect(headers.get('X-User-ID')).toBe('brand-admin-123');
   });
 
   it('rejects admin routes without admin_accessToken cookies', async () => {
@@ -390,7 +351,7 @@ describe('api-gateway', () => {
     const response = await app.request('https://api.example.com/tutorial/lessons/1', {
       headers: {
         authorization: `Bearer ${token}`,
-        cookie: 'accessToken=jwt-cookie-token; theme=dark',
+        cookie: 'theme=dark; session_hint=jwt-cookie-token',
       },
     }, env);
 
@@ -398,7 +359,7 @@ describe('api-gateway', () => {
     expect(fetchSpy).toHaveBeenCalledTimes(1);
     const [, init] = fetchSpy.mock.calls[0] ?? [];
     const headers = new Headers((init as RequestInit | undefined)?.headers);
-    expect(headers.get('cookie')).toContain('accessToken=jwt-cookie-token');
+    expect(headers.get('cookie')).toContain('session_hint=jwt-cookie-token');
   });
 
   it('forbids admin route for non-admin roles', async () => {
@@ -469,7 +430,7 @@ describe('api-gateway', () => {
     const token = await makeToken(['student']);
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
 
-    const response = await app.request('https://api.example.com/dashboard', {
+    const response = await app.request('https://api.example.com/exam', {
       headers: {
         authorization: `Bearer ${token}`,
       },

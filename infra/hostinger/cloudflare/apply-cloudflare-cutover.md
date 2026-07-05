@@ -2,13 +2,13 @@
 
 Status: prepared for review. Dry-run by default.
 
-Use `apply-cloudflare-cutover.ps1` to apply the reviewed Cloudflare DNS and frontend Worker-route cutover batches.
+Use `apply-cloudflare-cutover.ps1` to apply the reviewed Cloudflare DNS cutover batches.
 
 The script:
 
 - reads `CLOUDFLARE_API_TOKEN` or `CloudFlare_API_TOKEN` from the local shell
 - creates or updates reviewed `A` records to `72.61.115.49`
-- removes frontend Worker routes for selected batches
+- optionally removes frontend Worker routes for selected batches when the token supports the legacy Worker Routes API
 - refuses to touch excluded hostnames
 - does nothing unless `-Apply` is provided
 
@@ -16,16 +16,18 @@ The script:
 
 Live checks show the current frontend hostnames are still handled by the Cloudflare Worker. A DNS-only update will not bypass an active Worker route.
 
-For frontend batches, the default mode therefore requires Worker route read/edit access and removes frontend Worker routes as part of the cutover.
+The preferred path is to remove frontend routes by deploying the reviewed `services/api-gateway/wrangler.toml` change, while keeping API and placement routes in the Worker. See `worker-gateway-cutover.md`.
 
-If Worker routes are removed manually in the Cloudflare dashboard first, run the script with `-SkipWorkerRoutes` to update DNS only:
+For frontend batches, the script default still requires Worker route read/edit access and removes frontend Worker routes as part of the cutover. This is a conservative fallback for accounts where the Worker Routes API is available.
+
+If frontend Worker routes are already removed by a Worker deploy or Cloudflare dashboard change, run the script with `-SkipWorkerRoutes` to update DNS only:
 
 ```powershell
 .\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch 1 -SkipWorkerRoutes
 .\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch 1 -SkipWorkerRoutes -Apply
 ```
 
-Do not use `-SkipWorkerRoutes` while the matching frontend Worker route is still active.
+Do not use `-SkipWorkerRoutes` while the matching frontend Worker route is still active. Verify first with `/internal/health`.
 
 ## Dry Run
 
@@ -44,17 +46,17 @@ Run the read-only export first:
 .\infra\hostinger\cloudflare\export-cloudflare-state.ps1
 ```
 
-Then apply one batch at a time:
+After `worker-gateway-cutover.md` is approved and the Worker deploy removes frontend routes, apply one frontend DNS batch at a time with DNS-only mode:
 
 ```powershell
 .\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch origin -Apply
-.\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch 1 -Apply
-.\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch 2 -Apply
-.\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch 3 -Apply
+.\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch 1 -SkipWorkerRoutes -Apply
+.\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch 2 -SkipWorkerRoutes -Apply
+.\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch 3 -SkipWorkerRoutes -Apply
 ```
 
 Do not use `-Batch all -Apply` for production cutover unless rollback evidence has been exported and the operator explicitly accepts the larger blast radius.
 
 ## Out Of Scope
 
-The script does not update Worker environment variables. API Worker upstream changes must be reviewed separately after `origin-api.*` records exist and are validated.
+The script does not update Worker routes or variables when `-SkipWorkerRoutes` is used. API Worker upstream changes and frontend route removal are handled by the reviewed Worker configuration in `services/api-gateway/wrangler.toml`.

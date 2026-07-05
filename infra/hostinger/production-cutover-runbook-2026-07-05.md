@@ -1,7 +1,7 @@
 # Hostinger Production Cutover Runbook
 
 Date: 2026-07-05
-Status: origin API DNS prepared; frontend and Worker cutover pending explicit approval.
+Status: origin API DNS prepared; Worker gateway update and frontend cutover pending explicit approval.
 
 ## Scope
 
@@ -23,7 +23,7 @@ Live Cloudflare API export was performed with limited token permissions.
 
 The token could export zones and DNS records, but could not export account-level Worker metadata, zone SSL settings, zone rulesets, or Worker routes. Generated exports are stored under the gitignored `infra/hostinger/cloudflare/state-exports/` directory.
 
-Frontend batch cutover is blocked until the Cloudflare token includes Workers Routes read/edit permissions for the affected zones. DNS-only origin preparation is complete.
+Frontend batch cutover is blocked until frontend Worker routes are removed. The preferred remediation is deploying the reviewed Worker configuration that removes frontend routes and keeps API/placement routes, rather than depending on the legacy Worker Routes API permission.
 
 Live `/internal/health` checks confirmed the frontend hostnames still execute the Worker. A DNS-only frontend change will not move traffic while the matching Worker route remains active.
 
@@ -133,9 +133,9 @@ api.skillupitacademy.com
 api.skillhubcore.in
 ```
 
-### Worker Route Changes
+### Worker Gateway Changes
 
-Remove Worker routes for frontend hosts after their DNS records are ready:
+Deploy the reviewed `services/api-gateway/wrangler.toml` Worker configuration before frontend DNS batches. It removes Worker routes for frontend hosts currently declared in the Worker config:
 
 ```text
 user.realtutorialhub.com/*
@@ -145,10 +145,11 @@ admin.skillupitacademy.com/*
 faculty.skillupitacademy.com/*
 quiz.skillhubcore.in/*
 tutorial.skillhubcore.in/*
-admin.skillhubcore.in/*
 ```
 
-Keep Worker routes for API and placement hosts:
+`admin.skillhubcore.in` is not currently declared in the Worker config. It still belongs in the DNS frontend batch and should be verified with `/internal/health` before cutover.
+
+It keeps Worker routes for API and placement hosts:
 
 ```text
 api.realtutorialhub.com/*
@@ -167,7 +168,7 @@ After `origin-api.*` DNS records exist and resolve, update API upstream variable
 | `NOTIFICATION_URL` | `https://origin-api.realtutorialhub.com` |
 | `SKILLHUBCORE_URL` | `https://origin-api.skillhubcore.in` |
 
-Keep frontend upstream variables pointing at Cloud Run until their Worker routes are removed. They become irrelevant for frontend traffic once routes are removed, and retaining them helps rollback.
+Keep frontend upstream variables pointing at Cloud Run. They become irrelevant for frontend traffic once routes are removed, and retaining them helps rollback.
 
 Do not change `PLACEMENT_URL`.
 
@@ -204,40 +205,58 @@ curl.exe -k --resolve "origin-api.skillupitacademy.com:443:72.61.115.49" https:/
 curl.exe -k --resolve "origin-api.skillhubcore.in:443:72.61.115.49" https://origin-api.skillhubcore.in/healthz/
 ```
 
-7. Update one low-risk frontend DNS record and remove the matching Worker route.
+7. Deploy the reviewed Worker gateway change.
+
+Pre-deploy validation:
+
+```powershell
+cmd /c pnpm.cmd --filter @quiz/api-gateway test
+cmd /c pnpm.cmd --filter @quiz/api-gateway type-check
+```
+
+Deploy only after approval:
+
+```powershell
+cmd /c pnpm.cmd --filter @quiz/api-gateway exec wrangler deploy --env production
+```
+
+8. Verify frontend hostnames no longer execute the Worker by checking `/internal/health`.
+
+If a frontend hostname still returns the Worker health snapshot, stop. Do not run DNS-only frontend cutover for that hostname.
+
+9. Update one low-risk frontend DNS record.
 
 Dry-run first:
 
 ```powershell
-.\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch 1
+.\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch 1 -SkipWorkerRoutes
 ```
 
 Apply only after review:
 
 ```powershell
-.\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch 1 -Apply
+.\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch 1 -SkipWorkerRoutes -Apply
 ```
 
-If the Worker route has already been manually removed in Cloudflare, use DNS-only mode:
+Use DNS-only mode because frontend Worker routes should already be absent after the Worker deploy:
 
 ```powershell
 .\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch 1 -SkipWorkerRoutes
 .\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch 1 -SkipWorkerRoutes -Apply
 ```
 
-8. Validate that hostname from a browser and with HTTP status checks.
-9. Continue frontend hosts in batches.
+10. Validate that hostname from a browser and with HTTP status checks.
+11. Continue frontend hosts in batches.
 
 ```powershell
-.\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch 2
-.\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch 2 -Apply
-.\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch 3
-.\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch 3 -Apply
+.\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch 2 -SkipWorkerRoutes
+.\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch 2 -SkipWorkerRoutes -Apply
+.\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch 3 -SkipWorkerRoutes
+.\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch 3 -SkipWorkerRoutes -Apply
 ```
 
-10. Update Worker API upstream variables to `origin-api.*`.
-11. Validate API behavior and login flows.
-12. Monitor logs, CPU, memory, disk, and app errors.
+12. Validate API behavior and login flows.
+13. Monitor logs, CPU, memory, disk, and app errors.
 
 ## Batch Plan
 
@@ -314,7 +333,7 @@ Then verify:
 
 Rollback one batch at a time.
 
-1. Restore the removed Worker route for the affected frontend hostname.
+1. Restore the previous Worker configuration for the affected frontend hostname and redeploy the Worker.
 2. Restore the previous DNS record target from the timestamped backup.
 3. If API behavior fails, restore Worker variables to the previous Cloud Run URLs:
 
