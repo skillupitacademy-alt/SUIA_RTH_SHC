@@ -1,7 +1,7 @@
 # Hostinger Deployment Preparation Log
 
 Date: 2026-07-05
-Status: deployment preparation completed through the Cloudflare Origin Certificate gate
+Status: staging stack running on Hostinger VPS, pending DNS/Cloudflare cutover approval
 
 ## Completed
 
@@ -16,6 +16,11 @@ Status: deployment preparation completed through the Cloudflare Origin Certifica
 - Installed the Cloudflare Origin Certificate private key.
 - Verified the certificate parses with OpenSSL.
 - Verified the private key parses with OpenSSL.
+- Built all Docker images on the VPS.
+- Started the Docker Compose stack.
+- Confirmed all Compose containers report healthy.
+- Confirmed container Nginx is publicly bound to ports `80` and `443`.
+- Stopped and disabled host package Nginx so only container Nginx owns public HTTP/HTTPS.
 - Validated Docker Compose configuration on the VPS using:
 
 ```bash
@@ -30,6 +35,53 @@ docker compose \
 ```
 
 Result: `COMPOSE_CONFIG_OK`
+
+## Staging Runtime Validation
+
+Container status:
+
+```text
+api-server: healthy
+faculty-app: healthy
+nginx: healthy, publishes 80 and 443
+realtutorialhub-admin: healthy
+realtutorialhub-quiz: healthy
+realtutorialhub-web: healthy
+skillhub-placement: healthy at health endpoint
+skillhubcore-admin: healthy
+skillhubcore-service: healthy
+skillup-admin: healthy
+skillup-web: healthy
+```
+
+Local Nginx/SNI checks from the VPS:
+
+```text
+user.realtutorialhub.com 200
+admin.realtutorialhub.com 307
+user.skillupitacademy.com 200
+admin.skillupitacademy.com 307
+faculty.skillupitacademy.com 307
+quiz.skillhubcore.in 200
+tutorial.skillhubcore.in 200
+admin.skillhubcore.in 307
+api.realtutorialhub.com 200
+origin-api.realtutorialhub.com 200
+api.skillupitacademy.com 200
+origin-api.skillupitacademy.com 200
+api.skillhubcore.in 403
+origin-api.skillhubcore.in 403
+```
+
+`403` for SkillHub API root is expected at `/`; `/healthz/` returns `200`.
+
+## Placement Scope Note
+
+`placement.skillhubcore.in` is not validated for user traffic in this phase.
+
+The placement container health endpoint is healthy, but the placement homepage currently depends on placement application behavior that is not part of this migration task. Per operator instruction, no placement application programming changes were made.
+
+Do not cut over `placement.skillhubcore.in` until placement-specific implementation and validation are explicitly approved.
 
 ## Security Cleanup
 
@@ -90,8 +142,6 @@ origin-api.skillhubcore.in
 
 ## Not Executed
 
-- No Docker Compose services started.
-- No Nginx container started.
 - No Cloudflare DNS changes.
 - No Cloudflare Worker route changes.
 - No GCP changes.
