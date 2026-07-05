@@ -40,8 +40,13 @@ function Save-Json {
   $Value | ConvertTo-Json -Depth 50 | Set-Content -Path $Path -Encoding UTF8
 }
 
-$accountResponse = Invoke-CfGet "/accounts"
-Save-Json (Join-Path $exportRoot "accounts.json") $accountResponse
+$accountResponse = $null
+try {
+  $accountResponse = Invoke-CfGet "/accounts"
+  Save-Json (Join-Path $exportRoot "accounts.json") $accountResponse
+} catch {
+  Write-Warning "Could not export account list. Zone-level exports will continue: $($_.Exception.Message)"
+}
 
 $zoneIndex = @()
 
@@ -76,28 +81,30 @@ foreach ($zoneName in $Zones) {
 
 Save-Json (Join-Path $exportRoot "zones.index.json") $zoneIndex
 
-$accounts = @($accountResponse.result)
-foreach ($account in $accounts) {
-  $accountId = $account.id
-  $safeAccountName = ($account.name -replace '[^a-zA-Z0-9_.-]', '_')
-  $workerPathPrefix = "/accounts/$accountId/workers"
+if ($accountResponse) {
+  $accounts = @($accountResponse.result)
+  foreach ($account in $accounts) {
+    $accountId = $account.id
+    $safeAccountName = ($account.name -replace '[^a-zA-Z0-9_.-]', '_')
+    $workerPathPrefix = "/accounts/$accountId/workers"
 
-  try {
-    Save-Json (Join-Path $exportRoot "$safeAccountName.workers.scripts.json") (Invoke-CfGet "$workerPathPrefix/scripts")
-  } catch {
-    Write-Warning "Could not export workers scripts for account $($account.name): $($_.Exception.Message)"
-  }
+    try {
+      Save-Json (Join-Path $exportRoot "$safeAccountName.workers.scripts.json") (Invoke-CfGet "$workerPathPrefix/scripts")
+    } catch {
+      Write-Warning "Could not export workers scripts for account $($account.name): $($_.Exception.Message)"
+    }
 
-  try {
-    Save-Json (Join-Path $exportRoot "$safeAccountName.$WorkerName.settings.json") (Invoke-CfGet "$workerPathPrefix/scripts/$WorkerName/settings")
-  } catch {
-    Write-Warning "Could not export Worker settings for $WorkerName in account $($account.name): $($_.Exception.Message)"
-  }
+    try {
+      Save-Json (Join-Path $exportRoot "$safeAccountName.$WorkerName.settings.json") (Invoke-CfGet "$workerPathPrefix/scripts/$WorkerName/settings")
+    } catch {
+      Write-Warning "Could not export Worker settings for $WorkerName in account $($account.name): $($_.Exception.Message)"
+    }
 
-  try {
-    Save-Json (Join-Path $exportRoot "$safeAccountName.$WorkerName.deployments.json") (Invoke-CfGet "$workerPathPrefix/scripts/$WorkerName/deployments")
-  } catch {
-    Write-Warning "Could not export Worker deployments for $WorkerName in account $($account.name): $($_.Exception.Message)"
+    try {
+      Save-Json (Join-Path $exportRoot "$safeAccountName.$WorkerName.deployments.json") (Invoke-CfGet "$workerPathPrefix/scripts/$WorkerName/deployments")
+    } catch {
+      Write-Warning "Could not export Worker deployments for $WorkerName in account $($account.name): $($_.Exception.Message)"
+    }
   }
 }
 
@@ -106,6 +113,7 @@ $summary = [pscustomobject]@{
   outputDirectory = (Resolve-Path $exportRoot).Path
   zones = $zoneIndex
   workerName = $WorkerName
+  accountExported = [bool]$accountResponse
   note = "Read-only Cloudflare state export. Do not commit generated JSON files."
 }
 
