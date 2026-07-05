@@ -108,3 +108,4 @@ Cloud Run remains live during migration. If VPS validation or cutover fails, res
 - Nginx templates: `infra/hostinger/nginx/`
 - Cloudflare planning: `infra/hostinger/cloudflare/`
 - Operational scripts: `infra/hostinger/scripts/`
+- Monitoring plan: `infra/hostinger/monitoring/`

@@ -41,7 +41,16 @@ Status: planning checklist only.
 - [x] Generate `backup.sh`.
 - [x] Generate `restore.sh`.
 
-## Phase 5: Staging Validation
+## Phase 5: Monitoring
+
+- [x] Define public HTTP checks.
+- [x] Define internal container checks.
+- [x] Define external dependency checks.
+- [x] Define alert thresholds.
+- [x] Define log retention plan.
+- [x] Define dashboard requirements.
+
+## Phase 6: Staging Validation
 
 - [ ] Provision VPS manually or with reviewed bootstrap.
 - [ ] Install Docker and Nginx.
@@ -52,7 +61,7 @@ Status: planning checklist only.
 - [ ] Validate API Worker behavior.
 - [ ] Validate rollback path.
 
-## Phase 6: Production Cutover
+## Phase 7: Production Cutover
 
 - [ ] Lower DNS TTL where applicable.
 - [ ] Confirm Cloud Run remains healthy.
