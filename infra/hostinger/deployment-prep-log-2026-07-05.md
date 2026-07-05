@@ -230,3 +230,16 @@ origin-api.skillhubcore.in/healthz/ 200
 ```
 
 This does not move public production traffic. Public API hosts and frontend hosts remain unchanged until later batch cutover.
+
+## Frontend Cutover Blocker
+
+Batch 1 dry-run for `user.realtutorialhub.com` was attempted after origin DNS preparation.
+
+Result:
+
+```text
+DNS create planned: user.realtutorialhub.com -> 72.61.115.49, proxied=True
+Worker route read failed: Cloudflare authentication error
+```
+
+Conclusion: the current Cloudflare token can manage/read DNS but does not have Worker route read/edit permissions. Frontend cutover is blocked until the token includes Workers Routes permissions for the affected zones.

@@ -15,6 +15,7 @@ These documents describe the intended Cloudflare setup for the Hostinger migrati
 - `cloudflare-cutover-manifest.json`
 - `apply-cloudflare-cutover.md`
 - `apply-cloudflare-cutover.ps1`
+- `token-permissions.md`
 
 ## Cutover Principle
 
@@ -23,3 +24,5 @@ Cloudflare remains the public edge. API Worker routing is retained for the initi
 Before any Cloudflare change, run the read-only export helper and keep the generated `state-exports/` directory outside Git for rollback evidence.
 
 Cutover application tooling is dry-run by default and requires `-Apply` before it mutates Cloudflare.
+
+Frontend cutover also requires Workers Routes read/edit permissions. See `token-permissions.md`.

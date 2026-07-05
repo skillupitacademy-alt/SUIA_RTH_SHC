@@ -21,7 +21,9 @@ Move validated non-placement compute traffic from GCP Cloud Run to the Hostinger
 
 Live Cloudflare API export was performed with limited token permissions.
 
-The token could export zones and DNS records, but could not export account-level Worker metadata, zone SSL settings, or zone rulesets. Generated exports are stored under the gitignored `infra/hostinger/cloudflare/state-exports/` directory.
+The token could export zones and DNS records, but could not export account-level Worker metadata, zone SSL settings, zone rulesets, or Worker routes. Generated exports are stored under the gitignored `infra/hostinger/cloudflare/state-exports/` directory.
+
+Frontend batch cutover is blocked until the Cloudflare token includes Workers Routes read/edit permissions for the affected zones. DNS-only origin preparation is complete.
 
 ### VPS
 

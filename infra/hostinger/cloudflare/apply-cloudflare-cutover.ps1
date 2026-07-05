@@ -134,12 +134,30 @@ function Remove-WorkerRouteIfPresent {
   }
 }
 
+function Test-WorkerRouteAccess {
+  param([hashtable]$ZoneMap)
+
+  $zonesNeedingRouteAccess = @($records | Where-Object { $_.workerRoute } | ForEach-Object { $_.zone } | Sort-Object -Unique)
+  foreach ($zoneName in $zonesNeedingRouteAccess) {
+    $zoneId = $ZoneMap[$zoneName]
+    try {
+      Invoke-Cf -Method GET -Path "/zones/$zoneId/workers/routes" | Out-Null
+    } catch {
+      throw "Token cannot read Worker routes for zone '$zoneName'. Refusing frontend batch before DNS mutation to avoid partial cutover. Required permission: Workers Routes Read/Edit for the zone."
+    }
+  }
+}
+
 if (-not $Apply) {
   Write-Host "DRY RUN ONLY. Re-run with -Apply to change Cloudflare."
 }
 
 $zoneMap = Get-ZoneMap
 $records = Get-RecordsForBatch
+
+if ($Batch -ne "origin") {
+  Test-WorkerRouteAccess -ZoneMap $zoneMap
+}
 
 foreach ($record in $records) {
   if (@($manifest.excludedHostnames) -contains $record.hostname) {
