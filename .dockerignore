@@ -51,6 +51,8 @@ phasewise
 digitalmarketing
 audit-reports
 docs
+!docs
+!docs/**
 __tests__
 tests
 e2e
