@@ -14,7 +14,7 @@ Required permissions:
 
 This is enough to create the `origin-api.*` records.
 
-## Frontend Batch Cutover With Reviewed Worker Deploy
+## Frontend Cutover With Retained Worker
 
 Preferred permissions:
 
@@ -22,7 +22,7 @@ Preferred permissions:
 - DNS: Read
 - DNS: Edit
 
-The recommended path is to remove frontend Worker routes by deploying the reviewed `services/api-gateway/wrangler.toml` change, while retaining API and placement Worker routes. After live verification shows frontend hostnames no longer execute the Worker, run DNS batches with `-SkipWorkerRoutes`.
+The recommended path is to keep frontend Worker routes and create dedicated `origin-*` frontend DNS records for Worker-to-VPS routing. After those origins are validated, deploy a reviewed Worker upstream change.
 
 This avoids depending on the legacy `/zones/{zoneId}/workers/routes` API permission, which is not available in every Cloudflare token UI.
 
@@ -44,7 +44,7 @@ Frontend cutover needs Worker route access because frontend host routes must be 
 
 Live validation with `/internal/health` confirms frontend hostnames are currently served by the Worker. DNS-only changes will not move traffic while those routes remain active.
 
-If a reviewed Worker deploy or Cloudflare dashboard operation removes frontend Worker routes first, the DNS script can be run with `-SkipWorkerRoutes`.
+If a later reviewed direct-DNS fallback removes frontend Worker routes first, the DNS script can be run with `-SkipWorkerRoutes`.
 
 ## Optional Backup Exports
 

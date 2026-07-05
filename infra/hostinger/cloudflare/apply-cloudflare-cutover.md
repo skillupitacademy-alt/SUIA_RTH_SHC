@@ -2,7 +2,7 @@
 
 Status: prepared for review. Dry-run by default.
 
-Use `apply-cloudflare-cutover.ps1` to apply the reviewed Cloudflare DNS cutover batches.
+Use `apply-cloudflare-cutover.ps1` to apply reviewed Cloudflare DNS preparation and fallback cutover batches.
 
 The script:
 
@@ -12,11 +12,28 @@ The script:
 - refuses to touch excluded hostnames
 - does nothing unless `-Apply` is provided
 
-## Worker Route Requirement
+## Retained-Worker Origin Preparation
+
+The preferred frontend architecture now keeps public frontend hostnames Worker-routed and switches Worker frontend upstreams to dedicated VPS origin hostnames.
+
+In this path, `-Batch origin` prepares both API and frontend origin records:
+
+```text
+origin-api.*
+origin-user.*
+origin-admin.*
+origin-faculty.*
+origin-quiz.*
+origin-tutorial.*
+```
+
+These records do not move public frontend traffic by themselves. They prepare Worker-to-VPS routing.
+
+## Direct-DNS Fallback Requirement
 
 Live checks show the current frontend hostnames are still handled by the Cloudflare Worker. A DNS-only update will not bypass an active Worker route.
 
-The preferred path is to remove frontend routes by deploying the reviewed `services/api-gateway/wrangler.toml` change, while keeping API and placement routes in the Worker. See `worker-gateway-cutover.md`.
+Direct-DNS frontend cutover is now a fallback path. See `worker-gateway-cutover.md`.
 
 For frontend batches, the script default still requires Worker route read/edit access and removes frontend Worker routes as part of the cutover. This is a conservative fallback for accounts where the Worker Routes API is available.
 
@@ -46,10 +63,15 @@ Run the read-only export first:
 .\infra\hostinger\cloudflare\export-cloudflare-state.ps1
 ```
 
-After `worker-gateway-cutover.md` is approved and the Worker deploy removes frontend routes, apply one frontend DNS batch at a time with DNS-only mode:
+For the retained-Worker path, apply only the origin preparation batch:
 
 ```powershell
 .\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch origin -Apply
+```
+
+For the direct-DNS fallback path only, apply one frontend DNS batch at a time after frontend Worker routes are absent:
+
+```powershell
 .\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch 1 -SkipWorkerRoutes -Apply
 .\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch 2 -SkipWorkerRoutes -Apply
 .\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch 3 -SkipWorkerRoutes -Apply
@@ -59,4 +81,4 @@ Do not use `-Batch all -Apply` for production cutover unless rollback evidence h
 
 ## Out Of Scope
 
-The script does not update Worker routes or variables when `-SkipWorkerRoutes` is used. API Worker upstream changes and frontend route removal are handled by the reviewed Worker configuration in `services/api-gateway/wrangler.toml`.
+The script does not update Worker routes or variables when `-SkipWorkerRoutes` is used. Worker upstream changes are handled by the reviewed Worker configuration in `services/api-gateway/wrangler.toml`.

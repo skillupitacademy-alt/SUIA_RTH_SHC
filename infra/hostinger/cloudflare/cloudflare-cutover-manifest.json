@@ -28,6 +28,64 @@
       "proxied": true
     }
   ],
+  "originFrontendRecords": [
+    {
+      "hostname": "origin-user.realtutorialhub.com",
+      "zone": "realtutorialhub.com",
+      "type": "A",
+      "content": "72.61.115.49",
+      "proxied": true
+    },
+    {
+      "hostname": "origin-admin.realtutorialhub.com",
+      "zone": "realtutorialhub.com",
+      "type": "A",
+      "content": "72.61.115.49",
+      "proxied": true
+    },
+    {
+      "hostname": "origin-user.skillupitacademy.com",
+      "zone": "skillupitacademy.com",
+      "type": "A",
+      "content": "72.61.115.49",
+      "proxied": true
+    },
+    {
+      "hostname": "origin-admin.skillupitacademy.com",
+      "zone": "skillupitacademy.com",
+      "type": "A",
+      "content": "72.61.115.49",
+      "proxied": true
+    },
+    {
+      "hostname": "origin-faculty.skillupitacademy.com",
+      "zone": "skillupitacademy.com",
+      "type": "A",
+      "content": "72.61.115.49",
+      "proxied": true
+    },
+    {
+      "hostname": "origin-quiz.skillhubcore.in",
+      "zone": "skillhubcore.in",
+      "type": "A",
+      "content": "72.61.115.49",
+      "proxied": true
+    },
+    {
+      "hostname": "origin-tutorial.skillhubcore.in",
+      "zone": "skillhubcore.in",
+      "type": "A",
+      "content": "72.61.115.49",
+      "proxied": true
+    },
+    {
+      "hostname": "origin-admin.skillhubcore.in",
+      "zone": "skillhubcore.in",
+      "type": "A",
+      "content": "72.61.115.49",
+      "proxied": true
+    }
+  ],
   "frontendBatches": {
     "1": [
       {

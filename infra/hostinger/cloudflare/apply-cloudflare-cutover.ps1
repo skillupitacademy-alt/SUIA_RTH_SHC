@@ -56,12 +56,20 @@ function Get-ZoneMap {
 
 function Get-RecordsForBatch {
   if ($Batch -eq "origin") {
-    return @($manifest.originApiRecords)
+    $records = @()
+    $records += @($manifest.originApiRecords)
+    if ($manifest.PSObject.Properties.Name -contains "originFrontendRecords") {
+      $records += @($manifest.originFrontendRecords)
+    }
+    return $records
   }
 
   if ($Batch -eq "all") {
     $records = @()
     $records += @($manifest.originApiRecords)
+    if ($manifest.PSObject.Properties.Name -contains "originFrontendRecords") {
+      $records += @($manifest.originFrontendRecords)
+    }
     foreach ($key in @("1", "2", "3")) {
       $records += @($manifest.frontendBatches.$key)
     }

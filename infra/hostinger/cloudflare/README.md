@@ -19,10 +19,10 @@ These documents describe the intended Cloudflare setup for the Hostinger migrati
 
 ## Cutover Principle
 
-Cloudflare remains the public edge. API Worker routing is retained for the initial cutover unless a later ADR changes it.
+Cloudflare remains the public edge. Frontend and API Worker routing are retained for the initial cutover unless a later ADR changes that decision.
 
 Before any Cloudflare change, run the read-only export helper and keep the generated `state-exports/` directory outside Git for rollback evidence.
 
 Cutover application tooling is dry-run by default and requires `-Apply` before it mutates Cloudflare.
 
-Preferred frontend cutover removes frontend Worker routes through the reviewed Worker deploy, then runs DNS batches with `-SkipWorkerRoutes`. See `token-permissions.md`.
+Preferred frontend cutover keeps frontend Worker routes and switches Worker upstreams to dedicated VPS origin hostnames after those origin hostnames are validated. Direct DNS batches with `-SkipWorkerRoutes` are a fallback only. See `frontend-worker-audit.md` and `token-permissions.md`.

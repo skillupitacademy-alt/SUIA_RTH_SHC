@@ -8,7 +8,7 @@ GCP remains the rollback platform during and immediately after the Hostinger cut
 
 Do not delete, disable, or scale down Cloud Run services until:
 
-- frontend DNS cutover is complete
+- frontend Worker-to-VPS origin cutover is complete, or a separately approved direct DNS cutover is complete
 - API Worker-to-VPS behavior is stable
 - login smoke tests pass for all brands
 - Cloudflare and VPS logs show no sustained errors

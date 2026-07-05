@@ -35,6 +35,23 @@ If API Worker routing is retained, use origin hostnames to avoid Worker loops:
 
 The Worker should use these origin hostnames as upstreams during the retained-Worker phase.
 
+## Frontend Origin Records For Worker Retention
+
+If frontend Worker routing is retained, use dedicated origin hostnames to avoid Worker loops:
+
+| Hostname | Type | Target | Proxy |
+| --- | --- | --- | --- |
+| `origin-user.realtutorialhub.com` | `A` | `72.61.115.49` | Proxied |
+| `origin-admin.realtutorialhub.com` | `A` | `72.61.115.49` | Proxied |
+| `origin-user.skillupitacademy.com` | `A` | `72.61.115.49` | Proxied |
+| `origin-admin.skillupitacademy.com` | `A` | `72.61.115.49` | Proxied |
+| `origin-faculty.skillupitacademy.com` | `A` | `72.61.115.49` | Proxied |
+| `origin-quiz.skillhubcore.in` | `A` | `72.61.115.49` | Proxied |
+| `origin-tutorial.skillhubcore.in` | `A` | `72.61.115.49` | Proxied |
+| `origin-admin.skillhubcore.in` | `A` | `72.61.115.49` | Proxied |
+
+Do not set Worker frontend upstreams to the public frontend hostnames; that would create a Worker routing loop.
+
 ## Public API Records
 
 Do not change these in Phase 3:

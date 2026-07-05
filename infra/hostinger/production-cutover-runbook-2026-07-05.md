@@ -1,7 +1,7 @@
 # Hostinger Production Cutover Runbook
 
 Date: 2026-07-05
-Status: API Worker upstream update deployed; frontend Worker route removal and DNS cutover pending route-removal access.
+Status: API Worker upstream update deployed; frontend Worker-to-VPS origin cutover pending origin frontend preparation.
 
 ## Scope
 
@@ -23,9 +23,9 @@ Live Cloudflare API export was performed with limited token permissions.
 
 The token could export zones and DNS records, but could not export account-level Worker metadata, zone SSL settings, zone rulesets, or Worker routes. Generated exports are stored under the gitignored `infra/hostinger/cloudflare/state-exports/` directory.
 
-Frontend batch cutover is blocked until frontend Worker routes are removed. A Worker deploy with frontend proxy handlers removed was attempted, but Cloudflare route reconciliation failed due missing route permissions. The Worker was hotfixed to keep frontend proxy handlers until route removal access is available.
+Frontend direct-DNS cutover is no longer the recommended path. A Worker deploy with frontend proxy handlers removed was attempted, but Cloudflare route reconciliation failed due missing route permissions. The Worker was hotfixed to keep frontend proxy handlers.
 
-Live `/internal/health` checks confirmed the frontend hostnames still execute the Worker. A DNS-only frontend change will not move traffic while the matching Worker route remains active.
+Live `/internal/health` checks confirmed the frontend hostnames still execute the Worker. The preferred path is to retain those Worker routes and switch frontend upstream variables to dedicated VPS origin hostnames after origin records, Nginx aliases, and certificate coverage are ready.
 
 ### VPS
 
@@ -98,35 +98,43 @@ api.skillhubcore.in 401
 ## Target Initial Routing Model
 
 ```text
-Frontend hosts -> Cloudflare DNS -> VPS Nginx -> frontend containers
+Frontend hosts -> Cloudflare Worker -> origin frontend hostnames -> VPS Nginx -> frontend containers
 API hosts -> Cloudflare Worker -> origin-api hostnames -> VPS Nginx -> API containers
 ```
 
-This keeps API gateway behavior in the Worker during the initial cutover.
+This keeps frontend and API gateway behavior in the Worker during the initial cutover.
 
 ## Cloudflare Changes To Prepare
 
 ### DNS Records To Create Or Update
 
-Set these records to `A`, target `72.61.115.49`, proxied.
+For the retained-Worker path, create origin records to `A`, target `72.61.115.49`, proxied.
 
 | Hostname | Zone | Action |
 | --- | --- | --- |
-| `user.realtutorialhub.com` | `realtutorialhub.com` | update/create |
-| `admin.realtutorialhub.com` | `realtutorialhub.com` | update/create |
-| `user.skillupitacademy.com` | `skillupitacademy.com` | update/create |
-| `admin.skillupitacademy.com` | `skillupitacademy.com` | update/create |
-| `faculty.skillupitacademy.com` | `skillupitacademy.com` | update/create |
-| `quiz.skillhubcore.in` | `skillhubcore.in` | update/create |
-| `tutorial.skillhubcore.in` | `skillhubcore.in` | update/create |
-| `admin.skillhubcore.in` | `skillhubcore.in` | update/create |
 | `origin-api.realtutorialhub.com` | `realtutorialhub.com` | create |
 | `origin-api.skillupitacademy.com` | `skillupitacademy.com` | create |
 | `origin-api.skillhubcore.in` | `skillhubcore.in` | create |
+| `origin-user.realtutorialhub.com` | `realtutorialhub.com` | create |
+| `origin-admin.realtutorialhub.com` | `realtutorialhub.com` | create |
+| `origin-user.skillupitacademy.com` | `skillupitacademy.com` | create |
+| `origin-admin.skillupitacademy.com` | `skillupitacademy.com` | create |
+| `origin-faculty.skillupitacademy.com` | `skillupitacademy.com` | create |
+| `origin-quiz.skillhubcore.in` | `skillhubcore.in` | create |
+| `origin-tutorial.skillhubcore.in` | `skillhubcore.in` | create |
+| `origin-admin.skillhubcore.in` | `skillhubcore.in` | create |
 
 Do not modify:
 
 ```text
+user.realtutorialhub.com
+admin.realtutorialhub.com
+user.skillupitacademy.com
+admin.skillupitacademy.com
+faculty.skillupitacademy.com
+quiz.skillhubcore.in
+tutorial.skillhubcore.in
+admin.skillhubcore.in
 placement.skillhubcore.in
 api.realtutorialhub.com
 api.skillupitacademy.com
@@ -135,7 +143,7 @@ api.skillhubcore.in
 
 ### Worker Gateway Changes
 
-After route-removal access is available, deploy a reviewed `services/api-gateway/wrangler.toml` Worker configuration that removes Worker routes for frontend hosts currently declared in the Worker config:
+Keep Worker routes for frontend, API, and placement hosts during this phase:
 
 ```text
 user.realtutorialhub.com/*
@@ -145,22 +153,17 @@ admin.skillupitacademy.com/*
 faculty.skillupitacademy.com/*
 quiz.skillhubcore.in/*
 tutorial.skillhubcore.in/*
-```
-
-`admin.skillhubcore.in` is not currently declared in the Worker config. It still belongs in the DNS frontend batch and should be verified with `/internal/health` before cutover.
-
-It keeps Worker routes for API and placement hosts:
-
-```text
 api.realtutorialhub.com/*
 api.skillupitacademy.com/*
 api.skillhubcore.in/*
 placement.skillhubcore.in/*
 ```
 
+`admin.skillhubcore.in` is not currently declared in the Worker config. It can remain direct DNS/Nginx or be added to the retained-Worker model in a later reviewed change.
+
 ### Worker Upstream Variable Changes
 
-After `origin-api.*` DNS records exist and resolve, update API upstream variables:
+API upstream variables are already updated:
 
 | Worker variable | Target |
 | --- | --- |
@@ -168,7 +171,18 @@ After `origin-api.*` DNS records exist and resolve, update API upstream variable
 | `NOTIFICATION_URL` | `https://origin-api.realtutorialhub.com` |
 | `SKILLHUBCORE_URL` | `https://origin-api.skillhubcore.in` |
 
-Keep frontend upstream variables pointing at Cloud Run. They become irrelevant for frontend traffic once routes are removed, and retaining them helps rollback.
+After frontend origin records, Nginx aliases, and certificate coverage are validated, update frontend upstream variables:
+
+| Worker variable | Target |
+| --- | --- |
+| `TUTORIAL_SERVICE_URL` | `https://origin-user.realtutorialhub.com` |
+| `RTH_ADMIN_URL` | `https://origin-admin.realtutorialhub.com` |
+| `SKILLUP_WEB_URL` | `https://origin-user.skillupitacademy.com` |
+| `SKILLUP_ADMIN_URL` | `https://origin-admin.skillupitacademy.com` |
+| `FACULTY_URL` | `https://origin-faculty.skillupitacademy.com` |
+| `QUIZ_WEB_URL` | `https://origin-quiz.skillhubcore.in` |
+
+`tutorial.skillhubcore.in` currently shares `TUTORIAL_SERVICE_URL`. Add a dedicated Worker binding before switching if it needs a separate origin.
 
 Do not change `PLACEMENT_URL`.
 
@@ -183,7 +197,7 @@ ssh hostinger-quiz-platform "cd /opt/platform/apps/quiz-platform && infra/hostin
 ```
 
 4. Confirm Cloud Run rollback targets still answer.
-5. Create `origin-api.*` DNS records. Completed on 2026-07-05.
+5. Create origin DNS records. API origin records were completed on 2026-07-05. Frontend origin records are pending.
 
 Dry-run first:
 
@@ -205,9 +219,24 @@ curl.exe -k --resolve "origin-api.skillupitacademy.com:443:72.61.115.49" https:/
 curl.exe -k --resolve "origin-api.skillhubcore.in:443:72.61.115.49" https://origin-api.skillhubcore.in/healthz/
 ```
 
-7. Confirm Cloudflare route-removal access or manually remove frontend Worker routes in the Cloudflare dashboard.
+7. Install a Cloudflare Origin Certificate that also covers frontend `origin-*` hostnames.
 
-8. Deploy the reviewed Worker gateway route-removal change.
+8. Deploy Nginx aliases for frontend `origin-*` hostnames to the VPS.
+
+9. Validate frontend origin hostnames through Cloudflare and direct VPS SNI checks:
+
+```powershell
+curl.exe -k --resolve "origin-user.realtutorialhub.com:443:72.61.115.49" https://origin-user.realtutorialhub.com/
+curl.exe -k --resolve "origin-admin.realtutorialhub.com:443:72.61.115.49" https://origin-admin.realtutorialhub.com/login
+curl.exe -k --resolve "origin-user.skillupitacademy.com:443:72.61.115.49" https://origin-user.skillupitacademy.com/
+curl.exe -k --resolve "origin-admin.skillupitacademy.com:443:72.61.115.49" https://origin-admin.skillupitacademy.com/login
+curl.exe -k --resolve "origin-faculty.skillupitacademy.com:443:72.61.115.49" https://origin-faculty.skillupitacademy.com/login
+curl.exe -k --resolve "origin-quiz.skillhubcore.in:443:72.61.115.49" https://origin-quiz.skillhubcore.in/
+curl.exe -k --resolve "origin-tutorial.skillhubcore.in:443:72.61.115.49" https://origin-tutorial.skillhubcore.in/
+curl.exe -k --resolve "origin-admin.skillhubcore.in:443:72.61.115.49" https://origin-admin.skillhubcore.in/login
+```
+
+10. Deploy the reviewed Worker upstream switch.
 
 Pre-deploy validation:
 
@@ -222,45 +251,13 @@ Deploy only after approval:
 cmd /c pnpm.cmd --filter @quiz/api-gateway exec wrangler deploy --env production
 ```
 
-9. Verify frontend hostnames no longer execute the Worker by checking `/internal/health`.
+11. Verify frontend hostnames still execute the Worker and public pages return expected statuses.
+12. Validate API behavior and login flows.
+13. Monitor logs, CPU, memory, disk, and app errors.
 
-If a frontend hostname still returns the Worker health snapshot, stop. Do not run DNS-only frontend cutover for that hostname.
+## Direct-DNS Fallback Batch Plan
 
-10. Update one low-risk frontend DNS record.
-
-Dry-run first:
-
-```powershell
-.\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch 1 -SkipWorkerRoutes
-```
-
-Apply only after review:
-
-```powershell
-.\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch 1 -SkipWorkerRoutes -Apply
-```
-
-Use DNS-only mode because frontend Worker routes should already be absent after the Worker deploy:
-
-```powershell
-.\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch 1 -SkipWorkerRoutes
-.\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch 1 -SkipWorkerRoutes -Apply
-```
-
-11. Validate that hostname from a browser and with HTTP status checks.
-12. Continue frontend hosts in batches.
-
-```powershell
-.\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch 2 -SkipWorkerRoutes
-.\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch 2 -SkipWorkerRoutes -Apply
-.\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch 3 -SkipWorkerRoutes
-.\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch 3 -SkipWorkerRoutes -Apply
-```
-
-13. Validate API behavior and login flows.
-14. Monitor logs, CPU, memory, disk, and app errors.
-
-## Batch Plan
+This section is not the recommended retained-Worker path. Use it only if a later review chooses direct DNS frontend cutover and frontend Worker routes have already been removed.
 
 ### Batch 1
 
