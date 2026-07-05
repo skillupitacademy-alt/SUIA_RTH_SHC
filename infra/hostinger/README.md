@@ -1,6 +1,6 @@
 # Hostinger VPS Migration Planning
 
-Status: staging stack running on Hostinger VPS; production cutover pending explicit approval.
+Status: retained-Worker origin routing is live; operations hardening and observation are in progress.
 
 This directory defines the reviewable infrastructure baseline for migrating the `asia-southeast1` application stack from GCP Cloud Run to a Hostinger VPS.
 
@@ -13,7 +13,7 @@ This directory defines the reviewable infrastructure baseline for migrating the 
 - Docker Compose.
 - Internal Docker networking.
 - Only Nginx publicly exposed.
-- Cloudflare Worker retained for API routing in the initial cutover unless a later ADR changes that decision.
+- Cloudflare Worker retained for frontend and API routing. Worker upstreams point to VPS `origin-*` hostnames.
 
 ## Current State
 
@@ -22,7 +22,8 @@ This directory defines the reviewable infrastructure baseline for migrating the 
 - VPS bootstrap has been executed.
 - Cloudflare Origin Certificate has been installed on the VPS.
 - The Docker Compose stack is running on the VPS.
-- Outside-in `--resolve` validation passes for non-placement hostnames.
+- Public frontend/API validation passes through the retained Cloudflare Worker.
+- Worker upstream variables point to VPS `origin-*` hostnames for frontend and API traffic.
 - `placement.skillhubcore.in` is excluded from production cutover until placement-specific implementation and validation are approved.
 
 ## Artifacts
@@ -34,10 +35,12 @@ This directory defines the reviewable infrastructure baseline for migrating the 
 - `repository-layout.md`: target repository and VPS layout.
 - `migration-checklist.md`: migration phase checklist.
 - `verification-checklist.md`: pre-deployment and pre-cutover verification gates.
+- `monitoring/`: Prometheus, Grafana, Loki, Promtail, Node Exporter, cAdvisor, and Blackbox templates.
+- `security/`: Fail2Ban, SSH, unattended-upgrades, and credential-rotation hardening templates.
 
 ## Remaining Hard Boundaries
 
-- Do not modify Cloudflare DNS or Worker routes without explicit cutover approval.
+- Do not modify Cloudflare Worker routes without explicit approval.
 - Do not modify or remove GCP deployment artifacts.
 - Do not delete Cloud Run services.
 - Do not export production secrets into the repository.

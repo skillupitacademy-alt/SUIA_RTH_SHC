@@ -1,6 +1,6 @@
 # Log Plan
 
-Status: planning reference only.
+Status: implementation reference.
 
 ## Log Sources
 
@@ -20,9 +20,12 @@ Status: planning reference only.
 | Container logs | 7 to 14 days |
 | Incident exports | keep with incident record |
 
+Loki local retention is currently configured for 7 days. Increase it only after confirming disk headroom.
+
 ## Review Requirements
 
 - Ensure logs do not contain secrets.
 - Ensure auth tokens are not emitted.
 - Confirm Docker log rotation is active.
 - Confirm available disk can handle retention.
+- Confirm Loki does not ingest secrets from application logs.

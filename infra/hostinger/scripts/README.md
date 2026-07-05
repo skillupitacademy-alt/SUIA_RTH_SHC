@@ -13,6 +13,8 @@ These scripts are intended to run locally on the future VPS from the repository 
 - `rollback.sh`: restart the previous local Compose state. DNS/Cloudflare rollback remains manual.
 - `backup.sh`: backup local env/Nginx/Compose material.
 - `restore.sh`: restore a local backup with confirmation.
+- `monitoring-up.sh`: start the local-only monitoring stack.
+- `monitoring-down.sh`: stop the monitoring stack while preserving volumes.
 
 ## Assumptions
 

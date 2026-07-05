@@ -23,5 +23,17 @@ fi
 mkdir -p "$target/infra"
 cp -R "$REPO_DIR/infra/hostinger/compose" "$target/infra/"
 cp -R "$REPO_DIR/infra/hostinger/nginx" "$target/infra/"
+cp -R "$REPO_DIR/infra/hostinger/monitoring" "$target/infra/"
+cp -R "$REPO_DIR/infra/hostinger/security" "$target/infra/"
+
+if [ -d "$REPO_DIR/infra/hostinger/cloudflare/state-exports" ]; then
+  mkdir -p "$target/cloudflare"
+  cp -R "$REPO_DIR/infra/hostinger/cloudflare/state-exports" "$target/cloudflare/"
+fi
+
+if [ -f "$REPO_DIR/services/api-gateway/wrangler.toml" ]; then
+  mkdir -p "$target/worker"
+  cp "$REPO_DIR/services/api-gateway/wrangler.toml" "$target/worker/wrangler.toml"
+fi
 
 echo "Backup written to $target"

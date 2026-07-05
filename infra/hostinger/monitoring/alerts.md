@@ -1,6 +1,6 @@
 # Alert Plan
 
-Status: planning reference only.
+Status: implementation reference.
 
 ## Severity Levels
 
@@ -23,7 +23,7 @@ Status: planning reference only.
 
 ## Required Alert Destinations
 
-Choose later:
+Choose one before final production sign-off:
 
 - email
 - Telegram/Slack/Discord
@@ -32,3 +32,20 @@ Choose later:
 - uptime provider notifications
 
 Do not enable noisy alerts until thresholds are reviewed.
+
+## Minimum Enabled Alerts
+
+- Public endpoint probe failure.
+- Docker container missing or unhealthy.
+- Disk usage above 80%.
+- Memory usage above 85%.
+- Nginx metrics scrape failure.
+- Grafana/Prometheus/Loki container restart loop.
+
+## Current Template Location
+
+Prometheus rules live in:
+
+```text
+infra/hostinger/monitoring/prometheus/alerts.yml
+```

@@ -1,6 +1,6 @@
 # Monitoring Checks
 
-Status: planning reference only.
+Status: implementation reference.
 
 ## Public HTTP Checks
 
@@ -17,6 +17,8 @@ Status: planning reference only.
 | `placement.skillhubcore.in` | `/api/healthz` | `200` |
 | `admin.skillhubcore.in` | `/api/healthz` | `200` |
 | `api.skillhubcore.in` | `/healthz/` | `200` |
+
+`placement.skillhubcore.in` remains excluded from VPS cutover and should be tracked as a separate Cloud Run dependency until placement validation is approved.
 
 ## Internal Container Checks
 
@@ -37,3 +39,13 @@ During cutover, monitor both:
 
 - VPS target endpoints.
 - Existing Cloud Run rollback endpoints.
+
+## Dashboard Access Check
+
+After starting monitoring:
+
+```bash
+curl -fsS http://127.0.0.1:9090/-/ready
+curl -fsS http://127.0.0.1:3009/api/health
+curl -fsS http://127.0.0.1:3100/ready
+```

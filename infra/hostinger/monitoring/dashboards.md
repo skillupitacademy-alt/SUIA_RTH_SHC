@@ -1,6 +1,6 @@
 # Dashboard Requirements
 
-Status: planning reference only.
+Status: implementation reference.
 
 ## VPS Dashboard
 
@@ -13,6 +13,8 @@ Required panels:
 - Docker container status.
 - Nginx 2xx/3xx/4xx/5xx counts.
 - Nginx upstream response time.
+- Public endpoint probe status.
+- TLS certificate age where available.
 
 ## Application Dashboard
 
@@ -35,3 +37,13 @@ During cutover, show:
 - Cloudflare edge status.
 - Worker error rate.
 - DNS propagation state where available.
+
+## Provisioning
+
+Datasource provisioning is defined in:
+
+```text
+infra/hostinger/monitoring/grafana/provisioning/datasources/datasources.yml
+```
+
+Dashboard JSON files can be added under `infra/hostinger/monitoring/grafana/provisioning/dashboards/` in a later phase.
