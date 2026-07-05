@@ -21,6 +21,7 @@ Status: partially executed against the Hostinger VPS. Remaining unchecked items 
 - [x] Application containers are on internal network only.
 - [x] Containers report healthy.
 - [x] Restart policies are configured.
+- [ ] Application containers can resolve and reach required external dependencies.
 
 ## Nginx
 

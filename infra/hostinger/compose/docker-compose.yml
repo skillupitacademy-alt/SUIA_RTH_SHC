@@ -199,4 +199,3 @@ networks:
     name: quiz_platform_edge
   app_internal:
     name: quiz_platform_internal
-    internal: true

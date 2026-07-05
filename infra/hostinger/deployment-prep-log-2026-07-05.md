@@ -96,6 +96,16 @@ api.skillhubcore.in /healthz/ 200
 origin-api.skillhubcore.in /healthz/ 200
 ```
 
+## Login Smoke Test Blocker
+
+Browser login smoke tests against the VPS with DNS overridden to `72.61.115.49` loaded the login pages, but did not authenticate.
+
+VPS container logs showed frontend/admin auth routes failing to reach API hostnames from inside Docker. Direct container checks also showed app containers could not resolve external hostnames while attached to the `app_internal` network.
+
+Root cause: the Compose `app_internal` network used Docker `internal: true`, which keeps containers off external networks entirely. This is stronger than the intended requirement. The requirement is that app containers must not publish public ports; they still need outbound access to managed dependencies and API hostnames.
+
+Planned correction: keep app containers on the private Compose network with no published ports, but remove Docker `internal: true` so outbound DNS and HTTPS can work.
+
 ## Placement Scope Note
 
 `placement.skillhubcore.in` is not validated for user traffic in this phase.
