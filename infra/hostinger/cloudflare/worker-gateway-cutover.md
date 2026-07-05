@@ -77,7 +77,13 @@ After frontend origin records, Nginx aliases, and certificate coverage are valid
 
 `tutorial.skillhubcore.in` currently shares `TUTORIAL_SERVICE_URL`. Add a dedicated `TUTORIAL_WEB_URL` binding before switching if it needs a different origin than `user.realtutorialhub.com`.
 
-Keep `PLACEMENT_URL` unchanged for placement continuity.
+Set placement to a dedicated origin hostname to avoid a Worker routing loop:
+
+```text
+PLACEMENT_URL=https://origin-placement.skillhubcore.in
+```
+
+Keep the public `placement.skillhubcore.in/*` Worker route in place.
 
 ## Required Validation Before Deploy
 

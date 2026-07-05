@@ -47,6 +47,7 @@ If retaining Cloudflare Worker for frontend routing with origin hostnames, also 
 - `origin-quiz.skillhubcore.in`
 - `origin-tutorial.skillhubcore.in`
 - `origin-admin.skillhubcore.in`
+- `origin-placement.skillhubcore.in`
 
 If public API hosts are routed directly to Nginx in a later phase, also cover:
 

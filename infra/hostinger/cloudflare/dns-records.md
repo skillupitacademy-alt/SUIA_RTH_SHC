@@ -49,8 +49,9 @@ If frontend Worker routing is retained, use dedicated origin hostnames to avoid 
 | `origin-quiz.skillhubcore.in` | `A` | `72.61.115.49` | Proxied |
 | `origin-tutorial.skillhubcore.in` | `A` | `72.61.115.49` | Proxied |
 | `origin-admin.skillhubcore.in` | `A` | `72.61.115.49` | Proxied |
+| `origin-placement.skillhubcore.in` | `A` | `72.61.115.49` | Proxied |
 
-Do not set Worker frontend upstreams to the public frontend hostnames; that would create a Worker routing loop.
+Do not set Worker frontend or placement upstreams to the public hostnames; that would create a Worker routing loop.
 
 ## Public API Records
 

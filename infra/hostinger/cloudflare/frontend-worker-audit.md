@@ -60,7 +60,7 @@ Do not point Worker frontend upstreams at the public frontend hostnames. That wo
 
 `tutorial.skillhubcore.in` currently shares `TUTORIAL_SERVICE_URL`. If RealTutorialHub user and SkillHub tutorial need independent origins later, add a dedicated `TUTORIAL_WEB_URL` binding before switching.
 
-`PLACEMENT_URL` remains Cloud Run until placement is separately validated.
+`PLACEMENT_URL` should use `https://origin-placement.skillhubcore.in` after placement validation. The public `placement.skillhubcore.in/*` Worker route remains in place.
 
 ## Operational Decision
 

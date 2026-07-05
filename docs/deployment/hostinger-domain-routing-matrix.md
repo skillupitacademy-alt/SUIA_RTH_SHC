@@ -26,7 +26,7 @@ Target platform:
 | `api.skillupitacademy.com` | SkillUp API gateway/API surface | retained Cloudflare Worker -> `origin-api.realtutorialhub.com` -> `api-server` | 3000 | `quiz-api-server` | Keep Worker for initial cutover. |
 | `quiz.skillhubcore.in` | Shared quiz/exam engine | Worker -> `origin-quiz.skillhubcore.in` -> `realtutorialhub-quiz` | 3001 | `quiz-web-app` | Keep Worker for initial cutover. |
 | `tutorial.skillhubcore.in` | Shared tutorial engine | Worker -> `origin-tutorial.skillhubcore.in` -> `realtutorialhub-web` | 3003 | `realtutorialhub-web` | Needs dedicated Worker binding before split from RTH user origin. |
-| `placement.skillhubcore.in` | Shared placement app | `skillhub-placement` | 3008 | `skillhub-placement` | Excluded from current cutover; user-facing placement behavior is not validated. |
+| `placement.skillhubcore.in` | Shared placement app | `skillhub-placement` | 3008 | `skillhub-placement` | Retain Worker route; proxy to `origin-placement.skillhubcore.in` on VPS after validation. |
 | `admin.skillhubcore.in` | SkillHub super admin | `skillhubcore-admin` | 3000 | `skillhubcore-admin` | Also has Cloud Run domain mapping today. |
 | `api.skillhubcore.in` | SkillHubCore API | retained Cloudflare Worker -> `origin-api.skillhubcore.in` -> `skillhubcore-service` | 3000 | `skillhubcore-service` | Keep Worker for initial cutover. |
 

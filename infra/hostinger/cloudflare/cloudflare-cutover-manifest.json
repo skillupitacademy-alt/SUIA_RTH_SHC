@@ -84,6 +84,13 @@
       "type": "A",
       "content": "72.61.115.49",
       "proxied": true
+    },
+    {
+      "hostname": "origin-placement.skillhubcore.in",
+      "zone": "skillhubcore.in",
+      "type": "A",
+      "content": "72.61.115.49",
+      "proxied": true
     }
   ],
   "frontendBatches": {
