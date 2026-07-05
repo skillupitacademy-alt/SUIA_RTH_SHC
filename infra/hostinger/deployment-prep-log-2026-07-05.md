@@ -206,7 +206,27 @@ origin-api.skillhubcore.in
 
 ## Not Executed
 
-- No Cloudflare DNS changes.
+- No frontend Cloudflare DNS changes.
 - No Cloudflare Worker route changes.
 - No GCP changes.
 - No production traffic cutover.
+
+## Origin API DNS Preparation
+
+Cloudflare origin API records were created for Worker-to-VPS routing preparation:
+
+```text
+origin-api.realtutorialhub.com -> 72.61.115.49, proxied
+origin-api.skillupitacademy.com -> 72.61.115.49, proxied
+origin-api.skillhubcore.in -> 72.61.115.49, proxied
+```
+
+Validation through the public Cloudflare path:
+
+```text
+origin-api.realtutorialhub.com/api/health/live 200
+origin-api.skillupitacademy.com/api/health/live 200
+origin-api.skillhubcore.in/healthz/ 200
+```
+
+This does not move public production traffic. Public API hosts and frontend hosts remain unchanged until later batch cutover.

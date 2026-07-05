@@ -41,6 +41,7 @@ Status: partially executed against the Hostinger VPS. Remaining unchecked items 
 - [x] Certificate covers required hostnames.
 - [x] File permissions restrict private key access.
 - [ ] Cloudflare SSL mode is Full (Strict).
+- [x] `origin-api.*` DNS records exist and route to the VPS through Cloudflare.
 
 ## External Services
 
@@ -73,5 +74,6 @@ Status: partially executed against the Hostinger VPS. Remaining unchecked items 
 - [ ] Cloud Run rollback targets are still healthy.
 - [ ] Cloudflare Worker routing model is confirmed.
 - [ ] DNS changes are reviewed but not applied by automation.
+- [x] Origin API DNS preparation completed.
 - [ ] Smoke tests are ready.
 - [ ] Rollback owner and window are defined.

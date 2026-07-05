@@ -1,7 +1,7 @@
 # Hostinger Production Cutover Runbook
 
 Date: 2026-07-05
-Status: prepared for review. Do not execute Cloudflare changes until explicitly approved.
+Status: origin API DNS prepared; frontend and Worker cutover pending explicit approval.
 
 ## Scope
 
@@ -19,9 +19,9 @@ Move validated non-placement compute traffic from GCP Cloud Run to the Hostinger
 
 ### Cloudflare API Access
 
-Live Cloudflare API export was not performed in this preparation pass because no Cloudflare token was present in the shell environment.
+Live Cloudflare API export was performed with limited token permissions.
 
-Before executing this runbook, set the token outside Git as `CLOUDFLARE_API_TOKEN`, then export current DNS records, Worker routes, and Worker variables to a timestamped backup outside the repository.
+The token could export zones and DNS records, but could not export account-level Worker metadata, zone SSL settings, or zone rulesets. Generated exports are stored under the gitignored `infra/hostinger/cloudflare/state-exports/` directory.
 
 ### VPS
 
@@ -64,12 +64,12 @@ Cloud Run services still present in `asia-southeast1`:
 
 Public hostnames currently resolve to Cloudflare anycast addresses. This confirms they are proxied at Cloudflare, but does not reveal the hidden origin target.
 
-`origin-api.*` hostnames are not currently published:
+`origin-api.*` hostnames are now published through Cloudflare and validated:
 
 ```text
-origin-api.realtutorialhub.com: DNS name does not exist
-origin-api.skillupitacademy.com: DNS name does not exist
-origin-api.skillhubcore.in: DNS name does not exist
+origin-api.realtutorialhub.com/api/health/live 200
+origin-api.skillupitacademy.com/api/health/live 200
+origin-api.skillhubcore.in/healthz/ 200
 ```
 
 ### Public HTTP Observation
@@ -178,7 +178,7 @@ ssh hostinger-quiz-platform "cd /opt/platform/apps/quiz-platform && infra/hostin
 ```
 
 4. Confirm Cloud Run rollback targets still answer.
-5. Create `origin-api.*` DNS records.
+5. Create `origin-api.*` DNS records. Completed on 2026-07-05.
 
 Dry-run first:
 
@@ -192,7 +192,7 @@ Apply only after review:
 .\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch origin -Apply
 ```
 
-6. Validate origin API hostnames:
+6. Validate origin API hostnames. Completed on 2026-07-05:
 
 ```powershell
 curl.exe -k --resolve "origin-api.realtutorialhub.com:443:72.61.115.49" https://origin-api.realtutorialhub.com/api/health/live
