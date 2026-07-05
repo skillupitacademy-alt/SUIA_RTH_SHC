@@ -1,8 +1,8 @@
-# VPS Bootstrap Plan
+# VPS Bootstrap
 
-Status: Phase 7 planning artifacts.
+Status: Phase 7 bootstrap artifacts.
 
-These documents describe how the Hostinger VPS should be prepared before staging deployment. They are not executed by this phase.
+These documents and scripts describe how the Hostinger VPS should be prepared before staging deployment.
 
 ## Target
 
@@ -24,13 +24,29 @@ These documents describe how the Hostinger VPS should be prepared before staging
 - `docker.md`: Docker installation and verification.
 - `origin-certificates.md`: certificate placement and permissions.
 
+## Scripts
+
+- `bootstrap-ubuntu-24.04.sh`: idempotent root bootstrap script for Ubuntu 24.04 LTS.
+- `verify-vps-foundation.sh`: read-only verifier for the completed VPS foundation.
+
+## Execution Order
+
+Run these from a VS Code Remote SSH terminal on the VPS, not from your local repository shell:
+
+```bash
+sudo bash infra/hostinger/bootstrap/bootstrap-ubuntu-24.04.sh
+sudo sh infra/hostinger/bootstrap/verify-vps-foundation.sh
+```
+
+The bootstrap script requires typing `BOOTSTRAP` before it mutates the VPS.
+
 ## Current Blocker
 
-SSH reachability to `72.61.115.49:22` must be confirmed before executing this phase remotely.
+SSH key authentication must work from the execution environment before Codex can execute this phase remotely.
 
 ## Non-Goals
 
-- No SSH commands are executed from Codex.
-- No VPS mutation is performed.
 - No DNS or Cloudflare changes are performed.
 - No production secrets are exported.
+- No repository clone or application deployment is performed by the bootstrap script.
+- No GCP deployment artifacts are modified.
