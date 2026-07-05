@@ -12,6 +12,21 @@ The script:
 - refuses to touch excluded hostnames
 - does nothing unless `-Apply` is provided
 
+## Worker Route Requirement
+
+Live checks show the current frontend hostnames are still handled by the Cloudflare Worker. A DNS-only update will not bypass an active Worker route.
+
+For frontend batches, the default mode therefore requires Worker route read/edit access and removes frontend Worker routes as part of the cutover.
+
+If Worker routes are removed manually in the Cloudflare dashboard first, run the script with `-SkipWorkerRoutes` to update DNS only:
+
+```powershell
+.\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch 1 -SkipWorkerRoutes
+.\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch 1 -SkipWorkerRoutes -Apply
+```
+
+Do not use `-SkipWorkerRoutes` while the matching frontend Worker route is still active.
+
 ## Dry Run
 
 ```powershell

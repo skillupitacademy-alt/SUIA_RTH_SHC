@@ -26,6 +26,10 @@ Required permissions:
 
 Frontend cutover needs Worker route access because frontend host routes must be removed from the Cloudflare Worker after DNS records are ready. Without Worker route permissions, the script refuses to mutate frontend DNS to avoid a partial cutover.
 
+Live validation with `/internal/health` confirms frontend hostnames are currently served by the Worker. DNS-only changes will not move traffic while those routes remain active.
+
+If Cloudflare dashboard/manual operations are used to remove frontend Worker routes first, the DNS script can be run with `-SkipWorkerRoutes`.
+
 ## Optional Backup Exports
 
 Useful but not required for the cutover script:

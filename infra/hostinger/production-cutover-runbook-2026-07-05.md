@@ -25,6 +25,8 @@ The token could export zones and DNS records, but could not export account-level
 
 Frontend batch cutover is blocked until the Cloudflare token includes Workers Routes read/edit permissions for the affected zones. DNS-only origin preparation is complete.
 
+Live `/internal/health` checks confirmed the frontend hostnames still execute the Worker. A DNS-only frontend change will not move traffic while the matching Worker route remains active.
+
 ### VPS
 
 - Docker Compose stack is running on Hostinger.
@@ -214,6 +216,13 @@ Apply only after review:
 
 ```powershell
 .\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch 1 -Apply
+```
+
+If the Worker route has already been manually removed in Cloudflare, use DNS-only mode:
+
+```powershell
+.\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch 1 -SkipWorkerRoutes
+.\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch 1 -SkipWorkerRoutes -Apply
 ```
 
 8. Validate that hostname from a browser and with HTTP status checks.

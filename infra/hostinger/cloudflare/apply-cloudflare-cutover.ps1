@@ -2,6 +2,7 @@ param(
   [ValidateSet("origin", "1", "2", "3", "all")]
   [string]$Batch = "origin",
   [switch]$Apply,
+  [switch]$SkipWorkerRoutes,
   [string]$ManifestPath = "infra/hostinger/cloudflare/cloudflare-cutover-manifest.json"
 )
 
@@ -155,8 +156,10 @@ if (-not $Apply) {
 $zoneMap = Get-ZoneMap
 $records = Get-RecordsForBatch
 
-if ($Batch -ne "origin") {
+if (($Batch -ne "origin") -and (-not $SkipWorkerRoutes)) {
   Test-WorkerRouteAccess -ZoneMap $zoneMap
+} elseif (($Batch -ne "origin") -and $SkipWorkerRoutes) {
+  Write-Warning "Skipping Worker route checks and removals. Use only after frontend Worker routes are already removed or disabled outside this script."
 }
 
 foreach ($record in $records) {
@@ -167,7 +170,7 @@ foreach ($record in $records) {
   Upsert-DnsRecord -ZoneMap $zoneMap -Record $record
 }
 
-if ($Batch -ne "origin") {
+if (($Batch -ne "origin") -and (-not $SkipWorkerRoutes)) {
   foreach ($record in $records) {
     Remove-WorkerRouteIfPresent -ZoneMap $zoneMap -Record $record
   }

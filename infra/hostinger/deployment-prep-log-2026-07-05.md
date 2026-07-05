@@ -243,3 +243,11 @@ Worker route read failed: Cloudflare authentication error
 ```
 
 Conclusion: the current Cloudflare token can manage/read DNS but does not have Worker route read/edit permissions. Frontend cutover is blocked until the token includes Workers Routes permissions for the affected zones.
+
+Additional live audit:
+
+```text
+https://<frontend-host>/internal/health returned the Worker health snapshot for all frontend/API/placement hostnames.
+```
+
+Conclusion: frontend hostnames are still actively handled by the Cloudflare Worker. DNS-only changes will not bypass those routes. Either remove frontend Worker routes through Cloudflare API/dashboard, or manually remove them first and use the cutover script with `-SkipWorkerRoutes` for DNS-only updates.
