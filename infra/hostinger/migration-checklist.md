@@ -33,13 +33,13 @@ Status: planning checklist only.
 
 ## Phase 4: Operational Scripts
 
-- [ ] Generate `build.sh`.
-- [ ] Generate `verify.sh`.
-- [ ] Generate `deploy.sh`.
-- [ ] Generate `rollback.sh`.
-- [ ] Generate `health.sh`.
-- [ ] Generate `backup.sh`.
-- [ ] Generate `restore.sh`.
+- [x] Generate `build.sh`.
+- [x] Generate `verify.sh`.
+- [x] Generate `deploy.sh`.
+- [x] Generate `rollback.sh`.
+- [x] Generate `health.sh`.
+- [x] Generate `backup.sh`.
+- [x] Generate `restore.sh`.
 
 ## Phase 5: Staging Validation
 
