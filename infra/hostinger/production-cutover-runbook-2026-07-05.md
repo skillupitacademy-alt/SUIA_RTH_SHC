@@ -179,6 +179,19 @@ ssh hostinger-quiz-platform "cd /opt/platform/apps/quiz-platform && infra/hostin
 
 4. Confirm Cloud Run rollback targets still answer.
 5. Create `origin-api.*` DNS records.
+
+Dry-run first:
+
+```powershell
+.\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch origin
+```
+
+Apply only after review:
+
+```powershell
+.\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch origin -Apply
+```
+
 6. Validate origin API hostnames:
 
 ```powershell
@@ -188,8 +201,29 @@ curl.exe -k --resolve "origin-api.skillhubcore.in:443:72.61.115.49" https://orig
 ```
 
 7. Update one low-risk frontend DNS record and remove the matching Worker route.
+
+Dry-run first:
+
+```powershell
+.\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch 1
+```
+
+Apply only after review:
+
+```powershell
+.\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch 1 -Apply
+```
+
 8. Validate that hostname from a browser and with HTTP status checks.
 9. Continue frontend hosts in batches.
+
+```powershell
+.\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch 2
+.\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch 2 -Apply
+.\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch 3
+.\infra\hostinger\cloudflare\apply-cloudflare-cutover.ps1 -Batch 3 -Apply
+```
+
 10. Update Worker API upstream variables to `origin-api.*`.
 11. Validate API behavior and login flows.
 12. Monitor logs, CPU, memory, disk, and app errors.

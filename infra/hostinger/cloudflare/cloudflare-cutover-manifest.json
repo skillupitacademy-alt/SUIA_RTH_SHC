@@ -1,0 +1,115 @@
+{
+  "vpsIp": "72.61.115.49",
+  "zones": [
+    "realtutorialhub.com",
+    "skillupitacademy.com",
+    "skillhubcore.in"
+  ],
+  "originApiRecords": [
+    {
+      "hostname": "origin-api.realtutorialhub.com",
+      "zone": "realtutorialhub.com",
+      "type": "A",
+      "content": "72.61.115.49",
+      "proxied": true
+    },
+    {
+      "hostname": "origin-api.skillupitacademy.com",
+      "zone": "skillupitacademy.com",
+      "type": "A",
+      "content": "72.61.115.49",
+      "proxied": true
+    },
+    {
+      "hostname": "origin-api.skillhubcore.in",
+      "zone": "skillhubcore.in",
+      "type": "A",
+      "content": "72.61.115.49",
+      "proxied": true
+    }
+  ],
+  "frontendBatches": {
+    "1": [
+      {
+        "hostname": "user.realtutorialhub.com",
+        "zone": "realtutorialhub.com",
+        "type": "A",
+        "content": "72.61.115.49",
+        "proxied": true,
+        "workerRoute": "user.realtutorialhub.com/*"
+      }
+    ],
+    "2": [
+      {
+        "hostname": "admin.realtutorialhub.com",
+        "zone": "realtutorialhub.com",
+        "type": "A",
+        "content": "72.61.115.49",
+        "proxied": true,
+        "workerRoute": "admin.realtutorialhub.com/*"
+      },
+      {
+        "hostname": "user.skillupitacademy.com",
+        "zone": "skillupitacademy.com",
+        "type": "A",
+        "content": "72.61.115.49",
+        "proxied": true,
+        "workerRoute": "user.skillupitacademy.com/*"
+      }
+    ],
+    "3": [
+      {
+        "hostname": "admin.skillupitacademy.com",
+        "zone": "skillupitacademy.com",
+        "type": "A",
+        "content": "72.61.115.49",
+        "proxied": true,
+        "workerRoute": "admin.skillupitacademy.com/*"
+      },
+      {
+        "hostname": "faculty.skillupitacademy.com",
+        "zone": "skillupitacademy.com",
+        "type": "A",
+        "content": "72.61.115.49",
+        "proxied": true,
+        "workerRoute": "faculty.skillupitacademy.com/*"
+      },
+      {
+        "hostname": "quiz.skillhubcore.in",
+        "zone": "skillhubcore.in",
+        "type": "A",
+        "content": "72.61.115.49",
+        "proxied": true,
+        "workerRoute": "quiz.skillhubcore.in/*"
+      },
+      {
+        "hostname": "tutorial.skillhubcore.in",
+        "zone": "skillhubcore.in",
+        "type": "A",
+        "content": "72.61.115.49",
+        "proxied": true,
+        "workerRoute": "tutorial.skillhubcore.in/*"
+      },
+      {
+        "hostname": "admin.skillhubcore.in",
+        "zone": "skillhubcore.in",
+        "type": "A",
+        "content": "72.61.115.49",
+        "proxied": true,
+        "workerRoute": null
+      }
+    ]
+  },
+  "excludedHostnames": [
+    "placement.skillhubcore.in",
+    "api.realtutorialhub.com",
+    "api.skillupitacademy.com",
+    "api.skillhubcore.in"
+  ],
+  "workerRoutesToKeep": [
+    "api.realtutorialhub.com/*",
+    "api.skillupitacademy.com/*",
+    "api.skillhubcore.in/*",
+    "placement.skillhubcore.in/*"
+  ]
+}
