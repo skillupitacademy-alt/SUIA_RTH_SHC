@@ -11,6 +11,26 @@ workers_dev = true
 vars = { ENVIRONMENT = "production", QUIZ_WEB_URL = "https://quiz-web-app-plldp3atca-as.a.run.app", RTH_ADMIN_URL = "https://quiz-admin-app-plldp3atca-as.a.run.app", SKILLUP_WEB_URL = "https://skillup-web-plldp3atca-as.a.run.app", SKILLUP_ADMIN_URL = "https://skillup-admin-plldp3atca-as.a.run.app", FACULTY_URL = "https://faculty-app-plldp3atca-as.a.run.app", STUDENT_FACULTY_URL = "https://faculty-app-plldp3atca-as.a.run.app", TUTORIAL_SERVICE_URL = "https://realtutorialhub-web-plldp3atca-as.a.run.app", SKILLHUBCORE_URL = "https://origin-api.skillhubcore.in", EXAM_SERVICE_URL = "https://origin-api.realtutorialhub.com", NOTIFICATION_URL = "https://origin-api.realtutorialhub.com", PLACEMENT_URL = "https://skillhub-placement-plldp3atca-as.a.run.app" }
 
 [[env.production.routes]]
+pattern = "user.realtutorialhub.com/*"
+zone_name = "realtutorialhub.com"
+
+[[env.production.routes]]
+pattern = "admin.realtutorialhub.com/*"
+zone_name = "realtutorialhub.com"
+
+[[env.production.routes]]
+pattern = "user.skillupitacademy.com/*"
+zone_name = "skillupitacademy.com"
+
+[[env.production.routes]]
+pattern = "admin.skillupitacademy.com/*"
+zone_name = "skillupitacademy.com"
+
+[[env.production.routes]]
+pattern = "faculty.skillupitacademy.com/*"
+zone_name = "skillupitacademy.com"
+
+[[env.production.routes]]
 pattern = "api.skillupitacademy.com/*"
 zone_name = "skillupitacademy.com"
 
@@ -20,6 +40,14 @@ zone_name = "realtutorialhub.com"
 
 [[env.production.routes]]
 pattern = "api.skillhubcore.in/*"
+zone_name = "skillhubcore.in"
+
+[[env.production.routes]]
+pattern = "quiz.skillhubcore.in/*"
+zone_name = "skillhubcore.in"
+
+[[env.production.routes]]
+pattern = "tutorial.skillhubcore.in/*"
 zone_name = "skillhubcore.in"
 
 [[env.production.routes]]

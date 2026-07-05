@@ -115,20 +115,31 @@ describe('api-gateway', () => {
     expect(headers.get('X-User-ID')).toBeNull();
   });
 
-  it.each([
-    'user.realtutorialhub.com',
-    'admin.realtutorialhub.com',
-    'user.skillupitacademy.com',
-    'admin.skillupitacademy.com',
-    'faculty.skillupitacademy.com',
-    'quiz.skillhubcore.in',
-    'tutorial.skillhubcore.in',
-  ])('does not proxy frontend host traffic through the Worker: %s', async (hostname) => {
+  it('routes skillup user host traffic to the skillup web upstream while frontend Worker routes remain active', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
-    const response = await app.request(`https://${hostname}/dashboard`, undefined, env);
+    const response = await app.request('https://user.skillupitacademy.com/programs', undefined, env);
 
-    expect(response.status).toBe(404);
-    expect(fetchSpy).not.toHaveBeenCalled();
+    expect(response.status).toBe(200);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(env.SKILLUP_WEB_URL);
+  });
+
+  it('routes rth user host traffic to the tutorial upstream while frontend Worker routes remain active', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
+    const response = await app.request('https://user.realtutorialhub.com/learn/remediation', undefined, env);
+
+    expect(response.status).toBe(200);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(env.TUTORIAL_SERVICE_URL);
+  });
+
+  it('routes quiz host traffic to the quiz web upstream while frontend Worker routes remain active', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
+    const response = await app.request('https://quiz.skillhubcore.in/dashboard', undefined, env);
+
+    expect(response.status).toBe(200);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(env.QUIZ_WEB_URL);
   });
 
   it('routes placement host traffic to the placement upstream', async () => {

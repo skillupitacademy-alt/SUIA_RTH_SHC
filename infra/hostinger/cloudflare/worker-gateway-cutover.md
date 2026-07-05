@@ -1,6 +1,14 @@
 # Cloudflare Worker Gateway Cutover
 
-Status: prepared for review. Do not deploy without explicit production approval.
+Status: target architecture approved; route-removal deploy blocked by Cloudflare route permissions.
+
+## Current Production Safety Note
+
+On 2026-07-05, the Worker bundle upload succeeded but Cloudflare route reconciliation failed because the active token could not access `/workers/routes` for all affected zones.
+
+Because existing frontend Worker routes remained attached to the Worker, removing frontend proxy handlers from the Worker code caused frontend homepages to return `404`. A hotfix restored frontend proxy handlers while keeping API upstreams pointed at `origin-api.*`.
+
+Until frontend Worker routes are removed manually in Cloudflare or a token with route permissions is available, the deployed Worker config must retain frontend route declarations and frontend proxy handlers.
 
 ## Decision
 
@@ -25,7 +33,7 @@ placement.skillhubcore.in/*
 
 ## Frontend Routes To Remove
 
-Remove these routes from `services/api-gateway/wrangler.toml` before frontend DNS cutover:
+Remove these routes from `services/api-gateway/wrangler.toml` only after confirming Cloudflare can remove the matching live Worker routes:
 
 ```text
 user.realtutorialhub.com/*
@@ -68,7 +76,7 @@ git diff -- services/api-gateway/wrangler.toml services/api-gateway/src/routes/r
 
 ## Deployment Command
 
-Only after approval:
+Only after approval and route-removal access is confirmed:
 
 ```powershell
 cmd /c pnpm.cmd --filter @quiz/api-gateway exec wrangler deploy --env production
@@ -97,6 +105,8 @@ curl.exe -s https://api.skillhubcore.in/internal/health
 ```
 
 Proceed to frontend DNS batches only after frontend Worker routes are absent. At that point, run `apply-cloudflare-cutover.ps1` with `-SkipWorkerRoutes` for frontend DNS-only updates.
+
+If frontend hostnames still return this Worker health snapshot, do not run frontend DNS cutover.
 
 ## Rollback
 

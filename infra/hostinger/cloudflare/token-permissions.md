@@ -26,6 +26,8 @@ The recommended path is to remove frontend Worker routes by deploying the review
 
 This avoids depending on the legacy `/zones/{zoneId}/workers/routes` API permission, which is not available in every Cloudflare token UI.
 
+Important: if the token cannot reconcile routes, Wrangler may upload the Worker bundle but fail while updating routes. Do not deploy code that removes frontend proxy handlers unless the matching live frontend Worker routes have already been removed or route-removal access is confirmed.
+
 ## Frontend Batch Cutover With Worker Routes API
 
 Required permissions:

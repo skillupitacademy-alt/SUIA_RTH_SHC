@@ -260,3 +260,40 @@ Updated implementation direction:
 - Deploy the Worker configuration after review.
 - Verify frontend hostnames no longer return the Worker `/internal/health` snapshot.
 - Then run frontend DNS batches with `-SkipWorkerRoutes`.
+
+## Worker Deploy Attempt And Hotfix
+
+Worker deploy was attempted after the retained-API Worker configuration was reviewed.
+
+Result:
+
+```text
+Worker bundle upload: succeeded
+Route reconciliation: failed because the token cannot access /workers/routes for all affected zones
+```
+
+Impact:
+
+```text
+Existing frontend Worker routes stayed attached to the Worker.
+The route-removal Worker code no longer proxied frontend hosts.
+Frontend homepage checks returned 404.
+```
+
+Immediate hotfix:
+
+- Restored frontend proxy handlers in `services/api-gateway/src/routes/routing-table.ts`.
+- Restored frontend route declarations in `services/api-gateway/wrangler.toml`.
+- Kept API upstream variables pointed at `origin-api.*`.
+- Redeployed the Worker bundle.
+
+Post-hotfix validation:
+
+```text
+user.realtutorialhub.com/ 200
+user.skillupitacademy.com/ 200
+quiz.skillhubcore.in/ 200
+api.realtutorialhub.com/internal/health 200
+```
+
+Conclusion: API Worker-to-VPS origin routing is live, but frontend Worker routes must remain until Cloudflare route removal is available or completed manually. Do not run frontend DNS cutover yet.
