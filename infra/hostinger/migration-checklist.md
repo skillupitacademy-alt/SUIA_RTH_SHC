@@ -50,7 +50,16 @@ Status: planning checklist only.
 - [x] Define log retention plan.
 - [x] Define dashboard requirements.
 
-## Phase 6: Staging Validation
+## Phase 6: VPS Bootstrap Planning
+
+- [x] Define Ubuntu 24.04 base preparation.
+- [x] Define deploy user and permissions.
+- [x] Define `/opt/platform` filesystem layout.
+- [x] Define UFW and Hostinger firewall requirements.
+- [x] Define Docker installation plan.
+- [x] Define Cloudflare Origin Certificate placement.
+
+## Phase 7: Staging Validation
 
 - [ ] Provision VPS manually or with reviewed bootstrap.
 - [ ] Install Docker and Nginx.
@@ -61,7 +70,7 @@ Status: planning checklist only.
 - [ ] Validate API Worker behavior.
 - [ ] Validate rollback path.
 
-## Phase 7: Production Cutover
+## Phase 8: Production Cutover
 
 - [ ] Lower DNS TTL where applicable.
 - [ ] Confirm Cloud Run remains healthy.
