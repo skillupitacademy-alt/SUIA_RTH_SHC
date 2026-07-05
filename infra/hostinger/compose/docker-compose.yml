@@ -106,7 +106,7 @@ services:
       - "3002"
     healthcheck:
       <<: *next-health-defaults
-      test: ["CMD-SHELL", "wget --spider -q http://127.0.0.1:3002/ || exit 1"]
+      test: ["CMD-SHELL", "wget --spider -q http://127.0.0.1:3002/api/healthz || exit 1"]
 
   realtutorialhub-web:
     <<: *app-defaults
@@ -168,7 +168,7 @@ services:
       - "3000"
     healthcheck:
       <<: *next-health-defaults
-      test: ["CMD-SHELL", "wget --spider -q http://127.0.0.1:3000/api/healthz || exit 1"]
+      test: ["CMD-SHELL", "wget --spider -q http://127.0.0.1:3000/api/health || exit 1"]
 
   skillhub-placement:
     <<: *app-defaults
