@@ -75,6 +75,27 @@ origin-api.skillhubcore.in 403
 
 `403` for SkillHub API root is expected at `/`; `/healthz/` returns `200`.
 
+Outside-in HTTPS checks from the local workstation with DNS overridden to `72.61.115.49`:
+
+```text
+user.realtutorialhub.com 200
+admin.realtutorialhub.com 307
+user.skillupitacademy.com 200
+admin.skillupitacademy.com 307
+faculty.skillupitacademy.com 307
+quiz.skillhubcore.in 200
+tutorial.skillhubcore.in 200
+admin.skillhubcore.in 307
+api.realtutorialhub.com 200
+origin-api.realtutorialhub.com 200
+api.skillupitacademy.com 200
+origin-api.skillupitacademy.com 200
+api.skillhubcore.in 403
+origin-api.skillhubcore.in 403
+api.skillhubcore.in /healthz/ 200
+origin-api.skillhubcore.in /healthz/ 200
+```
+
 ## Placement Scope Note
 
 `placement.skillhubcore.in` is not validated for user traffic in this phase.
