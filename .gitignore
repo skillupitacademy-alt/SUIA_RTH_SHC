@@ -18,6 +18,12 @@ test-results/
 .env.local
 .env.*.local
 
+# Local SSH keys and host access material
+suia_rth
+suia_rth.pub
+*.pem
+*.key
+
 # IDE
 .vscode/
 .idea/
