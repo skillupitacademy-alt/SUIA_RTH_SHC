@@ -111,6 +111,7 @@ Cloud Run remains live during migration. If VPS validation or cutover fails, res
 - Monitoring plan: `infra/hostinger/monitoring/`
 - VPS bootstrap plan: `infra/hostinger/bootstrap/`
 - VPS bootstrap execution checklist: `infra/hostinger/bootstrap/execution-checklist.md`
+- VS Code Remote SSH workflow: `infra/hostinger/remote-ssh/README.md`
 - Staging validation plan: `infra/hostinger/staging-validation-plan.md`
 - Production cutover plan: `infra/hostinger/production-cutover-plan.md`
 - Future GCP decommission plan: `infra/hostinger/gcp-decommission-plan.md`

@@ -1,0 +1,19 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Hostinger: Validate templates",
+      "type": "shell",
+      "command": "powershell.exe",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}/infra/hostinger/validation/validate-templates.ps1"
+      ],
+      "problemMatcher": [],
+      "group": "test"
+    }
+  ]
+}

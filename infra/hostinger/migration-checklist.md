@@ -53,6 +53,9 @@ Status: planning checklist only.
 ## Phase 6: VPS Bootstrap Planning
 
 - [x] Add ordered enterprise bootstrap execution checklist.
+- [x] Add VS Code Remote SSH workflow.
+- [x] Add SSH key setup guide.
+- [x] Add Codex remote operating rules.
 - [x] Define Ubuntu 24.04 base preparation.
 - [x] Define deploy user and permissions.
 - [x] Define `/opt/platform` filesystem layout.
