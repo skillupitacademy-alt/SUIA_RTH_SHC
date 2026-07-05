@@ -1,6 +1,6 @@
 # Hostinger Verification Checklist
 
-Status: partially executed against the Hostinger VPS. Remaining unchecked items require browser, Worker, provider, or cutover validation.
+Status: partially executed against the Hostinger VPS. Retained-Worker origin routing is live; remaining unchecked items require provider, placement, monitoring, or rollback validation.
 
 ## Host
 
@@ -25,10 +25,10 @@ Status: partially executed against the Hostinger VPS. Remaining unchecked items 
 
 ## Nginx
 
-- [ ] Nginx config syntax valid.
+- [x] Nginx config syntax valid.
 - [x] Nginx process running.
-- [ ] Port `80` reachable through Cloudflare.
-- [ ] Port `443` reachable through Cloudflare.
+- [x] Port `80` reachable through Cloudflare.
+- [x] Port `443` reachable through Cloudflare.
 - [x] HTTP redirects to HTTPS.
 - [ ] WebSocket upgrade headers configured.
 - [ ] Per-host access logs present.
@@ -42,6 +42,7 @@ Status: partially executed against the Hostinger VPS. Remaining unchecked items 
 - [x] File permissions restrict private key access.
 - [ ] Cloudflare SSL mode is Full (Strict).
 - [x] `origin-api.*` DNS records exist and route to the VPS through Cloudflare.
+- [x] Frontend `origin-*` DNS records exist and route to the VPS through Cloudflare.
 
 ## External Services
 
@@ -72,8 +73,10 @@ Status: partially executed against the Hostinger VPS. Remaining unchecked items 
 ## Cutover Gates
 
 - [ ] Cloud Run rollback targets are still healthy.
-- [ ] Cloudflare Worker routing model is confirmed.
-- [ ] DNS changes are reviewed but not applied by automation.
+- [x] Cloudflare Worker routing model is confirmed.
+- [x] Frontend Worker upstreams point to VPS origin hostnames.
+- [x] DNS changes are reviewed; only origin records were applied.
 - [x] Origin API DNS preparation completed.
-- [ ] Smoke tests are ready.
+- [x] Frontend origin DNS preparation completed.
+- [x] Smoke tests are ready.
 - [ ] Rollback owner and window are defined.

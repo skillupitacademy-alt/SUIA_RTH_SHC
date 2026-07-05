@@ -299,3 +299,129 @@ api.realtutorialhub.com/internal/health 200
 ```
 
 Conclusion: API Worker-to-VPS origin routing is live, and frontend Worker routes should remain for the recommended path. Prepare dedicated frontend `origin-*` records, certificate coverage, and Nginx aliases before switching frontend Worker upstreams to the VPS.
+
+## Retained Frontend Worker Origin Cutover
+
+The migration direction was updated to retain the Cloudflare Worker for frontend and API traffic. The Worker now remains the public gateway, while frontend and API upstream variables point to dedicated VPS origin hostnames.
+
+Target request path:
+
+```text
+Browser
+Cloudflare Worker
+origin-* hostname
+Hostinger VPS Nginx
+Docker service
+```
+
+Changes executed:
+
+- Added VPS Nginx server aliases for frontend `origin-*` hostnames.
+- Reloaded the containerized Nginx instance after a successful syntax check.
+- Replaced the Cloudflare Origin Certificate with coverage for public hosts, `origin-api.*`, and frontend `origin-*` hostnames.
+- Created proxied Cloudflare DNS records for frontend origin hostnames.
+- Updated production Worker upstream variables to use VPS origin hostnames.
+- Deployed the Worker bundle.
+
+Worker deploy result:
+
+```text
+Worker bundle upload: succeeded
+Route reconciliation: failed because the token cannot access /workers/routes for all affected zones
+```
+
+The route reconciliation failure is the known Cloudflare token permission limitation. The route set was intentionally unchanged for the retained-Worker architecture, and the uploaded Worker configuration is active.
+
+New installed certificate validity:
+
+```text
+notBefore=Jul  5 15:31:00 2026 GMT
+notAfter=Jul  1 15:31:00 2041 GMT
+```
+
+Additional certificate hostnames covered:
+
+```text
+origin-user.realtutorialhub.com
+origin-admin.realtutorialhub.com
+origin-user.skillupitacademy.com
+origin-admin.skillupitacademy.com
+origin-faculty.skillupitacademy.com
+origin-quiz.skillhubcore.in
+origin-tutorial.skillhubcore.in
+origin-admin.skillhubcore.in
+```
+
+Frontend origin DNS records created:
+
+```text
+origin-user.realtutorialhub.com -> 72.61.115.49, proxied
+origin-admin.realtutorialhub.com -> 72.61.115.49, proxied
+origin-user.skillupitacademy.com -> 72.61.115.49, proxied
+origin-admin.skillupitacademy.com -> 72.61.115.49, proxied
+origin-faculty.skillupitacademy.com -> 72.61.115.49, proxied
+origin-quiz.skillhubcore.in -> 72.61.115.49, proxied
+origin-tutorial.skillhubcore.in -> 72.61.115.49, proxied
+origin-admin.skillhubcore.in -> 72.61.115.49, proxied
+```
+
+Worker health snapshot after deploy:
+
+```text
+QUIZ_WEB_URL=https://origin-quiz.skillhubcore.in
+RTH_ADMIN_URL=https://origin-admin.realtutorialhub.com
+SKILLUP_WEB_URL=https://origin-user.skillupitacademy.com
+SKILLUP_ADMIN_URL=https://origin-admin.skillupitacademy.com
+FACULTY_URL=https://origin-faculty.skillupitacademy.com
+TUTORIAL_SERVICE_URL=https://origin-user.realtutorialhub.com
+EXAM_SERVICE_URL=https://origin-api.realtutorialhub.com
+NOTIFICATION_URL=https://origin-api.realtutorialhub.com
+SKILLHUBCORE_URL=https://origin-api.skillhubcore.in
+PLACEMENT_URL=https://skillhub-placement-plldp3atca-as.a.run.app
+```
+
+Public route validation after deploy:
+
+```text
+user.realtutorialhub.com/ 200
+admin.realtutorialhub.com/login 200
+user.skillupitacademy.com/ 200
+admin.skillupitacademy.com/login 200
+faculty.skillupitacademy.com/login 200
+quiz.skillhubcore.in/ 200
+tutorial.skillhubcore.in/ 200
+api.realtutorialhub.com/internal/health 200
+api.skillupitacademy.com/internal/health 200
+api.skillhubcore.in/internal/health 200
+```
+
+Origin route validation after deploy:
+
+```text
+origin-user.realtutorialhub.com/ 200
+origin-user.skillupitacademy.com/ 200
+origin-admin.skillupitacademy.com/login 200
+origin-faculty.skillupitacademy.com/login 200
+origin-quiz.skillhubcore.in/ 200
+origin-tutorial.skillhubcore.in/ 200
+origin-api.realtutorialhub.com/api/health/live 200
+origin-api.skillupitacademy.com/api/health/live 200
+origin-api.skillhubcore.in/healthz/ 200
+```
+
+`origin-admin.realtutorialhub.com/login` returned `000` through the local workstation resolver, but Cloudflare DNS resolved the record through `1.1.1.1`, and forcing the request through Cloudflare edge returned `200`. Treat this as local resolver or propagation cache, not an origin or Nginx failure.
+
+VPS validation:
+
+```text
+Nginx syntax: ok
+Nginx container: healthy
+Application containers: healthy
+Only Nginx publishes ports 80 and 443
+```
+
+Remaining notes:
+
+- `placement.skillhubcore.in` remains excluded and still points to Cloud Run.
+- No GCP resources were modified.
+- No public frontend DNS batch cutover is required for the retained-Worker architecture.
