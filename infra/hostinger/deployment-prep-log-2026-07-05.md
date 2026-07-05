@@ -425,3 +425,90 @@ Remaining notes:
 - `placement.skillhubcore.in` remains excluded and still points to Cloud Run.
 - No GCP resources were modified.
 - No public frontend DNS batch cutover is required for the retained-Worker architecture.
+
+## Operations Hardening
+
+Operations hardening was applied after the retained-Worker origin cutover.
+
+Repository changes synced to the VPS:
+
+- Monitoring stack templates.
+- Security hardening templates.
+- Internal-only Nginx status endpoint.
+- Monitoring start/stop scripts.
+- Updated backup script.
+
+Nginx monitoring endpoint:
+
+```text
+Nginx syntax: ok
+Nginx reload: ok
+Container-local /nginx_status: ok
+```
+
+Security baseline:
+
+```text
+fail2ban: active
+unattended-upgrades: active
+fail2ban sshd jail: enabled
+currently banned sshd IPs: 0
+```
+
+Monitoring stack:
+
+```text
+Grafana: running on 127.0.0.1:3009
+Prometheus: running on 127.0.0.1:9090
+Loki: running on 127.0.0.1:3100
+Promtail: running
+Node Exporter: running
+cAdvisor: running and healthy
+Blackbox Exporter: running
+Nginx Exporter: running
+```
+
+Monitoring target status:
+
+```text
+active_targets: 15
+target_health: up
+```
+
+Public exposure check:
+
+```text
+0.0.0.0:80 -> Nginx only
+0.0.0.0:443 -> Nginx only
+127.0.0.1:3009 -> Grafana
+127.0.0.1:9090 -> Prometheus
+127.0.0.1:3100 -> Loki
+```
+
+Backup:
+
+```text
+/opt/platform/backups/20260705T161041Z
+```
+
+Post-hardening public route validation:
+
+```text
+user.realtutorialhub.com/ 200
+admin.realtutorialhub.com/login 200
+user.skillupitacademy.com/ 200
+admin.skillupitacademy.com/login 200
+faculty.skillupitacademy.com/login 200
+quiz.skillhubcore.in/ 200
+tutorial.skillhubcore.in/ 200
+api.realtutorialhub.com/internal/health 200
+api.skillupitacademy.com/internal/health 200
+api.skillhubcore.in/internal/health 200
+```
+
+Remaining operational items:
+
+- Rotate shared Cloudflare and SSH credentials.
+- Configure an external alert destination.
+- Review SSH root/password policy after confirming non-root sudo access.
+- Continue 7-14 days of observation before any GCP decommissioning.

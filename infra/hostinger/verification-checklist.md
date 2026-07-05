@@ -11,6 +11,8 @@ Status: partially executed against the Hostinger VPS. Retained-Worker origin rou
 - [ ] CPU load below alert threshold.
 - [ ] Time sync active.
 - [x] Firewall allows only required public ports.
+- [x] Fail2Ban enabled for SSH.
+- [x] Unattended security upgrades enabled.
 
 ## Docker
 
@@ -30,9 +32,24 @@ Status: partially executed against the Hostinger VPS. Retained-Worker origin rou
 - [x] Port `80` reachable through Cloudflare.
 - [x] Port `443` reachable through Cloudflare.
 - [x] HTTP redirects to HTTPS.
+- [x] Internal `/nginx_status` endpoint enabled for metrics exporter.
 - [ ] WebSocket upgrade headers configured.
 - [ ] Per-host access logs present.
 - [ ] Security headers present.
+
+## Monitoring
+
+- [x] Prometheus running on `127.0.0.1:9090`.
+- [x] Grafana running on `127.0.0.1:3009`.
+- [x] Loki running on `127.0.0.1:3100`.
+- [x] Promtail running.
+- [x] Node Exporter running.
+- [x] cAdvisor running.
+- [x] Blackbox Exporter running.
+- [x] Nginx Exporter running.
+- [x] Prometheus targets report `up`.
+- [ ] External alert destination configured.
+- [ ] Alert delivery test completed.
 
 ## Cloudflare Origin TLS
 
@@ -80,3 +97,6 @@ Status: partially executed against the Hostinger VPS. Retained-Worker origin rou
 - [x] Frontend origin DNS preparation completed.
 - [x] Smoke tests are ready.
 - [ ] Rollback owner and window are defined.
+- [x] First VPS configuration backup completed.
+- [ ] Shared Cloudflare and SSH credentials rotated.
+- [ ] 7-14 day observation period completed.
