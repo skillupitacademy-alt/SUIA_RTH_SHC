@@ -1,7 +1,7 @@
 # Hostinger Deployment Preparation Log
 
 Date: 2026-07-05
-Status: deployment preparation completed up to the Cloudflare Origin Certificate gate
+Status: deployment preparation completed through the Cloudflare Origin Certificate gate
 
 ## Completed
 
@@ -12,6 +12,10 @@ Status: deployment preparation completed up to the Cloudflare Origin Certificate
 - Set `/opt/platform/env/.env.production` mode to `0600`.
 - Copied the committed repository snapshot to `/opt/platform/apps/quiz-platform`.
 - Verified no local `.env`, `.pem`, `.key`, or SSH key files exist in the VPS repository checkout.
+- Generated and installed a Cloudflare Origin Certificate.
+- Installed the Cloudflare Origin Certificate private key.
+- Verified the certificate parses with OpenSSL.
+- Verified the private key parses with OpenSSL.
 - Validated Docker Compose configuration on the VPS using:
 
 ```bash
@@ -33,36 +37,56 @@ Result: `COMPOSE_CONFIG_OK`
 - Added `.env.production` to `.gitignore`.
 - Confirmed the file is not present in the refreshed VPS checkout.
 
-## Blocker
+## Cloudflare Origin Certificate
 
-Cloudflare Origin Certificate installation is blocked by Cloudflare credentials:
-
-- Existing `CLOUDFLARE_API_TOKEN` authenticates as expired.
-- Existing `CLOUDFLARE_API_TOKEN_ACCESS` does not authenticate.
-- Existing `CLOUDFLARE_API_TOKEN_SKILLUP` authenticates but was not accepted for Origin CA certificate generation.
-- Newly provided Cloudflare token was rejected by Cloudflare token verification as invalid.
-- Existing global API key plus inferred account email failed Cloudflare authentication.
-
-## Required Next Input
-
-Provide one of:
-
-- A valid Cloudflare API token with permission to create Origin CA certificates.
-- Manually generated Cloudflare Origin Certificate and private key files.
-
-Required VPS target paths:
+Final installed paths:
 
 ```text
 /opt/platform/nginx/certs/cloudflare-origin.pem
 /opt/platform/nginx/certs/cloudflare-origin.key
 ```
 
-Required permissions:
+Permissions:
 
 ```text
 root:root 0644 cloudflare-origin.pem
 root:root 0600 cloudflare-origin.key
 ```
+
+Validity:
+
+```text
+notBefore=Jul  5 08:34:00 2026 GMT
+notAfter=Jul  1 08:34:00 2041 GMT
+```
+
+Covered hostnames requested:
+
+```text
+user.realtutorialhub.com
+admin.realtutorialhub.com
+api.realtutorialhub.com
+origin-api.realtutorialhub.com
+user.skillupitacademy.com
+admin.skillupitacademy.com
+faculty.skillupitacademy.com
+api.skillupitacademy.com
+origin-api.skillupitacademy.com
+quiz.skillhubcore.in
+tutorial.skillhubcore.in
+placement.skillhubcore.in
+admin.skillhubcore.in
+api.skillhubcore.in
+origin-api.skillhubcore.in
+```
+
+## Previous Credential Notes
+
+- Existing `CLOUDFLARE_API_TOKEN` authenticated as expired.
+- Existing `CLOUDFLARE_API_TOKEN_ACCESS` did not authenticate.
+- Existing `CLOUDFLARE_API_TOKEN_SKILLUP` authenticated but was not accepted for Origin CA certificate generation.
+- First newly provided token was rejected by Cloudflare token verification as invalid.
+- Final newly provided token authenticated and was used to generate the installed Origin Certificate.
 
 ## Not Executed
 
