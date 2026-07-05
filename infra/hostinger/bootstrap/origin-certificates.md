@@ -13,6 +13,8 @@ Generate the certificate in Cloudflare. Do not generate or store real private ke
 /opt/platform/nginx/certs/cloudflare-origin.key
 ```
 
+The broader VPS layout also reserves `/opt/platform/ssl`. Use one certificate location consistently after review; the current Nginx templates expect `/opt/platform/nginx/certs` through `HOSTINGER_CERT_DIR`.
+
 ## Permissions
 
 ```bash

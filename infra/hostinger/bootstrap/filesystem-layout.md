@@ -7,15 +7,16 @@ Status: planning instructions only.
 ```text
 /opt/platform
 +-- apps/
++-- backups/
 +-- compose/
 +-- docker/
 +-- env/
 +-- logs/
 +-- monitoring/
 +-- nginx/
-|   +-- certs/
++-- operations/
 +-- scripts/
-+-- backups/
++-- ssl/
 ```
 
 ## Purpose
@@ -26,9 +27,10 @@ Status: planning instructions only.
 | `/opt/platform/compose/` | Reviewed Compose files if copied outside repo. |
 | `/opt/platform/env/` | Production environment files. |
 | `/opt/platform/logs/` | Nginx and operational logs. |
-| `/opt/platform/nginx/` | Nginx config and certificate mount material. |
-| `/opt/platform/nginx/certs/` | Cloudflare Origin Certificate files. |
+| `/opt/platform/nginx/` | Nginx config material. |
+| `/opt/platform/operations/` | Operator notes and handoff files. |
 | `/opt/platform/scripts/` | Approved operational scripts. |
+| `/opt/platform/ssl/` | Cloudflare Origin Certificate files. |
 | `/opt/platform/backups/` | Local config backups. |
 
 ## Directory Creation
@@ -36,5 +38,5 @@ Status: planning instructions only.
 Candidate command for review:
 
 ```bash
-mkdir -p /opt/platform/{apps,compose,docker,env,logs,monitoring,nginx/certs,scripts,backups}
+mkdir -p /opt/platform/{apps,backups,compose,docker,env,logs,monitoring,nginx,operations,scripts,ssl}
 ```

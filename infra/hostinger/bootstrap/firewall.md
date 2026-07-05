@@ -14,6 +14,10 @@ Only these public ports should be open:
 
 Application ports must not be exposed publicly.
 
+## Current Reachability Note
+
+From the local Codex environment, TCP connection to `72.61.115.49:22` failed. Before running bootstrap commands, verify Hostinger's firewall panel and VPS SSH service allow SSH access.
+
 ## UFW Candidate Commands
 
 ```bash

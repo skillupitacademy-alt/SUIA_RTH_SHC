@@ -16,12 +16,17 @@ These documents describe how the Hostinger VPS should be prepared before staging
 
 ## Documents
 
+- `execution-checklist.md`: ordered bootstrap execution checklist.
 - `ubuntu-24.04.md`: base OS and package preparation.
 - `users-and-permissions.md`: deploy user, groups, and file ownership.
 - `filesystem-layout.md`: `/opt/platform` directory structure.
 - `firewall.md`: UFW and Hostinger firewall requirements.
 - `docker.md`: Docker installation and verification.
 - `origin-certificates.md`: certificate placement and permissions.
+
+## Current Blocker
+
+SSH reachability to `72.61.115.49:22` must be confirmed before executing this phase remotely.
 
 ## Non-Goals
 

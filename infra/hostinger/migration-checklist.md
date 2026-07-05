@@ -52,6 +52,7 @@ Status: planning checklist only.
 
 ## Phase 6: VPS Bootstrap Planning
 
+- [x] Add ordered enterprise bootstrap execution checklist.
 - [x] Define Ubuntu 24.04 base preparation.
 - [x] Define deploy user and permissions.
 - [x] Define `/opt/platform` filesystem layout.
