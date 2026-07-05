@@ -73,3 +73,17 @@ Then run:
 ```bash
 infra/hostinger/scripts/verify.sh
 ```
+
+## Automated Local Check
+
+The validation script added for repeatable local checks is:
+
+```bash
+infra/hostinger/validation/validate-templates.sh
+```
+
+On Windows workstations without WSL, use:
+
+```powershell
+.\infra\hostinger\validation\validate-templates.ps1
+```
