@@ -38,3 +38,13 @@ Codex does not need the root password. It uses your approved VS Code terminal se
 - `vscode-remote-ssh.md`
 - `codex-remote-operating-rules.md`
 - `bootstrap-via-remote-ssh.md`
+
+## Passphrase-Protected Key Helper
+
+If the Hostinger SSH key is passphrase-protected, load it into Windows `ssh-agent` from an interactive PowerShell terminal:
+
+```powershell
+.\infra\hostinger\remote-ssh\load-hostinger-key.ps1
+```
+
+Enter the passphrase only at the `ssh-add` prompt. Do not place the passphrase in scripts, command arguments, repository files, or chat messages.
