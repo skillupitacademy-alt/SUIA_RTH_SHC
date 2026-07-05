@@ -83,8 +83,8 @@ This keeps API authentication, brand resolution, rewriting, and gateway behavior
 
 1. Planning docs reviewed.
 2. Compose design generated for review.
-3. Nginx design reviewed.
-4. Cloudflare design reviewed.
+3. Nginx design generated for review.
+4. Cloudflare design generated for review.
 5. VPS staging deployment reviewed.
 6. Production cutover approved.
 7. GCP decommission approved separately.
@@ -105,3 +105,5 @@ Cloud Run remains live during migration. If VPS validation or cutover fails, res
 - Verification checklist: `infra/hostinger/verification-checklist.md`
 - Operations: `infra/hostinger/operations/`
 - Compose templates: `infra/hostinger/compose/`
+- Nginx templates: `infra/hostinger/nginx/`
+- Cloudflare planning: `infra/hostinger/cloudflare/`

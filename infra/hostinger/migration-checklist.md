@@ -24,12 +24,12 @@ Status: planning checklist only.
 
 ## Phase 3: Nginx Design
 
-- [ ] Generate Nginx config.
-- [ ] Add Cloudflare Origin Certificate paths.
-- [ ] Add Cloudflare real IP handling.
-- [ ] Add WebSocket support.
-- [ ] Add security headers.
-- [ ] Add access and error log layout.
+- [x] Generate Nginx config.
+- [x] Add Cloudflare Origin Certificate paths.
+- [x] Add Cloudflare real IP handling.
+- [x] Add WebSocket support.
+- [x] Add security headers.
+- [x] Add access and error log layout.
 
 ## Phase 4: Operational Scripts
 
