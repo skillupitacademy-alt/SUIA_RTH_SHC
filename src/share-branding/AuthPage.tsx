@@ -113,7 +113,7 @@ function AuthContent({ brand, initialMode = 'login' }: AuthPageProps) {
           hasRedirectParam: !!redirectTarget,
         });
         
-        router.push(destination);
+        window.location.assign(destination);
       } catch (error) {
         setSubmitError(error instanceof Error ? error.message : 'Authentication failed');
       } finally {
@@ -144,7 +144,7 @@ function AuthContent({ brand, initialMode = 'login' }: AuthPageProps) {
         
         // ✅ STEP 3: Navigate based on fresh state
         // Server component will re-fetch and verify (double-check pattern)
-        router.push(sessionState.onboardingCompleted === true ? '/dashboard' : '/onboarding');
+        window.location.assign(sessionState.onboardingCompleted === true ? '/dashboard' : '/onboarding');
       } catch (error) {
         setSubmitError(error instanceof Error ? error.message : 'Authentication failed');
       } finally {
