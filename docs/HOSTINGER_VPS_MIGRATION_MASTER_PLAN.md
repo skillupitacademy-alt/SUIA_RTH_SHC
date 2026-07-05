@@ -82,7 +82,7 @@ This keeps API authentication, brand resolution, rewriting, and gateway behavior
 ## Validation Gates
 
 1. Planning docs reviewed.
-2. Compose design reviewed.
+2. Compose design generated for review.
 3. Nginx design reviewed.
 4. Cloudflare design reviewed.
 5. VPS staging deployment reviewed.
@@ -104,3 +104,4 @@ Cloud Run remains live during migration. If VPS validation or cutover fails, res
 - Migration checklist: `infra/hostinger/migration-checklist.md`
 - Verification checklist: `infra/hostinger/verification-checklist.md`
 - Operations: `infra/hostinger/operations/`
+- Compose templates: `infra/hostinger/compose/`

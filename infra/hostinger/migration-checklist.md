@@ -16,11 +16,11 @@ Status: planning checklist only.
 
 ## Phase 2: Compose Design
 
-- [ ] Generate Docker Compose files.
-- [ ] Define internal networks.
-- [ ] Define service health checks.
-- [ ] Define volumes.
-- [ ] Verify no app container publishes public ports.
+- [x] Generate Docker Compose files.
+- [x] Define internal networks.
+- [x] Define service health checks.
+- [x] Define volumes.
+- [x] Verify no app container publishes public ports.
 
 ## Phase 3: Nginx Design
 
