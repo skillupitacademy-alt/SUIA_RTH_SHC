@@ -15,7 +15,7 @@
 
 export type Role = 'student' | 'admin' | 'super_admin' | 'faculty';
 
-const VALID_ROLES: Set<Role> = new Set(['user', 'student', 'admin', 'super_admin', 'faculty']);
+const VALID_ROLES: Set<Role> = new Set(['student', 'admin', 'super_admin', 'faculty']);
 
 /**
  * Canonicalize roles to ensure consistent behavior across brands
@@ -126,5 +126,5 @@ export function isAdmin(roles: string[]): boolean {
  * @returns True if user is regular user
  */
 export function isRegularUser(roles: string[]): boolean {
-  return hasRole(roles, 'user') && !isAdmin(roles);
+  return hasRole(roles, 'student') && !isAdmin(roles);
 }
