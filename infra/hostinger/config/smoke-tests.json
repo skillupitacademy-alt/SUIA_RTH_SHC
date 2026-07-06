@@ -1,0 +1,123 @@
+{
+  "version": "3.0",
+  "description": "HTTP smoke tests for deployment validation",
+  "tests": {
+    "api-server": {
+      "name": "API Server Health",
+      "method": "GET",
+      "url": "http://api-server:3000/api/health/live",
+      "expected_status": 200,
+      "timeout_seconds": 10,
+      "required": true,
+      "execute_from": "nginx"
+    },
+    "api-server-ready": {
+      "name": "API Server Readiness",
+      "method": "GET",
+      "url": "http://api-server:3000/api/health/ready",
+      "expected_status": 200,
+      "timeout_seconds": 10,
+      "required": false,
+      "execute_from": "nginx"
+    },
+    "realtutorialhub-web": {
+      "name": "RTH Web Homepage",
+      "method": "GET",
+      "url": "http://realtutorialhub-web:3003/",
+      "expected_status": 200,
+      "timeout_seconds": 15,
+      "required": true,
+      "execute_from": "nginx"
+    },
+    "realtutorialhub-web-health": {
+      "name": "RTH Web Health",
+      "method": "GET",
+      "url": "http://realtutorialhub-web:3003/api/healthz",
+      "expected_status": 200,
+      "timeout_seconds": 10,
+      "required": false,
+      "execute_from": "nginx"
+    },
+    "realtutorialhub-quiz": {
+      "name": "RTH Quiz Homepage",
+      "method": "GET",
+      "url": "http://realtutorialhub-quiz:3005/",
+      "expected_status": 200,
+      "timeout_seconds": 15,
+      "required": true,
+      "execute_from": "nginx"
+    },
+    "realtutorialhub-admin": {
+      "name": "RTH Admin Homepage",
+      "method": "GET",
+      "url": "http://realtutorialhub-admin:3006/",
+      "expected_status": 200,
+      "timeout_seconds": 15,
+      "required": true,
+      "execute_from": "nginx"
+    },
+    "skillup-web": {
+      "name": "SkillUp Web Health",
+      "method": "GET",
+      "url": "http://skillup-web:3004/api/healthz",
+      "expected_status": 200,
+      "timeout_seconds": 10,
+      "required": true,
+      "execute_from": "nginx"
+    },
+    "skillup-web-home": {
+      "name": "SkillUp Web Homepage",
+      "method": "GET",
+      "url": "http://skillup-web:3004/",
+      "expected_status": 200,
+      "timeout_seconds": 15,
+      "required": false,
+      "execute_from": "nginx"
+    },
+    "skillup-admin": {
+      "name": "SkillUp Admin Homepage",
+      "method": "GET",
+      "url": "http://skillup-admin:3007/",
+      "expected_status": 200,
+      "timeout_seconds": 15,
+      "required": true,
+      "execute_from": "nginx"
+    },
+    "faculty-app": {
+      "name": "Faculty App Homepage",
+      "method": "GET",
+      "url": "http://faculty-app:3008/",
+      "expected_status": 200,
+      "timeout_seconds": 15,
+      "required": true,
+      "execute_from": "nginx"
+    },
+    "skillhubcore-admin": {
+      "name": "SkillHub Core Admin",
+      "method": "GET",
+      "url": "http://skillhubcore-admin:3009/",
+      "expected_status": 200,
+      "timeout_seconds": 15,
+      "required": true,
+      "execute_from": "nginx"
+    },
+    "skillhub-placement": {
+      "name": "SkillHub Placement",
+      "method": "GET",
+      "url": "http://skillhub-placement:3010/",
+      "expected_status": 200,
+      "timeout_seconds": 15,
+      "required": true,
+      "execute_from": "nginx"
+    },
+    "skillhubcore-service": {
+      "name": "SkillHub Core Service",
+      "method": "GET",
+      "url": "http://skillhubcore-service:3011/health",
+      "expected_status": 200,
+      "timeout_seconds": 10,
+      "required": true,
+      "execute_from": "nginx"
+    }
+  }
+}

@@ -1,12 +1,133 @@
 {
+  "version": "3.0",
+  "description": "Service mapping for incremental deployment detection",
   "services": {
     "api-server": {
-      "path": "apps/api-server",
-      "dependencies": ["packages/auth", "packages/db"]
+      "name": "api-server",
+      "source_path": "apps/api-server",
+      "compose_name": "api-server",
+      "image_name": "api-server",
+      "dependencies": [
+        "packages/auth",
+        "packages/db",
+        "packages/types"
+      ],
+      "health_check_required": true
     },
     "realtutorialhub-web": {
-      "path": "apps/realtutorialhub-web",
-      "dependencies": ["packages/ui", "packages/auth"]
+      "name": "realtutorialhub-web",
+      "source_path": "apps/realtutorialhub-web",
+      "compose_name": "realtutorialhub-web",
+      "image_name": "realtutorialhub-web",
+      "dependencies": [
+        "packages/ui",
+        "packages/auth",
+        "packages/types"
+      ],
+      "health_check_required": true
+    },
+    "realtutorialhub-quiz": {
+      "name": "realtutorialhub-quiz",
+      "source_path": "apps/realtutorialhub-quiz",
+      "compose_name": "realtutorialhub-quiz",
+      "image_name": "realtutorialhub-quiz",
+      "dependencies": [
+        "packages/ui",
+        "packages/auth",
+        "packages/types"
+      ],
+      "health_check_required": true
+    },
+    "realtutorialhub-admin": {
+      "name": "realtutorialhub-admin",
+      "source_path": "apps/realtutorialhub-admin",
+      "compose_name": "realtutorialhub-admin",
+      "image_name": "realtutorialhub-admin",
+      "dependencies": [
+        "packages/ui",
+        "packages/auth",
+        "packages/types"
+      ],
+      "health_check_required": true
+    },
+    "skillup-web": {
+      "name": "skillup-web",
+      "source_path": "apps/skillup-web",
+      "compose_name": "skillup-web",
+      "image_name": "skillup-web",
+      "dependencies": [
+        "packages/ui",
+        "packages/auth",
+        "packages/types"
+      ],
+      "health_check_required": true
+    },
+    "skillup-admin": {
+      "name": "skillup-admin",
+      "source_path": "apps/skillup-admin",
+      "compose_name": "skillup-admin",
+      "image_name": "skillup-admin",
+      "dependencies": [
+        "packages/ui",
+        "packages/auth",
+        "packages/types"
+      ],
+      "health_check_required": true
+    },
+    "faculty-app": {
+      "name": "faculty-app",
+      "source_path": "apps/faculty-app",
+      "compose_name": "faculty-app",
+      "image_name": "faculty-app",
+      "dependencies": [
+        "packages/ui",
+        "packages/auth",
+        "packages/types"
+      ],
+      "health_check_required": true
+    },
+    "skillhubcore-admin": {
+      "name": "skillhubcore-admin",
+      "source_path": "apps/skillhubcore-admin",
+      "compose_name": "skillhubcore-admin",
+      "image_name": "skillhubcore-admin",
+      "dependencies": [
+        "packages/ui",
+        "packages/auth",
+        "packages/types"
+      ],
+      "health_check_required": true
+    },
+    "skillhub-placement": {
+      "name": "skillhub-placement",
+      "source_path": "apps/skillhub-placement",
+      "compose_name": "skillhub-placement",
+      "image_name": "skillhub-placement",
+      "dependencies": [
+        "packages/ui",
+        "packages/auth",
+        "packages/types"
+      ],
+      "health_check_required": true
+    },
+    "skillhubcore-service": {
+      "name": "skillhubcore-service",
+      "source_path": "services/skillhubcore-service",
+      "compose_name": "skillhubcore-service",
+      "image_name": "skillhubcore-service",
+      "dependencies": [
+        "packages/db",
+        "packages/types"
+      ],
+      "health_check_required": true
+    },
+    "nginx": {
+      "name": "nginx",
+      "source_path": "infra/hostinger/nginx",
+      "compose_name": "nginx",
+      "image_name": "nginx",
+      "dependencies": [],
+      "health_check_required": false
     }
   }
 }

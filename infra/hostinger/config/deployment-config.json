@@ -1,0 +1,43 @@
+{
+  "version": "3.0",
+  "description": "Production deployment configuration for quiz-platform",
+  "deployment": {
+    "state_directory": "/opt/platform/state",
+    "history_retention": 30,
+    "lock_timeout_seconds": 1800,
+    "build_timeout_seconds": 1800,
+    "health_check_timeout_seconds": 60,
+    "health_check_interval_seconds": 5
+  },
+  "resource_requirements": {
+    "minimum_disk_free_percent": 15,
+    "minimum_memory_free_percent": 20,
+    "maximum_cpu_load": 8.0,
+    "minimum_inodes_free": 10000
+  },
+  "docker": {
+    "buildkit_enabled": true,
+    "compose_project_name": "quiz-platform",
+    "prune_images_older_than_days": 7,
+    "keep_image_versions": 3
+  },
+  "shared_paths": {
+    "packages": "packages/",
+    "root_configs": [
+      "turbo.json",
+      "package.json",
+      "pnpm-lock.yaml",
+      "pnpm-workspace.yaml"
+    ],
+    "infrastructure": [
+      "infra/hostinger/nginx/",
+      "infra/hostinger/env/"
+    ]
+  },
+  "deployment_triggers": {
+    "rebuild_all_on_shared_change": true,
+    "rebuild_all_on_root_config_change": true,
+    "restart_all_on_env_change": true,
+    "restart_nginx_on_config_change": true
+  }
+}
