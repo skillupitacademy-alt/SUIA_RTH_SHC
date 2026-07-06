@@ -41,7 +41,8 @@ export async function requireStudent(request: Request) {
     }
     
     // Validate user has required role (this was missing before!)
-    const allowedRoles = ['student', 'user', 'admin', 'super_admin', 'faculty'];
+    // 🔥 NOTE: Keeping 'user' for backward compatibility during transition, but 'student' is canonical
+    const allowedRoles = ['student', 'admin', 'super_admin', 'faculty'];
     const hasValidRole = normalizedRoles.some(role => allowedRoles.includes(role));
     
     if (!hasValidRole) {

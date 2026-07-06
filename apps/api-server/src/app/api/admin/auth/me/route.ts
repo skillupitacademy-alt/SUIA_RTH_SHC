@@ -65,8 +65,10 @@ async function handler(_req: NextRequest) {
     const profile = Array.isArray(_user.profile) ? _user.profile[0] ?? {} : (_user.profile ?? {});
     const typedProfile = profile as { name?: string | null };
 
-    const role = _user.userRoles[0]?.role?.name?.toLowerCase() ?? 'user';
-    const roleArray = [role].filter((r): r is Role => ['user', 'student', 'admin', 'super_admin', 'faculty', 'infrastructure'].includes(r)) as Role[];
+    const rawRole = _user.userRoles[0]?.role?.name?.toLowerCase() ?? 'student';
+    // 🔥 UNIFY: Convert 'user' → 'student'
+    const role = rawRole === 'user' ? 'student' : rawRole;
+    const roleArray = [role].filter((r): r is Role => ['student', 'admin', 'super_admin', 'faculty', 'infrastructure'].includes(r)) as Role[];
     
     // RBAC check
     if (!RBACService.hasPermission(roleArray, PERMISSIONS.ADMIN_PANEL)) {

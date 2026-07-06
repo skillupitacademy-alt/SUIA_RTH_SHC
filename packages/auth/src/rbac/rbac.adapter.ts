@@ -111,7 +111,7 @@ export class RBACUserUtils {
    * Get user's primary role (first role, or highest privilege)
    */
   static getPrimaryRole(user: RBACUser): Role {
-    const roleHierarchy: Role[] = ['super_admin', 'admin', 'faculty', 'user'];
+    const roleHierarchy: Role[] = ['super_admin', 'admin', 'faculty', 'student'];
     
     for (const role of roleHierarchy) {
       if (user.roles.includes(role)) {

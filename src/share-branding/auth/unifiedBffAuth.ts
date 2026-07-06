@@ -34,6 +34,7 @@ export interface BffAuthResult {
  */
 
 // 🔥 TYPE SAFETY: Define valid roles for RBAC preparation
+// NOTE: 'user' kept in type for backward compatibility during transition, but 'student' is canonical
 export type Role = 'user' | 'student' | 'admin' | 'super_admin' | 'faculty';
 
 const VALID_ROLES: Set<Role> = new Set(['user', 'student', 'admin', 'super_admin', 'faculty']);
@@ -41,7 +42,9 @@ const VALID_ROLES: Set<Role> = new Set(['user', 'student', 'admin', 'super_admin
 function normalizeRoles(roles: string[] = []): Role[] {
   const normalized = roles
     .map(role => role.toLowerCase().trim())
-    .filter(role => role.length > 0);
+    .filter(role => role.length > 0)
+    // 🔥 UNIFY: Convert 'user' → 'student' for canonical role
+    .map(role => role === 'user' ? 'student' : role);
   
   // 🚨 SECURITY AUDIT: Log non-normalized roles for monitoring (dev only)
   const hasUppercase = roles.some(role => role !== role.toLowerCase());

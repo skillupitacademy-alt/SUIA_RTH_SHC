@@ -20,18 +20,20 @@ import { getAuthBrandContext, shouldUseBrandBinding } from '@/modules/auth/brand
 export const dynamic = 'force-dynamic';
 
 // 🔥 RBAC: Role normalization function (local copy to avoid import issues)
-const VALID_ROLES: Set<Role> = new Set(['user', 'admin', 'super_admin', 'faculty']);
+const VALID_ROLES: Set<Role> = new Set(['student', 'admin', 'super_admin', 'faculty']);
 
 function normalizeRoles(roles: string[] = []): Role[] {
   const normalized = roles
     .map(role => role.toLowerCase().trim())
-    .filter(role => role.length > 0);
+    .filter(role => role.length > 0)
+    // 🔥 UNIFY: Convert 'user' → 'student'
+    .map(role => role === 'user' ? 'student' : role);
   
   // Filter out unknown roles for security
   const validRoles = normalized.filter((role): role is Role => VALID_ROLES.has(role as Role));
   
   // 🚨 CRITICAL SECURITY: Return empty array if no valid roles
-  // DO NOT fallback to ['user'] here - that would make RBAC fake
+  // DO NOT fallback to ['student'] here - that would make RBAC fake
   // Let the caller decide what to do with empty roles
   return [...new Set(validRoles)];
 }
