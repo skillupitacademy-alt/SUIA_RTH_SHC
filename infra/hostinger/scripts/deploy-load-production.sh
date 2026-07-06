@@ -68,6 +68,10 @@ done
 
 log_header "Restart Phase"
 compose up -d --no-build --no-deps $SERVICES
+if compose ps -q nginx >/dev/null 2>&1; then
+  log_info "Reloading Nginx so Docker DNS upstreams point to the recreated containers"
+  compose exec -T nginx nginx -s reload || compose restart nginx
+fi
 wait_for_services_health "$SERVICES" "$DEPLOY_HEALTH_TIMEOUT" "$DEPLOY_HEALTH_INTERVAL"
 run_smoke_tests "$SERVICES" "$SMOKE_TESTS"
 
