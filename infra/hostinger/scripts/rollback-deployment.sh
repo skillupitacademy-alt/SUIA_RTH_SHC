@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# Deployment Rollback V3.1
+# Deployment Rollback V3.2
 # Rolls back using immutable image tags recorded in deployment history.
 
 set -eu
@@ -19,7 +19,7 @@ if [ "${1:-}" = "--deployment-id" ]; then
   TARGET_DEPLOYMENT_ID="${2:-}"
 fi
 
-log_header "Deployment Rollback V3.1"
+log_header "Deployment Rollback V3.2"
 
 validate_deployment_tools rollback || exit 1
 validate_configuration_files "$CONFIG_DIR" || exit 1
@@ -90,11 +90,16 @@ for service in $ROLLBACK_SERVICES; do
   image_name=$(jq -r --arg service "$service" '.images[$service].image_name // empty' "$TARGET_PATH")
   tag=$(jq -r --arg service "$service" '.images[$service].tag // empty' "$TARGET_PATH")
   expected_id=$(jq -r --arg service "$service" '.images[$service].image_id // empty' "$TARGET_PATH")
+  expected_digest=$(jq -r --arg service "$service" '.images[$service].repo_digest // empty' "$TARGET_PATH")
   [ -n "$image_name" ] && [ -n "$tag" ] || { log_error "$service image metadata is incomplete"; exit 1; }
 
   actual_id=$(docker image inspect "${image_name}:${tag}" -f '{{.Id}}' 2>/dev/null || true)
   [ -n "$actual_id" ] || { log_error "Missing rollback image: ${image_name}:${tag}"; exit 1; }
-  if [ -n "$expected_id" ] && [ "$expected_id" != "null" ] && [ "$actual_id" != "$expected_id" ]; then
+  actual_digest=$(docker image inspect "${image_name}:${tag}" -f '{{range .RepoDigests}}{{println .}}{{end}}' 2>/dev/null | head -1 || true)
+  if [ -n "$expected_digest" ] && [ "$expected_digest" != "null" ] && [ -n "$actual_digest" ]; then
+    docker image inspect "${image_name}:${tag}" -f '{{range .RepoDigests}}{{println .}}{{end}}' 2>/dev/null |
+      grep -Fx "$expected_digest" >/dev/null || { log_error "$service repo digest mismatch for ${image_name}:${tag}"; exit 1; }
+  elif [ -n "$expected_id" ] && [ "$expected_id" != "null" ] && [ "$actual_id" != "$expected_id" ]; then
     log_error "$service image ID mismatch for ${image_name}:${tag}"
     exit 1
   fi

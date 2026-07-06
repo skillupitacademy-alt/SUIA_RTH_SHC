@@ -1,10 +1,10 @@
 {
-  "version": "3.1",
+  "version": "3.2",
   "description": "HTTP smoke tests for deployment validation. Tests run from an ephemeral curl container on the internal Docker network.",
   "runner": {
     "type": "docker",
     "image": "curlimages/curl:8.11.1",
-    "network": "quiz_platform_internal"
+    "network": "auto"
   },
   "tests": {
     "api-server": {

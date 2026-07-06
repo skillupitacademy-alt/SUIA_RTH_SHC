@@ -1,5 +1,5 @@
 {
-  "version": "3.1",
+  "version": "3.2",
   "description": "Service mapping for deployment execution. Dependency detection is delegated to Turbo where available; this file maps deployable packages to Docker Compose services and image names.",
   "services": {
     "api-server": {

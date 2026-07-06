@@ -1,4 +1,4 @@
-# Deployment Configuration V3.1
+# Deployment Configuration V3.2
 
 This directory contains the data-driven configuration for the Hostinger VPS production deployment framework.
 
@@ -27,22 +27,6 @@ Important fields:
 - `buildable`: Whether deployment scripts should build the service.
 - `health_check_required`: Whether the service must pass health checks.
 
-Example:
-
-```json
-{
-  "api-server": {
-    "name": "api-server",
-    "source_path": "apps/api-server",
-    "compose_name": "api-server",
-    "image_name": "quiz-platform-api-server",
-    "package_name": "@quiz/api-server",
-    "buildable": true,
-    "health_check_required": true
-  }
-}
-```
-
 ### smoke-tests.json
 
 Defines post-restart HTTP smoke tests.
@@ -53,8 +37,7 @@ Important fields:
 - `expected_status`: Required HTTP status code.
 - `timeout_seconds`: Per-test timeout.
 - `required`: Whether failure aborts deployment.
-
-Smoke tests run from the configured ephemeral curl runner on the internal Docker network. They do not depend on test tooling inside the Nginx container.
+- `runner.network`: Use `auto` to resolve the internal network from rendered Compose config.
 
 ## Validation
 
@@ -65,25 +48,23 @@ cd infra/hostinger/config
 
 The deployment scripts also validate JSON files before mutating services.
 
-## Adding a Service
-
-1. Add the service to `service-map.json`.
-2. Add a required or optional smoke test to `smoke-tests.json`.
-3. Validate the JSON configuration.
-4. Run `../scripts/deploy-production.sh` during an approved deployment window.
-
-## V3.1 Safety Model
+## V3.2 Safety Model
 
 - `jq` is mandatory.
 - Resource checks fail closed.
 - Health checks fail closed.
 - Required smoke tests fail closed.
+- Smoke-test network is resolved from Compose when `runner.network` is `auto`.
 - Docker images are tagged with immutable `deployment-<deployment-id>` tags.
 - Rollback uses the exact image manifest stored in deployment history.
+- Rollback verifies repo digest when available, otherwise image ID.
+- Deployment state records provenance: hostname, operator, branch, workspace, Compose project, Docker version, and Compose version.
+- Cleanup never removes deployment tags still referenced by retained history records.
 - Package dependency detection is delegated to Turbo instead of duplicating dependency graphs in JSON.
 
 ## Version History
 
+- v3.2: Dynamic smoke network, deployment provenance, history-aware tag retention, manifest schema version, digest-aware rollback.
 - v3.1: Mandatory jq, Turbo affected detection, exact image rollback manifests, fail-closed validation.
 - v3.0: Initial data-driven deployment configuration.
 - v2.0: Smart incremental deployment with jq.

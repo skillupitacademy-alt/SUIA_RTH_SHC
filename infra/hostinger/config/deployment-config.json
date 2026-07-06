@@ -1,5 +1,5 @@
 {
-  "version": "3.1",
+  "version": "3.2",
   "description": "Production deployment configuration for quiz-platform",
   "deployment": {
     "state_directory": "/opt/platform/state",

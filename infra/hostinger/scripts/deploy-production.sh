@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# Production Deployment System V3.1
+# Production Deployment System V3.2
 # Thin, fail-closed orchestrator using lib-deployment.sh.
 
 set -eu
@@ -14,7 +14,7 @@ SERVICE_MAP="$CONFIG_DIR/service-map.json"
 SMOKE_TESTS="$CONFIG_DIR/smoke-tests.json"
 DEPLOY_CONFIG="$CONFIG_DIR/deployment-config.json"
 
-log_header "Production Deployment System V3.1"
+log_header "Production Deployment System V3.2"
 
 validate_deployment_tools deploy || exit 1
 validate_configuration_files "$CONFIG_DIR" || exit 1
@@ -120,7 +120,7 @@ if [ "$BUILD_COUNT" -gt 0 ]; then
   log_success "Build complete ($((BUILD_ENDED_AT - BUILD_STARTED_AT))s)"
   tag_and_write_image_manifest "$SERVICES_TO_BUILD" "$DEPLOYMENT_ID" "$SERVICE_MAP" "$IMAGE_MANIFEST"
 else
-  echo '{}' > "$IMAGE_MANIFEST"
+  jq -n --arg schema_version "1" '{images_schema_version:$schema_version, images:{}}' > "$IMAGE_MANIFEST"
 fi
 
 if [ "$RESTART_COUNT" -gt 0 ]; then
@@ -146,11 +146,12 @@ save_deployment_state \
   "$COMPOSE_CHECKSUM" \
   "$DURATION_SECONDS"
 
-cp "$DEPLOYMENT_STATE" "$HISTORY_DIR/${DEPLOYMENT_ID}.json"
+cp "$DEPLOYMENT_STATE" "$HISTORY_DIR/${DEPLOYMENT_ID}.json.tmp"
+mv "$HISTORY_DIR/${DEPLOYMENT_ID}.json.tmp" "$HISTORY_DIR/${DEPLOYMENT_ID}.json"
 rotate_deployment_history "$HISTORY_DIR" "$DEPLOY_HISTORY_RETENTION"
 
 for service in $SERVICES_TO_BUILD; do
-  cleanup_deployment_tags "$service" "$SERVICE_MAP" "$KEEP_IMAGE_VERSIONS"
+  cleanup_deployment_tags "$service" "$SERVICE_MAP" "$KEEP_IMAGE_VERSIONS" "$HISTORY_DIR"
 done
 cleanup_docker_images
 

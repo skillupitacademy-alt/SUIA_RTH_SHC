@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# Validate Deployment Framework V3.1 configuration files.
+# Validate Deployment Framework V3.2 configuration files.
 
 set -eu
 
@@ -13,7 +13,7 @@ err() { printf 'ERR %s\n' "$1" >&2; FAILED=1; }
 
 require_jq() {
   if ! command -v jq >/dev/null 2>&1; then
-    printf '%s\n' "ERR jq is required for Deployment Framework V3.1" >&2
+    printf '%s\n' "ERR jq is required for Deployment Framework V3.2" >&2
     exit 1
   fi
 }
@@ -35,10 +35,10 @@ expect_version() {
   local file="$1"
   local version
   version=$(jq -r '.version // empty' "$CONFIG_DIR/$file")
-  if [ "$version" = "3.1" ]; then
-    ok "$file version is 3.1"
+  if [ "$version" = "3.2" ]; then
+    ok "$file version is 3.2"
   else
-    err "$file version is $version; expected 3.1"
+    err "$file version is $version; expected 3.2"
   fi
 }
 
@@ -61,7 +61,7 @@ validate_deployment_config() {
     (.change_detection.prefer_turbo_dry_run | type == "boolean") and
     .change_detection.turbo_task and
     (.change_detection.fallback_to_source_paths | type == "boolean")
-  ' "$file" >/dev/null || err "deployment-config.json missing required V3.1 fields"
+  ' "$file" >/dev/null || err "deployment-config.json missing required V3.2 fields"
 }
 
 validate_service_map() {
@@ -84,7 +84,7 @@ validate_service_map() {
 
   if [ -n "$invalid" ]; then
     for service in $invalid; do
-      err "service $service missing required V3.1 fields"
+      err "service $service missing required V3.2 fields"
     done
   else
     ok "service-map.json service schema is valid"
@@ -119,7 +119,7 @@ validate_smoke_tests() {
   jq -e '.runner.image and .runner.network' "$file" >/dev/null || err "smoke-tests.json runner config missing"
 }
 
-info "Validating Deployment Framework V3.1 configuration"
+info "Validating Deployment Framework V3.2 configuration"
 require_jq
 
 for file in deployment-config.json service-map.json smoke-tests.json; do

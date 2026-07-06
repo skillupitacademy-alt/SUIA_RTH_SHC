@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# Deployment Library V3.1
+# Deployment Library V3.2
 # Data-driven deployment helpers for Hostinger VPS production deploys.
 
 set -eu
@@ -35,7 +35,7 @@ log_header() {
 
 require_jq() {
   if ! command -v jq >/dev/null 2>&1; then
-    log_error "jq is required for Deployment Framework V3.1"
+    log_error "jq is required for Deployment Framework V3.2"
     return 1
   fi
 }
@@ -118,6 +118,10 @@ detect_with_turbo() {
 
   dry_run=$(pnpm exec turbo run "$TURBO_TASK" --dry=json --filter="...[$last_commit]" 2>/dev/null) || return 1
   [ -n "$dry_run" ] || return 1
+  printf '%s' "$dry_run" | jq -e 'has("packages") and (.packages | type == "array")' >/dev/null 2>&1 || {
+    log_warning "Turbo dry-run JSON did not include a packages array"
+    return 1
+  }
 
   for package in $(printf '%s' "$dry_run" | jq -r '.packages[]? // empty' 2>/dev/null); do
     local service
@@ -328,7 +332,18 @@ run_with_timeout() {
   local seconds="$1"
   shift
   if command -v timeout >/dev/null 2>&1; then
+    local status
+    set +e
     timeout "$seconds" "$@"
+    status=$?
+    set -e
+    [ "$status" -eq 0 ] && return 0
+    if [ "$status" -eq 124 ]; then
+      log_error "Command timed out after ${seconds}s: $*"
+    elif [ "$status" -ne 0 ]; then
+      log_error "Command failed with exit code $status: $*"
+    fi
+    return "$status"
   else
     "$@"
   fi
@@ -387,7 +402,7 @@ run_smoke_test() {
   test_timeout=$(jq -r ".tests[\"$test_name\"].timeout_seconds // 10" "$smoke_tests")
   expected=$(jq -r ".tests[\"$test_name\"].expected_status // 200" "$smoke_tests")
   runner_image=$(jq -r '.runner.image // "curlimages/curl:8.11.1"' "$smoke_tests")
-  runner_network=$(jq -r '.runner.network // "quiz_platform_internal"' "$smoke_tests")
+  runner_network=$(resolve_smoke_network "$smoke_tests")
 
   status=$(docker run --rm --network "$runner_network" "$runner_image" -sS -m "$test_timeout" -o /dev/null -w '%{http_code}' -X "$test_method" "$test_url" 2>/dev/null || echo "000")
   if [ "$status" = "$expected" ]; then
@@ -401,6 +416,24 @@ run_smoke_test() {
   fi
   log_warning "Optional smoke failed: $test_name expected $expected got $status"
   return 0
+}
+
+resolve_smoke_network() {
+  local smoke_tests="$1"
+  local configured network
+  configured=$(jq -r '.runner.network // "auto"' "$smoke_tests")
+  if [ -n "$configured" ] && [ "$configured" != "auto" ] && [ "$configured" != "null" ]; then
+    echo "$configured"
+    return 0
+  fi
+
+  network=$(compose config --format json 2>/dev/null | jq -r '.networks.app_internal.name // empty' 2>/dev/null || true)
+  if [ -n "$network" ] && [ "$network" != "null" ]; then
+    echo "$network"
+    return 0
+  fi
+
+  printf '%s_internal\n' "$(printf '%s' "$COMPOSE_PROJECT" | tr -c '[:alnum:]' '_')"
 }
 
 run_smoke_tests() {
@@ -429,7 +462,7 @@ tag_and_write_image_manifest() {
   local output_file="$4"
   local tmp
   tmp="${output_file}.tmp"
-  echo '{}' > "$tmp"
+  jq -n --arg schema_version "1" '{images_schema_version:$schema_version, images:{}}' > "$tmp"
 
   for service in $services; do
     local image_name image_id tag
@@ -457,12 +490,28 @@ tag_and_write_image_manifest() {
       --arg tag "$tag" \
       --arg image_id "$image_id" \
       --arg digest "$digest" \
-      '. + {($service): {image_name:$image_name, tag:$tag, image_id:$image_id, repo_digest:$digest}}' "$tmp" > "${tmp}.next"
+      '.images += {($service): {image_name:$image_name, tag:$tag, image_id:$image_id, repo_digest:$digest}}' "$tmp" > "${tmp}.next"
     mv "${tmp}.next" "$tmp"
     log_success "$service tagged as ${image_name}:${tag}"
   done
 
   mv "$tmp" "$output_file"
+}
+
+docker_version_string() {
+  docker version --format '{{.Server.Version}}' 2>/dev/null || echo "unknown"
+}
+
+compose_version_string() {
+  docker compose version --short 2>/dev/null || docker compose version 2>/dev/null | awk '{print $NF}' || echo "unknown"
+}
+
+git_branch_name() {
+  git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown"
+}
+
+operator_name() {
+  id -un 2>/dev/null || whoami 2>/dev/null || echo "unknown"
 }
 
 save_deployment_state() {
@@ -481,12 +530,23 @@ save_deployment_state() {
   commit_short=$(echo "$commit" | cut -c1-7)
   [ -f "$state_file" ] && cp "$state_file" "${state_file}.backup"
 
+  local tmp_file
+  tmp_file="${state_file}.tmp"
+
   jq -n \
-    --arg schema_version "3.1" \
+    --arg schema_version "3.2" \
+    --arg images_schema_version "1" \
     --arg deployment_id "$deployment_id" \
     --arg commit "$commit" \
     --arg commit_short "$commit_short" \
     --arg timestamp "$timestamp" \
+    --arg hostname "$(hostname 2>/dev/null || echo unknown)" \
+    --arg operator "$(operator_name)" \
+    --arg git_branch "$(git_branch_name)" \
+    --arg workspace "$(pwd)" \
+    --arg compose_project "$COMPOSE_PROJECT" \
+    --arg docker_version "$(docker_version_string)" \
+    --arg compose_version "$(compose_version_string)" \
     --arg services_built "$services_built" \
     --arg services_restarted "$services_restarted" \
     --arg compose_config_sha256 "$compose_checksum" \
@@ -495,10 +555,20 @@ save_deployment_state() {
     --slurpfile images "$images_file" \
     '{
       schema_version:$schema_version,
+      images_schema_version:$images_schema_version,
       deployment_id:$deployment_id,
       commit:$commit,
       commit_short:$commit_short,
       timestamp:$timestamp,
+      provenance:{
+        hostname:$hostname,
+        operator:$operator,
+        git_branch:$git_branch,
+        workspace:$workspace,
+        compose_project:$compose_project,
+        docker_version:$docker_version,
+        compose_version:$compose_version
+      },
       services_built:$services_built,
       services_restarted:$services_restarted,
       build_count:($services_built | split(" ") | map(select(length > 0)) | length),
@@ -506,8 +576,9 @@ save_deployment_state() {
       first_deployment:($first_deployment == 1),
       compose_config_sha256:$compose_config_sha256,
       duration_seconds:$duration_seconds,
-      images:$images[0]
-    }' > "$state_file"
+      images:($images[0].images // {})
+    }' > "$tmp_file"
+  mv "$tmp_file" "$state_file"
 }
 
 rotate_deployment_history() {
@@ -524,6 +595,7 @@ cleanup_deployment_tags() {
   local service="$1"
   local service_map="$2"
   local keep_count="$3"
+  local history_dir="${4:-}"
   local image_name
   image_name=$(get_service_field "$service" "image_name" "$service_map")
   docker images "$image_name" --format '{{.Tag}}' |
@@ -531,8 +603,29 @@ cleanup_deployment_tags() {
     sort -r |
     tail -n "+$((keep_count + 1))" |
     while read -r tag; do
-      [ -n "$tag" ] && docker rmi "${image_name}:${tag}" >/dev/null 2>&1 || true
+      [ -n "$tag" ] || continue
+      if is_deployment_tag_referenced "$image_name" "$tag" "$history_dir"; then
+        log_info "Keeping referenced rollback tag ${image_name}:${tag}"
+        continue
+      fi
+      docker rmi "${image_name}:${tag}" >/dev/null 2>&1 || true
     done
+}
+
+is_deployment_tag_referenced() {
+  local image_name="$1"
+  local tag="$2"
+  local history_dir="$3"
+  [ -n "$history_dir" ] && [ -d "$history_dir" ] || return 1
+  for file in "$history_dir"/*.json; do
+    [ -f "$file" ] || return 1
+    jq -e --arg image_name "$image_name" --arg tag "$tag" '
+      .images // {}
+      | to_entries[]
+      | select(.value.image_name == $image_name and .value.tag == $tag)
+    ' "$file" >/dev/null 2>&1 && return 0
+  done
+  return 1
 }
 
 cleanup_docker_images() {
