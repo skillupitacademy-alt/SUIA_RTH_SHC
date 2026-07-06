@@ -258,15 +258,10 @@ foreach ($service in $selected) {
   $imageName = $serviceMap.services.$service.image_name
   $latestRef = "${imageName}:latest"
   $taggedRef = "${imageName}:${ImageTag}"
-  $imageId = (& docker compose --env-file $serviceEnvPath -f $TempCompose -f $ComposeProd images -q $service 2>$null | Select-Object -First 1)
 
-  if (-not $imageId) {
-    throw "Cannot find built image for $service"
-  }
-
-  & docker tag $imageId $latestRef
+  & docker image inspect $latestRef --format "{{.Id}}" | Out-Null
   if ($LASTEXITCODE -ne 0) {
-    throw "Failed to tag $service as $latestRef"
+    throw "Cannot find built image for $service as $latestRef"
   }
 
   & docker tag $latestRef $taggedRef
