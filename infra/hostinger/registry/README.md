@@ -134,6 +134,27 @@ REGISTRY_PREFIX="docker.io/your-user" IMAGE_TAG="<tag>" ./deploy-pull-production
 
 When the scripts detect `/opt/platform/compose/docker-compose.yml`, they automatically use source-free runtime mode.
 
+## No-Registry Local Archive Deployment
+
+If you do not want Docker Hub, GHCR, GCP Artifact Registry, or any registry at all, build images locally and upload a Docker archive:
+
+```powershell
+.\infra\hostinger\scripts\build-save-images.ps1 -ImageTag "<tag>" -EnvFile "C:\tmp\hostinger-build.env"
+```
+
+Upload:
+
+```bash
+scp infra/hostinger/dist/images/quiz-platform-images-<tag>.tar root@72.61.115.49:/opt/platform/releases/
+```
+
+Deploy on VPS:
+
+```bash
+cd /opt/platform/scripts
+IMAGE_ARCHIVE="/opt/platform/releases/quiz-platform-images-<tag>.tar" IMAGE_TAG="<tag>" ./deploy-load-production.sh
+```
+
 ## Rollback
 
 Rollback still uses `rollback-deployment.sh`. Registry deployments write the same deployment state and image manifest format as VPS-build deployments.

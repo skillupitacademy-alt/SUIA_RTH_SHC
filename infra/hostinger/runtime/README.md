@@ -32,10 +32,10 @@ source Dockerfiles
 
 ## Five-Step Deployment
 
-1. Build and push images outside the VPS:
+1. Build images outside the VPS and save them to an archive:
 
-```bash
-REGISTRY_PREFIX="docker.io/your-user" IMAGE_TAG="<tag>" ./infra/hostinger/scripts/build-push-images.sh
+```powershell
+.\infra\hostinger\scripts\build-save-images.ps1 -ImageTag "<tag>" -EnvFile "C:\tmp\hostinger-build.env"
 ```
 
 2. Package the runtime bundle:
@@ -52,11 +52,11 @@ sha256sum -c hostinger-runtime-<version>.tar.gz.sha256
 
 4. Extract into `/opt/platform` and restore real env/cert files.
 
-5. Pull and deploy:
+5. Load and deploy:
 
 ```bash
 cd /opt/platform/scripts
-REGISTRY_PREFIX="docker.io/your-user" IMAGE_TAG="<tag>" ./deploy-pull-production.sh
+IMAGE_ARCHIVE="/opt/platform/releases/quiz-platform-images-<tag>.tar" IMAGE_TAG="<tag>" ./deploy-load-production.sh
 ```
 
 ## Bundle Contents
