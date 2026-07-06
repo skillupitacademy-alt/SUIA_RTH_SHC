@@ -1,6 +1,6 @@
 # Registry-Based Deployment Phase 2
 
-This is the optional Phase 2 deployment path. It moves Docker builds away from the Hostinger VPS.
+This is the default Phase 2 production deployment path. It moves Docker builds away from the Hostinger VPS.
 
 ## Flow
 
@@ -15,7 +15,7 @@ Hostinger VPS
   docker compose up --no-build
 ```
 
-The existing `deploy-production.sh` remains available for VPS-side builds. Use this registry path when you want to reduce VPS CPU load during deployment.
+The old VPS-build path is guarded. `deploy-production.sh` now refuses to build on the VPS unless `ALLOW_VPS_BUILD=true` is explicitly set for an emergency or fallback deployment.
 
 ## Registry Choice
 
@@ -91,6 +91,14 @@ Deploy selected services:
 
 ```bash
 REGISTRY_PREFIX="docker.io/your-user" IMAGE_TAG="<tag>" ./deploy-pull-production.sh api-server skillup-web
+```
+
+## Legacy VPS Build Fallback
+
+Use this only when registry deployment is unavailable and you intentionally accept build CPU load on the VPS:
+
+```bash
+ALLOW_VPS_BUILD=true ./deploy-production.sh
 ```
 
 ## Rollback

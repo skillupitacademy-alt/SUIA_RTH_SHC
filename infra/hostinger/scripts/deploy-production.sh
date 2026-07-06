@@ -16,6 +16,14 @@ DEPLOY_CONFIG="$CONFIG_DIR/deployment-config.json"
 
 log_header "Production Deployment System V3.2"
 
+if [ "${ALLOW_VPS_BUILD:-false}" != "true" ]; then
+  log_error "VPS-side Docker builds are disabled by default."
+  log_error "Phase 2 production deployments should use registry-built images:"
+  log_error "  REGISTRY_PREFIX=<registry/namespace> IMAGE_TAG=<tag> ./deploy-pull-production.sh"
+  log_error "To intentionally run the legacy VPS build path, set ALLOW_VPS_BUILD=true."
+  exit 1
+fi
+
 validate_deployment_tools deploy || exit 1
 validate_configuration_files "$CONFIG_DIR" || exit 1
 load_deployment_config "$DEPLOY_CONFIG"
