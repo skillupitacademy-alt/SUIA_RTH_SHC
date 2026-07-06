@@ -35,7 +35,7 @@ source Dockerfiles
 1. Build images outside the VPS and save them to an archive:
 
 ```powershell
-.\infra\hostinger\scripts\build-save-images.ps1 -ImageTag "<tag>" -EnvFile "C:\tmp\hostinger-build.env"
+.\infra\hostinger\scripts\build-save-images.ps1 -ImageTag "<tag>"
 ```
 
 2. Package the runtime bundle:

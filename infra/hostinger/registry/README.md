@@ -139,7 +139,7 @@ When the scripts detect `/opt/platform/compose/docker-compose.yml`, they automat
 If you do not want Docker Hub, GHCR, GCP Artifact Registry, or any registry at all, build images locally and upload a Docker archive:
 
 ```powershell
-.\infra\hostinger\scripts\build-save-images.ps1 -ImageTag "<tag>" -EnvFile "C:\tmp\hostinger-build.env"
+.\infra\hostinger\scripts\build-save-images.ps1 -ImageTag "<tag>"
 ```
 
 Upload:
