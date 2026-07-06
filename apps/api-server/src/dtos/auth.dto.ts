@@ -45,7 +45,8 @@ export function toUserSummaryDTO(user: AuthUserInput, isAdmin: boolean = false):
   // CRITICAL FIX: Use DB isOnboarded field as single source of truth
   // Remove fallback logic that can override DB value
   const onboarded = user.isOnboarded === true;
-  const role = isAdmin ? 'admin' : 'user';
+  // 🔥 ROLE STANDARDIZATION: Use 'student' instead of 'user' (unified across RTH and SkillUp)
+  const role = isAdmin ? 'admin' : 'student';
 
   return {
     id: user.id,
@@ -56,7 +57,7 @@ export function toUserSummaryDTO(user: AuthUserInput, isAdmin: boolean = false):
     onboarded,
     onboardingCompleted: onboarded, // 🔥 Add for backward compatibility
     role,
-    roles: [role], // 🔥 CRITICAL: Always provide roles as array
+    roles: [role], // 🔥 CRITICAL: Always provide roles as array (now returns 'student')
     isAdmin
   };
 }
