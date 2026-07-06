@@ -41,6 +41,28 @@ else
   export HAS_JQ=1
 fi
 
+# =============================================================================
+# Pre-Deployment Validation
+# =============================================================================
+
+log_header "Pre-Deployment Validation"
+
+# Validate deployment tools
+if ! validate_deployment_tools; then
+  log_error "Required tools missing - cannot proceed"
+  exit 1
+fi
+
+echo ""
+
+# Validate configuration files
+if ! validate_configuration_files "$CONFIG_DIR"; then
+  log_error "Configuration validation failed - cannot proceed"
+  exit 1
+fi
+
+echo ""
+
 # Load configuration
 if ! load_deployment_config "$CONFIG_DIR/deployment-config.json"; then
   log_error "Failed to load deployment configuration"
@@ -64,6 +86,20 @@ cleanup() {
 }
 trap cleanup EXIT
 
+# Set up timeout trap for build phase
+DEPLOYMENT_START_TIME=$(date +%s)
+
+check_timeout() {
+  local current_time=$(date +%s)
+  local elapsed=$((current_time - DEPLOYMENT_START_TIME))
+  
+  if [ $elapsed -gt "$DEPLOY_BUILD_TIMEOUT" ]; then
+    log_error "Deployment timeout exceeded (${elapsed}s > ${DEPLOY_BUILD_TIMEOUT}s)"
+    log_error "Aborting deployment"
+    exit 1
+  fi
+}
+
 # =============================================================================
 # Deployment Header
 # =============================================================================
@@ -73,6 +109,8 @@ log_header "Production Deployment System V3.0"
 log_info "Configuration loaded"
 log_info "State directory: $DEPLOY_STATE_DIR"
 log_info "Service map: $SERVICE_MAP"
+log_info "Build timeout: ${DEPLOY_BUILD_TIMEOUT}s"
+log_info "Lock timeout: ${DEPLOY_LOCK_TIMEOUT}s"
 echo ""
 
 # =============================================================================
@@ -247,6 +285,9 @@ echo ""
 if [ -n "$SERVICES_TO_BUILD" ] && [ "$BUILD_COUNT" -gt 0 ]; then
   log_header "Build Phase"
   
+  # Check timeout before build
+  check_timeout
+  
   # Enable BuildKit
   enable_buildkit
   
@@ -267,6 +308,9 @@ if [ -n "$SERVICES_TO_BUILD" ] && [ "$BUILD_COUNT" -gt 0 ]; then
   BUILD_DURATION=$((BUILD_END - BUILD_START))
   
   log_success "Build complete (${BUILD_DURATION}s)"
+  
+  # Check timeout after build
+  check_timeout
 else
   log_info "No services need rebuilding"
 fi

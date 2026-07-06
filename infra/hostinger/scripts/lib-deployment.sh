@@ -308,24 +308,48 @@ acquire_lock() {
   local timeout="$2"
   local wait_time=0
   
+  # Check if lock exists
+  if [ -f "$lock_file" ]; then
+    # Check if lock is stale
+    if is_lock_stale "$lock_file"; then
+      log_warning "Removing stale lock file"
+      rm -f "$lock_file"
+    fi
+  fi
+  
   while [ -f "$lock_file" ]; do
     if [ $wait_time -ge $timeout ]; then
       log_error "Failed to acquire lock after ${timeout}s"
       log_error "Another deployment may be in progress"
+      
+      # Show lock info
+      if [ -f "$lock_file" ]; then
+        local lock_info=$(cat "$lock_file" 2>/dev/null || echo "")
+        log_error "Lock info: $lock_info"
+      fi
+      
       log_error "Lock file: $lock_file"
+      log_info "To force unlock: rm $lock_file"
       return 1
     fi
     
     log_warning "Waiting for deployment lock... (${wait_time}s / ${timeout}s)"
     sleep 5
     wait_time=$((wait_time + 5))
+    
+    # Check if lock became stale
+    if is_lock_stale "$lock_file"; then
+      log_warning "Lock became stale, removing"
+      rm -f "$lock_file"
+      break
+    fi
   done
   
   # Create lock file
   mkdir -p "$(dirname "$lock_file")"
-  echo "$$|$(date -u +"%Y-%m-%dT%H:%M:%SZ")" > "$lock_file"
+  echo "$$|$(date -u +"%Y-%m-%dT%H:%M:%SZ")|$(hostname)" > "$lock_file"
   
-  log_success "Deployment lock acquired"
+  log_success "Deployment lock acquired (PID: $$)"
   return 0
 }
 
@@ -581,6 +605,143 @@ cleanup_docker_images() {
   docker builder prune -f --filter "until=${days}d" >/dev/null 2>&1 || true
   
   log_success "Docker cleanup complete"
+}
+
+# =============================================================================
+# Pre-Deployment Validation
+# =============================================================================
+
+# Check if all required tools are available
+# Returns: 0 if all OK, 1 if critical tools missing
+validate_deployment_tools() {
+  local checks_failed=0
+  
+  log_info "Validating deployment tools..."
+  
+  # Check Docker
+  if ! command -v docker >/dev/null 2>&1; then
+    log_error "docker command not found"
+    checks_failed=1
+  else
+    log_success "docker available"
+  fi
+  
+  # Check Docker Compose
+  if ! docker compose version >/dev/null 2>&1; then
+    log_error "docker compose not available"
+    checks_failed=1
+  else
+    log_success "docker compose available"
+  fi
+  
+  # Check Git
+  if ! command -v git >/dev/null 2>&1; then
+    log_error "git command not found"
+    checks_failed=1
+  else
+    log_success "git available"
+  fi
+  
+  # Check jq (warning only)
+  if ! command -v jq >/dev/null 2>&1; then
+    log_warning "jq not available (recommended)"
+  else
+    log_success "jq available"
+  fi
+  
+  if [ $checks_failed -eq 1 ]; then
+    log_error "Critical tools missing"
+    return 1
+  fi
+  
+  return 0
+}
+
+# Check if configuration files exist and are valid
+# Args: $1 = config directory
+# Returns: 0 if valid, 1 if invalid
+validate_configuration_files() {
+  local config_dir="$1"
+  local checks_failed=0
+  
+  log_info "Validating configuration files..."
+  
+  # Check deployment-config.json
+  if [ ! -f "$config_dir/deployment-config.json" ]; then
+    log_error "deployment-config.json not found"
+    checks_failed=1
+  else
+    if [ "$HAS_JQ" -eq 1 ]; then
+      if ! jq empty "$config_dir/deployment-config.json" 2>/dev/null; then
+        log_error "deployment-config.json is invalid JSON"
+        checks_failed=1
+      else
+        log_success "deployment-config.json valid"
+      fi
+    fi
+  fi
+  
+  # Check service-map.json
+  if [ ! -f "$config_dir/service-map.json" ]; then
+    log_error "service-map.json not found"
+    checks_failed=1
+  else
+    if [ "$HAS_JQ" -eq 1 ]; then
+      if ! jq empty "$config_dir/service-map.json" 2>/dev/null; then
+        log_error "service-map.json is invalid JSON"
+        checks_failed=1
+      else
+        log_success "service-map.json valid"
+      fi
+    fi
+  fi
+  
+  # Check smoke-tests.json
+  if [ ! -f "$config_dir/smoke-tests.json" ]; then
+    log_error "smoke-tests.json not found"
+    checks_failed=1
+  else
+    if [ "$HAS_JQ" -eq 1 ]; then
+      if ! jq empty "$config_dir/smoke-tests.json" 2>/dev/null; then
+        log_error "smoke-tests.json is invalid JSON"
+        checks_failed=1
+      else
+        log_success "smoke-tests.json valid"
+      fi
+    fi
+  fi
+  
+  if [ $checks_failed -eq 1 ]; then
+    log_error "Configuration validation failed"
+    return 1
+  fi
+  
+  return 0
+}
+
+# Check if lock is stale (process no longer running)
+# Args: $1 = lock file path
+# Returns: 0 if stale, 1 if active
+is_lock_stale() {
+  local lock_file="$1"
+  
+  if [ ! -f "$lock_file" ]; then
+    return 0
+  fi
+  
+  # Read PID from lock file
+  local lock_pid=$(cut -d'|' -f1 "$lock_file" 2>/dev/null || echo "")
+  
+  if [ -z "$lock_pid" ]; then
+    return 0
+  fi
+  
+  # Check if process is running
+  if kill -0 "$lock_pid" 2>/dev/null; then
+    return 1
+  fi
+  
+  return 0
 }
 
 # =============================================================================
