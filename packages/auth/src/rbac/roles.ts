@@ -6,7 +6,7 @@
  */
 
 export const ROLES = {
-  USER: 'user',
+  STUDENT: 'student',
   ADMIN: 'admin',
   SUPER_ADMIN: 'super_admin',
   FACULTY: 'faculty',

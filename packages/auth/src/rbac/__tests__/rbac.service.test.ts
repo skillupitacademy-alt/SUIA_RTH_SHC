@@ -9,20 +9,20 @@ import { RBACService } from '../rbac.service';
 import { PERMISSIONS } from '../permissions';
 
 describe('RBACService - Multi Role Logic', () => {
-  test('single role - user has permission', () => {
-    const roles = ['user'] as const;
+  test('single role - student has permission', () => {
+    const roles = ['student'] as const;
     const result = RBACService.hasPermission([...roles], PERMISSIONS.PROFILE_READ);
     expect(result).toBe(true);
   });
 
-  test('single role - user does NOT have admin permission', () => {
-    const roles = ['user'] as const;
+  test('single role - student does NOT have admin permission', () => {
+    const roles = ['student'] as const;
     const result = RBACService.hasPermission([...roles], PERMISSIONS.ADMIN_PANEL);
     expect(result).toBe(false);
   });
 
   test('multi-role - ANY role should grant access (CRITICAL REGRESSION TEST)', () => {
-    const roles = ["user"] as const;
+    const roles = ["student"] as const;
 
     const result = RBACService.hasPermission(
       [...roles],
@@ -33,7 +33,7 @@ describe('RBACService - Multi Role Logic', () => {
   });
 
   test('multi-role - both roles have permission', () => {
-    const roles = ["user"] as const;
+    const roles = ["student"] as const;
 
     const result = RBACService.hasPermission(
       [...roles],
@@ -44,7 +44,7 @@ describe('RBACService - Multi Role Logic', () => {
   });
 
   test('multi-role - deny only if NONE have permission', () => {
-    const roles = ['user'] as const;
+    const roles = ['student'] as const;
 
     const result = RBACService.hasPermission(
       [...roles],
@@ -55,14 +55,14 @@ describe('RBACService - Multi Role Logic', () => {
   });
 
   test('unknown role should NOT break system', () => {
-    const roles = ['user', 'invalid-role' as any] as const;
+    const roles = ['student', 'invalid-role' as any] as const;
 
     const result = RBACService.hasPermission(
       [...roles],
       PERMISSIONS.PROFILE_READ
     );
 
-    expect(result).toBe(true); // user role should still grant access
+    expect(result).toBe(true); // student role should still grant access
   });
 
   test('empty roles array should deny', () => {
@@ -109,16 +109,16 @@ describe('RBACService - Multi Role Logic', () => {
 });
 
 describe('RBACService - requirePermission', () => {
-  test('should not throw when user has permission', () => {
-    const roles = ['user'] as const;
+  test('should not throw when student has permission', () => {
+    const roles = ['student'] as const;
 
     expect(() => {
       RBACService.requirePermission([...roles], PERMISSIONS.PROFILE_READ);
     }).not.toThrow();
   });
 
-  test('should throw when user lacks permission', () => {
-    const roles = ['user'] as const;
+  test('should throw when student lacks permission', () => {
+    const roles = ['student'] as const;
 
     expect(() => {
       RBACService.requirePermission([...roles], PERMISSIONS.ADMIN_PANEL);
@@ -126,7 +126,7 @@ describe('RBACService - requirePermission', () => {
   });
 
   test('should not throw for multi-role with ANY permission (CRITICAL)', () => {
-    const roles = ["user"] as const;
+    const roles = ["student"] as const;
 
     expect(() => {
       RBACService.requirePermission([...roles], PERMISSIONS.PROFILE_READ);

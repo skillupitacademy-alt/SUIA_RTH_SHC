@@ -9,22 +9,22 @@ import { OwnershipRBACService } from '../ownership.service';
 import { PERMISSIONS } from '../permissions';
 
 describe('OwnershipRBACService', () => {
-  test('user can access own resource (ownership)', () => {
+  test('student can access own resource (ownership)', () => {
     expect(() => {
       OwnershipRBACService.requirePermissionOrOwnership({
         requestingUserId: 'user-1',
         resourceOwnerId: 'user-1',
-        userRoles: ['user'],
+        userRoles: ['student'],
       }, PERMISSIONS.PROFILE_WRITE);
     }).not.toThrow();
   });
 
-  test('user cannot access others resource without permission', () => {
+  test('student cannot access others resource without permission', () => {
     expect(() => {
       OwnershipRBACService.requirePermissionOrOwnership({
         requestingUserId: 'user-1',
         resourceOwnerId: 'user-2',
-        userRoles: ['user'],
+        userRoles: ['student'],
       }, PERMISSIONS.ADMIN_PANEL);
     }).toThrow();
   });
@@ -39,12 +39,12 @@ describe('OwnershipRBACService', () => {
     }).not.toThrow();
   });
 
-  test('multi-role user can access own resource (CRITICAL)', () => {
+  test('multi-role student can access own resource (CRITICAL)', () => {
     expect(() => {
       OwnershipRBACService.requirePermissionOrOwnership({
         requestingUserId: 'user-1',
         resourceOwnerId: 'user-1',
-        userRoles: ["user"],
+        userRoles: ["student"],
       }, PERMISSIONS.PROFILE_READ);
     }).not.toThrow();
   });
@@ -54,7 +54,7 @@ describe('OwnershipRBACService', () => {
       OwnershipRBACService.requirePermissionOrOwnership({
         requestingUserId: 'faculty-1',
         resourceOwnerId: 'student-1',
-        userRoles: ['faculty', 'user'],
+        userRoles: ['faculty', 'student'],
       }, PERMISSIONS.EXAM_GRADE);
     }).not.toThrow();
   });
@@ -63,7 +63,7 @@ describe('OwnershipRBACService', () => {
     const result = OwnershipRBACService.hasPermissionOrOwnership({
       requestingUserId: 'user-1',
       resourceOwnerId: 'user-1',
-      userRoles: ['user'],
+      userRoles: ['student'],
     }, PERMISSIONS.PROFILE_READ);
 
     expect(result).toBe(true);
@@ -83,7 +83,7 @@ describe('OwnershipRBACService', () => {
     const result = OwnershipRBACService.hasPermissionOrOwnership({
       requestingUserId: 'user-1',
       resourceOwnerId: 'user-2',
-      userRoles: ['user'],
+      userRoles: ['student'],
     }, PERMISSIONS.ADMIN_PANEL);
 
     expect(result).toBe(false);
@@ -98,7 +98,7 @@ describe('OwnershipRBACService', () => {
     const result = OwnershipRBACService.canAccessResource({
       requestingUserId: 'user-1',
       resourceOwnerId: 'user-1',
-      userRoles: ['user'],
+      userRoles: ['student'],
     }, PERMISSIONS.PROFILE_READ, PERMISSIONS.PROFILE_WRITE);
 
     expect(result.canRead).toBe(true);

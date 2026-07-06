@@ -11,8 +11,8 @@ import type { Role } from './roles';
 import type { Permission } from './permissions';
 
 export const ROLE_PERMISSIONS: Record<Role, readonly Permission[] | readonly ['*']> = {
-  // Basic user - standard access for all authenticated users
-  [ROLES.USER]: [
+  // Student - standard access for all authenticated learners
+  [ROLES.STUDENT]: [
     PERMISSIONS.PROFILE_READ,
     PERMISSIONS.PROFILE_WRITE,
     PERMISSIONS.DASHBOARD_VIEW,
