@@ -190,6 +190,8 @@ validate_deployment_tools() {
   local commands="docker jq"
   if [ "$mode" = "deploy" ]; then
     commands="$commands git sha256sum awk"
+  elif [ "$mode" = "pull" ]; then
+    commands="$commands git sha256sum awk"
   fi
 
   for command_name in $commands; do
@@ -455,6 +457,39 @@ deployment_tag_for() {
   printf '%s-%s' "$DEPLOYMENT_TAG_PREFIX" "$1"
 }
 
+registry_ref_for() {
+  local registry_prefix="$1"
+  local image_name="$2"
+  local tag="$3"
+  registry_prefix=$(printf '%s' "$registry_prefix" | sed 's:/*$::')
+  printf '%s/%s:%s' "$registry_prefix" "$image_name" "$tag"
+}
+
+write_empty_image_manifest() {
+  local output_file="$1"
+  jq -n --arg schema_version "1" '{images_schema_version:$schema_version, images:{}}' > "$output_file"
+}
+
+add_image_to_manifest() {
+  local manifest_file="$1"
+  local service="$2"
+  local image_name="$3"
+  local image_ref="$4"
+  local image_id digest
+
+  image_id=$(docker image inspect "$image_ref" -f '{{.Id}}')
+  digest=$(docker image inspect "$image_ref" -f '{{range .RepoDigests}}{{println .}}{{end}}' 2>/dev/null | head -1 || true)
+
+  jq --arg service "$service" \
+    --arg image_name "$image_name" \
+    --arg tag "$(printf '%s' "$image_ref" | awk -F: '{print $NF}')" \
+    --arg image_id "$image_id" \
+    --arg digest "$digest" \
+    '.images += {($service): {image_name:$image_name, tag:$tag, image_id:$image_id, repo_digest:$digest}}' \
+    "$manifest_file" > "${manifest_file}.next"
+  mv "${manifest_file}.next" "$manifest_file"
+}
+
 tag_and_write_image_manifest() {
   local services="$1"
   local deployment_id="$2"
@@ -462,7 +497,7 @@ tag_and_write_image_manifest() {
   local output_file="$4"
   local tmp
   tmp="${output_file}.tmp"
-  jq -n --arg schema_version "1" '{images_schema_version:$schema_version, images:{}}' > "$tmp"
+  write_empty_image_manifest "$tmp"
 
   for service in $services; do
     local image_name image_id tag
@@ -483,15 +518,7 @@ tag_and_write_image_manifest() {
     fi
     docker tag "${image_name}:latest" "${image_name}:${tag}"
     image_id=$(docker image inspect "${image_name}:${tag}" -f '{{.Id}}')
-    local digest
-    digest=$(docker image inspect "${image_name}:${tag}" -f '{{range .RepoDigests}}{{println .}}{{end}}' 2>/dev/null | head -1 || true)
-    jq --arg service "$service" \
-      --arg image_name "$image_name" \
-      --arg tag "$tag" \
-      --arg image_id "$image_id" \
-      --arg digest "$digest" \
-      '.images += {($service): {image_name:$image_name, tag:$tag, image_id:$image_id, repo_digest:$digest}}' "$tmp" > "${tmp}.next"
-    mv "${tmp}.next" "$tmp"
+    add_image_to_manifest "$tmp" "$service" "$image_name" "${image_name}:${tag}"
     log_success "$service tagged as ${image_name}:${tag}"
   done
 
