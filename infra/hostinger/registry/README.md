@@ -101,6 +101,39 @@ Use this only when registry deployment is unavailable and you intentionally acce
 ALLOW_VPS_BUILD=true ./deploy-production.sh
 ```
 
+## Phase 3 Source-Free Runtime
+
+For the final production target, package only the runtime bundle:
+
+```bash
+cd infra/hostinger/scripts
+./package-runtime-bundle.sh
+```
+
+This creates:
+
+```text
+infra/hostinger/dist/hostinger-runtime-<tag>.tar.gz
+```
+
+The bundle contains:
+
+- Runtime Compose files with `image:` only and no `build:` blocks.
+- Deployment scripts.
+- Deployment config.
+- Nginx config.
+
+It does not contain application source folders such as `apps/`, `packages/`, or `services/`.
+
+On the VPS, extract the bundle into `/opt/platform`, then deploy with:
+
+```bash
+cd /opt/platform/scripts
+REGISTRY_PREFIX="docker.io/your-user" IMAGE_TAG="<tag>" ./deploy-pull-production.sh
+```
+
+When the scripts detect `/opt/platform/compose/docker-compose.yml`, they automatically use source-free runtime mode.
+
 ## Rollback
 
 Rollback still uses `rollback-deployment.sh`. Registry deployments write the same deployment state and image manifest format as VPS-build deployments.

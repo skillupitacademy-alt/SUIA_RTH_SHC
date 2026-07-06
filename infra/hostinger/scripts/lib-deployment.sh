@@ -191,7 +191,7 @@ validate_deployment_tools() {
   if [ "$mode" = "deploy" ]; then
     commands="$commands git sha256sum awk"
   elif [ "$mode" = "pull" ]; then
-    commands="$commands git sha256sum awk"
+    commands="$commands sha256sum awk"
   fi
 
   for command_name in $commands; do
