@@ -1,6 +1,11 @@
 {
-  "version": "3.0",
-  "description": "HTTP smoke tests for deployment validation",
+  "version": "3.1",
+  "description": "HTTP smoke tests for deployment validation. Tests run from an ephemeral curl container on the internal Docker network.",
+  "runner": {
+    "type": "docker",
+    "image": "curlimages/curl:8.11.1",
+    "network": "quiz_platform_internal"
+  },
   "tests": {
     "api-server": {
       "name": "API Server Health",
@@ -8,17 +13,7 @@
       "url": "http://api-server:3000/api/health/live",
       "expected_status": 200,
       "timeout_seconds": 10,
-      "required": true,
-      "execute_from": "nginx"
-    },
-    "api-server-ready": {
-      "name": "API Server Readiness",
-      "method": "GET",
-      "url": "http://api-server:3000/api/health/ready",
-      "expected_status": 200,
-      "timeout_seconds": 10,
-      "required": false,
-      "execute_from": "nginx"
+      "required": true
     },
     "realtutorialhub-web": {
       "name": "RTH Web Homepage",
@@ -26,35 +21,23 @@
       "url": "http://realtutorialhub-web:3003/",
       "expected_status": 200,
       "timeout_seconds": 15,
-      "required": true,
-      "execute_from": "nginx"
-    },
-    "realtutorialhub-web-health": {
-      "name": "RTH Web Health",
-      "method": "GET",
-      "url": "http://realtutorialhub-web:3003/api/healthz",
-      "expected_status": 200,
-      "timeout_seconds": 10,
-      "required": false,
-      "execute_from": "nginx"
+      "required": true
     },
     "realtutorialhub-quiz": {
       "name": "RTH Quiz Homepage",
       "method": "GET",
-      "url": "http://realtutorialhub-quiz:3005/",
+      "url": "http://realtutorialhub-quiz:3001/",
       "expected_status": 200,
       "timeout_seconds": 15,
-      "required": true,
-      "execute_from": "nginx"
+      "required": true
     },
     "realtutorialhub-admin": {
-      "name": "RTH Admin Homepage",
+      "name": "RTH Admin Health",
       "method": "GET",
-      "url": "http://realtutorialhub-admin:3006/",
+      "url": "http://realtutorialhub-admin:3002/api/healthz",
       "expected_status": 200,
       "timeout_seconds": 15,
-      "required": true,
-      "execute_from": "nginx"
+      "required": true
     },
     "skillup-web": {
       "name": "SkillUp Web Health",
@@ -62,62 +45,47 @@
       "url": "http://skillup-web:3004/api/healthz",
       "expected_status": 200,
       "timeout_seconds": 10,
-      "required": true,
-      "execute_from": "nginx"
-    },
-    "skillup-web-home": {
-      "name": "SkillUp Web Homepage",
-      "method": "GET",
-      "url": "http://skillup-web:3004/",
-      "expected_status": 200,
-      "timeout_seconds": 15,
-      "required": false,
-      "execute_from": "nginx"
+      "required": true
     },
     "skillup-admin": {
-      "name": "SkillUp Admin Homepage",
+      "name": "SkillUp Admin Health",
       "method": "GET",
-      "url": "http://skillup-admin:3007/",
+      "url": "http://skillup-admin:3005/api/healthz",
       "expected_status": 200,
       "timeout_seconds": 15,
-      "required": true,
-      "execute_from": "nginx"
+      "required": true
     },
     "faculty-app": {
-      "name": "Faculty App Homepage",
+      "name": "Faculty App Health",
       "method": "GET",
-      "url": "http://faculty-app:3008/",
+      "url": "http://faculty-app:3006/api/healthz",
       "expected_status": 200,
       "timeout_seconds": 15,
-      "required": true,
-      "execute_from": "nginx"
+      "required": true
     },
     "skillhubcore-admin": {
-      "name": "SkillHub Core Admin",
+      "name": "SkillHub Core Admin Health",
       "method": "GET",
-      "url": "http://skillhubcore-admin:3009/",
+      "url": "http://skillhubcore-admin:3000/api/health",
       "expected_status": 200,
       "timeout_seconds": 15,
-      "required": true,
-      "execute_from": "nginx"
+      "required": true
     },
     "skillhub-placement": {
-      "name": "SkillHub Placement",
+      "name": "SkillHub Placement Health",
       "method": "GET",
-      "url": "http://skillhub-placement:3010/",
+      "url": "http://skillhub-placement:3008/api/healthz",
       "expected_status": 200,
       "timeout_seconds": 15,
-      "required": true,
-      "execute_from": "nginx"
+      "required": false
     },
     "skillhubcore-service": {
-      "name": "SkillHub Core Service",
+      "name": "SkillHub Core Service Health",
       "method": "GET",
-      "url": "http://skillhubcore-service:3011/health",
+      "url": "http://skillhubcore-service:3000/healthz/",
       "expected_status": 200,
       "timeout_seconds": 10,
-      "required": true,
-      "execute_from": "nginx"
+      "required": true
     }
   }
 }

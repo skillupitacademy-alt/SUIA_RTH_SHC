@@ -1,132 +1,104 @@
 {
-  "version": "3.0",
-  "description": "Service mapping for incremental deployment detection",
+  "version": "3.1",
+  "description": "Service mapping for deployment execution. Dependency detection is delegated to Turbo where available; this file maps deployable packages to Docker Compose services and image names.",
   "services": {
     "api-server": {
       "name": "api-server",
+      "package_name": "@quiz/api-server",
       "source_path": "apps/api-server",
       "compose_name": "api-server",
-      "image_name": "api-server",
-      "dependencies": [
-        "packages/auth",
-        "packages/db",
-        "packages/types"
-      ],
+      "image_name": "quiz-platform-api-server",
+      "buildable": true,
       "health_check_required": true
     },
     "realtutorialhub-web": {
       "name": "realtutorialhub-web",
+      "package_name": "@quiz/realtutorialhub-web",
       "source_path": "apps/realtutorialhub-web",
       "compose_name": "realtutorialhub-web",
-      "image_name": "realtutorialhub-web",
-      "dependencies": [
-        "packages/ui",
-        "packages/auth",
-        "packages/types"
-      ],
+      "image_name": "quiz-platform-realtutorialhub-web",
+      "buildable": true,
       "health_check_required": true
     },
     "realtutorialhub-quiz": {
       "name": "realtutorialhub-quiz",
+      "package_name": "@quiz/realtutorialhub-quiz",
       "source_path": "apps/realtutorialhub-quiz",
       "compose_name": "realtutorialhub-quiz",
-      "image_name": "realtutorialhub-quiz",
-      "dependencies": [
-        "packages/ui",
-        "packages/auth",
-        "packages/types"
-      ],
+      "image_name": "quiz-platform-realtutorialhub-quiz",
+      "buildable": true,
       "health_check_required": true
     },
     "realtutorialhub-admin": {
       "name": "realtutorialhub-admin",
+      "package_name": "@quiz/realtutorialhub-admin",
       "source_path": "apps/realtutorialhub-admin",
       "compose_name": "realtutorialhub-admin",
-      "image_name": "realtutorialhub-admin",
-      "dependencies": [
-        "packages/ui",
-        "packages/auth",
-        "packages/types"
-      ],
+      "image_name": "quiz-platform-realtutorialhub-admin",
+      "buildable": true,
       "health_check_required": true
     },
     "skillup-web": {
       "name": "skillup-web",
+      "package_name": "@quiz/skillup-web",
       "source_path": "apps/skillup-web",
       "compose_name": "skillup-web",
-      "image_name": "skillup-web",
-      "dependencies": [
-        "packages/ui",
-        "packages/auth",
-        "packages/types"
-      ],
+      "image_name": "quiz-platform-skillup-web",
+      "buildable": true,
       "health_check_required": true
     },
     "skillup-admin": {
       "name": "skillup-admin",
+      "package_name": "@quiz/skillup-admin",
       "source_path": "apps/skillup-admin",
       "compose_name": "skillup-admin",
-      "image_name": "skillup-admin",
-      "dependencies": [
-        "packages/ui",
-        "packages/auth",
-        "packages/types"
-      ],
+      "image_name": "quiz-platform-skillup-admin",
+      "buildable": true,
       "health_check_required": true
     },
     "faculty-app": {
       "name": "faculty-app",
+      "package_name": "@quiz/faculty-app",
       "source_path": "apps/faculty-app",
       "compose_name": "faculty-app",
-      "image_name": "faculty-app",
-      "dependencies": [
-        "packages/ui",
-        "packages/auth",
-        "packages/types"
-      ],
+      "image_name": "quiz-platform-faculty-app",
+      "buildable": true,
       "health_check_required": true
     },
     "skillhubcore-admin": {
       "name": "skillhubcore-admin",
+      "package_name": "@quiz/skillhubcore-admin",
       "source_path": "apps/skillhubcore-admin",
       "compose_name": "skillhubcore-admin",
-      "image_name": "skillhubcore-admin",
-      "dependencies": [
-        "packages/ui",
-        "packages/auth",
-        "packages/types"
-      ],
+      "image_name": "quiz-platform-skillhubcore-admin",
+      "buildable": true,
       "health_check_required": true
     },
     "skillhub-placement": {
       "name": "skillhub-placement",
+      "package_name": "@quiz/skillhub-placement",
       "source_path": "apps/skillhub-placement",
       "compose_name": "skillhub-placement",
-      "image_name": "skillhub-placement",
-      "dependencies": [
-        "packages/ui",
-        "packages/auth",
-        "packages/types"
-      ],
+      "image_name": "quiz-platform-skillhub-placement",
+      "buildable": true,
       "health_check_required": true
     },
     "skillhubcore-service": {
       "name": "skillhubcore-service",
+      "package_name": "@quiz/skillhubcore-service",
       "source_path": "services/skillhubcore-service",
       "compose_name": "skillhubcore-service",
-      "image_name": "skillhubcore-service",
-      "dependencies": [
-        "packages/db",
-        "packages/types"
-      ],
+      "image_name": "quiz-platform-skillhubcore-service",
+      "buildable": true,
       "health_check_required": true
     },
     "nginx": {
       "name": "nginx",
+      "package_name": null,
       "source_path": "infra/hostinger/nginx",
       "compose_name": "nginx",
-      "image_name": "nginx",
-      "dependencies": [],
+      "image_name": "nginx:1.27-alpine",
+      "buildable": false,
       "health_check_required": false
     }
   }

@@ -1,5 +1,5 @@
 {
-  "version": "3.0",
+  "version": "3.1",
   "description": "Production deployment configuration for quiz-platform",
   "deployment": {
     "state_directory": "/opt/platform/state",
@@ -19,7 +19,14 @@
     "buildkit_enabled": true,
     "compose_project_name": "quiz-platform",
     "prune_images_older_than_days": 7,
-    "keep_image_versions": 3
+    "keep_image_versions": 5,
+    "deployment_tag_prefix": "deployment",
+    "cleanup_builder_cache": false
+  },
+  "change_detection": {
+    "prefer_turbo_dry_run": true,
+    "turbo_task": "build",
+    "fallback_to_source_paths": true
   },
   "shared_paths": {
     "packages": "packages/",
