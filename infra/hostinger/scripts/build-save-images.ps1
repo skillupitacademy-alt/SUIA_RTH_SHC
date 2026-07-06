@@ -13,6 +13,8 @@ $RepoDir = Resolve-Path (Join-Path $HostingerDir "..\..")
 $ServiceMapPath = Join-Path $HostingerDir "config\service-map.json"
 $ComposeBase = Join-Path $HostingerDir "compose\docker-compose.yml"
 $ComposeProd = Join-Path $HostingerDir "compose\docker-compose.production.yml"
+$TempDir = Split-Path -Parent $ComposeBase
+$LocalComposeBase = Join-Path $TempDir "docker-compose.local-build.yml"
 
 if (-not $ImageTag) {
   $ImageTag = (git -C $RepoDir rev-parse --short=12 HEAD).Trim()
@@ -31,6 +33,29 @@ if (-not $EnvFile -or -not (Test-Path -LiteralPath $EnvFile)) {
 }
 
 New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
+
+# Local Docker builds do not need the VPS runtime env_file entries. Docker Compose
+# validates those absolute VPS paths on Windows before it starts the build, so use
+# a temporary build-only copy with env_file blocks removed.
+$composeLines = Get-Content -LiteralPath $ComposeBase
+$filteredLines = New-Object System.Collections.Generic.List[string]
+$skipEnvFileBlock = $false
+foreach ($line in $composeLines) {
+  if ($line -match '^\s{4}env_file:\s*$') {
+    $skipEnvFileBlock = $true
+    continue
+  }
+
+  if ($skipEnvFileBlock) {
+    if ($line -match '^\s{6}-\s+/opt/platform/env/') {
+      continue
+    }
+    $skipEnvFileBlock = $false
+  }
+
+  $filteredLines.Add($line)
+}
+$filteredLines | Set-Content -Encoding UTF8 -LiteralPath $LocalComposeBase
 
 $serviceMap = Get-Content -Raw $ServiceMapPath | ConvertFrom-Json
 $buildable = @($serviceMap.services.PSObject.Properties | Where-Object { $_.Value.buildable -eq $true })
@@ -58,7 +83,7 @@ Write-Host "Env file: $EnvFile"
 $composeArgs = @(
   "compose",
   "--env-file", $EnvFile,
-  "-f", $ComposeBase,
+  "-f", $LocalComposeBase,
   "-f", $ComposeProd,
   "build",
   "--pull"
@@ -79,7 +104,7 @@ foreach ($service in $selected) {
 
   $imageId = (& docker image inspect $latestRef -f "{{.Id}}" 2>$null)
   if (-not $imageId) {
-    $imageId = (& docker compose --env-file $EnvFile -f $ComposeBase -f $ComposeProd images -q $service 2>$null | Select-Object -First 1)
+    $imageId = (& docker compose --env-file $EnvFile -f $LocalComposeBase -f $ComposeProd images -q $service 2>$null | Select-Object -First 1)
     if (-not $imageId) {
       throw "Cannot find built image for $service"
     }
