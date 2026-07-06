@@ -278,10 +278,14 @@ export class UserRepository extends BaseRepository<User, typeof users> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const executor: any = tx ?? this.dbInstance;
     
+    // 🔥 FIX: Normalize role name to lowercase before lookup
+    // This prevents case-sensitivity issues (USER vs user vs Student)
+    const normalizedRoleName = roleName.trim().toLowerCase();
+    
     // ALWAYS use query API - no fallback
     const role = await executor.query.roles.findFirst({
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      where: (r: any, { eq }: any) => eq(r.name, roleName),
+      where: (r: any, { eq }: any) => eq(r.name, normalizedRoleName),
     });
 
     if (typeof role === 'object' && role !== null) {
@@ -289,6 +293,14 @@ export class UserRepository extends BaseRepository<User, typeof users> {
         userId,
         roleId: role.id,
       });
+    } else {
+      // 🔥 FIX: Throw error instead of silent failure
+      // This prevents users from being created without roles
+      throw new Error(
+        `Role "${roleName}" not found in database. ` +
+        `Tried normalized name: "${normalizedRoleName}". ` +
+        `Available roles: user, student, admin, super_admin, faculty, infrastructure`
+      );
     }
   }
 

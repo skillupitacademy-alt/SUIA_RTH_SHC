@@ -1,0 +1,105 @@
+╔════════════════════════════════════════════════════════════════════════╗
+║                                                                        ║
+║              VPS SIGNUP FIX - READY TO DEPLOY                         ║
+║                                                                        ║
+╚════════════════════════════════════════════════════════════════════════╝
+
+📍 LOCATION: d:\onlinewebsites\quiz-platform
+
+✅ FILES MODIFIED:
+   - packages/auth/src/middleware/cookie.middleware.ts (READY)
+
+📦 NEW FILES CREATED:
+   - DEPLOY_VPS_SIGNUP_FIX.ps1 (Automated deployment script)
+   - DEPLOY_NOW.md (Detailed deployment guide)
+   - VPS_SIGNUP_FIX.md (Comprehensive troubleshooting)
+   - VPS_DEPLOYMENT_SUMMARY.md (Architecture & summary)
+
+🎯 YOUR VPS:
+   IP: 72.61.115.49
+   SSH Key: .\suia_rth
+   Method: Docker Compose deployment
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚀 TO DEPLOY NOW (Automated):
+
+   .\DEPLOY_VPS_SIGNUP_FIX.ps1
+
+   This will:
+   1. Test SSH connection
+   2. Create backup on VPS
+   3. Sync code to VPS
+   4. Verify environment variables
+   5. Rebuild Docker images
+   6. Deploy updated containers
+   7. Run health checks
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 MANUAL DEPLOYMENT (If preferred):
+
+   1. Copy updated file to VPS:
+      
+      scp -i .\suia_rth `
+          .\packages\auth\src\middleware\cookie.middleware.ts `
+          root@72.61.115.49:/opt/platform/apps/quiz-platform/packages/auth/src/middleware/
+
+   2. SSH to VPS:
+      
+      ssh -i .\suia_rth root@72.61.115.49
+
+   3. On VPS, deploy:
+      
+      cd /opt/platform/apps/quiz-platform
+      ./infra/hostinger/scripts/deploy.sh
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚙️  ENVIRONMENT VARIABLES REQUIRED (on VPS):
+
+   File: /opt/platform/env/.env.production
+
+   COOKIE_DOMAIN_RTH=.realtutorialhub.com
+   COOKIE_DOMAIN_SKILLUP=.skillupitacademy.com
+   GATEWAY_URL=https://api.realtutorialhub.com
+   GATEWAY_URL_SKILLUP=https://api.skillupitacademy.com
+   ALLOWED_ORIGINS=https://user.realtutorialhub.com,https://user.skillupitacademy.com
+
+   The deployment script will verify these are set.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🧪 AFTER DEPLOYMENT:
+
+   1. Clear browser cache and cookies
+   2. Test signup:
+      - https://user.realtutorialhub.com/signup
+      - https://user.skillupitacademy.com/signup
+   3. Should redirect to /onboarding (NOT back to /signup)
+   4. Complete onboarding → Should go to /dashboard
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📚 DOCUMENTATION:
+
+   - DEPLOY_NOW.md → Complete deployment guide with examples
+   - VPS_SIGNUP_FIX.md → Detailed troubleshooting guide
+   - VPS_DEPLOYMENT_SUMMARY.md → What was changed and why
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 WHAT WAS FIXED:
+
+   Cookie domains were hardcoded, causing signup redirect loops.
+   Now they use environment variables for Docker deployment flexibility.
+
+   Before: domain: '.realtutorialhub.com' (hardcoded)
+   After:  domain: process.env.COOKIE_DOMAIN_RTH || '.realtutorialhub.com'
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⏱️  ESTIMATED TIME: 15-20 minutes
+
+✅ READY TO DEPLOY!
+

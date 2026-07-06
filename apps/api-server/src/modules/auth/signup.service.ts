@@ -68,10 +68,10 @@ export class SignupService {
 
       if (brandUserRepo.assignRole.length >= 3) {
         console.log('🔥 [SIGNUP] Assigning role (with tx)');
-        await brandUserRepo.assignRole(user.id, 'USER', tx);
+        await brandUserRepo.assignRole(user.id, 'student', tx);
       } else {
         console.log('🔥 [SIGNUP] Assigning role (without tx)');
-        await brandUserRepo.assignRole(user.id, 'USER');
+        await brandUserRepo.assignRole(user.id, 'student');
       }
       
       console.log('🔥 [SIGNUP] Role assigned, returning user');

@@ -13,14 +13,18 @@ export type Brand = 'realtutorialhub' | 'skillup';
 /**
  * Brand-specific configuration
  * Maps each brand to its cookie domain
+ * 
+ * 🔥 VPS COMPATIBILITY: Cookie domains are now environment-aware
+ * - For VPS/Hostinger deployments, set COOKIE_DOMAIN_RTH and COOKIE_DOMAIN_SKILLUP in .env
+ * - Falls back to production domains if env vars not set
  */
 const BRAND_CONFIG = {
   realtutorialhub: {
-    domain: '.realtutorialhub.com',
+    domain: process.env.COOKIE_DOMAIN_RTH || process.env.COOKIE_DOMAIN || '.realtutorialhub.com',
     hostnames: ['user.realtutorialhub.com', 'admin.realtutorialhub.com', 'api.realtutorialhub.com'],
   },
   skillup: {
-    domain: '.skillupitacademy.com',
+    domain: process.env.COOKIE_DOMAIN_SKILLUP || process.env.COOKIE_DOMAIN || '.skillupitacademy.com',
     hostnames: ['user.skillupitacademy.com', 'admin.skillupitacademy.com', 'api.skillupitacademy.com', 'faculty.skillupitacademy.com'],
   },
 } as const;

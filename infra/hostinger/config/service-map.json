@@ -1,0 +1,12 @@
+{
+  "services": {
+    "api-server": {
+      "path": "apps/api-server",
+      "dependencies": ["packages/auth", "packages/db"]
+    },
+    "realtutorialhub-web": {
+      "path": "apps/realtutorialhub-web",
+      "dependencies": ["packages/ui", "packages/auth"]
+    }
+  }
+}

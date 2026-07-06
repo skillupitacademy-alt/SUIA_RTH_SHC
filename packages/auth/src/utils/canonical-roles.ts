@@ -13,7 +13,7 @@
  * This makes both brands behave identically without DB migration.
  */
 
-export type Role = 'user' | 'student' | 'admin' | 'super_admin' | 'faculty';
+export type Role = 'student' | 'admin' | 'super_admin' | 'faculty';
 
 const VALID_ROLES: Set<Role> = new Set(['user', 'student', 'admin', 'super_admin', 'faculty']);
 
@@ -47,14 +47,14 @@ export function canonicalizeRoles(input: unknown): string[] {
     return [];
   }
   
-  // 🔥 CRITICAL: Unify "user" + "student" → ["user"]
-  // This makes RTH (user) and SkillUp (user+student) behave identically
+  // 🔥 CRITICAL: Unify "user" + "student" → ["student"]
+  // This makes RTH and SkillUp behave identically with standardized "student" role
   const hasUserOrStudent = roles.includes('user') || roles.includes('student');
   
   if (hasUserOrStudent) {
-    // Remove both "user" and "student", then add back only "user"
+    // Remove both "user" and "student", then add back only "student"
     roles = roles.filter(r => r !== 'user' && r !== 'student');
-    roles.push('user');
+    roles.push('student');
   }
   
   // Deduplicate and filter to valid roles only

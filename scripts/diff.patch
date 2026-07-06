@@ -1,0 +1,215 @@
+diff --git a/scripts/deploy-direct.sh b/scripts/deploy-direct.sh
+index 53228cfd..77ce182f 100644
+--- a/scripts/deploy-direct.sh
++++ b/scripts/deploy-direct.sh
+@@ -89,6 +89,31 @@ IMAGE_SHC_API="${REGISTRY}/${PROJECT_ID}/quiz-platform/skillhubcore-service:${GI
+ BUILD_RETRY_ATTEMPTS="${BUILD_RETRY_ATTEMPTS:-3}"
+ BUILD_RETRY_DELAY_SECONDS="${BUILD_RETRY_DELAY_SECONDS:-15}"
+ 
++run_with_retry() {
++  local label="$1"
++  shift
++
++  local attempt=1
++  while true; do
++    echo "🔁 ${label} (attempt ${attempt}/${BUILD_RETRY_ATTEMPTS})"
++
++    if "$@"; then
++      echo "✅ ${label} succeeded"
++      return 0
++    fi
++
++    if [ "$attempt" -ge "$BUILD_RETRY_ATTEMPTS" ]; then
++      echo "❌ ${label} failed after ${BUILD_RETRY_ATTEMPTS} attempts"
++      return 1
++    fi
++
++    echo "⚠️  ${label} failed. Waiting ${BUILD_RETRY_DELAY_SECONDS}s before retry..."
++    sleep "$BUILD_RETRY_DELAY_SECONDS"
++    attempt=$((attempt + 1))
++
++BUILD_RETRY_ATTEMPTS="${BUILD_RETRY_ATTEMPTS:-3}"
++BUILD_RETRY_DELAY_SECONDS="${BUILD_RETRY_DELAY_SECONDS:-15}"
++
+ run_with_retry() {
+   local label="$1"
+   shift
+@@ -116,14 +141,15 @@ run_with_retry() {
+ cloud_build_image() {
+   local dockerfile="$1"
+   local image="$2"
++  local image_latest="${image%:*}:latest"
+ 
+   run_with_retry "Cloud Build ${image}" \
+     gcloud builds submit . \
+       --region="$REGION" \
+-      --machine-type=e2-highcpu-8 \
++      --machine-type="${BUILD_MACHINE_TYPE:-e2-medium}" \
+       --timeout=3600s \
+       --config=scripts/cloudbuild-docker-image.yaml \
+-      --substitutions="_DOCKERFILE=${dockerfile},_IMAGE=${image}"
++      --substitutions="_DOCKERFILE=${dockerfile},_IMAGE=${image},_IMAGE_LATEST=${image_latest}"
+ }
+ 
+ deploy_marketing_site() {
+@@ -166,6 +192,98 @@ resolve_run_service_url() {
+     --format='value(status.url)' 2>/dev/null || true
+ }
+ 
++#############################################
++# 🔍 CHANGE DETECTION
++#############################################
++
++detect_changes() {
++  local FORCE_ALL="${DEPLOY_ALL:-false}"
++  
++  if [ "$FORCE_ALL" = "true" ]; then
++    echo "Force full deploy requested"
++    BUILD_API=true BUILD_RTH=true BUILD_SKILLUP=true
++    BUILD_SHC_ADMIN=true BUILD_SHC_API=true
++    BUILD_ANALYTICS=true BUILD_RTH_SITE=true BUILD_SUIA_SITE=true
++    return
++  fi
++
++  # Get the last deployed SHA from Cloud Run label
++  local LAST_SHA="${LAST_DEPLOYED_SHA:-}"
++  if [ -z "$LAST_SHA" ]; then
++    LAST_SHA=$(gcloud run services describe $SERVICE_API \
++      --region=$REGION \
++      --format='value(metadata.annotations.deploy-sha)' 2>/dev/null || echo "")
++  fi
++  
++  if [ -z "$LAST_SHA" ]; then
++    echo "⚠️  No previous deploy SHA found — building all services"
++    BUILD_API=true BUILD_RTH=true BUILD_SKILLUP=true
++    BUILD_SHC_ADMIN=true BUILD_SHC_API=true
++    BUILD_ANALYTICS=true BUILD_RTH_SITE=true BUILD_SUIA_SITE=true
++    return
++  fi
++  
++  CHANGED_FILES=$(git diff --name-only "$LAST_SHA" HEAD 2>/dev/null || echo "")
++  
++  if [ -z "$CHANGED_FILES" ]; then
++    echo "⚠️  Cannot determine changes — building all services"
++    BUILD_API=true BUILD_RTH=true BUILD_SKILLUP=true
++    BUILD_SHC_ADMIN=true BUILD_SHC_API=true
++    BUILD_ANALYTICS=true BUILD_RTH_SITE=true BUILD_SUIA_SITE=true
++    return
++  fi
++  
++  # Root config changes → full rebuild
++  if echo "$CHANGED_FILES" | grep -qE '^(pnpm-lock\.yaml|pnpm-workspace\.yaml|turbo\.json|tsconfig\.json|\.dockerignore|package\.json)$'; then
++    echo "🔁 Root config changed — building all services"
++    BUILD_API=true BUILD_RTH=true BUILD_SKILLUP=true
++    BUILD_SHC_ADMIN=true BUILD_SHC_API=true
++    BUILD_ANALYTICS=true BUILD_RTH_SITE=true BUILD_SUIA_SITE=true
++    return
++  fi
++
++  BUILD_API=false BUILD_RTH=false BUILD_SKILLUP=false
++  BUILD_SHC_ADMIN=false BUILD_SHC_API=false
++  BUILD_ANALYTICS=false BUILD_RTH_SITE=false BUILD_SUIA_SITE=false
++
++  # Direct service changes
++  echo "$CHANGED_FILES" | grep -q '^apps/api-server/'            && BUILD_API=true
++  echo "$CHANGED_FILES" | grep -q '^apps/realtutorialhub-web/'   && BUILD_RTH=true
++  echo "$CHANGED_FILES" | grep -q '^apps/skillup-web/'           && BUILD_SKILLUP=true
++  echo "$CHANGED_FILES" | grep -q '^apps/skillhubcore-admin/'    && BUILD_SHC_ADMIN=true
++  echo "$CHANGED_FILES" | grep -q '^services/skillhubcore-service/' && BUILD_SHC_API=true
++  echo "$CHANGED_FILES" | grep -q '^services/analytics-collector-service/' && BUILD_ANALYTICS=true
++  echo "$CHANGED_FILES" | grep -q '^apps/realtutorialhub-site/'  && BUILD_RTH_SITE=true
++  echo "$CHANGED_FILES" | grep -q '^apps/skillupitacademy-site/' && BUILD_SUIA_SITE=true
++
++  # Shared package changes → propagate to dependents
++  echo "$CHANGED_FILES" | grep -q '^packages/auth/'          && { BUILD_API=true; BUILD_RTH=true; BUILD_SKILLUP=true; BUILD_SHC_ADMIN=true; BUILD_SHC_API=true; }
++  echo "$CHANGED_FILES" | grep -q '^packages/db/'            && { BUILD_API=true; BUILD_RTH=true; BUILD_SHC_ADMIN=true; }
++  echo "$CHANGED_FILES" | grep -q '^packages/types/'         && { BUILD_API=true; BUILD_RTH=true; BUILD_SKILLUP=true; BUILD_SHC_ADMIN=true; BUILD_SHC_API=true; }
++  echo "$CHANGED_FILES" | grep -q '^packages/validation/'    && { BUILD_API=true; BUILD_RTH=true; BUILD_SKILLUP=true; BUILD_SHC_ADMIN=true; }
++  echo "$CHANGED_FILES" | grep -q '^packages/ui/'            && { BUILD_API=true; BUILD_SHC_ADMIN=true; }
++  echo "$CHANGED_FILES" | grep -q '^packages/events/'        && { BUILD_API=true; BUILD_SHC_API=true; }
++  echo "$CHANGED_FILES" | grep -q '^packages/db-tutorial/'   && { BUILD_API=true; BUILD_RTH=true; BUILD_SKILLUP=true; BUILD_SHC_ADMIN=true; }
++  echo "$CHANGED_FILES" | grep -q '^packages/db-people/'     && { BUILD_SKILLUP=true; BUILD_SHC_API=true; }
++  echo "$CHANGED_FILES" | grep -q '^packages/db-payment/'    && { BUILD_SKILLUP=true; }
++  echo "$CHANGED_FILES" | grep -q '^packages/db-placement/'  && { BUILD_SKILLUP=true; }
++  echo "$CHANGED_FILES" | grep -q '^packages/marketing-site/' && { BUILD_ANALYTICS=true; BUILD_RTH_SITE=true; BUILD_SUIA_SITE=true; BUILD_SHC_ADMIN=true; }
++  echo "$CHANGED_FILES" | grep -q '^packages/observability/' && { BUILD_API=true; BUILD_RTH=true; BUILD_SHC_ADMIN=true; }
++  echo "$CHANGED_FILES" | grep -q '^packages/api-client/'    && { BUILD_API=true; BUILD_RTH=true; BUILD_SHC_ADMIN=true; }
++  
++  echo ""
++  echo "📋 Build plan:"
++  echo "   API:               $BUILD_API"
++  echo "   RTH BFF:           $BUILD_RTH"
++  echo "   SkillUp BFF:       $BUILD_SKILLUP"
++  echo "   SHC Admin:         $BUILD_SHC_ADMIN"
++  echo "   SHC Service:       $BUILD_SHC_API"
++  echo "   Analytics:         $BUILD_ANALYTICS"
++  echo "   RTH Marketing:     $BUILD_RTH_SITE"
++  echo "   SUIA Marketing:    $BUILD_SUIA_SITE"
++  echo ""
++}
++
+ #############################################
+ # 🔐 RBAC TEST USER CREDENTIALS
+ #############################################
+@@ -239,12 +357,11 @@ REQUIRED_SECRETS=(
+ MISSING_SECRETS=()
+ 
+ for secret in "${REQUIRED_SECRETS[@]}"; do
+-  VALUE=$(gcloud secrets versions access latest --secret=$secret 2>/dev/null || echo "")
+-  if [ -z "$VALUE" ]; then
++  if ! gcloud secrets describe $secret --format="value(name)" &>/dev/null; then
+     echo "❌ Missing secret: $secret"
+     MISSING_SECRETS+=("$secret")
+   else
+-    echo "✅ $secret exists (${#VALUE} bytes)"
++    echo "✅ $secret exists"
+   fi
+ done
+ 
+@@ -364,14 +481,16 @@ echo "Analytics Collector: $PREV_ANALYTICS_COLLECTOR"
+ # 🚀 BUILD + PUSH IMAGES
+ #############################################
+ 
++detect_changes
++
+ echo "☁️  Building and pushing images with Cloud Build..."
+ 
+-cloud_build_image apps/api-server/Dockerfile $IMAGE_API
+-cloud_build_image apps/realtutorialhub-web/Dockerfile $IMAGE_RTH
+-cloud_build_image apps/skillup-web/Dockerfile $IMAGE_SKILLUP
+-cloud_build_image apps/skillhubcore-admin/Dockerfile $IMAGE_SHC_ADMIN
+-cloud_build_image services/skillhubcore-service/Dockerfile $IMAGE_SHC_API
+-deploy_collector_service $SERVICE_ANALYTICS_COLLECTOR cloudbuild.analytics-collector-service.yaml
++[ "$BUILD_API" = true ]       && cloud_build_image apps/api-server/Dockerfile $IMAGE_API
++[ "$BUILD_RTH" = true ]       && cloud_build_image apps/realtutorialhub-web/Dockerfile $IMAGE_RTH
++[ "$BUILD_SKILLUP" = true ]   && cloud_build_image apps/skillup-web/Dockerfile $IMAGE_SKILLUP
++[ "$BUILD_SHC_ADMIN" = true ] && cloud_build_image apps/skillhubcore-admin/Dockerfile $IMAGE_SHC_ADMIN
++[ "$BUILD_SHC_API" = true ]   && cloud_build_image services/skillhubcore-service/Dockerfile $IMAGE_SHC_API
++[ "$BUILD_ANALYTICS" = true ] && deploy_collector_service $SERVICE_ANALYTICS_COLLECTOR cloudbuild.analytics-collector-service.yaml
+ 
+ echo "🚀 Deploying ${SERVICE_SHC_API}..."
+ gcloud run deploy $SERVICE_SHC_API \
+@@ -435,8 +554,8 @@ SUIA_GTM_CONTAINER_ID="${NEXT_PUBLIC_SUIA_GTM_CONTAINER_ID:-}"
+ echo "🌐 SHC marketing base: $SHC_MARKETING_BASE_URL"
+ echo "🌐 Collector base: $COLLECTOR_BASE_URL"
+ 
+-deploy_marketing_site $SERVICE_RTH_SITE cloudbuild.realtutorialhub-site.yaml "$RTH_META_PIXEL_ID" "$RTH_GA4_MEASUREMENT_ID" "$RTH_GTM_CONTAINER_ID" "$SUIA_META_PIXEL_ID" "$SUIA_GA4_MEASUREMENT_ID" "$SUIA_GTM_CONTAINER_ID" "${NEXT_PUBLIC_ANALYTICS_ENV:-production}" "$SHC_MARKETING_BASE_URL" "$COLLECTOR_TRACK_URL"
+-deploy_marketing_site $SERVICE_SKILLUP_SITE cloudbuild.skillupitacademy-site.yaml "$RTH_META_PIXEL_ID" "$RTH_GA4_MEASUREMENT_ID" "$RTH_GTM_CONTAINER_ID" "$SUIA_META_PIXEL_ID" "$SUIA_GA4_MEASUREMENT_ID" "$SUIA_GTM_CONTAINER_ID" "${NEXT_PUBLIC_ANALYTICS_ENV:-production}" "$SHC_MARKETING_BASE_URL" "$COLLECTOR_TRACK_URL"
++[ "$BUILD_RTH_SITE" = true ] && deploy_marketing_site $SERVICE_RTH_SITE cloudbuild.realtutorialhub-site.yaml "$RTH_META_PIXEL_ID" "$RTH_GA4_MEASUREMENT_ID" "$RTH_GTM_CONTAINER_ID" "$SUIA_META_PIXEL_ID" "$SUIA_GA4_MEASUREMENT_ID" "$SUIA_GTM_CONTAINER_ID" "${NEXT_PUBLIC_ANALYTICS_ENV:-production}" "$SHC_MARKETING_BASE_URL" "$COLLECTOR_TRACK_URL"
++[ "$BUILD_SUIA_SITE" = true ] && deploy_marketing_site $SERVICE_SKILLUP_SITE cloudbuild.skillupitacademy-site.yaml "$RTH_META_PIXEL_ID" "$RTH_GA4_MEASUREMENT_ID" "$RTH_GTM_CONTAINER_ID" "$SUIA_META_PIXEL_ID" "$SUIA_GA4_MEASUREMENT_ID" "$SUIA_GTM_CONTAINER_ID" "${NEXT_PUBLIC_ANALYTICS_ENV:-production}" "$SHC_MARKETING_BASE_URL" "$COLLECTOR_TRACK_URL"
+ 
+ #############################################
+ # 🚀 DEPLOY API FIRST (NO TRAFFIC)
+@@ -1154,6 +1273,12 @@ echo "🔗 Admin Consoles:"
+ echo "   SHC Infrastructure: https://admin.skillhubcore.in"
+ echo "Hybrid marketing platform validated"
+ echo ""
++echo "📌 Updating deployment annotation..."
++gcloud run services update $SERVICE_API \
++  --region=$REGION \
++  --update-annotations="deploy-sha=${GIT_SHA}" \
++  --quiet || echo "⚠️  Failed to update annotation"
++
+ echo "✅ All services deployed and validated"
+ echo "✅ Authentication flows working"
+ echo "✅ RBAC enforcement verified"

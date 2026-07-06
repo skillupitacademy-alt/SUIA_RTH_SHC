@@ -15,16 +15,16 @@ import { ForbiddenError } from '../errors/auth-errors';
  * 🔐 DEFENSIVE ROLE CANONICALIZATION (STRICT)
  * 
  * Ensures consistent role behavior even if roles leak through without canonicalization.
- * STRICT UNIFICATION: ["user"] → ['user'] (NO OTHER ROLES)
+ * STRICT UNIFICATION: ["user"] or ["student"] → ['student'] (NO OTHER ROLES)
  */
 function canonicalizeRoles(roles: Role[]): Role[] {
   if (!roles || roles.length === 0) {
     return [];
   }
   
-  // 🔥 STRICT UNIFICATION: Legacy student role → user
+  // 🔥 STRICT UNIFICATION: Legacy user role → student
   if (roles.includes('user' as Role) || roles.includes('student' as any)) {
-    return ['user' as Role];
+    return ['student' as Role];
   }
   
   return roles;

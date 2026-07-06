@@ -108,7 +108,7 @@ describe('AuthService (Main Suite)', () => {
       const user = await container.get(AuthService).signup('t@t.com', 'pw', 'Name');
       expect(user.id).toBe('u1');
       expect(mockUserRepo.create).toHaveBeenCalled();
-      expect(mockUserRepo.assignRole).toHaveBeenCalledWith('u1', 'USER');
+      expect(mockUserRepo.assignRole).toHaveBeenCalledWith('u1', 'student');
     });
   });
 

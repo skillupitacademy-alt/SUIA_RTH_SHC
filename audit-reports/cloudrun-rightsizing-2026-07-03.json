@@ -1,0 +1,110 @@
+{
+  "faculty-app": {
+    "current_cpu": "1000m",
+    "current_mem": "512Mi",
+    "max_cpu_pct": 0.0,
+    "max_mem_pct": 0.0,
+    "max_mem_mb": 0.0,
+    "rec_cpu": "1",
+    "rec_mem": "256Mi"
+  },
+  "quiz-admin-app": {
+    "current_cpu": "1",
+    "current_mem": "1Gi",
+    "max_cpu_pct": 34.99,
+    "max_mem_pct": 13.990000000000002,
+    "max_mem_mb": 143.25760000000002,
+    "rec_cpu": "1",
+    "rec_mem": "256Mi"
+  },
+  "quiz-api-server": {
+    "current_cpu": "2",
+    "current_mem": "2Gi",
+    "max_cpu_pct": 20.990000000000002,
+    "max_mem_pct": 7.99,
+    "max_mem_mb": 163.6352,
+    "rec_cpu": "1",
+    "rec_mem": "512Mi"
+  },
+  "quiz-web-app": {
+    "current_cpu": "1",
+    "current_mem": "1Gi",
+    "max_cpu_pct": 3.9900000000000007,
+    "max_mem_pct": 9.99,
+    "max_mem_mb": 102.2976,
+    "rec_cpu": "1",
+    "rec_mem": "256Mi"
+  },
+  "realtutorialhub-site": {
+    "current_cpu": "1000m",
+    "current_mem": "512Mi",
+    "max_cpu_pct": 11.989999999999998,
+    "max_mem_pct": 19.990000000000002,
+    "max_mem_mb": 102.34880000000001,
+    "rec_cpu": "1",
+    "rec_mem": "256Mi"
+  },
+  "realtutorialhub-web": {
+    "current_cpu": "2",
+    "current_mem": "2Gi",
+    "max_cpu_pct": 13.990000000000002,
+    "max_mem_pct": 6.99,
+    "max_mem_mb": 143.1552,
+    "rec_cpu": "1",
+    "rec_mem": "256Mi"
+  },
+  "skillhub-placement": {
+    "current_cpu": "1000m",
+    "current_mem": "512Mi",
+    "max_cpu_pct": 5.989999999999999,
+    "max_mem_pct": 20.990000000000002,
+    "max_mem_mb": 107.46880000000002,
+    "rec_cpu": "1",
+    "rec_mem": "256Mi"
+  },
+  "skillhubcore-admin": {
+    "current_cpu": "1",
+    "current_mem": "1Gi",
+    "max_cpu_pct": 39.99,
+    "max_mem_pct": 13.990000000000002,
+    "max_mem_mb": 143.25760000000002,
+    "rec_cpu": "1",
+    "rec_mem": "256Mi"
+  },
+  "skillhubcore-service": {
+    "current_cpu": "1000m",
+    "current_mem": "512Mi",
+    "max_cpu_pct": 11.97,
+    "max_mem_pct": 33.99,
+    "max_mem_mb": 174.02880000000002,
+    "rec_cpu": "1",
+    "rec_mem": "512Mi"
+  },
+  "skillup-admin": {
+    "current_cpu": "1000m",
+    "current_mem": "512Mi",
+    "max_cpu_pct": 14.99,
+    "max_mem_pct": 20.990000000000002,
+    "max_mem_mb": 107.46880000000002,
+    "rec_cpu": "1",
+    "rec_mem": "256Mi"
+  },
+  "skillup-web": {
+    "current_cpu": "1000m",
+    "current_mem": "512Mi",
+    "max_cpu_pct": 37.99,
+    "max_mem_pct": 26.990000000000002,
+    "max_mem_mb": 138.18880000000001,
+    "rec_cpu": "1",
+    "rec_mem": "256Mi"
+  },
+  "skillupitacademy-site": {
+    "current_cpu": "1000m",
+    "current_mem": "512Mi",
+    "max_cpu_pct": 6.99,
+    "max_mem_pct": 20.990000000000002,
+    "max_mem_mb": 107.46880000000002,
+    "rec_cpu": "1",
+    "rec_mem": "256Mi"
+  }
+}

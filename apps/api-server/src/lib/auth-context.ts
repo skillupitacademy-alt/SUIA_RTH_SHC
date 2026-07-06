@@ -34,10 +34,10 @@ export function canonicalizeRoles(input: unknown): string[] {
       .filter(Boolean);
   }
   
-  // 🔥 STRICT UNIFICATION: user + student → user (ONLY)
+  // 🔥 STRICT UNIFICATION: user + student → student (ONLY)
   // No spreading, no merging, no hybrid state
-  if (roles.includes('user') || roles.includes("user")) {
-    return ['user'];
+  if (roles.includes('user') || roles.includes('student')) {
+    return ['student'];
   }
   
   // Keep other roles as-is (admin, faculty, super_admin)

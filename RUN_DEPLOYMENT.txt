@@ -1,0 +1,37 @@
+═══════════════════════════════════════════════════════════════
+  EXECUTE THESE COMMANDS IN POWERSHELL
+═══════════════════════════════════════════════════════════════
+
+1. Open PowerShell as Administrator
+
+2. Navigate to project:
+   cd d:\onlinewebsites\quiz-platform
+
+3. Run deployment:
+   .\DEPLOY_SIMPLE.ps1
+
+═══════════════════════════════════════════════════════════════
+  WHAT WILL HAPPEN
+═══════════════════════════════════════════════════════════════
+
+Step 1: Copy file to VPS
+  Local:  packages\auth\src\middleware\cookie.middleware.ts
+  Remote: /opt/platform/apps/quiz-platform/packages/auth/src/middleware/cookie.middleware.ts
+
+Step 2: SSH to VPS and rebuild
+  cd /opt/platform/apps/quiz-platform
+  ./infra/hostinger/scripts/build.sh
+  ./infra/hostinger/scripts/deploy.sh
+
+═══════════════════════════════════════════════════════════════
+  EXPECTED OUTPUT
+═══════════════════════════════════════════════════════════════
+
+✅ File copied successfully
+🏗️ Building Docker images...
+🚀 Deploying containers...
+✅ Deployment complete!
+
+═══════════════════════════════════════════════════════════════
+  IF YOU SEE ERRORS, PASTE THEM HERE AND I'LL HELP FIX
+═══════════════════════════════════════════════════════════════
