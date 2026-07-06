@@ -7,7 +7,7 @@ set -eu
 SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 CONFIG_DIR="$SCRIPT_DIR/../config"
 
-if [ -f "$SCRIPT_DIR/../compose/docker-compose.yml" ]; then
+if [ -f "$SCRIPT_DIR/../manifest.json" ] && [ -f "$SCRIPT_DIR/../compose/docker-compose.yml" ]; then
   export HOSTINGER_SOURCE_FREE_RUNTIME="${HOSTINGER_SOURCE_FREE_RUNTIME:-true}"
 fi
 

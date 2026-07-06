@@ -6,16 +6,17 @@ This directory defines the Phase 3 VPS runtime shape. It is designed for a VPS t
 
 ```text
 /opt/platform
-├── compose/
-│   ├── docker-compose.yml
-│   └── docker-compose.production.yml
-├── config/
-├── env/
-├── nginx/
-├── scripts/
-├── state/
-├── logs/
-└── backups/
+|-- compose/
+|   |-- docker-compose.yml
+|   `-- docker-compose.production.yml
+|-- config/
+|-- env/
+|-- nginx/
+|-- scripts/
+|-- state/
+|-- logs/
+|-- backups/
+`-- manifest.json
 ```
 
 The VPS should not need:
@@ -29,7 +30,7 @@ turbo.json
 source Dockerfiles
 ```
 
-## Deployment Flow
+## Five-Step Deployment
 
 1. Build and push images outside the VPS:
 
@@ -37,25 +38,35 @@ source Dockerfiles
 REGISTRY_PREFIX="docker.io/your-user" IMAGE_TAG="<tag>" ./infra/hostinger/scripts/build-push-images.sh
 ```
 
-2. Copy/sync only the runtime bundle to `/opt/platform`.
+2. Package the runtime bundle:
 
-3. Pull and deploy on the VPS:
+```bash
+./infra/hostinger/scripts/package-runtime-bundle.sh
+```
+
+3. Copy the `.tar.gz` and `.sha256` files to the VPS, then verify:
+
+```bash
+sha256sum -c hostinger-runtime-<version>.tar.gz.sha256
+```
+
+4. Extract into `/opt/platform` and restore real env/cert files.
+
+5. Pull and deploy:
 
 ```bash
 cd /opt/platform/scripts
-HOSTINGER_SOURCE_FREE_RUNTIME=true \
-REGISTRY_PREFIX="docker.io/your-user" \
-IMAGE_TAG="<tag>" \
-./deploy-pull-production.sh
+REGISTRY_PREFIX="docker.io/your-user" IMAGE_TAG="<tag>" ./deploy-pull-production.sh
 ```
 
-## Compose Contract
+## Bundle Contents
 
-`runtime/docker-compose.yml` contains only runtime image references and no `build:` sections. The deploy script pulls registry images, retags them as the local image names expected by Compose, then runs:
-
-```bash
-docker compose up -d --no-build
-```
+- Runtime Compose files with `image:` only and no `build:` sections.
+- Deployment scripts.
+- Deployment config.
+- Nginx config.
+- Empty runtime directories for env, state, logs, and backups.
+- `manifest.json` with bundle version, source commit, creation time, and schema.
 
 ## Legacy Fallback
 

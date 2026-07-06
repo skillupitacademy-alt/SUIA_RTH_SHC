@@ -223,6 +223,62 @@ validate_configuration_files() {
   [ "$failed" -eq 0 ]
 }
 
+validate_runtime_layout() {
+  local runtime_root="$1"
+  [ "${HOSTINGER_SOURCE_FREE_RUNTIME:-false}" = "true" ] || return 0
+
+  local failed=0
+  log_header "Runtime Layout Validation"
+
+  for dir in compose config nginx env scripts state logs backups; do
+    if [ -d "$runtime_root/$dir" ]; then
+      log_success "Runtime directory present: $dir"
+    else
+      log_error "Runtime directory missing: $runtime_root/$dir"
+      failed=1
+    fi
+  done
+
+  for file in compose/docker-compose.yml compose/docker-compose.production.yml config/deployment-config.json config/service-map.json config/smoke-tests.json manifest.json; do
+    if [ -f "$runtime_root/$file" ]; then
+      log_success "Runtime file present: $file"
+    else
+      log_error "Runtime file missing: $runtime_root/$file"
+      failed=1
+    fi
+  done
+
+  if grep -R -nE '^[[:space:]]*(build|dockerfile|context):' "$runtime_root/compose" >/dev/null 2>&1; then
+    log_error "Runtime compose contains source-build directives"
+    failed=1
+  fi
+
+  [ "$failed" -eq 0 ]
+}
+
+runtime_git_commit() {
+  local manifest_file="${1:-}"
+  if [ -n "$manifest_file" ] && [ -f "$manifest_file" ]; then
+    local commit
+    commit=$(jq -r '.gitCommit // empty' "$manifest_file" 2>/dev/null || echo "")
+    if [ -n "$commit" ] && [ "$commit" != "null" ]; then
+      echo "$commit"
+      return 0
+    fi
+  fi
+  git rev-parse HEAD 2>/dev/null || echo "unknown"
+}
+
+runtime_manifest_field() {
+  local field="$1"
+  local manifest_file="${RUNTIME_MANIFEST_FILE:-}"
+  if [ -n "$manifest_file" ] && [ -f "$manifest_file" ]; then
+    jq -r ".$field // \"unknown\"" "$manifest_file" 2>/dev/null || echo "unknown"
+    return 0
+  fi
+  echo "unknown"
+}
+
 check_system_resources() {
   local failed=0
   log_header "System Resource Check"
@@ -574,6 +630,8 @@ save_deployment_state() {
     --arg compose_project "$COMPOSE_PROJECT" \
     --arg docker_version "$(docker_version_string)" \
     --arg compose_version "$(compose_version_string)" \
+    --arg runtime_bundle_version "$(runtime_manifest_field bundleVersion)" \
+    --arg runtime_schema_version "$(runtime_manifest_field schemaVersion)" \
     --arg services_built "$services_built" \
     --arg services_restarted "$services_restarted" \
     --arg compose_config_sha256 "$compose_checksum" \
@@ -594,7 +652,9 @@ save_deployment_state() {
         workspace:$workspace,
         compose_project:$compose_project,
         docker_version:$docker_version,
-        compose_version:$compose_version
+        compose_version:$compose_version,
+        runtime_bundle_version:$runtime_bundle_version,
+        runtime_schema_version:$runtime_schema_version
       },
       services_built:$services_built,
       services_restarted:$services_restarted,

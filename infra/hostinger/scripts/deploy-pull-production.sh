@@ -6,7 +6,7 @@ set -eu
 SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 CONFIG_DIR="$SCRIPT_DIR/../config"
 
-if [ -f "$SCRIPT_DIR/../compose/docker-compose.yml" ]; then
+if [ -f "$SCRIPT_DIR/../manifest.json" ] && [ -f "$SCRIPT_DIR/../compose/docker-compose.yml" ]; then
   export HOSTINGER_SOURCE_FREE_RUNTIME="${HOSTINGER_SOURCE_FREE_RUNTIME:-true}"
 fi
 
@@ -16,12 +16,15 @@ fi
 SERVICE_MAP="$CONFIG_DIR/service-map.json"
 SMOKE_TESTS="$CONFIG_DIR/smoke-tests.json"
 DEPLOY_CONFIG="$CONFIG_DIR/deployment-config.json"
+RUNTIME_MANIFEST="$SCRIPT_DIR/../manifest.json"
+export RUNTIME_MANIFEST_FILE="$RUNTIME_MANIFEST"
 
 log_header "Registry Pull Deployment"
 
 validate_deployment_tools pull || exit 1
 validate_configuration_files "$CONFIG_DIR" || exit 1
 load_deployment_config "$DEPLOY_CONFIG"
+validate_runtime_layout "$SCRIPT_DIR/.."
 
 [ -n "${REGISTRY_PREFIX:-}" ] || { log_error "REGISTRY_PREFIX is required"; exit 1; }
 [ -n "${IMAGE_TAG:-}" ] || { log_error "IMAGE_TAG is required"; exit 1; }
@@ -43,7 +46,7 @@ SERVICES="${*:-$(get_buildable_services "$SERVICE_MAP")}"
 SERVICES=$(normalize_services "$SERVICES")
 [ -n "$SERVICES" ] || { log_error "No services selected"; exit 1; }
 
-CURRENT_COMMIT=$(git rev-parse HEAD 2>/dev/null || echo "unknown")
+CURRENT_COMMIT=$(runtime_git_commit "$RUNTIME_MANIFEST")
 CURRENT_SHORT=$(echo "$CURRENT_COMMIT" | cut -c1-7)
 
 acquire_lock "$LOCK_FILE" "$DEPLOY_LOCK_TIMEOUT"
@@ -93,6 +96,9 @@ cleanup_docker_images
 log_header "Registry Deployment Complete"
 log_info "Commit: $CURRENT_SHORT"
 log_info "Registry tag: $IMAGE_TAG"
+if [ -f "$RUNTIME_MANIFEST" ]; then
+  log_info "Runtime bundle: $(jq -r '.bundleVersion // "unknown"' "$RUNTIME_MANIFEST")"
+fi
 log_info "Deployment ID: $DEPLOYMENT_ID"
 log_info "Restarted: $(printf '%s' "$SERVICES" | wc -w | tr -d ' ') service(s)"
 log_success "Registry deployment completed successfully"
