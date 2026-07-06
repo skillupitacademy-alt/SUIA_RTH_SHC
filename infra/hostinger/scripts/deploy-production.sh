@@ -402,6 +402,20 @@ echo ""
 
 log_header "Finalization"
 
+# Tag Docker images with deployment timestamp for rollback
+DEPLOY_TIMESTAMP=$(date +"%Y%m%d-%H%M%S")
+
+if [ -n "$SERVICES_TO_BUILD" ] && [ "$BUILD_COUNT" -gt 0 ]; then
+  tag_deployment_images "$SERVICES_TO_BUILD" "$DEPLOY_TIMESTAMP"
+  
+  # Cleanup old tags (keep last 3 per service)
+  for service in $SERVICES_TO_BUILD; do
+    cleanup_deployment_tags "$service" 3
+  done
+fi
+
+echo ""
+
 # Save deployment state
 if ! save_deployment_state "$DEPLOYMENT_STATE" "$CURRENT_COMMIT" "$SERVICES_TO_BUILD" "$SERVICES_TO_RESTART" "$IS_FIRST_DEPLOYMENT"; then
   log_warning "Failed to save deployment state"

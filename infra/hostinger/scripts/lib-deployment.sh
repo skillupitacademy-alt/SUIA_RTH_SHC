@@ -607,6 +607,53 @@ cleanup_docker_images() {
   log_success "Docker cleanup complete"
 }
 
+# Tag deployment images with timestamp for versioning
+# Args: $1 = space-separated service names, $2 = timestamp
+tag_deployment_images() {
+  local services="$1"
+  local timestamp="$2"
+  
+  log_info "Tagging deployment images: $timestamp"
+  
+  for service in $services; do
+    # Get current latest image ID
+    local image_id=$(docker images "${service}:latest" -q 2>/dev/null | head -1)
+    
+    if [ -n "$image_id" ]; then
+      # Tag with deployment timestamp
+      if docker tag "$image_id" "${service}:deployment-${timestamp}" 2>/dev/null; then
+        log_success "$service: Tagged as deployment-${timestamp}"
+      else
+        log_warning "$service: Failed to tag image"
+      fi
+    else
+      log_warning "$service: No latest image found to tag"
+    fi
+  done
+}
+
+# Cleanup old deployment-tagged images (keep last N)
+# Args: $1 = service name, $2 = number to keep
+cleanup_deployment_tags() {
+  local service="$1"
+  local keep_count="$2"
+  
+  # Get all deployment tags for service
+  local tags=$(docker images "$service" --format "{{.Tag}}" 2>/dev/null | grep "^deployment-" | sort -r)
+  local tag_count=$(echo "$tags" | grep -c "^deployment-" || echo "0")
+  
+  if [ "$tag_count" -gt "$keep_count" ]; then
+    local remove_count=$((tag_count - keep_count))
+    log_info "$service: Removing $remove_count old deployment tag(s)"
+    
+    echo "$tags" | tail -n "+$((keep_count + 1))" | while read -r tag; do
+      if [ -n "$tag" ]; then
+        docker rmi "${service}:${tag}" >/dev/null 2>&1 || true
+      fi
+    done
+  fi
+}
+
 # =============================================================================
 # Pre-Deployment Validation
 # =============================================================================
