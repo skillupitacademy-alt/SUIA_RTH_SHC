@@ -24,7 +24,8 @@ import {
   Edit,
   GraduationCap,
   PlaySquare,
-  ChevronRight
+  ChevronRight,
+  FolderTree
 } from 'lucide-react';
 
 interface LeftSidebarProps {
@@ -76,6 +77,7 @@ export function LeftSidebar({ isLeftSidebarOpen, setIsLeftSidebarOpen, pathname 
             <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 px-2 whitespace-nowrap">Governance & Core</h2>
             <nav className="space-y-1">
               {[
+                { icon: FolderTree, label: 'Educational Hierarchy', href: '/questions' },
                 { icon: ShieldCheck, label: 'Constitutional Center', href: '#' },
                 { icon: MessageSquare, label: 'Prompt Governance', href: '#' },
                 { icon: Box, label: 'Architecture Governance', href: '#' },
