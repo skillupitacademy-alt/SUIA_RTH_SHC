@@ -60,6 +60,12 @@
             "@quiz/db-placement/*": [
                 "./packages/db-placement/src/*"
             ],
+            "@quiz/db-skillhubcore": [
+                "./packages/db-skillhubcore/src/index.ts"
+            ],
+            "@quiz/db-skillhubcore/*": [
+                "./packages/db-skillhubcore/src/*"
+            ],
             "@quiz/skillhubcore-service": [
                 "./services/skillhubcore-service/src/index.ts"
             ],

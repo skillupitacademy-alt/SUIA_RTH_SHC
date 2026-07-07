@@ -1,0 +1,30 @@
+{
+  "name": "@quiz/db-skillhubcore",
+  "version": "0.1.0",
+  "private": true,
+  "description": "SkillHubCore database package for educational hierarchy",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "node --loader ts-node/esm src/migrate/migrate.ts",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.45.1",
+    "pg": "^8.18.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.10",
+    "drizzle-kit": "^0.31.8",
+    "ts-node": "^10.9.2",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": "20.x"
+  }
+}
