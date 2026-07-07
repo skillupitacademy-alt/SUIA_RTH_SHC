@@ -109,7 +109,17 @@ Use this checklist to track your progress through the migration.
 
 ## 📊 Week 3.5: Data Migration (NEW)
 
-### Migrate Existing Data from RealTutorialHub
+### Run db-tutorial Migrations First
+- [x] Run db-tutorial schema push: `cd packages/db-tutorial && npx drizzle-kit push`
+- [x] Verify tutorial_* tables created (tutorial_domains, tutorial_subjects, tutorial_topics, tutorial_subtopics)
+- [x] Check if existing data exists in tutorial_* tables
+
+**✅ Result**: Tutorial tables created successfully, but **NO existing data found** (2026-07-07)
+- All 29 tutorial_* tables created in tutorial_prod database
+- Tables are empty - no data to migrate from RealTutorialHub
+- **Decision**: Skip data migration, start fresh with SkillHubCore admin UI
+
+### Alternative: Migrate Data (if data exists)
 - [ ] Review migration script: `scripts/migrate-educational-hierarchy-data.mjs`
 - [ ] Run dry-run to preview migration: `node scripts/migrate-educational-hierarchy-data.mjs --dry-run`
 - [ ] Review dry-run results (counts and sample data)
@@ -120,13 +130,8 @@ Use this checklist to track your progress through the migration.
 - [ ] Verify relationships are preserved (domain → subject → topic → subtopic)
 - [ ] Document any migration issues or data inconsistencies
 
-**Migration Details:**
-- Source: RealTutorialHub `tutorial_domains`, `tutorial_subjects`, `tutorial_topics`, `tutorial_subtopics`
-- Target: SkillHubCore `domains`, `subjects`, `topics`, `subtopics`
-- Uses `external_id` field to map relationships
-- Skips existing records (idempotent)
-- Preserves created_at and updated_at timestamps
-- Only migrates non-deleted records
+**Note**: Since no existing data found in tutorial_* tables, data migration is not needed.  
+Start creating educational hierarchy data directly in SkillHubCore admin UI.
 
 **Testing Scripts:**
 - [ ] Run database test: `node scripts/test-educational-hierarchy.mjs`
