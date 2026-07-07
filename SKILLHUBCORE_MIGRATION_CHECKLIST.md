@@ -98,10 +98,42 @@ Use this checklist to track your progress through the migration.
 - [x] Implement pagination support
 - [x] Implement search functionality
 - [x] Implement batch delete
+
+**✅ Phase 3 Complete** - All 5 API routes with full CRUD operations (2026-07-07)
 - [x] Add error handling
 - [x] Add validation
 
 **✅ Phase 3 Complete** - All 5 API routes created (2026-07-07)
+
+---
+
+## 📊 Week 3.5: Data Migration (NEW)
+
+### Migrate Existing Data from RealTutorialHub
+- [ ] Review migration script: `scripts/migrate-educational-hierarchy-data.mjs`
+- [ ] Run dry-run to preview migration: `node scripts/migrate-educational-hierarchy-data.mjs --dry-run`
+- [ ] Review dry-run results (counts and sample data)
+- [ ] Backup database before migration (if needed)
+- [ ] Run actual migration: `node scripts/migrate-educational-hierarchy-data.mjs`
+- [ ] Verify migrated data in database
+- [ ] Test migrated data in UI
+- [ ] Verify relationships are preserved (domain → subject → topic → subtopic)
+- [ ] Document any migration issues or data inconsistencies
+
+**Migration Details:**
+- Source: RealTutorialHub `tutorial_domains`, `tutorial_subjects`, `tutorial_topics`, `tutorial_subtopics`
+- Target: SkillHubCore `domains`, `subjects`, `topics`, `subtopics`
+- Uses `external_id` field to map relationships
+- Skips existing records (idempotent)
+- Preserves created_at and updated_at timestamps
+- Only migrates non-deleted records
+
+**Testing Scripts:**
+- [ ] Run database test: `node scripts/test-educational-hierarchy.mjs`
+- [ ] Run API test: `node scripts/test-educational-hierarchy-api.mjs` (requires dev server running)
+- [ ] Verify all CRUD operations work with migrated data
+
+**✅ Phase 3.5 Scripts Created** - Migration and testing scripts ready (2026-07-07)
 
 ---
 
