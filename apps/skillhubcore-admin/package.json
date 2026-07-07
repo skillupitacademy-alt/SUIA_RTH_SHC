@@ -57,6 +57,7 @@
     "node": "20.x"
   },
   "devDependencies": {
+    "@types/pg": "^8.11.10",
     "@types/qrcode": "^1.5.5",
     "@vitest/coverage-v8": "^4.0.18",
     "vite-tsconfig-paths": "^6.1.1",

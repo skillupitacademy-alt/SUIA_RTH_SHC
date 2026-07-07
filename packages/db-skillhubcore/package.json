@@ -19,6 +19,7 @@
   },
   "devDependencies": {
     "@types/node": "^25.0.10",
+    "@types/pg": "^8.11.10",
     "drizzle-kit": "^0.31.8",
     "ts-node": "^10.9.2",
     "tsup": "^8.3.5",
