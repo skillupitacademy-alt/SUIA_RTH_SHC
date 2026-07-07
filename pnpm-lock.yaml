@@ -1030,6 +1030,9 @@ importers:
       '@quiz/auth':
         specifier: workspace:*
         version: link:../../packages/auth
+      '@quiz/db-skillhubcore':
+        specifier: workspace:*
+        version: link:../../packages/db-skillhubcore
       '@quiz/db-tutorial':
         specifier: workspace:*
         version: link:../../packages/db-tutorial
@@ -1598,6 +1601,9 @@ importers:
       tsup:
         specifier: ^8.3.5
         version: 8.5.1(@swc/core@1.15.21)(jiti@2.7.0)(postcss@8.5.15)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+      tsx:
+        specifier: ^4.19.2
+        version: 4.21.0
       typescript:
         specifier: ^5.7.2
         version: 5.9.3

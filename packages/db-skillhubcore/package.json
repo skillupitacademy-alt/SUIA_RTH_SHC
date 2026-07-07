@@ -7,7 +7,7 @@
   "types": "src/index.ts",
   "scripts": {
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "node --loader ts-node/esm src/migrate/migrate.ts",
+    "db:migrate": "tsx src/migrate/migrate.ts",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "clean": "rimraf dist"
@@ -22,6 +22,7 @@
     "drizzle-kit": "^0.31.8",
     "ts-node": "^10.9.2",
     "tsup": "^8.3.5",
+    "tsx": "^4.19.2",
     "typescript": "^5.7.2"
   },
   "engines": {
