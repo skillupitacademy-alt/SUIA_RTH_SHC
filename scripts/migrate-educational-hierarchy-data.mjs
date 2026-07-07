@@ -40,30 +40,35 @@ const args = process.argv.slice(2);
 const isDryRun = args.includes('--dry-run');
 const isForce = args.includes('--force');
 
-// Database connections (same database, different tables)
-const databaseUrl = process.env.SKILLHUBCORE_DATABASE_URL || 
-                    process.env.DATABASE_URL_TUTORIAL;
+// Database connections
+const sourceDatabaseUrl = process.env.DATABASE_URL; // quiz_platform_prod
+const targetDatabaseUrl = process.env.SKILLHUBCORE_DATABASE_URL || 
+                          process.env.DATABASE_URL_TUTORIAL; // tutorial_prod
 
-if (!databaseUrl) {
-  console.error('❌ No database URL found');
-  console.error('Please set SKILLHUBCORE_DATABASE_URL or DATABASE_URL_TUTORIAL in .env.local');
+if (!sourceDatabaseUrl || !targetDatabaseUrl) {
+  console.error('❌ Missing database URLs');
+  console.error('Source (DATABASE_URL):', sourceDatabaseUrl ? '✅' : '❌');
+  console.error('Target (SKILLHUBCORE_DATABASE_URL or DATABASE_URL_TUTORIAL):', targetDatabaseUrl ? '✅' : '❌');
   process.exit(1);
 }
 
 const sourcePool = new Pool({
-  connectionString: databaseUrl,
+  connectionString: sourceDatabaseUrl,
   max: 5,
 });
 
 const targetPool = new Pool({
-  connectionString: databaseUrl,
+  connectionString: targetDatabaseUrl,
   max: 5,
 });
 
 console.log('🔄 Educational Hierarchy Data Migration\n');
-console.log('📊 Database:', databaseUrl.replace(/:[^:]*@/, ':****@'));
-console.log('📂 Source tables: tutorial_domains, tutorial_subjects, tutorial_topics, tutorial_subtopics');
-console.log('📂 Target tables: domains, subjects, topics, subtopics');
+console.log('📂 Source database: quiz_platform_prod');
+console.log('   Connection:', sourceDatabaseUrl.replace(/:[^:]*@/, ':****@'));
+console.log('   Tables: domains, subjects, topics, subtopics, skills');
+console.log('📂 Target database: tutorial_prod');
+console.log('   Connection:', targetDatabaseUrl.replace(/:[^:]*@/, ':****@'));
+console.log('   Tables: domains, subjects, topics, subtopics, skills');
 console.log('');
 
 if (isDryRun) {
@@ -98,55 +103,66 @@ async function countRecords() {
   console.log('📊 Step 1: Counting records\n');
 
   try {
-    // Count source records (only non-deleted)
+    // Verify connections
+    const sourceDb = await sourcePool.query('SELECT current_database()');
+    const targetDb = await targetPool.query('SELECT current_database()');
+    console.log(`Source DB: ${sourceDb.rows[0].current_database}`);
+    console.log(`Target DB: ${targetDb.rows[0].current_database}\n`);
+    
+    // Simple test - just count domains directly
+    console.log('Testing direct query...');
+    const testQuery = await sourcePool.query('SELECT COUNT(*) as count FROM domains');
+    console.log(`Test result: ${testQuery.rows[0].count} domains\n`);
+    
+    // Count source records
     const sourceDomains = await sourcePool.query(
-      'SELECT COUNT(*) as count FROM tutorial_domains WHERE deleted_at IS NULL'
+      'SELECT COUNT(*) as count FROM domains'
     );
     stats.domains.source = parseInt(sourceDomains.rows[0].count);
 
     const sourceSubjects = await sourcePool.query(
-      'SELECT COUNT(*) as count FROM tutorial_subjects WHERE deleted_at IS NULL'
+      `SELECT COUNT(*) as count FROM public.subjects ${deletedCondition}`
     );
     stats.subjects.source = parseInt(sourceSubjects.rows[0].count);
 
     const sourceTopics = await sourcePool.query(
-      'SELECT COUNT(*) as count FROM tutorial_topics WHERE deleted_at IS NULL'
+      `SELECT COUNT(*) as count FROM public.topics ${deletedCondition}`
     );
     stats.topics.source = parseInt(sourceTopics.rows[0].count);
 
     const sourceSubtopics = await sourcePool.query(
-      'SELECT COUNT(*) as count FROM tutorial_subtopics WHERE deleted_at IS NULL'
+      `SELECT COUNT(*) as count FROM public.subtopics ${deletedCondition}`
     );
     stats.subtopics.source = parseInt(sourceSubtopics.rows[0].count);
 
-    // Count target records
+    // Count target records  
     const targetDomains = await targetPool.query(
-      'SELECT COUNT(*) as count FROM domains WHERE deleted_at IS NULL'
+      'SELECT COUNT(*) as count FROM public.domains WHERE deleted_at IS NULL'
     );
     stats.domains.target = parseInt(targetDomains.rows[0].count);
 
     const targetSubjects = await targetPool.query(
-      'SELECT COUNT(*) as count FROM subjects WHERE deleted_at IS NULL'
+      'SELECT COUNT(*) as count FROM public.subjects WHERE deleted_at IS NULL'
     );
     stats.subjects.target = parseInt(targetSubjects.rows[0].count);
 
     const targetTopics = await targetPool.query(
-      'SELECT COUNT(*) as count FROM topics WHERE deleted_at IS NULL'
+      'SELECT COUNT(*) as count FROM public.topics WHERE deleted_at IS NULL'
     );
     stats.topics.target = parseInt(targetTopics.rows[0].count);
 
     const targetSubtopics = await targetPool.query(
-      'SELECT COUNT(*) as count FROM subtopics WHERE deleted_at IS NULL'
+      'SELECT COUNT(*) as count FROM public.subtopics WHERE deleted_at IS NULL'
     );
     stats.subtopics.target = parseInt(targetSubtopics.rows[0].count);
 
-    console.log('Source Records (RealTutorialHub):');
-    console.log(`  tutorial_domains:    ${stats.domains.source}`);
-    console.log(`  tutorial_subjects:   ${stats.subjects.source}`);
-    console.log(`  tutorial_topics:     ${stats.topics.source}`);
-    console.log(`  tutorial_subtopics:  ${stats.subtopics.source}`);
+    console.log('Source Records (quiz_platform_prod):');
+    console.log(`  domains:    ${stats.domains.source}`);
+    console.log(`  subjects:   ${stats.subjects.source}`);
+    console.log(`  topics:     ${stats.topics.source}`);
+    console.log(`  subtopics:  ${stats.subtopics.source}`);
     console.log('');
-    console.log('Target Records (SkillHubCore):');
+    console.log('Target Records (tutorial_prod / SkillHubCore):');
     console.log(`  domains:    ${stats.domains.target}`);
     console.log(`  subjects:   ${stats.subjects.target}`);
     console.log(`  topics:     ${stats.topics.target}`);
@@ -165,11 +181,10 @@ async function migrateDomains() {
   console.log('📋 Step 2: Migrating domains\n');
 
   try {
-    // Fetch source domains (only non-deleted)
+    // Fetch source domains
     const result = await sourcePool.query(`
-      SELECT id, external_id, name, slug, created_at, updated_at
-      FROM tutorial_domains
-      WHERE deleted_at IS NULL
+      SELECT id, name, description, category, status, "order", created_at, updated_at
+      FROM domains
       ORDER BY name
     `);
 
@@ -184,10 +199,10 @@ async function migrateDomains() {
     }
 
     for (const row of result.rows) {
-      // Check if domain already exists by external_id
+      // Check if domain already exists by id
       const existing = await targetPool.query(
         'SELECT id FROM domains WHERE id = $1',
-        [row.external_id]
+        [row.id]
       );
 
       if (existing.rows.length > 0) {
@@ -201,12 +216,12 @@ async function migrateDomains() {
         INSERT INTO domains (id, name, description, category, status, "order", created_at, updated_at)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       `, [
-        row.external_id,  // Use external_id as the new id
+        row.id,
         row.name,
-        `Migrated from RealTutorialHub (${row.slug})`,
-        'technology',  // Default category
-        'active',
-        0,
+        row.description || `Migrated from quiz_platform_prod`,
+        row.category || 'technology',
+        row.status || 'active',
+        row.order || 0,
         row.created_at,
         row.updated_at,
       ]);
@@ -228,13 +243,11 @@ async function migrateSubjects() {
   console.log('📋 Step 3: Migrating subjects\n');
 
   try {
-    // Fetch source subjects (only non-deleted)
+    // Fetch source subjects
     const result = await sourcePool.query(`
-      SELECT s.id, s.external_id, s.domain_id, s.name, s.slug, s.created_at, s.updated_at,
-             d.external_id as domain_external_id
-      FROM tutorial_subjects s
-      INNER JOIN tutorial_domains d ON s.domain_id = d.id
-      WHERE s.deleted_at IS NULL AND d.deleted_at IS NULL
+      SELECT s.id, s.domain_id, s.name, s.description, s.status, s."order", s.created_at, s.updated_at
+      FROM subjects s
+      INNER JOIN domains d ON s.domain_id = d.id
       ORDER BY s.name
     `);
 
@@ -252,7 +265,7 @@ async function migrateSubjects() {
       // Check if subject already exists
       const existing = await targetPool.query(
         'SELECT id FROM subjects WHERE id = $1',
-        [row.external_id]
+        [row.id]
       );
 
       if (existing.rows.length > 0) {
@@ -261,17 +274,17 @@ async function migrateSubjects() {
         continue;
       }
 
-      // Insert into target (using domain's external_id as domain_id)
+      // Insert into target
       await targetPool.query(`
         INSERT INTO subjects (id, domain_id, name, description, status, "order", created_at, updated_at)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       `, [
-        row.external_id,
-        row.domain_external_id,  // Map to the migrated domain
+        row.id,
+        row.domain_id,
         row.name,
-        `Migrated from RealTutorialHub (${row.slug})`,
-        'active',
-        0,
+        row.description || `Migrated from quiz_platform_prod`,
+        row.status || 'active',
+        row.order || 0,
         row.created_at,
         row.updated_at,
       ]);
@@ -293,13 +306,11 @@ async function migrateTopics() {
   console.log('📋 Step 4: Migrating topics\n');
 
   try {
-    // Fetch source topics (only non-deleted)
+    // Fetch source topics
     const result = await sourcePool.query(`
-      SELECT t.id, t.external_id, t.subject_id, t.name, t.slug, t.created_at, t.updated_at,
-             s.external_id as subject_external_id
-      FROM tutorial_topics t
-      INNER JOIN tutorial_subjects s ON t.subject_id = s.id
-      WHERE t.deleted_at IS NULL AND s.deleted_at IS NULL
+      SELECT t.id, t.subject_id, t.name, t.description, t.complexity, t.status, t."order", t.created_at, t.updated_at
+      FROM topics t
+      INNER JOIN subjects s ON t.subject_id = s.id
       ORDER BY t.name
     `);
 
@@ -317,7 +328,7 @@ async function migrateTopics() {
       // Check if topic already exists
       const existing = await targetPool.query(
         'SELECT id FROM topics WHERE id = $1',
-        [row.external_id]
+        [row.id]
       );
 
       if (existing.rows.length > 0) {
@@ -331,13 +342,13 @@ async function migrateTopics() {
         INSERT INTO topics (id, subject_id, name, description, complexity, status, "order", created_at, updated_at)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       `, [
-        row.external_id,
-        row.subject_external_id,
+        row.id,
+        row.subject_id,
         row.name,
-        `Migrated from RealTutorialHub (${row.slug})`,
-        'intermediate',  // Default complexity
-        'active',
-        0,
+        row.description || `Migrated from quiz_platform_prod`,
+        row.complexity || 'intermediate',
+        row.status || 'active',
+        row.order || 0,
         row.created_at,
         row.updated_at,
       ]);
@@ -359,13 +370,11 @@ async function migrateSubtopics() {
   console.log('📋 Step 5: Migrating subtopics\n');
 
   try {
-    // Fetch source subtopics (only non-deleted)
+    // Fetch source subtopics
     const result = await sourcePool.query(`
-      SELECT st.id, st.external_id, st.topic_id, st.name, st.slug, st.created_at, st.updated_at,
-             t.external_id as topic_external_id
-      FROM tutorial_subtopics st
-      INNER JOIN tutorial_topics t ON st.topic_id = t.id
-      WHERE st.deleted_at IS NULL AND t.deleted_at IS NULL
+      SELECT st.id, st.topic_id, st.name, st.description, st.status, st."order", st.created_at, st.updated_at
+      FROM subtopics st
+      INNER JOIN topics t ON st.topic_id = t.id
       ORDER BY st.name
     `);
 
@@ -383,7 +392,7 @@ async function migrateSubtopics() {
       // Check if subtopic already exists
       const existing = await targetPool.query(
         'SELECT id FROM subtopics WHERE id = $1',
-        [row.external_id]
+        [row.id]
       );
 
       if (existing.rows.length > 0) {
@@ -397,12 +406,12 @@ async function migrateSubtopics() {
         INSERT INTO subtopics (id, topic_id, name, description, status, "order", created_at, updated_at)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       `, [
-        row.external_id,
-        row.topic_external_id,
+        row.id,
+        row.topic_id,
         row.name,
-        `Migrated from RealTutorialHub (${row.slug})`,
-        'active',
-        0,
+        row.description || `Migrated from quiz_platform_prod`,
+        row.status || 'active',
+        row.order || 0,
         row.created_at,
         row.updated_at,
       ]);
