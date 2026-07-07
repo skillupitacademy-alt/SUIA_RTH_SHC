@@ -25,7 +25,18 @@ export * from './schema/domain';
 export * from './schema/enums';
 export * from './schema/relations';
 
-// Export types
+// Import types and schemas for type definitions
+import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
+import {
+  domains,
+  subjects,
+  topics,
+  subtopics,
+  skills,
+  topicSkills,
+} from './schema/domain';
+
+// Re-export Drizzle types
 export type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 
 // Export specific types
