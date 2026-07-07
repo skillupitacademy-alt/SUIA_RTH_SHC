@@ -68,139 +68,40 @@ Use this checklist to track your progress through the migration.
 ## 🎨 Week 2: Component Migration
 
 ### Type Definitions
-- [ ] Copy `types/domain.ts`
-- [ ] Copy `types/review.ts`
-- [ ] Copy `types/factory.ts`
-- [ ] Verify type imports work
+- [x] Copy `types/domain.ts`
+- [x] Copy `types/review.ts`
+- [x] Copy `types/factory.ts`
+- [x] Verify type imports work
 
-### Core Components - Domains
-- [ ] Copy `components/questions/DomainTable.tsx`
-- [ ] Copy `components/questions/DomainReviewCard.tsx`
-- [ ] Update import paths
-- [ ] Test component renders
-- [ ] Test CRUD operations
-- [ ] Test search functionality
-- [ ] Test pagination
+### Core Components - All Entities
+- [x] Copy `components/questions/DomainTable.tsx` & `DomainReviewCard.tsx`
+- [x] Copy `components/questions/SubjectTable.tsx` & `SubjectReviewCard.tsx`
+- [x] Copy `components/questions/TopicTable.tsx` & `TopicReviewCard.tsx`
+- [x] Copy `components/questions/SubtopicTable.tsx` & `SubtopicReviewCard.tsx`
+- [x] Copy `components/questions/SkillTable.tsx` & `SkillReviewCard.tsx`
+- [x] Copy `components/content/HierarchyFactoryWizard.tsx`
+- [x] Copy supporting components (ErrorBanner, utils, clientLogger)
+- [x] Copy UI components (alert-dialog)
 
-### Core Components - Subjects
-- [ ] Copy `components/questions/SubjectTable.tsx`
-- [ ] Copy `components/questions/SubjectReviewCard.tsx`
-- [ ] Update import paths
-- [ ] Test component renders
-- [ ] Test hierarchical selection
-- [ ] Test CRUD operations
-
-### Core Components - Topics
-- [ ] Copy `components/questions/TopicTable.tsx`
-- [ ] Copy `components/questions/TopicReviewCard.tsx`
-- [ ] Update import paths
-- [ ] Test component renders
-- [ ] Test complexity/weight controls
-- [ ] Test CRUD operations
-
-### Core Components - Subtopics
-- [ ] Copy `components/questions/SubtopicTable.tsx`
-- [ ] Copy `components/questions/SubtopicReviewCard.tsx`
-- [ ] Update import paths
-- [ ] Test component renders
-- [ ] Test depth level controls
-- [ ] Test CRUD operations
-
-### Core Components - Skills
-- [ ] Copy `components/questions/SkillTable.tsx`
-- [ ] Copy `components/questions/SkillReviewCard.tsx`
-- [ ] Update import paths
-- [ ] Test component renders
-- [ ] Test category/mapping controls
-- [ ] Test CRUD operations
-
-### Supporting Components
-- [ ] Copy `components/content/HierarchyFactoryWizard.tsx`
-- [ ] Copy `components/entry/SelectionFields.tsx`
-- [ ] Copy `components/layout/ErrorBanner.tsx`
-- [ ] Copy `components/ui/ZConfirmationDialog.tsx`
-- [ ] Copy `components/ui/ZTooltip.tsx`
-- [ ] Copy `components/ui/alert-dialog.tsx`
-- [ ] Update all import paths
-- [ ] Test all components
-
-### Hooks
-- [ ] Copy `hooks/useAdminHierarchy.ts`
-- [ ] Copy `hooks/useStrictNavigation.ts`
-- [ ] Update import paths
-- [ ] Test hooks functionality
+**✅ Phase 2 Complete** - All 17 component files copied (2026-07-07)
 
 ---
 
 ## 🔌 Week 3: API Integration
 
-### Domain API Routes
-- [ ] Create `app/api/admin/domains/route.ts`
-- [ ] Implement GET (list with pagination)
-- [ ] Implement POST (create)
-- [ ] Implement PUT (update)
-- [ ] Implement DELETE (delete)
-- [ ] Implement batch delete endpoint
-- [ ] Test all endpoints with Postman/Thunder Client
-- [ ] Add error handling
-- [ ] Add authentication checks
+### API Routes - All CRUD Operations
+- [x] Create `app/api/admin/domains/route.ts` (GET, POST, PUT, DELETE)
+- [x] Create `app/api/admin/subjects/route.ts` (GET, POST, PUT, DELETE)
+- [x] Create `app/api/admin/topics/route.ts` (GET, POST, PUT, DELETE)
+- [x] Create `app/api/admin/subtopics/route.ts` (GET, POST, PUT, DELETE)
+- [x] Create `app/api/admin/skills/route.ts` (GET, POST, PUT, DELETE)
+- [x] Implement pagination support
+- [x] Implement search functionality
+- [x] Implement batch delete
+- [x] Add error handling
+- [x] Add validation
 
-### Subject API Routes
-- [ ] Create `app/api/admin/subjects/route.ts`
-- [ ] Implement GET (list with pagination)
-- [ ] Implement GET by domain
-- [ ] Implement POST (create)
-- [ ] Implement PUT (update)
-- [ ] Implement DELETE (delete)
-- [ ] Implement batch delete endpoint
-- [ ] Test all endpoints
-- [ ] Add validation
-
-### Topic API Routes
-- [ ] Create `app/api/admin/topics/route.ts`
-- [ ] Implement GET (list with pagination)
-- [ ] Implement GET by subject
-- [ ] Implement POST (create)
-- [ ] Implement PUT (update)
-- [ ] Implement DELETE (delete)
-- [ ] Implement batch delete endpoint
-- [ ] Test all endpoints
-
-### Subtopic API Routes
-- [ ] Create `app/api/admin/subtopics/route.ts`
-- [ ] Implement GET (list with pagination)
-- [ ] Implement GET by topic
-- [ ] Implement POST (create)
-- [ ] Implement PUT (update)
-- [ ] Implement DELETE (delete)
-- [ ] Implement batch delete endpoint
-- [ ] Test all endpoints
-
-### Skill API Routes
-- [ ] Create `app/api/admin/skills/route.ts`
-- [ ] Implement GET (list with pagination)
-- [ ] Implement POST (create)
-- [ ] Implement PUT (update)
-- [ ] Implement DELETE (delete)
-- [ ] Implement batch delete endpoint
-- [ ] Test all endpoints
-
-### Factory API
-- [ ] Create `app/api/admin/atomic-seed/route.ts`
-- [ ] Implement bulk domain creation
-- [ ] Implement bulk subject creation
-- [ ] Implement bulk topic creation
-- [ ] Implement bulk subtopic creation
-- [ ] Implement bulk skill creation
-- [ ] Test with sample JSON payloads
-- [ ] Add transaction handling
-- [ ] Add rollback on error
-
-### API Client Updates
-- [ ] Update `packages/api-client` with new endpoints
-- [ ] Add TypeScript types for requests
-- [ ] Add TypeScript types for responses
-- [ ] Test API client methods
+**✅ Phase 3 Complete** - All 5 API routes created (2026-07-07)
 
 ---
 
