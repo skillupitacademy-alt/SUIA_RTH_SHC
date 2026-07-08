@@ -12,22 +12,28 @@ export type Brand = 'realtutorialhub' | 'skillup';
 
 /**
  * Brand-specific configuration
- * Maps each brand to its cookie domain
- * 
- * 🔥 VPS COMPATIBILITY: Cookie domains are now environment-aware
- * - For VPS/Hostinger deployments, set COOKIE_DOMAIN_RTH and COOKIE_DOMAIN_SKILLUP in .env
- * - Falls back to production domains if env vars not set
+ * Maps each brand to its canonical hostnames.
  */
 const BRAND_CONFIG = {
   realtutorialhub: {
-    domain: process.env.COOKIE_DOMAIN_RTH || process.env.COOKIE_DOMAIN || '.realtutorialhub.com',
     hostnames: ['user.realtutorialhub.com', 'admin.realtutorialhub.com', 'api.realtutorialhub.com'],
   },
   skillup: {
-    domain: process.env.COOKIE_DOMAIN_SKILLUP || process.env.COOKIE_DOMAIN || '.skillupitacademy.com',
     hostnames: ['user.skillupitacademy.com', 'admin.skillupitacademy.com', 'api.skillupitacademy.com', 'faculty.skillupitacademy.com'],
   },
 } as const;
+
+function getRuntimeEnv(): Record<string, string | undefined> | undefined {
+  if (typeof process !== 'undefined' && process.env !== undefined) {
+    return process.env as Record<string, string | undefined>;
+  }
+
+  return undefined;
+}
+
+function getCookieDomainFallback(brand: Brand): string {
+  return brand === 'skillup' ? '.skillupitacademy.com' : '.realtutorialhub.com';
+}
 
 /**
  * Get the cookie domain for a brand
@@ -36,11 +42,17 @@ const BRAND_CONFIG = {
  * @returns The cookie domain (e.g., '.realtutorialhub.com')
  */
 export function getCookieDomain(brand: Brand): string {
-  const config = BRAND_CONFIG[brand];
-  if (!config) {
+  if (brand !== 'realtutorialhub' && brand !== 'skillup') {
     throw new Error(`Invalid brand: ${brand}`);
   }
-  return config.domain;
+
+  const env = getRuntimeEnv();
+  const domain =
+    env?.[brand === 'realtutorialhub' ? 'COOKIE_DOMAIN_RTH' : 'COOKIE_DOMAIN_SKILLUP'] ??
+    env?.COOKIE_DOMAIN ??
+    getCookieDomainFallback(brand);
+
+  return domain;
 }
 
 /**
@@ -144,15 +156,16 @@ export function buildRefreshTokenCookie(token: string, brand: Brand, isAdmin = f
 export function validateCookieDomain(hostname: string, brand: Brand): void {
   const config = BRAND_CONFIG[brand];
   const normalized = hostname.toLowerCase();
+  const expectedDomain = getCookieDomain(brand);
   
   // Check if hostname matches any of the expected hostnames for this brand
   const isValidHostname = config.hostnames.some(h => normalized.includes(h.toLowerCase()));
   
   if (!isValidHostname) {
-    console.error('🚨 COOKIE DOMAIN MISMATCH', {
+    console.error('COOKIE DOMAIN MISMATCH', {
       hostname,
       brand,
-      expectedDomain: config.domain,
+      expectedDomain,
       expectedHostnames: config.hostnames,
     });
     

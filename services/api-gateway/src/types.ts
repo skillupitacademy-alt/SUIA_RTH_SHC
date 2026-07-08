@@ -25,6 +25,7 @@ export interface GatewayBindings {
   FACULTY_URL: string;
   STUDENT_FACULTY_URL: string;
   RTH_ADMIN_URL: string;
+  SKILLHUBCORE_ADMIN_URL: string;
   EXAM_SERVICE_URL: string;
   TUTORIAL_SERVICE_URL: string;
   PAYMENT_SERVICE_URL: string;
@@ -51,6 +52,7 @@ export type GatewayRoute = {
     | 'SKILLUP_ADMIN_URL'
     | 'FACULTY_URL'
     | 'STUDENT_FACULTY_URL'
+    | 'SKILLHUBCORE_ADMIN_URL'
     | 'EXAM_SERVICE_URL'
     | 'TUTORIAL_SERVICE_URL'
     | 'PAYMENT_SERVICE_URL'
