@@ -1,5 +1,4 @@
-import { LearningPage } from '../../../../../src/share-branding/LearningExperience/LearningPage';
-import { rthConfig } from '../../../../../src/share-branding/brandConfig';
+import { TutorialPage } from '../../../../../src/share-branding/LearningExperience/TutorialPage';
 
 export const metadata = {
   title: 'Python Lists — Part 1 | RealTutorialHub',
@@ -12,9 +11,6 @@ export const metadata = {
 
 export default function Page() {
   return (
-    <LearningPage
-      brandColor={rthConfig.primaryColor}
-      brandName={rthConfig.name}
-    />
+    <TutorialPage brand="rth" />
   );
 }

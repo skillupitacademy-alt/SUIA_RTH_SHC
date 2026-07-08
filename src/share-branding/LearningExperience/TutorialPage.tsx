@@ -126,7 +126,8 @@ function CourseSidebar() {
   };
 
   return (
-    <aside className="w-64 flex-shrink-0 bg-white border-r border-slate-200 flex flex-col h-full overflow-hidden">
+    <aside aria-label="Course navigation" className="w-64 flex-shrink-0 flex flex-col h-full overflow-hidden"
+      style={{ background: 'rgba(255,255,255,0.88)', borderRight: '1px solid rgba(226,232,240,0.9)', backdropFilter: 'blur(16px)' }}>
       {/* Brand Header */}
       <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-2.5">
         <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: brand.primaryColor }}>
@@ -219,8 +220,9 @@ function CourseSidebar() {
 function TopNav({ onToggleSidebar }: { onToggleSidebar: () => void }) {
   const brand = useBrand();
   return (
-    <header className="h-14 bg-white border-b border-slate-200 flex items-center px-5 gap-4 flex-shrink-0 z-50 relative">
-      <button onClick={onToggleSidebar} className="p-1 hover:bg-slate-100 rounded-md transition-colors mr-1">
+    <header className="h-14 flex items-center px-5 gap-4 flex-shrink-0 z-50 relative"
+      style={{ background: 'rgba(255,255,255,0.85)', borderBottom: '1px solid rgba(226,232,240,0.9)', backdropFilter: 'blur(16px)' }}>
+      <button onClick={onToggleSidebar} aria-label="Toggle course navigation" className="p-1 hover:bg-slate-100 rounded-md transition-colors mr-1">
         <Menu className="w-5 h-5 text-slate-600" />
       </button>
       <div className="flex items-center gap-1.5 text-xs text-slate-500 flex-shrink-0">
@@ -232,7 +234,7 @@ function TopNav({ onToggleSidebar }: { onToggleSidebar: () => void }) {
       </div>
       <div className="flex-1" />
       {/* Search */}
-      <div className="relative hidden md:block">
+      {/* <div className="relative hidden md:block">
         <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
         <input
           type="text"
@@ -244,7 +246,7 @@ function TopNav({ onToggleSidebar }: { onToggleSidebar: () => void }) {
         <span className="text-xs text-slate-500 hidden md:block">Bookmarks</span>
         <span className="text-xs text-slate-500 hidden md:block">Assignments</span>
         <span className="text-xs font-semibold hidden md:block" style={{ color: brand.primaryColor }}>Live Mentor</span>
-      </div>
+      </div> */}
       <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ backgroundColor: brand.primaryColor }}>
         AK
       </div>
@@ -262,15 +264,16 @@ function CodeBlock({ code, label }: { code: string; label?: string }) {
     setTimeout(() => setCopied(false), 2000);
   };
   return (
-    <div className="rounded-xl overflow-hidden border border-slate-200 my-4 shadow-sm">
-      <div className="flex items-center justify-between px-4 py-2 bg-slate-800">
+    <div className="rounded-xl overflow-hidden my-4 transition-all duration-200 hover:-translate-y-0.5"
+      style={{ border: '1px solid rgba(226,232,240,0.9)', boxShadow: '0 16px 50px rgba(15,23,42,0.07), 0 2px 8px rgba(15,23,42,0.04)' }}>
+      <div className="flex items-center justify-between px-4 py-2.5 bg-slate-800">
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded-full bg-red-400" />
           <div className="w-3 h-3 rounded-full bg-yellow-400" />
           <div className="w-3 h-3 rounded-full bg-green-400" />
           {label && <span className="ml-2 text-xs text-slate-400 font-mono">{label}</span>}
         </div>
-        <button onClick={handleCopy} className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors">
+        <button onClick={handleCopy} aria-label={copied ? 'Code copied' : 'Copy code'} className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors">
           {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
           {copied ? 'Copied!' : 'Copy'}
         </button>
@@ -285,9 +288,10 @@ function CodeBlock({ code, label }: { code: string; label?: string }) {
 function OutputBlock({ output }: { output: string }) {
   const brand = useBrand();
   return (
-    <div className="rounded-lg p-4 my-3 border-l-4 font-mono text-sm" style={{ backgroundColor: brand.accentBackground, borderLeftColor: brand.primaryColor }}>
-      <div className="text-xs font-semibold uppercase tracking-wider mb-1.5 opacity-60" style={{ color: brand.primaryColor }}>Output</div>
-      <div className="text-slate-700 whitespace-pre">{output}</div>
+    <div role="region" aria-label="Code output" className="rounded-xl p-4 my-3 border-l-4 font-mono text-sm transition-all duration-200"
+      style={{ backgroundColor: brand.accentBackground, borderLeftColor: brand.primaryColor, boxShadow: '0 8px 30px rgba(15,23,42,0.06)' }}>
+      <div className="text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: brand.primaryColorDark }}>Output</div>
+      <div className="text-slate-800 whitespace-pre">{output}</div>
     </div>
   );
 }
@@ -305,7 +309,8 @@ function InfoBox({ icon: Icon, title, children, variant = 'info' }: {
   };
   const c = colors[variant];
   return (
-    <div className="rounded-xl p-4 my-5 border" style={{ backgroundColor: c.bg, borderColor: c.border }}>
+    <div className="rounded-xl p-4 my-5 transition-all duration-200"
+      style={{ backgroundColor: c.bg, border: `1px solid ${c.border}`, boxShadow: '0 8px 30px rgba(15,23,42,0.06)' }}>
       <div className="flex items-start gap-3">
         <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5" style={{ backgroundColor: c.text + '20' }}>
           <Icon className="w-4 h-4" style={{ color: c.text }} />
@@ -338,7 +343,8 @@ function SH({ id, level, children }: { id: string; level: 1 | 2 | 3; children: R
 function MemoryDiagram() {
   const brand = useBrand();
   return (
-    <div className="my-5 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="my-5 rounded-xl p-5 transition-all duration-200 hover:-translate-y-0.5"
+      style={{ background: 'rgba(255,255,255,0.82)', border: '1px solid rgba(226,232,240,0.9)', boxShadow: '0 16px 50px rgba(15,23,42,0.06), 0 2px 8px rgba(15,23,42,0.04)', backdropFilter: 'blur(12px)' }}>
       <div className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-4">List Object — Memory Model</div>
       <div className="flex flex-col items-center gap-0">
         {/* Variable box */}
@@ -389,7 +395,8 @@ function IndexDiagram({ items, highlightPos, highlightNeg }: { items: string[]; 
   return (
     <div className="my-5">
       {/* Index/Value table */}
-      <div className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm mb-4">
+      <div className="rounded-xl overflow-hidden mb-4"
+        style={{ background: 'rgba(255,255,255,0.82)', border: '1px solid rgba(226,232,240,0.9)', boxShadow: '0 16px 50px rgba(15,23,42,0.06), 0 2px 8px rgba(15,23,42,0.04)', backdropFilter: 'blur(12px)' }}>
         <table className="w-full text-sm">
           <tbody>
             <tr className="border-b border-slate-200">
@@ -424,7 +431,8 @@ function IndexDiagram({ items, highlightPos, highlightNeg }: { items: string[]; 
       {highlightPos === undefined && highlightNeg === undefined && (
         <div className="grid grid-cols-3 gap-3">
           {examples.map(({ label, idx, output }) => (
-            <div key={label} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div key={label} className="rounded-xl p-4 transition-all duration-200 hover:-translate-y-0.5"
+              style={{ background: 'rgba(255,255,255,0.82)', border: '1px solid rgba(226,232,240,0.9)', boxShadow: '0 16px 50px rgba(15,23,42,0.06), 0 2px 8px rgba(15,23,42,0.04)', backdropFilter: 'blur(12px)' }}>
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm font-semibold text-slate-700">{label}</span>
                 <span className="text-xs font-mono" style={{ color: brand.primaryColor }}>python</span>
@@ -435,7 +443,7 @@ function IndexDiagram({ items, highlightPos, highlightNeg }: { items: string[]; 
                 <span className="font-bold" style={{ color: brand.primaryColor }}>[{idx}]</span>
                 <span className="font-semibold" style={{ color: brand.secondaryColor }}>)</span>
               </div>
-              <div className="text-xs text-slate-500 mb-1"># Output</div>
+              <div className="text-xs text-slate-600 font-semibold mb-1"># Output</div>
               <div className="font-mono font-bold" style={{ color: brand.secondaryColor }}>{output}</div>
             </div>
           ))}
@@ -454,9 +462,10 @@ function NestedDiagram() {
   return (
     <div className="flex gap-4 mb-5 items-stretch">
       {/* Left: Code Card */}
-      <div className="flex-1 rounded-xl border border-slate-200 bg-white p-5 shadow-sm min-w-0 flex flex-col justify-between relative">
+      <div className="flex-1 rounded-xl p-5 min-w-0 flex flex-col justify-between relative transition-all duration-200 hover:-translate-y-0.5"
+        style={{ background: 'rgba(255,255,255,0.82)', border: '1px solid rgba(226,232,240,0.9)', boxShadow: '0 16px 50px rgba(15,23,42,0.06), 0 2px 8px rgba(15,23,42,0.04)', backdropFilter: 'blur(12px)' }}>
         <span className="absolute top-4 right-5 text-xs font-bold" style={{ color: brand.primaryColor }}>python</span>
-        
+
         <div className="font-mono text-sm mb-6 mt-1">
           <span className="font-semibold" style={{ color: brand.secondaryColor }}>n_list</span>
           <span className="text-slate-600"> = </span>
@@ -482,8 +491,9 @@ function NestedDiagram() {
       </div>
 
       {/* Right: Tree Diagram Card */}
-      <div className="flex-1 rounded-xl border border-slate-200 bg-white p-5 shadow-sm flex flex-col items-center justify-center pt-6">
-        
+      <div className="flex-1 rounded-xl p-5 flex flex-col items-center justify-center pt-6 transition-all duration-200 hover:-translate-y-0.5"
+        style={{ background: 'rgba(255,255,255,0.82)', border: '1px solid rgba(226,232,240,0.9)', boxShadow: '0 16px 50px rgba(15,23,42,0.06), 0 2px 8px rgba(15,23,42,0.04)', backdropFilter: 'blur(12px)' }}>
+
         {/* n_list root box */}
         <div className="px-10 py-2.5 rounded-lg text-white text-sm font-bold font-mono" style={{ backgroundColor: brand.secondaryColor }}>
           n_list
@@ -495,20 +505,20 @@ function NestedDiagram() {
           <div className="w-0.5 h-6" style={{ backgroundColor: brand.primaryColor }}></div>
           {/* Red diamond */}
           <div className="absolute top-3 w-2.5 h-2.5 rotate-45" style={{ backgroundColor: brand.primaryColor }}></div>
-          
+
           {/* Horizontal dark line */}
           <div className="w-56 h-0.5 bg-slate-700 mt-0"></div>
-          
+
           {/* Left vertical line and arrowhead */}
           <div className="absolute top-6 left-1/2 -translate-x-28">
             <div className="w-0.5 h-4 bg-slate-700 mx-auto"></div>
-            <svg width="8" height="6" viewBox="0 0 8 6" className="fill-slate-700 mx-auto -mt-1"><path d="M0 0L8 0L4 6Z"/></svg>
+            <svg width="8" height="6" viewBox="0 0 8 6" className="fill-slate-700 mx-auto -mt-1"><path d="M0 0L8 0L4 6Z" /></svg>
           </div>
 
           {/* Right vertical line and arrowhead */}
           <div className="absolute top-6 left-1/2 translate-x-[4.5rem]">
             <div className="w-0.5 h-4 bg-slate-700 mx-auto"></div>
-            <svg width="8" height="6" viewBox="0 0 8 6" className="fill-slate-700 mx-auto -mt-1"><path d="M0 0L8 0L4 6Z"/></svg>
+            <svg width="8" height="6" viewBox="0 0 8 6" className="fill-slate-700 mx-auto -mt-1"><path d="M0 0L8 0L4 6Z" /></svg>
           </div>
         </div>
 
@@ -537,7 +547,7 @@ function NestedDiagram() {
               {innerVals.map((_, i) => (
                 <div key={i} className="w-9 flex flex-col items-center">
                   <div className="w-0.5 h-5" style={{ backgroundColor: brand.primaryColor }} />
-                  <svg width="8" height="6" viewBox="0 0 8 6" className="-mt-1" style={{ fill: brand.primaryColor }}><path d="M0 0L8 0L4 6Z"/></svg>
+                  <svg width="8" height="6" viewBox="0 0 8 6" className="-mt-1" style={{ fill: brand.primaryColor }}><path d="M0 0L8 0L4 6Z" /></svg>
                 </div>
               ))}
             </div>
@@ -566,7 +576,8 @@ function NegativeIndexDiagram() {
   return (
     <div className="my-5 flex flex-col gap-4">
       {/* Table */}
-      <div className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
+      <div className="rounded-xl overflow-hidden"
+        style={{ background: 'rgba(255,255,255,0.82)', border: '1px solid rgba(226,232,240,0.9)', boxShadow: '0 16px 50px rgba(15,23,42,0.06), 0 2px 8px rgba(15,23,42,0.04)', backdropFilter: 'blur(12px)' }}>
         <table className="w-full text-sm">
           <tbody>
             {/* Positive Index Row */}
@@ -603,7 +614,8 @@ function NegativeIndexDiagram() {
       {/* Code Cards */}
       <div className="grid grid-cols-2 gap-4">
         {/* Card 1 */}
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="rounded-xl p-5 transition-all duration-200 hover:-translate-y-0.5"
+          style={{ background: 'rgba(255,255,255,0.82)', border: '1px solid rgba(226,232,240,0.9)', boxShadow: '0 16px 50px rgba(15,23,42,0.06), 0 2px 8px rgba(15,23,42,0.04)', backdropFilter: 'blur(12px)' }}>
           <div className="flex justify-between items-center mb-4">
             <span className="font-bold text-sm" style={{ color: brand.secondaryColor }}>Last Element</span>
             <span className="font-bold text-xs" style={{ color: brand.primaryColor }}>python</span>
@@ -614,12 +626,13 @@ function NegativeIndexDiagram() {
             <span className="font-bold" style={{ color: brand.primaryColor }}>-1</span>
             <span className="font-semibold" style={{ color: brand.secondaryColor }}>])</span>
           </div>
-          <div className="font-mono text-sm text-slate-500 font-semibold mb-1"># Output</div>
+          <div className="font-mono text-sm text-slate-700 font-semibold mb-1"># Output</div>
           <div className="font-mono text-sm font-bold" style={{ color: brand.secondaryColor }}>e</div>
         </div>
 
         {/* Card 2 */}
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="rounded-xl p-5 transition-all duration-200 hover:-translate-y-0.5"
+          style={{ background: 'rgba(255,255,255,0.82)', border: '1px solid rgba(226,232,240,0.9)', boxShadow: '0 16px 50px rgba(15,23,42,0.06), 0 2px 8px rgba(15,23,42,0.04)', backdropFilter: 'blur(12px)' }}>
           <div className="flex justify-between items-center mb-4">
             <span className="font-bold text-sm" style={{ color: brand.secondaryColor }}>First Element (from negative)</span>
             <span className="font-bold text-xs" style={{ color: brand.primaryColor }}>python</span>
@@ -630,7 +643,7 @@ function NegativeIndexDiagram() {
             <span className="font-bold" style={{ color: brand.primaryColor }}>-5</span>
             <span className="font-semibold" style={{ color: brand.secondaryColor }}>])</span>
           </div>
-          <div className="font-mono text-sm text-slate-500 font-semibold mb-1"># Output</div>
+          <div className="font-mono text-sm text-slate-700 font-semibold mb-1"># Output</div>
           <div className="font-mono text-sm font-bold" style={{ color: brand.secondaryColor }}>p</div>
         </div>
       </div>
@@ -648,20 +661,23 @@ function SlicingVisualizer() {
   const isIn = (i: number) => i >= start && i < stop;
 
   return (
-    <div className="my-5 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="my-5 rounded-xl p-5 transition-all duration-200 hover:-translate-y-0.5"
+      style={{ background: 'rgba(255,255,255,0.82)', border: '1px solid rgba(226,232,240,0.9)', boxShadow: '0 16px 50px rgba(15,23,42,0.06), 0 2px 8px rgba(15,23,42,0.04)', backdropFilter: 'blur(12px)' }}>
       <div className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-4">Interactive Slice Explorer</div>
       <div className="flex gap-3 mb-4 flex-wrap items-center">
         <label className="flex items-center gap-1.5 text-xs">
-          <span className="text-slate-600 font-medium w-8">start</span>
+          <span className="text-slate-600 font-medium w-8" id="slice-start-label">start</span>
           <input type="number" min={0} max={5} value={start} onChange={e => setStart(+e.target.value)}
+            aria-labelledby="slice-start-label" aria-label="Slice start index"
             className="w-12 border border-slate-300 rounded px-2 py-1 text-center font-mono text-sm focus:outline-none" style={{ borderColor: brand.primaryColor + '60' }} />
         </label>
         <label className="flex items-center gap-1.5 text-xs">
-          <span className="text-slate-600 font-medium w-8">stop</span>
+          <span className="text-slate-600 font-medium w-8" id="slice-stop-label">stop</span>
           <input type="number" min={0} max={5} value={stop} onChange={e => setStop(+e.target.value)}
+            aria-labelledby="slice-stop-label" aria-label="Slice stop index"
             className="w-12 border border-slate-300 rounded px-2 py-1 text-center font-mono text-sm focus:outline-none" style={{ borderColor: brand.primaryColor + '60' }} />
         </label>
-        <div className="px-3 py-1.5 rounded-lg font-mono text-sm font-bold" style={{ backgroundColor: brand.accentBackground, color: brand.primaryColor }}>
+        <div className="px-3 py-1.5 rounded-lg font-mono text-sm font-bold" style={{ backgroundColor: 'rgba(255,255,255,0.9)', color: brand.primaryColorDark, border: `1px solid ${brand.primaryColor}40` }}>
           my_list[{start}:{stop}]
         </div>
       </div>
@@ -675,7 +691,7 @@ function SlicingVisualizer() {
         ))}
       </div>
       <div className="mt-3 text-sm text-center text-slate-700">
-        Result: <code className="font-mono font-bold px-1.5 py-0.5 rounded" style={{ backgroundColor: brand.accentBackground, color: brand.primaryColor }}>
+        Result: <code className="font-mono font-bold px-1.5 py-0.5 rounded" style={{ backgroundColor: 'rgba(255,255,255,0.9)', color: brand.primaryColorDark, border: `1px solid ${brand.primaryColor}40` }}>
           [{items.filter((_, i) => isIn(i)).map(c => `'${c}'`).join(', ')}]
         </code>
       </div>
@@ -693,7 +709,8 @@ function CharacteristicsTable() {
     ['Mixed Data Types', true], ['Nested Lists', true], ['Indexing', true], ['Slicing', true],
   ];
   return (
-    <div className="my-5 rounded-xl overflow-hidden border border-slate-200 shadow-sm">
+    <div className="my-5 rounded-xl overflow-hidden transition-all duration-200"
+      style={{ background: 'rgba(255,255,255,0.82)', border: '1px solid rgba(226,232,240,0.9)', boxShadow: '0 16px 50px rgba(15,23,42,0.06), 0 2px 8px rgba(15,23,42,0.04)', backdropFilter: 'blur(12px)' }}>
       <div className="grid grid-cols-2">
         <div className="px-4 py-2 bg-slate-800 text-white text-xs font-bold uppercase tracking-wider">Feature</div>
         <div className="px-4 py-2 bg-slate-800 text-white text-xs font-bold uppercase tracking-wider">Supported</div>
@@ -733,14 +750,18 @@ function RightPanel({ activeId }: { activeId: string }) {
   ];
 
   return (
-    <aside className="w-64 flex-shrink-0 bg-white border-l border-slate-200 flex flex-col h-full overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] py-8 px-6 hidden lg:flex">
+    <aside aria-label="On this page" className="w-64 flex-shrink-0 flex flex-col h-full overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] py-8 px-6 hidden lg:flex"
+      style={{ background: 'rgba(255,255,255,0.88)', borderLeft: '1px solid rgba(226,232,240,0.9)', backdropFilter: 'blur(16px)' }}>
       {/* TOC */}
       <div className="flex-1">
         <div className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-6">On this page</div>
         <ul className="space-y-3">
           {TOC_ITEMS.map(item => (
             <li key={item.id} className="flex items-center gap-2">
-              <button onClick={() => toggle(item.id)}
+              <button
+                onClick={() => toggle(item.id)}
+                aria-label={completed.has(item.id) ? `Mark "${item.label}" as incomplete` : `Mark "${item.label}" as complete`}
+                aria-pressed={completed.has(item.id)}
                 className="w-4 h-4 rounded-[4px] border flex items-center justify-center flex-shrink-0 transition-all mt-0.5"
                 style={{ borderColor: completed.has(item.id) ? brand.primaryColor : '#cbd5e1', backgroundColor: completed.has(item.id) ? brand.primaryColor : 'transparent' }}>
                 {completed.has(item.id) && <Check className="w-3 h-3 text-white stroke-[3]" />}
@@ -863,25 +884,26 @@ function ArticleContent({ onActiveChange }: { onActiveChange: (id: string) => vo
   ];
 
   return (
-    <article className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-      {/* Article Header */}
-      <div className="border-b border-slate-100 px-8 py-6" style={{ backgroundColor: brand.accentBackground }}>
-        <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-3">
-          <BookOpen className="w-3.5 h-3.5" />
+    <main id="main-content" className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]" style={{ background: 'transparent' }}>
+      <article>
+      {/* Article Header — bg uses accentBackground; text must pass 4.5:1 contrast on that bg */}
+      <header className="border-b border-slate-100 px-8 py-6" style={{ backgroundColor: brand.accentBackground }}>
+        <div className="flex items-center gap-1.5 text-xs text-slate-600 mb-3">
+          <BookOpen className="w-3.5 h-3.5" aria-hidden="true" />
           <span>Python Fundamentals</span>
-          <ChevronRight className="w-3 h-3" />
-          <span style={{ color: brand.primaryColor }} className="font-semibold">Chapter 2 · Lists</span>
+          <ChevronRight className="w-3 h-3" aria-hidden="true" />
+          <span className="font-bold" style={{ color: brand.primaryColorDark }}>Chapter 2 · Lists</span>
         </div>
         <h1 className="text-2xl font-bold text-slate-800 mb-1">Python Lists — Part 1</h1>
-        <p className="text-slate-500 text-sm mb-4">Based on the uploaded notebook: List Basics, Indexing, Nested Lists, Negative Indexing, and Slicing.</p>
+        <p className="text-slate-600 text-sm mb-4">Based on the uploaded notebook: List Basics, Indexing, Nested Lists, Negative Indexing, and Slicing.</p>
         <div className="flex items-center gap-4 flex-wrap">
-          <span className="flex items-center gap-1.5 text-xs text-slate-500"><Clock className="w-3.5 h-3.5" />~25 min</span>
-          <span className="flex items-center gap-1.5 text-xs text-slate-500"><Code2 className="w-3.5 h-3.5" />12 examples</span>
-          <span className="flex items-center gap-1.5 text-xs text-slate-500"><Target className="w-3.5 h-3.5" />1 quiz</span>
-          <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold" style={{ backgroundColor: brand.primaryColor + '20', color: brand.primaryColor }}>Beginner</span>
-          <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">Free Topic</span>
+          <span className="flex items-center gap-1.5 text-xs text-slate-600"><Clock className="w-3.5 h-3.5" aria-hidden="true" />~25 min</span>
+          <span className="flex items-center gap-1.5 text-xs text-slate-600"><Code2 className="w-3.5 h-3.5" aria-hidden="true" />12 examples</span>
+          <span className="flex items-center gap-1.5 text-xs text-slate-600"><Target className="w-3.5 h-3.5" aria-hidden="true" />1 quiz</span>
+          <span className="px-2.5 py-0.5 rounded-full text-xs font-bold" style={{ backgroundColor: 'rgba(255,255,255,0.9)', color: brand.primaryColorDark }}>Beginner</span>
+          <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">Free Topic</span>
         </div>
-      </div>
+      </header>
 
       <div className="px-8 py-6 w-full">
 
@@ -902,7 +924,8 @@ function ArticleContent({ onActiveChange }: { onActiveChange: (id: string) => vo
         <CodeBlock code={`my_list = [10, 20, 30, 40]`} label="python" />
         <div className="grid grid-cols-2 gap-2 my-3">
           {[['my_list', 'Variable name'], ['[10, 20, 30, 40]', 'The list object'], ['4 elements', 'Total items stored'], ['0 → 3', 'Index of each element']].map(([t, d]) => (
-            <div key={t} className="flex items-start gap-2 bg-slate-50 rounded-lg p-2.5 border border-slate-100">
+            <div key={t} className="flex items-start gap-2 rounded-lg p-2.5 transition-all duration-200 hover:-translate-y-0.5"
+              style={{ background: 'rgba(255,255,255,0.82)', border: '1px solid rgba(226,232,240,0.9)', boxShadow: '0 8px 24px rgba(15,23,42,0.05)' }}>
               <code className="text-xs font-mono font-bold px-1.5 py-0.5 rounded flex-shrink-0" style={{ backgroundColor: brand.accentBackground, color: brand.primaryColor }}>{t}</code>
               <span className="text-xs text-slate-500">{d}</span>
             </div>
@@ -937,7 +960,8 @@ function ArticleContent({ onActiveChange }: { onActiveChange: (id: string) => vo
         {/* Problems Solved */}
         <SH id="problems-solved" level={1}>Problems Solved by Lists</SH>
         <div className="grid grid-cols-2 gap-3 my-3">
-          <div className="rounded-xl border-2 border-red-100 bg-red-50 p-4">
+          <div className="rounded-xl p-4 transition-all duration-200"
+            style={{ background: 'rgba(254,242,242,0.85)', border: '1.5px solid rgba(254,202,202,0.9)', boxShadow: '0 8px 24px rgba(239,68,68,0.06)' }}>
             <div className="flex items-center gap-2 mb-2"><AlertCircle className="w-4 h-4 text-red-500" /><span className="font-bold text-red-700 text-sm">Before Lists</span></div>
             <ul className="space-y-1.5">
               {['Multiple variables', 'Difficult searching', 'Difficult looping', 'Hard maintenance', 'Fixed memory'].map(i => (
@@ -945,7 +969,8 @@ function ArticleContent({ onActiveChange }: { onActiveChange: (id: string) => vo
               ))}
             </ul>
           </div>
-          <div className="rounded-xl border-2 border-emerald-100 bg-emerald-50 p-4">
+          <div className="rounded-xl p-4 transition-all duration-200"
+            style={{ background: 'rgba(240,253,244,0.85)', border: '1.5px solid rgba(167,243,208,0.9)', boxShadow: '0 8px 24px rgba(16,185,129,0.06)' }}>
             <div className="flex items-center gap-2 mb-2"><CheckCircle className="w-4 h-4 text-emerald-500" /><span className="font-bold text-emerald-700 text-sm">After Lists</span></div>
             <ul className="space-y-1.5">
               {['Store thousands together', 'Easy iteration', 'Easy insertion/deletion', 'Dynamic resizing', 'Efficient manipulation'].map(i => (
@@ -960,7 +985,8 @@ function ArticleContent({ onActiveChange }: { onActiveChange: (id: string) => vo
         <p className="text-sm text-slate-700 leading-relaxed mb-3">
           Think of a <strong>bookshelf</strong>. Instead of "first book, second book…" you use position numbers.
         </p>
-        <div className="rounded-xl border border-slate-200 p-4 my-3 bg-slate-50">
+        <div className="rounded-xl p-4 my-3 transition-all duration-200"
+          style={{ background: 'rgba(248,251,255,0.9)', border: '1px solid rgba(226,232,240,0.9)', boxShadow: '0 16px 50px rgba(15,23,42,0.05)' }}>
           <div className="flex gap-1.5 mb-2 justify-center">
             {['Python', 'Java', 'C++', 'Go', 'AI'].map((book, i) => (
               <div key={book} className="flex flex-col items-center gap-1 w-14">
@@ -991,7 +1017,8 @@ function ArticleContent({ onActiveChange }: { onActiveChange: (id: string) => vo
         {/* First List */}
         <SH id="first-list" level={1}>Creating Your First List</SH>
         <CodeBlock code={`my_list = ['p', 'r', 'o', 'b', 'e']`} label="python" />
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 my-3">
+        <div className="rounded-xl p-4 my-3"
+          style={{ background: 'rgba(248,251,255,0.9)', border: '1px solid rgba(226,232,240,0.9)', boxShadow: '0 8px 24px rgba(15,23,42,0.05)' }}>
           {[
             { n: 1, t: "Python creates five string objects: 'p', 'r', 'o', 'b', 'e'" },
             { n: 2, t: "Python creates one list object with five reference slots" },
@@ -1021,7 +1048,7 @@ function ArticleContent({ onActiveChange }: { onActiveChange: (id: string) => vo
         </p>
         <NestedDiagram />
         <InfoBox icon={Lightbulb} title="How n_list[1][3] works" variant="tip">
-          Step 1: <code>n_list[1]</code> → <code>[2, 0, 1, 5]</code>&nbsp;&nbsp;
+          Step 1: <code>n_list[1]</code> → <code>[2, 0, 1, 5]</code>&nbsp;&nbsp;<br />
           Step 2: access <code>[3]</code> from that inner list → <strong>5</strong>
         </InfoBox>
 
@@ -1045,7 +1072,7 @@ function ArticleContent({ onActiveChange }: { onActiveChange: (id: string) => vo
 
         {/* Key Takeaways */}
         <SH id="takeaways" level={1}>Key Takeaways — Part 1</SH>
-        {/* <div className="rounded-xl border border-slate-200 overflow-hidden my-4">
+        <div className="rounded-xl border border-slate-200 overflow-hidden my-4">
           {[
             { icon: List, text: 'Ordered, mutable, and dynamically sized collection.' },
             { icon: Database, text: 'Stores references to objects — heterogeneous types allowed.' },
@@ -1061,10 +1088,11 @@ function ArticleContent({ onActiveChange }: { onActiveChange: (id: string) => vo
               <p className="text-sm text-slate-700 leading-relaxed">{text}</p>
             </div>
           ))}
-        </div> */}
+        </div>
 
         {/* Quiz */}
-        <div className="rounded-xl border-2 my-6 overflow-hidden" style={{ borderColor: brand.primaryColor + '40' }}>
+        <div className="rounded-xl my-6 overflow-hidden transition-all duration-200"
+          style={{ border: `2px solid ${brand.primaryColor}30`, boxShadow: '0 16px 50px rgba(15,23,42,0.07), 0 2px 8px rgba(15,23,42,0.04)', backdropFilter: 'blur(12px)', background: 'rgba(255,255,255,0.90)' }}>
           <div className="px-5 py-3" style={{ backgroundColor: brand.accentBackground }}>
             <div className="flex items-center gap-2">
               <Brain className="w-4 h-4" style={{ color: brand.primaryColor }} />
@@ -1097,7 +1125,8 @@ function ArticleContent({ onActiveChange }: { onActiveChange: (id: string) => vo
         </div>
 
         {/* Next CTA */}
-        <div className="rounded-xl border border-slate-200 p-5 my-4 bg-slate-50">
+        <div className="rounded-xl p-5 my-4 transition-all duration-200 hover:-translate-y-0.5"
+          style={{ background: 'rgba(255,255,255,0.82)', border: '1px solid rgba(226,232,240,0.9)', boxShadow: '0 16px 50px rgba(15,23,42,0.07), 0 2px 8px rgba(15,23,42,0.04)', backdropFilter: 'blur(12px)' }}>
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div>
               <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-0.5">Up Next</div>
@@ -1116,7 +1145,8 @@ function ArticleContent({ onActiveChange }: { onActiveChange: (id: string) => vo
         </div>
 
       </div>
-    </article>
+      </article>
+    </main>
   );
 }
 
@@ -1127,17 +1157,25 @@ function TutorialLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
-    <div className="flex flex-col h-screen bg-white relative">
+    <div className="flex flex-col h-screen relative"
+      style={{ background: 'radial-gradient(circle at top, rgba(14,165,233,0.07), transparent 28%), linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%)' }}>
+      {/* Skip to main content link for keyboard users */}
+      <a 
+        href="#main-content" 
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-white focus:text-slate-900 focus:rounded-lg focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        Skip to main content
+      </a>
       <TopNav onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
       <div className="flex flex-1 min-h-0 relative">
         {/* Overlay */}
         {isSidebarOpen && (
-          <div 
+          <div
             className="absolute inset-0 bg-black/20 z-40 transition-opacity"
             onClick={() => setIsSidebarOpen(false)}
           />
         )}
-        
+
         {/* Sidebar */}
         <div className={`absolute top-0 left-0 h-full z-50 transition-transform duration-300 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
           <CourseSidebar />
