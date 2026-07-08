@@ -34,6 +34,7 @@ const PROTECTED_PREFIXES = [
   '/faculty',
   '/api/student',
   '/api/batches',
+  '/learning-path',
 ];
 
 // 🔥 CRITICAL FIX: All roles must be lowercase to prevent security bypass
