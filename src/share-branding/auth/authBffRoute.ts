@@ -5,6 +5,7 @@ import { unifiedFetch } from '../lib/unifiedFetch';
 
 const HOP_BY_HOP_HEADERS = new Set([
   'connection',
+  'content-encoding',
   'content-length',
   'keep-alive',
   'proxy-authenticate',
