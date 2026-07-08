@@ -555,6 +555,89 @@ function NestedDiagram() {
   );
 }
 
+// ─── Negative Index Diagram ──────────────────────────────────────────────────
+
+function NegativeIndexDiagram() {
+  const brand = useBrand();
+  const items = ['p', 'r', 'o', 'b', 'e'];
+  const posIndices = [0, 1, 2, 3, 4];
+  const negIndices = [-5, -4, -3, -2, -1];
+
+  return (
+    <div className="my-5 flex flex-col gap-4">
+      {/* Table */}
+      <div className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
+        <table className="w-full text-sm">
+          <tbody>
+            {/* Positive Index Row */}
+            <tr className="border-b border-slate-200">
+              <td className="px-4 py-3 font-bold text-blue-900 border-r border-slate-200 w-36 bg-white">Positive Index</td>
+              {posIndices.map((idx, i) => (
+                <td key={i} className="px-4 py-3 text-center font-mono font-bold text-slate-800 border-r border-slate-200 last:border-r-0 bg-white">
+                  {idx}
+                </td>
+              ))}
+            </tr>
+            {/* Values Row */}
+            <tr className="border-b border-slate-200">
+              <td className="px-4 py-3 border-r border-slate-200 bg-white"></td>
+              {items.map((item, i) => (
+                <td key={i} className="px-4 py-3 text-center font-mono font-bold text-emerald-600 border-r border-slate-200 last:border-r-0 bg-white">
+                  {item}
+                </td>
+              ))}
+            </tr>
+            {/* Negative Index Row */}
+            <tr>
+              <td className="px-4 py-3 font-bold text-blue-900 border-r border-slate-200 bg-white">Negative Index</td>
+              {negIndices.map((idx, i) => (
+                <td key={i} className="px-4 py-3 text-center font-mono font-bold text-slate-800 border-r border-slate-200 last:border-r-0 bg-white">
+                  {idx}
+                </td>
+              ))}
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      {/* Code Cards */}
+      <div className="grid grid-cols-2 gap-4">
+        {/* Card 1 */}
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="flex justify-between items-center mb-4">
+            <span className="text-blue-900 font-bold text-sm">Last Element</span>
+            <span className="font-bold text-xs" style={{ color: brand.primaryColor }}>python</span>
+          </div>
+          <div className="font-mono text-sm mb-4">
+            <span className="text-amber-700 font-semibold">print</span>
+            <span className="text-slate-800">(my_list[</span>
+            <span className="font-bold" style={{ color: brand.primaryColor }}>-1</span>
+            <span className="text-slate-800">])</span>
+          </div>
+          <div className="font-mono text-sm text-emerald-600 font-semibold mb-1"># Output</div>
+          <div className="font-mono text-sm text-emerald-600 font-bold">e</div>
+        </div>
+
+        {/* Card 2 */}
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="flex justify-between items-center mb-4">
+            <span className="text-blue-900 font-bold text-sm">First Element (from negative)</span>
+            <span className="font-bold text-xs" style={{ color: brand.primaryColor }}>python</span>
+          </div>
+          <div className="font-mono text-sm mb-4">
+            <span className="text-amber-700 font-semibold">print</span>
+            <span className="text-slate-800">(my_list[</span>
+            <span className="font-bold" style={{ color: brand.primaryColor }}>-5</span>
+            <span className="text-slate-800">])</span>
+          </div>
+          <div className="font-mono text-sm text-emerald-600 font-semibold mb-1"># Output</div>
+          <div className="font-mono text-sm text-emerald-600 font-bold">p</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Slicing Visualizer ──────────────────────────────────────────────────────
 
 function SlicingVisualizer() {
@@ -947,9 +1030,7 @@ function ArticleContent({ onActiveChange }: { onActiveChange: (id: string) => vo
         <p className="text-sm text-slate-700 leading-relaxed mb-3">
           Python supports counting from the <strong>end</strong> using negative numbers. <code className="bg-slate-100 px-1 rounded text-xs">-1</code> = last element, <code className="bg-slate-100 px-1 rounded text-xs">-5</code> = first element (for a 5-item list).
         </p>
-        <IndexDiagram items={['p', 'r', 'o', 'b', 'e']} highlightNeg={-1} />
-        <CodeBlock code={`print(my_list[-1])   # e  — last element\nprint(my_list[-5])   # p  — first element (counting backward)`} label="python" />
-        <OutputBlock output={"e\np"} />
+        <NegativeIndexDiagram />
         <InfoBox icon={Lightbulb} title="When to use negative indexing" variant="tip">
           Useful when you need the <strong>last N elements</strong> without knowing the exact length of the sequence.
         </InfoBox>
