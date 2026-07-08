@@ -1,24 +1,44 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 
-// Database connection
-const databaseUrl = process.env.SKILLHUBCORE_DATABASE_URL || 
-                    process.env.DATABASE_URL_TUTORIAL;
+// Database connection - lazy initialization
+let _db: ReturnType<typeof drizzle> | null = null;
+let _pool: Pool | null = null;
 
-if (!databaseUrl) {
-  throw new Error(
-    'Database URL not found. Please set SKILLHUBCORE_DATABASE_URL or DATABASE_URL_TUTORIAL in environment variables.'
-  );
+function getPool() {
+  if (!_pool) {
+    const databaseUrl = process.env.SKILLHUBCORE_DATABASE_URL || 
+                        process.env.DATABASE_URL_TUTORIAL;
+
+    if (!databaseUrl) {
+      throw new Error(
+        'Database URL not found. Please set SKILLHUBCORE_DATABASE_URL or DATABASE_URL_TUTORIAL in environment variables.'
+      );
+    }
+
+    _pool = new Pool({
+      connectionString: databaseUrl,
+      max: 20,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 2000,
+    });
+  }
+  return _pool;
 }
 
-const pool = new Pool({
-  connectionString: databaseUrl,
-  max: 20,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
-});
+export function getDb() {
+  if (!_db) {
+    _db = drizzle(getPool());
+  }
+  return _db;
+}
 
-export const db = drizzle(pool);
+// For backwards compatibility - but this will throw at build time if accessed
+export const db = new Proxy({} as ReturnType<typeof drizzle>, {
+  get(_target, prop) {
+    return getDb()[prop as keyof ReturnType<typeof drizzle>];
+  }
+});
 
 // Export all schemas
 export * from './schema/domain';
