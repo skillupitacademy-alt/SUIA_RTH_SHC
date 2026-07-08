@@ -21,7 +21,7 @@ export function HeroActionCard() {
         <h2 className="mb-2 text-3xl font-black text-white sm:text-4xl">{hero.title}</h2>
         <p className="mb-6 text-lg text-white">{hero.description}</p>
 
-        <Link href="/launch-exam">
+        <Link href={hero.ctaLabel === 'Open My Learning Path' ? '/learning-path' : '/launch-exam'}>
           <button className="group flex h-14 items-center gap-3 rounded-2xl bg-white px-8 text-lg font-bold shadow-md transition-all hover:bg-gray-50">
             <span style={{ color: brand.primaryColor }}>{hero.ctaLabel}</span>
             <ArrowRight

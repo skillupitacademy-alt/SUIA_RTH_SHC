@@ -97,7 +97,9 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "../../packages/types/src/globals/**/*.d.ts"
+    "../../packages/types/src/globals/**/*.d.ts",
+    "../../src/share-branding/PythonNotes/**/*.ts",
+    "../../src/share-branding/PythonNotes/**/*.tsx"
   ],
   "exclude": [
     "node_modules",
