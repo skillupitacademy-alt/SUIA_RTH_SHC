@@ -1,9 +1,10 @@
-import { db, subjects } from '@quiz/db-skillhubcore';
+import { getDb, subjects } from '@quiz/db-skillhubcore';
 import { eq, ilike, and, isNull, desc } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
+    const db = getDb();
     const searchParams = request.nextUrl.searchParams;
     const search = searchParams.get('search') || '';
     const domainId = searchParams.get('domainId');
@@ -44,6 +45,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const db = getDb();
     const body = await request.json();
     const { name, description, domainId, status = 'active', order = 0 } = body;
 
@@ -64,6 +66,7 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
+    const db = getDb();
     const body = await request.json();
     const { id, name, description, status, order } = body;
 
@@ -92,6 +95,7 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    const db = getDb();
     const searchParams = request.nextUrl.searchParams;
     const id = searchParams.get('id');
     const ids = searchParams.get('ids');
