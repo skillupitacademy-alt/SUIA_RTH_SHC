@@ -1,11 +1,20 @@
-import PythonNotesPage from '../../../../../src/share-branding/PythonNotes/PythonNotesPage';
+import { LearningPage } from '../../../../../src/share-branding/LearningExperience/LearningPage';
 import { skillUpConfig } from '../../../../../src/share-branding/brandConfig';
 
 export const metadata = {
-  title: 'Learning Path | SkillUp IT Academy',
-  description: 'Your personalized Python learning path.',
+  title: 'Python Lists — Part 1 | SkillUp IT Academy',
+  description: 'Master Python lists: internal memory representation, indexing, nested lists, negative indexing, and slicing.',
+  openGraph: {
+    title: 'Python Lists — Part 1 | SkillUp IT Academy',
+    description: 'Master Python lists: internal memory representation, indexing, nested lists, negative indexing, and slicing.',
+  },
 };
 
-export default async function Page() {
-  return <PythonNotesPage config={skillUpConfig} />;
+export default function Page() {
+  return (
+    <LearningPage
+      brandColor={skillUpConfig.primaryColor}
+      brandName={skillUpConfig.name}
+    />
+  );
 }
