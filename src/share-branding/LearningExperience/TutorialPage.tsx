@@ -429,14 +429,14 @@ function IndexDiagram({ items, highlightPos, highlightNeg }: { items: string[]; 
                 <span className="text-sm font-semibold text-slate-700">{label}</span>
                 <span className="text-xs font-mono" style={{ color: brand.primaryColor }}>python</span>
               </div>
-              <div className="font-mono text-sm text-slate-800 mb-3">
-                <span className="text-slate-500">print</span>
-                <span className="text-slate-800">(my_list</span>
+              <div className="font-mono text-sm mb-3">
+                <span className="font-semibold" style={{ color: brand.secondaryColor }}>print</span>
+                <span className="font-semibold" style={{ color: brand.secondaryColor }}>(my_list</span>
                 <span className="font-bold" style={{ color: brand.primaryColor }}>[{idx}]</span>
-                <span className="text-slate-800">)</span>
+                <span className="font-semibold" style={{ color: brand.secondaryColor }}>)</span>
               </div>
-              <div className="text-xs text-slate-400 mb-1"># Output</div>
-              <div className="font-mono font-bold" style={{ color: brand.primaryColor }}>{output}</div>
+              <div className="text-xs text-slate-500 mb-1"># Output</div>
+              <div className="font-mono font-bold" style={{ color: brand.secondaryColor }}>{output}</div>
             </div>
           ))}
         </div>
@@ -458,9 +458,9 @@ function NestedDiagram() {
         <span className="absolute top-4 right-5 text-xs font-bold" style={{ color: brand.primaryColor }}>python</span>
         
         <div className="font-mono text-sm mb-6 mt-1">
-          <span className="font-semibold text-blue-700">n_list</span>
+          <span className="font-semibold" style={{ color: brand.secondaryColor }}>n_list</span>
           <span className="text-slate-600"> = </span>
-          <span className="text-emerald-700">["Happy", [2, 0, 1, 5]]</span>
+          <span className="text-slate-800 font-bold">["Happy", [2, 0, 1, 5]]</span>
         </div>
 
         <div className="space-y-1.5 font-mono text-sm">
@@ -471,9 +471,9 @@ function NestedDiagram() {
           ].map(({ code, idx, close, comment }, i) => (
             <div key={i} className="flex items-center">
               <span className="w-48 flex-shrink-0">
-                <span className="font-semibold text-blue-900">{code}</span>
+                <span className="font-semibold" style={{ color: brand.secondaryColor }}>{code}</span>
                 <span className="font-bold" style={{ color: brand.primaryColor }}>{idx}</span>
-                <span className="font-semibold text-blue-900">{close}</span>
+                <span className="font-semibold" style={{ color: brand.secondaryColor }}>{close}</span>
               </span>
               <span className="text-slate-500 whitespace-nowrap">{comment}</span>
             </div>
@@ -485,7 +485,7 @@ function NestedDiagram() {
       <div className="flex-1 rounded-xl border border-slate-200 bg-white p-5 shadow-sm flex flex-col items-center justify-center pt-6">
         
         {/* n_list root box */}
-        <div className="px-10 py-2.5 rounded-lg text-white text-sm font-bold font-mono" style={{ backgroundColor: '#153e75' }}>
+        <div className="px-10 py-2.5 rounded-lg text-white text-sm font-bold font-mono" style={{ backgroundColor: brand.secondaryColor }}>
           n_list
         </div>
 
@@ -516,7 +516,7 @@ function NestedDiagram() {
         <div className="flex gap-4 items-start w-full justify-center pl-8">
           {/* "Happy" cell */}
           <div className="flex flex-col items-center -ml-16">
-            <div className="border border-slate-300 rounded-lg px-3 py-3 font-mono text-sm font-bold bg-white text-emerald-600 shadow-sm"
+            <div className="border border-slate-300 rounded-lg px-3 py-3 font-mono text-sm font-bold bg-white text-slate-800 shadow-sm"
               style={{ borderColor: brand.primaryColor, backgroundColor: brand.accentBackground }}>
               "Happy"
             </div>
@@ -545,7 +545,7 @@ function NestedDiagram() {
             {/* Values */}
             <div className="flex mt-1">
               {innerVals.map((v, i) => (
-                <div key={i} className="w-9 text-center font-mono font-bold text-sm text-emerald-700">{v}</div>
+                <div key={i} className="w-9 text-center font-mono font-bold text-sm text-slate-800">{v}</div>
               ))}
             </div>
           </div>
@@ -571,7 +571,7 @@ function NegativeIndexDiagram() {
           <tbody>
             {/* Positive Index Row */}
             <tr className="border-b border-slate-200">
-              <td className="px-4 py-3 font-bold text-blue-900 border-r border-slate-200 w-36 bg-white">Positive Index</td>
+              <td className="px-4 py-3 font-bold border-r border-slate-200 w-36 bg-white" style={{ color: brand.secondaryColor }}>Positive Index</td>
               {posIndices.map((idx, i) => (
                 <td key={i} className="px-4 py-3 text-center font-mono font-bold text-slate-800 border-r border-slate-200 last:border-r-0 bg-white">
                   {idx}
@@ -582,14 +582,14 @@ function NegativeIndexDiagram() {
             <tr className="border-b border-slate-200">
               <td className="px-4 py-3 border-r border-slate-200 bg-white"></td>
               {items.map((item, i) => (
-                <td key={i} className="px-4 py-3 text-center font-mono font-bold text-emerald-600 border-r border-slate-200 last:border-r-0 bg-white">
+                <td key={i} className="px-4 py-3 text-center font-mono font-bold border-r border-slate-200 last:border-r-0 bg-white" style={{ color: brand.secondaryColor }}>
                   {item}
                 </td>
               ))}
             </tr>
             {/* Negative Index Row */}
             <tr>
-              <td className="px-4 py-3 font-bold text-blue-900 border-r border-slate-200 bg-white">Negative Index</td>
+              <td className="px-4 py-3 font-bold border-r border-slate-200 bg-white" style={{ color: brand.secondaryColor }}>Negative Index</td>
               {negIndices.map((idx, i) => (
                 <td key={i} className="px-4 py-3 text-center font-mono font-bold text-slate-800 border-r border-slate-200 last:border-r-0 bg-white">
                   {idx}
@@ -605,33 +605,33 @@ function NegativeIndexDiagram() {
         {/* Card 1 */}
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex justify-between items-center mb-4">
-            <span className="text-blue-900 font-bold text-sm">Last Element</span>
+            <span className="font-bold text-sm" style={{ color: brand.secondaryColor }}>Last Element</span>
             <span className="font-bold text-xs" style={{ color: brand.primaryColor }}>python</span>
           </div>
           <div className="font-mono text-sm mb-4">
-            <span className="text-amber-700 font-semibold">print</span>
-            <span className="text-slate-800">(my_list[</span>
+            <span className="font-semibold" style={{ color: brand.secondaryColor }}>print</span>
+            <span className="font-semibold" style={{ color: brand.secondaryColor }}>(my_list[</span>
             <span className="font-bold" style={{ color: brand.primaryColor }}>-1</span>
-            <span className="text-slate-800">])</span>
+            <span className="font-semibold" style={{ color: brand.secondaryColor }}>])</span>
           </div>
-          <div className="font-mono text-sm text-emerald-600 font-semibold mb-1"># Output</div>
-          <div className="font-mono text-sm text-emerald-600 font-bold">e</div>
+          <div className="font-mono text-sm text-slate-500 font-semibold mb-1"># Output</div>
+          <div className="font-mono text-sm font-bold" style={{ color: brand.secondaryColor }}>e</div>
         </div>
 
         {/* Card 2 */}
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex justify-between items-center mb-4">
-            <span className="text-blue-900 font-bold text-sm">First Element (from negative)</span>
+            <span className="font-bold text-sm" style={{ color: brand.secondaryColor }}>First Element (from negative)</span>
             <span className="font-bold text-xs" style={{ color: brand.primaryColor }}>python</span>
           </div>
           <div className="font-mono text-sm mb-4">
-            <span className="text-amber-700 font-semibold">print</span>
-            <span className="text-slate-800">(my_list[</span>
+            <span className="font-semibold" style={{ color: brand.secondaryColor }}>print</span>
+            <span className="font-semibold" style={{ color: brand.secondaryColor }}>(my_list[</span>
             <span className="font-bold" style={{ color: brand.primaryColor }}>-5</span>
-            <span className="text-slate-800">])</span>
+            <span className="font-semibold" style={{ color: brand.secondaryColor }}>])</span>
           </div>
-          <div className="font-mono text-sm text-emerald-600 font-semibold mb-1"># Output</div>
-          <div className="font-mono text-sm text-emerald-600 font-bold">p</div>
+          <div className="font-mono text-sm text-slate-500 font-semibold mb-1"># Output</div>
+          <div className="font-mono text-sm font-bold" style={{ color: brand.secondaryColor }}>p</div>
         </div>
       </div>
     </div>
@@ -702,8 +702,8 @@ function CharacteristicsTable() {
             <div className={`px-4 py-3 text-sm text-slate-700 font-medium border-b border-slate-100 ${i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>{feature}</div>
             <div className={`px-4 py-3 border-b border-slate-100 ${i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>
               <span className="flex items-center gap-1.5">
-                <CheckCircle className="w-4 h-4 text-emerald-500" />
-                <span className="text-sm text-emerald-700 font-medium">Yes</span>
+                <CheckCircle className="w-4 h-4" style={{ color: brand.primaryColor }} />
+                <span className="text-sm font-medium" style={{ color: brand.primaryColor }}>Yes</span>
               </span>
             </div>
           </Fragment>
