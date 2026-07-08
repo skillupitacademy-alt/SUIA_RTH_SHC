@@ -61,6 +61,7 @@ export interface BrandConfig {
   tutorialDashboardTitle: string;
   tutorialDashboardSubtitle: string;
   tutorialDashboardSearchPlaceholder: string;
+  brandTone: string;
 }
 
 export type SharedBrandId = 'realtutorialhub' | 'skillup' | 'skillhubcore';
@@ -117,6 +118,7 @@ export const rthConfig: BrandConfig = {
   tutorialDashboardTitle: 'Tutorial Engine Dashboard',
   tutorialDashboardSubtitle: 'Your personalized learning command center',
   tutorialDashboardSearchPlaceholder: 'Search courses, topics...',
+  brandTone: 'AI-Powered Learning / Crack Exams',
 };
 
 export const skillUpConfig: BrandConfig = {
@@ -171,6 +173,7 @@ export const skillUpConfig: BrandConfig = {
   tutorialDashboardTitle: 'Mentorship Dashboard',
   tutorialDashboardSubtitle: 'Your personalized learning and mentorship command center',
   tutorialDashboardSearchPlaceholder: 'Search courses, topics, mentors...',
+  brandTone: 'Mentor-Led / Secure A Job',
 };
 
 export const brands: Record<'rth' | 'skillup' | 'skillhubcore', BrandConfig> = {

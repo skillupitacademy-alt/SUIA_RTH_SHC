@@ -1,5 +1,4 @@
-import { LearningPage } from '../../../../../src/share-branding/LearningExperience/LearningPage';
-import { skillUpConfig } from '../../../../../src/share-branding/brandConfig';
+import { TutorialPage } from '../../../../../src/share-branding/LearningExperience/TutorialPage';
 
 export const metadata = {
   title: 'Python Lists — Part 1 | SkillUp IT Academy',
@@ -12,9 +11,6 @@ export const metadata = {
 
 export default function Page() {
   return (
-    <LearningPage
-      brandColor={skillUpConfig.primaryColor}
-      brandName={skillUpConfig.name}
-    />
+    <TutorialPage brand="skillup" />
   );
 }

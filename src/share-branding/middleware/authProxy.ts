@@ -17,6 +17,7 @@ const PUBLIC_PATHS = [
   '/placement',
   '/api/healthz',
   '/programs',
+  '/learning-path',
 ];
 
 const PUBLIC_PREFIXES = ['/verify', '/api/programs', '/api/certificates/verify/'];
@@ -34,7 +35,6 @@ const PROTECTED_PREFIXES = [
   '/faculty',
   '/api/student',
   '/api/batches',
-  '/learning-path',
 ];
 
 // 🔥 CRITICAL FIX: All roles must be lowercase to prevent security bypass
