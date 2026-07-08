@@ -2,7 +2,8 @@ param(
   [string]$ImageTag = "",
   [string]$OutputDir = "",
   [string]$EnvFile = "",
-  [string[]]$Services = @()
+  [string[]]$Services = @(),
+  [switch]$NoCache = $false
 )
 
 $ErrorActionPreference = "Stop"
@@ -250,7 +251,15 @@ foreach ($service in $selected) {
   }
 
   Write-Host "Building $service with $($buildEnvLines.Count) build variable(s)"
-  & docker compose --env-file $serviceEnvPath -f $TempCompose -f $ComposeProd build --pull $service
+  
+  $buildArgs = @("compose", "--env-file", $serviceEnvPath, "-f", $TempCompose, "-f", $ComposeProd, "build", "--pull")
+  if ($NoCache) {
+    Write-Host "Building with --no-cache flag (ignoring Docker cache)"
+    $buildArgs += "--no-cache"
+  }
+  $buildArgs += $service
+  
+  & docker @buildArgs
   if ($LASTEXITCODE -ne 0) {
     throw "docker compose build failed for $service"
   }
