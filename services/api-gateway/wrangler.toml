@@ -8,7 +8,7 @@ mode = "smart"
 
 [env.production]
 workers_dev = true
-vars = { ENVIRONMENT = "production", QUIZ_WEB_URL = "https://origin-quiz.skillhubcore.in", RTH_ADMIN_URL = "https://origin-admin.realtutorialhub.com", SKILLUP_WEB_URL = "https://origin-user.skillupitacademy.com", SKILLUP_ADMIN_URL = "https://origin-admin.skillupitacademy.com", FACULTY_URL = "https://origin-faculty.skillupitacademy.com", STUDENT_FACULTY_URL = "https://origin-faculty.skillupitacademy.com", TUTORIAL_SERVICE_URL = "https://origin-user.realtutorialhub.com", SKILLHUBCORE_URL = "https://origin-api.skillhubcore.in", EXAM_SERVICE_URL = "https://origin-api.realtutorialhub.com", NOTIFICATION_URL = "https://origin-api.realtutorialhub.com", PLACEMENT_URL = "https://origin-placement.skillhubcore.in" }
+vars = { ENVIRONMENT = "production", QUIZ_WEB_URL = "https://origin-quiz.skillhubcore.in", RTH_ADMIN_URL = "https://origin-admin.realtutorialhub.com", SKILLUP_WEB_URL = "https://origin-user.skillupitacademy.com", SKILLUP_ADMIN_URL = "https://origin-admin.skillupitacademy.com", FACULTY_URL = "https://origin-faculty.skillupitacademy.com", STUDENT_FACULTY_URL = "https://origin-faculty.skillupitacademy.com", TUTORIAL_SERVICE_URL = "https://origin-user.realtutorialhub.com", SKILLHUBCORE_URL = "https://origin-api.skillhubcore.in", SKILLHUBCORE_ADMIN_URL = "https://origin-admin.skillhubcore.in", EXAM_SERVICE_URL = "https://origin-api.realtutorialhub.com", NOTIFICATION_URL = "https://origin-api.realtutorialhub.com", PLACEMENT_URL = "https://origin-placement.skillhubcore.in" }
 
 [[env.production.routes]]
 pattern = "user.realtutorialhub.com/*"
@@ -52,4 +52,8 @@ zone_name = "skillhubcore.in"
 
 [[env.production.routes]]
 pattern = "placement.skillhubcore.in/*"
+zone_name = "skillhubcore.in"
+
+[[env.production.routes]]
+pattern = "admin.skillhubcore.in/*"
 zone_name = "skillhubcore.in"

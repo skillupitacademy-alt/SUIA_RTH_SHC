@@ -24,6 +24,7 @@ export const ROUTING_TABLE: GatewayRoute[] = [
   { host: 'user.skillupitacademy.com', prefix: '/', upstreamKey: 'SKILLUP_WEB_URL', public: true },
   { host: 'admin.skillupitacademy.com', prefix: '/', upstreamKey: 'SKILLUP_ADMIN_URL', public: true },
   { host: 'faculty.skillupitacademy.com', prefix: '/', upstreamKey: 'FACULTY_URL', public: true },
+  { host: 'admin.skillhubcore.in', prefix: '/', upstreamKey: 'SKILLHUBCORE_ADMIN_URL', public: true },
   { host: 'quiz.skillhubcore.in', prefix: '/', upstreamKey: 'QUIZ_WEB_URL', public: true },
   { host: 'tutorial.skillhubcore.in', prefix: '/', upstreamKey: 'TUTORIAL_SERVICE_URL', public: true },
   { host: 'placement.skillhubcore.in', prefix: '/', upstreamKey: 'PLACEMENT_URL', public: true },
