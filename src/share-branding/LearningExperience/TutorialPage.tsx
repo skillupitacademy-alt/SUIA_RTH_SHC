@@ -219,7 +219,7 @@ function CourseSidebar() {
 function TopNav({ onToggleSidebar }: { onToggleSidebar: () => void }) {
   const brand = useBrand();
   return (
-    <header className="h-14 bg-white border-b border-slate-200 flex items-center px-5 gap-4 flex-shrink-0 z-50 relative">
+    <header aria-label="Site header" className="h-14 bg-white border-b border-slate-200 flex items-center px-5 gap-4 flex-shrink-0 z-50 relative">
       <button onClick={onToggleSidebar} aria-label="Toggle course navigation" className="p-1 hover:bg-slate-100 rounded-md transition-colors mr-1">
         <Menu className="w-5 h-5 text-slate-600" />
       </button>
@@ -873,7 +873,7 @@ function ArticleContent({ onActiveChange }: { onActiveChange: (id: string) => vo
     <main id="main-content" className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] bg-white">
       <article>
       {/* Article Header — bg uses accentBackground; text must pass 4.5:1 contrast on that bg */}
-      <header className="border-b border-slate-100 px-8 py-6" style={{ backgroundColor: brand.accentBackground }}>
+      <header aria-label="Article header" className="border-b border-slate-100 px-8 py-6" style={{ backgroundColor: brand.accentBackground }}>
         <div className="flex items-center gap-1.5 text-xs text-slate-600 mb-3">
           <BookOpen className="w-3.5 h-3.5" aria-hidden="true" />
           <span>Python Fundamentals</span>
