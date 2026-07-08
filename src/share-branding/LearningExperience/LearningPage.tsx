@@ -2,7 +2,7 @@
 
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight as ChevronRightIcon } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { LearningLayout } from './layout/LearningLayout';
 import { HeroSection } from './components/HeroSection';
 import { MarkdownRenderer } from './components/MarkdownRenderer';
