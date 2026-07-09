@@ -151,7 +151,7 @@ function CourseSidebar() {
       </div> */}
 
       {/* Module Tree */}
-      <nav className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] py-2">
+      <nav aria-label="Course modules" className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] py-2">
         {modules.map(mod => (
           <div key={mod.id}>
             <button
@@ -302,7 +302,7 @@ function InfoBox({ icon: Icon, title, children, variant = 'info' }: {
   const colors = {
     info: { bg: brand.accentBackground, border: brand.primaryColor + '40', text: brand.primaryColor },
     tip: { bg: '#f0fdf4', border: '#86efac', text: '#16a34a' },
-    warning: { bg: '#fffbeb', border: '#fbbf24', text: '#d97706' }
+    warning: { bg: '#fffbeb', border: '#fbbf24', text: '#b45309' }
   };
   const c = colors[variant];
   return (
