@@ -275,7 +275,7 @@ function CodeBlock({ code, label }: { code: string; label?: string }) {
           {copied ? 'Copied!' : 'Copy'}
         </button>
       </div>
-      <pre className="bg-slate-900 text-slate-100 p-4 overflow-x-auto text-sm leading-relaxed font-mono whitespace-pre-wrap">{code}</pre>
+      <pre className="bg-slate-900 text-slate-100 p-4 overflow-x-auto text-base leading-relaxed font-mono whitespace-pre-wrap">{code}</pre>
     </div>
   );
 }
@@ -285,9 +285,9 @@ function CodeBlock({ code, label }: { code: string; label?: string }) {
 function OutputBlock({ output }: { output: string }) {
   const brand = useBrand();
   return (
-    <div role="region" aria-label="Code output" className="rounded-xl p-4 my-3 border-l-4 font-mono text-sm bg-slate-50 shadow-sm"
+    <div className="rounded-xl p-4 my-3 border-l-4 font-mono text-base bg-slate-50 shadow-sm"
       style={{ borderLeftColor: brand.primaryColor }}>
-      <div className="text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: brand.primaryColorDark }}>Output</div>
+      <div className="text-sm font-bold uppercase tracking-wider mb-1.5" style={{ color: brand.primaryColorDark }}>Output</div>
       <div className="text-slate-800 whitespace-pre">{output}</div>
     </div>
   );
@@ -313,8 +313,8 @@ function InfoBox({ icon: Icon, title, children, variant = 'info' }: {
           <Icon className="w-4 h-4" style={{ color: c.text }} />
         </div>
         <div>
-          <div className="font-semibold text-sm mb-1" style={{ color: c.text }}>{title}</div>
-          <div className="text-sm text-slate-700 leading-relaxed">{children}</div>
+          <div className="font-semibold text-base mb-1" style={{ color: c.text }}>{title}</div>
+          <div className="text-base text-slate-700 leading-relaxed">{children}</div>
         </div>
       </div>
     </div>
@@ -880,12 +880,12 @@ function ArticleContent({ onActiveChange }: { onActiveChange: (id: string) => vo
           <ChevronRight className="w-3 h-3" aria-hidden="true" />
           <span className="font-bold" style={{ color: brand.primaryColorDark }}>Chapter 2 · Lists</span>
         </div>
-        <h1 className="text-2xl font-bold text-slate-800 mb-1">Python Lists — Part 1</h1>
-        <p className="text-slate-600 text-sm mb-4">Based on the uploaded notebook: List Basics, Indexing, Nested Lists, Negative Indexing, and Slicing.</p>
+        <h1 className="text-3xl font-bold text-slate-800 mb-1">Python Lists — Part 1</h1>
+        <p className="text-slate-600 text-base mb-4">Based on the uploaded notebook: List Basics, Indexing, Nested Lists, Negative Indexing, and Slicing.</p>
         <div className="flex items-center gap-4 flex-wrap">
-          <span className="flex items-center gap-1.5 text-xs text-slate-600"><Clock className="w-3.5 h-3.5" aria-hidden="true" />~25 min</span>
-          <span className="flex items-center gap-1.5 text-xs text-slate-600"><Code2 className="w-3.5 h-3.5" aria-hidden="true" />12 examples</span>
-          <span className="flex items-center gap-1.5 text-xs text-slate-600"><Target className="w-3.5 h-3.5" aria-hidden="true" />1 quiz</span>
+          <span className="flex items-center gap-1.5 text-sm text-slate-600"><Clock className="w-4 h-4" aria-hidden="true" />~25 min</span>
+          <span className="flex items-center gap-1.5 text-sm text-slate-600"><Code2 className="w-4 h-4" aria-hidden="true" />12 examples</span>
+          <span className="flex items-center gap-1.5 text-sm text-slate-600"><Target className="w-4 h-4" aria-hidden="true" />1 quiz</span>
           <span className="px-2.5 py-0.5 rounded-full text-xs font-bold" style={{ backgroundColor: 'rgba(255,255,255,0.9)', color: brand.primaryColorDark }}>Beginner</span>
           <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">Free Topic</span>
         </div>
@@ -895,16 +895,16 @@ function ArticleContent({ onActiveChange }: { onActiveChange: (id: string) => vo
 
         {/* What is a List */}
         <SH id="what-is-list" level={1}>What is a List?</SH>
-        <p className="text-slate-700 leading-relaxed mb-3 text-sm">
+        <p className="text-slate-700 leading-relaxed mb-3 text-base">
           A <strong>List</strong> is one of Python's most powerful built-in data structures. It stores <strong>multiple values in a single variable</strong> while maintaining insertion order. Lists are flexible — they can hold integers, floats, strings, Booleans, objects, functions, or even other lists.
         </p>
-        <p className="text-slate-700 leading-relaxed mb-3 text-sm">
+        <p className="text-slate-700 leading-relaxed mb-3 text-base">
           Unlike fixed-size arrays in C or Java, Python lists are <strong>dynamic</strong> — size adjusts automatically at runtime without manual memory management. Used across AI, ML, data science, web development, DevOps, and more.
         </p>
 
         {/* Definition */}
         <SH id="definition" level={1}>Definition</SH>
-        <p className="text-sm text-slate-700 leading-relaxed mb-3">
+        <p className="text-base text-slate-700 leading-relaxed mb-3">
           A <strong>Python List</strong> is an <strong>ordered, mutable, dynamic collection of objects</strong> enclosed in square brackets <code className="bg-slate-100 px-1 rounded text-xs">[]</code>.
         </p>
         <CodeBlock code={`my_list = [10, 20, 30, 40]`} label="python" />
@@ -919,7 +919,7 @@ function ArticleContent({ onActiveChange }: { onActiveChange: (id: string) => vo
 
         {/* History */}
         <SH id="history" level={1}>Historical Background</SH>
-        <p className="text-sm text-slate-700 leading-relaxed mb-3">
+        <p className="text-base text-slate-700 leading-relaxed mb-3">
           Python was created by <strong>Guido van Rossum in 1991</strong> with a key goal: make programming intuitive. Earlier languages used fixed-size arrays requiring manual memory management. Python's <strong>lists</strong> changed that — automatic resizing, no manual allocation.
         </p>
         <div className="grid grid-cols-4 gap-1.5 my-3">
@@ -930,7 +930,7 @@ function ArticleContent({ onActiveChange }: { onActiveChange: (id: string) => vo
 
         {/* Why Lists */}
         <SH id="why-lists" level={1}>Why Do Lists Exist?</SH>
-        <p className="text-sm text-slate-700 leading-relaxed mb-2">Consider a student management system for 10,000 students:</p>
+        <p className="text-base text-slate-700 leading-relaxed mb-2">Consider a student management system for 10,000 students:</p>
         <div className="grid grid-cols-2 gap-3 my-3">
           <div>
             <div className="text-xs font-semibold text-red-600 mb-1">❌ Without Lists</div>
@@ -965,7 +965,7 @@ function ArticleContent({ onActiveChange }: { onActiveChange: (id: string) => vo
 
         {/* Analogy */}
         <SH id="analogy" level={1}>Real-World Analogy — Bookshelf</SH>
-        <p className="text-sm text-slate-700 leading-relaxed mb-3">
+        <p className="text-base text-slate-700 leading-relaxed mb-3">
           Think of a <strong>bookshelf</strong>. Instead of "first book, second book…" you use position numbers.
         </p>
         <div className="rounded-xl border border-slate-200 p-4 my-3 bg-slate-50">
@@ -1016,7 +1016,7 @@ function ArticleContent({ onActiveChange }: { onActiveChange: (id: string) => vo
 
         {/* Indexing */}
         <SH id="indexing" level={1}>Indexing</SH>
-        <p className="text-sm text-slate-700 leading-relaxed mb-3">Every element inside a list has an <strong>index</strong>. Python starts counting from <strong>0</strong>.</p>
+        <p className="text-base text-slate-700 leading-relaxed mb-3">Every element inside a list has an <strong>index</strong>. Python starts counting from <strong>0</strong>.</p>
         <IndexDiagram items={['p', 'r', 'o', 'b', 'e']} />
         <SH id="idx-examples" level={2}>Accessing Elements</SH>
         <CodeBlock code={`print(my_list[0])   # p  — first element\nprint(my_list[2])   # o  — third element (0→p, 1→r, 2→o)\nprint(my_list[4])   # e  — last element`} label="python" />
@@ -1024,7 +1024,7 @@ function ArticleContent({ onActiveChange }: { onActiveChange: (id: string) => vo
 
         {/* Nested */}
         <SH id="nested" level={1}>Nested Lists (List of Lists)</SH>
-        <p className="text-sm text-slate-700 leading-relaxed mb-3">
+        <p className="text-base text-slate-700 leading-relaxed mb-3">
           A list can contain another list as an element.
         </p>
         <NestedDiagram />
@@ -1035,7 +1035,7 @@ function ArticleContent({ onActiveChange }: { onActiveChange: (id: string) => vo
 
         {/* Negative Indexing */}
         <SH id="negative-indexing" level={1}>Negative Indexing</SH>
-        <p className="text-sm text-slate-700 leading-relaxed mb-3">
+        <p className="text-base text-slate-700 leading-relaxed mb-3">
           Python supports counting from the <strong>end</strong> using negative numbers. <code className="bg-slate-100 px-1 rounded text-xs">-1</code> = last element, <code className="bg-slate-100 px-1 rounded text-xs">-5</code> = first element (for a 5-item list).
         </p>
         <NegativeIndexDiagram />
@@ -1045,7 +1045,7 @@ function ArticleContent({ onActiveChange }: { onActiveChange: (id: string) => vo
 
         {/* Slicing */}
         <SH id="slicing" level={1}>List Slicing</SH>
-        <p className="text-sm text-slate-700 leading-relaxed mb-2">Retrieve a <strong>portion</strong> of a list using:</p>
+        <p className="text-base text-slate-700 leading-relaxed mb-2">Retrieve a <strong>portion</strong> of a list using:</p>
         <CodeBlock code={`list[start:stop]   # start included, stop excluded`} label="syntax" />
         <SlicingVisualizer />
         <CodeBlock code={`my_list = ['p', 'r', 'o', 'b', 'e']\n\nprint(my_list[2:5])    # ['o', 'b', 'e']\nprint(my_list[1:3])    # ['r', 'o']\nprint(my_list[-4:-1])  # ['r', 'o', 'b']`} label="python" />
