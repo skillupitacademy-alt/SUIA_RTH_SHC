@@ -257,6 +257,50 @@
       min-width: 0;
     }
 
+    .row-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 20px;
+      min-width: 0;
+    }
+
+    .what-you-need-layout {
+      display: grid;
+      grid-template-columns: 1fr 1.15fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .starter-skeleton-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .star-note-card {
+      grid-column: span 2;
+      background-color: #fff1f2;
+      border: 1px solid var(--border-pink);
+      border-radius: 12px;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .star-note-card svg {
+      color: var(--primary-magenta);
+      flex-shrink: 0;
+    }
+
+    .star-note-card p {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--primary-navy);
+      line-height: 1.4;
+    }
+
     .main-grid>*,
     .mid-grid>*,
     .bottom-grid>*,
@@ -1064,8 +1108,8 @@
       </div>
     </div>
 
-    <!-- Top Layout Grid: 4 Columns -->
-    <div class="main-grid">
+    <!-- Row 1: Background & What You Need to Build -->
+    <div class="row-grid-2">
 
       <!-- COLUMN 1: Background -->
       <div class="col-flex-container">
@@ -1136,161 +1180,166 @@
       <div class="col-flex-container">
 
         <!-- What You Need to Build -->
-        <div class="card">
+        <div class="card" style="height: 100%;">
           <div class="card-header gradient-pink">What You Need to Build</div>
-          <div class="card-body" style="gap: 12px;">
-            <div class="checklist">
-              <div class="checklist-item bold-desc">
-                <span class="check-circle green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                    stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                  </svg></span>
-                <span>Cooperative mixin classes (RBI, SwiftProtocol, KYCProtocol) that call super().__init__(*args,
-                  **kwargs).</span>
+          <div class="card-body" style="padding: 20px;">
+            <div class="what-you-need-layout">
+              <div class="checklist">
+                <div class="checklist-item bold-desc">
+                  <span class="check-circle green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg></span>
+                  <span>Cooperative mixin classes (RBI, SwiftProtocol, KYCProtocol) that call super().__init__(*args,
+                    **kwargs).</span>
+                </div>
+                <div class="checklist-item bold-desc">
+                  <span class="check-circle green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg></span>
+                  <span>A composite class IntlSBI that works regardless of mixin order and accepts branch_code.</span>
+                </div>
+                <div class="checklist-item bold-desc">
+                  <span class="check-circle green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg></span>
+                  <span>Two @classmethod factories that parse different inputs generically (no hardcoded field-by-field
+                    mapping).</span>
+                </div>
+                <div class="checklist-item bold-desc">
+                  <span class="check-circle green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg></span>
+                  <span>Extensibility: A new mixin (<span style="color: var(--primary-magenta);">FraudRiskProfile</span>)
+                    can be added without modifying existing code.</span>
+                </div>
               </div>
-              <div class="checklist-item bold-desc">
-                <span class="check-circle green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                    stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                  </svg></span>
-                <span>A composite class IntlSBI that works regardless of mixin order and accepts branch_code.</span>
+
+              <!-- Big Picture Architecture -->
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <span style="font-size: 13.5px; font-weight: 700; color: var(--primary-navy); text-align: center;">Big Picture Architecture</span>
+                <div class="diagram-container">
+                  <!-- SVG Architecture Diagram -->
+                  <svg width="100%" height="240" viewBox="0 0 500 270" style="display: block;">
+                    <defs>
+                      <!-- Arrow Markers -->
+                      <marker id="arrowhead" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                        <polygon points="0 0, 6 3, 0 6" fill="#64748b" />
+                      </marker>
+                      <marker id="arrowhead-red" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                        <polygon points="0 0, 6 3, 0 6" fill="#e11d48" />
+                      </marker>
+                    </defs>
+
+                    <!-- TOP BOXES -->
+                    <!-- RBI -->
+                    <rect x="15" y="10" width="135" height="50" rx="8" fill="#fff1f2" stroke="#fecdd3" stroke-width="1.5" />
+                    <text x="82.5" y="30" font-family="'Outfit', sans-serif" font-size="12" font-weight="700" fill="#0f172a"
+                      text-anchor="middle">RBI</text>
+                    <text x="82.5" y="46" font-family="'Outfit', sans-serif" font-size="10.5" font-weight="500"
+                      fill="#64748b" text-anchor="middle">(currency)</text>
+
+                    <!-- SwiftProtocol -->
+                    <rect x="182.5" y="10" width="135" height="50" rx="8" fill="#eff6ff" stroke="#bfdbfe"
+                      stroke-width="1.5" />
+                    <text x="250" y="30" font-family="'Outfit', sans-serif" font-size="12" font-weight="700" fill="#0f172a"
+                      text-anchor="middle">SwiftProtocol</text>
+                    <text x="250" y="46" font-family="'Outfit', sans-serif" font-size="10.5" font-weight="500"
+                      fill="#64748b" text-anchor="middle">(swift_code)</text>
+
+                    <!-- KYCProtocol -->
+                    <rect x="350" y="10" width="135" height="50" rx="8" fill="#faf5ff" stroke="#e9d5ff"
+                      stroke-width="1.5" />
+                    <text x="417.5" y="30" font-family="'Outfit', sans-serif" font-size="12" font-weight="700"
+                      fill="#0f172a" text-anchor="middle">KYCProtocol</text>
+                    <text x="417.5" y="46" font-family="'Outfit', sans-serif" font-size="10.5" font-weight="500"
+                      fill="#64748b" text-anchor="middle">(kyc_level)</text>
+
+                    <!-- MIDDLE BOX -->
+                    <!-- IntlSBI -->
+                    <rect x="150" y="95" width="200" height="42" rx="8" fill="#0e172c" stroke="#1e293b" stroke-width="1" />
+                    <text x="250" y="114" font-family="'Outfit', sans-serif" font-size="12.5" font-weight="700"
+                      fill="#ffffff" text-anchor="middle">IntlSBI</text>
+                    <text x="250" y="128" font-family="'Outfit', sans-serif" font-size="10" font-weight="500" fill="#cbd5e1"
+                      text-anchor="middle">(branch_code)</text>
+
+                    <!-- Top-to-Middle Connectors -->
+                    <path d="M82.5 60 L82.5 75 L210 75 L210 90" fill="none" stroke="#64748b" stroke-width="1.5"
+                      stroke-dasharray="3,3" marker-end="url(#arrowhead)" />
+                    <path d="M250 60 L250 90" fill="none" stroke="#64748b" stroke-width="1.5" stroke-dasharray="3,3"
+                      marker-end="url(#arrowhead)" />
+                    <path d="M417.5 60 L417.5 75 L290 75 L290 90" fill="none" stroke="#64748b" stroke-width="1.5"
+                      stroke-dasharray="3,3" marker-end="url(#arrowhead)" />
+
+                    <!-- BOTTOM-MID BOXES -->
+                    <!-- from_swift_message -->
+                    <rect x="15" y="170" width="220" height="40" rx="8" fill="#ecfdf5" stroke="#a7f3d0"
+                      stroke-width="1.5" />
+                    <!-- green file sheet icon wrapper in SVG -->
+                    <g transform="translate(25, 180)">
+                      <path d="M12 2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V6z" fill="none" stroke="#10b981"
+                        stroke-width="1.5" />
+                      <path d="M12 2v4h4" fill="none" stroke="#10b981" stroke-width="1.5" />
+                    </g>
+                    <text x="145" y="187" font-family="'Outfit', sans-serif" font-size="11" font-weight="700" fill="#065f46"
+                      text-anchor="middle">from_swift_message()</text>
+                    <text x="145" y="200" font-family="'Outfit', sans-serif" font-size="9.5" font-weight="500"
+                      fill="#059669" text-anchor="middle">(raw message)</text>
+
+                    <!-- from_admin_registration -->
+                    <rect x="265" y="170" width="220" height="40" rx="8" fill="#fffbeb" stroke="#fde68a"
+                      stroke-width="1.5" />
+                    <g transform="translate(275, 180)">
+                      <path d="M12 2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V6z" fill="none" stroke="#d97706"
+                        stroke-width="1.5" />
+                      <path d="M12 2v4h4" fill="none" stroke="#d97706" stroke-width="1.5" />
+                    </g>
+                    <text x="390" y="187" font-family="'Outfit', sans-serif" font-size="11" font-weight="700" fill="#92400e"
+                      text-anchor="middle">from_admin_registration()</text>
+                    <text x="390" y="200" font-family="'Outfit', sans-serif" font-size="9.5" font-weight="500"
+                      fill="#d97706" text-anchor="middle">(JSON form)</text>
+
+                    <!-- Middle-to-Bottom-Mid Connectors -->
+                    <path d="M250 137 L250 152 L125 152 L125 165" fill="none" stroke="#64748b" stroke-width="1.5"
+                      marker-end="url(#arrowhead)" />
+                    <path d="M250 137 L250 152 L375 152 L375 165" fill="none" stroke="#64748b" stroke-width="1.5"
+                      marker-end="url(#arrowhead)" />
+
+                    <!-- BOTTOM-MOST BOX -->
+                    <!-- One Validated Object -->
+                    <rect x="150" y="232" width="200" height="32" rx="8" fill="#fff1f2" stroke="#fecdd3"
+                      stroke-width="1.5" />
+                    <text x="250" y="244" font-family="'Outfit', sans-serif" font-size="11" font-weight="800" fill="#e11d48"
+                      text-anchor="middle">One Validated Object</text>
+                    <text x="250" y="256" font-family="'Outfit', sans-serif" font-size="9" font-weight="700" fill="#be123c"
+                      text-anchor="middle">Same for all channels</text>
+
+                    <!-- Bottom-Mid-to-Bottom-Most Connectors -->
+                    <path d="M125 210 L125 224 L210 224 L210 230" fill="none" stroke="#e11d48" stroke-width="1.2"
+                      marker-end="url(#arrowhead-red)" />
+                    <path d="M375 210 L375 224 L290 224 L290 230" fill="none" stroke="#e11d48" stroke-width="1.2"
+                      marker-end="url(#arrowhead-red)" />
+                  </svg>
+                </div>
               </div>
-              <div class="checklist-item bold-desc">
-                <span class="check-circle green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                    stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                  </svg></span>
-                <span>Two @classmethod factories that parse different inputs generically (no hardcoded field-by-field
-                  mapping).</span>
-              </div>
-              <div class="checklist-item bold-desc">
-                <span class="check-circle green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                    stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                  </svg></span>
-                <span>Extensibility: A new mixin (<span style="color: var(--primary-magenta);">FraudRiskProfile</span>)
-                  can be added without modifying existing code.</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Big Picture Architecture -->
-        <div class="card" style="flex-grow: 1;">
-          <div class="card-header gradient-pink">Big Picture Architecture</div>
-          <div class="card-body" style="padding: 12px; gap: 8px; justify-content: center;">
-            <div class="diagram-container">
-              <!-- SVG Architecture Diagram -->
-              <svg width="100%" height="240" viewBox="0 0 500 270" style="display: block;">
-                <defs>
-                  <!-- Arrow Markers -->
-                  <marker id="arrowhead" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-                    <polygon points="0 0, 6 3, 0 6" fill="#64748b" />
-                  </marker>
-                  <marker id="arrowhead-red" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-                    <polygon points="0 0, 6 3, 0 6" fill="#e11d48" />
-                  </marker>
-                </defs>
-
-                <!-- TOP BOXES -->
-                <!-- RBI -->
-                <rect x="15" y="10" width="135" height="50" rx="8" fill="#fff1f2" stroke="#fecdd3" stroke-width="1.5" />
-                <text x="82.5" y="30" font-family="'Outfit', sans-serif" font-size="12" font-weight="700" fill="#0f172a"
-                  text-anchor="middle">RBI</text>
-                <text x="82.5" y="46" font-family="'Outfit', sans-serif" font-size="10.5" font-weight="500"
-                  fill="#64748b" text-anchor="middle">(currency)</text>
-
-                <!-- SwiftProtocol -->
-                <rect x="182.5" y="10" width="135" height="50" rx="8" fill="#eff6ff" stroke="#bfdbfe"
-                  stroke-width="1.5" />
-                <text x="250" y="30" font-family="'Outfit', sans-serif" font-size="12" font-weight="700" fill="#0f172a"
-                  text-anchor="middle">SwiftProtocol</text>
-                <text x="250" y="46" font-family="'Outfit', sans-serif" font-size="10.5" font-weight="500"
-                  fill="#64748b" text-anchor="middle">(swift_code)</text>
-
-                <!-- KYCProtocol -->
-                <rect x="350" y="10" width="135" height="50" rx="8" fill="#faf5ff" stroke="#e9d5ff"
-                  stroke-width="1.5" />
-                <text x="417.5" y="30" font-family="'Outfit', sans-serif" font-size="12" font-weight="700"
-                  fill="#0f172a" text-anchor="middle">KYCProtocol</text>
-                <text x="417.5" y="46" font-family="'Outfit', sans-serif" font-size="10.5" font-weight="500"
-                  fill="#64748b" text-anchor="middle">(kyc_level)</text>
-
-                <!-- MIDDLE BOX -->
-                <!-- IntlSBI -->
-                <rect x="150" y="95" width="200" height="42" rx="8" fill="#0e172c" stroke="#1e293b" stroke-width="1" />
-                <text x="250" y="114" font-family="'Outfit', sans-serif" font-size="12.5" font-weight="700"
-                  fill="#ffffff" text-anchor="middle">IntlSBI</text>
-                <text x="250" y="128" font-family="'Outfit', sans-serif" font-size="10" font-weight="500" fill="#cbd5e1"
-                  text-anchor="middle">(branch_code)</text>
-
-                <!-- Top-to-Middle Connectors -->
-                <path d="M82.5 60 L82.5 75 L210 75 L210 90" fill="none" stroke="#64748b" stroke-width="1.5"
-                  stroke-dasharray="3,3" marker-end="url(#arrowhead)" />
-                <path d="M250 60 L250 90" fill="none" stroke="#64748b" stroke-width="1.5" stroke-dasharray="3,3"
-                  marker-end="url(#arrowhead)" />
-                <path d="M417.5 60 L417.5 75 L290 75 L290 90" fill="none" stroke="#64748b" stroke-width="1.5"
-                  stroke-dasharray="3,3" marker-end="url(#arrowhead)" />
-
-                <!-- BOTTOM-MID BOXES -->
-                <!-- from_swift_message -->
-                <rect x="15" y="170" width="220" height="40" rx="8" fill="#ecfdf5" stroke="#a7f3d0"
-                  stroke-width="1.5" />
-                <!-- green file sheet icon wrapper in SVG -->
-                <g transform="translate(25, 180)">
-                  <path d="M12 2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V6z" fill="none" stroke="#10b981"
-                    stroke-width="1.5" />
-                  <path d="M12 2v4h4" fill="none" stroke="#10b981" stroke-width="1.5" />
-                </g>
-                <text x="145" y="187" font-family="'Outfit', sans-serif" font-size="11" font-weight="700" fill="#065f46"
-                  text-anchor="middle">from_swift_message()</text>
-                <text x="145" y="200" font-family="'Outfit', sans-serif" font-size="9.5" font-weight="500"
-                  fill="#059669" text-anchor="middle">(raw message)</text>
-
-                <!-- from_admin_registration -->
-                <rect x="265" y="170" width="220" height="40" rx="8" fill="#fffbeb" stroke="#fde68a"
-                  stroke-width="1.5" />
-                <g transform="translate(275, 180)">
-                  <path d="M12 2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V6z" fill="none" stroke="#d97706"
-                    stroke-width="1.5" />
-                  <path d="M12 2v4h4" fill="none" stroke="#d97706" stroke-width="1.5" />
-                </g>
-                <text x="390" y="187" font-family="'Outfit', sans-serif" font-size="11" font-weight="700" fill="#92400e"
-                  text-anchor="middle">from_admin_registration()</text>
-                <text x="390" y="200" font-family="'Outfit', sans-serif" font-size="9.5" font-weight="500"
-                  fill="#d97706" text-anchor="middle">(JSON form)</text>
-
-                <!-- Middle-to-Bottom-Mid Connectors -->
-                <path d="M250 137 L250 152 L125 152 L125 165" fill="none" stroke="#64748b" stroke-width="1.5"
-                  marker-end="url(#arrowhead)" />
-                <path d="M250 137 L250 152 L375 152 L375 165" fill="none" stroke="#64748b" stroke-width="1.5"
-                  marker-end="url(#arrowhead)" />
-
-                <!-- BOTTOM-MOST BOX -->
-                <!-- One Validated Object -->
-                <rect x="150" y="232" width="200" height="32" rx="8" fill="#fff1f2" stroke="#fecdd3"
-                  stroke-width="1.5" />
-                <text x="250" y="244" font-family="'Outfit', sans-serif" font-size="11" font-weight="800" fill="#e11d48"
-                  text-anchor="middle">One Validated Object</text>
-                <text x="250" y="256" font-family="'Outfit', sans-serif" font-size="9" font-weight="700" fill="#be123c"
-                  text-anchor="middle">Same for all channels</text>
-
-                <!-- Bottom-Mid-to-Bottom-Most Connectors -->
-                <path d="M125 210 L125 224 L210 224 L210 230" fill="none" stroke="#e11d48" stroke-width="1.2"
-                  marker-end="url(#arrowhead-red)" />
-                <path d="M375 210 L375 224 L290 224 L290 230" fill="none" stroke="#e11d48" stroke-width="1.2"
-                  marker-end="url(#arrowhead-red)" />
-              </svg>
             </div>
           </div>
         </div>
 
       </div>
 
-      <!-- COLUMN 3: Part A – Core Requirements -->
+    </div>
+
+    <!-- Row 2: Part A & Starter Skeleton -->
+    <div class="row-grid-2">
+
+      <!-- COLUMN 1: Part A – Core Requirements -->
       <div class="col-flex-container">
 
-        <div class="card">
+        <div class="card" style="height: 100%;">
           <div class="card-header">Part A – Core Requirements</div>
           <div class="card-body" style="gap: 14px;">
 
@@ -1400,11 +1449,11 @@
 
       </div>
 
-      <!-- COLUMN 4: Starter Skeleton -->
+      <!-- COLUMN 2: Starter Skeleton -->
       <div class="col-flex-container">
 
         <!-- Starter Skeleton -->
-        <div class="card" style="flex-grow: 1;">
+        <div class="card" style="height: 100%;">
           <div class="card-header">
             <div class="window-dots">
               <div class="window-dot red"></div>
@@ -1414,9 +1463,11 @@
             <div class="window-label">Starter Skeleton (What You're Given)</div>
             <div></div>
           </div>
-          <div class="card-body" style="padding: 10px; background-color: var(--bg-dark);">
-            <div class="code-container" style="border: none;">
-              <pre class="code-content" style="padding: 10px 14px; font-size: 11.5px; line-height: 1.45;"><span class="kw">class</span> <span class="cls">RBI</span>:
+          <div class="card-body" style="padding: 14px; background-color: var(--bg-dark); gap: 12px; flex-grow: 1; display: flex; flex-direction: column;">
+            <div class="starter-skeleton-layout" style="flex-grow: 1;">
+              <!-- Left Column: Mixins -->
+              <div class="code-container" style="border: none;">
+                <pre class="code-content" style="padding: 0; font-size: 11px; line-height: 1.4;"><span class="kw">class</span> <span class="cls">RBI</span>:
     <span class="kw">def</span> <span class="fn">__init__</span>(<span class="var">self</span>, currency, *args, **kwargs):
         <span class="cm"># TODO</span>
         <span class="kw">pass</span>
@@ -1429,9 +1480,12 @@
 <span class="kw">class</span> <span class="cls">KYCProtocol</span>:
     <span class="kw">def</span> <span class="fn">__init__</span>(<span class="var">self</span>, kyc_level, *args, **kwargs):
         <span class="cm"># TODO</span>
-        <span class="kw">pass</span>
+        <span class="kw">pass</span></pre>
+              </div>
 
-<span class="kw">class</span> <span class="cls">IntlSBI</span>(<span class="cls">RBI</span>, <span class="cls">SwiftProtocol</span>, <span class="cls">KYCProtocol</span>):
+              <!-- Right Column: Composite and Premium -->
+              <div class="code-container" style="border: none;">
+                <pre class="code-content" style="padding: 0; font-size: 11px; line-height: 1.4;"><span class="kw">class</span> <span class="cls">IntlSBI</span>(<span class="cls">RBI</span>, <span class="cls">SwiftProtocol</span>, <span class="cls">KYCProtocol</span>):
     <span class="kw">def</span> <span class="fn">__init__</span>(<span class="var">self</span>, branch_code=<span class="kw">None</span>, *args, **kwargs):
         <span class="cm"># TODO: forward correctly, no hardcoding</span>
         <span class="kw">pass</span>
@@ -1450,6 +1504,16 @@
     <span class="kw">def</span> <span class="fn">__init__</span>(<span class="var">self</span>, relationship_manager=<span class="str">"unassigned"</span>, *args, **kwargs):
         <span class="cm"># TODO</span>
         <span class="kw">pass</span></pre>
+              </div>
+
+              <!-- Bottom Note -->
+              <div class="star-note-card">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+                  <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                </svg>
+                <p>Candidate must also demonstrate Part B (FraudRiskProfile extensibility) and Part D (edge case handling) with their own test code below.</p>
+              </div>
+
             </div>
           </div>
         </div>
