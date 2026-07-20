@@ -1,0 +1,1917 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multi-Protocol International Banking Onboarding System - Take-Home Assignment</title>
+  <!-- Import Outfit and Fira Code fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Outfit:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+
+  <style>
+    /* Design Tokens */
+    :root {
+      --primary-navy: #0e172c;
+      --primary-magenta: #e11d48;
+      --primary-magenta-hover: #be123c;
+      --accent-blue: #3b82f6;
+      --accent-purple: #8b5cf6;
+      --accent-green: #10b981;
+      --accent-orange: #f59e0b;
+
+      --bg-dark: #0f172a;
+      --bg-light: #f8fafc;
+      --bg-card: #ffffff;
+
+      --bg-light-pink: #fff1f2;
+      --bg-light-blue: #eff6ff;
+      --bg-light-purple: #faf5ff;
+      --bg-light-green: #ecfdf5;
+      --bg-light-orange: #fffbeb;
+
+      --border-pink: #fecdd3;
+      --border-blue: #bfdbfe;
+      --border-purple: #e9d5ff;
+      --border-green: #a7f3d0;
+      --border-orange: #fde68a;
+      --border-slate: #cbd5e1;
+
+      --text-dark: #0f172a;
+      --text-muted: #64748b;
+      --text-light: #f8fa5c;
+
+      --font-main: 'Outfit', sans-serif;
+      --font-code: 'Fira Code', monospace;
+    }
+
+    /* Reset and Base Styles */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      overflow-x: hidden;
+    }
+
+    body {
+      font-family: var(--font-main);
+      background-color: var(--bg-light);
+      color: var(--text-dark);
+      line-height: 1.5;
+      padding: 24px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      overflow-x: hidden;
+      min-width: 0;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1380px;
+      min-width: 0;
+      background-color: #ffffff;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04), 0 1px 8px rgba(0, 0, 0, 0.02);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      overflow: hidden;
+    }
+
+    /* Typography & Badges */
+    h1,
+    h2,
+    h3,
+    h4,
+    h5 {
+      font-weight: 700;
+    }
+
+    /* Header Section */
+    .header-wrapper {
+      display: grid;
+      grid-template-columns: 240px 1fr 180px;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .assignment-badge {
+      background-color: var(--primary-magenta);
+      color: white;
+      border-radius: 14px;
+      padding: 16px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 12px rgba(225, 29, 72, 0.2);
+    }
+
+    .assignment-badge .badge-tag {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      opacity: 0.9;
+    }
+
+    .assignment-badge .badge-title {
+      font-size: 18px;
+      font-weight: 800;
+      line-height: 1.2;
+      letter-spacing: 0.5px;
+    }
+
+    .assignment-badge svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .title-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 12px;
+    }
+
+    .title-block h1 {
+      font-size: 38px;
+      font-weight: 800;
+      line-height: 1.15;
+    }
+
+    .title-block h1 span.blue-text {
+      color: var(--primary-navy);
+    }
+
+    .title-block h1 span.magenta-text {
+      color: var(--primary-magenta);
+    }
+
+    .topics-bar {
+      background-color: var(--primary-navy);
+      color: white;
+      border-radius: 30px;
+      padding: 8px 20px;
+      font-size: 13px;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 2px 8px rgba(14, 23, 44, 0.15);
+    }
+
+    .topics-bar svg {
+      color: var(--primary-magenta);
+      flex-shrink: 0;
+    }
+
+    .topics-dot {
+      color: var(--primary-magenta);
+      margin: 0 4px;
+    }
+
+    .logo-block {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .logo-block span {
+      font-size: 26px;
+      font-weight: 700;
+      color: #374151;
+    }
+
+    /* Sub-header Bar */
+    .subheader-bar {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1.5fr;
+      gap: 16px;
+    }
+
+    .subheader-box {
+      border: 1px dashed var(--border-purple);
+      border-radius: 12px;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background-color: var(--bg-light-purple);
+    }
+
+    .subheader-box.pink-box {
+      background-color: #fff1f2;
+      border-color: #fecdd3;
+    }
+
+    .subheader-box.blue-box {
+      background-color: #eff6ff;
+      border-color: #bfdbfe;
+    }
+
+    .subheader-box svg {
+      width: 24px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+
+    .subheader-box.pink-box svg {
+      color: var(--primary-magenta);
+    }
+
+    .subheader-box.blue-box svg {
+      color: var(--accent-blue);
+    }
+
+    .subheader-box.purple-box svg {
+      color: var(--accent-purple);
+    }
+
+    .subheader-box .box-text {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--primary-navy);
+    }
+
+    .subheader-box .box-text strong {
+      font-weight: 700;
+    }
+
+    /* Main Layout Grid */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.15fr 1fr;
+      gap: 20px;
+      min-width: 0;
+    }
+
+    .main-grid>*,
+    .mid-grid>*,
+    .bottom-grid>*,
+    .part-e-layout>*,
+    .part-c-layout>* {
+      min-width: 0;
+    }
+
+    /* Card Styles */
+    .card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-slate);
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      min-width: 0;
+    }
+
+    .card-header {
+      background-color: var(--primary-navy);
+      color: white;
+      padding: 12px 20px;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-header.gradient-pink {
+      background: linear-gradient(135deg, #e11d48, #be123c);
+    }
+
+    .card-header.gradient-purple {
+      background: linear-gradient(135deg, #7c3aed, #6d28d9);
+    }
+
+    .card-body {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      flex-grow: 1;
+      min-width: 0;
+    }
+
+    /* Column 1 Card: Background */
+    .bg-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px dashed var(--border-slate);
+    }
+
+    .bg-row:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .bg-row-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .bg-row-icon.pink {
+      background-color: var(--bg-light-pink);
+      color: var(--primary-magenta);
+    }
+
+    .bg-row-icon.blue {
+      background-color: var(--bg-light-blue);
+      color: var(--accent-blue);
+    }
+
+    .bg-row-icon.purple {
+      background-color: var(--bg-light-purple);
+      color: var(--accent-purple);
+    }
+
+    .bg-row-content {
+      font-size: 13.5px;
+    }
+
+    .bg-row-content h4 {
+      font-size: 14.5px;
+      font-weight: 700;
+      margin-bottom: 2px;
+      color: var(--primary-navy);
+    }
+
+    .bg-row-content p {
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .bg-row-content p strong {
+      color: var(--primary-magenta);
+      font-weight: 600;
+    }
+
+    .intro-box {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      background-color: #fff1f2;
+      border: 1px dashed var(--border-pink);
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--primary-navy);
+    }
+
+    .intro-box svg {
+      width: 24px;
+      height: 24px;
+      color: var(--primary-magenta);
+      flex-shrink: 0;
+    }
+
+    /* Checklist Items */
+    .checklist {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .checklist-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-dark);
+    }
+
+    .checklist-item.bold-desc {
+      font-weight: 600;
+    }
+
+    .check-circle {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .check-circle.green {
+      background-color: #d1fae5;
+      color: #059669;
+    }
+
+    .check-circle.pink {
+      background-color: #ffe4e6;
+      color: #e11d48;
+    }
+
+    .check-circle.purple {
+      background-color: #f3e8ff;
+      color: #7c3aed;
+    }
+
+    .check-circle svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    /* Parts with Badges */
+    .part-section {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      border-bottom: 1px solid var(--border-slate);
+      padding-bottom: 12px;
+    }
+
+    .part-section:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .part-title-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .part-badge {
+      background-color: var(--primary-magenta);
+      color: white;
+      font-size: 11px;
+      font-weight: 800;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .part-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary-navy);
+    }
+
+    /* Code Blocks styling */
+    .code-container {
+      background-color: var(--bg-dark);
+      border-radius: 12px;
+      overflow: hidden;
+      overflow-x: auto;
+      font-family: var(--font-code);
+      font-size: 11.5px;
+      border: 1px solid #334155;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+      min-width: 0;
+    }
+
+    .code-header {
+      background-color: #1e293b;
+      padding: 8px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #334155;
+    }
+
+    .window-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .window-dot.red {
+      background-color: #ef4444;
+    }
+
+    .window-dot.yellow {
+      background-color: #eab308;
+    }
+
+    .window-dot.green {
+      background-color: #22c55e;
+    }
+
+    .window-label {
+      color: #94a3b8;
+      font-size: 10.5px;
+      font-weight: 500;
+    }
+
+    .code-content {
+      padding: 14px;
+      color: #f8fafc;
+      overflow-x: auto;
+      white-space: pre;
+      margin: 0;
+      display: block;
+      font-family: var(--font-code);
+      font-size: inherit;
+    }
+
+    /* Code Syntax Highlighting */
+    .kw {
+      color: #f472b6;
+      font-weight: 500;
+    }
+
+    /* Keyword */
+    .cls {
+      color: #67e8f9;
+    }
+
+    /* Class */
+    .fn {
+      color: #38bdf8;
+    }
+
+    /* Function */
+    .str {
+      color: #fbbf24;
+    }
+
+    /* String */
+    .var {
+      color: #fbcfe8;
+    }
+
+    /* Variable self/cls */
+    .arg {
+      color: #fed7aa;
+    }
+
+    /* args/kwargs */
+    .cm {
+      color: #64748b;
+      font-style: italic;
+    }
+
+    /* Comment */
+    .num {
+      color: #c084fc;
+    }
+
+    /* Number */
+
+    /* Layout Col 2 / Col 3 adjustments */
+    .col-flex-container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      min-width: 0;
+    }
+
+    /* Diagram in Big Picture Architecture */
+    .diagram-container {
+      background-color: #ffffff;
+      border: 1px solid var(--border-slate);
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Part B Extensibility details */
+    .arrow-divider {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 8px 0;
+      color: var(--primary-navy);
+    }
+
+    .arrow-divider svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .assert-line-wrapper {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .tip-card {
+      background-color: var(--bg-light-pink);
+      border: 1px solid var(--border-pink);
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      margin-top: 4px;
+    }
+
+    .tip-card svg {
+      color: var(--primary-magenta);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .tip-card p {
+      font-size: 12.5px;
+      font-weight: 500;
+      color: var(--primary-navy);
+      line-height: 1.4;
+    }
+
+    .tip-card p strong {
+      color: var(--primary-magenta);
+    }
+
+    /* Row 2 Grid: Part C & Part D */
+    .mid-grid {
+      display: grid;
+      grid-template-columns: 1.25fr 1fr;
+      gap: 20px;
+      min-width: 0;
+    }
+
+    .part-c-layout {
+      display: grid;
+      grid-template-columns: 1fr 160px;
+      gap: 16px;
+      min-width: 0;
+    }
+
+    /* Vertical Chains (Inheritance & MRO) */
+    .vertical-chain {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .vertical-chain-title {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      text-align: center;
+      margin-bottom: 4px;
+    }
+
+    .chain-box {
+      width: 100%;
+      max-width: 140px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 11px;
+      font-weight: 700;
+      border: 1px solid var(--border-slate);
+      background-color: #f1f5f9;
+      color: var(--primary-navy);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    }
+
+    .chain-box.pink {
+      border-color: var(--border-pink);
+      background-color: var(--bg-light-pink);
+    }
+
+    .chain-box.blue {
+      border-color: var(--border-blue);
+      background-color: var(--bg-light-blue);
+    }
+
+    .chain-box.purple {
+      border-color: var(--border-purple);
+      background-color: var(--bg-light-purple);
+    }
+
+    .chain-box.navy {
+      border-color: var(--primary-navy);
+      background-color: var(--primary-navy);
+      color: white;
+    }
+
+    .chain-arrow {
+      color: var(--text-muted);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .chain-arrow svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* Part D Table Styling */
+    .edge-cases-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    .edge-cases-table th {
+      background-color: #f1f5f9;
+      color: var(--primary-navy);
+      font-weight: 700;
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 2px solid var(--border-slate);
+    }
+
+    .edge-cases-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #e2e8f0;
+      vertical-align: top;
+      color: var(--text-dark);
+      font-weight: 500;
+    }
+
+    .edge-cases-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .table-case-cell {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .table-case-cell svg {
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .table-case-cell .case-title {
+      font-weight: 700;
+      color: var(--primary-navy);
+    }
+
+    .table-case-cell .case-code {
+      font-family: var(--font-code);
+      background-color: #f1f5f9;
+      padding: 1px 4px;
+      border-radius: 4px;
+      font-size: 11px;
+      display: inline-block;
+      margin-top: 2px;
+    }
+
+    /* Bottom Grid: Part E & MRO Flow */
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: 1fr 180px;
+      gap: 20px;
+      min-width: 0;
+    }
+
+    .part-e-layout {
+      display: grid;
+      grid-template-columns: 1.1fr 1.3fr 1fr;
+      gap: 16px;
+      min-width: 0;
+    }
+
+    .mro-vs-box {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .mro-chain-summary {
+      background-color: var(--bg-light);
+      border: 1px solid var(--border-slate);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 11.5px;
+      width: 100%;
+      font-weight: 500;
+      color: var(--text-dark);
+    }
+
+    .mro-chain-summary code {
+      font-family: var(--font-code);
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--primary-magenta);
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .vs-divider {
+      background-color: var(--primary-magenta);
+      color: white;
+      font-size: 11px;
+      font-weight: 800;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      box-shadow: 0 2px 6px rgba(225, 29, 72, 0.3);
+      margin: 4px 0;
+    }
+
+    .scales-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: auto;
+      padding-top: 12px;
+      color: var(--primary-navy);
+    }
+
+    .scales-wrapper svg {
+      width: 48px;
+      height: 48px;
+    }
+
+    /* MRO Flow Diagram */
+    .mro-flow-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-slate);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .mro-flow-header {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--primary-navy);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      text-align: center;
+      margin-bottom: 12px;
+      line-height: 1.2;
+    }
+
+    .mro-flow-header span {
+      display: block;
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-top: 2px;
+    }
+
+    .flow-box {
+      width: 100%;
+      max-width: 130px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 11px;
+      font-weight: 700;
+      border: 1.5px solid var(--border-slate);
+      background-color: white;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    }
+
+    .flow-box.pink {
+      border-color: var(--primary-magenta);
+      color: var(--primary-magenta);
+      background-color: var(--bg-light-pink);
+    }
+
+    .flow-box.blue {
+      border-color: var(--accent-blue);
+      color: var(--accent-blue);
+      background-color: var(--bg-light-blue);
+    }
+
+    .flow-box.purple {
+      border-color: var(--accent-purple);
+      color: var(--accent-purple);
+      background-color: var(--bg-light-purple);
+    }
+
+    .flow-box.object {
+      border-color: #475569;
+      color: #475569;
+      background-color: #f1f5f9;
+    }
+
+    /* Footer Evaluating Bar */
+    .evaluating-bar {
+      background-color: var(--primary-navy);
+      color: white;
+      border-radius: 16px;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      box-shadow: 0 4px 12px rgba(14, 23, 44, 0.15);
+    }
+
+    .evaluating-title {
+      background-color: #090e1d;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      border-right: 1px solid #1e293b;
+    }
+
+    .evaluating-title svg {
+      width: 24px;
+      height: 24px;
+      color: var(--primary-magenta);
+    }
+
+    .evaluating-checklist {
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .eval-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .eval-item .check-circle.pink {
+      background-color: #ffe4e6;
+      color: var(--primary-magenta);
+      width: 16px;
+      height: 16px;
+    }
+
+    .eval-item .check-circle.pink svg {
+      width: 10px;
+      height: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <!-- Header Block -->
+    <header class="header-wrapper">
+      <div class="assignment-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+          stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+          <polyline points="10 9 9 9 8 9"></polyline>
+        </svg>
+        <span class="badge-tag">FAANG / MAANG</span>
+        <span class="badge-title">TAKE-HOME<br>ASSIGNMENT</span>
+      </div>
+
+      <div class="title-block">
+        <h1>
+          <span class="blue-text">Multi-Protocol International</span><br>
+          <span class="magenta-text">Banking Onboarding System</span>
+        </h1>
+        <div class="topics-bar">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="16 18 22 12 16 6"></polyline>
+            <polyline points="8 6 2 12 8 18"></polyline>
+          </svg>
+          Topics: Cooperative Multiple Inheritance <span class="topics-dot">•</span> MRO <span
+            class="topics-dot">•</span> @classmethod Factories <span class="topics-dot">•</span> Extensible Mixin Design
+        </div>
+      </div>
+
+      <div class="logo-block">
+        <!-- SVG Python Logo styled with theme colors -->
+        <svg viewBox="0 0 110 110" width="36" height="36">
+          <path
+            d="M55 2C25.7 2 26.6 14.5 26.6 14.5l.1 12.3H56v3.5H23.5S2 29.5 2 58.7c0 29.2 17.6 28 17.6 28h10.5V72.1s-.4-17.1 16.7-17.1h29.2s16.1.4 16.1-15.6V23.6S92 2 55 2zm-12.7 9.8c2.7 0 4.8 2.1 4.8 4.8s-2.1 4.8-4.8 4.8-4.8-2.1-4.8-4.8 2.1-4.8 4.8-4.8z"
+            fill="var(--primary-magenta)" />
+          <path
+            d="M55 108c29.3 0 28.4-12.5 28.4-12.5l-.1-12.3H54v-3.5h32.5s21.5.8 21.5-28.4c0-29.2-17.6-28-17.6-28H79.9v14.6s.4 17.1-16.7 17.1H34s-16.1-.4-16.1 15.6v15.8s.1 21.6 37.1 21.6zm12.7-9.8c2.7 0 4.8 2.1 4.8 4.8s-2.1 4.8-4.8 4.8-4.8-2.1-4.8-4.8 2.1-4.8 4.8-4.8z"
+            fill="var(--primary-navy)" />
+        </svg>
+        <span>python</span>
+      </div>
+    </header>
+
+    <!-- Sub-header Meta-bar -->
+    <div class="subheader-bar">
+      <div class="subheader-box pink-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+          stroke-linejoin="round">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="8.5" cy="7" r="4"></circle>
+          <circle cx="19" cy="11" r="2"></circle>
+          <path d="M19 8v6"></path>
+          <path d="M22 11h-6"></path>
+        </svg>
+        <span class="box-text">Level: <strong>Senior Backend Engineer</strong></span>
+      </div>
+      <div class="subheader-box blue-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+          stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        <span class="box-text">Time Box: <strong>90 minutes</strong></span>
+      </div>
+      <div class="subheader-box purple-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+          stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <circle cx="12" cy="12" r="6"></circle>
+          <circle cx="12" cy="12" r="2"></circle>
+        </svg>
+        <span class="box-text">Goal: <strong>Design an extensible, maintainable, future-proof class
+            hierarchy</strong></span>
+      </div>
+    </div>
+
+    <!-- Top Layout Grid -->
+    <div class="main-grid">
+
+      <!-- COLUMN 1 -->
+      <div class="col-flex-container">
+
+        <!-- Background Card -->
+        <div class="card">
+          <div class="card-header">Background</div>
+          <div class="card-body" style="gap: 14px;">
+            <div class="intro-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M3 21h18"></path>
+                <path d="M19 21v-4a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v4"></path>
+                <path d="M9 21h6"></path>
+                <path d="M12 3v12"></path>
+                <path d="M12 3L8 7"></path>
+                <path d="M12 3l4 4"></path>
+              </svg>
+              <span>IntlSBI must satisfy compliance requirements from three independent regulatory domains, each owned
+                by different teams.</span>
+            </div>
+
+            <div class="bg-row">
+              <div class="bg-row-icon pink">
+                <span style="font-size: 20px; font-weight: 800; line-height: 1;">₹</span>
+              </div>
+              <div class="bg-row-content">
+                <h4>RBI Compliance</h4>
+                <p>Every account must carry a currency and a <strong>vault_security_key</strong>.</p>
+              </div>
+            </div>
+
+            <div class="bg-row">
+              <div class="bg-row-icon blue">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="2" y1="12" x2="22" y2="12"></line>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
+                  </path>
+                </svg>
+              </div>
+              <div class="bg-row-content">
+                <h4>SWIFT Protocol</h4>
+                <p>Every account must carry a <strong>swift_code</strong> for wire routing.</p>
+              </div>
+            </div>
+
+            <div class="bg-row">
+              <div class="bg-row-icon purple">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                  <circle cx="12" cy="11" r="3"></circle>
+                </svg>
+              </div>
+              <div class="bg-row-content">
+                <h4>KYC Protocol</h4>
+                <p>Every account must carry a <strong>kyc_level</strong>.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Part A Card -->
+        <div class="card">
+          <div class="card-header">Part A – Core Requirements</div>
+          <div class="card-body" style="gap: 14px;">
+
+            <div class="part-section">
+              <div class="part-title-wrapper">
+                <span class="part-badge">A1</span>
+                <span class="part-title">Cooperative Multiple Inheritance</span>
+              </div>
+              <div class="checklist">
+                <div class="checklist-item">
+                  <span class="check-circle pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg></span>
+                  <span>Create mixin classes: <code style="font-weight: 700; color: var(--primary-magenta);">RBI</code>,
+                    <code style="font-weight: 700; color: var(--accent-blue);">SwiftProtocol</code>, <code
+                      style="font-weight: 700; color: var(--accent-purple);">KYCProtocol</code>.</span>
+                </div>
+                <div class="checklist-item">
+                  <span class="check-circle pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg></span>
+                  <span>Each accepts exactly one attribute it owns.</span>
+                </div>
+                <div class="checklist-item">
+                  <span class="check-circle pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg></span>
+                  <span>Each MUST call <code
+                      style="font-family: var(--font-code); font-size: 11.5px; font-weight: 600;">super().__init__(*args, **kwargs)</code>.</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="part-section">
+              <div class="part-title-wrapper">
+                <span class="part-badge">A2</span>
+                <span class="part-title">The Composite Class</span>
+              </div>
+              <div class="checklist">
+                <div class="checklist-item">
+                  <span class="check-circle pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg></span>
+                  <span>Create <code
+                      style="font-weight: 700; color: var(--primary-navy);">IntlSBI(RBI, SwiftProtocol, KYCProtocol)</code>.</span>
+                </div>
+                <div class="checklist-item">
+                  <span class="check-circle pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg></span>
+                  <span>Accepts its own attribute: <code
+                      style="font-weight: 700; color: var(--primary-magenta);">branch_code</code>.</span>
+                </div>
+                <div class="checklist-item">
+                  <span class="check-circle pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg></span>
+                  <span>All four attributes must be set correctly.</span>
+                </div>
+                <div class="checklist-item">
+                  <span class="check-circle pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg></span>
+                  <span>No hardcoded routing of fields.</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="part-section">
+              <div class="part-title-wrapper">
+                <span class="part-badge">A3</span>
+                <span class="part-title">@classmethod Factories</span>
+              </div>
+              <div class="checklist">
+                <div class="checklist-item">
+                  <span class="check-circle pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg></span>
+                  <span><code
+                      style="font-weight: 700; color: var(--primary-magenta);">from_swift_message(raw: str)</code>
+                    &rarr; Parses semicolon format: <code
+                      style="font-family: var(--font-code); font-size: 11px;">"CCY;...;SWIFT;...;BRANCH;...;KYC;..."</code></span>
+                </div>
+                <div class="checklist-item">
+                  <span class="check-circle pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg></span>
+                  <span><code
+                      style="font-weight: 700; color: var(--primary-magenta);">from_admin_registration(json: str)</code>
+                    &rarr; Parses JSON generically and forwards via <code
+                      style="font-family: var(--font-code); font-size: 11.5px; font-weight: 600;">cls(**data)</code>.</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- COLUMN 2 -->
+      <div class="col-flex-container">
+
+        <!-- What You Need to Build -->
+        <div class="card">
+          <div class="card-header gradient-pink">What You Need to Build</div>
+          <div class="card-body" style="gap: 12px;">
+            <div class="checklist">
+              <div class="checklist-item bold-desc">
+                <span class="check-circle green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg></span>
+                <span>Cooperative mixin classes (RBI, SwiftProtocol, KYCProtocol) that call super().__init__(*args,
+                  **kwargs).</span>
+              </div>
+              <div class="checklist-item bold-desc">
+                <span class="check-circle green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg></span>
+                <span>A composite class IntlSBI that works regardless of mixin order and accepts branch_code.</span>
+              </div>
+              <div class="checklist-item bold-desc">
+                <span class="check-circle green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg></span>
+                <span>Two @classmethod factories that parse different inputs generically (no hardcoded field-by-field
+                  mapping).</span>
+              </div>
+              <div class="checklist-item bold-desc">
+                <span class="check-circle green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg></span>
+                <span>Extensibility: A new mixin (<span style="color: var(--primary-magenta);">FraudRiskProfile</span>)
+                  can be added without modifying existing code.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Starter Skeleton -->
+        <div class="card" style="flex-grow: 1;">
+          <div class="card-header">
+            <div class="window-dots">
+              <div class="window-dot red"></div>
+              <div class="window-dot yellow"></div>
+              <div class="window-dot green"></div>
+            </div>
+            <div class="window-label">Starter Skeleton (What You're Given)</div>
+            <div></div>
+          </div>
+          <div class="card-body" style="padding: 10px; background-color: var(--bg-dark);">
+            <div class="code-container" style="border: none;">
+              <pre class="code-content" style="padding: 10px 14px; font-size: 11.5px; line-height: 1.45;"><span class="kw">class</span> <span class="cls">RBI</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="var">self</span>, currency, *args, **kwargs):
+        <span class="cm"># TODO</span>
+        <span class="kw">pass</span>
+
+<span class="kw">class</span> <span class="cls">SwiftProtocol</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="var">self</span>, swift_code, *args, **kwargs):
+        <span class="cm"># TODO</span>
+        <span class="kw">pass</span>
+
+<span class="kw">class</span> <span class="cls">KYCProtocol</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="var">self</span>, kyc_level, *args, **kwargs):
+        <span class="cm"># TODO</span>
+        <span class="kw">pass</span>
+
+<span class="kw">class</span> <span class="cls">IntlSBI</span>(<span class="cls">RBI</span>, <span class="cls">SwiftProtocol</span>, <span class="cls">KYCProtocol</span>):
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="var">self</span>, branch_code=<span class="kw">None</span>, *args, **kwargs):
+        <span class="cm"># TODO: forward correctly, no hardcoding</span>
+        <span class="kw">pass</span>
+
+    <span class="kw">@classmethod</span>
+    <span class="kw">def</span> <span class="fn">from_swift_message</span>(<span class="var">cls</span>, raw: str) -&gt; <span class="str">"IntlSBI"</span>:
+        <span class="cm"># TODO</span>
+        <span class="kw">pass</span>
+
+    <span class="kw">@classmethod</span>
+    <span class="kw">def</span> <span class="fn">from_admin_registration</span>(<span class="var">cls</span>, form_json: str) -&gt; <span class="str">"IntlSBI"</span>:
+        <span class="cm"># TODO</span>
+        <span class="kw">pass</span>
+
+<span class="kw">class</span> <span class="cls">IntlSBIPremium</span>(<span class="cls">IntlSBI</span>):
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="var">self</span>, relationship_manager=<span class="str">"unassigned"</span>, *args, **kwargs):
+        <span class="cm"># TODO</span>
+        <span class="kw">pass</span></pre>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- COLUMN 3 -->
+      <div class="col-flex-container">
+
+        <!-- Big Picture Architecture -->
+        <div class="card">
+          <div class="card-header gradient-pink">Big Picture Architecture</div>
+          <div class="card-body" style="padding: 12px; gap: 8px; justify-content: center;">
+            <div class="diagram-container">
+              <!-- SVG Architecture Diagram -->
+              <svg width="100%" height="240" viewBox="0 0 500 270" style="display: block;">
+                <defs>
+                  <!-- Arrow Markers -->
+                  <marker id="arrowhead" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                    <polygon points="0 0, 6 3, 0 6" fill="#64748b" />
+                  </marker>
+                  <marker id="arrowhead-red" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                    <polygon points="0 0, 6 3, 0 6" fill="#e11d48" />
+                  </marker>
+                </defs>
+
+                <!-- TOP BOXES -->
+                <!-- RBI -->
+                <rect x="15" y="10" width="135" height="50" rx="8" fill="#fff1f2" stroke="#fecdd3" stroke-width="1.5" />
+                <text x="82.5" y="30" font-family="'Outfit', sans-serif" font-size="12" font-weight="700" fill="#0f172a"
+                  text-anchor="middle">RBI</text>
+                <text x="82.5" y="46" font-family="'Outfit', sans-serif" font-size="10.5" font-weight="500"
+                  fill="#64748b" text-anchor="middle">(currency)</text>
+
+                <!-- SwiftProtocol -->
+                <rect x="182.5" y="10" width="135" height="50" rx="8" fill="#eff6ff" stroke="#bfdbfe"
+                  stroke-width="1.5" />
+                <text x="250" y="30" font-family="'Outfit', sans-serif" font-size="12" font-weight="700" fill="#0f172a"
+                  text-anchor="middle">SwiftProtocol</text>
+                <text x="250" y="46" font-family="'Outfit', sans-serif" font-size="10.5" font-weight="500"
+                  fill="#64748b" text-anchor="middle">(swift_code)</text>
+
+                <!-- KYCProtocol -->
+                <rect x="350" y="10" width="135" height="50" rx="8" fill="#faf5ff" stroke="#e9d5ff"
+                  stroke-width="1.5" />
+                <text x="417.5" y="30" font-family="'Outfit', sans-serif" font-size="12" font-weight="700"
+                  fill="#0f172a" text-anchor="middle">KYCProtocol</text>
+                <text x="417.5" y="46" font-family="'Outfit', sans-serif" font-size="10.5" font-weight="500"
+                  fill="#64748b" text-anchor="middle">(kyc_level)</text>
+
+                <!-- MIDDLE BOX -->
+                <!-- IntlSBI -->
+                <rect x="150" y="95" width="200" height="42" rx="8" fill="#0e172c" stroke="#1e293b" stroke-width="1" />
+                <text x="250" y="114" font-family="'Outfit', sans-serif" font-size="12.5" font-weight="700"
+                  fill="#ffffff" text-anchor="middle">IntlSBI</text>
+                <text x="250" y="128" font-family="'Outfit', sans-serif" font-size="10" font-weight="500" fill="#cbd5e1"
+                  text-anchor="middle">(branch_code)</text>
+
+                <!-- Top-to-Middle Connectors -->
+                <path d="M82.5 60 L82.5 75 L210 75 L210 90" fill="none" stroke="#64748b" stroke-width="1.5"
+                  stroke-dasharray="3,3" marker-end="url(#arrowhead)" />
+                <path d="M250 60 L250 90" fill="none" stroke="#64748b" stroke-width="1.5" stroke-dasharray="3,3"
+                  marker-end="url(#arrowhead)" />
+                <path d="M417.5 60 L417.5 75 L290 75 L290 90" fill="none" stroke="#64748b" stroke-width="1.5"
+                  stroke-dasharray="3,3" marker-end="url(#arrowhead)" />
+
+                <!-- BOTTOM-MID BOXES -->
+                <!-- from_swift_message -->
+                <rect x="15" y="170" width="220" height="40" rx="8" fill="#ecfdf5" stroke="#a7f3d0"
+                  stroke-width="1.5" />
+                <!-- green file sheet icon wrapper in SVG -->
+                <g transform="translate(25, 180)">
+                  <path d="M12 2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V6z" fill="none" stroke="#10b981"
+                    stroke-width="1.5" />
+                  <path d="M12 2v4h4" fill="none" stroke="#10b981" stroke-width="1.5" />
+                </g>
+                <text x="145" y="187" font-family="'Outfit', sans-serif" font-size="11" font-weight="700" fill="#065f46"
+                  text-anchor="middle">from_swift_message()</text>
+                <text x="145" y="200" font-family="'Outfit', sans-serif" font-size="9.5" font-weight="500"
+                  fill="#059669" text-anchor="middle">(raw message)</text>
+
+                <!-- from_admin_registration -->
+                <rect x="265" y="170" width="220" height="40" rx="8" fill="#fffbeb" stroke="#fde68a"
+                  stroke-width="1.5" />
+                <g transform="translate(275, 180)">
+                  <path d="M12 2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V6z" fill="none" stroke="#d97706"
+                    stroke-width="1.5" />
+                  <path d="M12 2v4h4" fill="none" stroke="#d97706" stroke-width="1.5" />
+                </g>
+                <text x="390" y="187" font-family="'Outfit', sans-serif" font-size="11" font-weight="700" fill="#92400e"
+                  text-anchor="middle">from_admin_registration()</text>
+                <text x="390" y="200" font-family="'Outfit', sans-serif" font-size="9.5" font-weight="500"
+                  fill="#d97706" text-anchor="middle">(JSON form)</text>
+
+                <!-- Middle-to-Bottom-Mid Connectors -->
+                <path d="M250 137 L250 152 L125 152 L125 165" fill="none" stroke="#64748b" stroke-width="1.5"
+                  marker-end="url(#arrowhead)" />
+                <path d="M250 137 L250 152 L375 152 L375 165" fill="none" stroke="#64748b" stroke-width="1.5"
+                  marker-end="url(#arrowhead)" />
+
+                <!-- BOTTOM-MOST BOX -->
+                <!-- One Validated Object -->
+                <rect x="150" y="232" width="200" height="32" rx="8" fill="#fff1f2" stroke="#fecdd3"
+                  stroke-width="1.5" />
+                <text x="250" y="244" font-family="'Outfit', sans-serif" font-size="11" font-weight="800" fill="#e11d48"
+                  text-anchor="middle">One Validated Object</text>
+                <text x="250" y="256" font-family="'Outfit', sans-serif" font-size="9" font-weight="700" fill="#be123c"
+                  text-anchor="middle">Same for all channels</text>
+
+                <!-- Bottom-Mid-to-Bottom-Most Connectors -->
+                <path d="M125 210 L125 224 L210 224 L210 230" fill="none" stroke="#e11d48" stroke-width="1.2"
+                  marker-end="url(#arrowhead-red)" />
+                <path d="M375 210 L375 224 L290 224 L290 230" fill="none" stroke="#e11d48" stroke-width="1.2"
+                  marker-end="url(#arrowhead-red)" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Part B Card -->
+        <div class="card" style="flex-grow: 1;">
+          <div class="card-header">Part B – Extensibility Test</div>
+          <div class="card-body" style="gap: 10px;">
+            <p style="font-size: 13px; font-weight: 500; color: var(--primary-navy);">After Part A is done, another team
+              adds:</p>
+
+            <div class="code-container">
+              <pre class="code-content" style="padding: 8px 12px; font-size: 11px; line-height: 1.4;"><span class="kw">class</span> <span class="cls">FraudRiskProfile</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="var">self</span>, risk_score, *args, **kwargs):
+        <span class="var">super</span>().<span class="fn">__init__</span>(*args, **kwargs)
+        <span class="var">self</span>.risk_score = risk_score</pre>
+            </div>
+
+            <div class="arrow-divider">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <polyline points="19 12 12 19 5 12"></polyline>
+              </svg>
+            </div>
+
+            <p style="font-size: 13px; font-weight: 500; color: var(--primary-navy);">Without modifying any existing
+              code:</p>
+
+            <div class="code-container">
+              <pre class="code-content"
+                style="padding: 8px 12px; font-size: 11px; line-height: 1.4;"><span class="kw">class</span> <span class="cls">IntlSBI</span>(<span class="cls">RBI</span>, <span class="cls">SwiftProtocol</span>, <span class="cls">KYCProtocol</span>, <span class="cls">FraudRiskProfile</span>):
+    <span class="kw">pass</span>
+
+node = <span class="cls">IntlSBI</span>(
+    currency=<span class="str">"INR"</span>, swift_code=<span class="str">"SBININBBXXX"</span>,
+    branch_code=<span class="str">"SBI-INT-001"</span>, kyc_level=<span class="str">"FULL_KYC"</span>,
+    risk_score=<span class="num">42</span>,
+)
+
+<div class="assert-line-wrapper"><span><span class="kw">assert</span> node.risk_score == <span class="num">42</span></span><span class="check-circle green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div></pre>
+            </div>
+
+            <div class="tip-card">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path
+                  d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .6 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5">
+                </path>
+                <line x1="9" y1="18" x2="15" y2="18"></line>
+                <line x1="10" y1="22" x2="14" y2="22"></line>
+              </svg>
+              <p>If you had to change <strong>IntlSBI.__init__</strong> body to make this work, the design is
+                <strong>NOT extensible</strong>.
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Row 2: Part C & Part D -->
+    <div class="mid-grid">
+
+      <!-- Part C Card -->
+      <div class="card">
+        <div class="card-header gradient-pink">Part C – Subclassing Correctness</div>
+        <div class="card-body">
+          <div class="part-c-layout">
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <div class="code-container">
+                <pre class="code-content"
+                  style="padding: 10px 12px; font-size: 10.5px; line-height: 1.4;">premium = <span class="cls">IntlSBIPremium</span>.from_admin_registration(json.dumps({
+    <span class="str">"currency"</span>: <span class="str">"USD"</span>,
+    <span class="str">"swift_code"</span>: <span class="str">"SBIUSXXXXX"</span>,
+    <span class="str">"branch_code"</span>: <span class="str">"SBI-NY-001"</span>,
+    <span class="str">"kyc_level"</span>: <span class="str">"FULL_KYC"</span>,
+    <span class="str">"relationship_manager"</span>: <span class="str">"Meera Nair"</span>,
+}))
+
+<div class="assert-line-wrapper"><span><span class="kw">assert</span> type(premium) <span class="kw">is</span> <span class="cls">IntlSBIPremium</span></span><span class="check-circle green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div>
+<div class="assert-line-wrapper"><span><span class="kw">assert</span> premium.relationship_manager == <span class="str">"Meera Nair"</span></span><span class="check-circle green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div></pre>
+              </div>
+
+              <div class="checklist" style="gap: 8px;">
+                <div class="checklist-item">
+                  <span class="check-circle green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg></span>
+                  <span>Factories must work through inheritance (use <code
+                      style="font-weight: 700; color: var(--primary-magenta);">cls</code>).</span>
+                </div>
+                <div class="checklist-item">
+                  <span class="check-circle green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg></span>
+                  <span>IntlSBIPremium should not override the factories.</span>
+                </div>
+                <div class="checklist-item">
+                  <span class="check-circle green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg></span>
+                  <span>If relationship_manager is omitted &rarr; defaults to "unassigned".</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Inheritance Chain -->
+            <div class="vertical-chain">
+              <span class="vertical-chain-title">Inheritance Chain</span>
+              <div class="chain-box">object</div>
+              <div class="chain-arrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                  stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <polyline points="19 12 12 19 5 12"></polyline>
+                </svg>
+              </div>
+              <div class="chain-box pink">RBI</div>
+              <div class="chain-arrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                  stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <polyline points="19 12 12 19 5 12"></polyline>
+                </svg>
+              </div>
+              <div class="chain-box blue">SwiftProtocol</div>
+              <div class="chain-arrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                  stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <polyline points="19 12 12 19 5 12"></polyline>
+                </svg>
+              </div>
+              <div class="chain-box purple">KYCProtocol</div>
+              <div class="chain-arrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                  stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <polyline points="19 12 12 19 5 12"></polyline>
+                </svg>
+              </div>
+              <div class="chain-box navy">IntlSBI</div>
+              <div class="chain-arrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                  stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <polyline points="19 12 12 19 5 12"></polyline>
+                </svg>
+              </div>
+              <div class="chain-box pink">IntlSBIPremium</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Part D Card -->
+      <div class="card">
+        <div class="card-header">Part D – Edge Cases & Validation</div>
+        <div class="card-body" style="padding: 10px;">
+          <table class="edge-cases-table">
+            <thead>
+              <tr>
+                <th style="width: 32%;">Case</th>
+                <th style="width: 30%;">What To Do</th>
+                <th style="width: 38%;">Expected Behavior</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <div class="table-case-cell">
+                    <!-- Envelope / X icon -->
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#e11d48" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                      <path d="M22 6l-10 7L2 6"></path>
+                      <path d="M12 13v9" stroke-dasharray="3,3"></path>
+                      <line x1="19" y1="16" x2="15" y2="20" stroke-width="2.5"></line>
+                      <line x1="15" y1="16" x2="19" y2="20" stroke-width="2.5"></line>
+                    </svg>
+                    <div>
+                      <div class="case-title">from_swift_message</div>
+                      <div style="font-size: 11px; margin-top: 2px; color: var(--text-dark);">missing KYC field</div>
+                    </div>
+                  </div>
+                </td>
+                <td>Handle missing key</td>
+                <td style="font-weight: 600;">Raise clear error (KeyError or ValueError), not None</td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="table-case-cell">
+                    <!-- Warning triangle icon -->
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#d97706" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <path
+                        d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z">
+                      </path>
+                      <line x1="12" y1="9" x2="12" y2="13"></line>
+                      <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                    <div>
+                      <div class="case-title">IntlSBI() without</div>
+                      <span class="case-code">kyc_level</span>
+                    </div>
+                  </div>
+                </td>
+                <td>Let Python raise</td>
+                <td>
+                  <code
+                    style="font-family: var(--font-code); font-size: 10px; color: #b45309; word-break: break-all;">TypeError: KYCProtocol.__init__() missing 1 required positional argument: 'kyc_level'</code>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="table-case-cell">
+                    <!-- Overlapping spheres / clash icon -->
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#7c3aed" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                      <path d="M8 10h.01"></path>
+                      <path d="M12 10h.01"></path>
+                      <path d="M16 10h.01"></path>
+                    </svg>
+                    <div>
+                      <div class="case-title">Two mixins claim</div>
+                      <div style="font-size: 11px; margin-top: 2px; color: var(--text-dark);">the same parameter</div>
+                    </div>
+                  </div>
+                </td>
+                <td>Explain in 2-3 lines</td>
+                <td style="color: var(--text-muted);">Design smell: ambiguity. Catch via code review, duplicate
+                  parameter audit, or unit tests.</td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="table-case-cell">
+                    <!-- User icon -->
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#2563eb" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    <div>
+                      <div class="case-title">IntlSBIPremium via<br>factory without</div>
+                      <span class="case-code">relationship_manager</span>
+                    </div>
+                  </div>
+                </td>
+                <td>Default value handling</td>
+                <td style="font-weight: 600;">Defaults to "unassigned" (no error)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Row 3: Part E & MRO Flow -->
+    <div class="bottom-grid">
+
+      <!-- Part E Card -->
+      <div class="card">
+        <div class="card-header gradient-purple">Part E – Bonus / Stretch Goal</div>
+        <div class="card-body">
+          <div class="part-e-layout">
+
+            <!-- Column E1: Print the MRO -->
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <span style="font-size: 13.5px; font-weight: 700; color: var(--primary-navy);">Print the MRO</span>
+              <div class="code-container">
+                <pre class="code-content" style="padding: 10px; font-size: 10px; line-height: 1.4;"><span class="fn">print</span>(<span class="cls">IntlSBI</span>.<span class="var">__mro__</span>)
+
+<span class="cm"># Output example:</span>
+<span class="cm"># (&lt;class '__main__.IntlSBI'&gt;,</span>
+<span class="cm">#  &lt;class '__main__.RBI'&gt;,</span>
+<span class="cm">#  &lt;class '__main__.SwiftProtocol'&gt;,</span>
+<span class="cm">#  &lt;class '__main__.KYCProtocol'&gt;,</span>
+<span class="cm">#  &lt;class 'object'&gt;)</span></pre>
+              </div>
+            </div>
+
+            <!-- Column E2: Why Order Matters -->
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <span style="font-size: 13.5px; font-weight: 700; color: var(--primary-navy); text-align: center;">Why
+                Order Matters?</span>
+              <p
+                style="font-size: 11px; font-weight: 500; color: var(--text-muted); text-align: center; line-height: 1.35;">
+                The order <strong style="color: var(--primary-navy);">RBI, SwiftProtocol, KYCProtocol</strong>
+                determines the Method Resolution Order (MRO). Python calls <strong
+                  style="color: var(--primary-navy);">super()</strong> according to this order.</p>
+
+              <div class="mro-vs-box">
+                <div class="mro-chain-summary">
+                  <code>IntlSBI(RBI, SwiftProtocol, KYCProtocol)</code>
+                  RBI &rarr; SwiftProtocol &rarr; KYCProtocol &rarr; object
+                </div>
+
+                <div class="vs-divider">VS</div>
+
+                <div class="mro-chain-summary">
+                  <code>IntlSBI(KYCProtocol, RBI, SwiftProtocol)</code>
+                  KYCProtocol &rarr; RBI &rarr; SwiftProtocol &rarr; object
+                </div>
+              </div>
+            </div>
+
+            <!-- Column E3: What Changes If Reordered -->
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              <span style="font-size: 13.5px; font-weight: 700; color: var(--primary-navy);">What Changes If
+                Reordered?</span>
+
+              <div class="checklist" style="gap: 8px;">
+                <div class="checklist-item">
+                  <span class="check-circle green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg></span>
+                  <span>The initialization call order changes.</span>
+                </div>
+                <div class="checklist-item">
+                  <span class="check-circle green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg></span>
+                  <span>super() will follow the new MRO.</span>
+                </div>
+                <div class="checklist-item">
+                  <span class="check-circle green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg></span>
+                  <span>All attributes still set (if each mixin cooperates).</span>
+                </div>
+                <div class="checklist-item">
+                  <span class="check-circle green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg></span>
+                  <span>But debugging order & side-effects may differ.</span>
+                </div>
+              </div>
+
+              <!-- Scales of Justice Icon -->
+              <div class="scales-wrapper">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                  stroke-linejoin="round">
+                  <line x1="12" y1="3" x2="12" y2="21"></line>
+                  <line x1="4" y1="7" x2="20" y2="7"></line>
+                  <path d="M4 7l2 11c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2l2-11"></path>
+                  <path d="M2 7h20"></path>
+                  <circle cx="6" cy="18" r="2"></circle>
+                  <circle cx="18" cy="18" r="2"></circle>
+                </svg>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- MRO Visual Flow -->
+      <div class="mro-flow-card">
+        <h3 class="mro-flow-header">
+          MRO Visual Flow
+          <span>(Current Order)</span>
+        </h3>
+
+        <div class="vertical-chain" style="width: 100%; gap: 6px;">
+          <div class="flow-box pink">IntlSBI</div>
+          <div class="chain-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+              stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <polyline points="19 12 12 19 5 12"></polyline>
+            </svg>
+          </div>
+          <div class="flow-box pink" style="border-width: 1.5px;">RBI</div>
+          <div class="chain-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+              stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <polyline points="19 12 12 19 5 12"></polyline>
+            </svg>
+          </div>
+          <div class="flow-box blue">SwiftProtocol</div>
+          <div class="chain-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+              stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <polyline points="19 12 12 19 5 12"></polyline>
+            </svg>
+          </div>
+          <div class="flow-box purple">KYCProtocol</div>
+          <div class="chain-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+              stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <polyline points="19 12 12 19 5 12"></polyline>
+            </svg>
+          </div>
+          <div class="flow-box object">object</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer Evaluators Bar -->
+    <footer class="evaluating-bar">
+      <div class="evaluating-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <circle cx="12" cy="12" r="6"></circle>
+          <circle cx="12" cy="12" r="2"></circle>
+        </svg>
+        <span>What Interviewers<br>Are Evaluating</span>
+      </div>
+      <div class="evaluating-checklist">
+        <div class="eval-item">
+          <span class="check-circle pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+              stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg></span>
+          <span>Uses *args, **kwargs forwarding correctly</span>
+        </div>
+        <div class="eval-item">
+          <span class="check-circle pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+              stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg></span>
+          <span>Uses cls in factories (not hardcoded class)</span>
+        </div>
+        <div class="eval-item">
+          <span class="check-circle pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+              stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg></span>
+          <span>Part B works without editing Part A code</span>
+        </div>
+        <div class="eval-item">
+          <span class="check-circle pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+              stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg></span>
+          <span>Explains MRO and reordering clearly</span>
+        </div>
+        <div class="eval-item">
+          <span class="check-circle pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+              stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg></span>
+          <span>Identifies edge cases and explains well</span>
+        </div>
+      </div>
+    </footer>
+
+  </div>
+
+</body>
+
+</html>
