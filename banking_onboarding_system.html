@@ -267,8 +267,13 @@
     .what-you-need-layout {
       display: grid;
       grid-template-columns: 1fr 1.15fr;
-      gap: 20px;
+      gap: 24px;
       align-items: start;
+    }
+
+    .what-you-need-layout > :last-child {
+      border-left: 1px solid var(--border-slate);
+      padding-left: 24px;
     }
 
     .starter-skeleton-layout {
@@ -699,8 +704,13 @@
     .part-c-layout {
       display: grid;
       grid-template-columns: 1fr 160px;
-      gap: 16px;
+      gap: 20px;
       min-width: 0;
+    }
+
+    .part-c-layout > :last-child {
+      border-left: 1px solid var(--border-slate);
+      padding-left: 20px;
     }
 
     /* Vertical Chains (Inheritance & MRO) */
@@ -834,8 +844,13 @@
     .part-e-layout {
       display: grid;
       grid-template-columns: 1.1fr 1.3fr 1fr;
-      gap: 16px;
+      gap: 24px;
       min-width: 0;
+    }
+
+    .part-e-layout > :not(:first-child) {
+      border-left: 1px solid var(--border-slate);
+      padding-left: 24px;
     }
 
     .mro-vs-box {
