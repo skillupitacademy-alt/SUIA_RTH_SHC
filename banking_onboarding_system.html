@@ -1801,128 +1801,108 @@ node = <span class="cls">IntlSBI</span>(
               </div>
             </div>
 
-            <!-- Column E2: Why Order Matters -->
-            <div style="display: flex; flex-direction: column; gap: 8px;">
-              <span style="font-size: 13.5px; font-weight: 700; color: var(--primary-navy); text-align: center;">Why
-                Order Matters?</span>
-              <p
-                style="font-size: 11px; font-weight: 500; color: var(--text-muted); text-align: center; line-height: 1.35;">
-                The order <strong style="color: var(--primary-navy);">RBI, SwiftProtocol, KYCProtocol</strong>
-                determines the Method Resolution Order (MRO). Python calls <strong
-                  style="color: var(--primary-navy);">super()</strong> according to this order.</p>
+            <!-- Column E2: Why Order Matters & What Changes If Reordered -->
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+              
+              <!-- Sub-section: Why Order Matters? -->
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <span style="font-size: 13.5px; font-weight: 700; color: var(--primary-navy); text-align: center;">Why Order Matters?</span>
+                <p style="font-size: 11px; font-weight: 500; color: var(--text-muted); text-align: center; line-height: 1.35;">
+                  The order <strong style="color: var(--primary-navy);">RBI, SwiftProtocol, KYCProtocol</strong> determines the Method Resolution Order (MRO). Python calls <strong style="color: var(--primary-navy);">super()</strong> according to this order.
+                </p>
 
-              <div class="mro-vs-box">
-                <div class="mro-chain-summary">
-                  <code>IntlSBI(RBI, SwiftProtocol, KYCProtocol)</code>
-                  RBI &rarr; SwiftProtocol &rarr; KYCProtocol &rarr; object
-                </div>
+                <div class="mro-vs-box">
+                  <div class="mro-chain-summary">
+                    <code>IntlSBI(RBI, SwiftProtocol, KYCProtocol)</code>
+                    RBI &rarr; SwiftProtocol &rarr; KYCProtocol &rarr; object
+                  </div>
 
-                <div class="vs-divider">VS</div>
+                  <div class="vs-divider">VS</div>
 
-                <div class="mro-chain-summary">
-                  <code>IntlSBI(KYCProtocol, RBI, SwiftProtocol)</code>
-                  KYCProtocol &rarr; RBI &rarr; SwiftProtocol &rarr; object
+                  <div class="mro-chain-summary">
+                    <code>IntlSBI(KYCProtocol, RBI, SwiftProtocol)</code>
+                    KYCProtocol &rarr; RBI &rarr; SwiftProtocol &rarr; object
+                  </div>
                 </div>
               </div>
+
+              <!-- Sub-section: What Changes If Reordered? -->
+              <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 8px;">
+                <span style="font-size: 13.5px; font-weight: 700; color: var(--primary-navy); text-align: center;">What Changes If Reordered?</span>
+
+                <div class="checklist" style="gap: 8px;">
+                  <div class="checklist-item">
+                    <span class="check-circle green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
+                    <span>The initialization call order changes.</span>
+                  </div>
+                  <div class="checklist-item">
+                    <span class="check-circle green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
+                    <span>super() will follow the new MRO.</span>
+                  </div>
+                  <div class="checklist-item">
+                    <span class="check-circle green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
+                    <span>All attributes still set (if each mixin cooperates).</span>
+                  </div>
+                  <div class="checklist-item">
+                    <span class="check-circle green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
+                    <span>But debugging order & side-effects may differ.</span>
+                  </div>
+                </div>
+
+                <!-- Scales of Justice Icon -->
+                <div class="scales-wrapper" style="padding-top: 4px;">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width: 32px; height: 32px; display: block; margin: 0 auto; color: var(--primary-navy);">
+                    <line x1="12" y1="3" x2="12" y2="21"></line>
+                    <line x1="4" y1="7" x2="20" y2="7"></line>
+                    <path d="M4 7l2 11c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2l2-11"></path>
+                    <path d="M2 7h20"></path>
+                    <circle cx="6" cy="18" r="2"></circle>
+                    <circle cx="18" cy="18" r="2"></circle>
+                  </svg>
+                </div>
+              </div>
+
             </div>
 
-            <!-- Column E3: What Changes If Reordered -->
-            <div style="display: flex; flex-direction: column; gap: 10px;">
-              <span style="font-size: 13.5px; font-weight: 700; color: var(--primary-navy);">What Changes If
-                Reordered?</span>
-
-              <div class="checklist" style="gap: 8px;">
-                <div class="checklist-item">
-                  <span class="check-circle green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                      stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg></span>
-                  <span>The initialization call order changes.</span>
+            <!-- Column E3: MRO Visual Flow -->
+            <div style="display: flex; flex-direction: column; gap: 8px; align-items: center;">
+              <span style="font-size: 13.5px; font-weight: 700; color: var(--primary-navy); text-align: center; text-transform: uppercase; letter-spacing: 0.5px;">MRO Visual Flow<br><span style="font-size: 10px; color: var(--text-muted); font-weight: 500; text-transform: none;">(Current Order)</span></span>
+              
+              <div class="vertical-chain" style="width: 100%; gap: 6px; margin-top: 8px;">
+                <div class="flow-box pink">IntlSBI</div>
+                <div class="chain-arrow">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <polyline points="19 12 12 19 5 12"></polyline>
+                  </svg>
                 </div>
-                <div class="checklist-item">
-                  <span class="check-circle green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                      stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg></span>
-                  <span>super() will follow the new MRO.</span>
+                <div class="flow-box pink" style="border-width: 1.5px;">RBI</div>
+                <div class="chain-arrow">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <polyline points="19 12 12 19 5 12"></polyline>
+                  </svg>
                 </div>
-                <div class="checklist-item">
-                  <span class="check-circle green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                      stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg></span>
-                  <span>All attributes still set (if each mixin cooperates).</span>
+                <div class="flow-box blue">SwiftProtocol</div>
+                <div class="chain-arrow">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <polyline points="19 12 12 19 5 12"></polyline>
+                  </svg>
                 </div>
-                <div class="checklist-item">
-                  <span class="check-circle green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                      stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg></span>
-                  <span>But debugging order & side-effects may differ.</span>
+                <div class="flow-box purple">KYCProtocol</div>
+                <div class="chain-arrow">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <polyline points="19 12 12 19 5 12"></polyline>
+                  </svg>
                 </div>
-              </div>
-
-              <!-- Scales of Justice Icon -->
-              <div class="scales-wrapper">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-                  stroke-linejoin="round">
-                  <line x1="12" y1="3" x2="12" y2="21"></line>
-                  <line x1="4" y1="7" x2="20" y2="7"></line>
-                  <path d="M4 7l2 11c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2l2-11"></path>
-                  <path d="M2 7h20"></path>
-                  <circle cx="6" cy="18" r="2"></circle>
-                  <circle cx="18" cy="18" r="2"></circle>
-                </svg>
+                <div class="flow-box object">object</div>
               </div>
             </div>
 
           </div>
         </div>
-      </div>
-
-      <!-- MRO Visual Flow -->
-      <div class="mro-flow-card">
-        <h3 class="mro-flow-header">
-          MRO Visual Flow
-          <span>(Current Order)</span>
-        </h3>
-
-        <div class="vertical-chain" style="width: 100%; gap: 6px;">
-          <div class="flow-box pink">IntlSBI</div>
-          <div class="chain-arrow">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
-              stroke-linejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <polyline points="19 12 12 19 5 12"></polyline>
-            </svg>
-          </div>
-          <div class="flow-box pink" style="border-width: 1.5px;">RBI</div>
-          <div class="chain-arrow">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
-              stroke-linejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <polyline points="19 12 12 19 5 12"></polyline>
-            </svg>
-          </div>
-          <div class="flow-box blue">SwiftProtocol</div>
-          <div class="chain-arrow">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
-              stroke-linejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <polyline points="19 12 12 19 5 12"></polyline>
-            </svg>
-          </div>
-          <div class="flow-box purple">KYCProtocol</div>
-          <div class="chain-arrow">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
-              stroke-linejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <polyline points="19 12 12 19 5 12"></polyline>
-            </svg>
-          </div>
-          <div class="flow-box object">object</div>
-        </div>
-      </div>
 
     </div>
 
