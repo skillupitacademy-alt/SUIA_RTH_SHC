@@ -18,7 +18,6 @@ const PUBLIC_PATHS = [
   '/api/healthz',
   '/programs',
   '/learning-path',
-  '/dashboard/banking-onboarding',
 ];
 
 const PUBLIC_PREFIXES = ['/verify', '/api/programs', '/api/certificates/verify/'];
@@ -219,8 +218,6 @@ export async function createAuthProxy(options: AuthProxyOptions = {}) {
       return NextResponse.next();
     }
 
-    // Public route exceptions must run before protected-prefix checks because
-    // some preview pages intentionally live under protected namespaces.
     if (isPublicRoute(pathname)) {
       return user !== null
         ? addUserHeaders(NextResponse.next({ request: { headers: new Headers(request.headers) } }), user)
