@@ -1,0 +1,34 @@
+[
+  {
+    "brand": "rth",
+    "logo": {
+      "src": "/brand/realtutorialhub-logo.webp",
+      "complete": true,
+      "naturalWidth": 120,
+      "naturalHeight": 120,
+      "renderedWidth": 56,
+      "renderedHeight": 56
+    },
+    "pythonPresent": true,
+    "pythonText": "Python",
+    "pageOverflow": 0,
+    "overflowItems": [],
+    "axeViolations": []
+  },
+  {
+    "brand": "skillup",
+    "logo": {
+      "src": "/brand/skillup-logo.png",
+      "complete": true,
+      "naturalWidth": 1600,
+      "naturalHeight": 374,
+      "renderedWidth": 170,
+      "renderedHeight": 40
+    },
+    "pythonPresent": true,
+    "pythonText": "Python",
+    "pageOverflow": 0,
+    "overflowItems": [],
+    "axeViolations": []
+  }
+]

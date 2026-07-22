@@ -1,0 +1,114 @@
+[
+  {
+    "brand": "rth",
+    "label": "base-320",
+    "width": 320,
+    "pageOverflow": 0,
+    "overflowItems": [],
+    "boundaryIssues": []
+  },
+  {
+    "brand": "rth",
+    "label": "base-375",
+    "width": 375,
+    "pageOverflow": 0,
+    "overflowItems": [],
+    "boundaryIssues": []
+  },
+  {
+    "brand": "rth",
+    "label": "sm-640",
+    "width": 640,
+    "pageOverflow": 0,
+    "overflowItems": [],
+    "boundaryIssues": []
+  },
+  {
+    "brand": "rth",
+    "label": "md-768",
+    "width": 768,
+    "pageOverflow": 0,
+    "overflowItems": [],
+    "boundaryIssues": []
+  },
+  {
+    "brand": "rth",
+    "label": "lg-1024",
+    "width": 1024,
+    "pageOverflow": 0,
+    "overflowItems": [],
+    "boundaryIssues": []
+  },
+  {
+    "brand": "rth",
+    "label": "xl-1280",
+    "width": 1280,
+    "pageOverflow": 0,
+    "overflowItems": [],
+    "boundaryIssues": []
+  },
+  {
+    "brand": "rth",
+    "label": "2xl-1536",
+    "width": 1536,
+    "pageOverflow": 0,
+    "overflowItems": [],
+    "boundaryIssues": []
+  },
+  {
+    "brand": "skillup",
+    "label": "base-320",
+    "width": 320,
+    "pageOverflow": 0,
+    "overflowItems": [],
+    "boundaryIssues": []
+  },
+  {
+    "brand": "skillup",
+    "label": "base-375",
+    "width": 375,
+    "pageOverflow": 0,
+    "overflowItems": [],
+    "boundaryIssues": []
+  },
+  {
+    "brand": "skillup",
+    "label": "sm-640",
+    "width": 640,
+    "pageOverflow": 0,
+    "overflowItems": [],
+    "boundaryIssues": []
+  },
+  {
+    "brand": "skillup",
+    "label": "md-768",
+    "width": 768,
+    "pageOverflow": 0,
+    "overflowItems": [],
+    "boundaryIssues": []
+  },
+  {
+    "brand": "skillup",
+    "label": "lg-1024",
+    "width": 1024,
+    "pageOverflow": 0,
+    "overflowItems": [],
+    "boundaryIssues": []
+  },
+  {
+    "brand": "skillup",
+    "label": "xl-1280",
+    "width": 1280,
+    "pageOverflow": 0,
+    "overflowItems": [],
+    "boundaryIssues": []
+  },
+  {
+    "brand": "skillup",
+    "label": "2xl-1536",
+    "width": 1536,
+    "pageOverflow": 0,
+    "overflowItems": [],
+    "boundaryIssues": []
+  }
+]

@@ -1,0 +1,142 @@
+[
+  {
+    "brand": "rth",
+    "logo": {
+      "src": "/brand/realtutorialhub-logo.webp",
+      "alt": "RealTutorialHub logo",
+      "complete": true,
+      "naturalWidth": 120,
+      "naturalHeight": 120,
+      "renderedWidth": 56,
+      "renderedHeight": 56
+    },
+    "pageOverflow": 0,
+    "axeViolations": []
+  },
+  {
+    "brand": "skillup",
+    "logo": {
+      "src": "/brand/skillup-logo.png",
+      "alt": "SkillUp IT Academy logo",
+      "complete": true,
+      "naturalWidth": 1600,
+      "naturalHeight": 374,
+      "renderedWidth": 170,
+      "renderedHeight": 40
+    },
+    "pageOverflow": 0,
+    "axeViolations": []
+  },
+  {
+    "brand": "rth",
+    "label": "base-320",
+    "width": 320,
+    "overflowItems": 0,
+    "maxOverflow": 0,
+    "pageOverflow": 0
+  },
+  {
+    "brand": "rth",
+    "label": "base-375",
+    "width": 375,
+    "overflowItems": 0,
+    "maxOverflow": 0,
+    "pageOverflow": 0
+  },
+  {
+    "brand": "rth",
+    "label": "sm-640",
+    "width": 640,
+    "overflowItems": 0,
+    "maxOverflow": 0,
+    "pageOverflow": 0
+  },
+  {
+    "brand": "rth",
+    "label": "md-768",
+    "width": 768,
+    "overflowItems": 0,
+    "maxOverflow": 0,
+    "pageOverflow": 0
+  },
+  {
+    "brand": "rth",
+    "label": "lg-1024",
+    "width": 1024,
+    "overflowItems": 0,
+    "maxOverflow": 0,
+    "pageOverflow": 0
+  },
+  {
+    "brand": "rth",
+    "label": "xl-1280",
+    "width": 1280,
+    "overflowItems": 0,
+    "maxOverflow": 0,
+    "pageOverflow": 0
+  },
+  {
+    "brand": "rth",
+    "label": "2xl-1536",
+    "width": 1536,
+    "overflowItems": 0,
+    "maxOverflow": 0,
+    "pageOverflow": 0
+  },
+  {
+    "brand": "skillup",
+    "label": "base-320",
+    "width": 320,
+    "overflowItems": 0,
+    "maxOverflow": 0,
+    "pageOverflow": 0
+  },
+  {
+    "brand": "skillup",
+    "label": "base-375",
+    "width": 375,
+    "overflowItems": 0,
+    "maxOverflow": 0,
+    "pageOverflow": 0
+  },
+  {
+    "brand": "skillup",
+    "label": "sm-640",
+    "width": 640,
+    "overflowItems": 0,
+    "maxOverflow": 0,
+    "pageOverflow": 0
+  },
+  {
+    "brand": "skillup",
+    "label": "md-768",
+    "width": 768,
+    "overflowItems": 0,
+    "maxOverflow": 0,
+    "pageOverflow": 0
+  },
+  {
+    "brand": "skillup",
+    "label": "lg-1024",
+    "width": 1024,
+    "overflowItems": 0,
+    "maxOverflow": 0,
+    "pageOverflow": 0
+  },
+  {
+    "brand": "skillup",
+    "label": "xl-1280",
+    "width": 1280,
+    "overflowItems": 0,
+    "maxOverflow": 0,
+    "pageOverflow": 0
+  },
+  {
+    "brand": "skillup",
+    "label": "2xl-1536",
+    "width": 1536,
+    "overflowItems": 0,
+    "maxOverflow": 0,
+    "pageOverflow": 0
+  }
+]
