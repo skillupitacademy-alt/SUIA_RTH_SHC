@@ -3,7 +3,7 @@ export interface DomainSummary {
   name: string;
   description?: string;
   category?: string;
-  status?: 'active' | 'inactive';
+  status?: 'draft' | 'active' | 'archived' | 'deleted';
   subjectsCount?: number;
   subjects?: Array<{ id: string; name: string }>;
   createdAt?: string;
@@ -21,7 +21,7 @@ export interface TopicSummary {
   id: string;
   name: string;
   subjectId: string;
-  complexity?: 'beginner' | 'intermediate' | 'advanced';
+  complexity?: 'beginner' | 'intermediate' | 'advanced' | 'expert';
   status?: string;
 }
 

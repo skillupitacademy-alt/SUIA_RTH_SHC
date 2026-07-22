@@ -1,6 +1,6 @@
-export type Status = 'active' | 'inactive' | 'draft';
+export type Status = 'draft' | 'active' | 'archived' | 'deleted';
 export type Difficulty = 'simple' | 'intermediate' | 'expert';
-export type SkillCategory = 'technical' | 'cognitive' | 'process';
+export type SkillCategory = 'technical' | 'soft' | 'analytical' | 'creative' | 'managerial' | 'communication';
 export type MappingType = 'conceptual' | 'technical' | 'practical';
 
 export interface Domain {
@@ -44,7 +44,7 @@ export interface Topic {
     detailedNotesPath?: string | null;
     status: Status;
     // optional derived fields for UI convenience
-    complexity?: 'beginner' | 'intermediate' | 'advanced';
+    complexity?: 'beginner' | 'intermediate' | 'advanced' | 'expert';
     orderIndex?: number;
     createdAt?: string;
     updatedAt?: string;

@@ -2,12 +2,13 @@ import { getDb, topics } from '@quiz/db-skillhubcore';
 import { eq } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
-const complexityValues = new Set(['beginner', 'intermediate', 'advanced']);
+const complexityValues = new Set(['beginner', 'intermediate', 'advanced', 'expert']);
 
 function normalizeComplexity(value: unknown) {
   if (typeof value === 'string' && complexityValues.has(value)) return value;
   if (typeof value === 'number') {
-    if (value >= 3) return 'advanced';
+    if (value >= 4) return 'expert';
+    if (value === 3) return 'advanced';
     if (value === 2) return 'intermediate';
   }
   return 'beginner';

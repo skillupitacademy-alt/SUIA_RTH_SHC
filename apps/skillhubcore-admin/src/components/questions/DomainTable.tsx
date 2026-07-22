@@ -6,6 +6,7 @@ import { Check, Globe, Plus, Trash2, X } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
 import { HierarchyFactoryWizard } from '@/components/content/HierarchyFactoryWizard';
+import { SelectField } from '@/components/entry/SelectionFields';
 import { ErrorBanner } from '@/components/layout/ErrorBanner';
 import {
     AlertDialog,
@@ -26,8 +27,22 @@ type DomainForm = {
     name: string;
     category: string;
     description: string;
-    status: 'active' | 'inactive';
+    status: 'draft' | 'active' | 'archived';
 };
+
+const DOMAIN_CATEGORY_OPTIONS = [
+    { id: 'academic', name: 'Academic' },
+    { id: 'professional', name: 'Professional' },
+    { id: 'technical', name: 'Technical' },
+    { id: 'creative', name: 'Creative' },
+    { id: 'life_skills', name: 'Life Skills' }
+];
+
+const STATUS_OPTIONS = [
+    { id: 'draft', name: 'Draft' },
+    { id: 'active', name: 'Active' },
+    { id: 'archived', name: 'Archived' }
+];
 
 export function DomainTable() {
     const [data, setData] = useState<Domain[]>([]);
@@ -55,9 +70,9 @@ export function DomainTable() {
     // Form states
     const [formData, setFormData] = useState<DomainForm>({
         name: '',
-        category: '',
+        category: 'technical',
         description: '',
-        status: 'active' as 'active' | 'inactive'
+        status: 'active'
     });
 
     useEffect(() => {
@@ -158,15 +173,15 @@ export function DomainTable() {
             setCurrentDomain(normalized);
             setFormData({
                 name: normalized.name,
-                category: normalized.category ?? '',
+                category: normalized.category ?? 'technical',
                 description: normalized.description ?? '',
-                status: normalized.status === 'inactive' ? 'inactive' : 'active'
+                status: normalized.status === 'draft' || normalized.status === 'archived' ? normalized.status : 'active'
             });
         } else {
             setCurrentDomain(null);
             setFormData({
                 name: '',
-                category: '',
+                category: 'technical',
                 description: '',
                 status: 'active'
             });
@@ -180,7 +195,7 @@ export function DomainTable() {
         setCurrentDomain(null);
         setFormData({
             name: '',
-            category: '',
+            category: 'technical',
             description: '',
             status: 'active'
         });
@@ -314,18 +329,17 @@ export function DomainTable() {
                                             />
                                         </div>
 
-                                        {/* Category */}
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1" htmlFor="domain-category">Category (Reporting Dimension)</label>
-                                            <input
-                                                type="text"
-                                                id="domain-category"
-                                                placeholder="e.g., DevOps, Security, Frontend..."
-                                                value={formData.category || ''}
-                                                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400"
-                                            />
-                                        </div>
+                                        <SelectField
+                                            label="Category (Reporting Dimension)"
+                                            value={formData.category}
+                                            options={DOMAIN_CATEGORY_OPTIONS}
+                                            loading={false}
+                                            onChange={(val) => setFormData({ ...formData, category: val })}
+                                            placeholder="Select Category"
+                                            active={true}
+                                            icon={<Globe size={12} />}
+                                            hideCreate={true}
+                                        />
                                     </div>
 
                                     {/* Description */}
@@ -341,25 +355,17 @@ export function DomainTable() {
                                         />
                                     </div>
 
-                                    {/* Status */}
-                                    <div className="space-y-2">
-                                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1">Status</p>
-                                        <div className="flex bg-white p-1.5 rounded-xl border border-slate-200">
-                                            {(['active', 'inactive'] as const).map((status) => (
-                                                <button
-                                                    key={status}
-                                                    type="button"
-                                                    onClick={() => setFormData({ ...formData, status })}
-                                                    className={`flex-1 py-2.5 px-4 rounded-lg text-xs font-black uppercase tracking-wider transition-all ${formData.status === status
-                                                        ? 'bg-[#1A1A1A] text-white shadow-sm'
-                                                        : 'text-slate-500 hover:text-slate-600'
-                                                        }`}
-                                                >
-                                                    {status}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
+                                    <SelectField
+                                        label="Status"
+                                        value={formData.status}
+                                        options={STATUS_OPTIONS}
+                                        loading={false}
+                                        onChange={(val) => setFormData({ ...formData, status: val as DomainForm['status'] })}
+                                        placeholder="Select Status"
+                                        active={true}
+                                        icon={<Check size={12} />}
+                                        hideCreate={true}
+                                    />
 
                                     {/* Footer Actions */}
                                     <div className="pt-8 flex items-center justify-end gap-4">
@@ -475,7 +481,9 @@ export function DomainTable() {
                                 name: domain.name,
                                 description: domain.description ?? undefined,
                                 category: domain.category ?? undefined,
-                                status: (((domain as Domain).status ?? (domain as DomainSummary).status) as Status) === 'inactive' ? 'inactive' : 'active',
+                                status: (((domain as Domain).status ?? (domain as DomainSummary).status) as Status) === 'draft' || (((domain as Domain).status ?? (domain as DomainSummary).status) as Status) === 'archived'
+                                    ? (((domain as Domain).status ?? (domain as DomainSummary).status) as 'draft' | 'archived')
+                                    : 'active',
                                 createdAt: domain.createdAt,
                                 subjectsCount: (domain as unknown as { subjectsCount?: number }).subjectsCount,
                                 subjects: (domain as unknown as { subjects?: DomainSummary['subjects'] }).subjects

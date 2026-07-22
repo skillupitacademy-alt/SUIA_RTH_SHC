@@ -21,7 +21,7 @@ export interface Subject extends BaseEntity {
 export interface Topic extends BaseEntity {
   subjectId: string;
   orderIndex?: number;
-  complexity?: 'beginner' | 'intermediate' | 'advanced';
+  complexity?: 'beginner' | 'intermediate' | 'advanced' | 'expert';
 }
 
 export interface Subtopic extends BaseEntity {

@@ -18,7 +18,7 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { cn } from '@/lib/utils';
-import type { Skill } from '@/types/domain';
+import type { Skill, SkillCategory } from '@/types/domain';
 import { clientLogger } from '@/utils/clientLogger';
 
 import { SkillReviewCard } from './SkillReviewCard';
@@ -38,19 +38,19 @@ type SkillForm = {
 };
 
 const SKILL_CATEGORIES: Record<string, string> = {
-    problem_solving: 'Problem Solving',
-    code_debugging: 'Code Debugging',
-    api_design: 'API Design',
-    data_analysis: 'Data Analysis',
-    system_design: 'System Design',
-    security_awareness: 'Security Awareness',
-    performance_optimization: 'Performance Optimization',
-    testing_qa: 'Testing & QA',
-    version_control: 'Version Control',
-    agile_methodology: 'Agile Methodology',
     technical: 'Technical',
-    conceptual: 'Conceptual',
-    practical: 'Practical'
+    soft: 'Soft',
+    analytical: 'Analytical',
+    creative: 'Creative',
+    managerial: 'Managerial',
+    communication: 'Communication'
+};
+
+const normalizeSkillCategory = (category?: string): SkillCategory => {
+    if (category != null && Object.prototype.hasOwnProperty.call(SKILL_CATEGORIES, category)) {
+        return category as SkillCategory;
+    }
+    return 'technical';
 };
 
 export function SkillTable() {
@@ -100,7 +100,7 @@ export function SkillTable() {
                     id: String(s.id),
                     name: s.name ?? '',
                     description: s.description ?? '',
-                    category: (s as { category?: string }).category ?? 'technical',
+                    category: normalizeSkillCategory((s as { category?: string }).category),
                     mappingType: (s as { mappingType?: SkillRow['mappingType'] }).mappingType ?? 'conceptual',
                     weight: (s as { weight?: number }).weight ?? 1,
                     createdAt: s.createdAt,
@@ -193,7 +193,7 @@ export function SkillTable() {
             setCurrentSkill(skill);
             setFormData({
                 name: skill.name,
-                category: skill.category ?? 'technical',
+                category: normalizeSkillCategory(skill.category),
                 mappingType: skill.mappingType ?? 'conceptual',
                 weight: (skill.weight != null && skill.weight !== 0) ? skill.weight : 1,
                 description: skill.description ?? ''
@@ -506,7 +506,7 @@ export function SkillTable() {
                         {data.map((skill, index) => {
                             const normalized: SkillRow = {
                                 ...skill,
-                                category: skill.category ?? 'technical',
+                                category: normalizeSkillCategory(skill.category),
                                 mappingType: skill.mappingType ?? 'conceptual',
                                 weight: skill.weight ?? 1
                             };
@@ -519,13 +519,13 @@ export function SkillTable() {
                                     onSelect={handleSelect}
                                     onDeleteRequest={(d) => { setCurrentSkill({
                                         ...normalized,
-                                        category: d.category ?? normalized.category,
+                                        category: normalizeSkillCategory(d.category ?? normalized.category),
                                         mappingType: d.mappingType ?? normalized.mappingType,
                                         weight: d.weight ?? normalized.weight
                                     }); setIsDeleteOpen(true); }}
                                     onEditRequest={(d) => handleOpenForm({
                                         ...normalized,
-                                        category: d.category ?? normalized.category,
+                                        category: normalizeSkillCategory(d.category ?? normalized.category),
                                         mappingType: d.mappingType ?? normalized.mappingType,
                                         weight: d.weight ?? normalized.weight
                                     })}

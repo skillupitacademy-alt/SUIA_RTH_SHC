@@ -18,7 +18,7 @@ type SubtopicRow = {
     name: string;
     topicId: string;
     description?: string | null;
-    status?: 'active' | 'inactive' | 'draft';
+    status?: 'draft' | 'active' | 'archived' | 'deleted';
     order?: number;
     depthLevel?: number;
     topic?: {
@@ -34,12 +34,18 @@ type SubtopicForm = {
     name: string;
     topicId: string;
     description: string;
-    status: 'active' | 'inactive';
+    status: 'draft' | 'active' | 'archived';
     domainId: string;
     subjectId: string;
     order: number;
     depthLevel: number;
 };
+
+const STATUS_OPTIONS = [
+    { id: 'draft', name: 'Draft' },
+    { id: 'active', name: 'Active' },
+    { id: 'archived', name: 'Archived' }
+];
 
 export function SubtopicTable() {
     const [data, setData] = useState<SubtopicRow[]>([]);
@@ -159,7 +165,7 @@ export function SubtopicTable() {
                 name: (subtopic.name as string),
                 topicId: topicId,
                 description: (subtopic.description as string | undefined) ?? '',
-                status: ((subtopic.status as string | undefined) ?? 'active') as 'active' | 'inactive',
+                status: subtopic.status === 'draft' || subtopic.status === 'archived' ? subtopic.status : 'active',
                 domainId: domainId,
                 subjectId: subjectId,
                 order: (subtopic.order as number | undefined) ?? 0,
@@ -382,11 +388,12 @@ export function SubtopicTable() {
                                             <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Status</p>
                                             <select
                                                 value={formData.status}
-                                                onChange={(e) => setFormData({ ...formData, status: e.target.value as 'active' | 'inactive' })}
+                                                onChange={(e) => setFormData({ ...formData, status: e.target.value as SubtopicForm['status'] })}
                                                 className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-[#1A1A1A] focus:ring-2 focus:ring-teal-500/20"
                                             >
-                                                <option value="active">Active</option>
-                                                <option value="inactive">Inactive</option>
+                                                {STATUS_OPTIONS.map((option) => (
+                                                    <option key={option.id} value={option.id}>{option.name}</option>
+                                                ))}
                                             </select>
                                         </div>
 

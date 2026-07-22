@@ -15,11 +15,17 @@ import {
   IAdminBlueprintConfigClient,
 } from '@quiz/api-client/types';
 
-type DomainPayload = Pick<Domain, 'name' | 'slug' | 'description' | 'icon'>;
+type EntityStatus = 'draft' | 'active' | 'archived' | 'deleted';
+type DomainPayload = Pick<Domain, 'name' | 'slug' | 'description' | 'icon' | 'category'> & {
+  status?: EntityStatus;
+  orderIndex?: number;
+};
 type SubjectPayload = Pick<
   Subject,
   'name' | 'domainId' | 'slug' | 'description' | 'icon' | 'orderIndex'
->;
+> & {
+  status?: EntityStatus;
+};
 type TopicPayload = Pick<
   Topic,
   | 'name'
@@ -28,13 +34,26 @@ type TopicPayload = Pick<
   | 'description'
   | 'orderIndex'
   | 'complexity'
->;
+> & {
+  status?: EntityStatus;
+  weight?: number;
+  learningUrl?: string;
+  detailedNotesPath?: string;
+};
 type SubtopicPayload = Pick<
   Subtopic,
   'name' | 'topicId' | 'slug' | 'description' | 'orderIndex'
->;
+> & {
+  domainId?: string;
+  subjectId?: string;
+  status?: EntityStatus;
+  order?: number;
+  depthLevel?: number;
+};
 type SkillPayload = Pick<Skill, 'name' | 'description' | 'category'> & {
   topicId?: string;
+  mappingType?: 'conceptual' | 'technical' | 'practical';
+  weight?: number;
 };
 type QuestionPayload = Omit<QuestionSummary, 'id'> & Record<string, unknown>;
 type FactoryGeneratedQuestionPayload = {

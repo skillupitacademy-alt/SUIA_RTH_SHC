@@ -25,19 +25,12 @@ interface SkillReviewCardProps {
 }
 
 const SKILL_CATEGORIES: Record<string, string> = {
-    problem_solving: 'Problem Solving',
-    code_debugging: 'Code Debugging',
-    api_design: 'API Design',
-    data_analysis: 'Data Analysis',
-    system_design: 'System Design',
-    security_awareness: 'Security Awareness',
-    performance_optimization: 'Performance Optimization',
-    testing_qa: 'Testing & QA',
-    version_control: 'Version Control',
-    agile_methodology: 'Agile Methodology',
     technical: 'Technical',
-    conceptual: 'Conceptual',
-    practical: 'Practical'
+    soft: 'Soft',
+    analytical: 'Analytical',
+    creative: 'Creative',
+    managerial: 'Managerial',
+    communication: 'Communication'
 };
 
 export const SkillReviewCard = React.memo(({

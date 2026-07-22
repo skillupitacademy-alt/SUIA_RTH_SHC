@@ -23,8 +23,9 @@ interface Topic {
     id: string;
     name: string;
     description?: string;
-    status?: 'active' | 'inactive';
+    status?: 'draft' | 'active' | 'archived' | 'deleted';
     weight?: number;
+    complexity?: 'beginner' | 'intermediate' | 'advanced' | 'expert';
     complexityLevel?: number;
     learningUrl?: string;
     detailedNotesPath?: string;
@@ -39,6 +40,26 @@ interface Topic {
         };
     };
 }
+
+const TOPIC_COMPLEXITY_OPTIONS = [
+    { id: 'beginner', name: 'Beginner' },
+    { id: 'intermediate', name: 'Intermediate' },
+    { id: 'advanced', name: 'Advanced' },
+    { id: 'expert', name: 'Expert' }
+];
+
+const STATUS_OPTIONS = [
+    { id: 'draft', name: 'Draft' },
+    { id: 'active', name: 'Active' },
+    { id: 'archived', name: 'Archived' }
+];
+
+const complexityFromLevel = (level?: number): NonNullable<Topic['complexity']> => {
+    if (level === 2) return 'intermediate';
+    if (level === 3) return 'advanced';
+    if (level != null && level >= 4) return 'expert';
+    return 'beginner';
+};
 
 export function TopicTable() {
     const [data, setData] = useState<Topic[]>([]);
@@ -69,10 +90,10 @@ export function TopicTable() {
         name: '',
         subjectId: '',
         description: '',
-        status: 'active' as 'active' | 'inactive',
+        status: 'active' as 'draft' | 'active' | 'archived',
         domainId: '', // For cascading selection
         weight: 1,
-        complexityLevel: 1,
+        complexity: 'beginner' as NonNullable<Topic['complexity']>,
         learningUrl: '',
         detailedNotesPath: ''
     });
@@ -142,10 +163,10 @@ export function TopicTable() {
                 name: topic.name,
                 subjectId: (topic.subjectId ?? topic.subject?.id ?? ''),
                 description: topic.description ?? '',
-                status: (topic.status ?? 'active') as 'active' | 'inactive',
+                status: topic.status === 'draft' || topic.status === 'archived' ? topic.status : 'active',
                 domainId: (topic.subject?.domainId ?? topic.subject?.domain?.id ?? ''),
                 weight: topic.weight ?? 1,
-                complexityLevel: topic.complexityLevel ?? 1,
+                complexity: topic.complexity ?? complexityFromLevel(topic.complexityLevel),
                 learningUrl: topic.learningUrl ?? '',
                 detailedNotesPath: topic.detailedNotesPath ?? ''
             });
@@ -161,7 +182,7 @@ export function TopicTable() {
                 status: 'active',
                 domainId: '',
                 weight: 1,
-                complexityLevel: 1,
+                complexity: 'beginner',
                 learningUrl: '',
                 detailedNotesPath: ''
             });
@@ -180,7 +201,7 @@ export function TopicTable() {
             status: 'active',
             domainId: '',
             weight: 1,
-            complexityLevel: 1,
+            complexity: 'beginner',
             learningUrl: '',
             detailedNotesPath: ''
         });
@@ -202,7 +223,7 @@ export function TopicTable() {
                 ...formData,
                 slug: formData.name || 'topic',
                 orderIndex: formData.weight ?? 0,
-                complexityLevel: formData.complexityLevel ?? 0
+                complexity: formData.complexity
             };
             if (currentTopic !== null) {
                 await apiClient.admin.updateTopic(currentTopic.id, payload);
@@ -507,18 +528,31 @@ export function TopicTable() {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1" htmlFor="topic-complexity">Complexity Level</label>
-                                        <input
-                                            type="number"
-                                            min="1"
-                                            max="10"
-                                            id="topic-complexity"
-                                            value={formData.complexityLevel}
-                                            onChange={(e) => setFormData({ ...formData, complexityLevel: parseInt(e.target.value) })}
-                                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all bg-slate-50/50"
+                                        <SelectField
+                                            label="Complexity"
+                                            value={formData.complexity}
+                                            options={TOPIC_COMPLEXITY_OPTIONS}
+                                            loading={false}
+                                            onChange={(val) => setFormData({ ...formData, complexity: val as NonNullable<Topic['complexity']> })}
+                                            placeholder="Select Complexity"
+                                            active={true}
+                                            icon={<Sparkles size={12} />}
+                                            hideCreate={true}
                                         />
                                     </div>
                                 </div>
+
+                                <SelectField
+                                    label="Status"
+                                    value={formData.status}
+                                    options={STATUS_OPTIONS}
+                                    loading={false}
+                                    onChange={(val) => setFormData({ ...formData, status: val as typeof formData.status })}
+                                    placeholder="Select Status"
+                                    active={true}
+                                    icon={<Check size={12} />}
+                                    hideCreate={true}
+                                />
 
                                 <div className="grid grid-cols-2 gap-6">
                                     <div className="space-y-2">

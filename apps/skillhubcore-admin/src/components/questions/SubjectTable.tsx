@@ -27,7 +27,7 @@ type SubjectItem = {
     name: string;
     domainId: string;
     description?: string | null;
-    status?: 'active' | 'inactive' | 'draft';
+    status?: 'draft' | 'active' | 'archived' | 'deleted';
     order?: number;
     orderIndex?: number;
     domain?: { name?: string; id?: string; domainId?: string };
@@ -41,6 +41,12 @@ type SubjectItem = {
     createdAt?: string;
     updatedAt?: string;
 };
+
+const STATUS_OPTIONS = [
+    { id: 'draft', name: 'Draft' },
+    { id: 'active', name: 'Active' },
+    { id: 'archived', name: 'Archived' }
+];
 
 export function SubjectTable() {
     const [data, setData] = useState<SubjectItem[]>([]);
@@ -74,7 +80,7 @@ export function SubjectTable() {
         name: '',
         domainId: '',
         description: '',
-        status: 'active' as 'active' | 'inactive',
+        status: 'active' as 'draft' | 'active' | 'archived',
         order: 0
     });
 
@@ -191,7 +197,7 @@ export function SubjectTable() {
                 name: subject.name,
                 domainId: subject.domainId,
                 description: subject.description ?? '',
-                status: (subject.status as 'active' | 'inactive') ?? 'active',
+                status: subject.status === 'draft' || subject.status === 'archived' ? subject.status : 'active',
                 order: subject.order ?? 0
             });
             setIsFormOpen(true);
@@ -233,7 +239,7 @@ export function SubjectTable() {
                 name: string;
                 domainId: string;
                 description?: string;
-                status: 'active' | 'inactive';
+                status: 'draft' | 'active' | 'archived';
                 order?: number;
                 slug: string;
                 icon: string;
@@ -387,26 +393,17 @@ export function SubjectTable() {
                                         />
                                     </div>
 
-                                    {/* Status */}
-                                    <div className="space-y-2">
-                                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1" id="subject-status-label">Status</p>
-                                        <div className="flex bg-white p-1.5 rounded-xl border border-slate-200">
-                                            {['active', 'inactive'].map((status) => (
-                                                <button
-                                                    key={status}
-                                                    type="button"
-                                                    onClick={() => setFormData({ ...formData, status: status as 'active' | 'inactive' })}
-                                                    className={`flex-1 py-2.5 px-4 rounded-lg text-xs font-black uppercase tracking-wider transition-all ${formData.status === status
-                                                        ? 'bg-[#1A1A1A] text-white shadow-sm'
-                                                        : 'text-slate-500 hover:text-slate-600'
-                                                        }`}
-                                                    aria-labelledby="subject-status-label"
-                                                >
-                                                    {status}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
+                                    <SelectField
+                                        label="Status"
+                                        value={formData.status}
+                                        options={STATUS_OPTIONS}
+                                        loading={false}
+                                        onChange={(val) => setFormData({ ...formData, status: val as typeof formData.status })}
+                                        placeholder="Select Status"
+                                        active={true}
+                                        icon={<Check size={12} />}
+                                        hideCreate={true}
+                                    />
 
                                     {/* Footer Actions */}
                                     <div className="pt-8 flex items-center justify-end gap-4">
