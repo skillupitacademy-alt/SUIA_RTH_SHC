@@ -436,7 +436,7 @@ Returns \`['r', 'o']\` because indices \`1\` and \`2\` are included, but index \
 Negative indices can also be used in slicing:
 
 \`\`\`python
-print(my_list[-4:-1])
+print(my_list[${'-4:-1'}])
 \`\`\`
 
 Output:

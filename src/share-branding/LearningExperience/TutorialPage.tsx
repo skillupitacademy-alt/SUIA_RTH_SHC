@@ -1048,7 +1048,7 @@ function ArticleContent({ onActiveChange }: { onActiveChange: (id: string) => vo
         <p className="text-base text-slate-700 leading-relaxed mb-2">Retrieve a <strong>portion</strong> of a list using:</p>
         <CodeBlock code={`list[start:stop]   # start included, stop excluded`} label="syntax" />
         <SlicingVisualizer />
-        <CodeBlock code={`my_list = ['p', 'r', 'o', 'b', 'e']\n\nprint(my_list[2:5])    # ['o', 'b', 'e']\nprint(my_list[1:3])    # ['r', 'o']\nprint(my_list[-4:-1])  # ['r', 'o', 'b']`} label="python" />
+        <CodeBlock code={`my_list = ['p', 'r', 'o', 'b', 'e']\n\nprint(my_list[2:5])    # ['o', 'b', 'e']\nprint(my_list[1:3])    # ['r', 'o']\nprint(my_list[${'-4:-1'}])  # ['r', 'o', 'b']`} label="python" />
         <OutputBlock output={"['o', 'b', 'e']\n['r', 'o']\n['r', 'o', 'b']"} />
 
         {/* Key Takeaways */}
