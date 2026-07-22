@@ -1,0 +1,1205 @@
+[
+  {
+    "brand": "rth",
+    "viewport": {
+      "width": 375,
+      "height": 900
+    },
+    "title": "Banking Onboarding Assignment | RealTutorialHub",
+    "scrollWidth": 661,
+    "clientWidth": 375,
+    "pageOverflow": 286,
+    "hiddenBodyOverflow": [
+      {
+        "tag": "div",
+        "className": "",
+        "left": -262,
+        "right": 637,
+        "width": 900
+      },
+      {
+        "tag": "div",
+        "className": "container",
+        "left": -262,
+        "right": 637,
+        "width": 900
+      },
+      {
+        "tag": "header",
+        "className": "header-wrapper",
+        "left": -238,
+        "right": 613,
+        "width": 852
+      },
+      {
+        "tag": "div",
+        "className": "assignment-badge",
+        "left": -238,
+        "right": 2,
+        "width": 240
+      },
+      {
+        "tag": "svg",
+        "className": "",
+        "left": -130,
+        "right": -106,
+        "width": 24
+      },
+      {
+        "tag": "path",
+        "className": "",
+        "left": -126,
+        "right": -110,
+        "width": 16
+      },
+      {
+        "tag": "polyline",
+        "className": "",
+        "left": -116,
+        "right": -110,
+        "width": 6
+      },
+      {
+        "tag": "span",
+        "className": "badge-tag",
+        "left": -173,
+        "right": -64,
+        "width": 109
+      },
+      {
+        "tag": "span",
+        "className": "badge-title",
+        "left": -181,
+        "right": -56,
+        "width": 124
+      },
+      {
+        "tag": "div",
+        "className": "title-block",
+        "left": 22,
+        "right": 413,
+        "width": 392
+      },
+      {
+        "tag": "h1",
+        "className": "",
+        "left": 22,
+        "right": 413,
+        "width": 392
+      },
+      {
+        "tag": "div",
+        "className": "topics-bar",
+        "left": 22,
+        "right": 413,
+        "width": 392
+      },
+      {
+        "tag": "div",
+        "className": "logo-block",
+        "left": 433,
+        "right": 613,
+        "width": 180
+      },
+      {
+        "tag": "svg",
+        "className": "",
+        "left": 486,
+        "right": 522,
+        "width": 36
+      },
+      {
+        "tag": "path",
+        "className": "",
+        "left": 486,
+        "right": 516,
+        "width": 29
+      },
+      {
+        "tag": "path",
+        "className": "",
+        "left": 491,
+        "right": 521,
+        "width": 29
+      },
+      {
+        "tag": "span",
+        "className": "",
+        "left": 530,
+        "right": 613,
+        "width": 84
+      },
+      {
+        "tag": "div",
+        "className": "subheader-bar",
+        "left": -238,
+        "right": 613,
+        "width": 852
+      },
+      {
+        "tag": "div",
+        "className": "subheader-box pink-box",
+        "left": -238,
+        "right": -4,
+        "width": 234
+      },
+      {
+        "tag": "svg",
+        "className": "",
+        "left": -217,
+        "right": -193,
+        "width": 24
+      }
+    ],
+    "boundaryEscapes": [],
+    "tinyText": [],
+    "container": {
+      "left": -262,
+      "right": 637,
+      "width": 900
+    }
+  },
+  {
+    "brand": "rth",
+    "viewport": {
+      "width": 640,
+      "height": 900
+    },
+    "title": "Banking Onboarding Assignment | RealTutorialHub",
+    "scrollWidth": 794,
+    "clientWidth": 640,
+    "pageOverflow": 154,
+    "hiddenBodyOverflow": [
+      {
+        "tag": "div",
+        "className": "",
+        "left": -130,
+        "right": 770,
+        "width": 900
+      },
+      {
+        "tag": "div",
+        "className": "container",
+        "left": -130,
+        "right": 770,
+        "width": 900
+      },
+      {
+        "tag": "header",
+        "className": "header-wrapper",
+        "left": -106,
+        "right": 746,
+        "width": 852
+      },
+      {
+        "tag": "div",
+        "className": "assignment-badge",
+        "left": -106,
+        "right": 134,
+        "width": 240
+      },
+      {
+        "tag": "span",
+        "className": "badge-tag",
+        "left": -40,
+        "right": 68,
+        "width": 109
+      },
+      {
+        "tag": "span",
+        "className": "badge-title",
+        "left": -48,
+        "right": 76,
+        "width": 124
+      },
+      {
+        "tag": "div",
+        "className": "logo-block",
+        "left": 566,
+        "right": 746,
+        "width": 180
+      },
+      {
+        "tag": "svg",
+        "className": "",
+        "left": 618,
+        "right": 654,
+        "width": 36
+      },
+      {
+        "tag": "path",
+        "className": "",
+        "left": 619,
+        "right": 648,
+        "width": 29
+      },
+      {
+        "tag": "path",
+        "className": "",
+        "left": 624,
+        "right": 653,
+        "width": 29
+      },
+      {
+        "tag": "span",
+        "className": "",
+        "left": 662,
+        "right": 746,
+        "width": 84
+      },
+      {
+        "tag": "div",
+        "className": "subheader-bar",
+        "left": -106,
+        "right": 746,
+        "width": 852
+      },
+      {
+        "tag": "div",
+        "className": "subheader-box pink-box",
+        "left": -106,
+        "right": 128,
+        "width": 234
+      },
+      {
+        "tag": "svg",
+        "className": "",
+        "left": -85,
+        "right": -61,
+        "width": 24
+      },
+      {
+        "tag": "path",
+        "className": "",
+        "left": -84,
+        "right": -69,
+        "width": 15
+      },
+      {
+        "tag": "circle",
+        "className": "",
+        "left": -80,
+        "right": -72,
+        "width": 8
+      },
+      {
+        "tag": "circle",
+        "className": "",
+        "left": -68,
+        "right": -64,
+        "width": 4
+      },
+      {
+        "tag": "span",
+        "className": "box-text",
+        "left": -49,
+        "right": 107,
+        "width": 156
+      },
+      {
+        "tag": "strong",
+        "className": "",
+        "left": -49,
+        "right": 90,
+        "width": 139
+      },
+      {
+        "tag": "div",
+        "className": "subheader-box purple-box",
+        "left": 395,
+        "right": 746,
+        "width": 351
+      }
+    ],
+    "boundaryEscapes": [],
+    "tinyText": [],
+    "container": {
+      "left": -130,
+      "right": 770,
+      "width": 900
+    }
+  },
+  {
+    "brand": "rth",
+    "viewport": {
+      "width": 768,
+      "height": 900
+    },
+    "title": "Banking Onboarding Assignment | RealTutorialHub",
+    "scrollWidth": 858,
+    "clientWidth": 768,
+    "pageOverflow": 90,
+    "hiddenBodyOverflow": [
+      {
+        "tag": "div",
+        "className": "",
+        "left": -66,
+        "right": 834,
+        "width": 900
+      },
+      {
+        "tag": "div",
+        "className": "container",
+        "left": -66,
+        "right": 834,
+        "width": 900
+      },
+      {
+        "tag": "header",
+        "className": "header-wrapper",
+        "left": -42,
+        "right": 810,
+        "width": 852
+      },
+      {
+        "tag": "div",
+        "className": "assignment-badge",
+        "left": -42,
+        "right": 198,
+        "width": 240
+      },
+      {
+        "tag": "div",
+        "className": "logo-block",
+        "left": 630,
+        "right": 810,
+        "width": 180
+      },
+      {
+        "tag": "span",
+        "className": "",
+        "left": 726,
+        "right": 810,
+        "width": 84
+      },
+      {
+        "tag": "div",
+        "className": "subheader-bar",
+        "left": -42,
+        "right": 810,
+        "width": 852
+      },
+      {
+        "tag": "div",
+        "className": "subheader-box pink-box",
+        "left": -42,
+        "right": 192,
+        "width": 234
+      },
+      {
+        "tag": "svg",
+        "className": "",
+        "left": -21,
+        "right": 3,
+        "width": 24
+      },
+      {
+        "tag": "path",
+        "className": "",
+        "left": -20,
+        "right": -5,
+        "width": 15
+      },
+      {
+        "tag": "circle",
+        "className": "",
+        "left": -16,
+        "right": -8,
+        "width": 8
+      },
+      {
+        "tag": "circle",
+        "className": "",
+        "left": -4,
+        "right": 0,
+        "width": 4
+      },
+      {
+        "tag": "div",
+        "className": "subheader-box purple-box",
+        "left": 459,
+        "right": 810,
+        "width": 351
+      },
+      {
+        "tag": "span",
+        "className": "box-text",
+        "left": 516,
+        "right": 789,
+        "width": 273
+      },
+      {
+        "tag": "strong",
+        "className": "",
+        "left": 516,
+        "right": 780,
+        "width": 265
+      },
+      {
+        "tag": "div",
+        "className": "row-grid-2",
+        "left": -42,
+        "right": 810,
+        "width": 852
+      },
+      {
+        "tag": "div",
+        "className": "col-flex-container",
+        "left": -42,
+        "right": 810,
+        "width": 852
+      },
+      {
+        "tag": "div",
+        "className": "card",
+        "left": -42,
+        "right": 810,
+        "width": 852
+      },
+      {
+        "tag": "div",
+        "className": "card-header",
+        "left": -41,
+        "right": 809,
+        "width": 850
+      },
+      {
+        "tag": "div",
+        "className": "card-body",
+        "left": -41,
+        "right": 809,
+        "width": 850
+      }
+    ],
+    "boundaryEscapes": [],
+    "tinyText": [],
+    "container": {
+      "left": -66,
+      "right": 834,
+      "width": 900
+    }
+  },
+  {
+    "brand": "rth",
+    "viewport": {
+      "width": 1024,
+      "height": 900
+    },
+    "title": "Banking Onboarding Assignment | RealTutorialHub",
+    "scrollWidth": 1024,
+    "clientWidth": 1024,
+    "pageOverflow": 0,
+    "hiddenBodyOverflow": [
+      {
+        "tag": "g",
+        "className": "",
+        "left": 989,
+        "right": 1033,
+        "width": 43
+      },
+      {
+        "tag": "ellipse",
+        "className": "",
+        "left": 989,
+        "right": 1033,
+        "width": 43
+      },
+      {
+        "tag": "g",
+        "className": "",
+        "left": 989,
+        "right": 1033,
+        "width": 43
+      },
+      {
+        "tag": "ellipse",
+        "className": "",
+        "left": 989,
+        "right": 1033,
+        "width": 43
+      },
+      {
+        "tag": "g",
+        "className": "",
+        "left": 989,
+        "right": 1033,
+        "width": 43
+      },
+      {
+        "tag": "ellipse",
+        "className": "",
+        "left": 989,
+        "right": 1033,
+        "width": 43
+      }
+    ],
+    "boundaryEscapes": [],
+    "tinyText": [],
+    "container": {
+      "left": 24,
+      "right": 1000,
+      "width": 976
+    }
+  },
+  {
+    "brand": "rth",
+    "viewport": {
+      "width": 1280,
+      "height": 900
+    },
+    "title": "Banking Onboarding Assignment | RealTutorialHub",
+    "scrollWidth": 1280,
+    "clientWidth": 1280,
+    "pageOverflow": 0,
+    "hiddenBodyOverflow": [
+      {
+        "tag": "g",
+        "className": "",
+        "left": 1245,
+        "right": 1289,
+        "width": 43
+      },
+      {
+        "tag": "ellipse",
+        "className": "",
+        "left": 1245,
+        "right": 1289,
+        "width": 43
+      },
+      {
+        "tag": "g",
+        "className": "",
+        "left": 1245,
+        "right": 1289,
+        "width": 43
+      },
+      {
+        "tag": "ellipse",
+        "className": "",
+        "left": 1245,
+        "right": 1289,
+        "width": 43
+      },
+      {
+        "tag": "g",
+        "className": "",
+        "left": 1245,
+        "right": 1289,
+        "width": 43
+      },
+      {
+        "tag": "ellipse",
+        "className": "",
+        "left": 1245,
+        "right": 1289,
+        "width": 43
+      }
+    ],
+    "boundaryEscapes": [],
+    "tinyText": [],
+    "container": {
+      "left": 24,
+      "right": 1256,
+      "width": 1232
+    }
+  },
+  {
+    "brand": "rth",
+    "viewport": {
+      "width": 1536,
+      "height": 900
+    },
+    "title": "Banking Onboarding Assignment | RealTutorialHub",
+    "scrollWidth": 1536,
+    "clientWidth": 1536,
+    "pageOverflow": 0,
+    "hiddenBodyOverflow": [
+      {
+        "tag": "g",
+        "className": "",
+        "left": 1501,
+        "right": 1545,
+        "width": 43
+      },
+      {
+        "tag": "ellipse",
+        "className": "",
+        "left": 1501,
+        "right": 1545,
+        "width": 43
+      },
+      {
+        "tag": "g",
+        "className": "",
+        "left": 1501,
+        "right": 1545,
+        "width": 43
+      },
+      {
+        "tag": "ellipse",
+        "className": "",
+        "left": 1501,
+        "right": 1545,
+        "width": 43
+      },
+      {
+        "tag": "g",
+        "className": "",
+        "left": 1501,
+        "right": 1545,
+        "width": 43
+      },
+      {
+        "tag": "ellipse",
+        "className": "",
+        "left": 1501,
+        "right": 1545,
+        "width": 43
+      }
+    ],
+    "boundaryEscapes": [],
+    "tinyText": [],
+    "container": {
+      "left": 78,
+      "right": 1458,
+      "width": 1380
+    }
+  },
+  {
+    "brand": "skillup",
+    "viewport": {
+      "width": 375,
+      "height": 900
+    },
+    "title": "Banking Onboarding Assignment | SkillUp IT Academy | SkillUp IT Academy",
+    "scrollWidth": 661,
+    "clientWidth": 375,
+    "pageOverflow": 286,
+    "hiddenBodyOverflow": [
+      {
+        "tag": "div",
+        "className": "",
+        "left": -262,
+        "right": 637,
+        "width": 900
+      },
+      {
+        "tag": "div",
+        "className": "container",
+        "left": -262,
+        "right": 637,
+        "width": 900
+      },
+      {
+        "tag": "header",
+        "className": "header-wrapper",
+        "left": -238,
+        "right": 613,
+        "width": 852
+      },
+      {
+        "tag": "div",
+        "className": "assignment-badge",
+        "left": -238,
+        "right": 2,
+        "width": 240
+      },
+      {
+        "tag": "svg",
+        "className": "",
+        "left": -130,
+        "right": -106,
+        "width": 24
+      },
+      {
+        "tag": "path",
+        "className": "",
+        "left": -126,
+        "right": -110,
+        "width": 16
+      },
+      {
+        "tag": "polyline",
+        "className": "",
+        "left": -116,
+        "right": -110,
+        "width": 6
+      },
+      {
+        "tag": "span",
+        "className": "badge-tag",
+        "left": -173,
+        "right": -64,
+        "width": 109
+      },
+      {
+        "tag": "span",
+        "className": "badge-title",
+        "left": -181,
+        "right": -56,
+        "width": 124
+      },
+      {
+        "tag": "div",
+        "className": "title-block",
+        "left": 22,
+        "right": 413,
+        "width": 392
+      },
+      {
+        "tag": "h1",
+        "className": "",
+        "left": 22,
+        "right": 413,
+        "width": 392
+      },
+      {
+        "tag": "span",
+        "className": "magenta-text",
+        "left": 34,
+        "right": 401,
+        "width": 367
+      },
+      {
+        "tag": "div",
+        "className": "topics-bar",
+        "left": 22,
+        "right": 413,
+        "width": 392
+      },
+      {
+        "tag": "div",
+        "className": "logo-block",
+        "left": 433,
+        "right": 613,
+        "width": 180
+      },
+      {
+        "tag": "svg",
+        "className": "",
+        "left": 486,
+        "right": 522,
+        "width": 36
+      },
+      {
+        "tag": "path",
+        "className": "",
+        "left": 486,
+        "right": 516,
+        "width": 29
+      },
+      {
+        "tag": "path",
+        "className": "",
+        "left": 491,
+        "right": 521,
+        "width": 29
+      },
+      {
+        "tag": "span",
+        "className": "",
+        "left": 530,
+        "right": 613,
+        "width": 84
+      },
+      {
+        "tag": "div",
+        "className": "subheader-bar",
+        "left": -238,
+        "right": 613,
+        "width": 852
+      },
+      {
+        "tag": "div",
+        "className": "subheader-box pink-box",
+        "left": -238,
+        "right": -4,
+        "width": 234
+      }
+    ],
+    "boundaryEscapes": [],
+    "tinyText": [],
+    "container": {
+      "left": -262,
+      "right": 637,
+      "width": 900
+    }
+  },
+  {
+    "brand": "skillup",
+    "viewport": {
+      "width": 640,
+      "height": 900
+    },
+    "title": "Banking Onboarding Assignment | SkillUp IT Academy | SkillUp IT Academy",
+    "scrollWidth": 794,
+    "clientWidth": 640,
+    "pageOverflow": 154,
+    "hiddenBodyOverflow": [
+      {
+        "tag": "div",
+        "className": "",
+        "left": -130,
+        "right": 770,
+        "width": 900
+      },
+      {
+        "tag": "div",
+        "className": "container",
+        "left": -130,
+        "right": 770,
+        "width": 900
+      },
+      {
+        "tag": "header",
+        "className": "header-wrapper",
+        "left": -106,
+        "right": 746,
+        "width": 852
+      },
+      {
+        "tag": "div",
+        "className": "assignment-badge",
+        "left": -106,
+        "right": 134,
+        "width": 240
+      },
+      {
+        "tag": "span",
+        "className": "badge-tag",
+        "left": -40,
+        "right": 68,
+        "width": 109
+      },
+      {
+        "tag": "span",
+        "className": "badge-title",
+        "left": -48,
+        "right": 76,
+        "width": 124
+      },
+      {
+        "tag": "div",
+        "className": "logo-block",
+        "left": 566,
+        "right": 746,
+        "width": 180
+      },
+      {
+        "tag": "svg",
+        "className": "",
+        "left": 618,
+        "right": 654,
+        "width": 36
+      },
+      {
+        "tag": "path",
+        "className": "",
+        "left": 619,
+        "right": 648,
+        "width": 29
+      },
+      {
+        "tag": "path",
+        "className": "",
+        "left": 624,
+        "right": 653,
+        "width": 29
+      },
+      {
+        "tag": "span",
+        "className": "",
+        "left": 662,
+        "right": 746,
+        "width": 84
+      },
+      {
+        "tag": "div",
+        "className": "subheader-bar",
+        "left": -106,
+        "right": 746,
+        "width": 852
+      },
+      {
+        "tag": "div",
+        "className": "subheader-box pink-box",
+        "left": -106,
+        "right": 128,
+        "width": 234
+      },
+      {
+        "tag": "svg",
+        "className": "",
+        "left": -85,
+        "right": -61,
+        "width": 24
+      },
+      {
+        "tag": "path",
+        "className": "",
+        "left": -84,
+        "right": -69,
+        "width": 15
+      },
+      {
+        "tag": "circle",
+        "className": "",
+        "left": -80,
+        "right": -72,
+        "width": 8
+      },
+      {
+        "tag": "circle",
+        "className": "",
+        "left": -68,
+        "right": -64,
+        "width": 4
+      },
+      {
+        "tag": "span",
+        "className": "box-text",
+        "left": -49,
+        "right": 107,
+        "width": 156
+      },
+      {
+        "tag": "strong",
+        "className": "",
+        "left": -49,
+        "right": 90,
+        "width": 139
+      },
+      {
+        "tag": "div",
+        "className": "subheader-box purple-box",
+        "left": 395,
+        "right": 746,
+        "width": 351
+      }
+    ],
+    "boundaryEscapes": [],
+    "tinyText": [],
+    "container": {
+      "left": -130,
+      "right": 770,
+      "width": 900
+    }
+  },
+  {
+    "brand": "skillup",
+    "viewport": {
+      "width": 768,
+      "height": 900
+    },
+    "title": "Banking Onboarding Assignment | SkillUp IT Academy | SkillUp IT Academy",
+    "scrollWidth": 858,
+    "clientWidth": 768,
+    "pageOverflow": 90,
+    "hiddenBodyOverflow": [
+      {
+        "tag": "div",
+        "className": "",
+        "left": -66,
+        "right": 834,
+        "width": 900
+      },
+      {
+        "tag": "div",
+        "className": "container",
+        "left": -66,
+        "right": 834,
+        "width": 900
+      },
+      {
+        "tag": "header",
+        "className": "header-wrapper",
+        "left": -42,
+        "right": 810,
+        "width": 852
+      },
+      {
+        "tag": "div",
+        "className": "assignment-badge",
+        "left": -42,
+        "right": 198,
+        "width": 240
+      },
+      {
+        "tag": "div",
+        "className": "logo-block",
+        "left": 630,
+        "right": 810,
+        "width": 180
+      },
+      {
+        "tag": "span",
+        "className": "",
+        "left": 726,
+        "right": 810,
+        "width": 84
+      },
+      {
+        "tag": "div",
+        "className": "subheader-bar",
+        "left": -42,
+        "right": 810,
+        "width": 852
+      },
+      {
+        "tag": "div",
+        "className": "subheader-box pink-box",
+        "left": -42,
+        "right": 192,
+        "width": 234
+      },
+      {
+        "tag": "svg",
+        "className": "",
+        "left": -21,
+        "right": 3,
+        "width": 24
+      },
+      {
+        "tag": "path",
+        "className": "",
+        "left": -20,
+        "right": -5,
+        "width": 15
+      },
+      {
+        "tag": "circle",
+        "className": "",
+        "left": -16,
+        "right": -8,
+        "width": 8
+      },
+      {
+        "tag": "circle",
+        "className": "",
+        "left": -4,
+        "right": 0,
+        "width": 4
+      },
+      {
+        "tag": "div",
+        "className": "subheader-box purple-box",
+        "left": 459,
+        "right": 810,
+        "width": 351
+      },
+      {
+        "tag": "span",
+        "className": "box-text",
+        "left": 516,
+        "right": 789,
+        "width": 273
+      },
+      {
+        "tag": "strong",
+        "className": "",
+        "left": 516,
+        "right": 780,
+        "width": 265
+      },
+      {
+        "tag": "div",
+        "className": "row-grid-2",
+        "left": -42,
+        "right": 810,
+        "width": 852
+      },
+      {
+        "tag": "div",
+        "className": "col-flex-container",
+        "left": -42,
+        "right": 810,
+        "width": 852
+      },
+      {
+        "tag": "div",
+        "className": "card",
+        "left": -42,
+        "right": 810,
+        "width": 852
+      },
+      {
+        "tag": "div",
+        "className": "card-header",
+        "left": -41,
+        "right": 809,
+        "width": 850
+      },
+      {
+        "tag": "div",
+        "className": "card-body",
+        "left": -41,
+        "right": 809,
+        "width": 850
+      }
+    ],
+    "boundaryEscapes": [],
+    "tinyText": [],
+    "container": {
+      "left": -66,
+      "right": 834,
+      "width": 900
+    }
+  },
+  {
+    "brand": "skillup",
+    "viewport": {
+      "width": 1024,
+      "height": 900
+    },
+    "title": "Banking Onboarding Assignment | SkillUp IT Academy | SkillUp IT Academy",
+    "scrollWidth": 1024,
+    "clientWidth": 1024,
+    "pageOverflow": 0,
+    "hiddenBodyOverflow": [],
+    "boundaryEscapes": [],
+    "tinyText": [],
+    "container": {
+      "left": 24,
+      "right": 1000,
+      "width": 976
+    }
+  },
+  {
+    "brand": "skillup",
+    "viewport": {
+      "width": 1280,
+      "height": 900
+    },
+    "title": "Banking Onboarding Assignment | SkillUp IT Academy | SkillUp IT Academy",
+    "scrollWidth": 1280,
+    "clientWidth": 1280,
+    "pageOverflow": 0,
+    "hiddenBodyOverflow": [],
+    "boundaryEscapes": [],
+    "tinyText": [],
+    "container": {
+      "left": 24,
+      "right": 1256,
+      "width": 1232
+    }
+  },
+  {
+    "brand": "skillup",
+    "viewport": {
+      "width": 1536,
+      "height": 900
+    },
+    "title": "Banking Onboarding Assignment | SkillUp IT Academy | SkillUp IT Academy",
+    "scrollWidth": 1536,
+    "clientWidth": 1536,
+    "pageOverflow": 0,
+    "hiddenBodyOverflow": [],
+    "boundaryEscapes": [],
+    "tinyText": [],
+    "container": {
+      "left": 78,
+      "right": 1458,
+      "width": 1380
+    }
+  }
+]

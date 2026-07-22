@@ -18,6 +18,7 @@ const PUBLIC_PATHS = [
   '/api/healthz',
   '/programs',
   '/learning-path',
+  '/dashboard/banking-onboarding',
 ];
 
 const PUBLIC_PREFIXES = ['/verify', '/api/programs', '/api/certificates/verify/'];
@@ -218,6 +219,14 @@ export async function createAuthProxy(options: AuthProxyOptions = {}) {
       return NextResponse.next();
     }
 
+    // Public route exceptions must run before protected-prefix checks because
+    // some preview pages intentionally live under protected namespaces.
+    if (isPublicRoute(pathname)) {
+      return user !== null
+        ? addUserHeaders(NextResponse.next({ request: { headers: new Headers(request.headers) } }), user)
+        : NextResponse.next();
+    }
+
     // 🔥 CRITICAL: BFF's own API routes should NOT require gateway secret
     // Only external API calls (through gateway) need gateway secret
     // BFF internal routes like /api/profile, /api/auth/* are internal service calls
@@ -254,13 +263,6 @@ export async function createAuthProxy(options: AuthProxyOptions = {}) {
       pathname.startsWith('/dashboard')
     ) {
       return NextResponse.redirect(new URL('/onboarding', request.url));
-    }
-
-    // Handle public routes
-    if (isPublicRoute(pathname)) {
-      return user !== null
-        ? addUserHeaders(NextResponse.next({ request: { headers: new Headers(request.headers) } }), user)
-        : NextResponse.next();
     }
 
     // Handle protected routes with authenticated user

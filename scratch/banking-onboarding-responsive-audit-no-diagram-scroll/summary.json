@@ -1,0 +1,110 @@
+[
+  {
+    "brand": "rth",
+    "viewport": "base-375",
+    "pageOverflow": 0,
+    "escapes": 0,
+    "diagramOverflow": 0,
+    "diagramWidth": 259,
+    "diagramContainerWidth": 281
+  },
+  {
+    "brand": "rth",
+    "viewport": "sm-640",
+    "pageOverflow": 0,
+    "escapes": 0,
+    "diagramOverflow": 0,
+    "diagramWidth": 524,
+    "diagramContainerWidth": 546
+  },
+  {
+    "brand": "rth",
+    "viewport": "md-768",
+    "pageOverflow": 0,
+    "escapes": 0,
+    "diagramOverflow": 0,
+    "diagramWidth": 632,
+    "diagramContainerWidth": 658
+  },
+  {
+    "brand": "rth",
+    "viewport": "lg-1024",
+    "pageOverflow": 0,
+    "escapes": 0,
+    "diagramOverflow": 0,
+    "diagramWidth": 410,
+    "diagramContainerWidth": 436
+  },
+  {
+    "brand": "rth",
+    "viewport": "xl-1280",
+    "pageOverflow": 0,
+    "escapes": 0,
+    "diagramOverflow": 0,
+    "diagramWidth": 547,
+    "diagramContainerWidth": 573
+  },
+  {
+    "brand": "rth",
+    "viewport": "2xl-1536",
+    "pageOverflow": 0,
+    "escapes": 0,
+    "diagramOverflow": 0,
+    "diagramWidth": 684,
+    "diagramContainerWidth": 710
+  },
+  {
+    "brand": "skillup",
+    "viewport": "base-375",
+    "pageOverflow": 0,
+    "escapes": 0,
+    "diagramOverflow": 0,
+    "diagramWidth": 259,
+    "diagramContainerWidth": 281
+  },
+  {
+    "brand": "skillup",
+    "viewport": "sm-640",
+    "pageOverflow": 0,
+    "escapes": 0,
+    "diagramOverflow": 0,
+    "diagramWidth": 524,
+    "diagramContainerWidth": 546
+  },
+  {
+    "brand": "skillup",
+    "viewport": "md-768",
+    "pageOverflow": 0,
+    "escapes": 0,
+    "diagramOverflow": 0,
+    "diagramWidth": 632,
+    "diagramContainerWidth": 658
+  },
+  {
+    "brand": "skillup",
+    "viewport": "lg-1024",
+    "pageOverflow": 0,
+    "escapes": 0,
+    "diagramOverflow": 0,
+    "diagramWidth": 410,
+    "diagramContainerWidth": 436
+  },
+  {
+    "brand": "skillup",
+    "viewport": "xl-1280",
+    "pageOverflow": 0,
+    "escapes": 0,
+    "diagramOverflow": 0,
+    "diagramWidth": 547,
+    "diagramContainerWidth": 573
+  },
+  {
+    "brand": "skillup",
+    "viewport": "2xl-1536",
+    "pageOverflow": 0,
+    "escapes": 0,
+    "diagramOverflow": 0,
+    "diagramWidth": 684,
+    "diagramContainerWidth": 710
+  }
+]

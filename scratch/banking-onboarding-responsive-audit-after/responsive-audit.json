@@ -1,0 +1,510 @@
+[
+  {
+    "brand": "rth",
+    "viewport": "base-375",
+    "scrollWidth": 375,
+    "clientWidth": 375,
+    "pageOverflow": 0,
+    "bodyEscapes": [
+      {
+        "tag": "div",
+        "className": "checklist",
+        "left": 47,
+        "right": 589,
+        "width": 542
+      },
+      {
+        "tag": "div",
+        "className": "checklist-item bold-desc",
+        "left": 47,
+        "right": 589,
+        "width": 542
+      },
+      {
+        "tag": "span",
+        "className": "",
+        "left": 73,
+        "right": 589,
+        "width": 516
+      },
+      {
+        "tag": "div",
+        "className": "checklist-item bold-desc",
+        "left": 47,
+        "right": 589,
+        "width": 542
+      },
+      {
+        "tag": "span",
+        "className": "",
+        "left": 73,
+        "right": 588,
+        "width": 515
+      },
+      {
+        "tag": "div",
+        "className": "checklist-item bold-desc",
+        "left": 47,
+        "right": 589,
+        "width": 542
+      },
+      {
+        "tag": "span",
+        "className": "",
+        "left": 73,
+        "right": 589,
+        "width": 516
+      },
+      {
+        "tag": "div",
+        "className": "checklist-item bold-desc",
+        "left": 47,
+        "right": 589,
+        "width": 542
+      },
+      {
+        "tag": "span",
+        "className": "",
+        "left": 73,
+        "right": 589,
+        "width": 516
+      },
+      {
+        "tag": "div",
+        "className": "",
+        "left": 47,
+        "right": 589,
+        "width": 542
+      },
+      {
+        "tag": "span",
+        "className": "",
+        "left": 47,
+        "right": 589,
+        "width": 542
+      },
+      {
+        "tag": "g",
+        "className": "",
+        "left": 340,
+        "right": 384,
+        "width": 43
+      },
+      {
+        "tag": "ellipse",
+        "className": "",
+        "left": 340,
+        "right": 384,
+        "width": 43
+      },
+      {
+        "tag": "g",
+        "className": "",
+        "left": 340,
+        "right": 384,
+        "width": 43
+      },
+      {
+        "tag": "ellipse",
+        "className": "",
+        "left": 340,
+        "right": 384,
+        "width": 43
+      },
+      {
+        "tag": "g",
+        "className": "",
+        "left": 340,
+        "right": 384,
+        "width": 43
+      },
+      {
+        "tag": "ellipse",
+        "className": "",
+        "left": 340,
+        "right": 384,
+        "width": 43
+      }
+    ],
+    "boundaryEscapes": [
+      {
+        "parent": "what-you-need-layout",
+        "child": "checklist"
+      },
+      {
+        "parent": "what-you-need-layout",
+        "child": "div"
+      }
+    ],
+    "tinyText": 0
+  },
+  {
+    "brand": "rth",
+    "viewport": "sm-640",
+    "scrollWidth": 640,
+    "clientWidth": 640,
+    "pageOverflow": 0,
+    "bodyEscapes": [
+      {
+        "tag": "g",
+        "className": "",
+        "left": 605,
+        "right": 649,
+        "width": 43
+      },
+      {
+        "tag": "ellipse",
+        "className": "",
+        "left": 605,
+        "right": 649,
+        "width": 43
+      },
+      {
+        "tag": "g",
+        "className": "",
+        "left": 605,
+        "right": 649,
+        "width": 43
+      },
+      {
+        "tag": "ellipse",
+        "className": "",
+        "left": 605,
+        "right": 649,
+        "width": 43
+      },
+      {
+        "tag": "g",
+        "className": "",
+        "left": 605,
+        "right": 649,
+        "width": 43
+      },
+      {
+        "tag": "ellipse",
+        "className": "",
+        "left": 605,
+        "right": 649,
+        "width": 43
+      }
+    ],
+    "boundaryEscapes": [],
+    "tinyText": 0
+  },
+  {
+    "brand": "rth",
+    "viewport": "md-768",
+    "scrollWidth": 768,
+    "clientWidth": 768,
+    "pageOverflow": 0,
+    "bodyEscapes": [
+      {
+        "tag": "g",
+        "className": "",
+        "left": 733,
+        "right": 777,
+        "width": 43
+      },
+      {
+        "tag": "ellipse",
+        "className": "",
+        "left": 733,
+        "right": 777,
+        "width": 43
+      },
+      {
+        "tag": "g",
+        "className": "",
+        "left": 733,
+        "right": 777,
+        "width": 43
+      },
+      {
+        "tag": "ellipse",
+        "className": "",
+        "left": 733,
+        "right": 777,
+        "width": 43
+      },
+      {
+        "tag": "g",
+        "className": "",
+        "left": 733,
+        "right": 777,
+        "width": 43
+      },
+      {
+        "tag": "ellipse",
+        "className": "",
+        "left": 733,
+        "right": 777,
+        "width": 43
+      }
+    ],
+    "boundaryEscapes": [],
+    "tinyText": 0
+  },
+  {
+    "brand": "rth",
+    "viewport": "lg-1024",
+    "scrollWidth": 1024,
+    "clientWidth": 1024,
+    "pageOverflow": 0,
+    "bodyEscapes": [],
+    "boundaryEscapes": [],
+    "tinyText": 0
+  },
+  {
+    "brand": "rth",
+    "viewport": "xl-1280",
+    "scrollWidth": 1280,
+    "clientWidth": 1280,
+    "pageOverflow": 0,
+    "bodyEscapes": [
+      {
+        "tag": "g",
+        "className": "",
+        "left": 1245,
+        "right": 1289,
+        "width": 43
+      },
+      {
+        "tag": "ellipse",
+        "className": "",
+        "left": 1245,
+        "right": 1289,
+        "width": 43
+      },
+      {
+        "tag": "g",
+        "className": "",
+        "left": 1245,
+        "right": 1289,
+        "width": 43
+      },
+      {
+        "tag": "ellipse",
+        "className": "",
+        "left": 1245,
+        "right": 1289,
+        "width": 43
+      },
+      {
+        "tag": "g",
+        "className": "",
+        "left": 1245,
+        "right": 1289,
+        "width": 43
+      },
+      {
+        "tag": "ellipse",
+        "className": "",
+        "left": 1245,
+        "right": 1289,
+        "width": 43
+      }
+    ],
+    "boundaryEscapes": [],
+    "tinyText": 0
+  },
+  {
+    "brand": "rth",
+    "viewport": "2xl-1536",
+    "scrollWidth": 1536,
+    "clientWidth": 1536,
+    "pageOverflow": 0,
+    "bodyEscapes": [
+      {
+        "tag": "g",
+        "className": "",
+        "left": 1501,
+        "right": 1545,
+        "width": 43
+      },
+      {
+        "tag": "ellipse",
+        "className": "",
+        "left": 1501,
+        "right": 1545,
+        "width": 43
+      },
+      {
+        "tag": "g",
+        "className": "",
+        "left": 1501,
+        "right": 1545,
+        "width": 43
+      },
+      {
+        "tag": "ellipse",
+        "className": "",
+        "left": 1501,
+        "right": 1545,
+        "width": 43
+      },
+      {
+        "tag": "g",
+        "className": "",
+        "left": 1501,
+        "right": 1545,
+        "width": 43
+      },
+      {
+        "tag": "ellipse",
+        "className": "",
+        "left": 1501,
+        "right": 1545,
+        "width": 43
+      }
+    ],
+    "boundaryEscapes": [],
+    "tinyText": 0
+  },
+  {
+    "brand": "skillup",
+    "viewport": "base-375",
+    "scrollWidth": 375,
+    "clientWidth": 375,
+    "pageOverflow": 0,
+    "bodyEscapes": [
+      {
+        "tag": "div",
+        "className": "checklist",
+        "left": 47,
+        "right": 589,
+        "width": 542
+      },
+      {
+        "tag": "div",
+        "className": "checklist-item bold-desc",
+        "left": 47,
+        "right": 589,
+        "width": 542
+      },
+      {
+        "tag": "span",
+        "className": "",
+        "left": 73,
+        "right": 589,
+        "width": 516
+      },
+      {
+        "tag": "div",
+        "className": "checklist-item bold-desc",
+        "left": 47,
+        "right": 589,
+        "width": 542
+      },
+      {
+        "tag": "span",
+        "className": "",
+        "left": 73,
+        "right": 588,
+        "width": 515
+      },
+      {
+        "tag": "div",
+        "className": "checklist-item bold-desc",
+        "left": 47,
+        "right": 589,
+        "width": 542
+      },
+      {
+        "tag": "span",
+        "className": "",
+        "left": 73,
+        "right": 589,
+        "width": 516
+      },
+      {
+        "tag": "div",
+        "className": "checklist-item bold-desc",
+        "left": 47,
+        "right": 589,
+        "width": 542
+      },
+      {
+        "tag": "span",
+        "className": "",
+        "left": 73,
+        "right": 589,
+        "width": 516
+      },
+      {
+        "tag": "div",
+        "className": "",
+        "left": 47,
+        "right": 589,
+        "width": 542
+      },
+      {
+        "tag": "span",
+        "className": "",
+        "left": 47,
+        "right": 589,
+        "width": 542
+      }
+    ],
+    "boundaryEscapes": [
+      {
+        "parent": "what-you-need-layout",
+        "child": "checklist"
+      },
+      {
+        "parent": "what-you-need-layout",
+        "child": "div"
+      }
+    ],
+    "tinyText": 0
+  },
+  {
+    "brand": "skillup",
+    "viewport": "sm-640",
+    "scrollWidth": 640,
+    "clientWidth": 640,
+    "pageOverflow": 0,
+    "bodyEscapes": [],
+    "boundaryEscapes": [],
+    "tinyText": 0
+  },
+  {
+    "brand": "skillup",
+    "viewport": "md-768",
+    "scrollWidth": 768,
+    "clientWidth": 768,
+    "pageOverflow": 0,
+    "bodyEscapes": [],
+    "boundaryEscapes": [],
+    "tinyText": 0
+  },
+  {
+    "brand": "skillup",
+    "viewport": "lg-1024",
+    "scrollWidth": 1024,
+    "clientWidth": 1024,
+    "pageOverflow": 0,
+    "bodyEscapes": [],
+    "boundaryEscapes": [],
+    "tinyText": 0
+  },
+  {
+    "brand": "skillup",
+    "viewport": "xl-1280",
+    "scrollWidth": 1280,
+    "clientWidth": 1280,
+    "pageOverflow": 0,
+    "bodyEscapes": [],
+    "boundaryEscapes": [],
+    "tinyText": 0
+  },
+  {
+    "brand": "skillup",
+    "viewport": "2xl-1536",
+    "scrollWidth": 1536,
+    "clientWidth": 1536,
+    "pageOverflow": 0,
+    "bodyEscapes": [],
+    "boundaryEscapes": [],
+    "tinyText": 0
+  }
+]

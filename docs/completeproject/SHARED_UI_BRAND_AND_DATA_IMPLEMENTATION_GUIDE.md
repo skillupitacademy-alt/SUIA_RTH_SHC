@@ -336,6 +336,48 @@ These rules are mandatory for both current and future shared pages.
 - Use pure white text on deep brand surfaces
 - Use dark slate text on light surfaces
 
+### Responsive Breakpoint Rules
+
+Every shared page must qualify across the full Tailwind breakpoint range used by the platform:
+
+- `base` / `0px`: mobile portrait, including narrow 360px-375px devices
+- `sm` / `640px`: mobile landscape and small tablets
+- `md` / `768px`: tablets and compact laptops
+- `lg` / `1024px`: standard desktop
+- `xl` / `1280px`: large desktop
+- `2xl` / `1536px`: wide desktop
+
+For each breakpoint:
+
+- Parent containers must define stable width, max-width, min-width, padding, gap, and overflow behavior.
+- Child components must not touch, crop into, or overflow their parent borders.
+- Text must remain readable and must not overlap, clip, wrap awkwardly, or force horizontal page scroll.
+- Cards, grids, tables, code blocks, diagrams, charts, sidebars, headers, and footers must reflow intentionally.
+- Horizontal scrolling is allowed only inside intentionally scrollable regions such as tables and code blocks, never on the page body.
+- Font sizes, line heights, spacing, and icon sizes must be adjusted per breakpoint where needed so the complete page still looks designed, not merely compressed.
+- Responsive behavior must preserve the same information architecture for both brands; only visual brand tokens and route data may vary.
+
+### Responsive QA Rules
+
+Before a shared page is approved, run viewport checks for both brand routes at minimum:
+
+- 375px wide mobile
+- 640px small tablet
+- 768px tablet
+- 1024px laptop
+- 1280px desktop
+- 1536px wide desktop
+
+The QA pass must inspect:
+
+- parent-child boundary issues, including children touching or cropping parent borders
+- body-level horizontal overflow
+- clipped text, clipped controls, clipped icons, and clipped charts
+- inconsistent card heights that break alignment
+- tables/code blocks that overflow without their own scroll container
+- sticky headers, sidebars, bottom navigation, and page actions at each breakpoint
+- both RealTutorialHub and SkillUp routes, because brand token changes can affect contrast and visual balance
+
 ### Animation Rules
 
 - No text opacity fade-in as required by the architecture doc
@@ -369,6 +411,10 @@ Before implementing Option 3 and Option 4 on any new page, confirm:
 
 - What is the desktop structure?
 - What is the mobile structure?
+- What changes at `base`, `sm`, `md`, `lg`, `xl`, and `2xl`?
+- Which containers own overflow at each breakpoint?
+- Which children are allowed to scroll internally?
+- Which text, code, tables, charts, or diagrams need breakpoint-specific sizing?
 - Which elements are interactive?
 - Which states need persistence?
 - Which states are derived vs directly supplied by backend?
@@ -391,6 +437,7 @@ For any future page that follows this architecture, implementation is not comple
 6. mapping function from API to UI model
 7. route/server loader function
 8. loading, empty, and error handling decision documented
+9. responsive QA evidence for both brand routes across `base`, `sm`, `md`, `lg`, `xl`, and `2xl`
 
 ## Recommended Naming Convention
 
@@ -443,6 +490,8 @@ That is the approved architecture standard to replicate for all future shared pa
 - Do keep route `page.tsx` files thin and focused on config selection plus data loading
 - Do confirm page-specific data requirements with developer, client, or stakeholder before finalizing the UI model
 - Do keep desktop and mobile layouts structurally aligned even when their card count differs
+- Do verify every shared page at `base`, `sm`, `md`, `lg`, `xl`, and `2xl` for both brands before approval
+- Do ensure parent containers and child components have explicit responsive boundaries for width, spacing, overflow, and text wrapping
 - Do follow WCAG-oriented contrast rules on all themed surfaces
 - Do provide non-color-only state cues for status, progress, and selection
 - Do treat loader functions as the single entry point for future backend wiring
@@ -459,3 +508,4 @@ That is the approved architecture standard to replicate for all future shared pa
 - Dont rely only on color to communicate state
 - Dont add page-specific exceptions that bypass the shared mapper and loader pattern
 - Dont assume future pages can skip Option 3 or Option 4 just because the first version uses demo data
+- Dont approve a shared page if any breakpoint has body-level horizontal overflow, clipped children, border-cropping, unreadable font sizing, or accidental overlap

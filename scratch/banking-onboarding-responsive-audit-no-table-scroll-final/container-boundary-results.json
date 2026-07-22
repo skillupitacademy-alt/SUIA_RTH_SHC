@@ -1,0 +1,74 @@
+[
+  {
+    "brand": "rth",
+    "label": "base-375",
+    "width": 375,
+    "boundaryIssues": []
+  },
+  {
+    "brand": "rth",
+    "label": "sm-640",
+    "width": 640,
+    "boundaryIssues": []
+  },
+  {
+    "brand": "rth",
+    "label": "md-768",
+    "width": 768,
+    "boundaryIssues": []
+  },
+  {
+    "brand": "rth",
+    "label": "lg-1024",
+    "width": 1024,
+    "boundaryIssues": []
+  },
+  {
+    "brand": "rth",
+    "label": "xl-1280",
+    "width": 1280,
+    "boundaryIssues": []
+  },
+  {
+    "brand": "rth",
+    "label": "2xl-1536",
+    "width": 1536,
+    "boundaryIssues": []
+  },
+  {
+    "brand": "skillup",
+    "label": "base-375",
+    "width": 375,
+    "boundaryIssues": []
+  },
+  {
+    "brand": "skillup",
+    "label": "sm-640",
+    "width": 640,
+    "boundaryIssues": []
+  },
+  {
+    "brand": "skillup",
+    "label": "md-768",
+    "width": 768,
+    "boundaryIssues": []
+  },
+  {
+    "brand": "skillup",
+    "label": "lg-1024",
+    "width": 1024,
+    "boundaryIssues": []
+  },
+  {
+    "brand": "skillup",
+    "label": "xl-1280",
+    "width": 1280,
+    "boundaryIssues": []
+  },
+  {
+    "brand": "skillup",
+    "label": "2xl-1536",
+    "width": 1536,
+    "boundaryIssues": []
+  }
+]

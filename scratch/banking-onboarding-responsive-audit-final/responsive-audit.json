@@ -1,0 +1,428 @@
+[
+  {
+    "brand": "rth",
+    "viewport": "base-375",
+    "pageOverflow": 0,
+    "bodyEscapes": [
+      {
+        "tag": "g",
+        "className": "",
+        "box": [
+          340,
+          384,
+          43
+        ]
+      },
+      {
+        "tag": "ellipse",
+        "className": "",
+        "box": [
+          340,
+          384,
+          43
+        ]
+      },
+      {
+        "tag": "g",
+        "className": "",
+        "box": [
+          340,
+          384,
+          43
+        ]
+      },
+      {
+        "tag": "ellipse",
+        "className": "",
+        "box": [
+          340,
+          384,
+          43
+        ]
+      },
+      {
+        "tag": "g",
+        "className": "",
+        "box": [
+          340,
+          384,
+          43
+        ]
+      },
+      {
+        "tag": "ellipse",
+        "className": "",
+        "box": [
+          340,
+          384,
+          43
+        ]
+      }
+    ],
+    "boundaryEscapes": [],
+    "tinyText": 0
+  },
+  {
+    "brand": "rth",
+    "viewport": "sm-640",
+    "pageOverflow": 0,
+    "bodyEscapes": [
+      {
+        "tag": "g",
+        "className": "",
+        "box": [
+          605,
+          649,
+          43
+        ]
+      },
+      {
+        "tag": "ellipse",
+        "className": "",
+        "box": [
+          605,
+          649,
+          43
+        ]
+      },
+      {
+        "tag": "g",
+        "className": "",
+        "box": [
+          605,
+          649,
+          43
+        ]
+      },
+      {
+        "tag": "ellipse",
+        "className": "",
+        "box": [
+          605,
+          649,
+          43
+        ]
+      },
+      {
+        "tag": "g",
+        "className": "",
+        "box": [
+          605,
+          649,
+          43
+        ]
+      },
+      {
+        "tag": "ellipse",
+        "className": "",
+        "box": [
+          605,
+          649,
+          43
+        ]
+      }
+    ],
+    "boundaryEscapes": [],
+    "tinyText": 0
+  },
+  {
+    "brand": "rth",
+    "viewport": "md-768",
+    "pageOverflow": 0,
+    "bodyEscapes": [
+      {
+        "tag": "g",
+        "className": "",
+        "box": [
+          733,
+          777,
+          43
+        ]
+      },
+      {
+        "tag": "ellipse",
+        "className": "",
+        "box": [
+          733,
+          777,
+          43
+        ]
+      },
+      {
+        "tag": "g",
+        "className": "",
+        "box": [
+          733,
+          777,
+          43
+        ]
+      },
+      {
+        "tag": "ellipse",
+        "className": "",
+        "box": [
+          733,
+          777,
+          43
+        ]
+      },
+      {
+        "tag": "g",
+        "className": "",
+        "box": [
+          733,
+          777,
+          43
+        ]
+      },
+      {
+        "tag": "ellipse",
+        "className": "",
+        "box": [
+          733,
+          777,
+          43
+        ]
+      }
+    ],
+    "boundaryEscapes": [],
+    "tinyText": 0
+  },
+  {
+    "brand": "rth",
+    "viewport": "lg-1024",
+    "pageOverflow": 0,
+    "bodyEscapes": [
+      {
+        "tag": "g",
+        "className": "",
+        "box": [
+          989,
+          1033,
+          43
+        ]
+      },
+      {
+        "tag": "ellipse",
+        "className": "",
+        "box": [
+          989,
+          1033,
+          43
+        ]
+      },
+      {
+        "tag": "g",
+        "className": "",
+        "box": [
+          989,
+          1033,
+          43
+        ]
+      },
+      {
+        "tag": "ellipse",
+        "className": "",
+        "box": [
+          989,
+          1033,
+          43
+        ]
+      },
+      {
+        "tag": "g",
+        "className": "",
+        "box": [
+          989,
+          1033,
+          43
+        ]
+      },
+      {
+        "tag": "ellipse",
+        "className": "",
+        "box": [
+          989,
+          1033,
+          43
+        ]
+      }
+    ],
+    "boundaryEscapes": [],
+    "tinyText": 0
+  },
+  {
+    "brand": "rth",
+    "viewport": "xl-1280",
+    "pageOverflow": 0,
+    "bodyEscapes": [
+      {
+        "tag": "g",
+        "className": "",
+        "box": [
+          1245,
+          1289,
+          43
+        ]
+      },
+      {
+        "tag": "ellipse",
+        "className": "",
+        "box": [
+          1245,
+          1289,
+          43
+        ]
+      },
+      {
+        "tag": "g",
+        "className": "",
+        "box": [
+          1245,
+          1289,
+          43
+        ]
+      },
+      {
+        "tag": "ellipse",
+        "className": "",
+        "box": [
+          1245,
+          1289,
+          43
+        ]
+      },
+      {
+        "tag": "g",
+        "className": "",
+        "box": [
+          1245,
+          1289,
+          43
+        ]
+      },
+      {
+        "tag": "ellipse",
+        "className": "",
+        "box": [
+          1245,
+          1289,
+          43
+        ]
+      }
+    ],
+    "boundaryEscapes": [],
+    "tinyText": 0
+  },
+  {
+    "brand": "rth",
+    "viewport": "2xl-1536",
+    "pageOverflow": 0,
+    "bodyEscapes": [
+      {
+        "tag": "g",
+        "className": "",
+        "box": [
+          1501,
+          1545,
+          43
+        ]
+      },
+      {
+        "tag": "ellipse",
+        "className": "",
+        "box": [
+          1501,
+          1545,
+          43
+        ]
+      },
+      {
+        "tag": "g",
+        "className": "",
+        "box": [
+          1501,
+          1545,
+          43
+        ]
+      },
+      {
+        "tag": "ellipse",
+        "className": "",
+        "box": [
+          1501,
+          1545,
+          43
+        ]
+      },
+      {
+        "tag": "g",
+        "className": "",
+        "box": [
+          1501,
+          1545,
+          43
+        ]
+      },
+      {
+        "tag": "ellipse",
+        "className": "",
+        "box": [
+          1501,
+          1545,
+          43
+        ]
+      }
+    ],
+    "boundaryEscapes": [],
+    "tinyText": 0
+  },
+  {
+    "brand": "skillup",
+    "viewport": "base-375",
+    "pageOverflow": 0,
+    "bodyEscapes": [],
+    "boundaryEscapes": [],
+    "tinyText": 0
+  },
+  {
+    "brand": "skillup",
+    "viewport": "sm-640",
+    "pageOverflow": 0,
+    "bodyEscapes": [],
+    "boundaryEscapes": [],
+    "tinyText": 0
+  },
+  {
+    "brand": "skillup",
+    "viewport": "md-768",
+    "pageOverflow": 0,
+    "bodyEscapes": [],
+    "boundaryEscapes": [],
+    "tinyText": 0
+  },
+  {
+    "brand": "skillup",
+    "viewport": "lg-1024",
+    "pageOverflow": 0,
+    "bodyEscapes": [],
+    "boundaryEscapes": [],
+    "tinyText": 0
+  },
+  {
+    "brand": "skillup",
+    "viewport": "xl-1280",
+    "pageOverflow": 0,
+    "bodyEscapes": [],
+    "boundaryEscapes": [],
+    "tinyText": 0
+  },
+  {
+    "brand": "skillup",
+    "viewport": "2xl-1536",
+    "pageOverflow": 0,
+    "bodyEscapes": [],
+    "boundaryEscapes": [],
+    "tinyText": 0
+  }
+]

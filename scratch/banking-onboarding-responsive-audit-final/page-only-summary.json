@@ -1,0 +1,86 @@
+[
+  {
+    "brand": "rth",
+    "viewport": "base-375",
+    "overflow": 0,
+    "escapes": 0,
+    "boundary": 0
+  },
+  {
+    "brand": "rth",
+    "viewport": "sm-640",
+    "overflow": 0,
+    "escapes": 0,
+    "boundary": 0
+  },
+  {
+    "brand": "rth",
+    "viewport": "md-768",
+    "overflow": 0,
+    "escapes": 0,
+    "boundary": 0
+  },
+  {
+    "brand": "rth",
+    "viewport": "lg-1024",
+    "overflow": 0,
+    "escapes": 0,
+    "boundary": 0
+  },
+  {
+    "brand": "rth",
+    "viewport": "xl-1280",
+    "overflow": 0,
+    "escapes": 0,
+    "boundary": 0
+  },
+  {
+    "brand": "rth",
+    "viewport": "2xl-1536",
+    "overflow": 0,
+    "escapes": 0,
+    "boundary": 0
+  },
+  {
+    "brand": "skillup",
+    "viewport": "base-375",
+    "overflow": 0,
+    "escapes": 0,
+    "boundary": 0
+  },
+  {
+    "brand": "skillup",
+    "viewport": "sm-640",
+    "overflow": 0,
+    "escapes": 0,
+    "boundary": 0
+  },
+  {
+    "brand": "skillup",
+    "viewport": "md-768",
+    "overflow": 0,
+    "escapes": 0,
+    "boundary": 0
+  },
+  {
+    "brand": "skillup",
+    "viewport": "lg-1024",
+    "overflow": 0,
+    "escapes": 0,
+    "boundary": 0
+  },
+  {
+    "brand": "skillup",
+    "viewport": "xl-1280",
+    "overflow": 0,
+    "escapes": 0,
+    "boundary": 0
+  },
+  {
+    "brand": "skillup",
+    "viewport": "2xl-1536",
+    "overflow": 0,
+    "escapes": 0,
+    "boundary": 0
+  }
+]

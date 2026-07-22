@@ -1,0 +1,242 @@
+[
+  {
+    "brand": "rth",
+    "label": "base-375",
+    "width": 375,
+    "pageOverflow": 0,
+    "tableOverflow": 0,
+    "tableSelfOverflow": 0,
+    "diagramOverflow": 0,
+    "codeOverflowCount": 0,
+    "maxCodeOverflow": 0,
+    "escapes": [
+      {
+        "tag": "DIV",
+        "cls": "",
+        "left": 0,
+        "right": 363,
+        "total": 363
+      }
+    ]
+  },
+  {
+    "brand": "rth",
+    "label": "sm-640",
+    "width": 640,
+    "pageOverflow": 0,
+    "tableOverflow": 0,
+    "tableSelfOverflow": 0,
+    "diagramOverflow": 0,
+    "codeOverflowCount": 0,
+    "maxCodeOverflow": 0,
+    "escapes": [
+      {
+        "tag": "DIV",
+        "cls": "",
+        "left": 0,
+        "right": 628,
+        "total": 628
+      }
+    ]
+  },
+  {
+    "brand": "rth",
+    "label": "md-768",
+    "width": 768,
+    "pageOverflow": 0,
+    "tableOverflow": 0,
+    "tableSelfOverflow": 0,
+    "diagramOverflow": 0,
+    "codeOverflowCount": 0,
+    "maxCodeOverflow": 0,
+    "escapes": [
+      {
+        "tag": "DIV",
+        "cls": "",
+        "left": 0,
+        "right": 752,
+        "total": 752
+      }
+    ]
+  },
+  {
+    "brand": "rth",
+    "label": "lg-1024",
+    "width": 1024,
+    "pageOverflow": 0,
+    "tableOverflow": 0,
+    "tableSelfOverflow": 0,
+    "diagramOverflow": 0,
+    "codeOverflowCount": 0,
+    "maxCodeOverflow": 0,
+    "escapes": [
+      {
+        "tag": "DIV",
+        "cls": "",
+        "left": 0,
+        "right": 1000,
+        "total": 1000
+      }
+    ]
+  },
+  {
+    "brand": "rth",
+    "label": "xl-1280",
+    "width": 1280,
+    "pageOverflow": 0,
+    "tableOverflow": 0,
+    "tableSelfOverflow": 0,
+    "diagramOverflow": 0,
+    "codeOverflowCount": 0,
+    "maxCodeOverflow": 0,
+    "escapes": [
+      {
+        "tag": "DIV",
+        "cls": "",
+        "left": 0,
+        "right": 1256,
+        "total": 1256
+      }
+    ]
+  },
+  {
+    "brand": "rth",
+    "label": "2xl-1536",
+    "width": 1536,
+    "pageOverflow": 0,
+    "tableOverflow": 0,
+    "tableSelfOverflow": 0,
+    "diagramOverflow": 0,
+    "codeOverflowCount": 0,
+    "maxCodeOverflow": 0,
+    "escapes": [
+      {
+        "tag": "DIV",
+        "cls": "",
+        "left": 0,
+        "right": 1512,
+        "total": 1512
+      }
+    ]
+  },
+  {
+    "brand": "skillup",
+    "label": "base-375",
+    "width": 375,
+    "pageOverflow": 0,
+    "tableOverflow": 0,
+    "tableSelfOverflow": 0,
+    "diagramOverflow": 0,
+    "codeOverflowCount": 0,
+    "maxCodeOverflow": 0,
+    "escapes": [
+      {
+        "tag": "DIV",
+        "cls": "",
+        "left": 0,
+        "right": 363,
+        "total": 363
+      }
+    ]
+  },
+  {
+    "brand": "skillup",
+    "label": "sm-640",
+    "width": 640,
+    "pageOverflow": 0,
+    "tableOverflow": 0,
+    "tableSelfOverflow": 0,
+    "diagramOverflow": 0,
+    "codeOverflowCount": 0,
+    "maxCodeOverflow": 0,
+    "escapes": [
+      {
+        "tag": "DIV",
+        "cls": "",
+        "left": 0,
+        "right": 628,
+        "total": 628
+      }
+    ]
+  },
+  {
+    "brand": "skillup",
+    "label": "md-768",
+    "width": 768,
+    "pageOverflow": 0,
+    "tableOverflow": 0,
+    "tableSelfOverflow": 0,
+    "diagramOverflow": 0,
+    "codeOverflowCount": 0,
+    "maxCodeOverflow": 0,
+    "escapes": [
+      {
+        "tag": "DIV",
+        "cls": "",
+        "left": 0,
+        "right": 752,
+        "total": 752
+      }
+    ]
+  },
+  {
+    "brand": "skillup",
+    "label": "lg-1024",
+    "width": 1024,
+    "pageOverflow": 0,
+    "tableOverflow": 0,
+    "tableSelfOverflow": 0,
+    "diagramOverflow": 0,
+    "codeOverflowCount": 0,
+    "maxCodeOverflow": 0,
+    "escapes": [
+      {
+        "tag": "DIV",
+        "cls": "",
+        "left": 0,
+        "right": 1000,
+        "total": 1000
+      }
+    ]
+  },
+  {
+    "brand": "skillup",
+    "label": "xl-1280",
+    "width": 1280,
+    "pageOverflow": 0,
+    "tableOverflow": 0,
+    "tableSelfOverflow": 0,
+    "diagramOverflow": 0,
+    "codeOverflowCount": 0,
+    "maxCodeOverflow": 0,
+    "escapes": [
+      {
+        "tag": "DIV",
+        "cls": "",
+        "left": 0,
+        "right": 1256,
+        "total": 1256
+      }
+    ]
+  },
+  {
+    "brand": "skillup",
+    "label": "2xl-1536",
+    "width": 1536,
+    "pageOverflow": 0,
+    "tableOverflow": 0,
+    "tableSelfOverflow": 0,
+    "diagramOverflow": 0,
+    "codeOverflowCount": 0,
+    "maxCodeOverflow": 0,
+    "escapes": [
+      {
+        "tag": "DIV",
+        "cls": "",
+        "left": 0,
+        "right": 1512,
+        "total": 1512
+      }
+    ]
+  }
+]
