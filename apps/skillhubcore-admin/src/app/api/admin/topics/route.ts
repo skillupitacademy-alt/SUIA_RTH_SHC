@@ -1,4 +1,4 @@
-import { getDb, topics } from '@quiz/db-skillhubcore';
+import { getDb, domains, subjects, topics } from '@quiz/db-skillhubcore';
 import { eq, ilike, and, isNull, desc } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -14,9 +14,32 @@ export async function GET(request: NextRequest) {
     if (search) conditions.push(ilike(topics.name, `%${search}%`));
     if (subjectId) conditions.push(eq(topics.subjectId, subjectId));
 
-    const results = await db.select().from(topics).where(and(...conditions)).orderBy(desc(topics.createdAt)).limit(limit + 1);
+    const results = await db
+      .select({
+        topic: topics,
+        subject: subjects,
+        domain: domains,
+      })
+      .from(topics)
+      .leftJoin(subjects, eq(topics.subjectId, subjects.id))
+      .leftJoin(domains, eq(subjects.domainId, domains.id))
+      .where(and(...conditions))
+      .orderBy(desc(topics.createdAt))
+      .limit(limit + 1);
     const hasMore = results.length > limit;
-    const data = hasMore ? results.slice(0, limit) : results;
+    const rows = hasMore ? results.slice(0, limit) : results;
+    const data = rows.map(({ topic, subject, domain }) => ({
+      ...topic,
+      subject: subject !== null ? {
+        id: subject.id,
+        name: subject.name,
+        domainId: subject.domainId,
+        domain: domain !== null ? {
+          id: domain.id,
+          name: domain.name,
+        } : undefined,
+      } : undefined,
+    }));
 
     return NextResponse.json({ data, nextCursor: hasMore ? data[data.length - 1]?.id : null, hasMore });
   } catch (error) {

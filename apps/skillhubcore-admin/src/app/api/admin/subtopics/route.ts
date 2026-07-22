@@ -1,4 +1,4 @@
-import { getDb, subtopics } from '@quiz/db-skillhubcore';
+import { getDb, domains, subjects, subtopics, topics } from '@quiz/db-skillhubcore';
 import { eq, ilike, and, isNull, desc } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -14,9 +14,39 @@ export async function GET(request: NextRequest) {
     if (search) conditions.push(ilike(subtopics.name, `%${search}%`));
     if (topicId) conditions.push(eq(subtopics.topicId, topicId));
 
-    const results = await db.select().from(subtopics).where(and(...conditions)).orderBy(desc(subtopics.createdAt)).limit(limit + 1);
+    const results = await db
+      .select({
+        subtopic: subtopics,
+        topic: topics,
+        subject: subjects,
+        domain: domains,
+      })
+      .from(subtopics)
+      .leftJoin(topics, eq(subtopics.topicId, topics.id))
+      .leftJoin(subjects, eq(topics.subjectId, subjects.id))
+      .leftJoin(domains, eq(subjects.domainId, domains.id))
+      .where(and(...conditions))
+      .orderBy(desc(subtopics.createdAt))
+      .limit(limit + 1);
     const hasMore = results.length > limit;
-    const data = hasMore ? results.slice(0, limit) : results;
+    const rows = hasMore ? results.slice(0, limit) : results;
+    const data = rows.map(({ subtopic, topic, subject, domain }) => ({
+      ...subtopic,
+      topic: topic !== null ? {
+        id: topic.id,
+        name: topic.name,
+        subjectId: topic.subjectId,
+        subject: subject !== null ? {
+          id: subject.id,
+          name: subject.name,
+          domainId: subject.domainId,
+          domain: domain !== null ? {
+            id: domain.id,
+            name: domain.name,
+          } : undefined,
+        } : undefined,
+      } : undefined,
+    }));
 
     return NextResponse.json({ data, nextCursor: hasMore ? data[data.length - 1]?.id : null, hasMore });
   } catch (error) {

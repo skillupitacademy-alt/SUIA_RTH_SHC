@@ -38,6 +38,9 @@ interface QuestionData {
             }
         }
     };
+    subtopic?: {
+        topic?: QuestionData['topic'];
+    };
 }
 
 export function QuestionTable() {
@@ -145,6 +148,7 @@ export function QuestionTable() {
                     options?: Array<string | { text?: string; optionText?: string; option_text?: string; isCorrect?: boolean; is_correct?: boolean; id?: string }> | Record<string, string>;
                     questionSkills?: QuestionData['questionSkills'];
                     topic?: QuestionData['topic'];
+                    subtopic?: QuestionData['subtopic'];
                 };
 
                 const normalizeOptions = (options: RawQuestion['options'], correctAnswer?: string) => {
@@ -197,7 +201,9 @@ export function QuestionTable() {
                         id: opt.id ?? `${idx}-${optIdx}`
                     })),
                     questionSkills: (q as { questionSkills?: QuestionData['questionSkills'] }).questionSkills,
-                    topic: (q as { topic?: QuestionData['topic'] }).topic
+                    topic: (q as { topic?: QuestionData['topic']; subtopic?: QuestionData['subtopic'] }).topic
+                        ?? (q as { subtopic?: QuestionData['subtopic'] }).subtopic?.topic,
+                    subtopic: (q as { subtopic?: QuestionData['subtopic'] }).subtopic
                 }));
                 setQuestions(mappedQuestions);
                 const total = data.total ?? data.questions.length ?? 0;

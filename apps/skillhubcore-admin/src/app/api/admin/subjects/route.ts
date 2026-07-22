@@ -1,4 +1,4 @@
-import { getDb, subjects } from '@quiz/db-skillhubcore';
+import { getDb, domains, subjects } from '@quiz/db-skillhubcore';
 import { eq, ilike, and, isNull, desc } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -26,14 +26,25 @@ export async function GET(request: NextRequest) {
     }
 
     const results = await db
-      .select()
+      .select({
+        subject: subjects,
+        domain: domains,
+      })
       .from(subjects)
+      .leftJoin(domains, eq(subjects.domainId, domains.id))
       .where(and(...conditions))
       .orderBy(desc(subjects.createdAt))
       .limit(limit + 1);
 
     const hasMore = results.length > limit;
-    const data = hasMore ? results.slice(0, limit) : results;
+    const rows = hasMore ? results.slice(0, limit) : results;
+    const data = rows.map(({ subject, domain }) => ({
+      ...subject,
+      domain: domain !== null ? {
+        id: domain.id,
+        name: domain.name,
+      } : undefined,
+    }));
     const nextCursor = hasMore ? data[data.length - 1]?.id : null;
 
     return NextResponse.json({ data, nextCursor, hasMore });

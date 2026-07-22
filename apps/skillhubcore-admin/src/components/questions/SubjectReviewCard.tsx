@@ -37,11 +37,11 @@ export const SubjectReviewCard = React.memo(({
 
     return (
         <div className={cn(
-            "w-full bg-white border border-slate-200 rounded-[2rem] shadow-sm hover:shadow-xl hover:border-purple-500/20 transition-all duration-500 overflow-hidden flex flex-col group relative",
-            isSelected && "ring-2 ring-purple-500 border-transparent shadow-2xl bg-purple-500/[0.01]"
+            "w-full bg-white border border-slate-200 rounded-[2rem] shadow-sm hover:shadow-xl hover:border-[#f54a8d]/20 transition-all duration-500 overflow-hidden flex flex-col group relative",
+            isSelected && "ring-2 ring-[#f54a8d] border-transparent shadow-2xl bg-[#f54a8d]/[0.01]"
         )}>
             {/* SELECTION OVERLAY GLOW */}
-            {isSelected === true ? <div className="absolute inset-0 bg-purple-500/[0.02] pointer-events-none animate-in fade-in duration-500" /> : null}
+            {isSelected === true ? <div className="absolute inset-0 bg-[#f54a8d]/[0.02] pointer-events-none animate-in fade-in duration-500" /> : null}
 
             {/* Header Area: Status */}
             <div className="px-8 py-5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-4 bg-slate-50/50">
@@ -52,14 +52,14 @@ export const SubjectReviewCard = React.memo(({
                             type="checkbox"
                             checked={isSelected}
                             onChange={(e) => onSelect?.(subject.id as string, e.target.checked)}
-                            className="w-5 h-5 rounded-lg border-2 border-slate-200 text-purple-500 focus:ring-purple-500/20 cursor-pointer transition-all checked:border-purple-500"
+                            className="w-5 h-5 rounded-lg border-2 border-slate-200 text-[#f54a8d] focus:ring-[#f54a8d]/20 cursor-pointer transition-all checked:border-[#f54a8d]"
                             aria-label={`Select subject ${subject.name as string ?? 'item'}`}
                         />
                     </div>
 
                     <div className={cn(
                         "w-10 h-10 rounded-2xl flex items-center justify-center font-bold border-2 transition-all duration-300",
-                        isSelected === true ? "bg-indigo-600 text-white border-indigo-600 shadow-lg" : "bg-indigo-50 text-indigo-600 border-indigo-100"
+                        isSelected === true ? "bg-[#133382] text-white border-[#133382] shadow-lg" : "bg-[#f54a8d]/10 text-[#133382] border-[#f54a8d]/20"
                     )}>
                         #{index + 1}
                     </div>
@@ -86,7 +86,7 @@ export const SubjectReviewCard = React.memo(({
 
                     <button
                         onClick={() => onEditRequest(subject)}
-                        className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-purple-500 hover:border-purple-500/20 transition-all active:scale-95 shadow-sm"
+                        className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-[#f54a8d] hover:border-[#f54a8d]/20 transition-all active:scale-95 shadow-sm"
                         title="Edit Subject"
                         aria-label={`Edit subject ${subject.name as string ?? ''}`}
                     >
@@ -110,7 +110,7 @@ export const SubjectReviewCard = React.memo(({
                     <div className="p-5 rounded-3xl bg-slate-50 border border-slate-200 flex flex-col gap-4">
                         <div className="flex flex-col gap-1">
                             <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Hierarchy Root</h4>
-                            <div className="flex items-center gap-2 text-purple-600">
+                            <div className="flex items-center gap-2 text-[#133382]">
                                 <Layers size={14} />
                                 <span className="text-sm font-black uppercase tracking-tight">{(subject.domain?.name != null && subject.domain.name !== '') ? (subject.domain.name as string) : 'Unlinked'}</span>
                             </div>
@@ -127,7 +127,7 @@ export const SubjectReviewCard = React.memo(({
                 <div className="flex-1 space-y-6">
                     <div className="space-y-4">
                         <div className="flex items-start gap-4">
-                            <div className="mt-1 flex items-center justify-center w-8 h-8 rounded-xl bg-purple-50 text-purple-500 shadow-sm">
+                            <div className="mt-1 flex items-center justify-center w-8 h-8 rounded-xl bg-[#f54a8d]/10 text-[#f54a8d] shadow-sm">
                                 <BookOpen size={16} />
                             </div>
                             <div className="flex-1">

@@ -21,8 +21,8 @@ export default function QuestionsPage() {
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-primary/5">
                 <div>
                     <div className="flex items-center gap-3 mb-2">
-                        <Database size={20} className="text-[#FF4B91]" />
-                        <span className="text-xs font-black uppercase tracking-[0.3em] text-[#FF4B91]">Governance_Matrix</span>
+                        <Database size={20} className="text-[#f54a8d]" />
+                        <span className="text-xs font-black uppercase tracking-[0.3em] text-[#f54a8d]">Governance_Matrix</span>
                     </div>
                     <PageTitle text="Question Bank" />
                     <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest mt-2">Hierarchy • Difficulty • Compliance</p>
@@ -30,7 +30,7 @@ export default function QuestionsPage() {
                 <div className="flex flex-col items-end gap-3 text-right">
                     <Link
                         href="/questions/new"
-                        className="px-5 py-2.5 rounded-xl bg-[#FF4B91] hover:bg-[#ff3382] text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-[#FF4B91]/20 transition-all flex items-center gap-2"
+                        className="px-5 py-2.5 rounded-xl bg-[#f54a8d] hover:bg-[#d63d7a] text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-[#f54a8d]/20 transition-all flex items-center gap-2"
                     >
                         <Plus size={16} /> New Question
                     </Link>
