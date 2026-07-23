@@ -1,6 +1,6 @@
 // Rebuild trigger: Centralized navigation and footer stability
 import React, { useState } from 'react';
-import { CheckCircle2, ChevronRight, Star, TrendingUp } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { useBrand } from './PostLandingPage/app/context/BrandContext';
 import { SubtopicNotesViewData } from './subtopicNotesData';
 import { SubtopicTopBar } from './TutorialEngine/components/subtopic/SubtopicTopBar';
@@ -19,6 +19,7 @@ import { QuizContent } from './TutorialEngine/components/notes/QuizContent';
 import { SummaryContent } from './TutorialEngine/components/notes/SummaryContent';
 import { InterviewPrepContent } from './TutorialEngine/components/notes/InterviewPrepContent';
 import { AITutorContent } from './TutorialEngine/components/notes/AITutorContent';
+import { ProgressContent } from './TutorialEngine/components/notes/ProgressContent';
 import { TabFooter } from './TutorialEngine/components/notes/TabFooter';
 
 import { SubtopicViewPage } from './SubtopicViewPage';
@@ -98,7 +99,8 @@ export function SubtopicNotesPage({
     { id: 'quiz', label: 'Quiz' },
     { id: 'summary', label: 'Summary' },
     { id: 'interview', label: 'Interview Prep' },
-    { id: 'ai-tutor', label: brand.tutorLabel }
+    { id: 'ai-tutor', label: brand.tutorLabel },
+    { id: 'progress', label: 'Progress' }
   ];
 
   const handleTabChange = (id: string) => {
@@ -290,36 +292,7 @@ export function SubtopicNotesPage({
                   </>
                 )}
                 {activeTab === 'progress' && (
-                  <section className="min-w-0 space-y-6 rounded-[32px] bg-white/80 backdrop-blur-xl p-5 shadow-2xl border-t border-white/60 transition-all duration-300 -translate-y-1 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] sm:p-8">
-                    <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-white" style={{ backgroundColor: brand.primaryColor }}>
-                        <TrendingUp size={24} aria-hidden="true" />
-                      </div>
-                      <div className="min-w-0">
-                        <h1 className="break-words text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">Progress Tracker</h1>
-                        <p className="break-words text-sm font-medium text-slate-800">{notesData.leftSidebar.progress.message}</p>
-                      </div>
-                    </div>
-                    <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2">
-                      <div className="rounded-2xl border border-slate-100 bg-slate-50 p-5">
-                        <p className="text-[11px] font-bold uppercase tracking-wider text-slate-700">Course</p>
-                        <p className="mt-2 break-words text-lg font-bold text-slate-950">{notesData.rightSidebar.courseProgress.courseName}</p>
-                      </div>
-                      <div className="rounded-2xl border border-slate-100 bg-slate-50 p-5">
-                        <p className="text-[11px] font-bold uppercase tracking-wider text-slate-700">Completion</p>
-                        <p className="mt-2 text-lg font-bold text-slate-950">{notesData.rightSidebar.courseProgress.label}</p>
-                      </div>
-                    </div>
-                    <div className="space-y-3">
-                      {notesData.leftSidebar.items.filter(item => item.id !== 'overview').slice(0, 8).map((item) => (
-                        <div key={item.id} className="flex min-w-0 items-center gap-3 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
-                           <CheckCircle2 size={18} className={item.status === 'completed' ? 'text-emerald-800' : 'text-slate-400'} aria-hidden="true" />
-                          <span className="min-w-0 break-words text-sm font-bold text-slate-900">{item.label}</span>
-                          <span className="ml-auto shrink-0 rounded-full bg-slate-100 px-2 py-1 text-[10px] font-bold uppercase text-slate-700">{item.status}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </section>
+                  <ProgressContent notesData={notesData} onSelectTab={handleTabChange} />
                 )}
             </div>
 
