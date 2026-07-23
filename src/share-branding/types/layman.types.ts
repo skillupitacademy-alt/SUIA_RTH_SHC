@@ -19,6 +19,13 @@ export interface LaymanSectionPattern {
     comparisonPanel: string;
     visualMetaphor: Array<{ label: string; comparison: string }>;
     keyTakeaway: string;
+    image?: {
+      type: 'inline_svg';
+      dataUri: string;
+      width?: number;
+      height?: number;
+      alt?: string;
+    };
     analogyVisual?: {
       type: 'inline_svg';
       dataUri: string;

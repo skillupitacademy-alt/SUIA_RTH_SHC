@@ -48,7 +48,7 @@ export function LaymanMainContent({ data }: { data: SubtopicNotesViewData['mainC
           comparisonPanel={data.everydayAnalogy.comparisonPanel}
           visualMetaphor={data.everydayAnalogy.visualMetaphor}
           keyTakeaway={data.everydayAnalogy.keyTakeaway}
-          analogyVisual={data.everydayAnalogy.analogyVisual}
+          analogyVisual={data.everydayAnalogy.analogyVisual ?? data.everydayAnalogy.image}
         />
       )}
 

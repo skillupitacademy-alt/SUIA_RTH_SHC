@@ -121,6 +121,23 @@ export const getStrictSectionJsonTemplate = (section: string, subtopicName: stri
             { from: 'node-1', to: 'node-2', label: 'connects to' }
           ]
         },
+        cheatSheetSVG: {
+          title: `${subtopicName} Cheat Sheet`,
+          sections: [
+            {
+              id: 'quick-ref-1',
+              title: 'Operation or Rule 1',
+              code: 'example_syntax_here',
+              description: 'Short explanation of when to use this syntax.'
+            },
+            {
+              id: 'quick-ref-2',
+              title: 'Operation or Rule 2',
+              code: 'another_example_here',
+              description: 'Short explanation of the expected result.'
+            }
+          ]
+        },
         flashcardVisualSystem: {
           cards: [{ id: 'card1', question: 'Question?', answer: 'Answer.' }]
         },

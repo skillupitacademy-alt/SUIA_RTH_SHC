@@ -194,8 +194,9 @@ const DOMAIN_TABLE_DEFAULTS: Record<string, Record<string, unknown>> = {
 };
 
 const COLUMN_TO_PARENT_KEY: Record<string, string> = {
-  summaryHeroSvg: 'summaryHeroInfographic',
-  conceptMemoryMapSvg: 'conceptMemoryMap',
+  summaryHeroSvg: 'summaryHeroInfographic.image',
+  conceptMemoryMapSvg: 'conceptMemoryMap.image',
+  cheatSheetSVG: 'cheatSheetSVG.image',
   heroVisualSvg: 'simpleOverview.heroVisual',
   analogySvg: 'everydayAnalogy.image',
   mentalModelSvg: 'mentalModel.image',
@@ -1440,8 +1441,7 @@ function sanitizeRawContent(content: unknown): unknown {
       key === 'analogySvg' ||
       key === 'mentalModelSvg' ||
       key === 'summaryHeroSvg' ||
-      key === 'conceptMemoryMapSvg' ||
-      key === 'cheatSheetSVG'
+      key === 'conceptMemoryMapSvg'
     ) {
       if (typeof val === 'string') {
         const trimmed = val.trim();
@@ -1538,12 +1538,53 @@ export async function POST(req: NextRequest) {
         processedContent = content;
       }
 
-      // 1. Update the child domain table column
+      // 1. Resolve the child domain table and merge the parent JSON before any writes.
       const table = DOMAIN_TABLE_MAP[config.dbType];
       if (!table) {
         return NextResponse.json({ error: `Unsupported child domain table for section ${config.dbType}` }, { status: 400 });
       }
 
+      const targetParentKey = COLUMN_TO_PARENT_KEY[subsection] || subsection;
+      const updatedParentContent: Record<string, unknown> = {
+        schemaVersion: 1,
+        sectionType: config.dbType,
+        ...(sectionRecord.content as Record<string, unknown>),
+      };
+
+      if (targetParentKey.includes('.')) {
+        const [parentKey, childKey] = targetParentKey.split('.');
+        updatedParentContent[parentKey] = {
+          ...(updatedParentContent[parentKey] as Record<string, unknown>),
+          [childKey]: processedContent,
+        };
+      } else {
+        updatedParentContent[targetParentKey] = processedContent;
+      }
+
+      const sanitizedParentContent = sanitizeRawContent(updatedParentContent);
+      const validation = validateTutorialSection(config.dbType, sanitizedParentContent);
+
+      if (!validation.success) {
+        const formattedIssues = formatTutorialSectionValidationIssues(validation.issues);
+        console.error('[Content Manager API] Strict subsection validation failed', {
+          subtopicSlug,
+          sectionType: config.dbType,
+          subsection,
+          issues: validation.issues,
+        });
+        return NextResponse.json(
+          {
+            error: `Subsection '${subsection}' failed strict schema validation after parent merge. Regenerate or correct this subsection before saving.`,
+            sectionType: config.dbType,
+            subsection,
+            issues: validation.issues satisfies TutorialSectionValidationIssue[],
+            details: formattedIssues,
+          },
+          { status: 400 }
+        );
+      }
+
+      // 2. Update the child domain table column after validation passes.
       const [existingChild] = await db
         .select()
         .from(table)
@@ -1567,28 +1608,11 @@ export async function POST(req: NextRequest) {
         });
       }
 
-      // 2. Synchronize parent tutorialSections.content JSONB
-      const targetParentKey = COLUMN_TO_PARENT_KEY[subsection] || subsection;
-      const updatedParentContent: Record<string, unknown> = {
-        schemaVersion: 1,
-        sectionType: config.dbType,
-        ...(sectionRecord.content as Record<string, unknown>),
-      };
-
-      if (targetParentKey.includes('.')) {
-        const [parentKey, childKey] = targetParentKey.split('.');
-        updatedParentContent[parentKey] = {
-          ...(updatedParentContent[parentKey] as Record<string, unknown>),
-          [childKey]: processedContent,
-        };
-      } else {
-        updatedParentContent[targetParentKey] = processedContent;
-      }
-
+      // 3. Synchronize parent tutorialSections.content JSONB.
       await db
         .update(tutorialSections)
         .set({
-          content: updatedParentContent,
+          content: validation.data,
           updatedAt: now,
         })
         .where(eq(tutorialSections.id, sectionRecord.id));

@@ -61,6 +61,30 @@ function sanitizeDataUri(dataUri: string): string {
   return dataUri;
 }
 
+function makeInlineSvgResponsive(svg: string): string {
+  const trimmed = svg.trimStart();
+  if (!trimmed.startsWith('<svg')) return svg;
+
+  let output = trimmed.replace(
+    /<svg\b([^>]*)>/i,
+    (match, attrs: string) => {
+      let nextAttrs = String(attrs)
+        .replace(/\swidth=(["']).*?\1/i, '')
+        .replace(/\sheight=(["']).*?\1/i, '')
+        .replace(/\sstyle=(["']).*?\1/i, '')
+        .trim();
+
+      if (!/\spreserveAspectRatio=/i.test(` ${nextAttrs}`)) {
+        nextAttrs += ' preserveAspectRatio="xMidYMid meet"';
+      }
+
+      return `<svg ${nextAttrs} width="100%" height="100%" style="max-width:100%;max-height:100%;display:block;object-fit:contain;">`;
+    }
+  );
+
+  return output;
+}
+
 /**
  * SVGIconRenderer Component
  *
@@ -83,7 +107,7 @@ export const SVGIconRenderer: React.FC<SVGIconRendererProps> = ({
       <div
         className={className}
         style={style}
-        dangerouslySetInnerHTML={{ __html: dataUri }}
+        dangerouslySetInnerHTML={{ __html: makeInlineSvgResponsive(dataUri) }}
       />
     );
   }

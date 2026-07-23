@@ -26,6 +26,22 @@ const validQuiz = {
   ],
 };
 
+const validNotes = {
+  schemaVersion: 1,
+  sectionType: 'notes',
+  cheatSheetSVG: {
+    title: 'Python List Cheat Sheet',
+    sections: [
+      {
+        id: 'append',
+        title: 'Append Item',
+        code: 'items.append("new")',
+        description: 'Adds one item to the end of the list.',
+      },
+    ],
+  },
+};
+
 describe('strict tutorial section validation', () => {
   it('accepts valid strict section payloads', () => {
     expect(validateTutorialSection('quiz', validQuiz).success).toBe(true);
@@ -49,6 +65,40 @@ describe('strict tutorial section validation', () => {
       'failed strict schema validation'
     );
   });
+
+  it('accepts notes cheat sheet items that match renderer field names', () => {
+    expect(validateTutorialSection('notes', validNotes).success).toBe(true);
+  });
+
+  it('rejects notes cheat sheet items with loose label/value aliases', () => {
+    const result = validateTutorialSection('notes', {
+      ...validNotes,
+      cheatSheetSVG: {
+        title: 'Python List Cheat Sheet',
+        sections: [{ label: 'Append Item', value: 'items.append("new")' }],
+      },
+    });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.issues.some((issue) => issue.path.startsWith('cheatSheetSVG.sections.0'))).toBe(true);
+    }
+  });
+
+  it('rejects unknown keys in optional notes visual blocks', () => {
+    const result = validateTutorialSection('notes', {
+      ...validNotes,
+      cheatSheetSVG: {
+        ...validNotes.cheatSheetSVG,
+        rendererOnlyAlias: 'This must not be accepted silently.',
+      },
+    });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.issues.some((issue) => issue.path === 'cheatSheetSVG')).toBe(true);
+    }
+  });
 });
 
 describe('tutorial progress engine', () => {
@@ -65,4 +115,3 @@ describe('tutorial progress engine', () => {
     expect(snapshot.completedSections).toEqual(['notes', 'layman']);
   });
 });
-

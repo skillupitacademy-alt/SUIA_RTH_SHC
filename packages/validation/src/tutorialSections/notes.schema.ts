@@ -8,6 +8,13 @@ import {
   strictObject,
 } from './base';
 
+const NotesCheatSheetItemSchema = strictObject({
+  id: NonEmptyStringSchema,
+  title: NonEmptyStringSchema,
+  code: NonEmptyStringSchema,
+  description: OptionalNonEmptyStringSchema,
+});
+
 export const NotesSectionSchema = sectionSchema('notes', {
   simpleWords: NonEmptyStringSchema.optional(),
   definitionBlock: strictObject({
@@ -84,84 +91,84 @@ export const NotesSectionSchema = sectionSchema('notes', {
   }).optional(),
 
   // Premium Visual Architecture Blocks (Optional)
-  summaryHeroInfographic: z.object({
+  summaryHeroInfographic: strictObject({
     image: optionalSvgAssetField(),
-    summaryTitle: z.string().optional(),
-    examTips: z.array(z.string()).optional(),
-    howItWorks: z.array(z.object({
+    summaryTitle: OptionalNonEmptyStringSchema,
+    examTips: nonEmptyStringArray(1).optional(),
+    howItWorks: z.array(strictObject({
       step: z.number(),
-      label: z.string(),
-      description: z.string(),
+      label: NonEmptyStringSchema,
+      description: NonEmptyStringSchema,
     })).optional(),
   }).optional(),
 
-  conceptMemoryMap: z.object({
+  conceptMemoryMap: strictObject({
     image: optionalSvgAssetField(),
-    nodes: z.array(z.object({
-      id: z.string(),
-      label: z.string(),
-      description: z.string(),
+    nodes: z.array(strictObject({
+      id: NonEmptyStringSchema,
+      label: NonEmptyStringSchema,
+      description: NonEmptyStringSchema,
     })).optional(),
-    connections: z.array(z.object({
-      from: z.string(),
-      to: z.string(),
-      label: z.string().optional(),
+    connections: z.array(strictObject({
+      from: NonEmptyStringSchema,
+      to: NonEmptyStringSchema,
+      label: OptionalNonEmptyStringSchema,
     })).optional(),
   }).optional(),
 
-  cheatSheetSVG: z.object({
-    title: z.string().optional(),
+  cheatSheetSVG: strictObject({
+    title: OptionalNonEmptyStringSchema,
     image: optionalSvgAssetField(),
-    svgPath: z.string().optional(),
-    sections: z.array(z.any()).optional(),
+    svgPath: OptionalNonEmptyStringSchema,
+    sections: z.array(NotesCheatSheetItemSchema).min(1).optional(),
   }).optional(),
 
-  flashcardVisualSystem: z.object({
+  flashcardVisualSystem: strictObject({
     image: optionalSvgAssetField(),
-    cards: z.array(z.object({
-      id: z.string(),
-      question: z.string(),
-      answer: z.string(),
-    })),
+    cards: z.array(strictObject({
+      id: NonEmptyStringSchema,
+      question: NonEmptyStringSchema,
+      answer: NonEmptyStringSchema,
+    })).min(1),
   }).optional(),
 
-  comparisonSummaryChart: z.object({
+  comparisonSummaryChart: strictObject({
     image: optionalSvgAssetField(),
-    title: z.string().optional(),
-    columns: z.array(z.string()),
-    rows: z.array(z.array(z.string())),
+    title: OptionalNonEmptyStringSchema,
+    columns: nonEmptyStringArray(1),
+    rows: z.array(nonEmptyStringArray(1)).min(1),
   }).optional(),
 
-  mnemonicRetentionGraphic: z.object({
+  mnemonicRetentionGraphic: strictObject({
     image: optionalSvgAssetField(),
-    mnemonicTitle: z.string().optional(),
-    memoryHook: z.string().optional(),
-    rememberItems: z.array(z.object({
-      letter: z.string(),
-      label: z.string(),
-      description: z.string(),
-    })),
-    keyPoints: z.array(z.string()),
+    mnemonicTitle: OptionalNonEmptyStringSchema,
+    memoryHook: OptionalNonEmptyStringSchema,
+    rememberItems: z.array(strictObject({
+      letter: NonEmptyStringSchema,
+      label: NonEmptyStringSchema,
+      description: NonEmptyStringSchema,
+    })).min(1),
+    keyPoints: nonEmptyStringArray(1),
   }).optional(),
 
-  syntaxBlock: z.object({
+  syntaxBlock: strictObject({
     image: optionalSvgAssetField(),
-    code: z.string(),
-    language: z.string().optional(),
-    title: z.string().optional(),
-    subtitle: z.string().optional(),
-    explanations: z.array(z.object({
-      id: z.string(),
-      term: z.string(),
-      explanation: z.string(),
-    })),
+    code: NonEmptyStringSchema,
+    language: OptionalNonEmptyStringSchema,
+    title: OptionalNonEmptyStringSchema,
+    subtitle: OptionalNonEmptyStringSchema,
+    explanations: z.array(strictObject({
+      id: NonEmptyStringSchema,
+      term: NonEmptyStringSchema,
+      explanation: NonEmptyStringSchema,
+    })).min(1),
   }).optional(),
 
-  footerBlock: z.object({
+  footerBlock: strictObject({
     image: optionalSvgAssetField(),
-    finalNote: z.string(),
-    nextStepLabel: z.string(),
-    nextStepTarget: z.string(),
+    finalNote: NonEmptyStringSchema,
+    nextStepLabel: NonEmptyStringSchema,
+    nextStepTarget: NonEmptyStringSchema,
   }).optional(),
 });
 
