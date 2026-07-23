@@ -4,6 +4,60 @@ import React from 'react';
 import * as Icons from 'lucide-react';
 import { useBrand } from '../../../PostLandingPage/app/context/BrandContext';
 import { SubtopicNotesViewData } from '../../../subtopicNotesData';
+import { SVGIconRenderer } from '../shared/SVGIconRenderer';
+
+type InlineVisualAsset = {
+  type?: string;
+  dataUri?: string;
+  alt?: string;
+  caption?: string;
+};
+
+function getVisualAssetSrc(image?: string | InlineVisualAsset) {
+  if (!image) return undefined;
+  if (typeof image === 'string') return image;
+  return image.dataUri;
+}
+
+function getVisualAssetAlt(image?: string | InlineVisualAsset, fallback = 'Visual explanation infographic') {
+  if (!image || typeof image === 'string') return fallback;
+  return image.alt || fallback;
+}
+
+function getVisualAssetCaption(image?: string | InlineVisualAsset) {
+  if (!image || typeof image === 'string') return undefined;
+  return image.caption;
+}
+
+function InfographicPanel({
+  image,
+  fallbackAlt,
+  className = '',
+}: {
+  image?: string | InlineVisualAsset;
+  fallbackAlt: string;
+  className?: string;
+}) {
+  const src = getVisualAssetSrc(image);
+  if (!src) return null;
+
+  return (
+    <figure className={`mb-8 overflow-hidden rounded-2xl border border-slate-200 bg-white p-3 shadow-sm ${className}`}>
+      <div className="relative min-h-[220px] w-full sm:min-h-[300px] lg:min-h-[360px]">
+        <SVGIconRenderer
+          dataUri={src}
+          alt={getVisualAssetAlt(image, fallbackAlt)}
+          className="absolute inset-0 h-full w-full"
+        />
+      </div>
+      {getVisualAssetCaption(image) && (
+        <figcaption className="mt-3 text-center text-[12px] font-semibold uppercase tracking-wider text-slate-500">
+          {getVisualAssetCaption(image)}
+        </figcaption>
+      )}
+    </figure>
+  );
+}
 
 export function VisualExplanationContent({ data }: { data?: SubtopicNotesViewData['mainContent']['visualExplanation'] }) {
   const brand = useBrand();
@@ -29,6 +83,11 @@ export function VisualExplanationContent({ data }: { data?: SubtopicNotesViewDat
             <h3 className="text-2xl font-bold text-slate-950">{data.conceptVisualIntro.headline}</h3>
           </div>
           <p className="text-[15px] font-medium text-slate-800 leading-relaxed mb-6">{data.conceptVisualIntro.visualDefinition}</p>
+
+          <InfographicPanel
+            image={(data.conceptVisualIntro as any).image}
+            fallbackAlt="Python list ordered slot model"
+          />
           
           {data.conceptVisualIntro.heroDiagramPreview && (
             <div className="p-6 rounded-xl bg-white border border-purple-200 mb-6">
@@ -58,6 +117,11 @@ export function VisualExplanationContent({ data }: { data?: SubtopicNotesViewDat
           </div>
 
           <h4 className="text-lg font-bold text-slate-900 mb-6">{data.diagrammaticBreakdown.diagramTitle}</h4>
+
+          <InfographicPanel
+            image={(data.diagrammaticBreakdown as any).image}
+            fallbackAlt="Anatomy of a Python list infographic"
+          />
 
           {/* Component Labels */}
           <div className="space-y-4 mb-8">
@@ -114,6 +178,12 @@ export function VisualExplanationContent({ data }: { data?: SubtopicNotesViewDat
 
           <h4 className="text-lg font-bold text-slate-900 mb-6">{data.stepByStepVisualFlow.sequenceTitle}</h4>
 
+          <InfographicPanel
+            image={(data.stepByStepVisualFlow as any).image}
+            fallbackAlt="Python list workflow infographic"
+            className="border-emerald-200"
+          />
+
           <div className="space-y-6">
             {data.stepByStepVisualFlow.steps.map((step, idx) => (
               <div key={step.id} className="relative">
@@ -160,6 +230,11 @@ export function VisualExplanationContent({ data }: { data?: SubtopicNotesViewDat
           </div>
 
           <h4 className="text-lg font-bold text-slate-900 mb-6">{data.comparativeVisualization.comparisonTitle}</h4>
+
+          <InfographicPanel
+            image={(data.comparativeVisualization as any).image}
+            fallbackAlt="Many variables versus Python list comparison infographic"
+          />
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             {/* Option 1 */}
@@ -240,6 +315,11 @@ export function VisualExplanationContent({ data }: { data?: SubtopicNotesViewDat
             <h3 className="text-xl font-bold text-slate-950">{data.mentalModelVisualization.title}</h3>
           </div>
 
+          <InfographicPanel
+            image={(data.mentalModelVisualization as any).image}
+            fallbackAlt="Python list mental model map"
+          />
+
           {/* Framework Map Nodes */}
           <div className="space-y-4 mb-8">
             {data.mentalModelVisualization.frameworkMap.nodes.map((node) => (
@@ -306,6 +386,11 @@ export function VisualExplanationContent({ data }: { data?: SubtopicNotesViewDat
             <h3 className="text-xl font-bold text-slate-950">{data.realWorldVisualMapping.title}</h3>
           </div>
 
+          <InfographicPanel
+            image={(data.realWorldVisualMapping as any).image}
+            fallbackAlt="Real-world Python list usage map"
+          />
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             {data.realWorldVisualMapping.practicalScenarios.map((scenario) => {
               const IconComponent = (Icons as any)[scenario.icon] || Icons.Briefcase;
@@ -346,6 +431,11 @@ export function VisualExplanationContent({ data }: { data?: SubtopicNotesViewDat
             <div className="flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold text-white" style={{ backgroundColor: brand.primaryColor }}>6</div>
             <h3 className="text-xl font-bold text-slate-950">{data.commonConfusionVisualization.title}</h3>
           </div>
+
+          <InfographicPanel
+            image={(data.commonConfusionVisualization as any).image}
+            fallbackAlt="Python list misconceptions correction infographic"
+          />
 
           {/* Confusion Items */}
           <div className="space-y-6 mb-8">
@@ -409,6 +499,11 @@ export function VisualExplanationContent({ data }: { data?: SubtopicNotesViewDat
             <Icons.BookOpen size={24} className="text-slate-700" aria-hidden="true" />
             <h3 className="text-2xl font-bold text-slate-950">{data.visualSummary.summaryTitle}</h3>
           </div>
+
+          <InfographicPanel
+            image={(data.visualSummary as any).image}
+            fallbackAlt="Python list visual summary infographic"
+          />
 
           {/* Key Visual Takeaways */}
           <div className="mb-8">

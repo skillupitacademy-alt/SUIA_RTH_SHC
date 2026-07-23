@@ -14,13 +14,28 @@ interface LaymanAnalogyCardProps {
   comparisonPanel: string;
   visualMetaphor: ComparisonPoint[];
   keyTakeaway: string;
-  analogyVisual?: {
+  analogyVisual?: string | {
     type: 'inline_svg';
     dataUri: string;
     width?: number;
     height?: number;
     alt?: string;
+    caption?: string;
   };
+}
+
+function getAnalogyVisualDataUri(analogyVisual?: LaymanAnalogyCardProps['analogyVisual']) {
+  if (!analogyVisual) return undefined;
+  if (typeof analogyVisual === 'string') return analogyVisual;
+  return analogyVisual.dataUri;
+}
+
+function getAnalogyVisualAlt(
+  analogyVisual: LaymanAnalogyCardProps['analogyVisual'],
+  fallback: string
+) {
+  if (!analogyVisual || typeof analogyVisual === 'string') return fallback;
+  return analogyVisual.alt || fallback;
 }
 
 /**
@@ -38,6 +53,7 @@ export function LaymanAnalogyCard({
   analogyVisual
 }: LaymanAnalogyCardProps) {
   const brand = useBrand();
+  const analogyVisualDataUri = getAnalogyVisualDataUri(analogyVisual);
 
   return (
     <div className="w-full mb-12">
@@ -55,12 +71,12 @@ export function LaymanAnalogyCard({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
           {/* Left Column: Visual/Illustration */}
           <div className="lg:col-span-4 flex flex-col items-center">
-            <div className="w-full bg-gray-50 rounded-[20px] p-6 border border-gray-100 flex items-center justify-center min-h-[280px]">
-              {analogyVisual?.dataUri ? (
+            <div className="w-full bg-gray-50 rounded-[20px] p-4 border border-gray-100 flex items-center justify-center min-h-[280px] overflow-hidden">
+              {analogyVisualDataUri ? (
                 <SVGIconRenderer 
-                  dataUri={analogyVisual.dataUri} 
-                  alt={analogyVisual.alt || storyAnalogy} 
-                  className="max-h-[220px] object-contain drop-shadow-xl"
+                  dataUri={analogyVisualDataUri}
+                  alt={getAnalogyVisualAlt(analogyVisual, storyAnalogy)}
+                  className="h-[250px] w-full object-contain drop-shadow-xl"
                 />
               ) : (
                 <div className="opacity-20 flex flex-col items-center gap-4 text-slate-400">

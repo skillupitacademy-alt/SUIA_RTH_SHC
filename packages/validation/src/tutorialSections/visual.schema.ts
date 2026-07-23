@@ -3,6 +3,7 @@ import {
   NonEmptyStringSchema,
   OptionalNonEmptyStringSchema,
   nonEmptyStringArray,
+  optionalSvgAssetField,
   sectionSchema,
   strictObject,
 } from './base';
@@ -15,6 +16,7 @@ export const VisualSectionSchema = sectionSchema('visual', {
     heroDiagramPreview: OptionalNonEmptyStringSchema,
     importanceBlock: NonEmptyStringSchema,
     progressIndicator: OptionalNonEmptyStringSchema,
+    image: optionalSvgAssetField(),
   }).optional(),
   diagrammaticBreakdown: strictObject({
     title: NonEmptyStringSchema,
@@ -30,6 +32,7 @@ export const VisualSectionSchema = sectionSchema('visual', {
       term: NonEmptyStringSchema,
       explanation: NonEmptyStringSchema,
     })).min(1),
+    image: optionalSvgAssetField(),
   }).optional(),
   stepByStepVisualFlow: strictObject({
     title: NonEmptyStringSchema,
@@ -42,6 +45,7 @@ export const VisualSectionSchema = sectionSchema('visual', {
       visualCue: NonEmptyStringSchema,
     })).min(1),
     phaseExplanations: nonEmptyStringArray(1),
+    image: optionalSvgAssetField(),
   }).optional(),
   comparativeVisualization: strictObject({
     title: NonEmptyStringSchema,
@@ -61,6 +65,7 @@ export const VisualSectionSchema = sectionSchema('visual', {
       }),
     }),
     differenceHighlights: nonEmptyStringArray(1),
+    image: optionalSvgAssetField(),
   }).optional(),
   mentalModelVisualization: strictObject({
     title: NonEmptyStringSchema,
@@ -79,6 +84,7 @@ export const VisualSectionSchema = sectionSchema('visual', {
       })).min(1),
     }),
     memoryLabels: nonEmptyStringArray(1),
+    image: optionalSvgAssetField(),
   }).optional(),
   realWorldVisualMapping: strictObject({
     title: NonEmptyStringSchema,
@@ -91,6 +97,7 @@ export const VisualSectionSchema = sectionSchema('visual', {
       icon: NonEmptyStringSchema,
     })).min(1),
     careerRelevance: NonEmptyStringSchema,
+    image: optionalSvgAssetField(),
   }).optional(),
   commonConfusionVisualization: strictObject({
     title: NonEmptyStringSchema,
@@ -106,6 +113,7 @@ export const VisualSectionSchema = sectionSchema('visual', {
       answer: NonEmptyStringSchema,
     })).min(1),
     misconceptionDiagrams: nonEmptyStringArray(1),
+    image: optionalSvgAssetField(),
   }).optional(),
   visualSummary: strictObject({
     summaryTitle: NonEmptyStringSchema,
@@ -113,6 +121,7 @@ export const VisualSectionSchema = sectionSchema('visual', {
     revisionInfographic: NonEmptyStringSchema,
     memoryReinforcement: NonEmptyStringSchema,
     examVisualChecklist: nonEmptyStringArray(1),
+    image: optionalSvgAssetField(),
   }).optional(),
 });
 

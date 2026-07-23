@@ -6,6 +6,7 @@ export interface VisualSectionPattern {
     heroDiagramPreview?: string;
     importanceBlock: string;
     progressIndicator?: string;
+    image?: InlineSvgAsset | string;
   };
   diagrammaticBreakdown?: {
     title: string;
@@ -21,6 +22,7 @@ export interface VisualSectionPattern {
       term: string;
       explanation: string;
     }>;
+    image?: InlineSvgAsset | string;
   };
   stepByStepVisualFlow?: {
     title: string;
@@ -33,6 +35,7 @@ export interface VisualSectionPattern {
       visualCue: string;
     }>;
     phaseExplanations: string[];
+    image?: InlineSvgAsset | string;
   };
   comparativeVisualization?: {
     title: string;
@@ -52,6 +55,7 @@ export interface VisualSectionPattern {
       };
     };
     differenceHighlights: string[];
+    image?: InlineSvgAsset | string;
   };
   mentalModelVisualization?: {
     title: string;
@@ -70,6 +74,7 @@ export interface VisualSectionPattern {
       }>;
     };
     memoryLabels: string[];
+    image?: InlineSvgAsset | string;
   };
   realWorldVisualMapping?: {
     title: string;
@@ -82,6 +87,7 @@ export interface VisualSectionPattern {
       icon: string;
     }>;
     careerRelevance: string;
+    image?: InlineSvgAsset | string;
   };
   commonConfusionVisualization?: {
     title: string;
@@ -97,6 +103,7 @@ export interface VisualSectionPattern {
       answer: string;
     }>;
     misconceptionDiagrams: string[];
+    image?: InlineSvgAsset | string;
   };
   visualSummary?: {
     summaryTitle: string;
@@ -104,5 +111,16 @@ export interface VisualSectionPattern {
     revisionInfographic: string;
     memoryReinforcement: string;
     examVisualChecklist: string[];
+    image?: InlineSvgAsset | string;
   };
+}
+
+export interface InlineSvgAsset {
+  type: 'inline_svg';
+  name: string;
+  alt: string;
+  width: number;
+  height: number;
+  dataUri: string;
+  caption?: string;
 }
