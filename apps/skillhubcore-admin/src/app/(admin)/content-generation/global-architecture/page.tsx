@@ -9,6 +9,9 @@ import {
   Settings, ArrowRight, Copy, GripVertical, Type, Archive, History, FileText, CheckSquare,
   Sun, Moon, Trash2, MonitorSmartphone, Code, ExternalLink, ListOrdered, Activity, Users, Heart
 } from 'lucide-react';
+import { buildGlobalArchitectureRegistry } from './global-architecture-registry';
+import { getStrictSectionJsonTemplate } from '../../tools/prompt-generator/lib/prompt-templates';
+import { ContractAwareComponentPreview } from '../../tools/content-manager/components/ContractAwareComponentPreview';
 
 interface ComponentArchitecture {
   purpose?: string;
@@ -21,11 +24,14 @@ interface ComponentArchitecture {
   [key: string]: unknown;
 }
 
-// Import the JSON data
-import allSectionsData from '../../../../data/AllSectionTutorialPage.json';
-
 const formatTitle = (str: string) => {
-  return str.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ').replace(' Architecture', '').replace(' Uiux', '');
+  return str
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+    .replace(' Architecture', '')
+    .replace(' Uiux', ' UI/UX');
 };
 
 const getIconForComponent = (index: number) => {
@@ -47,18 +53,60 @@ const getColorForComponent = (index: number) => {
   return colors[index % colors.length];
 };
 
+const ARCHITECTURE_STORAGE_KEY = 'skillhubcore.globalArchitecture.customizations.v1';
+const PIPELINE_PAYLOAD_STORAGE_KEY = 'skillhubcore.globalArchitecture.pipelinePayload.v1';
+
+const DEFAULT_DUMMY_CONTEXT = {
+  domain: 'Programming',
+  subject: 'Python',
+  topic: 'Basics',
+  subtopic: 'What is Python?',
+  subtopicId: 'whatispython',
+};
+
+const LEARNER_PREVIEW_TARGETS = {
+  local: {
+    label: 'Localhost RTH',
+    baseUrl: 'http://localhost:3003',
+  },
+  rth: {
+    label: 'RTH Production',
+    baseUrl: 'https://user.realtutorialhub.com',
+  },
+  suia: {
+    label: 'SUIA / SkillUp',
+    baseUrl: 'https://user.skillupitacademy.com',
+  },
+} as const;
+
+const getPromptSectionId = (sectionId: string) => sectionId === 'reallife' ? 'real_life' : sectionId;
+
+const getDefaultPipelineJson = (sectionId: string, subsectionId: string | null, subtopicName: string) => {
+  const template = getStrictSectionJsonTemplate(getPromptSectionId(sectionId), subtopicName);
+  const rootKey = Object.keys(template)[0];
+  const rootValue = template[rootKey];
+
+  if (
+    subsectionId &&
+    rootValue &&
+    typeof rootValue === 'object' &&
+    !Array.isArray(rootValue) &&
+    subsectionId in rootValue
+  ) {
+    return (rootValue as Record<string, unknown>)[subsectionId];
+  }
+
+  return template;
+};
+
 export default function GlobalArchitecturePage() {
   const { setHeaderTitle, setHeaderSubtitle } = useContext(ShellContext);
   
-  const architectures = React.useMemo(() => {
-    return (allSectionsData as Record<string, unknown>[]).reduce((acc: Record<string, Record<string, any>>, curr: Record<string, any>) => { // eslint-disable-line @typescript-eslint/no-explicit-any
-      const key = Object.keys(curr)[0];
-      if (key && !acc[key]) {
-        acc[key] = curr[key];
-      }
-      return acc;
-    }, {});
+  const initialArchitectures = React.useMemo(() => {
+    return buildGlobalArchitectureRegistry();
   }, []);
+
+  const [architectures, setArchitectures] = useState(initialArchitectures);
 
   const sectionKeys = Object.keys(architectures);
   const eduKeys = sectionKeys.filter(k => !k.includes('uiux'));
@@ -71,24 +119,55 @@ export default function GlobalArchitecturePage() {
   const [configTab, setConfigTab] = useState('Layout');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedComponentKey, setSelectedComponentKey] = useState<string | null>(null);
+  const [actionMessage, setActionMessage] = useState('');
+  const [jsonEditorValue, setJsonEditorValue] = useState('');
+  const [isJsonEditing, setIsJsonEditing] = useState(false);
+  const [validationMessage, setValidationMessage] = useState('No validation run yet.');
+  const [selectedDevice, setSelectedDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
+  const [selectedTheme, setSelectedTheme] = useState<'light' | 'dark'>('light');
+  const [customizationsLoaded, setCustomizationsLoaded] = useState(false);
+  const [dummyContext, setDummyContext] = useState(DEFAULT_DUMMY_CONTEXT);
+  const [learnerPreviewTarget, setLearnerPreviewTarget] = useState<keyof typeof LEARNER_PREVIEW_TARGETS>('local');
+  const [showAdvancedSequence, setShowAdvancedSequence] = useState(false);
+  const [showAdvancedComponentDetails, setShowAdvancedComponentDetails] = useState(false);
+  const [showAdvancedRendererMapping, setShowAdvancedRendererMapping] = useState(false);
+  const [selectedRendererSubcomponentId, setSelectedRendererSubcomponentId] = useState('container');
 
   const activeData = architectures[activeSectionKey];
   
   useEffect(() => {
-    if (activeData?.universal_architecture_fixed) {
-      const keys = Object.keys(activeData.universal_architecture_fixed);
+    const source = activeData?.universal_architecture_fixed || activeData?.component_design_system;
+    if (source) {
+      const keys = Object.keys(source);
       if (keys.length > 0) setSelectedComponentKey(keys[0]);
     }
-  }, [activeSectionKey, activeData?.universal_architecture_fixed]);
+  }, [activeSectionKey, activeData?.universal_architecture_fixed, activeData?.component_design_system]);
 
   useEffect(() => {
     setHeaderTitle('');
     setHeaderSubtitle('');
   }, [setHeaderTitle, setHeaderSubtitle]);
 
-  // Find the UI/UX counterpart for the active section to sync renderer mapping
-  const uiuxKey = uiuxKeys.find(k => k.startsWith(activeSectionKey.replace('_architecture', '')));
-  const uiuxData = uiuxKey ? architectures[uiuxKey] : null;
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(ARCHITECTURE_STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+          setArchitectures((prev) => ({ ...prev, ...parsed }));
+        }
+      }
+    } catch {
+      // Ignore corrupted local customizations; canonical registry still loads.
+    } finally {
+      setCustomizationsLoaded(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!customizationsLoaded) return;
+    window.localStorage.setItem(ARCHITECTURE_STORAGE_KEY, JSON.stringify(architectures));
+  }, [architectures, customizationsLoaded]);
 
   if (!activeData) return <div className="p-10 font-bold text-slate-500">Loading Architecture...</div>;
 
@@ -96,6 +175,289 @@ export default function GlobalArchitecturePage() {
   const universalComponents = isUiUxMode ? [] : Object.entries(activeData.universal_architecture_fixed || {}) as [string, ComponentArchitecture][];
   const totalComponents = isUiUxMode ? Object.keys(activeData.component_design_system || {}).length : universalComponents.length;
   const jsonString = JSON.stringify({ [activeSectionKey]: activeData }, null, 2);
+  const canonicalSectionId = activeData.metadata?.section_type || activeSectionKey.replace('_section_uiux_architecture', '').replace('_section_architecture', '');
+  const adminSectionId = activeData.metadata?.admin_section_id || canonicalSectionId;
+  const educationalEntry = Object.entries(architectures).find(([, data]) => (
+    !String(data.metadata?.architecture_type || '').toLowerCase().includes('ui') &&
+    !String(data.metadata?.architecture_type || '').toLowerCase().includes('ux') &&
+    !String(data.metadata?.architecture_type || '').toLowerCase().includes('design') &&
+    data.metadata?.section_type === canonicalSectionId
+  )) || Object.entries(architectures).find(([key, data]) => !key.includes('uiux') && data.metadata?.section_type === canonicalSectionId);
+  const uiuxEntry = Object.entries(architectures).find(([key, data]) => key.includes('uiux') && data.metadata?.section_type === canonicalSectionId);
+  const educationalKey = educationalEntry?.[0] || activeSectionKey;
+  const educationalData = educationalEntry?.[1] || activeData;
+  const uiuxKey = uiuxEntry?.[0] || '';
+  const uiuxData = uiuxEntry?.[1] || null;
+  const workflowQuery = new URLSearchParams({
+    section: String(canonicalSectionId),
+    domain: dummyContext.domain,
+    subject: dummyContext.subject,
+    topic: dummyContext.topic,
+    subtopic: dummyContext.subtopic,
+    subtopicId: dummyContext.subtopicId,
+    previewTarget: learnerPreviewTarget,
+    source: 'global-architecture',
+  });
+  if (selectedComponentKey) workflowQuery.set('subsection', selectedComponentKey);
+  const contentManagerQuery = new URLSearchParams(workflowQuery);
+  contentManagerQuery.set('section', String(adminSectionId));
+  contentManagerQuery.set('requirePreviewApproval', 'true');
+  const selectedWorkflowUrls = {
+    visualGuide: `/tools/visual-guide?section=${canonicalSectionId}${selectedComponentKey ? `&subsection=${selectedComponentKey}` : ''}`,
+    promptGenerator: `/tools/prompt-generator?${workflowQuery.toString()}&autoGenerate=true`,
+    contentManager: `/tools/content-manager?${contentManagerQuery.toString()}`,
+    learnerPreview: `${LEARNER_PREVIEW_TARGETS[learnerPreviewTarget].baseUrl}/start-learning/subtopic/${dummyContext.subtopicId}${canonicalSectionId ? `?tab=${canonicalSectionId}` : ''}`,
+  };
+  const selectedComponentData = selectedComponentKey
+    ? (activeData.universal_architecture_fixed?.[selectedComponentKey] || activeData.component_design_system?.[selectedComponentKey] || {}) as ComponentArchitecture
+    : null;
+  const selectedRendererMapping = selectedComponentKey
+    ? (activeData.renderer_mapping_engine?.[selectedComponentKey] || uiuxData?.renderer_mapping_engine?.[selectedComponentKey] || null)
+    : null;
+  const activeComponentKeys = Object.keys(activeData.universal_architecture_fixed || activeData.component_design_system || {});
+  const activeLearningFlow = ((activeData.learning_progression_engine && activeData.learning_progression_engine[0]?.default_flow) || activeComponentKeys) as string[];
+  const selectedComponentIndex = selectedComponentKey ? Math.max(0, activeLearningFlow.indexOf(selectedComponentKey)) : 0;
+  const selectedDefaultJson = getDefaultPipelineJson(String(adminSectionId), selectedComponentKey, dummyContext.subtopic);
+  const selectedSchemaPreview = {
+    section: adminSectionId,
+    subsection: selectedComponentKey || 'full_section',
+    componentPurpose: selectedComponentData?.purpose || 'No component purpose defined.',
+    renderer: selectedComponentData?.renderer || (selectedRendererMapping as Record<string, unknown> | null)?.component || 'default_renderer',
+    required: selectedComponentData?.required !== false,
+    defaultDummyJson: selectedDefaultJson,
+  };
+  const rendererSubcomponents = React.useMemo(() => {
+    const configured = selectedComponentData?.ui_subcomponents;
+    if (Array.isArray(configured) && configured.length > 0) {
+      return configured as Array<Record<string, unknown>>;
+    }
+
+    const interactiveParts = Array.isArray(selectedComponentData?.interactive_elements)
+      ? selectedComponentData.interactive_elements.map((item) => String(item))
+      : [];
+    const defaults = ['container', 'header', 'body', 'action'];
+    return [...new Set([...defaults, ...interactiveParts])].map((id) => ({
+      id,
+      label: formatTitle(id),
+      role: id === 'container' ? 'Outer layout wrapper' : id === 'header' ? 'Title/label area' : id === 'body' ? 'Main content area' : id === 'action' ? 'CTA or interaction area' : 'Interactive child element',
+      visible: true,
+      layout: id === 'container' ? selectedComponentData?.layout || 'card' : 'inline',
+      color: id === 'container' ? selectedComponentData?.background_color || '#ffffff' : selectedComponentData?.primary_color || '#4f46e5',
+      emphasis: id === 'header' ? 'high' : 'medium',
+    }));
+  }, [
+    selectedComponentData?.ui_subcomponents,
+    selectedComponentData?.interactive_elements,
+    selectedComponentData?.layout,
+    selectedComponentData?.background_color,
+    selectedComponentData?.primary_color,
+  ]);
+  const selectedRendererSubcomponent = rendererSubcomponents.find((item) => item.id === selectedRendererSubcomponentId) || rendererSubcomponents[0];
+
+  const showActionMessage = (message: string) => {
+    setActionMessage(message);
+    window.setTimeout(() => setActionMessage(''), 2500);
+  };
+
+  const updateActiveArchitecture = (updater: (draft: Record<string, any>) => Record<string, any>) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+    setArchitectures((prev) => ({
+      ...prev,
+      [activeSectionKey]: updater(prev[activeSectionKey]),
+    }));
+  };
+
+  const buildPipelinePayload = () => {
+    const selectedSubsection = selectedComponentKey || null;
+    const defaultJson = getDefaultPipelineJson(String(adminSectionId), selectedSubsection, dummyContext.subtopic);
+    const educationalComponent = selectedSubsection ? educationalData?.universal_architecture_fixed?.[selectedSubsection] : null;
+    const uiuxComponent = selectedSubsection ? uiuxData?.component_design_system?.[selectedSubsection] : null;
+
+    return {
+      source: 'global-architecture',
+      generatedAt: new Date().toISOString(),
+      section: canonicalSectionId,
+      adminSectionId,
+      subsection: selectedSubsection,
+      dummyContext,
+      previewTarget: learnerPreviewTarget,
+      educationalArchitectureKey: educationalKey,
+      uiuxArchitectureKey: uiuxKey,
+      educationalComponent,
+      uiuxComponent,
+      rendererMapping: selectedSubsection
+        ? (educationalData?.renderer_mapping_engine?.[selectedSubsection] || uiuxData?.renderer_mapping_engine?.[selectedSubsection] || null)
+        : null,
+      defaultJson,
+    };
+  };
+
+  const persistPipelinePayload = () => {
+    try {
+      window.localStorage.setItem(PIPELINE_PAYLOAD_STORAGE_KEY, JSON.stringify(buildPipelinePayload()));
+    } catch {
+      showActionMessage('Could not save local pipeline payload.');
+    }
+  };
+
+  const openWorkflowUrl = (url: string) => {
+    persistPipelinePayload();
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
+  const copyArchitectureJson = async () => {
+    await navigator.clipboard.writeText(jsonString);
+    showActionMessage('Architecture JSON copied.');
+  };
+
+  const downloadArchitectureJson = () => {
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `${activeSectionKey}.json`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+    showActionMessage('Architecture JSON downloaded.');
+  };
+
+  const startJsonEdit = () => {
+    setJsonEditorValue(jsonString);
+    setIsJsonEditing(true);
+  };
+
+  const applyJsonEdit = () => {
+    try {
+      const parsed = JSON.parse(jsonEditorValue);
+      const nextData = parsed[activeSectionKey] ?? parsed;
+      if (!nextData || typeof nextData !== 'object' || Array.isArray(nextData)) {
+        throw new Error('Root JSON must be an architecture object.');
+      }
+      setArchitectures((prev) => ({
+        ...prev,
+        [activeSectionKey]: nextData,
+      }));
+      setIsJsonEditing(false);
+      setValidationMessage('Valid JSON. Local architecture state updated.');
+      showActionMessage('JSON applied to this page state.');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Invalid JSON.';
+      setValidationMessage(`Invalid JSON: ${message}`);
+      showActionMessage(`Invalid JSON: ${message}`);
+    }
+  };
+
+  const resetActiveArchitecture = () => {
+    setArchitectures((prev) => ({
+      ...prev,
+      [activeSectionKey]: initialArchitectures[activeSectionKey],
+    }));
+    setIsJsonEditing(false);
+    showActionMessage('Architecture reset to canonical registry.');
+  };
+
+  const resetAllArchitectureCustomizations = () => {
+    setArchitectures(initialArchitectures);
+    window.localStorage.removeItem(ARCHITECTURE_STORAGE_KEY);
+    setIsJsonEditing(false);
+    showActionMessage('All architecture customizations cleared.');
+  };
+
+  const validateActiveArchitecture = () => {
+    const componentSource = activeData.universal_architecture_fixed || activeData.component_design_system;
+    const errors: string[] = [];
+    if (!activeData.metadata?.section_type) errors.push('metadata.section_type is missing');
+    if (!componentSource || Object.keys(componentSource).length === 0) errors.push('No components are registered');
+    if (!activeData.renderer_mapping_engine) errors.push('renderer_mapping_engine is missing');
+    if (!activeData.accessibility_architecture && !activeData.validation_governance_system) errors.push('governance/accessibility rules are missing');
+
+    if (errors.length > 0) {
+      setValidationMessage(`Validation failed: ${errors.join('; ')}`);
+      showActionMessage('Validation failed.');
+      return false;
+    }
+
+    setValidationMessage(`Validation passed for ${formatTitle(String(canonicalSectionId))}.`);
+    showActionMessage('Validation passed.');
+    return true;
+  };
+
+  const updateArchitectureStatus = (status: 'active' | 'approved' | 'archived') => {
+    updateActiveArchitecture((current) => ({
+      ...current,
+      metadata: {
+        ...(current.metadata ?? {}),
+        status,
+        updated_at: new Date().toISOString(),
+      },
+    }));
+    showActionMessage(`Architecture marked ${status}.`);
+  };
+
+  const duplicateSelectedMapping = () => {
+    if (!selectedComponentKey) {
+      showActionMessage('Select a component first.');
+      return;
+    }
+    const source = activeData.universal_architecture_fixed || activeData.component_design_system;
+    const nextKey = `${selectedComponentKey}_copy`;
+    updateActiveArchitecture((current) => {
+      const sourceKey = current.universal_architecture_fixed ? 'universal_architecture_fixed' : 'component_design_system';
+      return {
+        ...current,
+        [sourceKey]: {
+          ...(current[sourceKey] ?? {}),
+          [nextKey]: {
+            ...(source?.[selectedComponentKey] ?? {}),
+            required: false,
+            label: `${formatTitle(selectedComponentKey)} Copy`,
+          },
+        },
+      };
+    });
+    setSelectedComponentKey(nextKey);
+    showActionMessage('Component mapping duplicated locally.');
+  };
+
+  const updateSelectedComponentConfig = (patch: Record<string, unknown>) => {
+    if (!selectedComponentKey) {
+      showActionMessage('Select a component first.');
+      return;
+    }
+    updateActiveArchitecture((current) => {
+      const sourceKey = current.universal_architecture_fixed ? 'universal_architecture_fixed' : 'component_design_system';
+      return {
+        ...current,
+        [sourceKey]: {
+          ...(current[sourceKey] ?? {}),
+          [selectedComponentKey]: {
+            ...(current[sourceKey]?.[selectedComponentKey] ?? {}),
+            ...patch,
+          },
+        },
+      };
+    });
+    showActionMessage('Selected component config saved locally.');
+  };
+
+  const addNewComponent = () => {
+    const sourceKey = isUiUxMode ? 'component_design_system' : 'universal_architecture_fixed';
+    const nextKey = `custom_component_${Date.now()}`;
+    updateActiveArchitecture((current) => ({
+      ...current,
+      [sourceKey]: {
+        ...(current[sourceKey] ?? {}),
+        [nextKey]: {
+          enabled: true,
+          required: false,
+          renderer: 'custom_card_renderer',
+          purpose: 'Custom section component added from Global Architecture.',
+          interactive_elements: ['Preview', 'Edit', 'Validate'],
+        },
+      },
+    }));
+    setSelectedComponentKey(nextKey);
+    showActionMessage('New custom component added locally.');
+  };
 
   const tabs = [
     'Universal Architecture', 'Section Sequence', 'Component Details', 
@@ -117,7 +479,11 @@ export default function GlobalArchitecturePage() {
             Constitutional {isUiUxMode ? 'design system' : 'educational architecture'} for {formatTitle(activeSectionKey)} across all domains and brands
           </p>
         </div>
-        <button className="flex items-center gap-2 border border-rose-200 text-rose-600 bg-rose-50 hover:bg-rose-100 px-4 py-2 rounded-lg font-bold text-sm transition-colors shadow-sm">
+        <button
+          type="button"
+          onClick={downloadArchitectureJson}
+          className="flex items-center gap-2 border border-rose-200 text-rose-600 bg-rose-50 hover:bg-rose-100 px-4 py-2 rounded-lg font-bold text-sm transition-colors shadow-sm"
+        >
           <Download size={16} />
           Export Architecture
         </button>
@@ -127,22 +493,24 @@ export default function GlobalArchitecturePage() {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         
         {/* Educational Section Dropdown Card */}
-        <button 
-          type="button"
-          className={`bg-white border ${!isUiUxMode ? 'border-indigo-300 shadow-md ring-2 ring-indigo-50' : 'border-slate-200 shadow-sm'} rounded-xl p-4 flex items-center gap-3 relative cursor-pointer transition-all w-full text-left`} 
-          onClick={(e) => { e.stopPropagation(); setIsEduDropdownOpen(!isEduDropdownOpen); setIsUiuxDropdownOpen(false); }}
-        >
-          <div className={`w-10 h-10 rounded-full ${!isUiUxMode ? 'bg-indigo-600 text-white' : 'bg-indigo-50 text-indigo-600'} flex items-center justify-center shrink-0 transition-colors`}>
-            <Layers size={20} />
-          </div>
-          <div className="overflow-hidden w-full">
-            <span className={`block text-[10px] font-bold ${!isUiUxMode ? 'text-indigo-600' : 'text-slate-400'} uppercase tracking-wider`}>Educational Arch</span>
-            <div className="flex items-center justify-between">
-              <span className="font-bold text-slate-800 text-sm truncate">{!isUiUxMode ? formatTitle(activeSectionKey) : 'Select Schema'}</span>
-              <ChevronDown size={14} className="text-slate-400 ml-1 shrink-0" />
+        <div className="relative">
+          <button 
+            type="button"
+            className={`bg-white border ${!isUiUxMode ? 'border-indigo-300 shadow-md ring-2 ring-indigo-50' : 'border-slate-200 shadow-sm'} rounded-xl p-4 flex items-center gap-3 cursor-pointer transition-all w-full text-left`} 
+            onClick={(e) => { e.stopPropagation(); setIsEduDropdownOpen(!isEduDropdownOpen); setIsUiuxDropdownOpen(false); }}
+          >
+            <div className={`w-10 h-10 rounded-full ${!isUiUxMode ? 'bg-indigo-600 text-white' : 'bg-indigo-50 text-indigo-600'} flex items-center justify-center shrink-0 transition-colors`}>
+              <Layers size={20} />
             </div>
-          </div>
-        </button>  {isEduDropdownOpen && (
+            <div className="overflow-hidden w-full">
+              <span className={`block text-[10px] font-bold ${!isUiUxMode ? 'text-indigo-600' : 'text-slate-400'} uppercase tracking-wider`}>Educational Arch</span>
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-slate-800 text-sm truncate">{!isUiUxMode ? formatTitle(activeSectionKey) : 'Select Schema'}</span>
+                <ChevronDown size={14} className="text-slate-400 ml-1 shrink-0" />
+              </div>
+            </div>
+          </button>
+          {isEduDropdownOpen && (
             <>
               <div 
                 className="fixed inset-0 z-40 cursor-default" 
@@ -166,24 +534,27 @@ export default function GlobalArchitecturePage() {
               </div>
             </>
           )}
+        </div>
 
         {/* UI/UX Section Dropdown Card (Replaces Brand Scope) */}
-        <button 
-          type="button"
-          className={`bg-white border ${isUiUxMode ? 'border-pink-300 shadow-md ring-2 ring-pink-50' : 'border-slate-200 shadow-sm'} rounded-xl p-4 flex items-center gap-3 relative cursor-pointer transition-all w-full text-left`} 
-          onClick={(e) => { e.stopPropagation(); setIsUiuxDropdownOpen(!isUiuxDropdownOpen); setIsEduDropdownOpen(false); }}
-        >
-          <div className={`w-10 h-10 rounded-full ${isUiUxMode ? 'bg-pink-600 text-white' : 'bg-pink-50 text-pink-600'} flex items-center justify-center shrink-0 transition-colors`}>
-            <Palette size={20} />
-          </div>
-          <div className="overflow-hidden w-full">
-            <span className={`block text-[10px] font-bold ${isUiUxMode ? 'text-pink-600' : 'text-slate-400'} uppercase tracking-wider`}>UI/UX Arch</span>
-            <div className="flex items-center justify-between">
-              <span className="font-bold text-slate-800 text-sm truncate">{isUiUxMode ? formatTitle(activeSectionKey) : 'Select Schema'}</span>
-              <ChevronDown size={14} className="text-slate-400 ml-1 shrink-0" />
+        <div className="relative">
+          <button 
+            type="button"
+            className={`bg-white border ${isUiUxMode ? 'border-pink-300 shadow-md ring-2 ring-pink-50' : 'border-slate-200 shadow-sm'} rounded-xl p-4 flex items-center gap-3 cursor-pointer transition-all w-full text-left`} 
+            onClick={(e) => { e.stopPropagation(); setIsUiuxDropdownOpen(!isUiuxDropdownOpen); setIsEduDropdownOpen(false); }}
+          >
+            <div className={`w-10 h-10 rounded-full ${isUiUxMode ? 'bg-pink-600 text-white' : 'bg-pink-50 text-pink-600'} flex items-center justify-center shrink-0 transition-colors`}>
+              <Palette size={20} />
             </div>
-          </div>
-        </button>  {isUiuxDropdownOpen && (
+            <div className="overflow-hidden w-full">
+              <span className={`block text-[10px] font-bold ${isUiUxMode ? 'text-pink-600' : 'text-slate-400'} uppercase tracking-wider`}>UI/UX Arch</span>
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-slate-800 text-sm truncate">{isUiUxMode ? formatTitle(activeSectionKey) : 'Select Schema'}</span>
+                <ChevronDown size={14} className="text-slate-400 ml-1 shrink-0" />
+              </div>
+            </div>
+          </button>
+          {isUiuxDropdownOpen && (
             <>
               <div 
                 className="fixed inset-0 z-40 cursor-default" 
@@ -207,6 +578,7 @@ export default function GlobalArchitecturePage() {
               </div>
             </>
           )}
+        </div>
 
         <div className="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-3 shadow-sm">
           <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0">
@@ -249,7 +621,128 @@ export default function GlobalArchitecturePage() {
         </div>
       </div>
 
-      {/* 3. Tabs Navigation */}
+      {/* 3. Workflow Actions */}
+      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-5 flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+        <div>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[10px] font-black uppercase bg-indigo-50 text-indigo-700 border border-indigo-100 px-2 py-1 rounded">
+              Active Workflow
+            </span>
+            <span className="text-sm font-black text-slate-900">{formatTitle(String(canonicalSectionId))}</span>
+            {selectedComponentKey ? (
+              <>
+                <ChevronRight size={14} className="text-slate-300" />
+                <span className="text-sm font-black text-rose-600">{formatTitle(selectedComponentKey)}</span>
+              </>
+            ) : null}
+          </div>
+          <p className="text-xs text-slate-500 font-medium mt-1">
+            Select a component below, then continue to visual placement, prompt generation, content entry, preview, and database save.
+          </p>
+          {actionMessage ? <p className="text-xs font-bold text-emerald-600 mt-2">{actionMessage}</p> : null}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => openWorkflowUrl(selectedWorkflowUrls.visualGuide)}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-blue-100 bg-blue-50 text-blue-700 text-xs font-black hover:bg-blue-100 transition-colors"
+          >
+            <Eye size={14} /> Visual Guide
+          </button>
+          <button
+            type="button"
+            onClick={() => openWorkflowUrl(selectedWorkflowUrls.promptGenerator)}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-amber-100 bg-amber-50 text-amber-700 text-xs font-black hover:bg-amber-100 transition-colors"
+          >
+            <Zap size={14} /> Prompt Generator
+          </button>
+          <button
+            type="button"
+            onClick={() => openWorkflowUrl(selectedWorkflowUrls.contentManager)}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-emerald-100 bg-emerald-50 text-emerald-700 text-xs font-black hover:bg-emerald-100 transition-colors"
+          >
+            <Edit2 size={14} /> Content Manager
+          </button>
+          <button
+            type="button"
+            onClick={() => openWorkflowUrl(selectedWorkflowUrls.learnerPreview)}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-purple-100 bg-purple-50 text-purple-700 text-xs font-black hover:bg-purple-100 transition-colors"
+          >
+            <ExternalLink size={14} /> Learner Preview
+          </button>
+          <button
+            type="button"
+            onClick={copyArchitectureJson}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-200 bg-white text-slate-700 text-xs font-black hover:bg-slate-50 transition-colors"
+          >
+            <Copy size={14} /> Copy JSON
+          </button>
+          <button
+            type="button"
+            onClick={resetAllArchitectureCustomizations}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-rose-100 bg-white text-rose-700 text-xs font-black hover:bg-rose-50 transition-colors"
+          >
+            <RotateCcw size={14} /> Reset All
+          </button>
+        </div>
+      </div>
+
+      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-5">
+        <div className="flex items-center justify-between gap-4 mb-4">
+          <div>
+            <h2 className="text-sm font-black text-slate-900">Dummy Content Context</h2>
+            <p className="text-xs text-slate-500 font-medium mt-1">
+              This sample context is passed into Prompt Generator and Content Manager for preview-before-save workflow testing.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setDummyContext(DEFAULT_DUMMY_CONTEXT)}
+            className="px-3 py-2 text-[10px] font-black text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50"
+          >
+            Reset Dummy
+          </button>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
+          {([
+            ['domain', 'Domain'],
+            ['subject', 'Subject'],
+            ['topic', 'Topic'],
+            ['subtopic', 'Subtopic'],
+            ['subtopicId', 'Subtopic ID'],
+          ] as const).map(([key, label]) => (
+            <div key={key}>
+              <label htmlFor={`dummy-${key}`} className="block text-[10px] font-black uppercase text-slate-400 mb-1">
+                {label}
+              </label>
+              <input
+                id={`dummy-${key}`}
+                value={dummyContext[key]}
+                onChange={(event) => setDummyContext((prev) => ({ ...prev, [key]: event.target.value }))}
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-100"
+              />
+            </div>
+          ))}
+          <div>
+            <label htmlFor="learner-preview-target" className="block text-[10px] font-black uppercase text-slate-400 mb-1">
+              Preview Target
+            </label>
+            <select
+              id="learner-preview-target"
+              value={learnerPreviewTarget}
+              onChange={(event) => setLearnerPreviewTarget(event.target.value as keyof typeof LEARNER_PREVIEW_TARGETS)}
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-100 bg-white"
+            >
+              {Object.entries(LEARNER_PREVIEW_TARGETS).map(([key, target]) => (
+                <option key={key} value={key}>{target.label}</option>
+              ))}
+            </select>
+            <p className="mt-1 truncate text-[10px] font-semibold text-slate-400">{selectedWorkflowUrls.learnerPreview}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* 4. Tabs Navigation */}
       <div className="border-b border-slate-200 flex overflow-x-auto hide-scrollbar">
         {tabs.map((tab) => (
           <button
@@ -285,11 +778,24 @@ export default function GlobalArchitecturePage() {
                     {universalComponents.map(([key, item]: [string, ComponentArchitecture], index) => {
                       const Icon = getIconForComponent(index);
                       const color = getColorForComponent(index);
+                      const isSelectedComponent = selectedComponentKey === key;
                       return (
-                        <div key={key} className="border border-slate-200 rounded-xl p-5 flex flex-col items-center text-center relative hover:shadow-md transition-shadow bg-white">
+                        <button
+                          type="button"
+                          key={key}
+                          onClick={() => setSelectedComponentKey(key)}
+                          className={`border rounded-xl p-5 flex flex-col items-center text-center relative hover:shadow-md transition-all bg-white w-full ${
+                            isSelectedComponent ? 'border-indigo-400 ring-4 ring-indigo-50 shadow-md' : 'border-slate-200'
+                          }`}
+                        >
                           <span className={`absolute top-2 left-2 w-6 h-6 rounded bg-slate-100 text-slate-600 text-[10px] font-bold flex items-center justify-center`}>
                             {index + 1}
                           </span>
+                          {isSelectedComponent ? (
+                            <span className="absolute top-2 right-2 text-[8px] font-black uppercase bg-indigo-600 text-white px-2 py-0.5 rounded">
+                              Selected
+                            </span>
+                          ) : null}
                           <div className={`w-12 h-12 rounded-full ${color.bg} ${color.text} flex items-center justify-center mb-3 mt-2`}>
                             <Icon size={24} />
                           </div>
@@ -305,7 +811,7 @@ export default function GlobalArchitecturePage() {
                               {item.renderer || 'default_card'}
                             </span>
                           </div>
-                        </div>
+                        </button>
                       );
                     })}
                   </div>
@@ -365,8 +871,16 @@ export default function GlobalArchitecturePage() {
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {(Object.entries(activeData.component_design_system || {}) as [string, ComponentArchitecture][]).map(([key, item], index) => {
                       const color = getColorForComponent(index);
+                      const isSelectedComponent = selectedComponentKey === key;
                       return (
-                        <div key={key} className="border border-slate-200 rounded-xl p-4 flex flex-col hover:shadow-md transition-shadow bg-slate-50/50">
+                        <button
+                          type="button"
+                          key={key}
+                          onClick={() => setSelectedComponentKey(key)}
+                          className={`border rounded-xl p-4 flex flex-col hover:shadow-md transition-all bg-slate-50/50 w-full text-left ${
+                            isSelectedComponent ? 'border-pink-400 ring-4 ring-pink-50 shadow-md' : 'border-slate-200'
+                          }`}
+                        >
                           <h3 className="text-sm font-bold text-slate-900 mb-1">{formatTitle(key)}</h3>
                           <div className="flex items-center gap-1.5 mb-3">
                             <span className={`text-[9px] font-bold px-2 py-0.5 rounded border border-slate-200 ${color.bg} ${color.text}`}>
@@ -386,7 +900,7 @@ export default function GlobalArchitecturePage() {
                                ))}
                             </div>
                           </div>
-                        </div>
+                        </button>
                       );
                     })}
                   </div>
@@ -475,16 +989,43 @@ export default function GlobalArchitecturePage() {
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                   <Code size={16} className="text-blue-600" />
-                  {isUiUxMode ? 'UI/UX JSON ' : 'Architecture JSON '} <span className="text-slate-400 font-medium">(Read Only)</span>
+                  {isUiUxMode ? 'UI/UX JSON ' : 'Architecture JSON '} <span className="text-slate-400 font-medium">{isJsonEditing ? '(Editing)' : '(Live State)'}</span>
                 </h2>
-                <button className="text-[10px] font-bold text-blue-600 border border-blue-100 px-2 py-1 rounded hover:bg-blue-50 transition-colors flex items-center gap-1">
-                  View Full JSON <ExternalLink size={12} />
+                <button
+                  type="button"
+                  onClick={isJsonEditing ? applyJsonEdit : startJsonEdit}
+                  className="text-[10px] font-bold text-blue-600 border border-blue-100 px-2 py-1 rounded hover:bg-blue-50 transition-colors flex items-center gap-1"
+                >
+                  {isJsonEditing ? 'Apply JSON' : 'Edit Full JSON'} <ExternalLink size={12} />
                 </button>
               </div>
               <div className="bg-[#0f172a] rounded-xl p-4 overflow-hidden relative">
-                <pre className="text-emerald-400 text-[10px] font-mono leading-relaxed overflow-y-auto h-[220px] custom-scrollbar">
-                  {jsonString}
-                </pre>
+                {isJsonEditing ? (
+                  <textarea
+                    value={jsonEditorValue}
+                    onChange={(event) => setJsonEditorValue(event.target.value)}
+                    className="w-full h-[220px] bg-transparent text-emerald-400 text-[10px] font-mono leading-relaxed outline-none resize-none custom-scrollbar"
+                    spellCheck={false}
+                  />
+                ) : (
+                  <pre className="text-emerald-400 text-[10px] font-mono leading-relaxed overflow-y-auto h-[220px] custom-scrollbar">
+                    {jsonString}
+                  </pre>
+                )}
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button type="button" onClick={copyArchitectureJson} className="px-3 py-1.5 text-[10px] font-bold text-indigo-600 border border-indigo-100 rounded hover:bg-indigo-50 flex items-center gap-1">
+                  <Copy size={11} /> Copy
+                </button>
+                <button type="button" onClick={downloadArchitectureJson} className="px-3 py-1.5 text-[10px] font-bold text-blue-600 border border-blue-100 rounded hover:bg-blue-50 flex items-center gap-1">
+                  <Download size={11} /> Download
+                </button>
+                <button type="button" onClick={validateActiveArchitecture} className="px-3 py-1.5 text-[10px] font-bold text-emerald-600 border border-emerald-100 rounded hover:bg-emerald-50 flex items-center gap-1">
+                  <CheckSquare size={11} /> Validate
+                </button>
+                <button type="button" onClick={resetActiveArchitecture} className="px-3 py-1.5 text-[10px] font-bold text-slate-600 border border-slate-200 rounded hover:bg-slate-50 flex items-center gap-1">
+                  <RotateCcw size={11} /> Reset
+                </button>
               </div>
             </div>
 
@@ -517,6 +1058,9 @@ export default function GlobalArchitecturePage() {
                        </div>
                      </div>
                    ))}
+                </div>
+                <div className="mt-4 rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 text-[10px] font-bold text-slate-600">
+                  {validationMessage}
                 </div>
               </div>
 
@@ -575,17 +1119,17 @@ export default function GlobalArchitecturePage() {
                 <Zap size={16} className="text-rose-500" /> Quick Actions
               </h2>
               <div className="space-y-2">
-                <button className="w-full flex items-center gap-3 p-2.5 text-sm font-bold text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors border border-transparent hover:border-indigo-100">
+                <button type="button" onClick={duplicateSelectedMapping} className="w-full flex items-center gap-3 p-2.5 text-sm font-bold text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors border border-transparent hover:border-indigo-100">
                    <div className="w-6 h-6 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center shrink-0 group-hover:bg-indigo-100 group-hover:text-indigo-600"><Plus size={12}/></div>
-                   {isUiUxMode ? 'Create New Variant' : 'Create New Topic'}
+                   {isUiUxMode ? 'Duplicate Variant' : 'Duplicate Component'}
                 </button>
-                <button className="w-full flex items-center gap-3 p-2.5 text-sm font-bold text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors border border-transparent hover:border-blue-100">
+                <button type="button" onClick={() => openWorkflowUrl(selectedWorkflowUrls.visualGuide)} className="w-full flex items-center gap-3 p-2.5 text-sm font-bold text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors border border-transparent hover:border-blue-100">
                    <div className="w-6 h-6 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center shrink-0 group-hover:bg-blue-100 group-hover:text-blue-600"><Globe size={12}/></div>
-                   {isUiUxMode ? 'Edit Theme Variables' : 'Add Domain Adaptation'}
+                   {isUiUxMode ? 'Open Visual Placement' : 'Open Visual Guide'}
                 </button>
-                 <button className="w-full flex items-center gap-3 p-2.5 text-sm font-bold text-slate-600 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors border border-transparent hover:border-amber-100">
+                 <button type="button" onClick={() => openWorkflowUrl(selectedWorkflowUrls.promptGenerator)} className="w-full flex items-center gap-3 p-2.5 text-sm font-bold text-slate-600 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors border border-transparent hover:border-amber-100">
                    <div className="w-6 h-6 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center shrink-0 group-hover:bg-amber-100 group-hover:text-amber-600"><FileText size={12}/></div>
-                   {isUiUxMode ? 'Export CSS Tokens' : 'New Prompt Template'}
+                   {isUiUxMode ? 'Generate UI Prompt' : 'New Prompt Template'}
                 </button>
               </div>
             </div>
@@ -599,8 +1143,14 @@ export default function GlobalArchitecturePage() {
            <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-12 gap-6">
               
               {/* Col 1: Universal Section Sequence */}
-              <div className="xl:col-span-4 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col h-[650px]">
-                 <h2 className="text-base font-bold text-slate-900 mb-4">1. Universal Section Sequence (Fixed Order)</h2>
+              <div className="xl:col-span-7 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col h-[650px]">
+                 <div className="flex items-start justify-between gap-4 mb-4">
+                   <div>
+                     <h2 className="text-base font-bold text-slate-900">Fixed Component Order</h2>
+                     <p className="text-xs text-slate-500 font-medium mt-1">Select a component to inspect its place in the section journey.</p>
+                   </div>
+                   <span className="flex items-center gap-1.5 text-[10px] font-black text-emerald-700 bg-emerald-50 border border-emerald-100 px-3 py-1 rounded-full"><CheckCircle2 size={12}/> Fixed</span>
+                 </div>
                  <div className="bg-blue-50 border border-blue-100 text-blue-700 p-3 rounded-lg text-xs font-bold mb-4 flex gap-2 items-center shrink-0">
                     <Info size={14} className="shrink-0 text-blue-500" />
                     This is the fixed universal flow order for all {formatTitle(activeSectionKey)} content.
@@ -611,7 +1161,7 @@ export default function GlobalArchitecturePage() {
                      const Icon = getIconForComponent(index);
                      const componentData = (activeData.universal_architecture_fixed?.[key] || {}) as ComponentArchitecture;
                      return (
-                       <div key={key} className="flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-xl hover:border-indigo-200 shadow-sm transition-all group cursor-pointer">
+                       <button type="button" key={key} onClick={() => setSelectedComponentKey(key)} className={`w-full flex items-center gap-3 p-3 border rounded-xl shadow-sm transition-all group text-left ${selectedComponentKey === key ? 'bg-indigo-50 border-indigo-300 ring-2 ring-indigo-50' : 'bg-white border-slate-100 hover:border-indigo-200'}`}>
                          <div className="w-6 h-6 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center text-[10px] font-black shrink-0">
                            {index + 1}
                          </div>
@@ -623,31 +1173,56 @@ export default function GlobalArchitecturePage() {
                            <p className="text-[9px] font-medium text-slate-500 truncate">{componentData.purpose || 'Executes step'}</p>
                          </div>
                          <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded shrink-0 border border-emerald-100">Required</span>
-                         <GripVertical size={14} className="text-slate-300 group-hover:text-slate-500 cursor-grab shrink-0" />
-                       </div>
+                         {selectedComponentKey === key ? <span className="text-[9px] font-black text-indigo-700 bg-white px-2 py-1 rounded border border-indigo-100">Selected</span> : null}
+                       </button>
                      )
                    })}
                  </div>
                  
-                 <div className="mt-4 pt-4 border-t border-slate-100 flex gap-3 shrink-0">
-                   <button className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg border border-rose-200 text-rose-600 bg-rose-50/50 text-xs font-bold hover:bg-rose-50 transition-colors">
-                     <ListOrdered size={14} /> Reorder Sequence
-                   </button>
-                   <button className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg border border-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-50 transition-colors">
-                     <RotateCcw size={14} /> Reset to Default
-                   </button>
-                 </div>
-                 <div className="mt-4 flex items-center justify-between text-[10px] font-bold text-slate-500 shrink-0">
-                    <span className="flex items-center gap-1.5 text-emerald-600"><CheckCircle2 size={12}/> Fixed Order</span>
-                    <span className="flex items-center gap-1.5"><GripVertical size={12}/> Drag to reorder (Admin Only)</span>
+                 <div className="mt-4 pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-[10px] font-bold text-slate-500 shrink-0">
+                    <span className="flex items-center gap-1.5 text-emerald-600"><CheckCircle2 size={12}/> No action needed unless the constitutional order changes.</span>
+                    <button type="button" onClick={() => setShowAdvancedSequence((value) => !value)} className="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50">
+                      <Settings size={12}/> {showAdvancedSequence ? 'Hide Advanced' : 'Show Advanced'}
+                    </button>
                  </div>
               </div>
+
+              <div className="xl:col-span-5 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 h-[650px] flex flex-col">
+                <h2 className="text-base font-bold text-slate-900 mb-4">Selected Component Journey</h2>
+                <div className="rounded-2xl bg-indigo-50 border border-indigo-100 p-5 mb-5">
+                  <span className="text-[10px] font-black text-indigo-600 uppercase tracking-wider">Selected</span>
+                  <h3 className="text-2xl font-black text-slate-950 mt-1">{selectedComponentKey ? formatTitle(selectedComponentKey) : 'Select a component'}</h3>
+                  <p className="text-sm text-slate-600 mt-3 leading-relaxed">{selectedComponentData?.purpose || 'Select a component on the left to see how it fits in the fixed sequence.'}</p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                    <span className="text-[10px] font-black text-slate-400 uppercase">Before</span>
+                    <p className="text-sm font-black text-slate-800 mt-1">{activeLearningFlow[selectedComponentIndex - 1] ? formatTitle(activeLearningFlow[selectedComponentIndex - 1]) : 'Section start'}</p>
+                  </div>
+                  <div className="rounded-xl border border-indigo-200 bg-white p-4">
+                    <span className="text-[10px] font-black text-indigo-500 uppercase">Position</span>
+                    <p className="text-sm font-black text-slate-800 mt-1">{selectedComponentIndex + 1} of {activeLearningFlow.length}</p>
+                  </div>
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                    <span className="text-[10px] font-black text-slate-400 uppercase">After</span>
+                    <p className="text-sm font-black text-slate-800 mt-1">{activeLearningFlow[selectedComponentIndex + 1] ? formatTitle(activeLearningFlow[selectedComponentIndex + 1]) : 'Section end'}</p>
+                  </div>
+                </div>
+                <div className="space-y-3 mt-auto">
+                  <button type="button" onClick={() => openWorkflowUrl(selectedWorkflowUrls.visualGuide)} className="w-full rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm font-black text-blue-700 hover:bg-blue-100 flex items-center justify-center gap-2"><Globe size={16}/> Open Visual Guide</button>
+                  <button type="button" onClick={() => openWorkflowUrl(selectedWorkflowUrls.promptGenerator)} className="w-full rounded-xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-black text-amber-700 hover:bg-amber-100 flex items-center justify-center gap-2"><FileText size={16}/> Open Prompt Generator</button>
+                  <button type="button" onClick={() => openWorkflowUrl(selectedWorkflowUrls.contentManager)} className="w-full rounded-xl bg-indigo-600 px-4 py-3 text-sm font-black text-white hover:bg-indigo-700 flex items-center justify-center gap-2"><Edit2 size={16}/> Open Content Manager</button>
+                </div>
+              </div>
+
+              {showAdvancedSequence ? (
+              <>
 
               {/* Col 2: JSON Architecture */}
               <div className="xl:col-span-4 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col h-[650px]">
                  <div className="flex items-center justify-between mb-4">
                    <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">2. Section Sequence Architecture (JSON) <Info size={14} className="text-slate-400"/></h2>
-                   <button className="flex items-center gap-1.5 text-[10px] font-bold text-indigo-600 border border-indigo-100 px-2.5 py-1.5 rounded-lg hover:bg-indigo-50 transition-colors">
+                   <button type="button" onClick={copyArchitectureJson} className="flex items-center gap-1.5 text-[10px] font-bold text-indigo-600 border border-indigo-100 px-2.5 py-1.5 rounded-lg hover:bg-indigo-50 transition-colors">
                      <Copy size={12} /> Copy JSON
                    </button>
                  </div>
@@ -671,7 +1246,7 @@ ${(((activeData.learning_progression_engine && activeData.learning_progression_e
                     </pre>
                  </div>
                  <div className="mt-4 shrink-0">
-                   <button className="flex some items-center gap-2 text-xs font-bold text-indigo-600 hover:text-indigo-700 transition-colors">
+                   <button type="button" onClick={downloadArchitectureJson} className="flex some items-center gap-2 text-xs font-bold text-indigo-600 hover:text-indigo-700 transition-colors">
                      <Download size={14} /> Export JSON
                    </button>
                  </div>
@@ -726,17 +1301,21 @@ ${(((activeData.learning_progression_engine && activeData.learning_progression_e
                        </div>
                        <div className="sm:w-[150px] space-y-2 border-t sm:border-t-0 sm:border-l border-slate-100 sm:pl-6 pt-4 sm:pt-0">
                          <span className="block text-[10px] font-bold text-slate-900 mb-3 uppercase tracking-wider">Governance Actions</span>
-                         <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border border-rose-100 text-rose-600 bg-white text-[10px] font-bold hover:bg-rose-50 transition-colors shadow-sm"><Edit2 size={12}/> Edit Sequence</button>
-                         <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border border-blue-100 text-blue-600 bg-white text-[10px] font-bold hover:bg-blue-50 transition-colors shadow-sm"><History size={12}/> Version History</button>
-                         <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border border-emerald-100 text-emerald-600 bg-white text-[10px] font-bold hover:bg-emerald-50 transition-colors shadow-sm"><CheckCircle2 size={12}/> Approve Changes</button>
-                         <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border border-rose-100 text-rose-600 bg-white text-[10px] font-bold hover:bg-rose-50 transition-colors shadow-sm"><Archive size={12}/> Archive Architecture</button>
+                         <button type="button" onClick={startJsonEdit} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border border-rose-100 text-rose-600 bg-white text-[10px] font-bold hover:bg-rose-50 transition-colors shadow-sm"><Edit2 size={12}/> Edit Sequence</button>
+                         <button type="button" onClick={() => showActionMessage('Version history is represented in the change log below.')} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border border-blue-100 text-blue-600 bg-white text-[10px] font-bold hover:bg-blue-50 transition-colors shadow-sm"><History size={12}/> Version History</button>
+                         <button type="button" onClick={() => updateArchitectureStatus('approved')} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border border-emerald-100 text-emerald-600 bg-white text-[10px] font-bold hover:bg-emerald-50 transition-colors shadow-sm"><CheckCircle2 size={12}/> Approve Changes</button>
+                         <button type="button" onClick={() => updateArchitectureStatus('archived')} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border border-rose-100 text-rose-600 bg-white text-[10px] font-bold hover:bg-rose-50 transition-colors shadow-sm"><Archive size={12}/> Archive Architecture</button>
                        </div>
                     </div>
                  </div>
               </div>
+              </>
+              ) : null}
            </div>
 
            {/* Bottom Content Rows */}
+           {showAdvancedSequence ? (
+           <>
            {/* Domain Adaptation Overview */}
            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
               <div className="flex items-center justify-between mb-4">
@@ -744,7 +1323,7 @@ ${(((activeData.learning_progression_engine && activeData.learning_progression_e
                    <h2 className="text-base font-bold text-slate-900">8. Domain Adaptation Overview</h2>
                    <p className="text-xs text-slate-500 font-medium mt-1">This sequence is universal. Domains may provide content adaptation inside each section, not sequence change.</p>
                  </div>
-                 <button className="text-[11px] font-bold border border-slate-200 text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-50 shadow-sm transition-colors">Manage Domain Adaptations</button>
+                 <button type="button" onClick={startJsonEdit} className="text-[11px] font-bold border border-slate-200 text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-50 shadow-sm transition-colors">Manage Domain Adaptations</button>
               </div>
               <div className="flex gap-4 overflow-x-auto pb-2 custom-scrollbar">
                  {activeData.metadata?.supported_domains?.map((domain: string, i: number) => {
@@ -832,10 +1411,81 @@ ${(((activeData.learning_progression_engine && activeData.learning_progression_e
                  </div>
               </div>
            </div>
+           </>
+           ) : null}
 
         </div>
       ) : activeTab === 'Component Details' && !isUiUxMode ? (
         <div className="space-y-6">
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+            <div className="xl:col-span-7 bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+              <div className="flex items-start justify-between gap-4 mb-6">
+                <div>
+                  <h2 className="text-lg font-bold text-slate-900">Selected Component Contract</h2>
+                  <p className="text-sm text-slate-500 mt-1">
+                    This is the one component currently selected from the fixed section architecture.
+                  </p>
+                </div>
+                <button type="button" onClick={() => setShowAdvancedComponentDetails((value) => !value)} className="px-4 py-2 rounded-lg border border-slate-200 text-xs font-black text-slate-700 hover:bg-slate-50 flex items-center gap-2">
+                  <Settings size={14}/> {showAdvancedComponentDetails ? 'Hide Advanced' : 'Show Advanced'}
+                </button>
+              </div>
+
+              <div className="rounded-3xl border border-indigo-100 bg-indigo-50 p-6 mb-6">
+                <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600">Component</span>
+                <h3 className="text-3xl font-black text-slate-950 mt-1">{selectedComponentKey ? formatTitle(selectedComponentKey) : 'Select a component'}</h3>
+                <p className="text-sm text-slate-700 mt-4 leading-relaxed">{selectedComponentData?.purpose || 'Select a component from Universal Architecture to inspect its contract.'}</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Renderer</span>
+                  <p className="text-sm font-black text-slate-900 mt-1">{String(selectedComponentData?.renderer || (selectedRendererMapping as Record<string, unknown> | null)?.component || 'Default renderer')}</p>
+                  <p className="text-xs text-slate-500 mt-2">This decides which UI component will show the JSON.</p>
+                </div>
+                <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Required / Fixed</span>
+                  <p className="text-sm font-black text-emerald-700 mt-1">{selectedComponentData?.required === false ? 'Optional' : 'Required'}</p>
+                  <p className="text-xs text-slate-500 mt-2">This section contract should not be changed during normal content work.</p>
+                </div>
+                <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Prompt Target</span>
+                  <p className="text-sm font-black text-slate-900 mt-1">{String(adminSectionId)}{selectedComponentKey ? `.${selectedComponentKey}` : ''}</p>
+                  <p className="text-xs text-slate-500 mt-2">This is what Prompt Generator and Content Manager receive.</p>
+                </div>
+                <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Sequence Position</span>
+                  <p className="text-sm font-black text-slate-900 mt-1">{selectedComponentIndex + 1} of {activeLearningFlow.length}</p>
+                  <p className="text-xs text-slate-500 mt-2">Use Section Sequence only to inspect the fixed order.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="xl:col-span-5 bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+              <h2 className="text-lg font-bold text-slate-900 mb-5">What Can You Do Here?</h2>
+              <div className="space-y-3">
+                <button type="button" onClick={() => openWorkflowUrl(selectedWorkflowUrls.visualGuide)} className="w-full rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm font-black text-blue-700 hover:bg-blue-100 flex items-center justify-center gap-2">
+                  <Globe size={16}/> Open Visual Guide for this component
+                </button>
+                <button type="button" onClick={() => openWorkflowUrl(selectedWorkflowUrls.promptGenerator)} className="w-full rounded-xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-black text-amber-700 hover:bg-amber-100 flex items-center justify-center gap-2">
+                  <FileText size={16}/> Generate Prompt for this component
+                </button>
+                <button type="button" onClick={() => openWorkflowUrl(selectedWorkflowUrls.contentManager)} className="w-full rounded-xl bg-indigo-600 px-4 py-3 text-sm font-black text-white hover:bg-indigo-700 flex items-center justify-center gap-2">
+                  <Edit2 size={16}/> Open Content Manager Preview
+                </button>
+                <button type="button" onClick={() => setActiveTab('Renderer Mapping')} className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 hover:bg-slate-50 flex items-center justify-center gap-2">
+                  <MonitorSmartphone size={16}/> Configure renderer mapping
+                </button>
+              </div>
+              <div className="mt-6 rounded-2xl bg-slate-50 border border-slate-200 p-4">
+                <p className="text-xs font-bold text-slate-600 leading-relaxed">
+                  The large component grid, raw JSON, prompt statistics, progression list, and metadata are advanced inspection panels. They are hidden by default because they are not needed for normal component workflow.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {showAdvancedComponentDetails ? (
            <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
               
               {/* Left Column */}
@@ -845,7 +1495,7 @@ ${(((activeData.learning_progression_engine && activeData.learning_progression_e
                  <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
                     <div className="flex items-center justify-between mb-4">
                        <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">1. Fixed Component Architecture ({totalComponents}/{totalComponents} Required) <Info size={14} className="text-slate-400"/></h2>
-                       <button className="text-[10px] font-bold text-blue-600 border border-blue-100 px-3 py-1.5 rounded-lg hover:bg-blue-50 flex items-center gap-1.5 transition-colors">
+                       <button type="button" onClick={() => setActiveTab('Section Sequence')} className="text-[10px] font-bold text-blue-600 border border-blue-100 px-3 py-1.5 rounded-lg hover:bg-blue-50 flex items-center gap-1.5 transition-colors">
                          <ChevronRight size={12} className="rotate-0"/> Manage Order
                        </button>
                     </div>
@@ -885,7 +1535,7 @@ ${(((activeData.learning_progression_engine && activeData.learning_progression_e
                     <div className="mt-4 pt-4 border-t border-slate-100 flex items-center gap-6 text-[10px] font-bold text-slate-500">
                        <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-emerald-500"></div> Required Component</span>
                        <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-blue-500"></div> Optional Component</span>
-                       <span className="flex items-center gap-1.5 ml-auto"><GripVertical size={12}/> Drag to reorder components</span>
+                       <span className="flex items-center gap-1.5 ml-auto"><Settings size={12}/> Advanced inspection only</span>
                     </div>
                  </div>
 
@@ -919,9 +1569,13 @@ ${(((activeData.learning_progression_engine && activeData.learning_progression_e
                                  <td className="py-2.5"><span className="flex items-center gap-1 text-emerald-600 font-bold"><CheckCircle2 size={10}/> Responsive</span></td>
                                  <td className="py-2.5"><span className="flex items-center gap-1 text-emerald-600 font-bold"><CheckCircle2 size={10}/> Active</span></td>
                                  <td className="py-2.5">
-                                   <div className="flex gap-2 text-indigo-500">
-                                     <Edit2 size={12} className="cursor-pointer hover:text-indigo-700"/>
-                                     <Eye size={12} className="cursor-pointer hover:text-indigo-700"/>
+                                   <div className="flex flex-wrap gap-2">
+                                     <button type="button" onClick={() => { setSelectedComponentKey(key); setActiveTab('Renderer Mapping'); }} className="rounded border border-indigo-100 bg-indigo-50 px-2 py-1 text-[9px] font-black text-indigo-700 hover:bg-indigo-100">
+                                       Configure
+                                     </button>
+                                     <button type="button" onClick={() => openWorkflowUrl(`/tools/visual-guide?section=${canonicalSectionId}&subsection=${key}`)} className="rounded border border-blue-100 bg-blue-50 px-2 py-1 text-[9px] font-black text-blue-700 hover:bg-blue-100">
+                                       Visual Guide
+                                     </button>
                                    </div>
                                  </td>
                                </tr>
@@ -935,7 +1589,7 @@ ${(((activeData.learning_progression_engine && activeData.learning_progression_e
                  {/* 8. Prompt Management Overview */}
                  <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 relative">
                     <h2 className="text-base font-bold text-slate-900 flex items-center gap-2 mb-6">8. Prompt Management Overview <Info size={14} className="text-slate-400"/></h2>
-                    <button className="absolute top-6 right-6 border border-rose-200 text-rose-600 px-3 py-1 rounded text-[10px] font-bold flex items-center gap-1 hover:bg-rose-50 transition-colors">Manage Prompts <ArrowRight size={10}/></button>
+                    <button type="button" onClick={() => openWorkflowUrl(selectedWorkflowUrls.promptGenerator)} className="absolute top-6 right-6 border border-rose-200 text-rose-600 px-3 py-1 rounded text-[10px] font-bold flex items-center gap-1 hover:bg-rose-50 transition-colors">Manage Prompts <ArrowRight size={10}/></button>
                     
                     <div className="flex gap-4 mb-6 flex-wrap">
                        <div className="flex items-center gap-3 border border-slate-100 rounded-xl p-3 flex-1 bg-white min-w-[140px] shadow-sm">
@@ -965,7 +1619,7 @@ ${(((activeData.learning_progression_engine && activeData.learning_progression_e
                          <span className="block text-[10px] font-bold text-slate-700 mb-1">Prompt Integrity Hash (SHA256)</span>
                          <span className="text-[10px] font-mono text-slate-500">a4f8c1d9b8e3f7c2a6d9e4b5f1c8a7e2d3f5a6b7c8d9e0f1a2b3c4d5e6f7a8b</span>
                        </div>
-                       <button className="border border-indigo-100 text-indigo-600 text-[10px] font-bold px-3 py-1.5 rounded flex items-center gap-1.5 hover:bg-indigo-50 transition-colors bg-white"><Copy size={10}/> Copy Hash</button>
+                       <button type="button" onClick={() => { navigator.clipboard.writeText('a4f8c1d9b8e3f7c2a6d9e4b5f1c8a7e2d3f5a6b7c8d9e0f1a2b3c4d5e6f7a8b'); showActionMessage('Prompt integrity hash copied.'); }} className="border border-indigo-100 text-indigo-600 text-[10px] font-bold px-3 py-1.5 rounded flex items-center gap-1.5 hover:bg-indigo-50 transition-colors bg-white"><Copy size={10}/> Copy Hash</button>
                     </div>
                  </div>
 
@@ -997,9 +1651,9 @@ ${(Object.entries(activeData.universal_architecture_fixed || {}) as [string, Com
                       </pre>
                     </div>
                     <div className="mt-4 flex gap-2">
-                       <button className="flex-1 flex items-center justify-center gap-1.5 text-[10px] font-bold text-indigo-600 border border-indigo-100 py-2 rounded hover:bg-indigo-50 transition-colors"><Copy size={12}/> Copy JSON</button>
-                       <button className="flex-1 flex items-center justify-center gap-1.5 text-[10px] font-bold text-blue-600 border border-blue-100 py-2 rounded hover:bg-blue-50 transition-colors"><Download size={12}/> Download JSON</button>
-                       <button className="flex-1 flex items-center justify-center gap-1.5 text-[10px] font-bold text-slate-600 border border-slate-200 py-2 rounded hover:bg-slate-50 transition-colors"><CheckSquare size={12}/> Validate JSON</button>
+                       <button type="button" onClick={copyArchitectureJson} className="flex-1 flex items-center justify-center gap-1.5 text-[10px] font-bold text-indigo-600 border border-indigo-100 py-2 rounded hover:bg-indigo-50 transition-colors"><Copy size={12}/> Copy JSON</button>
+                       <button type="button" onClick={downloadArchitectureJson} className="flex-1 flex items-center justify-center gap-1.5 text-[10px] font-bold text-blue-600 border border-blue-100 py-2 rounded hover:bg-blue-50 transition-colors"><Download size={12}/> Download JSON</button>
+                       <button type="button" onClick={validateActiveArchitecture} className="flex-1 flex items-center justify-center gap-1.5 text-[10px] font-bold text-slate-600 border border-slate-200 py-2 rounded hover:bg-slate-50 transition-colors"><CheckSquare size={12}/> Validate JSON</button>
                     </div>
                  </div>
 
@@ -1035,7 +1689,7 @@ ${(Object.entries(activeData.universal_architecture_fixed || {}) as [string, Com
                          )
                        })}
                     </div>
-                    <button className="w-full border border-purple-200 text-purple-600 bg-purple-50/50 text-xs font-bold py-2.5 rounded-lg hover:bg-purple-50 transition-colors shadow-sm">Edit Progression Flow</button>
+                    <button type="button" onClick={() => setActiveTab('Section Sequence')} className="w-full border border-purple-200 text-purple-600 bg-purple-50/50 text-xs font-bold py-2.5 rounded-lg hover:bg-purple-50 transition-colors shadow-sm">Edit Progression Flow</button>
                  </div>
 
                  {/* 9. Section Metadata */}
@@ -1053,8 +1707,138 @@ ${(Object.entries(activeData.universal_architecture_fixed || {}) as [string, Com
 
               </div>
            </div>
+           ) : null}
+        </div>
+      ) : activeTab === 'Learning Progression' && !isUiUxMode ? (
+        <div className="space-y-6 pb-10">
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <div className="xl:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+              <div className="flex items-start justify-between gap-4 mb-6">
+                <div>
+                  <h2 className="text-lg font-bold text-slate-900">Learning Progression for {formatTitle(String(adminSectionId))}</h2>
+                  <p className="text-sm text-slate-500 mt-1">
+                    This tab explains where the selected component sits in the learner journey and what should happen before and after it.
+                  </p>
+                </div>
+                <button type="button" onClick={() => setActiveTab('Section Sequence')} className="px-4 py-2 rounded-lg border border-indigo-100 bg-indigo-50 text-indigo-700 text-xs font-black hover:bg-indigo-100">
+                  Edit Sequence
+                </button>
+              </div>
+              <div className="space-y-3">
+                {activeLearningFlow.map((key, index) => {
+                  const item = activeData.universal_architecture_fixed?.[key] as ComponentArchitecture | undefined;
+                  const isSelected = selectedComponentKey === key;
+                  const Icon = getIconForComponent(index);
+                  return (
+                    <button
+                      type="button"
+                      key={key}
+                      onClick={() => setSelectedComponentKey(key)}
+                      className={`w-full text-left rounded-2xl border p-4 transition-all ${isSelected ? 'border-indigo-300 bg-indigo-50 shadow-sm' : 'border-slate-200 bg-white hover:bg-slate-50'}`}
+                    >
+                      <div className="flex items-start gap-4">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isSelected ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
+                          <Icon size={18} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-xs font-black text-slate-400">Step {index + 1}</span>
+                            <h3 className="text-sm font-black text-slate-900">{formatTitle(key)}</h3>
+                            {isSelected ? <span className="text-[10px] font-black text-indigo-700 bg-white border border-indigo-100 px-2 py-0.5 rounded-full">Selected</span> : null}
+                          </div>
+                          <p className="text-xs text-slate-600 mt-1 leading-relaxed">{item?.purpose || 'Defines this learning step inside the section.'}</p>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                <h3 className="text-base font-bold text-slate-900 mb-4">Selected Component Role</h3>
+                <div className="space-y-4 text-sm">
+                  <div>
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Component</span>
+                    <p className="font-black text-slate-900">{selectedComponentKey ? formatTitle(selectedComponentKey) : 'None selected'}</p>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Before</span>
+                    <p className="font-bold text-slate-700">{activeLearningFlow[selectedComponentIndex - 1] ? formatTitle(activeLearningFlow[selectedComponentIndex - 1]) : 'Start of section'}</p>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">After</span>
+                    <p className="font-bold text-slate-700">{activeLearningFlow[selectedComponentIndex + 1] ? formatTitle(activeLearningFlow[selectedComponentIndex + 1]) : 'End of section'}</p>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Purpose</span>
+                    <p className="font-medium text-slate-700 leading-relaxed">{selectedComponentData?.purpose || 'Select a component to see its educational purpose.'}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-purple-50 rounded-2xl border border-purple-100 p-6">
+                <h3 className="text-base font-bold text-purple-950 mb-3">What to Do Here</h3>
+                <p className="text-sm text-purple-800 leading-relaxed">
+                  Use this tab to decide whether the selected component belongs at this point in the learning flow. If order is wrong, go to Section Sequence. If content shape is wrong, go to JSON Schema.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       ) : activeTab === 'Prompt Management' && !isUiUxMode ? (
+        <div className="space-y-6 pb-10">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+              <div>
+                <h2 className="text-lg font-bold text-slate-900">Prompt Management Bridge</h2>
+                <p className="text-sm text-slate-500 mt-1 max-w-3xl">
+                  This tab does not replace the Prompt Generator page. It decides what selected architecture context will be sent to Prompt Generator for this component.
+                </p>
+              </div>
+              <button type="button" onClick={() => openWorkflowUrl(selectedWorkflowUrls.promptGenerator)} className="px-5 py-3 rounded-xl bg-amber-500 text-white text-sm font-black hover:bg-amber-600 flex items-center justify-center gap-2">
+                <Zap size={16} /> Open Prompt Generator
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+              <h3 className="text-base font-bold text-slate-900 mb-5">Selected Prompt Target</h3>
+              <div className="space-y-4 text-sm">
+                <div><span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Section</span><p className="font-black text-slate-900">{String(adminSectionId)}</p></div>
+                <div><span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Component</span><p className="font-black text-slate-900">{selectedComponentKey ? formatTitle(selectedComponentKey) : 'Full section'}</p></div>
+                <div><span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Dummy Topic</span><p className="font-bold text-slate-700">{dummyContext.domain} / {dummyContext.subject} / {dummyContext.subtopic}</p></div>
+                <div><span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Prompt URL</span><p className="break-all font-mono text-xs text-indigo-700">{selectedWorkflowUrls.promptGenerator}</p></div>
+              </div>
+            </div>
+
+            <div className="xl:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+              <h3 className="text-base font-bold text-slate-900 mb-4">Prompt Context That Will Be Sent</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Educational Component Role</span>
+                  <p className="text-sm font-bold text-slate-800 mt-2 leading-relaxed">{selectedComponentData?.purpose || 'Purpose not configured.'}</p>
+                </div>
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Renderer/UI Decision</span>
+                  <p className="text-sm font-bold text-slate-800 mt-2 leading-relaxed">{selectedComponentData?.renderer || (selectedRendererMapping as Record<string, unknown> | null)?.component as string || 'Default renderer'}</p>
+                </div>
+              </div>
+              <div className="bg-slate-950 rounded-xl p-4">
+                <pre className="text-xs text-emerald-300 overflow-auto max-h-[360px]">{JSON.stringify({
+                  section: adminSectionId,
+                  subsection: selectedComponentKey,
+                  dummyContext,
+                  educationalComponent: selectedComponentData,
+                  rendererMapping: selectedRendererMapping,
+                }, null, 2)}</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : activeTab === 'Legacy Prompt Management' && !isUiUxMode ? (
         <div className="space-y-6 pb-10">
            
            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-12 gap-5 items-start">
@@ -1421,8 +2205,589 @@ Writing Guidelines:
 
            </div>
         </div>
+      ) : activeTab === 'Validation Rules' && !isUiUxMode ? (
+        <div className="space-y-6 pb-10">
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <div className="xl:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+              <div className="flex items-start justify-between gap-4 mb-6">
+                <div>
+                  <h2 className="text-lg font-bold text-slate-900">Validation Rules for {selectedComponentKey ? formatTitle(selectedComponentKey) : formatTitle(String(adminSectionId))}</h2>
+                  <p className="text-sm text-slate-500 mt-1">
+                    These are the rules Content Manager should use before preview approval and database save.
+                  </p>
+                </div>
+                <button type="button" onClick={validateActiveArchitecture} className="px-4 py-2 rounded-lg bg-emerald-600 text-white text-xs font-black hover:bg-emerald-700">
+                  Run Architecture Check
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[
+                  { title: 'Component Must Exist', detail: `${selectedComponentKey || 'Selected component'} must be registered in universal_architecture_fixed.`, pass: Boolean(selectedComponentData || !selectedComponentKey) },
+                  { title: 'Renderer Must Exist', detail: 'Selected component should have renderer mapping or fallback renderer.', pass: Boolean(selectedComponentData?.renderer || selectedRendererMapping) },
+                  { title: 'Default JSON Must Exist', detail: 'Prompt/content flow needs dummy JSON for local preview testing.', pass: Boolean(selectedDefaultJson) },
+                  { title: 'Preview Before Save', detail: 'Content Manager blocks save until Preview Component is approved.', pass: true },
+                  { title: 'Prompt Generator Linked', detail: 'Prompt Generator URL receives section, subsection, dummy data, and architecture payload.', pass: true },
+                  { title: 'Content Manager Linked', detail: 'Content Manager receives same pipeline payload and default JSON.', pass: true },
+                ].map((rule) => (
+                  <div key={rule.title} className={`rounded-2xl border p-4 ${rule.pass ? 'border-emerald-200 bg-emerald-50' : 'border-rose-200 bg-rose-50'}`}>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 size={19} className={rule.pass ? 'text-emerald-600' : 'text-rose-500'} />
+                      <div>
+                        <h3 className="text-sm font-black text-slate-900">{rule.title}</h3>
+                        <p className="text-xs text-slate-600 mt-1 leading-relaxed">{rule.detail}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                <h3 className="text-base font-bold text-slate-900 mb-4">Validation Source</h3>
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between gap-3"><span className="text-slate-500 font-bold">Schema Package</span><span className="text-slate-900 font-black text-right">{String(activeData.validation_governance_system?.schema_package || '@quiz/validation')}</span></div>
+                  <div className="flex justify-between gap-3"><span className="text-slate-500 font-bold">Runtime Validation</span><span className="text-emerald-700 font-black">Enabled</span></div>
+                  <div className="flex justify-between gap-3"><span className="text-slate-500 font-bold">Content Manager</span><span className="text-emerald-700 font-black">Preview gated</span></div>
+                </div>
+              </div>
+
+              <div className="bg-slate-950 rounded-2xl p-4">
+                <pre className="text-xs text-sky-300 overflow-auto max-h-[360px]">{JSON.stringify(activeData.validation_governance_system || {}, null, 2)}</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : activeTab === 'JSON Schema' && !isUiUxMode ? (
+        <div className="space-y-6 pb-10">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-5">
+              <div>
+                <h2 className="text-lg font-bold text-slate-900">JSON Schema / Default Dummy Content</h2>
+                <p className="text-sm text-slate-500 mt-1 max-w-3xl">
+                  This shows the exact JSON shape that will be sent to Content Manager for the currently selected component.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                <button type="button" onClick={copyArchitectureJson} className="px-4 py-2 rounded-lg border border-indigo-100 bg-indigo-50 text-indigo-700 text-xs font-black hover:bg-indigo-100 flex items-center gap-2">
+                  <Copy size={14} /> Copy Architecture JSON
+                </button>
+                <button type="button" onClick={() => openWorkflowUrl(selectedWorkflowUrls.contentManager)} className="px-4 py-2 rounded-lg bg-blue-600 text-white text-xs font-black hover:bg-blue-700 flex items-center gap-2">
+                  <Edit2 size={14} /> Open Content Manager
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+              <h3 className="text-base font-bold text-slate-900 mb-4">Selected Component Schema Summary</h3>
+              <div className="space-y-4 text-sm">
+                <div><span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Section</span><p className="font-black text-slate-900">{String(adminSectionId)}</p></div>
+                <div><span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Subsection</span><p className="font-black text-slate-900">{selectedComponentKey || 'Full section'}</p></div>
+                <div><span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Renderer</span><p className="font-black text-slate-900">{String(selectedSchemaPreview.renderer)}</p></div>
+                <div><span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Required</span><p className="font-black text-slate-900">{selectedSchemaPreview.required ? 'Yes' : 'No'}</p></div>
+                <div><span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Purpose</span><p className="font-medium text-slate-700 leading-relaxed">{String(selectedSchemaPreview.componentPurpose)}</p></div>
+              </div>
+            </div>
+
+            <div className="bg-slate-950 rounded-2xl p-5 shadow-inner">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-black text-white">Default JSON Sent to Content Manager</h3>
+                <span className="text-[10px] font-black text-emerald-300 bg-emerald-500/10 px-2 py-1 rounded">Dummy Data</span>
+              </div>
+              <pre className="text-xs text-emerald-300 overflow-auto max-h-[620px]">{JSON.stringify(selectedSchemaPreview, null, 2)}</pre>
+            </div>
+          </div>
+        </div>
       ) : activeTab === 'Renderer Mapping' && !isUiUxMode ? (
          <div className="space-y-8 pb-12">
+            <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+              <div className="xl:col-span-4 bg-white rounded-[2rem] border border-slate-200 shadow-sm p-6">
+                <div className="flex items-start justify-between gap-4 mb-6">
+                  <div>
+                    <h2 className="text-lg font-bold text-slate-900">Select Component</h2>
+                    <p className="text-xs text-slate-500 mt-1">Choose one fixed component to configure its renderer.</p>
+                  </div>
+                  <button type="button" onClick={() => setShowAdvancedRendererMapping((value) => !value)} className="px-3 py-2 rounded-lg border border-slate-200 text-[10px] font-black text-slate-700 hover:bg-slate-50 flex items-center gap-2">
+                    <Settings size={12}/> {showAdvancedRendererMapping ? 'Hide Advanced' : 'Show Advanced'}
+                  </button>
+                </div>
+                <div className="space-y-3 max-h-[560px] overflow-y-auto pr-2 custom-scrollbar">
+                  {Object.keys(activeData.universal_architecture_fixed || {}).map((key, index) => {
+                    const item = activeData.universal_architecture_fixed?.[key] as ComponentArchitecture;
+                    const Icon = getIconForComponent(index);
+                    const isSelected = selectedComponentKey === key;
+                    return (
+                      <button
+                        type="button"
+                        key={key}
+                        onClick={() => setSelectedComponentKey(key)}
+                        className={`w-full text-left rounded-2xl border p-4 transition-all ${isSelected ? 'border-indigo-300 bg-indigo-50 ring-2 ring-indigo-50' : 'border-slate-200 bg-white hover:bg-slate-50'}`}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isSelected ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
+                            <Icon size={18}/>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-sm font-black text-slate-900 truncate">{formatTitle(key)}</h3>
+                            <p className="text-[11px] text-slate-500 font-bold truncate">{item?.renderer || 'default_renderer'}</p>
+                          </div>
+                          {isSelected ? <span className="text-[9px] font-black text-indigo-700 bg-white px-2 py-1 rounded border border-indigo-100">Selected</span> : null}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="xl:col-span-8 bg-white rounded-[2rem] border border-slate-200 shadow-sm p-6">
+                <div className="flex items-start justify-between gap-4 mb-6">
+                  <div>
+                    <h2 className="text-lg font-bold text-slate-900">Editable Renderer Contract</h2>
+                    <p className="text-xs text-slate-500 mt-1">These fields update the selected component locally and feed Visual Guide, Prompt Generator, Content Manager, and preview flow.</p>
+                  </div>
+                  <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 border border-emerald-100 px-3 py-1 rounded-full">Local State</span>
+                </div>
+
+                <div className="rounded-3xl border border-indigo-100 bg-indigo-50 p-6 mb-6">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600">Selected Component</span>
+                  <h3 className="text-2xl font-black text-slate-950 mt-1">{selectedComponentKey ? formatTitle(selectedComponentKey) : 'Select a component'}</h3>
+                  <p className="text-sm text-slate-700 mt-3 leading-relaxed">{selectedComponentData?.purpose || 'Select a component on the left to edit its renderer mapping.'}</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div>
+                    <label htmlFor="renderer-name" className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Renderer Name</label>
+                    <input
+                      id="renderer-name"
+                      value={String(selectedComponentData?.renderer || '')}
+                      onChange={(event) => updateSelectedComponentConfig({ renderer: event.target.value })}
+                      placeholder="e.g. progress_ring_checklist"
+                      className="w-full rounded-xl border-2 border-slate-200 px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:border-indigo-400"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="layout-type" className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Layout Type</label>
+                    <select
+                      id="layout-type"
+                      value={String(selectedComponentData?.layout || selectedComponentData?.layout_type || 'card')}
+                      onChange={(event) => updateSelectedComponentConfig({ layout: event.target.value })}
+                      className="w-full rounded-xl border-2 border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:border-indigo-400"
+                    >
+                      <option value="card">Card</option>
+                      <option value="grid">Grid</option>
+                      <option value="accordion">Accordion</option>
+                      <option value="timeline">Timeline</option>
+                      <option value="hero">Hero</option>
+                      <option value="inline">Inline</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="style-variant" className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Style Variant</label>
+                    <select
+                      id="style-variant"
+                      value={String(selectedComponentData?.style_variant || 'standard')}
+                      onChange={(event) => updateSelectedComponentConfig({ style_variant: event.target.value })}
+                      className="w-full rounded-xl border-2 border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:border-indigo-400"
+                    >
+                      <option value="standard">Standard</option>
+                      <option value="compact">Compact</option>
+                      <option value="featured">Featured</option>
+                      <option value="minimal">Minimal</option>
+                      <option value="high_emphasis">High Emphasis</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="animation-type" className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Animation</label>
+                    <select
+                      id="animation-type"
+                      value={String(selectedComponentData?.animation_type || 'none')}
+                      onChange={(event) => updateSelectedComponentConfig({ animation_type: event.target.value })}
+                      className="w-full rounded-xl border-2 border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:border-indigo-400"
+                    >
+                      <option value="none">None</option>
+                      <option value="fade_in">Fade In</option>
+                      <option value="slide_up">Slide Up</option>
+                      <option value="expand">Expand</option>
+                      <option value="progress">Progress</option>
+                    </select>
+                  </div>
+                  <div className="md:col-span-2">
+                    <label htmlFor="interactive-elements" className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Interactive Elements</label>
+                    <input
+                      id="interactive-elements"
+                      value={Array.isArray(selectedComponentData?.interactive_elements) ? selectedComponentData.interactive_elements.join(', ') : ''}
+                      onChange={(event) => updateSelectedComponentConfig({ interactive_elements: event.target.value.split(',').map((item) => item.trim()).filter(Boolean) })}
+                      placeholder="e.g. hover, expand, progress, checklist"
+                      className="w-full rounded-xl border-2 border-slate-200 px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:border-indigo-400"
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-8 space-y-6">
+                  <div className="rounded-3xl border border-indigo-100 bg-white p-5">
+                    <h3 className="text-sm font-black text-slate-900 mb-4">Sub-Component Editor</h3>
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                      <div>
+                        <label htmlFor="renderer-subcomponent" className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Select Child Part</label>
+                        <select
+                          id="renderer-subcomponent"
+                          value={String(selectedRendererSubcomponent?.id || 'container')}
+                          onChange={(event) => setSelectedRendererSubcomponentId(event.target.value)}
+                          className="w-full rounded-xl border-2 border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-800 outline-none focus:border-indigo-400"
+                        >
+                          {rendererSubcomponents.map((part) => (
+                            <option key={String(part.id)} value={String(part.id)}>{String(part.label || formatTitle(String(part.id)))}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label htmlFor="renderer-subcomponent-layout" className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Child Layout</label>
+                        <select
+                          id="renderer-subcomponent-layout"
+                          value={String(selectedRendererSubcomponent?.layout || 'inline')}
+                          onChange={(event) => {
+                            const nextParts = rendererSubcomponents.map((part) => String(part.id) === String(selectedRendererSubcomponent?.id) ? { ...part, layout: event.target.value } : part);
+                            updateSelectedComponentConfig({ ui_subcomponents: nextParts });
+                          }}
+                          className="w-full rounded-xl border-2 border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-800 outline-none focus:border-indigo-400"
+                        >
+                          <option value="inline">Inline</option>
+                          <option value="card">Card</option>
+                          <option value="pill">Pill</option>
+                          <option value="icon_block">Icon Block</option>
+                          <option value="progress">Progress</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label htmlFor="renderer-subcomponent-color" className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Child Color</label>
+                        <input
+                          id="renderer-subcomponent-color"
+                          type="color"
+                          value={String(selectedRendererSubcomponent?.color || selectedComponentData?.primary_color || '#4f46e5')}
+                          onChange={(event) => {
+                            const nextParts = rendererSubcomponents.map((part) => String(part.id) === String(selectedRendererSubcomponent?.id) ? { ...part, color: event.target.value } : part);
+                            updateSelectedComponentConfig({ ui_subcomponents: nextParts });
+                          }}
+                          className="h-10 w-full rounded-xl border-2 border-slate-200 bg-white p-1 outline-none focus:border-indigo-400"
+                        />
+                      </div>
+                    </div>
+                    <div className="mt-4 grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-4">
+                      <input
+                        value={String(selectedRendererSubcomponent?.label || '')}
+                        onChange={(event) => {
+                          const nextParts = rendererSubcomponents.map((part) => String(part.id) === String(selectedRendererSubcomponent?.id) ? { ...part, label: event.target.value } : part);
+                          updateSelectedComponentConfig({ ui_subcomponents: nextParts });
+                        }}
+                        placeholder="Child part label"
+                        className="rounded-xl border-2 border-slate-200 px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:border-indigo-400"
+                      />
+                      <label className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-black text-slate-700">
+                        Visible
+                        <input
+                          type="checkbox"
+                          checked={selectedRendererSubcomponent?.visible !== false}
+                          onChange={(event) => {
+                            const nextParts = rendererSubcomponents.map((part) => String(part.id) === String(selectedRendererSubcomponent?.id) ? { ...part, visible: event.target.checked } : part);
+                            updateSelectedComponentConfig({ ui_subcomponents: nextParts });
+                          }}
+                          className="h-4 w-4 accent-indigo-600"
+                        />
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
+                    <h3 className="text-sm font-black text-slate-900 mb-4">Responsive Layout Decision</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {[
+                        { id: 'desktop_layout', label: 'Desktop', options: ['two_column', 'single_column', 'wide_card', 'dashboard_grid'] },
+                        { id: 'tablet_layout', label: 'Tablet', options: ['stacked_cards', 'two_column', 'compact_grid', 'single_column'] },
+                        { id: 'mobile_layout', label: 'Mobile', options: ['stacked_cards', 'compact_card', 'accordion', 'single_column'] },
+                      ].map((control) => (
+                        <div key={control.id}>
+                          <label htmlFor={control.id} className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">{control.label}</label>
+                          <select
+                            id={control.id}
+                            value={String(selectedComponentData?.[control.id] || control.options[0])}
+                            onChange={(event) => updateSelectedComponentConfig({ [control.id]: event.target.value })}
+                            className="w-full rounded-xl border-2 border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-800 outline-none focus:border-indigo-400"
+                          >
+                            {control.options.map((option) => <option key={option} value={option}>{formatTitle(option)}</option>)}
+                          </select>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                    <div className="rounded-3xl border border-slate-200 bg-white p-5">
+                      <h3 className="text-sm font-black text-slate-900 mb-4">Visual Styling</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label htmlFor="visual-density" className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Density</label>
+                          <select
+                            id="visual-density"
+                            value={String(selectedComponentData?.density || 'comfortable')}
+                            onChange={(event) => updateSelectedComponentConfig({ density: event.target.value })}
+                            className="w-full rounded-xl border-2 border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-800 outline-none focus:border-indigo-400"
+                          >
+                            <option value="compact">Compact</option>
+                            <option value="comfortable">Comfortable</option>
+                            <option value="spacious">Spacious</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label htmlFor="emphasis-level" className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Emphasis</label>
+                          <select
+                            id="emphasis-level"
+                            value={String(selectedComponentData?.emphasis_level || 'medium')}
+                            onChange={(event) => updateSelectedComponentConfig({ emphasis_level: event.target.value })}
+                            className="w-full rounded-xl border-2 border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-800 outline-none focus:border-indigo-400"
+                          >
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label htmlFor="color-role" className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Color Role</label>
+                          <select
+                            id="color-role"
+                            value={String(selectedComponentData?.color_role || 'primary')}
+                            onChange={(event) => updateSelectedComponentConfig({ color_role: event.target.value })}
+                            className="w-full rounded-xl border-2 border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-800 outline-none focus:border-indigo-400"
+                          >
+                            <option value="primary">Primary</option>
+                            <option value="success">Success</option>
+                            <option value="warning">Warning</option>
+                            <option value="info">Info</option>
+                            <option value="neutral">Neutral</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label htmlFor="typography-scale" className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Typography</label>
+                          <select
+                            id="typography-scale"
+                            value={String(selectedComponentData?.typography_scale || 'body')}
+                            onChange={(event) => updateSelectedComponentConfig({ typography_scale: event.target.value })}
+                            className="w-full rounded-xl border-2 border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-800 outline-none focus:border-indigo-400"
+                          >
+                            <option value="hero">Hero</option>
+                            <option value="heading">Heading</option>
+                            <option value="body">Body</option>
+                            <option value="caption">Caption</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label htmlFor="primary-color" className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Primary Color</label>
+                          <input
+                            id="primary-color"
+                            type="color"
+                            value={String(selectedComponentData?.primary_color || '#4f46e5')}
+                            onChange={(event) => updateSelectedComponentConfig({ primary_color: event.target.value })}
+                            className="h-11 w-full rounded-xl border-2 border-slate-200 bg-white p-1 outline-none focus:border-indigo-400"
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="accent-color" className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Accent Color</label>
+                          <input
+                            id="accent-color"
+                            type="color"
+                            value={String(selectedComponentData?.accent_color || '#10b981')}
+                            onChange={(event) => updateSelectedComponentConfig({ accent_color: event.target.value })}
+                            className="h-11 w-full rounded-xl border-2 border-slate-200 bg-white p-1 outline-none focus:border-indigo-400"
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="background-color" className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Background Color</label>
+                          <input
+                            id="background-color"
+                            type="color"
+                            value={String(selectedComponentData?.background_color || '#ffffff')}
+                            onChange={(event) => updateSelectedComponentConfig({ background_color: event.target.value })}
+                            className="h-11 w-full rounded-xl border-2 border-slate-200 bg-white p-1 outline-none focus:border-indigo-400"
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="text-color" className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Text Color</label>
+                          <input
+                            id="text-color"
+                            type="color"
+                            value={String(selectedComponentData?.text_color || '#0f172a')}
+                            onChange={(event) => updateSelectedComponentConfig({ text_color: event.target.value })}
+                            className="h-11 w-full rounded-xl border-2 border-slate-200 bg-white p-1 outline-none focus:border-indigo-400"
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="border-color" className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Border Color</label>
+                          <input
+                            id="border-color"
+                            type="color"
+                            value={String(selectedComponentData?.border_color || '#e2e8f0')}
+                            onChange={(event) => updateSelectedComponentConfig({ border_color: event.target.value })}
+                            className="h-11 w-full rounded-xl border-2 border-slate-200 bg-white p-1 outline-none focus:border-indigo-400"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="rounded-3xl border border-slate-200 bg-white p-5">
+                      <h3 className="text-sm font-black text-slate-900 mb-4">Behavior & State</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {[
+                          { key: 'hover_state', label: 'Hover State' },
+                          { key: 'clickable', label: 'Clickable' },
+                          { key: 'collapsible', label: 'Collapsible' },
+                          { key: 'progressive_disclosure', label: 'Progressive Disclosure' },
+                        ].map((item) => (
+                          <label key={item.key} className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-black text-slate-700">
+                            {item.label}
+                            <input
+                              type="checkbox"
+                              checked={Boolean(selectedComponentData?.[item.key])}
+                              onChange={(event) => updateSelectedComponentConfig({ [item.key]: event.target.checked })}
+                              className="h-4 w-4 accent-indigo-600"
+                            />
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                    <div className="rounded-3xl border border-slate-200 bg-white p-5">
+                      <h3 className="text-sm font-black text-slate-900 mb-4">Accessibility</h3>
+                      <div className="space-y-3">
+                        {[
+                          { key: 'keyboard_navigation', label: 'Keyboard Navigation' },
+                          { key: 'screen_reader_labels', label: 'Screen Reader Labels' },
+                          { key: 'reduced_motion', label: 'Reduced Motion' },
+                        ].map((item) => (
+                          <label key={item.key} className="flex items-center justify-between gap-3 text-xs font-bold text-slate-700">
+                            {item.label}
+                            <input
+                              type="checkbox"
+                              checked={selectedComponentData?.[item.key] !== false}
+                              onChange={(event) => updateSelectedComponentConfig({ [item.key]: event.target.checked })}
+                              className="h-4 w-4 accent-emerald-600"
+                            />
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="rounded-3xl border border-slate-200 bg-white p-5">
+                      <h3 className="text-sm font-black text-slate-900 mb-4">Performance</h3>
+                      <div className="space-y-3">
+                        {[
+                          { key: 'lazy_load', label: 'Lazy Load' },
+                          { key: 'cache_component', label: 'Component Cache' },
+                          { key: 'prefetch_assets', label: 'Prefetch Assets' },
+                        ].map((item) => (
+                          <label key={item.key} className="flex items-center justify-between gap-3 text-xs font-bold text-slate-700">
+                            {item.label}
+                            <input
+                              type="checkbox"
+                              checked={Boolean(selectedComponentData?.[item.key])}
+                              onChange={(event) => updateSelectedComponentConfig({ [item.key]: event.target.checked })}
+                              className="h-4 w-4 accent-emerald-600"
+                            />
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="rounded-3xl border border-slate-200 bg-white p-5">
+                      <h3 className="text-sm font-black text-slate-900 mb-4">Brand & Domain</h3>
+                      <div className="space-y-4">
+                        <div>
+                          <label htmlFor="brand-variant" className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Brand Variant</label>
+                          <select
+                            id="brand-variant"
+                            value={String(selectedComponentData?.brand_variant || 'shared')}
+                            onChange={(event) => updateSelectedComponentConfig({ brand_variant: event.target.value })}
+                            className="w-full rounded-xl border-2 border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-800 outline-none focus:border-indigo-400"
+                          >
+                            <option value="shared">Shared</option>
+                            <option value="rth">Real Tutorial Hub</option>
+                            <option value="suia">SkillUp IT Academy</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label htmlFor="domain-override" className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Domain Override</label>
+                          <select
+                            id="domain-override"
+                            value={String(selectedComponentData?.domain_override || 'default')}
+                            onChange={(event) => updateSelectedComponentConfig({ domain_override: event.target.value })}
+                            className="w-full rounded-xl border-2 border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-800 outline-none focus:border-indigo-400"
+                          >
+                            <option value="default">Default</option>
+                            <option value="programming">Programming</option>
+                            <option value="cloud">Cloud</option>
+                            <option value="cybersecurity">Cybersecurity</option>
+                            <option value="finance">Finance</option>
+                            <option value="ai_ml">AI / ML</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div data-testid="renderer-decision-preview" className="rounded-3xl border border-indigo-100 bg-indigo-50 p-5">
+                    <h3 className="text-sm font-black text-indigo-950 mb-1">Renderer Decision Preview</h3>
+                    <p className="mb-4 text-xs font-semibold leading-5 text-indigo-700">
+                      This is the learner-facing preview for the selected content. Layout, colors, visible subcomponents, and interaction flags below are applied directly on the dummy JSON content.
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
+                      {[
+                        ['Renderer', selectedComponentData?.renderer || 'default'],
+                        ['Layout', selectedComponentData?.layout || selectedComponentData?.layout_type || 'card'],
+                        ['Desktop', selectedComponentData?.desktop_layout || 'two_column'],
+                        ['Tablet', selectedComponentData?.tablet_layout || 'stacked_cards'],
+                        ['Mobile', selectedComponentData?.mobile_layout || 'stacked_cards'],
+                        ['Brand', selectedComponentData?.brand_variant || 'shared'],
+                        ['Color Role', selectedComponentData?.color_role || 'primary'],
+                        ['Typography', selectedComponentData?.typography_scale || 'body'],
+                      ].slice(0, 8).map(([label, value]) => (
+                        <div key={String(label)} className="rounded-2xl bg-white border border-indigo-100 p-3">
+                          <span className="block text-[9px] font-black uppercase tracking-wider text-indigo-400">{String(label)}</span>
+                          <span className="mt-1 block font-black text-slate-900">{formatTitle(String(value))}</span>
+                        </div>
+                      ))}
+                    </div>
+                    {selectedComponentData ? (
+                      <div className="mt-5">
+                        <ContractAwareComponentPreview
+                          section={String(adminSectionId)}
+                          subsection={selectedComponentKey || ''}
+                          data={selectedDefaultJson}
+                          contract={selectedComponentData as Record<string, unknown>}
+                        />
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <button type="button" onClick={() => showActionMessage('Renderer mapping is already saved locally. Continue to Visual Guide or Content Manager.')} className="rounded-xl bg-indigo-600 px-5 py-3 text-sm font-black text-white hover:bg-indigo-700">
+                    Save Renderer Mapping
+                  </button>
+                  <button type="button" onClick={() => openWorkflowUrl(selectedWorkflowUrls.visualGuide)} className="rounded-xl border border-blue-100 bg-blue-50 px-5 py-3 text-sm font-black text-blue-700 hover:bg-blue-100">
+                    Open Visual Guide
+                  </button>
+                  <button type="button" onClick={() => openWorkflowUrl(selectedWorkflowUrls.contentManager)} className="rounded-xl border border-emerald-100 bg-emerald-50 px-5 py-3 text-sm font-black text-emerald-700 hover:bg-emerald-100">
+                    Preview in Content Manager
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {showAdvancedRendererMapping ? (
+            <>
             
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 items-start">
                {/* 1. Component Library */}
@@ -1484,7 +2849,7 @@ Writing Guidelines:
                      })}
                   </div>
                   <div className="p-6 border-t border-slate-100 shrink-0">
-                     <button className="w-full py-4 border-2 border-dashed border-indigo-200 rounded-[1.5rem] text-sm font-black text-indigo-600 hover:bg-indigo-50 hover:border-indigo-300 transition-all flex items-center justify-center gap-3">
+                     <button type="button" onClick={addNewComponent} className="w-full py-4 border-2 border-dashed border-indigo-200 rounded-[1.5rem] text-sm font-black text-indigo-600 hover:bg-indigo-50 hover:border-indigo-300 transition-all flex items-center justify-center gap-3">
                         <Plus size={20} /> Add New Component
                      </button>
                   </div>
@@ -1499,8 +2864,8 @@ Writing Guidelines:
                            <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mt-1">Component: {selectedComponentKey ? formatTitle(selectedComponentKey) : 'None Selected'}</p>
                         </div>
                         <div className="flex gap-2">
-                           <button className="px-4 py-2 bg-indigo-600 text-white text-[10px] font-black rounded-xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all uppercase tracking-wider">Save Config</button>
-                           <button className="px-4 py-2 bg-slate-100 text-slate-600 text-[10px] font-black rounded-xl hover:bg-slate-200 transition-all uppercase tracking-wider">Reset</button>
+                           <button type="button" onClick={() => updateSelectedComponentConfig({ renderer: 'configured_renderer', layout: configTab.toLowerCase().replace(/\s+/g, '_') })} className="px-4 py-2 bg-indigo-600 text-white text-[10px] font-black rounded-xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all uppercase tracking-wider">Save Config</button>
+                           <button type="button" onClick={resetActiveArchitecture} className="px-4 py-2 bg-slate-100 text-slate-600 text-[10px] font-black rounded-xl hover:bg-slate-200 transition-all uppercase tracking-wider">Reset</button>
                         </div>
                      </div>
                      <div className="p-1.5 bg-slate-100/50 rounded-3xl flex gap-1 overflow-x-auto hide-scrollbar">
@@ -1646,7 +3011,7 @@ Writing Guidelines:
                                              <span className="block text-xs font-black text-indigo-900 uppercase tracking-widest mb-1">Cache Strategy</span>
                                              <span className="text-[13px] font-black text-indigo-600">{String(val).toUpperCase()}</span>
                                           </div>
-                                          <button className="px-6 py-2.5 bg-white border border-indigo-200 rounded-2xl text-[11px] font-black text-indigo-600 shadow-sm hover:bg-indigo-600 hover:text-white transition-all">Change Strategy</button>
+                                          <button type="button" onClick={() => updateSelectedComponentConfig({ cache_strategy: 'component_level' })} className="px-6 py-2.5 bg-white border border-indigo-200 rounded-2xl text-[11px] font-black text-indigo-600 shadow-sm hover:bg-indigo-600 hover:text-white transition-all">Change Strategy</button>
                                        </div>
                                     )
                                  ))}
@@ -1779,9 +3144,9 @@ Writing Guidelines:
                   <div className="flex items-center justify-between mb-10 shrink-0">
                      <h2 className="text-lg font-bold text-slate-900">Architecture Device Preview</h2>
                      <div className="flex bg-slate-100 p-1.5 rounded-2xl border border-slate-200">
-                        <button className="p-2.5 bg-white text-indigo-600 rounded-xl shadow-sm"><Monitor size={18}/></button>
-                        <button className="p-2.5 text-slate-400 hover:text-slate-600 transition-all"><Tablet size={18}/></button>
-                        <button className="p-2.5 text-slate-400 hover:text-slate-600 transition-all"><Smartphone size={18}/></button>
+                        <button type="button" onClick={() => setSelectedDevice('desktop')} className={`p-2.5 rounded-xl shadow-sm ${selectedDevice === 'desktop' ? 'bg-white text-indigo-600' : 'text-slate-400 hover:text-slate-600'}`}><Monitor size={18}/></button>
+                        <button type="button" onClick={() => setSelectedDevice('tablet')} className={`p-2.5 rounded-xl ${selectedDevice === 'tablet' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}><Tablet size={18}/></button>
+                        <button type="button" onClick={() => setSelectedDevice('mobile')} className={`p-2.5 rounded-xl ${selectedDevice === 'mobile' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}><Smartphone size={18}/></button>
                      </div>
                   </div>
                   <div className="flex-1 bg-slate-50 rounded-[3rem] border-[6px] border-white shadow-[inset_0_0_40px_rgba(0,0,0,0.02)] p-16 flex flex-col items-center justify-center relative group overflow-y-auto hide-scrollbar">
@@ -1801,8 +3166,8 @@ Writing Guidelines:
                      <div className="space-y-4">
                         <span className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] text-center md:text-left">THEME SELECTION</span>
                         <div className="flex bg-slate-100/80 p-2 rounded-[1.5rem] border border-slate-200">
-                           <button className="px-6 py-2.5 bg-white text-indigo-600 rounded-[1.25rem] shadow-lg border border-slate-100 flex items-center gap-2.5 text-[13px] font-black transition-all"><Sun size={16}/> Light Mode</button>
-                           <button className="px-6 py-2.5 text-slate-400 flex items-center gap-2.5 text-[13px] font-black hover:text-slate-600 transition-all"><Moon size={16}/> Dark Mode</button>
+                           <button type="button" onClick={() => setSelectedTheme('light')} className={`px-6 py-2.5 rounded-[1.25rem] flex items-center gap-2.5 text-[13px] font-black transition-all ${selectedTheme === 'light' ? 'bg-white text-indigo-600 shadow-lg border border-slate-100' : 'text-slate-400 hover:text-slate-600'}`}><Sun size={16}/> Light Mode</button>
+                           <button type="button" onClick={() => setSelectedTheme('dark')} className={`px-6 py-2.5 rounded-[1.25rem] flex items-center gap-2.5 text-[13px] font-black transition-all ${selectedTheme === 'dark' ? 'bg-white text-indigo-600 shadow-lg border border-slate-100' : 'text-slate-400 hover:text-slate-600'}`}><Moon size={16}/> Dark Mode</button>
                         </div>
                      </div>
                      <div className="space-y-4 flex-1 max-w-[240px]">
@@ -1848,7 +3213,7 @@ Writing Guidelines:
                            <span className="text-[11px] font-black text-emerald-600 bg-emerald-100 px-4 py-1.5 rounded-full uppercase border border-emerald-200 tracking-wider">Active</span>
                         </div>
                      </div>
-                     <button className="w-full mt-8 py-4.5 text-sm font-black text-indigo-600 border-2 border-indigo-100 rounded-3xl hover:bg-indigo-50 transition-all flex items-center justify-center gap-3">
+                     <button type="button" onClick={duplicateSelectedMapping} className="w-full mt-8 py-4.5 text-sm font-black text-indigo-600 border-2 border-indigo-100 rounded-3xl hover:bg-indigo-50 transition-all flex items-center justify-center gap-3">
                         <Plus size={22} /> Add Brand Variant
                      </button>
                   </div>
@@ -1869,7 +3234,7 @@ Writing Guidelines:
                            </div>
                         ))}
                      </div>
-                     <button className="w-full mt-6 text-[13px] font-black text-indigo-600 flex items-center justify-center gap-3 hover:bg-indigo-50 py-3 rounded-[1.5rem] transition-all border border-transparent hover:border-indigo-100"><Settings size={18} className="animate-spin-slow"/> Manage Domain Overrides</button>
+                     <button type="button" onClick={startJsonEdit} className="w-full mt-6 text-[13px] font-black text-indigo-600 flex items-center justify-center gap-3 hover:bg-indigo-50 py-3 rounded-[1.5rem] transition-all border border-transparent hover:border-indigo-100"><Settings size={18} className="animate-spin-slow"/> Manage Domain Overrides</button>
                   </div>
                </div>
             </div>
@@ -1907,7 +3272,7 @@ Writing Guidelines:
                         </div>
                      ))}
                   </div>
-                  <button className="w-full mt-10 py-4 border-2 border-indigo-100 text-xs font-black text-indigo-600 rounded-3xl hover:bg-indigo-50 transition-all flex items-center justify-center gap-3 shadow-lg shadow-indigo-100/20">
+                  <button type="button" onClick={validateActiveArchitecture} className="w-full mt-10 py-4 border-2 border-indigo-100 text-xs font-black text-indigo-600 rounded-3xl hover:bg-indigo-50 transition-all flex items-center justify-center gap-3 shadow-lg shadow-indigo-100/20">
                      <ShieldCheck size={18} /> View Detailed Accessibility Report
                   </button>
                </div>
@@ -1937,7 +3302,7 @@ Writing Guidelines:
                         </div>
                      ))}
                   </div>
-                  <button className="w-full mt-12 py-4 border-2 border-indigo-100 text-xs font-black text-indigo-600 rounded-3xl hover:bg-indigo-50 transition-all flex items-center justify-center gap-3 shadow-lg shadow-indigo-100/20">
+                  <button type="button" onClick={() => openWorkflowUrl(selectedWorkflowUrls.visualGuide)} className="w-full mt-12 py-4 border-2 border-indigo-100 text-xs font-black text-indigo-600 rounded-3xl hover:bg-indigo-50 transition-all flex items-center justify-center gap-3 shadow-lg shadow-indigo-100/20">
                      <Brain size={18} /> View Universal Psychology Guide
                   </button>
                </div>
@@ -2008,19 +3373,21 @@ Writing Guidelines:
                    <div className="md:w-1/2 border-t md:border-t-0 md:border-l border-slate-100 pt-8 md:pt-0 md:pl-12">
                       <h3 className="text-lg font-bold text-slate-900 mb-8">Quick Actions</h3>
                       <div className="space-y-4">
-                         <button className="w-full flex items-center justify-center gap-4 p-4 rounded-2xl text-[13px] font-black text-slate-600 hover:bg-slate-50 border-2 border-slate-100 transition-all group">
+                         <button type="button" onClick={duplicateSelectedMapping} className="w-full flex items-center justify-center gap-4 p-4 rounded-2xl text-[13px] font-black text-slate-600 hover:bg-slate-50 border-2 border-slate-100 transition-all group">
                             <Copy size={18} className="text-indigo-50 group-hover:scale-125 transition-transform"/> Duplicate Mapping
                          </button>
-                         <button className="w-full flex items-center justify-center gap-4 p-4 rounded-2xl text-[13px] font-black text-slate-600 hover:bg-slate-50 border-2 border-slate-100 transition-all group">
+                         <button type="button" onClick={startJsonEdit} className="w-full flex items-center justify-center gap-4 p-4 rounded-2xl text-[13px] font-black text-slate-600 hover:bg-slate-50 border-2 border-slate-100 transition-all group">
                             <Edit2 size={18} className="text-blue-500 group-hover:scale-125 transition-transform"/> Edit JSON Config
                          </button>
-                         <button className="w-full flex items-center justify-center gap-4 p-4 rounded-[2rem] text-sm font-black text-rose-600 bg-rose-50/50 hover:bg-rose-50 border-2 border-rose-100 transition-all group shadow-lg shadow-rose-100/20">
+                         <button type="button" onClick={() => updateArchitectureStatus('archived')} className="w-full flex items-center justify-center gap-4 p-4 rounded-[2rem] text-sm font-black text-rose-600 bg-rose-50/50 hover:bg-rose-50 border-2 border-rose-100 transition-all group shadow-lg shadow-rose-100/20">
                             <Trash2 size={18} className="group-hover:animate-bounce"/> Delete Renderer Mapping
                          </button>
                       </div>
                    </div>
                </div>
             </div>
+            </>
+            ) : null}
          </div>
       ) : (
          <div className="bg-white rounded-2xl border border-slate-200 border-dashed shadow-sm p-16 flex flex-col items-center justify-center text-center">

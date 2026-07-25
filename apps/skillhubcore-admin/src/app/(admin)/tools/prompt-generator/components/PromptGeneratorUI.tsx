@@ -10,6 +10,55 @@ import { getPromptForSection, getSvgAssetPromptForSection } from '../lib/engine'
 
 import { sections, SUBSECTIONS_MAP, findMatchingAsset } from '../lib/prompt-generator-config';
 
+const PIPELINE_PAYLOAD_STORAGE_KEY = 'skillhubcore.globalArchitecture.pipelinePayload.v1';
+
+type PipelinePayload = {
+  source?: string;
+  section?: string;
+  adminSectionId?: string;
+  subsection?: string | null;
+  dummyContext?: {
+    domain?: string;
+    subject?: string;
+    topic?: string;
+    subtopic?: string;
+    subtopicId?: string;
+  };
+  previewTarget?: string;
+  educationalArchitectureKey?: string;
+  uiuxArchitectureKey?: string;
+  educationalComponent?: Record<string, unknown> | null;
+  uiuxComponent?: Record<string, unknown> | null;
+  rendererMapping?: Record<string, unknown> | null;
+  defaultJson?: unknown;
+};
+
+const getRecordLabel = (record: Record<string, unknown> | null | undefined, keys: string[]) => {
+  if (!record) return 'Not selected';
+  for (const key of keys) {
+    const value = record[key];
+    if (typeof value === 'string' && value.trim()) return value;
+  }
+  return 'Configured';
+};
+
+const buildArchitecturePromptContext = (payload: PipelinePayload | null) => {
+  if (!payload) return '';
+
+  const educationalPurpose = getRecordLabel(payload.educationalComponent, ['purpose', 'renderer', 'component_type']);
+  const uiuxVariant = getRecordLabel(payload.uiuxComponent, ['layout_pattern', 'style_variant', 'renderer', 'component_type']);
+
+  return `\n\nSELECTED GLOBAL ARCHITECTURE CONTEXT\n` +
+    `Use this architecture decision while creating content.\n` +
+    `Section: ${payload.adminSectionId || payload.section || 'not-selected'}\n` +
+    `Component/Subsection: ${payload.subsection || 'full-section'}\n` +
+    `Educational Architecture: ${payload.educationalArchitectureKey || 'not-selected'}\n` +
+    `Educational Component Role: ${educationalPurpose}\n` +
+    `UI/UX Architecture: ${payload.uiuxArchitectureKey || 'not-selected'}\n` +
+    `UI/UX Component Decision: ${uiuxVariant}\n` +
+    `Preview Target: ${payload.previewTarget || 'local'}\n` +
+    `Default Dummy JSON Available: ${payload.defaultJson ? 'yes' : 'no'}\n`;
+};
 
 export function PromptGeneratorUI() {
   const brand = useBrand();
@@ -26,11 +75,33 @@ export function PromptGeneratorUI() {
   const [copied, setCopied] = useState(false);
   const [assetCopied, setAssetCopied] = useState(false);
   const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);
+  const [subtopicId, setSubtopicId] = useState('whatispython');
+  const [previewTarget, setPreviewTarget] = useState<'local' | 'rth' | 'suia'>('local');
+  const [pipelinePayload, setPipelinePayload] = useState<PipelinePayload | null>(null);
 
   useEffect(() => {
     const sectParam = searchParams.get('section');
     const subParam = searchParams.get('subsection');
     const assetParam = searchParams.get('asset');
+    const domainParam = searchParams.get('domain');
+    const subjectParam = searchParams.get('subject');
+    const topicParam = searchParams.get('topic');
+    const subtopicParam = searchParams.get('subtopic');
+    const subtopicIdParam = searchParams.get('subtopicId');
+    const previewTargetParam = searchParams.get('previewTarget');
+    const autoGenerate = searchParams.get('autoGenerate') === 'true';
+    const sourceParam = searchParams.get('source');
+    let loadedPayload: PipelinePayload | null = null;
+
+    if (sourceParam === 'global-architecture' || sourceParam === 'prompt-generator') {
+      try {
+        const storedPayload = window.localStorage.getItem(PIPELINE_PAYLOAD_STORAGE_KEY);
+        loadedPayload = storedPayload ? JSON.parse(storedPayload) as PipelinePayload : null;
+        setPipelinePayload(loadedPayload);
+      } catch {
+        setPipelinePayload(null);
+      }
+    }
 
     if (sectParam) {
       setSelectedSection(sectParam);
@@ -38,13 +109,33 @@ export function PromptGeneratorUI() {
     if (subParam) {
       setSelectedSubsection(subParam);
     }
+    if (domainParam) setDomain(domainParam);
+    if (subjectParam) setSubject(subjectParam);
+    if (topicParam) setTopic(topicParam);
+    if (subtopicParam) setSubtopic(subtopicParam);
+    if (subtopicIdParam) setSubtopicId(subtopicIdParam);
+    if (previewTargetParam === 'local' || previewTargetParam === 'rth' || previewTargetParam === 'suia') setPreviewTarget(previewTargetParam);
     if (assetParam) {
       setSelectedAssetId(assetParam);
       // Generate prompt for visual asset
-      const assetPrompt = getSvgAssetPromptForSection(sectParam || selectedSection, subtopic, assetParam);
+      const assetPrompt = getSvgAssetPromptForSection(sectParam || selectedSection, subtopicParam || subtopic, assetParam);
       setGeneratedAssetPrompt(assetPrompt);
     }
-  }, [searchParams, subtopic, selectedSection]);
+    if (autoGenerate) {
+      const sectionToUse = sectParam || selectedSection;
+      const subtopicToUse = subtopicParam || subtopic;
+      setGeneratedPrompt(getPromptForSection(
+        sectionToUse,
+        domainParam || domain,
+        subjectParam || subject,
+        topicParam || topic,
+        subtopicToUse,
+        subParam || undefined
+      ) + buildArchitecturePromptContext(loadedPayload));
+      setGeneratedAssetPrompt(getSvgAssetPromptForSection(sectionToUse, subtopicToUse, assetParam));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const handleGeneratePrompt = (assetId: string | null = null) => {
     if (assetId) {
@@ -52,7 +143,8 @@ export function PromptGeneratorUI() {
       setGeneratedAssetPrompt(assetPrompt);
       setSelectedAssetId(assetId);
     } else {
-      const prompt = getPromptForSection(selectedSection, domain, subject, topic, subtopic, selectedSubsection || undefined);
+      const prompt = getPromptForSection(selectedSection, domain, subject, topic, subtopic, selectedSubsection || undefined) +
+        buildArchitecturePromptContext(pipelinePayload);
       setGeneratedPrompt(prompt);
 
       // Also generate all assets prompt for this section if not a specific asset
@@ -76,6 +168,43 @@ export function PromptGeneratorUI() {
     setTimeout(() => setAssetCopied(false), 2000);
   };
 
+  const openContentManagerWithConfirmation = () => {
+    const confirmed = window.confirm(
+      `Send this ${selectedSection}${selectedSubsection ? `.${selectedSubsection}` : ''} context to Content Manager for preview approval before DB save?`
+    );
+    if (!confirmed) return;
+
+    const params = new URLSearchParams({
+      section: selectedSection,
+      domain,
+      subject,
+      topic,
+      subtopic,
+      subtopicId,
+      previewTarget,
+      source: 'prompt-generator',
+      requirePreviewApproval: 'true',
+    });
+    if (selectedSubsection) params.set('subsection', selectedSubsection);
+    if (pipelinePayload) {
+      try {
+        window.localStorage.setItem(PIPELINE_PAYLOAD_STORAGE_KEY, JSON.stringify({
+          ...pipelinePayload,
+          source: 'prompt-generator',
+          section: selectedSection,
+          adminSectionId: selectedSection,
+          subsection: selectedSubsection || pipelinePayload.subsection || null,
+          dummyContext: { domain, subject, topic, subtopic, subtopicId },
+          previewTarget,
+          confirmedAt: new Date().toISOString(),
+        }));
+      } catch {
+        // Query params still carry the minimum pipeline context.
+      }
+    }
+    window.open(`/tools/content-manager?${params.toString()}`, '_blank', 'noopener,noreferrer');
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       {/* Header */}
@@ -92,6 +221,18 @@ export function PromptGeneratorUI() {
             Copy the prompt and paste it into any AI model to get perfectly formatted JSON content.
           </p>
         </div>
+
+        {pipelinePayload ? (
+          <div className="mx-6 mb-6 rounded-lg border-l-4 border-emerald-500 bg-emerald-50 p-5">
+            <p className="mb-2 text-sm font-bold uppercase tracking-wide text-emerald-800">Global Architecture Context Loaded</p>
+            <div className="grid gap-3 text-sm text-emerald-950 md:grid-cols-2">
+              <p><strong>Section:</strong> {pipelinePayload.adminSectionId || pipelinePayload.section} {pipelinePayload.subsection ? `.${pipelinePayload.subsection}` : ''}</p>
+              <p><strong>Preview:</strong> {pipelinePayload.previewTarget || previewTarget}</p>
+              <p><strong>Educational:</strong> {getRecordLabel(pipelinePayload.educationalComponent, ['purpose', 'renderer', 'component_type'])}</p>
+              <p><strong>UI/UX:</strong> {getRecordLabel(pipelinePayload.uiuxComponent, ['layout_pattern', 'style_variant', 'renderer', 'component_type'])}</p>
+            </div>
+          </div>
+        ) : null}
 
         {/* Input Section */}
         <section className="p-8">
@@ -117,6 +258,30 @@ export function PromptGeneratorUI() {
                 placeholder="e.g., JavaScript"
                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
               />
+            </div>
+            <div>
+              <label htmlFor="subtopicId" className="block text-lg font-semibold text-gray-800 mb-3">Subtopic ID</label>
+              <input
+                type="text"
+                id="subtopicId"
+                value={subtopicId}
+                onChange={(e) => setSubtopicId(e.target.value.toLowerCase())}
+                placeholder="e.g., whatispython"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+              />
+            </div>
+            <div>
+              <label htmlFor="previewTarget" className="block text-lg font-semibold text-gray-800 mb-3">Preview Target</label>
+              <select
+                id="previewTarget"
+                value={previewTarget}
+                onChange={(e) => setPreviewTarget(e.target.value as 'local' | 'rth' | 'suia')}
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors bg-white"
+              >
+                <option value="local">Localhost RTH (3003)</option>
+                <option value="rth">RTH Production</option>
+                <option value="suia">SUIA / SkillUp</option>
+              </select>
             </div>
           </div>
 
@@ -261,6 +426,12 @@ export function PromptGeneratorUI() {
               style={{ backgroundColor: brand?.primaryColor }}
             >
               Generate Core JSON Prompt
+            </button>
+            <button
+              onClick={openContentManagerWithConfirmation}
+              className="mt-4 w-full py-3 text-blue-700 text-sm font-black rounded-xl border-2 border-blue-200 bg-blue-50 hover:bg-blue-100 transition-all flex items-center justify-center gap-2"
+            >
+              Continue to Content Manager After Confirmation <ArrowRight size={16} />
             </button>
 
             {/* Asset Buttons Row */}

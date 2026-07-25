@@ -20,6 +20,7 @@ export const OverviewWireframe: React.FC<WireframeProps> = ({
   return (
     <div 
       id="wireframe-overview"
+      data-visual-guide-section="overview"
       onClick={() => handleSectionChange('overview')}
       className={`p-6 rounded-2xl border-2 transition-all cursor-pointer relative shadow-sm hover:shadow-md ${
         selectedSectionId === 'overview' 
@@ -40,7 +41,7 @@ export const OverviewWireframe: React.FC<WireframeProps> = ({
       {/* Grid 1: Hero and Outcomes */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mb-6">
         {/* hero */}
-        <div className="md:col-span-8 p-4 rounded-xl bg-slate-50 border border-slate-200/60 flex flex-col gap-2 relative overflow-hidden">
+        <div data-visual-guide-subsection="hero" className="md:col-span-8 p-4 rounded-xl bg-slate-50 border border-slate-200/60 flex flex-col gap-2 relative overflow-hidden">
           <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
             selectedSectionId === 'overview' && selectedSubsectionId === 'hero' 
               ? 'border-pink-500 bg-pink-500/5 scale-100' 
@@ -53,7 +54,7 @@ export const OverviewWireframe: React.FC<WireframeProps> = ({
         </div>
         
         {/* learningOutcomes */}
-        <div className="md:col-span-4 p-4 rounded-xl bg-slate-50 border border-slate-200/60 flex flex-col gap-2 relative">
+        <div data-visual-guide-subsection="learningOutcomes" className="md:col-span-4 p-4 rounded-xl bg-slate-50 border border-slate-200/60 flex flex-col gap-2 relative">
           <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
             selectedSectionId === 'overview' && selectedSubsectionId === 'learningOutcomes' 
               ? 'border-pink-500 bg-pink-500/5 scale-100' 
@@ -72,7 +73,7 @@ export const OverviewWireframe: React.FC<WireframeProps> = ({
       {/* Grid 2: Progress and Roadmap */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         {/* progressSummary */}
-        <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 flex flex-col gap-2 relative">
+        <div data-visual-guide-subsection="progressSummary" className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 flex flex-col gap-2 relative">
           <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
             selectedSectionId === 'overview' && selectedSubsectionId === 'progressSummary' 
               ? 'border-pink-500 bg-pink-500/5 scale-100' 
@@ -89,7 +90,7 @@ export const OverviewWireframe: React.FC<WireframeProps> = ({
         </div>
 
         {/* learningRoadmap */}
-        <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 flex flex-col gap-2 relative">
+        <div data-visual-guide-subsection="learningRoadmap" className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 flex flex-col gap-2 relative">
           <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
             selectedSectionId === 'overview' && selectedSubsectionId === 'learningRoadmap' 
               ? 'border-pink-500 bg-pink-500/5 scale-100' 
@@ -110,7 +111,7 @@ export const OverviewWireframe: React.FC<WireframeProps> = ({
       {/* Grid 3: Recommended Flow and Readiness */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         {/* recommendedFlow */}
-        <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 flex flex-col gap-2 relative">
+        <div data-visual-guide-subsection="recommendedFlow" className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 flex flex-col gap-2 relative">
           <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
             selectedSectionId === 'overview' && selectedSubsectionId === 'recommendedFlow' 
               ? 'border-pink-500 bg-pink-500/5 scale-100' 
@@ -126,7 +127,7 @@ export const OverviewWireframe: React.FC<WireframeProps> = ({
         </div>
 
         {/* readinessContext */}
-        <div className="p-4 rounded-xl bg-amber-50/50 border border-amber-200 flex gap-2 relative">
+        <div data-visual-guide-subsection="readinessContext" className="p-4 rounded-xl bg-amber-50/50 border border-amber-200 flex gap-2 relative">
           <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
             selectedSectionId === 'overview' && selectedSubsectionId === 'readinessContext' 
               ? 'border-pink-500 bg-pink-500/5 scale-100' 
@@ -142,7 +143,7 @@ export const OverviewWireframe: React.FC<WireframeProps> = ({
       </div>
 
       {/* Navigation Links */}
-      <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative">
+      <div data-visual-guide-subsection="navigation" className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 relative">
         <div className={`absolute inset-0 border-2 rounded-xl transition-all ${
           selectedSectionId === 'overview' && selectedSubsectionId === 'navigation' 
             ? 'border-pink-500 bg-pink-500/5 scale-100' 

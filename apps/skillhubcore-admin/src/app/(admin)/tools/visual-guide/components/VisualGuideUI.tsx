@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { 
   Eye, Sparkles, Edit, List, Map, 
   ArrowRight, Compass, CheckCircle2, 
@@ -12,6 +13,7 @@ import { SECTIONS_SPECS } from './sections-specs';
 import { WireframeRenderer } from './WireframeRenderer';
 
 export function VisualGuideUI() {
+  const searchParams = useSearchParams();
   const [sections, setSections] = useState<SectionSpec[]>(SECTIONS_SPECS);
   const [selectedSectionId, setSelectedSectionId] = useState<string>('notes');
   const [selectedSubsectionId, setSelectedSubsectionId] = useState<string>('definitionBlock');
@@ -24,10 +26,13 @@ export function VisualGuideUI() {
 
   const wireframeCanvasRef = useRef<HTMLDivElement>(null);
 
-  const handleSectionChange = (sectionId: string) => {
+  const handleSectionChange = (sectionId: string, preferredSubsectionId?: string) => {
     setSelectedSectionId(sectionId);
     const sect = sections.find(s => s.id === sectionId) || sections[1];
-    setSelectedSubsectionId(sect.subsections[0].id);
+    const matchingSubsection = preferredSubsectionId && sect.subsections.some((sub) => sub.id === preferredSubsectionId)
+      ? preferredSubsectionId
+      : sect.subsections[0].id;
+    setSelectedSubsectionId(matchingSubsection);
     scrollToWireframeSegment(sectionId);
   };
 
@@ -57,6 +62,31 @@ export function VisualGuideUI() {
       wireframeCanvasRef.current.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
+
+  useEffect(() => {
+    const sectionParam = searchParams.get('section');
+    const subsectionParam = searchParams.get('subsection');
+    if (!sectionParam) return;
+
+    const matchingSection = sections.find((section) => section.id === sectionParam);
+    if (!matchingSection) return;
+
+    const nextSubsection = subsectionParam && matchingSection.subsections.some((sub) => sub.id === subsectionParam)
+      ? subsectionParam
+      : matchingSection.subsections[0]?.id;
+
+    setSelectedSectionId(matchingSection.id);
+    if (nextSubsection) setSelectedSubsectionId(nextSubsection);
+    setHighlightedElement(matchingSection.id);
+
+    window.setTimeout(() => {
+      const activeSelector = nextSubsection
+        ? `[data-visual-guide-subsection="${nextSubsection}"]`
+        : `[data-visual-guide-section="${matchingSection.id}"]`;
+      const activeElement = wireframeCanvasRef.current?.querySelector(activeSelector);
+      activeElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 150);
+  }, [searchParams, sections]);
 
   useEffect(() => {
     if (highlightedElement) {

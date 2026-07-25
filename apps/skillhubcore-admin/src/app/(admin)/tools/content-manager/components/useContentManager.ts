@@ -17,6 +17,67 @@ import {
   getDefaultAssetFieldPath,
 } from './types';
 import { ASSET_SPECS } from '../../prompt-generator/lib/asset-specs';
+import { getStrictSectionJsonTemplate } from '../../prompt-generator/lib/prompt-templates';
+
+export type PreviewTarget = 'local' | 'rth' | 'suia';
+
+const PIPELINE_PAYLOAD_STORAGE_KEY = 'skillhubcore.globalArchitecture.pipelinePayload.v1';
+
+const PREVIEW_TARGET_BASE_URLS: Record<PreviewTarget, string> = {
+  local: 'http://localhost:3003',
+  rth: 'https://user.realtutorialhub.com',
+  suia: 'https://user.skillupitacademy.com',
+};
+
+type PipelinePayload = {
+  source?: string;
+  section?: string;
+  adminSectionId?: string;
+  subsection?: string | null;
+  dummyContext?: {
+    domain?: string;
+    subject?: string;
+    topic?: string;
+    subtopic?: string;
+    subtopicId?: string;
+  };
+  previewTarget?: PreviewTarget;
+  educationalArchitectureKey?: string;
+  uiuxArchitectureKey?: string;
+  educationalComponent?: Record<string, unknown> | null;
+  uiuxComponent?: Record<string, unknown> | null;
+  rendererMapping?: Record<string, unknown> | null;
+  defaultJson?: unknown;
+};
+
+const getPromptSectionId = (sectionId: string) => sectionId === 'reallife' ? 'real_life' : sectionId;
+
+const getDefaultPipelineJson = (sectionId: string, subsectionId: string | null, subtopicName: string) => {
+  const template = getStrictSectionJsonTemplate(getPromptSectionId(sectionId), subtopicName || 'What is Python?');
+  const rootKey = Object.keys(template)[0];
+  const rootValue = template[rootKey];
+
+  if (
+    subsectionId &&
+    rootValue &&
+    typeof rootValue === 'object' &&
+    !Array.isArray(rootValue) &&
+    subsectionId in rootValue
+  ) {
+    return (rootValue as Record<string, unknown>)[subsectionId];
+  }
+
+  return template;
+};
+
+const getRecordLabel = (record: Record<string, unknown> | null | undefined, keys: string[]) => {
+  if (!record) return 'Not selected';
+  for (const key of keys) {
+    const value = record[key];
+    if (typeof value === 'string' && value.trim()) return value;
+  }
+  return 'Configured';
+};
 
 function setNestedJsonValue(target: Record<string, unknown>, path: string, value: unknown) {
   const parts = path.split('.');
@@ -71,6 +132,10 @@ export function useContentManager() {
   const [processedAsset, setProcessedAsset] = useState<InlineSvgAsset | null>(null);
   const [isProcessingAsset, setIsProcessingAsset] = useState(false);
   const [previewData, setPreviewData] = useState<unknown>(null);
+  const [previewApproved, setPreviewApproved] = useState(false);
+  const [requirePreviewApproval, setRequirePreviewApproval] = useState(false);
+  const [previewTarget, setPreviewTarget] = useState<PreviewTarget>('local');
+  const [pipelinePayload, setPipelinePayload] = useState<PipelinePayload | null>(null);
 
   const selectedSectionLabel = sections.find((section) => section.id === selectedSection)?.label ?? selectedSection;
 
@@ -115,6 +180,25 @@ export function useContentManager() {
   useEffect(() => {
     const sectParam = searchParams.get('section');
     const subParam = searchParams.get('subsection');
+    const domainParam = searchParams.get('domain');
+    const subjectParam = searchParams.get('subject');
+    const topicParam = searchParams.get('topic');
+    const subtopicParam = searchParams.get('subtopic');
+    const subtopicIdParam = searchParams.get('subtopicId');
+    const previewTargetParam = searchParams.get('previewTarget');
+    const requiresApproval = searchParams.get('requirePreviewApproval') === 'true';
+    const sourceParam = searchParams.get('source');
+    let loadedPayload: PipelinePayload | null = null;
+
+    if (sourceParam === 'global-architecture' || sourceParam === 'prompt-generator') {
+      try {
+        const storedPayload = window.localStorage.getItem(PIPELINE_PAYLOAD_STORAGE_KEY);
+        loadedPayload = storedPayload ? JSON.parse(storedPayload) as PipelinePayload : null;
+        setPipelinePayload(loadedPayload);
+      } catch {
+        setPipelinePayload(null);
+      }
+    }
 
     if (sectParam) {
       setSelectedSection(sectParam as SectionType);
@@ -123,6 +207,34 @@ export function useContentManager() {
     if (subParam) {
       setSelectedSubsection(subParam);
     }
+    if (requiresApproval) setRequirePreviewApproval(true);
+    if (previewTargetParam === 'local' || previewTargetParam === 'rth' || previewTargetParam === 'suia') {
+      setPreviewTarget(previewTargetParam);
+    }
+    if (domainParam || subjectParam || topicParam || subtopicParam || subtopicIdParam) {
+      const nextInfo = {
+        subtopicId: subtopicIdParam || '',
+        domain: domainParam || '',
+        subject: subjectParam || '',
+        topic: topicParam || '',
+        subtopic: subtopicParam || '',
+      };
+      setSubtopicInfo(nextInfo);
+      if (nextInfo.subtopicId && nextInfo.domain && nextInfo.subject && nextInfo.topic && nextInfo.subtopic) {
+        setIsSubtopicCreated(true);
+        showMessage('Pipeline context loaded. Preview and approve before saving.', 'info');
+      }
+    }
+
+    if ((sourceParam === 'global-architecture' || sourceParam === 'prompt-generator') && !jsonInput.trim()) {
+      const sectionToUse = sectParam || loadedPayload?.adminSectionId || loadedPayload?.section || selectedSection;
+      const subsectionToUse = subParam || loadedPayload?.subsection || '';
+      const subtopicToUse = subtopicParam || loadedPayload?.dummyContext?.subtopic || subtopicInfo.subtopic || 'What is Python?';
+      const payloadJson = loadedPayload?.defaultJson;
+      const defaultJson = payloadJson ?? getDefaultPipelineJson(sectionToUse, subsectionToUse || null, subtopicToUse);
+      setJsonInput(JSON.stringify(defaultJson, null, 2));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   const showMessage = (msg: string, type: 'success' | 'error' | 'info') => {
@@ -383,6 +495,11 @@ export function useContentManager() {
       return;
     }
 
+    if (requirePreviewApproval && !previewApproved) {
+      showMessage('Preview approval is required before saving this pipeline content to the database.', 'error');
+      return;
+    }
+
     if (selectedSubsection) {
       const subSecConfig = SUBSECTIONS_MAP[selectedSection]?.find((s) => s.id === selectedSubsection);
       if (subSecConfig?.type === 'svg' && (trimmedInput.startsWith('<svg') || trimmedInput.startsWith('<?xml') || trimmedInput.includes('<svg'))) {
@@ -420,6 +537,7 @@ export function useContentManager() {
           setSectionStatus((prev) => ({ ...prev, [selectedSection]: true }));
           setJsonInput('');
         }
+        setPreviewApproved(false);
         showMessage(result.message || `${selectedSectionLabel} saved to database.`, 'success');
       } else {
         const details = result.details ? ` ${result.details}` : '';
@@ -432,7 +550,7 @@ export function useContentManager() {
   };
 
   const getPageUrl = (section?: SectionType) => {
-    const baseUrl = `https://user.realtutorialhub.com/start-learning/subtopic/${subtopicInfo.subtopicId}`;
+    const baseUrl = `${PREVIEW_TARGET_BASE_URLS[previewTarget]}/start-learning/subtopic/${subtopicInfo.subtopicId}`;
     return section ? `${baseUrl}?tab=${sectionTabs[section]}` : baseUrl;
   };
 
@@ -449,6 +567,7 @@ export function useContentManager() {
     try {
       const parsed = JSON.parse(jsonInput);
       setPreviewData(parsed);
+      setPreviewApproved(false);
       setRightSidebarWidth('100vw');
       setIsRightSidebarOpen(true);
       showMessage('Loaded preview for component in Right Sidebar.', 'success');
@@ -458,8 +577,18 @@ export function useContentManager() {
     }
   };
 
+  const approvePreview = () => {
+    if (!previewData) {
+      showMessage('Generate a component preview before approving.', 'error');
+      return;
+    }
+    setPreviewApproved(true);
+    showMessage('Preview approved. You can now save this section.', 'success');
+  };
+
   return {
     handlePreview,
+    approvePreview,
     isRightSidebarOpen,
     setIsRightSidebarOpen,
     setRightSidebarContent,
@@ -504,6 +633,13 @@ export function useContentManager() {
     setIsProcessingAsset,
     previewData,
     setPreviewData,
+    previewApproved,
+    requirePreviewApproval,
+    previewTarget,
+    setPreviewTarget,
+    pipelinePayload,
+    getPipelineEducationLabel: () => getRecordLabel(pipelinePayload?.educationalComponent, ['purpose', 'renderer', 'component_type']),
+    getPipelineUiuxLabel: () => getRecordLabel(pipelinePayload?.uiuxComponent, ['layout_pattern', 'style_variant', 'renderer', 'component_type']),
     selectedSectionLabel,
     activeSpecs,
     showMessage,

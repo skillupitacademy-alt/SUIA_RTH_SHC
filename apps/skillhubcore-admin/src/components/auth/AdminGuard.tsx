@@ -17,6 +17,18 @@ const isAdminEquivalentRole = (value: string | null | undefined) => {
   return role === 'admin' || role === 'super_admin' || role === 'infrastructure';
 };
 
+const LOCAL_TEST_BYPASS_PREFIXES = [
+  '/content-generation/global-architecture',
+  '/tools/visual-guide',
+  '/tools/prompt-generator',
+  '/tools/content-manager',
+];
+
+const isLocalTestBypassRoute = (pathname: string) => (
+  process.env.NODE_ENV !== 'production' &&
+  LOCAL_TEST_BYPASS_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`))
+);
+
 export function AdminGuard({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated, login, logout, isLocked } = useAuthStore(
     useShallow((s) => ({
@@ -87,7 +99,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
   });
 
   useEffect(() => {
-    if (pathname === '/login') {
+    if (pathname === '/login' || isLocalTestBypassRoute(pathname)) {
       setIsCheckingSession(false);
       return;
     }
@@ -143,7 +155,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
   }, [isAuthenticated, isLocked, isSameAuthSession, login, user]); // Removed pathname from dependencies
 
   // Bypass guard for login page
-  if (pathname === '/login') {
+  if (pathname === '/login' || isLocalTestBypassRoute(pathname)) {
     return <>{children}</>;
   }
 

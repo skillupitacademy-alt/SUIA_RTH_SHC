@@ -3,6 +3,7 @@
 import React from 'react';
 import { useBrand } from '@/share-branding/PostLandingPage/app/context/BrandContext';
 import { sections, SUBSECTIONS_MAP, SectionType } from './types';
+import type { PreviewTarget } from './useContentManager';
 
 interface SectionManagerProps {
   selectedSection: SectionType;
@@ -36,6 +37,11 @@ interface SectionManagerProps {
   processSvgAsset: () => void;
   injectAssetIntoJson: () => void;
   handlePreview: () => void;
+  approvePreview: () => void;
+  previewApproved: boolean;
+  requirePreviewApproval: boolean;
+  previewTarget: PreviewTarget;
+  setPreviewTarget: (target: PreviewTarget) => void;
   validateJSON: () => void;
   addSection: () => void;
   openPreview: (section?: SectionType) => void;
@@ -71,6 +77,11 @@ export function SectionManager({
   processSvgAsset,
   injectAssetIntoJson,
   handlePreview,
+  approvePreview,
+  previewApproved,
+  requirePreviewApproval,
+  previewTarget,
+  setPreviewTarget,
   validateJSON,
   addSection,
   openPreview
@@ -126,9 +137,24 @@ export function SectionManager({
       </div>
 
       <div className="mb-6 flex flex-wrap gap-4">
+        <div className="min-w-[220px]">
+          <label htmlFor="previewTarget" className="mb-2 block text-sm font-semibold text-gray-700">
+            Learner Preview Target
+          </label>
+          <select
+            id="previewTarget"
+            value={previewTarget}
+            onChange={(event) => setPreviewTarget(event.target.value as PreviewTarget)}
+            className="w-full rounded-lg border-2 border-gray-300 bg-white px-4 py-3 focus:border-blue-500 focus:outline-none"
+          >
+            <option value="local">Localhost RTH (3003)</option>
+            <option value="rth">RTH Production</option>
+            <option value="suia">SUIA / SkillUp</option>
+          </select>
+        </div>
         <button
           onClick={fetchSubsection}
-          className="rounded-lg bg-indigo-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-indigo-700 disabled:opacity-50"
+          className="self-end rounded-lg bg-indigo-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-indigo-700 disabled:opacity-50"
           disabled={isFetchingSubsection}
         >
           {isFetchingSubsection ? 'Loading Content...' : 'Load Current Content from Database'}
@@ -136,7 +162,7 @@ export function SectionManager({
 
         <button
           onClick={() => openPreview(selectedSection)}
-          className="rounded-lg border-2 border-gray-300 bg-white px-6 py-3 font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+          className="self-end rounded-lg border-2 border-gray-300 bg-white px-6 py-3 font-semibold text-gray-700 transition-colors hover:bg-gray-50"
         >
           Open Learner Page Tab
         </button>
@@ -314,6 +340,16 @@ export function SectionManager({
           Preview Component
         </button>
         <button
+          onClick={approvePreview}
+          className={`flex-1 rounded-lg py-3 font-semibold transition-colors shadow-md ${
+            previewApproved
+              ? 'bg-emerald-600 text-white'
+              : 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
+          }`}
+        >
+          {previewApproved ? 'Preview Approved' : 'Approve Preview'}
+        </button>
+        <button
           onClick={validateJSON}
           className="flex-1 rounded-lg bg-gray-600 py-3 font-semibold text-white transition-colors hover:bg-gray-700 shadow-md"
         >
@@ -321,10 +357,13 @@ export function SectionManager({
         </button>
         <button
           onClick={addSection}
-          className="flex-1 rounded-lg py-3 font-semibold text-white transition-all hover:shadow-xl shadow-md"
-          style={{ backgroundColor: brand.primaryColor }}
+          disabled={requirePreviewApproval && !previewApproved}
+          className={`flex-1 rounded-lg py-3 font-semibold text-white transition-all shadow-md ${
+            requirePreviewApproval && !previewApproved ? 'cursor-not-allowed opacity-50' : 'hover:shadow-xl'
+          }`}
+          style={{ backgroundColor: requirePreviewApproval && !previewApproved ? '#94a3b8' : brand.primaryColor }}
         >
-          Save This Section
+          {requirePreviewApproval && !previewApproved ? 'Approve Preview Before Save' : 'Save This Section'}
         </button>
       </div>
     </section>
