@@ -327,7 +327,7 @@ export function SectionManager({
           id="jsonInput"
           value={jsonInput}
           onChange={(event) => setJsonInput(event.target.value)}
-          placeholder='{"notes": {"schemaVersion": 1, "sectionType": "notes", "simpleWords": "...", "definitionBlock": {...}, "sections": [...]}}'
+          placeholder='{"notes": {"schemaVersion": 1, "sectionType": "notes", "concept_card": {...}, "definition_block": {...}, "component_grid": {...}}}'
           className="h-96 w-full rounded-lg border-2 border-gray-300 px-4 py-3 font-mono text-sm focus:border-blue-500 focus:outline-none"
         />
       </div>

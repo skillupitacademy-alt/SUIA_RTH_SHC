@@ -1,4 +1,8 @@
 export const getStrictSectionJsonTemplate = (section: string, subtopicName: string): Record<string, unknown> => {
+  const conceptTerm = subtopicName
+    .replace(/^what\s+is\s+/i, '')
+    .replace(/[?!.]+$/g, '')
+    .trim() || subtopicName;
   const base = { schemaVersion: 1, sectionType: section };
   const templates: Record<string, Record<string, unknown>> = {
     overview: {
@@ -49,113 +53,90 @@ export const getStrictSectionJsonTemplate = (section: string, subtopicName: stri
     notes: {
       notes: {
         ...base,
-        simpleWords: `Simple explanation of ${subtopicName}.`,
-        definitionBlock: {
+        concept_card: {
+          heroTitle: `${subtopicName} Notes`,
+          heroSubtitle: `A clear academic overview of ${subtopicName} with the most important ideas first.`,
+          quickLook: ['Definition', 'Mechanics', 'Syntax', 'Examples'],
+        },
+        definition_block: {
           badge: 'Core Concept',
-          headline: `What is ${subtopicName}?`,
-          definitionText: 'Precise definition.',
-          importanceCallout: 'Why it matters.',
-          quickSummary: ['Summary point 1', 'Summary point 2'],
+          headline: `What is ${conceptTerm}?`,
+          definition: `${conceptTerm} is the central concept being explained in this notes section.`,
+          simpleExplanation: `In simple terms, ${conceptTerm} helps learners understand the basic idea before moving to examples and practice.`,
+          whyItMatters: `Understanding ${conceptTerm} makes the later technical, code, and practice sections easier to follow.`,
         },
-        sections: [
-          { id: 'concept', title: 'Concept', content: 'Main explanation.', keyPoint: 'Key point.' },
-          { id: 'syntax', title: 'Syntax', content: 'Syntax explanation.', codeExample: { code: 'const value = true;', output: 'true' } },
-        ],
-        syntaxBlock: {
-          code: 'Code snippet here',
+        component_grid: {
+          panelTitle: 'How It Works',
+          description: `The key mechanics that make ${subtopicName} useful in real learning and implementation.`,
+          mechanics: [
+            { id: 'mechanic-1', label: 'Input', detail: 'The information, object, or situation the concept starts with.' },
+            { id: 'mechanic-2', label: 'Process', detail: 'The rule or behavior that transforms the input into something meaningful.' },
+            { id: 'mechanic-3', label: 'Result', detail: 'The outcome the learner should be able to recognize or produce.' },
+          ],
+        },
+        syntax_block: {
+          title: `${subtopicName} Syntax Pattern`,
+          codeSnippet: 'example = "canonical notes schema"',
           language: 'python',
-          title: 'Syntax Example',
-          subtitle: `${subtopicName} Basic Syntax`,
-          explanations: [
-            { id: 'exp1', term: 'Line 1', explanation: 'Explanation of this line or term.' }
-          ]
-        },
-        componentGrid: {
-          gridTitle: 'Key Components',
-          componentCards: [
-            { id: 'comp1', title: 'Component 1', description: 'Description.', icon: 'Box', subcomponents: ['Part 1'] },
+          breakdown: [
+            { part: 'example', explanation: 'Represents the variable or concept name.' },
+            { part: '=', explanation: 'Assigns a value or meaning.' },
+            { part: '"canonical notes schema"', explanation: 'Represents the content being stored or explained.' },
           ],
         },
-        examplePanel: {
-          exampleTitle: 'Practical Examples',
-          scenarios: [
-            { id: 'ex1', title: 'Example 1', scenarioDescription: 'Scenario.', practicalSolution: 'Solution.', industryContext: 'Industry context.' },
-          ],
-        },
-        practiceCard: {
-          bestPracticeTitle: 'Best Practices',
-          recommendations: [{ id: 'bp1', title: 'Practice 1', description: 'Description.' }],
-          optimizationTips: ['Tip 1'],
-          industryStandards: ['Standard 1'],
-        },
-        warningFaq: {
-          commonErrors: [{ id: 'err1', error: 'Mistake.', solution: 'Fix.' }],
-          faqItems: [{ id: 'faq1', question: 'Question?', answer: 'Answer.' }],
-          misconceptionAlerts: ['Misconception to avoid.'],
-        },
-        summaryCard: {
-          summaryTitle: 'Quick Revision Summary',
-          keyTakeaways: ['Takeaway 1'],
-          revisionChecklist: [{ id: 'check1', item: 'Review item.', checked: false }],
-          memoryReinforcement: 'Memory hook.',
-          examTips: ['Exam tip 1'],
-        },
-        summaryHeroInfographic: {
-          summaryTitle: `Quick Revision: What is ${subtopicName}?`,
-          examTips: [
-            `Top core point about ${subtopicName}.`,
-            `Important takeaway regarding ${subtopicName} implementation.`
-          ],
-          howItWorks: [
-            { step: 1, label: 'Trigger', description: 'Setup environment.' },
-            { step: 2, label: 'Process', description: 'Execution logic.' },
-            { step: 3, label: 'Render', description: 'Display result.' }
-          ]
-        },
-        conceptMemoryMap: {
-          nodes: [
-            { id: 'node-1', label: `${subtopicName} Core`, description: 'Primary learning objective.' },
-            { id: 'node-2', label: 'Context Integration', description: 'How it relates to parent architecture.' }
-          ],
-          connections: [
-            { from: 'node-1', to: 'node-2', label: 'connects to' }
-          ]
-        },
-        cheatSheetSVG: {
-          title: `${subtopicName} Cheat Sheet`,
-          sections: [
+        example_panel: {
+          title: 'Key Components',
+          description: `The main parts a learner should inspect when studying ${subtopicName}.`,
+          components: [
             {
-              id: 'quick-ref-1',
-              title: 'Operation or Rule 1',
-              code: 'example_syntax_here',
-              description: 'Short explanation of when to use this syntax.'
+              id: 'component-1',
+              title: 'Core Idea',
+              description: 'The main meaning of the concept.',
+              points: ['Keep the explanation short.', 'Connect it to the next section.'],
             },
             {
-              id: 'quick-ref-2',
-              title: 'Operation or Rule 2',
-              code: 'another_example_here',
-              description: 'Short explanation of the expected result.'
-            }
-          ]
+              id: 'component-2',
+              title: 'Practical Pattern',
+              description: 'The way the concept appears in real examples.',
+              points: ['Show one concrete use.', 'Avoid unnecessary theory early.'],
+            },
+          ],
         },
-        flashcardVisualSystem: {
-          cards: [{ id: 'card1', question: 'Question?', answer: 'Answer.' }]
+        practice_card: {
+          title: 'Best Practices',
+          practices: [
+            { id: 'practice-1', label: 'Start with the simplest meaning', tip: 'Explain the concept before introducing edge cases.' },
+            { id: 'practice-2', label: 'Use one practical example', tip: 'A single concrete example helps learners remember the idea.' },
+          ],
         },
-        comparisonSummaryChart: {
-          title: 'Comparison Chart',
-          columns: ['Column 1', 'Column 2'],
-          rows: [['Row 1 Col 1', 'Row 1 Col 2']]
+        warning_faq: {
+          title: 'Common Mistakes',
+          mistakes: [
+            { id: 'mistake-1', mistake: 'Memorizing the term without understanding the purpose.', fix: 'Connect the term to one real use case.' },
+            { id: 'mistake-2', mistake: 'Jumping to complex syntax too early.', fix: 'Read the definition and mechanics before syntax.' },
+          ],
         },
-        mnemonicRetentionGraphic: {
-          mnemonicTitle: 'Mnemonic',
-          memoryHook: 'Hook.',
-          rememberItems: [{ letter: 'A', label: 'Apple', description: 'Desc.' }],
-          keyPoints: ['Key point 1']
+        summary_card: {
+          summaryTitle: 'Quick Revision Summary',
+          conceptDiagramDescription: `${subtopicName} should move from definition to mechanics, syntax, examples, and revision.`,
+          keyTakeaways: [
+            `Know what ${subtopicName} means.`,
+            'Understand why it matters.',
+            'Practice with a simple example.',
+          ],
         },
         footerBlock: {
-          finalNote: 'Final note.',
-          nextStepLabel: 'Next Step',
-          nextStepTarget: 'next-subtopic'
+          title: 'Ready to continue?',
+          closingLine: `You now have the foundation to move from ${subtopicName} notes into examples, practice, and revision.`,
+          primaryAction: 'Continue learning',
+          secondaryAction: 'Review summary',
+          supportText: 'Use the next section only after the core idea feels clear.',
+        },
+        summaryHeroSvg: {
+          title: `${subtopicName} Learning Blueprint`,
+          description: `A visual summary showing how definition, mechanics, syntax, examples, and practice connect for ${subtopicName}.`,
+          stages: ['Definition', 'Mechanics', 'Syntax', 'Examples', 'Practice', 'Revision'],
+          caption: 'Follow the flow from meaning to application.',
         }
       },
     },

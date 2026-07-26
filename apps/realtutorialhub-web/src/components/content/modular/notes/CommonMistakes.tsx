@@ -12,24 +12,25 @@ interface CommonMistakesProps {
       fix: string;
     }>;
   };
-  }
+  themeColor?: string;
+}
 
-export function CommonMistakes({ data }: CommonMistakesProps) {
+export function CommonMistakes({ data, themeColor = '#e11d48' }: CommonMistakesProps) {
   if (!data) return null;
 
   return (
-    <div className="rounded-2xl border border-rose-900/30 bg-rose-900/5 p-6 shadow-lg">
-      <div className="flex items-center gap-3 mb-5">
-        <AlertCircle size={18} className="text-rose-500" />
-        <h3 className="text-sm font-black text-rose-500 uppercase tracking-widest">{data.title}</h3>
+    <div className="rounded-3xl border border-rose-100 bg-white p-6 shadow-lg">
+      <div className="mb-5 flex items-center gap-3">
+        <AlertCircle size={20} style={{ color: themeColor }} />
+        <h3 className="text-2xl font-black text-slate-950">{data.title}</h3>
       </div>
 
       <div className="space-y-4">
         {data.mistakes.map((item) => (
-          <div key={item.id} className="p-3 rounded-lg bg-rose-500/5 border border-rose-500/10">
-            <p className="text-xs font-bold text-rose-400 mb-2">❌ {item.mistake}</p>
-            <p className="text-[11px] text-slate-400 leading-normal pl-5 border-l border-rose-500/20">
-              <span className="font-bold text-emerald-500/80 mr-1">Fix:</span> {item.fix}
+          <div key={item.id} className="rounded-2xl border border-rose-100 bg-rose-50/30 p-4">
+            <p className="mb-2 text-sm font-black" style={{ color: themeColor }}>{item.mistake}</p>
+            <p className="border-l-4 border-emerald-400 pl-4 text-sm font-semibold leading-6 text-slate-600">
+              <span className="mr-1 font-black text-emerald-600">Fix:</span> {item.fix}
             </p>
           </div>
         ))}

@@ -24,21 +24,14 @@ export const SECTIONS_SPECS: SectionSpec[] = [
     color: 'from-orange-500 to-pink-500',
     glowColor: 'rgba(249, 115, 22, 0.4)',
     subsections: [
-      { id: 'simpleWords', label: 'Simple Words', purpose: 'Friendly 2-sentence description of the concept', components: ['Intro text block'] },
-      { id: 'definitionBlock', label: 'Definition Block', purpose: 'Canonical, dictionary-style term glossary card', components: ['Term badge', 'Formal definition', 'Key traits', 'Memory hook'] },
-      { id: 'syntaxBlock', label: 'Syntax Block', purpose: 'Syntax diagram with highlights pointing out code elements', components: ['Syntax Title Block', 'Visual pointing SVG diagram'], svgId: 'notes-syntax', svgLabel: 'Syntax Diagram' },
-      { id: 'componentGrid', label: 'Component Grid', purpose: 'A layout grid detailing major sub-elements', components: ['3-column cards', 'Hover animations'] },
-      { id: 'examplePanel', label: 'Example Panel', purpose: 'A detailed example of syntax with explanation', components: ['Code card', 'Protip note'] },
-      { id: 'practiceCard', label: 'Practice Card', purpose: 'A quick recall block to test immediate learning', components: ['Quick recall quiz options'] },
-      { id: 'warningFaq', label: 'Warning FAQ', purpose: 'Critical common traps and FAQs', components: ['Warning Banner', 'Gotchas list'] },
-      { id: 'summaryCard', label: 'Summary Card', purpose: 'An aesthetic summary graphic for rapid revision', components: ['Revision intent', 'SVG summary infographic'] },
-      { id: 'footerBlock', label: 'Footer Block', purpose: 'Closing section call-to-action banner', components: ['Closing line', 'SVG Footer Illustration'] },
-      { id: 'summaryHeroSvg', label: 'Summary Hero (SVG)', purpose: 'Large hero blueprint visual', components: ['SVG Hero Banner'], svgId: 'notes-hero', svgLabel: 'Hero Infographic' },
-      { id: 'conceptMemoryMapSvg', label: 'Concept Memory Map (SVG)', purpose: 'SVG node relationship blueprint graphic', components: ['SVG Relationship Chart'], svgId: 'notes-memory-map', svgLabel: 'Concept Memory Map' },
-      { id: 'cheatSheetSVG', label: 'Cheat Sheet (SVG)', purpose: 'Cheat sheet reference blueprint diagram', components: ['SVG reference cheat sheet'], svgId: 'notes-cheatsheet', svgLabel: 'Cheat Sheet' },
-      { id: 'flashcardVisualSystem', label: 'Flashcard Visual System', purpose: 'Visual flashcard quiz system with question-answer pairs', components: ['Flashcard container', 'Show answer flip interaction'], svgId: 'notes-flashcard', svgLabel: 'Flashcard Visual' },
-      { id: 'comparisonSummaryChart', label: 'Comparison Summary Chart', purpose: 'Detailed system comparison table with key metrics', components: ['Side-by-side grid', 'Feature checkmarks'], svgId: 'notes-comparison', svgLabel: 'Comparison Chart' },
-      { id: 'mnemonicRetentionGraphic', label: 'Mnemonic Retention Graphic', purpose: 'Creative memory hook visualization for long-term storage', components: ['Visual anchor illustration', 'Text explanation block'], svgId: 'notes-mnemonic', svgLabel: 'Mnemonic Graphic' }
+      { id: 'concept_card', label: 'Concept Card', purpose: 'Learner-facing academic overview hero for the notes section', components: ['NotesHero.tsx', 'Hero title', 'Hero subtitle', 'Quick-look tags'] },
+      { id: 'definition_block', label: 'Definition Block', purpose: 'Canonical definition and simple explanation card', components: ['CoreDefinition.tsx', 'Concept badge', 'Definition', 'Simple explanation', 'Why it matters'] },
+      { id: 'component_grid', label: 'Component Grid', purpose: 'Mechanics card that explains how the concept works', components: ['SystemMechanics.tsx', 'Mechanic timeline', 'Labels', 'Details'] },
+      { id: 'syntax_block', label: 'Syntax Block', purpose: 'Syntax/code structure panel with copy action and breakdown', components: ['SyntaxStructure.tsx', 'Code snippet', 'Copy button', 'Breakdown cards'], svgId: 'notes-syntax', svgLabel: 'Syntax Diagram' },
+      { id: 'example_panel', label: 'Example Panel', purpose: 'Polished key-component/example grid for practical inspection', components: ['KeyComponents.tsx', 'Component cards', 'Supporting points'] },
+      { id: 'practice_card', label: 'Practice Card', purpose: 'Best-practice guidance for immediate learner application', components: ['BestPractices.tsx', 'Practice tips', 'Check styling'] },
+      { id: 'warning_faq', label: 'Warning FAQ', purpose: 'Mistake prevention and correction guidance', components: ['CommonMistakes.tsx', 'Mistake cards', 'Fix notes'] },
+      { id: 'summary_card', label: 'Summary Card', purpose: 'Visual revision summary and key takeaways', components: ['VisualSummary.tsx', 'Concept flow', 'Takeaways', 'Optional image'] }
     ]
   },
   {

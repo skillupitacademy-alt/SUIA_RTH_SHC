@@ -23,15 +23,15 @@ export function NotesModularRenderer({ data, themeColor }: NotesModularRendererP
 
   const m = toRecord(data);
 
-  // Map Schema Keys
-  const definitionData = pickSection(m, ['definition_block', 'coreDefinition']);
-  const mechanicsData = pickSection(m, ['component_grid', 'keyComponents']);
-  const syntaxData = pickSection(m, ['syntax_block', 'syntaxStructure']);
-  const exampleData = pickSection(m, ['example_panel', 'examples']);
-  const bestPracticeData = pickSection(m, ['practice_card', 'bestPractices']);
-  const errorData = pickSection(m, ['warning_faq', 'commonErrors']);
-  const summaryData = pickSection(m, ['summary_card', 'revisionSummary']);
-  const heroData = pickSection(m, ['concept_card', 'conceptExplanation']);
+  // Canonical Notes schema keys. Do not add aliases here; invalid keys should fail validation instead of rendering silently.
+  const definitionData = pickSection(m, ['definition_block']);
+  const mechanicsData = pickSection(m, ['component_grid']);
+  const syntaxData = pickSection(m, ['syntax_block']);
+  const exampleData = pickSection(m, ['example_panel']);
+  const bestPracticeData = pickSection(m, ['practice_card']);
+  const errorData = pickSection(m, ['warning_faq']);
+  const summaryData = pickSection(m, ['summary_card']);
+  const heroData = pickSection(m, ['concept_card']);
 
   // Dynamic Layout Support
   const layoutStyle = getLayoutStyle(m);
@@ -56,10 +56,10 @@ export function NotesModularRenderer({ data, themeColor }: NotesModularRendererP
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
-          {exampleData && <KeyComponents data={exampleData} />}
+          {exampleData && <KeyComponents data={exampleData} themeColor={themeColor} />}
         </div>
         <div className="flex flex-col gap-6">
-          {bestPracticeData && <BestPractices data={bestPracticeData} />}
+          {bestPracticeData && <BestPractices data={bestPracticeData} themeColor={themeColor} />}
           {errorData && <CommonMistakes data={errorData} />}
         </div>
       </div>

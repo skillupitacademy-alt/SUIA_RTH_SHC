@@ -48,6 +48,11 @@ const getConfiguredPart = (
     visible: part?.visible !== false && fallbackVisible,
     label: asString(part?.label, ''),
     color: asString(part?.color, ''),
+    layout: asString(part?.layout, 'inline').toLowerCase(),
+    align: asString(part?.align, 'left').toLowerCase(),
+    spacing: asString(part?.spacing, 'normal').toLowerCase(),
+    radius: asString(part?.radius, 'rounded').toLowerCase(),
+    shadow: asString(part?.shadow, 'soft').toLowerCase(),
   };
 };
 
@@ -79,6 +84,28 @@ function summarizeContent(data: unknown, subsection: string, section: string) {
   return { title, description, iconLabel, difficulty, topicsCount, lastUpdated, items };
 }
 
+const buildCodePreviewDocument = (code: string) => {
+  const isFullDocument = /<html[\s>]/i.test(code);
+  if (isFullDocument) return code;
+
+  return `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      html, body { margin: 0; min-height: 100%; background: transparent; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      body { padding: 0; }
+      * { box-sizing: border-box; }
+    </style>
+  </head>
+  <body>
+    ${code}
+  </body>
+</html>`;
+};
+
 export function ContractAwareComponentPreview({
   section,
   subsection,
@@ -92,7 +119,29 @@ export function ContractAwareComponentPreview({
   contract: Record<string, unknown>;
   showDiagnostics?: boolean;
 }) {
+  const customRendererCode = asString(contract.custom_renderer_code, '');
+
+  if (customRendererCode) {
+    return (
+      <iframe
+        data-testid="contract-aware-component-preview"
+        title="Custom renderer code preview"
+        sandbox="allow-scripts"
+        srcDoc={buildCodePreviewDocument(customRendererCode)}
+        className="block h-[640px] w-full border-0 bg-transparent"
+      />
+    );
+  }
+
   const layout = asString(contract.layout, asString(contract.layout_type, 'card')).toLowerCase();
+  const renderer = asString(contract.renderer, asString(contract.component, 'SubtopicViewPage'));
+  const styleVariant = asString(contract.style_variant, 'standard').toLowerCase();
+  const animation = asString(contract.animation, asString(contract.animation_type, 'none')).toLowerCase();
+  const emphasis = asString(contract.emphasis_level, 'medium').toLowerCase();
+  const colorRole = asString(contract.color_role, 'primary').toLowerCase();
+  const desktopLayout = asString(contract.desktop_layout, 'single_column').toLowerCase();
+  const tabletLayout = asString(contract.tablet_layout, 'stacked_cards').toLowerCase();
+  const mobileLayout = asString(contract.mobile_layout, 'stacked_cards').toLowerCase();
   const density = asString(contract.density, 'comfortable').toLowerCase();
   const typography = asString(contract.typography_scale, 'standard').toLowerCase();
   const primaryColor = asString(contract.primary_color, '#4f46e5');
@@ -100,7 +149,21 @@ export function ContractAwareComponentPreview({
   const backgroundColor = asString(contract.background_color, '#ffffff');
   const textColor = asString(contract.text_color, '#0f172a');
   const borderColor = asString(contract.border_color, '#dbeafe');
+  const brandVariant = asString(contract.brand_variant, 'shared').toLowerCase();
+  const domainOverride = asString(contract.domain_override, 'default').toLowerCase();
+  const interactiveElements = asArray<string>(contract.interactive_elements);
+  const hoverState = Boolean(contract.hover_state);
+  const clickable = Boolean(contract.clickable);
+  const collapsible = Boolean(contract.collapsible);
+  const progressiveDisclosure = Boolean(contract.progressive_disclosure);
+  const keyboardNavigation = contract.keyboard_navigation !== false;
+  const screenReaderLabels = contract.screen_reader_labels !== false;
+  const reducedMotion = contract.reduced_motion !== false;
+  const lazyLoad = Boolean(contract.lazy_load);
+  const cacheComponent = Boolean(contract.cache_component);
+  const prefetchAssets = Boolean(contract.prefetch_assets);
   const parts = asArray<Record<string, unknown>>(contract.ui_subcomponents);
+  const containerPart = getConfiguredPart(parts, ['container', 'wrapper']);
   const headerPart = getConfiguredPart(parts, ['header', 'title']);
   const bodyPart = getConfiguredPart(parts, ['body', 'content', 'main']);
   const actionPart = getConfiguredPart(parts, ['action', 'cta', 'button']);
@@ -109,6 +172,29 @@ export function ContractAwareComponentPreview({
   const spacious = density === 'spacious';
   const padding = compact ? 'p-5' : spacious ? 'p-9' : 'p-7';
   const gap = compact ? 'gap-4' : spacious ? 'gap-8' : 'gap-6';
+  const focused = colorRole === 'accent' ? accentColor : primaryColor;
+  const mutedSurface = colorRole === 'neutral' ? '#f8fafc' : `${focused}0f`;
+  const domainLabel = domainOverride === 'default' ? 'Core concept' : titleCase(domainOverride);
+  const brandLabel = brandVariant === 'suia' ? 'SkillUp IT Academy' : brandVariant === 'rth' ? 'Real Tutorial Hub' : 'Guided Learning';
+  const styleClasses = styleVariant === 'minimal'
+    ? 'shadow-none'
+    : styleVariant === 'featured'
+      ? 'shadow-2xl'
+      : styleVariant === 'outlined'
+        ? 'shadow-sm'
+        : 'shadow-xl';
+  const radiusClass = styleVariant === 'compact' || compact ? 'rounded-2xl' : 'rounded-3xl';
+  const emphasisScale = emphasis === 'high' ? 'scale-[1.01]' : emphasis === 'low' ? 'opacity-90' : '';
+  const motionClass = reducedMotion
+    ? ''
+    : animation === 'pulse' || animation === 'progress'
+      ? 'animate-pulse'
+      : animation === 'fade_in'
+        ? 'transition-opacity duration-500'
+        : animation === 'slide_up'
+          ? 'transition-transform duration-500'
+          : '';
+  const interactionClass = hoverState ? 'transition hover:-translate-y-0.5 hover:shadow-2xl' : '';
   const titleSize = typography === 'large' || typography === 'hero'
     ? 'text-4xl lg:text-5xl'
     : typography === 'compact' || typography === 'caption'
@@ -116,7 +202,32 @@ export function ContractAwareComponentPreview({
       : 'text-3xl lg:text-4xl';
   const hasItems = summary.items.length > 0;
 
-  const badges = (
+  const wrapPart = (partLayout: string, children: React.ReactNode, color: string, extraClass = '') => {
+    const currentPart = [containerPart, headerPart, bodyPart, actionPart].find((part) => part.color === color) || containerPart;
+    const radius = currentPart.radius === 'none' ? 'rounded-none' : currentPart.radius === 'soft' ? 'rounded-xl' : currentPart.radius === 'pill' ? 'rounded-[2rem]' : 'rounded-2xl';
+    const shadow = currentPart.shadow === 'none' ? 'shadow-none' : currentPart.shadow === 'strong' ? 'shadow-xl' : 'shadow-sm';
+    const spacingClass = currentPart.spacing === 'tight' ? 'p-3' : currentPart.spacing === 'loose' ? 'p-7' : 'p-5';
+    const alignClass = currentPart.align === 'center' ? 'text-center' : currentPart.align === 'right' ? 'text-right' : 'text-left';
+    if (partLayout === 'card') {
+      return <div className={`${radius} border bg-white ${spacingClass} ${shadow} ${alignClass} ${extraClass}`} style={{ borderColor: color }}>{children}</div>;
+    }
+    if (partLayout === 'pill') {
+      return <div className={`rounded-[2rem] border bg-white px-5 py-4 ${shadow} ${alignClass} ${extraClass}`} style={{ borderColor: color }}>{children}</div>;
+    }
+    if (partLayout === 'progress') {
+      return (
+        <div className={`${alignClass} ${extraClass}`}>
+          {children}
+          <div className="mt-4 h-2 rounded-full bg-slate-100">
+            <div className="h-full rounded-full" style={{ width: progressiveDisclosure ? '48%' : '74%', backgroundColor: color }} />
+          </div>
+        </div>
+      );
+    }
+    return <div className={extraClass}>{children}</div>;
+  };
+
+  const badges = wrapPart(headerPart.layout === 'pill' ? 'inline' : headerPart.layout, (
     <div className="flex flex-wrap items-center gap-3">
       <span className="rounded-full px-3 py-1 text-xs font-black text-white" style={{ backgroundColor: primaryColor }}>
         {summary.iconLabel}
@@ -124,14 +235,24 @@ export function ContractAwareComponentPreview({
       <span className="rounded-full border px-3 py-1 text-xs font-bold" style={{ borderColor: `${accentColor}66`, backgroundColor: `${accentColor}12`, color: accentColor }}>
         {summary.difficulty}
       </span>
+      {domainOverride !== 'default' ? (
+        <span className="rounded-full border bg-white px-3 py-1 text-xs font-bold" style={{ borderColor, color: focused }}>
+          {domainLabel}
+        </span>
+      ) : null}
+      {brandVariant !== 'shared' ? (
+        <span className="rounded-full border bg-white px-3 py-1 text-xs font-bold" style={{ borderColor, color: primaryColor }}>
+          {brandLabel}
+        </span>
+      ) : null}
     </div>
-  );
+  ), headerPart.color || primaryColor);
 
   const header = headerPart.visible ? (
-    <div className={compact ? 'space-y-3' : 'space-y-4'}>
+    <div className={`${compact ? 'space-y-3' : headerPart.spacing === 'loose' ? 'space-y-6' : 'space-y-4'} ${headerPart.align === 'center' ? 'text-center' : headerPart.align === 'right' ? 'text-right' : 'text-left'}`} aria-label={screenReaderLabels ? `${renderer} header` : undefined}>
       {badges}
       <h2 className={`${titleSize} font-black leading-tight`} style={{ color: textColor }}>{summary.title}</h2>
-      <p className="max-w-2xl text-base font-semibold leading-7 text-slate-600">{summary.description}</p>
+      <p className={`max-w-2xl text-base font-semibold leading-7 text-slate-600 ${headerPart.align === 'center' ? 'mx-auto' : headerPart.align === 'right' ? 'ml-auto' : ''}`}>{summary.description}</p>
     </div>
   ) : null;
 
@@ -149,24 +270,29 @@ export function ContractAwareComponentPreview({
   );
 
   const learningCard = (
-    <div className="rounded-3xl border bg-white p-6 shadow-lg" style={{ borderColor }}>
+    <div className="rounded-3xl border bg-white p-6 shadow-lg" style={{ borderColor, background: styleVariant === 'featured' ? `linear-gradient(135deg, #ffffff 0%, ${focused}12 100%)` : '#ffffff' }}>
       <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl" style={{ backgroundColor: `${primaryColor}18`, color: primaryColor }}>
         <Sparkles size={28} />
       </div>
-      <p className="text-xs font-black uppercase tracking-widest text-slate-400">Learner First View</p>
+      <p className="text-xs font-black uppercase tracking-widest text-slate-400">{brandLabel}</p>
       <p className="mt-2 text-2xl font-black" style={{ color: textColor }}>{summary.title}</p>
       <div className="mt-5 h-2 rounded-full bg-slate-100">
-        <div className="h-full w-2/5 rounded-full" style={{ backgroundColor: primaryColor }} />
+        <div className="h-full rounded-full" style={{ width: progressiveDisclosure ? '42%' : '68%', backgroundColor: primaryColor }} />
+      </div>
+      <div className="mt-4 flex flex-wrap gap-2 text-[10px] font-black uppercase tracking-wide text-slate-500">
+        {lazyLoad ? <span>Optimized loading</span> : null}
+        {cacheComponent ? <span>Fast revisit</span> : null}
+        {prefetchAssets ? <span>Assets ready</span> : null}
       </div>
     </div>
   );
 
   const body = bodyPart.visible ? (
-    <div className={compact ? 'space-y-4' : 'space-y-5'}>
+    <div className={`${compact ? 'space-y-4' : bodyPart.spacing === 'loose' ? 'space-y-7' : bodyPart.spacing === 'tight' ? 'space-y-3' : 'space-y-5'} ${bodyPart.align === 'center' ? 'text-center' : bodyPart.align === 'right' ? 'text-right' : 'text-left'}`} aria-label={screenReaderLabels ? `${renderer} content` : undefined}>
       {hasItems ? (
         <div className={`grid ${gap} ${layout.includes('grid') ? 'md:grid-cols-2' : ''}`}>
           {summary.items.slice(0, 6).map((item, index) => (
-            <div key={item.key} className="flex items-start gap-3 rounded-2xl border bg-white p-4 shadow-sm" style={{ borderColor }}>
+            <div key={item.key} className={`flex items-start gap-3 border bg-white p-4 ${bodyPart.radius === 'none' ? 'rounded-none' : bodyPart.radius === 'soft' ? 'rounded-xl' : bodyPart.radius === 'pill' ? 'rounded-[2rem]' : 'rounded-2xl'} ${bodyPart.shadow === 'none' ? 'shadow-none' : bodyPart.shadow === 'strong' ? 'shadow-xl' : 'shadow-sm'}`} style={{ borderColor: bodyPart.color || borderColor }}>
               <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-black text-white" style={{ backgroundColor: primaryColor }}>
                 {index + 1}
               </span>
@@ -175,29 +301,347 @@ export function ContractAwareComponentPreview({
           ))}
         </div>
       ) : (
-        stats
+        wrapPart(bodyPart.layout, stats, bodyPart.color || borderColor)
       )}
     </div>
   ) : null;
 
   const action = actionPart.visible ? (
-    <div className="flex flex-wrap items-center gap-3">
-      <button className="inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-black text-white shadow-sm" style={{ backgroundColor: accentColor }}>
-        Start learning <ArrowRight size={17} />
-      </button>
-      <button className="inline-flex items-center gap-2 rounded-full border bg-white px-5 py-3 text-sm font-black" style={{ borderColor, color: primaryColor }}>
-        <BookOpen size={17} /> View roadmap
-      </button>
+    <div className={`space-y-3 ${actionPart.align === 'center' ? 'text-center' : actionPart.align === 'right' ? 'text-right' : 'text-left'}`}>
+      <div className={`flex flex-wrap items-center gap-3 ${actionPart.align === 'center' ? 'justify-center' : actionPart.align === 'right' ? 'justify-end' : ''}`}>
+        <button
+          className="inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-black text-white shadow-sm disabled:cursor-default"
+          style={{ backgroundColor: actionPart.color || accentColor }}
+          disabled={!clickable}
+          tabIndex={keyboardNavigation ? 0 : -1}
+        >
+          {actionPart.label || 'Start learning'} <ArrowRight size={17} />
+        </button>
+        <button className="inline-flex items-center gap-2 rounded-full border bg-white px-5 py-3 text-sm font-black" style={{ borderColor, color: primaryColor }}>
+          <BookOpen size={17} /> View roadmap
+        </button>
+        {interactiveElements.slice(0, 3).map((item) => (
+          <button key={item} className="inline-flex items-center gap-2 rounded-full border bg-white px-4 py-2 text-xs font-black" style={{ borderColor: actionPart.color || accentColor, color: actionPart.color || accentColor }}>
+            {titleCase(item)}
+          </button>
+        ))}
+      </div>
+      <div className="flex flex-wrap gap-2 text-[10px] font-black uppercase tracking-wide text-slate-500">
+        {keyboardNavigation || screenReaderLabels || reducedMotion ? <span>Accessible reading mode</span> : null}
+        {lazyLoad || cacheComponent || prefetchAssets ? <span>Optimized delivery</span> : null}
+        {progressiveDisclosure ? <span>Step-by-step reveal</span> : null}
+      </div>
     </div>
   ) : null;
 
-  const content = (() => {
-    if (layout.includes('accordion')) {
+  const appliedHeader = headerPart.layout === 'inline' ? header : wrapPart(headerPart.layout, header, headerPart.color || primaryColor);
+  const appliedBody = bodyPart.layout === 'inline' ? body : wrapPart(bodyPart.layout, body, bodyPart.color || borderColor);
+  const appliedAction = actionPart.layout === 'inline' ? action : wrapPart(actionPart.layout, action, actionPart.color || accentColor);
+  const visibleBlocks = [appliedHeader, appliedBody, appliedAction].filter(Boolean);
+  const contentRecord = asRecord(data);
+  const normalizedSection = section.toLowerCase();
+  const normalizedSubsection = subsection
+    .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+    .replace(/[-\s]+/g, '_')
+    .toLowerCase();
+  const isNotesSection = normalizedSection === 'notes';
+
+  const notesSpecificContent = isNotesSection ? (() => {
+    if (['simple_words', 'simplewords', 'concept_card'].includes(normalizedSubsection)) {
+      const quickLook = asArray<unknown>(contentRecord.quickLook);
+      return (
+        <div className={`grid ${gap} lg:grid-cols-[1.1fr_0.9fr] lg:items-center`}>
+          <div className="space-y-5">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="rounded-full px-3 py-1 text-xs font-black text-white" style={{ backgroundColor: primaryColor }}>{summary.iconLabel}</span>
+              <span className="rounded-full border px-3 py-1 text-xs font-bold" style={{ borderColor: `${accentColor}66`, color: accentColor }}>{summary.difficulty}</span>
+            </div>
+            <h2 className={`${titleSize} font-black leading-tight`} style={{ color: textColor }}>
+              {asString(contentRecord.heroTitle, `${summary.title} Notes`)}
+            </h2>
+            <p className="max-w-2xl text-base font-semibold leading-7 text-slate-600">
+              {asString(contentRecord.heroSubtitle, summary.description)}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {(quickLook.length ? quickLook : ['Definition', 'Mechanics', 'Syntax', 'Examples']).map((item) => (
+                <span key={String(item)} className="rounded-full border bg-white px-4 py-2 text-xs font-black" style={{ borderColor, color: primaryColor }}>
+                  {String(item)}
+                </span>
+              ))}
+            </div>
+          </div>
+          <div className="rounded-3xl border bg-white p-6 shadow-lg" style={{ borderColor }}>
+            <p className="text-xs font-black uppercase tracking-widest text-slate-400">Simple Words</p>
+            <p className="mt-3 text-2xl font-black" style={{ color: textColor }}>Begin with meaning first</p>
+            <p className="mt-3 text-sm font-semibold leading-6 text-slate-600">A short overview designed to orient the learner before detail-heavy blocks.</p>
+            <div className="mt-5 h-2 rounded-full bg-slate-100">
+              <div className="h-full w-2/5 rounded-full" style={{ backgroundColor: primaryColor }} />
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (['definition_block', 'definitionblock'].includes(normalizedSubsection)) {
+      return (
+        <div className="space-y-5">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="rounded-full px-3 py-1 text-xs font-black text-white" style={{ backgroundColor: primaryColor }}>
+              {asString(contentRecord.badge, 'Core Concept')}
+            </span>
+            <span className="rounded-full border px-3 py-1 text-xs font-bold" style={{ borderColor: `${accentColor}66`, color: accentColor }}>Definition</span>
+          </div>
+          <div className="rounded-3xl border bg-white p-7 shadow-lg" style={{ borderColor }}>
+            <p className="text-xs font-black uppercase tracking-widest text-slate-400">Canonical Definition</p>
+            <h2 className="mt-3 text-3xl font-black leading-tight" style={{ color: textColor }}>
+              {asString(contentRecord.headline, summary.title)}
+            </h2>
+            <p className="mt-5 border-l-4 pl-5 text-lg font-bold leading-8 text-slate-700" style={{ borderColor: primaryColor }}>
+              {asString(contentRecord.definition, summary.description)}
+            </p>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="rounded-2xl border bg-white p-5 shadow-sm" style={{ borderColor }}>
+              <p className="text-xs font-black uppercase tracking-wider" style={{ color: primaryColor }}>Simple Explanation</p>
+              <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">{asString(contentRecord.simpleExplanation, 'Short learner-friendly explanation.')}</p>
+            </div>
+            <div className="rounded-2xl border bg-white p-5 shadow-sm" style={{ borderColor }}>
+              <p className="text-xs font-black uppercase tracking-wider" style={{ color: primaryColor }}>Why It Matters</p>
+              <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">{asString(contentRecord.whyItMatters, 'Why the definition matters for the learner.')}</p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (['syntax_block', 'syntaxblock'].includes(normalizedSubsection)) {
+      const breakdown = asArray<Record<string, unknown>>(contentRecord.breakdown);
+      return (
+        <div className="space-y-5">
+          <h2 className="text-3xl font-black" style={{ color: textColor }}>{asString(contentRecord.title, summary.title)}</h2>
+          <pre className="overflow-x-auto rounded-3xl border bg-slate-950 p-6 text-sm font-bold leading-7 text-emerald-300 shadow-lg" style={{ borderColor }}>
+            <code>{asString(contentRecord.codeSnippet, 'example = \"value\"')}</code>
+          </pre>
+          <div className="grid gap-3 md:grid-cols-3">
+            {breakdown.map((item, index) => (
+              <div key={index} className="rounded-2xl border bg-white p-4 shadow-sm" style={{ borderColor }}>
+                <p className="font-mono text-sm font-black" style={{ color: primaryColor }}>{asString(item.part, `part_${index + 1}`)}</p>
+                <p className="mt-2 text-xs font-semibold leading-5 text-slate-600">{asString(item.explanation, 'Syntax explanation.')}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    if (['component_grid', 'componentgrid'].includes(normalizedSubsection)) {
+      const mechanics = asArray<Record<string, unknown>>(contentRecord.mechanics);
+      return (
+        <div className="space-y-5">
+          <div>
+            <h2 className="text-3xl font-black" style={{ color: textColor }}>{asString(contentRecord.panelTitle, summary.title)}</h2>
+            <p className="mt-3 max-w-3xl text-base font-semibold leading-7 text-slate-600">{asString(contentRecord.description, summary.description)}</p>
+          </div>
+          <div className="grid gap-4 md:grid-cols-3">
+            {mechanics.map((item, index) => (
+              <div key={asString(item.id, String(index))} className="rounded-3xl border bg-white p-5 shadow-sm" style={{ borderColor }}>
+                <span className="flex h-10 w-10 items-center justify-center rounded-2xl text-sm font-black text-white" style={{ backgroundColor: primaryColor }}>{index + 1}</span>
+                <h3 className="mt-4 text-lg font-black" style={{ color: textColor }}>{asString(item.label, `Step ${index + 1}`)}</h3>
+                <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">{asString(item.detail, 'Mechanic detail.')}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    if (['example_panel', 'examplepanel'].includes(normalizedSubsection)) {
+      const components = asArray<Record<string, unknown>>(contentRecord.components);
+      return (
+        <div className="space-y-5">
+          <div>
+            <h2 className="text-3xl font-black" style={{ color: textColor }}>{asString(contentRecord.title, summary.title)}</h2>
+            <p className="mt-3 max-w-3xl text-base font-semibold leading-7 text-slate-600">{asString(contentRecord.description, summary.description)}</p>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            {components.map((item, index) => (
+              <div key={asString(item.id, String(index))} className="rounded-3xl border bg-white p-5 shadow-sm" style={{ borderColor }}>
+                <h3 className="text-lg font-black" style={{ color: primaryColor }}>{asString(item.title, `Example ${index + 1}`)}</h3>
+                <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">{asString(item.description, 'Example detail.')}</p>
+                <ul className="mt-4 space-y-2">
+                  {asArray<unknown>(item.points).map((point, pointIndex) => (
+                    <li key={pointIndex} className="flex items-start gap-2 text-xs font-bold text-slate-700">
+                      <CheckCircle2 size={14} className="mt-0.5 shrink-0" style={{ color: accentColor }} />
+                      {String(point)}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    if (['practice_card', 'practicecard'].includes(normalizedSubsection)) {
+      const practices = asArray<Record<string, unknown>>(contentRecord.practices);
+      return (
+        <div className="space-y-5">
+          <h2 className="text-3xl font-black" style={{ color: textColor }}>{asString(contentRecord.title, 'Practice Checklist')}</h2>
+          <div className="rounded-3xl border bg-white p-6 shadow-lg" style={{ borderColor }}>
+            <div className="space-y-4">
+              {practices.map((item, index) => (
+                <div key={asString(item.id, String(index))} className="flex items-start gap-4 rounded-2xl border p-4" style={{ borderColor }}>
+                  <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-black text-white" style={{ backgroundColor: accentColor }}>
+                    <CheckCircle2 size={16} />
+                  </span>
+                  <div>
+                    <h3 className="text-sm font-black" style={{ color: textColor }}>{asString(item.label, `Practice ${index + 1}`)}</h3>
+                    <p className="mt-1 text-sm font-semibold leading-6 text-slate-600">{asString(item.tip, 'Practice tip.')}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (['warning_faq', 'warningfaq'].includes(normalizedSubsection)) {
+      const mistakes = asArray<Record<string, unknown>>(contentRecord.mistakes);
+      return (
+        <div className="space-y-4">
+          <h2 className="text-3xl font-black" style={{ color: textColor }}>{asString(contentRecord.title, 'Common Mistakes')}</h2>
+          {mistakes.map((item, index) => (
+            <details key={asString(item.id, String(index))} open={index === 0} className="rounded-3xl border bg-white p-5 shadow-sm" style={{ borderColor }}>
+              <summary className="cursor-pointer text-base font-black" style={{ color: primaryColor }}>
+                {asString(item.mistake, `Mistake ${index + 1}`)}
+              </summary>
+              <div className="mt-4 rounded-2xl border p-4 text-sm font-semibold leading-6 text-slate-700" style={{ borderColor: `${accentColor}66`, backgroundColor: `${accentColor}10` }}>
+                <span className="font-black" style={{ color: accentColor }}>Fix: </span>
+                {asString(item.fix, 'Correction guidance.')}
+              </div>
+            </details>
+          ))}
+        </div>
+      );
+    }
+
+    if (['summary_card', 'summarycard'].includes(normalizedSubsection)) {
+      const takeaways = asArray<unknown>(contentRecord.keyTakeaways);
+      return (
+        <div className={`grid ${gap} lg:grid-cols-[0.9fr_1.1fr] lg:items-center`}>
+          <div className="rounded-3xl border p-7 shadow-lg" style={{ borderColor, background: `linear-gradient(135deg, #ffffff 0%, ${primaryColor}12 100%)` }}>
+            <p className="text-xs font-black uppercase tracking-widest" style={{ color: primaryColor }}>Revision Summary</p>
+            <h2 className="mt-3 text-3xl font-black leading-tight" style={{ color: textColor }}>{asString(contentRecord.summaryTitle, summary.title)}</h2>
+            <p className="mt-4 text-sm font-semibold leading-6 text-slate-600">{asString(contentRecord.conceptDiagramDescription, summary.description)}</p>
+          </div>
+          <div className="space-y-3">
+            {takeaways.map((item, index) => (
+              <div key={index} className="flex items-start gap-3 rounded-2xl border bg-white p-4 shadow-sm" style={{ borderColor }}>
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-black text-white" style={{ backgroundColor: primaryColor }}>{index + 1}</span>
+                <p className="text-sm font-bold leading-6 text-slate-700">{String(item)}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    if (['footer_block', 'footerblock'].includes(normalizedSubsection)) {
+      return (
+        <div className="overflow-hidden rounded-3xl border shadow-lg" style={{ borderColor, backgroundColor }}>
+          <div className={`grid ${gap} p-7 lg:grid-cols-[1fr_auto] lg:items-center`}>
+            <div>
+              <p className="text-xs font-black uppercase tracking-widest" style={{ color: primaryColor }}>Closing Checkpoint</p>
+              <h2 className="mt-3 text-3xl font-black leading-tight" style={{ color: textColor }}>
+                {asString(contentRecord.title, 'Ready to continue?')}
+              </h2>
+              <p className="mt-4 max-w-3xl text-base font-semibold leading-7 text-slate-600">
+                {asString(contentRecord.closingLine, summary.description)}
+              </p>
+              <p className="mt-3 text-sm font-bold leading-6 text-slate-500">
+                {asString(contentRecord.supportText, 'Use the next section after the current idea is clear.')}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3 lg:justify-end">
+              <button className="inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-black text-white" style={{ backgroundColor: accentColor }}>
+                {asString(contentRecord.primaryAction, 'Continue learning')}
+                <ArrowRight size={16} />
+              </button>
+              <button className="inline-flex items-center gap-2 rounded-full border bg-white px-5 py-3 text-sm font-black" style={{ borderColor, color: primaryColor }}>
+                <BookOpen size={16} />
+                {asString(contentRecord.secondaryAction, 'Review summary')}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (['summary_hero_svg', 'summaryherosvg'].includes(normalizedSubsection)) {
+      const stages = asArray<unknown>(contentRecord.stages);
+      const displayStages = stages.length ? stages : ['Definition', 'Mechanics', 'Syntax', 'Examples', 'Practice', 'Revision'];
+      return (
+        <div className={`grid ${gap} lg:grid-cols-[0.95fr_1.05fr] lg:items-center`}>
+          <div>
+            <span className="inline-flex rounded-full px-3 py-1 text-xs font-black text-white" style={{ backgroundColor: primaryColor }}>Summary Visual</span>
+            <h2 className="mt-4 text-4xl font-black leading-tight" style={{ color: textColor }}>
+              {asString(contentRecord.title, `${summary.title} Blueprint`)}
+            </h2>
+            <p className="mt-4 max-w-2xl text-base font-semibold leading-7 text-slate-600">
+              {asString(contentRecord.description, summary.description)}
+            </p>
+            <p className="mt-4 text-sm font-black uppercase tracking-widest text-slate-400">
+              {asString(contentRecord.caption, 'Follow the learning flow from meaning to application.')}
+            </p>
+          </div>
+          <div className="rounded-3xl border bg-white p-6 shadow-xl" style={{ borderColor }}>
+            <div className="relative min-h-[240px]">
+              <div className="absolute inset-x-8 top-1/2 hidden h-1 -translate-y-1/2 rounded-full md:block" style={{ backgroundColor: `${primaryColor}22` }} />
+              <div className="relative grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {displayStages.map((stage, index) => (
+                  <div key={String(stage)} className="rounded-2xl border bg-white p-4 shadow-sm" style={{ borderColor }}>
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full text-xs font-black text-white" style={{ backgroundColor: index % 2 ? accentColor : primaryColor }}>
+                      {index + 1}
+                    </span>
+                    <p className="mt-3 text-sm font-black" style={{ color: textColor }}>{String(stage)}</p>
+                    <div className="mt-3 h-1.5 rounded-full bg-slate-100">
+                      <div className="h-full rounded-full" style={{ width: `${Math.min(100, 30 + index * 12)}%`, backgroundColor: index % 2 ? accentColor : primaryColor }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return null;
+  })() : null;
+
+  const unmappedNotesContent = isNotesSection && !notesSpecificContent ? (
+    <div className="rounded-3xl border border-rose-200 bg-rose-50 p-6">
+      <p className="text-xs font-black uppercase tracking-widest text-rose-600">No Notes Renderer Mapped</p>
+      <h2 className="mt-2 text-2xl font-black text-rose-950">{titleCase(subsection || 'selected component')}</h2>
+      <p className="mt-3 max-w-2xl text-sm font-bold leading-6 text-rose-800">
+        This Notes component does not have a learner-facing preview implementation. Add a specific renderer branch before using it in Global Architecture, Visual Guide, Prompt Generator, or Content Manager.
+      </p>
+      <div className="mt-4 rounded-2xl border border-rose-200 bg-white p-4">
+        <span className="block text-[10px] font-black uppercase tracking-widest text-rose-400">Requested subsection</span>
+        <code className="mt-1 block break-all text-sm font-black text-rose-900">{normalizedSubsection || 'unknown'}</code>
+      </div>
+    </div>
+  ) : null;
+
+  const content = notesSpecificContent ?? unmappedNotesContent ?? (() => {
+    if (collapsible || layout.includes('accordion')) {
       return (
         <div className="space-y-3">
           <details open className="rounded-2xl border bg-white p-5" style={{ borderColor }}>
             <summary className="cursor-pointer text-base font-black" style={{ color: primaryColor }}>{summary.title}</summary>
-            <div className="mt-4 space-y-5">{header}{body}{action}</div>
+            <div className="mt-4 space-y-5">{appliedHeader}{appliedBody}{appliedAction}</div>
           </details>
           {hasItems ? summary.items.slice(0, 3).map((item) => (
             <details key={item.key} className="rounded-2xl border bg-white p-5" style={{ borderColor }}>
@@ -211,7 +655,7 @@ export function ContractAwareComponentPreview({
     if (layout.includes('timeline')) {
       return (
         <div className="space-y-5">
-          {[header, body, action].filter(Boolean).map((block, index) => (
+          {visibleBlocks.map((block, index) => (
             <div key={index} className="grid grid-cols-[38px_1fr] gap-4">
               <div className="flex flex-col items-center">
                 <span className="flex h-9 w-9 items-center justify-center rounded-full text-xs font-black text-white" style={{ backgroundColor: primaryColor }}>{index + 1}</span>
@@ -224,29 +668,39 @@ export function ContractAwareComponentPreview({
       );
     }
 
-    if (layout.includes('grid')) {
+    if (layout.includes('inline')) {
       return (
-        <div className={`grid ${gap} lg:grid-cols-[1fr_0.85fr] lg:items-start`}>
-          <div className="space-y-5">{header}{action}</div>
-          <div className="space-y-5">{body}{learningCard}</div>
+        <div className={`flex flex-wrap items-center justify-between ${gap}`}>
+          <div className="min-w-[260px] flex-1">{appliedHeader}</div>
+          <div className="min-w-[220px] flex-1">{appliedBody}</div>
+          {appliedAction}
         </div>
       );
     }
 
-    if (layout.includes('hero') || layout.includes('wide')) {
+    if (layout.includes('grid') || desktopLayout.includes('dashboard')) {
+      return (
+        <div className={`grid ${gap} lg:grid-cols-[1fr_0.85fr] lg:items-start`}>
+          <div className="space-y-5">{appliedHeader}{appliedAction}</div>
+          <div className="space-y-5">{appliedBody}{learningCard}</div>
+        </div>
+      );
+    }
+
+    if (layout.includes('hero') || layout.includes('wide') || desktopLayout.includes('wide') || desktopLayout.includes('two_column')) {
       return (
         <div className={`grid ${gap} lg:grid-cols-[1.1fr_0.9fr] lg:items-center`}>
-          <div className="space-y-6">{header}{action}</div>
-          <div className="space-y-5">{learningCard}{body}</div>
+          <div className="space-y-6">{appliedHeader}{appliedAction}</div>
+          <div className="space-y-5">{learningCard}{appliedBody}</div>
         </div>
       );
     }
 
     return (
       <div className="space-y-6">
-        {header}
-        {body}
-        {action}
+        {appliedHeader}
+        {appliedBody}
+        {appliedAction}
       </div>
     );
   })();
@@ -254,10 +708,42 @@ export function ContractAwareComponentPreview({
   return (
     <section
       data-testid="contract-aware-component-preview"
-      className={`overflow-hidden rounded-3xl border ${padding} shadow-xl`}
-      style={{ backgroundColor, borderColor, color: textColor }}
+      className={`overflow-hidden ${radiusClass} border ${padding} ${styleClasses} ${emphasisScale} ${motionClass} ${interactionClass}`}
+      data-renderer={renderer}
+      data-layout={layout}
+      data-desktop-layout={desktopLayout}
+      data-tablet-layout={tabletLayout}
+      data-mobile-layout={mobileLayout}
+      data-brand={brandVariant}
+      data-domain={domainOverride}
+      style={{
+        backgroundColor: containerPart.color || backgroundColor,
+        borderColor,
+        borderWidth: emphasis === 'high' ? 3 : emphasis === 'low' ? 1 : 2,
+        color: textColor,
+        backgroundImage: styleVariant === 'featured' ? `linear-gradient(135deg, ${backgroundColor} 0%, ${mutedSurface} 100%)` : undefined,
+      }}
     >
       {content}
+
+      {(tabletLayout !== 'stacked_cards' || mobileLayout !== 'stacked_cards') ? (
+        <div className="mt-6 grid gap-3 border-t border-slate-100 pt-4 sm:grid-cols-2">
+          <div className="rounded-2xl border bg-white p-3" style={{ borderColor }}>
+            <p className="text-xs font-black" style={{ color: primaryColor }}>Tablet preview</p>
+            <div className={`mt-3 grid gap-2 ${tabletLayout.includes('grid') || tabletLayout.includes('two') ? 'grid-cols-2' : 'grid-cols-1'}`}>
+              <span className="h-8 rounded-lg" style={{ backgroundColor: `${primaryColor}22` }} />
+              <span className="h-8 rounded-lg" style={{ backgroundColor: `${accentColor}22` }} />
+            </div>
+          </div>
+          <div className="rounded-2xl border bg-white p-3" style={{ borderColor }}>
+            <p className="text-xs font-black" style={{ color: primaryColor }}>Mobile preview</p>
+            <div className={`mt-3 grid gap-2 ${mobileLayout.includes('accordion') ? 'grid-cols-1' : 'grid-cols-1'}`}>
+              <span className="h-7 rounded-lg" style={{ backgroundColor: `${primaryColor}22` }} />
+              <span className="h-7 rounded-lg" style={{ backgroundColor: `${accentColor}22` }} />
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {showDiagnostics ? (
         <div className="mt-6 flex flex-wrap gap-2 border-t border-slate-100 pt-4">

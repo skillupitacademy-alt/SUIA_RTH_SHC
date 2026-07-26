@@ -45,8 +45,14 @@ function getNotesExcerpt(content: TutorialContentJSON | null | undefined, fallba
   let excerpt = '';
   if ('markdown' in content.notes) {
     excerpt = content.notes.markdown;
-  } else if ('coreDefinition' in content.notes) {
-    excerpt = `${content.notes.coreDefinition.definition} ${content.notes.conceptExplanation.mainConcept}`;
+  } else if ('definition_block' in content.notes || 'concept_card' in content.notes) {
+    const definition = typeof content.notes.definition_block?.definition === 'string'
+      ? content.notes.definition_block.definition
+      : '';
+    const concept = typeof content.notes.concept_card?.heroSubtitle === 'string'
+      ? content.notes.concept_card.heroSubtitle
+      : '';
+    excerpt = `${definition} ${concept}`;
   }
 
   if (excerpt.trim().length === 0) {

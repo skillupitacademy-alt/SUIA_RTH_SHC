@@ -51,7 +51,136 @@ function toSnakeCase(value: string) {
   return value.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
 }
 
+const RUNTIME_SUBCOMPONENT_RENDERERS: Record<string, Record<string, string>> = {
+  notes: {
+    concept_card: 'NotesHero',
+    definition_block: 'CoreDefinition',
+    component_grid: 'SystemMechanics',
+    syntax_block: 'SyntaxStructure',
+    example_panel: 'KeyComponents',
+    practice_card: 'BestPractices',
+    warning_faq: 'CommonMistakes',
+    summary_card: 'VisualSummary',
+  },
+};
+
+const NOTES_UIUX_COMPONENT_DEFAULTS: Record<string, JsonRecord> = {
+  concept_card: {
+    layout: 'hero',
+    desktop_layout: 'two_column',
+    tablet_layout: 'stacked_cards',
+    mobile_layout: 'stacked_cards',
+    style_variant: 'featured',
+    density: 'comfortable',
+    typography_scale: 'hero',
+    color_role: 'primary',
+    animation_type: 'fade_in',
+    interactive_elements: ['quick_look_tags', 'start_learning_cta', 'roadmap_link'],
+    ui_subcomponents: [
+      { id: 'container', label: 'Hero surface', layout: 'card', visible: true, spacing: 'loose', radius: 'rounded', shadow: 'soft' },
+      { id: 'header', label: 'Hero title block', layout: 'inline', visible: true, spacing: 'normal' },
+      { id: 'body', label: 'Quick-look tags', layout: 'pill', visible: true, spacing: 'normal' },
+      { id: 'action', label: 'Primary CTA', layout: 'inline', visible: true },
+    ],
+  },
+  definition_block: {
+    layout: 'definition_card',
+    desktop_layout: 'single_column',
+    tablet_layout: 'single_column',
+    mobile_layout: 'stacked_cards',
+    style_variant: 'outlined',
+    density: 'comfortable',
+    typography_scale: 'large',
+    color_role: 'primary',
+    animation_type: 'fade_in',
+    interactive_elements: ['definition_callout', 'simple_explanation', 'why_it_matters'],
+    ui_subcomponents: [
+      { id: 'container', label: 'Definition shell', layout: 'card', visible: true, spacing: 'normal', radius: 'rounded', shadow: 'soft' },
+      { id: 'header', label: 'Concept badge and headline', layout: 'inline', visible: true },
+      { id: 'body', label: 'Definition callout', layout: 'card', visible: true, spacing: 'normal' },
+      { id: 'action', label: 'Explanation cards', layout: 'card', visible: true },
+    ],
+  },
+  component_grid: {
+    layout: 'grid',
+    desktop_layout: 'dashboard_grid',
+    tablet_layout: 'compact_grid',
+    mobile_layout: 'stacked_cards',
+    style_variant: 'standard',
+    density: 'comfortable',
+    typography_scale: 'standard',
+    color_role: 'accent',
+    animation_type: 'slide_up',
+    interactive_elements: ['mechanic_cards', 'hover_focus', 'step_numbers'],
+  },
+  syntax_block: {
+    layout: 'code_panel',
+    desktop_layout: 'single_column',
+    tablet_layout: 'single_column',
+    mobile_layout: 'stacked_cards',
+    style_variant: 'high_emphasis',
+    density: 'compact',
+    typography_scale: 'code',
+    color_role: 'primary',
+    animation_type: 'none',
+    interactive_elements: ['copy_code', 'syntax_breakdown', 'highlight_parts'],
+  },
+  example_panel: {
+    layout: 'grid',
+    desktop_layout: 'two_column',
+    tablet_layout: 'stacked_cards',
+    mobile_layout: 'stacked_cards',
+    style_variant: 'standard',
+    density: 'comfortable',
+    typography_scale: 'standard',
+    color_role: 'primary',
+    animation_type: 'slide_up',
+    interactive_elements: ['example_cards', 'supporting_points'],
+  },
+  practice_card: {
+    layout: 'checklist',
+    desktop_layout: 'single_column',
+    tablet_layout: 'stacked_cards',
+    mobile_layout: 'stacked_cards',
+    style_variant: 'outlined',
+    density: 'compact',
+    typography_scale: 'standard',
+    color_role: 'accent',
+    animation_type: 'progress',
+    interactive_elements: ['checklist', 'practice_tips'],
+  },
+  warning_faq: {
+    layout: 'accordion',
+    desktop_layout: 'single_column',
+    tablet_layout: 'stacked_cards',
+    mobile_layout: 'accordion',
+    style_variant: 'outlined',
+    density: 'comfortable',
+    typography_scale: 'standard',
+    color_role: 'primary',
+    animation_type: 'expand',
+    interactive_elements: ['mistake_fix_pairs', 'expand_collapse'],
+    collapsible: true,
+    progressive_disclosure: true,
+  },
+  summary_card: {
+    layout: 'summary_card',
+    desktop_layout: 'wide_card',
+    tablet_layout: 'stacked_cards',
+    mobile_layout: 'stacked_cards',
+    style_variant: 'featured',
+    density: 'comfortable',
+    typography_scale: 'large',
+    color_role: 'accent',
+    animation_type: 'fade_in',
+    interactive_elements: ['takeaway_list', 'revision_summary'],
+  },
+};
+
 function rendererForSubsection(section: TutorialSectionContract, subsectionId: string) {
+  const runtimeRenderer = RUNTIME_SUBCOMPONENT_RENDERERS[section.dbType]?.[subsectionId];
+  if (runtimeRenderer) return runtimeRenderer;
+
   const base = section.rendererHints[0] || `${section.label.replace(/\s+/g, '')}Content`;
   if (subsectionId.toLowerCase().includes('svg') || subsectionId.toLowerCase().includes('visual')) {
     return 'inline_svg_asset_renderer';
@@ -204,6 +333,7 @@ function buildUiuxArchitecture(section: TutorialSectionContract, existing?: Json
   const component_design_system = Object.fromEntries(
     subsections.map((subsection, index) => {
       const matchingAsset = assets.find((asset) => asset.id === subsection.svgId);
+      const componentDefaults = section.dbType === 'notes' ? NOTES_UIUX_COMPONENT_DEFAULTS[subsection.id] || {} : {};
       return [
         subsection.id,
         {
@@ -214,10 +344,12 @@ function buildUiuxArchitecture(section: TutorialSectionContract, existing?: Json
           style_variant: sectionSpec?.color ?? 'brand_default',
           animation_type: 'subtle_reveal',
           interactive_elements: subsection.components,
+          ...componentDefaults,
           accessibility: {
             semantic_region: true,
             keyboard_navigation: true,
             alt_text_required: Boolean(matchingAsset),
+            ...(componentDefaults.accessibility || {}),
           },
         },
       ];

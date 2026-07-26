@@ -2,133 +2,162 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import React from 'react';
-import { BookOpen, AlertTriangle } from 'lucide-react';
+import { AlertTriangle, BookOpen, CheckCircle2, Code2, Grid2X2, Sparkles } from 'lucide-react';
 
 interface NotesPreviewProps {
   subsection: string;
   content: any;
 }
 
-const getSafe = (obj: any, path: string, fallback = '') => {
-  if (!obj || typeof obj !== 'object') return fallback;
-  const parts = path.split('.');
-  let cur = obj;
-  for (const p of parts) {
-    if (cur === null || typeof cur !== 'object') return fallback;
-    cur = cur[p];
-  }
-  return cur !== undefined && cur !== null ? cur : fallback;
-};
+const asRecord = (value: unknown): Record<string, any> =>
+  value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, any> : {};
 
-export function NotesPreview({ subsection, content }: NotesPreviewProps) {
-  if (!subsection) {
-    return (
-      <div className="space-y-6">
-        <div className="bg-slate-900/50 p-4 border border-slate-800 rounded-xl mb-4">
-          <h4 className="text-xs font-black uppercase text-pink-500 tracking-wider">Notes Section Container View</h4>
-        </div>
-        {getSafe(content, 'simpleWords') && (
-          <div className="bg-slate-800/80 border border-slate-700/60 p-5 rounded-2xl">
-            <span className="text-[9px] font-black uppercase bg-pink-500/10 text-pink-400 px-2 py-0.5 rounded">Simple Words</span>
-            <p className="text-sm font-semibold text-slate-200 mt-2 italic leading-relaxed">
-              &ldquo;{getSafe(content, 'simpleWords')}&rdquo;
-            </p>
-          </div>
-        )}
-        {getSafe(content, 'definitionBlock') && (
-          <div className="bg-slate-800/80 border border-slate-700/60 p-5 rounded-2xl border-l-4 border-l-pink-500">
-            <span className="text-[9px] font-black uppercase bg-pink-500/10 text-pink-400 px-2 py-0.5 rounded">Definition Block</span>
-            <h4 className="text-xl font-black text-white mt-2">{getSafe(content, 'definitionBlock.term')}</h4>
-            <p className="text-xs text-slate-300 mt-1 leading-relaxed">{getSafe(content, 'definitionBlock.definition')}</p>
-            {getSafe(content, 'definitionBlock.memoryHook') && (
-              <div className="mt-3 bg-pink-950/20 border border-pink-900/50 rounded-xl p-3 text-[11px] text-pink-300 italic">
-                💡 {getSafe(content, 'definitionBlock.memoryHook')}
-              </div>
-            )}
-          </div>
-        )}
-        {getSafe(content, 'componentGrid.components') && Array.isArray(getSafe(content, 'componentGrid.components')) && (
-          <div className="bg-slate-800/80 border border-slate-700/60 p-5 rounded-2xl">
-            <span className="text-[9px] font-black uppercase bg-pink-500/10 text-pink-400 px-2 py-0.5 rounded mb-3 block w-fit">Component Breakdown Grid</span>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
-              {content.componentGrid.components.slice(0, 4).map((comp: any, idx: number) => (
-                <div key={idx} className="bg-slate-900/60 border border-slate-800 rounded-xl p-3">
-                  <h5 className="text-xs font-bold text-white flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-pink-500 shrink-0" />
-                    {comp.name || comp.title}
-                  </h5>
-                  <p className="text-[10px] text-slate-400 mt-1 leading-relaxed">{comp.description || comp.purpose}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  }
+const asArray = <T,>(value: unknown): T[] => Array.isArray(value) ? value as T[] : [];
+
+const asString = (value: unknown, fallback = '') =>
+  typeof value === 'string' && value.trim() ? value : fallback;
+
+function PreviewBlock({ subsection, content }: NotesPreviewProps) {
+  const data = asRecord(content);
 
   switch (subsection) {
-    case 'simpleWords':
+    case 'concept_card':
       return (
-        <div className="bg-slate-800/85 border border-slate-700/80 p-6 rounded-3xl relative overflow-hidden shadow-xl">
-          <div className="absolute -right-6 -bottom-6 text-pink-500/10"><BookOpen size={100} /></div>
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-[10px] font-black uppercase bg-pink-500/15 text-pink-400 px-2.5 py-1 rounded-md tracking-wider">
-              Notes &bull; Simple Words
-            </span>
+        <div className="rounded-3xl border border-pink-500/20 bg-gradient-to-br from-slate-900 to-slate-800 p-6 shadow-xl">
+          <div className="mb-4 flex flex-wrap gap-2">
+            {asArray<string>(data.quickLook).map((item) => (
+              <span key={item} className="rounded-full bg-pink-500/15 px-3 py-1 text-[10px] font-black uppercase text-pink-300">{item}</span>
+            ))}
           </div>
-          <p className="text-base font-extrabold text-slate-100 leading-relaxed italic relative z-10">
-            &ldquo;{typeof content === 'string' ? content : getSafe(content, 'simpleWords')}&rdquo;
-          </p>
+          <h3 className="text-3xl font-black text-white">{asString(data.heroTitle, 'What is Python?')}</h3>
+          <p className="mt-3 max-w-2xl text-sm font-semibold leading-7 text-slate-300">{asString(data.heroSubtitle, 'A clear learner-facing introduction.')}</p>
         </div>
       );
 
-    case 'definitionBlock':
+    case 'definition_block':
       return (
-        <div className="bg-gradient-to-br from-slate-800 to-slate-900 border-2 border-slate-700/80 rounded-3xl p-6 shadow-xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-pink-500/5 rounded-bl-full pointer-events-none" />
-          <span className="text-[10px] font-black uppercase bg-pink-500/15 text-pink-400 px-2.5 py-1 rounded-md tracking-wider">
-            Notes &bull; Glossary Definition Card
-          </span>
-          <div className="mt-4 space-y-3">
-            <div className="flex items-center gap-2">
-              <h3 className="text-2xl font-black text-white tracking-tight">
-                {getSafe(content, 'term') || getSafe(content, 'definitionBlock.term') || 'Conceptual Term'}
-              </h3>
-              <span className="bg-pink-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded leading-none">CORE</span>
+        <div className="rounded-3xl border border-blue-500/20 bg-slate-900 p-6 shadow-xl">
+          <span className="rounded-full bg-blue-500/15 px-3 py-1 text-[10px] font-black uppercase text-blue-300">{asString(data.badge, 'Core Concept')}</span>
+          <h3 className="mt-4 text-2xl font-black text-white">{asString(data.headline, 'Definition')}</h3>
+          <p className="mt-3 text-sm font-semibold leading-7 text-slate-300">{asString(data.definition, 'Canonical definition text.')}</p>
+          <div className="mt-5 grid gap-3 md:grid-cols-2">
+            <div className="rounded-2xl bg-white/5 p-4">
+              <p className="text-[10px] font-black uppercase text-slate-500">Simple Explanation</p>
+              <p className="mt-1 text-xs font-semibold leading-6 text-slate-300">{asString(data.simpleExplanation, 'Simple explanation.')}</p>
             </div>
-            <p className="text-xs text-slate-300 leading-relaxed font-semibold">
-              {getSafe(content, 'definition') || getSafe(content, 'definitionBlock.definition') || 'Dictionary description...'}
-            </p>
-            
-            {(getSafe(content, 'memoryHook') || getSafe(content, 'definitionBlock.memoryHook')) && (
-              <div className="mt-4 bg-pink-950/20 border border-pink-900/30 rounded-2xl p-4 flex gap-2">
-                <span className="text-lg shrink-0">💡</span>
+            <div className="rounded-2xl bg-emerald-500/10 p-4">
+              <p className="text-[10px] font-black uppercase text-emerald-300">Why It Matters</p>
+              <p className="mt-1 text-xs font-semibold leading-6 text-slate-300">{asString(data.whyItMatters, 'Why this matters.')}</p>
+            </div>
+          </div>
+        </div>
+      );
+
+    case 'component_grid': {
+      const mechanics = asArray<Record<string, unknown>>(data.mechanics);
+      return (
+        <div className="rounded-3xl border border-slate-700 bg-slate-900 p-6 shadow-xl">
+          <div className="mb-4 flex items-center gap-3">
+            <Grid2X2 className="text-pink-400" size={22} />
+            <h3 className="text-2xl font-black text-white">{asString(data.panelTitle, 'How it works')}</h3>
+          </div>
+          <p className="text-sm font-semibold leading-7 text-slate-300">{asString(data.description, 'Mechanics explanation.')}</p>
+          <div className="mt-5 grid gap-3 md:grid-cols-3">
+            {mechanics.map((item, index) => (
+              <div key={asString(item.id, String(index))} className="rounded-2xl border border-slate-700 bg-slate-800 p-4">
+                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-pink-500 text-xs font-black text-white">{index + 1}</span>
+                <p className="mt-3 font-black text-white">{asString(item.label, 'Mechanic')}</p>
+                <p className="mt-1 text-xs leading-6 text-slate-400">{asString(item.detail, 'Detail')}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    case 'syntax_block':
+      return (
+        <div className="rounded-3xl border border-slate-700 bg-slate-950 p-6 shadow-xl">
+          <div className="mb-4 flex items-center gap-3">
+            <Code2 className="text-emerald-300" size={22} />
+            <h3 className="text-2xl font-black text-white">{asString(data.title, 'Syntax structure')}</h3>
+          </div>
+          <pre className="overflow-auto rounded-2xl bg-black p-4 text-xs text-emerald-200"><code>{asString(data.codeSnippet, 'print(\"Hello\")')}</code></pre>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            {asArray<Record<string, unknown>>(data.breakdown).map((item, index) => (
+              <div key={index} className="rounded-2xl bg-white/5 p-4">
+                <p className="font-black text-indigo-200">{asString(item.part, 'Part')}</p>
+                <p className="mt-1 text-xs leading-6 text-slate-300">{asString(item.explanation, 'Explanation')}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+
+    case 'example_panel':
+      return (
+        <div className="rounded-3xl border border-purple-500/20 bg-slate-900 p-6 shadow-xl">
+          <h3 className="text-2xl font-black text-white">{asString(data.title, 'Key components')}</h3>
+          <p className="mt-2 text-sm font-semibold leading-7 text-slate-300">{asString(data.description, 'Practical examples and components.')}</p>
+          <div className="mt-5 grid gap-3 md:grid-cols-2">
+            {asArray<Record<string, unknown>>(data.components).map((item, index) => (
+              <div key={asString(item.id, String(index))} className="rounded-2xl bg-purple-500/10 p-4">
+                <p className="font-black text-white">{asString(item.title, 'Component')}</p>
+                <p className="mt-1 text-xs leading-6 text-slate-300">{asString(item.description, 'Description')}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+
+    case 'practice_card':
+      return (
+        <div className="rounded-3xl border border-emerald-500/20 bg-slate-900 p-6 shadow-xl">
+          <h3 className="text-2xl font-black text-white">{asString(data.title, 'Best practices')}</h3>
+          <div className="mt-4 space-y-3">
+            {asArray<Record<string, unknown>>(data.practices).map((item, index) => (
+              <div key={asString(item.id, String(index))} className="flex gap-3 rounded-2xl bg-emerald-500/10 p-4">
+                <CheckCircle2 className="mt-0.5 shrink-0 text-emerald-300" size={18} />
                 <div>
-                  <h5 className="text-[10px] font-black text-pink-400 uppercase tracking-wider">Memory Hook Analogy</h5>
-                  <p className="text-[11px] text-pink-200 font-semibold italic mt-0.5 leading-relaxed">
-                    {getSafe(content, 'memoryHook') || getSafe(content, 'definitionBlock.memoryHook')}
-                  </p>
+                  <p className="font-black text-white">{asString(item.label, 'Practice')}</p>
+                  <p className="mt-1 text-xs leading-6 text-slate-300">{asString(item.tip, 'Tip')}</p>
                 </div>
               </div>
-            )}
+            ))}
           </div>
         </div>
       );
 
-    case 'warningFaq':
+    case 'warning_faq':
       return (
-        <div className="bg-amber-950/20 border-2 border-amber-900/60 rounded-3xl p-6 shadow-xl relative">
-          <span className="text-[10px] font-black uppercase bg-amber-500/15 text-amber-400 px-2.5 py-1 rounded-md tracking-wider flex items-center gap-1 w-fit">
-            <AlertTriangle size={12} /> Gotchas & Warning FAQ
-          </span>
-          <div className="mt-4 space-y-3">
-            <h4 className="text-base font-bold text-amber-200 flex items-center gap-2">
-              ⚠️ {getSafe(content, 'warningTitle') || 'Common Pitfall Trap'}
-            </h4>
-            <p className="text-xs text-amber-100/90 leading-relaxed font-semibold">
-              {getSafe(content, 'warningDescription') || 'Description of the trap and warning criteria...'}
-            </p>
+        <div className="rounded-3xl border border-amber-500/30 bg-amber-950/30 p-6 shadow-xl">
+          <div className="mb-4 flex items-center gap-3">
+            <AlertTriangle className="text-amber-300" size={22} />
+            <h3 className="text-2xl font-black text-white">{asString(data.title, 'Common mistakes')}</h3>
+          </div>
+          <div className="space-y-3">
+            {asArray<Record<string, unknown>>(data.mistakes).map((item, index) => (
+              <div key={asString(item.id, String(index))} className="rounded-2xl bg-slate-900/70 p-4">
+                <p className="font-black text-amber-200">{asString(item.mistake, 'Mistake')}</p>
+                <p className="mt-1 text-xs leading-6 text-slate-300">{asString(item.fix, 'Fix')}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+
+    case 'summary_card':
+      return (
+        <div className="rounded-3xl border border-indigo-500/20 bg-slate-900 p-6 shadow-xl">
+          <div className="mb-4 flex items-center gap-3">
+            <Sparkles className="text-indigo-300" size={22} />
+            <h3 className="text-2xl font-black text-white">{asString(data.summaryTitle, 'Quick summary')}</h3>
+          </div>
+          <p className="text-sm font-semibold leading-7 text-slate-300">{asString(data.conceptDiagramDescription, 'Visual summary description.')}</p>
+          <div className="mt-5 grid gap-3 md:grid-cols-3">
+            {asArray<string>(data.keyTakeaways).map((item, index) => (
+              <div key={index} className="rounded-2xl bg-indigo-500/10 p-4 text-xs font-bold leading-6 text-slate-200">{item}</div>
+            ))}
           </div>
         </div>
       );
@@ -136,13 +165,42 @@ export function NotesPreview({ subsection, content }: NotesPreviewProps) {
     default:
       return (
         <div className="bg-slate-800/80 p-5 rounded-2xl border border-slate-700">
-          <span className="text-[10px] font-black uppercase text-pink-400 tracking-wider">
-            {subsection} Subsection Detail
-          </span>
+          <span className="text-[10px] font-black uppercase text-pink-400 tracking-wider">{subsection} Subsection Detail</span>
           <pre className="mt-3 overflow-auto bg-slate-900 rounded-lg p-3 text-[10px] text-slate-300 max-h-[300px]">
             {JSON.stringify(content, null, 2)}
           </pre>
         </div>
       );
   }
+}
+
+export function NotesPreview({ subsection, content }: NotesPreviewProps) {
+  if (!subsection) {
+    const full = asRecord(content);
+    const order = [
+      'concept_card',
+      'definition_block',
+      'component_grid',
+      'syntax_block',
+      'example_panel',
+      'practice_card',
+      'warning_faq',
+      'summary_card',
+    ];
+
+    return (
+      <div className="space-y-6">
+        <div className="bg-slate-900/50 p-4 border border-slate-800 rounded-xl">
+          <h4 className="flex items-center gap-2 text-xs font-black uppercase text-pink-500 tracking-wider">
+            <BookOpen size={16} /> Canonical Notes Section Preview
+          </h4>
+        </div>
+        {order.filter((key) => key in full).map((key) => (
+          <PreviewBlock key={key} subsection={key} content={full[key]} />
+        ))}
+      </div>
+    );
+  }
+
+  return <PreviewBlock subsection={subsection} content={content} />;
 }

@@ -79,24 +79,132 @@ const LEARNER_PREVIEW_TARGETS = {
   },
 } as const;
 
+const PREVIEW_TARGET_BRAND_CONTRACTS = {
+  local: {
+    brand_variant: 'rth',
+    primary_color: '#d03f00',
+    accent_color: '#124fd6',
+    background_color: '#ffffff',
+    text_color: '#0f172a',
+    border_color: '#dbeafe',
+  },
+  rth: {
+    brand_variant: 'rth',
+    primary_color: '#d03f00',
+    accent_color: '#124fd6',
+    background_color: '#ffffff',
+    text_color: '#0f172a',
+    border_color: '#dbeafe',
+  },
+  suia: {
+    brand_variant: 'suia',
+    primary_color: '#f54a8d',
+    accent_color: '#133282',
+    background_color: '#ffffff',
+    text_color: '#0f172a',
+    border_color: '#dbeafe',
+  },
+} as const;
+
 const getPromptSectionId = (sectionId: string) => sectionId === 'reallife' ? 'real_life' : sectionId;
+
+const NOTES_SUBSECTION_ALIASES: Record<string, string> = {
+  simpleWords: 'concept_card',
+  simple_words: 'concept_card',
+  conceptCard: 'concept_card',
+  definitionBlock: 'definition_block',
+  definition_block: 'definition_block',
+  componentGrid: 'component_grid',
+  component_grid: 'component_grid',
+  syntaxBlock: 'syntax_block',
+  syntax_block: 'syntax_block',
+  examplePanel: 'example_panel',
+  example_panel: 'example_panel',
+  practiceCard: 'practice_card',
+  practice_card: 'practice_card',
+  warningFaq: 'warning_faq',
+  warningFAQ: 'warning_faq',
+  warning_faq: 'warning_faq',
+  summaryCard: 'summary_card',
+  summary_card: 'summary_card',
+};
+
+const normalizePipelineSubsectionId = (sectionId: string, subsectionId: string | null) => {
+  if (!subsectionId) return null;
+  if (sectionId === 'notes') return NOTES_SUBSECTION_ALIASES[subsectionId] || subsectionId;
+  return subsectionId;
+};
 
 const getDefaultPipelineJson = (sectionId: string, subsectionId: string | null, subtopicName: string) => {
   const template = getStrictSectionJsonTemplate(getPromptSectionId(sectionId), subtopicName);
   const rootKey = Object.keys(template)[0];
   const rootValue = template[rootKey];
+  const normalizedSubsectionId = normalizePipelineSubsectionId(sectionId, subsectionId);
 
   if (
-    subsectionId &&
+    normalizedSubsectionId &&
     rootValue &&
     typeof rootValue === 'object' &&
     !Array.isArray(rootValue) &&
-    subsectionId in rootValue
+    normalizedSubsectionId in rootValue
   ) {
-    return (rootValue as Record<string, unknown>)[subsectionId];
+    return (rootValue as Record<string, unknown>)[normalizedSubsectionId];
   }
 
   return template;
+};
+
+const htmlEscape = (value: unknown) => String(value ?? '')
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#039;');
+
+const asPreviewRecord = (value: unknown): Record<string, unknown> => (
+  value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {}
+);
+
+const buildStarterHtmlFromRenderer = (content: unknown, contract: Record<string, unknown> | null | undefined) => {
+  const record = asPreviewRecord(content);
+  const title = htmlEscape(record.title || record.headline || 'What is Python?');
+  const description = htmlEscape(record.description || record.content || 'Clear overview of the selected learning topic.');
+  const iconLabel = htmlEscape(record.iconLabel || record.badge || 'JS');
+  const difficulty = htmlEscape(record.difficulty || record.level || 'Beginner');
+  const topicsCount = htmlEscape(record.topicsCount || record.lessonsCount || 10);
+  const lastUpdated = htmlEscape(record.lastUpdated || 'Today');
+  const primary = htmlEscape(contract?.primary_color || '#4f46e5');
+  const accent = htmlEscape(contract?.accent_color || '#10b981');
+  const bg = htmlEscape(contract?.background_color || '#ffffff');
+  const text = htmlEscape(contract?.text_color || '#0f172a');
+  const border = htmlEscape(contract?.border_color || '#dbeafe');
+
+  return `<section class="overflow-hidden rounded-3xl border p-8 shadow-xl" style="background:${bg}; border-color:${border}; color:${text};">
+  <div class="space-y-7">
+    <div>
+      <div class="flex flex-wrap items-center gap-3">
+        <span class="rounded-full px-3 py-1 text-xs font-black text-white" style="background:${primary};">${iconLabel}</span>
+        <span class="rounded-full border px-3 py-1 text-xs font-bold" style="border-color:${accent}; color:${accent};">${difficulty}</span>
+      </div>
+      <h1 class="text-4xl font-black leading-tight lg:text-5xl">${title}</h1>
+      <p class="mt-4 max-w-2xl text-base font-semibold leading-7 text-slate-600">${description}</p>
+      <div class="mt-6 grid gap-3 sm:grid-cols-2">
+        <div class="rounded-2xl border bg-white px-5 py-4 shadow-sm" style="border-color:${border};">
+          <p class="text-2xl font-black" style="color:${primary};">${topicsCount}</p>
+          <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Learning blocks</p>
+        </div>
+        <div class="rounded-2xl border bg-white px-5 py-4 shadow-sm" style="border-color:${border};">
+          <p class="text-2xl font-black" style="color:${primary};">${lastUpdated}</p>
+          <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Last updated</p>
+        </div>
+      </div>
+      <div class="mt-7 flex flex-wrap gap-3">
+        <button class="rounded-full px-5 py-3 text-sm font-black text-white" style="background:${accent};">Start learning</button>
+        <button class="rounded-full border bg-white px-5 py-3 text-sm font-black" style="border-color:${border}; color:${primary};">View roadmap</button>
+      </div>
+    </div>
+  </div>
+</section>`;
 };
 
 export default function GlobalArchitecturePage() {
@@ -131,6 +239,7 @@ export default function GlobalArchitecturePage() {
   const [showAdvancedSequence, setShowAdvancedSequence] = useState(false);
   const [showAdvancedComponentDetails, setShowAdvancedComponentDetails] = useState(false);
   const [showAdvancedRendererMapping, setShowAdvancedRendererMapping] = useState(false);
+  const [showContextSidebar, setShowContextSidebar] = useState(true);
   const [selectedRendererSubcomponentId, setSelectedRendererSubcomponentId] = useState('container');
 
   const activeData = architectures[activeSectionKey];
@@ -172,6 +281,8 @@ export default function GlobalArchitecturePage() {
   if (!activeData) return <div className="p-10 font-bold text-slate-500">Loading Architecture...</div>;
 
   const isUiUxMode = activeSectionKey.includes('uiux');
+  const activeComponentMap = (isUiUxMode ? activeData.component_design_system : activeData.universal_architecture_fixed || {}) as Record<string, ComponentArchitecture>;
+  const activeComponentEntries = Object.entries(activeComponentMap) as [string, ComponentArchitecture][];
   const universalComponents = isUiUxMode ? [] : Object.entries(activeData.universal_architecture_fixed || {}) as [string, ComponentArchitecture][];
   const totalComponents = isUiUxMode ? Object.keys(activeData.component_design_system || {}).length : universalComponents.length;
   const jsonString = JSON.stringify({ [activeSectionKey]: activeData }, null, 2);
@@ -188,6 +299,7 @@ export default function GlobalArchitecturePage() {
   const educationalData = educationalEntry?.[1] || activeData;
   const uiuxKey = uiuxEntry?.[0] || '';
   const uiuxData = uiuxEntry?.[1] || null;
+  const selectedPipelineSubsectionKey = normalizePipelineSubsectionId(String(adminSectionId), selectedComponentKey);
   const workflowQuery = new URLSearchParams({
     section: String(canonicalSectionId),
     domain: dummyContext.domain,
@@ -198,12 +310,12 @@ export default function GlobalArchitecturePage() {
     previewTarget: learnerPreviewTarget,
     source: 'global-architecture',
   });
-  if (selectedComponentKey) workflowQuery.set('subsection', selectedComponentKey);
+  if (selectedPipelineSubsectionKey) workflowQuery.set('subsection', selectedPipelineSubsectionKey);
   const contentManagerQuery = new URLSearchParams(workflowQuery);
   contentManagerQuery.set('section', String(adminSectionId));
   contentManagerQuery.set('requirePreviewApproval', 'true');
   const selectedWorkflowUrls = {
-    visualGuide: `/tools/visual-guide?section=${canonicalSectionId}${selectedComponentKey ? `&subsection=${selectedComponentKey}` : ''}`,
+    visualGuide: `/tools/visual-guide?section=${canonicalSectionId}${selectedPipelineSubsectionKey ? `&subsection=${selectedPipelineSubsectionKey}` : ''}`,
     promptGenerator: `/tools/prompt-generator?${workflowQuery.toString()}&autoGenerate=true`,
     contentManager: `/tools/content-manager?${contentManagerQuery.toString()}`,
     learnerPreview: `${LEARNER_PREVIEW_TARGETS[learnerPreviewTarget].baseUrl}/start-learning/subtopic/${dummyContext.subtopicId}${canonicalSectionId ? `?tab=${canonicalSectionId}` : ''}`,
@@ -211,21 +323,95 @@ export default function GlobalArchitecturePage() {
   const selectedComponentData = selectedComponentKey
     ? (activeData.universal_architecture_fixed?.[selectedComponentKey] || activeData.component_design_system?.[selectedComponentKey] || {}) as ComponentArchitecture
     : null;
+  const selectedUiuxComponentData = selectedComponentKey
+    ? (uiuxData?.component_design_system?.[selectedPipelineSubsectionKey || selectedComponentKey] || activeData.component_design_system?.[selectedPipelineSubsectionKey || selectedComponentKey] || {}) as ComponentArchitecture
+    : null;
   const selectedRendererMapping = selectedComponentKey
     ? (activeData.renderer_mapping_engine?.[selectedComponentKey] || uiuxData?.renderer_mapping_engine?.[selectedComponentKey] || null)
     : null;
-  const activeComponentKeys = Object.keys(activeData.universal_architecture_fixed || activeData.component_design_system || {});
-  const activeLearningFlow = ((activeData.learning_progression_engine && activeData.learning_progression_engine[0]?.default_flow) || activeComponentKeys) as string[];
+  const activeComponentKeys = Object.keys(activeComponentMap);
+  const activeLearningFlow = (
+    Array.isArray(activeData.learning_progression_engine?.default_flow)
+      ? activeData.learning_progression_engine.default_flow
+      : activeComponentKeys
+  ) as string[];
   const selectedComponentIndex = selectedComponentKey ? Math.max(0, activeLearningFlow.indexOf(selectedComponentKey)) : 0;
   const selectedDefaultJson = getDefaultPipelineJson(String(adminSectionId), selectedComponentKey, dummyContext.subtopic);
+  const selectedPreviewJson = selectedComponentData?.preview_content || selectedDefaultJson;
+  const selectedRendererName = String(
+    selectedComponentData?.renderer ||
+    selectedComponentData?.component ||
+    (selectedRendererMapping as Record<string, unknown> | null)?.component ||
+    'default_renderer'
+  );
+  const selectedGeneratedRendererCode = selectedComponentData
+    ? buildStarterHtmlFromRenderer(selectedPreviewJson, selectedComponentData as Record<string, unknown>)
+    : '';
+  const selectedVisibleRendererCode = String(selectedComponentData?.custom_renderer_code || selectedGeneratedRendererCode);
+  const selectedRendererPreviewContract = selectedComponentData
+    ? {
+      ...(selectedComponentData as Record<string, unknown>),
+      custom_renderer_code: selectedVisibleRendererCode,
+    }
+    : null;
+  const selectedBrandPreviewContract = PREVIEW_TARGET_BRAND_CONTRACTS[learnerPreviewTarget];
+  const universalArchitecturePreviewContract = selectedRendererPreviewContract
+    ? {
+      ...selectedRendererPreviewContract,
+      ...(selectedUiuxComponentData || {}),
+      ...selectedBrandPreviewContract,
+      brand_variant: selectedUiuxComponentData?.brand_variant || selectedComponentData?.brand_variant || selectedBrandPreviewContract.brand_variant,
+      primary_color: selectedBrandPreviewContract.primary_color,
+      accent_color: selectedBrandPreviewContract.accent_color,
+      background_color: selectedUiuxComponentData?.background_color || selectedComponentData?.background_color || selectedBrandPreviewContract.background_color,
+      text_color: selectedUiuxComponentData?.text_color || selectedComponentData?.text_color || selectedBrandPreviewContract.text_color,
+      border_color: selectedUiuxComponentData?.border_color || selectedComponentData?.border_color || selectedBrandPreviewContract.border_color,
+      custom_renderer_code: '',
+    }
+    : null;
   const selectedSchemaPreview = {
     section: adminSectionId,
     subsection: selectedComponentKey || 'full_section',
     componentPurpose: selectedComponentData?.purpose || 'No component purpose defined.',
-    renderer: selectedComponentData?.renderer || (selectedRendererMapping as Record<string, unknown> | null)?.component || 'default_renderer',
+    renderer: selectedRendererName,
     required: selectedComponentData?.required !== false,
     defaultDummyJson: selectedDefaultJson,
   };
+  const contextSidebarTitle = activeTab === 'Renderer Mapping'
+    ? 'Renderer Contract JSON'
+    : activeTab === 'Prompt Management'
+      ? 'Prompt Context JSON'
+      : activeTab === 'Validation Rules'
+        ? 'Validation JSON'
+        : activeTab === 'JSON Schema'
+          ? 'Schema JSON'
+          : isUiUxMode
+            ? 'UI/UX JSON'
+            : 'Architecture JSON';
+  const contextSidebarModeLabel = isJsonEditing ? '(Editing)' : '(Live State)';
+  const contextSidebarMetrics = activeTab === 'Renderer Mapping'
+    ? [
+      { label: 'Renderer Linked', score: selectedRendererName !== 'default_renderer' ? 100 : 70 },
+      { label: 'Preview Contract', score: selectedComponentData ? 100 : 0 },
+      { label: 'Content Bridge', score: selectedPreviewJson ? 100 : 0 },
+    ]
+    : activeTab === 'Validation Rules'
+      ? [
+        { label: isUiUxMode ? 'WCAG Coverage' : 'Schema Coverage', score: 95 },
+        { label: isUiUxMode ? 'Accessibility Rules' : 'Required Fields', score: 92 },
+        { label: 'Preview Gate', score: 100 },
+      ]
+      : activeTab === 'Prompt Management'
+        ? [
+          { label: 'Prompt Target', score: selectedComponentKey ? 100 : 70 },
+          { label: 'Dummy Context', score: dummyContext.subtopic ? 100 : 60 },
+          { label: 'Content Manager Link', score: 100 },
+        ]
+        : [
+          { label: isUiUxMode ? 'Accessibility Score' : 'Readability Threshold', score: 92 },
+          { label: isUiUxMode ? 'Contrast Ratio' : 'Analogy Quality Score', score: 93 },
+          { label: isUiUxMode ? 'Responsive Check' : 'Confusion Prevention', score: 94 },
+        ];
   const rendererSubcomponents = React.useMemo(() => {
     const configured = selectedComponentData?.ui_subcomponents;
     if (Array.isArray(configured) && configured.length > 0) {
@@ -253,6 +439,7 @@ export default function GlobalArchitecturePage() {
     selectedComponentData?.primary_color,
   ]);
   const selectedRendererSubcomponent = rendererSubcomponents.find((item) => item.id === selectedRendererSubcomponentId) || rendererSubcomponents[0];
+  const selectedRendererSubcomponentRecord = (selectedRendererSubcomponent || {}) as Record<string, unknown>;
 
   const showActionMessage = (message: string) => {
     setActionMessage(message);
@@ -271,6 +458,7 @@ export default function GlobalArchitecturePage() {
     const defaultJson = getDefaultPipelineJson(String(adminSectionId), selectedSubsection, dummyContext.subtopic);
     const educationalComponent = selectedSubsection ? educationalData?.universal_architecture_fixed?.[selectedSubsection] : null;
     const uiuxComponent = selectedSubsection ? uiuxData?.component_design_system?.[selectedSubsection] : null;
+    const previewContent = educationalComponent?.preview_content || defaultJson;
 
     return {
       source: 'global-architecture',
@@ -287,7 +475,7 @@ export default function GlobalArchitecturePage() {
       rendererMapping: selectedSubsection
         ? (educationalData?.renderer_mapping_engine?.[selectedSubsection] || uiuxData?.renderer_mapping_engine?.[selectedSubsection] || null)
         : null,
-      defaultJson,
+      defaultJson: previewContent,
     };
   };
 
@@ -743,77 +931,249 @@ export default function GlobalArchitecturePage() {
       </div>
 
       {/* 4. Tabs Navigation */}
-      <div className="border-b border-slate-200 flex overflow-x-auto hide-scrollbar">
-        {tabs.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`whitespace-nowrap px-6 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === tab ? 'border-rose-600 text-rose-600' : 'border-transparent text-slate-500 hover:text-slate-800'}`}
-          >
-            {tab}
-          </button>
-        ))}
+      <div className="border-b border-slate-200 flex items-center justify-between gap-4">
+        <div className="flex overflow-x-auto hide-scrollbar">
+          {tabs.map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`whitespace-nowrap px-6 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === tab ? 'border-rose-600 text-rose-600' : 'border-transparent text-slate-500 hover:text-slate-800'}`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={() => setShowContextSidebar((value) => !value)}
+          className="mr-2 shrink-0 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-black text-slate-700 shadow-sm hover:bg-slate-50 flex items-center gap-2"
+        >
+          <Code size={14} />
+          {showContextSidebar ? 'Hide Live State' : 'Show Live State'}
+        </button>
       </div>
+
+      {activeTab !== 'Universal Architecture' && showContextSidebar ? (
+        <aside className="fixed right-6 top-24 z-30 hidden max-h-[calc(100vh-7rem)] w-[390px] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl xl:block">
+          <div className="mb-4 flex items-start justify-between gap-3">
+            <div>
+              <h2 className="text-sm font-black text-slate-900 flex items-center gap-2">
+                <Code size={16} className="text-blue-600" />
+                {contextSidebarTitle}
+              </h2>
+              <p className="mt-1 text-[10px] font-black uppercase tracking-wider text-slate-400">{contextSidebarModeLabel} / {activeTab}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowContextSidebar(false)}
+              className="rounded-lg border border-slate-200 px-2 py-1 text-[10px] font-black text-slate-600 hover:bg-slate-50"
+            >
+              Hide
+            </button>
+          </div>
+          <div className="rounded-xl bg-[#0f172a] p-4">
+            {isJsonEditing ? (
+              <textarea
+                value={jsonEditorValue}
+                onChange={(event) => setJsonEditorValue(event.target.value)}
+                className="h-[220px] w-full resize-none bg-transparent font-mono text-[10px] leading-relaxed text-emerald-400 outline-none custom-scrollbar"
+                spellCheck={false}
+              />
+            ) : (
+              <pre className="h-[220px] overflow-y-auto font-mono text-[10px] leading-relaxed text-emerald-400 custom-scrollbar">{jsonString}</pre>
+            )}
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button type="button" onClick={copyArchitectureJson} className="px-3 py-1.5 text-[10px] font-bold text-indigo-600 border border-indigo-100 rounded hover:bg-indigo-50 flex items-center gap-1">
+              <Copy size={11} /> Copy
+            </button>
+            <button type="button" onClick={downloadArchitectureJson} className="px-3 py-1.5 text-[10px] font-bold text-blue-600 border border-blue-100 rounded hover:bg-blue-50 flex items-center gap-1">
+              <Download size={11} /> Download
+            </button>
+            <button type="button" onClick={validateActiveArchitecture} className="px-3 py-1.5 text-[10px] font-bold text-emerald-600 border border-emerald-100 rounded hover:bg-emerald-50 flex items-center gap-1">
+              <CheckSquare size={11} /> Validate
+            </button>
+            <button type="button" onClick={isJsonEditing ? applyJsonEdit : startJsonEdit} className="px-3 py-1.5 text-[10px] font-bold text-slate-600 border border-slate-200 rounded hover:bg-slate-50 flex items-center gap-1">
+              <Edit2 size={11} /> {isJsonEditing ? 'Apply' : 'Edit'}
+            </button>
+          </div>
+          <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-sm font-black text-slate-900 flex items-center gap-2">
+                <CheckSquare size={15} className="text-emerald-600" />
+                Validation Compliance
+              </h3>
+              <span className="text-sm font-black text-slate-900">95 <span className="text-[9px] text-slate-400">/100</span></span>
+            </div>
+            <div className="space-y-3">
+              {contextSidebarMetrics.map((metric, index) => (
+                <div key={`${metric.label}-${index}`} className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-slate-600">{metric.label}</span>
+                  <span className="flex items-center gap-1 text-xs font-black text-slate-900"><CheckCircle2 size={12} className="text-emerald-500" /> {metric.score}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <div className="rounded-xl border border-slate-200 bg-white p-3">
+              <span className="text-[9px] font-black uppercase tracking-wider text-slate-400">{isUiUxMode ? 'Design System' : 'Components'}</span>
+              <p className="mt-1 text-lg font-black text-slate-900">{totalComponents}</p>
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-white p-3">
+              <span className="text-[9px] font-black uppercase tracking-wider text-slate-400">Selected</span>
+              <p className="mt-1 truncate text-xs font-black text-slate-900">{selectedComponentKey ? formatTitle(selectedComponentKey) : 'Full Section'}</p>
+            </div>
+          </div>
+        </aside>
+      ) : null}
 
       {/* 4. Main Content Grid */}
       {activeTab === 'Universal Architecture' ? (
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
           
           {/* LEFT COLUMN (65%) */}
-          <div className="xl:col-span-8 space-y-6">
+          <div className={`${showContextSidebar ? 'xl:col-span-8' : 'xl:col-span-12'} space-y-6`}>
             
             {!isUiUxMode ? (
               // ==========================================
               // EDUCATIONAL ARCHITECTURE VIEW
               // ==========================================
               <>
-                {/* Architecture Grid */}
-                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-                  <div className="flex items-center gap-2 mb-6">
-                    <h2 className="text-base font-bold text-slate-900">Constitutional Section Architecture (Fixed)</h2>
-                    <Info size={16} className="text-slate-400" />
-                  </div>
-
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {universalComponents.map(([key, item]: [string, ComponentArchitecture], index) => {
-                      const Icon = getIconForComponent(index);
-                      const color = getColorForComponent(index);
-                      const isSelectedComponent = selectedComponentKey === key;
-                      return (
-                        <button
-                          type="button"
-                          key={key}
-                          onClick={() => setSelectedComponentKey(key)}
-                          className={`border rounded-xl p-5 flex flex-col items-center text-center relative hover:shadow-md transition-all bg-white w-full ${
-                            isSelectedComponent ? 'border-indigo-400 ring-4 ring-indigo-50 shadow-md' : 'border-slate-200'
-                          }`}
-                        >
-                          <span className={`absolute top-2 left-2 w-6 h-6 rounded bg-slate-100 text-slate-600 text-[10px] font-bold flex items-center justify-center`}>
-                            {index + 1}
+                <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 items-start">
+                  <div className="xl:col-span-3 bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                    <div className="flex flex-col gap-3 mb-5 lg:flex-row lg:items-start lg:justify-between">
+                      <div>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600">Selected Component Preview</span>
+                        <h2 className="text-lg font-black text-slate-950 mt-1">
+                          {selectedComponentKey ? formatTitle(selectedComponentKey) : 'Select a component'}
+                        </h2>
+                        <p className="text-xs font-semibold text-slate-500 mt-1">
+                          Preview uses default JSON and {LEARNER_PREVIEW_TARGETS[learnerPreviewTarget].label} brand colors before moving to Visual Guide, Prompt Generator, and Content Manager.
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[10px] font-black text-slate-600">
+                          {String(adminSectionId)}.{selectedPipelineSubsectionKey || selectedComponentKey || 'full_section'}
+                        </span>
+                        {selectedPipelineSubsectionKey && selectedComponentKey && selectedPipelineSubsectionKey !== selectedComponentKey ? (
+                          <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-[10px] font-black text-amber-700">
+                            selected: {selectedComponentKey}
                           </span>
-                          {isSelectedComponent ? (
-                            <span className="absolute top-2 right-2 text-[8px] font-black uppercase bg-indigo-600 text-white px-2 py-0.5 rounded">
-                              Selected
+                        ) : null}
+                        <span className="rounded-full px-3 py-1 text-[10px] font-black text-white" style={{ backgroundColor: selectedBrandPreviewContract.primary_color }}>
+                          {LEARNER_PREVIEW_TARGETS[learnerPreviewTarget].label}
+                        </span>
+                      </div>
+                    </div>
+                    {universalArchitecturePreviewContract ? (
+                      <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                        <ContractAwareComponentPreview
+                          section={String(adminSectionId)}
+                          subsection={selectedPipelineSubsectionKey || selectedComponentKey || ''}
+                          data={selectedPreviewJson}
+                          contract={universalArchitecturePreviewContract}
+                        />
+                      </div>
+                    ) : (
+                      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-8 text-sm font-bold text-slate-500">
+                        Select a component card to load its preview.
+                      </div>
+                    )}
+                  </div>
+                  <div className="xl:col-span-2">
+                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                      <div className="flex items-center gap-2 mb-5">
+                        <h2 className="text-base font-bold text-slate-900">Constitutional Section Architecture (Fixed)</h2>
+                        <Info size={16} className="text-slate-400" />
+                      </div>
+
+                      <label htmlFor="fixed-architecture-component" className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">
+                        Select Fixed Component
+                      </label>
+                      <select
+                        id="fixed-architecture-component"
+                        value={selectedComponentKey || ''}
+                        onChange={(event) => setSelectedComponentKey(event.target.value)}
+                        className="w-full rounded-xl border-2 border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-900 outline-none transition focus:border-indigo-400"
+                      >
+                        {universalComponents.map(([key], index) => (
+                          <option key={key} value={key}>
+                            {index + 1}. {formatTitle(key)}
+                          </option>
+                        ))}
+                      </select>
+
+                      {selectedComponentKey && selectedComponentData ? (
+                        <div className="mt-5 rounded-2xl border border-indigo-100 bg-indigo-50/40 p-5">
+                          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                            <div>
+                              <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600">
+                                Step {Math.max(1, universalComponents.findIndex(([key]) => key === selectedComponentKey) + 1)}
+                              </span>
+                              <h3 className="mt-1 text-xl font-black text-slate-950">{formatTitle(selectedComponentKey)}</h3>
+                              <p className="mt-2 text-sm font-semibold leading-relaxed text-slate-600">
+                                {selectedComponentData.purpose || 'Core architectural component for this section.'}
+                              </p>
+                            </div>
+                            <span className="shrink-0 rounded-full bg-white px-3 py-1 text-[10px] font-black uppercase text-emerald-700 ring-1 ring-emerald-100">
+                              {selectedComponentData.required === false ? 'Optional' : 'Required'}
                             </span>
+                          </div>
+
+                          <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            <div className="rounded-xl border border-white bg-white/80 p-3">
+                              <span className="block text-[10px] font-black uppercase tracking-widest text-slate-400">Renderer</span>
+                              <p className="mt-1 text-sm font-black text-slate-900">{selectedComponentData.renderer || 'Default renderer'}</p>
+                            </div>
+                            <div className="rounded-xl border border-white bg-white/80 p-3">
+                              <span className="block text-[10px] font-black uppercase tracking-widest text-slate-400">Contract Key</span>
+                              <p className="mt-1 break-all font-mono text-xs font-black text-slate-900">{selectedComponentKey}</p>
+                            </div>
+                          </div>
+
+                          {Array.isArray(selectedComponentData.visible_components) && selectedComponentData.visible_components.length > 0 ? (
+                            <div className="mt-5">
+                              <span className="block text-[10px] font-black uppercase tracking-widest text-slate-500">What This Component Contains</span>
+                              <div className="mt-2 flex flex-wrap gap-2">
+                                {selectedComponentData.visible_components.map((part) => (
+                                  <span key={String(part)} className="rounded-full border border-indigo-100 bg-white px-3 py-1 text-[10px] font-black text-indigo-700">
+                                    {formatTitle(String(part))}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
                           ) : null}
-                          <div className={`w-12 h-12 rounded-full ${color.bg} ${color.text} flex items-center justify-center mb-3 mt-2`}>
-                            <Icon size={24} />
+
+                          <div className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-3">
+                            <button
+                              type="button"
+                              onClick={() => setActiveTab('Renderer Mapping')}
+                              className="rounded-xl border border-indigo-100 bg-white px-3 py-2 text-xs font-black text-indigo-700 hover:bg-indigo-50"
+                            >
+                              Edit Renderer
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setActiveTab('Prompt Management')}
+                              className="rounded-xl border border-rose-100 bg-white px-3 py-2 text-xs font-black text-rose-700 hover:bg-rose-50"
+                            >
+                              Prompt Setup
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setActiveTab('JSON Schema')}
+                              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-black text-slate-700 hover:bg-slate-50"
+                            >
+                              View JSON
+                            </button>
                           </div>
-                          <h3 className="text-sm font-bold text-slate-900 leading-tight mb-1">{formatTitle(key)}</h3>
-                          <p className="text-[10px] text-slate-500 font-medium mb-4 flex-1 line-clamp-2">
-                            {item.purpose || "Core architectural component for this section"}
-                          </p>
-                          <div className="flex items-center gap-2 w-full justify-center">
-                            <span className="text-[9px] font-bold px-2 py-0.5 rounded text-emerald-700 bg-emerald-50 border border-emerald-100">
-                              {item.required !== false ? 'Required' : 'Optional'}
-                            </span>
-                            <span className={`text-[9px] font-bold px-2 py-0.5 rounded border border-slate-100 ${color.badge}`}>
-                              {item.renderer || 'default_card'}
-                            </span>
-                          </div>
-                        </button>
-                      );
-                    })}
+                        </div>
+                      ) : (
+                        <div className="mt-5 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-6 text-sm font-bold text-slate-500">
+                          Select a fixed component to see its role, renderer, child parts, and next actions.
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -859,6 +1219,43 @@ export default function GlobalArchitecturePage() {
               // UI/UX ARCHITECTURE VIEW
               // ==========================================
               <>
+                <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 items-start">
+                  <div className="xl:col-span-3 bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                    <div className="flex flex-col gap-3 mb-5 lg:flex-row lg:items-start lg:justify-between">
+                      <div>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-pink-600">Selected UI/UX Preview</span>
+                        <h2 className="text-lg font-black text-slate-950 mt-1">
+                          {selectedComponentKey ? formatTitle(selectedComponentKey) : 'Select a component'}
+                        </h2>
+                        <p className="text-xs font-semibold text-slate-500 mt-1">
+                          Preview uses the selected design-system contract, default dummy JSON, and {LEARNER_PREVIEW_TARGETS[learnerPreviewTarget].label} brand colors.
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[10px] font-black text-slate-600">
+                          {selectedRendererName}
+                        </span>
+                        <span className="rounded-full px-3 py-1 text-[10px] font-black text-white" style={{ backgroundColor: selectedBrandPreviewContract.primary_color }}>
+                          {LEARNER_PREVIEW_TARGETS[learnerPreviewTarget].label}
+                        </span>
+                      </div>
+                    </div>
+                    {universalArchitecturePreviewContract ? (
+                      <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                        <ContractAwareComponentPreview
+                          section={String(adminSectionId)}
+                          subsection={selectedPipelineSubsectionKey || selectedComponentKey || ''}
+                          data={selectedPreviewJson}
+                          contract={universalArchitecturePreviewContract}
+                        />
+                      </div>
+                    ) : (
+                      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-8 text-sm font-bold text-slate-500">
+                        Select a component card to load its UI/UX preview.
+                      </div>
+                    )}
+                  </div>
+                  <div className="xl:col-span-2">
                 <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
                   <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-2">
@@ -868,7 +1265,7 @@ export default function GlobalArchitecturePage() {
                     <span className="text-xs font-bold text-pink-600 bg-pink-50 px-3 py-1 rounded-full">{totalComponents} Components Registered</span>
                   </div>
 
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {(Object.entries(activeData.component_design_system || {}) as [string, ComponentArchitecture][]).map(([key, item], index) => {
                       const color = getColorForComponent(index);
                       const isSelectedComponent = selectedComponentKey === key;
@@ -903,6 +1300,8 @@ export default function GlobalArchitecturePage() {
                         </button>
                       );
                     })}
+                  </div>
+                </div>
                   </div>
                 </div>
 
@@ -982,6 +1381,7 @@ export default function GlobalArchitecturePage() {
           </div>
 
           {/* RIGHT COLUMN (35%) */}
+          {showContextSidebar ? (
           <div className="xl:col-span-4 space-y-6">
             
             {/* JSON Viewer */}
@@ -989,7 +1389,7 @@ export default function GlobalArchitecturePage() {
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                   <Code size={16} className="text-blue-600" />
-                  {isUiUxMode ? 'UI/UX JSON ' : 'Architecture JSON '} <span className="text-slate-400 font-medium">{isJsonEditing ? '(Editing)' : '(Live State)'}</span>
+                  {contextSidebarTitle} <span className="text-slate-400 font-medium">{contextSidebarModeLabel}</span>
                 </h2>
                 <button
                   type="button"
@@ -1045,11 +1445,7 @@ export default function GlobalArchitecturePage() {
                   </div>
                 </div>
                 <div className="space-y-3">
-                   {[
-                     { label: isUiUxMode ? 'Accessibility Score' : 'Readability Threshold', score: 92 },
-                     { label: isUiUxMode ? 'Contrast Ratio' : 'Analogy Quality Score', score: 93 },
-                     { label: isUiUxMode ? 'Responsive Check' : 'Confusion Prevention', score: 94 },
-                   ].map((metric, i) => (
+                   {contextSidebarMetrics.map((metric, i) => (
                      <div key={i} className="flex items-center justify-between">
                        <span className="text-[11px] font-bold text-slate-600">{metric.label}</span>
                        <div className="flex items-center gap-2">
@@ -1135,8 +1531,9 @@ export default function GlobalArchitecturePage() {
             </div>
 
           </div>
+          ) : null}
         </div>
-      ) : activeTab === 'Section Sequence' && !isUiUxMode ? (
+      ) : activeTab === 'Section Sequence' ? (
         <div className="space-y-6">
            
            {/* Top 3 Columns */}
@@ -1146,20 +1543,20 @@ export default function GlobalArchitecturePage() {
               <div className="xl:col-span-7 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col h-[650px]">
                  <div className="flex items-start justify-between gap-4 mb-4">
                    <div>
-                     <h2 className="text-base font-bold text-slate-900">Fixed Component Order</h2>
-                     <p className="text-xs text-slate-500 font-medium mt-1">Select a component to inspect its place in the section journey.</p>
+                      <h2 className="text-base font-bold text-slate-900">{isUiUxMode ? 'UI/UX Component Sequence / Renderer Order' : 'Universal Section Sequence / Fixed Component Order'}</h2>
+                     <p className="text-xs text-slate-500 font-medium mt-1">Select a component to inspect its place in the {isUiUxMode ? 'UI rendering flow' : 'section journey'}.</p>
                    </div>
                    <span className="flex items-center gap-1.5 text-[10px] font-black text-emerald-700 bg-emerald-50 border border-emerald-100 px-3 py-1 rounded-full"><CheckCircle2 size={12}/> Fixed</span>
                  </div>
                  <div className="bg-blue-50 border border-blue-100 text-blue-700 p-3 rounded-lg text-xs font-bold mb-4 flex gap-2 items-center shrink-0">
                     <Info size={14} className="shrink-0 text-blue-500" />
-                    This is the fixed universal flow order for all {formatTitle(activeSectionKey)} content.
+                    This is the fixed {isUiUxMode ? 'UI/UX component rendering order' : 'universal flow order'} for all {formatTitle(activeSectionKey)} content.
                  </div>
                  
                  <div className="flex-1 space-y-3 overflow-y-auto pr-2 custom-scrollbar">
-                   {((activeData.learning_progression_engine && activeData.learning_progression_engine[0]?.default_flow) || Object.keys(activeData.universal_architecture_fixed || {})).map((key: string, index: number) => {
+                    {activeLearningFlow.map((key: string, index: number) => {
                      const Icon = getIconForComponent(index);
-                     const componentData = (activeData.universal_architecture_fixed?.[key] || {}) as ComponentArchitecture;
+                     const componentData = (activeComponentMap[key] || {}) as ComponentArchitecture;
                      return (
                        <button type="button" key={key} onClick={() => setSelectedComponentKey(key)} className={`w-full flex items-center gap-3 p-3 border rounded-xl shadow-sm transition-all group text-left ${selectedComponentKey === key ? 'bg-indigo-50 border-indigo-300 ring-2 ring-indigo-50' : 'bg-white border-slate-100 hover:border-indigo-200'}`}>
                          <div className="w-6 h-6 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center text-[10px] font-black shrink-0">
@@ -1169,8 +1566,9 @@ export default function GlobalArchitecturePage() {
                            <Icon size={14} />
                          </div>
                          <div className="flex-1 min-w-0">
-                           <h3 className="text-xs font-bold text-slate-900 truncate">{formatTitle(key)}</h3>
-                           <p className="text-[9px] font-medium text-slate-500 truncate">{componentData.purpose || 'Executes step'}</p>
+                            <h3 className="text-xs font-bold text-slate-900 truncate">{formatTitle(key)}</h3>
+                            <p className="text-[9px] font-black text-indigo-600 truncate">{key}</p>
+                            <p className="text-[9px] font-medium text-slate-500 truncate">{String(componentData.renderer || componentData.component || componentData.purpose || 'Executes step')}</p>
                          </div>
                          <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded shrink-0 border border-emerald-100">Required</span>
                          {selectedComponentKey === key ? <span className="text-[9px] font-black text-indigo-700 bg-white px-2 py-1 rounded border border-indigo-100">Selected</span> : null}
@@ -1192,7 +1590,7 @@ export default function GlobalArchitecturePage() {
                 <div className="rounded-2xl bg-indigo-50 border border-indigo-100 p-5 mb-5">
                   <span className="text-[10px] font-black text-indigo-600 uppercase tracking-wider">Selected</span>
                   <h3 className="text-2xl font-black text-slate-950 mt-1">{selectedComponentKey ? formatTitle(selectedComponentKey) : 'Select a component'}</h3>
-                  <p className="text-sm text-slate-600 mt-3 leading-relaxed">{selectedComponentData?.purpose || 'Select a component on the left to see how it fits in the fixed sequence.'}</p>
+                  <p className="text-sm text-slate-600 mt-3 leading-relaxed">{isUiUxMode ? String(selectedComponentData?.renderer || selectedComponentData?.component || 'Select a component to see the renderer and UI contract.') : selectedComponentData?.purpose || 'Select a component on the left to see how it fits in the fixed sequence.'}</p>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
                   <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
@@ -1234,7 +1632,7 @@ export default function GlobalArchitecturePage() {
     "status": "active",
     "updated_at": "2025-05-15T10:30:00Z",
     "sequence": [
-${(((activeData.learning_progression_engine && activeData.learning_progression_engine[0]?.default_flow) || Object.keys(activeData.universal_architecture_fixed || {}))).map((key: string, index: number) => `      {
+${activeLearningFlow.map((key: string, index: number) => `      {
         "order": ${index + 1},
         "type": "${key}",
         "title": "${formatTitle(key)}",
@@ -1258,8 +1656,8 @@ ${(((activeData.learning_progression_engine && activeData.learning_progression_e
                  <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex-1 flex flex-col">
                     <h2 className="text-base font-bold text-slate-900 flex items-center gap-2 mb-6">3. Sequence Progression Flow <Info size={14} className="text-slate-400"/></h2>
                     <div className="flex items-center justify-between mb-8 px-2 overflow-x-auto hide-scrollbar">
-                       {(((activeData.learning_progression_engine && activeData.learning_progression_engine[0]?.default_flow) || Object.keys(activeData.universal_architecture_fixed || {}))).slice(0,8).map((key: string, index: number) => {
-                         const isLast = index === Math.min(Object.keys(activeData.universal_architecture_fixed || {}).length, 8) - 1;
+                        {activeLearningFlow.slice(0,8).map((key: string, index: number) => {
+                         const isLast = index === Math.min(activeLearningFlow.length, 8) - 1;
                          const color = getColorForComponent(index);
                          const Icon = getIconForComponent(index);
                          return (
@@ -1415,15 +1813,15 @@ ${(((activeData.learning_progression_engine && activeData.learning_progression_e
            ) : null}
 
         </div>
-      ) : activeTab === 'Component Details' && !isUiUxMode ? (
+      ) : activeTab === 'Component Details' ? (
         <div className="space-y-6">
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
             <div className="xl:col-span-7 bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
               <div className="flex items-start justify-between gap-4 mb-6">
                 <div>
-                  <h2 className="text-lg font-bold text-slate-900">Selected Component Contract</h2>
+                  <h2 className="text-lg font-bold text-slate-900">Selected {isUiUxMode ? 'UI/UX Component Contract' : 'Component Contract'}</h2>
                   <p className="text-sm text-slate-500 mt-1">
-                    This is the one component currently selected from the fixed section architecture.
+                    This is the one component currently selected from the fixed {isUiUxMode ? 'UI/UX design system' : 'section architecture'}.
                   </p>
                 </div>
                 <button type="button" onClick={() => setShowAdvancedComponentDetails((value) => !value)} className="px-4 py-2 rounded-lg border border-slate-200 text-xs font-black text-slate-700 hover:bg-slate-50 flex items-center gap-2">
@@ -1432,9 +1830,33 @@ ${(((activeData.learning_progression_engine && activeData.learning_progression_e
               </div>
 
               <div className="rounded-3xl border border-indigo-100 bg-indigo-50 p-6 mb-6">
-                <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600">Component</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600">{isUiUxMode ? 'UI/UX Architecture Component' : 'Component'}</span>
                 <h3 className="text-3xl font-black text-slate-950 mt-1">{selectedComponentKey ? formatTitle(selectedComponentKey) : 'Select a component'}</h3>
+                <p className="mt-2 font-mono text-xs font-black text-indigo-700">{selectedComponentKey || 'full_section'}</p>
+                {isUiUxMode ? <p className="mt-2 font-mono text-xs font-black text-pink-700">{String(selectedComponentData?.renderer || selectedComponentData?.component || 'No renderer selected')}</p> : null}
                 <p className="text-sm text-slate-700 mt-4 leading-relaxed">{selectedComponentData?.purpose || 'Select a component from Universal Architecture to inspect its contract.'}</p>
+              </div>
+
+              <div className="mb-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <h3 className="text-sm font-black text-slate-900">{isUiUxMode ? 'UI/UX Architecture / Renderer Mapping Configuration' : 'Fixed Component Architecture / Renderer Mapping Configuration'}</h3>
+                <p className="mt-2 text-xs font-semibold leading-relaxed text-slate-600">
+                  {isUiUxMode ? 'This tab confirms which learner-facing renderer, layout, style variant, and interaction contract belongs to the selected Notes UI component.' : 'This tab explains the selected component contract. Use Renderer Mapping for UI/UX editing; this tab confirms which fixed education component and renderer are connected.'}
+                </p>
+              </div>
+
+              <div className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+                {activeComponentEntries.map(([key, item]) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setSelectedComponentKey(key)}
+                    className={`rounded-xl border p-3 text-left transition-all ${selectedComponentKey === key ? 'border-indigo-300 bg-indigo-50' : 'border-slate-200 bg-white hover:bg-slate-50'}`}
+                  >
+                    <p className="text-xs font-black text-slate-900">{formatTitle(key)}</p>
+                    <p className="mt-1 font-mono text-[10px] font-black text-indigo-700">{String((item as ComponentArchitecture).renderer || (item as ComponentArchitecture).component || 'default_renderer')}</p>
+                    {isUiUxMode ? <p className="mt-1 text-[10px] font-bold text-slate-500">layout: {String((item as ComponentArchitecture).layout_type || (item as ComponentArchitecture).layout || 'default')}</p> : null}
+                  </button>
+                ))}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1501,7 +1923,7 @@ ${(((activeData.learning_progression_engine && activeData.learning_progression_e
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                      {(Object.entries(activeData.universal_architecture_fixed || {}) as [string, ComponentArchitecture][]).map(([key, item], index) => {
+                      {activeComponentEntries.map(([key, item], index) => {
                         const Icon = getIconForComponent(index);
                         const color = getColorForComponent(index);
                         return (
@@ -1556,7 +1978,7 @@ ${(((activeData.learning_progression_engine && activeData.learning_progression_e
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50 text-[10px] font-medium text-slate-600">
-                          {(Object.entries(activeData.universal_architecture_fixed || {}) as [string, ComponentArchitecture][]).slice(0, 8).map(([key, item], index) => {
+                          {activeComponentEntries.slice(0, 8).map(([key, item], index) => {
                              const color = getColorForComponent(index);
                              const interactions = ['Static + Icons', 'Visual + Text', 'Icon + Points', 'Hover + Cards', 'Expand/Collapse', 'Zoom + Pan', 'Expand/Collapse', 'Highlights'];
                              const layouts = ['Card', 'Card', 'Card', 'Grid', 'Accordion', 'Diagram', 'FAQ', 'Card'];
@@ -1638,7 +2060,7 @@ ${(((activeData.learning_progression_engine && activeData.learning_progression_e
   "version": "${activeData.metadata?.version || '1.0'}",
   "status": "active",
   "components": [
-${(Object.entries(activeData.universal_architecture_fixed || {}) as [string, ComponentArchitecture][]).map(([key, item], index) => `    {
+${activeComponentEntries.map(([key, item], index) => `    {
       "key": "${key}",
       "name": "${formatTitle(key)}",
       "required": ${item.required !== false},
@@ -1661,10 +2083,10 @@ ${(Object.entries(activeData.universal_architecture_fixed || {}) as [string, Com
                  <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
                     <h2 className="text-base font-bold text-slate-900 flex items-center gap-2 mb-6">5. Default Learning Progression Flow <Info size={14} className="text-slate-400"/></h2>
                     <div className="flex items-center justify-between mb-8 overflow-x-auto hide-scrollbar pb-2">
-                       {Object.keys(activeData.universal_architecture_fixed || {}).slice(0,8).map((key: string, index: number) => {
+                       {activeComponentKeys.slice(0,8).map((key: string, index: number) => {
                          const color = getColorForComponent(index);
                          const Icon = getIconForComponent(index);
-                         const isLast = index === Math.min(Object.keys(activeData.universal_architecture_fixed || {}).length, 8) - 1;
+                         const isLast = index === Math.min(activeComponentKeys.length, 8) - 1;
                          return (
                            <React.Fragment key={key}>
                              <div className="flex flex-col items-center gap-1 shrink-0">
@@ -1679,7 +2101,7 @@ ${(Object.entries(activeData.universal_architecture_fixed || {}) as [string, Com
                        })}
                     </div>
                     <div className="space-y-4 mb-6">
-                       {Object.keys(activeData.universal_architecture_fixed || {}).slice(0,8).map((key: string, index: number) => {
+                       {activeComponentKeys.slice(0,8).map((key: string, index: number) => {
                          const color = getColorForComponent(index);
                          return (
                            <div key={key} className="flex items-center gap-3">
@@ -1709,15 +2131,15 @@ ${(Object.entries(activeData.universal_architecture_fixed || {}) as [string, Com
            </div>
            ) : null}
         </div>
-      ) : activeTab === 'Learning Progression' && !isUiUxMode ? (
+      ) : activeTab === 'Learning Progression' ? (
         <div className="space-y-6 pb-10">
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
             <div className="xl:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
               <div className="flex items-start justify-between gap-4 mb-6">
                 <div>
-                  <h2 className="text-lg font-bold text-slate-900">Learning Progression for {formatTitle(String(adminSectionId))}</h2>
+                  <h2 className="text-lg font-bold text-slate-900">{isUiUxMode ? 'UI/UX Rendering Progression' : 'Learning Progression'} for {formatTitle(String(adminSectionId))}</h2>
                   <p className="text-sm text-slate-500 mt-1">
-                    This tab explains where the selected component sits in the learner journey and what should happen before and after it.
+                    {isUiUxMode ? 'This tab explains where the selected UI component sits in the learner-facing rendering flow and which renderer presents it.' : 'This tab explains where the selected component sits in the learner journey and what should happen before and after it.'}
                   </p>
                 </div>
                 <button type="button" onClick={() => setActiveTab('Section Sequence')} className="px-4 py-2 rounded-lg border border-indigo-100 bg-indigo-50 text-indigo-700 text-xs font-black hover:bg-indigo-100">
@@ -1726,7 +2148,7 @@ ${(Object.entries(activeData.universal_architecture_fixed || {}) as [string, Com
               </div>
               <div className="space-y-3">
                 {activeLearningFlow.map((key, index) => {
-                  const item = activeData.universal_architecture_fixed?.[key] as ComponentArchitecture | undefined;
+                  const item = activeComponentMap[key] as ComponentArchitecture | undefined;
                   const isSelected = selectedComponentKey === key;
                   const Icon = getIconForComponent(index);
                   return (
@@ -1740,13 +2162,14 @@ ${(Object.entries(activeData.universal_architecture_fixed || {}) as [string, Com
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isSelected ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
                           <Icon size={18} />
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <span className="text-xs font-black text-slate-400">Step {index + 1}</span>
-                            <h3 className="text-sm font-black text-slate-900">{formatTitle(key)}</h3>
-                            {isSelected ? <span className="text-[10px] font-black text-indigo-700 bg-white border border-indigo-100 px-2 py-0.5 rounded-full">Selected</span> : null}
-                          </div>
-                          <p className="text-xs text-slate-600 mt-1 leading-relaxed">{item?.purpose || 'Defines this learning step inside the section.'}</p>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="text-xs font-black text-slate-400">Step {index + 1}</span>
+                              <h3 className="text-sm font-black text-slate-900">{formatTitle(key)}</h3>
+                              <span className="rounded-full bg-slate-100 px-2 py-0.5 font-mono text-[10px] font-black text-indigo-700">{key}</span>
+                              {isSelected ? <span className="text-[10px] font-black text-indigo-700 bg-white border border-indigo-100 px-2 py-0.5 rounded-full">Selected</span> : null}
+                            </div>
+                          <p className="text-xs text-slate-600 mt-1 leading-relaxed">{isUiUxMode ? String(item?.renderer || item?.component || 'Defines this UI rendering step inside the section.') : item?.purpose || 'Defines this learning step inside the section.'}</p>
                         </div>
                       </div>
                     </button>
@@ -1762,6 +2185,7 @@ ${(Object.entries(activeData.universal_architecture_fixed || {}) as [string, Com
                   <div>
                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Component</span>
                     <p className="font-black text-slate-900">{selectedComponentKey ? formatTitle(selectedComponentKey) : 'None selected'}</p>
+                    <p className="font-mono text-xs font-black text-indigo-700">{selectedComponentKey || 'none'}</p>
                   </div>
                   <div>
                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Before</span>
@@ -1772,8 +2196,8 @@ ${(Object.entries(activeData.universal_architecture_fixed || {}) as [string, Com
                     <p className="font-bold text-slate-700">{activeLearningFlow[selectedComponentIndex + 1] ? formatTitle(activeLearningFlow[selectedComponentIndex + 1]) : 'End of section'}</p>
                   </div>
                   <div>
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Purpose</span>
-                    <p className="font-medium text-slate-700 leading-relaxed">{selectedComponentData?.purpose || 'Select a component to see its educational purpose.'}</p>
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">{isUiUxMode ? 'Renderer / UI Role' : 'Purpose'}</span>
+                    <p className="font-medium text-slate-700 leading-relaxed">{isUiUxMode ? String(selectedComponentData?.renderer || selectedComponentData?.component || 'Select a component to see its UI purpose.') : selectedComponentData?.purpose || 'Select a component to see its educational purpose.'}</p>
                   </div>
                 </div>
               </div>
@@ -1781,20 +2205,20 @@ ${(Object.entries(activeData.universal_architecture_fixed || {}) as [string, Com
               <div className="bg-purple-50 rounded-2xl border border-purple-100 p-6">
                 <h3 className="text-base font-bold text-purple-950 mb-3">What to Do Here</h3>
                 <p className="text-sm text-purple-800 leading-relaxed">
-                  Use this tab to decide whether the selected component belongs at this point in the learning flow. If order is wrong, go to Section Sequence. If content shape is wrong, go to JSON Schema.
+                  {isUiUxMode ? 'Use this tab to confirm whether the selected UI component appears at the right point in the learner page rendering flow. If the look is wrong, go to Renderer Mapping.' : 'Use this tab to decide whether the selected component belongs at this point in the learning flow. If order is wrong, go to Section Sequence. If content shape is wrong, go to JSON Schema.'}
                 </p>
               </div>
             </div>
           </div>
         </div>
-      ) : activeTab === 'Prompt Management' && !isUiUxMode ? (
+      ) : activeTab === 'Prompt Management' ? (
         <div className="space-y-6 pb-10">
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
             <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
               <div>
-                <h2 className="text-lg font-bold text-slate-900">Prompt Management Bridge</h2>
+                <h2 className="text-lg font-bold text-slate-900">{isUiUxMode ? 'UI/UX Prompt Management Bridge' : 'Prompt Management Bridge'}</h2>
                 <p className="text-sm text-slate-500 mt-1 max-w-3xl">
-                  This tab does not replace the Prompt Generator page. It decides what selected architecture context will be sent to Prompt Generator for this component.
+                  This tab does not replace the Prompt Generator page. It decides what selected {isUiUxMode ? 'UI/UX architecture' : 'architecture'} context will be sent to Prompt Generator for this component.
                 </p>
               </div>
               <button type="button" onClick={() => openWorkflowUrl(selectedWorkflowUrls.promptGenerator)} className="px-5 py-3 rounded-xl bg-amber-500 text-white text-sm font-black hover:bg-amber-600 flex items-center justify-center gap-2">
@@ -1809,6 +2233,7 @@ ${(Object.entries(activeData.universal_architecture_fixed || {}) as [string, Com
               <div className="space-y-4 text-sm">
                 <div><span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Section</span><p className="font-black text-slate-900">{String(adminSectionId)}</p></div>
                 <div><span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Component</span><p className="font-black text-slate-900">{selectedComponentKey ? formatTitle(selectedComponentKey) : 'Full section'}</p></div>
+                <div><span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Prompt Contract Key</span><p className="font-mono text-xs font-black text-indigo-700">{String(adminSectionId)}.{selectedComponentKey || 'full_section'}</p></div>
                 <div><span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Dummy Topic</span><p className="font-bold text-slate-700">{dummyContext.domain} / {dummyContext.subject} / {dummyContext.subtopic}</p></div>
                 <div><span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Prompt URL</span><p className="break-all font-mono text-xs text-indigo-700">{selectedWorkflowUrls.promptGenerator}</p></div>
               </div>
@@ -1818,8 +2243,8 @@ ${(Object.entries(activeData.universal_architecture_fixed || {}) as [string, Com
               <h3 className="text-base font-bold text-slate-900 mb-4">Prompt Context That Will Be Sent</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
                 <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Educational Component Role</span>
-                  <p className="text-sm font-bold text-slate-800 mt-2 leading-relaxed">{selectedComponentData?.purpose || 'Purpose not configured.'}</p>
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">{isUiUxMode ? 'UI/UX Component Role' : 'Educational Component Role'}</span>
+                  <p className="text-sm font-bold text-slate-800 mt-2 leading-relaxed">{isUiUxMode ? String(selectedComponentData?.component || selectedComponentData?.purpose || 'UI purpose not configured.') : selectedComponentData?.purpose || 'Purpose not configured.'}</p>
                 </div>
                 <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Renderer/UI Decision</span>
@@ -2205,15 +2630,15 @@ Writing Guidelines:
 
            </div>
         </div>
-      ) : activeTab === 'Validation Rules' && !isUiUxMode ? (
+      ) : activeTab === 'Validation Rules' ? (
         <div className="space-y-6 pb-10">
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
             <div className="xl:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
               <div className="flex items-start justify-between gap-4 mb-6">
                 <div>
-                  <h2 className="text-lg font-bold text-slate-900">Validation Rules for {selectedComponentKey ? formatTitle(selectedComponentKey) : formatTitle(String(adminSectionId))}</h2>
+                  <h2 className="text-lg font-bold text-slate-900">{isUiUxMode ? 'UI/UX Validation Rules' : 'Validation Rules'} for {selectedComponentKey ? formatTitle(selectedComponentKey) : formatTitle(String(adminSectionId))}</h2>
                   <p className="text-sm text-slate-500 mt-1">
-                    These are the rules Content Manager should use before preview approval and database save.
+                    {isUiUxMode ? 'These are the renderer, Accessibility, WCAG, responsive, and design-token checks before preview approval and database save.' : 'These are the rules Content Manager should use before preview approval and database save.'}
                   </p>
                 </div>
                 <button type="button" onClick={validateActiveArchitecture} className="px-4 py-2 rounded-lg bg-emerald-600 text-white text-xs font-black hover:bg-emerald-700">
@@ -2223,8 +2648,12 @@ Writing Guidelines:
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {[
-                  { title: 'Component Must Exist', detail: `${selectedComponentKey || 'Selected component'} must be registered in universal_architecture_fixed.`, pass: Boolean(selectedComponentData || !selectedComponentKey) },
+                  { title: 'Component Must Exist', detail: `${selectedComponentKey || 'Selected component'} must be registered in ${isUiUxMode ? 'component_design_system' : 'universal_architecture_fixed'}.`, pass: Boolean(selectedComponentData || !selectedComponentKey) },
                   { title: 'Renderer Must Exist', detail: 'Selected component should have renderer mapping or fallback renderer.', pass: Boolean(selectedComponentData?.renderer || selectedRendererMapping) },
+                  ...(isUiUxMode ? [
+                    { title: 'Accessibility Contract', detail: 'UI/UX component must define keyboard, screen reader, reduced motion, and visible state behavior.', pass: true },
+                    { title: 'WCAG Check', detail: 'Visual styling must preserve WCAG contrast and responsive behavior before learner preview save.', pass: true },
+                  ] : []),
                   { title: 'Default JSON Must Exist', detail: 'Prompt/content flow needs dummy JSON for local preview testing.', pass: Boolean(selectedDefaultJson) },
                   { title: 'Preview Before Save', detail: 'Content Manager blocks save until Preview Component is approved.', pass: true },
                   { title: 'Prompt Generator Linked', detail: 'Prompt Generator URL receives section, subsection, dummy data, and architecture payload.', pass: true },
@@ -2259,14 +2688,14 @@ Writing Guidelines:
             </div>
           </div>
         </div>
-      ) : activeTab === 'JSON Schema' && !isUiUxMode ? (
+      ) : activeTab === 'JSON Schema' ? (
         <div className="space-y-6 pb-10">
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
             <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-5">
               <div>
-                <h2 className="text-lg font-bold text-slate-900">JSON Schema / Default Dummy Content</h2>
+                <h2 className="text-lg font-bold text-slate-900">{isUiUxMode ? 'UI/UX JSON Schema / Renderer Contract' : 'JSON Schema / Default Dummy Content'}</h2>
                 <p className="text-sm text-slate-500 mt-1 max-w-3xl">
-                  This shows the exact JSON shape that will be sent to Content Manager for the currently selected component.
+                  This shows the exact {isUiUxMode ? 'component_design_system and renderer contract' : 'JSON shape'} that will be sent to Content Manager for the currently selected component.
                 </p>
               </div>
               <div className="flex flex-wrap gap-3">
@@ -2286,6 +2715,7 @@ Writing Guidelines:
               <div className="space-y-4 text-sm">
                 <div><span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Section</span><p className="font-black text-slate-900">{String(adminSectionId)}</p></div>
                 <div><span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Subsection</span><p className="font-black text-slate-900">{selectedComponentKey || 'Full section'}</p></div>
+                <div><span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Source Object</span><p className="font-mono text-xs font-black text-indigo-700">{isUiUxMode ? 'component_design_system' : 'universal_architecture_fixed'}</p></div>
                 <div><span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Renderer</span><p className="font-black text-slate-900">{String(selectedSchemaPreview.renderer)}</p></div>
                 <div><span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Required</span><p className="font-black text-slate-900">{selectedSchemaPreview.required ? 'Yes' : 'No'}</p></div>
                 <div><span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Purpose</span><p className="font-medium text-slate-700 leading-relaxed">{String(selectedSchemaPreview.componentPurpose)}</p></div>
@@ -2300,23 +2730,38 @@ Writing Guidelines:
               <pre className="text-xs text-emerald-300 overflow-auto max-h-[620px]">{JSON.stringify(selectedSchemaPreview, null, 2)}</pre>
             </div>
           </div>
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <h3 className="text-base font-bold text-slate-900 mb-4">Full Section Schema Contract</h3>
+            <p className="mb-4 text-sm font-semibold text-slate-600">
+              These are all canonical component keys registered for this Notes section under {isUiUxMode ? 'component_design_system' : 'universal_architecture_fixed'}. Content Manager should reject old aliases and save only this shape.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+              {activeComponentEntries.map(([key, item]) => (
+                <div key={key} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <p className="font-mono text-xs font-black text-indigo-700">{key}</p>
+                  <p className="mt-1 text-sm font-black text-slate-900">{String((item as ComponentArchitecture).renderer || (item as ComponentArchitecture).component || 'default_renderer')}</p>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-      ) : activeTab === 'Renderer Mapping' && !isUiUxMode ? (
+      ) : activeTab === 'Renderer Mapping' ? (
          <div className="space-y-8 pb-12">
-            <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
-              <div className="xl:col-span-4 bg-white rounded-[2rem] border border-slate-200 shadow-sm p-6">
+            <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+              <div className="xl:col-span-5 space-y-5">
+              <div className="bg-white rounded-[2rem] border border-slate-200 shadow-sm p-6">
                 <div className="flex items-start justify-between gap-4 mb-6">
                   <div>
                     <h2 className="text-lg font-bold text-slate-900">Select Component</h2>
-                    <p className="text-xs text-slate-500 mt-1">Choose one fixed component to configure its renderer.</p>
+                    <p className="text-xs text-slate-500 mt-1">Choose one fixed {isUiUxMode ? 'UI/UX Architecture' : 'education'} component to configure its renderer.</p>
                   </div>
                   <button type="button" onClick={() => setShowAdvancedRendererMapping((value) => !value)} className="px-3 py-2 rounded-lg border border-slate-200 text-[10px] font-black text-slate-700 hover:bg-slate-50 flex items-center gap-2">
                     <Settings size={12}/> {showAdvancedRendererMapping ? 'Hide Advanced' : 'Show Advanced'}
                   </button>
                 </div>
-                <div className="space-y-3 max-h-[560px] overflow-y-auto pr-2 custom-scrollbar">
-                  {Object.keys(activeData.universal_architecture_fixed || {}).map((key, index) => {
-                    const item = activeData.universal_architecture_fixed?.[key] as ComponentArchitecture;
+                <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                  {Object.keys(activeComponentMap).map((key, index) => {
+                    const item = activeComponentMap[key] as ComponentArchitecture;
                     const Icon = getIconForComponent(index);
                     const isSelected = selectedComponentKey === key;
                     return (
@@ -2342,7 +2787,227 @@ Writing Guidelines:
                 </div>
               </div>
 
-              <div className="xl:col-span-8 bg-white rounded-[2rem] border border-slate-200 shadow-sm p-6">
+              <div className="rounded-[2rem] border border-indigo-100 bg-white p-5 shadow-sm">
+                <div className="mb-4 flex items-start justify-between gap-3">
+                  <div>
+                    <h3 className="text-sm font-black text-slate-900">Micro Component Editor</h3>
+                    <p className="mt-1 text-xs font-semibold text-slate-500">Edit the selected learner UI part directly.</p>
+                  </div>
+                  <span className="rounded-full bg-indigo-50 px-3 py-1 text-[10px] font-black text-indigo-700">Part Level</span>
+                </div>
+                <div className="grid grid-cols-1 gap-3">
+                  <div>
+                    <label htmlFor="renderer-subcomponent" className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Select Child Part</label>
+                    <select
+                      id="renderer-subcomponent"
+                      value={String(selectedRendererSubcomponent?.id || 'container')}
+                      onChange={(event) => setSelectedRendererSubcomponentId(event.target.value)}
+                      className="w-full rounded-xl border-2 border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-800 outline-none focus:border-indigo-400"
+                    >
+                      {rendererSubcomponents.map((part) => (
+                        <option key={String(part.id)} value={String(part.id)}>{String(part.label || formatTitle(String(part.id)))}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label htmlFor="renderer-subcomponent-layout" className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Child Layout</label>
+                      <select
+                        id="renderer-subcomponent-layout"
+                        value={String(selectedRendererSubcomponent?.layout || 'inline')}
+                        onChange={(event) => {
+                          const nextParts = rendererSubcomponents.map((part) => String(part.id) === String(selectedRendererSubcomponent?.id) ? { ...part, layout: event.target.value } : part);
+                          updateSelectedComponentConfig({ ui_subcomponents: nextParts });
+                        }}
+                        className="w-full rounded-xl border-2 border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-800 outline-none focus:border-indigo-400"
+                      >
+                        <option value="inline">Inline</option>
+                        <option value="card">Card</option>
+                        <option value="pill">Pill</option>
+                        <option value="icon_block">Icon Block</option>
+                        <option value="progress">Progress</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label htmlFor="renderer-subcomponent-color" className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Child Color</label>
+                      <input
+                        id="renderer-subcomponent-color"
+                        type="color"
+                        value={String(selectedRendererSubcomponent?.color || selectedComponentData?.primary_color || '#4f46e5')}
+                        onChange={(event) => {
+                          const nextParts = rendererSubcomponents.map((part) => String(part.id) === String(selectedRendererSubcomponent?.id) ? { ...part, color: event.target.value } : part);
+                          updateSelectedComponentConfig({ ui_subcomponents: nextParts });
+                        }}
+                        className="h-10 w-full rounded-xl border-2 border-slate-200 bg-white p-1 outline-none focus:border-indigo-400"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-[1fr_auto] gap-3">
+                    <input
+                      value={String(selectedRendererSubcomponent?.label || '')}
+                      onChange={(event) => {
+                        const nextParts = rendererSubcomponents.map((part) => String(part.id) === String(selectedRendererSubcomponent?.id) ? { ...part, label: event.target.value } : part);
+                        updateSelectedComponentConfig({ ui_subcomponents: nextParts });
+                      }}
+                      placeholder="Child part label"
+                      className="rounded-xl border-2 border-slate-200 px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:border-indigo-400"
+                    />
+                    <label className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-black text-slate-700">
+                      Visible
+                      <input
+                        type="checkbox"
+                        checked={selectedRendererSubcomponent?.visible !== false}
+                        onChange={(event) => {
+                          const nextParts = rendererSubcomponents.map((part) => String(part.id) === String(selectedRendererSubcomponent?.id) ? { ...part, visible: event.target.checked } : part);
+                          updateSelectedComponentConfig({ ui_subcomponents: nextParts });
+                        }}
+                        className="h-4 w-4 accent-indigo-600"
+                      />
+                    </label>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { key: 'align', label: 'Align', value: selectedRendererSubcomponentRecord.align || 'left', options: ['left', 'center', 'right'] },
+                      { key: 'spacing', label: 'Spacing', value: selectedRendererSubcomponentRecord.spacing || 'normal', options: ['tight', 'normal', 'loose'] },
+                      { key: 'radius', label: 'Radius', value: selectedRendererSubcomponentRecord.radius || 'rounded', options: ['none', 'soft', 'rounded', 'pill'] },
+                      { key: 'shadow', label: 'Shadow', value: selectedRendererSubcomponentRecord.shadow || 'soft', options: ['none', 'soft', 'strong'] },
+                    ].map((control) => (
+                      <div key={control.key}>
+                        <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">{control.label}</label>
+                        <select
+                          value={String(control.value)}
+                          onChange={(event) => {
+                            const nextParts = rendererSubcomponents.map((part) => String(part.id) === String(selectedRendererSubcomponent?.id) ? { ...part, [control.key]: event.target.value } : part);
+                            updateSelectedComponentConfig({ ui_subcomponents: nextParts });
+                          }}
+                          className="w-full rounded-xl border-2 border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-800 outline-none focus:border-indigo-400"
+                        >
+                          {control.options.map((option) => <option key={option} value={option}>{formatTitle(option)}</option>)}
+                        </select>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-5">
+                <div className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm">
+                  <h3 className="text-sm font-black text-slate-900 mb-4">Visual Styling</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="visual-density-left" className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Density</label>
+                      <select id="visual-density-left" value={String(selectedComponentData?.density || 'comfortable')} onChange={(event) => updateSelectedComponentConfig({ density: event.target.value })} className="w-full rounded-xl border-2 border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-800 outline-none focus:border-indigo-400">
+                        <option value="compact">Compact</option>
+                        <option value="comfortable">Comfortable</option>
+                        <option value="spacious">Spacious</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label htmlFor="emphasis-level-left" className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Emphasis</label>
+                      <select id="emphasis-level-left" value={String(selectedComponentData?.emphasis_level || 'medium')} onChange={(event) => updateSelectedComponentConfig({ emphasis_level: event.target.value })} className="w-full rounded-xl border-2 border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-800 outline-none focus:border-indigo-400">
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label htmlFor="color-role-left" className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Color Role</label>
+                      <select id="color-role-left" value={String(selectedComponentData?.color_role || 'primary')} onChange={(event) => updateSelectedComponentConfig({ color_role: event.target.value })} className="w-full rounded-xl border-2 border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-800 outline-none focus:border-indigo-400">
+                        <option value="primary">Primary</option>
+                        <option value="success">Success</option>
+                        <option value="warning">Warning</option>
+                        <option value="info">Info</option>
+                        <option value="neutral">Neutral</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label htmlFor="typography-scale-left" className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Typography</label>
+                      <select id="typography-scale-left" value={String(selectedComponentData?.typography_scale || 'body')} onChange={(event) => updateSelectedComponentConfig({ typography_scale: event.target.value })} className="w-full rounded-xl border-2 border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-800 outline-none focus:border-indigo-400">
+                        <option value="hero">Hero</option>
+                        <option value="heading">Heading</option>
+                        <option value="body">Body</option>
+                        <option value="caption">Caption</option>
+                      </select>
+                    </div>
+                    {[
+                      ['primary_color', 'Primary Color', '#4f46e5'],
+                      ['accent_color', 'Accent Color', '#10b981'],
+                      ['background_color', 'Background Color', '#ffffff'],
+                      ['text_color', 'Text Color', '#0f172a'],
+                      ['border_color', 'Border Color', '#e2e8f0'],
+                    ].map(([key, label, fallback]) => (
+                      <div key={key}>
+                        <label htmlFor={`${key}-left`} className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">{label}</label>
+                        <input
+                          id={`${key}-left`}
+                          type="color"
+                          value={String(selectedComponentData?.[key] || fallback)}
+                          onChange={(event) => updateSelectedComponentConfig({ [key]: event.target.value })}
+                          className="h-11 w-full rounded-xl border-2 border-slate-200 bg-white p-1 outline-none focus:border-indigo-400"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm">
+                  <h3 className="text-sm font-black text-slate-900 mb-4">Behavior & State</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {[
+                      { key: 'hover_state', label: 'Hover State' },
+                      { key: 'clickable', label: 'Clickable' },
+                      { key: 'collapsible', label: 'Collapsible' },
+                      { key: 'progressive_disclosure', label: 'Progressive Disclosure' },
+                    ].map((item) => (
+                      <label key={item.key} className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-black text-slate-700">
+                        {item.label}
+                        <input
+                          type="checkbox"
+                          checked={Boolean(selectedComponentData?.[item.key])}
+                          onChange={(event) => updateSelectedComponentConfig({ [item.key]: event.target.checked })}
+                          className="h-4 w-4 accent-indigo-600"
+                        />
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-[2rem] border border-emerald-100 bg-emerald-50 p-5 shadow-sm">
+                <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <h3 className="text-sm font-black text-slate-900">Preview Content Editor</h3>
+                    <p className="mt-1 text-xs font-semibold text-emerald-800">
+                      This dummy learner content feeds Renderer Decision Preview and Content Manager.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => updateSelectedComponentConfig({ preview_content: selectedDefaultJson })}
+                    className="rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs font-black text-emerald-700 hover:bg-emerald-100"
+                  >
+                    Reset
+                  </button>
+                </div>
+                <textarea
+                  key={`${activeSectionKey}:${selectedComponentKey}:preview-content:${JSON.stringify(selectedPreviewJson)}`}
+                  defaultValue={JSON.stringify(selectedPreviewJson, null, 2)}
+                  onBlur={(event) => {
+                    try {
+                      updateSelectedComponentConfig({ preview_content: JSON.parse(event.target.value) });
+                      setValidationMessage('Preview content JSON valid.');
+                    } catch {
+                      setValidationMessage('Preview content JSON has a syntax error. Fix it before continuing.');
+                    }
+                  }}
+                  rows={9}
+                  className="w-full rounded-2xl border-2 border-emerald-100 bg-white p-4 font-mono text-xs font-semibold leading-5 text-slate-800 outline-none focus:border-emerald-400"
+                />
+                <p className="mt-3 text-xs font-bold text-emerald-900">{validationMessage}</p>
+              </div>
+              </div>
+
+              <div className="xl:col-span-7 bg-white rounded-[2rem] border border-slate-200 shadow-sm p-6">
                 <div className="flex items-start justify-between gap-4 mb-6">
                   <div>
                     <h2 className="text-lg font-bold text-slate-900">Editable Renderer Contract</h2>
@@ -2354,6 +3019,7 @@ Writing Guidelines:
                 <div className="rounded-3xl border border-indigo-100 bg-indigo-50 p-6 mb-6">
                   <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600">Selected Component</span>
                   <h3 className="text-2xl font-black text-slate-950 mt-1">{selectedComponentKey ? formatTitle(selectedComponentKey) : 'Select a component'}</h3>
+                  <p className="mt-2 font-mono text-xs font-black text-indigo-700">{selectedRendererName}</p>
                   <p className="text-sm text-slate-700 mt-3 leading-relaxed">{selectedComponentData?.purpose || 'Select a component on the left to edit its renderer mapping.'}</p>
                 </div>
 
@@ -2362,7 +3028,7 @@ Writing Guidelines:
                     <label htmlFor="renderer-name" className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Renderer Name</label>
                     <input
                       id="renderer-name"
-                      value={String(selectedComponentData?.renderer || '')}
+                      value={String(selectedComponentData?.renderer || selectedComponentData?.component || '')}
                       onChange={(event) => updateSelectedComponentConfig({ renderer: event.target.value })}
                       placeholder="e.g. progress_ring_checklist"
                       className="w-full rounded-xl border-2 border-slate-200 px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:border-indigo-400"
@@ -2427,79 +3093,6 @@ Writing Guidelines:
                 </div>
 
                 <div className="mt-8 space-y-6">
-                  <div className="rounded-3xl border border-indigo-100 bg-white p-5">
-                    <h3 className="text-sm font-black text-slate-900 mb-4">Sub-Component Editor</h3>
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                      <div>
-                        <label htmlFor="renderer-subcomponent" className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Select Child Part</label>
-                        <select
-                          id="renderer-subcomponent"
-                          value={String(selectedRendererSubcomponent?.id || 'container')}
-                          onChange={(event) => setSelectedRendererSubcomponentId(event.target.value)}
-                          className="w-full rounded-xl border-2 border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-800 outline-none focus:border-indigo-400"
-                        >
-                          {rendererSubcomponents.map((part) => (
-                            <option key={String(part.id)} value={String(part.id)}>{String(part.label || formatTitle(String(part.id)))}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <div>
-                        <label htmlFor="renderer-subcomponent-layout" className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Child Layout</label>
-                        <select
-                          id="renderer-subcomponent-layout"
-                          value={String(selectedRendererSubcomponent?.layout || 'inline')}
-                          onChange={(event) => {
-                            const nextParts = rendererSubcomponents.map((part) => String(part.id) === String(selectedRendererSubcomponent?.id) ? { ...part, layout: event.target.value } : part);
-                            updateSelectedComponentConfig({ ui_subcomponents: nextParts });
-                          }}
-                          className="w-full rounded-xl border-2 border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-800 outline-none focus:border-indigo-400"
-                        >
-                          <option value="inline">Inline</option>
-                          <option value="card">Card</option>
-                          <option value="pill">Pill</option>
-                          <option value="icon_block">Icon Block</option>
-                          <option value="progress">Progress</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label htmlFor="renderer-subcomponent-color" className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Child Color</label>
-                        <input
-                          id="renderer-subcomponent-color"
-                          type="color"
-                          value={String(selectedRendererSubcomponent?.color || selectedComponentData?.primary_color || '#4f46e5')}
-                          onChange={(event) => {
-                            const nextParts = rendererSubcomponents.map((part) => String(part.id) === String(selectedRendererSubcomponent?.id) ? { ...part, color: event.target.value } : part);
-                            updateSelectedComponentConfig({ ui_subcomponents: nextParts });
-                          }}
-                          className="h-10 w-full rounded-xl border-2 border-slate-200 bg-white p-1 outline-none focus:border-indigo-400"
-                        />
-                      </div>
-                    </div>
-                    <div className="mt-4 grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-4">
-                      <input
-                        value={String(selectedRendererSubcomponent?.label || '')}
-                        onChange={(event) => {
-                          const nextParts = rendererSubcomponents.map((part) => String(part.id) === String(selectedRendererSubcomponent?.id) ? { ...part, label: event.target.value } : part);
-                          updateSelectedComponentConfig({ ui_subcomponents: nextParts });
-                        }}
-                        placeholder="Child part label"
-                        className="rounded-xl border-2 border-slate-200 px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:border-indigo-400"
-                      />
-                      <label className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-black text-slate-700">
-                        Visible
-                        <input
-                          type="checkbox"
-                          checked={selectedRendererSubcomponent?.visible !== false}
-                          onChange={(event) => {
-                            const nextParts = rendererSubcomponents.map((part) => String(part.id) === String(selectedRendererSubcomponent?.id) ? { ...part, visible: event.target.checked } : part);
-                            updateSelectedComponentConfig({ ui_subcomponents: nextParts });
-                          }}
-                          className="h-4 w-4 accent-indigo-600"
-                        />
-                      </label>
-                    </div>
-                  </div>
-
                   <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
                     <h3 className="text-sm font-black text-slate-900 mb-4">Responsive Layout Decision</h3>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -2523,142 +3116,86 @@ Writing Guidelines:
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                    <div className="rounded-3xl border border-slate-200 bg-white p-5">
-                      <h3 className="text-sm font-black text-slate-900 mb-4">Visual Styling</h3>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <label htmlFor="visual-density" className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Density</label>
-                          <select
-                            id="visual-density"
-                            value={String(selectedComponentData?.density || 'comfortable')}
-                            onChange={(event) => updateSelectedComponentConfig({ density: event.target.value })}
-                            className="w-full rounded-xl border-2 border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-800 outline-none focus:border-indigo-400"
-                          >
-                            <option value="compact">Compact</option>
-                            <option value="comfortable">Comfortable</option>
-                            <option value="spacious">Spacious</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label htmlFor="emphasis-level" className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Emphasis</label>
-                          <select
-                            id="emphasis-level"
-                            value={String(selectedComponentData?.emphasis_level || 'medium')}
-                            onChange={(event) => updateSelectedComponentConfig({ emphasis_level: event.target.value })}
-                            className="w-full rounded-xl border-2 border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-800 outline-none focus:border-indigo-400"
-                          >
-                            <option value="low">Low</option>
-                            <option value="medium">Medium</option>
-                            <option value="high">High</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label htmlFor="color-role" className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Color Role</label>
-                          <select
-                            id="color-role"
-                            value={String(selectedComponentData?.color_role || 'primary')}
-                            onChange={(event) => updateSelectedComponentConfig({ color_role: event.target.value })}
-                            className="w-full rounded-xl border-2 border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-800 outline-none focus:border-indigo-400"
-                          >
-                            <option value="primary">Primary</option>
-                            <option value="success">Success</option>
-                            <option value="warning">Warning</option>
-                            <option value="info">Info</option>
-                            <option value="neutral">Neutral</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label htmlFor="typography-scale" className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Typography</label>
-                          <select
-                            id="typography-scale"
-                            value={String(selectedComponentData?.typography_scale || 'body')}
-                            onChange={(event) => updateSelectedComponentConfig({ typography_scale: event.target.value })}
-                            className="w-full rounded-xl border-2 border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-800 outline-none focus:border-indigo-400"
-                          >
-                            <option value="hero">Hero</option>
-                            <option value="heading">Heading</option>
-                            <option value="body">Body</option>
-                            <option value="caption">Caption</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label htmlFor="primary-color" className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Primary Color</label>
-                          <input
-                            id="primary-color"
-                            type="color"
-                            value={String(selectedComponentData?.primary_color || '#4f46e5')}
-                            onChange={(event) => updateSelectedComponentConfig({ primary_color: event.target.value })}
-                            className="h-11 w-full rounded-xl border-2 border-slate-200 bg-white p-1 outline-none focus:border-indigo-400"
-                          />
-                        </div>
-                        <div>
-                          <label htmlFor="accent-color" className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Accent Color</label>
-                          <input
-                            id="accent-color"
-                            type="color"
-                            value={String(selectedComponentData?.accent_color || '#10b981')}
-                            onChange={(event) => updateSelectedComponentConfig({ accent_color: event.target.value })}
-                            className="h-11 w-full rounded-xl border-2 border-slate-200 bg-white p-1 outline-none focus:border-indigo-400"
-                          />
-                        </div>
-                        <div>
-                          <label htmlFor="background-color" className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Background Color</label>
-                          <input
-                            id="background-color"
-                            type="color"
-                            value={String(selectedComponentData?.background_color || '#ffffff')}
-                            onChange={(event) => updateSelectedComponentConfig({ background_color: event.target.value })}
-                            className="h-11 w-full rounded-xl border-2 border-slate-200 bg-white p-1 outline-none focus:border-indigo-400"
-                          />
-                        </div>
-                        <div>
-                          <label htmlFor="text-color" className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Text Color</label>
-                          <input
-                            id="text-color"
-                            type="color"
-                            value={String(selectedComponentData?.text_color || '#0f172a')}
-                            onChange={(event) => updateSelectedComponentConfig({ text_color: event.target.value })}
-                            className="h-11 w-full rounded-xl border-2 border-slate-200 bg-white p-1 outline-none focus:border-indigo-400"
-                          />
-                        </div>
-                        <div>
-                          <label htmlFor="border-color" className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Border Color</label>
-                          <input
-                            id="border-color"
-                            type="color"
-                            value={String(selectedComponentData?.border_color || '#e2e8f0')}
-                            onChange={(event) => updateSelectedComponentConfig({ border_color: event.target.value })}
-                            className="h-11 w-full rounded-xl border-2 border-slate-200 bg-white p-1 outline-none focus:border-indigo-400"
-                          />
-                        </div>
+                  <div data-testid="renderer-decision-preview" className="rounded-3xl border border-indigo-100 bg-indigo-50 p-5">
+                    <h3 className="text-sm font-black text-indigo-950 mb-1">Renderer Decision Preview</h3>
+                    <p className="mb-4 text-xs font-semibold leading-5 text-indigo-700">
+                      This is the learner-facing preview for the selected content. Layout, colors, visible subcomponents, and interaction flags below are applied directly on the dummy JSON content.
+                    </p>
+                    {selectedComponentData ? (
+                      <div className="mt-5">
+                        <ContractAwareComponentPreview
+                          section={String(adminSectionId)}
+                          subsection={selectedComponentKey || ''}
+                          data={selectedPreviewJson}
+                          contract={selectedRendererPreviewContract || selectedComponentData as Record<string, unknown>}
+                        />
+                      </div>
+                    ) : null}
+                  </div>
+
+                  <div className="rounded-3xl border border-fuchsia-100 bg-fuchsia-50 p-5">
+                    <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <h3 className="text-sm font-black text-fuchsia-950">HTML / CSS / Tailwind Renderer</h3>
+                        <p className="mt-1 text-xs font-semibold leading-5 text-fuchsia-800">
+                          Paste custom code or generate starter HTML from the current renderer/content. When code is present, Renderer Decision Preview renders this code directly.
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => updateSelectedComponentConfig({
+                            custom_renderer_code: selectedGeneratedRendererCode,
+                          })}
+                          className="rounded-xl bg-fuchsia-600 px-3 py-2 text-xs font-black text-white hover:bg-fuchsia-700"
+                        >
+                          Generate HTML From Current Preview
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => updateSelectedComponentConfig({ custom_renderer_code: '' })}
+                          className="rounded-xl border border-fuchsia-200 bg-white px-3 py-2 text-xs font-black text-fuchsia-700 hover:bg-fuchsia-100"
+                        >
+                          Clear Code
+                        </button>
                       </div>
                     </div>
+                    <div className="mb-3 rounded-xl border border-fuchsia-100 bg-white px-3 py-2 text-xs font-bold leading-5 text-fuchsia-800">
+                      This is bidirectional at authoring level: generate starter HTML from the current preview, edit the code, and the preview renders the edited code as the source of truth.
+                    </div>
+                    <label htmlFor="custom-renderer-code" className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Generated HTML / CSS / Tailwind Code</label>
+                    <textarea
+                      id="custom-renderer-code"
+                      value={selectedVisibleRendererCode}
+                      onChange={(event) => updateSelectedComponentConfig({ custom_renderer_code: event.target.value })}
+                      placeholder={'<section class="rounded-3xl bg-white p-8 shadow-xl">\\n  <h1>What is Python?</h1>\\n</section>'}
+                      rows={12}
+                      className="w-full rounded-2xl border-2 border-fuchsia-100 bg-white p-4 font-mono text-xs font-semibold leading-5 text-slate-800 outline-none focus:border-fuchsia-400"
+                    />
+                  </div>
 
-                    <div className="rounded-3xl border border-slate-200 bg-white p-5">
-                      <h3 className="text-sm font-black text-slate-900 mb-4">Behavior & State</h3>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {[
-                          { key: 'hover_state', label: 'Hover State' },
-                          { key: 'clickable', label: 'Clickable' },
-                          { key: 'collapsible', label: 'Collapsible' },
-                          { key: 'progressive_disclosure', label: 'Progressive Disclosure' },
-                        ].map((item) => (
-                          <label key={item.key} className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-black text-slate-700">
-                            {item.label}
-                            <input
-                              type="checkbox"
-                              checked={Boolean(selectedComponentData?.[item.key])}
-                              onChange={(event) => updateSelectedComponentConfig({ [item.key]: event.target.checked })}
-                              className="h-4 w-4 accent-indigo-600"
-                            />
-                          </label>
-                        ))}
-                      </div>
+                  <div className="rounded-3xl border border-blue-100 bg-blue-50 p-5">
+                    <h3 className="mb-3 text-sm font-black text-blue-950">Selected Renderer Decision</h3>
+                    <div className="grid grid-cols-1 gap-3 text-xs md:grid-cols-4">
+                      {[
+                        ['Renderer', selectedComponentData?.renderer || selectedComponentData?.component || 'default'],
+                        ['Layout', selectedComponentData?.layout || selectedComponentData?.layout_type || 'card'],
+                        ['Desktop', selectedComponentData?.desktop_layout || 'two_column'],
+                        ['Tablet', selectedComponentData?.tablet_layout || 'stacked_cards'],
+                        ['Mobile', selectedComponentData?.mobile_layout || 'stacked_cards'],
+                        ['Brand', selectedComponentData?.brand_variant || 'shared'],
+                        ['Color Role', selectedComponentData?.color_role || 'primary'],
+                        ['Typography', selectedComponentData?.typography_scale || 'body'],
+                      ].map(([label, value]) => (
+                        <div key={String(label)} className="rounded-2xl border border-blue-100 bg-white p-3">
+                          <span className="block text-[9px] font-black uppercase tracking-wider text-blue-400">{String(label)}</span>
+                          <span className="mt-1 block font-black text-slate-900">{formatTitle(String(value))}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
                     <div className="rounded-3xl border border-slate-200 bg-white p-5">
                       <h3 className="text-sm font-black text-slate-900 mb-4">Accessibility</h3>
                       <div className="space-y-3">
@@ -2736,40 +3273,6 @@ Writing Guidelines:
                       </div>
                     </div>
                   </div>
-
-                  <div data-testid="renderer-decision-preview" className="rounded-3xl border border-indigo-100 bg-indigo-50 p-5">
-                    <h3 className="text-sm font-black text-indigo-950 mb-1">Renderer Decision Preview</h3>
-                    <p className="mb-4 text-xs font-semibold leading-5 text-indigo-700">
-                      This is the learner-facing preview for the selected content. Layout, colors, visible subcomponents, and interaction flags below are applied directly on the dummy JSON content.
-                    </p>
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
-                      {[
-                        ['Renderer', selectedComponentData?.renderer || 'default'],
-                        ['Layout', selectedComponentData?.layout || selectedComponentData?.layout_type || 'card'],
-                        ['Desktop', selectedComponentData?.desktop_layout || 'two_column'],
-                        ['Tablet', selectedComponentData?.tablet_layout || 'stacked_cards'],
-                        ['Mobile', selectedComponentData?.mobile_layout || 'stacked_cards'],
-                        ['Brand', selectedComponentData?.brand_variant || 'shared'],
-                        ['Color Role', selectedComponentData?.color_role || 'primary'],
-                        ['Typography', selectedComponentData?.typography_scale || 'body'],
-                      ].slice(0, 8).map(([label, value]) => (
-                        <div key={String(label)} className="rounded-2xl bg-white border border-indigo-100 p-3">
-                          <span className="block text-[9px] font-black uppercase tracking-wider text-indigo-400">{String(label)}</span>
-                          <span className="mt-1 block font-black text-slate-900">{formatTitle(String(value))}</span>
-                        </div>
-                      ))}
-                    </div>
-                    {selectedComponentData ? (
-                      <div className="mt-5">
-                        <ContractAwareComponentPreview
-                          section={String(adminSectionId)}
-                          subsection={selectedComponentKey || ''}
-                          data={selectedDefaultJson}
-                          contract={selectedComponentData as Record<string, unknown>}
-                        />
-                      </div>
-                    ) : null}
-                  </div>
                 </div>
 
                 <div className="mt-6 flex flex-wrap gap-3">
@@ -2814,8 +3317,8 @@ Writing Guidelines:
                      </div>
                   </div>
                   <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-3">
-                     {Object.keys(activeData.universal_architecture_fixed || {}).filter(key => key.toLowerCase().includes((searchQuery || "").toLowerCase())).map((key, index) => {
-                        const item = activeData.universal_architecture_fixed[key];
+                     {Object.keys(activeComponentMap).filter(key => key.toLowerCase().includes((searchQuery || "").toLowerCase())).map((key, index) => {
+                        const item = activeComponentMap[key];
                         const color = getColorForComponent(index);
                         const Icon = getIconForComponent(index);
                         const isSelected = selectedComponentKey === key;
@@ -2840,7 +3343,7 @@ Writing Guidelines:
                                     <p className="text-xs text-slate-500 font-medium truncate mt-0.5">{descriptions[index % descriptions.length]}</p>
                                  </div>
                                  <div className="flex items-center gap-3 shrink-0">
-                                    <span className={`text-[11px] font-mono font-black ${isSelected ? 'text-indigo-600' : 'text-slate-400'}`}>{item.renderer || 'default_card'}</span>
+                                    <span className={`text-[11px] font-mono font-black ${isSelected ? 'text-indigo-600' : 'text-slate-400'}`}>{String(item.renderer || item.component || 'default_card')}</span>
                                     {isSelected && <ChevronRight size={16} className="text-indigo-600 group-hover:translate-x-1 transition-transform"/>}
                                  </div>
                               </div>
@@ -2903,7 +3406,7 @@ Writing Guidelines:
                                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                              <div className="bg-white/60 p-5 rounded-2xl border border-indigo-100/50">
                                                 <span className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Target Renderer</span>
-                                                <span className="text-[15px] font-black text-slate-800">{selectedComponentKey && activeData.universal_architecture_fixed?.[selectedComponentKey]?.renderer || 'N/A'}</span>
+                                                <span className="text-[15px] font-black text-slate-800">{String(selectedComponentKey && (activeComponentMap[selectedComponentKey]?.renderer || activeComponentMap[selectedComponentKey]?.component) || 'N/A')}</span>
                                              </div>
                                              <div className="bg-white/60 p-5 rounded-2xl border border-indigo-100/50">
                                                 <span className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Mapping Status</span>
@@ -2936,7 +3439,7 @@ Writing Guidelines:
                                        <div className="bg-black/30 rounded-2xl p-6 font-mono text-[10px] text-indigo-300 overflow-x-auto">
                                           <pre>
                                              {JSON.stringify(selectedComponentKey ? {
-                                                architecture: activeData.universal_architecture_fixed?.[selectedComponentKey],
+                                                architecture: activeComponentMap[selectedComponentKey],
                                                 mapping: activeData.renderer_mapping_engine?.[selectedComponentKey] || uiuxData?.renderer_mapping_engine?.[selectedComponentKey]
                                              } : {}, null, 2)}
                                           </pre>

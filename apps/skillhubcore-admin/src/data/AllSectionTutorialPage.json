@@ -606,45 +606,45 @@
         }
       },
       "universal_architecture_fixed": {
-        "core_definition": {
+        "concept_card": {
           "enabled": true,
           "required": true,
-          "renderer": "definition_block"
+          "renderer": "NotesHero"
         },
-        "concept_explanation": {
+        "definition_block": {
           "enabled": true,
           "required": true,
-          "renderer": "concept_card"
+          "renderer": "CoreDefinition"
         },
-        "key_components": {
+        "component_grid": {
           "enabled": true,
           "required": true,
-          "renderer": "component_grid"
+          "renderer": "SystemMechanics"
         },
-        "syntax_or_structure": {
+        "syntax_block": {
           "enabled": true,
           "required": true,
-          "renderer": "syntax_block"
+          "renderer": "SyntaxStructure"
         },
-        "examples": {
+        "example_panel": {
           "enabled": true,
           "required": true,
-          "renderer": "example_panel"
+          "renderer": "KeyComponents"
         },
-        "best_practices": {
+        "practice_card": {
           "enabled": true,
           "required": true,
-          "renderer": "practice_card"
+          "renderer": "BestPractices"
         },
-        "common_errors": {
+        "warning_faq": {
           "enabled": true,
           "required": true,
-          "renderer": "warning_faq"
+          "renderer": "CommonMistakes"
         },
-        "revision_summary": {
+        "summary_card": {
           "enabled": true,
           "required": true,
-          "renderer": "summary_card"
+          "renderer": "VisualSummary"
         }
       },
       "domain_adaptations_flexible": {
@@ -688,14 +688,38 @@
         }
       },
       "renderer_mapping_engine": {
-        "definition_block": {},
-        "concept_card": {},
-        "component_grid": {},
-        "syntax_block": {},
-        "example_panel": {},
-        "practice_card": {},
-        "warning_faq": {},
-        "summary_card": {},
+        "concept_card": {
+          "component": "NotesHero",
+          "data_source": "notes.concept_card"
+        },
+        "definition_block": {
+          "component": "CoreDefinition",
+          "data_source": "notes.definition_block"
+        },
+        "component_grid": {
+          "component": "SystemMechanics",
+          "data_source": "notes.component_grid"
+        },
+        "syntax_block": {
+          "component": "SyntaxStructure",
+          "data_source": "notes.syntax_block"
+        },
+        "example_panel": {
+          "component": "KeyComponents",
+          "data_source": "notes.example_panel"
+        },
+        "practice_card": {
+          "component": "BestPractices",
+          "data_source": "notes.practice_card"
+        },
+        "warning_faq": {
+          "component": "CommonMistakes",
+          "data_source": "notes.warning_faq"
+        },
+        "summary_card": {
+          "component": "VisualSummary",
+          "data_source": "notes.summary_card"
+        },
         "domain_overrides": {
           "programming": {},
           "finance": {},
@@ -713,14 +737,14 @@
       },
       "learning_progression_engine": {
         "default_flow": [
-          "core_definition",
-          "concept_explanation",
-          "key_components",
-          "syntax_or_structure",
-          "examples",
-          "best_practices",
-          "common_errors",
-          "revision_summary"
+          "concept_card",
+          "definition_block",
+          "component_grid",
+          "syntax_block",
+          "example_panel",
+          "practice_card",
+          "warning_faq",
+          "summary_card"
         ],
         "adaptive_learning_rules": [],
         "exam_pathways": {},
@@ -740,7 +764,17 @@
           "review": true,
           "approved": true,
           "published": true
-        }
+        },
+        "prompt_sections": [
+          "concept_card",
+          "definition_block",
+          "component_grid",
+          "syntax_block",
+          "example_panel",
+          "practice_card",
+          "warning_faq",
+          "summary_card"
+        ]
       },
       "ai_draft_generation_system": {
         "manual_ai_paste": true,
@@ -767,7 +801,17 @@
         "domain_accuracy_validation": true,
         "best_practice_validation": true,
         "seo_validation": true,
-        "security_validation": true
+        "security_validation": true,
+        "schema_keys": [
+          "concept_card",
+          "definition_block",
+          "component_grid",
+          "syntax_block",
+          "example_panel",
+          "practice_card",
+          "warning_faq",
+          "summary_card"
+        ]
       },
       "version_governance": {
         "architecture_versions": [],
@@ -811,6 +855,18 @@
         "engagement_metrics": true,
         "revision_frequency": true,
         "optimization_controls": true
+      },
+      "cms_integration_layer": {
+        "db_storage_keys": {
+          "concept_card": {},
+          "definition_block": {},
+          "component_grid": {},
+          "syntax_block": {},
+          "example_panel": {},
+          "practice_card": {},
+          "warning_faq": {},
+          "summary_card": {}
+        }
       }
     }
   },
@@ -908,48 +964,63 @@
           "section_spacing": {}
         },
         "component_library": {
-          "definition_blocks": {},
-          "concept_cards": {},
-          "syntax_panels": {},
-          "code_blocks": {},
-          "warning_cards": {},
-          "summary_panels": {},
-          "tables": {},
-          "diagram_panels": {},
-          "accordion_sections": {}
+          "concept_card": {
+            "component": "NotesHero"
+          },
+          "definition_block": {
+            "component": "CoreDefinition"
+          },
+          "component_grid": {
+            "component": "SystemMechanics"
+          },
+          "syntax_block": {
+            "component": "SyntaxStructure"
+          },
+          "example_panel": {
+            "component": "KeyComponents"
+          },
+          "practice_card": {
+            "component": "BestPractices"
+          },
+          "warning_faq": {
+            "component": "CommonMistakes"
+          },
+          "summary_card": {
+            "component": "VisualSummary"
+          }
         }
       },
       "renderer_mapping_engine": {
-        "core_definition": {
-          "component": "definition_block",
-          "layout": "top_priority_intro"
+        "concept_card": {
+          "component": "NotesHero",
+          "layout": "hero_overview"
         },
-        "concept_explanation": {
-          "component": "concept_card",
-          "layout": "educational_content_panel"
+        "definition_block": {
+          "component": "CoreDefinition",
+          "layout": "definition_priority"
         },
-        "key_components": {
-          "component": "component_grid",
-          "layout": "structured_breakdown"
+        "component_grid": {
+          "component": "SystemMechanics",
+          "layout": "structured_mechanics_grid"
         },
-        "syntax_or_structure": {
-          "component": "syntax_block",
+        "syntax_block": {
+          "component": "SyntaxStructure",
           "layout": "code_or_formula_highlight"
         },
-        "examples": {
-          "component": "example_panel",
+        "example_panel": {
+          "component": "KeyComponents",
           "layout": "practical_example_cards"
         },
-        "best_practices": {
-          "component": "practice_card",
+        "practice_card": {
+          "component": "BestPractices",
           "layout": "recommendation_block"
         },
-        "common_errors": {
-          "component": "warning_faq",
+        "warning_faq": {
+          "component": "CommonMistakes",
           "layout": "mistake_prevention"
         },
-        "revision_summary": {
-          "component": "summary_card",
+        "summary_card": {
+          "component": "VisualSummary",
           "layout": "exam_ready_summary"
         },
         "domain_renderer_overrides": {

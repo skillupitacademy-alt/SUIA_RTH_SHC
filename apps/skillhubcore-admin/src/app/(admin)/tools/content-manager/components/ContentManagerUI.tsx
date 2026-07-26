@@ -199,7 +199,7 @@ export function ContentManagerUI() {
                           <>
                             <p><strong>Missing Required Array/Object:</strong> The component is trying to access data that doesn&apos;t exist in your JSON.</p>
                             <ul className="list-disc pl-5 mt-2">
-                              <li>Did you paste JSON for a specific component (like <code>definitionBlock</code>) but leave the dropdown on <strong>&quot;Full Section&quot;</strong>?</li>
+                              <li>Did you paste JSON for a specific component (like <code>definition_block</code>) but leave the dropdown on <strong>&quot;Full Section&quot;</strong>?</li>
                               <li>Does your JSON include all required arrays (like <code>quickSummary</code>, <code>faqItems</code>, etc.)?</li>
                             </ul>
                           </>

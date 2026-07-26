@@ -21,33 +21,23 @@ export function SystemMechanics({ data, themeColor }: SystemMechanicsProps) {
   if (!data) return null;
 
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6 shadow-xl">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 rounded-lg bg-slate-800/80 border border-slate-700">
+    <div className="rounded-3xl border border-blue-100 bg-white p-6 shadow-xl">
+      <div className="mb-5">
+        <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-50">
           <Settings size={20} style={{ color: themeColor }} />
         </div>
-        <h3 className="text-lg font-bold text-slate-100 tracking-tight">{data.panelTitle}</h3>
+        <h3 className="text-2xl font-black tracking-tight text-slate-950">{data.panelTitle}</h3>
+        <p className="mt-3 text-sm font-semibold leading-6 text-slate-600">{data.description}</p>
       </div>
 
-      <p className="text-slate-400 text-sm mb-6 leading-relaxed">
-        {data.description}
-      </p>
-
-      <div className="space-y-4">
+      <div className="grid gap-4 md:grid-cols-3">
         {data.mechanics.map((item, idx) => (
-          <div key={item.id} className="group relative pl-6 pb-4 last:pb-0">
-            {idx !== data.mechanics.length - 1 && (
-              <div className="absolute left-1.5 top-5 bottom-0 w-px bg-slate-800 group-hover:bg-slate-700 transition-colors" />
-            )}
-            <div 
-              className="absolute left-0 top-1.5 w-3 h-3 rounded-full border-2 border-slate-800 bg-slate-900 transition-all group-hover:scale-125"
-              style={{ borderColor: idx % 2 === 0 ? themeColor : 'inherit' }}
-            />
-            
-            <div className="flex flex-col gap-1">
-              <span className="text-xs font-bold text-slate-200 tracking-wide uppercase">{item.label}</span>
-              <p className="text-xs text-slate-400 leading-relaxed">{item.detail}</p>
-            </div>
+          <div key={item.id} className="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm">
+            <span className="flex h-9 w-9 items-center justify-center rounded-full text-xs font-black text-white" style={{ backgroundColor: themeColor }}>
+              {idx + 1}
+            </span>
+            <h4 className="mt-4 text-base font-black text-slate-950">{item.label}</h4>
+            <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">{item.detail}</p>
           </div>
         ))}
       </div>

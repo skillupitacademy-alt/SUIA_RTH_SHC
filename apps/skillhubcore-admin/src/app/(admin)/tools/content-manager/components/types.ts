@@ -48,21 +48,14 @@ export const initialSectionStatus = sections.reduce((status, section) => ({
 
 export const SUBSECTIONS_MAP: Record<string, Array<{ id: string; label: string; type: 'json' | 'svg' }>> = {
   notes: [
-    { id: 'simpleWords', label: 'Simple Words (Text)', type: 'json' },
-    { id: 'definitionBlock', label: 'Definition Block (JSON)', type: 'json' },
-    { id: 'syntaxBlock', label: 'Syntax Block (JSON)', type: 'json' },
-    { id: 'componentGrid', label: 'Component Grid (JSON)', type: 'json' },
-    { id: 'examplePanel', label: 'Example Panel (JSON)', type: 'json' },
-    { id: 'practiceCard', label: 'Practice Card (JSON)', type: 'json' },
-    { id: 'warningFaq', label: 'Warning FAQ (JSON)', type: 'json' },
-    { id: 'summaryCard', label: 'Summary Card (JSON)', type: 'json' },
-    { id: 'footerBlock', label: 'Footer Block (JSON)', type: 'json' },
-    { id: 'summaryHeroSvg', label: 'Summary Hero (SVG)', type: 'svg' },
-    { id: 'conceptMemoryMapSvg', label: 'Concept Memory Map (SVG)', type: 'svg' },
-    { id: 'cheatSheetSVG', label: 'Cheat Sheet (SVG)', type: 'svg' },
-    { id: 'flashcardVisualSystem', label: 'Flashcard Visual System (JSON)', type: 'json' },
-    { id: 'comparisonSummaryChart', label: 'Comparison Summary Chart (JSON)', type: 'json' },
-    { id: 'mnemonicRetentionGraphic', label: 'Mnemonic Retention Graphic (JSON)', type: 'json' },
+    { id: 'concept_card', label: 'Concept Card / Notes Hero (JSON)', type: 'json' },
+    { id: 'definition_block', label: 'Definition Block (JSON)', type: 'json' },
+    { id: 'component_grid', label: 'Component Grid / Mechanics (JSON)', type: 'json' },
+    { id: 'syntax_block', label: 'Syntax Block (JSON)', type: 'json' },
+    { id: 'example_panel', label: 'Example Panel / Key Components (JSON)', type: 'json' },
+    { id: 'practice_card', label: 'Practice Card / Best Practices (JSON)', type: 'json' },
+    { id: 'warning_faq', label: 'Warning FAQ / Common Mistakes (JSON)', type: 'json' },
+    { id: 'summary_card', label: 'Summary Card / Visual Summary (JSON)', type: 'json' },
   ],
   layman: [
     { id: 'simpleOverview', label: 'Simple Overview (JSON)', type: 'json' },
@@ -180,7 +173,7 @@ export function getDefaultAssetFieldPath(section: SectionType) {
     case 'layman':
       return 'everydayAnalogy.image';
     case 'notes':
-      return 'summaryCard.image';
+      return 'summary_card.image';
     case 'code':
       return 'outputDemonstration.previewAsset';
     case 'technical':
@@ -199,7 +192,7 @@ export function getAllowedAssetFieldPaths(section: SectionType) {
     case 'layman':
       return ['everydayAnalogy.image', 'simpleOverview.image'];
     case 'notes':
-      return ['summaryCard.image', 'summaryHeroInfographic.image', 'conceptMemoryMap.image', 'syntaxBlock.image'];
+      return ['summary_card.image', 'syntax_block.image'];
     case 'code':
       return ['outputDemonstration.previewAsset'];
     case 'technical':

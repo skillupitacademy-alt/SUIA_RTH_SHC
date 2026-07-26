@@ -159,65 +159,15 @@ export function buildSubtopicNotesDataFromSectionsResponse(
         level: subtopicInfo.level,
         xp: 50
       },
-      simpleWords: notesContent?.simpleWords ?? '',
-      definitionBlock: notesContent?.definitionBlock,
-      sections: notesContent?.sections ?? [],
-      componentGrid: notesContent?.componentGrid,
-      examplePanel: notesContent?.examplePanel,
-      practiceCard: notesContent?.practiceCard,
-      warningFaq: notesContent?.warningFaq,
-      summaryCard: notesContent?.summaryCard,
-
-      // 1. Summary Hero Infographic
-      summaryHeroInfographic:
-        notesContent?.summaryHeroInfographic ??
-        (visualContent as any)?.summaryInfographic ??
-        (visualContent as any)?.summary_infographic,
-
-      // 2. Concept Memory Map / Flow
-      conceptMemoryMap:
-        notesContent?.conceptMemoryMap ??
-        (visualContent as any)?.mentalModelVisualization ??
-        (visualContent as any)?.mental_model_canvas,
-
-      // 3. Component Grid (Already handled in componentGrid field above)
-
-      // 4. Syntax Block
-      syntaxBlock:
-        notesContent?.syntaxBlock ??
-        (visualContent as any)?.syntaxBlock ??
-        (visualContent as any)?.lineByLineExplanation,
-
-      // 5. Example Panel (Already handled in examplePanel field above)
-
-      // 6. Practice Card (Already handled in practiceCard field above)
-
-      // 7. Cheat Sheet (Quick Reference)
-      cheatSheetSVG:
-        notesContent?.cheatSheetSVG ??
-        (visualContent as any)?.diagrammaticBreakdown ??
-        (visualContent as any)?.diagram_panel,
-
-      // 8. Flashcard Visual System
-      flashcardVisualSystem:
-        notesContent?.flashcardVisualSystem ??
-        (visualContent as any)?.flashcardVisualSystem,
-
-      // 9. Comparison Summary Chart
-      comparisonSummaryChart:
-        notesContent?.comparisonSummaryChart ??
-        (visualContent as any)?.comparativeVisualization ??
-        (visualContent as any)?.comparison_diagram,
-
-      // 10. Mnemonic & Retention Graphic
-      mnemonicRetentionGraphic:
-        notesContent?.mnemonicRetentionGraphic ??
-        (visualContent as any)?.mnemonicRetentionGraphic,
-
-      // Final Footer
-      footerBlock:
-        notesContent?.footerBlock ??
-        (visualContent as any)?.footerBlock,
+      simpleWords: notesContent?.concept_card?.heroSubtitle ?? '',
+      definitionBlock: notesContent?.definition_block,
+      sections: notesContent?.concept_card ? [notesContent.concept_card] : [],
+      componentGrid: notesContent?.component_grid,
+      examplePanel: notesContent?.example_panel,
+      practiceCard: notesContent?.practice_card,
+      warningFaq: notesContent?.warning_faq,
+      summaryCard: notesContent?.summary_card,
+      syntaxBlock: notesContent?.syntax_block,
 
       laymanExplanation: laymanContent,
       realLifeExamples: realLifeContent,
@@ -256,7 +206,7 @@ export function buildSubtopicNotesDataFromSectionsResponse(
       relatedSubtopics: [
       ],
       laymanSidebar: {
-        quickSummary: notesContent?.definitionBlock?.quickSummary ?? [],
+        quickSummary: notesContent?.summary_card?.keyTakeaways ?? [],
         keyTerms: [],
         readingTime: '',
         thinkAboutIt: ''

@@ -22,30 +22,32 @@ export function VisualSummary({ data, themeColor }: VisualSummaryProps) {
   const imageCaption = getTutorialAssetCaption(data.image);
 
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/30 p-6 shadow-xl">
-      <div className="flex items-center gap-3 mb-6">
+    <div className="rounded-3xl border border-blue-100 bg-white p-7 shadow-xl">
+      <div className="mb-6 flex items-center gap-3">
         <Eye size={20} style={{ color: themeColor }} />
-        <h3 className="text-lg font-bold text-slate-100 tracking-tight">{data.summaryTitle}</h3>
+        <h3 className="text-3xl font-black tracking-tight text-slate-950">{data.summaryTitle}</h3>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+      <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-2">
         <div className="space-y-6">
-          <div className="bg-slate-800/40 p-5 rounded-xl border border-slate-700/50">
-            <div className="flex items-center gap-2 mb-3">
+          <div className="rounded-2xl border border-blue-100 bg-blue-50/30 p-5">
+            <div className="mb-3 flex items-center gap-2">
               <Info size={14} style={{ color: themeColor }} />
               <span className="text-[10px] font-black uppercase tracking-tighter text-slate-400">Concept Flow</span>
             </div>
-            <p className="text-sm text-slate-300 leading-relaxed italic">
+            <p className="text-sm font-semibold leading-6 text-slate-600">
               {data.conceptDiagramDescription}
             </p>
           </div>
 
           <div>
-            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Core Takeaways</h4>
+            <h4 className="mb-3 text-xs font-bold uppercase tracking-widest text-slate-500">Core Takeaways</h4>
             <ul className="space-y-2">
               {data.keyTakeaways.map((takeaway, idx) => (
-                <li key={idx} className="flex items-start gap-3 text-sm text-slate-400">
-                  <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-slate-700 shrink-0" />
+                <li key={idx} className="flex items-start gap-3 text-sm font-bold leading-6 text-slate-700">
+                  <span className="mt-1.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-black text-white" style={{ backgroundColor: themeColor }}>
+                    {idx + 1}
+                  </span>
                   {takeaway}
                 </li>
               ))}
@@ -55,24 +57,24 @@ export function VisualSummary({ data, themeColor }: VisualSummaryProps) {
 
         {imageSource ? (
           <div className="relative group">
-            <div className="absolute -inset-1 bg-gradient-to-r opacity-20 blur group-hover:opacity-30 transition-opacity" style={{ backgroundImage: `linear-gradient(to right, ${themeColor}, #fb923c)` }} />
-            <div className="relative rounded-xl overflow-hidden border border-slate-700 bg-slate-950">
+            <div className="absolute -inset-1 bg-gradient-to-r opacity-20 blur transition-opacity group-hover:opacity-30" style={{ backgroundImage: `linear-gradient(to right, ${themeColor}, #fb923c)` }} />
+            <div className="relative overflow-hidden rounded-2xl border border-blue-100 bg-white">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={imageSource}
                 alt={imageAlt}
-                className="w-full h-auto object-cover"
+                className="h-auto w-full object-cover"
               />
               {imageCaption && (
-                <div className="absolute bottom-0 left-0 right-0 p-3 bg-black/60 backdrop-blur-sm text-[10px] text-slate-300 border-t border-slate-800">
+                <div className="absolute bottom-0 left-0 right-0 border-t border-blue-100 bg-white/90 p-3 text-[10px] font-bold text-slate-600 backdrop-blur-sm">
                   {imageCaption}
                 </div>
               )}
             </div>
           </div>
         ) : (
-          <div className="aspect-video rounded-xl bg-slate-950/50 border border-slate-800 border-dashed flex items-center justify-center">
-            <span className="text-slate-600 text-xs font-mono">Visual Placeholder</span>
+          <div className="flex aspect-video items-center justify-center rounded-2xl border border-dashed border-blue-200 bg-blue-50/40">
+            <span className="text-xs font-black uppercase tracking-widest text-slate-400">Visual Placeholder</span>
           </div>
         )}
       </div>

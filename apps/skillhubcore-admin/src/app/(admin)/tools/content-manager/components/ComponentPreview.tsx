@@ -11,19 +11,7 @@ import {
   Target,
 } from 'lucide-react';
 
-// Notes Components
-import { NotesSummaryCard } from '@/share-branding/TutorialEngine/components/notes/NotesSummaryCard';
-import { NotesSyntaxBlock } from '@/share-branding/TutorialEngine/components/notes/NotesSyntaxBlock';
-import { NotesPracticeCard } from '@/share-branding/TutorialEngine/components/notes/NotesPracticeCard';
-import { NotesWarningFaq } from '@/share-branding/TutorialEngine/components/notes/NotesWarningFaq';
-import { NotesDefinitionBlock } from '@/share-branding/TutorialEngine/components/notes/NotesDefinitionBlock';
-import { NotesCheatSheet } from '@/share-branding/TutorialEngine/components/notes/NotesCheatSheet';
-import { NotesExamplePanel } from '@/share-branding/TutorialEngine/components/notes/NotesExamplePanel';
-import { NotesConceptMemoryMap } from '@/share-branding/TutorialEngine/components/notes/NotesConceptMemoryMap';
-import { NotesHeroInfographic } from '@/share-branding/TutorialEngine/components/notes/NotesHeroInfographic';
-
 // Main Content Components for Full Section Preview
-import { NotesMainContent } from '@/share-branding/TutorialEngine/components/notes/NotesMainContent';
 import { LaymanMainContent } from '@/share-branding/TutorialEngine/components/layman/LaymanMainContent';
 import { CodeExampleContent } from '@/share-branding/TutorialEngine/components/notes/CodeExampleContent';
 import { TechnicalDeepDiveContent } from '@/share-branding/TutorialEngine/components/notes/TechnicalDeepDiveContent';
@@ -315,6 +303,169 @@ function GenericComponentPreview({ section, subsection, data }: { section: strin
   );
 }
 
+function NotesCanonicalPreview({ subsection, data }: { subsection: string; data: unknown }) {
+  const record = asRecord(data);
+
+  switch (subsection) {
+    case 'concept_card': {
+      const quickLook = asArray<string>(record.quickLook);
+      return (
+        <section className="overflow-hidden rounded-3xl border border-indigo-100 bg-gradient-to-br from-white via-indigo-50 to-emerald-50 p-8 shadow-xl">
+          <div className="mb-5 flex flex-wrap gap-2">
+            {quickLook.map((item) => (
+              <span key={item} className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700">{item}</span>
+            ))}
+          </div>
+          <h2 className="text-4xl font-black tracking-tight text-slate-950">{asString(record.heroTitle, 'What is Python?')}</h2>
+          <p className="mt-4 max-w-3xl text-base font-semibold leading-7 text-slate-600">{asString(record.heroSubtitle, 'A clear learner-facing introduction.')}</p>
+        </section>
+      );
+    }
+    case 'definition_block':
+      return (
+        <section className="rounded-3xl border border-blue-100 bg-white p-7 shadow-xl">
+          <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-black uppercase text-blue-700">{asString(record.badge, 'Core Concept')}</span>
+          <h2 className="mt-5 text-3xl font-black text-slate-950">{asString(record.headline, 'Definition')}</h2>
+          <p className="mt-4 text-lg font-bold leading-8 text-slate-700">{asString(record.definition, 'Canonical definition text.')}</p>
+          <div className="mt-6 grid gap-4 md:grid-cols-2">
+            <div className="rounded-2xl bg-slate-50 p-5">
+              <p className="text-xs font-black uppercase text-slate-400">Simple Explanation</p>
+              <p className="mt-2 font-semibold leading-7 text-slate-700">{asString(record.simpleExplanation, 'Simple explanation.')}</p>
+            </div>
+            <div className="rounded-2xl bg-emerald-50 p-5">
+              <p className="text-xs font-black uppercase text-emerald-700">Why It Matters</p>
+              <p className="mt-2 font-semibold leading-7 text-slate-700">{asString(record.whyItMatters, 'Why this matters.')}</p>
+            </div>
+          </div>
+        </section>
+      );
+    case 'component_grid': {
+      const mechanics = asArray<Record<string, unknown>>(record.mechanics);
+      return (
+        <section className="rounded-3xl border border-slate-200 bg-white p-7 shadow-xl">
+          <h2 className="text-3xl font-black text-slate-950">{asString(record.panelTitle, 'How it works')}</h2>
+          <p className="mt-3 max-w-3xl font-semibold leading-7 text-slate-600">{asString(record.description, 'Mechanics explanation.')}</p>
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            {mechanics.map((item, index) => (
+              <div key={asString(item.id, String(index))} className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600 text-sm font-black text-white">{index + 1}</div>
+                <h3 className="font-black text-slate-950">{asString(item.label, 'Mechanic')}</h3>
+                <p className="mt-2 text-sm font-medium leading-6 text-slate-600">{asString(item.detail, 'Detail')}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      );
+    }
+    case 'syntax_block': {
+      const breakdown = asArray<Record<string, unknown>>(record.breakdown);
+      return (
+        <section className="rounded-3xl border border-slate-800 bg-slate-950 p-7 text-white shadow-xl">
+          <p className="text-xs font-black uppercase tracking-widest text-indigo-300">{asString(record.language, 'python')}</p>
+          <h2 className="mt-2 text-3xl font-black">{asString(record.title, 'Syntax structure')}</h2>
+          <pre className="mt-5 overflow-x-auto rounded-2xl bg-black p-5 text-sm text-emerald-200"><code>{asString(record.codeSnippet, 'print(\"Hello\")')}</code></pre>
+          <div className="mt-5 grid gap-3 md:grid-cols-2">
+            {breakdown.map((item, index) => (
+              <div key={index} className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                <p className="font-black text-indigo-200">{asString(item.part, 'Part')}</p>
+                <p className="mt-1 text-sm leading-6 text-slate-300">{asString(item.explanation, 'Explanation')}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      );
+    }
+    case 'example_panel': {
+      const components = asArray<Record<string, unknown>>(record.components);
+      return (
+        <section className="rounded-3xl border border-purple-100 bg-white p-7 shadow-xl">
+          <h2 className="text-3xl font-black text-slate-950">{asString(record.title, 'Key components')}</h2>
+          <p className="mt-3 font-semibold leading-7 text-slate-600">{asString(record.description, 'Practical examples and components.')}</p>
+          <div className="mt-6 grid gap-4 md:grid-cols-2">
+            {components.map((item, index) => (
+              <div key={asString(item.id, String(index))} className="rounded-2xl border border-purple-100 bg-purple-50 p-5">
+                <h3 className="font-black text-slate-950">{asString(item.title, 'Component')}</h3>
+                <p className="mt-2 text-sm font-medium leading-6 text-slate-700">{asString(item.description, 'Description')}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      );
+    }
+    case 'practice_card': {
+      const practices = asArray<Record<string, unknown>>(record.practices);
+      return (
+        <section className="rounded-3xl border border-emerald-100 bg-emerald-50 p-7 shadow-xl">
+          <h2 className="text-3xl font-black text-slate-950">{asString(record.title, 'Best practices')}</h2>
+          <div className="mt-5 space-y-3">
+            {practices.map((item, index) => (
+              <div key={asString(item.id, String(index))} className="rounded-2xl bg-white p-4 shadow-sm">
+                <p className="font-black text-emerald-700">{asString(item.label, 'Practice')}</p>
+                <p className="mt-1 font-medium leading-6 text-slate-700">{asString(item.tip, 'Tip')}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      );
+    }
+    case 'warning_faq': {
+      const mistakes = asArray<Record<string, unknown>>(record.mistakes);
+      return (
+        <section className="rounded-3xl border border-rose-100 bg-rose-50 p-7 shadow-xl">
+          <h2 className="text-3xl font-black text-slate-950">{asString(record.title, 'Common mistakes')}</h2>
+          <div className="mt-5 grid gap-4 md:grid-cols-2">
+            {mistakes.map((item, index) => (
+              <div key={asString(item.id, String(index))} className="rounded-2xl bg-white p-5 shadow-sm">
+                <p className="font-black text-rose-700">{asString(item.mistake, 'Mistake')}</p>
+                <p className="mt-2 text-sm font-semibold leading-6 text-slate-700">{asString(item.fix, 'Fix')}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      );
+    }
+    case 'summary_card': {
+      const takeaways = asArray<string>(record.keyTakeaways);
+      return (
+        <section className="rounded-3xl border border-indigo-100 bg-indigo-50 p-7 shadow-xl">
+          <h2 className="text-3xl font-black text-slate-950">{asString(record.summaryTitle, 'Quick summary')}</h2>
+          <p className="mt-3 font-semibold leading-7 text-slate-600">{asString(record.conceptDiagramDescription, 'Visual summary description.')}</p>
+          <div className="mt-5 grid gap-3 md:grid-cols-3">
+            {takeaways.map((item, index) => (
+              <div key={index} className="rounded-2xl bg-white p-4 text-sm font-bold leading-6 text-slate-700 shadow-sm">{item}</div>
+            ))}
+          </div>
+        </section>
+      );
+    }
+    default:
+      return <GenericComponentPreview section="notes" subsection={subsection} data={data} />;
+  }
+}
+
+function NotesCanonicalFullPreview({ data }: { data: Record<string, unknown> }) {
+  const order = [
+    'concept_card',
+    'definition_block',
+    'component_grid',
+    'syntax_block',
+    'example_panel',
+    'practice_card',
+    'warning_faq',
+    'summary_card',
+  ];
+
+  return (
+    <div className="space-y-8">
+      {order
+        .filter((key) => key in data)
+        .map((key) => (
+          <NotesCanonicalPreview key={key} subsection={key} data={data[key]} />
+        ))}
+    </div>
+  );
+}
+
 export function ComponentPreview({ section, subsection, data, rendererContract }: ComponentPreviewProps) {
   if (!data) return <div className="p-4 text-center text-slate-500">No data available for preview. Please parse valid JSON first.</div>;
 
@@ -345,7 +496,7 @@ export function ComponentPreview({ section, subsection, data, rendererContract }
       case 'overview':
         return <OverviewFullPreview data={asRecord(targetData)} />;
       case 'notes':
-        return <NotesMainContent data={targetData as React.ComponentProps<typeof NotesMainContent>['data']} isStandalone={false} />;
+        return <NotesCanonicalFullPreview data={asRecord(targetData)} />;
       case 'layman':
         return <LaymanMainContent data={targetData as React.ComponentProps<typeof LaymanMainContent>['data']} />;
       case 'code':
@@ -366,30 +517,20 @@ export function ComponentPreview({ section, subsection, data, rendererContract }
   }
 
   if (section === 'notes') {
-    switch (subsection) {
-      case 'summaryCard':
-        return <NotesSummaryCard {...(targetData as React.ComponentProps<typeof NotesSummaryCard>)} />;
-      case 'practiceCard':
-        return <NotesPracticeCard {...(targetData as React.ComponentProps<typeof NotesPracticeCard>)} />;
-      case 'warningFaq':
-        return <NotesWarningFaq {...(targetData as React.ComponentProps<typeof NotesWarningFaq>)} />;
-      case 'definitionBlock':
-        return <NotesDefinitionBlock {...(targetData as React.ComponentProps<typeof NotesDefinitionBlock>)} />;
-      case 'cheatSheetSVG':
-      case 'diagrammaticBreakdown':
-        return <NotesCheatSheet {...(targetData as React.ComponentProps<typeof NotesCheatSheet>)} />;
-      case 'syntaxBlock':
-      case 'lineByLineExplanation':
-        return <NotesSyntaxBlock {...(targetData as React.ComponentProps<typeof NotesSyntaxBlock>)} />;
-      case 'examplePanel':
-        return <NotesExamplePanel {...(targetData as React.ComponentProps<typeof NotesExamplePanel>)} />;
-      case 'conceptMemoryMap':
-      case 'mentalModelVisualization':
-        return <NotesConceptMemoryMap {...(targetData as React.ComponentProps<typeof NotesConceptMemoryMap>)} />;
-      case 'summaryHeroInfographic':
-      case 'summaryHeroSvg':
-        return <NotesHeroInfographic {...(targetData as React.ComponentProps<typeof NotesHeroInfographic>)} />;
+    if ([
+      'concept_card',
+      'definition_block',
+      'component_grid',
+      'syntax_block',
+      'example_panel',
+      'practice_card',
+      'warning_faq',
+      'summary_card',
+    ].includes(subsection)) {
+      return <NotesCanonicalPreview subsection={subsection} data={targetData} />;
     }
+
+    return <GenericComponentPreview section="notes" subsection={subsection} data={targetData} />;
   }
 
   // 3. Default visual fallback for components that do not have a dedicated renderer yet.

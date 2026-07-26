@@ -29,16 +29,17 @@ const validQuiz = {
 const validNotes = {
   schemaVersion: 1,
   sectionType: 'notes',
-  cheatSheetSVG: {
-    title: 'Python List Cheat Sheet',
-    sections: [
-      {
-        id: 'append',
-        title: 'Append Item',
-        code: 'items.append("new")',
-        description: 'Adds one item to the end of the list.',
-      },
-    ],
+  concept_card: {
+    heroTitle: 'What is a Python list?',
+    heroSubtitle: 'A Python list stores multiple ordered values in one variable.',
+    quickLook: ['Ordered', 'Mutable', 'Index based'],
+  },
+  definition_block: {
+    badge: 'Core concept',
+    headline: 'Python lists hold ordered collections',
+    definition: 'A list is a mutable sequence of values.',
+    simpleExplanation: 'Think of it like a numbered row of boxes.',
+    whyItMatters: 'Lists are used to group values and process them together.',
   },
 };
 
@@ -66,37 +67,37 @@ describe('strict tutorial section validation', () => {
     );
   });
 
-  it('accepts notes cheat sheet items that match renderer field names', () => {
+  it('accepts canonical notes component keys that match renderer field names', () => {
     expect(validateTutorialSection('notes', validNotes).success).toBe(true);
   });
 
-  it('rejects notes cheat sheet items with loose label/value aliases', () => {
+  it('rejects legacy notes subsection aliases', () => {
     const result = validateTutorialSection('notes', {
       ...validNotes,
-      cheatSheetSVG: {
-        title: 'Python List Cheat Sheet',
-        sections: [{ label: 'Append Item', value: 'items.append("new")' }],
+      definitionBlock: {
+        term: 'Python list',
+        definition: 'A sequence.',
       },
     });
 
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.issues.some((issue) => issue.path.startsWith('cheatSheetSVG.sections.0'))).toBe(true);
+      expect(result.issues.some((issue) => issue.message.includes('Unrecognized key'))).toBe(true);
     }
   });
 
-  it('rejects unknown keys in optional notes visual blocks', () => {
+  it('rejects unknown keys in canonical notes visual blocks', () => {
     const result = validateTutorialSection('notes', {
       ...validNotes,
-      cheatSheetSVG: {
-        ...validNotes.cheatSheetSVG,
+      concept_card: {
+        ...validNotes.concept_card,
         rendererOnlyAlias: 'This must not be accepted silently.',
       },
     });
 
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.issues.some((issue) => issue.path === 'cheatSheetSVG')).toBe(true);
+      expect(result.issues.some((issue) => issue.path === 'concept_card')).toBe(true);
     }
   });
 });

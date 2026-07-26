@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Lightbulb, Info } from 'lucide-react';
+import { Info, Lightbulb } from 'lucide-react';
 
 interface CoreDefinitionProps {
   data: {
@@ -18,46 +18,41 @@ export function CoreDefinition({ data, themeColor }: CoreDefinitionProps) {
   if (!data) return null;
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/50 p-6 shadow-xl transition-all hover:shadow-2xl hover:border-slate-700">
-      <div className="absolute top-0 right-0 p-4 opacity-10">
-        <Lightbulb size={64} style={{ color: themeColor }} />
-      </div>
-      
-      <div className="flex items-center gap-2 mb-4">
-        <span 
-          className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider text-white shadow-sm"
+    <div className="relative overflow-hidden rounded-3xl border border-blue-100 bg-white p-7 shadow-xl">
+      <div className="mb-6 flex flex-wrap items-center gap-3">
+        <span
+          className="rounded-full px-3 py-1 text-xs font-black text-white shadow-sm"
           style={{ backgroundColor: themeColor }}
         >
           {data.badge}
         </span>
+        <span className="rounded-full border border-blue-200 bg-white px-3 py-1 text-xs font-bold" style={{ color: themeColor }}>
+          Definition
+        </span>
       </div>
 
-      <h3 className="text-xl font-bold text-slate-100 mb-3 tracking-tight">
-        {data.headline}
-      </h3>
-
-      <div className="space-y-4">
-        <p className="text-slate-300 text-sm leading-relaxed border-l-2 pl-4" style={{ borderColor: themeColor }}>
+      <div className="rounded-3xl border border-blue-100 bg-white p-7 shadow-lg">
+        <div className="mb-3 flex items-center gap-2">
+          <Lightbulb size={18} style={{ color: themeColor }} />
+          <p className="text-xs font-black uppercase tracking-widest text-slate-400">Canonical Definition</p>
+        </div>
+        <h3 className="text-3xl font-black leading-tight text-slate-950">{data.headline}</h3>
+        <p className="mt-5 border-l-4 pl-5 text-lg font-bold leading-8 text-slate-700" style={{ borderColor: themeColor }}>
           {data.definition}
         </p>
+      </div>
 
-        <div className="bg-slate-800/40 rounded-xl p-4 border border-slate-700/50">
-          <div className="flex items-start gap-3">
-            <Info size={16} className="mt-0.5 text-slate-400" />
-            <div>
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">In Simple Terms</p>
-              <p className="text-slate-300 text-sm italic leading-relaxed">
-                {`"${data.simpleExplanation}"`}
-              </p>
-            </div>
+      <div className="mt-5 grid gap-4 md:grid-cols-2">
+        <div className="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm">
+          <div className="mb-2 flex items-center gap-2">
+            <Info size={15} style={{ color: themeColor }} />
+            <p className="text-xs font-black uppercase tracking-wider" style={{ color: themeColor }}>Simple Explanation</p>
           </div>
+          <p className="text-sm font-semibold leading-6 text-slate-600">{data.simpleExplanation}</p>
         </div>
-
-        <div className="pt-2">
-          <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1">Strategic Value</p>
-          <p className="text-slate-400 text-xs leading-relaxed">
-            {data.whyItMatters}
-          </p>
+        <div className="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm">
+          <p className="mb-2 text-xs font-black uppercase tracking-wider" style={{ color: themeColor }}>Why It Matters</p>
+          <p className="text-sm font-semibold leading-6 text-slate-600">{data.whyItMatters}</p>
         </div>
       </div>
     </div>

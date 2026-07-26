@@ -22,8 +22,16 @@ export function NotesBlock({ data, theme }: NotesBlockProps) {
   
   if (!data) return null;
 
-  // Check if we are using the new modular format
-  const isModular = 'coreDefinition' in data;
+  // Canonical modular Notes payload. Old aliases are intentionally not accepted here.
+  const isModular =
+    'concept_card' in data ||
+    'definition_block' in data ||
+    'component_grid' in data ||
+    'syntax_block' in data ||
+    'example_panel' in data ||
+    'practice_card' in data ||
+    'warning_faq' in data ||
+    'summary_card' in data;
 
   if (isModular) {
     return (

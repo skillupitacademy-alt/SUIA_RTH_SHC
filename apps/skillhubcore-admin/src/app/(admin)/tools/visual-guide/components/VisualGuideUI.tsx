@@ -16,7 +16,7 @@ export function VisualGuideUI() {
   const searchParams = useSearchParams();
   const [sections, setSections] = useState<SectionSpec[]>(SECTIONS_SPECS);
   const [selectedSectionId, setSelectedSectionId] = useState<string>('notes');
-  const [selectedSubsectionId, setSelectedSubsectionId] = useState<string>('definitionBlock');
+  const [selectedSubsectionId, setSelectedSubsectionId] = useState<string>('concept_card');
   const [highlightedElement, setHighlightedElement] = useState<string | null>(null);
   const [isEditingSubsection, setIsEditingSubsection] = useState<boolean>(false);
   const [editForm, setEditForm] = useState<SubsectionInfo | null>(null);

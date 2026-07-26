@@ -202,6 +202,17 @@ const COLUMN_TO_PARENT_KEY: Record<string, string> = {
   mentalModelSvg: 'mentalModel.image',
 };
 
+const DOMAIN_COLUMN_MAP: Record<string, string> = {
+  concept_card: 'sections',
+  definition_block: 'definitionBlock',
+  component_grid: 'componentGrid',
+  syntax_block: 'syntaxBlock',
+  example_panel: 'examplePanel',
+  practice_card: 'practiceCard',
+  warning_faq: 'warningFaq',
+  summary_card: 'summaryCard',
+};
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function upsertChildDomainTable(tx: any, sectionId: string, sectionType: string, content: any) {
   const table = DOMAIN_TABLE_MAP[sectionType];
@@ -228,19 +239,19 @@ async function upsertChildDomainTable(tx: any, sectionId: string, sectionType: s
       break;
 
     case 'notes':
-      values.simpleWords = content.simpleWords || '';
-      values.definitionBlock = content.definitionBlock || {};
-      values.sections = content.sections || [];
-      values.componentGrid = content.componentGrid || {};
-      values.examplePanel = content.examplePanel || {};
-      values.practiceCard = content.practiceCard || {};
-      values.warningFaq = content.warningFaq || {};
-      values.summaryCard = content.summaryCard || {};
-      values.syntaxBlock = content.syntaxBlock || null;
+      values.simpleWords = content.concept_card?.heroSubtitle || '';
+      values.definitionBlock = content.definition_block || {};
+      values.sections = content.concept_card ? [content.concept_card] : [];
+      values.componentGrid = content.component_grid || {};
+      values.examplePanel = content.example_panel || {};
+      values.practiceCard = content.practice_card || {};
+      values.warningFaq = content.warning_faq || {};
+      values.summaryCard = content.summary_card || {};
+      values.syntaxBlock = content.syntax_block || null;
       values.footerBlock = content.footerBlock || null;
       values.summaryHeroSvg = content.summaryHeroInfographic || null;
       values.conceptMemoryMapSvg = content.conceptMemoryMap || null;
-      values.cheatSheetSVG = content.cheatSheetSVG || null;
+      values.cheatSheetSVG = null;
       break;
 
     case 'layman':
@@ -669,162 +680,11 @@ function transformOverviewSection(content: JsonRecord, subtopicName: string): Js
   };
 }
 
-function transformNotesSection(content: JsonRecord, subtopicName: string): JsonRecord {
-  if (isRecord(content.definitionBlock)) {
-    const definitionBlock = asRecord(content.definitionBlock);
-    const componentGrid = asRecord(content.componentGrid);
-    const examplePanel = asRecord(content.examplePanel);
-    const practiceCard = asRecord(content.practiceCard);
-    const warningFaq = asRecord(content.warningFaq);
-    const summaryCard = asRecord(content.summaryCard);
-
-    return {
-      simpleWords: asString(content.simpleWords, asString(definitionBlock.definitionText, subtopicName)),
-      summaryHeroInfographic: isRecord(content.summaryHeroInfographic) ? {
-        ...asRecord(content.summaryHeroInfographic),
-        ...(normalizeSvgAsset(asRecord(content.summaryHeroInfographic).image) ? { image: normalizeSvgAsset(asRecord(content.summaryHeroInfographic).image) } : {})
-      } : undefined,
-      conceptMemoryMap: isRecord(content.conceptMemoryMap) ? {
-        ...asRecord(content.conceptMemoryMap),
-        ...(normalizeSvgAsset(asRecord(content.conceptMemoryMap).image) ? { image: normalizeSvgAsset(asRecord(content.conceptMemoryMap).image) } : {})
-      } : undefined,
-      cheatSheetSVG: isRecord(content.cheatSheetSVG) ? {
-        ...asRecord(content.cheatSheetSVG),
-        ...(normalizeSvgAsset(asRecord(content.cheatSheetSVG).image) ? { image: normalizeSvgAsset(asRecord(content.cheatSheetSVG).image) } : {})
-      } : undefined,
-      definitionBlock: {
-        ...definitionBlock,
-        quickSummary: asArray(definitionBlock.quickSummary),
-      },
-      sections: asArray(content.sections),
-      componentGrid: {
-        ...componentGrid,
-        componentCards: asArray(componentGrid.componentCards),
-      },
-      syntaxBlock: isRecord(content.syntaxBlock) ? {
-        ...asRecord(content.syntaxBlock),
-        ...(normalizeSvgAsset(asRecord(content.syntaxBlock).image) ? { image: normalizeSvgAsset(asRecord(content.syntaxBlock).image) } : {})
-      } : undefined,
-      examplePanel: {
-        ...examplePanel,
-        scenarios: asArray(examplePanel.scenarios),
-      },
-      practiceCard: {
-        ...practiceCard,
-        recommendations: asArray(practiceCard.recommendations),
-        optimizationTips: asArray(practiceCard.optimizationTips),
-        industryStandards: asArray(practiceCard.industryStandards),
-      },
-      warningFaq: {
-        ...warningFaq,
-        commonErrors: asArray(warningFaq.commonErrors),
-        faqItems: asArray(warningFaq.faqItems),
-        misconceptionAlerts: asArray(warningFaq.misconceptionAlerts),
-      },
-      summaryCard: {
-        ...summaryCard,
-        keyTakeaways: asArray(summaryCard.keyTakeaways),
-        revisionChecklist: asArray(summaryCard.revisionChecklist),
-        examTips: asArray(summaryCard.examTips),
-        ...(normalizeSvgAsset(summaryCard.image) ? { image: normalizeSvgAsset(summaryCard.image) } : {}),
-      },
-      footerBlock: isRecord(content.footerBlock) ? asRecord(content.footerBlock) : undefined,
-    };
-  }
-
-  const coreDefinition = asRecord(content.coreDefinition);
-  const conceptExplanation = asRecord(content.conceptExplanation);
-  const keyComponents = asRecord(content.keyComponents);
-  const syntaxStructure = asRecord(content.syntaxStructure);
-  const examples = asRecord(content.examples);
-  const bestPractices = asRecord(content.bestPractices);
-  const commonErrors = asRecord(content.commonErrors);
-  const revisionSummary = asRecord(content.revisionSummary);
-
-  const componentCards = asArray<JsonRecord>(keyComponents.components).map((component, index) => ({
-    id: asString(component.id, `component-${index + 1}`),
-    title: asString(component.name, `Component ${index + 1}`),
-    description: asString(component.description),
-    icon: asString(component.icon, 'Box'),
-    subcomponents: [asString(component.purpose)].filter(Boolean),
-  }));
-
-  const syntaxScenario = Object.keys(syntaxStructure).length > 0
-    ? [{
-        id: 'syntax',
-        title: asString(syntaxStructure.syntaxTitle, asString(syntaxStructure.title, 'Syntax')),
-        scenarioDescription: asString(syntaxStructure.explanation),
-        practicalSolution: asString(syntaxStructure.code),
-        industryContext: 'Basic syntax pattern used in modern applications',
-      }]
-    : [];
-
-  const exampleScenarios = asArray<JsonRecord>(examples.exampleCards).map((example, index) => ({
-    id: asString(example.id, `example-${index + 1}`),
-    title: asString(example.title, `Example ${index + 1}`),
-    scenarioDescription: asString(example.scenario),
-    practicalSolution: asString(example.code),
-    industryContext: asString(example.explanation),
-  }));
-
+function transformNotesSection(content: JsonRecord, _subtopicName: string): JsonRecord {
   return {
-    simpleWords: asString(coreDefinition.simpleExplanation, `${subtopicName} explained simply`),
-    definitionBlock: {
-      badge: asString(coreDefinition.badge, 'Core Concept'),
-      headline: asString(coreDefinition.headline, `What is ${subtopicName}?`),
-      definitionText: asString(coreDefinition.definition),
-      importanceCallout: asString(coreDefinition.whyItMatters),
-      quickSummary: [asString(coreDefinition.simpleExplanation), asString(coreDefinition.keyTakeaway)].filter(Boolean),
-    },
-    sections: [{
-      id: 'concept',
-      title: asString(conceptExplanation.title, `Understanding ${subtopicName}`),
-      content: [
-        asString(conceptExplanation.introduction),
-        asString(conceptExplanation.mainConcept),
-        asString(conceptExplanation.detailedBreakdown),
-      ].filter(Boolean).join('\n\n'),
-      keyPoint: asString(conceptExplanation.visualAnalogy),
-    }],
-    componentGrid: {
-      gridTitle: asString(keyComponents.title, `Key Components of ${subtopicName}`),
-      componentCards,
-    },
-    examplePanel: {
-      exampleTitle: asString(syntaxStructure.title, 'Practical Examples'),
-      scenarios: [...syntaxScenario, ...exampleScenarios],
-    },
-    practiceCard: {
-      bestPracticeTitle: asString(bestPractices.title, 'Best Practices'),
-      recommendations: asArray<JsonRecord>(bestPractices.practices).map((practice, index) => ({
-        id: asString(practice.id, `practice-${index + 1}`),
-        title: asString(practice.title, `Practice ${index + 1}`),
-        description: [
-          asString(practice.description),
-          asString(practice.doExample) ? `Do: ${asString(practice.doExample)}` : '',
-          asString(practice.dontExample) ? `Avoid: ${asString(practice.dontExample)}` : '',
-        ].filter(Boolean).join(' '),
-      })),
-      optimizationTips: ['Keep the implementation readable', 'Prefer consistent patterns across the project'],
-      industryStandards: ['Use meaningful names', 'Document important tradeoffs'],
-    },
-    warningFaq: {
-      commonErrors: asArray<JsonRecord>(commonErrors.errors).map((error, index) => ({
-        id: asString(error.id, `error-${index + 1}`),
-        error: asString(error.error),
-        solution: [asString(error.why), asString(error.fix)].filter(Boolean).join(' '),
-      })),
-      faqItems: asArray(commonErrors.faqItems),
-      misconceptionAlerts: ['Review common mistakes before applying this concept'],
-    },
-    summaryCard: {
-      summaryTitle: asString(revisionSummary.title, 'Revision Summary'),
-      keyTakeaways: asArray(revisionSummary.keyPoints),
-      revisionChecklist: toChecklist(asArray(revisionSummary.quickRecap)),
-      memoryReinforcement: asString(revisionSummary.rememberThis),
-      examTips: asArray(revisionSummary.examTips),
-      ...(normalizeSvgAsset(revisionSummary.image) ? { image: normalizeSvgAsset(revisionSummary.image) } : {}),
-    },
+    schemaVersion: 1,
+    sectionType: 'notes',
+    ...content,
   };
 }
 
@@ -1545,6 +1405,7 @@ export async function POST(req: NextRequest) {
       }
 
       const targetParentKey = COLUMN_TO_PARENT_KEY[subsection] || subsection;
+      const targetDomainColumn = DOMAIN_COLUMN_MAP[subsection] || subsection;
       const updatedParentContent: Record<string, unknown> = {
         schemaVersion: 1,
         sectionType: config.dbType,
@@ -1595,7 +1456,7 @@ export async function POST(req: NextRequest) {
         await db
           .update(table)
           .set({
-            [subsection]: processedContent,
+            [targetDomainColumn]: processedContent,
             updatedAt: now,
           })
           .where(eq(table.sectionId, sectionRecord.id));
@@ -1604,7 +1465,7 @@ export async function POST(req: NextRequest) {
         await db.insert(table).values({
           sectionId: sectionRecord.id,
           ...defaults,
-          [subsection]: processedContent,
+          [targetDomainColumn]: processedContent,
         });
       }
 
