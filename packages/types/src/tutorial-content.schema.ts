@@ -54,6 +54,7 @@ const NotesModularSchema = z.object({
   practice_card: z.any().optional(),
   warning_faq: z.any().optional(),
   summary_card: z.any().optional(),
+  uiux_contract: z.any().optional(),
 }).merge(BaseModularSchema);
 
 const LaymanModularSchema = z.object({

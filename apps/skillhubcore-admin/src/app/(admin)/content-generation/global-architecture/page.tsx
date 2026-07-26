@@ -83,7 +83,9 @@ const PREVIEW_TARGET_BRAND_CONTRACTS = {
   local: {
     brand_variant: 'rth',
     primary_color: '#d03f00',
-    accent_color: '#124fd6',
+    primary_color_dark: '#b63600',
+    accent_color: '#b63600',
+    secondary_color: '#124fd6',
     background_color: '#ffffff',
     text_color: '#0f172a',
     border_color: '#dbeafe',
@@ -91,7 +93,9 @@ const PREVIEW_TARGET_BRAND_CONTRACTS = {
   rth: {
     brand_variant: 'rth',
     primary_color: '#d03f00',
-    accent_color: '#124fd6',
+    primary_color_dark: '#b63600',
+    accent_color: '#b63600',
+    secondary_color: '#124fd6',
     background_color: '#ffffff',
     text_color: '#0f172a',
     border_color: '#dbeafe',
@@ -99,7 +103,9 @@ const PREVIEW_TARGET_BRAND_CONTRACTS = {
   suia: {
     brand_variant: 'suia',
     primary_color: '#f54a8d',
-    accent_color: '#133282',
+    primary_color_dark: '#d63d7a',
+    accent_color: '#d63d7a',
+    secondary_color: '#133382',
     background_color: '#ffffff',
     text_color: '#0f172a',
     border_color: '#dbeafe',
@@ -109,6 +115,8 @@ const PREVIEW_TARGET_BRAND_CONTRACTS = {
 const getPromptSectionId = (sectionId: string) => sectionId === 'reallife' ? 'real_life' : sectionId;
 
 const NOTES_SUBSECTION_ALIASES: Record<string, string> = {
+  hero: 'concept_card',
+  Hero: 'concept_card',
   simpleWords: 'concept_card',
   simple_words: 'concept_card',
   conceptCard: 'concept_card',
@@ -161,9 +169,64 @@ const htmlEscape = (value: unknown) => String(value ?? '')
   .replace(/"/g, '&quot;')
   .replace(/'/g, '&#039;');
 
+const COLOR_COMBINATION_OPTIONS = [
+  { id: 'primary_75_secondary_25', label: 'Primary 75% / Secondary 25%', primaryWeight: 0.75, secondaryWeight: 0.25 },
+  { id: 'primary_60_secondary_40', label: 'Primary 60% / Secondary 40%', primaryWeight: 0.6, secondaryWeight: 0.4 },
+  { id: 'balanced_50_50', label: 'Primary 50% / Secondary 50%', primaryWeight: 0.5, secondaryWeight: 0.5 },
+  { id: 'primary_40_secondary_60', label: 'Primary 40% / Secondary 60%', primaryWeight: 0.4, secondaryWeight: 0.6 },
+  { id: 'primary_25_secondary_75', label: 'Primary 25% / Secondary 75%', primaryWeight: 0.25, secondaryWeight: 0.75 },
+] as const;
+
+const normalizeHexColor = (value: unknown, fallback: string) => {
+  const raw = String(value || '').trim();
+  return /^#[0-9a-f]{6}$/i.test(raw) ? raw : fallback;
+};
+
+const mixHexColors = (primary: string, secondary: string, secondaryRatio: number) => {
+  const first = normalizeHexColor(primary, '#4f46e5').replace('#', '');
+  const second = normalizeHexColor(secondary, '#10b981').replace('#', '');
+  const firstRatio = 1 - secondaryRatio;
+  const toChannel = (start: string, end: string) => {
+    const mixed = Math.round(parseInt(start, 16) * firstRatio + parseInt(end, 16) * secondaryRatio);
+    return mixed.toString(16).padStart(2, '0');
+  };
+  return `#${toChannel(first.slice(0, 2), second.slice(0, 2))}${toChannel(first.slice(2, 4), second.slice(2, 4))}${toChannel(first.slice(4, 6), second.slice(4, 6))}`;
+};
+
 const asPreviewRecord = (value: unknown): Record<string, unknown> => (
   value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {}
 );
+
+const firstPreviewText = (...values: unknown[]) => {
+  for (const value of values) {
+    if (typeof value === 'string' && value.trim()) return value;
+  }
+  return '';
+};
+
+const normalizePreviewContentForStrictSchema = (
+  sectionId: string,
+  subsectionId: string | null,
+  content: unknown,
+  fallback: unknown
+) => {
+  const normalizedSubsectionId = normalizePipelineSubsectionId(sectionId, subsectionId);
+  const record = asPreviewRecord(content);
+
+  if (sectionId === 'notes' && normalizedSubsectionId === 'concept_card') {
+    const quickLook = Array.isArray(record.quickLook)
+      ? record.quickLook.map((item) => String(item)).filter(Boolean)
+      : [];
+
+    return {
+      heroTitle: firstPreviewText(record.heroTitle, record.title, 'Notes Overview'),
+      heroSubtitle: firstPreviewText(record.heroSubtitle, record.description, 'A clear learner-facing notes introduction.'),
+      quickLook: quickLook.length > 0 ? quickLook : ['Definition', 'Mechanics', 'Syntax', 'Examples'],
+    };
+  }
+
+  return content || fallback;
+};
 
 const buildStarterHtmlFromRenderer = (content: unknown, contract: Record<string, unknown> | null | undefined) => {
   const record = asPreviewRecord(content);
@@ -174,7 +237,7 @@ const buildStarterHtmlFromRenderer = (content: unknown, contract: Record<string,
   const topicsCount = htmlEscape(record.topicsCount || record.lessonsCount || 10);
   const lastUpdated = htmlEscape(record.lastUpdated || 'Today');
   const primary = htmlEscape(contract?.primary_color || '#4f46e5');
-  const accent = htmlEscape(contract?.accent_color || '#10b981');
+  const accent = htmlEscape(contract?.accent_color || contract?.primary_color_dark || '#10b981');
   const bg = htmlEscape(contract?.background_color || '#ffffff');
   const text = htmlEscape(contract?.text_color || '#0f172a');
   const border = htmlEscape(contract?.border_color || '#dbeafe');
@@ -248,9 +311,11 @@ export default function GlobalArchitecturePage() {
     const source = activeData?.universal_architecture_fixed || activeData?.component_design_system;
     if (source) {
       const keys = Object.keys(source);
-      if (keys.length > 0) setSelectedComponentKey(keys[0]);
+      if (keys.length > 0 && (!selectedComponentKey || !source[selectedComponentKey])) {
+        setSelectedComponentKey(keys[0]);
+      }
     }
-  }, [activeSectionKey, activeData?.universal_architecture_fixed, activeData?.component_design_system]);
+  }, [activeSectionKey, activeData?.universal_architecture_fixed, activeData?.component_design_system, selectedComponentKey]);
 
   useEffect(() => {
     setHeaderTitle('');
@@ -320,14 +385,43 @@ export default function GlobalArchitecturePage() {
     contentManager: `/tools/content-manager?${contentManagerQuery.toString()}`,
     learnerPreview: `${LEARNER_PREVIEW_TARGETS[learnerPreviewTarget].baseUrl}/start-learning/subtopic/${dummyContext.subtopicId}${canonicalSectionId ? `?tab=${canonicalSectionId}` : ''}`,
   };
-  const selectedComponentData = selectedComponentKey
-    ? (activeData.universal_architecture_fixed?.[selectedComponentKey] || activeData.component_design_system?.[selectedComponentKey] || {}) as ComponentArchitecture
-    : null;
+  const selectedComponentLookupKeys = Array.from(new Set([
+    selectedPipelineSubsectionKey,
+    selectedComponentKey,
+  ].filter(Boolean))) as string[];
+  const selectedComponentMergeKeys = [...selectedComponentLookupKeys].reverse();
+  const resolveComponentConfig = (
+    sources: Array<Record<string, ComponentArchitecture> | undefined | null>
+  ) => {
+    if (!selectedComponentKey) return null;
+    return sources.reduce<ComponentArchitecture>((merged, source) => {
+      if (!source) return merged;
+      selectedComponentMergeKeys.forEach((key) => {
+        if (source[key]) merged = { ...merged, ...source[key] };
+      });
+      return merged;
+    }, {});
+  };
+  const selectedComponentData = resolveComponentConfig([
+    activeData.universal_architecture_fixed,
+    activeData.component_design_system,
+  ]);
   const selectedUiuxComponentData = selectedComponentKey
-    ? (uiuxData?.component_design_system?.[selectedPipelineSubsectionKey || selectedComponentKey] || activeData.component_design_system?.[selectedPipelineSubsectionKey || selectedComponentKey] || {}) as ComponentArchitecture
+    ? resolveComponentConfig([
+      uiuxData?.component_design_system,
+      activeData.component_design_system,
+    ])
     : null;
   const selectedRendererMapping = selectedComponentKey
-    ? (activeData.renderer_mapping_engine?.[selectedComponentKey] || uiuxData?.renderer_mapping_engine?.[selectedComponentKey] || null)
+    ? (
+      selectedComponentLookupKeys.reduce<Record<string, unknown> | null>((found, key) => (
+        found ||
+        activeData.renderer_mapping_engine?.[key] ||
+        uiuxData?.renderer_mapping_engine?.[key] ||
+        null
+      ), null) ||
+      null
+    )
     : null;
   const activeComponentKeys = Object.keys(activeComponentMap);
   const activeLearningFlow = (
@@ -336,25 +430,81 @@ export default function GlobalArchitecturePage() {
       : activeComponentKeys
   ) as string[];
   const selectedComponentIndex = selectedComponentKey ? Math.max(0, activeLearningFlow.indexOf(selectedComponentKey)) : 0;
-  const selectedDefaultJson = getDefaultPipelineJson(String(adminSectionId), selectedComponentKey, dummyContext.subtopic);
-  const selectedPreviewJson = selectedComponentData?.preview_content || selectedDefaultJson;
+  const selectedDefaultJson = getDefaultPipelineJson(String(adminSectionId), selectedPipelineSubsectionKey || selectedComponentKey, dummyContext.subtopic);
+  const selectedPreviewJson = normalizePreviewContentForStrictSchema(
+    String(adminSectionId),
+    selectedPipelineSubsectionKey || selectedComponentKey,
+    selectedComponentData?.preview_content || selectedDefaultJson,
+    selectedDefaultJson
+  );
   const selectedRendererName = String(
     selectedComponentData?.renderer ||
     selectedComponentData?.component ||
     (selectedRendererMapping as Record<string, unknown> | null)?.component ||
     'default_renderer'
   );
+  const selectedBrandPreviewContract = PREVIEW_TARGET_BRAND_CONTRACTS[learnerPreviewTarget];
+  const selectedRendererBrandVariant = String(selectedComponentData?.brand_variant || '');
+  const effectiveRendererBrandVariant = selectedRendererBrandVariant && selectedRendererBrandVariant !== 'shared'
+    ? selectedRendererBrandVariant
+    : selectedBrandPreviewContract.brand_variant;
   const selectedGeneratedRendererCode = selectedComponentData
-    ? buildStarterHtmlFromRenderer(selectedPreviewJson, selectedComponentData as Record<string, unknown>)
+    ? buildStarterHtmlFromRenderer(selectedPreviewJson, {
+      ...selectedBrandPreviewContract,
+      ...(selectedComponentData as Record<string, unknown>),
+      primary_color: selectedComponentData?.primary_color || selectedBrandPreviewContract.primary_color,
+      primary_color_dark: selectedComponentData?.primary_color_dark || selectedBrandPreviewContract.primary_color_dark,
+      accent_color: selectedComponentData?.accent_color || selectedBrandPreviewContract.accent_color,
+      secondary_color: selectedComponentData?.secondary_color || selectedBrandPreviewContract.secondary_color,
+    })
     : '';
-  const selectedVisibleRendererCode = String(selectedComponentData?.custom_renderer_code || selectedGeneratedRendererCode);
+  const selectedCustomRendererCode = String(selectedComponentData?.custom_renderer_code || '');
+  const selectedVisibleRendererCode = selectedCustomRendererCode || selectedGeneratedRendererCode;
   const selectedRendererPreviewContract = selectedComponentData
     ? {
       ...(selectedComponentData as Record<string, unknown>),
-      custom_renderer_code: selectedVisibleRendererCode,
+      custom_renderer_code: selectedCustomRendererCode,
     }
     : null;
-  const selectedBrandPreviewContract = PREVIEW_TARGET_BRAND_CONTRACTS[learnerPreviewTarget];
+  const effectiveRendererPreviewContract = selectedRendererPreviewContract
+    ? {
+      ...selectedRendererPreviewContract,
+      brand_variant: effectiveRendererBrandVariant,
+      primary_color: selectedComponentData?.primary_color || selectedBrandPreviewContract.primary_color,
+      primary_color_dark: selectedComponentData?.primary_color_dark || selectedBrandPreviewContract.primary_color_dark,
+      accent_color: selectedComponentData?.accent_color || selectedBrandPreviewContract.accent_color,
+      secondary_color: selectedComponentData?.secondary_color || selectedBrandPreviewContract.secondary_color,
+      background_color: selectedComponentData?.background_color || selectedBrandPreviewContract.background_color,
+      text_color: selectedComponentData?.text_color || selectedBrandPreviewContract.text_color,
+      border_color: selectedComponentData?.border_color || selectedBrandPreviewContract.border_color,
+    }
+    : null;
+  const rendererColorControls = [
+    ['primary_color', 'Primary Color 1', selectedBrandPreviewContract.primary_color],
+    ['primary_color_dark', 'Primary Color 2', selectedBrandPreviewContract.primary_color_dark],
+    ['accent_color', 'Accent / CTA Color', selectedBrandPreviewContract.accent_color],
+    ['secondary_color', 'Secondary Brand Color', selectedBrandPreviewContract.secondary_color],
+    ['background_color', 'Background Color', selectedBrandPreviewContract.background_color],
+    ['text_color', 'Text Color', selectedBrandPreviewContract.text_color],
+    ['border_color', 'Border Color', selectedBrandPreviewContract.border_color],
+  ] as const;
+  const selectedColorCombinationId = String(selectedComponentData?.color_combination || 'primary_75_secondary_25');
+  const selectedColorCombination = COLOR_COMBINATION_OPTIONS.find((option) => option.id === selectedColorCombinationId) || COLOR_COMBINATION_OPTIONS[0];
+  const algorithmPrimaryColor = normalizeHexColor(selectedComponentData?.primary_color || selectedBrandPreviewContract.primary_color, selectedBrandPreviewContract.primary_color);
+  const algorithmSecondaryColor = normalizeHexColor(selectedComponentData?.secondary_color || selectedBrandPreviewContract.secondary_color, selectedBrandPreviewContract.secondary_color);
+  const algorithmPrimaryDarkColor = normalizeHexColor(selectedComponentData?.primary_color_dark || selectedBrandPreviewContract.primary_color_dark, selectedBrandPreviewContract.primary_color_dark);
+  const algorithmMixedColor = mixHexColors(algorithmPrimaryColor, algorithmSecondaryColor, selectedColorCombination.secondaryWeight);
+  const algorithmReverseMixedColor = mixHexColors(algorithmPrimaryColor, algorithmSecondaryColor, selectedColorCombination.primaryWeight);
+  const algorithmPalette = {
+    primary: algorithmPrimaryColor,
+    primaryDark: algorithmPrimaryDarkColor,
+    secondary: algorithmSecondaryColor,
+    mixed: algorithmMixedColor,
+    reverseMixed: algorithmReverseMixedColor,
+    surface: normalizeHexColor(selectedComponentData?.background_color || selectedBrandPreviewContract.background_color, selectedBrandPreviewContract.background_color),
+    text: normalizeHexColor(selectedComponentData?.text_color || selectedBrandPreviewContract.text_color, selectedBrandPreviewContract.text_color),
+    border: normalizeHexColor(selectedComponentData?.border_color || selectedBrandPreviewContract.border_color, selectedBrandPreviewContract.border_color),
+  };
   const universalArchitecturePreviewContract = selectedRendererPreviewContract
     ? {
       ...selectedRendererPreviewContract,
@@ -362,7 +512,9 @@ export default function GlobalArchitecturePage() {
       ...selectedBrandPreviewContract,
       brand_variant: selectedUiuxComponentData?.brand_variant || selectedComponentData?.brand_variant || selectedBrandPreviewContract.brand_variant,
       primary_color: selectedBrandPreviewContract.primary_color,
+      primary_color_dark: selectedBrandPreviewContract.primary_color_dark,
       accent_color: selectedBrandPreviewContract.accent_color,
+      secondary_color: selectedBrandPreviewContract.secondary_color,
       background_color: selectedUiuxComponentData?.background_color || selectedComponentData?.background_color || selectedBrandPreviewContract.background_color,
       text_color: selectedUiuxComponentData?.text_color || selectedComponentData?.text_color || selectedBrandPreviewContract.text_color,
       border_color: selectedUiuxComponentData?.border_color || selectedComponentData?.border_color || selectedBrandPreviewContract.border_color,
@@ -414,29 +566,157 @@ export default function GlobalArchitecturePage() {
         ];
   const rendererSubcomponents = React.useMemo(() => {
     const configured = selectedComponentData?.ui_subcomponents;
-    if (Array.isArray(configured) && configured.length > 0) {
-      return configured as Array<Record<string, unknown>>;
-    }
+    const configuredParts = Array.isArray(configured) ? configured as Array<Record<string, unknown>> : [];
 
     const interactiveParts = Array.isArray(selectedComponentData?.interactive_elements)
       ? selectedComponentData.interactive_elements.map((item) => String(item))
       : [];
-    const defaults = ['container', 'header', 'body', 'action'];
-    return [...new Set([...defaults, ...interactiveParts])].map((id) => ({
-      id,
-      label: formatTitle(id),
-      role: id === 'container' ? 'Outer layout wrapper' : id === 'header' ? 'Title/label area' : id === 'body' ? 'Main content area' : id === 'action' ? 'CTA or interaction area' : 'Interactive child element',
-      visible: true,
-      layout: id === 'container' ? selectedComponentData?.layout || 'card' : 'inline',
-      color: id === 'container' ? selectedComponentData?.background_color || '#ffffff' : selectedComponentData?.primary_color || '#4f46e5',
-      emphasis: id === 'header' ? 'high' : 'medium',
-    }));
+    const commonDefaults: Array<Record<string, unknown>> = [
+      { id: 'container', label: 'Outer Surface', role: 'Component background and wrapper', layout: selectedComponentData?.layout || 'card', color: algorithmPalette.surface },
+      { id: 'header', label: 'Header Area', role: 'Title, badges, and intro copy', layout: 'inline', color: algorithmPalette.primary },
+      { id: 'body', label: 'Body Area', role: 'Main content and supporting cards', layout: 'inline', color: algorithmPalette.border },
+      { id: 'action', label: 'Action Area', role: 'CTA and interaction row', layout: 'inline', color: algorithmPalette.mixed },
+      { id: 'icon_badge', label: 'JS Badge', role: 'Technology badge fill color', layout: 'pill', color: algorithmPalette.primary },
+      { id: 'difficulty_badge', label: 'Difficulty Badge', role: 'Beginner badge text and border color', layout: 'pill', color: algorithmPalette.mixed },
+      { id: 'brand_badge', label: 'Brand Badge', role: 'Brand pill text and border color', layout: 'pill', color: algorithmPalette.secondary },
+      { id: 'title', label: 'Title Text', role: 'Main heading color', layout: 'inline', color: algorithmPalette.text },
+      { id: 'description', label: 'Description Text', role: 'Intro description color', layout: 'inline', color: '#475569' },
+      { id: 'stat_cards', label: 'Stat Cards', role: 'Learning blocks and last updated card border', layout: 'card', color: algorithmPalette.border },
+      { id: 'stat_value', label: 'Stat Values', role: '10 and Today value color', layout: 'inline', color: algorithmPalette.primary },
+      { id: 'primary_button', label: 'Primary Button', role: 'Main action button fill color', layout: 'pill', color: algorithmPalette.mixed },
+      { id: 'secondary_button', label: 'Roadmap Button', role: 'Secondary action text and border color', layout: 'pill', color: algorithmPalette.primary },
+      { id: 'progress_bar', label: 'Progress Bar', role: 'Preview progress indicator color', layout: 'progress', color: algorithmPalette.reverseMixed },
+    ];
+    const notesPartPresets: Record<string, Array<Record<string, unknown>>> = {
+      concept_card: [
+        { ...commonDefaults[0] },
+        { ...commonDefaults[1] },
+        { ...commonDefaults[4], label: 'JS Badge', role: 'Technology badge fill color' },
+        { ...commonDefaults[5], label: 'Difficulty Badge', role: 'Difficulty pill color' },
+        { ...commonDefaults[6], label: 'Brand Badge', role: 'Brand pill color' },
+        { ...commonDefaults[7] },
+        { ...commonDefaults[8] },
+        { ...commonDefaults[2], label: 'Simple Words Preview Card', role: 'Right-side preview card surface' },
+        { ...commonDefaults[12], label: 'Quick Look Pills', role: 'Definition, Mechanics, Syntax, and Examples pill color' },
+        { ...commonDefaults[13] },
+      ],
+      definition_block: [
+        { ...commonDefaults[0] },
+        { ...commonDefaults[1] },
+        { ...commonDefaults[4], label: 'Core Concept Badge', role: 'Core concept badge fill color' },
+        { ...commonDefaults[5], label: 'Definition Badge', role: 'Definition badge border/text color' },
+        { ...commonDefaults[7], label: 'Definition Title', role: 'Main definition heading color' },
+        { ...commonDefaults[8], label: 'Definition Text', role: 'Definition and explanation text color' },
+        { ...commonDefaults[2], label: 'Definition Cards', role: 'Definition, simple explanation, and why-it-matters card styling' },
+        { ...commonDefaults[13], label: 'Definition Accent Line', role: 'Vertical accent line color' },
+      ],
+      component_grid: [
+        { ...commonDefaults[0] },
+        { ...commonDefaults[1] },
+        { ...commonDefaults[7], label: 'Grid Title', role: 'Mechanics grid title color' },
+        { ...commonDefaults[8], label: 'Grid Description', role: 'Mechanics grid description color' },
+        { ...commonDefaults[2], label: 'Mechanic Cards', role: 'Individual mechanics card styling' },
+        { ...commonDefaults[4], label: 'Step Number Badges', role: 'Number badge fill color inside mechanic cards' },
+      ],
+      syntax_block: [
+        { ...commonDefaults[0] },
+        { ...commonDefaults[1] },
+        { ...commonDefaults[7], label: 'Syntax Title', role: 'Syntax heading color' },
+        { ...commonDefaults[2], label: 'Code And Breakdown Panels', role: 'Code panel and breakdown card styling' },
+        { ...commonDefaults[4], label: 'Syntax Part Labels', role: 'Syntax part label color' },
+      ],
+      example_panel: [
+        { ...commonDefaults[0] },
+        { ...commonDefaults[1] },
+        { ...commonDefaults[7], label: 'Example Title', role: 'Example section heading color' },
+        { ...commonDefaults[8], label: 'Example Description', role: 'Example intro text color' },
+        { ...commonDefaults[2], label: 'Example Cards', role: 'Individual example card styling' },
+        { ...commonDefaults[4], label: 'Check Icons', role: 'Checklist icon color' },
+      ],
+      practice_card: [
+        { ...commonDefaults[0] },
+        { ...commonDefaults[1] },
+        { ...commonDefaults[7], label: 'Practice Title', role: 'Practice heading color' },
+        { ...commonDefaults[2], label: 'Practice Items', role: 'Practice card and item styling' },
+        { ...commonDefaults[4], label: 'Practice Check Icons', role: 'Practice icon fill color' },
+      ],
+      warning_faq: [
+        { ...commonDefaults[0] },
+        { ...commonDefaults[1] },
+        { ...commonDefaults[7], label: 'FAQ Title', role: 'Common mistakes heading color' },
+        { ...commonDefaults[2], label: 'FAQ Items', role: 'FAQ card styling' },
+        { ...commonDefaults[4], label: 'Question Text', role: 'Mistake/question heading color' },
+        { ...commonDefaults[13], label: 'Fix Highlight', role: 'Fix callout color' },
+      ],
+      summary_card: [
+        { ...commonDefaults[0] },
+        { ...commonDefaults[1] },
+        { ...commonDefaults[7], label: 'Summary Title', role: 'Summary heading color' },
+        { ...commonDefaults[8], label: 'Summary Description', role: 'Summary description color' },
+        { ...commonDefaults[2], label: 'Summary And Takeaway Cards', role: 'Summary panel and takeaway card styling' },
+        { ...commonDefaults[4], label: 'Takeaway Number Badges', role: 'Number badge fill color' },
+      ],
+    };
+    const notesSubsectionKey = String(selectedPipelineSubsectionKey || selectedComponentKey || '');
+    const defaults = String(adminSectionId) === 'notes' && notesPartPresets[notesSubsectionKey]
+      ? notesPartPresets[notesSubsectionKey]
+      : commonDefaults;
+    const defaultIds = defaults.map((part) => part.id);
+    const extraParts: Array<Record<string, unknown>> = interactiveParts
+      .filter((id) => !defaultIds.includes(id))
+      .map((id) => ({
+        id,
+        label: formatTitle(id),
+        role: 'Interactive child element',
+        visible: true,
+        layout: 'inline',
+        color: algorithmPalette.primary,
+        emphasis: 'medium',
+      }));
+    const mergedDefaults: Array<Record<string, unknown>> = [...defaults, ...extraParts].map((part) => {
+      const saved = configuredParts.find((item) => String(item.id || '') === part.id);
+      const savedHasManualColor = Boolean(saved?.color_override);
+      const savedWithoutImplicitColor = savedHasManualColor ? saved : saved ? { ...saved, color: part.color } : {};
+      const savedUserControls = savedWithoutImplicitColor && String(adminSectionId) === 'notes'
+        ? Object.fromEntries(
+          Object.entries(savedWithoutImplicitColor).filter(([key]) => !['label', 'role'].includes(key))
+        )
+        : savedWithoutImplicitColor;
+      return {
+        ...part,
+        visible: true,
+        emphasis: part.id === 'header' ? 'high' : 'medium',
+        ...savedUserControls,
+      };
+    });
+    const mergedDefaultIds = mergedDefaults.map((part) => part.id);
+    const unknownConfiguredParts = String(adminSectionId) === 'notes'
+      ? []
+      : configuredParts.filter((part) => !mergedDefaultIds.includes(String(part.id || '')));
+
+    return [...mergedDefaults, ...unknownConfiguredParts] as Array<Record<string, unknown>>;
   }, [
     selectedComponentData?.ui_subcomponents,
     selectedComponentData?.interactive_elements,
     selectedComponentData?.layout,
     selectedComponentData?.background_color,
     selectedComponentData?.primary_color,
+    selectedComponentData?.primary_color_dark,
+    selectedComponentData?.accent_color,
+    selectedComponentData?.secondary_color,
+    selectedComponentData?.border_color,
+    selectedComponentData?.text_color,
+    selectedComponentData?.color_combination,
+    selectedPipelineSubsectionKey,
+    selectedComponentKey,
+    adminSectionId,
+    selectedBrandPreviewContract.background_color,
+    selectedBrandPreviewContract.primary_color,
+    selectedBrandPreviewContract.primary_color_dark,
+    selectedBrandPreviewContract.accent_color,
+    selectedBrandPreviewContract.secondary_color,
+    selectedBrandPreviewContract.border_color,
+    selectedBrandPreviewContract.text_color,
   ]);
   const selectedRendererSubcomponent = rendererSubcomponents.find((item) => item.id === selectedRendererSubcomponentId) || rendererSubcomponents[0];
   const selectedRendererSubcomponentRecord = (selectedRendererSubcomponent || {}) as Record<string, unknown>;
@@ -454,11 +734,20 @@ export default function GlobalArchitecturePage() {
   };
 
   const buildPipelinePayload = () => {
-    const selectedSubsection = selectedComponentKey || null;
+    const selectedSubsection = normalizePipelineSubsectionId(String(adminSectionId), selectedComponentKey);
     const defaultJson = getDefaultPipelineJson(String(adminSectionId), selectedSubsection, dummyContext.subtopic);
-    const educationalComponent = selectedSubsection ? educationalData?.universal_architecture_fixed?.[selectedSubsection] : null;
-    const uiuxComponent = selectedSubsection ? uiuxData?.component_design_system?.[selectedSubsection] : null;
-    const previewContent = educationalComponent?.preview_content || defaultJson;
+    const educationalComponent = selectedSubsection
+      ? educationalData?.universal_architecture_fixed?.[selectedSubsection] || educationalData?.universal_architecture_fixed?.[selectedComponentKey || ''] || null
+      : null;
+    const uiuxComponent = selectedSubsection
+      ? uiuxData?.component_design_system?.[selectedSubsection] || uiuxData?.component_design_system?.[selectedComponentKey || ''] || null
+      : null;
+    const previewContent = normalizePreviewContentForStrictSchema(
+      String(adminSectionId),
+      selectedSubsection,
+      educationalComponent?.preview_content || defaultJson,
+      defaultJson
+    );
 
     return {
       source: 'global-architecture',
@@ -472,9 +761,7 @@ export default function GlobalArchitecturePage() {
       uiuxArchitectureKey: uiuxKey,
       educationalComponent,
       uiuxComponent,
-      rendererMapping: selectedSubsection
-        ? (educationalData?.renderer_mapping_engine?.[selectedSubsection] || uiuxData?.renderer_mapping_engine?.[selectedSubsection] || null)
-        : null,
+      rendererMapping: effectiveRendererPreviewContract,
       defaultJson: previewContent,
     };
   };
@@ -613,15 +900,19 @@ export default function GlobalArchitecturePage() {
     }
     updateActiveArchitecture((current) => {
       const sourceKey = current.universal_architecture_fixed ? 'universal_architecture_fixed' : 'component_design_system';
+      const sourceMap = (current[sourceKey] ?? {}) as Record<string, ComponentArchitecture>;
+      const targetKeys = selectedComponentLookupKeys.filter((key) => sourceMap[key]);
+      if (targetKeys.length === 0) targetKeys.push(selectedComponentKey);
+      const nextSourceMap = { ...sourceMap };
+      targetKeys.forEach((key) => {
+        nextSourceMap[key] = {
+          ...(sourceMap[key] ?? {}),
+          ...patch,
+        };
+      });
       return {
         ...current,
-        [sourceKey]: {
-          ...(current[sourceKey] ?? {}),
-          [selectedComponentKey]: {
-            ...(current[sourceKey]?.[selectedComponentKey] ?? {}),
-            ...patch,
-          },
-        },
+        [sourceKey]: nextSourceMap,
       };
     });
     showActionMessage('Selected component config saved locally.');
@@ -2233,7 +2524,7 @@ ${activeComponentEntries.map(([key, item], index) => `    {
               <div className="space-y-4 text-sm">
                 <div><span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Section</span><p className="font-black text-slate-900">{String(adminSectionId)}</p></div>
                 <div><span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Component</span><p className="font-black text-slate-900">{selectedComponentKey ? formatTitle(selectedComponentKey) : 'Full section'}</p></div>
-                <div><span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Prompt Contract Key</span><p className="font-mono text-xs font-black text-indigo-700">{String(adminSectionId)}.{selectedComponentKey || 'full_section'}</p></div>
+                <div><span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Prompt Contract Key</span><p className="font-mono text-xs font-black text-indigo-700">{String(adminSectionId)}.{selectedPipelineSubsectionKey || selectedComponentKey || 'full_section'}</p></div>
                 <div><span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Dummy Topic</span><p className="font-bold text-slate-700">{dummyContext.domain} / {dummyContext.subject} / {dummyContext.subtopic}</p></div>
                 <div><span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Prompt URL</span><p className="break-all font-mono text-xs text-indigo-700">{selectedWorkflowUrls.promptGenerator}</p></div>
               </div>
@@ -2254,7 +2545,7 @@ ${activeComponentEntries.map(([key, item], index) => `    {
               <div className="bg-slate-950 rounded-xl p-4">
                 <pre className="text-xs text-emerald-300 overflow-auto max-h-[360px]">{JSON.stringify({
                   section: adminSectionId,
-                  subsection: selectedComponentKey,
+                  subsection: selectedPipelineSubsectionKey || selectedComponentKey,
                   dummyContext,
                   educationalComponent: selectedComponentData,
                   rendererMapping: selectedRendererMapping,
@@ -2833,13 +3124,29 @@ Writing Guidelines:
                       <input
                         id="renderer-subcomponent-color"
                         type="color"
-                        value={String(selectedRendererSubcomponent?.color || selectedComponentData?.primary_color || '#4f46e5')}
+                        value={String(selectedRendererSubcomponent?.color || selectedComponentData?.primary_color || selectedBrandPreviewContract.primary_color)}
                         onChange={(event) => {
-                          const nextParts = rendererSubcomponents.map((part) => String(part.id) === String(selectedRendererSubcomponent?.id) ? { ...part, color: event.target.value } : part);
+                          const nextParts = rendererSubcomponents.map((part) => String(part.id) === String(selectedRendererSubcomponent?.id) ? { ...part, color: event.target.value, color_override: true } : part);
                           updateSelectedComponentConfig({ ui_subcomponents: nextParts });
                         }}
                         className="h-10 w-full rounded-xl border-2 border-slate-200 bg-white p-1 outline-none focus:border-indigo-400"
                       />
+                      {selectedRendererSubcomponent?.color_override ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const nextParts = rendererSubcomponents.map((part) => {
+                              if (String(part.id) !== String(selectedRendererSubcomponent?.id)) return part;
+                              const { color_override: _colorOverride, ...rest } = part;
+                              return rest;
+                            });
+                            updateSelectedComponentConfig({ ui_subcomponents: nextParts });
+                          }}
+                          className="mt-2 w-full rounded-xl border border-indigo-100 bg-indigo-50 px-3 py-2 text-[10px] font-black uppercase tracking-wider text-indigo-700 hover:bg-indigo-100"
+                        >
+                          Use Algorithm Color
+                        </button>
+                      ) : null}
                     </div>
                   </div>
                   <div className="grid grid-cols-[1fr_auto] gap-3">
@@ -2894,6 +3201,26 @@ Writing Guidelines:
                 <div className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm">
                   <h3 className="text-sm font-black text-slate-900 mb-4">Visual Styling</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="sm:col-span-2">
+                      <label htmlFor="color-combination-left" className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Overall Color Combination</label>
+                      <select
+                        id="color-combination-left"
+                        value={selectedColorCombination.id}
+                        onChange={(event) => updateSelectedComponentConfig({ color_combination: event.target.value })}
+                        className="w-full rounded-xl border-2 border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-800 outline-none focus:border-indigo-400"
+                      >
+                        {COLOR_COMBINATION_OPTIONS.map((option) => (
+                          <option key={option.id} value={option.id}>{option.label}</option>
+                        ))}
+                      </select>
+                      <div className="mt-3 grid grid-cols-5 overflow-hidden rounded-xl border border-slate-200">
+                        <span className="h-4" style={{ backgroundColor: algorithmPalette.primary }} />
+                        <span className="h-4" style={{ backgroundColor: mixHexColors(algorithmPalette.primary, algorithmPalette.secondary, 0.25) }} />
+                        <span className="h-4" style={{ backgroundColor: algorithmPalette.mixed }} />
+                        <span className="h-4" style={{ backgroundColor: mixHexColors(algorithmPalette.primary, algorithmPalette.secondary, 0.75) }} />
+                        <span className="h-4" style={{ backgroundColor: algorithmPalette.secondary }} />
+                      </div>
+                    </div>
                     <div>
                       <label htmlFor="visual-density-left" className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Density</label>
                       <select id="visual-density-left" value={String(selectedComponentData?.density || 'comfortable')} onChange={(event) => updateSelectedComponentConfig({ density: event.target.value })} className="w-full rounded-xl border-2 border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-800 outline-none focus:border-indigo-400">
@@ -2929,13 +3256,7 @@ Writing Guidelines:
                         <option value="caption">Caption</option>
                       </select>
                     </div>
-                    {[
-                      ['primary_color', 'Primary Color', '#4f46e5'],
-                      ['accent_color', 'Accent Color', '#10b981'],
-                      ['background_color', 'Background Color', '#ffffff'],
-                      ['text_color', 'Text Color', '#0f172a'],
-                      ['border_color', 'Border Color', '#e2e8f0'],
-                    ].map(([key, label, fallback]) => (
+                    {rendererColorControls.map(([key, label, fallback]) => (
                       <div key={key}>
                         <label htmlFor={`${key}-left`} className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">{label}</label>
                         <input
@@ -2980,6 +3301,14 @@ Writing Guidelines:
                     <p className="mt-1 text-xs font-semibold text-emerald-800">
                       This dummy learner content feeds Renderer Decision Preview and Content Manager.
                     </p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <span className="rounded-full border border-emerald-200 bg-white px-3 py-1 text-[10px] font-black uppercase tracking-wider text-emerald-700">
+                        Latest DB Schema
+                      </span>
+                      <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[10px] font-black text-slate-600">
+                        {String(adminSectionId)}.{selectedPipelineSubsectionKey || selectedComponentKey || 'full_section'}
+                      </span>
+                    </div>
                   </div>
                   <button
                     type="button"
@@ -3117,7 +3446,12 @@ Writing Guidelines:
                   </div>
 
                   <div data-testid="renderer-decision-preview" className="rounded-3xl border border-indigo-100 bg-indigo-50 p-5">
-                    <h3 className="text-sm font-black text-indigo-950 mb-1">Renderer Decision Preview</h3>
+                    <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
+                      <h3 className="text-sm font-black text-indigo-950">Renderer Decision Preview</h3>
+                      <span className={`rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-wider ${selectedCustomRendererCode ? 'bg-fuchsia-600 text-white' : 'bg-emerald-100 text-emerald-700'}`}>
+                        {selectedCustomRendererCode ? 'Code Mode' : 'Live Contract Mode'}
+                      </span>
+                    </div>
                     <p className="mb-4 text-xs font-semibold leading-5 text-indigo-700">
                       This is the learner-facing preview for the selected content. Layout, colors, visible subcomponents, and interaction flags below are applied directly on the dummy JSON content.
                     </p>
@@ -3127,7 +3461,10 @@ Writing Guidelines:
                           section={String(adminSectionId)}
                           subsection={selectedComponentKey || ''}
                           data={selectedPreviewJson}
-                          contract={selectedRendererPreviewContract || selectedComponentData as Record<string, unknown>}
+                          contract={{
+                            ...((effectiveRendererPreviewContract || selectedComponentData || {}) as Record<string, unknown>),
+                            ui_subcomponents: rendererSubcomponents,
+                          }}
                         />
                       </div>
                     ) : null}
@@ -3183,7 +3520,10 @@ Writing Guidelines:
                         ['Desktop', selectedComponentData?.desktop_layout || 'two_column'],
                         ['Tablet', selectedComponentData?.tablet_layout || 'stacked_cards'],
                         ['Mobile', selectedComponentData?.mobile_layout || 'stacked_cards'],
-                        ['Brand', selectedComponentData?.brand_variant || 'shared'],
+                        ['Brand', effectiveRendererBrandVariant],
+                        ['Primary 1', effectiveRendererPreviewContract?.primary_color || selectedBrandPreviewContract.primary_color],
+                        ['Primary 2', effectiveRendererPreviewContract?.primary_color_dark || selectedBrandPreviewContract.primary_color_dark],
+                        ['Color Mix', selectedColorCombination.label],
                         ['Color Role', selectedComponentData?.color_role || 'primary'],
                         ['Typography', selectedComponentData?.typography_scale || 'body'],
                       ].map(([label, value]) => (

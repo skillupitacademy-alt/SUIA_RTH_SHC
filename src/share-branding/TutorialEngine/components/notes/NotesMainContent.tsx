@@ -17,6 +17,140 @@ import { NotesCheatSheet } from './NotesCheatSheet';
 import { NotesSyntaxBlock } from './NotesSyntaxBlock';
 import { NotesFooter } from './NotesFooter';
 
+type NotesBlockKey = keyof NonNullable<SubtopicNotesViewData['mainContent']['enabledNotesBlocks']>;
+
+function asRecord(value: unknown): Record<string, any> {
+  return value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, any> : {};
+}
+
+function asArray<T = unknown>(value: unknown): T[] {
+  return Array.isArray(value) ? value as T[] : [];
+}
+
+function pickColor(source: Record<string, any>, key: string, fallback: string) {
+  const value = source[key];
+  return typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value) ? value : fallback;
+}
+
+function contrastText(hex: string) {
+  const normalized = hex.replace('#', '');
+  if (!/^[0-9a-f]{6}$/i.test(normalized)) return '#ffffff';
+  const r = parseInt(normalized.slice(0, 2), 16);
+  const g = parseInt(normalized.slice(2, 4), 16);
+  const b = parseInt(normalized.slice(4, 6), 16);
+  return ((r * 299 + g * 587 + b * 114) / 1000) > 150 ? '#0f172a' : '#ffffff';
+}
+
+function partConfig(contract: Record<string, any>, id: string, fallbackColor: string) {
+  const parts = asArray<Record<string, any>>(contract.ui_subcomponents);
+  const part = parts.find((item) => String(item.id || '').toLowerCase() === id);
+  return {
+    visible: part?.visible !== false,
+    color: pickColor(part || {}, 'color', fallbackColor),
+  };
+}
+
+function NotesCanonicalConceptCard({
+  conceptCard,
+  uiuxContract,
+}: {
+  conceptCard: Record<string, any>;
+  uiuxContract: Record<string, any>;
+}) {
+  const brand = useBrand();
+  const components = asRecord(uiuxContract.component_design_system || uiuxContract.components || uiuxContract);
+  const contract = asRecord(components.concept_card);
+  const primaryColor = pickColor(contract, 'primary_color', brand.primaryColor);
+  const accentColor = pickColor(contract, 'accent_color', brand.primaryColorDark || primaryColor);
+  const secondaryColor = pickColor(contract, 'secondary_color', '#2563eb');
+  const backgroundColor = pickColor(contract, 'background_color', '#ffffff');
+  const borderColor = pickColor(contract, 'border_color', '#dbeafe');
+  const textColor = pickColor(contract, 'text_color', '#0f172a');
+  const iconBadge = partConfig(contract, 'icon_badge', primaryColor);
+  const difficultyBadge = partConfig(contract, 'difficulty_badge', accentColor);
+  const brandBadge = partConfig(contract, 'brand_badge', secondaryColor);
+  const titlePart = partConfig(contract, 'title', primaryColor);
+  const descriptionPart = partConfig(contract, 'description', '#475569');
+  const secondaryButton = partConfig(contract, 'secondary_button', accentColor);
+  const progressBar = partConfig(contract, 'progress_bar', accentColor);
+  const quickLook = asArray<string>(conceptCard.quickLook).filter(Boolean);
+  const brandLabel = String(contract.brand_variant || '').toLowerCase() === 'suia'
+    ? 'SkillUp IT Academy'
+    : 'Real Tutorial Hub';
+
+  return (
+    <section
+      className="w-full rounded-[28px] border bg-white p-6 shadow-2xl sm:p-8 lg:p-9"
+      style={{
+        backgroundColor,
+        borderColor,
+        color: textColor,
+      }}
+    >
+      <div className="mb-7 flex flex-wrap items-center gap-3">
+        {iconBadge.visible ? (
+          <span
+            className="rounded-full px-3 py-1 text-xs font-black text-white"
+            style={{ backgroundColor: iconBadge.color, color: contrastText(iconBadge.color) }}
+          >
+            JS
+          </span>
+        ) : null}
+        {difficultyBadge.visible ? (
+          <span
+            className="rounded-full border bg-white px-4 py-1 text-xs font-bold"
+            style={{ borderColor: `${difficultyBadge.color}66`, color: difficultyBadge.color }}
+          >
+            Beginner
+          </span>
+        ) : null}
+        {brandBadge.visible ? (
+          <span
+            className="rounded-full border bg-white px-4 py-1 text-xs font-bold"
+            style={{ borderColor: `${brandBadge.color}66`, color: brandBadge.color }}
+          >
+            {brandLabel}
+          </span>
+        ) : null}
+      </div>
+
+      <h2 className="text-4xl font-black leading-tight sm:text-5xl" style={{ color: titlePart.color }}>
+        {conceptCard.heroTitle}
+      </h2>
+      <p className="mt-7 max-w-4xl text-base font-semibold leading-7 sm:text-lg" style={{ color: descriptionPart.color }}>
+        {conceptCard.heroSubtitle}
+      </p>
+
+      {quickLook.length > 0 ? (
+        <div className="mt-7 flex flex-wrap gap-3">
+          {quickLook.map((tag) => (
+            <span
+              key={tag}
+              className="rounded-full border bg-white px-5 py-2 text-sm font-black"
+              style={{ borderColor: `${secondaryButton.color}66`, color: secondaryButton.color }}
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+      ) : null}
+
+      <div className="mt-8">
+        <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">Simple Words</p>
+        <h3 className="mt-6 text-2xl font-black sm:text-3xl" style={{ color: titlePart.color }}>
+          Begin with meaning first
+        </h3>
+        <p className="mt-6 max-w-4xl text-base font-semibold leading-7" style={{ color: descriptionPart.color }}>
+          A short overview designed to orient the learner before detail-heavy blocks.
+        </p>
+        <div className="mt-7 h-2 rounded-full bg-slate-100">
+          <div className="h-full w-2/5 rounded-full" style={{ backgroundColor: progressBar.color }} />
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function NotesSimpleWords({ simpleWords }: { simpleWords: string }) {
   const brand = useBrand();
 
@@ -149,15 +283,28 @@ export function NotesMainContent({
   data: SubtopicNotesViewData['mainContent']; 
   isStandalone?: boolean;
 }) {
+  const isBlockEnabled = (blockKey: NotesBlockKey) => data.enabledNotesBlocks?.[blockKey] !== false;
+  const canonicalNotes = asRecord(data.canonicalNotes);
+  const canonicalConceptCard = asRecord(canonicalNotes.concept_card);
+  const hasCanonicalConceptCard = Object.keys(canonicalConceptCard).length > 0;
+  const canonicalUiuxContract = asRecord(canonicalNotes.uiux_contract);
+
   const content = (
     <div className={`min-w-0 space-y-12 transition-all duration-500 ${isStandalone ? 'mx-auto w-full max-w-[1200px] px-4 py-8 sm:px-8 sm:py-10' : ''}`}>
+      {hasCanonicalConceptCard && (
+        <NotesCanonicalConceptCard
+          conceptCard={canonicalConceptCard}
+          uiuxContract={canonicalUiuxContract}
+        />
+      )}
+
       {/* A. WELCOME / INTRO (SIMPLE WORDS) */}
-      {data.simpleWords && (
+      {!hasCanonicalConceptCard && isBlockEnabled('simpleWords') && data.simpleWords && (
         <NotesSimpleWords simpleWords={data.simpleWords} />
       )}
 
       {/* 1. DEFINITION BLOCK */}
-      {data.definitionBlock && (
+      {isBlockEnabled('definitionBlock') && data.definitionBlock && (
         <NotesDefinitionBlock
           badge={data.definitionBlock.badge}
           headline={data.definitionBlock.headline}
@@ -167,7 +314,7 @@ export function NotesMainContent({
         />
       )}
 
-      {data.summaryHeroInfographic != null && (
+      {isBlockEnabled('summaryHeroInfographic') && data.summaryHeroInfographic != null && (
         <NotesHeroInfographic
           summaryTitle={data.summaryHeroInfographic.summaryTitle || data.title}
           image={data.summaryHeroInfographic.image}
@@ -178,12 +325,12 @@ export function NotesMainContent({
       )}
 
       {/* B. DYNAMIC CONCEPT SECTIONS */}
-      {data.sections && data.sections.length > 0 && (
+      {!hasCanonicalConceptCard && isBlockEnabled('sections') && data.sections && data.sections.length > 0 && (
         <NotesConceptSections sections={data.sections} />
       )}
 
       {/* 2. CONCEPT CARD / MEMORY MAP */}
-      {data.conceptMemoryMap != null && (
+      {isBlockEnabled('conceptMemoryMap') && data.conceptMemoryMap != null && (
         <NotesConceptMemoryMap
           image={data.conceptMemoryMap.image}
           nodes={data.conceptMemoryMap.nodes || []}
@@ -192,7 +339,7 @@ export function NotesMainContent({
       )}
 
       {/* 3. COMPONENT GRID */}
-      {data.componentGrid && (
+      {isBlockEnabled('componentGrid') && data.componentGrid && (
         <NotesComponentGrid
           gridTitle={data.componentGrid.gridTitle}
           componentCards={data.componentGrid.componentCards}
@@ -200,7 +347,7 @@ export function NotesMainContent({
       )}
 
       {/* 4. SYNTAX BLOCK */}
-      {data.syntaxBlock != null && (
+      {isBlockEnabled('syntaxBlock') && data.syntaxBlock != null && (
         <NotesSyntaxBlock
           image={data.syntaxBlock.image}
           code={data.syntaxBlock.code}
@@ -212,7 +359,7 @@ export function NotesMainContent({
       )}
 
       {/* 5. EXAMPLE PANEL */}
-      {data.examplePanel && (
+      {isBlockEnabled('examplePanel') && data.examplePanel && (
         <NotesExamplePanel
           exampleTitle={data.examplePanel.exampleTitle}
           scenarios={data.examplePanel.scenarios}
@@ -220,7 +367,7 @@ export function NotesMainContent({
       )}
 
       {/* 6. PRACTICE CARD */}
-      {data.practiceCard && (
+      {isBlockEnabled('practiceCard') && data.practiceCard && (
         <NotesPracticeCard
           bestPracticeTitle={data.practiceCard.bestPracticeTitle}
           recommendations={data.practiceCard.recommendations}
@@ -230,14 +377,14 @@ export function NotesMainContent({
       )}
 
       {/* 7. WARNING FAQ (COMMON MISTAKES) */}
-      {data.warningFaq && (
+      {isBlockEnabled('warningFaq') && data.warningFaq && (
         <NotesWarningFaq
           faqItems={data.warningFaq.faqItems}
         />
       )}
 
       {/* 8. SUMMARY CARD (REVISION DASHBOARD) */}
-      {data.summaryCard && (
+      {isBlockEnabled('summaryCard') && data.summaryCard && (
         <NotesSummaryCard
           image={data.summaryCard.image}
           summaryTitle={data.summaryCard.summaryTitle}
@@ -250,7 +397,7 @@ export function NotesMainContent({
 
       {/* ADDITIONAL VISUALS (If any) */}
       <div className="space-y-12">
-        {data.cheatSheetSVG != null && (
+        {isBlockEnabled('cheatSheetSVG') && data.cheatSheetSVG != null && (
           <NotesCheatSheet
             image={data.cheatSheetSVG.image}
             title={data.cheatSheetSVG.title}
@@ -258,14 +405,14 @@ export function NotesMainContent({
           />
         )}
 
-        {data.flashcardVisualSystem != null && (
+        {isBlockEnabled('flashcardVisualSystem') && data.flashcardVisualSystem != null && (
           <NotesFlashcardSystem
             image={data.flashcardVisualSystem.image}
             cards={data.flashcardVisualSystem.cards || []}
           />
         )}
 
-        {data.comparisonSummaryChart != null && (
+        {isBlockEnabled('comparisonSummaryChart') && data.comparisonSummaryChart != null && (
           <NotesComparisonChart
             image={data.comparisonSummaryChart.image}
             title={data.comparisonSummaryChart.title || "Comparison Summary"}
@@ -274,7 +421,7 @@ export function NotesMainContent({
           />
         )}
 
-        {data.mnemonicRetentionGraphic != null && (
+        {isBlockEnabled('mnemonicRetentionGraphic') && data.mnemonicRetentionGraphic != null && (
           <NotesMnemonicGraphic
             image={data.mnemonicRetentionGraphic.image}
             mnemonicTitle={data.mnemonicRetentionGraphic.mnemonicTitle || ''}
@@ -286,7 +433,7 @@ export function NotesMainContent({
       </div>
 
       {/* FOOTER SECTION */}
-      {data.footerBlock != null && (
+      {isBlockEnabled('footerBlock') && data.footerBlock != null && (
         <NotesFooter
           image={data.footerBlock.image}
           finalNote={data.footerBlock.finalNote || ''}

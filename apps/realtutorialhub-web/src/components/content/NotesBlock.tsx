@@ -20,7 +20,13 @@ interface NotesBlockProps {
 export function NotesBlock({ data, theme }: NotesBlockProps) {
   const t = useTranslations('blocks.notes');
   
-  if (!data) return null;
+  if (!data) {
+    return (
+      <section className="design-panel" aria-label={t('ariaLabel')}>
+        <BlockHeader icon="N" title={t('title')} accentColor={theme.blockNotesHeader} headingId="block-notes-heading" />
+      </section>
+    );
+  }
 
   // Canonical modular Notes payload. Old aliases are intentionally not accepted here.
   const isModular =

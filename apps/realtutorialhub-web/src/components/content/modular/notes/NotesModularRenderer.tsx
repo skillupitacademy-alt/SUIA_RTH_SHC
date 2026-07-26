@@ -12,6 +12,7 @@ import { CommonMistakes } from './CommonMistakes';
 import { VisualSummary } from './VisualSummary';
 import { NotesHero } from './NotesHero';
 import { getLayoutStyle, pickSection, pickString, toRecord } from '../utils';
+import { asUiuxRecord } from './uiuxContract';
 
 interface NotesModularRendererProps {
   data: NonNullable<TutorialContentJSON['notes']>;
@@ -32,6 +33,9 @@ export function NotesModularRenderer({ data, themeColor }: NotesModularRendererP
   const errorData = pickSection(m, ['warning_faq']);
   const summaryData = pickSection(m, ['summary_card']);
   const heroData = pickSection(m, ['concept_card']);
+  const uiuxRoot = asUiuxRecord(m.uiux_contract);
+  const componentContracts = asUiuxRecord(uiuxRoot.component_design_system || uiuxRoot.components || uiuxRoot);
+  const pickUiux = (componentKey: string) => asUiuxRecord(componentContracts[componentKey]);
 
   // Dynamic Layout Support
   const layoutStyle = getLayoutStyle(m);
@@ -45,26 +49,26 @@ export function NotesModularRenderer({ data, themeColor }: NotesModularRendererP
         ...layoutStyle
       }}
     >
-      {heroData && <NotesHero data={heroData} themeColor={themeColor} />}
+      {heroData && <NotesHero data={heroData} themeColor={themeColor} uiux={pickUiux('concept_card')} />}
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {definitionData && <CoreDefinition data={definitionData} themeColor={themeColor} />}
-        {mechanicsData && <SystemMechanics data={mechanicsData} themeColor={themeColor} />}
+        {definitionData && <CoreDefinition data={definitionData} themeColor={themeColor} uiux={pickUiux('definition_block')} />}
+        {mechanicsData && <SystemMechanics data={mechanicsData} themeColor={themeColor} uiux={pickUiux('component_grid')} />}
       </div>
 
-      {syntaxData && <SyntaxStructure data={syntaxData} themeColor={themeColor} />}
+      {syntaxData && <SyntaxStructure data={syntaxData} themeColor={themeColor} uiux={pickUiux('syntax_block')} />}
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
-          {exampleData && <KeyComponents data={exampleData} themeColor={themeColor} />}
+          {exampleData && <KeyComponents data={exampleData} themeColor={themeColor} uiux={pickUiux('example_panel')} />}
         </div>
         <div className="flex flex-col gap-6">
-          {bestPracticeData && <BestPractices data={bestPracticeData} themeColor={themeColor} />}
-          {errorData && <CommonMistakes data={errorData} />}
+          {bestPracticeData && <BestPractices data={bestPracticeData} themeColor={themeColor} uiux={pickUiux('practice_card')} />}
+          {errorData && <CommonMistakes data={errorData} uiux={pickUiux('warning_faq')} />}
         </div>
       </div>
 
-      {summaryData && <VisualSummary data={summaryData} themeColor={themeColor} />}
+      {summaryData && <VisualSummary data={summaryData} themeColor={themeColor} uiux={pickUiux('summary_card')} />}
     </div>
   );
 }

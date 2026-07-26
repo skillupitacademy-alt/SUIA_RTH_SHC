@@ -48,7 +48,7 @@ export const initialSectionStatus = sections.reduce((status, section) => ({
 
 export const SUBSECTIONS_MAP: Record<string, Array<{ id: string; label: string; type: 'json' | 'svg' }>> = {
   notes: [
-    { id: 'concept_card', label: 'Concept Card / Notes Hero (JSON)', type: 'json' },
+    { id: 'concept_card', label: 'Hero / Concept Card / Notes Hero (JSON)', type: 'json' },
     { id: 'definition_block', label: 'Definition Block (JSON)', type: 'json' },
     { id: 'component_grid', label: 'Component Grid / Mechanics (JSON)', type: 'json' },
     { id: 'syntax_block', label: 'Syntax Block (JSON)', type: 'json' },

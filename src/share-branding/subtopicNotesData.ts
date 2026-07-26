@@ -73,6 +73,7 @@ export interface SubtopicNotesViewData {
       xp: number;
     };
   } & SubtopicContentPattern & {
+    canonicalNotes?: Record<string, any>;
     // Legacy Notes-only visual blocks (preserved for compatibility)
     summaryHeroInfographic?: {
       image?: any;

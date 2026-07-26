@@ -343,33 +343,51 @@ function deriveTaskCards(sections: Record<string, unknown>, title: string): Cont
 }
 
 export function buildOverviewFromSections(brand: BrandConfig, subtopicId: string, apiData: TutorialSectionsResponse | null): SubtopicViewData {
-  const sections = apiData?.sections;
-  if (!sections || !Object.prototype.hasOwnProperty.call(sections, 'overview')) {
-    throw new Error('This tutorial section failed schema validation and must be regenerated. Section: overview. Missing required DB section.');
-  }
+  const sections = apiData?.sections || {};
+  const fallbackTitle = apiData?.subtopicName || titleFromSlug(subtopicId);
+  let overview: ReturnType<typeof parseTutorialSection<'overview'>> | null = null;
 
-  let overview: ReturnType<typeof parseTutorialSection<'overview'>>;
-  try {
-    overview = parseTutorialSection('overview', sections.overview);
-  } catch (error) {
-    if (error instanceof TutorialSectionValidationError) {
-      throw new Error(
-        `This tutorial section failed schema validation and must be regenerated. Section: overview. ${formatTutorialSectionValidationIssues(error.issues)}`
-      );
+  if (Object.prototype.hasOwnProperty.call(sections, 'overview')) {
+    try {
+      overview = parseTutorialSection('overview', sections.overview);
+    } catch (error) {
+      if (error instanceof TutorialSectionValidationError) {
+        console.error(
+          `This tutorial section failed schema validation and must be regenerated. Section: overview. ${formatTutorialSectionValidationIssues(error.issues)}`
+        );
+      } else {
+        throw error;
+      }
     }
-    throw error;
   }
 
-  const hero = overview.hero;
-  const progressSummary = overview.progressSummary;
+  const hero = overview?.hero ?? {
+    iconLabel: iconLabelFromTitle(fallbackTitle),
+    title: fallbackTitle,
+    description: `Start learning ${fallbackTitle} with the available tutorial sections.`,
+    difficulty: apiData?.difficulty ?? 'simple',
+    estimatedReadTime: '10 mins',
+    xp: 0,
+    topicsCount: apiData?.totalSections ?? Object.keys(sections).length,
+    lastUpdated: 'Today',
+  };
+  const progressSummary = overview?.progressSummary ?? {
+    percentage: 0,
+    checklist: Object.keys(sections).length > 0
+      ? Object.keys(sections).map((section) => ({ label: section.replace(/_/g, ' '), completed: false }))
+      : [{ label: 'Open available section', completed: false }],
+  };
   const title = hero.title;
   const description = hero.description;
   const topicsCount = hero.topicsCount;
   const progress = progressSummary.percentage;
   const checklist = progressSummary.checklist;
-  const contentCards = overview.learningRoadmap.contentCards;
-  const taskCards = overview.learningRoadmap.taskCards;
-  const navigation = overview.navigation;
+  const contentCards = overview?.learningRoadmap.contentCards ?? deriveOverviewContent(sections, title);
+  const taskCards = overview?.learningRoadmap.taskCards ?? deriveTaskCards(sections, title);
+  const navigation = overview?.navigation ?? {
+    prevTitle: 'Previous Topic',
+    nextTitle: 'Next Topic',
+  };
 
   return {
     nav: {

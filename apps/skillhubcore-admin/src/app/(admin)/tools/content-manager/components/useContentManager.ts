@@ -52,19 +52,42 @@ type PipelinePayload = {
 
 const getPromptSectionId = (sectionId: string) => sectionId === 'reallife' ? 'real_life' : sectionId;
 
+const NOTES_SUBSECTION_ALIASES: Record<string, string> = {
+  hero: 'concept_card',
+  Hero: 'concept_card',
+  simpleWords: 'concept_card',
+  simple_words: 'concept_card',
+  conceptCard: 'concept_card',
+  definitionBlock: 'definition_block',
+  componentGrid: 'component_grid',
+  syntaxBlock: 'syntax_block',
+  examplePanel: 'example_panel',
+  practiceCard: 'practice_card',
+  warningFaq: 'warning_faq',
+  warningFAQ: 'warning_faq',
+  summaryCard: 'summary_card',
+};
+
+const normalizePipelineSubsectionId = (sectionId: string, subsectionId: string | null) => {
+  if (!subsectionId) return null;
+  if (sectionId === 'notes') return NOTES_SUBSECTION_ALIASES[subsectionId] || subsectionId;
+  return subsectionId;
+};
+
 const getDefaultPipelineJson = (sectionId: string, subsectionId: string | null, subtopicName: string) => {
   const template = getStrictSectionJsonTemplate(getPromptSectionId(sectionId), subtopicName || 'What is Python?');
   const rootKey = Object.keys(template)[0];
   const rootValue = template[rootKey];
+  const normalizedSubsectionId = normalizePipelineSubsectionId(sectionId, subsectionId);
 
   if (
-    subsectionId &&
+    normalizedSubsectionId &&
     rootValue &&
     typeof rootValue === 'object' &&
     !Array.isArray(rootValue) &&
-    subsectionId in rootValue
+    normalizedSubsectionId in rootValue
   ) {
-    return (rootValue as Record<string, unknown>)[subsectionId];
+    return (rootValue as Record<string, unknown>)[normalizedSubsectionId];
   }
 
   return template;
@@ -228,9 +251,16 @@ export function useContentManager() {
 
     if ((sourceParam === 'global-architecture' || sourceParam === 'prompt-generator') && !jsonInput.trim()) {
       const sectionToUse = sectParam || loadedPayload?.adminSectionId || loadedPayload?.section || selectedSection;
-      const subsectionToUse = subParam || loadedPayload?.subsection || '';
+      const subsectionToUse = normalizePipelineSubsectionId(sectionToUse, subParam || loadedPayload?.subsection || '') || '';
       const subtopicToUse = subtopicParam || loadedPayload?.dummyContext?.subtopic || subtopicInfo.subtopic || 'What is Python?';
-      const payloadJson = loadedPayload?.defaultJson;
+      const payloadSection = loadedPayload ? String(loadedPayload.adminSectionId || loadedPayload.section || '') : '';
+      const payloadSubsection = loadedPayload ? normalizePipelineSubsectionId(sectionToUse, loadedPayload.subsection || '') || '' : '';
+      const payloadMatchesCurrentTarget = Boolean(
+        loadedPayload?.defaultJson &&
+        payloadSection === sectionToUse &&
+        payloadSubsection === subsectionToUse
+      );
+      const payloadJson = payloadMatchesCurrentTarget ? loadedPayload?.defaultJson : undefined;
       const defaultJson = payloadJson ?? getDefaultPipelineJson(sectionToUse, subsectionToUse || null, subtopicToUse);
       setJsonInput(JSON.stringify(defaultJson, null, 2));
     }
@@ -489,6 +519,8 @@ export function useContentManager() {
   const addSection = async () => {
     let finalContent: unknown;
     const trimmedInput = jsonInput.trim();
+    const activeRendererContract =
+      pipelinePayload?.rendererMapping || pipelinePayload?.uiuxComponent || pipelinePayload?.educationalComponent || null;
 
     if (!trimmedInput) {
       showMessage('Please provide content in the editor.', 'error');
@@ -527,6 +559,7 @@ export function useContentManager() {
           section: selectedSection,
           subsection: selectedSubsection || undefined,
           content: finalContent,
+          rendererContract: activeRendererContract,
         }),
       });
 

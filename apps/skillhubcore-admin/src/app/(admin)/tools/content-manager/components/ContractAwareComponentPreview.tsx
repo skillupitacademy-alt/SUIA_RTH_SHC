@@ -56,6 +56,24 @@ const getConfiguredPart = (
   };
 };
 
+const getExactConfiguredPart = (
+  parts: Record<string, unknown>[],
+  id: string,
+  fallbackColor: string
+) => {
+  const part = parts.find((item) => String(item.id || '').toLowerCase() === id.toLowerCase());
+  return {
+    visible: part?.visible !== false,
+    color: asString(part?.color, fallbackColor),
+    label: asString(part?.label, titleCase(id)),
+    layout: asString(part?.layout, 'inline').toLowerCase(),
+    align: asString(part?.align, 'left').toLowerCase(),
+    spacing: asString(part?.spacing, 'normal').toLowerCase(),
+    radius: asString(part?.radius, 'pill').toLowerCase(),
+    shadow: asString(part?.shadow, 'none').toLowerCase(),
+  };
+};
+
 function summarizeContent(data: unknown, subsection: string, section: string) {
   const record = asRecord(data);
   const title = asString(
@@ -145,7 +163,8 @@ export function ContractAwareComponentPreview({
   const density = asString(contract.density, 'comfortable').toLowerCase();
   const typography = asString(contract.typography_scale, 'standard').toLowerCase();
   const primaryColor = asString(contract.primary_color, '#4f46e5');
-  const accentColor = asString(contract.accent_color, '#10b981');
+  const primaryColorDark = asString(contract.primary_color_dark, primaryColor);
+  const accentColor = asString(contract.accent_color, primaryColorDark);
   const backgroundColor = asString(contract.background_color, '#ffffff');
   const textColor = asString(contract.text_color, '#0f172a');
   const borderColor = asString(contract.border_color, '#dbeafe');
@@ -167,23 +186,59 @@ export function ContractAwareComponentPreview({
   const headerPart = getConfiguredPart(parts, ['header', 'title']);
   const bodyPart = getConfiguredPart(parts, ['body', 'content', 'main']);
   const actionPart = getConfiguredPart(parts, ['action', 'cta', 'button']);
+  const iconBadgePart = getExactConfiguredPart(parts, 'icon_badge', primaryColor);
+  const difficultyBadgePart = getExactConfiguredPart(parts, 'difficulty_badge', accentColor);
+  const brandBadgePart = getExactConfiguredPart(parts, 'brand_badge', asString(contract.secondary_color, accentColor));
+  const titlePart = getExactConfiguredPart(parts, 'title', textColor);
+  const descriptionPart = getExactConfiguredPart(parts, 'description', '#475569');
+  const statCardsPart = getExactConfiguredPart(parts, 'stat_cards', borderColor);
+  const statValuePart = getExactConfiguredPart(parts, 'stat_value', primaryColor);
+  const primaryButtonPart = getExactConfiguredPart(parts, 'primary_button', accentColor);
+  const secondaryButtonPart = getExactConfiguredPart(parts, 'secondary_button', primaryColor);
+  const progressBarPart = getExactConfiguredPart(parts, 'progress_bar', primaryColor);
   const summary = summarizeContent(data, subsection, section);
   const compact = density === 'compact';
   const spacious = density === 'spacious';
-  const padding = compact ? 'p-5' : spacious ? 'p-9' : 'p-7';
+  const partRadiusClass = (radius: string) => (
+    radius === 'none' ? 'rounded-none' : radius === 'soft' ? 'rounded-xl' : radius === 'pill' ? 'rounded-[2rem]' : 'rounded-3xl'
+  );
+  const partShadowClass = (shadow: string) => (
+    shadow === 'none' ? 'shadow-none' : shadow === 'strong' ? 'shadow-2xl' : 'shadow-xl'
+  );
+  const partPaddingClass = (spacing: string) => (
+    spacing === 'tight' || compact ? 'p-5' : spacing === 'loose' || spacious ? 'p-9' : 'p-7'
+  );
+  const padding = partPaddingClass(containerPart.spacing);
   const gap = compact ? 'gap-4' : spacious ? 'gap-8' : 'gap-6';
   const focused = colorRole === 'accent' ? accentColor : primaryColor;
   const mutedSurface = colorRole === 'neutral' ? '#f8fafc' : `${focused}0f`;
   const domainLabel = domainOverride === 'default' ? 'Core concept' : titleCase(domainOverride);
   const brandLabel = brandVariant === 'suia' ? 'SkillUp IT Academy' : brandVariant === 'rth' ? 'Real Tutorial Hub' : 'Guided Learning';
-  const styleClasses = styleVariant === 'minimal'
+  const styleClasses = containerPart.shadow
+    ? partShadowClass(containerPart.shadow)
+    : styleVariant === 'minimal'
     ? 'shadow-none'
     : styleVariant === 'featured'
       ? 'shadow-2xl'
       : styleVariant === 'outlined'
         ? 'shadow-sm'
         : 'shadow-xl';
-  const radiusClass = styleVariant === 'compact' || compact ? 'rounded-2xl' : 'rounded-3xl';
+  const radiusClass = containerPart.radius
+    ? partRadiusClass(containerPart.radius)
+    : styleVariant === 'compact' || compact ? 'rounded-2xl' : 'rounded-3xl';
+  const containerLayout = containerPart.layout;
+  const containerAlignClass = containerPart.align === 'center'
+    ? 'text-center'
+    : containerPart.align === 'right'
+      ? 'text-right'
+      : 'text-left';
+  const containerFrameClass = containerLayout === 'inline'
+    ? `overflow-visible rounded-none border-0 bg-transparent p-0 shadow-none ${containerAlignClass}`
+    : containerLayout === 'pill'
+      ? `overflow-hidden rounded-[2rem] border ${padding} ${styleClasses} ${containerAlignClass}`
+      : containerLayout === 'progress'
+        ? `overflow-hidden ${radiusClass} border ${padding} ${styleClasses} ${containerAlignClass}`
+        : `overflow-hidden ${radiusClass} border ${padding} ${styleClasses} ${containerAlignClass}`;
   const emphasisScale = emphasis === 'high' ? 'scale-[1.01]' : emphasis === 'low' ? 'opacity-90' : '';
   const motionClass = reducedMotion
     ? ''
@@ -201,6 +256,30 @@ export function ContractAwareComponentPreview({
       ? 'text-2xl lg:text-3xl'
       : 'text-3xl lg:text-4xl';
   const hasItems = summary.items.length > 0;
+  const partAlignClass = (part: { align: string }) => (
+    part.align === 'center' ? 'text-center' : part.align === 'right' ? 'text-right' : 'text-left'
+  );
+  const partJustifyClass = (part: { align: string }) => (
+    part.align === 'center' ? 'justify-center' : part.align === 'right' ? 'justify-end' : ''
+  );
+  const partSpaceClass = (part: { spacing: string }) => (
+    compact ? 'space-y-3' : part.spacing === 'loose' ? 'space-y-7' : part.spacing === 'tight' ? 'space-y-3' : 'space-y-5'
+  );
+  const partPanelClass = (part: { radius: string; shadow: string; spacing: string; align: string }, extraClass = '') => (
+    `${partRadiusClass(part.radius)} border bg-white ${part.spacing === 'tight' ? 'p-4' : part.spacing === 'loose' ? 'p-8' : 'p-5'} ${part.shadow === 'none' ? 'shadow-none' : part.shadow === 'strong' ? 'shadow-xl' : 'shadow-sm'} ${partAlignClass(part)} ${extraClass}`
+  );
+  const exactPartClass = (part: { radius: string; shadow: string; spacing: string }, basePadding = 'px-3 py-1') => {
+    const paddingClass = part.spacing === 'tight'
+      ? 'px-2 py-0.5'
+      : part.spacing === 'loose'
+        ? 'px-5 py-2'
+        : basePadding;
+    const shadowClass = part.shadow === 'none' ? 'shadow-none' : part.shadow === 'strong' ? 'shadow-lg' : 'shadow-sm';
+    return `${partRadiusClass(part.radius)} ${paddingClass} ${shadowClass}`;
+  };
+  const exactAlignClass = (part: { align: string }) => (
+    part.align === 'center' ? 'mx-auto text-center' : part.align === 'right' ? 'ml-auto text-right' : 'text-left'
+  );
 
   const wrapPart = (partLayout: string, children: React.ReactNode, color: string, extraClass = '') => {
     const currentPart = [containerPart, headerPart, bodyPart, actionPart].find((part) => part.color === color) || containerPart;
@@ -229,19 +308,23 @@ export function ContractAwareComponentPreview({
 
   const badges = wrapPart(headerPart.layout === 'pill' ? 'inline' : headerPart.layout, (
     <div className="flex flex-wrap items-center gap-3">
-      <span className="rounded-full px-3 py-1 text-xs font-black text-white" style={{ backgroundColor: primaryColor }}>
-        {summary.iconLabel}
-      </span>
-      <span className="rounded-full border px-3 py-1 text-xs font-bold" style={{ borderColor: `${accentColor}66`, backgroundColor: `${accentColor}12`, color: accentColor }}>
-        {summary.difficulty}
-      </span>
+      {iconBadgePart.visible ? (
+        <span className={`${exactPartClass(iconBadgePart)} inline-flex text-xs font-black ${exactAlignClass(iconBadgePart)}`} style={{ backgroundColor: iconBadgePart.color, color: contrastText(iconBadgePart.color) }}>
+          {summary.iconLabel}
+        </span>
+      ) : null}
+      {difficultyBadgePart.visible ? (
+        <span className={`${exactPartClass(difficultyBadgePart)} inline-flex border text-xs font-bold ${exactAlignClass(difficultyBadgePart)}`} style={{ borderColor: `${difficultyBadgePart.color}66`, backgroundColor: `${difficultyBadgePart.color}12`, color: difficultyBadgePart.color }}>
+          {summary.difficulty}
+        </span>
+      ) : null}
       {domainOverride !== 'default' ? (
         <span className="rounded-full border bg-white px-3 py-1 text-xs font-bold" style={{ borderColor, color: focused }}>
           {domainLabel}
         </span>
       ) : null}
-      {brandVariant !== 'shared' ? (
-        <span className="rounded-full border bg-white px-3 py-1 text-xs font-bold" style={{ borderColor, color: primaryColor }}>
+      {brandVariant !== 'shared' && brandBadgePart.visible ? (
+        <span className={`${exactPartClass(brandBadgePart)} inline-flex border bg-white text-xs font-bold ${exactAlignClass(brandBadgePart)}`} style={{ borderColor: `${brandBadgePart.color}66`, color: brandBadgePart.color }}>
           {brandLabel}
         </span>
       ) : null}
@@ -251,19 +334,19 @@ export function ContractAwareComponentPreview({
   const header = headerPart.visible ? (
     <div className={`${compact ? 'space-y-3' : headerPart.spacing === 'loose' ? 'space-y-6' : 'space-y-4'} ${headerPart.align === 'center' ? 'text-center' : headerPart.align === 'right' ? 'text-right' : 'text-left'}`} aria-label={screenReaderLabels ? `${renderer} header` : undefined}>
       {badges}
-      <h2 className={`${titleSize} font-black leading-tight`} style={{ color: textColor }}>{summary.title}</h2>
-      <p className={`max-w-2xl text-base font-semibold leading-7 text-slate-600 ${headerPart.align === 'center' ? 'mx-auto' : headerPart.align === 'right' ? 'ml-auto' : ''}`}>{summary.description}</p>
+      {titlePart.visible ? <h2 className={`${titleSize} font-black leading-tight ${exactAlignClass(titlePart)}`} style={{ color: titlePart.color }}>{summary.title}</h2> : null}
+      {descriptionPart.visible ? <p className={`max-w-2xl text-base font-semibold leading-7 ${exactAlignClass(descriptionPart)}`} style={{ color: descriptionPart.color }}>{summary.description}</p> : null}
     </div>
   ) : null;
 
   const stats = (
     <div className="grid gap-3 sm:grid-cols-2">
-      <div className="rounded-2xl border bg-white p-4 shadow-sm" style={{ borderColor }}>
-        <p className="text-2xl font-black" style={{ color: primaryColor }}>{summary.topicsCount}</p>
+      <div className="rounded-2xl border bg-white p-4 shadow-sm" style={{ borderColor: statCardsPart.color }}>
+        <p className="text-2xl font-black" style={{ color: statValuePart.color }}>{summary.topicsCount}</p>
         <p className="mt-1 text-xs font-bold uppercase tracking-wide text-slate-500">Learning blocks</p>
       </div>
-      <div className="rounded-2xl border bg-white p-4 shadow-sm" style={{ borderColor }}>
-        <p className="text-2xl font-black" style={{ color: primaryColor }}>{summary.lastUpdated}</p>
+      <div className="rounded-2xl border bg-white p-4 shadow-sm" style={{ borderColor: statCardsPart.color }}>
+        <p className="text-2xl font-black" style={{ color: statValuePart.color }}>{summary.lastUpdated}</p>
         <p className="mt-1 text-xs font-bold uppercase tracking-wide text-slate-500">Last updated</p>
       </div>
     </div>
@@ -277,7 +360,7 @@ export function ContractAwareComponentPreview({
       <p className="text-xs font-black uppercase tracking-widest text-slate-400">{brandLabel}</p>
       <p className="mt-2 text-2xl font-black" style={{ color: textColor }}>{summary.title}</p>
       <div className="mt-5 h-2 rounded-full bg-slate-100">
-        <div className="h-full rounded-full" style={{ width: progressiveDisclosure ? '42%' : '68%', backgroundColor: primaryColor }} />
+        <div className="h-full rounded-full" style={{ width: progressiveDisclosure ? '42%' : '68%', backgroundColor: progressBarPart.color }} />
       </div>
       <div className="mt-4 flex flex-wrap gap-2 text-[10px] font-black uppercase tracking-wide text-slate-500">
         {lazyLoad ? <span>Optimized loading</span> : null}
@@ -311,13 +394,13 @@ export function ContractAwareComponentPreview({
       <div className={`flex flex-wrap items-center gap-3 ${actionPart.align === 'center' ? 'justify-center' : actionPart.align === 'right' ? 'justify-end' : ''}`}>
         <button
           className="inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-black text-white shadow-sm disabled:cursor-default"
-          style={{ backgroundColor: actionPart.color || accentColor }}
+          style={{ backgroundColor: primaryButtonPart.color, color: contrastText(primaryButtonPart.color) }}
           disabled={!clickable}
           tabIndex={keyboardNavigation ? 0 : -1}
         >
           {actionPart.label || 'Start learning'} <ArrowRight size={17} />
         </button>
-        <button className="inline-flex items-center gap-2 rounded-full border bg-white px-5 py-3 text-sm font-black" style={{ borderColor, color: primaryColor }}>
+        <button className="inline-flex items-center gap-2 rounded-full border bg-white px-5 py-3 text-sm font-black" style={{ borderColor: `${secondaryButtonPart.color}66`, color: secondaryButtonPart.color }}>
           <BookOpen size={17} /> View roadmap
         </button>
         {interactiveElements.slice(0, 3).map((item) => (
@@ -338,6 +421,37 @@ export function ContractAwareComponentPreview({
   const appliedBody = bodyPart.layout === 'inline' ? body : wrapPart(bodyPart.layout, body, bodyPart.color || borderColor);
   const appliedAction = actionPart.layout === 'inline' ? action : wrapPart(actionPart.layout, action, actionPart.color || accentColor);
   const visibleBlocks = [appliedHeader, appliedBody, appliedAction].filter(Boolean);
+  const notesPairClass = layout.includes('inline')
+    ? `flex flex-wrap items-center justify-between ${gap}`
+    : layout.includes('grid') || desktopLayout.includes('dashboard')
+      ? `grid ${gap} md:grid-cols-2`
+      : layout.includes('hero') || layout.includes('wide') || desktopLayout.includes('wide') || desktopLayout.includes('two_column')
+        ? `grid ${gap} lg:grid-cols-[1.1fr_0.9fr] lg:items-center`
+        : 'space-y-5';
+  const notesCardClass = `${partRadiusClass(bodyPart.radius)} border bg-white ${bodyPart.spacing === 'tight' ? 'p-4' : bodyPart.spacing === 'loose' ? 'p-8' : 'p-6'} ${bodyPart.shadow === 'none' ? 'shadow-none' : bodyPart.shadow === 'strong' ? 'shadow-xl' : 'shadow-lg'}`;
+  const notesPreviewCardClass = bodyPart.layout === 'inline'
+    ? `${partSpaceClass(bodyPart)} ${partAlignClass(bodyPart)}`
+    : bodyPart.layout === 'pill'
+      ? `${partRadiusClass('pill')} border bg-white ${bodyPart.spacing === 'tight' ? 'px-4 py-3' : bodyPart.spacing === 'loose' ? 'px-8 py-6' : 'px-6 py-5'} ${bodyPart.shadow === 'none' ? 'shadow-none' : bodyPart.shadow === 'strong' ? 'shadow-xl' : 'shadow-lg'} ${partAlignClass(bodyPart)}`
+      : bodyPart.layout === 'progress'
+        ? `${partSpaceClass(bodyPart)} ${partAlignClass(bodyPart)}`
+        : notesCardClass;
+  const notesHeaderClass = `${partSpaceClass(headerPart)} ${partAlignClass(headerPart)}`;
+  const notesBadgeRowClass = `flex flex-wrap items-center gap-3 ${partJustifyClass(headerPart)}`;
+  const notesActionRowClass = `flex flex-wrap gap-3 ${partJustifyClass(actionPart)}`;
+  const notesInlineHeaderStyle = headerPart.color
+    ? {
+      borderBottom: `3px solid ${headerPart.color}`,
+      paddingBottom: compact ? '0.75rem' : '1rem',
+    }
+    : undefined;
+  const renderNotesHeader = (children: React.ReactNode) => {
+    if (!headerPart.visible) return null;
+    const headerContent = <div className={notesHeaderClass} style={headerPart.layout === 'inline' ? notesInlineHeaderStyle : undefined}>{children}</div>;
+    return headerPart.layout === 'inline'
+      ? headerContent
+      : wrapPart(headerPart.layout, headerContent, headerPart.color || primaryColor);
+  };
   const contentRecord = asRecord(data);
   const normalizedSection = section.toLowerCase();
   const normalizedSubsection = subsection
@@ -350,62 +464,79 @@ export function ContractAwareComponentPreview({
     if (['simple_words', 'simplewords', 'concept_card'].includes(normalizedSubsection)) {
       const quickLook = asArray<unknown>(contentRecord.quickLook);
       return (
-        <div className={`grid ${gap} lg:grid-cols-[1.1fr_0.9fr] lg:items-center`}>
-          <div className="space-y-5">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="rounded-full px-3 py-1 text-xs font-black text-white" style={{ backgroundColor: primaryColor }}>{summary.iconLabel}</span>
-              <span className="rounded-full border px-3 py-1 text-xs font-bold" style={{ borderColor: `${accentColor}66`, color: accentColor }}>{summary.difficulty}</span>
+        <div className={notesPairClass}>
+          {renderNotesHeader(<>
+            <div className={notesBadgeRowClass}>
+              {iconBadgePart.visible ? (
+                <span className={`${exactPartClass(iconBadgePart)} inline-flex text-xs font-black ${exactAlignClass(iconBadgePart)}`} style={{ backgroundColor: iconBadgePart.color, color: contrastText(iconBadgePart.color) }}>{summary.iconLabel}</span>
+              ) : null}
+              {difficultyBadgePart.visible ? (
+                <span className={`${exactPartClass(difficultyBadgePart)} inline-flex border text-xs font-bold ${exactAlignClass(difficultyBadgePart)}`} style={{ borderColor: `${difficultyBadgePart.color}66`, color: difficultyBadgePart.color }}>{summary.difficulty}</span>
+              ) : null}
+              {brandVariant !== 'shared' && brandBadgePart.visible ? (
+                <span className={`${exactPartClass(brandBadgePart)} inline-flex border bg-white text-xs font-bold ${exactAlignClass(brandBadgePart)}`} style={{ borderColor: `${brandBadgePart.color}66`, color: brandBadgePart.color }}>{brandLabel}</span>
+              ) : null}
             </div>
-            <h2 className={`${titleSize} font-black leading-tight`} style={{ color: textColor }}>
-              {asString(contentRecord.heroTitle, `${summary.title} Notes`)}
-            </h2>
-            <p className="max-w-2xl text-base font-semibold leading-7 text-slate-600">
-              {asString(contentRecord.heroSubtitle, summary.description)}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {(quickLook.length ? quickLook : ['Definition', 'Mechanics', 'Syntax', 'Examples']).map((item) => (
-                <span key={String(item)} className="rounded-full border bg-white px-4 py-2 text-xs font-black" style={{ borderColor, color: primaryColor }}>
-                  {String(item)}
-                </span>
-              ))}
+            {titlePart.visible ? (
+              <h2 className={`${titleSize} font-black leading-tight ${exactAlignClass(titlePart)}`} style={{ color: titlePart.color }}>
+                {asString(contentRecord.heroTitle, `${summary.title} Notes`)}
+              </h2>
+            ) : null}
+            {descriptionPart.visible ? (
+              <p className={`max-w-2xl text-base font-semibold leading-7 ${exactAlignClass(descriptionPart)}`} style={{ color: descriptionPart.color }}>
+                {asString(contentRecord.heroSubtitle, summary.description)}
+              </p>
+            ) : null}
+            {secondaryButtonPart.visible ? (
+              <div className={`flex flex-wrap gap-2 ${partJustifyClass(secondaryButtonPart) || partJustifyClass(headerPart)}`}>
+                {(quickLook.length ? quickLook : ['Definition', 'Mechanics', 'Syntax', 'Examples']).map((item) => (
+                  <span key={String(item)} className={`${exactPartClass(secondaryButtonPart, 'px-4 py-2')} border bg-white text-xs font-black ${exactAlignClass(secondaryButtonPart)}`} style={{ borderColor: `${secondaryButtonPart.color}66`, color: secondaryButtonPart.color }}>
+                    {String(item)}
+                  </span>
+                ))}
+              </div>
+            ) : null}
+          </>)}
+          {bodyPart.visible ? (
+            <div className={notesPreviewCardClass} style={{ borderColor: bodyPart.layout === 'inline' || bodyPart.layout === 'progress' ? undefined : bodyPart.color || statCardsPart.color }}>
+              <p className="text-xs font-black uppercase tracking-widest text-slate-400">Simple Words</p>
+              <p className={`mt-3 text-2xl font-black ${exactAlignClass(titlePart)}`} style={{ color: titlePart.color }}>Begin with meaning first</p>
+              <p className={`mt-3 text-sm font-semibold leading-6 ${exactAlignClass(descriptionPart)}`} style={{ color: descriptionPart.color }}>A short overview designed to orient the learner before detail-heavy blocks.</p>
+              {progressBarPart.visible ? (
+                <div className={`${progressBarPart.spacing === 'tight' ? 'mt-3' : progressBarPart.spacing === 'loose' ? 'mt-7' : 'mt-5'} h-2 rounded-full bg-slate-100 ${progressBarPart.shadow === 'none' ? 'shadow-none' : progressBarPart.shadow === 'strong' ? 'shadow-lg' : 'shadow-sm'}`}>
+                  <div className={`h-full w-2/5 ${partRadiusClass(progressBarPart.radius)}`} style={{ backgroundColor: progressBarPart.color }} />
+                </div>
+              ) : null}
             </div>
-          </div>
-          <div className="rounded-3xl border bg-white p-6 shadow-lg" style={{ borderColor }}>
-            <p className="text-xs font-black uppercase tracking-widest text-slate-400">Simple Words</p>
-            <p className="mt-3 text-2xl font-black" style={{ color: textColor }}>Begin with meaning first</p>
-            <p className="mt-3 text-sm font-semibold leading-6 text-slate-600">A short overview designed to orient the learner before detail-heavy blocks.</p>
-            <div className="mt-5 h-2 rounded-full bg-slate-100">
-              <div className="h-full w-2/5 rounded-full" style={{ backgroundColor: primaryColor }} />
-            </div>
-          </div>
+          ) : null}
         </div>
       );
     }
 
     if (['definition_block', 'definitionblock'].includes(normalizedSubsection)) {
       return (
-        <div className="space-y-5">
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="rounded-full px-3 py-1 text-xs font-black text-white" style={{ backgroundColor: primaryColor }}>
+        <div className={partSpaceClass(bodyPart)}>
+          {renderNotesHeader(<div className={notesBadgeRowClass}>
+            <span className="rounded-full px-3 py-1 text-xs font-black" style={{ backgroundColor: iconBadgePart.color, color: contrastText(iconBadgePart.color) }}>
               {asString(contentRecord.badge, 'Core Concept')}
             </span>
-            <span className="rounded-full border px-3 py-1 text-xs font-bold" style={{ borderColor: `${accentColor}66`, color: accentColor }}>Definition</span>
-          </div>
-          <div className="rounded-3xl border bg-white p-7 shadow-lg" style={{ borderColor }}>
+            <span className="rounded-full border px-3 py-1 text-xs font-bold" style={{ borderColor: `${difficultyBadgePart.color}66`, color: difficultyBadgePart.color }}>Definition</span>
+          </div>)}
+          <div className={notesCardClass} style={{ borderColor: bodyPart.color || statCardsPart.color }}>
             <p className="text-xs font-black uppercase tracking-widest text-slate-400">Canonical Definition</p>
-            <h2 className="mt-3 text-3xl font-black leading-tight" style={{ color: textColor }}>
+            <h2 className={`mt-3 text-3xl font-black leading-tight ${partAlignClass(headerPart)}`} style={{ color: titlePart.color }}>
               {asString(contentRecord.headline, summary.title)}
             </h2>
-            <p className="mt-5 border-l-4 pl-5 text-lg font-bold leading-8 text-slate-700" style={{ borderColor: primaryColor }}>
+            <p className="mt-5 border-l-4 pl-5 text-lg font-bold leading-8 text-slate-700" style={{ borderColor: progressBarPart.color }}>
               {asString(contentRecord.definition, summary.description)}
             </p>
           </div>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-2xl border bg-white p-5 shadow-sm" style={{ borderColor }}>
+          <div className={`grid gap-4 ${layout.includes('inline') ? 'md:grid-cols-1' : 'md:grid-cols-2'}`}>
+            <div className={partPanelClass(bodyPart)} style={{ borderColor: bodyPart.color || borderColor }}>
               <p className="text-xs font-black uppercase tracking-wider" style={{ color: primaryColor }}>Simple Explanation</p>
               <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">{asString(contentRecord.simpleExplanation, 'Short learner-friendly explanation.')}</p>
             </div>
-            <div className="rounded-2xl border bg-white p-5 shadow-sm" style={{ borderColor }}>
+            <div className={partPanelClass(bodyPart)} style={{ borderColor: bodyPart.color || borderColor }}>
               <p className="text-xs font-black uppercase tracking-wider" style={{ color: primaryColor }}>Why It Matters</p>
               <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">{asString(contentRecord.whyItMatters, 'Why the definition matters for the learner.')}</p>
             </div>
@@ -417,15 +548,15 @@ export function ContractAwareComponentPreview({
     if (['syntax_block', 'syntaxblock'].includes(normalizedSubsection)) {
       const breakdown = asArray<Record<string, unknown>>(contentRecord.breakdown);
       return (
-        <div className="space-y-5">
-          <h2 className="text-3xl font-black" style={{ color: textColor }}>{asString(contentRecord.title, summary.title)}</h2>
-          <pre className="overflow-x-auto rounded-3xl border bg-slate-950 p-6 text-sm font-bold leading-7 text-emerald-300 shadow-lg" style={{ borderColor }}>
+        <div className={partSpaceClass(bodyPart)}>
+          {renderNotesHeader(<h2 className={`${titleSize} font-black`} style={{ color: titlePart.color }}>{asString(contentRecord.title, summary.title)}</h2>)}
+          <pre className={`overflow-x-auto ${partRadiusClass(bodyPart.radius)} border bg-slate-950 ${bodyPart.spacing === 'tight' ? 'p-4' : bodyPart.spacing === 'loose' ? 'p-8' : 'p-6'} text-sm font-bold leading-7 text-emerald-300 ${bodyPart.shadow === 'none' ? 'shadow-none' : 'shadow-lg'}`} style={{ borderColor: bodyPart.color || borderColor }}>
             <code>{asString(contentRecord.codeSnippet, 'example = \"value\"')}</code>
           </pre>
-          <div className="grid gap-3 md:grid-cols-3">
+          <div className={`grid gap-3 ${layout.includes('inline') ? 'md:grid-cols-1' : 'md:grid-cols-3'}`}>
             {breakdown.map((item, index) => (
-              <div key={index} className="rounded-2xl border bg-white p-4 shadow-sm" style={{ borderColor }}>
-                <p className="font-mono text-sm font-black" style={{ color: primaryColor }}>{asString(item.part, `part_${index + 1}`)}</p>
+              <div key={index} className={partPanelClass(bodyPart)} style={{ borderColor: bodyPart.color || borderColor }}>
+                <p className="font-mono text-sm font-black" style={{ color: iconBadgePart.color }}>{asString(item.part, `part_${index + 1}`)}</p>
                 <p className="mt-2 text-xs font-semibold leading-5 text-slate-600">{asString(item.explanation, 'Syntax explanation.')}</p>
               </div>
             ))}
@@ -437,15 +568,15 @@ export function ContractAwareComponentPreview({
     if (['component_grid', 'componentgrid'].includes(normalizedSubsection)) {
       const mechanics = asArray<Record<string, unknown>>(contentRecord.mechanics);
       return (
-        <div className="space-y-5">
-          <div>
-            <h2 className="text-3xl font-black" style={{ color: textColor }}>{asString(contentRecord.panelTitle, summary.title)}</h2>
-            <p className="mt-3 max-w-3xl text-base font-semibold leading-7 text-slate-600">{asString(contentRecord.description, summary.description)}</p>
-          </div>
-          <div className="grid gap-4 md:grid-cols-3">
+        <div className={partSpaceClass(bodyPart)}>
+          {renderNotesHeader(<>
+            <h2 className={`${titleSize} font-black`} style={{ color: titlePart.color }}>{asString(contentRecord.panelTitle, summary.title)}</h2>
+            <p className={`max-w-3xl text-base font-semibold leading-7 ${headerPart.align === 'center' ? 'mx-auto' : headerPart.align === 'right' ? 'ml-auto' : ''}`} style={{ color: descriptionPart.color }}>{asString(contentRecord.description, summary.description)}</p>
+          </>)}
+          <div className={`grid gap-4 ${layout.includes('inline') ? 'md:grid-cols-1' : 'md:grid-cols-3'}`}>
             {mechanics.map((item, index) => (
-              <div key={asString(item.id, String(index))} className="rounded-3xl border bg-white p-5 shadow-sm" style={{ borderColor }}>
-                <span className="flex h-10 w-10 items-center justify-center rounded-2xl text-sm font-black text-white" style={{ backgroundColor: primaryColor }}>{index + 1}</span>
+              <div key={asString(item.id, String(index))} className={partPanelClass(bodyPart)} style={{ borderColor: bodyPart.color || borderColor }}>
+                <span className="flex h-10 w-10 items-center justify-center rounded-2xl text-sm font-black" style={{ backgroundColor: iconBadgePart.color, color: contrastText(iconBadgePart.color) }}>{index + 1}</span>
                 <h3 className="mt-4 text-lg font-black" style={{ color: textColor }}>{asString(item.label, `Step ${index + 1}`)}</h3>
                 <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">{asString(item.detail, 'Mechanic detail.')}</p>
               </div>
@@ -458,20 +589,20 @@ export function ContractAwareComponentPreview({
     if (['example_panel', 'examplepanel'].includes(normalizedSubsection)) {
       const components = asArray<Record<string, unknown>>(contentRecord.components);
       return (
-        <div className="space-y-5">
-          <div>
-            <h2 className="text-3xl font-black" style={{ color: textColor }}>{asString(contentRecord.title, summary.title)}</h2>
-            <p className="mt-3 max-w-3xl text-base font-semibold leading-7 text-slate-600">{asString(contentRecord.description, summary.description)}</p>
-          </div>
-          <div className="grid gap-4 md:grid-cols-2">
+        <div className={partSpaceClass(bodyPart)}>
+          {renderNotesHeader(<>
+            <h2 className={`${titleSize} font-black`} style={{ color: titlePart.color }}>{asString(contentRecord.title, summary.title)}</h2>
+            <p className={`max-w-3xl text-base font-semibold leading-7 ${headerPart.align === 'center' ? 'mx-auto' : headerPart.align === 'right' ? 'ml-auto' : ''}`} style={{ color: descriptionPart.color }}>{asString(contentRecord.description, summary.description)}</p>
+          </>)}
+          <div className={`grid gap-4 ${layout.includes('inline') ? 'md:grid-cols-1' : 'md:grid-cols-2'}`}>
             {components.map((item, index) => (
-              <div key={asString(item.id, String(index))} className="rounded-3xl border bg-white p-5 shadow-sm" style={{ borderColor }}>
+              <div key={asString(item.id, String(index))} className={partPanelClass(bodyPart)} style={{ borderColor: bodyPart.color || borderColor }}>
                 <h3 className="text-lg font-black" style={{ color: primaryColor }}>{asString(item.title, `Example ${index + 1}`)}</h3>
                 <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">{asString(item.description, 'Example detail.')}</p>
                 <ul className="mt-4 space-y-2">
                   {asArray<unknown>(item.points).map((point, pointIndex) => (
                     <li key={pointIndex} className="flex items-start gap-2 text-xs font-bold text-slate-700">
-                      <CheckCircle2 size={14} className="mt-0.5 shrink-0" style={{ color: accentColor }} />
+                      <CheckCircle2 size={14} className="mt-0.5 shrink-0" style={{ color: iconBadgePart.color }} />
                       {String(point)}
                     </li>
                   ))}
@@ -486,13 +617,13 @@ export function ContractAwareComponentPreview({
     if (['practice_card', 'practicecard'].includes(normalizedSubsection)) {
       const practices = asArray<Record<string, unknown>>(contentRecord.practices);
       return (
-        <div className="space-y-5">
-          <h2 className="text-3xl font-black" style={{ color: textColor }}>{asString(contentRecord.title, 'Practice Checklist')}</h2>
-          <div className="rounded-3xl border bg-white p-6 shadow-lg" style={{ borderColor }}>
+        <div className={partSpaceClass(bodyPart)}>
+          {renderNotesHeader(<h2 className={`${titleSize} font-black`} style={{ color: titlePart.color }}>{asString(contentRecord.title, 'Practice Checklist')}</h2>)}
+          <div className={notesCardClass} style={{ borderColor: bodyPart.color || borderColor }}>
             <div className="space-y-4">
               {practices.map((item, index) => (
-                <div key={asString(item.id, String(index))} className="flex items-start gap-4 rounded-2xl border p-4" style={{ borderColor }}>
-                  <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-black text-white" style={{ backgroundColor: accentColor }}>
+                <div key={asString(item.id, String(index))} className={`flex items-start gap-4 ${partPanelClass(bodyPart, 'p-4')}`} style={{ borderColor: bodyPart.color || borderColor }}>
+                  <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-black" style={{ backgroundColor: iconBadgePart.color, color: contrastText(iconBadgePart.color) }}>
                     <CheckCircle2 size={16} />
                   </span>
                   <div>
@@ -510,15 +641,15 @@ export function ContractAwareComponentPreview({
     if (['warning_faq', 'warningfaq'].includes(normalizedSubsection)) {
       const mistakes = asArray<Record<string, unknown>>(contentRecord.mistakes);
       return (
-        <div className="space-y-4">
-          <h2 className="text-3xl font-black" style={{ color: textColor }}>{asString(contentRecord.title, 'Common Mistakes')}</h2>
+        <div className={partSpaceClass(bodyPart)}>
+          {renderNotesHeader(<h2 className={`${titleSize} font-black`} style={{ color: titlePart.color }}>{asString(contentRecord.title, 'Common Mistakes')}</h2>)}
           {mistakes.map((item, index) => (
-            <details key={asString(item.id, String(index))} open={index === 0} className="rounded-3xl border bg-white p-5 shadow-sm" style={{ borderColor }}>
-              <summary className="cursor-pointer text-base font-black" style={{ color: primaryColor }}>
+            <details key={asString(item.id, String(index))} open={index === 0} className={partPanelClass(bodyPart)} style={{ borderColor: bodyPart.color || borderColor }}>
+              <summary className="cursor-pointer text-base font-black" style={{ color: iconBadgePart.color }}>
                 {asString(item.mistake, `Mistake ${index + 1}`)}
               </summary>
-              <div className="mt-4 rounded-2xl border p-4 text-sm font-semibold leading-6 text-slate-700" style={{ borderColor: `${accentColor}66`, backgroundColor: `${accentColor}10` }}>
-                <span className="font-black" style={{ color: accentColor }}>Fix: </span>
+              <div className="mt-4 rounded-2xl border p-4 text-sm font-semibold leading-6 text-slate-700" style={{ borderColor: `${progressBarPart.color}66`, backgroundColor: `${progressBarPart.color}10` }}>
+                <span className="font-black" style={{ color: progressBarPart.color }}>Fix: </span>
                 {asString(item.fix, 'Correction guidance.')}
               </div>
             </details>
@@ -530,16 +661,17 @@ export function ContractAwareComponentPreview({
     if (['summary_card', 'summarycard'].includes(normalizedSubsection)) {
       const takeaways = asArray<unknown>(contentRecord.keyTakeaways);
       return (
-        <div className={`grid ${gap} lg:grid-cols-[0.9fr_1.1fr] lg:items-center`}>
-          <div className="rounded-3xl border p-7 shadow-lg" style={{ borderColor, background: `linear-gradient(135deg, #ffffff 0%, ${primaryColor}12 100%)` }}>
+        <div className={notesPairClass}>
+          <div className={notesCardClass} style={{ borderColor: bodyPart.color || borderColor, background: `linear-gradient(135deg, #ffffff 0%, ${primaryColor}12 100%)` }}>
+            {headerPart.visible ? <div className="mb-4" style={notesInlineHeaderStyle} /> : null}
             <p className="text-xs font-black uppercase tracking-widest" style={{ color: primaryColor }}>Revision Summary</p>
-            <h2 className="mt-3 text-3xl font-black leading-tight" style={{ color: textColor }}>{asString(contentRecord.summaryTitle, summary.title)}</h2>
-            <p className="mt-4 text-sm font-semibold leading-6 text-slate-600">{asString(contentRecord.conceptDiagramDescription, summary.description)}</p>
+            {titlePart.visible ? <h2 className={`mt-3 text-3xl font-black leading-tight ${partAlignClass(headerPart)}`} style={{ color: titlePart.color }}>{asString(contentRecord.summaryTitle, summary.title)}</h2> : null}
+            {descriptionPart.visible ? <p className="mt-4 text-sm font-semibold leading-6" style={{ color: descriptionPart.color }}>{asString(contentRecord.conceptDiagramDescription, summary.description)}</p> : null}
           </div>
           <div className="space-y-3">
             {takeaways.map((item, index) => (
-              <div key={index} className="flex items-start gap-3 rounded-2xl border bg-white p-4 shadow-sm" style={{ borderColor }}>
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-black text-white" style={{ backgroundColor: primaryColor }}>{index + 1}</span>
+              <div key={index} className={`flex items-start gap-3 ${partPanelClass(bodyPart, 'p-4')}`} style={{ borderColor: bodyPart.color || borderColor }}>
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-black" style={{ backgroundColor: iconBadgePart.color, color: contrastText(iconBadgePart.color) }}>{index + 1}</span>
                 <p className="text-sm font-bold leading-6 text-slate-700">{String(item)}</p>
               </div>
             ))}
@@ -550,21 +682,21 @@ export function ContractAwareComponentPreview({
 
     if (['footer_block', 'footerblock'].includes(normalizedSubsection)) {
       return (
-        <div className="overflow-hidden rounded-3xl border shadow-lg" style={{ borderColor, backgroundColor }}>
-          <div className={`grid ${gap} p-7 lg:grid-cols-[1fr_auto] lg:items-center`}>
-            <div>
+        <div className={notesCardClass} style={{ borderColor: bodyPart.color || borderColor, backgroundColor }}>
+          <div className={`grid ${gap} ${layout.includes('inline') ? '' : 'lg:grid-cols-[1fr_auto]'} lg:items-center`}>
+            {renderNotesHeader(<>
               <p className="text-xs font-black uppercase tracking-widest" style={{ color: primaryColor }}>Closing Checkpoint</p>
-              <h2 className="mt-3 text-3xl font-black leading-tight" style={{ color: textColor }}>
+              {titlePart.visible ? <h2 className="mt-3 text-3xl font-black leading-tight" style={{ color: titlePart.color }}>
                 {asString(contentRecord.title, 'Ready to continue?')}
-              </h2>
-              <p className="mt-4 max-w-3xl text-base font-semibold leading-7 text-slate-600">
+              </h2> : null}
+              {descriptionPart.visible ? <p className={`mt-4 max-w-3xl text-base font-semibold leading-7 ${headerPart.align === 'center' ? 'mx-auto' : headerPart.align === 'right' ? 'ml-auto' : ''}`} style={{ color: descriptionPart.color }}>
                 {asString(contentRecord.closingLine, summary.description)}
-              </p>
+              </p> : null}
               <p className="mt-3 text-sm font-bold leading-6 text-slate-500">
                 {asString(contentRecord.supportText, 'Use the next section after the current idea is clear.')}
               </p>
-            </div>
-            <div className="flex flex-wrap gap-3 lg:justify-end">
+            </>)}
+            {actionPart.visible ? <div className={notesActionRowClass}>
               <button className="inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-black text-white" style={{ backgroundColor: accentColor }}>
                 {asString(contentRecord.primaryAction, 'Continue learning')}
                 <ArrowRight size={16} />
@@ -573,7 +705,7 @@ export function ContractAwareComponentPreview({
                 <BookOpen size={16} />
                 {asString(contentRecord.secondaryAction, 'Review summary')}
               </button>
-            </div>
+            </div> : null}
           </div>
         </div>
       );
@@ -583,20 +715,20 @@ export function ContractAwareComponentPreview({
       const stages = asArray<unknown>(contentRecord.stages);
       const displayStages = stages.length ? stages : ['Definition', 'Mechanics', 'Syntax', 'Examples', 'Practice', 'Revision'];
       return (
-        <div className={`grid ${gap} lg:grid-cols-[0.95fr_1.05fr] lg:items-center`}>
-          <div>
+        <div className={notesPairClass}>
+          {renderNotesHeader(<>
             <span className="inline-flex rounded-full px-3 py-1 text-xs font-black text-white" style={{ backgroundColor: primaryColor }}>Summary Visual</span>
-            <h2 className="mt-4 text-4xl font-black leading-tight" style={{ color: textColor }}>
+            {titlePart.visible ? <h2 className="mt-4 text-4xl font-black leading-tight" style={{ color: titlePart.color }}>
               {asString(contentRecord.title, `${summary.title} Blueprint`)}
-            </h2>
-            <p className="mt-4 max-w-2xl text-base font-semibold leading-7 text-slate-600">
+            </h2> : null}
+            {descriptionPart.visible ? <p className={`mt-4 max-w-2xl text-base font-semibold leading-7 ${headerPart.align === 'center' ? 'mx-auto' : headerPart.align === 'right' ? 'ml-auto' : ''}`} style={{ color: descriptionPart.color }}>
               {asString(contentRecord.description, summary.description)}
-            </p>
+            </p> : null}
             <p className="mt-4 text-sm font-black uppercase tracking-widest text-slate-400">
               {asString(contentRecord.caption, 'Follow the learning flow from meaning to application.')}
             </p>
-          </div>
-          <div className="rounded-3xl border bg-white p-6 shadow-xl" style={{ borderColor }}>
+          </>)}
+          <div className={notesCardClass} style={{ borderColor: bodyPart.color || borderColor }}>
             <div className="relative min-h-[240px]">
               <div className="absolute inset-x-8 top-1/2 hidden h-1 -translate-y-1/2 rounded-full md:block" style={{ backgroundColor: `${primaryColor}22` }} />
               <div className="relative grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -708,7 +840,7 @@ export function ContractAwareComponentPreview({
   return (
     <section
       data-testid="contract-aware-component-preview"
-      className={`overflow-hidden ${radiusClass} border ${padding} ${styleClasses} ${emphasisScale} ${motionClass} ${interactionClass}`}
+      className={`${containerFrameClass} ${emphasisScale} ${motionClass} ${interactionClass}`}
       data-renderer={renderer}
       data-layout={layout}
       data-desktop-layout={desktopLayout}
@@ -717,11 +849,11 @@ export function ContractAwareComponentPreview({
       data-brand={brandVariant}
       data-domain={domainOverride}
       style={{
-        backgroundColor: containerPart.color || backgroundColor,
-        borderColor,
-        borderWidth: emphasis === 'high' ? 3 : emphasis === 'low' ? 1 : 2,
+        backgroundColor: containerLayout === 'inline' ? 'transparent' : containerPart.color || backgroundColor,
+        borderColor: containerLayout === 'inline' ? 'transparent' : borderColor,
+        borderWidth: containerLayout === 'inline' ? 0 : emphasis === 'high' ? 3 : emphasis === 'low' ? 1 : 2,
         color: textColor,
-        backgroundImage: styleVariant === 'featured' ? `linear-gradient(135deg, ${backgroundColor} 0%, ${mutedSurface} 100%)` : undefined,
+        backgroundImage: containerLayout !== 'inline' && styleVariant === 'featured' ? `linear-gradient(135deg, ${backgroundColor} 0%, ${mutedSurface} 100%)` : undefined,
       }}
     >
       {content}

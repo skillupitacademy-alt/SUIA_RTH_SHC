@@ -97,6 +97,7 @@ export const NotesSectionSchema = sectionSchema('notes', {
   practice_card: BestPracticesSchema.optional(),
   warning_faq: CommonMistakesSchema.optional(),
   summary_card: VisualSummarySchema.optional(),
+  uiux_contract: z.record(z.unknown()).optional(),
 }).refine(
   (value) => [
     value.concept_card,

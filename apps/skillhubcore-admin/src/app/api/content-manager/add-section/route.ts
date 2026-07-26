@@ -213,6 +213,28 @@ const DOMAIN_COLUMN_MAP: Record<string, string> = {
   summary_card: 'summaryCard',
 };
 
+function normalizeSubsectionContent(sectionType: string, subsection: string, content: unknown): unknown {
+  if (sectionType !== 'notes' || subsection !== 'concept_card' || !isRecord(content)) {
+    return content;
+  }
+
+  if (
+    typeof content.heroTitle === 'string' &&
+    typeof content.heroSubtitle === 'string' &&
+    Array.isArray(content.quickLook)
+  ) {
+    return content;
+  }
+
+  return {
+    heroTitle: asString(content.heroTitle, asString(content.title, 'Notes Overview')),
+    heroSubtitle: asString(content.heroSubtitle, asString(content.description, 'A clear learner-facing notes introduction.')),
+    quickLook: asArray(content.quickLook).length > 0
+      ? asArray(content.quickLook).map((item) => asString(item)).filter(Boolean)
+      : ['Definition', 'Mechanics', 'Syntax', 'Examples'],
+  };
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function upsertChildDomainTable(tx: any, sectionId: string, sectionType: string, content: any) {
   const table = DOMAIN_TABLE_MAP[sectionType];
@@ -394,6 +416,7 @@ interface RequestBody {
   };
   section: TutorialAdminSectionId;
   content: string | JsonRecord;
+  rendererContract?: JsonRecord | null;
 }
 
 const TUTORIAL_CACHE_VERSIONS = ['v1', 'v2'] as const;
@@ -1331,7 +1354,7 @@ function sanitizeRawContent(content: unknown): unknown {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json() as RequestBody & { subsection?: string };
-    const { subtopicId: subtopicSlug, subtopicInfo, section, subsection, content } = body;
+    const { subtopicId: subtopicSlug, subtopicInfo, section, subsection, content, rendererContract } = body;
     const config = getTutorialSectionContractByAdminId(section);
 
     if (!subtopicSlug || !subtopicInfo || !config || content === undefined) {
@@ -1404,6 +1427,8 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: `Unsupported child domain table for section ${config.dbType}` }, { status: 400 });
       }
 
+      processedContent = normalizeSubsectionContent(config.dbType, subsection, processedContent);
+
       const targetParentKey = COLUMN_TO_PARENT_KEY[subsection] || subsection;
       const targetDomainColumn = DOMAIN_COLUMN_MAP[subsection] || subsection;
       const updatedParentContent: Record<string, unknown> = {
@@ -1422,8 +1447,30 @@ export async function POST(req: NextRequest) {
         updatedParentContent[targetParentKey] = processedContent;
       }
 
-      const sanitizedParentContent = sanitizeRawContent(updatedParentContent);
-      const validation = validateTutorialSection(config.dbType, sanitizedParentContent);
+      if (config.dbType === 'notes' && subsection && rendererContract && isRecord(rendererContract)) {
+        const currentUiux = isRecord(updatedParentContent.uiux_contract)
+          ? updatedParentContent.uiux_contract
+          : {};
+        const currentComponents = isRecord(currentUiux.component_design_system)
+          ? currentUiux.component_design_system
+          : isRecord(currentUiux.components)
+            ? currentUiux.components
+            : {};
+
+        updatedParentContent.uiux_contract = {
+          ...currentUiux,
+          component_design_system: {
+            ...currentComponents,
+            [subsection]: rendererContract,
+          },
+        };
+      }
+
+      const sanitizedParentContent = sanitizeRawContent(updatedParentContent) as JsonRecord;
+      const normalizedParentContent = SECTION_TRANSFORMERS[config.dbType]
+        ? SECTION_TRANSFORMERS[config.dbType](sanitizedParentContent, subtopicInfo.subtopic)
+        : sanitizedParentContent;
+      const validation = validateTutorialSection(config.dbType, normalizedParentContent);
 
       if (!validation.success) {
         const formattedIssues = formatTutorialSectionValidationIssues(validation.issues);
@@ -1510,8 +1557,9 @@ export async function POST(req: NextRequest) {
 
 
     const unwrappedContent = unwrapSectionContent(parsedContent, config);
-    const sanitizedContent = sanitizeRawContent(unwrappedContent);
-    const validation = validateTutorialSection(config.dbType, sanitizedContent);
+    const sanitizedContent = sanitizeRawContent(unwrappedContent) as JsonRecord;
+    const normalizedContent = SECTION_TRANSFORMERS[config.dbType](sanitizedContent, subtopicInfo.subtopic);
+    const validation = validateTutorialSection(config.dbType, normalizedContent);
 
     if (!validation.success) {
       const formattedIssues = formatTutorialSectionValidationIssues(validation.issues);

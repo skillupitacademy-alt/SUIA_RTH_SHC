@@ -125,6 +125,18 @@ export const getStrictSectionJsonTemplate = (section: string, subtopicName: stri
             'Practice with a simple example.',
           ],
         },
+        uiux_contract: {
+          component_design_system: {
+            concept_card: { required: true, enabled: true },
+            definition_block: { required: true, enabled: true },
+            component_grid: { required: false, enabled: true },
+            syntax_block: { required: false, enabled: true },
+            example_panel: { required: false, enabled: true },
+            practice_card: { required: false, enabled: true },
+            warning_faq: { required: false, enabled: true },
+            summary_card: { required: true, enabled: true },
+          },
+        },
         footerBlock: {
           title: 'Ready to continue?',
           closingLine: `You now have the foundation to move from ${subtopicName} notes into examples, practice, and revision.`,

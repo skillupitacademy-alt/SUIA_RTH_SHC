@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Settings } from 'lucide-react';
+import { getSurfaceStyle, getUiuxColor, type NotesUiuxContract } from './uiuxContract';
 
 interface SystemMechanicsProps {
   data: {
@@ -15,16 +16,18 @@ interface SystemMechanicsProps {
     }>;
   };
   themeColor: string;
+  uiux?: NotesUiuxContract;
 }
 
-export function SystemMechanics({ data, themeColor }: SystemMechanicsProps) {
+export function SystemMechanics({ data, themeColor, uiux }: SystemMechanicsProps) {
   if (!data) return null;
+  const primaryColor = getUiuxColor(uiux, 'primary_color', themeColor);
 
   return (
-    <div className="rounded-3xl border border-blue-100 bg-white p-6 shadow-xl">
+    <div className="rounded-3xl border border-blue-100 bg-white shadow-xl" style={getSurfaceStyle(uiux, themeColor)}>
       <div className="mb-5">
         <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-50">
-          <Settings size={20} style={{ color: themeColor }} />
+          <Settings size={20} style={{ color: primaryColor }} />
         </div>
         <h3 className="text-2xl font-black tracking-tight text-slate-950">{data.panelTitle}</h3>
         <p className="mt-3 text-sm font-semibold leading-6 text-slate-600">{data.description}</p>
@@ -33,7 +36,7 @@ export function SystemMechanics({ data, themeColor }: SystemMechanicsProps) {
       <div className="grid gap-4 md:grid-cols-3">
         {data.mechanics.map((item, idx) => (
           <div key={item.id} className="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm">
-            <span className="flex h-9 w-9 items-center justify-center rounded-full text-xs font-black text-white" style={{ backgroundColor: themeColor }}>
+            <span className="flex h-9 w-9 items-center justify-center rounded-full text-xs font-black text-white" style={{ backgroundColor: primaryColor }}>
               {idx + 1}
             </span>
             <h4 className="mt-4 text-base font-black text-slate-950">{item.label}</h4>

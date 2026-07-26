@@ -9,88 +9,6 @@ import { SectionManager } from './SectionManager';
 import { ComponentPreview } from './ComponentPreview';
 import { ErrorBoundary } from './ErrorBoundary';
 
-type RendererContract = Record<string, unknown> | null | undefined;
-
-const titleCase = (value: unknown) => String(value || '')
-  .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
-  .split('_')
-  .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-  .join(' ');
-
-function AppliedRendererContractShell({
-  contract,
-  children,
-}: {
-  contract: RendererContract;
-  children: React.ReactNode;
-}) {
-  if (!contract) return <>{children}</>;
-
-  const renderer = String(contract.renderer || contract.component || 'default_renderer');
-  const layout = String(contract.layout || contract.layout_type || 'card');
-  const desktop = String(contract.desktop_layout || layout || 'single_column');
-  const mobile = String(contract.mobile_layout || 'stacked_cards');
-  const primaryColor = String(contract.primary_color || '#4f46e5');
-  const accentColor = String(contract.accent_color || '#10b981');
-  const backgroundColor = String(contract.background_color || '#ffffff');
-  const textColor = String(contract.text_color || '#0f172a');
-  const borderColor = String(contract.border_color || '#e2e8f0');
-  const subcomponents = Array.isArray(contract.ui_subcomponents) ? contract.ui_subcomponents as Array<Record<string, unknown>> : [];
-
-  return (
-    <div className="space-y-5">
-      <div className="rounded-3xl border border-indigo-100 bg-indigo-50 p-5">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-indigo-600">Applied Renderer Contract</p>
-            <h3 className="text-xl font-black text-slate-950">{titleCase(renderer)}</h3>
-          </div>
-          <span className="rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-wider text-white" style={{ backgroundColor: primaryColor }}>
-            Content Manager Preview
-          </span>
-        </div>
-        <div className="grid grid-cols-2 gap-3 text-xs md:grid-cols-4">
-          {[
-            ['Layout', layout],
-            ['Desktop', desktop],
-            ['Mobile', mobile],
-            ['Style', contract.style_variant || 'standard'],
-          ].map(([label, value]) => (
-            <div key={String(label)} className="rounded-2xl border border-indigo-100 bg-white p-3">
-              <span className="block text-[9px] font-black uppercase tracking-wider text-indigo-400">{String(label)}</span>
-              <span className="mt-1 block font-black text-slate-900">{titleCase(value)}</span>
-            </div>
-          ))}
-        </div>
-        {subcomponents.length > 0 ? (
-          <div className="mt-4 flex flex-wrap gap-2">
-            {subcomponents.filter((part) => part.visible !== false).map((part) => (
-              <span
-                key={String(part.id || part.label)}
-                className="rounded-full bg-white px-3 py-1 text-[10px] font-black"
-                style={{ color: String(part.color || primaryColor), border: `1px solid ${borderColor}` }}
-              >
-                {String(part.label || titleCase(part.id))}
-              </span>
-            ))}
-          </div>
-        ) : null}
-      </div>
-      <div
-        className="rounded-3xl p-5 shadow-sm"
-        style={{
-          backgroundColor,
-          color: textColor,
-          border: `2px solid ${borderColor}`,
-          boxShadow: `0 0 0 4px ${accentColor}14`,
-        }}
-      >
-        {children}
-      </div>
-    </div>
-  );
-}
-
 export function ContentManagerUI() {
   const brand = useBrand();
   
@@ -151,6 +69,9 @@ export function ContentManagerUI() {
     handlePreview,
     approvePreview
   } = useContentManager();
+
+  const activeRendererContract =
+    pipelinePayload?.rendererMapping || pipelinePayload?.uiuxComponent || pipelinePayload?.educationalComponent;
 
   // Sync preview content dynamically when data or sections change
   useEffect(() => {
@@ -220,14 +141,12 @@ export function ContentManagerUI() {
                   </div>
                 )}
               >
-                <AppliedRendererContractShell contract={pipelinePayload?.educationalComponent || pipelinePayload?.uiuxComponent || pipelinePayload?.rendererMapping}>
-                  <ComponentPreview
-                    section={selectedSection}
-                    subsection={selectedSubsection}
-                    data={previewData}
-                    rendererContract={pipelinePayload?.educationalComponent || pipelinePayload?.uiuxComponent || pipelinePayload?.rendererMapping}
-                  />
-                </AppliedRendererContractShell>
+                <ComponentPreview
+                  section={selectedSection}
+                  subsection={selectedSubsection}
+                  data={previewData}
+                  rendererContract={activeRendererContract}
+                />
               </ErrorBoundary>
             </div>
           </div>

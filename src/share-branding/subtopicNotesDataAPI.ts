@@ -51,6 +51,179 @@ function loadStrictSection<TSection extends TutorialMasterySectionId>(
   return { data: validation.data };
 }
 
+function asArray<T = unknown>(value: unknown): T[] {
+  return Array.isArray(value) ? value as T[] : [];
+}
+
+const NOTES_BLOCK_KEY_MAP = {
+  concept_card: ['simpleWords', 'sections'],
+  definition_block: ['definitionBlock'],
+  component_grid: ['componentGrid'],
+  syntax_block: ['syntaxBlock'],
+  example_panel: ['examplePanel'],
+  practice_card: ['practiceCard'],
+  warning_faq: ['warningFaq'],
+  summary_card: ['summaryCard'],
+  summary_hero_infographic: ['summaryHeroInfographic'],
+  concept_memory_map: ['conceptMemoryMap'],
+  cheat_sheet_svg: ['cheatSheetSVG'],
+  flashcard_visual_system: ['flashcardVisualSystem'],
+  comparison_summary_chart: ['comparisonSummaryChart'],
+  mnemonic_retention_graphic: ['mnemonicRetentionGraphic'],
+  footer_block: ['footerBlock'],
+} as const;
+
+function getNotesBlockEnabledState(notesContent: JsonRecord | undefined) {
+  const enabledBlocks: Record<string, boolean> = {};
+  const uiuxContract = notesContent?.uiux_contract;
+  const uiuxRecord = uiuxContract && typeof uiuxContract === 'object' && !Array.isArray(uiuxContract)
+    ? uiuxContract as JsonRecord
+    : {};
+  const componentsRecord = uiuxRecord.components && typeof uiuxRecord.components === 'object' && !Array.isArray(uiuxRecord.components)
+    ? uiuxRecord.components as JsonRecord
+    : uiuxRecord.component_design_system && typeof uiuxRecord.component_design_system === 'object' && !Array.isArray(uiuxRecord.component_design_system)
+      ? uiuxRecord.component_design_system as JsonRecord
+      : uiuxRecord;
+
+  for (const [canonicalKey, viewKeys] of Object.entries(NOTES_BLOCK_KEY_MAP)) {
+    const componentConfig = componentsRecord[canonicalKey] ?? uiuxRecord[canonicalKey];
+    const configRecord = componentConfig && typeof componentConfig === 'object' && !Array.isArray(componentConfig)
+      ? componentConfig as JsonRecord
+      : {};
+    const explicitState = configRecord.enabled ?? configRecord.visible;
+
+    if (typeof explicitState === 'boolean') {
+      for (const viewKey of viewKeys) {
+        enabledBlocks[viewKey] = explicitState;
+      }
+    }
+  }
+
+  return enabledBlocks;
+}
+
+function toLegacyDefinitionBlock(definitionBlock: JsonRecord | undefined, summaryTakeaways: string[]) {
+  if (!definitionBlock) return undefined;
+
+  return {
+    badge: firstText(definitionBlock.badge, 'Core Concept'),
+    headline: firstText(definitionBlock.headline, 'Definition'),
+    definitionText: firstText(definitionBlock.definitionText, definitionBlock.definition),
+    importanceCallout: firstText(definitionBlock.importanceCallout, definitionBlock.whyItMatters),
+    quickSummary: summaryTakeaways.length > 0
+      ? summaryTakeaways
+      : [firstText(definitionBlock.simpleExplanation, definitionBlock.definition)].filter(Boolean),
+  };
+}
+
+function toLegacyConceptSections(conceptCard: JsonRecord | undefined) {
+  if (!conceptCard) return [];
+
+  return [{
+    id: 'concept-card',
+    title: firstText(conceptCard.heroTitle, 'Concept Overview'),
+    content: firstText(conceptCard.heroSubtitle),
+    keyPoint: asArray<string>(conceptCard.quickLook).filter(Boolean).join(' | '),
+  }];
+}
+
+function toLegacyComponentGrid(componentGrid: JsonRecord | undefined) {
+  if (!componentGrid) return undefined;
+
+  return {
+    gridTitle: firstText(componentGrid.gridTitle, componentGrid.panelTitle, 'How It Works'),
+    componentCards: asArray<JsonRecord>(componentGrid.componentCards ?? componentGrid.mechanics).map((item, index) => ({
+      id: firstText(item.id, `component-${index + 1}`),
+      title: firstText(item.title, item.label, `Part ${index + 1}`),
+      description: firstText(item.description, item.detail),
+      icon: firstText(item.icon, item.iconName, 'Box'),
+      subcomponents: asArray<string>(item.subcomponents ?? item.points).filter(Boolean),
+    })),
+  };
+}
+
+function toLegacySyntaxBlock(syntaxBlock: JsonRecord | undefined) {
+  if (!syntaxBlock) return undefined;
+
+  return {
+    image: syntaxBlock.image,
+    code: firstText(syntaxBlock.code, syntaxBlock.codeSnippet),
+    language: firstText(syntaxBlock.language, 'python'),
+    title: firstText(syntaxBlock.title, 'Syntax Block'),
+    subtitle: firstText(syntaxBlock.subtitle, 'Basic Syntax'),
+    explanations: asArray<JsonRecord>(syntaxBlock.explanations ?? syntaxBlock.breakdown).map((item, index) => ({
+      id: firstText(item.id, `syntax-${index + 1}`),
+      term: firstText(item.term, item.part),
+      explanation: firstText(item.explanation),
+    })),
+  };
+}
+
+function toLegacyExamplePanel(examplePanel: JsonRecord | undefined) {
+  if (!examplePanel) return undefined;
+
+  return {
+    exampleTitle: firstText(examplePanel.exampleTitle, examplePanel.title, 'Examples'),
+    scenarios: asArray<JsonRecord>(examplePanel.scenarios ?? examplePanel.components).map((item, index) => ({
+      id: firstText(item.id, `example-${index + 1}`),
+      title: firstText(item.title, `Example ${index + 1}`),
+      scenarioDescription: firstText(item.scenarioDescription, item.description),
+      practicalSolution: asArray<string>(item.points).join(', ') || firstText(item.practicalSolution, item.description),
+      industryContext: firstText(item.industryContext, 'Python usage'),
+    })),
+  };
+}
+
+function toLegacyPracticeCard(practiceCard: JsonRecord | undefined) {
+  if (!practiceCard) return undefined;
+
+  const practices = asArray<JsonRecord>(practiceCard.recommendations ?? practiceCard.practices);
+  return {
+    bestPracticeTitle: firstText(practiceCard.bestPracticeTitle, practiceCard.title, 'Best Practices'),
+    recommendations: practices.map((item, index) => ({
+      id: firstText(item.id, `practice-${index + 1}`),
+      title: firstText(item.title, item.label, `Practice ${index + 1}`),
+      description: firstText(item.description, item.tip),
+    })),
+    optimizationTips: asArray<string>(practiceCard.optimizationTips).length > 0
+      ? asArray<string>(practiceCard.optimizationTips)
+      : practices.map((item) => firstText(item.tip, item.description)).filter(Boolean),
+    industryStandards: asArray<string>(practiceCard.industryStandards).length > 0
+      ? asArray<string>(practiceCard.industryStandards)
+      : ['Clear naming', 'Small tests', 'Consistent indentation'],
+  };
+}
+
+function toLegacyWarningFaq(warningFaq: JsonRecord | undefined) {
+  if (!warningFaq) return undefined;
+
+  return {
+    faqItems: asArray<JsonRecord>(warningFaq.faqItems ?? warningFaq.mistakes).map((item, index) => ({
+      id: firstText(item.id, `mistake-${index + 1}`),
+      question: firstText(item.question, item.mistake),
+      answer: firstText(item.answer, item.fix),
+    })),
+  };
+}
+
+function toLegacySummaryCard(summaryCard: JsonRecord | undefined) {
+  if (!summaryCard) return undefined;
+
+  const takeaways = asArray<string>(summaryCard.keyTakeaways);
+  return {
+    image: summaryCard.image,
+    summaryTitle: firstText(summaryCard.summaryTitle, 'Summary'),
+    keyTakeaways: takeaways,
+    revisionChecklist: asArray<JsonRecord>(summaryCard.revisionChecklist).length > 0
+      ? asArray<JsonRecord>(summaryCard.revisionChecklist)
+      : takeaways.map((item, index) => ({ id: `takeaway-${index + 1}`, item, checked: false })),
+    memoryReinforcement: firstText(summaryCard.memoryReinforcement, summaryCard.conceptDiagramDescription),
+    examTips: asArray<string>(summaryCard.examTips).length > 0
+      ? asArray<string>(summaryCard.examTips)
+      : takeaways,
+  };
+}
+
 /**
  * Load subtopic data from database via API
  * 
@@ -114,6 +287,16 @@ export function buildSubtopicNotesDataFromSectionsResponse(
   const summaryContent = loadedSections.summary.data;
   const interviewContent = loadedSections.interview.data;
   const aiTutorContent = loadedSections.ai_tutor.data;
+  const conceptCard = notesContent?.concept_card as JsonRecord | undefined;
+  const definitionBlock = notesContent?.definition_block as JsonRecord | undefined;
+  const componentGrid = notesContent?.component_grid as JsonRecord | undefined;
+  const syntaxBlock = notesContent?.syntax_block as JsonRecord | undefined;
+  const examplePanel = notesContent?.example_panel as JsonRecord | undefined;
+  const practiceCard = notesContent?.practice_card as JsonRecord | undefined;
+  const warningFaq = notesContent?.warning_faq as JsonRecord | undefined;
+  const summaryCard = notesContent?.summary_card as JsonRecord | undefined;
+  const summaryTakeaways = asArray<string>(summaryCard?.keyTakeaways).filter(Boolean);
+  const enabledNotesBlocks = getNotesBlockEnabledState(notesContent);
   const progressSnapshot = calculateTutorialProgress({ completedSections: [] });
 
   return {
@@ -159,15 +342,17 @@ export function buildSubtopicNotesDataFromSectionsResponse(
         level: subtopicInfo.level,
         xp: 50
       },
-      simpleWords: notesContent?.concept_card?.heroSubtitle ?? '',
-      definitionBlock: notesContent?.definition_block,
-      sections: notesContent?.concept_card ? [notesContent.concept_card] : [],
-      componentGrid: notesContent?.component_grid,
-      examplePanel: notesContent?.example_panel,
-      practiceCard: notesContent?.practice_card,
-      warningFaq: notesContent?.warning_faq,
-      summaryCard: notesContent?.summary_card,
-      syntaxBlock: notesContent?.syntax_block,
+      simpleWords: conceptCard?.heroSubtitle ?? '',
+      canonicalNotes: notesContent,
+      enabledNotesBlocks,
+      definitionBlock: toLegacyDefinitionBlock(definitionBlock, summaryTakeaways),
+      sections: toLegacyConceptSections(conceptCard),
+      componentGrid: toLegacyComponentGrid(componentGrid),
+      examplePanel: toLegacyExamplePanel(examplePanel),
+      practiceCard: toLegacyPracticeCard(practiceCard),
+      warningFaq: toLegacyWarningFaq(warningFaq),
+      summaryCard: toLegacySummaryCard(summaryCard),
+      syntaxBlock: toLegacySyntaxBlock(syntaxBlock),
 
       laymanExplanation: laymanContent,
       realLifeExamples: realLifeContent,

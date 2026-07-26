@@ -29,4 +29,33 @@ describe('NotesBlock', () => {
     renderWithIntl(<NotesBlock data={{ markdown: '', image: null }} theme={theme} />);
     expect(screen.getByLabelText('Notes block')).toBeDefined();
   });
+
+  it('applies notes UI/UX contract to modular blocks', () => {
+    renderWithIntl(
+      <NotesBlock
+        data={{
+          schemaVersion: 1,
+          sectionType: 'notes',
+          concept_card: {
+            heroTitle: 'What is Python? Notes',
+            heroSubtitle: 'A clear overview.',
+            quickLook: ['Definition', 'Syntax'],
+          },
+          uiux_contract: {
+            component_design_system: {
+              concept_card: {
+                primary_color: '#d03f00',
+                density: 'compact',
+                visible_parts: { action: false },
+              },
+            },
+          },
+        }}
+        theme={theme}
+      />
+    );
+
+    expect(screen.getByText('What is Python? Notes')).toBeDefined();
+    expect(screen.queryByText('Begin with meaning first')).toBeNull();
+  });
 });

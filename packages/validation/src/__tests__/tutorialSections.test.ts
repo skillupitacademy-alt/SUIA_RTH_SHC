@@ -71,6 +71,24 @@ describe('strict tutorial section validation', () => {
     expect(validateTutorialSection('notes', validNotes).success).toBe(true);
   });
 
+  it('accepts notes UI/UX contract beside canonical content', () => {
+    const result = validateTutorialSection('notes', {
+      ...validNotes,
+      uiux_contract: {
+        component_design_system: {
+          concept_card: {
+            layout: 'hero',
+            density: 'compact',
+            primary_color: '#d03f00',
+            visible_parts: { action: false },
+          },
+        },
+      },
+    });
+
+    expect(result.success).toBe(true);
+  });
+
   it('rejects legacy notes subsection aliases', () => {
     const result = validateTutorialSection('notes', {
       ...validNotes,

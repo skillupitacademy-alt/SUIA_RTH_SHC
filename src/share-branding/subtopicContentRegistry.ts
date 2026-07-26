@@ -19,6 +19,25 @@ import { ProgressSectionPattern } from './types/progress.types';
 
 export interface SubtopicContentPattern extends NotesSectionPattern {
   simpleWords: string;
+  enabledNotesBlocks?: Partial<Record<
+    | 'simpleWords'
+    | 'definitionBlock'
+    | 'sections'
+    | 'componentGrid'
+    | 'syntaxBlock'
+    | 'examplePanel'
+    | 'practiceCard'
+    | 'warningFaq'
+    | 'summaryCard'
+    | 'summaryHeroInfographic'
+    | 'conceptMemoryMap'
+    | 'cheatSheetSVG'
+    | 'flashcardVisualSystem'
+    | 'comparisonSummaryChart'
+    | 'mnemonicRetentionGraphic'
+    | 'footerBlock',
+    boolean
+  >>;
   laymanExplanation?: LaymanSectionPattern;
   realLifeExamples?: RealLifeSectionPattern;
   technicalDeepDive?: TechnicalSectionPattern;
