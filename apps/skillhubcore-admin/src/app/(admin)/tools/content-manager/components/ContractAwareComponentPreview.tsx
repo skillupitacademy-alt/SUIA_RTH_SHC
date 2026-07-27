@@ -130,14 +130,35 @@ export function ContractAwareComponentPreview({
   data,
   contract,
   showDiagnostics = false,
+  highlightedSubcomponentId,
 }: {
   section: string;
   subsection: string;
   data: unknown;
   contract: Record<string, unknown>;
   showDiagnostics?: boolean;
+  highlightedSubcomponentId?: string;
 }) {
   const customRendererCode = asString(contract.custom_renderer_code, '');
+
+  // Helper to add highlight border when a subcomponent is selected
+  const getHighlightStyle = (partId: string) => {
+    if (!highlightedSubcomponentId || highlightedSubcomponentId !== partId) {
+      return {};
+    }
+    return {
+      outline: '3px solid #6366f1',
+      outlineOffset: '2px',
+      boxShadow: '0 0 0 4px rgba(99, 102, 241, 0.1)',
+    };
+  };
+
+  const getHighlightClass = (partId: string) => {
+    if (!highlightedSubcomponentId || highlightedSubcomponentId !== partId) {
+      return '';
+    }
+    return 'transition-all duration-200';
+  };
 
   if (customRendererCode) {
     return (
@@ -196,6 +217,49 @@ export function ContractAwareComponentPreview({
   const primaryButtonPart = getExactConfiguredPart(parts, 'primary_button', accentColor);
   const secondaryButtonPart = getExactConfiguredPart(parts, 'secondary_button', primaryColor);
   const progressBarPart = getExactConfiguredPart(parts, 'progress_bar', primaryColor);
+  const previewLabelPart = getExactConfiguredPart(parts, 'preview_label', '#94a3b8');
+  const previewTitlePart = getExactConfiguredPart(parts, 'preview_title', textColor);
+  const previewDescriptionPart = getExactConfiguredPart(parts, 'preview_description', '#64748b');
+  const quickLookPill0Part = getExactConfiguredPart(parts, 'quick_look_pill_0', primaryColor);
+  const quickLookPill1Part = getExactConfiguredPart(parts, 'quick_look_pill_1', primaryColor);
+  const quickLookPill2Part = getExactConfiguredPart(parts, 'quick_look_pill_2', primaryColor);
+  const quickLookPill3Part = getExactConfiguredPart(parts, 'quick_look_pill_3', primaryColor);
+  
+  // Additional parts for other notes components
+  const definitionTitlePart = getExactConfiguredPart(parts, 'title', textColor);
+  const definitionTextPart = getExactConfiguredPart(parts, 'description', '#475569');
+  const definitionCardsPart = getExactConfiguredPart(parts, 'body', borderColor);
+  const definitionAccentPart = getExactConfiguredPart(parts, 'progress_bar', primaryColor);
+  const coreConceptBadgePart = getExactConfiguredPart(parts, 'icon_badge', primaryColor);
+  const definitionBadgePart = getExactConfiguredPart(parts, 'difficulty_badge', accentColor);
+  
+  const syntaxTitlePart = getExactConfiguredPart(parts, 'title', textColor);
+  const syntaxPanelsPart = getExactConfiguredPart(parts, 'body', borderColor);
+  const syntaxPartLabelsPart = getExactConfiguredPart(parts, 'icon_badge', primaryColor);
+  
+  const gridTitlePart = getExactConfiguredPart(parts, 'title', textColor);
+  const gridDescriptionPart = getExactConfiguredPart(parts, 'description', '#475569');
+  const mechanicCardsPart = getExactConfiguredPart(parts, 'body', borderColor);
+  const stepNumberBadgesPart = getExactConfiguredPart(parts, 'icon_badge', primaryColor);
+  
+  const exampleTitlePart = getExactConfiguredPart(parts, 'title', textColor);
+  const exampleDescriptionPart = getExactConfiguredPart(parts, 'description', '#475569');
+  const exampleCardsPart = getExactConfiguredPart(parts, 'body', borderColor);
+  const checkIconsPart = getExactConfiguredPart(parts, 'icon_badge', primaryColor);
+  
+  const practiceTitlePart = getExactConfiguredPart(parts, 'title', textColor);
+  const practiceItemsPart = getExactConfiguredPart(parts, 'body', borderColor);
+  const practiceCheckIconsPart = getExactConfiguredPart(parts, 'icon_badge', primaryColor);
+  
+  const faqTitlePart = getExactConfiguredPart(parts, 'title', textColor);
+  const faqItemsPart = getExactConfiguredPart(parts, 'body', borderColor);
+  const questionTextPart = getExactConfiguredPart(parts, 'icon_badge', primaryColor);
+  const fixHighlightPart = getExactConfiguredPart(parts, 'progress_bar', accentColor);
+  
+  const summaryTitlePart = getExactConfiguredPart(parts, 'title', textColor);
+  const summaryDescriptionPart = getExactConfiguredPart(parts, 'description', '#475569');
+  const summaryCardsPart = getExactConfiguredPart(parts, 'body', borderColor);
+  const takeawayBadgesPart = getExactConfiguredPart(parts, 'icon_badge', primaryColor);
   const summary = summarizeContent(data, subsection, section);
   const compact = density === 'compact';
   const spacious = density === 'spacious';
@@ -309,12 +373,20 @@ export function ContractAwareComponentPreview({
   const badges = wrapPart(headerPart.layout === 'pill' ? 'inline' : headerPart.layout, (
     <div className="flex flex-wrap items-center gap-3">
       {iconBadgePart.visible ? (
-        <span className={`${exactPartClass(iconBadgePart)} inline-flex text-xs font-black ${exactAlignClass(iconBadgePart)}`} style={{ backgroundColor: iconBadgePart.color, color: contrastText(iconBadgePart.color) }}>
+        <span 
+          data-part-id="icon_badge"
+          className={`${exactPartClass(iconBadgePart)} inline-flex text-xs font-black ${exactAlignClass(iconBadgePart)} ${getHighlightClass('icon_badge')}`} 
+          style={{ ...{ backgroundColor: iconBadgePart.color, color: contrastText(iconBadgePart.color) }, ...getHighlightStyle('icon_badge') }}
+        >
           {summary.iconLabel}
         </span>
       ) : null}
       {difficultyBadgePart.visible ? (
-        <span className={`${exactPartClass(difficultyBadgePart)} inline-flex border text-xs font-bold ${exactAlignClass(difficultyBadgePart)}`} style={{ borderColor: `${difficultyBadgePart.color}66`, backgroundColor: `${difficultyBadgePart.color}12`, color: difficultyBadgePart.color }}>
+        <span 
+          data-part-id="difficulty_badge"
+          className={`${exactPartClass(difficultyBadgePart)} inline-flex border text-xs font-bold ${exactAlignClass(difficultyBadgePart)} ${getHighlightClass('difficulty_badge')}`} 
+          style={{ ...{ borderColor: `${difficultyBadgePart.color}66`, backgroundColor: `${difficultyBadgePart.color}12`, color: difficultyBadgePart.color }, ...getHighlightStyle('difficulty_badge') }}
+        >
           {summary.difficulty}
         </span>
       ) : null}
@@ -324,7 +396,11 @@ export function ContractAwareComponentPreview({
         </span>
       ) : null}
       {brandVariant !== 'shared' && brandBadgePart.visible ? (
-        <span className={`${exactPartClass(brandBadgePart)} inline-flex border bg-white text-xs font-bold ${exactAlignClass(brandBadgePart)}`} style={{ borderColor: `${brandBadgePart.color}66`, color: brandBadgePart.color }}>
+        <span 
+          data-part-id="brand_badge"
+          className={`${exactPartClass(brandBadgePart)} inline-flex border bg-white text-xs font-bold ${exactAlignClass(brandBadgePart)} ${getHighlightClass('brand_badge')}`} 
+          style={{ ...{ borderColor: `${brandBadgePart.color}66`, color: brandBadgePart.color }, ...getHighlightStyle('brand_badge') }}
+        >
           {brandLabel}
         </span>
       ) : null}
@@ -332,21 +408,58 @@ export function ContractAwareComponentPreview({
   ), headerPart.color || primaryColor);
 
   const header = headerPart.visible ? (
-    <div className={`${compact ? 'space-y-3' : headerPart.spacing === 'loose' ? 'space-y-6' : 'space-y-4'} ${headerPart.align === 'center' ? 'text-center' : headerPart.align === 'right' ? 'text-right' : 'text-left'}`} aria-label={screenReaderLabels ? `${renderer} header` : undefined}>
+    <div 
+      data-part-id="header"
+      className={`${compact ? 'space-y-3' : headerPart.spacing === 'loose' ? 'space-y-6' : 'space-y-4'} ${headerPart.align === 'center' ? 'text-center' : headerPart.align === 'right' ? 'text-right' : 'text-left'} ${getHighlightClass('header')}`} 
+      style={getHighlightStyle('header')}
+      aria-label={screenReaderLabels ? `${renderer} header` : undefined}
+    >
       {badges}
-      {titlePart.visible ? <h2 className={`${titleSize} font-black leading-tight ${exactAlignClass(titlePart)}`} style={{ color: titlePart.color }}>{summary.title}</h2> : null}
-      {descriptionPart.visible ? <p className={`max-w-2xl text-base font-semibold leading-7 ${exactAlignClass(descriptionPart)}`} style={{ color: descriptionPart.color }}>{summary.description}</p> : null}
+      {titlePart.visible ? (
+        <h2 
+          data-part-id="title"
+          className={`${titleSize} font-black leading-tight ${exactAlignClass(titlePart)} ${getHighlightClass('title')}`} 
+          style={{ ...{ color: titlePart.color }, ...getHighlightStyle('title') }}
+        >
+          {summary.title}
+        </h2>
+      ) : null}
+      {descriptionPart.visible ? (
+        <p 
+          data-part-id="description"
+          className={`max-w-2xl text-base font-semibold leading-7 ${exactAlignClass(descriptionPart)} ${getHighlightClass('description')}`} 
+          style={{ ...{ color: descriptionPart.color }, ...getHighlightStyle('description') }}
+        >
+          {summary.description}
+        </p>
+      ) : null}
     </div>
   ) : null;
 
   const stats = (
-    <div className="grid gap-3 sm:grid-cols-2">
+    <div 
+      data-part-id="stat_cards"
+      className={`grid gap-3 sm:grid-cols-2 ${getHighlightClass('stat_cards')}`}
+      style={getHighlightStyle('stat_cards')}
+    >
       <div className="rounded-2xl border bg-white p-4 shadow-sm" style={{ borderColor: statCardsPart.color }}>
-        <p className="text-2xl font-black" style={{ color: statValuePart.color }}>{summary.topicsCount}</p>
+        <p 
+          data-part-id="stat_value"
+          className={`text-2xl font-black ${getHighlightClass('stat_value')}`} 
+          style={{ ...{ color: statValuePart.color }, ...getHighlightStyle('stat_value') }}
+        >
+          {summary.topicsCount}
+        </p>
         <p className="mt-1 text-xs font-bold uppercase tracking-wide text-slate-500">Learning blocks</p>
       </div>
       <div className="rounded-2xl border bg-white p-4 shadow-sm" style={{ borderColor: statCardsPart.color }}>
-        <p className="text-2xl font-black" style={{ color: statValuePart.color }}>{summary.lastUpdated}</p>
+        <p 
+          data-part-id="stat_value"
+          className={`text-2xl font-black ${getHighlightClass('stat_value')}`} 
+          style={{ ...{ color: statValuePart.color }, ...getHighlightStyle('stat_value') }}
+        >
+          {summary.lastUpdated}
+        </p>
         <p className="mt-1 text-xs font-bold uppercase tracking-wide text-slate-500">Last updated</p>
       </div>
     </div>
@@ -371,7 +484,12 @@ export function ContractAwareComponentPreview({
   );
 
   const body = bodyPart.visible ? (
-    <div className={`${compact ? 'space-y-4' : bodyPart.spacing === 'loose' ? 'space-y-7' : bodyPart.spacing === 'tight' ? 'space-y-3' : 'space-y-5'} ${bodyPart.align === 'center' ? 'text-center' : bodyPart.align === 'right' ? 'text-right' : 'text-left'}`} aria-label={screenReaderLabels ? `${renderer} content` : undefined}>
+    <div 
+      data-part-id="body"
+      className={`${compact ? 'space-y-4' : bodyPart.spacing === 'loose' ? 'space-y-7' : bodyPart.spacing === 'tight' ? 'space-y-3' : 'space-y-5'} ${bodyPart.align === 'center' ? 'text-center' : bodyPart.align === 'right' ? 'text-right' : 'text-left'} ${getHighlightClass('body')}`} 
+      style={getHighlightStyle('body')}
+      aria-label={screenReaderLabels ? `${renderer} content` : undefined}
+    >
       {hasItems ? (
         <div className={`grid ${gap} ${layout.includes('grid') ? 'md:grid-cols-2' : ''}`}>
           {summary.items.slice(0, 6).map((item, index) => (
@@ -390,17 +508,26 @@ export function ContractAwareComponentPreview({
   ) : null;
 
   const action = actionPart.visible ? (
-    <div className={`space-y-3 ${actionPart.align === 'center' ? 'text-center' : actionPart.align === 'right' ? 'text-right' : 'text-left'}`}>
+    <div 
+      data-part-id="action"
+      className={`space-y-3 ${actionPart.align === 'center' ? 'text-center' : actionPart.align === 'right' ? 'text-right' : 'text-left'} ${getHighlightClass('action')}`}
+      style={getHighlightStyle('action')}
+    >
       <div className={`flex flex-wrap items-center gap-3 ${actionPart.align === 'center' ? 'justify-center' : actionPart.align === 'right' ? 'justify-end' : ''}`}>
         <button
-          className="inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-black text-white shadow-sm disabled:cursor-default"
-          style={{ backgroundColor: primaryButtonPart.color, color: contrastText(primaryButtonPart.color) }}
+          data-part-id="primary_button"
+          className={`inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-black text-white shadow-sm disabled:cursor-default ${getHighlightClass('primary_button')}`}
+          style={{ ...{ backgroundColor: primaryButtonPart.color, color: contrastText(primaryButtonPart.color) }, ...getHighlightStyle('primary_button') }}
           disabled={!clickable}
           tabIndex={keyboardNavigation ? 0 : -1}
         >
           {actionPart.label || 'Start learning'} <ArrowRight size={17} />
         </button>
-        <button className="inline-flex items-center gap-2 rounded-full border bg-white px-5 py-3 text-sm font-black" style={{ borderColor: `${secondaryButtonPart.color}66`, color: secondaryButtonPart.color }}>
+        <button 
+          data-part-id="secondary_button"
+          className={`inline-flex items-center gap-2 rounded-full border bg-white px-5 py-3 text-sm font-black ${getHighlightClass('secondary_button')}`} 
+          style={{ ...{ borderColor: `${secondaryButtonPart.color}66`, color: secondaryButtonPart.color }, ...getHighlightStyle('secondary_button') }}
+        >
           <BookOpen size={17} /> View roadmap
         </button>
         {interactiveElements.slice(0, 3).map((item) => (
@@ -468,42 +595,114 @@ export function ContractAwareComponentPreview({
           {renderNotesHeader(<>
             <div className={notesBadgeRowClass}>
               {iconBadgePart.visible ? (
-                <span className={`${exactPartClass(iconBadgePart)} inline-flex text-xs font-black ${exactAlignClass(iconBadgePart)}`} style={{ backgroundColor: iconBadgePart.color, color: contrastText(iconBadgePart.color) }}>{summary.iconLabel}</span>
+                <span 
+                  data-part-id="icon_badge"
+                  className={`${exactPartClass(iconBadgePart)} inline-flex text-xs font-black ${exactAlignClass(iconBadgePart)} ${getHighlightClass('icon_badge')}`} 
+                  style={{ ...{ backgroundColor: iconBadgePart.color, color: contrastText(iconBadgePart.color) }, ...getHighlightStyle('icon_badge') }}
+                >
+                  {summary.iconLabel}
+                </span>
               ) : null}
               {difficultyBadgePart.visible ? (
-                <span className={`${exactPartClass(difficultyBadgePart)} inline-flex border text-xs font-bold ${exactAlignClass(difficultyBadgePart)}`} style={{ borderColor: `${difficultyBadgePart.color}66`, color: difficultyBadgePart.color }}>{summary.difficulty}</span>
+                <span 
+                  data-part-id="difficulty_badge"
+                  className={`${exactPartClass(difficultyBadgePart)} inline-flex border text-xs font-bold ${exactAlignClass(difficultyBadgePart)} ${getHighlightClass('difficulty_badge')}`} 
+                  style={{ ...{ borderColor: `${difficultyBadgePart.color}66`, color: difficultyBadgePart.color }, ...getHighlightStyle('difficulty_badge') }}
+                >
+                  {summary.difficulty}
+                </span>
               ) : null}
               {brandVariant !== 'shared' && brandBadgePart.visible ? (
-                <span className={`${exactPartClass(brandBadgePart)} inline-flex border bg-white text-xs font-bold ${exactAlignClass(brandBadgePart)}`} style={{ borderColor: `${brandBadgePart.color}66`, color: brandBadgePart.color }}>{brandLabel}</span>
+                <span 
+                  data-part-id="brand_badge"
+                  className={`${exactPartClass(brandBadgePart)} inline-flex border bg-white text-xs font-bold ${exactAlignClass(brandBadgePart)} ${getHighlightClass('brand_badge')}`} 
+                  style={{ ...{ borderColor: `${brandBadgePart.color}66`, color: brandBadgePart.color }, ...getHighlightStyle('brand_badge') }}
+                >
+                  {brandLabel}
+                </span>
               ) : null}
             </div>
             {titlePart.visible ? (
-              <h2 className={`${titleSize} font-black leading-tight ${exactAlignClass(titlePart)}`} style={{ color: titlePart.color }}>
+              <h2 
+                data-part-id="title"
+                className={`${titleSize} font-black leading-tight ${exactAlignClass(titlePart)} ${getHighlightClass('title')}`} 
+                style={{ ...{ color: titlePart.color }, ...getHighlightStyle('title') }}
+              >
                 {asString(contentRecord.heroTitle, `${summary.title} Notes`)}
               </h2>
             ) : null}
             {descriptionPart.visible ? (
-              <p className={`max-w-2xl text-base font-semibold leading-7 ${exactAlignClass(descriptionPart)}`} style={{ color: descriptionPart.color }}>
+              <p 
+                data-part-id="description"
+                className={`max-w-2xl text-base font-semibold leading-7 ${exactAlignClass(descriptionPart)} ${getHighlightClass('description')}`} 
+                style={{ ...{ color: descriptionPart.color }, ...getHighlightStyle('description') }}
+              >
                 {asString(contentRecord.heroSubtitle, summary.description)}
               </p>
             ) : null}
             {secondaryButtonPart.visible ? (
-              <div className={`flex flex-wrap gap-2 ${partJustifyClass(secondaryButtonPart) || partJustifyClass(headerPart)}`}>
-                {(quickLook.length ? quickLook : ['Definition', 'Mechanics', 'Syntax', 'Examples']).map((item) => (
-                  <span key={String(item)} className={`${exactPartClass(secondaryButtonPart, 'px-4 py-2')} border bg-white text-xs font-black ${exactAlignClass(secondaryButtonPart)}`} style={{ borderColor: `${secondaryButtonPart.color}66`, color: secondaryButtonPart.color }}>
-                    {String(item)}
-                  </span>
-                ))}
+              <div 
+                data-part-id="secondary_button"
+                className={`flex flex-wrap gap-2 ${partJustifyClass(secondaryButtonPart) || partJustifyClass(headerPart)} ${getHighlightClass('secondary_button')}`}
+                style={getHighlightStyle('secondary_button')}
+              >
+                {(quickLook.length ? quickLook : ['Definition', 'Mechanics', 'Syntax', 'Examples']).map((item, index) => {
+                  const pillPart = [quickLookPill0Part, quickLookPill1Part, quickLookPill2Part, quickLookPill3Part][index] || secondaryButtonPart;
+                  const pillId = `quick_look_pill_${index}`;
+                  return pillPart.visible ? (
+                    <span 
+                      key={String(item)} 
+                      data-part-id={pillId}
+                      data-pill-value={String(item)}
+                      className={`${exactPartClass(pillPart, 'px-4 py-2')} border bg-white text-xs font-black ${exactAlignClass(pillPart)} ${getHighlightClass(pillId)}`} 
+                      style={{ ...{ borderColor: `${pillPart.color}66`, color: pillPart.color }, ...getHighlightStyle(pillId) }}
+                    >
+                      {String(item)}
+                    </span>
+                  ) : null;
+                })}
               </div>
             ) : null}
           </>)}
           {bodyPart.visible ? (
-            <div className={notesPreviewCardClass} style={{ borderColor: bodyPart.layout === 'inline' || bodyPart.layout === 'progress' ? undefined : bodyPart.color || statCardsPart.color }}>
-              <p className="text-xs font-black uppercase tracking-widest text-slate-400">Simple Words</p>
-              <p className={`mt-3 text-2xl font-black ${exactAlignClass(titlePart)}`} style={{ color: titlePart.color }}>Begin with meaning first</p>
-              <p className={`mt-3 text-sm font-semibold leading-6 ${exactAlignClass(descriptionPart)}`} style={{ color: descriptionPart.color }}>A short overview designed to orient the learner before detail-heavy blocks.</p>
+            <div 
+              data-part-id="body"
+              className={`${notesPreviewCardClass} ${getHighlightClass('body')}`} 
+              style={{ ...{ borderColor: bodyPart.layout === 'inline' || bodyPart.layout === 'progress' ? undefined : bodyPart.color || statCardsPart.color }, ...getHighlightStyle('body') }}
+            >
+              {previewLabelPart.visible ? (
+                <p 
+                  data-part-id="preview_label"
+                  className={`text-xs font-black uppercase tracking-widest ${getHighlightClass('preview_label')}`}
+                  style={{ ...{ color: previewLabelPart.color }, ...getHighlightStyle('preview_label') }}
+                >
+                  Simple Words
+                </p>
+              ) : null}
+              {previewTitlePart.visible ? (
+                <p 
+                  data-part-id="preview_title"
+                  className={`mt-3 text-2xl font-black ${exactAlignClass(previewTitlePart)} ${getHighlightClass('preview_title')}`} 
+                  style={{ ...{ color: previewTitlePart.color }, ...getHighlightStyle('preview_title') }}
+                >
+                  Begin with meaning first
+                </p>
+              ) : null}
+              {previewDescriptionPart.visible ? (
+                <p 
+                  data-part-id="preview_description"
+                  className={`mt-3 text-sm font-semibold leading-6 ${exactAlignClass(previewDescriptionPart)} ${getHighlightClass('preview_description')}`} 
+                  style={{ ...{ color: previewDescriptionPart.color }, ...getHighlightStyle('preview_description') }}
+                >
+                  A short overview designed to orient the learner before detail-heavy blocks.
+                </p>
+              ) : null}
               {progressBarPart.visible ? (
-                <div className={`${progressBarPart.spacing === 'tight' ? 'mt-3' : progressBarPart.spacing === 'loose' ? 'mt-7' : 'mt-5'} h-2 rounded-full bg-slate-100 ${progressBarPart.shadow === 'none' ? 'shadow-none' : progressBarPart.shadow === 'strong' ? 'shadow-lg' : 'shadow-sm'}`}>
+                <div 
+                  data-part-id="progress_bar"
+                  className={`${progressBarPart.spacing === 'tight' ? 'mt-3' : progressBarPart.spacing === 'loose' ? 'mt-7' : 'mt-5'} h-2 rounded-full bg-slate-100 ${progressBarPart.shadow === 'none' ? 'shadow-none' : progressBarPart.shadow === 'strong' ? 'shadow-lg' : 'shadow-sm'} ${getHighlightClass('progress_bar')}`}
+                  style={getHighlightStyle('progress_bar')}
+                >
                   <div className={`h-full w-2/5 ${partRadiusClass(progressBarPart.radius)}`} style={{ backgroundColor: progressBarPart.color }} />
                 </div>
               ) : null}
@@ -515,28 +714,68 @@ export function ContractAwareComponentPreview({
 
     if (['definition_block', 'definitionblock'].includes(normalizedSubsection)) {
       return (
-        <div className={partSpaceClass(bodyPart)}>
-          {renderNotesHeader(<div className={notesBadgeRowClass}>
-            <span className="rounded-full px-3 py-1 text-xs font-black" style={{ backgroundColor: iconBadgePart.color, color: contrastText(iconBadgePart.color) }}>
-              {asString(contentRecord.badge, 'Core Concept')}
-            </span>
-            <span className="rounded-full border px-3 py-1 text-xs font-bold" style={{ borderColor: `${difficultyBadgePart.color}66`, color: difficultyBadgePart.color }}>Definition</span>
-          </div>)}
-          <div className={notesCardClass} style={{ borderColor: bodyPart.color || statCardsPart.color }}>
+        <div 
+          data-part-id="container"
+          className={`${partSpaceClass(bodyPart)} ${getHighlightClass('container')}`}
+          style={getHighlightStyle('container')}
+        >
+          {renderNotesHeader(
+            <div 
+              data-part-id="header"
+              className={`${notesBadgeRowClass} ${getHighlightClass('header')}`}
+              style={getHighlightStyle('header')}
+            >
+              {coreConceptBadgePart.visible ? (
+                <span 
+                  data-part-id="icon_badge"
+                  className={`rounded-full px-3 py-1 text-xs font-black ${getHighlightClass('icon_badge')}`} 
+                  style={{ ...{ backgroundColor: coreConceptBadgePart.color, color: contrastText(coreConceptBadgePart.color) }, ...getHighlightStyle('icon_badge') }}
+                >
+                  {asString(contentRecord.badge, 'Core Concept')}
+                </span>
+              ) : null}
+              {definitionBadgePart.visible ? (
+                <span 
+                  data-part-id="difficulty_badge"
+                  className={`rounded-full border px-3 py-1 text-xs font-bold ${getHighlightClass('difficulty_badge')}`} 
+                  style={{ ...{ borderColor: `${definitionBadgePart.color}66`, color: definitionBadgePart.color }, ...getHighlightStyle('difficulty_badge') }}
+                >
+                  Definition
+                </span>
+              ) : null}
+            </div>
+          )}
+          <div 
+            data-part-id="body"
+            className={`${notesCardClass} ${getHighlightClass('body')}`} 
+            style={{ ...{ borderColor: definitionCardsPart.color || statCardsPart.color }, ...getHighlightStyle('body') }}
+          >
             <p className="text-xs font-black uppercase tracking-widest text-slate-400">Canonical Definition</p>
-            <h2 className={`mt-3 text-3xl font-black leading-tight ${partAlignClass(headerPart)}`} style={{ color: titlePart.color }}>
-              {asString(contentRecord.headline, summary.title)}
-            </h2>
-            <p className="mt-5 border-l-4 pl-5 text-lg font-bold leading-8 text-slate-700" style={{ borderColor: progressBarPart.color }}>
-              {asString(contentRecord.definition, summary.description)}
-            </p>
+            {definitionTitlePart.visible ? (
+              <h2 
+                data-part-id="title"
+                className={`mt-3 text-3xl font-black leading-tight ${partAlignClass(headerPart)} ${getHighlightClass('title')}`} 
+                style={{ ...{ color: definitionTitlePart.color }, ...getHighlightStyle('title') }}
+              >
+                {asString(contentRecord.headline, summary.title)}
+              </h2>
+            ) : null}
+            {definitionTextPart.visible ? (
+              <p 
+                data-part-id="description"
+                className={`mt-5 border-l-4 pl-5 text-lg font-bold leading-8 ${getHighlightClass('description')}`} 
+                style={{ ...{ color: definitionTextPart.color, borderColor: definitionAccentPart.color }, ...getHighlightStyle('description') }}
+              >
+                {asString(contentRecord.definition, summary.description)}
+              </p>
+            ) : null}
           </div>
           <div className={`grid gap-4 ${layout.includes('inline') ? 'md:grid-cols-1' : 'md:grid-cols-2'}`}>
-            <div className={partPanelClass(bodyPart)} style={{ borderColor: bodyPart.color || borderColor }}>
+            <div className={partPanelClass(definitionCardsPart)} style={{ borderColor: definitionCardsPart.color || borderColor }}>
               <p className="text-xs font-black uppercase tracking-wider" style={{ color: primaryColor }}>Simple Explanation</p>
               <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">{asString(contentRecord.simpleExplanation, 'Short learner-friendly explanation.')}</p>
             </div>
-            <div className={partPanelClass(bodyPart)} style={{ borderColor: bodyPart.color || borderColor }}>
+            <div className={partPanelClass(definitionCardsPart)} style={{ borderColor: definitionCardsPart.color || borderColor }}>
               <p className="text-xs font-black uppercase tracking-wider" style={{ color: primaryColor }}>Why It Matters</p>
               <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">{asString(contentRecord.whyItMatters, 'Why the definition matters for the learner.')}</p>
             </div>
@@ -548,15 +787,43 @@ export function ContractAwareComponentPreview({
     if (['syntax_block', 'syntaxblock'].includes(normalizedSubsection)) {
       const breakdown = asArray<Record<string, unknown>>(contentRecord.breakdown);
       return (
-        <div className={partSpaceClass(bodyPart)}>
-          {renderNotesHeader(<h2 className={`${titleSize} font-black`} style={{ color: titlePart.color }}>{asString(contentRecord.title, summary.title)}</h2>)}
-          <pre className={`overflow-x-auto ${partRadiusClass(bodyPart.radius)} border bg-slate-950 ${bodyPart.spacing === 'tight' ? 'p-4' : bodyPart.spacing === 'loose' ? 'p-8' : 'p-6'} text-sm font-bold leading-7 text-emerald-300 ${bodyPart.shadow === 'none' ? 'shadow-none' : 'shadow-lg'}`} style={{ borderColor: bodyPart.color || borderColor }}>
-            <code>{asString(contentRecord.codeSnippet, 'example = \"value\"')}</code>
-          </pre>
+        <div 
+          data-part-id="container"
+          className={`${partSpaceClass(bodyPart)} ${getHighlightClass('container')}`}
+          style={getHighlightStyle('container')}
+        >
+          {renderNotesHeader(
+            syntaxTitlePart.visible ? (
+              <h2 
+                data-part-id="title"
+                className={`${titleSize} font-black ${getHighlightClass('title')}`} 
+                style={{ ...{ color: syntaxTitlePart.color }, ...getHighlightStyle('title') }}
+              >
+                {asString(contentRecord.title, summary.title)}
+              </h2>
+            ) : null
+          )}
+          {syntaxPanelsPart.visible ? (
+            <pre 
+              data-part-id="body"
+              className={`overflow-x-auto ${partRadiusClass(syntaxPanelsPart.radius)} border bg-slate-950 ${syntaxPanelsPart.spacing === 'tight' ? 'p-4' : syntaxPanelsPart.spacing === 'loose' ? 'p-8' : 'p-6'} text-sm font-bold leading-7 text-emerald-300 ${syntaxPanelsPart.shadow === 'none' ? 'shadow-none' : 'shadow-lg'} ${getHighlightClass('body')}`} 
+              style={{ ...{ borderColor: syntaxPanelsPart.color || borderColor }, ...getHighlightStyle('body') }}
+            >
+              <code>{asString(contentRecord.codeSnippet, 'example = \"value\"')}</code>
+            </pre>
+          ) : null}
           <div className={`grid gap-3 ${layout.includes('inline') ? 'md:grid-cols-1' : 'md:grid-cols-3'}`}>
             {breakdown.map((item, index) => (
-              <div key={index} className={partPanelClass(bodyPart)} style={{ borderColor: bodyPart.color || borderColor }}>
-                <p className="font-mono text-sm font-black" style={{ color: iconBadgePart.color }}>{asString(item.part, `part_${index + 1}`)}</p>
+              <div key={index} className={partPanelClass(syntaxPanelsPart)} style={{ borderColor: syntaxPanelsPart.color || borderColor }}>
+                {syntaxPartLabelsPart.visible ? (
+                  <p 
+                    data-part-id="icon_badge"
+                    className={`font-mono text-sm font-black ${getHighlightClass('icon_badge')}`} 
+                    style={{ ...{ color: syntaxPartLabelsPart.color }, ...getHighlightStyle('icon_badge') }}
+                  >
+                    {asString(item.part, `part_${index + 1}`)}
+                  </p>
+                ) : null}
                 <p className="mt-2 text-xs font-semibold leading-5 text-slate-600">{asString(item.explanation, 'Syntax explanation.')}</p>
               </div>
             ))}
@@ -568,15 +835,48 @@ export function ContractAwareComponentPreview({
     if (['component_grid', 'componentgrid'].includes(normalizedSubsection)) {
       const mechanics = asArray<Record<string, unknown>>(contentRecord.mechanics);
       return (
-        <div className={partSpaceClass(bodyPart)}>
+        <div 
+          data-part-id="container"
+          className={`${partSpaceClass(bodyPart)} ${getHighlightClass('container')}`}
+          style={getHighlightStyle('container')}
+        >
           {renderNotesHeader(<>
-            <h2 className={`${titleSize} font-black`} style={{ color: titlePart.color }}>{asString(contentRecord.panelTitle, summary.title)}</h2>
-            <p className={`max-w-3xl text-base font-semibold leading-7 ${headerPart.align === 'center' ? 'mx-auto' : headerPart.align === 'right' ? 'ml-auto' : ''}`} style={{ color: descriptionPart.color }}>{asString(contentRecord.description, summary.description)}</p>
+            {gridTitlePart.visible ? (
+              <h2 
+                data-part-id="title"
+                className={`${titleSize} font-black ${getHighlightClass('title')}`} 
+                style={{ ...{ color: gridTitlePart.color }, ...getHighlightStyle('title') }}
+              >
+                {asString(contentRecord.panelTitle, summary.title)}
+              </h2>
+            ) : null}
+            {gridDescriptionPart.visible ? (
+              <p 
+                data-part-id="description"
+                className={`max-w-3xl text-base font-semibold leading-7 ${headerPart.align === 'center' ? 'mx-auto' : headerPart.align === 'right' ? 'ml-auto' : ''} ${getHighlightClass('description')}`} 
+                style={{ ...{ color: gridDescriptionPart.color }, ...getHighlightStyle('description') }}
+              >
+                {asString(contentRecord.description, summary.description)}
+              </p>
+            ) : null}
           </>)}
           <div className={`grid gap-4 ${layout.includes('inline') ? 'md:grid-cols-1' : 'md:grid-cols-3'}`}>
             {mechanics.map((item, index) => (
-              <div key={asString(item.id, String(index))} className={partPanelClass(bodyPart)} style={{ borderColor: bodyPart.color || borderColor }}>
-                <span className="flex h-10 w-10 items-center justify-center rounded-2xl text-sm font-black" style={{ backgroundColor: iconBadgePart.color, color: contrastText(iconBadgePart.color) }}>{index + 1}</span>
+              <div 
+                key={asString(item.id, String(index))} 
+                data-part-id="body"
+                className={`${partPanelClass(mechanicCardsPart)} ${getHighlightClass('body')}`} 
+                style={{ ...{ borderColor: mechanicCardsPart.color || borderColor }, ...getHighlightStyle('body') }}
+              >
+                {stepNumberBadgesPart.visible ? (
+                  <span 
+                    data-part-id="icon_badge"
+                    className={`flex h-10 w-10 items-center justify-center rounded-2xl text-sm font-black ${getHighlightClass('icon_badge')}`} 
+                    style={{ ...{ backgroundColor: stepNumberBadgesPart.color, color: contrastText(stepNumberBadgesPart.color) }, ...getHighlightStyle('icon_badge') }}
+                  >
+                    {index + 1}
+                  </span>
+                ) : null}
                 <h3 className="mt-4 text-lg font-black" style={{ color: textColor }}>{asString(item.label, `Step ${index + 1}`)}</h3>
                 <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">{asString(item.detail, 'Mechanic detail.')}</p>
               </div>
@@ -589,20 +889,52 @@ export function ContractAwareComponentPreview({
     if (['example_panel', 'examplepanel'].includes(normalizedSubsection)) {
       const components = asArray<Record<string, unknown>>(contentRecord.components);
       return (
-        <div className={partSpaceClass(bodyPart)}>
+        <div 
+          data-part-id="container"
+          className={`${partSpaceClass(bodyPart)} ${getHighlightClass('container')}`}
+          style={getHighlightStyle('container')}
+        >
           {renderNotesHeader(<>
-            <h2 className={`${titleSize} font-black`} style={{ color: titlePart.color }}>{asString(contentRecord.title, summary.title)}</h2>
-            <p className={`max-w-3xl text-base font-semibold leading-7 ${headerPart.align === 'center' ? 'mx-auto' : headerPart.align === 'right' ? 'ml-auto' : ''}`} style={{ color: descriptionPart.color }}>{asString(contentRecord.description, summary.description)}</p>
+            {exampleTitlePart.visible ? (
+              <h2 
+                data-part-id="title"
+                className={`${titleSize} font-black ${getHighlightClass('title')}`} 
+                style={{ ...{ color: exampleTitlePart.color }, ...getHighlightStyle('title') }}
+              >
+                {asString(contentRecord.title, summary.title)}
+              </h2>
+            ) : null}
+            {exampleDescriptionPart.visible ? (
+              <p 
+                data-part-id="description"
+                className={`max-w-3xl text-base font-semibold leading-7 ${headerPart.align === 'center' ? 'mx-auto' : headerPart.align === 'right' ? 'ml-auto' : ''} ${getHighlightClass('description')}`} 
+                style={{ ...{ color: exampleDescriptionPart.color }, ...getHighlightStyle('description') }}
+              >
+                {asString(contentRecord.description, summary.description)}
+              </p>
+            ) : null}
           </>)}
           <div className={`grid gap-4 ${layout.includes('inline') ? 'md:grid-cols-1' : 'md:grid-cols-2'}`}>
             {components.map((item, index) => (
-              <div key={asString(item.id, String(index))} className={partPanelClass(bodyPart)} style={{ borderColor: bodyPart.color || borderColor }}>
+              <div 
+                key={asString(item.id, String(index))} 
+                data-part-id="body"
+                className={`${partPanelClass(exampleCardsPart)} ${getHighlightClass('body')}`} 
+                style={{ ...{ borderColor: exampleCardsPart.color || borderColor }, ...getHighlightStyle('body') }}
+              >
                 <h3 className="text-lg font-black" style={{ color: primaryColor }}>{asString(item.title, `Example ${index + 1}`)}</h3>
                 <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">{asString(item.description, 'Example detail.')}</p>
                 <ul className="mt-4 space-y-2">
                   {asArray<unknown>(item.points).map((point, pointIndex) => (
                     <li key={pointIndex} className="flex items-start gap-2 text-xs font-bold text-slate-700">
-                      <CheckCircle2 size={14} className="mt-0.5 shrink-0" style={{ color: iconBadgePart.color }} />
+                      {checkIconsPart.visible ? (
+                        <CheckCircle2 
+                          data-part-id="icon_badge"
+                          size={14} 
+                          className={`mt-0.5 shrink-0 ${getHighlightClass('icon_badge')}`} 
+                          style={{ ...{ color: checkIconsPart.color }, ...getHighlightStyle('icon_badge') }} 
+                        />
+                      ) : null}
                       {String(point)}
                     </li>
                   ))}
@@ -617,23 +949,49 @@ export function ContractAwareComponentPreview({
     if (['practice_card', 'practicecard'].includes(normalizedSubsection)) {
       const practices = asArray<Record<string, unknown>>(contentRecord.practices);
       return (
-        <div className={partSpaceClass(bodyPart)}>
-          {renderNotesHeader(<h2 className={`${titleSize} font-black`} style={{ color: titlePart.color }}>{asString(contentRecord.title, 'Practice Checklist')}</h2>)}
-          <div className={notesCardClass} style={{ borderColor: bodyPart.color || borderColor }}>
-            <div className="space-y-4">
-              {practices.map((item, index) => (
-                <div key={asString(item.id, String(index))} className={`flex items-start gap-4 ${partPanelClass(bodyPart, 'p-4')}`} style={{ borderColor: bodyPart.color || borderColor }}>
-                  <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-black" style={{ backgroundColor: iconBadgePart.color, color: contrastText(iconBadgePart.color) }}>
-                    <CheckCircle2 size={16} />
-                  </span>
-                  <div>
-                    <h3 className="text-sm font-black" style={{ color: textColor }}>{asString(item.label, `Practice ${index + 1}`)}</h3>
-                    <p className="mt-1 text-sm font-semibold leading-6 text-slate-600">{asString(item.tip, 'Practice tip.')}</p>
+        <div 
+          data-part-id="container"
+          className={`${partSpaceClass(bodyPart)} ${getHighlightClass('container')}`}
+          style={getHighlightStyle('container')}
+        >
+          {renderNotesHeader(
+            practiceTitlePart.visible ? (
+              <h2 
+                data-part-id="title"
+                className={`${titleSize} font-black ${getHighlightClass('title')}`} 
+                style={{ ...{ color: practiceTitlePart.color }, ...getHighlightStyle('title') }}
+              >
+                {asString(contentRecord.title, 'Practice Checklist')}
+              </h2>
+            ) : null
+          )}
+          {practiceItemsPart.visible ? (
+            <div 
+              data-part-id="body"
+              className={`${notesCardClass} ${getHighlightClass('body')}`} 
+              style={{ ...{ borderColor: practiceItemsPart.color || borderColor }, ...getHighlightStyle('body') }}
+            >
+              <div className="space-y-4">
+                {practices.map((item, index) => (
+                  <div key={asString(item.id, String(index))} className={`flex items-start gap-4 ${partPanelClass(practiceItemsPart, 'p-4')}`} style={{ borderColor: practiceItemsPart.color || borderColor }}>
+                    {practiceCheckIconsPart.visible ? (
+                      <span 
+                        data-part-id="icon_badge"
+                        className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-black ${getHighlightClass('icon_badge')}`} 
+                        style={{ ...{ backgroundColor: practiceCheckIconsPart.color, color: contrastText(practiceCheckIconsPart.color) }, ...getHighlightStyle('icon_badge') }}
+                      >
+                        <CheckCircle2 size={16} />
+                      </span>
+                    ) : null}
+                    <div>
+                      <h3 className="text-sm font-black" style={{ color: textColor }}>{asString(item.label, `Practice ${index + 1}`)}</h3>
+                      <p className="mt-1 text-sm font-semibold leading-6 text-slate-600">{asString(item.tip, 'Practice tip.')}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          ) : null}
         </div>
       );
     }
@@ -641,17 +999,49 @@ export function ContractAwareComponentPreview({
     if (['warning_faq', 'warningfaq'].includes(normalizedSubsection)) {
       const mistakes = asArray<Record<string, unknown>>(contentRecord.mistakes);
       return (
-        <div className={partSpaceClass(bodyPart)}>
-          {renderNotesHeader(<h2 className={`${titleSize} font-black`} style={{ color: titlePart.color }}>{asString(contentRecord.title, 'Common Mistakes')}</h2>)}
+        <div 
+          data-part-id="container"
+          className={`${partSpaceClass(bodyPart)} ${getHighlightClass('container')}`}
+          style={getHighlightStyle('container')}
+        >
+          {renderNotesHeader(
+            faqTitlePart.visible ? (
+              <h2 
+                data-part-id="title"
+                className={`${titleSize} font-black ${getHighlightClass('title')}`} 
+                style={{ ...{ color: faqTitlePart.color }, ...getHighlightStyle('title') }}
+              >
+                {asString(contentRecord.title, 'Common Mistakes')}
+              </h2>
+            ) : null
+          )}
           {mistakes.map((item, index) => (
-            <details key={asString(item.id, String(index))} open={index === 0} className={partPanelClass(bodyPart)} style={{ borderColor: bodyPart.color || borderColor }}>
-              <summary className="cursor-pointer text-base font-black" style={{ color: iconBadgePart.color }}>
-                {asString(item.mistake, `Mistake ${index + 1}`)}
-              </summary>
-              <div className="mt-4 rounded-2xl border p-4 text-sm font-semibold leading-6 text-slate-700" style={{ borderColor: `${progressBarPart.color}66`, backgroundColor: `${progressBarPart.color}10` }}>
-                <span className="font-black" style={{ color: progressBarPart.color }}>Fix: </span>
-                {asString(item.fix, 'Correction guidance.')}
-              </div>
+            <details 
+              key={asString(item.id, String(index))} 
+              open={index === 0} 
+              data-part-id="body"
+              className={`${partPanelClass(faqItemsPart)} ${getHighlightClass('body')}`} 
+              style={{ ...{ borderColor: faqItemsPart.color || borderColor }, ...getHighlightStyle('body') }}
+            >
+              {questionTextPart.visible ? (
+                <summary 
+                  data-part-id="icon_badge"
+                  className={`cursor-pointer text-base font-black ${getHighlightClass('icon_badge')}`} 
+                  style={{ ...{ color: questionTextPart.color }, ...getHighlightStyle('icon_badge') }}
+                >
+                  {asString(item.mistake, `Mistake ${index + 1}`)}
+                </summary>
+              ) : null}
+              {fixHighlightPart.visible ? (
+                <div 
+                  data-part-id="progress_bar"
+                  className={`mt-4 rounded-2xl border p-4 text-sm font-semibold leading-6 text-slate-700 ${getHighlightClass('progress_bar')}`} 
+                  style={{ ...{ borderColor: `${fixHighlightPart.color}66`, backgroundColor: `${fixHighlightPart.color}10` }, ...getHighlightStyle('progress_bar') }}
+                >
+                  <span className="font-black" style={{ color: fixHighlightPart.color }}>Fix: </span>
+                  {asString(item.fix, 'Correction guidance.')}
+                </div>
+              ) : null}
             </details>
           ))}
         </div>
@@ -661,17 +1051,51 @@ export function ContractAwareComponentPreview({
     if (['summary_card', 'summarycard'].includes(normalizedSubsection)) {
       const takeaways = asArray<unknown>(contentRecord.keyTakeaways);
       return (
-        <div className={notesPairClass}>
-          <div className={notesCardClass} style={{ borderColor: bodyPart.color || borderColor, background: `linear-gradient(135deg, #ffffff 0%, ${primaryColor}12 100%)` }}>
-            {headerPart.visible ? <div className="mb-4" style={notesInlineHeaderStyle} /> : null}
-            <p className="text-xs font-black uppercase tracking-widest" style={{ color: primaryColor }}>Revision Summary</p>
-            {titlePart.visible ? <h2 className={`mt-3 text-3xl font-black leading-tight ${partAlignClass(headerPart)}`} style={{ color: titlePart.color }}>{asString(contentRecord.summaryTitle, summary.title)}</h2> : null}
-            {descriptionPart.visible ? <p className="mt-4 text-sm font-semibold leading-6" style={{ color: descriptionPart.color }}>{asString(contentRecord.conceptDiagramDescription, summary.description)}</p> : null}
-          </div>
+        <div 
+          data-part-id="container"
+          className={`${notesPairClass} ${getHighlightClass('container')}`}
+          style={getHighlightStyle('container')}
+        >
+          {summaryCardsPart.visible ? (
+            <div 
+              data-part-id="body"
+              className={`${notesCardClass} ${getHighlightClass('body')}`} 
+              style={{ ...{ borderColor: summaryCardsPart.color || borderColor, background: `linear-gradient(135deg, #ffffff 0%, ${primaryColor}12 100%)` }, ...getHighlightStyle('body') }}
+            >
+              {headerPart.visible ? <div className="mb-4" style={notesInlineHeaderStyle} /> : null}
+              <p className="text-xs font-black uppercase tracking-widest" style={{ color: primaryColor }}>Revision Summary</p>
+              {summaryTitlePart.visible ? (
+                <h2 
+                  data-part-id="title"
+                  className={`mt-3 text-3xl font-black leading-tight ${partAlignClass(headerPart)} ${getHighlightClass('title')}`} 
+                  style={{ ...{ color: summaryTitlePart.color }, ...getHighlightStyle('title') }}
+                >
+                  {asString(contentRecord.summaryTitle, summary.title)}
+                </h2>
+              ) : null}
+              {summaryDescriptionPart.visible ? (
+                <p 
+                  data-part-id="description"
+                  className={`mt-4 text-sm font-semibold leading-6 ${getHighlightClass('description')}`} 
+                  style={{ ...{ color: summaryDescriptionPart.color }, ...getHighlightStyle('description') }}
+                >
+                  {asString(contentRecord.conceptDiagramDescription, summary.description)}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
           <div className="space-y-3">
             {takeaways.map((item, index) => (
-              <div key={index} className={`flex items-start gap-3 ${partPanelClass(bodyPart, 'p-4')}`} style={{ borderColor: bodyPart.color || borderColor }}>
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-black" style={{ backgroundColor: iconBadgePart.color, color: contrastText(iconBadgePart.color) }}>{index + 1}</span>
+              <div key={index} className={`flex items-start gap-3 ${partPanelClass(summaryCardsPart, 'p-4')}`} style={{ borderColor: summaryCardsPart.color || borderColor }}>
+                {takeawayBadgesPart.visible ? (
+                  <span 
+                    data-part-id="icon_badge"
+                    className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-black ${getHighlightClass('icon_badge')}`} 
+                    style={{ ...{ backgroundColor: takeawayBadgesPart.color, color: contrastText(takeawayBadgesPart.color) }, ...getHighlightStyle('icon_badge') }}
+                  >
+                    {index + 1}
+                  </span>
+                ) : null}
                 <p className="text-sm font-bold leading-6 text-slate-700">{String(item)}</p>
               </div>
             ))}
@@ -840,7 +1264,8 @@ export function ContractAwareComponentPreview({
   return (
     <section
       data-testid="contract-aware-component-preview"
-      className={`${containerFrameClass} ${emphasisScale} ${motionClass} ${interactionClass}`}
+      data-part-id="container"
+      className={`${containerFrameClass} ${emphasisScale} ${motionClass} ${interactionClass} ${getHighlightClass('container')}`}
       data-renderer={renderer}
       data-layout={layout}
       data-desktop-layout={desktopLayout}
@@ -849,11 +1274,14 @@ export function ContractAwareComponentPreview({
       data-brand={brandVariant}
       data-domain={domainOverride}
       style={{
-        backgroundColor: containerLayout === 'inline' ? 'transparent' : containerPart.color || backgroundColor,
-        borderColor: containerLayout === 'inline' ? 'transparent' : borderColor,
-        borderWidth: containerLayout === 'inline' ? 0 : emphasis === 'high' ? 3 : emphasis === 'low' ? 1 : 2,
-        color: textColor,
-        backgroundImage: containerLayout !== 'inline' && styleVariant === 'featured' ? `linear-gradient(135deg, ${backgroundColor} 0%, ${mutedSurface} 100%)` : undefined,
+        ...{
+          backgroundColor: containerLayout === 'inline' ? 'transparent' : containerPart.color || backgroundColor,
+          borderColor: containerLayout === 'inline' ? 'transparent' : borderColor,
+          borderWidth: containerLayout === 'inline' ? 0 : emphasis === 'high' ? 3 : emphasis === 'low' ? 1 : 2,
+          color: textColor,
+          backgroundImage: containerLayout !== 'inline' && styleVariant === 'featured' ? `linear-gradient(135deg, ${backgroundColor} 0%, ${mutedSurface} 100%)` : undefined,
+        },
+        ...getHighlightStyle('container'),
       }}
     >
       {content}

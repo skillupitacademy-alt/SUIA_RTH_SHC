@@ -599,8 +599,15 @@ export default function GlobalArchitecturePage() {
         { ...commonDefaults[6], label: 'Brand Badge', role: 'Brand pill color' },
         { ...commonDefaults[7] },
         { ...commonDefaults[8] },
+        { ...commonDefaults[12], label: 'Quick Look Pills Container', role: 'Pills wrapper and gap styling' },
+        { id: 'quick_look_pill_0', label: 'Definition Pill', role: 'First quick-look pill color', layout: 'pill', color: algorithmPalette.primary },
+        { id: 'quick_look_pill_1', label: 'Mechanics Pill', role: 'Second quick-look pill color', layout: 'pill', color: algorithmPalette.primary },
+        { id: 'quick_look_pill_2', label: 'Syntax Pill', role: 'Third quick-look pill color', layout: 'pill', color: algorithmPalette.primary },
+        { id: 'quick_look_pill_3', label: 'Examples Pill', role: 'Fourth quick-look pill color', layout: 'pill', color: algorithmPalette.primary },
         { ...commonDefaults[2], label: 'Simple Words Preview Card', role: 'Right-side preview card surface' },
-        { ...commonDefaults[12], label: 'Quick Look Pills', role: 'Definition, Mechanics, Syntax, and Examples pill color' },
+        { id: 'preview_label', label: 'Simple Words Label', role: 'Small gray label text color', layout: 'inline', color: '#94a3b8' },
+        { id: 'preview_title', label: 'Preview Card Title', role: 'Begin with meaning first heading color', layout: 'inline', color: algorithmPalette.text },
+        { id: 'preview_description', label: 'Preview Card Description', role: 'Short overview description text color', layout: 'inline', color: '#64748b' },
         { ...commonDefaults[13] },
       ],
       definition_block: [
@@ -3575,6 +3582,7 @@ Writing Guidelines:
                             ...((effectiveRendererPreviewContract || selectedComponentData || {}) as Record<string, unknown>),
                             ui_subcomponents: rendererSubcomponents,
                           }}
+                          highlightedSubcomponentId={selectedRendererSubcomponentId}
                         />
                       </div>
                     ) : null}
