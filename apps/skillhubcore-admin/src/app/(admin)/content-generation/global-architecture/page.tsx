@@ -304,6 +304,9 @@ export default function GlobalArchitecturePage() {
   const [showAdvancedRendererMapping, setShowAdvancedRendererMapping] = useState(false);
   const [showContextSidebar, setShowContextSidebar] = useState(true);
   const [selectedRendererSubcomponentId, setSelectedRendererSubcomponentId] = useState('container');
+  const [isLoadingDbArchitecture, setIsLoadingDbArchitecture] = useState(false);
+  const [dbLoadMessage, setDbLoadMessage] = useState('Using dummy/generated architecture context.');
+  const [dbLoadedSectionJson, setDbLoadedSectionJson] = useState<unknown>(null);
 
   const activeData = architectures[activeSectionKey];
   
@@ -745,7 +748,7 @@ export default function GlobalArchitecturePage() {
     const previewContent = normalizePreviewContentForStrictSchema(
       String(adminSectionId),
       selectedSubsection,
-      educationalComponent?.preview_content || defaultJson,
+      educationalComponent?.preview_content || (!selectedSubsection && dbLoadedSectionJson) || defaultJson,
       defaultJson
     );
 
@@ -916,6 +919,84 @@ export default function GlobalArchitecturePage() {
       };
     });
     showActionMessage('Selected component config saved locally.');
+  };
+
+  const loadArchitectureFromDb = async (scope: 'section' | 'component') => {
+    if (!dummyContext.subtopicId.trim()) {
+      showActionMessage('Enter a Subtopic ID first.');
+      return;
+    }
+
+    const subsection = scope === 'component'
+      ? normalizePipelineSubsectionId(String(adminSectionId), selectedComponentKey)
+      : null;
+
+    if (scope === 'component' && !subsection) {
+      showActionMessage('Select a component first.');
+      return;
+    }
+
+    const url = new URL('/api/content-manager/add-section', window.location.origin);
+    url.searchParams.set('subtopicId', dummyContext.subtopicId.trim());
+    url.searchParams.set('section', String(adminSectionId));
+    if (subsection) url.searchParams.set('subsection', subsection);
+
+    try {
+      setIsLoadingDbArchitecture(true);
+      setDbLoadMessage(`Loading ${scope === 'component' ? 'selected component' : 'full section'} from DB...`);
+      const response = await fetch(url.toString(), { cache: 'no-store' });
+      const result = await response.json();
+
+      if (!response.ok) {
+        const message = result.error || 'Could not load architecture/content from DB.';
+        setDbLoadMessage(message);
+        showActionMessage(message);
+        return;
+      }
+
+      if (result.subtopicInfo) {
+        setDummyContext({
+          domain: result.subtopicInfo.domain || dummyContext.domain,
+          subject: result.subtopicInfo.subject || dummyContext.subject,
+          topic: result.subtopicInfo.topic || dummyContext.topic,
+          subtopic: result.subtopicInfo.subtopic || dummyContext.subtopic,
+          subtopicId: result.subtopicInfo.subtopicId || dummyContext.subtopicId,
+        });
+      }
+
+      if (result.content === null) {
+        const message = result.message || 'No deployed DB content exists for this selection.';
+        setDbLoadMessage(message);
+        showActionMessage(message);
+        return;
+      }
+
+      if (scope === 'section') {
+        const sectionContent = result.parentContent || result.content;
+        setDbLoadedSectionJson(sectionContent);
+        setJsonEditorValue(JSON.stringify(sectionContent, null, 2));
+        setDbLoadMessage(`Loaded deployed ${String(adminSectionId)} section JSON from DB.`);
+        showActionMessage('Full section loaded from DB.');
+        return;
+      }
+
+      const rendererContract = result.rendererContract && typeof result.rendererContract === 'object'
+        ? result.rendererContract as Record<string, unknown>
+        : {};
+      updateSelectedComponentConfig({
+        ...rendererContract,
+        preview_content: result.content,
+        db_loaded: true,
+        db_loaded_at: new Date().toISOString(),
+      });
+      setDbLoadMessage(`Loaded deployed ${String(adminSectionId)}.${subsection} content and UI/UX contract from DB.`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown DB load error';
+      setDbLoadMessage(`DB load failed: ${message}`);
+      showActionMessage(`DB load failed: ${message}`);
+    } finally {
+      setIsLoadingDbArchitecture(false);
+    }
   };
 
   const addNewComponent = () => {
@@ -1217,6 +1298,35 @@ export default function GlobalArchitecturePage() {
               ))}
             </select>
             <p className="mt-1 truncate text-[10px] font-semibold text-slate-400">{selectedWorkflowUrls.learnerPreview}</p>
+          </div>
+        </div>
+        <div className="mt-4 rounded-2xl border border-blue-100 bg-blue-50 p-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <h3 className="text-xs font-black uppercase tracking-wider text-blue-900">Existing DB Architecture / Content</h3>
+              <p className="mt-1 text-xs font-semibold text-blue-800">
+                Load deployed section JSON or selected component JSON + UI/UX contract, edit it here, then send it to Content Manager for preview approval and DB save.
+              </p>
+              <p className="mt-2 text-[11px] font-bold text-blue-700">{dbLoadMessage}</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => loadArchitectureFromDb('section')}
+                disabled={isLoadingDbArchitecture}
+                className="rounded-xl border border-blue-200 bg-white px-4 py-2 text-xs font-black text-blue-700 hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isLoadingDbArchitecture ? 'Loading...' : 'Load Full Section from DB'}
+              </button>
+              <button
+                type="button"
+                onClick={() => loadArchitectureFromDb('component')}
+                disabled={isLoadingDbArchitecture || !selectedComponentKey}
+                className="rounded-xl border border-emerald-200 bg-white px-4 py-2 text-xs font-black text-emerald-700 hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isLoadingDbArchitecture ? 'Loading...' : 'Load Selected Component from DB'}
+              </button>
+            </div>
           </div>
         </div>
       </div>

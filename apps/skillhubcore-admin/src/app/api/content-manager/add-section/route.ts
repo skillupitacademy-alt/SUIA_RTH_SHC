@@ -213,6 +213,19 @@ const DOMAIN_COLUMN_MAP: Record<string, string> = {
   summary_card: 'summaryCard',
 };
 
+function getUiuxComponentContract(parentContent: unknown, subsection: string | null): unknown {
+  if (!subsection || !isRecord(parentContent)) return null;
+
+  const uiux = isRecord(parentContent.uiux_contract) ? parentContent.uiux_contract : {};
+  const componentDesignSystem = isRecord(uiux.component_design_system)
+    ? uiux.component_design_system
+    : isRecord(uiux.components)
+      ? uiux.components
+      : {};
+
+  return componentDesignSystem[subsection] ?? null;
+}
+
 function normalizeSubsectionContent(sectionType: string, subsection: string, content: unknown): unknown {
   if (sectionType !== 'notes' || subsection !== 'concept_card' || !isRecord(content)) {
     return content;
@@ -1263,6 +1276,26 @@ export async function GET(req: NextRequest) {
     }
 
     if (subsection) {
+      const parentContent = isRecord(section.content) ? section.content : {};
+      const targetParentKey = COLUMN_TO_PARENT_KEY[subsection] || subsection;
+      const parentValue = targetParentKey.includes('.')
+        ? (() => {
+            const [parentKey, childKey] = targetParentKey.split('.');
+            const parent = parentContent[parentKey];
+            return isRecord(parent) ? parent[childKey] : undefined;
+          })()
+        : parentContent[targetParentKey];
+
+      if (parentValue !== undefined) {
+        return NextResponse.json({
+          success: true,
+          subtopicInfo,
+          content: parentValue,
+          parentContent,
+          rendererContract: getUiuxComponentContract(parentContent, subsection),
+        });
+      }
+
       const table = DOMAIN_TABLE_MAP[config.dbType];
       if (!table) {
         return NextResponse.json({ error: `Unsupported domain table for ${config.dbType}` }, { status: 400 });
@@ -1288,6 +1321,8 @@ export async function GET(req: NextRequest) {
         success: true,
         subtopicInfo,
         content: value,
+        parentContent,
+        rendererContract: getUiuxComponentContract(parentContent, subsection),
       });
     }
 
@@ -1299,6 +1334,8 @@ export async function GET(req: NextRequest) {
       success: true,
       subtopicInfo,
       content: wrappedContent,
+      parentContent: section.content,
+      rendererContract: null,
     });
   } catch (error: unknown) {
     console.error('[Content Manager API] GET Error:', error);
