@@ -278,6 +278,7 @@ export default function GlobalArchitecturePage() {
   }, []);
 
   const [architectures, setArchitectures] = useState(initialArchitectures);
+  const [isMounted, setIsMounted] = useState(false);
 
   const sectionKeys = Object.keys(architectures);
   const eduKeys = sectionKeys.filter(k => !k.includes('uiux'));
@@ -309,6 +310,10 @@ export default function GlobalArchitecturePage() {
   const [dbLoadedSectionJson, setDbLoadedSectionJson] = useState<unknown>(null);
 
   const activeData = architectures[activeSectionKey];
+  
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
   
   useEffect(() => {
     const source = activeData?.universal_architecture_fixed || activeData?.component_design_system;
@@ -346,16 +351,11 @@ export default function GlobalArchitecturePage() {
     window.localStorage.setItem(ARCHITECTURE_STORAGE_KEY, JSON.stringify(architectures));
   }, [architectures, customizationsLoaded]);
 
-  if (!activeData) return <div className="p-10 font-bold text-slate-500">Loading Architecture...</div>;
-
+  // Compute derived state before any conditional returns
   const isUiUxMode = activeSectionKey.includes('uiux');
-  const activeComponentMap = (isUiUxMode ? activeData.component_design_system : activeData.universal_architecture_fixed || {}) as Record<string, ComponentArchitecture>;
-  const activeComponentEntries = Object.entries(activeComponentMap) as [string, ComponentArchitecture][];
-  const universalComponents = isUiUxMode ? [] : Object.entries(activeData.universal_architecture_fixed || {}) as [string, ComponentArchitecture][];
-  const totalComponents = isUiUxMode ? Object.keys(activeData.component_design_system || {}).length : universalComponents.length;
-  const jsonString = JSON.stringify({ [activeSectionKey]: activeData }, null, 2);
-  const canonicalSectionId = activeData.metadata?.section_type || activeSectionKey.replace('_section_uiux_architecture', '').replace('_section_architecture', '');
-  const adminSectionId = activeData.metadata?.admin_section_id || canonicalSectionId;
+  const activeComponentMap = (isUiUxMode ? activeData?.component_design_system : activeData?.universal_architecture_fixed || {}) as Record<string, ComponentArchitecture>;
+  const canonicalSectionId = activeData?.metadata?.section_type || activeSectionKey.replace('_section_uiux_architecture', '').replace('_section_architecture', '');
+  const adminSectionId = activeData?.metadata?.admin_section_id || canonicalSectionId;
   const educationalEntry = Object.entries(architectures).find(([, data]) => (
     !String(data.metadata?.architecture_type || '').toLowerCase().includes('ui') &&
     !String(data.metadata?.architecture_type || '').toLowerCase().includes('ux') &&
@@ -363,31 +363,10 @@ export default function GlobalArchitecturePage() {
     data.metadata?.section_type === canonicalSectionId
   )) || Object.entries(architectures).find(([key, data]) => !key.includes('uiux') && data.metadata?.section_type === canonicalSectionId);
   const uiuxEntry = Object.entries(architectures).find(([key, data]) => key.includes('uiux') && data.metadata?.section_type === canonicalSectionId);
-  const educationalKey = educationalEntry?.[0] || activeSectionKey;
-  const educationalData = educationalEntry?.[1] || activeData;
-  const uiuxKey = uiuxEntry?.[0] || '';
   const uiuxData = uiuxEntry?.[1] || null;
   const selectedPipelineSubsectionKey = normalizePipelineSubsectionId(String(adminSectionId), selectedComponentKey);
-  const workflowQuery = new URLSearchParams({
-    section: String(canonicalSectionId),
-    domain: dummyContext.domain,
-    subject: dummyContext.subject,
-    topic: dummyContext.topic,
-    subtopic: dummyContext.subtopic,
-    subtopicId: dummyContext.subtopicId,
-    previewTarget: learnerPreviewTarget,
-    source: 'global-architecture',
-  });
-  if (selectedPipelineSubsectionKey) workflowQuery.set('subsection', selectedPipelineSubsectionKey);
-  const contentManagerQuery = new URLSearchParams(workflowQuery);
-  contentManagerQuery.set('section', String(adminSectionId));
-  contentManagerQuery.set('requirePreviewApproval', 'true');
-  const selectedWorkflowUrls = {
-    visualGuide: `/tools/visual-guide?section=${canonicalSectionId}${selectedPipelineSubsectionKey ? `&subsection=${selectedPipelineSubsectionKey}` : ''}`,
-    promptGenerator: `/tools/prompt-generator?${workflowQuery.toString()}&autoGenerate=true`,
-    contentManager: `/tools/content-manager?${contentManagerQuery.toString()}`,
-    learnerPreview: `${LEARNER_PREVIEW_TARGETS[learnerPreviewTarget].baseUrl}/start-learning/subtopic/${dummyContext.subtopicId}${canonicalSectionId ? `?tab=${canonicalSectionId}` : ''}`,
-  };
+
+  // Compute values needed for rendererSubcomponents useMemo
   const selectedComponentLookupKeys = Array.from(new Set([
     selectedPipelineSubsectionKey,
     selectedComponentKey,
@@ -405,92 +384,12 @@ export default function GlobalArchitecturePage() {
       return merged;
     }, {});
   };
-  const selectedComponentData = resolveComponentConfig([
+  const selectedComponentData = activeData ? resolveComponentConfig([
     activeData.universal_architecture_fixed,
     activeData.component_design_system,
-  ]);
-  const selectedUiuxComponentData = selectedComponentKey
-    ? resolveComponentConfig([
-      uiuxData?.component_design_system,
-      activeData.component_design_system,
-    ])
-    : null;
-  const selectedRendererMapping = selectedComponentKey
-    ? (
-      selectedComponentLookupKeys.reduce<Record<string, unknown> | null>((found, key) => (
-        found ||
-        activeData.renderer_mapping_engine?.[key] ||
-        uiuxData?.renderer_mapping_engine?.[key] ||
-        null
-      ), null) ||
-      null
-    )
-    : null;
-  const activeComponentKeys = Object.keys(activeComponentMap);
-  const activeLearningFlow = (
-    Array.isArray(activeData.learning_progression_engine?.default_flow)
-      ? activeData.learning_progression_engine.default_flow
-      : activeComponentKeys
-  ) as string[];
-  const selectedComponentIndex = selectedComponentKey ? Math.max(0, activeLearningFlow.indexOf(selectedComponentKey)) : 0;
-  const selectedDefaultJson = getDefaultPipelineJson(String(adminSectionId), selectedPipelineSubsectionKey || selectedComponentKey, dummyContext.subtopic);
-  const selectedPreviewJson = normalizePreviewContentForStrictSchema(
-    String(adminSectionId),
-    selectedPipelineSubsectionKey || selectedComponentKey,
-    selectedComponentData?.preview_content || selectedDefaultJson,
-    selectedDefaultJson
-  );
-  const selectedRendererName = String(
-    selectedComponentData?.renderer ||
-    selectedComponentData?.component ||
-    (selectedRendererMapping as Record<string, unknown> | null)?.component ||
-    'default_renderer'
-  );
+  ]) : null;
+  
   const selectedBrandPreviewContract = PREVIEW_TARGET_BRAND_CONTRACTS[learnerPreviewTarget];
-  const selectedRendererBrandVariant = String(selectedComponentData?.brand_variant || '');
-  const effectiveRendererBrandVariant = selectedRendererBrandVariant && selectedRendererBrandVariant !== 'shared'
-    ? selectedRendererBrandVariant
-    : selectedBrandPreviewContract.brand_variant;
-  const selectedGeneratedRendererCode = selectedComponentData
-    ? buildStarterHtmlFromRenderer(selectedPreviewJson, {
-      ...selectedBrandPreviewContract,
-      ...(selectedComponentData as Record<string, unknown>),
-      primary_color: selectedComponentData?.primary_color || selectedBrandPreviewContract.primary_color,
-      primary_color_dark: selectedComponentData?.primary_color_dark || selectedBrandPreviewContract.primary_color_dark,
-      accent_color: selectedComponentData?.accent_color || selectedBrandPreviewContract.accent_color,
-      secondary_color: selectedComponentData?.secondary_color || selectedBrandPreviewContract.secondary_color,
-    })
-    : '';
-  const selectedCustomRendererCode = String(selectedComponentData?.custom_renderer_code || '');
-  const selectedVisibleRendererCode = selectedCustomRendererCode || selectedGeneratedRendererCode;
-  const selectedRendererPreviewContract = selectedComponentData
-    ? {
-      ...(selectedComponentData as Record<string, unknown>),
-      custom_renderer_code: selectedCustomRendererCode,
-    }
-    : null;
-  const effectiveRendererPreviewContract = selectedRendererPreviewContract
-    ? {
-      ...selectedRendererPreviewContract,
-      brand_variant: effectiveRendererBrandVariant,
-      primary_color: selectedComponentData?.primary_color || selectedBrandPreviewContract.primary_color,
-      primary_color_dark: selectedComponentData?.primary_color_dark || selectedBrandPreviewContract.primary_color_dark,
-      accent_color: selectedComponentData?.accent_color || selectedBrandPreviewContract.accent_color,
-      secondary_color: selectedComponentData?.secondary_color || selectedBrandPreviewContract.secondary_color,
-      background_color: selectedComponentData?.background_color || selectedBrandPreviewContract.background_color,
-      text_color: selectedComponentData?.text_color || selectedBrandPreviewContract.text_color,
-      border_color: selectedComponentData?.border_color || selectedBrandPreviewContract.border_color,
-    }
-    : null;
-  const rendererColorControls = [
-    ['primary_color', 'Primary Color 1', selectedBrandPreviewContract.primary_color],
-    ['primary_color_dark', 'Primary Color 2', selectedBrandPreviewContract.primary_color_dark],
-    ['accent_color', 'Accent / CTA Color', selectedBrandPreviewContract.accent_color],
-    ['secondary_color', 'Secondary Brand Color', selectedBrandPreviewContract.secondary_color],
-    ['background_color', 'Background Color', selectedBrandPreviewContract.background_color],
-    ['text_color', 'Text Color', selectedBrandPreviewContract.text_color],
-    ['border_color', 'Border Color', selectedBrandPreviewContract.border_color],
-  ] as const;
   const selectedColorCombinationId = String(selectedComponentData?.color_combination || 'primary_75_secondary_25');
   const selectedColorCombination = COLOR_COMBINATION_OPTIONS.find((option) => option.id === selectedColorCombinationId) || COLOR_COMBINATION_OPTIONS[0];
   const algorithmPrimaryColor = normalizeHexColor(selectedComponentData?.primary_color || selectedBrandPreviewContract.primary_color, selectedBrandPreviewContract.primary_color);
@@ -508,65 +407,8 @@ export default function GlobalArchitecturePage() {
     text: normalizeHexColor(selectedComponentData?.text_color || selectedBrandPreviewContract.text_color, selectedBrandPreviewContract.text_color),
     border: normalizeHexColor(selectedComponentData?.border_color || selectedBrandPreviewContract.border_color, selectedBrandPreviewContract.border_color),
   };
-  const universalArchitecturePreviewContract = selectedRendererPreviewContract
-    ? {
-      ...selectedRendererPreviewContract,
-      ...(selectedUiuxComponentData || {}),
-      ...selectedBrandPreviewContract,
-      brand_variant: selectedUiuxComponentData?.brand_variant || selectedComponentData?.brand_variant || selectedBrandPreviewContract.brand_variant,
-      primary_color: selectedBrandPreviewContract.primary_color,
-      primary_color_dark: selectedBrandPreviewContract.primary_color_dark,
-      accent_color: selectedBrandPreviewContract.accent_color,
-      secondary_color: selectedBrandPreviewContract.secondary_color,
-      background_color: selectedUiuxComponentData?.background_color || selectedComponentData?.background_color || selectedBrandPreviewContract.background_color,
-      text_color: selectedUiuxComponentData?.text_color || selectedComponentData?.text_color || selectedBrandPreviewContract.text_color,
-      border_color: selectedUiuxComponentData?.border_color || selectedComponentData?.border_color || selectedBrandPreviewContract.border_color,
-      custom_renderer_code: '',
-    }
-    : null;
-  const selectedSchemaPreview = {
-    section: adminSectionId,
-    subsection: selectedComponentKey || 'full_section',
-    componentPurpose: selectedComponentData?.purpose || 'No component purpose defined.',
-    renderer: selectedRendererName,
-    required: selectedComponentData?.required !== false,
-    defaultDummyJson: selectedDefaultJson,
-  };
-  const contextSidebarTitle = activeTab === 'Renderer Mapping'
-    ? 'Renderer Contract JSON'
-    : activeTab === 'Prompt Management'
-      ? 'Prompt Context JSON'
-      : activeTab === 'Validation Rules'
-        ? 'Validation JSON'
-        : activeTab === 'JSON Schema'
-          ? 'Schema JSON'
-          : isUiUxMode
-            ? 'UI/UX JSON'
-            : 'Architecture JSON';
-  const contextSidebarModeLabel = isJsonEditing ? '(Editing)' : '(Live State)';
-  const contextSidebarMetrics = activeTab === 'Renderer Mapping'
-    ? [
-      { label: 'Renderer Linked', score: selectedRendererName !== 'default_renderer' ? 100 : 70 },
-      { label: 'Preview Contract', score: selectedComponentData ? 100 : 0 },
-      { label: 'Content Bridge', score: selectedPreviewJson ? 100 : 0 },
-    ]
-    : activeTab === 'Validation Rules'
-      ? [
-        { label: isUiUxMode ? 'WCAG Coverage' : 'Schema Coverage', score: 95 },
-        { label: isUiUxMode ? 'Accessibility Rules' : 'Required Fields', score: 92 },
-        { label: 'Preview Gate', score: 100 },
-      ]
-      : activeTab === 'Prompt Management'
-        ? [
-          { label: 'Prompt Target', score: selectedComponentKey ? 100 : 70 },
-          { label: 'Dummy Context', score: dummyContext.subtopic ? 100 : 60 },
-          { label: 'Content Manager Link', score: 100 },
-        ]
-        : [
-          { label: isUiUxMode ? 'Accessibility Score' : 'Readability Threshold', score: 92 },
-          { label: isUiUxMode ? 'Contrast Ratio' : 'Analogy Quality Score', score: 93 },
-          { label: isUiUxMode ? 'Responsive Check' : 'Confusion Prevention', score: 94 },
-        ];
+
+  // rendererSubcomponents useMemo MUST be called before early return to satisfy Rules of Hooks
   const rendererSubcomponents = React.useMemo(() => {
     const configured = selectedComponentData?.ui_subcomponents;
     const configuredParts = Array.isArray(configured) ? configured as Array<Record<string, unknown>> : [];
@@ -667,10 +509,73 @@ export default function GlobalArchitecturePage() {
         { ...commonDefaults[4], label: 'Takeaway Number Badges', role: 'Number badge fill color' },
       ],
     };
+    
+    // Educational Architecture component-specific part presets
+    const educationalPartPresets: Record<string, Array<Record<string, unknown>>> = {
+      hero_summary: [
+        { ...commonDefaults[0] },
+        { ...commonDefaults[1] },
+        { ...commonDefaults[4], label: 'Icon Badge', role: 'Subtopic icon badge color' },
+        { ...commonDefaults[5], label: 'Difficulty Badge', role: 'Difficulty level badge' },
+        { ...commonDefaults[7], label: 'Hero Title', role: 'Main subtopic heading' },
+        { ...commonDefaults[8], label: 'Hero Description', role: 'Subtopic intro text' },
+        { ...commonDefaults[10], label: 'Stat Cards', role: 'Learning blocks and last updated cards' },
+        { ...commonDefaults[11], label: 'Stat Values', role: 'Stat number values' },
+        { ...commonDefaults[12], label: 'Primary CTA', role: 'Start learning button' },
+        { ...commonDefaults[13], label: 'Secondary CTA', role: 'View roadmap button' },
+      ],
+      learning_outcome_snapshot: [
+        { ...commonDefaults[0] },
+        { ...commonDefaults[1] },
+        { ...commonDefaults[7], label: 'Outcome Title', role: 'Learning outcomes heading' },
+        { ...commonDefaults[2], label: 'Outcome Items', role: 'Individual outcome list items' },
+        { ...commonDefaults[4], label: 'Outcome Icons', role: 'Checkmark or star icons' },
+      ],
+      section_roadmap: [
+        { ...commonDefaults[0] },
+        { ...commonDefaults[1] },
+        { ...commonDefaults[7], label: 'Roadmap Title', role: 'Section roadmap heading' },
+        { ...commonDefaults[2], label: 'Module Cards', role: 'Content and task module cards' },
+        { ...commonDefaults[4], label: 'Module Badges', role: 'Module type badges' },
+        { ...commonDefaults[3], label: 'Module CTA Buttons', role: 'Start/Go buttons in cards' },
+      ],
+      progress_summary: [
+        { ...commonDefaults[0] },
+        { ...commonDefaults[1] },
+        { ...commonDefaults[7], label: 'Progress Title', role: 'Progress summary heading' },
+        { ...commonDefaults[13], label: 'Progress Ring', role: 'Circular progress indicator' },
+        { ...commonDefaults[2], label: 'Checklist Items', role: 'Completion checklist cards' },
+        { ...commonDefaults[4], label: 'Check Icons', role: 'Completed item checkmarks' },
+      ],
+      recommended_learning_flow: [
+        { ...commonDefaults[0] },
+        { ...commonDefaults[1] },
+        { ...commonDefaults[7], label: 'Flow Title', role: 'Recommended flow heading' },
+        { ...commonDefaults[8], label: 'Flow Description', role: 'Flow intro text' },
+        { ...commonDefaults[2], label: 'Flow Step Cards', role: 'Sequential step cards' },
+        { ...commonDefaults[4], label: 'Step Numbers', role: 'Step number badges' },
+      ],
+      readiness_context: [
+        { ...commonDefaults[0] },
+        { ...commonDefaults[1] },
+        { ...commonDefaults[7], label: 'Context Title', role: 'Readiness context heading' },
+        { ...commonDefaults[2], label: 'Prerequisite Cards', role: 'Prerequisites and success criteria' },
+        { ...commonDefaults[4], label: 'Context Icons', role: 'Prerequisite check icons' },
+      ],
+    };
     const notesSubsectionKey = String(selectedPipelineSubsectionKey || selectedComponentKey || '');
-    const defaults = String(adminSectionId) === 'notes' && notesPartPresets[notesSubsectionKey]
-      ? notesPartPresets[notesSubsectionKey]
-      : commonDefaults;
+    const componentKey = String(selectedComponentKey || '');
+    
+    // Determine which preset to use based on section type and component
+    let defaults: Array<Record<string, unknown>>;
+    if (String(adminSectionId) === 'notes' && notesPartPresets[notesSubsectionKey]) {
+      defaults = notesPartPresets[notesSubsectionKey];
+    } else if (educationalPartPresets[componentKey]) {
+      defaults = educationalPartPresets[componentKey];
+    } else {
+      // Fallback to common defaults if no specific preset exists
+      defaults = commonDefaults;
+    }
     const defaultIds = defaults.map((part) => part.id);
     const extraParts: Array<Record<string, unknown>> = interactiveParts
       .filter((id) => !defaultIds.includes(id))
@@ -687,7 +592,7 @@ export default function GlobalArchitecturePage() {
       const saved = configuredParts.find((item) => String(item.id || '') === part.id);
       const savedHasManualColor = Boolean(saved?.color_override);
       const savedWithoutImplicitColor = savedHasManualColor ? saved : saved ? { ...saved, color: part.color } : {};
-      const savedUserControls = savedWithoutImplicitColor && String(adminSectionId) === 'notes'
+      const savedUserControls = savedWithoutImplicitColor && (String(adminSectionId) === 'notes' || educationalPartPresets[componentKey])
         ? Object.fromEntries(
           Object.entries(savedWithoutImplicitColor).filter(([key]) => !['label', 'role'].includes(key))
         )
@@ -700,7 +605,7 @@ export default function GlobalArchitecturePage() {
       };
     });
     const mergedDefaultIds = mergedDefaults.map((part) => part.id);
-    const unknownConfiguredParts = String(adminSectionId) === 'notes'
+    const unknownConfiguredParts = String(adminSectionId) === 'notes' || educationalPartPresets[componentKey]
       ? []
       : configuredParts.filter((part) => !mergedDefaultIds.includes(String(part.id || '')));
 
@@ -727,7 +632,191 @@ export default function GlobalArchitecturePage() {
     selectedBrandPreviewContract.secondary_color,
     selectedBrandPreviewContract.border_color,
     selectedBrandPreviewContract.text_color,
+    algorithmPalette.primary,
+    algorithmPalette.mixed,
+    algorithmPalette.secondary,
+    algorithmPalette.border,
+    algorithmPalette.text,
+    algorithmPalette.surface,
+    algorithmPalette.reverseMixed,
   ]);
+
+  // Early return AFTER all hooks are called
+  if (!isMounted || !activeData) return <div className="p-10 font-bold text-slate-500">Loading Architecture...</div>;
+
+  // Continue with computed values that depend on activeData
+  const activeComponentEntries = Object.entries(activeComponentMap) as [string, ComponentArchitecture][];
+  const universalComponents = isUiUxMode ? [] : Object.entries(activeData.universal_architecture_fixed || {}) as [string, ComponentArchitecture][];
+  const totalComponents = isUiUxMode ? Object.keys(activeData.component_design_system || {}).length : universalComponents.length;
+  const jsonString = JSON.stringify({ [activeSectionKey]: activeData }, null, 2);
+  const educationalKey = educationalEntry?.[0] || activeSectionKey;
+  const educationalData = educationalEntry?.[1] || activeData;
+  const uiuxKey = uiuxEntry?.[0] || '';
+  const workflowQuery = new URLSearchParams({
+    section: String(canonicalSectionId),
+    domain: dummyContext.domain,
+    subject: dummyContext.subject,
+    topic: dummyContext.topic,
+    subtopic: dummyContext.subtopic,
+    subtopicId: dummyContext.subtopicId,
+    previewTarget: learnerPreviewTarget,
+    source: 'global-architecture',
+  });
+  if (selectedPipelineSubsectionKey) workflowQuery.set('subsection', selectedPipelineSubsectionKey);
+  const contentManagerQuery = new URLSearchParams(workflowQuery);
+  contentManagerQuery.set('section', String(adminSectionId));
+  contentManagerQuery.set('requirePreviewApproval', 'true');
+  const selectedWorkflowUrls = {
+    visualGuide: `/tools/visual-guide?section=${canonicalSectionId}${selectedPipelineSubsectionKey ? `&subsection=${selectedPipelineSubsectionKey}` : ''}`,
+    promptGenerator: `/tools/prompt-generator?${workflowQuery.toString()}&autoGenerate=true`,
+    contentManager: `/tools/content-manager?${contentManagerQuery.toString()}`,
+    learnerPreview: `${LEARNER_PREVIEW_TARGETS[learnerPreviewTarget].baseUrl}/start-learning/subtopic/${dummyContext.subtopicId}${canonicalSectionId ? `?tab=${canonicalSectionId}` : ''}`,
+  };
+  
+  // Additional computed values needed in JSX
+  const selectedUiuxComponentData = selectedComponentKey
+    ? resolveComponentConfig([
+      uiuxData?.component_design_system,
+      activeData.component_design_system,
+    ])
+    : null;
+  const selectedRendererMapping = selectedComponentKey
+    ? (
+      selectedComponentLookupKeys.reduce<Record<string, unknown> | null>((found, key) => (
+        found ||
+        activeData.renderer_mapping_engine?.[key] ||
+        uiuxData?.renderer_mapping_engine?.[key] ||
+        null
+      ), null) ||
+      null
+    )
+    : null;
+  const activeComponentKeys = Object.keys(activeComponentMap);
+  const activeLearningFlow = (
+    Array.isArray(activeData.learning_progression_engine?.default_flow)
+      ? activeData.learning_progression_engine.default_flow
+      : activeComponentKeys
+  ) as string[];
+  const selectedComponentIndex = selectedComponentKey ? Math.max(0, activeLearningFlow.indexOf(selectedComponentKey)) : 0;
+  const selectedDefaultJson = getDefaultPipelineJson(String(adminSectionId), selectedPipelineSubsectionKey || selectedComponentKey, dummyContext.subtopic);
+  const selectedPreviewJson = normalizePreviewContentForStrictSchema(
+    String(adminSectionId),
+    selectedPipelineSubsectionKey || selectedComponentKey,
+    selectedComponentData?.preview_content || selectedDefaultJson,
+    selectedDefaultJson
+  );
+  const selectedRendererName = String(
+    selectedComponentData?.renderer ||
+    selectedComponentData?.component ||
+    (selectedRendererMapping as Record<string, unknown> | null)?.component ||
+    'default_renderer'
+  );
+  const selectedRendererBrandVariant = String(selectedComponentData?.brand_variant || '');
+  const effectiveRendererBrandVariant = selectedRendererBrandVariant && selectedRendererBrandVariant !== 'shared'
+    ? selectedRendererBrandVariant
+    : selectedBrandPreviewContract.brand_variant;
+  const selectedGeneratedRendererCode = selectedComponentData
+    ? buildStarterHtmlFromRenderer(selectedPreviewJson, {
+      ...selectedBrandPreviewContract,
+      ...(selectedComponentData as Record<string, unknown>),
+      primary_color: selectedComponentData?.primary_color || selectedBrandPreviewContract.primary_color,
+      primary_color_dark: selectedComponentData?.primary_color_dark || selectedBrandPreviewContract.primary_color_dark,
+      accent_color: selectedComponentData?.accent_color || selectedBrandPreviewContract.accent_color,
+      secondary_color: selectedComponentData?.secondary_color || selectedBrandPreviewContract.secondary_color,
+    })
+    : '';
+  const selectedCustomRendererCode = String(selectedComponentData?.custom_renderer_code || '');
+  const selectedVisibleRendererCode = selectedCustomRendererCode || selectedGeneratedRendererCode;
+  const selectedRendererPreviewContract = selectedComponentData
+    ? {
+      ...(selectedComponentData as Record<string, unknown>),
+      custom_renderer_code: selectedCustomRendererCode,
+    }
+    : null;
+  const effectiveRendererPreviewContract = selectedRendererPreviewContract
+    ? {
+      ...selectedRendererPreviewContract,
+      brand_variant: effectiveRendererBrandVariant,
+      primary_color: selectedComponentData?.primary_color || selectedBrandPreviewContract.primary_color,
+      primary_color_dark: selectedComponentData?.primary_color_dark || selectedBrandPreviewContract.primary_color_dark,
+      accent_color: selectedComponentData?.accent_color || selectedBrandPreviewContract.accent_color,
+      secondary_color: selectedComponentData?.secondary_color || selectedBrandPreviewContract.secondary_color,
+      background_color: selectedComponentData?.background_color || selectedBrandPreviewContract.background_color,
+      text_color: selectedComponentData?.text_color || selectedBrandPreviewContract.text_color,
+      border_color: selectedComponentData?.border_color || selectedBrandPreviewContract.border_color,
+    }
+    : null;
+  const universalArchitecturePreviewContract = selectedRendererPreviewContract
+    ? {
+      ...selectedRendererPreviewContract,
+      ...(selectedUiuxComponentData || {}),
+      ...selectedBrandPreviewContract,
+      brand_variant: selectedUiuxComponentData?.brand_variant || selectedComponentData?.brand_variant || selectedBrandPreviewContract.brand_variant,
+      primary_color: selectedBrandPreviewContract.primary_color,
+      primary_color_dark: selectedBrandPreviewContract.primary_color_dark,
+      accent_color: selectedBrandPreviewContract.accent_color,
+      secondary_color: selectedBrandPreviewContract.secondary_color,
+      background_color: selectedUiuxComponentData?.background_color || selectedComponentData?.background_color || selectedBrandPreviewContract.background_color,
+      text_color: selectedUiuxComponentData?.text_color || selectedComponentData?.text_color || selectedBrandPreviewContract.text_color,
+      border_color: selectedUiuxComponentData?.border_color || selectedComponentData?.border_color || selectedBrandPreviewContract.border_color,
+      custom_renderer_code: '',
+    }
+    : null;
+  const rendererColorControls = [
+    ['primary_color', 'Primary Color 1', selectedBrandPreviewContract.primary_color],
+    ['primary_color_dark', 'Primary Color 2', selectedBrandPreviewContract.primary_color_dark],
+    ['accent_color', 'Accent / CTA Color', selectedBrandPreviewContract.accent_color],
+    ['secondary_color', 'Secondary Brand Color', selectedBrandPreviewContract.secondary_color],
+    ['background_color', 'Background Color', selectedBrandPreviewContract.background_color],
+    ['text_color', 'Text Color', selectedBrandPreviewContract.text_color],
+    ['border_color', 'Border Color', selectedBrandPreviewContract.border_color],
+  ] as const;
+  
+  const selectedSchemaPreview = {
+    section: adminSectionId,
+    subsection: selectedComponentKey || 'full_section',
+    componentPurpose: selectedComponentData?.purpose || 'No component purpose defined.',
+    renderer: selectedRendererName,
+    required: selectedComponentData?.required !== false,
+    defaultDummyJson: selectedDefaultJson,
+  };
+  
+  const contextSidebarTitle = activeTab === 'Renderer Mapping'
+    ? 'Renderer Contract JSON'
+    : activeTab === 'Prompt Management'
+      ? 'Prompt Context JSON'
+      : activeTab === 'Validation Rules'
+        ? 'Validation JSON'
+        : activeTab === 'JSON Schema'
+          ? 'Schema JSON'
+          : isUiUxMode
+            ? 'UI/UX JSON'
+            : 'Architecture JSON';
+  const contextSidebarModeLabel = isJsonEditing ? '(Editing)' : '(Live State)';
+  const contextSidebarMetrics = activeTab === 'Renderer Mapping'
+    ? [
+      { label: 'Renderer Linked', score: selectedRendererName !== 'default_renderer' ? 100 : 70 },
+      { label: 'Preview Contract', score: selectedComponentData ? 100 : 0 },
+      { label: 'Content Bridge', score: selectedPreviewJson ? 100 : 0 },
+    ]
+    : activeTab === 'Validation Rules'
+      ? [
+        { label: isUiUxMode ? 'WCAG Coverage' : 'Schema Coverage', score: 95 },
+        { label: isUiUxMode ? 'Accessibility Rules' : 'Required Fields', score: 92 },
+        { label: 'Preview Gate', score: 100 },
+      ]
+      : activeTab === 'Prompt Management'
+        ? [
+          { label: 'Prompt Target', score: selectedComponentKey ? 100 : 70 },
+          { label: 'Dummy Context', score: dummyContext.subtopic ? 100 : 60 },
+          { label: 'Content Manager Link', score: 100 },
+        ]
+        : [
+          { label: isUiUxMode ? 'Accessibility Score' : 'Readability Threshold', score: 92 },
+          { label: isUiUxMode ? 'Contrast Ratio' : 'Analogy Quality Score', score: 93 },
+          { label: isUiUxMode ? 'Responsive Check' : 'Confusion Prevention', score: 94 },
+        ];
+  
   const selectedRendererSubcomponent = rendererSubcomponents.find((item) => item.id === selectedRendererSubcomponentId) || rendererSubcomponents[0];
   const selectedRendererSubcomponentRecord = (selectedRendererSubcomponent || {}) as Record<string, unknown>;
 

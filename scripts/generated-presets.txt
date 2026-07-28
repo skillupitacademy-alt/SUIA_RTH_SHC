@@ -1,0 +1,27 @@
+    const notesPartPresets: Record<string, Array<Record<string, unknown>>> = {
+      concept_card: [
+        { ...commonDefaults[0], label: 'Hero surface' },
+        { ...commonDefaults[1], label: 'Hero title block' },
+        { ...commonDefaults[4], label: 'JS Badge' },
+        { ...commonDefaults[5], label: 'Difficulty Badge' },
+        { ...commonDefaults[6], label: 'Brand Badge' },
+        { ...commonDefaults[7], label: 'Title Text' },
+        { ...commonDefaults[8], label: 'Description Text' },
+        { ...commonDefaults[12], label: 'Quick Look Pills Container' },
+        { id: 'quick_look_pill_0', label: 'Definition Pill', role: 'Component part', layout: 'inline', color: algorithmPalette.primary },
+        { id: 'quick_look_pill_1', label: 'Mechanics Pill', role: 'Component part', layout: 'inline', color: algorithmPalette.primary },
+        { id: 'quick_look_pill_2', label: 'Syntax Pill', role: 'Component part', layout: 'inline', color: algorithmPalette.primary },
+        { id: 'quick_look_pill_3', label: 'Examples Pill', role: 'Component part', layout: 'inline', color: algorithmPalette.primary },
+        { ...commonDefaults[2], label: 'Simple Words Preview Card' },
+        { id: 'preview_label', label: 'Simple Words Label', role: 'Component part', layout: 'inline', color: algorithmPalette.primary },
+        { id: 'preview_title', label: 'Preview Card Title', role: 'Component part', layout: 'inline', color: algorithmPalette.primary },
+        { id: 'preview_description', label: 'Preview Card Description', role: 'Component part', layout: 'inline', color: algorithmPalette.primary },
+        { ...commonDefaults[13], label: 'Progress Bar' },
+      ],
+      definition_block: [
+        { ...commonDefaults[0], label: 'Definition shell' },
+        { ...commonDefaults[1], label: 'Concept badge and headline' },
+        { ...commonDefaults[2], label: 'Definition callout' },
+        { ...commonDefaults[3], label: 'Explanation cards' },
+      ],
+    };

@@ -82,7 +82,7 @@ export const NotesWireframe: React.FC<WireframeProps> = ({
         </div>
         <div className="h-20 rounded bg-slate-900 p-3 font-mono text-xs text-emerald-400 flex flex-col gap-1">
           <div>items = []</div>
-          <div>items.append("new")</div>
+          <div>items.append(&quot;new&quot;)</div>
         </div>
         <span className="text-[9px] font-black text-slate-400 mt-2 block">Syntax Block / SyntaxStructure (syntax_block)</span>
       </div>
