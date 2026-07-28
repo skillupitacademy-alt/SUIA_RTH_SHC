@@ -204,6 +204,40 @@ function rendererForSubsection(section: TutorialSectionContract, subsectionId: s
   return base;
 }
 
+/**
+ * Get enabled components from Educational Architecture for use in UI/UX Architecture
+ * Filters component_design_system to only include components where enabled === true
+ */
+function getEnabledComponents(educationalArch: JsonRecord): string[] {
+  const universalArchFixed = educationalArch.universal_architecture_fixed as Record<string, JsonRecord> | undefined;
+  if (!universalArchFixed) return [];
+  
+  return Object.entries(universalArchFixed)
+    .filter(([, config]) => config.enabled === true)
+    .map(([key]) => key);
+}
+
+/**
+ * Filter UI/UX Architecture to only include enabled components from Educational Architecture
+ * Currently unused but kept for future filtering needs
+ */
+// function filterUiuxByEnabledComponents(
+//   uiuxArch: JsonRecord,
+//   enabledComponents: string[]
+// ): JsonRecord {
+//   const componentDesignSystem = uiuxArch.component_design_system as Record<string, JsonRecord> | undefined;
+//   if (!componentDesignSystem) return uiuxArch;
+  
+//   const filteredComponents = Object.fromEntries(
+//     Object.entries(componentDesignSystem).filter(([key]) => enabledComponents.includes(key))
+//   );
+  
+//   return {
+//     ...uiuxArch,
+//     component_design_system: filteredComponents,
+//   };
+// }
+
 function buildEducationalArchitecture(section: TutorialSectionContract, existing?: JsonRecord): JsonRecord {
   const sectionSpec = SECTIONS_SPECS.find((spec) => normalizeSectionId(spec.id) === section.dbType);
   const subsections = sectionSpec?.subsections ?? [];
@@ -216,10 +250,22 @@ function buildEducationalArchitecture(section: TutorialSectionContract, existing
       return [
         subsection.id,
         {
+          // Component Selection & Status (NEW)
           enabled: true,
           required: true,
+          priority: 4, // 1-5 scale, default to 4 (high importance)
           order: index + 1,
+          
+          // Educational Properties (NEW)
           purpose: subsection.purpose,
+          learning_objective: subsection.purpose || 'Help learners understand this concept clearly and build foundation for next topics.',
+          content_requirements: subsection.components || [],
+          
+          // Dependencies (NEW)
+          prerequisites: index === 0 ? [] : [subsections[index - 1].id], // Sequential by default
+          enables: index < subsections.length - 1 ? [subsections[index + 1].id] : [],
+          
+          // Existing properties
           renderer: rendererForSubsection(section, subsection.id),
           visible_components: subsection.components,
           visual_guide_subsection: subsection.id,
@@ -264,6 +310,11 @@ function buildEducationalArchitecture(section: TutorialSectionContract, existing
       coverage_source: 'canonical_contracts_visual_guide_generated',
       brand_scope: SUPPORTED_BRANDS,
       supported_domains: SUPPORTED_DOMAINS,
+      
+      // Educational Architecture Status (NEW)
+      finalized_status: existing?.metadata?.finalized_status || 'finalized', // Default to finalized for backward compatibility
+      finalized_at: existing?.metadata?.finalized_at || new Date().toISOString(),
+      finalized_by: existing?.metadata?.finalized_by || 'system_migration',
     },
     hierarchy: {
       parent: 'tutorial_subtopic',
@@ -501,4 +552,51 @@ export function buildGlobalArchitectureRegistry() {
 
     return acc;
   }, {});
+}
+
+/**
+ * Get enabled components for a specific section
+ * @param architectures - Full architecture registry
+ * @param sectionType - Section type (e.g., 'notes', 'overview')
+ * @returns Array of enabled component IDs
+ */
+export function getEnabledComponentsForSection(
+  architectures: Record<string, JsonRecord>,
+  sectionType: string
+): string[] {
+  const educationalKey = Object.keys(architectures).find(
+    (key) => !key.includes('uiux') && architectures[key].metadata?.section_type === sectionType
+  );
+  
+  if (!educationalKey) return [];
+  return getEnabledComponents(architectures[educationalKey]);
+}
+
+/**
+ * Check if Educational Architecture is finalized for a section
+ * @param architectures - Full architecture registry  
+ * @param sectionType - Section type (e.g., 'notes', 'overview')
+ * @returns Finalization status
+ */
+export function isEducationalArchitectureFinalized(
+  architectures: Record<string, JsonRecord>,
+  sectionType: string
+): { isFinalized: boolean; status: string; finalizedAt: string | null } {
+  const educationalKey = Object.keys(architectures).find(
+    (key) => !key.includes('uiux') && architectures[key].metadata?.section_type === sectionType
+  );
+  
+  if (!educationalKey) {
+    return { isFinalized: false, status: 'draft', finalizedAt: null };
+  }
+  
+  const metadata = architectures[educationalKey].metadata as Record<string, unknown> | undefined;
+  const status = String(metadata?.finalized_status || 'draft');
+  const finalizedAt = metadata?.finalized_at ? String(metadata.finalized_at) : null;
+  
+  return {
+    isFinalized: status === 'finalized',
+    status,
+    finalizedAt,
+  };
 }

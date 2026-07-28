@@ -7,11 +7,55 @@ import {
   Grid, Globe, Calendar, Layout, Zap, Brain, Edit2, Palette,
   RotateCcw, ShieldCheck, Plus, ChevronRight, Eye, Search, Monitor, Tablet, Smartphone, Box,
   Settings, ArrowRight, Copy, GripVertical, Type, Archive, History, FileText, CheckSquare,
-  Sun, Moon, Trash2, MonitorSmartphone, Code, ExternalLink, ListOrdered, Activity, Users, Heart
+  Sun, Moon, Trash2, MonitorSmartphone, Code, ExternalLink, Activity, Users, Heart, X
 } from 'lucide-react';
-import { buildGlobalArchitectureRegistry } from './global-architecture-registry';
-import { getStrictSectionJsonTemplate } from '../../tools/prompt-generator/lib/prompt-templates';
-import { ContractAwareComponentPreview } from '../../tools/content-manager/components/ContractAwareComponentPreview';
+import { buildGlobalArchitectureRegistry, getEnabledComponentsForSection, isEducationalArchitectureFinalized } from './global-architecture-registry';
+import type { ArchitectureStatus, EducationalComponentConfig, UIUXComponentConfig, ComponentPriority } from './types';
+
+// New Architecture Components (Phase 2 & 3)
+import {
+  ComponentSelectionTab,
+  EducationalPropertiesTab,
+  LearningFlowTab,
+  UIUXGatingBanner,
+  VisualStylingTab,
+  ResponsiveDesignTab,
+  AccessibilityTab,
+  PreviewModal,
+} from './components';
+
+// Legacy Tabs (Migration in Progress)
+import {
+  UniversalArchitectureTab,
+  SectionSequenceTab,
+  ComponentDetailsTab,
+  LearningProgressionTab,
+  PromptManagementTab,
+  LegacyPromptManagementTab,
+  ValidationRulesTab,
+  JSONSchemaTab,
+  RendererMappingTab,
+} from './legacy-tabs';
+
+// Extracted Utilities and Hooks
+import { 
+  ARCHITECTURE_STORAGE_KEY,
+  LEGACY_STORAGE_KEY_V1,
+  DEFAULT_DUMMY_CONTEXT,
+  LEARNER_PREVIEW_TARGETS,
+  PREVIEW_TARGET_BRAND_CONTRACTS,
+  COLOR_COMBINATION_OPTIONS,
+} from './constants';
+import {
+  formatTitle,
+  getIconForComponent,
+  getColorForComponent,
+  getDefaultPipelineJson,
+  normalizeHexColor,
+  mixHexColors,
+} from './utils';
+import { useArchitectureHandlers } from './useArchitectureHandlers';
+import { useRendererSubcomponents } from './useRendererSubcomponents';
 
 interface ComponentArchitecture {
   purpose?: string;
@@ -53,7 +97,8 @@ const getColorForComponent = (index: number) => {
   return colors[index % colors.length];
 };
 
-const ARCHITECTURE_STORAGE_KEY = 'skillhubcore.globalArchitecture.customizations.v1';
+const ARCHITECTURE_STORAGE_KEY = 'skillhubcore.globalArchitecture.customizations.v2';
+const LEGACY_STORAGE_KEY_V1 = 'skillhubcore.globalArchitecture.customizations.v1';
 const PIPELINE_PAYLOAD_STORAGE_KEY = 'skillhubcore.globalArchitecture.pipelinePayload.v1';
 
 const DEFAULT_DUMMY_CONTEXT = {
@@ -308,6 +353,8 @@ export default function GlobalArchitecturePage() {
   const [isLoadingDbArchitecture, setIsLoadingDbArchitecture] = useState(false);
   const [dbLoadMessage, setDbLoadMessage] = useState('Using dummy/generated architecture context.');
   const [dbLoadedSectionJson, setDbLoadedSectionJson] = useState<unknown>(null);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [previewComponentId, setPreviewComponentId] = useState<string | null>(null);
 
   const activeData = architectures[activeSectionKey];
   
@@ -332,14 +379,75 @@ export default function GlobalArchitecturePage() {
 
   useEffect(() => {
     try {
+      // Try loading v2 first
       const stored = window.localStorage.getItem(ARCHITECTURE_STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
         if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
           setArchitectures((prev) => ({ ...prev, ...parsed }));
         }
+      } else {
+        // Try migrating from v1 if it exists
+        const legacyStored = window.localStorage.getItem(LEGACY_STORAGE_KEY_V1);
+        if (legacyStored) {
+          const parsed = JSON.parse(legacyStored);
+          if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+            // Migrate v1 to v2 by adding new properties with defaults
+            const migrated = Object.fromEntries(
+              Object.entries(parsed).map(([key, value]) => {
+                const arch = value as Record<string, unknown>;
+                const isEducational = arch.universal_architecture_fixed;
+                
+                if (isEducational) {
+                  // Add new Educational Architecture properties
+                  const components = arch.universal_architecture_fixed as Record<string, Record<string, unknown>>;
+                  const componentKeys = Object.keys(components);
+                  const migratedComponents = Object.fromEntries(
+                    Object.entries(components).map(([compKey, compValue], index) => [
+                      compKey,
+                      {
+                        ...compValue,
+                        enabled: true, // Default all to enabled
+                        required: compValue.required ?? true,
+                        priority: 4, // Default priority
+                        order: compValue.order || index + 1,
+                        learning_objective: compValue.learning_objective || compValue.purpose || 'Help learners understand this concept.',
+                        content_requirements: compValue.content_requirements || compValue.visible_components || [],
+                        prerequisites: compValue.prerequisites || (index === 0 ? [] : [componentKeys[index - 1]]),
+                        enables: compValue.enables || (index < componentKeys.length - 1 ? [componentKeys[index + 1]] : []),
+                      }
+                    ])
+                  );
+                  
+                  return [
+                    key,
+                    {
+                      ...arch,
+                      universal_architecture_fixed: migratedComponents,
+                      metadata: {
+                        ...((arch.metadata as Record<string, unknown>) || {}),
+                        finalized_status: 'finalized', // Legacy data is considered finalized
+                        finalized_at: new Date().toISOString(),
+                        finalized_by: 'v1_migration',
+                      },
+                    },
+                  ];
+                }
+                
+                return [key, value];
+              })
+            );
+            
+            setArchitectures((prev) => ({ ...prev, ...migrated as any }));
+            // Save migrated data to v2 storage
+            window.localStorage.setItem(ARCHITECTURE_STORAGE_KEY, JSON.stringify(migrated));
+            // Keep v1 as backup
+            console.log('Migrated v1 architecture data to v2');
+          }
+        }
       }
-    } catch {
+    } catch (error) {
+      console.error('Error loading architecture customizations:', error);
       // Ignore corrupted local customizations; canonical registry still loads.
     } finally {
       setCustomizationsLoaded(true);
@@ -1115,10 +1223,160 @@ export default function GlobalArchitecturePage() {
     showActionMessage('New custom component added locally.');
   };
 
-  const tabs = [
-    'Universal Architecture', 'Section Sequence', 'Component Details', 
-    'Learning Progression', 'Prompt Management', 'Renderer Mapping', 'Validation Rules', 'JSON Schema'
+  // Determine tabs based on architecture mode
+  const educationalTabs = [
+    'Component Selection',
+    'Educational Properties',
+    'Learning Flow & Requirements',
   ];
+  
+  const uiuxTabs = [
+    'Visual Styling',
+    'Responsive Design',
+    'Accessibility',
+  ];
+  
+  const legacyTabs = [
+    'Universal Architecture',
+    'Section Sequence',
+    'Component Details',
+    'Learning Progression',
+    'Prompt Management',
+    'Renderer Mapping',
+    'Validation Rules',
+    'JSON Schema',
+  ];
+  
+  const tabs = isUiUxMode ? [...uiuxTabs, ...legacyTabs] : [...educationalTabs, ...legacyTabs];
+  
+  // Extract finalization status from Educational Architecture
+  const finalizationInfo = isEducationalArchitectureFinalized(architectures, String(canonicalSectionId));
+  const isEducationalFinalized = finalizationInfo.isFinalized;
+  const finalizationStatus = finalizationInfo.status as ArchitectureStatus;
+  
+  // Calculate enabled components count
+  const enabledComponentIds = getEnabledComponentsForSection(architectures, String(canonicalSectionId));
+  const enabledCount = enabledComponentIds.length;
+  
+  // Handler functions for new tabs
+  const handleToggleEnabled = (componentId: string, enabled: boolean) => {
+    if (!educationalKey) return;
+    setArchitectures((prev) => {
+      const eduArch = prev[educationalKey];
+      const components = eduArch?.universal_architecture_fixed as Record<string, Record<string, unknown>> || {};
+      return {
+        ...prev,
+        [educationalKey]: {
+          ...eduArch,
+          universal_architecture_fixed: {
+            ...components,
+            [componentId]: {
+              ...components[componentId],
+              enabled,
+            },
+          },
+        },
+      };
+    });
+    showActionMessage(`Component ${enabled ? 'enabled' : 'disabled'}.`);
+  };
+  
+  const handleUpdatePriority = (componentId: string, priority: ComponentPriority) => {
+    if (!educationalKey) return;
+    setArchitectures((prev) => {
+      const eduArch = prev[educationalKey];
+      const components = eduArch?.universal_architecture_fixed as Record<string, Record<string, unknown>> || {};
+      return {
+        ...prev,
+        [educationalKey]: {
+          ...eduArch,
+          universal_architecture_fixed: {
+            ...components,
+            [componentId]: {
+              ...components[componentId],
+              priority,
+            },
+          },
+        },
+      };
+    });
+    showActionMessage('Priority updated.');
+  };
+  
+  const handleUpdateEducationalConfig = (componentId: string, config: Partial<EducationalComponentConfig>) => {
+    if (!educationalKey) return;
+    setArchitectures((prev) => {
+      const eduArch = prev[educationalKey];
+      const components = eduArch?.universal_architecture_fixed as Record<string, Record<string, unknown>> || {};
+      return {
+        ...prev,
+        [educationalKey]: {
+          ...eduArch,
+          universal_architecture_fixed: {
+            ...components,
+            [componentId]: {
+              ...components[componentId],
+              ...config,
+            },
+          },
+        },
+      };
+    });
+    showActionMessage('Educational configuration saved.');
+  };
+  
+  const handleUpdateFinalizationStatus = (status: ArchitectureStatus) => {
+    if (!educationalKey) return;
+    setArchitectures((prev) => {
+      const eduArch = prev[educationalKey];
+      return {
+        ...prev,
+        [educationalKey]: {
+          ...eduArch,
+          metadata: {
+            ...((eduArch?.metadata as Record<string, unknown>) || {}),
+            finalized_status: status,
+            finalized_at: status === 'finalized' ? new Date().toISOString() : eduArch?.metadata?.finalized_at,
+            finalized_by: status === 'finalized' ? 'admin_user' : eduArch?.metadata?.finalized_by,
+          },
+        },
+      };
+    });
+    showActionMessage(`Educational Architecture ${status}.`);
+  };
+  
+  const handleUpdateVisualStyling = (componentId: string, config: Partial<UIUXComponentConfig>) => {
+    if (!uiuxKey) return;
+    setArchitectures((prev) => {
+      const uiuxArch = prev[uiuxKey];
+      const components = uiuxArch?.component_design_system as Record<string, Record<string, unknown>> || {};
+      return {
+        ...prev,
+        [uiuxKey]: {
+          ...uiuxArch,
+          component_design_system: {
+            ...components,
+            [componentId]: {
+              ...components[componentId],
+              ...config,
+            },
+          },
+        },
+      };
+    });
+    showActionMessage('Visual styling saved.');
+  };
+  
+  const handleNavigateToEducational = () => {
+    // Switch to Educational Architecture
+    const eduKey = Object.keys(architectures).find(
+      (key) => !key.includes('uiux') && architectures[key].metadata?.section_type === canonicalSectionId
+    );
+    if (eduKey) {
+      setActiveSectionKey(eduKey);
+      setActiveTab('Component Selection');
+    }
+  };
 
   return (
     <div className="max-w-[1600px] mx-auto space-y-6 pb-20">
@@ -1526,10 +1784,69 @@ export default function GlobalArchitecturePage() {
 
       {/* 4. Main Content Grid */}
       {activeTab === 'Universal Architecture' ? (
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
-          
-          {/* LEFT COLUMN (65%) */}
-          <div className={`${showContextSidebar ? 'xl:col-span-8' : 'xl:col-span-12'} space-y-6`}>
+        <UniversalArchitectureTab
+          activeSectionKey={activeSectionKey}
+          activeData={activeData}
+          activeComponentMap={activeComponentMap}
+          activeLearningFlow={activeLearningFlow}
+          isUiUxMode={isUiUxMode}
+          selectedComponentKey={selectedComponentKey}
+          setSelectedComponentKey={setSelectedComponentKey}
+          selectedComponentData={selectedComponentData}
+          selectedComponentIndex={selectedComponentIndex}
+          selectedPreviewJson={selectedPreviewJson}
+          selectedBrandPreviewContract={selectedBrandPreviewContract}
+          learnerPreviewTarget={learnerPreviewTarget}
+          selectedPipelineSubsectionKey={selectedPipelineSubsectionKey}
+          adminSectionId={adminSectionId}
+          canonicalSectionId={canonicalSectionId}
+          architectures={architectures}
+          showActionMessage={showActionMessage}
+          updateArchitectureStatus={updateArchitectureStatus}
+          startJsonEdit={startJsonEdit}
+          copyArchitectureJson={copyArchitectureJson}
+          downloadArchitectureJson={downloadArchitectureJson}
+          openWorkflowUrl={openWorkflowUrl}
+          selectedWorkflowUrls={selectedWorkflowUrls}
+          showContextSidebar={showContextSidebar}
+          universalComponents={universalComponents}
+          universalArchitecturePreviewContract={universalArchitecturePreviewContract}
+          // TODO: Extract full content from page.tsx lines 1788-2290
+        />
+      ) : activeTab === 'Section Sequence' ? (
+        <SectionSequenceTab
+          activeSectionKey={activeSectionKey}
+          activeData={activeData}
+          activeComponentMap={activeComponentMap}
+          activeLearningFlow={activeLearningFlow}
+          isUiUxMode={isUiUxMode}
+          selectedComponentKey={selectedComponentKey}
+          setSelectedComponentKey={setSelectedComponentKey}
+          selectedComponentData={selectedComponentData}
+          selectedComponentIndex={selectedComponentIndex}
+          selectedPreviewJson={selectedPreviewJson}
+          selectedBrandPreviewContract={selectedBrandPreviewContract}
+          learnerPreviewTarget={learnerPreviewTarget}
+          selectedPipelineSubsectionKey={selectedPipelineSubsectionKey}
+          adminSectionId={adminSectionId}
+          canonicalSectionId={canonicalSectionId}
+          architectures={architectures}
+          showActionMessage={showActionMessage}
+          updateArchitectureStatus={updateArchitectureStatus}
+          startJsonEdit={startJsonEdit}
+          copyArchitectureJson={copyArchitectureJson}
+          downloadArchitectureJson={downloadArchitectureJson}
+          openWorkflowUrl={openWorkflowUrl}
+          selectedWorkflowUrls={selectedWorkflowUrls}
+          showContextSidebar={showContextSidebar}
+          universalComponents={universalComponents}
+          universalArchitecturePreviewContract={universalArchitecturePreviewContract}
+          showAdvancedSequence={showAdvancedSequence}
+          setShowAdvancedSequence={setShowAdvancedSequence}
+          // TODO: Extract full content from page.tsx lines 2469-2745
+        />
+      
+      ) : activeTab === 'Component Selection' ? (
             
             {!isUiUxMode ? (
               // ==========================================
@@ -2030,6 +2347,182 @@ export default function GlobalArchitecturePage() {
           </div>
           ) : null}
         </div>
+      
+      ) : activeTab === 'Component Selection' ? (
+        // ==========================================
+        // PHASE 2: COMPONENT SELECTION TAB
+        // ==========================================
+        <ComponentSelectionTab
+          sectionId={String(canonicalSectionId)}
+          sectionLabel={formatTitle(String(canonicalSectionId))}
+          components={activeData?.universal_architecture_fixed || {}}
+          dummyContext={dummyContext}
+          onToggleEnabled={handleToggleEnabled}
+          onUpdatePriority={handleUpdatePriority}
+          onPreviewComponent={(compId) => {
+            setPreviewComponentId(compId);
+            setShowPreviewModal(true);
+            setActionMessage(`Opening preview for ${compId}...`);
+          }}
+          onEditComponent={(compId) => {
+            setSelectedComponentKey(compId);
+            setActiveTab('Educational Properties');
+            setActionMessage(`Editing ${compId} properties`);
+          }}
+          onGenerateDummyData={() => {
+            // Cycle through different subjects for visual feedback
+            const subjects = ['Python', 'JavaScript', 'Java', 'C++', 'React'];
+            const currentIndex = subjects.indexOf(dummyContext.subject);
+            const nextIndex = (currentIndex + 1) % subjects.length;
+            const nextSubject = subjects[nextIndex];
+            
+            setDummyContext({
+              domain: 'Programming',
+              subject: nextSubject,
+              topic: 'Basics',
+              subtopic: `What is ${nextSubject}?`,
+              subtopicId: `whatis${nextSubject.toLowerCase()}`,
+            });
+            setActionMessage(`Preview context changed to: ${nextSubject} → Basics → What is ${nextSubject}?`);
+          }}
+        />
+      
+      ) : activeTab === 'Educational Properties' ? (
+        // ==========================================
+        // PHASE 2: EDUCATIONAL PROPERTIES TAB
+        // ==========================================
+        <EducationalPropertiesTab
+          componentId={selectedComponentKey}
+          componentLabel={selectedComponentKey ? formatTitle(selectedComponentKey) : ''}
+          componentConfig={selectedComponentData ? {
+            enabled: selectedComponentData.enabled !== false,
+            required: selectedComponentData.required !== false,
+            priority: (selectedComponentData.priority || 4) as ComponentPriority,
+            purpose: String(selectedComponentData.purpose || ''),
+            learning_objective: String(selectedComponentData.learning_objective || ''),
+            content_requirements: Array.isArray(selectedComponentData.content_requirements) ? selectedComponentData.content_requirements.map(String) : [],
+            prerequisites: Array.isArray(selectedComponentData.prerequisites) ? selectedComponentData.prerequisites.map(String) : [],
+            enables: Array.isArray(selectedComponentData.enables) ? selectedComponentData.enables.map(String) : [],
+          } : null}
+          availableComponents={Object.keys(activeData?.universal_architecture_fixed || {}).map((id) => ({
+            id,
+            label: formatTitle(id),
+          }))}
+          onSave={handleUpdateEducationalConfig}
+        />
+      
+      ) : activeTab === 'Learning Flow & Requirements' ? (
+        // ==========================================
+        // PHASE 2: LEARNING FLOW TAB
+        // ==========================================
+        <LearningFlowTab
+          sectionLabel={formatTitle(String(canonicalSectionId))}
+          components={activeData?.universal_architecture_fixed || {}}
+          currentStatus={finalizationStatus}
+          finalizedAt={activeData?.metadata?.finalized_at ? String(activeData.metadata.finalized_at) : null}
+          finalizedBy={activeData?.metadata?.finalized_by ? String(activeData.metadata.finalized_by) : null}
+          onUpdateStatus={handleUpdateFinalizationStatus}
+          onReorderComponents={(newOrder) => {
+            // Update component order
+            if (!educationalKey) return;
+            setArchitectures((prev) => {
+              const eduArch = prev[educationalKey];
+              const components = eduArch?.universal_architecture_fixed as Record<string, Record<string, unknown>> || {};
+              const reordered = Object.fromEntries(
+                newOrder.map((id, index) => [
+                  id,
+                  { ...components[id], order: index + 1 },
+                ])
+              );
+              return {
+                ...prev,
+                [educationalKey]: {
+                  ...eduArch,
+                  universal_architecture_fixed: reordered,
+                },
+              };
+            });
+            showActionMessage('Component order updated.');
+          }}
+        />
+      
+      ) : activeTab === 'Visual Styling' ? (
+        // ==========================================
+        // PHASE 3: VISUAL STYLING TAB
+        // ==========================================
+        <>
+          {isUiUxMode && !isEducationalFinalized ? (
+            <UIUXGatingBanner
+              isLocked={!isEducationalFinalized}
+              educationalStatus={finalizationStatus}
+              enabledComponentsCount={enabledCount}
+              totalComponentsCount={totalComponents}
+              sectionLabel={formatTitle(String(canonicalSectionId))}
+              onNavigateToEducational={handleNavigateToEducational}
+            />
+          ) : null}
+          <VisualStylingTab
+            componentId={selectedComponentKey}
+            componentLabel={selectedComponentKey ? formatTitle(selectedComponentKey) : ''}
+            componentConfig={selectedUiuxComponentData as any}
+            brandColors={{
+              primary_color: selectedBrandPreviewContract.primary_color,
+              primary_color_dark: selectedBrandPreviewContract.primary_color_dark,
+              accent_color: selectedBrandPreviewContract.accent_color,
+              secondary_color: selectedBrandPreviewContract.secondary_color,
+              background_color: selectedBrandPreviewContract.background_color,
+              text_color: selectedBrandPreviewContract.text_color,
+              border_color: selectedBrandPreviewContract.border_color,
+            }}
+            onSave={handleUpdateVisualStyling}
+          />
+        </>
+      
+      ) : activeTab === 'Responsive Design' ? (
+        // ==========================================
+        // PHASE 3: RESPONSIVE DESIGN TAB
+        // ==========================================
+        <>
+          {isUiUxMode && !isEducationalFinalized ? (
+            <UIUXGatingBanner
+              isLocked={!isEducationalFinalized}
+              educationalStatus={finalizationStatus}
+              enabledComponentsCount={enabledCount}
+              totalComponentsCount={totalComponents}
+              sectionLabel={formatTitle(String(canonicalSectionId))}
+              onNavigateToEducational={handleNavigateToEducational}
+            />
+          ) : null}
+          <ResponsiveDesignTab
+            componentId={selectedComponentKey}
+            componentLabel={selectedComponentKey ? formatTitle(selectedComponentKey) : ''}
+            componentConfig={selectedUiuxComponentData as any}
+            onSave={handleUpdateVisualStyling}
+          />
+        </>
+      
+      ) : activeTab === 'Accessibility' ? (
+        // ==========================================
+        // PHASE 3: ACCESSIBILITY TAB
+        // ==========================================
+        <>
+          {isUiUxMode && !isEducationalFinalized ? (
+            <UIUXGatingBanner
+              isLocked={!isEducationalFinalized}
+              educationalStatus={finalizationStatus}
+              enabledComponentsCount={enabledCount}
+              totalComponentsCount={totalComponents}
+              sectionLabel={formatTitle(String(canonicalSectionId))}
+              onNavigateToEducational={handleNavigateToEducational}
+            />
+          ) : null}
+          <AccessibilityTab
+            componentId={selectedComponentKey}
+            componentLabel={selectedComponentKey ? formatTitle(selectedComponentKey) : ''}
+            componentConfig={selectedUiuxComponentData as any}
+          />
+        </>
+      
       ) : activeTab === 'Section Sequence' ? (
         <div className="space-y-6">
            
@@ -4448,6 +4941,172 @@ Writing Guidelines:
             </p>
          </div>
       )}
+      
+      {/* Preview Modal - Fullscreen */}
+      {showPreviewModal && previewComponentId && (
+        <div className="fixed inset-0 bg-white z-50 flex flex-col">
+          {/* Fullscreen Header */}
+          <div className="border-b border-slate-200 px-6 py-4 flex items-center justify-between bg-gradient-to-r from-indigo-50 to-purple-50 shrink-0">
+            <div className="flex items-center gap-4">
+              <button
+                type="button"
+                onClick={() => setShowPreviewModal(false)}
+                className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 transition-colors"
+                title="Close Preview"
+              >
+                ✕
+              </button>
+              <div>
+                <h2 className="text-xl font-black text-slate-900 flex items-center gap-2">
+                  <Eye size={24} className="text-indigo-600" />
+                  Component Preview
+                </h2>
+                <p className="text-sm font-semibold text-slate-600 mt-0.5">
+                  {previewComponentId.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedComponentKey(previewComponentId);
+                  setActiveTab('Educational Properties');
+                  setShowPreviewModal(false);
+                }}
+                className="bg-white border border-slate-200 text-slate-700 rounded-lg px-4 py-2 text-sm font-black hover:bg-slate-50 transition-colors flex items-center gap-2"
+              >
+                <Edit2 size={14} />
+                Edit Properties
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowPreviewModal(false)}
+                className="bg-indigo-600 text-white rounded-lg px-6 py-2 text-sm font-black hover:bg-indigo-700 transition-colors"
+              >
+                Close Preview
+              </button>
+            </div>
+          </div>
+          
+          {/* Fullscreen Body - Split Layout */}
+          <div className="flex-1 overflow-hidden flex">
+            {/* Left Sidebar - Component Info */}
+            <div className="w-80 border-r border-slate-200 bg-slate-50 overflow-y-auto p-6 space-y-4 shrink-0">
+              {/* Preview Context */}
+              <div className="bg-purple-50 border border-purple-200 rounded-xl p-4">
+                <h3 className="text-sm font-black text-purple-900 mb-2">Preview Context</h3>
+                <p className="text-xs font-semibold text-purple-700">
+                  <strong>{dummyContext.subject}</strong> → {dummyContext.topic} → {dummyContext.subtopic}
+                </p>
+              </div>
+              
+              {/* Component Data */}
+              <div className="bg-white border border-slate-200 rounded-xl p-4">
+                <h3 className="text-sm font-black text-slate-900 mb-3">Component Configuration</h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-center justify-between py-2 border-b border-slate-100">
+                    <span className="font-bold text-slate-600">Enabled:</span>
+                    <span className={`font-black ${(activeComponentMap[previewComponentId]?.enabled !== false) ? 'text-emerald-600' : 'text-rose-600'}`}>
+                      {(activeComponentMap[previewComponentId]?.enabled !== false) ? 'Yes' : 'No'}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between py-2 border-b border-slate-100">
+                    <span className="font-bold text-slate-600">Required:</span>
+                    <span className={`font-black ${activeComponentMap[previewComponentId]?.required ? 'text-rose-600' : 'text-slate-600'}`}>
+                      {activeComponentMap[previewComponentId]?.required ? 'Yes' : 'No'}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between py-2 border-b border-slate-100">
+                    <span className="font-bold text-slate-600">Renderer:</span>
+                    <span className="font-mono text-xs text-slate-900">
+                      {activeComponentMap[previewComponentId]?.renderer || 'default'}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between py-2">
+                    <span className="font-bold text-slate-600">Style:</span>
+                    <span className="font-mono text-xs text-slate-900">
+                      {String(activeComponentMap[previewComponentId]?.style_variant || 'default')}
+                    </span>
+                  </div>
+                </div>
+                
+                {activeComponentMap[previewComponentId]?.purpose && (
+                  <div className="mt-3 pt-3 border-t border-slate-200">
+                    <span className="font-bold text-slate-600 text-xs">Purpose:</span>
+                    <p className="mt-1 text-xs font-semibold text-slate-700">
+                      {String(activeComponentMap[previewComponentId]?.purpose)}
+                    </p>
+                  </div>
+                )}
+              </div>
+              
+              {/* Interactive Elements */}
+              {Array.isArray(activeComponentMap[previewComponentId]?.interactive_elements) && 
+               (activeComponentMap[previewComponentId]?.interactive_elements as string[]).length > 0 && (
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                  <h3 className="text-sm font-black text-blue-900 mb-2">Interactive Elements</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {(activeComponentMap[previewComponentId]?.interactive_elements as string[]).map((element) => (
+                      <span
+                        key={element}
+                        className="bg-white border border-blue-200 text-blue-700 text-xs font-bold px-3 py-1 rounded-full"
+                      >
+                        {element}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            {/* Right Main Area - Visual Preview */}
+            <div className="flex-1 overflow-y-auto bg-slate-100">
+              <div className="min-h-full p-8">
+                <div className="max-w-5xl mx-auto">
+                  {/* Preview Header */}
+                  <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl px-6 py-4 mb-6">
+                    <h3 className="text-base font-black text-indigo-900 flex items-center gap-2 mb-1">
+                      <Eye size={18} />
+                      Live Component Rendering
+                    </h3>
+                    <p className="text-sm font-semibold text-indigo-700">
+                      Showing how this component renders with {dummyContext.subject} content
+                    </p>
+                  </div>
+                  
+                  {/* Component Preview */}
+                  <div className="bg-white rounded-xl border border-slate-200 shadow-lg overflow-hidden">
+                    <div className="p-8">
+                      {(() => {
+                        const previewData = activeComponentMap[previewComponentId];
+                        const uiuxComponentData = uiuxData?.component_design_system?.[previewComponentId];
+                        const previewContent = getDefaultPipelineJson(
+                          String(canonicalSectionId),
+                          previewComponentId,
+                          dummyContext.subtopic
+                        );
+                        
+                        return (
+                          <ContractAwareComponentPreview
+                            section={String(canonicalSectionId)}
+                            subsection={previewComponentId}
+                            data={previewContent}
+                            contract={uiuxComponentData || previewData || {}}
+                            showDiagnostics={false}
+                          />
+                        );
+                      })()}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
