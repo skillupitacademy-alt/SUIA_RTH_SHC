@@ -1,5 +1,6 @@
-import { getDb, domains, subjects } from '@quiz/db-skillhubcore';
-import { eq, ilike, and, isNull, desc } from 'drizzle-orm';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { domains, getDb, subjects } from '@quiz/db';
+import { and, desc, eq, ilike, inArray } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
@@ -11,7 +12,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20');
     const cursor = searchParams.get('cursor');
 
-    const conditions = [isNull(subjects.deletedAt)];
+    const conditions = [];
     
     if (search) {
       conditions.push(ilike(subjects.name, `%${search}%`));
@@ -32,7 +33,7 @@ export async function GET(request: NextRequest) {
       })
       .from(subjects)
       .leftJoin(domains, eq(subjects.domainId, domains.id))
-      .where(and(...conditions))
+      .where(conditions.length > 0 ? and(...conditions) : undefined)
       .orderBy(desc(subjects.createdAt))
       .limit(limit + 1);
 
@@ -117,10 +118,10 @@ export async function DELETE(request: NextRequest) {
 
     if (ids) {
       const idArray = ids.split(',');
-      await db.update(subjects).set({ deletedAt: new Date() }).where(eq(subjects.id, idArray as any));
+      await db.delete(subjects).where(inArray(subjects.id, idArray));
       return NextResponse.json({ message: `${idArray.length} subjects deleted` });
     } else {
-      const [deleted] = await db.update(subjects).set({ deletedAt: new Date() }).where(eq(subjects.id, id!)).returning();
+      const [deleted] = await db.delete(subjects).where(eq(subjects.id, id!)).returning();
       if (!deleted) {
         return NextResponse.json({ error: 'Subject not found' }, { status: 404 });
       }

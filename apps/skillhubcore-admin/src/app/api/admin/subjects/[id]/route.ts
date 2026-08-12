@@ -1,4 +1,4 @@
-import { getDb, subjects } from '@quiz/db-skillhubcore';
+import { getDb, subjects } from '@quiz/db';
 import { eq } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -30,7 +30,7 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
   try {
     const { id } = await params;
     const db = getDb();
-    const [deleted] = await db.update(subjects).set({ deletedAt: new Date() }).where(eq(subjects.id, id)).returning();
+    const [deleted] = await db.delete(subjects).where(eq(subjects.id, id)).returning();
     if (!deleted) return NextResponse.json({ error: 'Subject not found' }, { status: 404 });
 
     return NextResponse.json({ message: 'Subject deleted successfully' });

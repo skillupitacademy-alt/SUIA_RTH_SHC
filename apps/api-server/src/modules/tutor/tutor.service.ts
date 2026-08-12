@@ -1,4 +1,4 @@
-import { backgroundJobs, db, exams, notesDeliveryLocks, notifications, resultsByDimension, topics, userRecommendations } from "@quiz/db";
+import { backgroundJobs, db, exams, notesDeliveryLocks, notifications, resultsByDimension, userRecommendations } from "@quiz/db";
 import { and, eq, gte, sql } from "drizzle-orm";
 
 
@@ -63,20 +63,8 @@ export class TutorService {
           });
           if (existing) continue;
 
-          const topicData = await tx.query.topics.findFirst({
-            where: eq(topics.id, topicId),
-            columns: { learningUrl: true, detailedNotesPath: true, notesAssetId: true },
-          });
-          const actionUrl =
-            typeof topicData?.learningUrl === "string" && topicData.learningUrl.length > 0
-              ? topicData.learningUrl
-              : null;
-          const notesPath =
-            typeof topicData?.notesAssetId === "string" && topicData.notesAssetId.length > 0
-              ? topicData.notesAssetId
-              : typeof topicData?.detailedNotesPath === "string" && topicData.detailedNotesPath.length > 0
-                ? topicData.detailedNotesPath
-                : null;
+          const actionUrl = null;
+          const notesPath = null;
 
           await tx.insert(userRecommendations).values({
             userId,
@@ -128,10 +116,7 @@ export class TutorService {
                 payload: {
                   topicId,
                   notesPath,
-                  learningUrl:
-                    typeof topicData?.learningUrl === "string" && topicData.learningUrl.length > 0
-                      ? topicData.learningUrl
-                      : null,
+                  learningUrl: actionUrl,
                   recommendationLevel: level,
                 },
               });

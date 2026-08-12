@@ -1,15 +1,19 @@
-import { getDb, topics } from '@quiz/db-skillhubcore';
+import { getDb, topics } from '@quiz/db';
 import { eq } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
-const complexityValues = new Set(['beginner', 'intermediate', 'advanced', 'expert']);
-
 function normalizeComplexity(value: unknown) {
-  if (typeof value === 'string' && complexityValues.has(value)) return value;
   if (typeof value === 'number') {
-    if (value >= 4) return 'expert';
-    if (value === 3) return 'advanced';
+    if (value >= 3) return 'advanced';
     if (value === 2) return 'intermediate';
+    return 'beginner';
+  }
+  if (typeof value === 'string') {
+    const normalized = value.toLowerCase();
+    if (normalized === 'expert' || normalized === 'advanced') return 'advanced';
+    if (normalized === 'intermediate') return 'intermediate';
+    const numeric = Number(value);
+    if (Number.isFinite(numeric)) return normalizeComplexity(numeric);
   }
   return 'beginner';
 }
@@ -26,10 +30,10 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     if (body.subjectId !== undefined) updateData.subjectId = body.subjectId;
     if (body.complexity !== undefined) updateData.complexity = normalizeComplexity(body.complexity);
     if (body.complexityLevel !== undefined) updateData.complexity = normalizeComplexity(body.complexityLevel);
-    if (body.weight !== undefined) updateData.weight = String(body.weight);
+    if (body.weight !== undefined) updateData.weight = Number.isFinite(Number(body.weight)) ? Number(body.weight) : 1;
     if (body.status !== undefined) updateData.status = body.status;
     if (body.order !== undefined) updateData.order = body.order;
-    if (body.orderIndex !== undefined) updateData.order = body.orderIndex;
+    void body.orderIndex;
 
     const [updated] = await db.update(topics).set(updateData).where(eq(topics.id, id)).returning();
     if (!updated) return NextResponse.json({ error: 'Topic not found' }, { status: 404 });
@@ -45,7 +49,7 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
   try {
     const { id } = await params;
     const db = getDb();
-    const [deleted] = await db.update(topics).set({ deletedAt: new Date() }).where(eq(topics.id, id)).returning();
+    const [deleted] = await db.delete(topics).where(eq(topics.id, id)).returning();
     if (!deleted) return NextResponse.json({ error: 'Topic not found' }, { status: 404 });
 
     return NextResponse.json({ message: 'Topic deleted successfully' });

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Shared types and interfaces for legacy tab components
  */
@@ -19,6 +20,7 @@ export interface ComponentArchitecture {
   priority?: number;
   ui_subcomponents?: Array<Record<string, unknown>>;
   layout?: string;
+  layout_type?: string;
   color_combination?: string;
   primary_color?: string;
   secondary_color?: string;
@@ -49,6 +51,7 @@ export interface LegacyTabCommonProps {
   setSelectedComponentKey: (key: string | null) => void;
   selectedComponentData: ComponentArchitecture | null;
   selectedComponentIndex: number;
+  selectedRendererMapping?: Record<string, unknown> | null;
   
   // Preview and context
   selectedPreviewJson: unknown;
@@ -88,4 +91,22 @@ export interface LegacyTabCommonProps {
   
   // Preview contract
   universalArchitecturePreviewContract: any;
+}
+
+
+export interface PromptManagementTabProps {
+  isUiUxMode: boolean;
+  adminSectionId: string;
+  selectedComponentKey: string | null;
+  formatTitle: (key: string) => string;
+  selectedPipelineSubsectionKey: string | null;
+  dummyContext: {
+    domain: string;
+    subject: string;
+    subtopic: string;
+  };
+  selectedComponentData: ComponentArchitecture | null;
+  selectedRendererMapping: any;
+  selectedWorkflowUrls: WorkflowUrls;
+  openWorkflowUrl: (url: string) => void;
 }

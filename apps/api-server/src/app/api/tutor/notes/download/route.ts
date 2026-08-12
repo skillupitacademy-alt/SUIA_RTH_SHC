@@ -34,18 +34,10 @@ async function getHandler(req: NextRequest) {
 
     const topic = await db.query.topics.findFirst({
       where: eq(topics.id, topicId),
-      columns: { notesAssetId: true, detailedNotesPath: true, name: true },
+      columns: { name: true },
     });
 
-    const notesAssetId =
-      typeof topic?.notesAssetId === "string" && topic.notesAssetId.length > 0 ? topic.notesAssetId : null;
-    const detailedNotesPath =
-      typeof topic?.detailedNotesPath === "string" && topic.detailedNotesPath.length > 0
-        ? topic.detailedNotesPath
-        : null;
-    
-    const realPathRaw = notesAssetId ?? detailedNotesPath;
-    const realPath = typeof realPathRaw === "string" ? realPathRaw : "";
+    const realPath = "";
     if (realPath.length === 0) {
       return ApiResponse.error(notFound("Notes", topicId));
     }

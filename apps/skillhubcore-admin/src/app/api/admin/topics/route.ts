@@ -1,5 +1,6 @@
-import { getDb, domains, subjects, topics } from '@quiz/db-skillhubcore';
-import { eq, ilike, and, isNull, desc } from 'drizzle-orm';
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
+import { domains, getDb, subjects, topics } from '@quiz/db';
+import { and, desc, eq, ilike, inArray } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
@@ -10,7 +11,7 @@ export async function GET(request: NextRequest) {
     const subjectId = searchParams.get('subjectId');
     const limit = parseInt(searchParams.get('limit') || '20');
 
-    const conditions = [isNull(topics.deletedAt)];
+    const conditions = [];
     if (search) conditions.push(ilike(topics.name, `%${search}%`));
     if (subjectId) conditions.push(eq(topics.subjectId, subjectId));
 
@@ -23,7 +24,7 @@ export async function GET(request: NextRequest) {
       .from(topics)
       .leftJoin(subjects, eq(topics.subjectId, subjects.id))
       .leftJoin(domains, eq(subjects.domainId, domains.id))
-      .where(and(...conditions))
+      .where(conditions.length > 0 ? and(...conditions) : undefined)
       .orderBy(desc(topics.createdAt))
       .limit(limit + 1);
     const hasMore = results.length > limit;
@@ -51,13 +52,21 @@ export async function POST(request: NextRequest) {
   try {
     const db = getDb();
     const body = await request.json();
-    const { name, description, subjectId, complexity = 'beginner', weight = '1.00', status = 'active', order = 0 } = body;
+    const { name, description, subjectId, complexity, complexityLevel, weight = 1, status = 'active', order = 0 } = body;
 
     if (!name || !subjectId) {
       return NextResponse.json({ error: 'Name and subjectId required' }, { status: 400 });
     }
 
-    const [newTopic] = await db.insert(topics).values({ name, description, subjectId, complexity, weight, status, order }).returning();
+    const [newTopic] = await db.insert(topics).values({
+      name,
+      description,
+      subjectId,
+      complexity: normalizeComplexity(complexity ?? complexityLevel),
+      weight: Number.isFinite(Number(weight)) ? Number(weight) : 1,
+      order,
+      status,
+    }).returning();
     return NextResponse.json(newTopic, { status: 201 });
   } catch (error) {
     return NextResponse.json({ error: 'Failed to create topic' }, { status: 500 });
@@ -68,15 +77,16 @@ export async function PUT(request: NextRequest) {
   try {
     const db = getDb();
     const body = await request.json();
-    const { id, name, description, complexity, weight, status, order } = body;
+    const { id, name, description, complexity, complexityLevel, weight, status, order } = body;
 
     if (!id) return NextResponse.json({ error: 'Topic ID required' }, { status: 400 });
 
     const updateData: any = { updatedAt: new Date() };
     if (name) updateData.name = name;
     if (description !== undefined) updateData.description = description;
-    if (complexity) updateData.complexity = complexity;
-    if (weight) updateData.weight = weight;
+    if (complexity !== undefined) updateData.complexity = normalizeComplexity(complexity);
+    if (complexityLevel !== undefined) updateData.complexity = normalizeComplexity(complexityLevel);
+    if (weight !== undefined) updateData.weight = Number.isFinite(Number(weight)) ? Number(weight) : 1;
     if (status) updateData.status = status;
     if (order !== undefined) updateData.order = order;
 
@@ -99,13 +109,29 @@ export async function DELETE(request: NextRequest) {
     if (!id && !ids) return NextResponse.json({ error: 'ID required' }, { status: 400 });
 
     if (ids) {
-      await db.update(topics).set({ deletedAt: new Date() }).where(eq(topics.id, ids.split(',') as any));
+      await db.delete(topics).where(inArray(topics.id, ids.split(',')));
       return NextResponse.json({ message: 'Topics deleted' });
     }
 
-    await db.update(topics).set({ deletedAt: new Date() }).where(eq(topics.id, id!));
+    await db.delete(topics).where(eq(topics.id, id!));
     return NextResponse.json({ message: 'Topic deleted' });
   } catch (error) {
     return NextResponse.json({ error: 'Failed to delete topic' }, { status: 500 });
   }
+}
+
+function normalizeComplexity(value: unknown) {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    if (value >= 3) return 'advanced';
+    if (value === 2) return 'intermediate';
+    return 'beginner';
+  }
+  if (typeof value === 'string') {
+    const normalized = value.toLowerCase();
+    if (normalized === 'expert' || normalized === 'advanced') return 'advanced';
+    if (normalized === 'intermediate') return 'intermediate';
+    const numeric = Number(value);
+    if (Number.isFinite(numeric)) return normalizeComplexity(numeric);
+  }
+  return 'beginner';
 }

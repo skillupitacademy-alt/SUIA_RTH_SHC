@@ -39,7 +39,7 @@ export class DomainService {
           with: {
             topics: {
               where: eq(topics.status, 'active'),
-              orderBy: [topics.complexityLevel],
+              orderBy: [topics.complexity],
               with: {
                 subtopics: true,
               }
@@ -129,7 +129,7 @@ export class TopicService {
 
     const results = await db.query.topics.findMany({
       where: and(eq(topics.subjectId, subjectId), eq(topics.status, 'active')),
-      orderBy: [topics.complexityLevel],
+      orderBy: [topics.complexity],
       with: {
         topicSkills: {
           with: {

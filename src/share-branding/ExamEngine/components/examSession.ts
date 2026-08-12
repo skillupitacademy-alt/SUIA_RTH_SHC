@@ -34,6 +34,7 @@ export interface ExamProgressMetrics {
 }
 
 export interface ExamSessionData {
+  examId?: string;
   breadcrumb: string;
   student: ExamStudentIdentity;
   questions: ExamQuestionItem[];

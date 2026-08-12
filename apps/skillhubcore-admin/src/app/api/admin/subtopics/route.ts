@@ -1,5 +1,6 @@
-import { getDb, domains, subjects, subtopics, topics } from '@quiz/db-skillhubcore';
-import { eq, ilike, and, isNull, desc } from 'drizzle-orm';
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
+import { domains, getDb, subjects, subtopics, topics } from '@quiz/db';
+import { and, desc, eq, ilike, inArray } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
@@ -10,7 +11,7 @@ export async function GET(request: NextRequest) {
     const topicId = searchParams.get('topicId');
     const limit = parseInt(searchParams.get('limit') || '20');
 
-    const conditions = [isNull(subtopics.deletedAt)];
+    const conditions = [];
     if (search) conditions.push(ilike(subtopics.name, `%${search}%`));
     if (topicId) conditions.push(eq(subtopics.topicId, topicId));
 
@@ -25,7 +26,7 @@ export async function GET(request: NextRequest) {
       .leftJoin(topics, eq(subtopics.topicId, topics.id))
       .leftJoin(subjects, eq(topics.subjectId, subjects.id))
       .leftJoin(domains, eq(subjects.domainId, domains.id))
-      .where(and(...conditions))
+      .where(conditions.length > 0 ? and(...conditions) : undefined)
       .orderBy(desc(subtopics.createdAt))
       .limit(limit + 1);
     const hasMore = results.length > limit;
@@ -58,13 +59,20 @@ export async function POST(request: NextRequest) {
   try {
     const db = getDb();
     const body = await request.json();
-    const { name, description, topicId, depth = 1, status = 'active', order = 0 } = body;
+    const { name, description, topicId, depth, depthLevel, status = 'active', order = 0 } = body;
 
     if (!name || !topicId) {
       return NextResponse.json({ error: 'Name and topicId required' }, { status: 400 });
     }
 
-    const [newSubtopic] = await db.insert(subtopics).values({ name, description, topicId, depth, status, order }).returning();
+    const [newSubtopic] = await db.insert(subtopics).values({
+      name,
+      description,
+      topicId,
+      depth: normalizeDepth(depth ?? depthLevel),
+      status,
+      order,
+    }).returning();
     return NextResponse.json(newSubtopic, { status: 201 });
   } catch (error) {
     return NextResponse.json({ error: 'Failed to create subtopic' }, { status: 500 });
@@ -75,15 +83,16 @@ export async function PUT(request: NextRequest) {
   try {
     const db = getDb();
     const body = await request.json();
-    const { id, name, description, depth, status, order } = body;
+    const { id, name, description, depth, depthLevel, status, order } = body;
 
     if (!id) return NextResponse.json({ error: 'Subtopic ID required' }, { status: 400 });
 
     const updateData: any = { updatedAt: new Date() };
     if (name) updateData.name = name;
     if (description !== undefined) updateData.description = description;
-    if (depth) updateData.depth = depth;
-    if (status) updateData.status = status;
+    if (depth !== undefined) updateData.depth = normalizeDepth(depth);
+    if (depthLevel !== undefined) updateData.depth = normalizeDepth(depthLevel);
+    if (status !== undefined) updateData.status = status;
     if (order !== undefined) updateData.order = order;
 
     const [updated] = await db.update(subtopics).set(updateData).where(eq(subtopics.id, id)).returning();
@@ -105,13 +114,18 @@ export async function DELETE(request: NextRequest) {
     if (!id && !ids) return NextResponse.json({ error: 'ID required' }, { status: 400 });
 
     if (ids) {
-      await db.update(subtopics).set({ deletedAt: new Date() }).where(eq(subtopics.id, ids.split(',') as any));
+      await db.delete(subtopics).where(inArray(subtopics.id, ids.split(',')));
       return NextResponse.json({ message: 'Subtopics deleted' });
     }
 
-    await db.update(subtopics).set({ deletedAt: new Date() }).where(eq(subtopics.id, id!));
+    await db.delete(subtopics).where(eq(subtopics.id, id!));
     return NextResponse.json({ message: 'Subtopic deleted' });
   } catch (error) {
     return NextResponse.json({ error: 'Failed to delete subtopic' }, { status: 500 });
   }
+}
+
+function normalizeDepth(value: unknown) {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? Math.max(1, Math.round(numeric)) : 1;
 }

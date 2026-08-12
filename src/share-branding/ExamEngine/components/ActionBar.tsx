@@ -13,6 +13,9 @@ interface ActionBarProps {
   onToggleOverview?: () => void;
   themeMode: CardThemeMode;
   onThemeChange: (mode: CardThemeMode) => void;
+  onSubmit?: () => void;
+  isSaving?: boolean;
+  isSubmitting?: boolean;
 }
 
 export function ActionBar({ 
@@ -26,6 +29,9 @@ export function ActionBar({
   onToggleOverview,
   themeMode,
   onThemeChange,
+  onSubmit,
+  isSaving = false,
+  isSubmitting = false,
 }: ActionBarProps) {
   const chromeStyles = {
     'premium-white': {
@@ -125,20 +131,23 @@ export function ActionBar({
           </button>
           <button 
             onClick={onNext}
+            disabled={isSaving}
             className="flex min-h-10 min-w-0 items-center justify-center gap-1.5 rounded-lg px-3 py-2 font-bold transition-opacity hover:opacity-90"
             style={{ 
               backgroundColor: primaryAccent,
               color: '#ffffff' 
             }}
           >
-            <span className="truncate text-sm xl:text-[13px]">Save & Next</span>
+            <span className="truncate text-sm xl:text-[13px]">{isSaving ? 'Saving...' : 'Save & Next'}</span>
             <ChevronRight className="h-4 w-4 shrink-0" />
           </button>
           <button 
+            onClick={onSubmit}
+            disabled={isSubmitting}
             className="min-h-10 min-w-0 rounded-lg px-3 py-2 text-sm font-bold transition-opacity hover:opacity-90 xl:text-[13px]"
             style={{ backgroundColor: chromeStyles.submitBg, color: chromeStyles.submitText }}
           >
-            <span className="block truncate">Submit Assessment</span>
+            <span className="block truncate">{isSubmitting ? 'Submitting...' : 'Submit Assessment'}</span>
           </button>
         </div>
       </div>

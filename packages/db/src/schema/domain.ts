@@ -1,5 +1,5 @@
 import { pgTable, text, timestamp, uuid, integer, primaryKey, index } from "drizzle-orm/pg-core";
-import { statusEnum, skillCategoryEnum, mappingTypeEnum, tutorialSyncStatusEnum } from "./enums";
+import { statusEnum, skillCategoryEnum } from "./enums";
 
 // --- EDUCATIONAL HIERARCHY ---
 
@@ -9,9 +9,10 @@ export const domains = pgTable("domains", {
   description: text("description"),
   category: text("category"),
   status: statusEnum("status").notNull().default("active"),
-  tutorialSyncStatus: tutorialSyncStatusEnum("tutorial_sync_status").notNull().default("pending"),
+  order: integer("order").notNull().default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  deletedAt: timestamp("deleted_at"),
 });
 
 export const subjects = pgTable("subjects", {
@@ -23,9 +24,9 @@ export const subjects = pgTable("subjects", {
   description: text("description"),
   order: integer("order").notNull().default(0),
   status: statusEnum("status").notNull().default("active"),
-  tutorialSyncStatus: tutorialSyncStatusEnum("tutorial_sync_status").notNull().default("pending"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  deletedAt: timestamp("deleted_at"),
 }, (t) => ({
   idx_subjects_domain_id: index("idx_subjects_domain_id").on(t.domainId),
 }));
@@ -37,15 +38,13 @@ export const topics = pgTable("topics", {
     .references(() => subjects.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   description: text("description"),
-  complexityLevel: integer("complexity_level").notNull().default(1),
+  complexity: text("complexity").notNull().default("beginner"),
   weight: integer("weight").notNull().default(1),
-  learningUrl: text("learning_url"),
-  detailedNotesPath: text("detailed_notes_path"),
-  notesAssetId: text("notes_asset_id"),
+  order: integer("order").notNull().default(0),
   status: statusEnum("status").notNull().default("active"),
-  tutorialSyncStatus: tutorialSyncStatusEnum("tutorial_sync_status").notNull().default("pending"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  deletedAt: timestamp("deleted_at"),
 }, (t) => ({
   idx_topics_subject_id: index("idx_topics_subject_id").on(t.subjectId),
 }));
@@ -57,9 +56,12 @@ export const subtopics = pgTable("subtopics", {
     .references(() => topics.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   description: text("description"),
-  depthLevel: integer("depth_level").notNull().default(1),
-  tutorialSyncStatus: tutorialSyncStatusEnum("tutorial_sync_status").notNull().default("pending"),
+  depth: integer("depth").notNull().default(1),
+  order: integer("order").notNull().default(0),
+  status: statusEnum("status").notNull().default("active"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  deletedAt: timestamp("deleted_at"),
 }, (t) => ({
   idx_subtopics_topic_id: index("idx_subtopics_topic_id").on(t.topicId),
 }));
@@ -69,11 +71,13 @@ export const subtopics = pgTable("subtopics", {
 export const skills = pgTable("skills", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull().unique(),
+  description: text("description"),
   category: skillCategoryEnum("category"),
-  mappingType: mappingTypeEnum("mapping_type"),
   weight: integer("weight").notNull().default(1),
+  status: statusEnum("status").notNull().default("active"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  deletedAt: timestamp("deleted_at"),
 });
 
 export const topicSkills = pgTable("topic_skills", {

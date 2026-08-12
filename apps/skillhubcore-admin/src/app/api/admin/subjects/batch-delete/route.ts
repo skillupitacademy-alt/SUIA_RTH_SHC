@@ -1,4 +1,4 @@
-import { getDb, subjects } from '@quiz/db-skillhubcore';
+import { getDb, subjects } from '@quiz/db';
 import { inArray } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Subject IDs are required' }, { status: 400 });
     }
 
-    await getDb().update(subjects).set({ deletedAt: new Date() }).where(inArray(subjects.id, ids));
+    await getDb().delete(subjects).where(inArray(subjects.id, ids));
     return NextResponse.json({ message: `${ids.length} subjects deleted successfully` });
   } catch (error) {
     console.error('Error batch deleting subjects:', error);

@@ -79,10 +79,8 @@ async function postHandler(_req: NextRequest) {
       name: body.name,
       description: body.description,
       status: body.status,
-      complexityLevel: typeof body.complexityLevel === 'number' ? body.complexityLevel : undefined,
+      complexity: typeof body.complexityLevel === 'number' ? String(body.complexityLevel) : undefined,
       weight: typeof body.weight === 'number' ? body.weight : undefined,
-      learningUrl: body.learningUrl,
-      detailedNotesPath: body.detailedNotesPath,
     };
 
     const engine = container.get(AdminTopicEngineClass);

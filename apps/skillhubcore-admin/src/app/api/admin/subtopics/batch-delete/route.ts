@@ -1,4 +1,4 @@
-import { getDb, subtopics } from '@quiz/db-skillhubcore';
+import { getDb, subtopics } from '@quiz/db';
 import { inArray } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Subtopic IDs are required' }, { status: 400 });
     }
 
-    await getDb().update(subtopics).set({ deletedAt: new Date() }).where(inArray(subtopics.id, ids));
+    await getDb().delete(subtopics).where(inArray(subtopics.id, ids));
     return NextResponse.json({ message: `${ids.length} subtopics deleted successfully` });
   } catch (error) {
     console.error('Error batch deleting subtopics:', error);

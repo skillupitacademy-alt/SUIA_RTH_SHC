@@ -80,7 +80,7 @@ export const getDb = (type: 'primary' | 'replica' = 'primary'): DbClient => {
 
     // 2. Fallback to Primary
     if (!primaryDbInstance) {
-        const databaseUrl = process.env.DATABASE_URL_PEOPLE || process.env.DATABASE_URL;
+        const databaseUrl = process.env.DATABASE_URL || process.env.DATABASE_URL_TUTORIAL || process.env.DATABASE_URL_PEOPLE;
         if (!databaseUrl) {
             if (process.env.NODE_ENV === 'test') {
                 primaryDbInstance = createTestDb();

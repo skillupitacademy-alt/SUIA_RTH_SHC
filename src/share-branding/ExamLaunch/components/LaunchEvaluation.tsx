@@ -21,6 +21,8 @@ export function LaunchEvaluation() {
   const [expertMode, setExpertMode] = useState(false);
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [showActiveSession, setShowActiveSession] = useState(true);
+  const [isLaunching, setIsLaunching] = useState(false);
+  const [launchError, setLaunchError] = useState<string | null>(null);
 
   const [config, setConfig] = useState<LaunchSelectionState>({
     domain: null,
@@ -39,11 +41,44 @@ export function LaunchEvaluation() {
     return true;
   };
 
-  const handleAdvance = () => {
+  const handleAdvance = async () => {
     if (currentStep < data.steps.length) {
       setCurrentStep(currentStep + 1);
+      setLaunchError(null);
     } else {
-      router.push('/exam');
+      setIsLaunching(true);
+      setLaunchError(null);
+
+      try {
+        const response = await fetch('/api/quiz/start', {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'Idempotency-Key': crypto.randomUUID(),
+          },
+          body: JSON.stringify({
+            domainId: config.domain?.id,
+            subjectIds: config.subjects.map((subject) => subject.id),
+            topicIds: config.topics.map((topic) => topic.id),
+            subtopicIds: config.subtopics.map((subtopic) => subtopic.id),
+            difficulty: config.difficulty.toLowerCase(),
+            questionCount: config.questionCount,
+          }),
+        });
+
+        const payload = (await response.json().catch(() => null)) as { examId?: string; error?: string; message?: string } | null;
+
+        if (!response.ok || payload?.examId == null || payload.examId === '') {
+          throw new Error(payload?.error ?? payload?.message ?? 'Unable to start exam.');
+        }
+
+        router.push(`/exam?examId=${encodeURIComponent(payload.examId)}`);
+      } catch (error) {
+        setLaunchError(error instanceof Error ? error.message : 'Unable to start exam.');
+      } finally {
+        setIsLaunching(false);
+      }
     }
   };
 
@@ -195,11 +230,11 @@ export function LaunchEvaluation() {
             </button>
 
             <div className="order-3 w-full text-center text-xs font-semibold text-gray-600 sm:order-none sm:w-auto sm:text-sm">
-              {data.labels.stepCounterLabel.replace('{current}', String(currentStep)).replace('{total}', String(data.steps.length))}
+              {launchError ?? data.labels.stepCounterLabel.replace('{current}', String(currentStep)).replace('{total}', String(data.steps.length))}
             </div>
 
-            <button onClick={handleAdvance} disabled={!canAdvance()} aria-label={currentStep === data.steps.length ? data.labels.launchLabel : data.labels.continueLabel} className="flex min-w-0 items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-semibold text-white shadow-lg transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:px-6 sm:text-sm" style={{ backgroundColor: brandConfig.primaryColor }}>
-              {currentStep === data.steps.length ? data.labels.launchLabel : data.labels.continueLabel}
+            <button onClick={() => void handleAdvance()} disabled={!canAdvance() || isLaunching} aria-label={currentStep === data.steps.length ? data.labels.launchLabel : data.labels.continueLabel} className="flex min-w-0 items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-semibold text-white shadow-lg transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:px-6 sm:text-sm" style={{ backgroundColor: brandConfig.primaryColor }}>
+              {isLaunching ? 'Launching...' : currentStep === data.steps.length ? data.labels.launchLabel : data.labels.continueLabel}
               {currentStep < data.steps.length && <ChevronRight className="h-5 w-5" />}
               {currentStep === data.steps.length && <Zap className="h-5 w-5" />}
             </button>

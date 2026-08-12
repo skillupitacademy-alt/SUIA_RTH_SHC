@@ -120,11 +120,11 @@ export class DrizzleSkillRepository extends BaseRepository<typeof skills.$inferS
       const dataRaw = rowsQuery.rows.map((row) => ({
         id: String((row as { id: unknown }).id),
         name: String((row as { name: unknown }).name),
+        description: null,
         category: ((row as { category: unknown }).category as typeof skills.$inferSelect['category']) ?? null,
-        mappingType: ((row as { mapping_type?: unknown; mappingType?: unknown }).mapping_type
-          ?? (row as { mappingType?: unknown }).mappingType
-          ?? null) as typeof skills.$inferSelect['mappingType'],
         weight: Number((row as { weight: unknown }).weight ?? 1),
+        status: 'active',
+        deletedAt: null,
         // Synthetic timestamps for legacy-schema fallback path only.
         createdAt: new Date(0),
         updatedAt: new Date(0),

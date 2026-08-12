@@ -1,5 +1,6 @@
-import { getDb, skills } from '@quiz/db-skillhubcore';
-import { eq, ilike, and, isNull, desc } from 'drizzle-orm';
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
+import { getDb, skills } from '@quiz/db';
+import { and, desc, eq, ilike, inArray } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
@@ -10,11 +11,11 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category');
     const limit = parseInt(searchParams.get('limit') || '20');
 
-    const conditions = [isNull(skills.deletedAt)];
+    const conditions = [];
     if (search) conditions.push(ilike(skills.name, `%${search}%`));
     if (category) conditions.push(eq(skills.category, category as any));
 
-    const results = await db.select().from(skills).where(and(...conditions)).orderBy(desc(skills.createdAt)).limit(limit + 1);
+    const results = await db.select().from(skills).where(conditions.length > 0 ? and(...conditions) : undefined).orderBy(desc(skills.createdAt)).limit(limit + 1);
     const hasMore = results.length > limit;
     const data = hasMore ? results.slice(0, limit) : results;
 
@@ -28,13 +29,19 @@ export async function POST(request: NextRequest) {
   try {
     const db = getDb();
     const body = await request.json();
-    const { name, description, category, weight = '1.00', status = 'active' } = body;
+    const { name, description, category, weight = 1, status = 'active' } = body;
 
     if (!name || !category) {
       return NextResponse.json({ error: 'Name and category required' }, { status: 400 });
     }
 
-    const [newSkill] = await db.insert(skills).values({ name, description, category, weight, status }).returning();
+    const [newSkill] = await db.insert(skills).values({
+      name,
+      description,
+      category,
+      weight: Number.isFinite(Number(weight)) ? Number(weight) : 1,
+      status,
+    }).returning();
     return NextResponse.json(newSkill, { status: 201 });
   } catch (error) {
     return NextResponse.json({ error: 'Failed to create skill' }, { status: 500 });
@@ -45,7 +52,7 @@ export async function PUT(request: NextRequest) {
   try {
     const db = getDb();
     const body = await request.json();
-    const { id, name, description, category, weight, status } = body;
+    const { id, name, description, category, mappingType, weight, status } = body;
 
     if (!id) return NextResponse.json({ error: 'Skill ID required' }, { status: 400 });
 
@@ -53,8 +60,9 @@ export async function PUT(request: NextRequest) {
     if (name) updateData.name = name;
     if (description !== undefined) updateData.description = description;
     if (category) updateData.category = category;
-    if (weight) updateData.weight = weight;
-    if (status) updateData.status = status;
+    void mappingType;
+    if (weight) updateData.weight = Number.isFinite(Number(weight)) ? Number(weight) : 1;
+    if (status !== undefined) updateData.status = status;
 
     const [updated] = await db.update(skills).set(updateData).where(eq(skills.id, id)).returning();
     if (!updated) return NextResponse.json({ error: 'Skill not found' }, { status: 404 });
@@ -75,11 +83,11 @@ export async function DELETE(request: NextRequest) {
     if (!id && !ids) return NextResponse.json({ error: 'ID required' }, { status: 400 });
 
     if (ids) {
-      await db.update(skills).set({ deletedAt: new Date() }).where(eq(skills.id, ids.split(',') as any));
+      await db.delete(skills).where(inArray(skills.id, ids.split(',')));
       return NextResponse.json({ message: 'Skills deleted' });
     }
 
-    await db.update(skills).set({ deletedAt: new Date() }).where(eq(skills.id, id!));
+    await db.delete(skills).where(eq(skills.id, id!));
     return NextResponse.json({ message: 'Skill deleted' });
   } catch (error) {
     return NextResponse.json({ error: 'Failed to delete skill' }, { status: 500 });

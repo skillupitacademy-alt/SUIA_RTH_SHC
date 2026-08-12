@@ -15,7 +15,7 @@ import {
   IAdminBlueprintConfigClient,
 } from '@quiz/api-client/types';
 
-type EntityStatus = 'draft' | 'active' | 'archived' | 'deleted';
+type EntityStatus = 'draft' | 'active' | 'inactive' | 'archived' | 'deleted';
 type DomainPayload = Pick<Domain, 'name' | 'slug' | 'description' | 'icon' | 'category'> & {
   status?: EntityStatus;
   orderIndex?: number;

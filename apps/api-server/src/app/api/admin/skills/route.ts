@@ -77,9 +77,10 @@ async function postHandler(_req: NextRequest) {
       : Number(body.weight ?? NaN);
     const createBody: SkillInsert = {
       name: body.name,
+      description: body.description,
       category: body.category,
-      mappingType: body.mappingType,
       weight: Number.isFinite(parsedWeight) ? parsedWeight : 1,
+      status: body.status,
     };
 
     const engine = container.get(AdminSkillEngineClass);

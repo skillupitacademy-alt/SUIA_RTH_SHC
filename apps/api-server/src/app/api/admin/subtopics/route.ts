@@ -78,7 +78,7 @@ async function postHandler(_req: NextRequest) {
       topicId: body.topicId,
       name: body.name,
       description: body.description,
-      depthLevel: body.depthLevel,
+      depth: body.depthLevel,
     };
 
     const engine = container.get(AdminSubtopicEngineClass);

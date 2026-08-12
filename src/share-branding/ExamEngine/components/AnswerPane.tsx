@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AccordionCodeOption } from './AccordionCodeOption';
 import { Check } from 'lucide-react';
 import { MacOSDots } from './MacOSDots';
@@ -18,22 +18,30 @@ interface AnswerPaneProps {
   primaryTint: string;
   multiSelect?: boolean;
   cardTheme: ExamCardTheme;
+  selectedIds?: string[];
+  onSelectionChange?: (selectedIds: string[]) => void;
 }
 
-export function AnswerPane({ options, primaryAccent, primaryTint, multiSelect = false, cardTheme }: AnswerPaneProps) {
-  const [selected, setSelected] = useState<string[]>([]);
+export function AnswerPane({ options, primaryAccent, primaryTint, multiSelect = false, cardTheme, selectedIds = [], onSelectionChange }: AnswerPaneProps) {
+  const [selected, setSelected] = useState<string[]>(selectedIds);
   const [expandedOption, setExpandedOption] = useState<string | null>(
     options.length > 0 && options.some(o => !!o.code) ? options[0].id : null
   );
 
+  useEffect(() => {
+    setSelected(selectedIds);
+  }, [selectedIds]);
+
   const handleSelect = (id: string) => {
+    let nextSelected: string[];
     if (multiSelect) {
-      setSelected(prev => 
-        prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
-      );
+      nextSelected = selected.includes(id) ? selected.filter(x => x !== id) : [...selected, id];
     } else {
-      setSelected([id]);
+      nextSelected = [id];
     }
+
+    setSelected(nextSelected);
+    onSelectionChange?.(nextSelected);
   };
 
   const handleToggleExpand = (id: string) => {

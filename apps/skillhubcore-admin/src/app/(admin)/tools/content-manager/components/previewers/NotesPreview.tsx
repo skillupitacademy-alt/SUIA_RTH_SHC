@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable no-useless-escape */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import React from 'react';

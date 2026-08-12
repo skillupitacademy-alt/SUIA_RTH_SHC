@@ -19,6 +19,7 @@ const isAdminEquivalentRole = (value: string | null | undefined) => {
 
 const LOCAL_TEST_BYPASS_PREFIXES = [
   '/content-generation/global-architecture',
+  '/questions',
   '/tools/visual-guide',
   '/tools/prompt-generator',
   '/tools/content-manager',

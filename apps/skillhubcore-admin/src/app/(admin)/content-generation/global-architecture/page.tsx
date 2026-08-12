@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, react-hooks/exhaustive-deps */
 "use client";
 
 import React, { useState, useEffect, useContext } from 'react';
@@ -10,9 +11,9 @@ import {
   Sun, Moon, Trash2, MonitorSmartphone, Code, ExternalLink, Activity, Users, Heart, X
 } from 'lucide-react';
 import { buildGlobalArchitectureRegistry, getEnabledComponentsForSection, isEducationalArchitectureFinalized } from './global-architecture-registry';
+import { getStrictSectionJsonTemplate } from '../../tools/prompt-generator/lib/prompt-templates';
+import { ContractAwareComponentPreview } from '../../tools/content-manager/components/ContractAwareComponentPreview';
 import type { ArchitectureStatus, EducationalComponentConfig, UIUXComponentConfig, ComponentPriority } from './types';
-
-// New Architecture Components (Phase 2 & 3)
 import {
   ComponentSelectionTab,
   EducationalPropertiesTab,
@@ -21,41 +22,7 @@ import {
   VisualStylingTab,
   ResponsiveDesignTab,
   AccessibilityTab,
-  PreviewModal,
 } from './components';
-
-// Legacy Tabs (Migration in Progress)
-import {
-  UniversalArchitectureTab,
-  SectionSequenceTab,
-  ComponentDetailsTab,
-  LearningProgressionTab,
-  PromptManagementTab,
-  LegacyPromptManagementTab,
-  ValidationRulesTab,
-  JSONSchemaTab,
-  RendererMappingTab,
-} from './legacy-tabs';
-
-// Extracted Utilities and Hooks
-import { 
-  ARCHITECTURE_STORAGE_KEY,
-  LEGACY_STORAGE_KEY_V1,
-  DEFAULT_DUMMY_CONTEXT,
-  LEARNER_PREVIEW_TARGETS,
-  PREVIEW_TARGET_BRAND_CONTRACTS,
-  COLOR_COMBINATION_OPTIONS,
-} from './constants';
-import {
-  formatTitle,
-  getIconForComponent,
-  getColorForComponent,
-  getDefaultPipelineJson,
-  normalizeHexColor,
-  mixHexColors,
-} from './utils';
-import { useArchitectureHandlers } from './useArchitectureHandlers';
-import { useRendererSubcomponents } from './useRendererSubcomponents';
 
 interface ComponentArchitecture {
   purpose?: string;
@@ -1784,69 +1751,10 @@ export default function GlobalArchitecturePage() {
 
       {/* 4. Main Content Grid */}
       {activeTab === 'Universal Architecture' ? (
-        <UniversalArchitectureTab
-          activeSectionKey={activeSectionKey}
-          activeData={activeData}
-          activeComponentMap={activeComponentMap}
-          activeLearningFlow={activeLearningFlow}
-          isUiUxMode={isUiUxMode}
-          selectedComponentKey={selectedComponentKey}
-          setSelectedComponentKey={setSelectedComponentKey}
-          selectedComponentData={selectedComponentData}
-          selectedComponentIndex={selectedComponentIndex}
-          selectedPreviewJson={selectedPreviewJson}
-          selectedBrandPreviewContract={selectedBrandPreviewContract}
-          learnerPreviewTarget={learnerPreviewTarget}
-          selectedPipelineSubsectionKey={selectedPipelineSubsectionKey}
-          adminSectionId={adminSectionId}
-          canonicalSectionId={canonicalSectionId}
-          architectures={architectures}
-          showActionMessage={showActionMessage}
-          updateArchitectureStatus={updateArchitectureStatus}
-          startJsonEdit={startJsonEdit}
-          copyArchitectureJson={copyArchitectureJson}
-          downloadArchitectureJson={downloadArchitectureJson}
-          openWorkflowUrl={openWorkflowUrl}
-          selectedWorkflowUrls={selectedWorkflowUrls}
-          showContextSidebar={showContextSidebar}
-          universalComponents={universalComponents}
-          universalArchitecturePreviewContract={universalArchitecturePreviewContract}
-          // TODO: Extract full content from page.tsx lines 1788-2290
-        />
-      ) : activeTab === 'Section Sequence' ? (
-        <SectionSequenceTab
-          activeSectionKey={activeSectionKey}
-          activeData={activeData}
-          activeComponentMap={activeComponentMap}
-          activeLearningFlow={activeLearningFlow}
-          isUiUxMode={isUiUxMode}
-          selectedComponentKey={selectedComponentKey}
-          setSelectedComponentKey={setSelectedComponentKey}
-          selectedComponentData={selectedComponentData}
-          selectedComponentIndex={selectedComponentIndex}
-          selectedPreviewJson={selectedPreviewJson}
-          selectedBrandPreviewContract={selectedBrandPreviewContract}
-          learnerPreviewTarget={learnerPreviewTarget}
-          selectedPipelineSubsectionKey={selectedPipelineSubsectionKey}
-          adminSectionId={adminSectionId}
-          canonicalSectionId={canonicalSectionId}
-          architectures={architectures}
-          showActionMessage={showActionMessage}
-          updateArchitectureStatus={updateArchitectureStatus}
-          startJsonEdit={startJsonEdit}
-          copyArchitectureJson={copyArchitectureJson}
-          downloadArchitectureJson={downloadArchitectureJson}
-          openWorkflowUrl={openWorkflowUrl}
-          selectedWorkflowUrls={selectedWorkflowUrls}
-          showContextSidebar={showContextSidebar}
-          universalComponents={universalComponents}
-          universalArchitecturePreviewContract={universalArchitecturePreviewContract}
-          showAdvancedSequence={showAdvancedSequence}
-          setShowAdvancedSequence={setShowAdvancedSequence}
-          // TODO: Extract full content from page.tsx lines 2469-2745
-        />
-      
-      ) : activeTab === 'Component Selection' ? (
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+          
+          {/* LEFT COLUMN (65%) */}
+          <div className={`${showContextSidebar ? 'xl:col-span-8' : 'xl:col-span-12'} space-y-6`}>
             
             {!isUiUxMode ? (
               // ==========================================

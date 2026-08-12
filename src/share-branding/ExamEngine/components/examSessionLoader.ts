@@ -1,7 +1,9 @@
 import { ExamApiResponse, mapExamApiToSessionData } from './examSessionMapper';
 import { ExamSessionData } from './examSession';
+import { headers } from 'next/headers';
 
 const demoExamApiResponse: ExamApiResponse = {
+  examId: 'demo',
   breadcrumb: 'Full Stack Development / Front End Development / React',
   student: {
     name: 'Demo Student',
@@ -166,7 +168,144 @@ class ConcreteObserver extends Subject {
   ],
 };
 
-export async function loadExamSessionData(): Promise<ExamSessionData> {
-  // Replace this with the real exam session API call once backend wiring is ready.
+type QuizStateOption =
+  | string
+  | {
+      id?: string;
+      text?: string | null;
+      code?: string | null;
+      label?: string | null;
+    };
+
+interface QuizStateQuestion {
+  id?: string;
+  questionId?: string;
+  text?: string;
+  questionText?: string;
+  options?: QuizStateOption[];
+  codeSnippet?: string | null;
+  type?: string;
+  questionType?: string;
+  userAnswer?: string | null;
+  order?: number;
+}
+
+interface QuizStateResponse {
+  examId?: string;
+  id?: string;
+  status?: string;
+  remainingTimeSeconds?: number;
+  startedAt?: string;
+  progress?: {
+    totalQuestions?: number;
+    answeredCount?: number;
+  };
+  questions?: QuizStateQuestion[];
+}
+
+function unwrapQuizStatePayload(value: unknown): QuizStateResponse | null {
+  if (typeof value !== 'object' || value === null) {
+    return null;
+  }
+
+  if ('data' in value) {
+    const data = (value as { data?: unknown }).data;
+    return typeof data === 'object' && data !== null ? data as QuizStateResponse : null;
+  }
+
+  return value as QuizStateResponse;
+}
+
+function formatTimeRemaining(seconds: number | undefined): string {
+  if (typeof seconds !== 'number' || Number.isFinite(seconds) === false || seconds <= 0) {
+    return '0m';
+  }
+
+  const minutes = Math.ceil(seconds / 60);
+  return `${minutes}m`;
+}
+
+function getOptionId(option: QuizStateOption, index: number): string {
+  if (typeof option === 'string') {
+    return String.fromCharCode(97 + index);
+  }
+
+  return option.id ?? option.label ?? String.fromCharCode(97 + index);
+}
+
+function getOptionText(option: QuizStateOption): string | undefined {
+  return typeof option === 'string' ? option : option.text ?? option.label ?? undefined;
+}
+
+function mapQuizStateToSessionData(state: QuizStateResponse): ExamSessionData {
+  const questions = state.questions ?? [];
+  const answeredCount = state.progress?.answeredCount ?? questions.filter((question) => question.userAnswer !== null && question.userAnswer !== undefined).length;
+  const totalQuestions = state.progress?.totalQuestions ?? questions.length;
+
+  return {
+    examId: state.examId ?? state.id,
+    breadcrumb: 'Exam Session',
+    student: {
+      name: 'Learner',
+      identifierLabel: 'Exam ID',
+      identifierValue: state.examId ?? state.id ?? 'active',
+    },
+    progress: {
+      answeredCount,
+      markedCount: 0,
+      remainingCount: Math.max(0, totalQuestions - answeredCount),
+      timeRemainingLabel: formatTimeRemaining(state.remainingTimeSeconds),
+      sectionLabel: state.status ?? 'started',
+      metadataSummary: `${totalQuestions} Questions`,
+    },
+    questions: questions.map((question, index) => ({
+      id: question.questionId ?? question.id ?? `q${index + 1}`,
+      status: question.userAnswer !== null && question.userAnswer !== undefined ? 'completed' : 'unanswered',
+      question: {
+        number: question.order ?? index + 1,
+        text: question.questionText ?? question.text ?? '',
+        code: question.codeSnippet ?? undefined,
+      },
+      answers: (question.options ?? []).map((option, optionIndex) => ({
+        id: getOptionId(option, optionIndex),
+        text: getOptionText(option),
+        code: typeof option === 'string' ? undefined : option.code ?? undefined,
+      })),
+      multiSelect: question.type === 'multiple' || question.questionType === 'multiple',
+    })),
+  };
+}
+
+async function loadRealExamSessionData(examId: string): Promise<ExamSessionData> {
+  const requestHeaders = await headers();
+  const host = requestHeaders.get('x-forwarded-host') ?? requestHeaders.get('host');
+  const proto = requestHeaders.get('x-forwarded-proto') ?? 'http';
+
+  if (host === null || host.trim() === '') {
+    throw new Error('Unable to resolve exam host');
+  }
+
+  const response = await fetch(`${proto}://${host}/api/quiz/state?examId=${encodeURIComponent(examId)}`, {
+    cache: 'no-store',
+    headers: {
+      cookie: requestHeaders.get('cookie') ?? '',
+      accept: 'application/json',
+    },
+  });
+
+  const payload = await response.json().catch(() => null);
+  const state = unwrapQuizStatePayload(payload);
+  if (!response.ok || state === null) {
+    throw new Error('Unable to load exam session');
+  }
+
+  return mapQuizStateToSessionData(state);
+}
+
+export async function loadExamSessionData(examId?: string): Promise<ExamSessionData> {
+  if (typeof examId === 'string' && examId.trim() !== '') {
+    return loadRealExamSessionData(examId.trim());
+  }
+
   return mapExamApiToSessionData(demoExamApiResponse);
 }

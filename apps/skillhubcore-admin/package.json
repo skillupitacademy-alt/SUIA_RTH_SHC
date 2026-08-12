@@ -13,7 +13,7 @@
   "dependencies": {
     "@quiz/api-client": "workspace:*",
     "@quiz/auth": "workspace:*",
-    "@quiz/db-skillhubcore": "workspace:*",
+    "@quiz/db": "workspace:*",
     "@quiz/db-tutorial": "workspace:*",
     "@quiz/marketing-site": "workspace:*",
     "@quiz/observability": "workspace:*",

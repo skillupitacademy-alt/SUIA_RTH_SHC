@@ -21,6 +21,7 @@ export interface ExamApiQuestion {
 }
 
 export interface ExamApiResponse {
+  examId?: string;
   breadcrumb: string;
   student: ExamApiStudent;
   progress: {
@@ -54,6 +55,7 @@ function mapQuestion(question: ExamApiQuestion): ExamQuestionItem {
 
 export function mapExamApiToSessionData(api: ExamApiResponse): ExamSessionData {
   return {
+    examId: api.examId,
     breadcrumb: api.breadcrumb,
     student: {
       name: api.student.name,

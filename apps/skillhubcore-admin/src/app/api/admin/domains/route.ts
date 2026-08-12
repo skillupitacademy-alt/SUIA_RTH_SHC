@@ -1,5 +1,6 @@
-import { getDb, domains } from '@quiz/db-skillhubcore';
-import { eq, ilike, and, isNull, desc } from 'drizzle-orm';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { domains, getDb } from '@quiz/db';
+import { and, desc, eq, ilike, inArray } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
 // GET /api/admin/domains - List domains with pagination and search
@@ -11,8 +12,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20');
     const cursor = searchParams.get('cursor');
 
-    // Build query conditions
-    const conditions = [isNull(domains.deletedAt)];
+    const conditions = [];
     
     if (search) {
       conditions.push(ilike(domains.name, `%${search}%`));
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     const results = await db
       .select()
       .from(domains)
-      .where(and(...conditions))
+      .where(conditions.length > 0 ? and(...conditions) : undefined)
       .orderBy(desc(domains.createdAt))
       .limit(limit + 1);
 
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
   try {
     const db = getDb();
     const body = await request.json();
-    const { name, description, category, status = 'active', order = 0 } = body;
+    const { name, description, category, status = 'active' } = body;
 
     if (!name || !category) {
       return NextResponse.json(
@@ -69,7 +69,6 @@ export async function POST(request: NextRequest) {
         description,
         category,
         status,
-        order,
       })
       .returning();
 
@@ -102,7 +101,7 @@ export async function PUT(request: NextRequest) {
     if (description !== undefined) updateData.description = description;
     if (category !== undefined) updateData.category = category;
     if (status !== undefined) updateData.status = status;
-    if (order !== undefined) updateData.order = order;
+    void order;
 
     const [updatedDomain] = await db
       .update(domains)
@@ -143,21 +142,17 @@ export async function DELETE(request: NextRequest) {
     }
 
     if (ids) {
-      // Batch delete
       const idArray = ids.split(',');
       await db
-        .update(domains)
-        .set({ deletedAt: new Date() })
-        .where(eq(domains.id, idArray as any));
+        .delete(domains)
+        .where(inArray(domains.id, idArray));
 
       return NextResponse.json({ 
         message: `${idArray.length} domains deleted successfully` 
       });
     } else {
-      // Single delete
       const [deletedDomain] = await db
-        .update(domains)
-        .set({ deletedAt: new Date() })
+        .delete(domains)
         .where(eq(domains.id, id!))
         .returning();
 

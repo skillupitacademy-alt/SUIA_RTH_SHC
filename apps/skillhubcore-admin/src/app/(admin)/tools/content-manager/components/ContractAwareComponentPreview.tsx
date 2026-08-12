@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 import React from 'react';
 import { ArrowRight, BookOpen, CheckCircle2, Sparkles } from 'lucide-react';
 

@@ -1,4 +1,4 @@
-import { getDb, skills } from '@quiz/db-skillhubcore';
+import { getDb, skills } from '@quiz/db';
 import { eq } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -12,7 +12,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     if (body.name !== undefined) updateData.name = body.name;
     if (body.description !== undefined) updateData.description = body.description;
     if (body.category !== undefined) updateData.category = body.category;
-    if (body.weight !== undefined) updateData.weight = String(body.weight);
+    void body.mappingType;
+    if (body.weight !== undefined) updateData.weight = Number.isFinite(Number(body.weight)) ? Number(body.weight) : 1;
     if (body.status !== undefined) updateData.status = body.status;
 
     const [updated] = await db.update(skills).set(updateData).where(eq(skills.id, id)).returning();
@@ -29,7 +30,7 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
   try {
     const { id } = await params;
     const db = getDb();
-    const [deleted] = await db.update(skills).set({ deletedAt: new Date() }).where(eq(skills.id, id)).returning();
+    const [deleted] = await db.delete(skills).where(eq(skills.id, id)).returning();
     if (!deleted) return NextResponse.json({ error: 'Skill not found' }, { status: 404 });
 
     return NextResponse.json({ message: 'Skill deleted successfully' });

@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { BrandConfig } from '../../brandConfig';
 import { ActionBar } from './ActionBar';
@@ -17,10 +18,15 @@ interface ExamEngineProps {
 }
 
 export function ExamEngine({ brand, session }: ExamEngineProps) {
+  const router = useRouter();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showTracker, setShowTracker] = useState(true);
   const [showOverview, setShowOverview] = useState(true);
   const [themeMode, setThemeMode] = useState<CardThemeMode>('high-clarity');
+  const [answersByQuestionId, setAnswersByQuestionId] = useState<Record<string, string[]>>({});
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
   if (!session || session.questions.length === 0) {
     return null;
   }
@@ -34,12 +40,90 @@ export function ExamEngine({ brand, session }: ExamEngineProps) {
     { label: 'Time Left', value: session.progress.timeRemainingLabel },
   ];
 
-  const handleNext = () => {
+  const saveCurrentAnswer = async () => {
+    if (session.examId === undefined || session.examId === 'demo') {
+      return;
+    }
+
+    const selected = answersByQuestionId[currentScenario.id] ?? [];
+    if (selected.length === 0) {
+      return;
+    }
+
+    setIsSaving(true);
+    setActionError(null);
+
+    try {
+      const response = await fetch('/api/quiz/answer', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'Idempotency-Key': crypto.randomUUID(),
+        },
+        body: JSON.stringify({
+          examId: session.examId,
+          questionId: currentScenario.id,
+          answer: currentScenario.multiSelect ? JSON.stringify(selected) : selected[0],
+        }),
+      });
+
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => null)) as { error?: string; message?: string } | null;
+        throw new Error(payload?.error ?? payload?.message ?? 'Unable to save answer.');
+      }
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleNext = async () => {
+    try {
+      await saveCurrentAnswer();
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : 'Unable to save answer.');
+      return;
+    }
+
     setCurrentIndex((prev) => (prev + 1) % session.questions.length);
   };
 
   const handlePrev = () => {
     setCurrentIndex((prev) => (prev === 0 ? session.questions.length - 1 : prev - 1));
+  };
+
+  const handleSubmit = async () => {
+    if (session.examId === undefined || session.examId === 'demo') {
+      return;
+    }
+
+    setIsSubmitting(true);
+    setActionError(null);
+
+    try {
+      await saveCurrentAnswer();
+
+      const response = await fetch('/api/quiz/submit', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'Idempotency-Key': crypto.randomUUID(),
+        },
+        body: JSON.stringify({ examId: session.examId }),
+      });
+
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => null)) as { error?: string; message?: string } | null;
+        throw new Error(payload?.error ?? payload?.message ?? 'Unable to submit exam.');
+      }
+
+      router.push(`/result?examId=${encodeURIComponent(session.examId)}`);
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : 'Unable to submit exam.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const desktopMainClassName = showTracker
@@ -58,6 +142,11 @@ export function ExamEngine({ brand, session }: ExamEngineProps) {
       />
 
       <main className={`grid gap-4 px-3 py-3 pb-24 sm:px-4 sm:py-4 sm:pb-24 xl:gap-4 xl:px-4 xl:py-4 xl:pb-[4vh] ${desktopMainClassName}`}>
+        {actionError !== null && (
+          <div className="order-first rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 xl:col-span-2">
+            {actionError}
+          </div>
+        )}
         <div
           className={`order-1 min-h-[320px] overflow-hidden rounded-2xl border shadow-2xl xl:col-start-1 xl:row-start-1 xl:h-full xl:min-h-0 ${
             !showTracker ? 'xl:row-span-2' : ''
@@ -84,6 +173,13 @@ export function ExamEngine({ brand, session }: ExamEngineProps) {
             primaryTint={`rgba(${brand.primaryRgb}, 0.05)`}
             multiSelect={currentScenario.multiSelect}
             cardTheme={cardTheme}
+            selectedIds={answersByQuestionId[currentScenario.id] ?? []}
+            onSelectionChange={(selectedIds) => {
+              setAnswersByQuestionId((current) => ({
+                ...current,
+                [currentScenario.id]: selectedIds,
+              }));
+            }}
           />
         </div>
 
@@ -119,7 +215,7 @@ export function ExamEngine({ brand, session }: ExamEngineProps) {
       <ActionBar
         primaryAccent={brand.primaryColorDark}
         secondaryAccent={brand.secondaryColor}
-        onNext={handleNext}
+        onNext={() => void handleNext()}
         onPrevious={handlePrev}
         showTracker={showTracker}
         onToggleTracker={() => setShowTracker(!showTracker)}
@@ -127,6 +223,9 @@ export function ExamEngine({ brand, session }: ExamEngineProps) {
         onToggleOverview={() => setShowOverview(!showOverview)}
         themeMode={themeMode}
         onThemeChange={setThemeMode}
+        onSubmit={() => void handleSubmit()}
+        isSaving={isSaving}
+        isSubmitting={isSubmitting}
       />
     </div>
   );

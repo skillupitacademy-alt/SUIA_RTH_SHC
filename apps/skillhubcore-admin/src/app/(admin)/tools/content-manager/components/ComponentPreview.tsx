@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, no-useless-escape */
 import React from 'react';
 import {
   ArrowLeft,

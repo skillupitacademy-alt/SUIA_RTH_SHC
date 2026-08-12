@@ -264,52 +264,7 @@ export class HierarchySyncService {
 
   static async retryFailed(): Promise<BulkSyncSummary> {
     const summary: BulkSyncSummary = { total: 0, succeeded: 0, failed: 0 };
-    const entityBatches: Array<{ entityType: HierarchyEntityType; ids: Array<{ id: string }> }> = [
-      {
-        entityType: "domain",
-        ids: await withTimeout(
-          quizDb.query.domains.findMany({
-            where: eq(domains.tutorialSyncStatus, "failed"),
-            columns: { id: true },
-          }) as Promise<Array<{ id: string }>>,
-          STANDARD_QUERY_TIMEOUT,
-          "HierarchySyncService.retryFailed.domains",
-        ),
-      },
-      {
-        entityType: "subject",
-        ids: await withTimeout(
-          quizDb.query.subjects.findMany({
-            where: eq(subjects.tutorialSyncStatus, "failed"),
-            columns: { id: true },
-          }) as Promise<Array<{ id: string }>>,
-          STANDARD_QUERY_TIMEOUT,
-          "HierarchySyncService.retryFailed.subjects",
-        ),
-      },
-      {
-        entityType: "topic",
-        ids: await withTimeout(
-          quizDb.query.topics.findMany({
-            where: eq(topics.tutorialSyncStatus, "failed"),
-            columns: { id: true },
-          }) as Promise<Array<{ id: string }>>,
-          STANDARD_QUERY_TIMEOUT,
-          "HierarchySyncService.retryFailed.topics",
-        ),
-      },
-      {
-        entityType: "subtopic",
-        ids: await withTimeout(
-          quizDb.query.subtopics.findMany({
-            where: eq(subtopics.tutorialSyncStatus, "failed"),
-            columns: { id: true },
-          }) as Promise<Array<{ id: string }>>,
-          STANDARD_QUERY_TIMEOUT,
-          "HierarchySyncService.retryFailed.subtopics",
-        ),
-      },
-    ];
+    const entityBatches: Array<{ entityType: HierarchyEntityType; ids: Array<{ id: string }> }> = [];
 
     for (const batch of entityBatches) {
       for (const row of batch.ids) {
