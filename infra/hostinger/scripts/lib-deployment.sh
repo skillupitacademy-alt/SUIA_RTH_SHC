@@ -304,7 +304,7 @@ check_system_resources() {
   load_avg=$(awk '{print $1}' /proc/loadavg 2>/dev/null || echo "0")
   cpu_count=$(nproc 2>/dev/null || echo "1")
   max_allowed=$(awk -v configured="$MAX_CPU_LOAD" -v cpus="$cpu_count" 'BEGIN { per_cpu=cpus*2; print configured < per_cpu ? configured : per_cpu }')
-  awk -v load="$load_avg" -v max="$max_allowed" 'BEGIN { exit(load <= max ? 0 : 1) }' || { log_error "CPU load $load_avg above $max_allowed"; failed=1; }
+  awk -v current_load="$load_avg" -v max="$max_allowed" 'BEGIN { exit(current_load <= max ? 0 : 1) }' || { log_error "CPU load $load_avg above $max_allowed"; failed=1; }
 
   docker info >/dev/null 2>&1 || { log_error "Docker daemon not running"; failed=1; }
   docker compose version >/dev/null 2>&1 || { log_error "Docker Compose unavailable"; failed=1; }

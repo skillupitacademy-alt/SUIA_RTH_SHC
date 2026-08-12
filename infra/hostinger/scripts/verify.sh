@@ -31,11 +31,16 @@ fi
 compose config >/dev/null
 
 echo "Checking for accidental public app port mappings..."
-if compose config | awk '
-  /^[a-zA-Z0-9_-]+:$/ { service=$1; sub(":", "", service) }
-  /published:/ && service != "nginx" { found=1; print "public port on service " service }
-  END { exit found ? 1 : 0 }
-'; then
+if compose config --format json | jq -e '
+  [
+    .services
+    | to_entries[]
+    | select(.key != "nginx")
+    | select((.value.ports // []) | length > 0)
+    | .key
+  ] as $services
+  | if ($services | length) == 0 then true else $services[] | "public port on service \(.)" | halt_error(1) end
+' >/dev/null; then
   echo "Port exposure check passed."
 else
   echo "Only nginx may publish public ports." >&2
