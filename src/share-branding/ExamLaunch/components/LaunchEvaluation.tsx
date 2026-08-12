@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight, X, AlertCircle, Clock, Zap, ArrowLeft } from 'lucide-react';
 import { useBrand } from '../../PostLandingPage/app/context/BrandContext';
 import { DomainSelection } from './evaluation/DomainSelection';
@@ -12,6 +12,14 @@ import { AssessmentSummary } from './evaluation/AssessmentSummary';
 import { useLaunchData } from './LaunchDataContext';
 import { LaunchSelectionState } from '../../launchExamPageData';
 
+function readCookie(name: string) {
+  if (typeof document === 'undefined') return undefined;
+  const match = document.cookie
+    .split('; ')
+    .find((cookie) => cookie.startsWith(`${name}=`));
+  return match === undefined ? undefined : decodeURIComponent(match.slice(name.length + 1));
+}
+
 export function LaunchEvaluation() {
   const brandConfig = useBrand();
   const data = useLaunchData();
@@ -20,7 +28,8 @@ export function LaunchEvaluation() {
   const [currentStep, setCurrentStep] = useState(1);
   const [expertMode, setExpertMode] = useState(false);
   const [showExitDialog, setShowExitDialog] = useState(false);
-  const [showActiveSession, setShowActiveSession] = useState(true);
+  const [showActiveSession, setShowActiveSession] = useState(false);
+  const [activeSession, setActiveSession] = useState<{ examId: string; title: string } | null>(null);
   const [isLaunching, setIsLaunching] = useState(false);
   const [launchError, setLaunchError] = useState<string | null>(null);
 
@@ -32,6 +41,50 @@ export function LaunchEvaluation() {
     difficulty: 'Mixed',
     questionCount: 20,
   });
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadActiveSession() {
+      try {
+        const response = await fetch('/api/quiz/active', {
+          credentials: 'include',
+          cache: 'no-store',
+        });
+        const payload = (await response.json().catch(() => null)) as {
+          data?: { active?: boolean; examId?: string; title?: string };
+          active?: boolean;
+          examId?: string;
+          title?: string;
+        } | null;
+        const active = payload?.data ?? payload;
+
+        if (
+          cancelled === false &&
+          active?.active === true &&
+          typeof active.examId === 'string' &&
+          active.examId.length > 0
+        ) {
+          setActiveSession({
+            examId: active.examId,
+            title: active.title ?? 'Active exam',
+          });
+          setShowActiveSession(true);
+        }
+      } catch {
+        if (cancelled === false) {
+          setActiveSession(null);
+          setShowActiveSession(false);
+        }
+      }
+    }
+
+    void loadActiveSession();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const canAdvance = () => {
     if (currentStep === 1) return config.domain !== null;
@@ -50,13 +103,19 @@ export function LaunchEvaluation() {
       setLaunchError(null);
 
       try {
+        const csrfToken = readCookie('csrfToken');
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+          'Idempotency-Key': crypto.randomUUID(),
+        };
+        if (csrfToken !== undefined && csrfToken !== '') {
+          headers['x-csrf-token'] = csrfToken;
+        }
+
         const response = await fetch('/api/quiz/start', {
           method: 'POST',
           credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-            'Idempotency-Key': crypto.randomUUID(),
-          },
+          headers,
           body: JSON.stringify({
             domainId: config.domain?.id,
             subjectIds: config.subjects.map((subject) => subject.id),
@@ -114,17 +173,17 @@ export function LaunchEvaluation() {
   return (
     <div className="flex min-h-screen w-full max-w-full flex-col overflow-x-hidden bg-slate-50">
       <header role="banner" className="flex-none">
-        {showActiveSession && (
+        {showActiveSession && activeSession !== null && (
           <div className="flex flex-col items-center justify-between gap-3 px-4 py-2 text-center text-white transition-colors duration-300 sm:flex-row sm:py-2.5 sm:text-left" style={{ backgroundColor: brandConfig.primaryColorDark }}>
             <div className="flex items-center gap-3">
               <Clock className="h-4 w-4 flex-shrink-0 sm:h-5 sm:w-5" />
               <div>
                 <p className="text-sm font-bold sm:text-[15px] sm:font-semibold">{data.labels.activeSessionTitle}</p>
-                <p className="text-[10px] text-white/90 sm:text-xs">{data.labels.activeSessionDescription}</p>
+                <p className="text-[10px] text-white/90 sm:text-xs">{`"${activeSession.title}" is currently active`}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <button aria-label="Resume active session" className="rounded-xl bg-white px-3 py-1.5 text-xs font-bold shadow-sm transition-colors hover:bg-gray-100 sm:px-4 sm:text-sm" style={{ color: brandConfig.primaryColorDark }}>
+              <button onClick={() => router.push(`/exam?examId=${encodeURIComponent(activeSession.examId)}`)} aria-label="Resume active session" className="rounded-xl bg-white px-3 py-1.5 text-xs font-bold shadow-sm transition-colors hover:bg-gray-100 sm:px-4 sm:text-sm" style={{ color: brandConfig.primaryColorDark }}>
                 {data.labels.activeSessionResumeLabel}
               </button>
               <button onClick={() => setShowActiveSession(false)} aria-label="Dismiss banner" className="rounded-full p-1 transition-all hover:scale-110 hover:bg-white/20">

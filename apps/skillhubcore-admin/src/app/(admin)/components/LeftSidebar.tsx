@@ -25,7 +25,9 @@ import {
   GraduationCap,
   PlaySquare,
   ChevronRight,
-  FolderTree
+  FolderTree,
+  Award,
+  BadgeCheck,
 } from 'lucide-react';
 
 interface LeftSidebarProps {
@@ -152,6 +154,25 @@ export function LeftSidebar({ isLeftSidebarOpen, setIsLeftSidebarOpen, pathname 
                 <Link key={i} href={item.href} className={`flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors focus:ring-2 focus:ring-pink-500 outline-none ${pathname === item.href ? 'bg-slate-800 text-white font-bold' : 'text-slate-300 hover:text-white hover:bg-slate-800'}`}>
                   <div className="flex items-center gap-3 overflow-hidden">
                     <div className={`p-1 rounded bg-slate-800/50 shrink-0 ${item.color || 'text-slate-400'}`}><item.icon size={14} /></div>
+                    <span className="whitespace-nowrap truncate">{item.label}</span>
+                  </div>
+                  <ChevronRight size={14} className="text-slate-500 shrink-0" />
+                </Link>
+              ))}
+            </nav>
+          </div>
+
+          {/* Certificates */}
+          <div>
+            <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 px-2 whitespace-nowrap">Certificates</h2>
+            <nav className="space-y-1">
+              {[
+                { icon: Award, label: 'Certificate Generator', href: '/certificate-generator', color: 'text-emerald-400' },
+                { icon: BadgeCheck, label: 'Certificate Preview', href: '/certificate-preview', color: 'text-sky-400' }
+              ].map((item, i) => (
+                <Link key={i} href={item.href} className={`flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors focus:ring-2 focus:ring-pink-500 outline-none ${pathname === item.href ? 'bg-slate-800 text-white font-bold' : 'text-slate-300 hover:text-white hover:bg-slate-800'}`}>
+                  <div className="flex items-center gap-3 overflow-hidden">
+                    <div className={`p-1 rounded bg-slate-800/50 shrink-0 ${item.color}`}><item.icon size={14} /></div>
                     <span className="whitespace-nowrap truncate">{item.label}</span>
                   </div>
                   <ChevronRight size={14} className="text-slate-500 shrink-0" />
