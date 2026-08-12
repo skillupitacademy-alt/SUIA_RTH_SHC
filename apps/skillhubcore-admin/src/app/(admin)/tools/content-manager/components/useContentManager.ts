@@ -19,12 +19,11 @@ import {
 import { ASSET_SPECS } from '../../prompt-generator/lib/asset-specs';
 import { getStrictSectionJsonTemplate } from '../../prompt-generator/lib/prompt-templates';
 
-export type PreviewTarget = 'local' | 'rth' | 'suia';
+export type PreviewTarget = 'rth' | 'suia';
 
 const PIPELINE_PAYLOAD_STORAGE_KEY = 'skillhubcore.globalArchitecture.pipelinePayload.v1';
 
 const PREVIEW_TARGET_BASE_URLS: Record<PreviewTarget, string> = {
-  local: 'http://localhost:3003',
   rth: 'https://user.realtutorialhub.com',
   suia: 'https://user.skillupitacademy.com',
 };
@@ -157,7 +156,7 @@ export function useContentManager() {
   const [previewData, setPreviewData] = useState<unknown>(null);
   const [previewApproved, setPreviewApproved] = useState(false);
   const [requirePreviewApproval, setRequirePreviewApproval] = useState(false);
-  const [previewTarget, setPreviewTarget] = useState<PreviewTarget>('local');
+  const [previewTarget, setPreviewTarget] = useState<PreviewTarget>('rth');
   const [pipelinePayload, setPipelinePayload] = useState<PipelinePayload | null>(null);
 
   const selectedSectionLabel = sections.find((section) => section.id === selectedSection)?.label ?? selectedSection;
@@ -231,7 +230,7 @@ export function useContentManager() {
       setSelectedSubsection(subParam);
     }
     if (requiresApproval) setRequirePreviewApproval(true);
-    if (previewTargetParam === 'local' || previewTargetParam === 'rth' || previewTargetParam === 'suia') {
+    if (previewTargetParam === 'rth' || previewTargetParam === 'suia') {
       setPreviewTarget(previewTargetParam);
     }
     if (domainParam || subjectParam || topicParam || subtopicParam || subtopicIdParam) {

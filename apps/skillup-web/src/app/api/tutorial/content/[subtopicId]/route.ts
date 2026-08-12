@@ -38,7 +38,7 @@ export async function GET(
     console.log('[SkillUp Tutorial Content] User authenticated:', user.userId);
     
     // Call API server with brand context
-    const apiUrl = process.env.INTERNAL_API_URL || process.env.GATEWAY_URL || 'http://localhost:3000';
+    const apiUrl = process.env.INTERNAL_API_URL || process.env.GATEWAY_URL || 'https://api.skillhubcore.in';
     const apiEndpoint = `${apiUrl}/api/tutorial/content/${params.subtopicId}`;
     
     console.log('[SkillUp Tutorial Content] Calling API:', apiEndpoint);

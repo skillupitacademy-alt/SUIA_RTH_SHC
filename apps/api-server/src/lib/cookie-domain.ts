@@ -18,7 +18,7 @@ function normalizeHost(value: string): string | undefined {
 
   host = host.split('/')[0].split(':')[0].replace(/^\.+/, '');
 
-  if (host.length === 0 || host === 'localhost' || isIpAddress(host) || !host.includes('.')) {
+  if (host.length === 0 || isIpAddress(host) || !host.includes('.')) {
     return undefined;
   }
 

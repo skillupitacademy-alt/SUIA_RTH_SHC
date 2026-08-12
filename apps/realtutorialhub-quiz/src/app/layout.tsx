@@ -56,7 +56,7 @@ export default function RootLayout({
 }>) {
     ReactDOM.preconnect("https://fonts.googleapis.com");
     ReactDOM.preconnect("https://fonts.gstatic.com", { crossOrigin: "" });
-    ReactDOM.preconnect(process.env.NEXT_PUBLIC_API_URL || "http://localhost:3002", { crossOrigin: "use-credentials" });
+    ReactDOM.preconnect(process.env.NEXT_PUBLIC_API_URL || "https://api.skillhubcore.in", { crossOrigin: "use-credentials" });
 
     return (
         <html lang="en" suppressHydrationWarning className={`${inter.variable} ${outfit.variable}`}>

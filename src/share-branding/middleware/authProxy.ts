@@ -65,14 +65,6 @@ export function isProtectedRoute(pathname: string): boolean {
   return hasPrefix(pathname, PROTECTED_PREFIXES);
 }
 
-function isLocalSubtopicPreviewRoute(request: NextRequest): boolean {
-  const hostname = request.nextUrl.hostname;
-  return (
-    (hostname === 'localhost' || hostname === '127.0.0.1') &&
-    request.nextUrl.pathname.startsWith('/start-learning/subtopic/')
-  );
-}
-
 export function getAccessToken(request: NextRequest): string | undefined {
   return request.cookies.get('accessToken')?.value;
 }
@@ -255,7 +247,7 @@ export async function createAuthProxy(options: AuthProxyOptions = {}) {
     }
 
     // Handle unauthenticated user accessing protected routes
-    if (isProtectedRoute(pathname) && user === null && !isLocalSubtopicPreviewRoute(request)) {
+    if (isProtectedRoute(pathname) && user === null) {
       return isApiRoute
         ? NextResponse.json({ error: 'Authentication required' }, { status: 401 })
         : NextResponse.redirect(getLoginUrl(request, redirectPath, options.brandLoginUrl));

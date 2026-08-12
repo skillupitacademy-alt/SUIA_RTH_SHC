@@ -15,10 +15,6 @@ export const DEFAULT_DUMMY_CONTEXT = {
 };
 
 export const LEARNER_PREVIEW_TARGETS = {
-  local: {
-    label: 'Localhost RTH',
-    baseUrl: 'http://localhost:3003',
-  },
   rth: {
     label: 'RTH Production',
     baseUrl: 'https://user.realtutorialhub.com',
@@ -30,16 +26,6 @@ export const LEARNER_PREVIEW_TARGETS = {
 } as const;
 
 export const PREVIEW_TARGET_BRAND_CONTRACTS = {
-  local: {
-    brand_variant: 'rth',
-    primary_color: '#d03f00',
-    primary_color_dark: '#b63600',
-    accent_color: '#b63600',
-    secondary_color: '#124fd6',
-    background_color: '#ffffff',
-    text_color: '#0f172a',
-    border_color: '#dbeafe',
-  },
   rth: {
     brand_variant: 'rth',
     primary_color: '#d03f00',

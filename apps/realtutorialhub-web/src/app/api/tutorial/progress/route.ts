@@ -33,7 +33,7 @@ async function getHandler(request: NextRequest) {
     }
 
     // Call API server
-    const apiUrl = process.env.INTERNAL_API_URL || process.env.GATEWAY_URL || 'http://localhost:3000';
+    const apiUrl = process.env.INTERNAL_API_URL || process.env.GATEWAY_URL || 'https://api.skillhubcore.in';
     const response = await fetch(
       `${apiUrl}/api/tutorial/progress?subtopicId=${parsed.data.subtopicId}`,
       {
@@ -83,7 +83,7 @@ async function postHandler(request: NextRequest) {
     }
 
     // Call API server
-    const apiUrl = process.env.INTERNAL_API_URL || process.env.GATEWAY_URL || 'http://localhost:3000';
+    const apiUrl = process.env.INTERNAL_API_URL || process.env.GATEWAY_URL || 'https://api.skillhubcore.in';
     const response = await fetch(
       `${apiUrl}/api/tutorial/progress`,
       {

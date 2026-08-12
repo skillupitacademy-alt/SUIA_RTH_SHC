@@ -37,7 +37,7 @@ function normalizeHost(value?: string | null): string | undefined {
 }
 
 function getUpstreamBaseUrl(): string {
-  const raw = (process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000').trim();
+  const raw = (process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'https://api.skillhubcore.in').trim();
   const withoutTrailingSlash = raw.replace(/\/+$/, '');
   return withoutTrailingSlash.toLowerCase().endsWith('/api')
     ? withoutTrailingSlash.slice(0, -4)

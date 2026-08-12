@@ -19,7 +19,7 @@ export class ExamObserver {
   private static triggerPdfGeneration(examId: string) {
     const apiBase = (process.env.NEXT_PUBLIC_API_URL !== undefined && process.env.NEXT_PUBLIC_API_URL !== '')
       ? process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, '')
-      : 'http://localhost:3002/api';
+      : 'https://api.skillhubcore.in/api';
 
     fetch(`${apiBase}/generate-report`, {
       method: 'POST',

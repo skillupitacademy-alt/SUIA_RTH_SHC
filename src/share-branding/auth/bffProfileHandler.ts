@@ -32,7 +32,14 @@ import {
  */
 
 // 🔥 INTERNAL API: Direct service-to-service calls (bypasses gateway)
-const INTERNAL_API_URL = process.env.INTERNAL_API_URL || process.env.API_SERVER_URL || 'http://localhost:3001';
+const INTERNAL_API_URL = (() => {
+  const configured = process.env.INTERNAL_API_URL || process.env.API_SERVER_URL;
+  if (typeof configured === 'string' && configured.trim().length > 0) {
+    return configured.trim().replace(/\/+$/, '');
+  }
+
+  return 'https://api.skillhubcore.in';
+})();
 
 /**
  * GET /api/profile

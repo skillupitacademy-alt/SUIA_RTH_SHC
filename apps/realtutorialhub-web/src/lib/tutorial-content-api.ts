@@ -17,7 +17,7 @@ const tutorialApiBase = (() => {
     return publicUrl.replace(/\/+$/, '');
   }
 
-  return 'http://localhost:3000/api';
+  return 'https://api.skillhubcore.in/api';
 })();
 
 export type TutorialContentApiDTO = {

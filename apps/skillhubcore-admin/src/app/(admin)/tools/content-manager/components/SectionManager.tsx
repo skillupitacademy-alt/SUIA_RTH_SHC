@@ -147,7 +147,6 @@ export function SectionManager({
             onChange={(event) => setPreviewTarget(event.target.value as PreviewTarget)}
             className="w-full rounded-lg border-2 border-gray-300 bg-white px-4 py-3 focus:border-blue-500 focus:outline-none"
           >
-            <option value="local">Localhost RTH (3003)</option>
             <option value="rth">RTH Production</option>
             <option value="suia">SUIA / SkillUp</option>
           </select>

@@ -56,7 +56,7 @@ const buildArchitecturePromptContext = (payload: PipelinePayload | null) => {
     `Educational Component Role: ${educationalPurpose}\n` +
     `UI/UX Architecture: ${payload.uiuxArchitectureKey || 'not-selected'}\n` +
     `UI/UX Component Decision: ${uiuxVariant}\n` +
-    `Preview Target: ${payload.previewTarget || 'local'}\n` +
+    `Preview Target: ${payload.previewTarget || 'rth'}\n` +
     `Default Dummy JSON Available: ${payload.defaultJson ? 'yes' : 'no'}\n`;
 };
 
@@ -76,7 +76,7 @@ export function PromptGeneratorUI() {
   const [assetCopied, setAssetCopied] = useState(false);
   const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);
   const [subtopicId, setSubtopicId] = useState('whatispython');
-  const [previewTarget, setPreviewTarget] = useState<'local' | 'rth' | 'suia'>('local');
+  const [previewTarget, setPreviewTarget] = useState<'rth' | 'suia'>('rth');
   const [pipelinePayload, setPipelinePayload] = useState<PipelinePayload | null>(null);
 
   useEffect(() => {
@@ -114,7 +114,7 @@ export function PromptGeneratorUI() {
     if (topicParam) setTopic(topicParam);
     if (subtopicParam) setSubtopic(subtopicParam);
     if (subtopicIdParam) setSubtopicId(subtopicIdParam);
-    if (previewTargetParam === 'local' || previewTargetParam === 'rth' || previewTargetParam === 'suia') setPreviewTarget(previewTargetParam);
+    if (previewTargetParam === 'rth' || previewTargetParam === 'suia') setPreviewTarget(previewTargetParam);
     if (assetParam) {
       setSelectedAssetId(assetParam);
       // Generate prompt for visual asset
@@ -275,10 +275,9 @@ export function PromptGeneratorUI() {
               <select
                 id="previewTarget"
                 value={previewTarget}
-                onChange={(e) => setPreviewTarget(e.target.value as 'local' | 'rth' | 'suia')}
+                onChange={(e) => setPreviewTarget(e.target.value as 'rth' | 'suia')}
                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors bg-white"
               >
-                <option value="local">Localhost RTH (3003)</option>
                 <option value="rth">RTH Production</option>
                 <option value="suia">SUIA / SkillUp</option>
               </select>

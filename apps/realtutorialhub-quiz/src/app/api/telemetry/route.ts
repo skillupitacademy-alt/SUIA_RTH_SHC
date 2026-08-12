@@ -4,7 +4,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     // Use internal URL to bypass Cloudflare for server-to-server calls
-    const rawUrl = (process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api").replace(/\/+$/, "");
+    const rawUrl = (process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || "https://api.skillhubcore.in/api").replace(/\/+$/, "");
     // rawUrl already ends with /api, so append only /telemetry
     const telemetryUrl = rawUrl.endsWith("/api") ? `${rawUrl}/telemetry` : `${rawUrl}/api/telemetry`;
     

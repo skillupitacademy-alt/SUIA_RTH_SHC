@@ -26,7 +26,7 @@ export class QueueService {
     } else if (typeof internalUrl === 'string' && internalUrl.trim() !== '') {
       this.appUrl = internalUrl;
     } else {
-      this.appUrl = 'http://localhost:3000';
+      this.appUrl = 'https://api.skillhubcore.in';
     }
   }
 

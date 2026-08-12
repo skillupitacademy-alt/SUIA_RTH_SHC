@@ -3,7 +3,7 @@ import { type NextRequest, NextResponse } from "next/server";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.skillhubcore.in";
     
     // Proxy to central api-server
     const res = await fetch(`${apiUrl}/api/telemetry`, {

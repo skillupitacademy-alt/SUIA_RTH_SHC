@@ -40,7 +40,7 @@ export async function GET(
     const { searchParams } = new URL(request.url);
     
     // Build API server URL with query params
-    const apiUrl = process.env.INTERNAL_API_URL || process.env.GATEWAY_URL || 'http://localhost:3000';
+    const apiUrl = process.env.INTERNAL_API_URL || process.env.GATEWAY_URL || 'https://api.skillhubcore.in';
     const url = new URL(`${apiUrl}/tutorial/sections/${params.subtopicId}`);
     searchParams.forEach((value, key) => {
       url.searchParams.set(key, value);

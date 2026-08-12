@@ -66,7 +66,7 @@ async function handler(_req: NextRequest) {
         ? publicEnvUrl
         : typeof internalEnvUrl === 'string' && internalEnvUrl.trim() !== ''
             ? internalEnvUrl
-            : 'http://localhost:3000';
+            : 'https://api.skillhubcore.in';
     const workflowUrl = `${publicUrl}/api/workflows/bulk-import`;
     
     // We fire-and-forget or await the trigger

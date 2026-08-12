@@ -18,7 +18,7 @@ export type SkillupCertificateVerification = {
 const API_BASE = (
   process.env.SKILLUP_API_URL?.trim() ??
   process.env.NEXT_PUBLIC_API_URL?.trim() ??
-  'http://localhost:3000/api'
+  'https://api.skillhubcore.in/api'
 ).replace(/\/+$/, '');
 
 export async function fetchSkillupCertificateVerification(code: string): Promise<SkillupCertificateVerification> {

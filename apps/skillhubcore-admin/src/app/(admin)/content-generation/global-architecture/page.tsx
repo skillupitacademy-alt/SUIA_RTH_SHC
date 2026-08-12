@@ -77,10 +77,6 @@ const DEFAULT_DUMMY_CONTEXT = {
 };
 
 const LEARNER_PREVIEW_TARGETS = {
-  local: {
-    label: 'Localhost RTH',
-    baseUrl: 'http://localhost:3003',
-  },
   rth: {
     label: 'RTH Production',
     baseUrl: 'https://user.realtutorialhub.com',
@@ -92,16 +88,6 @@ const LEARNER_PREVIEW_TARGETS = {
 } as const;
 
 const PREVIEW_TARGET_BRAND_CONTRACTS = {
-  local: {
-    brand_variant: 'rth',
-    primary_color: '#d03f00',
-    primary_color_dark: '#b63600',
-    accent_color: '#b63600',
-    secondary_color: '#124fd6',
-    background_color: '#ffffff',
-    text_color: '#0f172a',
-    border_color: '#dbeafe',
-  },
   rth: {
     brand_variant: 'rth',
     primary_color: '#d03f00',
@@ -311,7 +297,7 @@ export default function GlobalArchitecturePage() {
   const [selectedTheme, setSelectedTheme] = useState<'light' | 'dark'>('light');
   const [customizationsLoaded, setCustomizationsLoaded] = useState(false);
   const [dummyContext, setDummyContext] = useState(DEFAULT_DUMMY_CONTEXT);
-  const [learnerPreviewTarget, setLearnerPreviewTarget] = useState<keyof typeof LEARNER_PREVIEW_TARGETS>('local');
+  const [learnerPreviewTarget, setLearnerPreviewTarget] = useState<keyof typeof LEARNER_PREVIEW_TARGETS>('rth');
   const [showAdvancedSequence, setShowAdvancedSequence] = useState(false);
   const [showAdvancedComponentDetails, setShowAdvancedComponentDetails] = useState(false);
   const [showAdvancedRendererMapping, setShowAdvancedRendererMapping] = useState(false);
@@ -3552,7 +3538,7 @@ Writing Guidelines:
                     { title: 'Accessibility Contract', detail: 'UI/UX component must define keyboard, screen reader, reduced motion, and visible state behavior.', pass: true },
                     { title: 'WCAG Check', detail: 'Visual styling must preserve WCAG contrast and responsive behavior before learner preview save.', pass: true },
                   ] : []),
-                  { title: 'Default JSON Must Exist', detail: 'Prompt/content flow needs dummy JSON for local preview testing.', pass: Boolean(selectedDefaultJson) },
+                  { title: 'Default JSON Must Exist', detail: 'Prompt/content flow needs dummy JSON for live preview testing.', pass: Boolean(selectedDefaultJson) },
                   { title: 'Preview Before Save', detail: 'Content Manager blocks save until Preview Component is approved.', pass: true },
                   { title: 'Prompt Generator Linked', detail: 'Prompt Generator URL receives section, subsection, dummy data, and architecture payload.', pass: true },
                   { title: 'Content Manager Linked', detail: 'Content Manager receives same pipeline payload and default JSON.', pass: true },

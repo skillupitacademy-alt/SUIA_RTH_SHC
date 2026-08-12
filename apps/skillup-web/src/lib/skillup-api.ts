@@ -11,7 +11,7 @@ function resolveSkillupOrigin(): string {
     return candidate.replace(/\/+$/, '');
   }
 
-  return 'http://localhost:3004';
+  return 'https://user.skillupitacademy.com';
 }
 
 function toAbsoluteUrl(path: string): string {

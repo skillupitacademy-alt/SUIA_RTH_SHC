@@ -39,7 +39,7 @@ const getAppUrl = () => {
   if (typeof publicUrl === 'string' && publicUrl.trim().length > 0) return publicUrl.trim();
   if (typeof appUrl === 'string' && appUrl.trim().length > 0) return appUrl.trim();
   if (typeof internalUrl === 'string' && internalUrl.trim().length > 0) return internalUrl.trim();
-  return 'http://localhost:3003';
+  return 'https://user.realtutorialhub.com';
 };
 
 const getQStashClient = (): QStashLike => {

@@ -41,7 +41,7 @@ export class EngagementWorkflowService {
         ? publicUrl
         : typeof internalUrl === 'string' && internalUrl.trim() !== ''
           ? internalUrl
-          : 'http://localhost:3000';
+          : 'https://api.skillhubcore.in';
       const workflowUrl = `${appUrl}/api/workflows/learning-journey`;
 
       const { workflowRunId } = await client.trigger({

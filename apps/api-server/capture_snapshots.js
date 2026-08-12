@@ -5,7 +5,7 @@ async function capture() {
     const attemptId = "1771810577"; // Recent attemptId
     const artifactDir = "C:\\Users\\RealTutorialHub\\.gemini\\antigravity\\brain\\db098ece-f8b5-48d3-bab3-df368067be9a";
     const internalKey = "secret";
-    const url = `http://localhost:3001/report/print/${attemptId}?internalKey=${internalKey}`;
+    const url = `https://api.skillhubcore.in/report/print/${attemptId}?internalKey=${internalKey}`;
 
     console.log('Launching browser...');
     const browser = await puppeteer.launch({

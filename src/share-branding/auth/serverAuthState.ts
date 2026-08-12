@@ -20,7 +20,7 @@ export interface BackendAuthUserState {
 
 /**
  * 🔥 Build base URL using incoming request headers
- * SSR MUST go through gateway (NOT localhost)
+ * SSR MUST go through gateway, not direct API shortcuts.
  */
 async function buildBaseUrl(): Promise<string> {
   const headerList = await headers();

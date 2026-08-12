@@ -43,7 +43,7 @@ export class ReportPdfService {
   ): Promise<{ buffer: Buffer; generationTimeMs: number; fileSizeKb: number; pageCount: number }> {
     const start = Date.now();
     const isWindows = process.platform === "win32";
-    const webAppUrl = process.env.NEXT_PUBLIC_WEB_APP_URL ?? "http://localhost:3000";
+    const webAppUrl = process.env.NEXT_PUBLIC_WEB_APP_URL ?? "https://user.realtutorialhub.com";
     const internalKey = process.env.INTERNAL_API_KEY ?? "dev-internal-key";
     
     // Remote browserless (Production) vs Local Chromium (Dev)

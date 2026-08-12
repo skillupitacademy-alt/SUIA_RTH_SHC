@@ -27,7 +27,7 @@ const getAppUrl = () => {
   const internalUrl = process.env.INTERNAL_API_URL
   if (typeof publicUrl === 'string' && publicUrl.trim().length > 0) return publicUrl.trim()
   if (typeof internalUrl === 'string' && internalUrl.trim().length > 0) return internalUrl.trim()
-  return 'http://localhost:3000'
+  return 'https://user.realtutorialhub.com'
 }
 
 const getQStashClient = (): QStashLike => {
@@ -114,4 +114,3 @@ export class ExamCompletedSaga {
     }
   }
 }
-

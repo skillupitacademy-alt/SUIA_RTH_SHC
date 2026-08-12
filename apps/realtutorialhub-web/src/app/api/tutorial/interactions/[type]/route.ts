@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 const allowedInteractionTypes = new Set(['quiz', 'practice', 'code', 'visual', 'completion']);
 
 function buildApiUrl(type: string, requestUrl: string) {
-  const apiUrl = process.env.INTERNAL_API_URL || process.env.GATEWAY_URL || 'http://localhost:3000';
+  const apiUrl = process.env.INTERNAL_API_URL || process.env.GATEWAY_URL || 'https://api.skillhubcore.in';
   const url = new URL(`${apiUrl}/tutorial/interactions/${type}`);
   const sourceUrl = new URL(requestUrl);
   sourceUrl.searchParams.forEach((value, key) => url.searchParams.set(key, value));
@@ -76,4 +76,3 @@ export async function GET(
   const payload = await response.json().catch(() => ({ error: 'Interaction request failed' }));
   return NextResponse.json(payload, { status: response.status });
 }
-

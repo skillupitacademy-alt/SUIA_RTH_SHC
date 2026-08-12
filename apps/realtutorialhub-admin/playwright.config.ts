@@ -15,7 +15,7 @@ export default defineConfig({
   reporter: [['list'], ['html', { outputFolder: 'playwright-report' }]],
   use: {
     actionTimeout: 0,
-    baseURL: process.env.NEXT_PUBLIC_ADMIN_URL || 'http://localhost:3002',
+    baseURL: process.env.NEXT_PUBLIC_ADMIN_URL || 'https://admin.realtutorialhub.com',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'on-first-retry',

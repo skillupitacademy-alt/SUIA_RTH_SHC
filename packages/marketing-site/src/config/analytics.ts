@@ -55,7 +55,7 @@ function readNumber(value: string | undefined, fallback: number): number {
 const brandConfigs: Record<AnalyticsBrandId, BrandAnalyticsConfig> = {
   realtutorialhub: {
     brandId: "realtutorialhub",
-    hostnamePatterns: ["realtutorialhub.com", "www.realtutorialhub.com", "localhost"],
+    hostnamePatterns: ["realtutorialhub.com", "www.realtutorialhub.com"],
     ga4MeasurementId: process.env.NEXT_PUBLIC_RTH_GA4_MEASUREMENT_ID,
     ga4MeasurementApiSecret: process.env.RTH_GA4_MEASUREMENT_API_SECRET,
     metaPixelId: process.env.NEXT_PUBLIC_RTH_META_PIXEL_ID,
@@ -68,7 +68,7 @@ const brandConfigs: Record<AnalyticsBrandId, BrandAnalyticsConfig> = {
   },
   skillupitacademy: {
     brandId: "skillupitacademy",
-    hostnamePatterns: ["skillupitacademy.com", "www.skillupitacademy.com", "localhost"],
+    hostnamePatterns: ["skillupitacademy.com", "www.skillupitacademy.com"],
     ga4MeasurementId: process.env.NEXT_PUBLIC_SUIA_GA4_MEASUREMENT_ID,
     ga4MeasurementApiSecret: process.env.SUIA_GA4_MEASUREMENT_API_SECRET,
     metaPixelId: process.env.NEXT_PUBLIC_SUIA_META_PIXEL_ID,

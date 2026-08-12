@@ -14,7 +14,6 @@ export const ALLOWED_ORIGINS = [
   'https://quiz.skillhubcore.in',
   'https://tutorial.skillhubcore.in',
   'https://placement.skillhubcore.in',
-  'http://localhost:3000',
 ];
 
 export function createCorsMiddleware(): MiddlewareHandler {
