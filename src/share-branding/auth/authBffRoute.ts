@@ -64,6 +64,13 @@ export function getUpstreamUrls(fallbackApiBase: string, upstreamPath: string, h
 export function getAuthUpstreamUrls(fallbackApiBase: string, authPath: string, hostname?: string): string[] {
   const normalizedAuthPath = authPath.replace(/^\/+/, '');
   const gatewayUrl = getGatewayUrl(hostname);
+
+  if (/^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/i.test(gatewayUrl)) {
+    return [
+      `${gatewayUrl}/api/auth/${normalizedAuthPath}`,
+      `${gatewayUrl}/auth/${normalizedAuthPath}`,
+    ];
+  }
   
   // Gateway handles auth routing - use /auth prefix
   return [`${gatewayUrl}/auth/${normalizedAuthPath}`];
@@ -170,14 +177,18 @@ export function createForwardHeaders(request: NextRequest): Headers {
     const hostname = getRequestHost(request);
     if (hostname) {
       let brand: string;
-      if (hostname.includes('skillhubcore')) {
+      if (hostname.includes('skillhubcore') || hostname.includes('localhost:3007') || hostname.includes('127.0.0.1:3007')) {
         brand = 'skillhubcore';
-      } else if (hostname.includes('skillup')) {
+      } else if (hostname.includes('skillup') || hostname.includes('localhost:3009') || hostname.includes('127.0.0.1:3009')) {
         brand = 'skillup';
       } else {
         brand = 'realtutorialhub';
       }
       headers.set('x-brand', brand);
+
+      if (brand === 'skillhubcore' && !headers.has('x-portal-identity')) {
+        headers.set('x-portal-identity', 'shc-admin');
+      }
       
       // 📊 OBSERVABILITY: Log brand resolution and internal secret status
       console.log(JSON.stringify({
@@ -347,7 +358,10 @@ export async function proxyAuthRequest(
 
   // 🔥 PHASE 5: Gateway-first execution
   const gatewayUrl = getGatewayUrl(hostname);
-  const targetUrl = `${gatewayUrl}/auth/${options.authPath}`;
+  const localDirectApi = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/i.test(gatewayUrl);
+  const targetUrl = localDirectApi
+    ? `${gatewayUrl}/api/auth/${options.authPath}`
+    : `${gatewayUrl}/auth/${options.authPath}`;
   const headers = createForwardHeaders(request);
   const method = options.method ?? request.method;
   const body = options.body !== undefined

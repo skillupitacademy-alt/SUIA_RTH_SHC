@@ -8,7 +8,7 @@ import { container } from '@/modules/core/container';
 import { _verifyAdmin } from './rbac.service';
 import { TokenService } from './token.service';
 
-type Audience = 'admin' | 'infra';
+type Audience = 'admin' | 'infra' | 'shc-admin';
 
 /**
  * Derive expected admin-facing audience from portal header.
@@ -16,6 +16,7 @@ type Audience = 'admin' | 'infra';
  */
 export function getAdminAudience(_req: NextRequest): Audience {
   const portalIdentity = _req.headers.get('x-portal-identity') ?? 'admin';
+  if (portalIdentity === 'shc-admin') return 'shc-admin';
   return portalIdentity === 'infrastructure' ? 'infra' : 'admin';
 }
 
@@ -60,7 +61,19 @@ export async function requireAdminRouteAccess(_req: NextRequest) {
   const route = _req.nextUrl.pathname;
   const { payload, audience } = await verifyAdminOrInfraToken(_req);
 
-  if (audience !== 'infra') {
+  if (audience === 'shc-admin') {
+    const roles = Array.isArray(payload.roles) ? payload.roles.map((role) => role.toLowerCase()) : [];
+    const hasSkillHubCoreAdminAccess =
+      payload.brand === 'skillhubcore' &&
+      payload.isAdmin === true &&
+      (roles.includes('admin') || roles.includes('super_admin') || roles.includes('infrastructure'));
+
+    if (!hasSkillHubCoreAdminAccess) {
+      recordCounter(METRICS.AUTH.FAILURE, 1, { scope: audience, route, reason: 'rbac_denied' });
+      recordTimer(METRICS.AUTH.FAILURE + '.duration', Date.now() - startedAt, { scope: audience, route, reason: 'rbac_denied' });
+      throw forbidden('SkillHubCore admin access only');
+    }
+  } else if (audience !== 'infra') {
     const hasAdminAccess = await _verifyAdmin(payload);
     if (!hasAdminAccess) {
       recordCounter(METRICS.AUTH.FAILURE, 1, { scope: audience, route, reason: 'rbac_denied' });

@@ -1,7 +1,6 @@
-import { db, questions, questionSkills } from '@quiz/db';
+import { db, questions, questionSkills, skills, subtopics, topics } from '@quiz/db';
 import { and, desc, eq, inArray, lt, or, sql } from 'drizzle-orm';
 
-import { getDrizzleFields } from '@/lib/field-selector';
 import { buildPaginatedResponse, decodePageCursor } from '@/lib/pagination';
 
 import { BaseRepository } from '../../modules/core/repositories/base.repository';
@@ -68,55 +67,63 @@ export class DrizzleQuestionRepository extends BaseRepository<typeof questions.$
     const allConditions = [...baseConditions, ...cursorConditions];
     const whereClause = allConditions.length > 0 ? and(...allConditions) : undefined;
 
-    const QUESTION_ADMIN_ALLOWLIST = [
-        'id',
-        'topicId',
-        'subtopicId',
-        'questionText',
-        'options',
-        'correctAnswer',
-        'explanation',
-        'difficulty',
-        'type',
-        'status',
-        'estimatedTime',
-        'tags',
-        'createdAt',
-        'updatedAt'
-    ];
-    const columns = getDrizzleFields(filters?.fields, QUESTION_ADMIN_ALLOWLIST, questions as unknown as Record<string, unknown>);
-
     const dataRaw = await this.dbInstance.query.questions.findMany({
       where: whereClause,
       limit: limit + 1,
       orderBy: [desc(questions.updatedAt), desc(questions.id)],
-      ...(columns ? { columns } : {}),
-      with: {
-        questionSkills: {
-          with: {
-            skill: true,
-          },
-        },
-        topic: {
-          with: {
-            subject: {
-              with: { domain: true }
-            }
-          }
-        },
-        subtopic: {
-          with: {
-            topic: {
-              with: {
-                subject: {
-                  with: { domain: true }
-                }
-              }
-            }
-          }
-        }
-      }
     });
+
+    const questionIds = dataRaw.map((question) => question.id);
+    const topicIds = Array.from(new Set(dataRaw.map((question) => question.topicId).filter((id): id is string => typeof id === 'string' && id !== '')));
+    const subtopicIds = Array.from(new Set(dataRaw.map((question) => question.subtopicId).filter((id): id is string => typeof id === 'string' && id !== '')));
+
+    const [skillRows, topicRows, subtopicRows] = await Promise.all([
+      questionIds.length > 0
+        ? this.dbInstance
+            .select({
+              questionId: questionSkills.questionId,
+              skillName: skills.name,
+            })
+            .from(questionSkills)
+            .leftJoin(skills, eq(questionSkills.skillId, skills.id))
+            .where(inArray(questionSkills.questionId, questionIds))
+        : Promise.resolve([]),
+      topicIds.length > 0
+        ? this.dbInstance
+            .select({
+              id: topics.id,
+              name: topics.name,
+            })
+            .from(topics)
+            .where(inArray(topics.id, topicIds))
+        : Promise.resolve([]),
+      subtopicIds.length > 0
+        ? this.dbInstance
+            .select({
+              id: subtopics.id,
+              name: subtopics.name,
+            })
+            .from(subtopics)
+            .where(inArray(subtopics.id, subtopicIds))
+        : Promise.resolve([]),
+    ]);
+
+    const skillsByQuestionId = new Map<string, Array<{ skill: { name: string } }>>();
+    for (const row of skillRows) {
+      if (row.skillName === null) continue;
+      const current = skillsByQuestionId.get(row.questionId) ?? [];
+      current.push({ skill: { name: row.skillName } });
+      skillsByQuestionId.set(row.questionId, current);
+    }
+
+    const topicById = new Map(topicRows.map((topic) => [topic.id, topic]));
+    const subtopicById = new Map(subtopicRows.map((subtopic) => [subtopic.id, subtopic]));
+    const dataHydrated = dataRaw.map((question) => ({
+      ...question,
+      questionSkills: skillsByQuestionId.get(question.id) ?? [],
+      topic: typeof question.topicId === 'string' ? topicById.get(question.topicId) ?? null : null,
+      subtopic: typeof question.subtopicId === 'string' ? subtopicById.get(question.subtopicId) ?? null : null,
+    }));
 
     // For total count, use only baseConditions
     const [{ count: totalCount }] = await this.dbInstance
@@ -127,7 +134,7 @@ export class DrizzleQuestionRepository extends BaseRepository<typeof questions.$
     const total = Number(totalCount ?? 0);
 
     const paginated = buildPaginatedResponse(
-        dataRaw,
+        dataHydrated,
         limit,
         item => item.updatedAt.toISOString(),
         total

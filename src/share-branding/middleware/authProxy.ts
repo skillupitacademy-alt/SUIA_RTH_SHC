@@ -241,6 +241,7 @@ export async function createAuthProxy(options: AuthProxyOptions = {}) {
       pathname.startsWith('/api/user/') ||
       pathname.startsWith('/api/dashboard/') ||
       pathname.startsWith('/api/onboarding/') ||
+      pathname.startsWith('/api/quiz/') ||
       pathname.startsWith('/api/tutorial/sections/')
     );
     

@@ -82,9 +82,12 @@ export async function proxy(request: NextRequest) {
     const pathname = request.nextUrl.pathname;
     const portalIdentity = request.headers.get('x-portal-identity') ?? 'user';
     let scope: 'admin' | 'user' | 'infrastructure' = 'user';
-    let expectedAudience: 'admin' | 'user' | 'infra' = 'user';
+    let expectedAudience: 'admin' | 'user' | 'infra' | 'shc-admin' = 'user';
 
-    if (portalIdentity === 'infrastructure') {
+    if (portalIdentity === 'shc-admin') {
+        scope = 'admin';
+        expectedAudience = 'shc-admin';
+    } else if (portalIdentity === 'infrastructure') {
         scope = 'infrastructure';
         expectedAudience = 'infra';
     } else if (pathname.startsWith('/api/admin') || pathname.startsWith('/api/factory') || pathname.startsWith('/api/analytics/admin') || portalIdentity === 'admin') {
@@ -119,12 +122,28 @@ export async function proxy(request: NextRequest) {
             ? await tokenService.verifyAdminAccessToken(_token!, { audience: expectedAudience })
             : await tokenService.verifyUserAccessToken(_token!, { audience: expectedAudience });
 
+        const isShcAdminRoute = pathname.startsWith('/api/admin') && portalIdentity === 'shc-admin';
         const isInfraRoute = pathname.startsWith('/api/admin') && portalIdentity === 'infrastructure';
         const isAdminRoute = (pathname.startsWith('/api/admin') && !pathname.startsWith('/api/admin/auth') && portalIdentity !== 'infrastructure') || 
                              pathname.startsWith('/api/factory') ||
                              pathname.startsWith('/api/analytics/admin');
 
-        if (isInfraRoute) {
+        if (isShcAdminRoute) {
+            const roles = (Array.isArray(_payload.roles) ? _payload.roles : [])
+              .map((role) => typeof role === 'string' ? role.toLowerCase() : null)
+              .filter((role): role is string => role !== null);
+
+            const hasShcAdminAccess =
+              _payload.brand === 'skillhubcore' &&
+              _payload.isAdmin === true &&
+              (roles.includes('admin') || roles.includes('super_admin') || roles.includes('infrastructure'));
+
+            if (!hasShcAdminAccess) {
+              const res = NextResponse.json({ error: 'Forbidden: SkillHubCore admin access required' }, { status: 403 });
+              res.headers.set('x-request-id', requestId);
+              return corsMiddleware(request, res);
+            }
+        } else if (isInfraRoute) {
             const roles = (Array.isArray(_payload.roles) ? _payload.roles : [])
               .map(r => typeof r === 'string' ? r.toLowerCase() : null)
               .filter((r): r is Role => r !== null) as Role[];

@@ -82,6 +82,17 @@ export async function POST(request: NextRequest) {
             ].filter(Boolean).join('; ');
             
             newResponse.headers.append('set-cookie', accessTokenCookie);
+
+            const adminAccessTokenCookie = [
+              `admin_accessToken=${responseBody.accessToken}`,
+              'Path=/',
+              domain ? `Domain=${domain}` : '',
+              'HttpOnly',
+              'Secure',
+              'SameSite=None',
+            ].filter(Boolean).join('; ');
+
+            newResponse.headers.append('set-cookie', adminAccessTokenCookie);
             
             console.log(JSON.stringify({
               tag: 'SHC_LOGIN_COOKIE',
@@ -103,6 +114,17 @@ export async function POST(request: NextRequest) {
             ].filter(Boolean).join('; ');
             
             newResponse.headers.append('set-cookie', refreshTokenCookie);
+
+            const adminRefreshTokenCookie = [
+              `admin_refreshToken=${responseBody.refreshToken}`,
+              'Path=/',
+              domain ? `Domain=${domain}` : '',
+              'HttpOnly',
+              'Secure',
+              'SameSite=None',
+            ].filter(Boolean).join('; ');
+
+            newResponse.headers.append('set-cookie', adminRefreshTokenCookie);
             
             console.log(JSON.stringify({
               tag: 'SHC_LOGIN_COOKIE',
