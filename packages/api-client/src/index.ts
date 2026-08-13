@@ -17,7 +17,12 @@ export * from './lib/normalize-auth-user';
 function getApiUrl(): string {
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname.toLowerCase();
-    if (hostname === 'quiz.skillhubcore.in' || hostname === 'tutorial.skillhubcore.in') {
+    if (
+      hostname === 'quiz.skillhubcore.in' ||
+      hostname === 'tutorial.skillhubcore.in' ||
+      hostname === 'user.skillupitacademy.com' ||
+      hostname === 'user.realtutorialhub.com'
+    ) {
       return '/api';
     }
   }
