@@ -48,6 +48,39 @@ export interface ContentPromptBlueprint {
 export const PromptService = {
     generateTechnicalPrompt: (blueprint: FactoryBlueprint): string => {
         const total = blueprint.counts.simple + blueprint.counts.intermediate + blueprint.counts.expert;
+        const sourceSection = blueprint.sourceCode.trim() !== ''
+            ? `### SOURCE MATERIAL (THE TRUTH)
+Use ONLY the following content to generate the questions. Do not hallucinate facts outside this scope.
+
+The provided code and concepts represent the authoritative knowledge boundary for question generation.
+
+You may generate questions using any permutation, combination, or variation of the concepts contained in this material, including combining multiple concepts into a single question.
+
+Allowed transformations include:
+
+Rearranging code snippets.
+
+Creating logical variations of the given examples.
+
+Embedding the code into conditional or logical scenarios.
+
+Combine multiple concepts into a single question.
+
+Create scenario-based or logic-based questions using these concepts.
+
+Rearrange or slightly modify code examples to test understanding.
+
+${blueprint.sourceCode.trim()}`
+            : `### SOURCE MATERIAL
+No extra source material was provided.
+
+Generate questions from the selected taxonomy context, difficulty distribution, and official skills only:
+- Domain: ${blueprint.context.domainName}
+- Subject: ${blueprint.context.subjectName}
+- Topic: ${blueprint.context.topicName}
+${blueprint.context.subtopicName !== undefined ? `- Subtopic: ${blueprint.context.subtopicName}` : ''}
+
+Do not invent unrelated technologies, topics, or skills outside this selected scope.`;
         const skillsList = (blueprint.knownSkills?.length ?? 0) > 0 
             ? `\n### OFFICIAL TAXONOMY (PRIORITY)\nYou MUST prioritize using these existing skills for the 'skillNames' array:\n${blueprint.knownSkills!.map(s => `- ${s}`).join('\n')}\n\n${blueprint.strictMode === true 
                 ? "*CRITICAL RULE: You are FORBIDDEN from creating new skill names. You MUST map every question to at least one skill from the list above.*" 
@@ -112,28 +145,7 @@ You must return ONLY a raw JSON object matching this schema:
 
 ---
 
-### SOURCE MATERIAL (THE TRUTH)
-Use ONLY the following content to generate the questions. Do not hallucinate facts outside this scope.
-
-The provided code and concepts represent the authoritative knowledge boundary for question generation.
-
-You may generate questions using any permutation, combination, or variation of the concepts contained in this material, including combining multiple concepts into a single question.
-
-Allowed transformations include:
-
-Rearranging code snippets.
-
-Creating logical variations of the given examples.
-
-Embedding the code into conditional or logical scenarios.
-
-Combine multiple concepts into a single question.
-
-Create scenario-based or logic-based questions using these concepts.
-
-Rearrange or slightly modify code examples to test understanding.
-
-${blueprint.sourceCode}
+${sourceSection}
 `.trim();
     },
 

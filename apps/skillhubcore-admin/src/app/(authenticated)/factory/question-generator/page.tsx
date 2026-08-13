@@ -65,10 +65,6 @@ function QuestionFactoryContent() {
             toast.error("Please select a Topic first.");
             return;
         }
-        if (sourceCode.trim() === '') {
-            toast.error("Please provide Source Code/Material.");
-            return;
-        }
 
         setIsCopying(true);
         try {
@@ -222,17 +218,17 @@ function QuestionFactoryContent() {
 
                                     <button
                                         onClick={() => { void handleCopyPrompt(); }}
-                                        disabled={blueprint.topicId === null || blueprint.topicId === '' || sourceCode === ''}
+                                        disabled={blueprint.topicId === null || blueprint.topicId === ''}
                                         className={`
                                             h-12 px-10 rounded-2xl flex items-center justify-center gap-3 font-black uppercase tracking-widest text-[11px] transition-all
-                                            ${(blueprint.topicId === null || blueprint.topicId === '' || sourceCode === '')
+                                            ${(blueprint.topicId === null || blueprint.topicId === '')
                                                 ? 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
                                                 : 'bg-[#FF4B91] hover:bg-[#FF4B91]/90 text-white shadow-xl shadow-[#FF4B91]/30 active:scale-[0.98]'
                                             }
                                         `}
                                     >
                                         {isCopying ? <Check size={18} /> : <Copy size={18} />}
-                                        <span className="whitespace-nowrap">{isCopying ? 'Copied' : 'Copy Smart Prompt'}</span>
+                                        <span className="whitespace-nowrap">{isCopying ? 'Copied' : 'Generate / Copy AI Prompt'}</span>
                                     </button>
                                 </div>
                                 <div /> {/* Right Rail Spacer */}
