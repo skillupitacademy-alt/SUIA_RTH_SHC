@@ -3,13 +3,13 @@ import { inArray, sql } from "drizzle-orm";
 import { type NextRequest } from "next/server";
 import { z } from "zod";
 
-import { badRequest, unauthorized } from "@/lib/api-error";
+import { badRequest } from "@/lib/api-error";
 import { ApiResponse } from "@/lib/api-response";
 import { logger } from "@/lib/logger";
 import { recordCounter, recordTimer } from "@/lib/metrics";
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from "@/lib/sanitize";
 import { withLogging } from "@/lib/withLogging";
-import { verifyAdminOrInfraToken } from "@/modules/auth/admin-audience.util";
+import { requireAdminRouteAccess } from "@/modules/auth/admin-audience.util";
 import { SemanticSearchService } from "@/modules/intelligence/semantic-search.service";
 import { DuplicateDetector } from "@/modules/question/duplicate-detector";
 import { computeCodeHash, computeQuestionHash, normalizeConceptKey, normalizeObjectiveKey } from "@/modules/question/question-hash";
@@ -45,12 +45,9 @@ const savePayloadSchema = z.object({
 async function handler(req: NextRequest) {
   const start = Date.now();
   try {
-    // 1. Defense-in-Depth Admin Check (P0-SEC-002)
-    try {
-      await verifyAdminOrInfraToken(req);
-    } catch {
-      return ApiResponse.error(unauthorized("Authentication required"));
-    }
+    // 1. Defense-in-depth admin check. This supports legacy admin,
+    // infrastructure, and SkillHubCore admin audiences.
+    await requireAdminRouteAccess(req);
 
     const rawBody = await req.json();
 

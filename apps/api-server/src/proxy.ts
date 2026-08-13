@@ -122,10 +122,12 @@ export async function proxy(request: NextRequest) {
             ? await tokenService.verifyAdminAccessToken(_token!, { audience: expectedAudience })
             : await tokenService.verifyUserAccessToken(_token!, { audience: expectedAudience });
 
-        const isShcAdminRoute = pathname.startsWith('/api/admin') && portalIdentity === 'shc-admin';
+        const isShcAdminRoute =
+          (pathname.startsWith('/api/admin') || pathname.startsWith('/api/factory')) &&
+          portalIdentity === 'shc-admin';
         const isInfraRoute = pathname.startsWith('/api/admin') && portalIdentity === 'infrastructure';
         const isAdminRoute = (pathname.startsWith('/api/admin') && !pathname.startsWith('/api/admin/auth') && portalIdentity !== 'infrastructure') || 
-                             pathname.startsWith('/api/factory') ||
+                             (pathname.startsWith('/api/factory') && portalIdentity !== 'shc-admin') ||
                              pathname.startsWith('/api/analytics/admin');
 
         if (isShcAdminRoute) {
