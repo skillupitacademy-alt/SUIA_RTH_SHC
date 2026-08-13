@@ -13,6 +13,12 @@ import { findBatchDuplicateDetails } from '@/modules/question/batch-duplicate-de
 import { DuplicateDetector } from '@/modules/question/duplicate-detector';
 import { bulkQuestionSchema } from '@/schemas/admin.schemas';
 
+type ZodIssueLike = {
+    path: Array<string | number>;
+    message: string;
+    code?: string;
+};
+
 type CreateQuestionInput = typeof questions.$inferInsert & {
     skillNames?: string[];
     mappingType?: string;
@@ -32,6 +38,20 @@ type BulkQuestionBody = {
   questions: CreateQuestionInput[];
 };
 
+function formatValidationIssues(issues: ZodIssueLike[]) {
+    return issues.map((issue) => {
+        const path = issue.path.length > 0
+            ? issue.path.map((segment) => typeof segment === 'number' ? `[${segment}]` : String(segment)).join('.').replace('.[', '[')
+            : 'payload';
+
+        return {
+            path,
+            message: `${path}: ${issue.message}`,
+            code: issue.code,
+        };
+    });
+}
+
 async function handler(_req: NextRequest) {
   const start = Date.now();
   try {
@@ -46,7 +66,7 @@ async function handler(_req: NextRequest) {
     const sanitizedBody = sanitizeJsonField(rawBody) as BulkQuestionBody;
     const parsed = bulkQuestionSchema.safeParse(sanitizedBody);
     if (!parsed.success) {
-        return ApiResponse.error(badRequest('Invalid payload', 'BAD_REQUEST', parsed.error.issues));
+        return ApiResponse.error(badRequest('Invalid payload', 'BAD_REQUEST', formatValidationIssues(parsed.error.issues)));
     }
     const { topicId, subtopicId, skillId, skillIds, questions } = parsed.data;
 

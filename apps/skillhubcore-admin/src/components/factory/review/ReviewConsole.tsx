@@ -35,8 +35,12 @@ function extractErrorDetails(error: unknown): string[] {
 
     return error.details.slice(0, 6).map((detail: unknown) => {
         if (detail !== null && typeof detail === 'object') {
-            const record = detail as { index?: unknown; reason?: unknown; message?: unknown; status?: unknown; level?: unknown };
-            const row = typeof record.index === 'number' ? `Q${record.index + 1}` : 'Item';
+            const record = detail as { index?: unknown; path?: unknown; reason?: unknown; message?: unknown; status?: unknown; level?: unknown };
+            const row = typeof record.index === 'number'
+                ? `Q${record.index + 1}`
+                : typeof record.path === 'string' && record.path !== ''
+                    ? record.path
+                    : 'Item';
             const reason = typeof record.reason === 'string'
                 ? record.reason
                 : typeof record.message === 'string'

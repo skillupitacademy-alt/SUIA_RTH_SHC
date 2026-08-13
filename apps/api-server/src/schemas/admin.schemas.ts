@@ -44,12 +44,19 @@ export const questionSchema = z.object({
 });
 export type QuestionInput = z.infer<typeof questionSchema>;
 
+const bulkQuestionItemSchema = questionSchema.partial({
+  topicId: true,
+  subtopicId: true,
+  skillId: true,
+  skillIds: true,
+});
+
 export const bulkQuestionSchema = z.object({
   topicId: uuid,
   subtopicId: uuid.optional(),
   skillId: uuid.optional(),
   skillIds: z.array(uuid).optional(),
-  questions: z.array(questionSchema).min(1),
+  questions: z.array(bulkQuestionItemSchema).min(1),
 });
 export type BulkQuestionInput = z.infer<typeof bulkQuestionSchema>;
 
