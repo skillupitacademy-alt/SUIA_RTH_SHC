@@ -238,6 +238,7 @@ export class ContentAdminClient implements IAdminQuestionConfigClient, IAdminBlu
     }
   ) {
     const query = new URLSearchParams({ limit: limit.toString() });
+    query.append('_ts', Date.now().toString());
     if (cursor != null && cursor !== '') query.append('cursor', cursor);
     if (filters?.domainId) query.append('domainId', filters.domainId);
     if (filters?.subjectId) query.append('subjectId', filters.subjectId);

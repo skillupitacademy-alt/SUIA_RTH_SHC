@@ -52,6 +52,7 @@ export function QuestionTable() {
     const [pageSize, setPageSize] = useState(20);
     const [totalPages, setTotalPages] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     // Phase 8: Filters
     const [filters, setFilters] = useState({
@@ -125,6 +126,7 @@ export function QuestionTable() {
     useEffect(() => {
         const fetchQuestions = async () => {
             setIsLoading(true);
+            setErrorMessage(null);
             try {
                 const data = await apiClient.admin.getQuestions(currentCursor, pageSize, {
                     domainId: (filters.domainId != null && filters.domainId !== '') ? filters.domainId : undefined,
@@ -185,7 +187,11 @@ export function QuestionTable() {
                     return [];
                 };
 
-                const mappedQuestions: QuestionData[] = data.questions.map((q: RawQuestion, idx: number) => ({
+                const responseQuestions = Array.isArray(data.questions)
+                    ? data.questions
+                    : (Array.isArray(data.data) ? data.data : []);
+
+                const mappedQuestions: QuestionData[] = responseQuestions.map((q: RawQuestion, idx: number) => ({
                     id: q.id ?? `q-${idx}`,
                     questionText: (q.questionText != null && q.questionText !== '') ? q.questionText : (q.text ?? ''),
                     type: q.type ?? 'single',
@@ -206,13 +212,20 @@ export function QuestionTable() {
                     subtopic: (q as { subtopic?: QuestionData['subtopic'] }).subtopic
                 }));
                 setQuestions(mappedQuestions);
-                const total = data.total ?? data.questions.length ?? 0;
+                const total = data.total ?? responseQuestions.length ?? 0;
                 setTotalPages(Math.max(1, Math.ceil(total / pageSize)));
                 setTotalCount(total);
                 setNextCursor(data.nextCursor ?? null);
+                setSelectedIds(new Set());
             } catch (error) {
-                clientLogger.error('Failed to fetch questions', { error: error instanceof Error ? error.message : 'unknown' });
-                // We keep silence for main table load but could set an error state if requested
+                const message = error instanceof Error ? error.message : 'Unknown error';
+                clientLogger.error('Failed to fetch questions', { error: message });
+                setQuestions([]);
+                setTotalPages(1);
+                setTotalCount(0);
+                setNextCursor(null);
+                setSelectedIds(new Set());
+                setErrorMessage(`Connection Error: Unable to load questions at this time. ${message}`);
             } finally {
                 setIsLoading(false);
             }
@@ -322,6 +335,14 @@ export function QuestionTable() {
                             </button> : null}
                         </div>
                     </div>
+
+                    {errorMessage != null && errorMessage !== '' ? (
+                        <div className="mt-6">
+                            <div className="rounded-2xl border border-red-100 bg-red-50 px-5 py-4 text-sm font-bold text-red-700">
+                                {errorMessage}
+                            </div>
+                        </div>
+                    ) : null}
 
                     <div className="space-y-6">
                         <CascadingSelect
