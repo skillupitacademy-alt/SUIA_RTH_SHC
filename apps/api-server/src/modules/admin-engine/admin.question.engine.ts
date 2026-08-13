@@ -1,6 +1,7 @@
 import { db } from '@quiz/db';
 import { JobType } from '@quiz/types';
 
+import { conflict } from "@/lib/api-error";
 import { AuditService } from "@/modules/auth/audit.service";
 import { container } from "@/modules/core/container";
 import { DrizzleQuestionRepository } from "@/repositories/implementations/drizzle-question.repository";
@@ -86,10 +87,30 @@ export class AdminQuestionEngine {
     );
 
     if (verdict.status === 'duplicate') {
-      throw new Error(`CONCEPTUAL_DUPLICATE: A question with this meaning already exists (${verdict.reason}). Please review existing content.`);
+      throw conflict(
+        `A question with this meaning already exists (${verdict.reason}). Please review existing content.`,
+        'CONFLICT',
+        {
+          status: verdict.status,
+          level: verdict.level,
+          reason: verdict.reason,
+          similarity: verdict.similarity,
+          matchedQuestionId: verdict.signals.matchedQuestionId ?? null,
+        }
+      );
     }
     if (verdict.status === 'review') {
-      throw new Error(`CONCEPTUAL_REVIEW: Question flagged for review (${verdict.reason}). Resolve in the Review Console before saving.`);
+      throw conflict(
+        `Question flagged for review (${verdict.reason}). Resolve in the Review Console before saving.`,
+        'CONFLICT',
+        {
+          status: verdict.status,
+          level: verdict.level,
+          reason: verdict.reason,
+          similarity: verdict.similarity,
+          matchedQuestionId: verdict.signals.matchedQuestionId ?? null,
+        }
+      );
     }
 
     const conceptKey = (data as CreateQuestionInput & { conceptKey?: string }).conceptKey ?? null;

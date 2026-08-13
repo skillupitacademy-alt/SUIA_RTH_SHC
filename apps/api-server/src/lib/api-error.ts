@@ -9,6 +9,7 @@ export type ApiErrorCode =
   | 'BAD_REQUEST'
   | 'UNAUTHORIZED'
   | 'FORBIDDEN'
+  | 'CONFLICT'
   | 'LOCKED'
   | 'NOT_FOUND'
   | 'VALIDATION_FAILED'
@@ -78,6 +79,9 @@ export const unauthorized = (message: string = 'Unauthorized', code: ApiErrorCod
 
 export const forbidden = (message: string = 'Forbidden', code: ApiErrorCode = 'FORBIDDEN') => 
   new ApiError(403, message, code);
+
+export const conflict = (message: string = 'Conflict', code: ApiErrorCode = 'CONFLICT', details?: unknown) =>
+  new ApiError(409, message, code, details);
 
 export const locked = (message: string = 'Locked') =>
   new ApiError(423, message, 'LOCKED');
