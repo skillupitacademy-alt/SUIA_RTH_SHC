@@ -10,6 +10,9 @@ import { recordCounter, recordTimer } from "@/lib/metrics";
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from "@/lib/sanitize";
 import { withLogging } from "@/lib/withLogging";
 import { verifyAdminOrInfraToken } from "@/modules/auth/admin-audience.util";
+import { SemanticSearchService } from "@/modules/intelligence/semantic-search.service";
+import { DuplicateDetector } from "@/modules/question/duplicate-detector";
+import { computeCodeHash, computeQuestionHash, normalizeConceptKey, normalizeObjectiveKey } from "@/modules/question/question-hash";
 
 export const dynamic = "force-dynamic";
 
@@ -27,6 +30,8 @@ const generatedQuestionSchema = z.object({
   difficulty: z.enum(['simple', 'intermediate', 'expert']),
   depthLevel: z.number().int().min(1).max(10),
   mappingType: z.enum(['conceptual', 'technical', 'practical']),
+  conceptKey: z.string().min(1).optional(),
+  objectiveKey: z.string().min(1).optional(),
   skillNames: z.array(z.string()).optional(),
 });
 
@@ -62,6 +67,50 @@ async function handler(req: NextRequest) {
 
     const { questions: checkQuestions, topicId, subtopicId } = parsed.data;
 
+    // ════════════════════════════════════════════════════════════════════
+    // LAYERED DUPLICATE ENFORCEMENT (server-side safety net on commit).
+    // Each question is evaluated through: exact hash → code → concept →
+    // Upstash Vector → private judge. Duplicate verdicts hard-block the
+    // whole save (the GUI already blocks per-question; this is the final
+    // gate before the unique question_hash constraint fires).
+    // ════════════════════════════════════════════════════════════════════
+    const verdicts = await Promise.all(
+      checkQuestions.map((q) =>
+        DuplicateDetector.evaluate(
+          {
+            questionText: q.questionText,
+            codeSnippet: q.codeSnippet,
+            conceptKey: q.conceptKey,
+            objectiveKey: q.objectiveKey,
+            type: q.codeSnippet !== undefined && q.codeSnippet !== null && q.codeSnippet.trim() !== '' ? 'code_mcq' : 'mcq',
+            correctAnswer: q.correctAnswer,
+          },
+          topicId
+        )
+      )
+    );
+
+    const duplicates = verdicts
+      .map((v, idx) => (v.status === 'duplicate' || v.status === 'review' ? { index: idx, verdict: v } : null))
+      .filter((d): d is { index: number; verdict: typeof verdicts[number] } => d !== null);
+
+    if (duplicates.length > 0) {
+      recordCounter('factory.api.save.blocked', 1, { topicId, blockedCount: duplicates.length });
+      recordTimer('factory.api.save.duration', Date.now() - start, { outcome: 'blocked_duplicates' });
+      return ApiResponse.error(
+        badRequest(
+          `Batch contains ${duplicates.length} duplicate/review-question(s). Resolve flagged questions in the Review Console and retry.`,
+          'VALIDATION_FAILED',
+          duplicates.map((d) => ({
+            index: d.index,
+            status: d.verdict.status,
+            reason: d.verdict.reason,
+            similarity: d.verdict.similarity,
+          }))
+        )
+      );
+    }
+
     // 1. Extract all unique skill names from the payload
     const allSkillNames = Array.from(
       new Set(checkQuestions.flatMap((q) => (q.skillNames !== undefined && q.skillNames !== null ? q.skillNames : [])).map((s) => s.toLowerCase().trim()))
@@ -77,6 +126,9 @@ async function handler(req: NextRequest) {
     const skillsToCreate = allSkillNames.filter((name) => !existingSkillMap.has(name));
 
     const newSkillMap = new Map<string, string>();
+
+    // Track inserted question ids for post-commit vector indexing.
+    const insertedIds: string[] = [];
 
     // Use transaction for safer bulk writes
     await db.transaction(async (tx) => {
@@ -99,8 +151,11 @@ async function handler(req: NextRequest) {
 
         const finalSkillMap = new Map([...existingSkillMap, ...newSkillMap]);
 
-        // 3. Insert Questions and Link Skills
+        // 3. Insert Questions, store duplicate-detection hashes, and Link Skills
         for (const q of checkQuestions) {
+            const codeSnippet = (q.codeSnippet !== undefined && q.codeSnippet !== null && q.codeSnippet !== '') ? q.codeSnippet : null;
+            const conceptKey = q.conceptKey !== undefined && q.conceptKey.trim() !== '' ? normalizeConceptKey(q.conceptKey) : null;
+            const objectiveKey = q.objectiveKey !== undefined && q.objectiveKey.trim() !== '' ? normalizeObjectiveKey(q.objectiveKey) : null;
             const [insertedQ] = await tx
                 .insert(questions)
                 .values({
@@ -112,7 +167,12 @@ async function handler(req: NextRequest) {
                     difficulty: q.difficulty as Difficulty,
                     mappingType: q.mappingType as MappingType,
                     explanation: q.explanation,
-                    codeSnippet: (q.codeSnippet !== undefined && q.codeSnippet !== null && q.codeSnippet !== '') ? q.codeSnippet : null,
+                    codeSnippet,
+                    // Duplicate-detection layer (see packages/db/migrations/0027)
+                    questionHash: computeQuestionHash(q.questionText),
+                    codeHash: computeCodeHash(codeSnippet),
+                    conceptKey,
+                    objectiveKey,
                     metadata: {
                         depthLevel: q.depthLevel,
                         source: 'factory',
@@ -122,6 +182,7 @@ async function handler(req: NextRequest) {
                 .returning({ id: questions.id });
 
             if (insertedQ !== undefined && insertedQ !== null) {
+                insertedIds.push(insertedQ.id);
                 const qSkillNames = (q.skillNames !== undefined && q.skillNames !== null) ? q.skillNames : [];
                 const qSkillIds = qSkillNames
                     .map((name: string) => finalSkillMap.get(name.toLowerCase().trim()))
@@ -137,6 +198,26 @@ async function handler(req: NextRequest) {
                 }
             }
         }
+    });
+
+    // Fire-and-forget vector indexing for newly inserted questions.
+    // The Upstash index was pre-created with a hosted text-compute embedding model.
+    checkQuestions.forEach((q, idx) => {
+        const id = insertedIds[idx];
+        if (id === undefined) return;
+        void SemanticSearchService.indexQuestion(
+            id,
+            q.questionText,
+            {
+                topicId,
+                type: q.codeSnippet !== undefined && q.codeSnippet !== null && q.codeSnippet.trim() !== '' ? 'code_mcq' : 'mcq',
+                status: 'active',
+                codeSnippet: q.codeSnippet,
+                correctAnswer: q.correctAnswer,
+                conceptKey: q.conceptKey,
+                objectiveKey: q.objectiveKey,
+            }
+        );
     });
 
     recordCounter('factory.api.save.success', 1, { topicId });

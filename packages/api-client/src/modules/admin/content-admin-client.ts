@@ -66,6 +66,8 @@ type FactoryGeneratedQuestionPayload = {
   difficulty: 'simple' | 'intermediate' | 'expert';
   depthLevel: number;
   mappingType: 'conceptual' | 'technical' | 'practical';
+  conceptKey?: string;
+  objectiveKey?: string;
   skillNames?: string[];
 };
 type FactoryBatchPayload = {
@@ -293,7 +295,17 @@ export class ContentAdminClient implements IAdminQuestionConfigClient, IAdminBlu
     return this.client.post<Record<string, unknown>, FactoryBatchPayload>('/factory/save', data);
   }
 
-  async checkDuplicates(data: { questions: { questionText: string }[]; topicId: string }) {
+  async checkDuplicates(data: {
+    questions: Array<{
+      questionText: string;
+      codeSnippet?: string;
+      conceptKey?: string;
+      objectiveKey?: string;
+      type?: string;
+      correctAnswer?: string;
+    }>;
+    topicId: string;
+  }) {
     return this.client.post<DuplicateCheckResponse>('/factory/check-duplicates', data);
   }
 

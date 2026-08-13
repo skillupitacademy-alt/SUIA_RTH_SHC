@@ -123,9 +123,29 @@ export interface AdminLiveSession {
   [key: string]: unknown;
 }
 
+export interface DuplicateCheckDetail {
+  index: number;
+  /** 'duplicate' → hard block. 'review' → human/AI-judge decision needed. */
+  status: 'duplicate' | 'review';
+  level: 'exact' | 'code' | 'concept' | 'semantic' | 'judge' | 'none';
+  reason: string;
+  similarity: number;
+  originalId: string | null;
+  existingQuestionText: string | null;
+  existingQuestionCode: string | null;
+  isDuplicate: boolean;
+  judge?: {
+    available: boolean;
+    duplicate: boolean;
+    confidence: number;
+    reason: string;
+  };
+}
+
 export interface DuplicateCheckResponse {
-  details: Array<{ index: number; originalId: string; isDuplicate: true }>;
+  details: DuplicateCheckDetail[];
   foundCount: number;
+  newCount?: number;
 }
 
 export interface AdminTrendSummary {

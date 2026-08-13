@@ -152,11 +152,12 @@ export function ReviewConsole() {
 
                 if (result.details != null && result.details.length > 0) {
                     const nextMap = new Map<number, string>();
-                    result.details.forEach((d: { index?: number; originalId?: string; id?: string }, idx: number) => {
+                    result.details.forEach((d: { index?: number; originalId?: string | null; id?: string | null; status?: string }, idx: number) => {
                         const questionIndex = typeof d.index === 'number' ? d.index : idx;
                         const originalId = d.originalId ?? d.id;
-                        if (originalId != null && originalId !== '') {
-                            nextMap.set(questionIndex, originalId);
+                        const marker = originalId ?? d.status ?? 'review';
+                        if (marker !== '') {
+                            nextMap.set(questionIndex, marker);
                         }
                     });
                     setDuplicateMap(nextMap);
@@ -188,6 +189,8 @@ export function ReviewConsole() {
                     difficulty: q.difficulty,
                     depthLevel: Math.max(1, Math.min(10, q.depthLevel)),
                     mappingType: q.mappingType,
+                    conceptKey: q.conceptKey,
+                    objectiveKey: q.objectiveKey,
                     skillNames: q.skillNames
                 })),
                 topicId: blueprint.topicId,

@@ -11,6 +11,8 @@ export interface GeneratedQuestion {
     difficulty: Difficulty;
     depthLevel: number; // 1-10
     mappingType: MappingType;
+    conceptKey?: string;
+    objectiveKey?: string;
     skillNames: string[];
 }
 

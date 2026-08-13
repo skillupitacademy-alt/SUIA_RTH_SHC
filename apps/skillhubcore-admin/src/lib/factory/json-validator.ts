@@ -202,6 +202,8 @@ export const JsonValidator = {
                     difficulty: (finalItemObj.difficulty != null && finalItemObj.difficulty !== '' ? finalItemObj.difficulty : 'intermediate') as GeneratedQuestion['difficulty'],
                     depthLevel: typeof finalItemObj.depthLevel === 'number' ? finalItemObj.depthLevel : (typeof finalItemObj.depthLevel === 'string' ? (parseInt(finalItemObj.depthLevel as string, 10) || 1) : 1),
                     mappingType: (finalItemObj.mappingType != null && finalItemObj.mappingType !== '' ? finalItemObj.mappingType : 'technical') as GeneratedQuestion['mappingType'],
+                    conceptKey: (finalItemObj.conceptKey != null && finalItemObj.conceptKey !== '') ? (finalItemObj.conceptKey as string) : undefined,
+                    objectiveKey: (finalItemObj.objectiveKey != null && finalItemObj.objectiveKey !== '') ? (finalItemObj.objectiveKey as string) : undefined,
                     skillNames: Array.isArray(finalItemObj.skillNames) ? (finalItemObj.skillNames as string[]) : []
                 };
             });

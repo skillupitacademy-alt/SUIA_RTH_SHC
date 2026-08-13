@@ -1,6 +1,4 @@
-import { db, questions } from "@quiz/db";
 import { METRICS } from "@quiz/observability";
-import { and, eq } from 'drizzle-orm';
 import { type NextRequest } from 'next/server';
 
 import { badRequest, unauthorized } from "@/lib/api-error";
@@ -11,9 +9,17 @@ import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from "@/lib/sa
 import { withLogging } from "@/lib/withLogging";
 import { TokenService } from "@/modules/auth/token.service";
 import { container } from '@/modules/core/container';
+import { DuplicateDetector } from "@/modules/question/duplicate-detector";
 
 interface DuplicateCheckPayload {
-  questions: { questionText: string }[];
+  questions: {
+    questionText: string;
+    codeSnippet?: string;
+    conceptKey?: string;
+    objectiveKey?: string;
+    type?: string;
+    correctAnswer?: string;
+  }[];
   topicId: string;
 }
 
@@ -52,39 +58,48 @@ async function postHandler(req: NextRequest) {
       throw badRequest("Invalid payload");
     }
 
-    const existingQuestions = await db
-      .select({ id: questions.id, text: questions.questionText })
-      .from(questions)
-      .where(and(
-        eq(questions.topicId, topicId),
-        eq(questions.status, "active")
-      ));
+    // Layered duplicate detection per question:
+    //   exact hash → code hash → concept key → objective key → Upstash Vector → private judge.
+    const details = await Promise.all(
+      checkQuestions.map(async (q, idx) => {
+        const verdict = await DuplicateDetector.evaluate(
+          {
+            questionText: q.questionText,
+            codeSnippet: q.codeSnippet,
+            conceptKey: q.conceptKey,
+            objectiveKey: q.objectiveKey,
+            type: q.type,
+            correctAnswer: q.correctAnswer,
+          },
+          topicId
+        );
 
-    const normalize = (text: string) => text.toLowerCase().trim().replace(/\s+/g, ' ');
+        if (verdict.status === 'new') return null;
 
-    const existingMap = new Map<string, string>();
-    existingQuestions.forEach(q => {
-        existingMap.set(normalize(q.text), q.id);
-    });
+        return {
+          index: idx,
+          status: verdict.status, // 'duplicate' | 'review'
+          level: verdict.level,
+          reason: verdict.reason,
+          similarity: verdict.similarity ?? verdict.signals.semanticScore,
+          originalId: verdict.signals.matchedQuestionId ?? null,
+          existingQuestionText: verdict.signals.matchedQuestionText ?? null,
+          existingQuestionCode: verdict.signals.matchedQuestionCode ?? null,
+          isDuplicate: verdict.status === 'duplicate',
+          judge: verdict.judge ?? undefined,
+        };
+      })
+    );
 
-    const duplicates = checkQuestions.map((q, idx) => {
-        const norm = normalize(q.questionText);
-        if (existingMap.has(norm)) {
-            return {
-                index: idx,
-                originalId: existingMap.get(norm),
-                isDuplicate: true
-            };
-        }
-        return null;
-    }).filter(Boolean);
+    const nonNewDetails = details.filter((d): d is Exclude<typeof d, null> => d !== null);
 
     recordCounter('factory.api.duplicate_check.success', 1, { topicId });
     recordTimer('factory.api.duplicate_check.duration', Date.now() - start, { outcome: 'success' });
     
     return ApiResponse.success({
-      details: duplicates,
-      foundCount: duplicates.length
+      details: nonNewDetails,
+      foundCount: nonNewDetails.length,
+      newCount: checkQuestions.length - nonNewDetails.length
     });
 
   } catch (error: unknown) {

@@ -35,6 +35,8 @@ export const questionSchema = z.object({
   correctAnswer: z.string().optional(),
   explanation: z.string().optional(),
   codeSnippet: z.string().nullable().optional(),
+  conceptKey: z.string().min(1).optional(),
+  objectiveKey: z.string().min(1).optional(),
   estimatedTime: z.number().int().positive().optional(),
   tags: z.array(z.string()).optional(),
   skillWeight: z.number().int().positive().optional(),

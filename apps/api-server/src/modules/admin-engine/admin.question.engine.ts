@@ -7,8 +7,11 @@ import { DrizzleQuestionRepository } from "@/repositories/implementations/drizzl
 import { IQuestionRepository } from "@/repositories/interfaces/question.repository.interface";
 
 import { queueService } from '../core/queue.service';
-import { SemanticSearchService } from '../intelligence/semantic-search.service';
-import { type BackendQuestionType,normalizeQuestionOptions, normalizeQuestionType } from '../question/question-contract';
+import { DuplicateDetector } from '../question/duplicate-detector';
+import { type BackendQuestionType, normalizeQuestionOptions, normalizeQuestionType } from '../question/question-contract';
+import { computeCodeHash, computeQuestionHash, normalizeConceptKey, normalizeObjectiveKey } from '../question/question-hash';
+
+
 
 export interface QuestionOption {
   id: string;
@@ -31,6 +34,8 @@ export interface CreateQuestionInput {
   correctAnswer?: string;
   explanation?: string;
   codeSnippet?: string | null;
+  conceptKey?: string;
+  objectiveKey?: string;
   estimatedTime?: number;
   tags?: string[];
   skillWeight?: number;
@@ -67,10 +72,29 @@ export class AdminQuestionEngine {
   }
 
   async createQuestion(data: CreateQuestionInput, adminId: string) {
-    const isDuplicate = await SemanticSearchService.isDuplicate(data.questionText);
-    if (isDuplicate) {
-        throw new Error('CONCEPTUAL_DUPLICATE: A question with this meaning already exists. Please review existing content.');
+    // Layered duplicate enforcement (exact hash → code → concept → vector → judge).
+    const verdict = await DuplicateDetector.evaluate(
+      {
+        questionText: data.questionText,
+        codeSnippet: data.codeSnippet,
+        conceptKey: (data as CreateQuestionInput & { conceptKey?: string }).conceptKey,
+        objectiveKey: data.objectiveKey,
+        type: normalizeQuestionType(data.type),
+        correctAnswer: data.correctAnswer,
+      },
+      data.topicId
+    );
+
+    if (verdict.status === 'duplicate') {
+      throw new Error(`CONCEPTUAL_DUPLICATE: A question with this meaning already exists (${verdict.reason}). Please review existing content.`);
     }
+    if (verdict.status === 'review') {
+      throw new Error(`CONCEPTUAL_REVIEW: Question flagged for review (${verdict.reason}). Resolve in the Review Console before saving.`);
+    }
+
+    const conceptKey = (data as CreateQuestionInput & { conceptKey?: string }).conceptKey ?? null;
+    const objectiveKey = data.objectiveKey ?? null;
+    const codeSnippet = data.codeSnippet ?? null;
 
     const { db } = await import('@quiz/db');
     return await db.transaction(async (tx) => {
@@ -83,7 +107,12 @@ export class AdminQuestionEngine {
             correctAnswer: data.correctAnswer ?? "No correct answer provided",
             type: normalizeQuestionType(data.type),
             explanation: data.explanation,
-            codeSnippet: data.codeSnippet,
+            codeSnippet,
+            // Duplicate-detection layer (see packages/db/migrations/0027)
+            questionHash: computeQuestionHash(data.questionText),
+            codeHash: computeCodeHash(codeSnippet),
+            conceptKey: conceptKey !== null && conceptKey.trim() !== '' ? normalizeConceptKey(conceptKey) : null,
+            objectiveKey: objectiveKey !== null && objectiveKey.trim() !== '' ? normalizeObjectiveKey(objectiveKey) : null,
             status: (data.status ?? "active") as "active" | "inactive" | "draft"
         };
 
@@ -100,7 +129,12 @@ export class AdminQuestionEngine {
             text: newQuestion.questionText,
             metadata: {
                 topicId: newQuestion.topicId,
-                difficulty: newQuestion.difficulty
+                difficulty: newQuestion.difficulty,
+                type: questionData.type,
+                codeSnippet,
+                correctAnswer: questionData.correctAnswer,
+                conceptKey: questionData.conceptKey,
+                objectiveKey: questionData.objectiveKey,
             }
         });
 
@@ -112,6 +146,7 @@ export class AdminQuestionEngine {
       await this.auditService.log({ userId: adminId, action: 'admin_update_question', metadata: { questionId: id } });
       const { db } = await import('@quiz/db');
     return await db.transaction(async (tx) => {
+        const nextCodeSnippet = data.codeSnippet === undefined ? undefined : (data.codeSnippet ?? null);
         const questionData = {
             topicId: data.topicId,
             subtopicId: data.subtopicId,
@@ -122,6 +157,10 @@ export class AdminQuestionEngine {
             type: data.type !== undefined ? normalizeQuestionType(data.type) : undefined,
             explanation: data.explanation,
             codeSnippet: data.codeSnippet,
+            questionHash: data.questionText !== undefined ? computeQuestionHash(data.questionText) : undefined,
+            codeHash: nextCodeSnippet !== undefined ? computeCodeHash(nextCodeSnippet) : undefined,
+            conceptKey: data.conceptKey !== undefined && data.conceptKey.trim() !== '' ? normalizeConceptKey(data.conceptKey) : undefined,
+            objectiveKey: data.objectiveKey !== undefined && data.objectiveKey.trim() !== '' ? normalizeObjectiveKey(data.objectiveKey) : undefined,
             status: data.status as "active" | "inactive" | "draft" | undefined
         };
 

@@ -19,6 +19,23 @@ vi.mock('../core/queue.service', () => ({
   },
 }));
 
+vi.mock('../../question/duplicate-detector', () => ({
+  DuplicateDetector: {
+    evaluate: vi.fn().mockResolvedValue({
+      status: 'new',
+      level: 'none',
+      reason: 'test_new',
+      signals: {
+        exactMatch: false,
+        codeMatch: false,
+        conceptMatch: false,
+        objectiveMatch: false,
+        semanticScore: 0,
+      },
+    }),
+  },
+}));
+
 // Mock db transaction
 const txMocks = vi.hoisted(() => ({
   transaction: vi.fn(async (cb: any) => cb({})),
@@ -28,7 +45,7 @@ vi.mock('@quiz/db', () => ({ db: txMocks }));
 
 import { container } from '@/modules/core/container';
 import { queueService } from '../core/queue.service';
-import { SemanticSearchService } from '../intelligence/semantic-search.service';
+import { DuplicateDetector } from '../../question/duplicate-detector';
 import { AdminQuestionEngine } from '../admin.question.engine';
 
 describe('AdminQuestionEngine branches', () => {
@@ -55,12 +72,33 @@ describe('AdminQuestionEngine branches', () => {
   });
 
   it('createQuestion throws on duplicate and queues indexing otherwise', async () => {
-    (SemanticSearchService as any).isDuplicate = vi.fn().mockResolvedValue(true);
-    repo.create.mockRejectedValueOnce(new Error('CONCEPTUAL_DUPLICATE: A question with this meaning already exists. Please review existing content.'));
+    (DuplicateDetector.evaluate as any).mockResolvedValueOnce({
+      status: 'duplicate',
+      level: 'exact',
+      reason: 'exact_match',
+      signals: {
+        exactMatch: true,
+        codeMatch: false,
+        conceptMatch: false,
+        objectiveMatch: false,
+        semanticScore: 1,
+      },
+    });
     const engine = new AdminQuestionEngine(repo as any, { log: vi.fn().mockResolvedValue(undefined) } as any);
     await expect(engine.createQuestion({ topicId: 't', questionText: 'dup', options: [] } as any, 'admin')).rejects.toThrow('CONCEPTUAL_DUPLICATE');
 
-    (SemanticSearchService as any).isDuplicate = vi.fn().mockResolvedValue(false);
+    (DuplicateDetector.evaluate as any).mockResolvedValueOnce({
+      status: 'new',
+      level: 'none',
+      reason: 'test_new',
+      signals: {
+        exactMatch: false,
+        codeMatch: false,
+        conceptMatch: false,
+        objectiveMatch: false,
+        semanticScore: 0,
+      },
+    });
     repo.create.mockResolvedValue({ id: 'n1', topicId: 't', questionText: 'q', difficulty: 'intermediate' });
     const out = await engine.createQuestion({ topicId: 't', questionText: 'q', options: [] } as any, 'admin');
     expect(out.id).toBe('n1');
