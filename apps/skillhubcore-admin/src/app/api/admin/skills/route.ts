@@ -21,6 +21,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ data, nextCursor: hasMore ? data[data.length - 1]?.id : null, hasMore });
   } catch (error) {
+    console.error('Error fetching skills:', error);
     return NextResponse.json({ error: 'Failed to fetch skills' }, { status: 500 });
   }
 }
@@ -44,6 +45,7 @@ export async function POST(request: NextRequest) {
     }).returning();
     return NextResponse.json(newSkill, { status: 201 });
   } catch (error) {
+    console.error('Error creating skill:', error);
     return NextResponse.json({ error: 'Failed to create skill' }, { status: 500 });
   }
 }
@@ -69,6 +71,7 @@ export async function PUT(request: NextRequest) {
 
     return NextResponse.json(updated);
   } catch (error) {
+    console.error('Error updating skill:', error);
     return NextResponse.json({ error: 'Failed to update skill' }, { status: 500 });
   }
 }
@@ -90,6 +93,7 @@ export async function DELETE(request: NextRequest) {
     await db.delete(skills).where(eq(skills.id, id!));
     return NextResponse.json({ message: 'Skill deleted' });
   } catch (error) {
+    console.error('Error deleting skill:', error);
     return NextResponse.json({ error: 'Failed to delete skill' }, { status: 500 });
   }
 }

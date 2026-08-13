@@ -67,6 +67,19 @@ export function CascadingSelect({ onChange, value, hideSkills }: CascadingSelect
         return (skills.data as Skill[]).filter((s) => (s.category ?? 'technical').toLowerCase() === skillCategory.toLowerCase());
     }, [skills.data, skillCategory]);
 
+    const topicOptions = useMemo(() => {
+        const topicData = (topics.data as Topic[] | undefined) ?? [];
+        const nameCounts = topicData.reduce((acc: Record<string, number>, topic) => {
+            acc[topic.name] = (acc[topic.name] ?? 0) + 1;
+            return acc;
+        }, {});
+
+        return topicData.map((topic) => ({
+            ...topic,
+            name: nameCounts[topic.name] > 1 ? `${topic.name} (${topic.id.slice(0, 8)})` : topic.name,
+        }));
+    }, [topics.data]);
+
 
     const handleChange = (level: keyof Selection, val: string | string[] | null) => {
         const next: Selection = { ...selection };
@@ -171,7 +184,7 @@ export function CascadingSelect({ onChange, value, hideSkills }: CascadingSelect
                 <SelectField
                     label="Topic"
                     value={selection.topicId}
-                    options={(topics.data as Topic[]) ?? []}
+                    options={topicOptions}
                     loading={topics.loading}
                     disabled={selection.subjectId == null || selection.subjectId === ''}
                     onChange={(id) => handleChange('topicId', id)}
@@ -214,9 +227,9 @@ export function CascadingSelect({ onChange, value, hideSkills }: CascadingSelect
                     label="Technical Focus"
                     value={skillCategory}
                     options={[
-                        { id: 'technical', name: 'Technical Focus' },
-                        { id: 'cognitive', name: 'Cognitive Focus' },
-                        { id: 'process', name: 'Process Focus' },
+                        { id: 'technical', name: 'Technical' },
+                        { id: 'cognitive', name: 'Cognitive' },
+                        { id: 'process', name: 'Process' },
                         { id: 'all', name: 'Show All Categories' }
                     ]}
                     loading={false}

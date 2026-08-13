@@ -555,7 +555,158 @@ function buildLaunchExamApiResponse(): LaunchExamApiResponse {
   };
 }
 
-export async function loadLaunchExamData(_brand: BrandConfig): Promise<LaunchViewData> {
-  const apiResponse = buildLaunchExamApiResponse();
+type HierarchyDomain = {
+  id: string;
+  name: string;
+  description?: string | null;
+  category?: string | null;
+  subjects?: HierarchySubject[];
+};
+
+type HierarchySubject = {
+  id: string;
+  name: string;
+  topics?: HierarchyTopic[];
+};
+
+type HierarchyTopic = {
+  id: string;
+  name: string;
+  complexity?: string | null;
+  subtopics?: HierarchySubtopic[];
+};
+
+type HierarchySubtopic = {
+  id: string;
+  name: string;
+};
+
+function getLaunchGatewayUrl(brand: BrandConfig): string | undefined {
+  const isSkillUp = brand.name.toLowerCase().includes('skillup');
+  const configured = process.env.INTERNAL_API_URL ?? process.env.API_SERVER_URL ?? (isSkillUp
+    ? process.env.GATEWAY_URL_SKILLUP ?? process.env.GATEWAY_URL
+    : process.env.GATEWAY_URL);
+
+  return configured?.trim().replace(/\/+$/, '').replace(/\/api$/i, '');
+}
+
+async function fetchLaunchJson<T>(url: string): Promise<T> {
+  const headers: Record<string, string> = { accept: 'application/json' };
+  if (process.env.INTERNAL_API_SECRET !== undefined && process.env.INTERNAL_API_SECRET !== '') {
+    headers['x-internal-secret'] = process.env.INTERNAL_API_SECRET;
+  }
+  if (process.env.INTERNAL_API_KEY !== undefined && process.env.INTERNAL_API_KEY !== '') {
+    headers['x-internal-key'] = process.env.INTERNAL_API_KEY;
+  }
+
+  const response = await fetch(url, {
+    cache: 'no-store',
+    headers,
+  });
+
+  if (!response.ok) {
+    throw new Error(`Launch hierarchy request failed with status ${response.status}`);
+  }
+
+  return response.json() as Promise<T>;
+}
+
+function toLaunchDifficulty(complexity?: string | null): LaunchTopic['difficulty'] {
+  if (complexity === 'advanced' || complexity === 'expert') return 'Advanced';
+  if (complexity === 'intermediate') return 'Intermediate';
+  return 'Beginner';
+}
+
+function buildLaunchExamApiResponseFromHierarchy(domains: HierarchyDomain[]): LaunchExamApiResponse {
+  const base = buildLaunchExamApiResponse();
+  const subjectsByDomain: Record<string, LaunchSubject[]> = {};
+  const topicsBySubject: Record<string, LaunchTopic[]> = {};
+  const subtopicsByTopic: Record<string, LaunchSubtopic[]> = {};
+
+  const launchDomains = domains.map((domain) => {
+    const subjects = Array.isArray(domain.subjects) ? domain.subjects : [];
+    subjectsByDomain[domain.id] = subjects.map((subject) => {
+      const topics = Array.isArray(subject.topics) ? subject.topics : [];
+      topicsBySubject[subject.id] = topics.map((topic) => {
+        const subtopics = Array.isArray(topic.subtopics) ? topic.subtopics : [];
+        subtopicsByTopic[topic.id] = subtopics.map((subtopic) => ({
+          id: subtopic.id,
+          title: subtopic.name,
+          questionCount: 0,
+          parentTopicId: topic.id,
+        }));
+
+        return {
+          id: topic.id,
+          title: topic.name,
+          subtopicCount: subtopics.length,
+          difficulty: toLaunchDifficulty(topic.complexity),
+          parentSubjectId: subject.id,
+        };
+      });
+
+      return {
+        id: subject.id,
+        title: subject.name,
+        topicCount: topics.length,
+      };
+    });
+
+    return {
+      id: domain.id,
+      title: domain.name,
+      description: domain.description ?? 'Assessment-ready question bank',
+      category: domain.category ?? 'Learning',
+      coverage: 100,
+      icon: 'code',
+    };
+  });
+
+  return {
+    ...base,
+    selections: {
+      ...base.selections,
+      domain: {
+        ...base.selections.domain,
+        items: launchDomains,
+      },
+      subject: {
+        ...base.selections.subject,
+        itemsByDomain: subjectsByDomain,
+      },
+      topic: {
+        ...base.selections.topic,
+        itemsBySubject: topicsBySubject,
+      },
+      subtopic: {
+        ...base.selections.subtopic,
+        itemsByTopic: subtopicsByTopic,
+      },
+    },
+  };
+}
+
+async function loadDbLaunchExamApiResponse(brand: BrandConfig): Promise<LaunchExamApiResponse | null> {
+  const gatewayUrl = getLaunchGatewayUrl(brand);
+  if (gatewayUrl === undefined || gatewayUrl === '') return null;
+
+  const domains = await fetchLaunchJson<HierarchyDomain[]>(`${gatewayUrl}/api/domains`);
+  if (!Array.isArray(domains) || domains.length === 0) return null;
+
+  const hierarchy = await Promise.all(
+    domains.map(async (domain) => {
+      try {
+        return await fetchLaunchJson<HierarchyDomain>(`${gatewayUrl}/api/domains?id=${encodeURIComponent(domain.id)}`);
+      } catch {
+        return domain;
+      }
+    }),
+  );
+
+  return buildLaunchExamApiResponseFromHierarchy(hierarchy);
+}
+
+export async function loadLaunchExamData(brand: BrandConfig): Promise<LaunchViewData> {
+  const apiResponse = await loadDbLaunchExamApiResponse(brand).catch(() => null) ?? buildLaunchExamApiResponse();
   return mapLaunchExamApiToViewData(apiResponse);
 }

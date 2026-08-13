@@ -187,7 +187,9 @@ export default function QuestionEntryPage() {
                             ) : (
                                 <BulkUploadPanel
                                     topicId={(selection.topicId != null) ? selection.topicId : ''}
+                                    topicName={selection.topicName}
                                     subtopicId={(selection.subtopicId != null) ? selection.subtopicId : null}
+                                    subtopicName={selection.subtopicName}
                                     skillIds={selection.skillIds}
                                     onSuccess={handleBulkSuccess}
                                     onError={(msg) => { setStatus({ type: 'error', message: msg }); }}

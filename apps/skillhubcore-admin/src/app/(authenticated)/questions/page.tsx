@@ -84,7 +84,7 @@ export default function QuestionsPage() {
             </div>
 
             {/* Tab Content */}
-            <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+            <div key={activeTab} className="animate-in fade-in slide-in-from-bottom-4 duration-300">
                 {activeTab === 'domains' && <DomainTable />}
                 {activeTab === 'subjects' && <SubjectTable />}
                 {activeTab === 'topics' && <TopicTable />}

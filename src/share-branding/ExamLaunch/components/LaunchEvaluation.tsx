@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { apiClient } from '@quiz/api-client';
 import { ChevronLeft, ChevronRight, X, AlertCircle, Clock, Zap, ArrowLeft } from 'lucide-react';
 import { useBrand } from '../../PostLandingPage/app/context/BrandContext';
 import { DomainSelection } from './evaluation/DomainSelection';
@@ -11,14 +12,6 @@ import { EngineCalibration } from './evaluation/EngineCalibration';
 import { AssessmentSummary } from './evaluation/AssessmentSummary';
 import { useLaunchData } from './LaunchDataContext';
 import { LaunchSelectionState } from '../../launchExamPageData';
-
-function readCookie(name: string) {
-  if (typeof document === 'undefined') return undefined;
-  const match = document.cookie
-    .split('; ')
-    .find((cookie) => cookie.startsWith(`${name}=`));
-  return match === undefined ? undefined : decodeURIComponent(match.slice(name.length + 1));
-}
 
 export function LaunchEvaluation() {
   const brandConfig = useBrand();
@@ -103,33 +96,20 @@ export function LaunchEvaluation() {
       setLaunchError(null);
 
       try {
-        const csrfToken = readCookie('csrfToken');
-        const headers: Record<string, string> = {
-          'Content-Type': 'application/json',
-          'Idempotency-Key': crypto.randomUUID(),
-        };
-        if (csrfToken !== undefined && csrfToken !== '') {
-          headers['x-csrf-token'] = csrfToken;
-        }
-
-        const response = await fetch('/api/quiz/start', {
-          method: 'POST',
-          credentials: 'include',
-          headers,
-          body: JSON.stringify({
+        const payload = await apiClient.quiz.startExam(
+          {
             domainId: config.domain?.id,
             subjectIds: config.subjects.map((subject) => subject.id),
             topicIds: config.topics.map((topic) => topic.id),
             subtopicIds: config.subtopics.map((subtopic) => subtopic.id),
             difficulty: config.difficulty.toLowerCase(),
             questionCount: config.questionCount,
-          }),
-        });
+          },
+          { idempotencyKey: crypto.randomUUID() }
+        );
 
-        const payload = (await response.json().catch(() => null)) as { examId?: string; error?: string; message?: string } | null;
-
-        if (!response.ok || payload?.examId == null || payload.examId === '') {
-          throw new Error(payload?.error ?? payload?.message ?? 'Unable to start exam.');
+        if (payload.examId == null || payload.examId === '') {
+          throw new Error('Unable to start exam.');
         }
 
         router.push(`/exam?examId=${encodeURIComponent(payload.examId)}`);
@@ -194,7 +174,7 @@ export function LaunchEvaluation() {
         )}
 
         <div className="border-b border-gray-200 bg-white px-4 py-3 shadow-sm sm:px-6 sm:py-4">
-          <div className="mx-auto max-w-7xl">
+          <div className="w-full">
             <div className="grid gap-3 lg:gap-4 xl:grid-cols-[minmax(320px,1fr)_auto] xl:items-start">
               <div className="min-w-0 max-w-full">
                 <p className="text-[11px] font-black uppercase tracking-[0.24em] sm:text-xs" style={{ color: brandConfig.primaryColor }}>
@@ -236,9 +216,9 @@ export function LaunchEvaluation() {
       </header>
 
       <main className="relative flex min-w-0 w-full max-w-full flex-1 flex-col overflow-hidden" role="main">
-        <div className="mx-auto flex w-full max-w-7xl min-w-0 flex-1 flex-col overflow-y-auto">
-          <div className="min-w-0 p-4 pb-20 sm:p-6 md:pb-6">
-            <div className="mx-auto w-full min-w-0">
+        <div className="flex w-full min-w-0 flex-1 flex-col overflow-y-auto">
+          <div className="min-w-0 p-4 pb-20 sm:p-6 md:pb-6 lg:p-8 xl:p-10">
+            <div className="w-full min-w-0">
               <div className="mb-4 rounded-[1.75rem] border border-slate-200 bg-white px-4 py-4 shadow-[0_18px_44px_rgba(15,23,42,0.06)] sm:px-5 sm:py-4">
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                   <div className="min-w-0">
@@ -282,7 +262,7 @@ export function LaunchEvaluation() {
         </div>
 
         <div className="fixed bottom-0 left-0 right-0 z-30 w-full max-w-full overflow-x-hidden border-t border-gray-200 bg-white/95 px-4 py-3 backdrop-blur sm:px-6 md:relative md:py-4 md:backdrop-blur-0">
-          <div className="mx-auto flex w-full max-w-7xl min-w-0 flex-wrap items-center justify-between gap-2.5 sm:gap-3">
+          <div className="flex w-full min-w-0 flex-wrap items-center justify-between gap-2.5 sm:gap-3">
             <button onClick={handleBack} disabled={currentStep === 1} aria-label="Go to previous step" className="flex min-w-0 items-center gap-2 rounded-xl border border-transparent px-4 py-2 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50 sm:px-5 sm:text-sm">
               <ChevronLeft className="h-5 w-5" />
               {data.labels.backLabel}

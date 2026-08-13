@@ -15,12 +15,18 @@ export async function csrfProtection(_request: NextRequest) {
   const origin = _request.headers.get('origin');
   const host = _request.headers.get('host');
   const path = _request.nextUrl.pathname;
+  const internalKey = _request.headers.get('x-internal-key');
+  const isValidInternal = internalKey !== null && internalKey === process.env.INTERNAL_API_KEY;
   
   // EXEMPTION: Public/Telemetry Endpoints
   // Browser-automated POSTs for CSP violations and telemetry do not carry CSRF tokens.
   const isWorkflowRoute = path.startsWith('/api/workflows');
   const isExportTriggerRoute = path === '/api/export/trigger';
   if (path === '/api/security/report' || path === '/api/logs/client' || isWorkflowRoute || isExportTriggerRoute) return null;
+
+  if (isValidInternal) {
+    return null;
+  }
   
   // Check if origin is allowed
   const isAllowed = config.csrf.allowedOrigins.includes(origin ?? '') || 
@@ -33,10 +39,8 @@ export async function csrfProtection(_request: NextRequest) {
 
   const cookieToken = _request.cookies.get('csrfToken')?.value;
   const headerToken = _request.headers.get('x-csrf-token');
-  const internalKey = _request.headers.get('x-internal-key');
-  const isValidInternal = internalKey !== null && internalKey === process.env.INTERNAL_API_KEY;
 
-  if (!isValidInternal && (cookieToken === undefined || headerToken === null || cookieToken !== headerToken)) {
+  if (cookieToken === undefined || headerToken === null || cookieToken !== headerToken) {
     // SECURITY UPGRADE: JWT Fallback
     // If the CSRF check fails, check if the _request has a valid Authorization header.
     // In a multi-port/multi-domain local setup, cookies are often lost or blocked.

@@ -1,4 +1,4 @@
-import { db, questions, questionSkills, skills, subtopics, topics } from '@quiz/db';
+import { db, domains, questions, questionSkills, skills, subjects, subtopics, topics } from '@quiz/db';
 import { and, desc, eq, inArray, lt, or, sql } from 'drizzle-orm';
 
 import { buildPaginatedResponse, decodePageCursor } from '@/lib/pagination';
@@ -18,8 +18,11 @@ export class DrizzleQuestionRepository extends BaseRepository<typeof questions.$
   }
 
   async findAll(cursor: string | null, limit: number, filters?: { 
+    domainId?: string;
+    subjectId?: string;
     topicId?: string; 
     subtopicId?: string; 
+    skillIds?: string[];
     status?: string;
     search?: string;
     fields?: string;
@@ -30,6 +33,32 @@ export class DrizzleQuestionRepository extends BaseRepository<typeof questions.$
         baseConditions.push(eq(questions.subtopicId, filters.subtopicId));
     } else if (filters?.topicId !== undefined && filters?.topicId !== null && filters?.topicId !== '') {
         baseConditions.push(eq(questions.topicId, filters.topicId));
+    }
+
+    if (filters?.subjectId !== undefined && filters?.subjectId !== null && filters?.subjectId !== '') {
+        const subjectTopicRows = await this.dbInstance
+            .select({ id: topics.id })
+            .from(topics)
+            .where(eq(topics.subjectId, filters.subjectId));
+        const subjectTopicIds = subjectTopicRows.map((topic) => topic.id);
+        baseConditions.push(subjectTopicIds.length > 0 ? inArray(questions.topicId, subjectTopicIds) : sql`false`);
+    } else if (filters?.domainId !== undefined && filters?.domainId !== null && filters?.domainId !== '') {
+        const domainTopicRows = await this.dbInstance
+            .select({ id: topics.id })
+            .from(topics)
+            .leftJoin(subjects, eq(topics.subjectId, subjects.id))
+            .where(eq(subjects.domainId, filters.domainId));
+        const domainTopicIds = domainTopicRows.map((topic) => topic.id);
+        baseConditions.push(domainTopicIds.length > 0 ? inArray(questions.topicId, domainTopicIds) : sql`false`);
+    }
+
+    if (filters?.skillIds !== undefined && filters.skillIds.length > 0) {
+        const skillQuestionRows = await this.dbInstance
+            .select({ questionId: questionSkills.questionId })
+            .from(questionSkills)
+            .where(inArray(questionSkills.skillId, filters.skillIds));
+        const skillQuestionIds = Array.from(new Set(skillQuestionRows.map((row) => row.questionId)));
+        baseConditions.push(skillQuestionIds.length > 0 ? inArray(questions.id, skillQuestionIds) : sql`false`);
     }
 
     if (filters?.status !== undefined && filters?.status !== null && filters?.status !== '') {
@@ -82,7 +111,9 @@ export class DrizzleQuestionRepository extends BaseRepository<typeof questions.$
         ? this.dbInstance
             .select({
               questionId: questionSkills.questionId,
+              skillId: skills.id,
               skillName: skills.name,
+              skillCategory: skills.category,
             })
             .from(questionSkills)
             .leftJoin(skills, eq(questionSkills.skillId, skills.id))
@@ -93,8 +124,14 @@ export class DrizzleQuestionRepository extends BaseRepository<typeof questions.$
             .select({
               id: topics.id,
               name: topics.name,
+              subjectId: subjects.id,
+              subjectName: subjects.name,
+              domainId: domains.id,
+              domainName: domains.name,
             })
             .from(topics)
+            .leftJoin(subjects, eq(topics.subjectId, subjects.id))
+            .leftJoin(domains, eq(subjects.domainId, domains.id))
             .where(inArray(topics.id, topicIds))
         : Promise.resolve([]),
       subtopicIds.length > 0
@@ -102,27 +139,59 @@ export class DrizzleQuestionRepository extends BaseRepository<typeof questions.$
             .select({
               id: subtopics.id,
               name: subtopics.name,
+              topicId: subtopics.topicId,
             })
             .from(subtopics)
             .where(inArray(subtopics.id, subtopicIds))
         : Promise.resolve([]),
     ]);
 
-    const skillsByQuestionId = new Map<string, Array<{ skill: { name: string } }>>();
+    const skillsByQuestionId = new Map<string, Array<{ skill: { id: string; name: string; category: string } }>>();
     for (const row of skillRows) {
       if (row.skillName === null) continue;
       const current = skillsByQuestionId.get(row.questionId) ?? [];
-      current.push({ skill: { name: row.skillName } });
+      current.push({
+        skill: {
+          id: row.skillId ?? '',
+          name: row.skillName,
+          category: row.skillCategory ?? 'technical',
+        },
+      });
       skillsByQuestionId.set(row.questionId, current);
     }
 
-    const topicById = new Map(topicRows.map((topic) => [topic.id, topic]));
+    const topicById = new Map(topicRows.map((topic) => [topic.id, {
+      id: topic.id,
+      name: topic.name,
+      subject: topic.subjectId !== null
+        ? {
+            id: topic.subjectId,
+            name: topic.subjectName ?? '',
+            domain: topic.domainId !== null
+              ? {
+                  id: topic.domainId,
+                  name: topic.domainName ?? '',
+                }
+              : null,
+          }
+        : null,
+    }]));
     const subtopicById = new Map(subtopicRows.map((subtopic) => [subtopic.id, subtopic]));
     const dataHydrated = dataRaw.map((question) => ({
       ...question,
       questionSkills: skillsByQuestionId.get(question.id) ?? [],
       topic: typeof question.topicId === 'string' ? topicById.get(question.topicId) ?? null : null,
-      subtopic: typeof question.subtopicId === 'string' ? subtopicById.get(question.subtopicId) ?? null : null,
+      subtopic: typeof question.subtopicId === 'string'
+        ? (() => {
+            const subtopic = subtopicById.get(question.subtopicId);
+            return subtopic === undefined
+              ? null
+              : {
+                  ...subtopic,
+                  topic: typeof question.topicId === 'string' ? topicById.get(question.topicId) ?? null : null,
+                };
+          })()
+        : null,
     }));
 
     // For total count, use only baseConditions

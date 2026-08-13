@@ -10,7 +10,9 @@ import { clientLogger } from '@/utils/clientLogger';
 
 interface BulkUploadPanelProps {
     topicId: string;
+    topicName?: string;
     subtopicId: string | null;
+    subtopicName?: string;
     skillIds: string[];
     onSuccess: (count: number) => void;
     onError: (message: string) => void;
@@ -26,7 +28,7 @@ interface BulkQuestion {
     explanation?: string;
 }
 
-export function BulkUploadPanel({ topicId, subtopicId, skillIds, onSuccess, onError }: BulkUploadPanelProps) {
+export function BulkUploadPanel({ topicId, topicName, subtopicId, subtopicName, skillIds, onSuccess, onError }: BulkUploadPanelProps) {
     const [file, setFile] = useState<File | null>(null);
     const [questions, setQuestions] = useState<BulkQuestion[]>([]);
     const [isUploading, setIsUploading] = useState(false);
@@ -144,8 +146,14 @@ export function BulkUploadPanel({ topicId, subtopicId, skillIds, onSuccess, onEr
   }
 ]`;
 
+    const trimmedTopicName = topicName?.trim();
+    const trimmedSubtopicName = subtopicName?.trim();
+    const resolvedTopicName = trimmedTopicName != null && trimmedTopicName !== '' ? trimmedTopicName : '[INSERT TOPIC HERE]';
+    const resolvedSubtopicName = trimmedSubtopicName != null && trimmedSubtopicName !== '' ? trimmedSubtopicName : '[INSERT SUBTOPIC HERE]';
+
     const aiPrompt = `You are an expert exam content generator.
-Generate 5 high-quality multiple-choice questions for the topic: {(topicName != null && topicName !== '') ? topicName : "[INSERT TOPIC HERE]"}
+Generate 5 high-quality multiple-choice questions for the topic: ${resolvedTopicName}
+Target subtopic/component: ${resolvedSubtopicName}
 Generate strictly in the following JSON format:
 
 [

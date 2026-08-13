@@ -55,6 +55,13 @@ export function getConfiguredAuthBaseUrls(fallbackApiBase: string, hostname?: st
 
 export function getUpstreamUrls(fallbackApiBase: string, upstreamPath: string, hostname?: string): string[] {
   const normalizedPath = upstreamPath.replace(/^\/+/, '');
+  const isSkillHubCore = hostname?.includes('skillhubcore') ?? false;
+  const internalApiUrl = process.env.INTERNAL_API_URL?.trim().replace(/\/+$/, '').replace(/\/api$/i, '');
+
+  if (isSkillHubCore && normalizedPath.startsWith('api/admin/') && internalApiUrl !== undefined && internalApiUrl.length > 0) {
+    return [`${internalApiUrl}/${normalizedPath}`];
+  }
+
   const gatewayUrl = getGatewayUrl(hostname);
   
   // Gateway URLs already include routing - just append the path
@@ -138,6 +145,7 @@ export function createForwardHeaders(request: NextRequest): Headers {
   
   // 🔥 CRITICAL: Add internal secret for BFF → API authentication
   const internalSecret = process.env.INTERNAL_API_SECRET;
+  const internalApiKey = process.env.INTERNAL_API_KEY ?? internalSecret;
   if (internalSecret) {
     headers.set('x-internal-secret', internalSecret);
   } else {
@@ -146,6 +154,10 @@ export function createForwardHeaders(request: NextRequest): Headers {
   
   // 🔐 ENTERPRISE AUTH: Preserve device context headers
   // These headers are CRITICAL for multi-device session tracking
+  if (internalApiKey) {
+    headers.set('x-internal-key', internalApiKey);
+  }
+
   const deviceId = request.headers.get('x-device-id');
   const deviceName = request.headers.get('x-device-name');
   const forwardedFor = request.headers.get('x-forwarded-for');
@@ -166,8 +178,12 @@ export function createForwardHeaders(request: NextRequest): Headers {
   }
   
   // 🏷️ BRAND RESOLUTION: Add x-brand header based on hostname
+  const hostname = getRequestHost(request);
+  if (hostname?.includes('skillhubcore') === true) {
+    headers.set('x-brand', 'skillhubcore');
+    headers.set('x-portal-identity', 'shc-admin');
+  }
   if (!headers.has('x-brand')) {
-    const hostname = getRequestHost(request);
     if (hostname) {
       let brand: string;
       if (hostname.includes('skillhubcore')) {
@@ -179,7 +195,7 @@ export function createForwardHeaders(request: NextRequest): Headers {
       }
       headers.set('x-brand', brand);
 
-      if (brand === 'skillhubcore' && !headers.has('x-portal-identity')) {
+      if (brand === 'skillhubcore') {
         headers.set('x-portal-identity', 'shc-admin');
       }
       

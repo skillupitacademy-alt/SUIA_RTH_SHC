@@ -1,11 +1,14 @@
 "use client";
 
+import { apiClient } from '@quiz/api-client';
 import React, { type ReactNode } from 'react';
 import { ShellContext } from './ShellContext';
 import { useClientShell } from './components/useClientShell';
 import { LeftSidebar } from './components/LeftSidebar';
 import { Header } from './components/Header';
 import { RightSidebar } from './components/RightSidebar';
+
+apiClient.client.setPortalIdentity('admin');
 
 export default function ClientShell({ children }: { children: ReactNode }) {
   const {

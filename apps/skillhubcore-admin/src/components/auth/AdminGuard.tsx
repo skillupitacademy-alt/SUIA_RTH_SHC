@@ -17,6 +17,8 @@ const isAdminEquivalentRole = (value: string | null | undefined) => {
   return role === 'admin' || role === 'super_admin' || role === 'infrastructure';
 };
 
+apiClient.client.setPortalIdentity('admin');
+
 const LOCAL_TEST_BYPASS_PREFIXES = [
   '/content-generation/global-architecture',
   '/questions',

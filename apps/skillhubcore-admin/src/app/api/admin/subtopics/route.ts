@@ -51,6 +51,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ data, nextCursor: hasMore ? data[data.length - 1]?.id : null, hasMore });
   } catch (error) {
+    console.error('Error fetching subtopics:', error);
     return NextResponse.json({ error: 'Failed to fetch subtopics' }, { status: 500 });
   }
 }
@@ -75,6 +76,7 @@ export async function POST(request: NextRequest) {
     }).returning();
     return NextResponse.json(newSubtopic, { status: 201 });
   } catch (error) {
+    console.error('Error creating subtopic:', error);
     return NextResponse.json({ error: 'Failed to create subtopic' }, { status: 500 });
   }
 }
@@ -100,6 +102,7 @@ export async function PUT(request: NextRequest) {
 
     return NextResponse.json(updated);
   } catch (error) {
+    console.error('Error updating subtopic:', error);
     return NextResponse.json({ error: 'Failed to update subtopic' }, { status: 500 });
   }
 }
@@ -121,6 +124,7 @@ export async function DELETE(request: NextRequest) {
     await db.delete(subtopics).where(eq(subtopics.id, id!));
     return NextResponse.json({ message: 'Subtopic deleted' });
   } catch (error) {
+    console.error('Error deleting subtopic:', error);
     return NextResponse.json({ error: 'Failed to delete subtopic' }, { status: 500 });
   }
 }
