@@ -102,6 +102,13 @@ def judge_questions(request: JudgeRequest) -> JudgeResponse:
         duplicate = True
         confidence = min(0.95, (text_sim + 0.95) / 2)
         reason = "Both questions assess the same learning objective with equivalent reasoning requirements."
+
+    # Identical code + same objective/type -> duplicate even when the text model
+    # under-scores a wording change such as "printed" vs "output".
+    elif code_sim >= 0.98 and objective_match and type_match:
+        duplicate = True
+        confidence = 0.93
+        reason = "Questions use identical code and assess the same learning objective with the same answer format."
     
     # Identical code + same concept + borderline text similarity
     elif code_sim >= 0.98 and concept_match and text_sim >= 0.80:
