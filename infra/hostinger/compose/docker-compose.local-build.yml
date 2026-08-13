@@ -27,6 +27,8 @@ services:
       - ${HOSTINGER_CERT_DIR:-/opt/platform/nginx/certs}:/etc/nginx/certs:ro
       - ${HOSTINGER_LOG_DIR:-/opt/platform/logs}/nginx:/var/log/nginx
     depends_on:
+      question-judge:
+        condition: service_healthy
       api-server:
         condition: service_healthy
       realtutorialhub-quiz:
@@ -61,6 +63,9 @@ services:
 
   api-server:
     <<: *common-defaults
+    depends_on:
+      question-judge:
+        condition: service_healthy
     build:
       context: ../../..
       dockerfile: apps/api-server/Dockerfile
@@ -74,6 +79,20 @@ services:
     healthcheck:
       <<: *next-health-defaults
       test: ["CMD-SHELL", "wget --spider -q http://127.0.0.1:3000/api/health/live || exit 1"]
+
+  question-judge:
+    <<: *common-defaults
+    build:
+      context: ../../../apps/question-judge
+      dockerfile: Dockerfile
+    expose:
+      - "8000"
+    healthcheck:
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=5).read()\" || exit 1"]
 
   realtutorialhub-quiz:
     <<: *common-defaults

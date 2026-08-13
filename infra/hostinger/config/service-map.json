@@ -11,6 +11,15 @@
       "buildable": true,
       "health_check_required": true
     },
+    "question-judge": {
+      "name": "question-judge",
+      "package_name": null,
+      "source_path": "apps/question-judge",
+      "compose_name": "question-judge",
+      "image_name": "quiz-platform-question-judge",
+      "buildable": true,
+      "health_check_required": true
+    },
     "realtutorialhub-web": {
       "name": "realtutorialhub-web",
       "package_name": "@quiz/realtutorialhub-web",

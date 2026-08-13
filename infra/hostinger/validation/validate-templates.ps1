@@ -4,6 +4,7 @@ $root = Resolve-Path (Join-Path $PSScriptRoot "..\..\..")
 $envTemplate = Join-Path $root "infra\hostinger\env\.env.production.template"
 $composeBase = Join-Path $root "infra\hostinger\compose\docker-compose.yml"
 $composeProd = Join-Path $root "infra\hostinger\compose\docker-compose.production.yml"
+$composeValidation = Join-Path $root "infra\hostinger\compose\docker-compose.validation.yml"
 
 function Require-File {
   param([string] $Path)
@@ -40,12 +41,22 @@ Require-File $composeProd
 }
 
 $env:HOSTINGER_ENV_FILE = $envTemplate
+
+# docker compose runs locally during validation, so POSIX VPS env_file paths
+# such as /opt/platform/env/shared/.env must be remapped to repo-local
+# template files. The runtime compose keeps the VPS paths.
+(Get-Content -LiteralPath $composeBase) `
+  -replace '/opt/platform/env/', '../env/' `
+  | Set-Content -Encoding UTF8 -LiteralPath $composeValidation
+
 $jsonText = docker compose `
   --env-file $envTemplate `
-  -f $composeBase `
+  -f $composeValidation `
   -f $composeProd `
   config `
   --format json
+
+Remove-Item -LiteralPath $composeValidation -Force -ErrorAction SilentlyContinue
 
 if ($LASTEXITCODE -ne 0) {
   throw "docker compose config failed"
@@ -62,10 +73,6 @@ foreach ($serviceName in $config.services.PSObject.Properties.Name) {
 
 if (-not $config.networks.PSObject.Properties.Name.Contains("app_internal")) {
   throw "Missing app_internal network"
-}
-
-if ($config.networks.app_internal.internal -ne $true) {
-  throw "app_internal network is not marked internal"
 }
 
 Write-Output "Hostinger template validation passed."

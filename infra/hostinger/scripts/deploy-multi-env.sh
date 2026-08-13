@@ -69,6 +69,7 @@ scp infra/hostinger/env/brands/skillhubcore.env ${VPS_USER}@${VPS_HOST}:${ENV_BA
 # Copy service envs
 echo "  📄 Copying service configurations..."
 scp infra/hostinger/env/services/api-server.env ${VPS_USER}@${VPS_HOST}:${ENV_BASE}/services/api-server.env
+scp infra/hostinger/env/services/question-judge.env ${VPS_USER}@${VPS_HOST}:${ENV_BASE}/services/question-judge.env
 scp infra/hostinger/env/services/realtutorialhub-web.env ${VPS_USER}@${VPS_HOST}:${ENV_BASE}/services/realtutorialhub-web.env
 scp infra/hostinger/env/services/realtutorialhub-admin.env ${VPS_USER}@${VPS_HOST}:${ENV_BASE}/services/realtutorialhub-admin.env
 scp infra/hostinger/env/services/realtutorialhub-quiz.env ${VPS_USER}@${VPS_HOST}:${ENV_BASE}/services/realtutorialhub-quiz.env
@@ -136,6 +137,7 @@ echo "   │   ├── skillup.env          (SUIA brand)"
 echo "   │   └── skillhubcore.env     (SHC brand)"
 echo "   └── services/"
 echo "       ├── api-server.env"
+echo "       ├── question-judge.env"
 echo "       ├── realtutorialhub-web.env"
 echo "       ├── skillup-web.env"
 echo "       └── ... (all services)"

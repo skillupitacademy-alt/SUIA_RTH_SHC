@@ -17,6 +17,11 @@ services:
         max-size: "100m"
         max-file: "5"
 
+  question-judge:
+    mem_limit: 1024m
+    cpus: "1.00"
+    logging: *app-logging
+
   realtutorialhub-quiz:
     mem_limit: 1024m
     cpus: "1.00"
