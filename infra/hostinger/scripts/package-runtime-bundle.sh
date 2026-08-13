@@ -19,6 +19,8 @@ json_escape() {
   printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'
 }
 
+rm -rf "$BUNDLE_DIR"
+
 mkdir -p \
   "$BUNDLE_DIR/compose" \
   "$BUNDLE_DIR/config" \
