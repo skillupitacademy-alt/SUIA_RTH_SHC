@@ -9,6 +9,8 @@ import { recordCounter, recordTimer } from '@/lib/metrics';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
 import { requireAdminRouteAccess } from '@/modules/auth/admin-audience.util';
+import { findBatchDuplicateDetails } from '@/modules/question/batch-duplicate-detector';
+import { DuplicateDetector } from '@/modules/question/duplicate-detector';
 import { bulkQuestionSchema } from '@/schemas/admin.schemas';
 
 type CreateQuestionInput = typeof questions.$inferInsert & {
@@ -47,6 +49,70 @@ async function handler(_req: NextRequest) {
         return ApiResponse.error(badRequest('Invalid payload', 'BAD_REQUEST', parsed.error.issues));
     }
     const { topicId, subtopicId, skillId, skillIds, questions } = parsed.data;
+
+    const batchDuplicates = findBatchDuplicateDetails(
+        questions.map((q) => ({
+            questionText: q.questionText,
+            codeSnippet: q.codeSnippet,
+            conceptKey: q.conceptKey,
+            objectiveKey: q.objectiveKey,
+            type: q.type,
+            correctAnswer: q.correctAnswer,
+        }))
+    );
+
+    if (batchDuplicates.length > 0) {
+        return ApiResponse.error(
+            badRequest(
+                `Batch contains ${batchDuplicates.length} duplicate question(s) inside the uploaded JSON. Remove or edit them before committing.`,
+                'VALIDATION_FAILED',
+                batchDuplicates
+            )
+        );
+    }
+
+    const duplicateVerdicts = await Promise.all(
+        questions.map((q) =>
+            DuplicateDetector.evaluate(
+                {
+                    questionText: q.questionText,
+                    codeSnippet: q.codeSnippet,
+                    conceptKey: q.conceptKey,
+                    objectiveKey: q.objectiveKey,
+                    type: q.type,
+                    correctAnswer: q.correctAnswer,
+                },
+                topicId
+            )
+        )
+    );
+
+    const duplicateDetails = duplicateVerdicts
+        .map((verdict, index) => (verdict.status === 'duplicate' || verdict.status === 'review'
+            ? {
+                index,
+                status: verdict.status,
+                level: verdict.level,
+                reason: verdict.reason,
+                similarity: verdict.similarity ?? verdict.signals.semanticScore,
+                originalId: verdict.signals.matchedQuestionId ?? null,
+                existingQuestionText: verdict.signals.matchedQuestionText ?? null,
+                existingQuestionCode: verdict.signals.matchedQuestionCode ?? null,
+                isDuplicate: verdict.status === 'duplicate',
+                judge: verdict.judge ?? undefined,
+            }
+            : null))
+        .filter((detail): detail is NonNullable<typeof detail> => detail !== null);
+
+    if (duplicateDetails.length > 0) {
+        return ApiResponse.error(
+            badRequest(
+                `Batch contains ${duplicateDetails.length} duplicate/review-question(s) already in the question bank. Resolve flagged questions and retry.`,
+                'VALIDATION_FAILED',
+                duplicateDetails
+            )
+        );
+    }
 
     // Create a job record for tracking the bulk import
     const { JobsService } = await import('@/modules/system/jobs.service');

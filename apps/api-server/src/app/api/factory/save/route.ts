@@ -11,6 +11,7 @@ import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from "@/lib/sa
 import { withLogging } from "@/lib/withLogging";
 import { requireAdminRouteAccess } from "@/modules/auth/admin-audience.util";
 import { SemanticSearchService } from "@/modules/intelligence/semantic-search.service";
+import { findBatchDuplicateDetails } from "@/modules/question/batch-duplicate-detector";
 import { DuplicateDetector } from "@/modules/question/duplicate-detector";
 import { computeCodeHash, computeQuestionHash, normalizeConceptKey, normalizeObjectiveKey } from "@/modules/question/question-hash";
 
@@ -63,6 +64,19 @@ async function handler(req: NextRequest) {
     }
 
     const { questions: checkQuestions, topicId, subtopicId } = parsed.data;
+
+    const batchDuplicates = findBatchDuplicateDetails(checkQuestions);
+    if (batchDuplicates.length > 0) {
+      recordCounter('factory.api.save.blocked', 1, { topicId, blockedCount: batchDuplicates.length });
+      recordTimer('factory.api.save.duration', Date.now() - start, { outcome: 'blocked_batch_duplicates' });
+      return ApiResponse.error(
+        badRequest(
+          `Batch contains ${batchDuplicates.length} duplicate question(s) inside the staged JSON. Resolve flagged questions in the Review Console and retry.`,
+          'VALIDATION_FAILED',
+          batchDuplicates
+        )
+      );
+    }
 
     // ════════════════════════════════════════════════════════════════════
     // LAYERED DUPLICATE ENFORCEMENT (server-side safety net on commit).

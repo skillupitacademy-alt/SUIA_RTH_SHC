@@ -272,7 +272,13 @@ export class ContentAdminClient implements IAdminQuestionConfigClient, IAdminBlu
     skillIds?: string[];
     questions: QuestionPayload[];
   }) {
-    return this.client.post<{ questions: QuestionSummary[] }, typeof data>('/admin/questions/bulk', data);
+    return this.client.post<{
+      success?: boolean;
+      questions?: QuestionSummary[];
+      jobId?: string;
+      count?: number;
+      message?: string;
+    }, typeof data>('/admin/questions/bulk', data);
   }
 
   async updateQuestion(id: string, data: Partial<QuestionPayload>) {

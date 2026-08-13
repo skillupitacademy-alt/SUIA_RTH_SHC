@@ -1,4 +1,3 @@
-import { METRICS } from "@quiz/observability";
 import { type NextRequest } from 'next/server';
 
 import { badRequest } from "@/lib/api-error";
@@ -8,6 +7,7 @@ import { recordCounter, recordTimer } from "@/lib/metrics";
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from "@/lib/sanitize";
 import { withLogging } from "@/lib/withLogging";
 import { requireAdminRouteAccess } from "@/modules/auth/admin-audience.util";
+import { findBatchDuplicateDetails } from "@/modules/question/batch-duplicate-detector";
 import { DuplicateDetector } from "@/modules/question/duplicate-detector";
 
 interface DuplicateCheckPayload {
@@ -47,10 +47,15 @@ async function postHandler(req: NextRequest) {
       throw badRequest("Invalid payload");
     }
 
+    const batchDetails = findBatchDuplicateDetails(checkQuestions);
+    const batchDuplicateIndices = new Set(batchDetails.map((detail) => detail.index));
+
     // Layered duplicate detection per question:
-    //   exact hash → code hash → concept key → objective key → Upstash Vector → private judge.
+    //   in-batch duplicate checks, then DB/vector/judge checks.
     const details = await Promise.all(
       checkQuestions.map(async (q, idx) => {
+        if (batchDuplicateIndices.has(idx)) return null;
+
         const verdict = await DuplicateDetector.evaluate(
           {
             questionText: q.questionText,
@@ -80,7 +85,9 @@ async function postHandler(req: NextRequest) {
       })
     );
 
-    const nonNewDetails = details.filter((d): d is Exclude<typeof d, null> => d !== null);
+    const dbDetails = details.filter((d): d is Exclude<typeof d, null> => d !== null);
+    const nonNewDetails = [...batchDetails, ...dbDetails].sort((a, b) => a.index - b.index);
+    const blockedIndices = new Set(nonNewDetails.map((detail) => detail.index));
 
     recordCounter('factory.api.duplicate_check.success', 1, { topicId });
     recordTimer('factory.api.duplicate_check.duration', Date.now() - start, { outcome: 'success' });
@@ -88,7 +95,7 @@ async function postHandler(req: NextRequest) {
     return ApiResponse.success({
       details: nonNewDetails,
       foundCount: nonNewDetails.length,
-      newCount: checkQuestions.length - nonNewDetails.length
+      newCount: checkQuestions.length - blockedIndices.size
     });
 
   } catch (error: unknown) {

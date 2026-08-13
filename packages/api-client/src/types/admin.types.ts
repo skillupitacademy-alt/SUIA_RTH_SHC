@@ -127,13 +127,14 @@ export interface DuplicateCheckDetail {
   index: number;
   /** 'duplicate' → hard block. 'review' → human/AI-judge decision needed. */
   status: 'duplicate' | 'review';
-  level: 'exact' | 'code' | 'concept' | 'semantic' | 'judge' | 'none';
+  level: 'exact' | 'code' | 'concept' | 'semantic' | 'judge' | 'none' | 'batch_exact' | 'batch_concept_objective' | 'batch_code_objective';
   reason: string;
   similarity: number;
   originalId: string | null;
   existingQuestionText: string | null;
   existingQuestionCode: string | null;
   isDuplicate: boolean;
+  batchOriginalIndex?: number | null;
   judge?: {
     available: boolean;
     duplicate: boolean;

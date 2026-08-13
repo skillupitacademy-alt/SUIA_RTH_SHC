@@ -2,18 +2,55 @@
 
 import { ZConfirmationDialog } from '@quiz/ui';
 import {
-    CheckCheck,
+    AlertCircle as AlertCircleIcon, CheckCheck,
     RefreshCcw, Save, Sparkles,
     Trash2
 } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 
+import { ApiRequestError } from '@quiz/api-client/core/fetch-client';
+import type { DuplicateCheckDetail } from '@quiz/api-client/types';
+
 import { useFactory } from '@/context/FactoryContext';
 import { GeneratedQuestion } from '@/types/factory';
 import { clientLogger } from '@/utils/clientLogger';
 
 import { QuestionCard } from './QuestionCard';
+
+type CommitFeedback = {
+    type: 'info' | 'success' | 'error';
+    message: string;
+    details?: string[];
+};
+
+function formatDuplicateMarker(detail: DuplicateCheckDetail): string {
+    const batchIndex = typeof detail.batchOriginalIndex === 'number' ? `staged Q${detail.batchOriginalIndex + 1}` : null;
+    const source = batchIndex ?? detail.originalId ?? 'question bank';
+    return `${detail.reason} (${source})`;
+}
+
+function extractErrorDetails(error: unknown): string[] {
+    if (!(error instanceof ApiRequestError) || !Array.isArray(error.details)) return [];
+
+    return error.details.slice(0, 6).map((detail: unknown) => {
+        if (detail !== null && typeof detail === 'object') {
+            const record = detail as { index?: unknown; reason?: unknown; message?: unknown; status?: unknown; level?: unknown };
+            const row = typeof record.index === 'number' ? `Q${record.index + 1}` : 'Item';
+            const reason = typeof record.reason === 'string'
+                ? record.reason
+                : typeof record.message === 'string'
+                    ? record.message
+                    : typeof record.level === 'string'
+                        ? record.level
+                        : typeof record.status === 'string'
+                            ? record.status
+                            : 'Validation failed';
+            return `${row}: ${reason}`;
+        }
+        return String(detail);
+    });
+}
 
 export function ReviewConsole() {
     const { stagedQuestions, updateQuestion, removeQuestion, removeBatch, clearStage, resetFactory } = useFactory();
@@ -96,7 +133,8 @@ export function ReviewConsole() {
 
     const [isSaving, setIsSaving] = React.useState(false);
     const [officialSkills, setOfficialSkills] = React.useState<Array<{ id: string; name: string }>>([]);
-    const [duplicateMap, setDuplicateMap] = React.useState<Map<number, string>>(new Map()); // Index -> Original ID
+    const [duplicateMap, setDuplicateMap] = React.useState<Map<number, string>>(new Map());
+    const [commitFeedback, setCommitFeedback] = React.useState<CommitFeedback | null>(null);
     const { blueprint } = useFactory();
 
     const validateBeforeCommit = () => {
@@ -146,19 +184,22 @@ export function ReviewConsole() {
             try {
                 const { apiClient } = await import('@quiz/api-client');
                 const result = await apiClient.admin.checkDuplicates({
-                    questions: stagedQuestions.map(q => ({ questionText: q.questionText })),
+                    questions: stagedQuestions.map(q => ({
+                        questionText: q.questionText,
+                        codeSnippet: q.codeSnippet,
+                        conceptKey: q.conceptKey,
+                        objectiveKey: q.objectiveKey,
+                        type: q.codeSnippet != null && q.codeSnippet.trim() !== '' ? 'code_mcq' : 'mcq',
+                        correctAnswer: q.correctAnswer,
+                    })),
                     topicId: blueprint.topicId
                 });
 
                 if (result.details != null && result.details.length > 0) {
                     const nextMap = new Map<number, string>();
-                    result.details.forEach((d: { index?: number; originalId?: string | null; id?: string | null; status?: string }, idx: number) => {
+                    result.details.forEach((d, idx: number) => {
                         const questionIndex = typeof d.index === 'number' ? d.index : idx;
-                        const originalId = d.originalId ?? d.id;
-                        const marker = originalId ?? d.status ?? 'review';
-                        if (marker !== '') {
-                            nextMap.set(questionIndex, marker);
-                        }
+                        nextMap.set(questionIndex, formatDuplicateMarker(d));
                     });
                     setDuplicateMap(nextMap);
                 } else {
@@ -176,6 +217,10 @@ export function ReviewConsole() {
 
     const performCommit = async () => {
         setIsSaving(true);
+        setCommitFeedback({
+            type: 'info',
+            message: `Submitting ${stagedQuestions.length} question(s) to the question bank...`,
+        });
         try {
             const { apiClient } = await import('@quiz/api-client');
             const payload = {
@@ -204,14 +249,30 @@ export function ReviewConsole() {
             };
 
             const result = await apiClient.admin.bulkCreateQuestions(payload);
-            const insertedCount = Array.isArray(result.questions) ? result.questions.length : stagedQuestions.length;
+            const insertedCount = result.count ?? (Array.isArray(result.questions) ? result.questions.length : stagedQuestions.length);
+            const jobSuffix = result.jobId != null && result.jobId !== '' ? ` Job: ${result.jobId.slice(0, 8)}.` : '';
+            const successMessage = `Queued ${insertedCount} question(s) for import.${jobSuffix}`;
 
-            toast.success(`Success! Saved ${insertedCount} questions to the question bank.`);
+            toast.success(successMessage);
+            setCommitFeedback({
+                type: 'success',
+                message: successMessage,
+            });
             resetFactory();
-            window.location.href = '/factory/question-generator';
         } catch (error) {
             clientLogger.error('Save failed', { error: error instanceof Error ? error.message : 'unknown' });
-            toast.error("Failed to save batch. Check console for details.");
+            const message = error instanceof ApiRequestError
+                ? error.message
+                : error instanceof Error
+                    ? error.message
+                    : 'Failed to save batch.';
+            const details = extractErrorDetails(error);
+            setCommitFeedback({
+                type: 'error',
+                message,
+                details,
+            });
+            toast.error(message);
         } finally {
             setIsSaving(false);
         }
@@ -226,17 +287,26 @@ export function ReviewConsole() {
         const commitValidationErrors = validateBeforeCommit();
         if (commitValidationErrors.length > 0) {
             const preview = commitValidationErrors.slice(0, 3).join(' | ');
+            setCommitFeedback({
+                type: 'error',
+                message: 'Commit blocked by local validation.',
+                details: commitValidationErrors.slice(0, 6),
+            });
             toast.error(`Commit blocked: ${preview}${commitValidationErrors.length > 3 ? ' ...' : ''}`);
             return;
         }
 
         if (duplicateMap.size > 0) {
-            openDialog({
-                title: "Duplicates Detected",
-                description: `Warning: ${duplicateMap.size} duplicate questions detected. Do you want to proceed and potentially create duplicates?`,
-                variant: 'warning',
-                onConfirm: () => { void performCommit(); }
+            const details = Array.from(duplicateMap.entries())
+                .sort(([a], [b]) => a - b)
+                .slice(0, 6)
+                .map(([index, reason]) => `Q${index + 1}: ${reason}`);
+            setCommitFeedback({
+                type: 'error',
+                message: `Commit blocked: ${duplicateMap.size} duplicate question(s) detected.`,
+                details,
             });
+            toast.error(`Commit blocked: ${duplicateMap.size} duplicate question(s) detected.`);
             return;
         }
 
@@ -253,6 +323,30 @@ export function ReviewConsole() {
                 description={dialogConfig.description}
                 variant={dialogConfig.variant}
             />
+            {commitFeedback !== null ? (
+                <div className={[
+                    'rounded-3xl border p-5 shadow-sm',
+                    commitFeedback.type === 'success' ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : '',
+                    commitFeedback.type === 'error' ? 'border-rose-200 bg-rose-50 text-rose-800' : '',
+                    commitFeedback.type === 'info' ? 'border-blue-200 bg-blue-50 text-blue-800' : '',
+                ].join(' ')}>
+                    <div className="flex items-start gap-3">
+                        <div className="mt-0.5">
+                            {commitFeedback.type === 'success' ? <CheckCheck size={18} /> : <AlertCircleIcon />}
+                        </div>
+                        <div className="space-y-2">
+                            <p className="text-sm font-black">{commitFeedback.message}</p>
+                            {commitFeedback.details != null && commitFeedback.details.length > 0 ? (
+                                <ul className="space-y-1 text-xs font-semibold">
+                                    {commitFeedback.details.map((detail, index) => (
+                                        <li key={index}>{detail}</li>
+                                    ))}
+                                </ul>
+                            ) : null}
+                        </div>
+                    </div>
+                </div>
+            ) : null}
             {/* FLOATING SELECTION COMMAND BAR */}
             {selectedIndices.size > 0 && (
                 <div className="fixed top-28 left-1/2 -translate-x-1/2 z-[60] animate-in slide-in-from-top-4 duration-500">
@@ -359,6 +453,7 @@ export function ReviewConsole() {
                             index={idx}
                             officialSkills={officialSkills}
                             isDuplicate={duplicateMap.has(idx)}
+                            duplicateReason={duplicateMap.get(idx)}
                             isSelected={selectedIndices.has(idx)}
                             onUpdate={(updates: Partial<GeneratedQuestion>) => handleUpdate(idx, updates)}
                             onDelete={() => handleDelete(idx)}

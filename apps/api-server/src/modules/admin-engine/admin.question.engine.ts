@@ -8,6 +8,7 @@ import { DrizzleQuestionRepository } from "@/repositories/implementations/drizzl
 import { IQuestionRepository } from "@/repositories/interfaces/question.repository.interface";
 
 import { queueService } from '../core/queue.service';
+import { findBatchDuplicateDetails } from '../question/batch-duplicate-detector';
 import { DuplicateDetector } from '../question/duplicate-detector';
 import { type BackendQuestionType, normalizeQuestionOptions, normalizeQuestionType } from '../question/question-contract';
 import { computeCodeHash, computeQuestionHash, normalizeConceptKey, normalizeObjectiveKey } from '../question/question-hash';
@@ -207,8 +208,28 @@ export class AdminQuestionEngine {
   async bulkCreateQuestionsWithContext(questions: CreateQuestionInput[], context?: Record<string, unknown>, _adminId?: string, adminId?: string) {
     const results = [];
     const actor = adminId ?? _adminId ?? 'system';
-    for (const q of questions) {
-        results.push(await this.createQuestion({ ...q, ...context }, actor));
+    const questionsWithContext = questions.map((q) => ({ ...q, ...context }));
+    const batchDuplicates = findBatchDuplicateDetails(
+      questionsWithContext.map((q) => ({
+        questionText: q.questionText,
+        codeSnippet: q.codeSnippet,
+        conceptKey: q.conceptKey,
+        objectiveKey: q.objectiveKey,
+        type: q.type,
+        correctAnswer: q.correctAnswer,
+      }))
+    );
+
+    if (batchDuplicates.length > 0) {
+      throw conflict(
+        `Batch contains ${batchDuplicates.length} duplicate question(s) inside the upload. Resolve flagged questions before saving.`,
+        'CONFLICT',
+        batchDuplicates
+      );
+    }
+
+    for (const q of questionsWithContext) {
+        results.push(await this.createQuestion(q, actor));
     }
     await this.auditService.log({
       userId: actor,

@@ -17,6 +17,7 @@ interface QuestionCardProps {
     index: number;
     officialSkills?: Array<{ id: string; name: string }>; // Array of skill objects { id, name }
     isDuplicate?: boolean;
+    duplicateReason?: string;
     onUpdate: (updates: Partial<GeneratedQuestion>) => void;
     onDelete: () => void;
     isSelected?: boolean;
@@ -28,6 +29,7 @@ export function QuestionCard({
     index,
     officialSkills,
     isDuplicate,
+    duplicateReason,
     onUpdate,
     onDelete,
     isSelected = false,
@@ -57,8 +59,8 @@ export function QuestionCard({
             {(isSelected === true) ? <div className="absolute inset-0 bg-[#FF4B91]/[0.02] pointer-events-none animate-in fade-in duration-500" /> : null}
 
             {/* Duplicate Warning Banner */}
-            {(isDuplicate === true) ? <div className="w-full bg-rose-500 text-white text-[10px] font-black uppercase tracking-widest py-1 text-center animate-pulse">
-                ⚠️ Duplicate Detected - This question already exists in this topic
+            {(isDuplicate === true) ? <div className="w-full bg-rose-500 text-white text-[10px] font-black uppercase tracking-widest py-2 text-center">
+                Duplicate Detected - {duplicateReason ?? 'This question conflicts with an existing or staged question'}
             </div> : null}
             {/* 1. Header Area: Identity & Metadata */}
             <div className="px-10 py-6 border-b border-slate-100 flex flex-wrap items-center justify-between gap-4 bg-slate-50/30">
@@ -103,6 +105,12 @@ export function QuestionCard({
                     <div className="px-4 py-1.5 rounded-full border border-slate-200 bg-white text-slate-500 text-[9px] font-black uppercase tracking-widest flex items-center gap-2">
                         <Target size={10} className="text-[#FF4B91]" /> {question.mappingType}
                     </div>
+
+                    {isDuplicate === true ? (
+                        <div className="px-4 py-1.5 rounded-full border border-rose-200 bg-rose-50 text-rose-600 text-[9px] font-black uppercase tracking-widest flex items-center gap-2">
+                            <AlertCircle size={10} /> Duplicate
+                        </div>
+                    ) : null}
                 </div>
 
                 <div className="flex items-center gap-2">

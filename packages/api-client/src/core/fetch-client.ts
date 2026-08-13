@@ -29,11 +29,17 @@ class RetryableStatusError extends Error {
 
 export class ApiRequestError extends Error {
   status: number;
+  code?: string;
+  details?: unknown;
+  body?: unknown;
 
-  constructor(status: number, message: string) {
+  constructor(status: number, message: string, options?: { code?: string; details?: unknown; body?: unknown }) {
     super(message);
     this.name = 'ApiRequestError';
     this.status = status;
+    this.code = options?.code;
+    this.details = options?.details;
+    this.body = options?.body;
   }
 }
 
@@ -301,7 +307,11 @@ export class FetchClient {
         const event = new CustomEvent('auth:forbidden', { cancelable: true });
         window.dispatchEvent(event);
       }
-      throw new ApiRequestError(response.status, errorMessage);
+      throw new ApiRequestError(response.status, errorMessage, {
+        code: typeof errorBody.code === 'string' ? errorBody.code : undefined,
+        details: errorBody.details,
+        body: errorBody,
+      });
     }
 
     // Capture request id and performance metrics for correlation
