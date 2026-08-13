@@ -105,7 +105,7 @@ function QuestionFactoryContent() {
     };
 
     return (
-        <FactoryLayout title="Question Factory" subtitle="Context-Aware Generator" backPath="/">
+        <FactoryLayout title="Question Factory" subtitle="Context-Aware Generator" backPath="/questions">
             <ZConfirmationDialog
                 isOpen={isResetConfirmOpen}
                 onClose={() => setIsResetConfirmOpen(false)}
