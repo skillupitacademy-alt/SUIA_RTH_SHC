@@ -510,6 +510,14 @@ export class ExamEngine {
         } else {
           void JobOrchestrator.runJob(jobId, userId);
         }
+      } else {
+        const { ScoringEngine } = await import('@/modules/scoring-engine/scoring.engine');
+        try {
+          await ScoringEngine.calculateExamResults(targetExamId);
+          return { examId: targetExamId, status: 'completed', jobId };
+        } catch (error) {
+          this.log.error({ err: error, examId: targetExamId }, '[ExamEngine] Inline scoring fallback failed');
+        }
       }
     }
 

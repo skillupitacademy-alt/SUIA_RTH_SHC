@@ -10,6 +10,7 @@ import { withLogging } from '@/lib/withLogging';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 import { ReportEngine } from '@/modules/report-engine/report.engine';
+import { ScoringEngine } from '@/modules/scoring-engine/scoring.engine';
 
 export const dynamic = 'force-dynamic';
 
@@ -51,7 +52,13 @@ async function getHandler(req: NextRequest) {
             message: 'Exam is still finishing...' 
         }, 202, { 'Retry-After': '5' });
     }
-    if (examCheck.status === 'processing') {
+    let resolvedStatus = examCheck.status;
+    if (resolvedStatus === 'processing' && process.env.QUEUE_ENABLED !== 'true') {
+        await ScoringEngine.calculateExamResults(examId);
+        resolvedStatus = 'completed';
+    }
+
+    if (resolvedStatus === 'processing') {
         return ApiResponse.success({ 
             status: 'processing',
             message: 'Results are being calculated...' 
