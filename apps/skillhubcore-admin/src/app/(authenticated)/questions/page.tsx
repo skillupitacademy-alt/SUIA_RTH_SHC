@@ -1,7 +1,7 @@
 'use client';
 
 import { PageTitle } from '@quiz/ui';
-import { Award, BookOpen, Database, GitBranch, Hash, Layers, Plus } from 'lucide-react';
+import { Award, BookOpen, Database, GitBranch, Hash, Layers, Plus, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 
@@ -27,7 +27,13 @@ export default function QuestionsPage() {
                     <PageTitle text="Question Bank" />
                     <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest mt-2">Hierarchy • Difficulty • Compliance</p>
                 </div>
-                <div className="flex flex-col items-end gap-3 text-right">
+                <div className="flex flex-col sm:flex-row items-end gap-3 text-right">
+                    <Link
+                        href="/factory/question-generator"
+                        className="px-5 py-2.5 rounded-xl bg-white hover:bg-gray-50 text-[#1A1A1A] text-xs font-black uppercase tracking-widest shadow-lg border border-slate-200 transition-all flex items-center gap-2"
+                    >
+                        <Sparkles size={16} /> Question Factory
+                    </Link>
                     <Link
                         href="/questions/new"
                         className="px-5 py-2.5 rounded-xl bg-[#f54a8d] hover:bg-[#d63d7a] text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-[#f54a8d]/20 transition-all flex items-center gap-2"

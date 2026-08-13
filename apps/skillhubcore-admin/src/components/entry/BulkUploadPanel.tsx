@@ -28,21 +28,119 @@ interface BulkQuestion {
     explanation?: string;
 }
 
+const allowedDifficulties = new Set(['simple', 'intermediate', 'expert']);
+const allowedTypes = new Set(['mcq', 'code_mcq']);
+const allowedMappingTypes = new Set(['conceptual', 'technical', 'practical']);
+
+function validateBulkQuestions(parsed: unknown): { questions: BulkQuestion[]; errors: string[] } {
+    const errors: string[] = [];
+
+    if (!Array.isArray(parsed)) {
+        return { questions: [], errors: ['JSON root must be an array of questions.'] };
+    }
+
+    if (parsed.length === 0) {
+        errors.push('JSON file must contain at least 1 question.');
+    }
+
+    if (parsed.length > 100) {
+        errors.push('Maximum 100 questions are allowed per file.');
+    }
+
+    const questions = parsed.map((item, index) => {
+        const row = index + 1;
+        const question = item as Partial<BulkQuestion> & {
+            options?: Array<{ id?: string; text?: string; isCorrect?: boolean }>;
+            correctAnswer?: string;
+        };
+        const text = typeof question.text === 'string' && question.text.trim() !== ''
+            ? question.text.trim()
+            : typeof question.questionText === 'string' ? question.questionText.trim() : '';
+
+        if (text === '') {
+            errors.push(`Question ${row}: text or questionText is required.`);
+        }
+
+        if (question.difficulty != null && question.difficulty !== '' && !allowedDifficulties.has(String(question.difficulty))) {
+            errors.push(`Question ${row}: difficulty must be simple, intermediate, or expert.`);
+        }
+
+        if (question.type != null && question.type !== '' && !allowedTypes.has(String(question.type))) {
+            errors.push(`Question ${row}: type must be mcq or code_mcq.`);
+        }
+
+        if (question.mappingType != null && question.mappingType !== '' && !allowedMappingTypes.has(String(question.mappingType))) {
+            errors.push(`Question ${row}: mappingType must be conceptual, technical, or practical.`);
+        }
+
+        if (typeof question.explanation !== 'string' || question.explanation.trim() === '') {
+            errors.push(`Question ${row}: explanation is required.`);
+        }
+
+        if (!Array.isArray(question.options) || question.options.length < 2) {
+            errors.push(`Question ${row}: minimum 2 options are required.`);
+        }
+
+        const options = Array.isArray(question.options) ? question.options.map((option, optionIndex) => {
+            if (typeof option.text !== 'string' || option.text.trim() === '') {
+                errors.push(`Question ${row}, option ${optionIndex + 1}: text is required.`);
+            }
+
+            return {
+                id: option.id != null && option.id !== '' ? option.id : String.fromCharCode(97 + optionIndex),
+                text: typeof option.text === 'string' ? option.text.trim() : '',
+                isCorrect: option.isCorrect === true
+            };
+        }) : [];
+
+        const hasCorrectFlag = options.some(option => option.isCorrect);
+        const correctAnswer = typeof question.correctAnswer === 'string' ? question.correctAnswer.trim() : '';
+        const hasMatchingCorrectAnswer = correctAnswer !== '' && options.some(option => option.text === correctAnswer);
+
+        if (!hasCorrectFlag && !hasMatchingCorrectAnswer) {
+            errors.push(`Question ${row}: mark one option as isCorrect true or provide a correctAnswer matching an option.`);
+        }
+
+        return {
+            ...question,
+            text,
+            questionText: text,
+            difficulty: question.difficulty ?? 'intermediate',
+            type: question.type ?? 'mcq',
+            mappingType: question.mappingType ?? 'conceptual',
+            explanation: typeof question.explanation === 'string' ? question.explanation.trim() : '',
+            options: options.map(option => ({
+                ...option,
+                isCorrect: option.isCorrect || option.text === correctAnswer
+            }))
+        } satisfies BulkQuestion;
+    });
+
+    return { questions, errors };
+}
+
 export function BulkUploadPanel({ topicId, topicName, subtopicId, subtopicName, skillIds, onSuccess, onError }: BulkUploadPanelProps) {
     const [file, setFile] = useState<File | null>(null);
     const [questions, setQuestions] = useState<BulkQuestion[]>([]);
     const [isUploading, setIsUploading] = useState(false);
+    const [validationErrors, setValidationErrors] = useState<string[]>([]);
+    const [validationSummary, setValidationSummary] = useState<string | null>(null);
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFile = e.target.files?.[0];
         if (selectedFile == null) return;
 
         if (selectedFile.type !== 'application/json' && !selectedFile.name.endsWith('.json')) {
+            setValidationSummary(null);
+            setValidationErrors(['Please upload a valid JSON file.']);
             onError('Please upload a valid JSON file.');
             return;
         }
 
         setFile(selectedFile);
+        setQuestions([]);
+        setValidationSummary(null);
+        setValidationErrors([]);
 
         try {
             const reader = new FileReader();
@@ -50,38 +148,23 @@ export function BulkUploadPanel({ topicId, topicName, subtopicId, subtopicName, 
                 try {
                     const content = (event.target?.result as string) ?? '';
                     const parsed = JSON.parse(content);
-
-                    if (!Array.isArray(parsed)) {
-                        throw new Error('JSON must be an array of questions.');
+                    const validation = validateBulkQuestions(parsed);
+                    if (validation.errors.length > 0) {
+                        setValidationErrors(validation.errors);
+                        setValidationSummary(null);
+                        setQuestions([]);
+                        onError(`Validation failed: ${validation.errors[0]}`);
+                        return;
                     }
 
-                    // Basic validation
-                    const validated = parsed.map((q: { text?: string; questionText?: string; options: Array<{ id?: string; text: string; isCorrect: boolean }> }, idx: number) => {
-                        // Strict check for text presence
-                        const textVal = (q.text != null && q.text !== '') ? q.text : (q.questionText ?? '');
-                        if (textVal === '') {
-                            throw new Error(`Question at index ${idx} is missing text.`);
-                        }
-                        if (!Array.isArray(q.options) || q.options.length < 2) throw new Error(`Question at index ${idx} must have at least 2 options.`);
-
-                        // Ensure options have IDs for UI stability
-                        const sanitizedOptions = q.options.map((o) => ({
-                            ...o,
-                            id: (o.id != null && o.id !== '') ? o.id : crypto.randomUUID()
-                        }));
-
-                        return {
-                            ...q,
-                            text: textVal,
-                            questionText: textVal,
-                            options: sanitizedOptions
-                        };
-                    });
-
-                    setQuestions(validated);
+                    setValidationErrors([]);
+                    setValidationSummary(`Validated ${validation.questions.length} questions. Ready to upload.`);
+                    setQuestions(validation.questions);
                 } catch (err: unknown) {
                     const msg = err instanceof Error ? err.message : 'Unknown parsing error';
                     clientLogger.error('Bulk upload parse failed', { error: msg });
+                    setValidationSummary(null);
+                    setValidationErrors([msg]);
                     onError(`Parsing Error: ${msg}`);
                     setFile(null);
                 }
@@ -127,6 +210,8 @@ export function BulkUploadPanel({ topicId, topicName, subtopicId, subtopicName, 
     const clearFile = () => {
         setFile(null);
         setQuestions([]);
+        setValidationErrors([]);
+        setValidationSummary(null);
     };
 
     const [copiedSchema, setCopiedSchema] = useState(false);
@@ -292,6 +377,35 @@ Generate strictly in the following JSON format:
                     </div>
                 </div>
             )}
+
+            {(validationErrors.length > 0 || validationSummary != null) ? (
+                <div className={cn(
+                    "rounded-2xl border p-5 text-sm font-bold",
+                    validationErrors.length > 0
+                        ? "border-red-200 bg-red-50 text-red-700"
+                        : "border-emerald-200 bg-emerald-50 text-emerald-700"
+                )}>
+                    {validationErrors.length > 0 ? (
+                        <div className="space-y-2">
+                            <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest">
+                                <AlertCircle className="w-4 h-4" /> JSON validation failed
+                            </div>
+                            <ul className="list-disc pl-5 space-y-1">
+                                {validationErrors.slice(0, 12).map((error, index) => (
+                                    <li key={index}>{error}</li>
+                                ))}
+                            </ul>
+                            {validationErrors.length > 12 ? (
+                                <p className="text-xs uppercase tracking-widest">+ {validationErrors.length - 12} more errors</p>
+                            ) : null}
+                        </div>
+                    ) : (
+                        <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest">
+                            <Check className="w-4 h-4" /> {validationSummary}
+                        </div>
+                    )}
+                </div>
+            ) : null}
 
             {/* Resources Grid */}
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
