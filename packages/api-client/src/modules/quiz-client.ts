@@ -100,7 +100,7 @@ export class QuizClient {
 
   async getQuestionCount(filters: {
     domainId: string;
-    subjects?: string[];
+    subjectIds?: string[];
     topicIds?: string[];
     subtopicIds?: string[];
   }) {

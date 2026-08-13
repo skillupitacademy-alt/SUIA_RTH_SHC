@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
-import { apiClient, Domain, Subject, Subtopic, Topic } from '@quiz/api-client';
+import { apiClient, Domain, QuestionCounts, Subject, Subtopic, Topic } from '@quiz/api-client';
 import { AssessmentSummary } from './AssessmentSummary';
 import { DomainCard } from './DomainCard';
 import { TopicChip } from './TopicChip';
@@ -42,6 +42,8 @@ function QuizSelectionConsoleContent() {
     const [mode, setMode] = useState<'basic' | 'advanced'>('basic');
     const [loading, setLoading] = useState(false);
     const [selectionError, setSelectionError] = useState<string | null>(null);
+    const [questionAvailability, setQuestionAvailability] = useState<QuestionCounts | null>(null);
+    const [availabilityLoading, setAvailabilityLoading] = useState(false);
 
     const searchParams = useSearchParams();
     const [showInvalidLinkError, setShowInvalidLinkError] = useState(false);
@@ -224,6 +226,47 @@ function QuizSelectionConsoleContent() {
         }
     }, [selectedTopics]);
 
+    useEffect(() => {
+        let cancelled = false;
+
+        const fetchQuestionAvailability = async () => {
+            if (selectedDomains.length === 0) {
+                setQuestionAvailability(null);
+                return;
+            }
+
+            setAvailabilityLoading(true);
+            try {
+                const counts = await apiClient.quiz.getQuestionCount({
+                    domainId: selectedDomains[0],
+                    subjectIds: selectedSubjects.length > 0 ? selectedSubjects : undefined,
+                    topicIds: selectedTopics.length > 0 ? selectedTopics : undefined,
+                    subtopicIds: selectedSubtopics.length > 0 ? selectedSubtopics : undefined,
+                });
+                if (!cancelled) {
+                    setQuestionAvailability(counts);
+                }
+            } catch (err) {
+                clientLogger.warn('Failed to fetch question availability', {
+                    error: err instanceof Error ? err.message : 'unknown'
+                });
+                if (!cancelled) {
+                    setQuestionAvailability(null);
+                }
+            } finally {
+                if (!cancelled) {
+                    setAvailabilityLoading(false);
+                }
+            }
+        };
+
+        fetchQuestionAvailability();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [selectedDomains, selectedSubjects, selectedTopics, selectedSubtopics]);
+
     // Mode Clamping Rules
     useEffect(() => {
         if (mode === 'basic') {
@@ -339,6 +382,10 @@ function QuizSelectionConsoleContent() {
 
     const handleLaunch = () => {
         if (isLocked) return;
+        if (questionAvailability && questionAvailability.total === 0) {
+            setSelectionError('No active questions found for this selection. Upload active questions in SHC first.');
+            return;
+        }
         setShowPreflight(true);
     };
 
@@ -780,6 +827,8 @@ function QuizSelectionConsoleContent() {
                             selectedSubjects={currentSubjects.map(s => s.name)}
                             selectedTopics={currentTopics.map(t => t.name)}
                             selectedSubtopics={currentSubtopics.map(st => st.name)}
+                            questionAvailability={questionAvailability}
+                            availabilityLoading={availabilityLoading}
                         />
                     </div>
                 )}

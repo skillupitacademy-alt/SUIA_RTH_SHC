@@ -423,10 +423,11 @@ export class SelectionService {
           STANDARD_QUERY_TIMEOUT,
           'SelectionService.fetchBatchFromPool.allIds'
         );
-        if (allMatching.length === 0) return [];
+        const availableMatching = allMatching.filter((row) => !selectedIds.has(row.id));
+        if (availableMatching.length === 0) return [];
 
         const poolMap: Partial<Record<string, string[]>> = {};
-        allMatching.forEach(r => {
+        availableMatching.forEach(r => {
             const bucket = poolMap[r.difficulty] ?? [];
             bucket.push(r.id);
             poolMap[r.difficulty] = bucket;
@@ -487,6 +488,16 @@ export class SelectionService {
         };
         const pooled = await fetchBatchFromPool(targets);
         selectedQuestions.push(...pooled);
+
+        const remaining = requestedTotal - selectedQuestions.length;
+        if (remaining > 0) {
+          const backfill = await fetchBatchFromPool({
+            simple: remaining,
+            intermediate: remaining,
+            expert: remaining,
+          });
+          selectedQuestions.push(...backfill.slice(0, remaining));
+        }
       } else {
         const pooled = await fetchBatchFromPool({ [difficultyPref]: requestedTotal });
         selectedQuestions.push(...pooled);

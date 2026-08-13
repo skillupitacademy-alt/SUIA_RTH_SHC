@@ -17,6 +17,14 @@ interface AssessmentSummaryProps {
     selectedSubjects?: string[];
     selectedTopics?: string[];
     selectedSubtopics?: string[];
+    questionAvailability?: {
+        simple: number;
+        intermediate: number;
+        expert: number;
+        total: number;
+        isReady?: boolean;
+    } | null;
+    availabilityLoading?: boolean;
 }
 
 export function AssessmentSummary({
@@ -32,8 +40,13 @@ export function AssessmentSummary({
     loading = false,
     selectedSubjects = [],
     selectedTopics = [],
-    selectedSubtopics = []
+    selectedSubtopics = [],
+    questionAvailability,
+    availabilityLoading = false
 }: AssessmentSummaryProps) {
+    const hasNoAvailableQuestions = questionAvailability !== undefined && questionAvailability !== null && questionAvailability.total === 0;
+    const canStart = isReady && !loading && !hasNoAvailableQuestions;
+
     return (
         <aside className="w-full h-full flex flex-col md:pr-12">
             <div className={cn(
@@ -146,6 +159,19 @@ export function AssessmentSummary({
                             </div>
 
                             <div className="space-y-3 opacity-90">
+                                <div className="flex justify-between items-center py-2 border-b border-gray-100 group/availability cursor-default">
+                                    <span className="text-[10px] font-black text-[#1A1A1A] uppercase tracking-[0.1em] group-hover/availability:text-[#FF2D55] transition-colors">Question Bank</span>
+                                    <span className={cn(
+                                        "text-[11px] font-black uppercase",
+                                        hasNoAvailableQuestions ? "text-[#FF2D55]" : "text-[#1A1A1A]"
+                                    )}>
+                                        {availabilityLoading
+                                            ? 'Checking...'
+                                            : questionAvailability
+                                                ? `${Math.min(questionAvailability.total, questionCount)} / ${questionCount} ready`
+                                                : 'Pending'}
+                                    </span>
+                                </div>
                                 <div className="flex justify-between items-center py-2 border-b border-gray-100 group/tier cursor-default">
                                     <span className="text-[10px] font-black text-[#1A1A1A] uppercase tracking-[0.1em] group-hover/tier:text-[#FF2D55] transition-colors">Engine Tier</span>
                                     <span className="text-[11px] font-black text-[#FF2D55] uppercase">{difficulty}</span>
@@ -162,10 +188,10 @@ export function AssessmentSummary({
                     <div className="mt-6 h-[12dvh] flex items-center border-t border-gray-100 pointer-events-auto">
                         <button
                             onClick={onStart}
-                            disabled={!isReady}
+                            disabled={!canStart}
                             className={cn(
                                 "w-full h-[54px] rounded-xl font-black font-outfit text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all active:scale-95 group border-2 relative overflow-hidden",
-                                !isReady
+                                !canStart
                                     ? "bg-[#FF2D550D] text-[#FF2D554D] border-[#FF2D551A] cursor-not-allowed opacity-100"
                                     : "bg-[#FF2D55] text-white border-[#FF2D55] shadow-[0_10px_30px_rgba(255,45,85,0.2)] hover:shadow-[0_15px_40px_rgba(255,45,85,0.4)] hover:bg-[#FF2D55] hover:border-[#FF2D55] hover:scale-[1.02]"
                             )}

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { apiClient } from '@quiz/api-client';
+import { apiClient, QuestionCounts } from '@quiz/api-client';
 import { ChevronLeft, ChevronRight, X, AlertCircle, Clock, Zap, ArrowLeft } from 'lucide-react';
 import { useBrand } from '../../PostLandingPage/app/context/BrandContext';
 import { DomainSelection } from './evaluation/DomainSelection';
@@ -25,6 +25,8 @@ export function LaunchEvaluation() {
   const [activeSession, setActiveSession] = useState<{ examId: string; title: string } | null>(null);
   const [isLaunching, setIsLaunching] = useState(false);
   const [launchError, setLaunchError] = useState<string | null>(null);
+  const [questionAvailability, setQuestionAvailability] = useState<QuestionCounts | null>(null);
+  const [availabilityLoading, setAvailabilityLoading] = useState(false);
 
   const [config, setConfig] = useState<LaunchSelectionState>({
     domain: null,
@@ -79,6 +81,45 @@ export function LaunchEvaluation() {
     };
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadQuestionAvailability() {
+      if (config.domain === null) {
+        setQuestionAvailability(null);
+        return;
+      }
+
+      setAvailabilityLoading(true);
+      try {
+        const counts = await apiClient.quiz.getQuestionCount({
+          domainId: config.domain.id,
+          subjectIds: config.subjects.length > 0 ? config.subjects.map((subject) => subject.id) : undefined,
+          topicIds: config.topics.length > 0 ? config.topics.map((topic) => topic.id) : undefined,
+          subtopicIds: config.subtopics.length > 0 ? config.subtopics.map((subtopic) => subtopic.id) : undefined,
+        });
+
+        if (!cancelled) {
+          setQuestionAvailability(counts);
+        }
+      } catch {
+        if (!cancelled) {
+          setQuestionAvailability(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setAvailabilityLoading(false);
+        }
+      }
+    }
+
+    void loadQuestionAvailability();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [config.domain, config.subjects, config.topics, config.subtopics]);
+
   const canAdvance = () => {
     if (currentStep === 1) return config.domain !== null;
     if (currentStep === 2) return config.subjects.length > 0;
@@ -96,6 +137,14 @@ export function LaunchEvaluation() {
       setLaunchError(null);
 
       try {
+        if (questionAvailability !== null && questionAvailability.total === 0) {
+          throw new Error('No active questions found for this selected domain, subject, topic, and subtopic.');
+        }
+
+        if (questionAvailability !== null && questionAvailability.total < config.questionCount) {
+          throw new Error(`Only ${questionAvailability.total} active questions are available for this selection. Reduce the question count or upload more SHC questions.`);
+        }
+
         const payload = await apiClient.quiz.startExam(
           {
             domainId: config.domain?.id,
@@ -254,7 +303,12 @@ export function LaunchEvaluation() {
 
               {showFinalSummary && (
                 <div className="mt-6 w-full min-w-0">
-                  <AssessmentSummary config={config} currentStep={currentStep} />
+                  <AssessmentSummary
+                    config={config}
+                    currentStep={currentStep}
+                    questionAvailability={questionAvailability}
+                    availabilityLoading={availabilityLoading}
+                  />
                 </div>
               )}
             </div>
@@ -272,7 +326,7 @@ export function LaunchEvaluation() {
               {launchError ?? data.labels.stepCounterLabel.replace('{current}', String(currentStep)).replace('{total}', String(data.steps.length))}
             </div>
 
-            <button onClick={() => void handleAdvance()} disabled={!canAdvance() || isLaunching} aria-label={currentStep === data.steps.length ? data.labels.launchLabel : data.labels.continueLabel} className="flex min-w-0 items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-semibold text-white shadow-lg transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:px-6 sm:text-sm" style={{ backgroundColor: brandConfig.primaryColor }}>
+            <button onClick={() => void handleAdvance()} disabled={!canAdvance() || isLaunching || (currentStep === data.steps.length && questionAvailability !== null && questionAvailability.total < config.questionCount)} aria-label={currentStep === data.steps.length ? data.labels.launchLabel : data.labels.continueLabel} className="flex min-w-0 items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-semibold text-white shadow-lg transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:px-6 sm:text-sm" style={{ backgroundColor: brandConfig.primaryColor }}>
               {isLaunching ? 'Launching...' : currentStep === data.steps.length ? data.labels.launchLabel : data.labels.continueLabel}
               {currentStep < data.steps.length && <ChevronRight className="h-5 w-5" />}
               {currentStep === data.steps.length && <Zap className="h-5 w-5" />}

@@ -6,9 +6,22 @@ import { LaunchSelectionState } from '../../../launchExamPageData';
 interface AssessmentSummaryProps {
   config: LaunchSelectionState;
   currentStep: number;
+  questionAvailability?: {
+    simple: number;
+    intermediate: number;
+    expert: number;
+    total: number;
+    isReady?: boolean;
+  } | null;
+  availabilityLoading?: boolean;
 }
 
-export function AssessmentSummary({ config, currentStep }: AssessmentSummaryProps) {
+export function AssessmentSummary({
+  config,
+  currentStep,
+  questionAvailability,
+  availabilityLoading = false,
+}: AssessmentSummaryProps) {
   const brandConfig = useBrand();
   const data = useLaunchData();
 
@@ -46,8 +59,17 @@ export function AssessmentSummary({ config, currentStep }: AssessmentSummaryProp
       label: data.summary.subtopicsLabel,
       empty: data.summary.emptySubtopicsLabel,
       value: config.subtopics.length > 0 ? data.labels.selectedCountFormat.replace('{count}', String(config.subtopics.length)) : null,
+      detail: config.subtopics.length > 0 ? config.subtopics.slice(0, 2).map((subtopic) => subtopic.title).join(', ') : null,
     },
   ];
+
+  const availableTotal = questionAvailability?.total ?? null;
+  const questionBankStatus = availabilityLoading
+    ? 'Checking...'
+    : availableTotal === null
+      ? 'Pending'
+      : `${Math.min(availableTotal, config.questionCount)} of ${config.questionCount} ready`;
+  const isQuestionBankShort = availableTotal !== null && availableTotal < config.questionCount;
 
   return (
     <div className="relative z-10 w-full overflow-hidden rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_24px_56px_rgba(15,23,42,0.08)] transition-all duration-300">
@@ -111,6 +133,10 @@ export function AssessmentSummary({ config, currentStep }: AssessmentSummaryProp
                 <div className="rounded-xl bg-white px-3 py-3">
                   <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">{data.labels.questionScopeLabel}</p>
                   <p className="mt-2 text-base font-bold text-slate-900">{config.questionCount} {data.labels.questionsSuffix}</p>
+                </div>
+                <div className="rounded-xl bg-white px-3 py-3">
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Question Bank</p>
+                  <p className={`mt-2 text-base font-bold ${isQuestionBankShort ? 'text-rose-600' : 'text-slate-900'}`}>{questionBankStatus}</p>
                 </div>
                 <div className="rounded-xl bg-white px-3 py-3">
                   <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">{data.calibration.previewDifficultyLabel}</p>
