@@ -243,9 +243,8 @@ describe('SelectionService (Branch Coverage)', () => {
     it('single difficulty happy path', async () => {
         vi.mocked(db.query.examBlueprints.findFirst).mockResolvedValue(mockBlueprint as any);
         selectQueue = [
-            qb([{ topicId: 't1' }]),  // selectedTopicParents
-            qb([]),                    // selectedSubjectParents
-            qb([]),                    // subQuery for subjectTopicCond (actualSubjectIds = ['s1'])
+            qb([]),                    // domainCond subjects subquery builder
+            qb([]),                    // domainCond topics subquery builder
             qb([{ id: 'q1', difficulty: 'simple' }]), 
             qb([mkQ('q1')])
         ];
@@ -317,15 +316,21 @@ describe('SelectionService (Branch Coverage)', () => {
     it('handles "mixed" difficulty tier loop', async () => {
         vi.mocked(db.query.examBlueprints.findFirst).mockResolvedValue(mockBlueprint as any);
         selectQueue = [
-            qb([{ topicId: 't1' }]),  
-            qb([]),                    
-            qb([]),                    // subQuery for subjectTopicCond
+            qb([]),
+            qb([]),
             qb([
                 { id: 'q1', difficulty: 'simple' },
                 { id: 'q2', difficulty: 'intermediate' },
                 { id: 'q3', difficulty: 'expert' }
             ]),
-            qb([mkQ('q1'), mkQ('q2'), mkQ('q3')])
+            qb([mkQ('q1'), mkQ('q2'), mkQ('q3')]),
+            qb([]),
+            qb([]),
+            qb([
+                { id: 'q1', difficulty: 'simple' },
+                { id: 'q2', difficulty: 'intermediate' },
+                { id: 'q3', difficulty: 'expert' }
+            ]),
         ];
 
         const service = container.get(SelectionService);

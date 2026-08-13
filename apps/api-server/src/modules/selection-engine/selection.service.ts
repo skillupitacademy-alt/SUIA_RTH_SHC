@@ -206,45 +206,57 @@ export class SelectionService {
      let blueprint: Blueprint | null = null;
      const cache = await this.getCache();
      const log = await this.getLog();
+     const hasRuntimeSelection =
+      (config?.subjectId !== undefined && config.subjectId !== '') ||
+      ((config?.subjectIds?.length ?? 0) > 0) ||
+      ((config?.topicIds?.length ?? 0) > 0) ||
+      ((config?.topics?.length ?? 0) > 0) ||
+      ((config?.subtopicIds?.length ?? 0) > 0) ||
+      config?.questionCount !== undefined ||
+      (config?.difficulty !== undefined && config.difficulty !== '');
 
-    try {
-      blueprint = await cache.get<Blueprint>(blueprintCacheKey); 
-    } catch (e) {
-      log.warn(
-        { error: e instanceof Error ? e.message : 'unknown error' },
-        'Cache lookup failed when resolving blueprint',
-      );
+    if (!hasRuntimeSelection) {
+      try {
+        blueprint = await cache.get<Blueprint>(blueprintCacheKey); 
+      } catch (e) {
+        log.warn(
+          { error: e instanceof Error ? e.message : 'unknown error' },
+          'Cache lookup failed when resolving blueprint',
+        );
+      }
     }
 
     if (!blueprint) {
-      const blueprintResult = await withTimeout(
-        this.dbInstance.query.examBlueprints.findFirst({
-          where: eq(examBlueprints.id, blueprintOrDomainId),
-        }),
-        STANDARD_QUERY_TIMEOUT,
-        'SelectionService.resolveBlueprint.byId'
-      );
-      blueprint = blueprintResult ?? null;
-
-      if (!blueprint) {
+      if (!hasRuntimeSelection) {
         const blueprintResult = await withTimeout(
           this.dbInstance.query.examBlueprints.findFirst({
-            where: sql`${examBlueprints.domains} @> ARRAY[${blueprintOrDomainId}]::uuid[]`,
+            where: eq(examBlueprints.id, blueprintOrDomainId),
           }),
           STANDARD_QUERY_TIMEOUT,
-          'SelectionService.resolveBlueprint.byDomain'
+          'SelectionService.resolveBlueprint.byId'
         );
         blueprint = blueprintResult ?? null;
-      }
 
-      if (blueprint) {
-        try {
-          await cache.set(blueprintCacheKey, blueprint, BLUEPRINT_CACHE_TTL_MS);
-        } catch (e) {
-          log.warn(
-            { error: e instanceof Error ? e.message : 'unknown error' },
-            'Cache storage failed when caching blueprint',
+        if (!blueprint) {
+          const blueprintResult = await withTimeout(
+            this.dbInstance.query.examBlueprints.findFirst({
+              where: sql`${examBlueprints.domains} @> ARRAY[${blueprintOrDomainId}]::uuid[]`,
+            }),
+            STANDARD_QUERY_TIMEOUT,
+            'SelectionService.resolveBlueprint.byDomain'
           );
+          blueprint = blueprintResult ?? null;
+        }
+
+        if (blueprint) {
+          try {
+            await cache.set(blueprintCacheKey, blueprint, BLUEPRINT_CACHE_TTL_MS);
+          } catch (e) {
+            log.warn(
+              { error: e instanceof Error ? e.message : 'unknown error' },
+              'Cache storage failed when caching blueprint',
+            );
+          }
         }
       }
     }
