@@ -8,6 +8,7 @@ import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
+import { AdminQuestionEngine } from '@/modules/admin-engine/admin.engine';
 import { requireAdminRouteAccess } from '@/modules/auth/admin-audience.util';
 import { findBatchDuplicateDetails } from '@/modules/question/batch-duplicate-detector';
 import { DuplicateDetector } from '@/modules/question/duplicate-detector';
@@ -171,6 +172,34 @@ async function handler(_req: NextRequest) {
     });
 
     if (!workflowResponse.ok) {
+        if (workflowResponse.status === 404) {
+            await JobsService.updateJobStatus(job.id, JobStatus.PROCESSING, { currentStep: 'workflow_fallback_sync_insert' });
+            const context = { topicId, subtopicId, skillId, skillIds };
+            const questionsWithContext = questions.map((question) => ({
+                ...question,
+                ...context,
+            }));
+            const inserted = await AdminQuestionEngine.bulkCreateQuestionsWithContext(questionsWithContext, context, _payload.userId);
+            await JobsService.updateJobStatus(job.id, JobStatus.COMPLETED, {
+                result: {
+                    count: inserted.length,
+                    mode: 'sync_fallback',
+                    reason: 'workflow_not_found',
+                }
+            });
+
+            const durationMs = Date.now() - start;
+            recordCounter(METRICS.ADMIN.BULK_UPLOAD, 1, { outcome: 'sync_fallback', count: inserted.length });
+            recordTimer(METRICS.ADMIN.BULK_UPLOAD + '.duration', durationMs, { outcome: 'sync_fallback' });
+
+            return ApiResponse.success({
+                success: true,
+                jobId: job.id,
+                count: inserted.length,
+                message: `Saved ${inserted.length} questions using synchronous fallback because the workflow endpoint was not found`
+            }, 200, { 'X-Duration-Ms': durationMs.toString() });
+        }
+
         await JobsService.updateJobStatus(job.id, JobStatus.FAILED, { error: `Workflow trigger failed: ${workflowResponse.statusText}` });
         throw new Error(`Failed to trigger workflow: ${workflowResponse.statusText}`);
     }
