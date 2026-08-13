@@ -108,6 +108,16 @@ For each question, you must calculate and include:
 1. 'depthLevel' (Integer 1-10): Rate the complexity (1=Syntax, 5=Pattern, 10=Architecture).
 2. 'mappingType': Label as 'conceptual' (Theory), 'technical' (Syntax), or 'practical' (Real-world).
 3. 'skillNames': Select the most relevant terms from the provided OFFICIAL TAXONOMY list. If strict mode is ON and taxonomy is available, do not create new skill names.
+4. 'conceptKey': A stable snake_case concept key for this individual question, derived from the selected topic/subtopic and the specific concept being tested.
+5. 'objectiveKey': A stable snake_case learning objective key for this individual question, derived from what the learner must identify, predict, explain, debug, or apply.
+
+Concept/objective key rules:
+- Generate keys per question, not one shared key for the full batch.
+- Base keys on the selected Topic/Subtopic and the actual question objective.
+- Use lowercase snake_case only.
+- Keep keys stable and reusable across similar questions.
+- Example conceptKey style: "python_list_indexing", "python_list_membership", "python_list_reverse_method".
+- Example objectiveKey style: "identify_index_error_for_out_of_range_access", "evaluate_membership_operator_result", "predict_reverse_method_mutation".
 
 ---
 
@@ -138,6 +148,8 @@ You must return ONLY a raw JSON object matching this schema:
       "difficulty": "simple|intermediate|expert",
       "depthLevel": 1,
       "mappingType": "conceptual|technical|practical",
+      "conceptKey": "stable_snake_case_concept_for_this_question",
+      "objectiveKey": "stable_snake_case_learning_objective_for_this_question",
       "skillNames": ["SkillA", "SkillB"]
     }
   ]
