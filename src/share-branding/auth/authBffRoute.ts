@@ -58,7 +58,10 @@ export function getUpstreamUrls(fallbackApiBase: string, upstreamPath: string, h
   const isSkillHubCore = hostname?.includes('skillhubcore') ?? false;
   const internalApiUrl = process.env.INTERNAL_API_URL?.trim().replace(/\/+$/, '').replace(/\/api$/i, '');
 
-  if (isSkillHubCore && normalizedPath.startsWith('api/admin/') && internalApiUrl !== undefined && internalApiUrl.length > 0) {
+  const isSkillHubCoreInternalRoute =
+    normalizedPath.startsWith('api/admin/') || normalizedPath.startsWith('api/factory/');
+
+  if (isSkillHubCore && isSkillHubCoreInternalRoute && internalApiUrl !== undefined && internalApiUrl.length > 0) {
     return [`${internalApiUrl}/${normalizedPath}`];
   }
 
