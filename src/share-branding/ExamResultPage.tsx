@@ -1,4 +1,4 @@
-import DetailedExamSummaryPage from './DetailedExamSummaryPage';
+import ExamSummaryReport from './ExamSummaryReport';
 import { BrandConfig } from './brandConfig';
 
 interface ExamResultPageProps {
@@ -7,5 +7,5 @@ interface ExamResultPageProps {
 }
 
 export default function ExamResultPage({ brand, examId }: ExamResultPageProps) {
-  return <DetailedExamSummaryPage brand={brand} examId={examId} />;
+  return <ExamSummaryReport brand={brand} examId={examId} />;
 }

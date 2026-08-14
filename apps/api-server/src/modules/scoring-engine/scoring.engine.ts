@@ -266,8 +266,13 @@ export class ScoringEngine {
           const scoringAnswer = resolveAnswerForScoring(question, rawUserAnswer);
           const isCorrect = this.answerEvaluation!.evaluate(normalizedType, scoringCorrectAnswer, scoringAnswer);
 
-          await db.update(examQuestions).set({ isCorrect }).where(eq(examQuestions.id, eqRecord.id)).catch(() => undefined);
-          eqRecord.isCorrect = isCorrect;
+          try {
+            await db.update(examQuestions).set({ isCorrect }).where(eq(examQuestions.id, eqRecord.id));
+            eqRecord.isCorrect = isCorrect;
+          } catch (updateError) {
+            this.log.error({ examQuestionId: eqRecord.id, error: updateError }, 'Failed to update isCorrect for exam question');
+            throw updateError;
+          }
 
           return {
             question: eqRecord.question as Record<string, unknown>,
