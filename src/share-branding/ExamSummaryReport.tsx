@@ -256,7 +256,7 @@ export default function ExamSummaryReport({ brand, examId }: ExamSummaryReportPr
     <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8 bg-white">
       <div className="max-w-7xl mx-auto">
         {/* Header with Subject Logo and Title */}
-        <div className="bg-gradient-to-r from-blue-900 to-indigo-900 rounded-2xl p-6 mb-6 flex items-center justify-between">
+        <div className="bg-blue-900 rounded-2xl p-6 mb-6 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <SubjectLogo 
               subject={result.lineage?.subject || result.lineage?.topic || 'Python'}
@@ -313,7 +313,7 @@ export default function ExamSummaryReport({ brand, examId }: ExamSummaryReportPr
           {/* Left Column - Overall Performance */}
           <div className="col-span-3">
             <div className="bg-white rounded-2xl p-6 border-2 border-gray-200 shadow-sm">
-              <div className="bg-gradient-to-r from-pink-600 to-pink-700 rounded-xl px-4 py-2 mb-6 inline-block">
+              <div className="bg-pink-600 rounded-xl px-4 py-2 mb-6 inline-block">
                 <h2 className="text-xs font-black uppercase tracking-wider text-white">Overall Performance</h2>
               </div>
 
@@ -400,7 +400,7 @@ export default function ExamSummaryReport({ brand, examId }: ExamSummaryReportPr
             {/* Performance by Difficulty */}
             {difficultyData.length > 0 && (
               <div className="bg-white rounded-2xl p-6 border-2 border-gray-200 shadow-sm">
-                <div className="bg-gradient-to-r from-pink-600 to-pink-700 rounded-xl px-4 py-2 mb-6 inline-block">
+                <div className="bg-pink-600 rounded-xl px-4 py-2 mb-6 inline-block">
                   <h2 className="text-xs font-black uppercase tracking-wider text-white">Performance by Difficulty</h2>
                 </div>
 
@@ -487,14 +487,14 @@ export default function ExamSummaryReport({ brand, examId }: ExamSummaryReportPr
 
             {/* Concept Wise Performance (Highlights) */}
             <div className="bg-white rounded-2xl p-6 border-2 border-gray-200 shadow-sm">
-              <div className="bg-gradient-to-r from-pink-600 to-pink-700 rounded-xl px-4 py-2 mb-6 inline-block">
+              <div className="bg-pink-600 rounded-xl px-4 py-2 mb-6 inline-block">
                 <h2 className="text-xs font-black uppercase tracking-wider text-white">Concept Wise Performance (Highlights)</h2>
               </div>
 
               <div className="flex items-center gap-6">
                 {/* Python Logo Circle */}
                 <div className="flex-shrink-0">
-                  <div className="w-28 h-28 rounded-full bg-gradient-to-br from-blue-500 to-yellow-400 flex items-center justify-center">
+                  <div className="w-28 h-28 rounded-full bg-blue-500 flex items-center justify-center">
                     <SubjectLogo 
                       subject={result.lineage?.subject || 'Python'}
                       primaryColor="#3776ab"
@@ -561,7 +561,7 @@ export default function ExamSummaryReport({ brand, examId }: ExamSummaryReportPr
             {/* Skills Tested */}
             {skillsData.length > 0 && (
               <div className="bg-white rounded-2xl p-6 border-2 border-gray-200 shadow-sm">
-                <div className="bg-gradient-to-r from-pink-600 to-pink-700 rounded-xl px-4 py-2 mb-6 inline-block">
+                <div className="bg-pink-600 rounded-xl px-4 py-2 mb-6 inline-block">
                   <h2 className="text-xs font-black uppercase tracking-wider text-white">Skills Tested</h2>
                 </div>
 
@@ -606,7 +606,7 @@ export default function ExamSummaryReport({ brand, examId }: ExamSummaryReportPr
           <div className="col-span-3 space-y-6">
             {/* Question Status Overview */}
             <div className="bg-white rounded-2xl p-6 border-2 border-gray-200 shadow-sm">
-              <div className="bg-gradient-to-r from-pink-600 to-pink-700 rounded-xl px-4 py-2 mb-6 inline-block">
+              <div className="bg-pink-600 rounded-xl px-4 py-2 mb-6 inline-block">
                 <h2 className="text-xs font-black uppercase tracking-wider text-white">Question Status Overview</h2>
               </div>
 
@@ -732,7 +732,7 @@ export default function ExamSummaryReport({ brand, examId }: ExamSummaryReportPr
         </div>
 
         {/* Next Steps */}
-        <div className="mt-8 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-8 border-2 border-blue-200">
+        <div className="mt-8 bg-blue-50 rounded-2xl p-8 border-2 border-blue-200">
           <div className="flex items-start gap-4 mb-6">
             <div className="w-12 h-12 rounded-xl bg-pink-600 flex items-center justify-center flex-shrink-0">
               <Trophy className="w-6 h-6 text-white" />
@@ -765,3 +765,4 @@ export default function ExamSummaryReport({ brand, examId }: ExamSummaryReportPr
     </div>
   );
 }
+

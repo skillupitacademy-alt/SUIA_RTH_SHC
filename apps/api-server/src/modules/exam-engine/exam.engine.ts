@@ -296,9 +296,29 @@ export class ExamEngine {
         idempotencyKey: idempotencyKey ?? null
     };
 
+    // Save to Redis for fast retrieval
     {
       const cache = await this.getCache();
       await cache.set(`${liveStateKey}:q:${questionId}`, answerPayload, 1000 * 60 * 60 * 2).catch(() => null);
+    }
+    
+    // CRITICAL FIX: Save answer to database immediately (not just Redis)
+    // Fetch the exam question with question details
+    const examQuestion = await this.examRepo.findQuestionByExamAndQuestion(examId, questionId);
+    if (examQuestion) {
+      await this.updateExamResponse(
+        {
+          id: examId,
+          startedAt: exam.startedAt,
+          lastAnsweredAt: exam.lastAnsweredAt ?? null
+        },
+        {
+          id: examQuestion.id,
+          responseMetadata: (examQuestion.responseMetadata as Record<string, unknown> | null) ?? null,
+          question: examQuestion.question as ScorableQuestion
+        },
+        normalizedAnswer
+      );
     }
     
     await withTimeout(
