@@ -1,21 +1,20 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { BrandConfig } from './brandConfig';
 import {
   ExamSummaryReportProps,
   ExamSummaryData,
   PerformanceMetric,
   SkillItem,
-  ReportHeader,
-  OverallPerformanceCard,
-  DifficultyPerformanceCard,
-  QuestionStatusCard,
-  ConceptPerformanceCard,
-  SkillsTestedCard,
-  MetricsSummaryBar,
-  ReportActions,
-} from './components/report';
+} from './components/report/types';
+import { ReportHeader } from './components/report/ReportHeader';
+import { OverallPerformanceCard } from './components/report/OverallPerformanceCard';
+import { DifficultyPerformanceCard } from './components/report/DifficultyPerformanceCard';
+import { QuestionStatusCard } from './components/report/QuestionStatusCard';
+import { ConceptPerformanceCard } from './components/report/ConceptPerformanceCard';
+import { SkillsTestedCard } from './components/report/SkillsTestedCard';
+import { MetricsSummaryBar } from './components/report/MetricsSummaryBar';
+import { ReportActions } from './components/report/ReportActions';
 
 async function fetchExamResult(examId: string): Promise<ExamSummaryData> {
   const response = await fetch(`/api/quiz/result?examId=${encodeURIComponent(examId)}`, {
