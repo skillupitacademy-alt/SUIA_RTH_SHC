@@ -20,6 +20,7 @@ import {
 import { eq, inArray, type InferSelectModel } from 'drizzle-orm';
 
 import { logger } from '@/lib/logger';
+import { normalizeQuestionOptions, normalizeQuestionType, parseAnswer } from '@/modules/question/question-contract';
 
 import type { AnswerEvaluationEngine } from '../answer-engine/answer.engine';
 import { ExamObserver } from '../exam-engine/exam.observer';
@@ -32,6 +33,46 @@ const withTimeout = dbWithTimeout ?? (async <T>(promise: Promise<T>) => promise)
 export const __withTimeout = withTimeout;
 
 export const dynamic = 'force-dynamic';
+
+type ScorableQuestion = {
+  type?: string | null;
+  correctAnswer?: string | null;
+  options?: unknown;
+};
+
+function resolveAnswerForScoring(question: ScorableQuestion, answer: string): string {
+  const normalizedType = normalizeQuestionType(question.type);
+  const normalizedOptions = normalizeQuestionOptions(question.options);
+
+  if (normalizedOptions.length === 0) {
+    return normalizedType === 'multi_select' ? parseAnswer(answer).join(',') : answer.trim();
+  }
+
+  const answerIds = normalizedType === 'multi_select' ? parseAnswer(answer) : [answer.trim()];
+  const optionById = new Map(normalizedOptions.map((option) => [option.id.toLowerCase(), option]));
+  const optionByLabel = new Map(
+    normalizedOptions
+      .filter((option) => typeof option.label === 'string' && option.label.trim() !== '')
+      .map((option) => [option.label!.toLowerCase(), option])
+  );
+
+  const resolvedAnswers = answerIds.map((answerId) => {
+    const key = answerId.toLowerCase();
+    const option = optionById.get(key) ?? optionByLabel.get(key);
+    return option?.text ?? option?.code ?? option?.label ?? answerId;
+  });
+
+  return resolvedAnswers.join(',');
+}
+
+function resolveCorrectAnswerForScoring(question: ScorableQuestion): string {
+  const normalizedOptions = normalizeQuestionOptions(question.options);
+  const flaggedCorrect = normalizedOptions
+    .filter((option) => option.isCorrect === true)
+    .map((option) => option.text ?? option.code ?? option.label ?? option.id);
+
+  return flaggedCorrect.length > 0 ? flaggedCorrect.join(',') : question.correctAnswer ?? '';
+}
 
 export class ScoringEngine {
   private static singleton: ScoringEngine | null = null;
@@ -218,11 +259,15 @@ export class ScoringEngine {
         const topicMap = new Map(topicData.map(t => [t.id, t]));
 
         const evaluatedAnswers: EvaluatedAnswer[] = await Promise.all(exam.examQuestions.map(async (eqRecord) => {
-          if (eqRecord.isCorrect === null || eqRecord.isCorrect === undefined) {
-             const isCorrect = this.answerEvaluation!.evaluate((eqRecord.question as Record<string, unknown>).type as string, (eqRecord.question as Record<string, unknown>).correctAnswer as string, eqRecord.userAnswer as string);
-             await db.update(examQuestions).set({ isCorrect }).where(eq(examQuestions.id, eqRecord.id)).catch(() => undefined);
-             eqRecord.isCorrect = isCorrect;
-          }
+          const question = eqRecord.question as ScorableQuestion;
+          const normalizedType = normalizeQuestionType(question.type);
+          const rawUserAnswer = typeof eqRecord.userAnswer === 'string' ? eqRecord.userAnswer : '';
+          const scoringCorrectAnswer = resolveCorrectAnswerForScoring(question);
+          const scoringAnswer = resolveAnswerForScoring(question, rawUserAnswer);
+          const isCorrect = this.answerEvaluation!.evaluate(normalizedType, scoringCorrectAnswer, scoringAnswer);
+
+          await db.update(examQuestions).set({ isCorrect }).where(eq(examQuestions.id, eqRecord.id)).catch(() => undefined);
+          eqRecord.isCorrect = isCorrect;
 
           return {
             question: eqRecord.question as Record<string, unknown>,

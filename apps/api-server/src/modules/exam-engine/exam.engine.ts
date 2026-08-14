@@ -26,6 +26,11 @@ const TOKENS = {
 type ExamWithQuestions = NonNullable<Awaited<ReturnType<ExamRepository['findByIdWithQuestions']>>>;
 type ExamHeader = Pick<InferSelectModel<typeof exams>, 'id' | 'status' | 'userId' | 'startedAt' | 'lastAnsweredAt'>;
 type ExamRepoWithFindById = { findById?: (id: string) => Promise<ExamHeader | null | undefined> };
+type ScorableQuestion = {
+  type: string;
+  correctAnswer: string;
+  options?: unknown;
+};
 
 export interface StartExamConfig {
   subjectId?: string;
@@ -90,6 +95,40 @@ export class ExamEngine {
   private static getInstance() {
     if (this.singleton === null) this.singleton = new ExamEngine();
     return this.singleton;
+  }
+
+  private resolveAnswerForScoring(question: ScorableQuestion, answer: string): string {
+    const normalizedType = normalizeQuestionType(question.type);
+    const normalizedOptions = normalizeQuestionOptions(question.options);
+
+    if (normalizedOptions.length === 0) {
+      return normalizedType === 'multi_select' ? parseAnswer(answer).join(',') : answer.trim();
+    }
+
+    const answerIds = normalizedType === 'multi_select' ? parseAnswer(answer) : [answer.trim()];
+    const optionById = new Map(normalizedOptions.map((option) => [option.id.toLowerCase(), option]));
+    const optionByLabel = new Map(
+      normalizedOptions
+        .filter((option) => typeof option.label === 'string' && option.label.trim() !== '')
+        .map((option) => [option.label!.toLowerCase(), option])
+    );
+
+    const resolvedAnswers = answerIds.map((answerId) => {
+      const key = answerId.toLowerCase();
+      const option = optionById.get(key) ?? optionByLabel.get(key);
+      return option?.text ?? option?.code ?? option?.label ?? answerId;
+    });
+
+    return resolvedAnswers.join(',');
+  }
+
+  private resolveCorrectAnswerForScoring(question: ScorableQuestion): string {
+    const normalizedOptions = normalizeQuestionOptions(question.options);
+    const flaggedCorrect = normalizedOptions
+      .filter((option) => option.isCorrect === true)
+      .map((option) => option.text ?? option.code ?? option.label ?? option.id);
+
+    return flaggedCorrect.length > 0 ? flaggedCorrect.join(',') : question.correctAnswer;
   }
 
   /**
@@ -276,7 +315,7 @@ export class ExamEngine {
 
   async updateExamResponse(
     exam: { id: string; startedAt: string | Date; lastAnsweredAt?: string | Date | null },
-    eqRecord: { id: string; responseMetadata?: Record<string, unknown> | null; question: { type: string; correctAnswer: string } },
+    eqRecord: { id: string; responseMetadata?: Record<string, unknown> | null; question: ScorableQuestion },
     answer: string
   ) {
     const { AnswerEvaluationEngine } = await import('@/modules/answer-engine/answer.engine');
@@ -296,7 +335,9 @@ export class ExamEngine {
     const firstAnsweredAt = existingMetadata.firstAnsweredAt ?? now.toISOString();
     const normalizedType = normalizeQuestionType(eqRecord.question.type);
     const normalizedAnswer = normalizedType === 'multi_select' ? parseAnswer(answer).join(',') : answer.trim();
-    const isCorrect = this.answerEvaluation.evaluate(normalizedType, eqRecord.question.correctAnswer, normalizedAnswer);
+    const scoringAnswer = this.resolveAnswerForScoring(eqRecord.question, normalizedAnswer);
+    const scoringCorrectAnswer = this.resolveCorrectAnswerForScoring(eqRecord.question);
+    const isCorrect = this.answerEvaluation.evaluate(normalizedType, scoringCorrectAnswer, scoringAnswer);
 
     await this.examRepo.updateExamQuestionResponse(eqRecord.id, {
       userAnswer: normalizedAnswer,

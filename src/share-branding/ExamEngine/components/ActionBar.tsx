@@ -14,6 +14,8 @@ interface ActionBarProps {
   themeMode: CardThemeMode;
   onThemeChange: (mode: CardThemeMode) => void;
   onSubmit?: () => void;
+  onToggleMark?: () => void;
+  isMarked?: boolean;
   isSaving?: boolean;
   isSubmitting?: boolean;
 }
@@ -30,6 +32,8 @@ export function ActionBar({
   themeMode,
   onThemeChange,
   onSubmit,
+  onToggleMark,
+  isMarked = false,
   isSaving = false,
   isSubmitting = false,
 }: ActionBarProps) {
@@ -113,9 +117,17 @@ export function ActionBar({
             <span className="text-center text-sm font-medium leading-tight xl:text-[13px]">{showOverview ? 'Hide Overview' : 'Show Overview'}</span>
           </button>
 
-          <button className="flex min-h-10 items-center justify-center gap-1.5 rounded-lg border px-3 py-2 transition-colors xl:px-2.5" style={{ borderColor: chromeStyles.utilityBorder, color: chromeStyles.utilityText, backgroundColor: 'transparent' }}>
+          <button
+            onClick={onToggleMark}
+            className="flex min-h-10 items-center justify-center gap-1.5 rounded-lg border px-3 py-2 transition-colors xl:px-2.5"
+            style={{
+              borderColor: isMarked ? '#f59e0b' : chromeStyles.utilityBorder,
+              color: isMarked ? '#ffffff' : chromeStyles.utilityText,
+              backgroundColor: isMarked ? '#f59e0b' : 'transparent',
+            }}
+          >
             <Flag className="h-4 w-4 shrink-0" />
-            <span className="text-center text-sm font-medium leading-tight xl:text-[13px]">Mark for Review</span>
+            <span className="text-center text-sm font-medium leading-tight xl:text-[13px]">{isMarked ? 'Marked' : 'Mark for Review'}</span>
           </button>
           </div>
         </div>

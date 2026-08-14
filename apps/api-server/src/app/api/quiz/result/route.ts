@@ -35,7 +35,7 @@ async function getHandler(req: NextRequest) {
 
     const examCheck = await db.query.exams.findFirst({
         where: eq(exams.id, examId),
-        columns: { userId: true, status: true }
+        columns: { userId: true, status: true, totalScore: true }
     });
 
     if (examCheck === null || examCheck === undefined) {
@@ -56,6 +56,9 @@ async function getHandler(req: NextRequest) {
     if (resolvedStatus === 'processing' && process.env.QUEUE_ENABLED !== 'true') {
         await ScoringEngine.calculateExamResults(examId);
         resolvedStatus = 'completed';
+    }
+    if (resolvedStatus === 'completed' && examCheck.totalScore === 0) {
+        await ScoringEngine.calculateExamResults(examId);
     }
 
     if (resolvedStatus === 'processing') {

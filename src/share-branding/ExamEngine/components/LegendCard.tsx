@@ -9,9 +9,10 @@ interface LegendCardProps {
   currentQuestionNumber: number;
   questions: ExamQuestionItem[];
   cardTheme: ExamCardTheme;
+  onQuestionSelect?: (index: number) => void;
 }
 
-export function LegendCard({ primaryAccent, currentQuestionNumber, questions, cardTheme }: LegendCardProps) {
+export function LegendCard({ primaryAccent, currentQuestionNumber, questions, cardTheme, onQuestionSelect }: LegendCardProps) {
   const getQuestionStatus = (question: ExamQuestionItem): ExamQuestionStatus | 'current' => {
     if (question.question.number === currentQuestionNumber) return 'current';
     return question.status;
@@ -58,7 +59,7 @@ export function LegendCard({ primaryAccent, currentQuestionNumber, questions, ca
 
       <div className="custom-scrollbar flex flex-1 flex-col overflow-auto p-4 sm:p-5">
         <div className="mb-6 grid w-full grid-cols-[repeat(auto-fill,minmax(38px,1fr))] gap-2 sm:grid-cols-[repeat(auto-fill,minmax(44px,1fr))] sm:gap-3">
-          {questions.map((question) => {
+          {questions.map((question, index) => {
             const status = getQuestionStatus(question);
             const colors = getStatusColor(status);
             
@@ -66,6 +67,7 @@ export function LegendCard({ primaryAccent, currentQuestionNumber, questions, ca
               <button
                 key={question.id}
                 aria-label={`Go to question ${question.question.number}`}
+                onClick={() => onQuestionSelect?.(index)}
                 className="w-9 h-9 rounded-lg flex items-center justify-center text-xs font-semibold transition-all border-2 shadow-sm hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2"
                 style={{
                   backgroundColor: colors.bg,

@@ -24,6 +24,12 @@ export function ExamEngine({ brand, session }: ExamEngineProps) {
   const [showOverview, setShowOverview] = useState(true);
   const [themeMode, setThemeMode] = useState<CardThemeMode>('high-clarity');
   const [answersByQuestionId, setAnswersByQuestionId] = useState<Record<string, string[]>>({});
+  const [completedQuestionIds, setCompletedQuestionIds] = useState<Set<string>>(
+    () => new Set(session?.questions.filter((question) => question.status === 'completed').map((question) => question.id) ?? [])
+  );
+  const [markedQuestionIds, setMarkedQuestionIds] = useState<Set<string>>(
+    () => new Set(session?.questions.filter((question) => question.status === 'marked').map((question) => question.id) ?? [])
+  );
   const [isSaving, setIsSaving] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -33,10 +39,21 @@ export function ExamEngine({ brand, session }: ExamEngineProps) {
 
   const currentScenario = session.questions[currentIndex] ?? session.questions[0];
   const cardTheme = EXAM_CARD_THEMES[themeMode];
+  const questionsWithLocalStatus = session.questions.map((question) => ({
+    ...question,
+    status: markedQuestionIds.has(question.id)
+      ? 'marked' as const
+      : completedQuestionIds.has(question.id) || (answersByQuestionId[question.id]?.length ?? 0) > 0
+        ? 'completed' as const
+        : question.status,
+  }));
+  const answeredCount = questionsWithLocalStatus.filter((question) => question.status === 'completed' || (answersByQuestionId[question.id]?.length ?? 0) > 0).length;
+  const markedCount = markedQuestionIds.size;
+  const remainingCount = Math.max(0, session.questions.length - answeredCount);
   const desktopStats = [
-    { label: 'Answered', value: String(session.progress.answeredCount).padStart(2, '0') },
-    { label: 'Marked', value: String(session.progress.markedCount).padStart(2, '0') },
-    { label: 'Remaining', value: String(session.progress.remainingCount).padStart(2, '0') },
+    { label: 'Answered', value: String(answeredCount).padStart(2, '0') },
+    { label: 'Marked', value: String(markedCount).padStart(2, '0') },
+    { label: 'Remaining', value: String(remainingCount).padStart(2, '0') },
     { label: 'Time Left', value: session.progress.timeRemainingLabel },
   ];
 
@@ -72,6 +89,8 @@ export function ExamEngine({ brand, session }: ExamEngineProps) {
         const payload = (await response.json().catch(() => null)) as { error?: string; message?: string } | null;
         throw new Error(payload?.error ?? payload?.message ?? 'Unable to save answer.');
       }
+
+      setCompletedQuestionIds((current) => new Set(current).add(currentScenario.id));
     } finally {
       setIsSaving(false);
     }
@@ -191,8 +210,9 @@ export function ExamEngine({ brand, session }: ExamEngineProps) {
             <LegendCard
               primaryAccent={brand.primaryColor}
               currentQuestionNumber={currentScenario.question.number}
-              questions={session.questions}
+              questions={questionsWithLocalStatus}
               cardTheme={cardTheme}
+              onQuestionSelect={setCurrentIndex}
             />
           </div>
         )}
@@ -205,7 +225,12 @@ export function ExamEngine({ brand, session }: ExamEngineProps) {
             <ProgressOverviewCard
               primaryAccent={brand.primaryColor}
               totalQuestions={session.questions.length}
-              progress={session.progress}
+              progress={{
+                ...session.progress,
+                answeredCount,
+                markedCount,
+                remainingCount,
+              }}
               cardTheme={cardTheme}
             />
           </div>
@@ -224,6 +249,18 @@ export function ExamEngine({ brand, session }: ExamEngineProps) {
         themeMode={themeMode}
         onThemeChange={setThemeMode}
         onSubmit={() => void handleSubmit()}
+        onToggleMark={() => {
+          setMarkedQuestionIds((current) => {
+            const next = new Set(current);
+            if (next.has(currentScenario.id)) {
+              next.delete(currentScenario.id);
+            } else {
+              next.add(currentScenario.id);
+            }
+            return next;
+          });
+        }}
+        isMarked={markedQuestionIds.has(currentScenario.id)}
         isSaving={isSaving}
         isSubmitting={isSubmitting}
       />
