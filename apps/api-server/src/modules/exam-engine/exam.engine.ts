@@ -518,17 +518,20 @@ export class ExamEngine {
                     const existingMetadata = (eqRecord.responseMetadata as ResponseMetadata | null) ?? {};
                     const timeSpentSeconds = existingMetadata.timeSpentSeconds ?? Math.max(0, Math.floor((now.getTime() - lastTime) / 1000));
 
-                    await tx.update(examQuestions)
-                        .set({
-                            userAnswer: cachedAnswer, 
-                            isCorrect: null, 
-                            responseMetadata: { 
-                                ...existingMetadata, 
-                                timeSpentSeconds, 
-                                firstAnsweredAt: existingMetadata.firstAnsweredAt ?? now.toISOString() 
-                            } 
-                        })
-                        .where(eq(examQuestions.id, eqRecord.id));
+                    // 🔴 FIX: Only update userAnswer if not already saved by submitAnswer()
+                    // Don't overwrite isCorrect with null - let submitAnswer's value persist or let ScoringEngine set it
+                    if (eqRecord.userAnswer === null || eqRecord.userAnswer === undefined || eqRecord.userAnswer === '') {
+                        await tx.update(examQuestions)
+                            .set({
+                                userAnswer: cachedAnswer,
+                                responseMetadata: { 
+                                    ...existingMetadata, 
+                                    timeSpentSeconds, 
+                                    firstAnsweredAt: existingMetadata.firstAnsweredAt ?? now.toISOString() 
+                                } 
+                            })
+                            .where(eq(examQuestions.id, eqRecord.id));
+                    }
                 }
             }
             

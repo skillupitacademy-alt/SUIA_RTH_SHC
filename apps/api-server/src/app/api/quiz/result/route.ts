@@ -57,8 +57,27 @@ async function getHandler(req: NextRequest) {
         await ScoringEngine.calculateExamResults(examId);
         resolvedStatus = 'completed';
     }
-    if (resolvedStatus === 'completed' && examCheck.totalScore === 0) {
-        await ScoringEngine.calculateExamResults(examId);
+    
+    // 🔴 FIX: Better safety net - check if there are answered questions with isCorrect=null
+    // instead of checking totalScore === 0 (which is a valid score!)
+    if (resolvedStatus === 'completed') {
+        const { examQuestions } = await db.query.exams.findFirst({
+            where: eq(exams.id, examId),
+            with: {
+                examQuestions: {
+                    columns: { userAnswer: true, isCorrect: true }
+                }
+            }
+        }) ?? { examQuestions: [] };
+        
+        const hasAnsweredQuestionsWithNullCorrectness = examQuestions.some(
+            eq => (eq.userAnswer !== null && eq.userAnswer !== '' && eq.isCorrect === null)
+        );
+        
+        if (hasAnsweredQuestionsWithNullCorrectness) {
+            // Re-score because there are answered questions that weren't evaluated
+            await ScoringEngine.calculateExamResults(examId);
+        }
     }
 
     if (resolvedStatus === 'processing') {

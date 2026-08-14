@@ -266,6 +266,18 @@ export class ScoringEngine {
           const scoringAnswer = resolveAnswerForScoring(question, rawUserAnswer);
           const isCorrect = this.answerEvaluation!.evaluate(normalizedType, scoringCorrectAnswer, scoringAnswer);
 
+          // 🔍 DIAGNOSTIC: Log detailed comparison to debug 0-marks issue
+          this.log.info({
+            examQuestionId: eqRecord.id,
+            questionType: normalizedType,
+            rawUserAnswer,
+            resolvedScoringAnswer: scoringAnswer,
+            resolvedCorrectAnswer: scoringCorrectAnswer,
+            isCorrect,
+            optionCount: normalizeQuestionOptions(question.options).length,
+            existingIsCorrect: eqRecord.isCorrect,
+          }, '[ScoringEngine] Answer evaluation detail');
+
           try {
             await db.update(examQuestions).set({ isCorrect }).where(eq(examQuestions.id, eqRecord.id));
             eqRecord.isCorrect = isCorrect;
