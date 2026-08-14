@@ -32,6 +32,7 @@ interface PerformanceMetric {
   id: string;
   name: string;
   score: number;
+  total: number;
   accuracy: number;
   attempts: number;
 }
