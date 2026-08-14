@@ -33,6 +33,51 @@ export function ExamEngine({ brand, session }: ExamEngineProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  
+  // 🔴 NEW: Real-time countdown timer
+  const [timeRemaining, setTimeRemaining] = useState<string>(session?.progress.timeRemainingLabel ?? '00m 00s');
+  const [examStartTime] = useState<number>(() => Date.now());
+  
+  // Calculate initial remaining seconds from the label
+  const parseTimeLabel = (label: string): number => {
+    const match = label.match(/(\d+)m(?:\s*(\d+)s)?/);
+    if (!match) return 0;
+    const minutes = parseInt(match[1], 10);
+    const seconds = parseInt(match[2] || '0', 10);
+    return minutes * 60 + seconds;
+  };
+  
+  const [remainingSeconds, setRemainingSeconds] = useState<number>(() => 
+    parseTimeLabel(session?.progress.timeRemainingLabel ?? '00m 00s')
+  );
+  
+  // 🔴 NEW: Countdown timer effect
+  useEffect(() => {
+    if (remainingSeconds <= 0) return;
+    
+    const interval = setInterval(() => {
+      setRemainingSeconds((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          // Auto-submit when time runs out
+          if (session?.examId && session.examId !== 'demo') {
+            handleSubmit();
+          }
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    
+    return () => clearInterval(interval);
+  }, [remainingSeconds, session?.examId]);
+  
+  // 🔴 NEW: Format remaining seconds as "Xm Ys"
+  useEffect(() => {
+    const minutes = Math.floor(remainingSeconds / 60);
+    const seconds = remainingSeconds % 60;
+    setTimeRemaining(`${minutes}m ${seconds.toString().padStart(2, '0')}s`);
+  }, [remainingSeconds]);
   if (!session || session.questions.length === 0) {
     return null;
   }
@@ -54,7 +99,7 @@ export function ExamEngine({ brand, session }: ExamEngineProps) {
     { label: 'Answered', value: String(answeredCount).padStart(2, '0') },
     { label: 'Marked', value: String(markedCount).padStart(2, '0') },
     { label: 'Remaining', value: String(remainingCount).padStart(2, '0') },
-    { label: 'Time Left', value: session.progress.timeRemainingLabel },
+    { label: 'Time Left', value: timeRemaining }, // Use dynamic time instead of static label
   ];
 
   const saveCurrentAnswer = async () => {

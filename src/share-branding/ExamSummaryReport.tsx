@@ -218,10 +218,14 @@ export default function ExamSummaryReport({ brand, examId }: ExamSummaryReportPr
 
   const percentage = result.percentage ?? 0;
   const isPassed = percentage >= 70;
-  const correctCount = result.questions?.filter(q => q.isCorrect).length ?? result.score ?? 0;
-  const totalQuestions = result.questions?.length ?? result.total ?? 0;
-  const incorrectCount = totalQuestions - correctCount;
-  const skippedCount = result.questions?.filter(q => !q.userAnswer).length ?? 0;
+  
+  // 🔴 FIX: Separate answered, correct, incorrect, and skipped properly
+  const allQuestions = result.questions ?? [];
+  const answeredQuestions = allQuestions.filter(q => q.userAnswer !== null && q.userAnswer !== '');
+  const correctCount = answeredQuestions.filter(q => q.isCorrect === true).length;
+  const incorrectCount = answeredQuestions.filter(q => q.isCorrect === false).length;
+  const skippedCount = allQuestions.length - answeredQuestions.length;
+  const totalQuestions = allQuestions.length;
 
   // Get difficulty breakdown
   const difficultyData = result.performance?.difficulty ?? [];
@@ -232,13 +236,33 @@ export default function ExamSummaryReport({ brand, examId }: ExamSummaryReportPr
   // Get skills data
   const skillsData = result.performance?.skill?.slice(0, 6) ?? [];
 
-  // Calculate time metrics
-  const totalTimeMinutes = Math.floor((result.totalTimeSpentSeconds || 0) / 60);
-  const totalTimeSeconds = (result.totalTimeSpentSeconds || 0) % 60;
-  const avgTimePerQuestion = totalQuestions > 0 ? Math.floor((result.totalTimeSpentSeconds || 0) / totalQuestions) : 0;
+  // 🔴 FIX: Calculate time metrics properly - use timeTaken string or calculate from questions
+  let totalTimeMinutes = 0;
+  let totalTimeSeconds = 0;
+  let totalTimeSpentSeconds = result.totalTimeSpentSeconds || 0;
   
-  // Find fastest and slowest questions
-  const sortedByTime = [...(result.questions || [])].sort((a, b) => a.timeSpent - b.timeSpent);
+  // If totalTimeSpentSeconds not provided, calculate from questions
+  if (totalTimeSpentSeconds === 0 && allQuestions.length > 0) {
+    totalTimeSpentSeconds = allQuestions.reduce((sum, q) => sum + (q.timeSpent || 0), 0);
+  }
+  
+  // Parse from timeTaken string if available (format: "2m 15s")
+  if (!totalTimeSpentSeconds && result.timeTaken) {
+    const timeMatch = result.timeTaken.match(/(\d+)m\s*(\d+)s/);
+    if (timeMatch) {
+      totalTimeMinutes = parseInt(timeMatch[1], 10);
+      totalTimeSeconds = parseInt(timeMatch[2], 10);
+      totalTimeSpentSeconds = totalTimeMinutes * 60 + totalTimeSeconds;
+    }
+  } else {
+    totalTimeMinutes = Math.floor(totalTimeSpentSeconds / 60);
+    totalTimeSeconds = totalTimeSpentSeconds % 60;
+  }
+  
+  const avgTimePerQuestion = answeredQuestions.length > 0 ? Math.floor(totalTimeSpentSeconds / answeredQuestions.length) : 0;
+  
+  // Find fastest and slowest questions (only from answered questions)
+  const sortedByTime = [...answeredQuestions].filter(q => q.timeSpent > 0).sort((a, b) => a.timeSpent - b.timeSpent);
   const fastestQuestion = sortedByTime[0];
   const slowestQuestion = sortedByTime[sortedByTime.length - 1];
 
@@ -409,18 +433,20 @@ export default function ExamSummaryReport({ brand, examId }: ExamSummaryReportPr
                     <div className="text-center">
                       <div className="relative inline-flex items-center justify-center mb-3">
                         <DonutProgress 
-                          percentage={simpleData.accuracy}
+                          percentage={simpleData.accuracy ?? 0}
                           size={110}
                           strokeWidth={12}
                           color="#10b981"
                           bgColor="#f0f0f0"
                         />
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-2xl font-black text-gray-900">{Math.round(simpleData.accuracy)}%</span>
+                          <span className="text-2xl font-black text-gray-900">{Math.round(simpleData.accuracy ?? 0)}%</span>
                         </div>
                       </div>
                       <h3 className="text-sm font-bold text-gray-900 mb-1">Simple</h3>
-                      <p className="text-xs text-gray-600">({Math.round(simpleData.accuracy * simpleData.attempts / 100)} / {simpleData.attempts})</p>
+                      <p className="text-xs text-gray-600">
+                        ({simpleData.score ?? 0} / {simpleData.total ?? 0})
+                      </p>
                     </div>
                   )}
 
@@ -428,18 +454,20 @@ export default function ExamSummaryReport({ brand, examId }: ExamSummaryReportPr
                     <div className="text-center">
                       <div className="relative inline-flex items-center justify-center mb-3">
                         <DonutProgress 
-                          percentage={intermediateData.accuracy}
+                          percentage={intermediateData.accuracy ?? 0}
                           size={110}
                           strokeWidth={12}
                           color="#3b82f6"
                           bgColor="#f0f0f0"
                         />
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-2xl font-black text-gray-900">{Math.round(intermediateData.accuracy)}%</span>
+                          <span className="text-2xl font-black text-gray-900">{Math.round(intermediateData.accuracy ?? 0)}%</span>
                         </div>
                       </div>
                       <h3 className="text-sm font-bold text-gray-900 mb-1">Intermediate</h3>
-                      <p className="text-xs text-gray-600">({Math.round(intermediateData.accuracy * intermediateData.attempts / 100)} / {intermediateData.attempts})</p>
+                      <p className="text-xs text-gray-600">
+                        ({intermediateData.score ?? 0} / {intermediateData.total ?? 0})
+                      </p>
                     </div>
                   )}
 
@@ -447,18 +475,20 @@ export default function ExamSummaryReport({ brand, examId }: ExamSummaryReportPr
                     <div className="text-center">
                       <div className="relative inline-flex items-center justify-center mb-3">
                         <DonutProgress 
-                          percentage={expertData.accuracy}
+                          percentage={expertData.accuracy ?? 0}
                           size={110}
                           strokeWidth={12}
                           color="#ec4899"
                           bgColor="#f0f0f0"
                         />
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-2xl font-black text-gray-900">{Math.round(expertData.accuracy)}%</span>
+                          <span className="text-2xl font-black text-gray-900">{Math.round(expertData.accuracy ?? 0)}%</span>
                         </div>
                       </div>
                       <h3 className="text-sm font-bold text-gray-900 mb-1">Expert</h3>
-                      <p className="text-xs text-gray-600">({Math.round(expertData.accuracy * expertData.attempts / 100)} / {expertData.attempts})</p>
+                      <p className="text-xs text-gray-600">
+                        ({expertData.score ?? 0} / {expertData.total ?? 0})
+                      </p>
                     </div>
                   )}
                 </div>
