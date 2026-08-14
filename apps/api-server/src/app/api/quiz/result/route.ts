@@ -89,14 +89,14 @@ async function getHandler(req: NextRequest) {
 
     const result = await ReportEngine.getExamReport(examId, { includeCorrectAnswers: false });
     
-    const { toExamResultDTO } = await import('@/dtos/exam.dto');
-    const responseDto = toExamResultDTO(result);
+    // Don't transform with toExamResultDTO - it strips out critical data!
+    // Frontend expects the full report format with score, total, questions, performance, etc.
 
     const durationMs = Date.now() - startTime;
     recordCounter(METRICS.QUIZ.SCORE, 1, { outcome: 'success' });
     recordTimer(METRICS.QUIZ.SCORE + '.duration', durationMs, { outcome: 'success' });
     
-    return ApiResponse.success(responseDto, 200, { 'X-Duration-Ms': durationMs.toString() });
+    return ApiResponse.success(result, 200, { 'X-Duration-Ms': durationMs.toString() });
   } catch (error: unknown) {
     const durationMs = Date.now() - startTime;
     const message = error instanceof Error ? error.message : String(error);
