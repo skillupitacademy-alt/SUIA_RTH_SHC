@@ -35,7 +35,19 @@ export class MaintenanceWorker {
     this.isRunning = true;
 
     try {
-      const dirtyViews = await redis.smembers(DIRTY_VIEWS_KEY);
+      // Try to get dirty views from Redis, but if Redis is down, just skip
+      let dirtyViews: string[] = [];
+      try {
+        dirtyViews = await Promise.race([
+          redis.smembers(DIRTY_VIEWS_KEY),
+          new Promise<string[]>((resolve) => setTimeout(() => resolve([]), 5000)) // 5 second timeout
+        ]);
+      } catch (redisError) {
+        logger.warn({ error: redisError }, '[MaintenanceWorker] Redis unavailable, skipping dirty views check');
+        this.isRunning = false;
+        return;
+      }
+
       if (dirtyViews.length === 0) {
         this.isRunning = false;
         return;
@@ -47,7 +59,11 @@ export class MaintenanceWorker {
         try {
           await materializedViewsService.refreshView(viewName);
           // Remove from set only after successful refresh
-          await redis.srem(DIRTY_VIEWS_KEY, viewName);
+          try {
+            await redis.srem(DIRTY_VIEWS_KEY, viewName);
+          } catch (redisError) {
+            logger.warn({ error: redisError, viewName }, '[MaintenanceWorker] Redis unavailable, could not remove dirty view marker');
+          }
         } catch (error) {
           logger.error({ error, viewName }, '[MaintenanceWorker] Failed to refresh view in background');
         }

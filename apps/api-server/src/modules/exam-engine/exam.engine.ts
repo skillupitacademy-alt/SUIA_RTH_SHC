@@ -304,21 +304,29 @@ export class ExamEngine {
     
     // CRITICAL FIX: Save answer to database immediately (not just Redis)
     // Fetch the exam question with question details
-    const examQuestion = await this.examRepo.findQuestionByExamAndQuestion(examId, questionId);
-    if (examQuestion) {
-      await this.updateExamResponse(
-        {
-          id: examId,
-          startedAt: exam.startedAt,
-          lastAnsweredAt: exam.lastAnsweredAt ?? null
-        },
-        {
-          id: examQuestion.id,
-          responseMetadata: (examQuestion.responseMetadata as Record<string, unknown> | null) ?? null,
-          question: examQuestion.question as ScorableQuestion
-        },
-        normalizedAnswer
-      );
+    try {
+      const examQuestion = await this.examRepo.findQuestionByExamAndQuestion(examId, questionId);
+      if (examQuestion) {
+        await this.updateExamResponse(
+          {
+            id: examId,
+            startedAt: exam.startedAt,
+            lastAnsweredAt: exam.lastAnsweredAt ?? null
+          },
+          {
+            id: examQuestion.id,
+            responseMetadata: (examQuestion.responseMetadata as Record<string, unknown> | null) ?? null,
+            question: examQuestion.question as ScorableQuestion
+          },
+          normalizedAnswer
+        );
+        this.log.info({ examId, questionId, isCorrect: examQuestion.isCorrect }, '[ExamEngine] Answer saved to database');
+      } else {
+        this.log.error({ examId, questionId }, '[ExamEngine] CRITICAL: examQuestion not found - answer NOT saved to database!');
+      }
+    } catch (dbError) {
+      this.log.error({ examId, questionId, error: dbError }, '[ExamEngine] CRITICAL: Failed to save answer to database!');
+      throw dbError; // Don't silently fail - this is critical
     }
     
     await withTimeout(
