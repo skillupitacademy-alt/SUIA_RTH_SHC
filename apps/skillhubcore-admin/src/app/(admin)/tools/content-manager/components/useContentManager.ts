@@ -16,8 +16,8 @@ import {
   SUBSECTIONS_MAP,
   getDefaultAssetFieldPath,
 } from './types';
-import { ASSET_SPECS } from '../../prompt-generator/lib/asset-specs';
-import { getStrictSectionJsonTemplate } from '../../prompt-generator/lib/prompt-templates';
+import { ASSET_SPECS } from '../lib/asset-specs';
+import { getStrictSectionJsonTemplate } from '../lib/template-generator';
 
 export type PreviewTarget = 'rth' | 'suia';
 
