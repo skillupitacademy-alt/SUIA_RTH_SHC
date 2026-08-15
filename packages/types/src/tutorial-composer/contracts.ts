@@ -207,6 +207,173 @@ export type ListTutorialSectionsResponse = z.infer<
 >;
 
 // ============================================================
+// RAW CONTENT IMPORT CONTRACTS (PROMPT 05)
+// ============================================================
+
+/**
+ * Raw Content Source Type
+ */
+export const RawContentSourceTypeSchema = z.enum([
+  'markdown',
+  'html',
+  'plain_text',
+  'file',
+  'url',
+  'ai_generate',
+]);
+
+export type RawContentSourceType = z.infer<typeof RawContentSourceTypeSchema>;
+
+/**
+ * Import Processing Options
+ */
+export const ImportOptionsSchema = z
+  .object({
+    extractTitle: z.boolean().default(true),
+    detectCodeBlocks: z.boolean().default(true),
+    detectLists: z.boolean().default(true),
+    detectHeadings: z.boolean().default(true),
+    customTitle: z.string().max(200).optional(),
+  })
+  .strict();
+
+export type ImportOptions = z.infer<typeof ImportOptionsSchema>;
+
+/**
+ * Imported Content Structural Statistics
+ */
+export const ImportedContentStatsSchema = z
+  .object({
+    headings: z.number().int().min(0),
+    paragraphs: z.number().int().min(0),
+    codeBlocks: z.number().int().min(0),
+    lists: z.number().int().min(0),
+    quotes: z.number().int().min(0),
+    tables: z.number().int().min(0),
+    totalBlocks: z.number().int().min(0),
+    wordCount: z.number().int().min(0),
+    charCount: z.number().int().min(0),
+  })
+  .strict();
+
+export type ImportedContentStats = z.infer<typeof ImportedContentStatsSchema>;
+
+/**
+ * Raw Content Import Request
+ */
+export const RawContentImportRequestSchema = z
+  .object({
+    subtopicId: z.string().uuid('Invalid subtopic ID'),
+    sectionType: SectionTypeSchema,
+    difficulty: DifficultySchema,
+    brandId: BrandIdSchema.optional(),
+    sourceType: RawContentSourceTypeSchema,
+    rawContent: z.string().min(1, 'Raw content cannot be empty').max(1_000_000, 'Content exceeds 1MB limit'),
+    options: ImportOptionsSchema.optional(),
+  })
+  .strict();
+
+export type RawContentImportRequest = z.infer<typeof RawContentImportRequestSchema>;
+
+/**
+ * Raw Content Import Response
+ */
+export const RawContentImportResponseSchema = z
+  .object({
+    document: TutorialDocumentSchema,
+    stats: ImportedContentStatsSchema,
+    sourceType: RawContentSourceTypeSchema,
+  })
+  .strict();
+
+export type RawContentImportResponse = z.infer<typeof RawContentImportResponseSchema>;
+
+// ============================================================
+// PROMPT 06 - CONTENT ANALYSIS SCHEMAS
+// ============================================================
+
+export const QualityStatusSchema = z.enum(['excellent', 'good', 'fair', 'poor', 'none', 'high']);
+export type QualityStatus = z.infer<typeof QualityStatusSchema>;
+
+export const AnalysisSectionLevelSchema = z.enum(['h1', 'h2', 'h3', 'summary']);
+export type AnalysisSectionLevel = z.infer<typeof AnalysisSectionLevelSchema>;
+
+export const AnalysisSectionSchema: z.ZodType<AnalysisSection> = z.lazy(() =>
+  z.object({
+    id: z.string(),
+    level: AnalysisSectionLevelSchema,
+    title: z.string(),
+    snippet: z.string(),
+    confidence: z.number().min(0).max(100),
+    isVerified: z.boolean().default(true),
+    subsections: z.array(AnalysisSectionSchema).optional(),
+  })
+);
+
+export interface AnalysisSection {
+  id: string;
+  level: AnalysisSectionLevel;
+  title: string;
+  snippet: string;
+  confidence: number;
+  isVerified?: boolean;
+  subsections?: AnalysisSection[];
+}
+
+export const SmartSuggestionSchema = z.object({
+  id: z.string(),
+  text: z.string(),
+  type: z.enum(['layout', 'component', 'callout', 'structure', 'general']).default('general'),
+  targetSectionId: z.string().optional(),
+});
+export type SmartSuggestion = z.infer<typeof SmartSuggestionSchema>;
+
+export const ContentAnalysisResultSchema = z
+  .object({
+    documentId: z.string().optional(),
+    subtopicId: z.string().optional(),
+    statistics: z.object({
+      totalWords: z.number().int().min(0),
+      characters: z.number().int().min(0),
+      readingTimeMinutes: z.number().int().min(0),
+      sectionsDetected: z.number().int().min(0),
+      totalBlocks: z.number().int().min(0),
+      sectionsBreakdown: z.string().optional(), // e.g. "H1: 1, H2: 5, H3: 2"
+    }),
+    sectionOutline: z.array(AnalysisSectionSchema),
+    qualityIndicators: z.object({
+      readability: QualityStatusSchema,
+      structure: QualityStatusSchema,
+      completeness: QualityStatusSchema,
+      examples: QualityStatusSchema,
+      codePresence: QualityStatusSchema,
+      visualPotential: QualityStatusSchema,
+    }),
+    smartSuggestions: z.array(SmartSuggestionSchema),
+    detectedElements: z.object({
+      headings: z.number().int().min(0),
+      paragraphs: z.number().int().min(0),
+      bulletLists: z.number().int().min(0),
+      numberedLists: z.number().int().min(0),
+      codeBlocks: z.number().int().min(0),
+      quotes: z.number().int().min(0),
+      tables: z.number().int().min(0),
+      callouts: z.number().int().min(0),
+      keyConcepts: z.number().int().min(0),
+      comparisons: z.number().int().min(0),
+      examples: z.number().int().min(0),
+    }),
+    overallConfidence: z.object({
+      score: z.number().min(0).max(100),
+      grade: z.enum(['Excellent', 'High', 'Good', 'Moderate', 'Low']),
+      description: z.string().optional(),
+    }),
+  })
+  .strict();
+
+export type ContentAnalysisResult = z.infer<typeof ContentAnalysisResultSchema>;
+
+// ============================================================
 // ERROR RESPONSES
 // ============================================================
 

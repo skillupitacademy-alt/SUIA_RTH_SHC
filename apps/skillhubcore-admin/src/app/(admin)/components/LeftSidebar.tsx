@@ -120,6 +120,36 @@ export function LeftSidebar({ isLeftSidebarOpen, setIsLeftSidebarOpen, pathname 
             </nav>
           </div>
 
+          {/* Content Intelligence */}
+          <div>
+            <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 px-2 whitespace-nowrap">Content Intelligence</h2>
+            <nav className="space-y-1">
+              {[
+                { icon: FileText, label: 'Import Content', href: '/content-intelligence/import', color: 'text-pink-400' },
+                { icon: Compass, label: 'Content Analysis', href: '/content-intelligence/analysis', color: 'text-pink-400' },
+                { icon: Box, label: 'Block Suggestions', href: '/content-intelligence/block-suggestions', color: 'text-slate-400' },
+                { icon: Layout, label: 'Presentation Ideas', href: '/content-intelligence/presentation-ideas', color: 'text-slate-400' },
+                { icon: ShieldCheck, label: 'Quality Check', href: '/content-intelligence/quality-check', color: 'text-slate-400' },
+              ].map((item, i) => (
+                <Link
+                  key={i}
+                  href={item.href}
+                  className={`flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors focus:ring-2 focus:ring-pink-500 outline-none ${
+                    pathname === item.href
+                      ? 'bg-pink-900/30 text-pink-400 font-bold border border-pink-500/30'
+                      : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                  }`}
+                >
+                  <div className="flex items-center gap-3 overflow-hidden">
+                    <div className={`p-1 rounded bg-slate-800/50 shrink-0 ${item.color}`}><item.icon size={14} /></div>
+                    <span className="whitespace-nowrap truncate">{item.label}</span>
+                  </div>
+                  <ChevronRight size={14} className="text-slate-500 shrink-0" />
+                </Link>
+              ))}
+            </nav>
+          </div>
+
           {/* Content Generation */}
           <div>
             <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 px-2 whitespace-nowrap">Content Generation</h2>

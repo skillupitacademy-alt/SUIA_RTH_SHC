@@ -20,10 +20,19 @@ export class TutorialComposerError extends Error {
  * Thrown when TutorialDocument fails validation
  */
 export class TutorialDocumentValidationError extends TutorialComposerError {
+  public readonly validationErrors: ZodValidationError[];
+
   constructor(
-    public readonly validationErrors: ZodValidationError[]
+    errorsOrMessage: ZodValidationError[] | string = 'Tutorial document validation failed',
+    validationErrors?: ZodValidationError[]
   ) {
-    super('Tutorial document validation failed');
+    if (typeof errorsOrMessage === 'string') {
+      super(errorsOrMessage);
+      this.validationErrors = validationErrors || [];
+    } else {
+      super('Tutorial document validation failed');
+      this.validationErrors = errorsOrMessage;
+    }
     this.name = 'TutorialDocumentValidationError';
   }
 }

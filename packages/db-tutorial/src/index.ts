@@ -23,6 +23,14 @@ export * from './services/layman-revision.service';
 export { tutorialComposerService } from './services/tutorial-composer.service';
 export type { TutorialComposerServiceContext } from './services/tutorial-composer.service';
 
+// Tutorial Raw Content Import - NEW architecture (Prompt 05)
+export { tutorialImportService, TutorialImportService } from './services/tutorial-import.service';
+export { MarkdownParser } from './services/parsers/markdown-parser';
+export { HtmlParser } from './services/parsers/html-parser';
+export { PlainTextParser } from './services/parsers/plain-text-parser';
+export { safeUrlFetcher, SafeUrlFetcher } from './services/parsers/safe-url-fetcher';
+export type { IRawContentParser, ParsedBlockResult } from './services/parsers/raw-content-parser.interface';
+
 // Validators, Types, DTOs
 export * from './validators/layman.validator';
 export * from './types/layman.types';
