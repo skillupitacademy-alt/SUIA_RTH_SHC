@@ -12,3 +12,44 @@ export * from './tutorial-content.schema';
 export * from './tutorial-section-contracts';
 export * from './tutorial-repositories.types';
 export * from './portal';
+
+// Rich Tutorial Document Model (Schema Version 1)
+export * from './tutorial-rich-document';
+
+// NEW Tutorial Composer (API Contracts & Domain Types)
+// Selective exports to avoid naming conflicts
+export type {
+  SectionType as ComposerSectionType,
+  Difficulty,
+  SectionStatus,
+  BrandId,
+  CreateTutorialSectionRequest,
+  UpdateTutorialSectionRequest,
+  PublishTutorialSectionRequest,
+  TutorialSectionResponse,
+  ListTutorialSectionsQuery,
+  ListTutorialSectionsResponse,
+  ApiErrorCode,
+  ValidationErrorDetail,
+  ApiErrorResponse,
+} from './tutorial-composer/contracts';
+
+export {
+  SectionTypeSchema as ComposerSectionTypeSchema,
+  DifficultySchema,
+  SectionStatusSchema,
+  BrandIdSchema,
+  CreateTutorialSectionRequestSchema,
+  UpdateTutorialSectionRequestSchema,
+  PublishTutorialSectionRequestSchema,
+  TutorialSectionResponseSchema,
+  ListTutorialSectionsQuerySchema,
+  ListTutorialSectionsResponseSchema,
+  ApiErrorCode as ApiErrorCodeSchema,
+  ValidationErrorDetailSchema,
+  ApiErrorResponseSchema,
+  createSuccessResponse,
+  createErrorResponse,
+} from './tutorial-composer/contracts';
+
+export * from './tutorial-composer/errors';

@@ -7,3 +7,4 @@ export * from './tutorial-progress.repository';
 export * from './live-session.repository';
 export * from './project-submission.repository';
 export * from './layman.repository';
+export * from './tutorial-section.repository';

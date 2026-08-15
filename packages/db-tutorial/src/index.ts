@@ -19,6 +19,10 @@ export * from './services/layman-prompt-integrity.service';
 export * from './services/layman-content-sanitization.service';
 export * from './services/layman-revision.service';
 
+// Tutorial Composer - NEW architecture (Prompt 04)
+export { tutorialComposerService } from './services/tutorial-composer.service';
+export type { TutorialComposerServiceContext } from './services/tutorial-composer.service';
+
 // Validators, Types, DTOs
 export * from './validators/layman.validator';
 export * from './types/layman.types';

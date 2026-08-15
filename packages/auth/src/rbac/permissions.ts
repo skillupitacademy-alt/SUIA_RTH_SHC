@@ -25,11 +25,17 @@ export const PERMISSIONS = {
   COURSE_EDIT: 'course.edit',
   COURSE_DELETE: 'course.delete',
   
-  // Tutorial permissions
+  // Tutorial permissions (learner side)
   TUTORIAL_READ: 'tutorial.read',
   TUTORIAL_VIEW: 'tutorial.view',
   TUTORIAL_PROGRESS: 'tutorial.progress',
   TUTORIAL_ASSIGNMENTS: 'tutorial.assignments',
+  
+  // Tutorial authoring permissions (NEW - Prompt 04A)
+  TUTORIAL_AUTHOR_CREATE: 'tutorial.author.create',
+  TUTORIAL_AUTHOR_EDIT: 'tutorial.author.edit',
+  TUTORIAL_AUTHOR_DELETE: 'tutorial.author.delete',
+  TUTORIAL_AUTHOR_PUBLISH: 'tutorial.author.publish',
   
   // Admin permissions
   ADMIN_PANEL: 'admin.panel',
