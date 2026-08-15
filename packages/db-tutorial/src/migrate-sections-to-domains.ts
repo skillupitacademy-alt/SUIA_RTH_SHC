@@ -12,7 +12,7 @@ import {
   tutorialSections,
   tutorialSectionOverview,
   tutorialSectionNotes,
-  tutorialSectionLayman,
+  // tutorialSectionLayman, // REMOVED 2026-08-15
   tutorialSectionRealLife,
   tutorialSectionTechnical,
   tutorialSectionCode,
@@ -102,6 +102,7 @@ async function migrateSectionsToDomains() {
               });
               break;
 
+            /* REMOVED 2026-08-15: layman section migration
             case 'layman':
               await tx.insert(tutorialSectionLayman).values({
                 sectionId: section.id,
@@ -118,6 +119,7 @@ async function migrateSectionsToDomains() {
                 mentalModelSvg: content.mentalModel?.image || null,
               });
               break;
+            */
 
             case 'real_life':
               await tx.insert(tutorialSectionRealLife).values({

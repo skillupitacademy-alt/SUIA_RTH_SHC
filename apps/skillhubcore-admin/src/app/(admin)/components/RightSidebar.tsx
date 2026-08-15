@@ -49,8 +49,8 @@ export function RightSidebar({
             </div>
 
             <div className="p-6 space-y-8 flex-1">
-              {/* Conditional Widgets for Layman Generation & Architecture */}
-              {pathname === '/content-generation/layman' && (
+              {/* Conditional Widgets for Generation & Architecture */}
+              {false && (
                 <>
                   {/* Generation Overview */}
                   <section className="space-y-4">
@@ -126,8 +126,8 @@ export function RightSidebar({
                 </>
               )}
 
-              {/* Specialized Widgets for Layman Architecture */}
-              {pathname === '/content-generation/layman-architecture' && (
+              {/* Specialized Widgets for Architecture */}
+              {false && (
                 <>
                   {/* Architecture Overview */}
                   <section className="space-y-4">
@@ -230,7 +230,7 @@ export function RightSidebar({
               )}
 
               {/* Default Dashboard Tools (Visible on other pages) */}
-              {pathname !== '/content-generation/layman' && pathname !== '/content-generation/layman-architecture' && (
+              {true && (
                 <>
                   {/* Platform Status */}
                   <div className="space-y-4">
