@@ -9,7 +9,7 @@ import {
   tutorialTopics,
   tutorialSectionOverview,
   tutorialSectionNotes,
-  tutorialSectionLayman,
+  // tutorialSectionLayman, // REMOVED 2026-08-15
   tutorialSectionRealLife,
   tutorialSectionTechnical,
   tutorialSectionCode,
@@ -42,7 +42,7 @@ type JsonRecord = Record<string, unknown>;
 const DOMAIN_TABLE_MAP: Record<string, any> = {
   overview: tutorialSectionOverview,
   notes: tutorialSectionNotes,
-  layman: tutorialSectionLayman,
+  // layman: tutorialSectionLayman, // REMOVED 2026-08-15
   real_life: tutorialSectionRealLife,
   technical: tutorialSectionTechnical,
   code: tutorialSectionCode,
@@ -81,19 +81,7 @@ const DOMAIN_TABLE_DEFAULTS: Record<string, Record<string, unknown>> = {
     conceptMemoryMapSvg: null,
     cheatSheetSVG: null,
   },
-  layman: {
-    simpleOverview: {},
-    everydayAnalogy: {},
-    whyItExists: {},
-    simpleUseCases: {},
-    beginnerBreakdown: {},
-    mentalModel: {},
-    commonConfusions: {},
-    simpleRecap: {},
-    heroVisualSvg: null,
-    analogySvg: null,
-    mentalModelSvg: null,
-  },
+  // layman defaults removed 2026-08-15
   real_life: {
     conceptMapping: {},
     industryUseCase: {},
@@ -290,6 +278,7 @@ async function upsertChildDomainTable(tx: any, sectionId: string, sectionType: s
       values.cheatSheetSVG = null;
       break;
 
+    /* REMOVED 2026-08-15: layman section
     case 'layman':
       values.simpleOverview = content.simpleOverview || {};
       values.everydayAnalogy = content.everydayAnalogy || {};
@@ -303,6 +292,7 @@ async function upsertChildDomainTable(tx: any, sectionId: string, sectionType: s
       values.analogySvg = content.everydayAnalogy?.image || null;
       values.mentalModelSvg = content.mentalModel?.image || null;
       break;
+    */
 
     case 'real_life':
       values.conceptMapping = content.conceptMapping || {};
@@ -439,7 +429,7 @@ const TUTORIAL_DIFFICULTIES = ['simple'] as const;
 const SECTION_TRANSFORMERS: Record<TutorialSectionId, (content: JsonRecord, subtopicName: string) => JsonRecord> = {
   overview: transformOverviewSection,
   notes: transformNotesSection,
-  layman: transformLaymanSection,
+  // layman: transformLaymanSection, // REMOVED 2026-08-15
   real_life: transformRealLifeSection,
   technical: transformTechnicalSection,
   code: transformCodeSection,
@@ -451,7 +441,7 @@ const SECTION_TRANSFORMERS: Record<TutorialSectionId, (content: JsonRecord, subt
   summary: transformSummarySection,
   interview: transformInterviewSection,
   ai_tutor: transformAiTutorSection,
-};
+} as any; // Type assertion to allow missing layman
 
 function slugify(text: string) {
   return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');

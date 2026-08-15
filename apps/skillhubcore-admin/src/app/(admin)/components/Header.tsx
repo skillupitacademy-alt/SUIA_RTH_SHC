@@ -46,7 +46,7 @@ export function Header({
               <h2 className="text-lg font-bold text-slate-900 font-outfit tracking-tight leading-none">
                 {headerTitle}
               </h2>
-              {pathname === '/content-generation/layman-architecture' && (
+              {false && (
                 <span className="bg-pink-50 text-pink-600 text-xs font-bold px-1.5 py-0.5 rounded uppercase tracking-wider border border-pink-100">
                   ARCHITECTURE
                 </span>

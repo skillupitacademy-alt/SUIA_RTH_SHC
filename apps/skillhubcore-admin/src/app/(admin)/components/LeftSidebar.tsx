@@ -83,7 +83,6 @@ export function LeftSidebar({ isLeftSidebarOpen, setIsLeftSidebarOpen, pathname 
                 { icon: ShieldCheck, label: 'Constitutional Center', href: '#' },
                 { icon: MessageSquare, label: 'Prompt Governance', href: '#' },
                 { icon: Box, label: 'Architecture Governance', href: '#' },
-                { icon: Globe, label: 'Global Architecture', href: '/content-generation/global-architecture' },
                 { icon: Settings, label: 'Brand & Deployment', href: '#' },
                 { icon: Settings, label: 'System Settings', href: '#' },
                 { icon: CheckSquare, label: 'Audit & Compliance', href: '#' }
@@ -127,7 +126,6 @@ export function LeftSidebar({ isLeftSidebarOpen, setIsLeftSidebarOpen, pathname 
             <nav className="space-y-1">
               {[
                 { icon: LayoutGrid, label: 'Overview', href: '#' },
-                { icon: Cpu, label: 'Layman Generation', href: '/content-generation/layman', color: 'text-pink-400' },
                 { icon: FileText, label: 'Notes Generation', href: '#', color: 'text-orange-400' },
                 { icon: Compass, label: 'Technical Generation', href: '#', color: 'text-pink-400' }
               ].map((item, i) => (
@@ -147,8 +145,6 @@ export function LeftSidebar({ isLeftSidebarOpen, setIsLeftSidebarOpen, pathname 
             <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 px-2 whitespace-nowrap">AI Content Workspace</h2>
             <nav className="space-y-1">
               {[
-                { icon: Layout, label: 'Visual Guide Directory', href: '/tools/visual-guide', color: 'text-rose-400' },
-                { icon: Sparkles, label: 'Prompt Generator UI', href: '/tools/prompt-generator', color: 'text-amber-400' },
                 { icon: Edit, label: 'Granular Content Manager', href: '/tools/content-manager', color: 'text-sky-400' }
               ].map((item, i) => (
                 <Link key={i} href={item.href} className={`flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors focus:ring-2 focus:ring-pink-500 outline-none ${pathname === item.href ? 'bg-slate-800 text-white font-bold' : 'text-slate-300 hover:text-white hover:bg-slate-800'}`}>
