@@ -101,11 +101,21 @@ export default function RawContentImportPage() {
 
     setIsAnalyzing(true);
     try {
+      const isPreview =
+        typeof window !== 'undefined' &&
+        (window.location.pathname.startsWith('/preview/') ||
+          process.env.NODE_ENV === 'development');
+
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (isPreview) {
+        headers['x-tutorial-dev-bypass'] = 'true';
+      }
+
       const response = await fetch('/api/tutorial-composer/import', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify({
           subtopicId,
           sectionType: 'notes',

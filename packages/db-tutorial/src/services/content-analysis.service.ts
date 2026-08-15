@@ -326,12 +326,18 @@ export class ContentAnalysisService {
     return {
       headings: blocks.filter((b) => b.type === 'heading').length,
       paragraphs: blocks.filter((b) => b.type === 'paragraph').length,
-      bulletLists: blocks.filter(
-        (b) => b.type === 'list' && !((b as any).content?.ordered ?? (b as any).style === 'numbered')
-      ).length,
-      numberedLists: blocks.filter(
-        (b) => b.type === 'list' && Boolean((b as any).content?.ordered || (b as any).style === 'numbered')
-      ).length,
+      bulletLists: blocks.filter((b) => {
+        if (b.type !== 'list') return false;
+        const list = b as any;
+        const style = list.content?.style ?? list.style;
+        return style === 'unordered' || style === 'bullet';
+      }).length,
+      numberedLists: blocks.filter((b) => {
+        if (b.type !== 'list') return false;
+        const list = b as any;
+        const style = list.content?.style ?? list.style;
+        return style === 'ordered' || style === 'numbered';
+      }).length,
       codeBlocks: blocks.filter((b) => b.type === 'code').length,
       quotes: blocks.filter((b) => b.type === 'quote').length,
       tables: blocks.filter((b) => b.type === 'table').length,

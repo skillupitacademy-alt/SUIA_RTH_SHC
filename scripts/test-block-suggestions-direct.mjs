@@ -6,159 +6,197 @@
  * Useful for rapid development/debugging.
  * 
  * USAGE:
- *   node scripts/test-block-suggestions-direct.mjs
+ *   npx tsx scripts/test-block-suggestions-direct.mjs
  */
 
-import { blockSuggestionService } from '../packages/db-tutorial/dist/index.js';
+import { blockSuggestionService } from '../packages/db-tutorial/src/index.ts';
 
 // ============================================================
 // TEST DATA
 // ============================================================
 
 const COMPREHENSIVE_DOCUMENT = {
-  id: 'test-comprehensive-doc',
-  version: '1.0.0',
-  title: 'JavaScript Complete Guide',
+  schemaVersion: 1,
   blocks: [
     // Parallel concepts (Two Column trigger)
     {
       id: 'h1',
       type: 'heading',
-      level: 3,
-      text: 'Client-Side JavaScript',
+      content: {
+        level: 3,
+        text: 'Client-Side JavaScript',
+      },
     },
     {
       id: 'p1',
       type: 'paragraph',
-      text: 'JavaScript runs in browsers, manipulating the DOM and handling user interactions.',
+      content: {
+        text: 'JavaScript runs in browsers, manipulating the DOM and handling user interactions.',
+      },
     },
     {
       id: 'h2',
       type: 'heading',
-      level: 3,
-      text: 'Server-Side JavaScript',
+      content: {
+        level: 3,
+        text: 'Server-Side JavaScript',
+      },
     },
     {
       id: 'p2',
       type: 'paragraph',
-      text: 'Node.js enables JavaScript on servers, handling HTTP requests and database operations.',
+      content: {
+        text: 'Node.js enables JavaScript on servers, handling HTTP requests and database operations.',
+      },
     },
 
     // Comparison trigger
     {
       id: 'comp1',
       type: 'paragraph',
-      text: 'React vs Vue: Both are component-based frameworks, but React uses JSX while Vue uses templates.',
+      content: {
+        text: 'React vs Vue: Both are component-based frameworks, but React uses JSX while Vue uses templates.',
+      },
     },
 
     // Callout triggers
     {
       id: 'note1',
       type: 'paragraph',
-      text: 'Note: Always validate user input before processing to prevent security vulnerabilities.',
+      content: {
+        text: 'Note: Always validate user input before processing to prevent security vulnerabilities.',
+      },
     },
     {
       id: 'warning1',
       type: 'paragraph',
-      text: 'Warning: Modifying the __proto__ property can cause serious performance issues.',
+      content: {
+        text: 'Warning: Modifying the __proto__ property can cause serious performance issues.',
+      },
     },
     {
       id: 'important1',
       type: 'paragraph',
-      text: 'Important: Use async/await for better error handling in asynchronous code.',
+      content: {
+        text: 'Important: Use async/await for better error handling in asynchronous code.',
+      },
     },
 
     // Example trigger
     {
       id: 'example1',
       type: 'paragraph',
-      text: 'For example, you can use Array.map() to transform each element: [1,2,3].map(x => x * 2).',
+      content: {
+        text: 'For example, you can use Array.map() to transform each element: [1,2,3].map(x => x * 2).',
+      },
     },
 
     // Diagram trigger
     {
       id: 'flow1',
       type: 'paragraph',
-      text: 'The authentication workflow follows these steps: step 1 user submits credentials, step 2 server validates, step 3 JWT token issued.',
+      content: {
+        text: 'The authentication workflow follows these steps: step 1 user submits credentials, step 2 server validates, step 3 JWT token issued.',
+      },
     },
 
     // Definition trigger
     {
       id: 'def1',
       type: 'paragraph',
-      text: 'A closure is a function that has access to variables in its outer (enclosing) scope, even after the outer function has returned.',
+      content: {
+        text: 'A closure is a function that has access to variables in its outer (enclosing) scope, even after the outer function has returned.',
+      },
     },
     {
       id: 'def2',
       type: 'paragraph',
-      text: 'Hoisting refers to the behavior where variable and function declarations are moved to the top of their scope during compilation.',
+      content: {
+        text: 'Hoisting refers to the behavior where variable and function declarations are moved to the top of their scope during compilation.',
+      },
     },
 
     // Table trigger
     {
       id: 'list1',
       type: 'list',
-      style: 'bullet',
-      items: [
-        { text: 'GET: Retrieves data from the server' },
-        { text: 'POST: Sends data to create new resources' },
-        { text: 'PUT: Updates existing resources' },
-        { text: 'DELETE: Removes resources from the server' },
-      ],
+      content: {
+        style: 'unordered',
+        items: [
+          { text: 'GET: Retrieves data from the server' },
+          { text: 'POST: Sends data to create new resources' },
+          { text: 'PUT: Updates existing resources' },
+          { text: 'DELETE: Removes resources from the server' },
+        ],
+      },
     },
 
     // Concept cards trigger
     {
       id: 'card1',
       type: 'heading',
-      level: 3,
-      text: 'String',
+      content: {
+        level: 3,
+        text: 'String',
+      },
     },
     {
       id: 'card2',
       type: 'heading',
-      level: 3,
-      text: 'Number',
+      content: {
+        level: 3,
+        text: 'Number',
+      },
     },
     {
       id: 'card3',
       type: 'heading',
-      level: 3,
-      text: 'Boolean',
+      content: {
+        level: 3,
+        text: 'Boolean',
+      },
     },
     {
       id: 'card4',
       type: 'heading',
-      level: 3,
-      text: 'Object',
+      content: {
+        level: 3,
+        text: 'Object',
+      },
     },
 
     // Timeline trigger
     {
       id: 'timeline1',
       type: 'list',
-      style: 'number',
-      items: [
-        { text: 'First, plan the application architecture and data models' },
-        { text: 'Then, implement the core business logic and API endpoints' },
-        { text: 'After that, add comprehensive testing and error handling' },
-        { text: 'Finally, deploy to production with monitoring and logging' },
-      ],
+      content: {
+        style: 'ordered',
+        items: [
+          { text: 'First, plan the application architecture and data models' },
+          { text: 'Then, implement the core business logic and API endpoints' },
+          { text: 'After that, add comprehensive testing and error handling' },
+          { text: 'Finally, deploy to production with monitoring and logging' },
+        ],
+      },
     },
 
     // Code block (existing)
     {
       id: 'code1',
       type: 'code',
-      language: 'javascript',
-      code: 'const greeting = () => console.log("Hello World");',
+      content: {
+        language: 'javascript',
+        code: 'const greeting = () => console.log("Hello World");',
+      },
     },
 
     // Quote (existing)
     {
       id: 'quote1',
       type: 'quote',
-      text: 'JavaScript is the duct tape of the Internet.',
+      content: {
+        text: 'JavaScript is the duct tape of the Internet.',
+      },
     },
   ],
 };
@@ -210,7 +248,7 @@ console.log('╚═════════════════════�
 console.log('');
 
 console.log('📄 Input Document:');
-console.log(`  Title: ${COMPREHENSIVE_DOCUMENT.title}`);
+console.log(`  Schema Version: ${COMPREHENSIVE_DOCUMENT.schemaVersion}`);
 console.log(`  Total Blocks: ${COMPREHENSIVE_DOCUMENT.blocks.length}`);
 console.log('');
 
@@ -394,6 +432,57 @@ const checks = [
   {
     name: 'Has source preview',
     pass: !!result.sourcePreview && !!result.sourcePreview.raw,
+  },
+  // Rule-specific assertions
+  {
+    name: 'RULE 1: Two-Column suggestion exists',
+    pass: suggestions.some((s) => s.blockType === 'two-column'),
+  },
+  {
+    name: 'RULE 2: Comparison suggestion exists',
+    pass: suggestions.some((s) => s.blockType === 'comparison'),
+  },
+  {
+    name: 'RULE 3: Callout suggestion exists',
+    pass: suggestions.some((s) => s.blockType === 'callout'),
+  },
+  {
+    name: 'RULE 4: Example suggestion exists',
+    pass: suggestions.some((s) => s.blockType === 'example'),
+  },
+  {
+    name: 'RULE 5: Diagram suggestion exists',
+    pass: suggestions.some((s) => s.blockType === 'diagram'),
+  },
+  {
+    name: 'RULE 6: Summary suggestion exists',
+    pass: suggestions.some((s) => s.blockType === 'summary'),
+  },
+  {
+    name: 'RULE 7: Definition suggestion exists',
+    pass: suggestions.some((s) => s.blockType === 'definition'),
+  },
+  {
+    name: 'RULE 8: Table suggestion exists',
+    pass: suggestions.some((s) => s.blockType === 'table'),
+  },
+  {
+    name: 'RULE 9: Concept-cards suggestion exists',
+    pass: suggestions.some((s) => s.blockType === 'concept-cards'),
+  },
+  {
+    name: 'RULE 10: Timeline suggestion exists',
+    pass: suggestions.some((s) => s.blockType === 'timeline'),
+  },
+  {
+    name: 'NO Diagram/Timeline duplication on same block',
+    pass: (() => {
+      const timelineBlockIds = new Set(
+        suggestions.filter((s) => s.blockType === 'timeline').flatMap((s) => s.sourceBlockIds)
+      );
+      const diagramSuggestions = suggestions.filter((s) => s.blockType === 'diagram');
+      return !diagramSuggestions.some((s) => s.sourceBlockIds.some((id) => timelineBlockIds.has(id)));
+    })(),
   },
 ];
 

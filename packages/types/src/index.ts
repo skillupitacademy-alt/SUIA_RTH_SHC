@@ -93,3 +93,20 @@ export {
 } from './tutorial-composer/contracts';
 
 export * from './tutorial-composer/errors';
+
+// Tutorial Composer - Apply Suggestion Contracts (Prompt 08 Wave 1)
+export type {
+  ApplySuggestionRequest,
+  ApplySuggestionResponse,
+  ApplySuggestionErrorCode,
+  VersionConflictDetail,
+  ApplySuggestionErrorResponse,
+} from './tutorial-composer/apply-suggestion-contracts';
+
+export {
+  ApplySuggestionRequestSchema,
+  ApplySuggestionResponseSchema,
+  ApplySuggestionErrorCode as ApplySuggestionErrorCodeSchema,
+  VersionConflictDetailSchema,
+  ApplySuggestionErrorResponseSchema,
+} from './tutorial-composer/apply-suggestion-contracts';

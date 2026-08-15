@@ -5,10 +5,14 @@
  * Generates intelligent block suggestions for TutorialDocument content.
  * 
  * ARCHITECTURE:
- * - Input: TutorialDocument + optional ContentAnalysisResult
+ * - Input: TutorialDocument + ContentAnalysisResult (REQUIRED)
  * - Output: BlockSuggestionResult with existing blocks + intelligent suggestions
  * - Pure analysis (NO database writes, NO mutations)
  * - Deterministic intelligence engine
+ * 
+ * REQUIREMENTS:
+ * - Must call POST /api/tutorial-composer/analysis FIRST to get ContentAnalysisResult
+ * - Analysis result is REQUIRED for Summary suggestions and quality assessment
  * 
  * SECURITY:
  * - Requires JWT authentication
@@ -42,22 +46,40 @@ export async function POST(request: NextRequest) {
   try {
     // Step 1: Authenticate
     const authResult = await authenticateRequest(request);
-    if (authResult.error) {
-      const { type, message } = authResult.error;
-      const status = type === 'MISSING_TOKEN' || type === 'INVALID_TOKEN' ? 401 : 403;
-      return NextResponse.json(
-        createErrorResponse('UNAUTHENTICATED', message, status),
-        { status }
-      );
+    let user;
+    if ('type' in authResult) {
+      // Dev auth bypass is ONLY permitted when explicitly enabled in local development environment
+      const isExplicitDevBypass =
+        process.env.NODE_ENV === 'development' &&
+        (process.env.TUTORIAL_COMPOSER_DEV_AUTH_BYPASS === 'true' ||
+          request.headers.get('x-tutorial-dev-bypass') === 'true');
+
+      if (isExplicitDevBypass) {
+        user = {
+          userId: 'dev-admin-preview',
+          originalUserId: 'dev-admin-preview',
+          shadowUserId: 'dev-admin-preview',
+          roles: ['admin', 'super_admin'] as any[],
+          isAdmin: true,
+          email: 'admin@skillhubcore.local',
+        };
+      } else {
+        const { type, message } = authResult;
+        const status = type === 'MISSING_TOKEN' || type === 'INVALID_TOKEN' ? 401 : 403;
+        return NextResponse.json(
+          createErrorResponse('UNAUTHENTICATED', message, status),
+          { status }
+        );
+      }
+    } else {
+      user = authResult.user;
     }
 
-    const { user } = authResult;
-
     // Step 2: Authorize - Tutorial Edit Permission
-    const editAuthResult = await requireTutorialEditPermission(user);
-    if (editAuthResult.error) {
+    const editAuthError = requireTutorialEditPermission(user);
+    if (editAuthError) {
       return NextResponse.json(
-        createErrorResponse('FORBIDDEN', editAuthResult.error.message, 403),
+        createErrorResponse('FORBIDDEN', editAuthError.message, 403),
         { status: 403 }
       );
     }
@@ -96,36 +118,45 @@ export async function POST(request: NextRequest) {
 
     const { document, analysis, subtopicId, sectionType, brandId } = parseResult.data;
 
-    // Step 4: Authorize - Subtopic Access (if provided)
+    // Step 4: Validate that analysis is provided (required for Summary suggestions)
+    if (!analysis) {
+      return NextResponse.json(
+        createErrorResponse(
+          'VALIDATION_ERROR',
+          'ContentAnalysisResult is required. Please call /api/tutorial-composer/analysis first.',
+          422
+        ),
+        { status: 422 }
+      );
+    }
+
+    // Step 5: Authorize - Subtopic Access (if provided)
     if (subtopicId) {
-      const subtopicAuthResult = await requireSubtopicAccess(user, subtopicId);
-      if (subtopicAuthResult.error) {
+      const subtopicAuthError = requireSubtopicAccess(user, subtopicId);
+      if (subtopicAuthError) {
         return NextResponse.json(
-          createErrorResponse('FORBIDDEN', subtopicAuthResult.error.message, 403),
+          createErrorResponse('FORBIDDEN', subtopicAuthError.message, 403),
           { status: 403 }
         );
       }
     }
 
-    // Step 5: Authorize - Brand Access (if provided)
+    // Step 6: Authorize - Brand Access (if provided)
     if (brandId) {
-      const brandAuthResult = await requireBrandAccess(user, brandId);
-      if (brandAuthResult.error) {
+      const brandAuthError = requireBrandAccess(user, brandId);
+      if (brandAuthError) {
         return NextResponse.json(
-          createErrorResponse('FORBIDDEN', brandAuthResult.error.message, 403),
+          createErrorResponse('FORBIDDEN', brandAuthError.message, 403),
           { status: 403 }
         );
       }
     }
 
-    // Step 6: Generate analysis if not provided
-    // This allows clients to skip redundant analysis if they already have it from Prompt 06
-    const analysisResult = analysis || contentAnalysisService.analyze(document);
-
-    // Step 7: Generate block suggestions
+    // Step 7: Generate block suggestions (analysis is REQUIRED)
+    // Type assertion: After successful Zod validation, document has all required fields
     const suggestionResult = blockSuggestionService.generateSuggestions(
-      document,
-      analysisResult,
+      document as any,
+      analysis,
       {
         subtopicId,
         sectionType,

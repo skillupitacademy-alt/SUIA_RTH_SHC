@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { ChevronRight, AlertCircle, ArrowLeft, RefreshCw } from 'lucide-react';
 import type { ContentAnalysisResult } from '@quiz/types';
 
@@ -25,11 +26,21 @@ export default function ContentAnalysisPage() {
     setError(null);
 
     try {
+      const isPreview =
+        typeof window !== 'undefined' &&
+        (window.location.pathname.startsWith('/preview/') ||
+          process.env.NODE_ENV === 'development');
+
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (isPreview) {
+        headers['x-tutorial-dev-bypass'] = 'true';
+      }
+
       const response = await fetch('/api/tutorial-composer/analysis', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify({
           document: documentPayload.document,
           subtopicId: documentPayload.subtopicId || '00000000-0000-0000-0000-000000000001',
@@ -141,12 +152,12 @@ export default function ContentAnalysisPage() {
                 id: 'list-1',
                 type: 'list',
                 content: {
+                  style: 'unordered',
                   items: [
-                    'Single-threaded event-loop architecture',
-                    'Dynamic and weak typing system',
-                    'First-class functions supporting functional programming',
+                    { text: 'Single-threaded event-loop architecture' },
+                    { text: 'Dynamic and weak typing system' },
+                    { text: 'First-class functions supporting functional programming' },
                   ],
-                  ordered: false,
                 },
               },
               {
@@ -212,6 +223,15 @@ export default function ContentAnalysisPage() {
     }
   };
 
+  const pathname = usePathname();
+  const isPreviewMode = Boolean(pathname?.startsWith('/preview/'));
+  const importHref = isPreviewMode
+    ? '/preview/raw-import'
+    : '/content-intelligence/import';
+  const blockSuggestionsHref = isPreviewMode
+    ? '/preview/block-suggestions'
+    : '/content-intelligence/block-suggestions';
+
   return (
     <div className="min-h-screen bg-slate-50/50 p-6 lg:p-8">
       {/* 1. Breadcrumbs */}
@@ -222,7 +242,7 @@ export default function ContentAnalysisPage() {
         <ChevronRight size={13} className="text-slate-400" />
         <span className="text-slate-500">Content Intelligence</span>
         <ChevronRight size={13} className="text-slate-400" />
-        <Link href="/content-intelligence/import" className="hover:text-slate-800 transition-colors">
+        <Link href={importHref} className="hover:text-slate-800 transition-colors">
           Import Content
         </Link>
         <ChevronRight size={13} className="text-slate-400" />
@@ -252,7 +272,7 @@ export default function ContentAnalysisPage() {
           <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto mb-4">
             <AlertCircle size={24} />
           </div>
-          <h2 className="text-base font-bold text-slate-900 mb-2">Unable to Analyze Content</h2>
+          <h2 className="text-base font-bold text-slate-900 mb-2">Analysis Generation Failed</h2>
           <p className="text-xs text-slate-500 mb-6">{error}</p>
           <div className="flex items-center justify-center gap-3">
             <button
@@ -263,7 +283,7 @@ export default function ContentAnalysisPage() {
               <span>Try Again</span>
             </button>
             <Link
-              href="/content-intelligence/import"
+              href={importHref}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-semibold transition-colors"
             >
               <ArrowLeft size={14} />
@@ -276,12 +296,12 @@ export default function ContentAnalysisPage() {
       {/* 4. Empty State */}
       {!isLoading && !error && !data && (
         <div className="bg-white rounded-xl border border-slate-200 p-8 shadow-sm text-center max-w-lg mx-auto mt-12">
-          <h2 className="text-base font-bold text-slate-900 mb-2">No Analysis Available</h2>
+          <h2 className="text-base font-bold text-slate-900 mb-2">No Content Available</h2>
           <p className="text-xs text-slate-500 mb-6">
             Please import raw content first to generate a structured content analysis.
           </p>
           <Link
-            href="/content-intelligence/import"
+            href={importHref}
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold transition-colors"
           >
             <ArrowLeft size={14} />
@@ -294,7 +314,10 @@ export default function ContentAnalysisPage() {
       {!isLoading && !error && data && (
         <div>
           {/* Header */}
-          <AnalysisHeader />
+          <AnalysisHeader
+            backHref={importHref}
+            nextHref={blockSuggestionsHref}
+          />
 
           {/* Top 5 KPI Cards */}
           <AnalysisSummaryCards

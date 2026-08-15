@@ -13,42 +13,45 @@ describe('ContentAnalysisService', () => {
   const createSimpleDocument = (): TutorialDocument => ({
     schemaVersion: 1,
     metadata: {
-      title: 'Test Document',
-      description: 'A test document',
       tags: ['test'],
-      estimatedDuration: 10,
-      difficulty: 'beginner',
+      estimatedReadTime: 10,
+      audience: 'beginner',
     },
     blocks: [
       {
         id: 'heading-1',
         type: 'heading',
-        level: 1,
-        text: 'Introduction to Testing',
+        content: {
+          level: 1,
+          text: 'Introduction to Testing',
+        },
         presentation: {
-          align: 'left',
-          style: 'default',
+          alignment: 'left',
+          spacing: 'normal',
         },
       },
       {
         id: 'paragraph-1',
         type: 'paragraph',
-        text: 'This is a test paragraph with some content to analyze. It contains multiple sentences. We want to test the analysis engine.',
+        content: {
+          text: 'This is a test paragraph with some content to analyze. It contains multiple sentences. We want to test the analysis engine.',
+        },
         presentation: {
-          align: 'left',
-          emphasis: 'normal',
+          alignment: 'left',
+          spacing: 'normal',
         },
       },
       {
         id: 'code-1',
         type: 'code',
-        language: 'javascript',
-        code: 'console.log("Hello World");',
-        caption: 'Example code',
-        presentation: {
-          theme: 'dark',
+        content: {
+          language: 'javascript',
+          code: 'console.log("Hello World");',
+          caption: 'Example code',
           showLineNumbers: true,
-          highlightLines: [],
+        },
+        presentation: {
+          spacing: 'normal',
         },
       },
     ],
@@ -109,31 +112,36 @@ describe('ContentAnalysisService', () => {
       const document: TutorialDocument = {
         schemaVersion: 1,
         metadata: {
-          title: 'Test',
           tags: [],
-          estimatedDuration: 10,
-          difficulty: 'beginner',
+          estimatedReadTime: 10,
+          audience: 'beginner',
         },
         blocks: [
           {
             id: 'h1-1',
             type: 'heading',
-            level: 1,
-            text: 'Main Title',
-            presentation: { align: 'left', style: 'default' },
+            content: {
+              level: 1,
+              text: 'Main Title',
+            },
+            presentation: { alignment: 'left', spacing: 'normal' },
           },
           {
             id: 'p1',
             type: 'paragraph',
-            text: 'Section content here',
-            presentation: { align: 'left', emphasis: 'normal' },
+            content: {
+              text: 'Section content here',
+            },
+            presentation: { alignment: 'left', spacing: 'normal' },
           },
           {
             id: 'h2-1',
             type: 'heading',
-            level: 2,
-            text: 'Subsection',
-            presentation: { align: 'left', style: 'default' },
+            content: {
+              level: 2,
+              text: 'Subsection',
+            },
+            presentation: { alignment: 'left', spacing: 'normal' },
           },
         ],
       };
@@ -221,36 +229,37 @@ describe('ContentAnalysisService', () => {
       const document: TutorialDocument = {
         schemaVersion: 1,
         metadata: {
-          title: 'Test',
           tags: [],
-          estimatedDuration: 10,
-          difficulty: 'beginner',
+          estimatedReadTime: 10,
+          audience: 'beginner',
         },
         blocks: [
           {
             id: 'list-1',
             type: 'list',
-            style: 'bullet',
-            items: [
-              { id: 'item-1', text: 'Item 1' },
-              { id: 'item-2', text: 'Item 2' },
-            ],
+            content: {
+              style: 'unordered',
+              items: [
+                { text: 'Item 1' },
+                { text: 'Item 2' },
+              ],
+            },
             presentation: {
-              spacing: 'comfortable',
-              marker: 'disc',
+              spacing: 'normal',
             },
           },
           {
             id: 'list-2',
             type: 'list',
-            style: 'numbered',
-            items: [
-              { id: 'item-3', text: 'Step 1' },
-              { id: 'item-4', text: 'Step 2' },
-            ],
+            content: {
+              style: 'ordered',
+              items: [
+                { text: 'Step 1' },
+                { text: 'Step 2' },
+              ],
+            },
             presentation: {
-              spacing: 'comfortable',
-              marker: 'decimal',
+              spacing: 'normal',
             },
           },
         ],
@@ -276,17 +285,18 @@ describe('ContentAnalysisService', () => {
       const document: TutorialDocument = {
         schemaVersion: 1,
         metadata: {
-          title: 'Test',
           tags: [],
-          estimatedDuration: 10,
-          difficulty: 'beginner',
+          estimatedReadTime: 10,
+          audience: 'beginner',
         },
         blocks: [
           {
             id: 'p1',
             type: 'paragraph',
-            text: 'Content without headings',
-            presentation: { align: 'left', emphasis: 'normal' },
+            content: {
+              text: 'Content without headings',
+            },
+            presentation: { alignment: 'left', spacing: 'normal' },
           },
         ],
       };
@@ -344,55 +354,74 @@ describe('ContentAnalysisService', () => {
       const richDocument: TutorialDocument = {
         schemaVersion: 1,
         metadata: {
-          title: 'Comprehensive Tutorial',
           tags: ['complete'],
-          estimatedDuration: 30,
-          difficulty: 'intermediate',
+          estimatedReadTime: 30,
+          audience: 'intermediate',
         },
         blocks: [
           {
             id: 'h1-1',
             type: 'heading',
-            level: 1,
-            text: 'Complete Tutorial',
-            presentation: { align: 'left', style: 'default' },
+            content: {
+              level: 1,
+              text: 'Complete Tutorial',
+            },
+            presentation: { alignment: 'left', spacing: 'normal' },
           },
           {
             id: 'p1',
             type: 'paragraph',
-            text: 'This is a comprehensive tutorial with lots of content. It covers many topics in detail. The content is well-structured and easy to follow. We provide multiple examples throughout.',
-            presentation: { align: 'left', emphasis: 'normal' },
+            content: {
+              text: 'This is a comprehensive tutorial with lots of content. It covers many topics in detail. The content is well-structured and easy to follow. We provide multiple examples throughout.',
+            },
+            presentation: { alignment: 'left', spacing: 'normal' },
           },
           {
             id: 'code-1',
             type: 'code',
-            language: 'javascript',
-            code: 'const example = "code";',
-            presentation: { theme: 'dark', showLineNumbers: true, highlightLines: [] },
+            content: {
+              language: 'javascript',
+              code: 'const example = "code";',
+              showLineNumbers: true,
+            },
+            presentation: { spacing: 'normal' },
           },
           {
             id: 'example-1',
             type: 'example',
-            title: 'Real Example',
-            content: 'For example, consider this case...',
-            presentation: { style: 'default' },
+            content: {
+              title: 'Real Example',
+              explanation: 'For example, consider this case...',
+            },
+            presentation: { spacing: 'normal' },
           },
           {
             id: 'callout-1',
             type: 'callout',
-            variant: 'info',
-            title: 'Important Note',
-            content: 'Remember this key point',
-            presentation: { showIcon: true },
+            content: {
+              variant: 'info',
+              title: 'Important Note',
+              text: 'Remember this key point',
+            },
+            presentation: { spacing: 'normal' },
           },
           {
             id: 'table-1',
             type: 'table',
-            headers: ['Feature', 'Description'],
-            rows: [
-              { id: 'row-1', cells: ['Feature 1', 'Description 1'] },
-            ],
-            presentation: { style: 'default', showHeaders: true },
+            content: {
+              columns: [
+                { id: 'col-1', label: 'Feature' },
+                { id: 'col-2', label: 'Description' },
+              ],
+              rows: [
+                { id: 'row-1', cells: [
+                  { columnId: 'col-1', value: 'Feature 1' },
+                  { columnId: 'col-2', value: 'Description 1' },
+                ]},
+              ],
+              hasHeader: true,
+            },
+            presentation: { spacing: 'normal' },
           },
         ],
       };

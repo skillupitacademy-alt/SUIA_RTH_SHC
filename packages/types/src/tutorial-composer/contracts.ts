@@ -298,18 +298,6 @@ export type QualityStatus = z.infer<typeof QualityStatusSchema>;
 export const AnalysisSectionLevelSchema = z.enum(['h1', 'h2', 'h3', 'summary']);
 export type AnalysisSectionLevel = z.infer<typeof AnalysisSectionLevelSchema>;
 
-export const AnalysisSectionSchema: z.ZodType<AnalysisSection> = z.lazy(() =>
-  z.object({
-    id: z.string(),
-    level: AnalysisSectionLevelSchema,
-    title: z.string(),
-    snippet: z.string(),
-    confidence: z.number().min(0).max(100),
-    isVerified: z.boolean().default(true),
-    subsections: z.array(AnalysisSectionSchema).optional(),
-  })
-);
-
 export interface AnalysisSection {
   id: string;
   level: AnalysisSectionLevel;
@@ -319,6 +307,19 @@ export interface AnalysisSection {
   isVerified?: boolean;
   subsections?: AnalysisSection[];
 }
+
+// Recursive schema - no explicit type annotation to avoid inference conflicts
+export const AnalysisSectionSchema = z.lazy(() =>
+  z.object({
+    id: z.string(),
+    level: AnalysisSectionLevelSchema,
+    title: z.string(),
+    snippet: z.string(),
+    confidence: z.number().min(0).max(100),
+    isVerified: z.boolean().default(true),
+    subsections: z.array(AnalysisSectionSchema).optional(),
+  })
+) as z.ZodType<AnalysisSection>;
 
 export const SmartSuggestionSchema = z.object({
   id: z.string(),
@@ -500,7 +501,7 @@ export type BlockSuggestionResult = z.infer<typeof BlockSuggestionResultSchema>;
  */
 export const BlockSuggestionsRequestSchema = z.object({
   document: TutorialDocumentSchema,
-  analysis: ContentAnalysisResultSchema.optional(), // Optional: can be recomputed
+  analysis: ContentAnalysisResultSchema, // REQUIRED: must call analysis endpoint first
   subtopicId: z.string().uuid().optional(),
   sectionType: SectionTypeSchema.optional(),
   brandId: BrandIdSchema.optional(),

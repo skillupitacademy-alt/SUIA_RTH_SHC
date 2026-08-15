@@ -246,6 +246,86 @@ export class TutorialSectionRepository extends TutorialRepositoryBase {
   }
 
   /**
+   * Update section with optimistic concurrency control
+   * 
+   * This method provides atomic version checking at the database level.
+   * If the current version does not match expectedVersion, the update fails
+   * and returns null, preventing concurrent modification conflicts.
+   * 
+   * CRITICAL: Version check is performed in the WHERE clause (database-level),
+   * NOT in application code, ensuring true atomicity.
+   * 
+   * @param sectionId - Section UUID to update
+   * @param expectedVersion - Expected current version (for optimistic concurrency)
+   * @param input - Update data
+   * @returns Updated section if version matches, null if version conflict
+   * 
+   * @example
+   * ```ts
+   * const section = await repo.updateSectionWithVersion(
+   *   sectionId,
+   *   5,  // Expected version
+   *   { content: newDocument }
+   * );
+   * 
+   * if (!section) {
+   *   // Version conflict - document was modified by another request
+   *   throw new VersionConflictError();
+   * }
+   * ```
+   */
+  async updateSectionWithVersion(
+    sectionId: string,
+    expectedVersion: number,
+    input: UpdateTutorialSectionInput
+  ): Promise<TutorialSection | null> {
+    const updateData: any = {
+      updatedAt: new Date(),
+    };
+
+    if (input.content !== undefined) {
+      updateData.content = input.content;
+      // Increment version when content changes
+      updateData.version = sql`${tutorialSections.version} + 1`;
+    }
+
+    if (input.difficulty !== undefined) {
+      updateData.difficulty = input.difficulty;
+    }
+
+    if (input.orderIndex !== undefined) {
+      updateData.orderIndex = input.orderIndex;
+    }
+
+    if (input.status !== undefined) {
+      updateData.status = input.status;
+      
+      // Set publishedAt when deploying
+      if (input.status === 'deployed' && !updateData.publishedAt) {
+        updateData.publishedAt = new Date();
+      }
+    }
+
+    const rows = await this.runRead(
+      this.dbInstance
+        .update(tutorialSections)
+        .set(updateData)
+        .where(
+          and(
+            eq(tutorialSections.id, sectionId),
+            eq(tutorialSections.version, expectedVersion), // ← Optimistic concurrency check
+            isNull(tutorialSections.deletedAt)
+          )
+        )
+        .returning(),
+      'TutorialSectionRepository.updateSectionWithVersion'
+    );
+
+    // Return null if no rows affected (version conflict)
+    return rows[0] ?? null;
+  }
+
+  /**
    * Publish section (change status to deployed)
    */
   async publishSection(sectionId: string): Promise<TutorialSection | undefined> {

@@ -38,6 +38,10 @@ export { contentAnalysisService, ContentAnalysisService } from './services/conte
 export { blockSuggestionService, BlockSuggestionService } from './services/block-suggestion.service';
 export type { SuggestionContext } from './services/block-suggestion.service';
 
+// Tutorial Suggestion Application - NEW architecture (Prompt 08)
+export { suggestionApplicationService, SuggestionApplicationService } from './services/suggestion-application.service';
+export type { ApplySuggestionInput, ApplySuggestionResult } from './services/suggestion-application.service';
+
 // Validators, Types, DTOs
 export * from './validators/layman.validator';
 export * from './types/layman.types';

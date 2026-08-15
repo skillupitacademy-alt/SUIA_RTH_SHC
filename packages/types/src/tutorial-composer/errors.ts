@@ -98,3 +98,51 @@ export class VersionConflictError extends TutorialComposerError {
     this.name = 'VersionConflictError';
   }
 }
+
+/**
+ * Suggestion Not Found Error
+ * Thrown when a requested suggestion cannot be found in the regenerated suggestion set
+ */
+export class SuggestionNotFoundError extends TutorialComposerError {
+  constructor(suggestionId: string) {
+    super(`Suggestion not found: ${suggestionId}`);
+    this.name = 'SuggestionNotFoundError';
+  }
+}
+
+/**
+ * Suggestion Fingerprint Mismatch Error
+ * Thrown when client-provided fingerprint does not match server-generated fingerprint
+ */
+export class SuggestionFingerprintMismatchError extends TutorialComposerError {
+  constructor(suggestionId: string) {
+    super(
+      `Suggestion fingerprint mismatch for ${suggestionId}. ` +
+      `The suggestion content has changed since it was generated. ` +
+      `Please refresh the suggestions and try again.`
+    );
+    this.name = 'SuggestionFingerprintMismatchError';
+  }
+}
+
+/**
+ * Invalid Suggestion Error
+ * Thrown when a suggestion is malformed or invalid
+ */
+export class InvalidSuggestionError extends TutorialComposerError {
+  constructor(message: string) {
+    super(message);
+    this.name = 'InvalidSuggestionError';
+  }
+}
+
+/**
+ * Invalid Transformation Error
+ * Thrown when a suggestion cannot be transformed into a canonical block
+ */
+export class InvalidTransformationError extends TutorialComposerError {
+  constructor(message: string) {
+    super(message);
+    this.name = 'InvalidTransformationError';
+  }
+}
