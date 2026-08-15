@@ -13,7 +13,11 @@
 
 import { describe, it, expect } from 'vitest';
 import { BlockSuggestionService } from '../block-suggestion.service';
-import type { TutorialDocument, ContentAnalysisResult } from '@quiz/types';
+import type { 
+  TutorialDocument, 
+  ContentAnalysisResult,
+  BlockSuggestion,
+} from '@quiz/types';
 
 describe('BlockSuggestionService', () => {
   const service = new BlockSuggestionService();
@@ -32,14 +36,18 @@ describe('BlockSuggestionService', () => {
           {
             id: 'heading-1',
             type: 'heading',
-            level: 2,
-            text: 'Client-Side JavaScript',
+            content: {
+              level: 2,
+              text: 'Client-Side JavaScript',
+            },
           },
           {
             id: 'heading-2',
             type: 'heading',
-            level: 2,
-            text: 'Server-Side JavaScript',
+            content: {
+              level: 2,
+              text: 'Server-Side JavaScript',
+            },
           },
         ],
       };
@@ -73,21 +81,25 @@ describe('BlockSuggestionService', () => {
           {
             id: 'h1',
             type: 'heading',
-            level: 3,
-            text: 'Client-Side JavaScript',
+            content: {
+              level: 3,
+              text: 'Client-Side JavaScript',
+            },
           },
           {
             id: 'h2',
             type: 'heading',
-            level: 3,
-            text: 'Server-Side JavaScript',
+            content: {
+              level: 3,
+              text: 'Server-Side JavaScript',
+            },
           },
         ],
       };
 
       const result = service.generateSuggestions(document);
       const twoColSuggestions = result.blocks.filter(
-        (b) => b.blockType === 'two-column' && b.kind === 'suggested'
+        (b: BlockSuggestion) => b.blockType === 'two-column' && b.kind === 'suggested'
       );
 
       expect(twoColSuggestions.length).toBeGreaterThan(0);
@@ -105,21 +117,25 @@ describe('BlockSuggestionService', () => {
           {
             id: 'frontend',
             type: 'heading',
-            level: 3,
-            text: 'Frontend Development',
+            content: {
+              level: 3,
+              text: 'Frontend Development',
+            },
           },
           {
             id: 'backend',
             type: 'heading',
-            level: 3,
-            text: 'Backend Development',
+            content: {
+              level: 3,
+              text: 'Backend Development',
+            },
           },
         ],
       };
 
       const result = service.generateSuggestions(document);
       const twoColSuggestions = result.blocks.filter(
-        (b) => b.blockType === 'two-column' && b.kind === 'suggested'
+        (b: BlockSuggestion) => b.blockType === 'two-column' && b.kind === 'suggested'
       );
 
       expect(twoColSuggestions.length).toBeGreaterThan(0);
@@ -141,14 +157,16 @@ describe('BlockSuggestionService', () => {
           {
             id: 'comp-1',
             type: 'paragraph',
-            text: 'React vs Vue: Both are popular frameworks, but React uses JSX while Vue uses templates.',
+            content: {
+              text: 'React vs Vue: Both are popular frameworks, but React uses JSX while Vue uses templates.',
+            },
           },
         ],
       };
 
       const result = service.generateSuggestions(document);
       const comparisonSuggestions = result.blocks.filter(
-        (b) => b.blockType === 'comparison' && b.kind === 'suggested'
+        (b: BlockSuggestion) => b.blockType === 'comparison' && b.kind === 'suggested'
       );
 
       expect(comparisonSuggestions.length).toBeGreaterThan(0);
@@ -165,14 +183,16 @@ describe('BlockSuggestionService', () => {
           {
             id: 'diff',
             type: 'paragraph',
-            text: 'The main difference between let and const is that const cannot be reassigned.',
+            content: {
+              text: 'The main difference between let and const is that const cannot be reassigned.',
+            },
           },
         ],
       };
 
       const result = service.generateSuggestions(document);
       const comparisonSuggestions = result.blocks.filter(
-        (b) => b.blockType === 'comparison' && b.kind === 'suggested'
+        (b: BlockSuggestion) => b.blockType === 'comparison' && b.kind === 'suggested'
       );
 
       expect(comparisonSuggestions.length).toBeGreaterThan(0);
@@ -193,14 +213,16 @@ describe('BlockSuggestionService', () => {
           {
             id: 'important',
             type: 'paragraph',
-            text: 'Important: Always validate user input before processing it.',
+            content: {
+              text: 'Important: Always validate user input before processing it.',
+            },
           },
         ],
       };
 
       const result = service.generateSuggestions(document);
       const calloutSuggestions = result.blocks.filter(
-        (b) => b.blockType === 'callout' && b.kind === 'suggested'
+        (b: BlockSuggestion) => b.blockType === 'callout' && b.kind === 'suggested'
       );
 
       expect(calloutSuggestions.length).toBeGreaterThan(0);
@@ -217,14 +239,16 @@ describe('BlockSuggestionService', () => {
           {
             id: 'note',
             type: 'paragraph',
-            text: 'Note: This API requires authentication.',
+            content: {
+              text: 'Note: This API requires authentication.',
+            },
           },
         ],
       };
 
       const result = service.generateSuggestions(document);
       const calloutSuggestions = result.blocks.filter(
-        (b) => b.blockType === 'callout' && b.kind === 'suggested'
+        (b: BlockSuggestion) => b.blockType === 'callout' && b.kind === 'suggested'
       );
 
       expect(calloutSuggestions.length).toBeGreaterThan(0);
@@ -240,14 +264,16 @@ describe('BlockSuggestionService', () => {
           {
             id: 'warning',
             type: 'paragraph',
-            text: 'Warning: This operation will delete all data.',
+            content: {
+              text: 'Warning: This operation will delete all data.',
+            },
           },
         ],
       };
 
       const result = service.generateSuggestions(document);
       const calloutSuggestions = result.blocks.filter(
-        (b) => b.blockType === 'callout' && b.kind === 'suggested'
+        (b: BlockSuggestion) => b.blockType === 'callout' && b.kind === 'suggested'
       );
 
       expect(calloutSuggestions.length).toBeGreaterThan(0);
@@ -269,14 +295,16 @@ describe('BlockSuggestionService', () => {
           {
             id: 'example',
             type: 'paragraph',
-            text: 'For example, you can use map() to transform array elements.',
+            content: {
+              text: 'For example, you can use map() to transform array elements.',
+            },
           },
         ],
       };
 
       const result = service.generateSuggestions(document);
       const exampleSuggestions = result.blocks.filter(
-        (b) => b.blockType === 'example' && b.kind === 'suggested'
+        (b: BlockSuggestion) => b.blockType === 'example' && b.kind === 'suggested'
       );
 
       expect(exampleSuggestions.length).toBeGreaterThan(0);
@@ -292,14 +320,16 @@ describe('BlockSuggestionService', () => {
           {
             id: 'usecase',
             type: 'paragraph',
-            text: 'A common use case is fetching data from an API.',
+            content: {
+              text: 'A common use case is fetching data from an API.',
+            },
           },
         ],
       };
 
       const result = service.generateSuggestions(document);
       const exampleSuggestions = result.blocks.filter(
-        (b) => b.blockType === 'example' && b.kind === 'suggested'
+        (b: BlockSuggestion) => b.blockType === 'example' && b.kind === 'suggested'
       );
 
       expect(exampleSuggestions.length).toBeGreaterThan(0);
@@ -320,14 +350,16 @@ describe('BlockSuggestionService', () => {
           {
             id: 'flow',
             type: 'paragraph',
-            text: 'The authentication workflow follows these steps: step 1 login, step 2 verify, step 3 authorize.',
+            content: {
+              text: 'The authentication workflow follows these steps: step 1 login, step 2 verify, step 3 authorize.',
+            },
           },
         ],
       };
 
       const result = service.generateSuggestions(document);
       const diagramSuggestions = result.blocks.filter(
-        (b) => b.blockType === 'diagram' && b.kind === 'suggested'
+        (b: BlockSuggestion) => b.blockType === 'diagram' && b.kind === 'suggested'
       );
 
       expect(diagramSuggestions.length).toBeGreaterThan(0);
@@ -343,14 +375,16 @@ describe('BlockSuggestionService', () => {
           {
             id: 'arch',
             type: 'paragraph',
-            text: 'The system architecture includes multiple layers and components.',
+            content: {
+              text: 'The system architecture includes multiple layers and components.',
+            },
           },
         ],
       };
 
       const result = service.generateSuggestions(document);
       const diagramSuggestions = result.blocks.filter(
-        (b) => b.blockType === 'diagram' && b.kind === 'suggested'
+        (b: BlockSuggestion) => b.blockType === 'diagram' && b.kind === 'suggested'
       );
 
       expect(diagramSuggestions.length).toBeGreaterThan(0);
@@ -370,9 +404,9 @@ describe('BlockSuggestionService', () => {
         blocks: Array.from({ length: 20 }, (_, i) => ({
           id: `para-${i}`,
           type: 'paragraph' as const,
-          text: 'This is a paragraph with substantial content to make the document long enough for summary suggestion. '.repeat(
-            5
-          ),
+          content: {
+            text: 'This is a paragraph with substantial content to make the document long enough for summary suggestion. '.repeat(5),
+          },
         })),
       };
 
@@ -415,7 +449,7 @@ describe('BlockSuggestionService', () => {
 
       const result = service.generateSuggestions(document, analysis);
       const summarySuggestions = result.blocks.filter(
-        (b) => b.blockType === 'summary' && b.kind === 'suggested'
+        (b: BlockSuggestion) => b.blockType === 'summary' && b.kind === 'suggested'
       );
 
       expect(summarySuggestions.length).toBeGreaterThan(0);
@@ -431,7 +465,9 @@ describe('BlockSuggestionService', () => {
           {
             id: 'para-1',
             type: 'paragraph',
-            text: 'This is short content.',
+            content: {
+              text: 'This is short content.',
+            },
           },
         ],
       };
@@ -475,7 +511,7 @@ describe('BlockSuggestionService', () => {
 
       const result = service.generateSuggestions(document, analysis);
       const summarySuggestions = result.blocks.filter(
-        (b) => b.blockType === 'summary' && b.kind === 'suggested'
+        (b: BlockSuggestion) => b.blockType === 'summary' && b.kind === 'suggested'
       );
 
       expect(summarySuggestions.length).toBe(0);
@@ -496,14 +532,16 @@ describe('BlockSuggestionService', () => {
           {
             id: 'def',
             type: 'paragraph',
-            text: 'A closure is a function that has access to variables in its outer scope.',
+            content: {
+              text: 'A closure is a function that has access to variables in its outer scope.',
+            },
           },
         ],
       };
 
       const result = service.generateSuggestions(document);
       const definitionSuggestions = result.blocks.filter(
-        (b) => b.blockType === 'definition' && b.kind === 'suggested'
+        (b: BlockSuggestion) => b.blockType === 'definition' && b.kind === 'suggested'
       );
 
       expect(definitionSuggestions.length).toBeGreaterThan(0);
@@ -519,14 +557,16 @@ describe('BlockSuggestionService', () => {
           {
             id: 'def',
             type: 'paragraph',
-            text: 'Hoisting refers to the behavior of moving declarations to the top.',
+            content: {
+              text: 'Hoisting refers to the behavior of moving declarations to the top.',
+            },
           },
         ],
       };
 
       const result = service.generateSuggestions(document);
       const definitionSuggestions = result.blocks.filter(
-        (b) => b.blockType === 'definition' && b.kind === 'suggested'
+        (b: BlockSuggestion) => b.blockType === 'definition' && b.kind === 'suggested'
       );
 
       expect(definitionSuggestions.length).toBeGreaterThan(0);
@@ -547,20 +587,22 @@ describe('BlockSuggestionService', () => {
           {
             id: 'list',
             type: 'list',
-            style: 'bullet',
-            items: [
-              { text: 'GET: Retrieves data' },
-              { text: 'POST: Creates data' },
-              { text: 'PUT: Updates data' },
-              { text: 'DELETE: Removes data' },
-            ],
+            content: {
+              style: 'unordered',
+              items: [
+                { text: 'GET: Retrieves data' },
+                { text: 'POST: Creates data' },
+                { text: 'PUT: Updates data' },
+                { text: 'DELETE: Removes data' },
+              ],
+            },
           },
         ],
       };
 
       const result = service.generateSuggestions(document);
       const tableSuggestions = result.blocks.filter(
-        (b) => b.blockType === 'table' && b.kind === 'suggested'
+        (b: BlockSuggestion) => b.blockType === 'table' && b.kind === 'suggested'
       );
 
       expect(tableSuggestions.length).toBeGreaterThan(0);
@@ -576,15 +618,17 @@ describe('BlockSuggestionService', () => {
           {
             id: 'list',
             type: 'list',
-            style: 'bullet',
-            items: [{ text: 'Item 1' }, { text: 'Item 2' }, { text: 'Item 3' }],
+            content: {
+              style: 'unordered',
+              items: [{ text: 'Item 1' }, { text: 'Item 2' }, { text: 'Item 3' }],
+            },
           },
         ],
       };
 
       const result = service.generateSuggestions(document);
       const tableSuggestions = result.blocks.filter(
-        (b) => b.blockType === 'table' && b.kind === 'suggested'
+        (b: BlockSuggestion) => b.blockType === 'table' && b.kind === 'suggested'
       );
 
       expect(tableSuggestions.length).toBe(0);
@@ -602,17 +646,17 @@ describe('BlockSuggestionService', () => {
         version: '1.0.0',
         title: 'JavaScript Data Types',
         blocks: [
-          { id: 'h1', type: 'heading', level: 3, text: 'String' },
-          { id: 'h2', type: 'heading', level: 3, text: 'Number' },
-          { id: 'h3', type: 'heading', level: 3, text: 'Boolean' },
-          { id: 'h4', type: 'heading', level: 3, text: 'Object' },
-          { id: 'para', type: 'paragraph', text: 'Content break' },
+          { id: 'h1', type: 'heading', content: { level: 3, text: 'String' } },
+          { id: 'h2', type: 'heading', content: { level: 3, text: 'Number' } },
+          { id: 'h3', type: 'heading', content: { level: 3, text: 'Boolean' } },
+          { id: 'h4', type: 'heading', content: { level: 3, text: 'Object' } },
+          { id: 'para', type: 'paragraph', content: { text: 'Content break' } },
         ],
       };
 
       const result = service.generateSuggestions(document);
       const cardSuggestions = result.blocks.filter(
-        (b) => b.blockType === 'concept-cards' && b.kind === 'suggested'
+        (b: BlockSuggestion) => b.blockType === 'concept-cards' && b.kind === 'suggested'
       );
 
       expect(cardSuggestions.length).toBeGreaterThan(0);
@@ -625,14 +669,14 @@ describe('BlockSuggestionService', () => {
         version: '1.0.0',
         title: 'Only Two Concepts',
         blocks: [
-          { id: 'h1', type: 'heading', level: 3, text: 'Concept 1' },
-          { id: 'h2', type: 'heading', level: 3, text: 'Concept 2' },
+          { id: 'h1', type: 'heading', content: { level: 3, text: 'Concept 1' } },
+          { id: 'h2', type: 'heading', content: { level: 3, text: 'Concept 2' } },
         ],
       };
 
       const result = service.generateSuggestions(document);
       const cardSuggestions = result.blocks.filter(
-        (b) => b.blockType === 'concept-cards' && b.kind === 'suggested'
+        (b: BlockSuggestion) => b.blockType === 'concept-cards' && b.kind === 'suggested'
       );
 
       expect(cardSuggestions.length).toBe(0);
@@ -653,20 +697,22 @@ describe('BlockSuggestionService', () => {
           {
             id: 'timeline',
             type: 'list',
-            style: 'number',
-            items: [
-              { text: 'First, we plan the architecture' },
-              { text: 'Then we implement the core features' },
-              { text: 'After that, we test thoroughly' },
-              { text: 'Finally, we deploy to production' },
-            ],
+            content: {
+              style: 'ordered',
+              items: [
+                { text: 'First, we plan the architecture' },
+                { text: 'Then we implement the core features' },
+                { text: 'After that, we test thoroughly' },
+                { text: 'Finally, we deploy to production' },
+              ],
+            },
           },
         ],
       };
 
       const result = service.generateSuggestions(document);
       const timelineSuggestions = result.blocks.filter(
-        (b) => b.blockType === 'timeline' && b.kind === 'suggested'
+        (b: BlockSuggestion) => b.blockType === 'timeline' && b.kind === 'suggested'
       );
 
       expect(timelineSuggestions.length).toBeGreaterThan(0);
@@ -682,19 +728,21 @@ describe('BlockSuggestionService', () => {
           {
             id: 'phases',
             type: 'list',
-            style: 'bullet',
-            items: [
-              { text: 'Phase 1: Requirements gathering' },
-              { text: 'Phase 2: Design and architecture' },
-              { text: 'Phase 3: Implementation' },
-            ],
+            content: {
+              style: 'unordered',
+              items: [
+                { text: 'Phase 1: Requirements gathering' },
+                { text: 'Phase 2: Design and architecture' },
+                { text: 'Phase 3: Implementation' },
+              ],
+            },
           },
         ],
       };
 
       const result = service.generateSuggestions(document);
       const timelineSuggestions = result.blocks.filter(
-        (b) => b.blockType === 'timeline' && b.kind === 'suggested'
+        (b: BlockSuggestion) => b.blockType === 'timeline' && b.kind === 'suggested'
       );
 
       expect(timelineSuggestions.length).toBeGreaterThan(0);
@@ -715,19 +763,23 @@ describe('BlockSuggestionService', () => {
           {
             id: 'para1',
             type: 'paragraph',
-            text: 'JavaScript is a programming language.',
+            content: {
+              text: 'JavaScript is a programming language.',
+            },
           },
           {
             id: 'para2',
             type: 'paragraph',
-            text: 'It runs in the browser.',
+            content: {
+              text: 'It runs in the browser.',
+            },
           },
         ],
       };
 
       const result = service.generateSuggestions(document);
       const comparisonSuggestions = result.blocks.filter(
-        (b) => b.blockType === 'comparison' && b.kind === 'suggested'
+        (b: BlockSuggestion) => b.blockType === 'comparison' && b.kind === 'suggested'
       );
 
       expect(comparisonSuggestions.length).toBe(0);
@@ -742,19 +794,21 @@ describe('BlockSuggestionService', () => {
           {
             id: 'list',
             type: 'list',
-            style: 'bullet',
-            items: [
-              { text: 'Some random thought' },
-              { text: 'Another unrelated point' },
-              { text: 'Yet another idea' },
-            ],
+            content: {
+              style: 'unordered',
+              items: [
+                { text: 'Some random thought' },
+                { text: 'Another unrelated point' },
+                { text: 'Yet another idea' },
+              ],
+            },
           },
         ],
       };
 
       const result = service.generateSuggestions(document);
       const tableSuggestions = result.blocks.filter(
-        (b) => b.blockType === 'table' && b.kind === 'suggested'
+        (b: BlockSuggestion) => b.blockType === 'table' && b.kind === 'suggested'
       );
 
       expect(tableSuggestions.length).toBe(0);
@@ -775,14 +829,16 @@ describe('BlockSuggestionService', () => {
           {
             id: 'warning',
             type: 'paragraph',
-            text: 'Warning: This is a critical security issue.',
+            content: {
+              text: 'Warning: This is a critical security issue.',
+            },
           },
         ],
       };
 
       const result = service.generateSuggestions(document);
       const highConfSuggestions = result.blocks.filter(
-        (b) => b.kind === 'suggested' && b.confidenceLevel === 'high'
+        (b: BlockSuggestion) => b.kind === 'suggested' && b.confidenceLevel === 'high'
       );
 
       expect(highConfSuggestions.length).toBeGreaterThan(0);
@@ -798,14 +854,16 @@ describe('BlockSuggestionService', () => {
           {
             id: 'example',
             type: 'paragraph',
-            text: 'For example, you can use this pattern.',
+            content: {
+              text: 'For example, you can use this pattern.',
+            },
           },
         ],
       };
 
       const result = service.generateSuggestions(document);
       const mediumConfSuggestions = result.blocks.filter(
-        (b) => b.kind === 'suggested' && b.confidenceLevel === 'medium'
+        (b: BlockSuggestion) => b.kind === 'suggested' && b.confidenceLevel === 'medium'
       );
 
       expect(mediumConfSuggestions.length).toBeGreaterThan(0);
@@ -822,14 +880,16 @@ describe('BlockSuggestionService', () => {
           {
             id: 'vague',
             type: 'paragraph',
-            text: 'The workflow process might involve some steps.',
+            content: {
+              text: 'The workflow process might involve some steps.',
+            },
           },
         ],
       };
 
       const result = service.generateSuggestions(document);
       const lowConfSuggestions = result.blocks.filter(
-        (b) => b.kind === 'suggested' && b.confidenceLevel === 'low'
+        (b: BlockSuggestion) => b.kind === 'suggested' && b.confidenceLevel === 'low'
       );
 
       // Note: This test may not always produce low confidence suggestions
@@ -854,25 +914,31 @@ describe('BlockSuggestionService', () => {
           {
             id: 'h1',
             type: 'heading',
-            level: 2,
-            text: 'Introduction',
+            content: {
+              level: 2,
+              text: 'Introduction',
+            },
           },
           {
             id: 'para',
             type: 'paragraph',
-            text: 'Note: This is important information.',
+            content: {
+              text: 'Note: This is important information.',
+            },
           },
           {
             id: 'comp',
             type: 'paragraph',
-            text: 'React vs Vue: a comparison.',
+            content: {
+              text: 'React vs Vue: a comparison.',
+            },
           },
         ],
       };
 
       const result = service.generateSuggestions(document);
 
-      result.blocks.forEach((suggestion) => {
+      result.blocks.forEach((suggestion: BlockSuggestion) => {
         // Every suggestion must have a reason
         expect(suggestion.reason).toBeTruthy();
         expect(typeof suggestion.reason).toBe('string');
@@ -901,14 +967,14 @@ describe('BlockSuggestionService', () => {
         version: '1.0.0',
         title: 'Test Headings',
         blocks: [
-          { id: 'h1', type: 'heading', level: 2, text: 'Section 1' },
-          { id: 'h2', type: 'heading', level: 3, text: 'Subsection' },
+          { id: 'h1', type: 'heading', content: { level: 2, text: 'Section 1' } },
+          { id: 'h2', type: 'heading', content: { level: 3, text: 'Subsection' } },
         ],
       };
 
       const result = service.generateSuggestions(document);
       const existingHeadings = result.blocks.filter(
-        (b) => b.kind === 'existing' && b.blockType === 'heading'
+        (b: BlockSuggestion) => b.kind === 'existing' && b.blockType === 'heading'
       );
 
       expect(existingHeadings.length).toBe(2);
@@ -922,14 +988,14 @@ describe('BlockSuggestionService', () => {
         version: '1.0.0',
         title: 'Test Paragraphs',
         blocks: [
-          { id: 'p1', type: 'paragraph', text: 'First paragraph' },
-          { id: 'p2', type: 'paragraph', text: 'Second paragraph' },
+          { id: 'p1', type: 'paragraph', content: { text: 'First paragraph' } },
+          { id: 'p2', type: 'paragraph', content: { text: 'Second paragraph' } },
         ],
       };
 
       const result = service.generateSuggestions(document);
       const existingParagraphs = result.blocks.filter(
-        (b) => b.kind === 'existing' && b.blockType === 'paragraph'
+        (b: BlockSuggestion) => b.kind === 'existing' && b.blockType === 'paragraph'
       );
 
       expect(existingParagraphs.length).toBe(2);
@@ -941,13 +1007,20 @@ describe('BlockSuggestionService', () => {
         version: '1.0.0',
         title: 'Test Code',
         blocks: [
-          { id: 'code1', type: 'code', language: 'javascript', code: 'console.log("hello")' },
+          { 
+            id: 'code1', 
+            type: 'code', 
+            content: { 
+              language: 'javascript', 
+              code: 'console.log("hello")' 
+            } 
+          },
         ],
       };
 
       const result = service.generateSuggestions(document);
       const existingCode = result.blocks.filter(
-        (b) => b.kind === 'existing' && b.blockType === 'code'
+        (b: BlockSuggestion) => b.kind === 'existing' && b.blockType === 'code'
       );
 
       expect(existingCode.length).toBe(1);
@@ -966,9 +1039,9 @@ describe('BlockSuggestionService', () => {
         version: '1.0.0',
         title: 'Stats Test',
         blocks: [
-          { id: 'h1', type: 'heading', level: 2, text: 'Client-Side' },
-          { id: 'h2', type: 'heading', level: 2, text: 'Server-Side' },
-          { id: 'para', type: 'paragraph', text: 'Note: Important info' },
+          { id: 'h1', type: 'heading', content: { level: 2, text: 'Client-Side' } },
+          { id: 'h2', type: 'heading', content: { level: 2, text: 'Server-Side' } },
+          { id: 'para', type: 'paragraph', content: { text: 'Note: Important info' } },
         ],
       };
 
@@ -996,7 +1069,7 @@ describe('BlockSuggestionService', () => {
         version: '1.0.0',
         title: 'Overall Test',
         blocks: [
-          { id: 'h1', type: 'heading', level: 2, text: 'Title' },
+          { id: 'h1', type: 'heading', content: { level: 2, text: 'Title' } },
         ],
       };
 

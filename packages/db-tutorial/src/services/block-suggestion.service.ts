@@ -52,6 +52,72 @@ export interface SuggestionContext {
 }
 
 /**
+ * Helper function to safely extract text from block content
+ * Supports both old flat structure and new nested content structure
+ */
+function getBlockText(block: any): string {
+  if (block.content && block.content.text) {
+    return block.content.text;
+  }
+  if (block.text) {
+    return block.text;
+  }
+  return '';
+}
+
+/**
+ * Helper function to safely extract level from heading block
+ */
+function getHeadingLevel(block: any): number {
+  if (block.content && block.content.level) {
+    return block.content.level;
+  }
+  if (block.level) {
+    return block.level;
+  }
+  return 0;
+}
+
+/**
+ * Helper function to safely extract style from list block
+ */
+function getListStyle(block: any): string {
+  if (block.content && block.content.style) {
+    return block.content.style;
+  }
+  if (block.style) {
+    return block.style;
+  }
+  return 'unordered';
+}
+
+/**
+ * Helper function to safely extract items from list block
+ */
+function getListItems(block: any): any[] {
+  if (block.content && block.content.items) {
+    return block.content.items;
+  }
+  if (block.items) {
+    return block.items;
+  }
+  return [];
+}
+
+/**
+ * Helper function to safely extract language from code block
+ */
+function getCodeLanguage(block: any): string {
+  if (block.content && block.content.language) {
+    return block.content.language;
+  }
+  if (block.language) {
+    return block.language;
+  }
+  return 'text';
+}
+
+/**
  * Block Suggestion Service
  * Generates intelligent suggestions for content block improvements
  */
@@ -123,28 +189,32 @@ export class BlockSuggestionService {
       switch (block.type) {
         case 'heading':
           blockType = 'heading';
-          title = `Heading ${(block as any).level}`;
-          preview = (block as any).text || '';
+          const level = getHeadingLevel(block);
+          title = `Heading ${level}`;
+          preview = getBlockText(block);
           break;
         case 'paragraph':
           blockType = 'paragraph';
           title = 'Paragraph';
-          preview = ((block as any).text || '').substring(0, 100);
+          preview = getBlockText(block).substring(0, 100);
           break;
         case 'list':
           blockType = 'list';
-          title = (block as any).style === 'bullet' ? 'Bullet List' : 'Numbered List';
-          preview = `${(block as any).items?.length || 0} items`;
+          const listStyle = getListStyle(block);
+          title = listStyle === 'unordered' || listStyle === 'bullet' ? 'Bullet List' : 'Numbered List';
+          const items = getListItems(block);
+          preview = `${items.length} items`;
           break;
         case 'code':
           blockType = 'code';
           title = 'Code Block';
-          preview = `${(block as any).language || 'text'} code`;
+          const language = getCodeLanguage(block);
+          preview = `${language} code`;
           break;
         case 'quote':
           blockType = 'quote';
           title = 'Quote';
-          preview = ((block as any).text || '').substring(0, 100);
+          preview = getBlockText(block).substring(0, 100);
           break;
         default:
           return; // Skip other block types for existing detection
@@ -220,11 +290,11 @@ export class BlockSuggestionService {
       const block1 = blocks[i];
       const block2 = blocks[i + 1];
       
-      if (block1.type === 'heading' && (block1 as any).level === 3 &&
-          block2.type === 'heading' && (block2 as any).level === 3) {
+      if (block1.type === 'heading' && getHeadingLevel(block1) === 3 &&
+          block2.type === 'heading' && getHeadingLevel(block2) === 3) {
         
-        const text1 = (block1 as any).text?.toLowerCase() || '';
-        const text2 = (block2 as any).text?.toLowerCase() || '';
+        const text1 = getBlockText(block1).toLowerCase();
+        const text2 = getBlockText(block2).toLowerCase();
         
         // Check for parallel concept indicators
         const parallelIndicators = [
@@ -248,12 +318,12 @@ export class BlockSuggestionService {
             kind: 'suggested',
             blockType: 'two-column',
             title: 'Two Column',
-            preview: `${(block1 as any).text} | ${(block2 as any).text}`,
+            preview: `${getBlockText(block1)} | ${getBlockText(block2)}`,
             confidence,
             confidenceLevel: this.getConfidenceLevel(confidence),
             reason: 'Parallel concepts detected and suitable for side-by-side presentation',
             sourceBlockIds: [block1.id, block2.id],
-            sourceText: `${(block1 as any).text}\n${(block2 as any).text}`,
+            sourceText: `${getBlockText(block1)}\n${getBlockText(block2)}`,
             status: 'pending',
           });
         }
@@ -274,7 +344,7 @@ export class BlockSuggestionService {
       const block = blocks[i];
       
       if (block.type === 'paragraph' || block.type === 'heading') {
-        const text = ((block as any).text || '').toLowerCase();
+        const text = getBlockText(block).toLowerCase();
         
         const comparisonPatterns = [
           'vs',
@@ -296,12 +366,12 @@ export class BlockSuggestionService {
             kind: 'suggested',
             blockType: 'comparison',
             title: 'Comparison Block',
-            preview: ((block as any).text || '').substring(0, 100),
+            preview: getBlockText(block).substring(0, 100),
             confidence,
             confidenceLevel: this.getConfidenceLevel(confidence),
             reason: 'Comparison language detected - content would benefit from side-by-side comparison structure',
             sourceBlockIds: [block.id],
-            sourceText: (block as any).text,
+            sourceText: getBlockText(block),
             status: 'pending',
           });
         }
@@ -322,7 +392,7 @@ export class BlockSuggestionService {
       const block = blocks[i];
       
       if (block.type === 'paragraph') {
-        const text = ((block as any).text || '').toLowerCase();
+        const text = (getBlockText(block) || '').toLowerCase();
         
         const calloutPatterns = [
           { pattern: 'important', variant: 'warning', confidence: 85 },
@@ -341,12 +411,12 @@ export class BlockSuggestionService {
               kind: 'suggested',
               blockType: 'callout',
               title: `Callout (${variant})`,
-              preview: ((block as any).text || '').substring(0, 100),
+              preview: (getBlockText(block) || '').substring(0, 100),
               confidence,
               confidenceLevel: this.getConfidenceLevel(confidence),
               reason: `Detected ${pattern} indicator - content should be highlighted as a ${variant} callout`,
               sourceBlockIds: [block.id],
-              sourceText: (block as any).text,
+              sourceText: getBlockText(block),
               status: 'pending',
             });
             break;
@@ -369,7 +439,7 @@ export class BlockSuggestionService {
       const block = blocks[i];
       
       if (block.type === 'paragraph') {
-        const text = ((block as any).text || '').toLowerCase();
+        const text = (getBlockText(block) || '').toLowerCase();
         
         const examplePatterns = [
           'for example',
@@ -391,12 +461,12 @@ export class BlockSuggestionService {
             kind: 'suggested',
             blockType: 'example',
             title: 'Example Block',
-            preview: ((block as any).text || '').substring(0, 100),
+            preview: (getBlockText(block) || '').substring(0, 100),
             confidence,
             confidenceLevel: this.getConfidenceLevel(confidence),
             reason: 'Example language detected - would be clearer as a dedicated example block',
             sourceBlockIds: [block.id],
-            sourceText: (block as any).text,
+            sourceText: getBlockText(block),
             status: 'pending',
           });
         }
@@ -417,7 +487,7 @@ export class BlockSuggestionService {
       const block = blocks[i];
       
       if (block.type === 'paragraph' || block.type === 'list') {
-        const text = ((block as any).text || (block as any).items?.map((item: any) => item.text).join(' ') || '').toLowerCase();
+        const text = (getBlockText(block) || getListItems(block)?.map((item: any) => item.text).join(' ') || '').toLowerCase();
         
         const diagramPatterns = [
           'step 1',
@@ -502,7 +572,7 @@ export class BlockSuggestionService {
       const block = blocks[i];
       
       if (block.type === 'paragraph') {
-        const text = (block as any).text || '';
+        const text = getBlockText(block) || '';
         
         const definitionPatterns = [
           /(\w+) is (a|an) /i,
@@ -548,7 +618,7 @@ export class BlockSuggestionService {
       const block = blocks[i];
       
       if (block.type === 'list') {
-        const items = (block as any).items || [];
+        const items = getListItems(block) || [];
         
         // Check if list items have consistent structure suggesting tabular data
         const hasColonPattern = items.filter((item: any) => 
@@ -590,7 +660,7 @@ export class BlockSuggestionService {
     for (let i = 0; i < blocks.length; i++) {
       const block = blocks[i];
       
-      if (block.type === 'heading' && (block as any).level === 3) {
+      if (block.type === 'heading' && getHeadingLevel(block) === 3) {
         consecutiveHeadings.push(block);
       } else if (consecutiveHeadings.length > 0) {
         if (consecutiveHeadings.length >= 3 && consecutiveHeadings.length <= 6) {
@@ -627,7 +697,7 @@ export class BlockSuggestionService {
       const block = blocks[i];
       
       if (block.type === 'list') {
-        const items = (block as any).items || [];
+        const items = getListItems(block) || [];
         const allText = items.map((item: any) => item.text || '').join(' ').toLowerCase();
         
         const timelinePatterns = [
