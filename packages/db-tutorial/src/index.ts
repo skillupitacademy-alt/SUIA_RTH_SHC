@@ -34,6 +34,10 @@ export type { IRawContentParser, ParsedBlockResult } from './services/parsers/ra
 // Tutorial Content Analysis - NEW architecture (Prompt 06)
 export { contentAnalysisService, ContentAnalysisService } from './services/content-analysis.service';
 
+// Tutorial Block Suggestions - NEW architecture (Prompt 07B)
+export { blockSuggestionService, BlockSuggestionService } from './services/block-suggestion.service';
+export type { SuggestionContext } from './services/block-suggestion.service';
+
 // Validators, Types, DTOs
 export * from './validators/layman.validator';
 export * from './types/layman.types';

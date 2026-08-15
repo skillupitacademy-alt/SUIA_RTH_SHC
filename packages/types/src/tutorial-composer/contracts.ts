@@ -374,6 +374,148 @@ export const ContentAnalysisResultSchema = z
 export type ContentAnalysisResult = z.infer<typeof ContentAnalysisResultSchema>;
 
 // ============================================================
+// PROMPT 07 - BLOCK SUGGESTION SCHEMAS
+// ============================================================
+
+/**
+ * Block Suggestion Kind
+ * Distinguishes existing detected blocks from newly suggested blocks
+ */
+export const BlockSuggestionKindSchema = z.enum(['existing', 'suggested']);
+export type BlockSuggestionKind = z.infer<typeof BlockSuggestionKindSchema>;
+
+/**
+ * Block Suggestion Type
+ * Types of blocks that can be suggested
+ */
+export const BlockSuggestionTypeSchema = z.enum([
+  // Existing detected blocks (from Prompt 06 analysis)
+  'heading',
+  'paragraph',
+  'list',
+  'code',
+  'quote',
+  'image',
+  
+  // Intelligent suggestions (Prompt 07 intelligence)
+  'two-column',
+  'three-column',
+  'comparison',
+  'concept-cards',
+  'callout',
+  'example',
+  'diagram',
+  'summary',
+  'definition',
+  'table',
+  'timeline',
+]);
+export type BlockSuggestionType = z.infer<typeof BlockSuggestionTypeSchema>;
+
+/**
+ * Confidence Level Bands
+ */
+export const ConfidenceLevelSchema = z.enum(['high', 'medium', 'low']);
+export type ConfidenceLevel = z.infer<typeof ConfidenceLevelSchema>;
+
+/**
+ * Suggestion Review Status
+ */
+export const SuggestionStatusSchema = z.enum(['pending', 'accepted', 'rejected']);
+export type SuggestionStatus = z.infer<typeof SuggestionStatusSchema>;
+
+/**
+ * Individual Block Suggestion
+ * 
+ * IMPORTANT SEMANTICS:
+ * - kind: "existing" = detected from analysis (not a new suggestion)
+ * - kind: "suggested" = intelligent recommendation to improve content
+ * - confidence: deterministic structural confidence (NOT ML probability)
+ */
+export const BlockSuggestionSchema = z.object({
+  id: z.string(),
+  kind: BlockSuggestionKindSchema,
+  blockType: BlockSuggestionTypeSchema,
+  title: z.string(),
+  preview: z.string(),
+  confidence: z.number().min(0).max(100),
+  confidenceLevel: ConfidenceLevelSchema,
+  reason: z.string(),
+  sourceBlockIds: z.array(z.string()),
+  sourceText: z.string().optional(),
+  suggestedContent: z.any().optional(), // TutorialBlock content if applicable
+  status: SuggestionStatusSchema.default('pending'),
+  metadata: z.object({
+    detectedAt: z.string().datetime().optional(),
+    suggestedAt: z.string().datetime().optional(),
+  }).optional(),
+});
+export type BlockSuggestion = z.infer<typeof BlockSuggestionSchema>;
+
+/**
+ * Block Suggestion Statistics
+ */
+export const BlockSuggestionStatisticsSchema = z.object({
+  totalBlocks: z.number().int().min(0),
+  existingBlocks: z.number().int().min(0),
+  suggestedBlocks: z.number().int().min(0),
+  highConfidence: z.number().int().min(0),
+  mediumConfidence: z.number().int().min(0),
+  lowConfidence: z.number().int().min(0),
+  sectionsDetected: z.number().int().min(0),
+  byType: z.record(z.number().int().min(0)),
+});
+export type BlockSuggestionStatistics = z.infer<typeof BlockSuggestionStatisticsSchema>;
+
+/**
+ * Source Content Preview
+ */
+export const SourcePreviewSchema = z.object({
+  raw: z.string(),
+  formatted: z.string().optional(),
+});
+export type SourcePreview = z.infer<typeof SourcePreviewSchema>;
+
+/**
+ * Block Suggestion Result
+ * Complete result from block suggestion analysis
+ */
+export const BlockSuggestionResultSchema = z.object({
+  sourceDocumentId: z.string().optional(),
+  subtopicId: z.string().optional(),
+  statistics: BlockSuggestionStatisticsSchema,
+  blocks: z.array(BlockSuggestionSchema),
+  sourcePreview: SourcePreviewSchema,
+  overallConfidence: z.number().min(0).max(100),
+  metadata: z.object({
+    analysisVersion: z.string().optional(),
+    generatedAt: z.string().datetime(),
+    processingTimeMs: z.number().int().min(0).optional(),
+  }).optional(),
+});
+export type BlockSuggestionResult = z.infer<typeof BlockSuggestionResultSchema>;
+
+/**
+ * Block Suggestions Request
+ */
+export const BlockSuggestionsRequestSchema = z.object({
+  document: TutorialDocumentSchema,
+  analysis: ContentAnalysisResultSchema.optional(), // Optional: can be recomputed
+  subtopicId: z.string().uuid().optional(),
+  sectionType: SectionTypeSchema.optional(),
+  brandId: BrandIdSchema.optional(),
+});
+export type BlockSuggestionsRequest = z.infer<typeof BlockSuggestionsRequestSchema>;
+
+/**
+ * Block Suggestions Response
+ */
+export const BlockSuggestionsResponseSchema = z.object({
+  data: BlockSuggestionResultSchema,
+});
+export type BlockSuggestionsResponse = z.infer<typeof BlockSuggestionsResponseSchema>;
+
+// ============================================================
 // ERROR RESPONSES
 // ============================================================
 
