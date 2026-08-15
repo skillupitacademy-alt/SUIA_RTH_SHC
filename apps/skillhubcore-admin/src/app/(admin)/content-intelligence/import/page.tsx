@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import type { RawContentSourceType, RawContentImportResponse } from '@quiz/types';
 
@@ -64,6 +65,7 @@ actionButton.addEventListener("click", () => {
 - Powers modern full-stack web applications worldwide.`;
 
 export default function RawContentImportPage() {
+  const router = useRouter();
   const [selectedMethod, setSelectedMethod] = useState<RawContentSourceType>('markdown');
   const [content, setContent] = useState<string>(JAVASCRIPT_SAMPLE_CONTENT);
   const [wordCount, setWordCount] = useState<number>(0);
@@ -129,9 +131,30 @@ export default function RawContentImportPage() {
       const data = json.data as RawContentImportResponse;
       setImportResult(data);
 
+      // Store TutorialDocument for Content Analysis (Page 12)
+      try {
+        sessionStorage.setItem(
+          'tutorial_composer_document',
+          JSON.stringify({
+            document: data.document,
+            subtopicId,
+            sectionType: 'notes',
+            brandId: 'skillhubcore',
+          })
+        );
+      } catch (e) {
+        console.warn('Failed to store document in sessionStorage', e);
+      }
+
       toast.success(
-        `Successfully parsed: ${data.stats.headings} headings, ${data.stats.paragraphs} paragraphs, ${data.stats.codeBlocks} code blocks.`
+        `Successfully parsed: ${data.stats.headings} headings, ${data.stats.paragraphs} paragraphs, ${data.stats.codeBlocks} code blocks. Redirecting to analysis...`
       );
+
+      // Navigate to Page 12 (Content Analysis)
+      setTimeout(() => {
+        const isPreview = typeof window !== 'undefined' && window.location.pathname.startsWith('/preview/');
+        router.push(isPreview ? '/preview/analysis' : '/content-intelligence/analysis');
+      }, 600);
     } catch (error) {
       console.error('[RawContentImportPage] Error:', error);
       toast.error(error instanceof Error ? error.message : 'Analysis failed');

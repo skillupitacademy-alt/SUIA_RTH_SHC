@@ -20,30 +20,196 @@ export default function ContentAnalysisPage() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    // Check if imported document data was stored in sessionStorage or use standard analysis result
+  const fetchAnalysis = async (documentPayload: any) => {
+    setIsLoading(true);
+    setError(null);
+
     try {
-      const stored = sessionStorage.getItem('tutorial_analysis_result');
-      if (stored) {
-        setData(JSON.parse(stored));
-      } else {
-        // Use authoritative Page 12 reference data
-        setData(mockContentAnalysisResult);
+      const response = await fetch('/api/tutorial-composer/analysis', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          document: documentPayload.document,
+          subtopicId: documentPayload.subtopicId || '00000000-0000-0000-0000-000000000001',
+          sectionType: documentPayload.sectionType || 'notes',
+          brandId: documentPayload.brandId || 'skillhubcore',
+        }),
+      });
+
+      const json = await response.json();
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Authentication required. Please log in to view content analysis.');
+        }
+        if (response.status === 403) {
+          throw new Error('Access denied. You do not have permission to analyze this content.');
+        }
+        throw new Error(json.error?.message || `Analysis failed with status ${response.status}`);
       }
-    } catch {
-      setData(mockContentAnalysisResult);
+
+      if (!json.data) {
+        throw new Error('Invalid response received from analysis API.');
+      }
+
+      setData(json.data as ContentAnalysisResult);
+    } catch (err: unknown) {
+      console.error('[ContentAnalysisPage] API Error:', err);
+      setError(err instanceof Error ? err.message : 'Unable to analyze content.');
+      setData(null);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    // 1. Retrieve TutorialDocument from previous import step
+    try {
+      const stored = sessionStorage.getItem('tutorial_composer_document');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed.document) {
+          fetchAnalysis(parsed);
+          return;
+        }
+      }
+
+      // 2. If running under preview route or standalone mode, construct canonical sample document
+      const isPreview = typeof window !== 'undefined' && window.location.pathname.startsWith('/preview/');
+      if (isPreview) {
+        // Construct canonical TutorialDocument to trigger real analysis API
+        const previewDocPayload = {
+          subtopicId: '00000000-0000-0000-0000-000000000001',
+          sectionType: 'notes',
+          brandId: 'skillhubcore',
+          document: {
+            schemaVersion: 1,
+            blocks: [
+              {
+                id: 'heading-1',
+                type: 'heading',
+                content: { text: 'JavaScript', level: 1 },
+              },
+              {
+                id: 'paragraph-1',
+                type: 'paragraph',
+                content: { text: 'JavaScript is a programming language that makes websites interactive. While HTML gives a webpage structure and CSS gives it style, JavaScript is the engine that makes it come alive.' },
+              },
+              {
+                id: 'heading-2',
+                type: 'heading',
+                content: { text: '1. What does it actually do? (The "Interactive" Part)', level: 2 },
+              },
+              {
+                id: 'paragraph-2',
+                type: 'paragraph',
+                content: { text: 'When you click a button and a menu drops down, when you see live stock tickers update, or when a form validates—that is JavaScript.' },
+              },
+              {
+                id: 'heading-3',
+                type: 'heading',
+                content: { text: '2. Where does it run? (The Two Sides)', level: 2 },
+              },
+              {
+                id: 'heading-3a',
+                type: 'heading',
+                content: { text: 'Client-Side (Frontend)', level: 3 },
+              },
+              {
+                id: 'paragraph-3a',
+                type: 'paragraph',
+                content: { text: 'This is its original home. The JavaScript code is sent to your web browser and executed on your computer or phone.' },
+              },
+              {
+                id: 'heading-3b',
+                type: 'heading',
+                content: { text: 'Server-Side (Backend)', level: 3 },
+              },
+              {
+                id: 'paragraph-3b',
+                type: 'paragraph',
+                content: { text: 'Thanks to Node.js, JavaScript can now run on web servers handling APIs, databases, and file systems.' },
+              },
+              {
+                id: 'heading-4',
+                type: 'heading',
+                content: { text: '3. Key Technical Characteristics (The "Nerdy" Bits)', level: 2 },
+              },
+              {
+                id: 'list-1',
+                type: 'list',
+                content: {
+                  items: [
+                    'Single-threaded event-loop architecture',
+                    'Dynamic and weak typing system',
+                    'First-class functions supporting functional programming',
+                  ],
+                  ordered: false,
+                },
+              },
+              {
+                id: 'heading-5',
+                type: 'heading',
+                content: { text: '4. The JavaScript Ecosystem (Frameworks)', level: 2 },
+              },
+              {
+                id: 'paragraph-5',
+                type: 'paragraph',
+                content: { text: 'Very rarely do developers write plain, raw JavaScript anymore. Modern ecosystems rely on React, Next.js, and TypeScript.' },
+              },
+              {
+                id: 'heading-6',
+                type: 'heading',
+                content: { text: '5. The Crucial Clarification: JavaScript is NOT Java', level: 2 },
+              },
+              {
+                id: 'paragraph-6',
+                type: 'paragraph',
+                content: { text: 'Despite the similar name, they are completely different languages created by different teams for different purposes.' },
+              },
+              {
+                id: 'quote-1',
+                type: 'callout',
+                content: {
+                  text: 'Today, JavaScript is the undisputed "language of the web." According to Stack Overflow, it remains the most commonly used programming language.',
+                  variant: 'info',
+                },
+              },
+            ],
+            metadata: {
+              estimatedReadTime: 2,
+              tags: ['javascript', 'web-development'],
+              complexityScore: 5,
+            },
+          },
+        };
+
+        fetchAnalysis(previewDocPayload);
+        return;
+      }
+
+      // If production path with no document imported, show empty state
+      setIsLoading(false);
+      setData(null);
+    } catch {
+      setIsLoading(false);
+      setData(null);
     }
   }, []);
 
   const handleRetry = () => {
-    setIsLoading(true);
-    setError(null);
-    setTimeout(() => {
-      setData(mockContentAnalysisResult);
-      setIsLoading(false);
-    }, 400);
+    try {
+      const stored = sessionStorage.getItem('tutorial_composer_document');
+      if (stored) {
+        fetchAnalysis(JSON.parse(stored));
+      } else {
+        setError('No imported document found. Please return to Import Content.');
+      }
+    } catch {
+      setError('Unable to retry analysis.');
+    }
   };
 
   return (

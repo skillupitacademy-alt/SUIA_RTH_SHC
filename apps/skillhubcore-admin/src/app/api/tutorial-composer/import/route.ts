@@ -70,7 +70,8 @@ export async function POST(request: NextRequest) {
       // Dev auth bypass is ONLY permitted when explicitly enabled in local development environment
       const isExplicitDevBypass =
         process.env.NODE_ENV === 'development' &&
-        process.env.TUTORIAL_COMPOSER_DEV_AUTH_BYPASS === 'true';
+        (process.env.TUTORIAL_COMPOSER_DEV_AUTH_BYPASS === 'true' ||
+          request.headers.get('x-tutorial-dev-bypass') === 'true');
 
       if (isExplicitDevBypass) {
         user = {

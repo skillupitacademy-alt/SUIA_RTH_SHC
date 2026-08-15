@@ -31,6 +31,9 @@ export { PlainTextParser } from './services/parsers/plain-text-parser';
 export { safeUrlFetcher, SafeUrlFetcher } from './services/parsers/safe-url-fetcher';
 export type { IRawContentParser, ParsedBlockResult } from './services/parsers/raw-content-parser.interface';
 
+// Tutorial Content Analysis - NEW architecture (Prompt 06)
+export { contentAnalysisService, ContentAnalysisService } from './services/content-analysis.service';
+
 // Validators, Types, DTOs
 export * from './validators/layman.validator';
 export * from './types/layman.types';
