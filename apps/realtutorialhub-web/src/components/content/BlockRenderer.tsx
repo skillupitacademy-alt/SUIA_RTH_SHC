@@ -2,7 +2,9 @@
 
 import { useMemo } from 'react';
 
-import type { ContentBlockType, TutorialContentJSON } from '@quiz/types';
+import type { ContentBlockType, TutorialContentJSON, TutorialDocument } from '@quiz/types';
+import { isTutorialDocument } from '@quiz/types';
+import { TutorialRenderer } from '@quiz/ui';
 
 import type { DomainTheme } from '@/lib/domain-themes';
 import { AssignmentBlock } from './AssignmentBlock';
@@ -40,7 +42,21 @@ export function BlockRenderer({
   // Use activeBlockType if type is not provided
   const targetType = type || activeBlockType || 'notes';
 
+  const sectionData = (content as any)?.[targetType];
+
   const renderedBlock = useMemo(() => {
+    // If section content is a canonical TutorialDocument, render via Universal TutorialRenderer
+    if (isTutorialDocument(sectionData)) {
+      return (
+        <TutorialRenderer
+          document={sectionData as TutorialDocument}
+          sectionType={targetType}
+          theme={theme}
+        />
+      );
+    }
+
+    // Otherwise, fall back to legacy block renderer components
     switch (targetType) {
       case 'notes':
         return <NotesBlock data={content.notes} theme={theme} />;
@@ -71,7 +87,7 @@ export function BlockRenderer({
       default:
         return null;
     }
-  }, [targetType, content, theme, subtopicName]);
+  }, [targetType, sectionData, content, theme, subtopicName]);
 
   if (!renderedBlock) return null;
 

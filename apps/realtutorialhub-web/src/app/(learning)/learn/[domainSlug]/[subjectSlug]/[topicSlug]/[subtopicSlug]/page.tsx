@@ -48,6 +48,17 @@ function getBaseUrl() {
 }
 
 function deriveDescription(sections: Partial<Record<string, unknown>>, fallback: string): string {
+  // Support canonical TutorialDocument paragraph extraction for SEO description
+  for (const key of ['overview', 'notes', 'layman']) {
+    const sec = sections[key];
+    if (sec && typeof sec === 'object' && 'blocks' in sec && Array.isArray((sec as any).blocks)) {
+      const pBlock = (sec as any).blocks.find((b: any) => b.type === 'paragraph');
+      if (pBlock?.content?.text) {
+        return pBlock.content.text;
+      }
+    }
+  }
+
   const overview = sections.overview as { hero?: { description?: string } } | undefined;
   const notes = sections.notes as { definitionBlock?: { definitionText?: string } } | undefined;
   const layman = sections.layman as { simpleOverview?: { simpleDefinition?: string } } | undefined;

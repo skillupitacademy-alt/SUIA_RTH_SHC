@@ -457,6 +457,9 @@ export default function BlockSuggestionsPage() {
   const backToAnalysisHref = isPreviewMode
     ? '/preview/analysis'
     : '/content-intelligence/analysis';
+  const presentationIdeasHref = isPreviewMode
+    ? '/preview/presentation-ideas'
+    : '/content-intelligence/presentation-ideas';
   const importHref = isPreviewMode
     ? '/preview/raw-import'
     : '/content-intelligence/import';
@@ -549,6 +552,7 @@ export default function BlockSuggestionsPage() {
             selectedCount={selectedCount}
             onAddToComposer={handleAddToComposer}
             backHref={backToAnalysisHref}
+            nextHref={presentationIdeasHref}
           />
 
           {/* Top 5 KPI Summary Cards */}

@@ -49,13 +49,7 @@ export type {
   ITimelineBlock,
 };
 
-export interface DomainTheme {
-  primaryColor?: string;
-  secondaryColor?: string;
-  accentColor?: string;
-  surfaceColor?: string;
-  textColor?: string;
-}
+export type DomainTheme = Record<string, any>;
 
 export interface TutorialRendererProps {
   document: TutorialDocument | null | undefined;

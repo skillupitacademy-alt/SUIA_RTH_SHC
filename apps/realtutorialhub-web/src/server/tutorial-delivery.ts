@@ -2,8 +2,8 @@ import { unstable_cache } from 'next/cache';
 import { headers } from 'next/headers';
 import { Redis } from '@upstash/redis';
 
-import type { TutorialDifficulty, TutorialSectionId, TutorialContentJSON } from '@quiz/types';
-import { TUTORIAL_SECTION_CONTRACTS } from '@quiz/types';
+import type { TutorialDifficulty, TutorialSectionId, TutorialContentJSON, TutorialDocument } from '@quiz/types';
+import { TUTORIAL_SECTION_CONTRACTS, isTutorialDocument, TutorialDocumentSchema } from '@quiz/types';
 import {
   formatTutorialSectionValidationIssues,
   validateTutorialSection,
@@ -246,6 +246,25 @@ export async function getValidatedTutorialSectionsForDelivery(
       continue;
     }
 
+    // Support canonical TutorialDocument format
+    if (isTutorialDocument(rawSection)) {
+      const docValidation = TutorialDocumentSchema.safeParse(rawSection);
+      if (docValidation.success) {
+        sections[contract.dbType] = docValidation.data;
+        continue;
+      }
+      invalidSections.push({
+        sectionType: contract.dbType,
+        issues: docValidation.error.errors.map((e) => ({
+          path: e.path.join('.'),
+          code: e.code,
+          message: e.message,
+        })),
+      });
+      continue;
+    }
+
+    // Legacy section validation fallback
     const validation = validateTutorialSection(contract.dbType, rawSection);
     if (!validation.success) {
       invalidSections.push({
