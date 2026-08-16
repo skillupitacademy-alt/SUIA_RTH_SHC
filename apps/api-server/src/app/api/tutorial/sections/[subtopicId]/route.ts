@@ -1,15 +1,37 @@
-import { db } from '@quiz/db-tutorial';
-import { tutorialSections, tutorialSubtopics } from '@quiz/db-tutorial';
-import { and,eq,inArray } from 'drizzle-orm';
+/**
+ * Tutorial Sections API - Learner Delivery Endpoint
+ * 
+ * PROMPT 11 — Learner Tutorial Delivery API
+ * 
+ * GET /api/tutorial/sections/:subtopicId
+ * 
+ * Enhanced with:
+ * - TutorialDeliveryService integration (Prompt 10)
+ * - Brand context awareness
+ * - Proper error handling with typed errors
+ * - Schema validation at trust boundary
+ * - No admin-only metadata exposure
+ */
+
 import { NextRequest, NextResponse } from 'next/server';
+import {
+  tutorialDeliveryService,
+  SubtopicNotFoundError,
+  type DeliveryOptions,
+} from '@quiz/db-tutorial';
+import type { TutorialDifficulty, SectionType, Brand } from '@quiz/types';
 
 export const dynamic = 'force-dynamic';
 
 /**
  * GET /api/tutorial/sections/:subtopicId
  * 
- * Get all sections for a subtopic from database
- * Replaces static file reads from subtopicContentRegistry.ts
+ * Query params:
+ * - difficulty: simple | intermediate | expert | mixed (default: simple)
+ * - sectionType: notes | visual | code | ... (optional, returns all if omitted)
+ * 
+ * Headers:
+ * - X-Brand: realtutorialhub | skillup | skillhubcore (default: shared)
  */
 export async function GET(
   request: NextRequest,
@@ -18,75 +40,52 @@ export async function GET(
   try {
     const params = await context.params;
     const { searchParams } = new URL(request.url);
-    const sectionType = searchParams.get('sectionType');
+    
+    // Extract query parameters
     const difficultyParam = searchParams.get('difficulty');
-    const difficulty = (difficultyParam !== null && difficultyParam !== '') ? difficultyParam : 'simple';
+    const sectionTypeParam = searchParams.get('sectionType');
     
-    // Validate subtopic exists
-    const subtopic = await db
-      .select()
-      .from(tutorialSubtopics)
-      .where(eq(tutorialSubtopics.slug, params.subtopicId))
-      .limit(1);
+    // Extract brand context from headers
+    const brandHeader = request.headers.get('X-Brand');
+    const brandId: Brand = (brandHeader as Brand) || 'shared';
     
-    if (subtopic.length === 0) {
-      return NextResponse.json(
-        { error: 'Subtopic not found' },
-        { status: 404 }
-      );
-    }
-    
-    const subtopicId = subtopic[0].id;
+    // Build delivery options
+    const options: DeliveryOptions = {
+      difficulty: (difficultyParam as TutorialDifficulty) || 'simple',
+      brandId,
+    };
     
     // If specific section type requested
-    if (sectionType !== null && sectionType !== '') {
-      const section = await db
-        .select()
-        .from(tutorialSections)
-        .where(
-          and(
-            eq(tutorialSections.subtopicId, subtopicId),
-            eq(tutorialSections.sectionType, sectionType as "overview" | "technical" | "practice" | "layman" | "real_life" | "code" | "notes" | "summary" | "visual" | "assignment" | "project" | "quiz" | "interview" | "ai_tutor"),
-            eq(tutorialSections.difficulty, difficulty as "simple" | "intermediate" | "expert" | "mixed"),
-            inArray(tutorialSections.status, ['approved', 'deployed'])
-          )
-        )
-        .limit(1);
-      
-      if (section.length === 0) {
-        return NextResponse.json(
-          { error: 'Section not found' },
-          { status: 404 }
-        );
-      }
-      
+    if (sectionTypeParam) {
+      options.sectionType = sectionTypeParam as SectionType;
+    }
+    
+    // Use TutorialDeliveryService
+    const delivery = await tutorialDeliveryService.getTutorialBySlug(
+      params.subtopicId,
+      options
+    );
+    
+    // If single section requested, return simplified response
+    if (sectionTypeParam && delivery.sections.length === 1) {
+      const section = delivery.sections[0];
       return NextResponse.json({
         subtopicId: params.subtopicId,
-        sectionId: section[0].id,
-        sectionType,
-        difficulty,
-        content: section[0].content,
-        version: section[0].version,
-        language: section[0].language
+        sectionId: section.id,
+        sectionType: section.sectionType,
+        difficulty: section.difficulty,
+        content: section.content,
+        version: section.version,
+        language: section.language,
       });
     }
     
-    // Get all sections for subtopic
-    const sections = await db
-      .select()
-      .from(tutorialSections)
-      .where(
-        and(
-          eq(tutorialSections.subtopicId, subtopicId),
-          eq(tutorialSections.difficulty, difficulty as "simple" | "intermediate" | "expert" | "mixed"),
-          inArray(tutorialSections.status, ['approved', 'deployed'])
-        )
-      );
-    
-    // Transform to frontend format
+    // Return all sections
+    // Transform to legacy format for backward compatibility
     const sectionsMap: Record<string, unknown> = {};
     const sectionMeta: Record<string, { id: string; version: number; language: string }> = {};
-    sections.forEach(section => {
+    
+    delivery.sections.forEach(section => {
       sectionsMap[section.sectionType] = section.content;
       sectionMeta[section.sectionType] = {
         id: section.id,
@@ -97,15 +96,24 @@ export async function GET(
     
     return NextResponse.json({
       subtopicId: params.subtopicId,
-      subtopicName: subtopic[0].name,
-      difficulty,
+      subtopicName: delivery.subtopicName,
+      difficulty: delivery.difficulty,
       sections: sectionsMap,
       sectionMeta,
-      totalSections: sections.length
+      totalSections: delivery.totalSections,
     });
     
   } catch (error) {
-    console.error('[Tutorial Sections API] Error:', error);
+    // Handle typed errors
+    if (error instanceof SubtopicNotFoundError) {
+      return NextResponse.json(
+        { error: 'Subtopic not found' },
+        { status: 404 }
+      );
+    }
+    
+    // Log unexpected errors
+    console.error('[Tutorial Sections API] Unexpected error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

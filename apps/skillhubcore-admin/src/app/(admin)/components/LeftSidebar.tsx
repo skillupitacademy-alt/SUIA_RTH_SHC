@@ -129,6 +129,7 @@ export function LeftSidebar({ isLeftSidebarOpen, setIsLeftSidebarOpen, pathname 
                 { icon: Compass, label: 'Content Analysis', href: '/content-intelligence/analysis', color: 'text-pink-400' },
                 { icon: Box, label: 'Block Suggestions', href: '/content-intelligence/block-suggestions', color: 'text-slate-400' },
                 { icon: Layout, label: 'Presentation Ideas', href: '/content-intelligence/presentation-ideas', color: 'text-slate-400' },
+                { icon: CheckSquare, label: 'Review & Approve', href: '/content-intelligence/review-approve', color: 'text-pink-400' },
                 { icon: ShieldCheck, label: 'Quality Check', href: '/content-intelligence/quality-check', color: 'text-slate-400' },
               ].map((item, i) => (
                 <Link
