@@ -259,10 +259,10 @@ function handleServiceError(error: unknown) {
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { sectionId: string } }
+  { params }: { params: Promise<{ sectionId: string }> }
 ) {
   try {
-    const { sectionId } = params;
+    const { sectionId } = await params;
 
     // ========================================
     // STEP 1: Authenticate Request

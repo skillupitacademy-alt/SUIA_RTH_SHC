@@ -107,8 +107,9 @@ export function ModifySuggestionModal({
         <div className="space-y-4 mb-6">
           {/* Custom Title */}
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">Block Title</label>
+            <label htmlFor="blockTitle" className="block text-xs font-semibold text-slate-700 mb-1">Block Title</label>
             <input
+              id="blockTitle"
               type="text"
               value={customTitle}
               onChange={(e) => setCustomTitle(e.target.value)}
@@ -121,8 +122,9 @@ export function ModifySuggestionModal({
           {isTwoColumn && (
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Column Ratio</label>
+                <label htmlFor="columnRatio" className="block text-xs font-semibold text-slate-700 mb-1">Column Ratio</label>
                 <select
+                  id="columnRatio"
                   value={ratio}
                   onChange={(e) => setRatio(e.target.value)}
                   className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-[#f54a8d] outline-none"
@@ -135,8 +137,9 @@ export function ModifySuggestionModal({
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Gap Spacing</label>
+                <label htmlFor="gapSpacing" className="block text-xs font-semibold text-slate-700 mb-1">Gap Spacing</label>
                 <select
+                  id="gapSpacing"
                   value={gap}
                   onChange={(e) => setGap(e.target.value)}
                   className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-[#f54a8d] outline-none"
@@ -153,8 +156,9 @@ export function ModifySuggestionModal({
           {isCardGrid && (
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Grid Columns</label>
+                <label htmlFor="gridColumns" className="block text-xs font-semibold text-slate-700 mb-1">Grid Columns</label>
                 <select
+                  id="gridColumns"
                   value={columns}
                   onChange={(e) => setColumns(Number(e.target.value))}
                   className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-[#f54a8d] outline-none"
@@ -165,8 +169,9 @@ export function ModifySuggestionModal({
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Gap Spacing</label>
+                <label htmlFor="gapSpacingGrid" className="block text-xs font-semibold text-slate-700 mb-1">Gap Spacing</label>
                 <select
+                  id="gapSpacingGrid"
                   value={gap}
                   onChange={(e) => setGap(e.target.value)}
                   className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-[#f54a8d] outline-none"
@@ -181,8 +186,9 @@ export function ModifySuggestionModal({
 
           {isCallout && (
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Callout Variant</label>
+              <label htmlFor="calloutVariant" className="block text-xs font-semibold text-slate-700 mb-1">Callout Variant</label>
               <select
+                id="calloutVariant"
                 value={variant}
                 onChange={(e) => setVariant(e.target.value)}
                 className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-[#f54a8d] outline-none"
@@ -198,8 +204,9 @@ export function ModifySuggestionModal({
 
           {/* Author Note */}
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">Modification Note</label>
+            <label htmlFor="modificationNote" className="block text-xs font-semibold text-slate-700 mb-1">Modification Note</label>
             <textarea
+              id="modificationNote"
               value={customNote}
               onChange={(e) => setCustomNote(e.target.value)}
               rows={2}

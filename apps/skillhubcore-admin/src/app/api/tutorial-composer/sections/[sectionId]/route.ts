@@ -88,11 +88,10 @@ function getAuthenticatedContext(request: NextRequest): TutorialComposerServiceC
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ sectionId: string }> | { sectionId: string } }
+  { params }: { params: Promise<{ sectionId: string }> }
 ) {
   try {
-    const resolvedParams = await Promise.resolve(params);
-    const { sectionId } = resolvedParams;
+    const { sectionId } = await params;
 
     // Step 1: Authenticate request
     const authResult = await authenticateRequest(request);
@@ -136,11 +135,10 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ sectionId: string }> | { sectionId: string } }
+  { params }: { params: Promise<{ sectionId: string }> }
 ) {
   try {
-    const resolvedParams = await Promise.resolve(params);
-    const { sectionId } = resolvedParams;
+    const { sectionId } = await params;
 
     // Step 1: Authenticate request
     const authResult = await authenticateRequest(request);
@@ -234,11 +232,10 @@ export async function PATCH(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ sectionId: string }> | { sectionId: string } }
+  { params }: { params: Promise<{ sectionId: string }> }
 ) {
   try {
-    const resolvedParams = await Promise.resolve(params);
-    const { sectionId } = resolvedParams;
+    const { sectionId } = await params;
 
     // Step 1: Authenticate request
     const authResult = await authenticateRequest(request);

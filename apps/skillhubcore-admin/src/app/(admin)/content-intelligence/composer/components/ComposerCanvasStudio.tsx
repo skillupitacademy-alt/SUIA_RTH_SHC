@@ -206,7 +206,15 @@ export function ComposerCanvasStudio({
                 return (
                   <div
                     key={block.id || idx}
+                    role="button"
+                    tabIndex={0}
                     onClick={() => onSelectBlock(block.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        onSelectBlock(block.id);
+                      }
+                    }}
                     className={`bg-white rounded-xl border p-4 transition-all relative group cursor-pointer ${
                       isSelected
                         ? 'border-[#f54a8d] ring-2 ring-pink-100 shadow-xs'
@@ -310,10 +318,10 @@ export function ComposerCanvasStudio({
 
                       {block.type === 'quote' && (
                         <blockquote className="border-l-4 border-[#f54a8d] pl-3 italic text-slate-700">
-                          "{block.content?.text}"
+                          &ldquo;{block.content?.text}&rdquo;
                           {block.content?.author && (
                             <span className="block text-[10px] not-italic text-slate-400 mt-1">
-                              — {block.content.author}
+                              &mdash; {block.content.author}
                             </span>
                           )}
                         </blockquote>

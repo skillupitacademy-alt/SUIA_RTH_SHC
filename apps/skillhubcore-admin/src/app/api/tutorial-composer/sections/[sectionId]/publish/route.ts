@@ -91,11 +91,10 @@ function getAuthenticatedContext(request: NextRequest): TutorialComposerServiceC
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ sectionId: string }> | { sectionId: string } }
+  { params }: { params: Promise<{ sectionId: string }> }
 ) {
   try {
-    const resolvedParams = await Promise.resolve(params);
-    const { sectionId } = resolvedParams;
+    const { sectionId } = await params;
 
     // Step 1: Authenticate request
     const authResult = await authenticateRequest(request);

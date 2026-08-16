@@ -3,9 +3,27 @@
 import React from 'react';
 import { Sliders, Trash2, Copy, MoveUp, MoveDown } from 'lucide-react';
 
+interface BlockContent {
+  level?: number;
+  text?: string;
+  variant?: string;
+  language?: string;
+  code?: string;
+  ratio?: string;
+  columns?: number;
+  author?: string;
+  items?: Array<string | { text: string }>;
+}
+
+interface Block {
+  id: string;
+  type: string;
+  content?: BlockContent;
+}
+
 interface PropertiesInspectorPanelProps {
-  selectedBlock: any | null;
-  onUpdateBlock: (blockId: string, updatedContent: any) => void;
+  selectedBlock: Block | null;
+  onUpdateBlock: (blockId: string, updatedContent: BlockContent) => void;
   onDeleteBlock: (blockId: string) => void;
   onDuplicateBlock: (blockId: string) => void;
   onMoveBlock?: (blockId: string, direction: 'up' | 'down') => void;
@@ -51,6 +69,7 @@ export function PropertiesInspectorPanel({
               <button
                 onClick={() => onMoveBlock(id, 'up')}
                 title="Move Up"
+                type="button"
                 className="w-6 h-6 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center transition-colors cursor-pointer"
               >
                 <MoveUp size={12} />
@@ -58,6 +77,7 @@ export function PropertiesInspectorPanel({
               <button
                 onClick={() => onMoveBlock(id, 'down')}
                 title="Move Down"
+                type="button"
                 className="w-6 h-6 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center transition-colors cursor-pointer"
               >
                 <MoveDown size={12} />
@@ -67,6 +87,7 @@ export function PropertiesInspectorPanel({
           <button
             onClick={() => onDuplicateBlock(id)}
             title="Duplicate Block"
+            type="button"
             className="w-6 h-6 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center transition-colors cursor-pointer"
           >
             <Copy size={12} />
@@ -74,6 +95,7 @@ export function PropertiesInspectorPanel({
           <button
             onClick={() => onDeleteBlock(id)}
             title="Delete Block"
+            type="button"
             className="w-6 h-6 rounded text-rose-500 hover:bg-rose-50 flex items-center justify-center transition-colors cursor-pointer"
           >
             <Trash2 size={12} />
@@ -87,10 +109,11 @@ export function PropertiesInspectorPanel({
         {type === 'heading' && (
           <>
             <div>
-              <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+              <label htmlFor="headingLevel" className="block text-[11px] font-semibold text-slate-700 mb-1">
                 Heading Level
               </label>
               <select
+                id="headingLevel"
                 value={content.level || 2}
                 onChange={(e) => onUpdateBlock(id, { ...content, level: Number(e.target.value) })}
                 className="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg bg-white focus:ring-1 focus:ring-[#f54a8d] outline-none"
@@ -103,10 +126,11 @@ export function PropertiesInspectorPanel({
             </div>
 
             <div>
-              <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+              <label htmlFor="headingText" className="block text-[11px] font-semibold text-slate-700 mb-1">
                 Heading Text
               </label>
               <input
+                id="headingText"
                 type="text"
                 value={content.text || ''}
                 onChange={(e) => onUpdateBlock(id, { ...content, text: e.target.value })}
@@ -119,10 +143,11 @@ export function PropertiesInspectorPanel({
         {/* PARAGRAPH PROPERTIES */}
         {type === 'paragraph' && (
           <div>
-            <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+            <label htmlFor="paragraphContent" className="block text-[11px] font-semibold text-slate-700 mb-1">
               Paragraph Content (Markdown)
             </label>
             <textarea
+              id="paragraphContent"
               value={content.text || ''}
               onChange={(e) => onUpdateBlock(id, { ...content, text: e.target.value })}
               rows={6}
@@ -135,10 +160,11 @@ export function PropertiesInspectorPanel({
         {type === 'callout' && (
           <>
             <div>
-              <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+              <label htmlFor="calloutVariant" className="block text-[11px] font-semibold text-slate-700 mb-1">
                 Variant
               </label>
               <select
+                id="calloutVariant"
                 value={content.variant || 'info'}
                 onChange={(e) => onUpdateBlock(id, { ...content, variant: e.target.value })}
                 className="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg bg-white focus:ring-1 focus:ring-[#f54a8d] outline-none"
@@ -152,10 +178,11 @@ export function PropertiesInspectorPanel({
             </div>
 
             <div>
-              <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+              <label htmlFor="calloutText" className="block text-[11px] font-semibold text-slate-700 mb-1">
                 Callout Text
               </label>
               <textarea
+                id="calloutText"
                 value={content.text || ''}
                 onChange={(e) => onUpdateBlock(id, { ...content, text: e.target.value })}
                 rows={4}
@@ -169,10 +196,11 @@ export function PropertiesInspectorPanel({
         {type === 'code' && (
           <>
             <div>
-              <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+              <label htmlFor="codeLanguage" className="block text-[11px] font-semibold text-slate-700 mb-1">
                 Programming Language
               </label>
               <input
+                id="codeLanguage"
                 type="text"
                 value={content.language || 'javascript'}
                 onChange={(e) => onUpdateBlock(id, { ...content, language: e.target.value })}
@@ -182,10 +210,11 @@ export function PropertiesInspectorPanel({
             </div>
 
             <div>
-              <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+              <label htmlFor="sourceCode" className="block text-[11px] font-semibold text-slate-700 mb-1">
                 Source Code
               </label>
               <textarea
+                id="sourceCode"
                 value={content.code || ''}
                 onChange={(e) => onUpdateBlock(id, { ...content, code: e.target.value })}
                 rows={8}
@@ -199,10 +228,11 @@ export function PropertiesInspectorPanel({
         {type === 'two-column' && (
           <>
             <div>
-              <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+              <label htmlFor="columnRatio" className="block text-[11px] font-semibold text-slate-700 mb-1">
                 Column Ratio
               </label>
               <select
+                id="columnRatio"
                 value={content.ratio || '50-50'}
                 onChange={(e) => onUpdateBlock(id, { ...content, ratio: e.target.value })}
                 className="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg bg-white focus:ring-1 focus:ring-[#f54a8d] outline-none"
@@ -219,10 +249,11 @@ export function PropertiesInspectorPanel({
         {/* CARD-GRID PROPERTIES */}
         {type === 'card-grid' && (
           <div>
-            <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+            <label htmlFor="gridColumns" className="block text-[11px] font-semibold text-slate-700 mb-1">
               Columns
             </label>
             <select
+              id="gridColumns"
               value={content.columns || 3}
               onChange={(e) => onUpdateBlock(id, { ...content, columns: Number(e.target.value) })}
               className="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg bg-white focus:ring-1 focus:ring-[#f54a8d] outline-none"
@@ -238,10 +269,11 @@ export function PropertiesInspectorPanel({
         {type === 'quote' && (
           <>
             <div>
-              <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+              <label htmlFor="quoteText" className="block text-[11px] font-semibold text-slate-700 mb-1">
                 Quote Text
               </label>
               <textarea
+                id="quoteText"
                 value={content.text || ''}
                 onChange={(e) => onUpdateBlock(id, { ...content, text: e.target.value })}
                 rows={4}
@@ -249,10 +281,11 @@ export function PropertiesInspectorPanel({
               />
             </div>
             <div>
-              <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+              <label htmlFor="quoteAuthor" className="block text-[11px] font-semibold text-slate-700 mb-1">
                 Author / Citation
               </label>
               <input
+                id="quoteAuthor"
                 type="text"
                 value={content.author || ''}
                 onChange={(e) => onUpdateBlock(id, { ...content, author: e.target.value })}

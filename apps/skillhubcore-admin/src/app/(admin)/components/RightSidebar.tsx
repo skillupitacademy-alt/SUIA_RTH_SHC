@@ -3,8 +3,8 @@
 import React from 'react';
 import {
   FileText, Download, Copy, FileDown, FileUp, Globe, History, XCircle, Trash2,
-  LineChart, BookOpen, ClipboardList, Briefcase, UserCog, Sparkles, LayoutList,
-  BarChart3, Layout
+  LineChart, BookOpen, ClipboardList, Briefcase, UserCog, LayoutList,
+  BarChart3, Layout, Sparkles
 } from 'lucide-react';
 
 interface RightSidebarProps {

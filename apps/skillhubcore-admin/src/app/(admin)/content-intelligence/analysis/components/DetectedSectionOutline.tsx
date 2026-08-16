@@ -75,7 +75,15 @@ export function DetectedSectionOutline({ sections }: DetectedSectionOutlineProps
             <div key={section.id} className="group">
               {/* Main Section Row */}
               <div
+                role="button"
+                tabIndex={0}
                 onClick={() => toggleExpand(section.id)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    toggleExpand(section.id);
+                  }
+                }}
                 className="flex items-start justify-between gap-3 p-2.5 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer border border-transparent hover:border-slate-100"
               >
                 <div className="flex items-start gap-3 min-w-0">

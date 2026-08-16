@@ -63,10 +63,11 @@ Always structure your content clearly, keep concepts modular, and review each bl
 
       <form onSubmit={handleGenerate} className="mt-4 space-y-4">
         <div>
-          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+          <label htmlFor="topicPrompt" className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
             Topic / Concept Prompt
           </label>
           <input
+            id="topicPrompt"
             type="text"
             value={topicPrompt}
             onChange={(e) => setTopicPrompt(e.target.value)}

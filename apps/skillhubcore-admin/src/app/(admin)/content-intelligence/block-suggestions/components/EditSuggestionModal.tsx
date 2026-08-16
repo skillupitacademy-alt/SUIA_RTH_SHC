@@ -61,10 +61,11 @@ export function EditSuggestionModal({
         {/* Form */}
         <form onSubmit={handleSave} className="p-5 space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+            <label htmlFor="blockType" className="block text-xs font-semibold text-slate-700 mb-1.5">
               Block Type
             </label>
             <input
+              id="blockType"
               type="text"
               value={blockName}
               onChange={(e) => setBlockName(e.target.value)}
@@ -73,10 +74,11 @@ export function EditSuggestionModal({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+            <label htmlFor="contentPreview" className="block text-xs font-semibold text-slate-700 mb-1.5">
               Content Preview / Text
             </label>
             <textarea
+              id="contentPreview"
               rows={4}
               value={content}
               onChange={(e) => setContent(e.target.value)}
@@ -85,10 +87,10 @@ export function EditSuggestionModal({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">
+            <label htmlFor="detectionReason" className="block text-xs font-semibold text-slate-700 mb-1">
               Detection Reason
             </label>
-            <p className="text-xs text-slate-500 bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+            <p id="detectionReason" className="text-xs text-slate-500 bg-slate-50 p-2.5 rounded-lg border border-slate-100">
               {block.reason}
             </p>
           </div>

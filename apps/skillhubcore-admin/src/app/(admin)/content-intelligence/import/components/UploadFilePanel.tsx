@@ -82,11 +82,19 @@ export function UploadFilePanel({ onFileContentParsed }: UploadFilePanelProps) {
       <h3 className="text-sm font-bold text-slate-900 mb-4">Upload File</h3>
 
       <div
+        role="button"
+        tabIndex={0}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
         onDragOver={handleDrag}
         onDrop={handleDrop}
         onClick={() => fileInputRef.current?.click()}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            fileInputRef.current?.click();
+          }
+        }}
         className={`border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-colors ${
           dragActive
             ? 'border-pink-500 bg-pink-50/50'
