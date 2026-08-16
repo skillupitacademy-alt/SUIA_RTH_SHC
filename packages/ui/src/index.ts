@@ -24,3 +24,4 @@ export * from './store/auth-store';
 export * from './lib/portal-auth';
 export * from './theme-store';
 export * from './PortalLoginPage';
+export * from './tutorial';

@@ -88,9 +88,12 @@ function getAuthenticatedContext(request: NextRequest): TutorialComposerServiceC
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { sectionId: string } }
+  { params }: { params: Promise<{ sectionId: string }> | { sectionId: string } }
 ) {
   try {
+    const resolvedParams = await Promise.resolve(params);
+    const { sectionId } = resolvedParams;
+
     // Step 1: Authenticate request
     const authResult = await authenticateRequest(request);
     if ('type' in authResult) {
@@ -99,7 +102,6 @@ export async function GET(
     // Note: GET does not require authorization checks beyond authentication
 
     // Step 2: Fetch section
-    const { sectionId } = params;
     const section = await tutorialComposerService.getSection(sectionId);
 
     // Step 3: Format response
@@ -134,10 +136,11 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { sectionId: string } }
+  { params }: { params: Promise<{ sectionId: string }> | { sectionId: string } }
 ) {
   try {
-    const { sectionId } = params;
+    const resolvedParams = await Promise.resolve(params);
+    const { sectionId } = resolvedParams;
 
     // Step 1: Authenticate request
     const authResult = await authenticateRequest(request);
@@ -231,10 +234,11 @@ export async function PATCH(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { sectionId: string } }
+  { params }: { params: Promise<{ sectionId: string }> | { sectionId: string } }
 ) {
   try {
-    const { sectionId } = params;
+    const resolvedParams = await Promise.resolve(params);
+    const { sectionId } = resolvedParams;
 
     // Step 1: Authenticate request
     const authResult = await authenticateRequest(request);

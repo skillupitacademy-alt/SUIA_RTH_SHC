@@ -145,3 +145,26 @@ export {
   PresentationPlanSchema,
   BlockTypeSchema,
 } from './tutorial-composer/presentation-ideas-contracts';
+
+// Tutorial Composer - Composer Contracts
+export type {
+  ReviewStatus,
+  ReviewModification,
+  ReviewableSuggestionItem,
+  TutorialComposerFinalReview,
+  StoredTutorialDocument,
+  ComposerInitialDraftRequest,
+  ComposerInitialDraftResponse,
+  ComposerAutoSavePayload,
+} from './tutorial-composer/composer-contracts';
+
+export {
+  ReviewStatusSchema,
+  ReviewModificationSchema,
+  ReviewableSuggestionItemSchema,
+  TutorialComposerFinalReviewSchema,
+  StoredTutorialDocumentSchema,
+  ComposerInitialDraftRequestSchema,
+  ComposerInitialDraftResponseSchema,
+  ComposerAutoSavePayloadSchema,
+} from './tutorial-composer/composer-contracts';

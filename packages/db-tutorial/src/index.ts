@@ -55,6 +55,17 @@ export type { SanitizationResult } from './services/tutorial-content-sanitizatio
 export { presentationIdeasService, PresentationIdeasService } from './services/presentation-ideas.service';
 export type { PresentationIdeasContext } from './services/presentation-ideas.service';
 
+// Composer Draft Generator - NEW architecture (Prompt 16B)
+export { ComposerDraftGeneratorService } from './services/composer-draft-generator.service';
+export type {
+  ReviewStatus,
+  ReviewModification,
+  ReviewableSuggestionItem,
+  TutorialComposerFinalReview,
+  GenerateComposerDraftInput,
+  GenerateComposerDraftResult,
+} from './services/composer-draft-generator.service';
+
 // Validators, Types, DTOs
 export * from './validators/layman.validator';
 

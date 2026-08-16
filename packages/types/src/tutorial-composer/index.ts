@@ -6,6 +6,7 @@
 // Contracts
 export * from './contracts';
 export * from './presentation-ideas-contracts';
+export * from './composer-contracts';
 
 // Errors
 export * from './errors';

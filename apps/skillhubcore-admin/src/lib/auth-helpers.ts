@@ -65,9 +65,18 @@ function getAccessToken(request: NextRequest): string | undefined {
  */
 async function verifyToken(token: string): Promise<AuthenticatedUser | null> {
   try {
-    const payload = await TokenService.verifyAdminAccessToken(token, { 
-      audience: 'admin' 
-    });
+    // Try primary audience first (shc-admin for gateway tokens)
+    let payload;
+    try {
+      payload = await TokenService.verifyAdminAccessToken(token, { 
+        audience: 'shc-admin' 
+      });
+    } catch (audienceError) {
+      // Fallback to 'admin' audience for compatibility
+      payload = await TokenService.verifyAdminAccessToken(token, { 
+        audience: 'admin' 
+      });
+    }
 
     // Extract user identity from token payload
     const originalUserId = payload.originalUserId ?? payload.sub ?? payload.userId;
