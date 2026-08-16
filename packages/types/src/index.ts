@@ -110,3 +110,38 @@ export {
   VersionConflictDetailSchema,
   ApplySuggestionErrorResponseSchema,
 } from './tutorial-composer/apply-suggestion-contracts';
+
+// Tutorial Composer - Presentation Ideas (Prompt 14B)
+export type {
+  PresentationImpact,
+  PresentationIdeaType,
+  WireframeType,
+  PresentationIdeaStatus,
+  PresentationConfig,
+  PresentationIdea,
+  PresentationIdeasStatistics,
+  ContextOutline,
+  BestPractice,
+  PresentationIdeasResult,
+  PresentationIdeasRequest,
+  PresentationIdeasResponse,
+  PresentationPlan,
+  BlockType,
+} from './tutorial-composer/presentation-ideas-contracts';
+
+export {
+  PresentationImpactSchema,
+  PresentationIdeaTypeSchema,
+  WireframeTypeSchema,
+  PresentationIdeaStatusSchema,
+  PresentationConfigSchema,
+  PresentationIdeaSchema,
+  PresentationIdeasStatisticsSchema,
+  ContextOutlineSchema,
+  BestPracticeSchema,
+  PresentationIdeasResultSchema,
+  PresentationIdeasRequestSchema,
+  PresentationIdeasResponseSchema,
+  PresentationPlanSchema,
+  BlockTypeSchema,
+} from './tutorial-composer/presentation-ideas-contracts';

@@ -42,8 +42,22 @@ export type { SuggestionContext } from './services/block-suggestion.service';
 export { suggestionApplicationService, SuggestionApplicationService } from './services/suggestion-application.service';
 export type { ApplySuggestionInput, ApplySuggestionResult } from './services/suggestion-application.service';
 
+// Tutorial Delivery - NEW architecture (Prompt 10)
+export { tutorialDeliveryService, TutorialDeliveryService } from './services/tutorial-delivery.service';
+export type { DeliverySection, TutorialDelivery, DeliveryOptions } from './services/tutorial-delivery.service';
+export { SubtopicNotFoundError, SectionNotFoundError, InvalidSectionContentError } from './services/tutorial-delivery.service';
+
+// Tutorial Content Sanitization - NEW architecture (Prompt 12)
+export { tutorialContentSanitizationService, TutorialContentSanitizationService } from './services/tutorial-content-sanitization.service';
+export type { SanitizationResult } from './services/tutorial-content-sanitization.service';
+
+// Tutorial Presentation Ideas - NEW architecture (Prompt 14B)
+export { presentationIdeasService, PresentationIdeasService } from './services/presentation-ideas.service';
+export type { PresentationIdeasContext } from './services/presentation-ideas.service';
+
 // Validators, Types, DTOs
 export * from './validators/layman.validator';
+
 export * from './types/layman.types';
 export * from './types/layman-prompt.types';
 export * from './dto/layman.dto';
