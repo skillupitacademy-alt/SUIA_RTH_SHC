@@ -12,6 +12,7 @@ export * from './tutorial-content.schema';
 export * from './tutorial-section-contracts';
 export * from './tutorial-repositories.types';
 export * from './portal';
+export * from './tutorial-sidebar.types';
 
 // Rich Tutorial Document Model (Schema Version 1)
 export * from './tutorial-rich-document';
