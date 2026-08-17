@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { db, tutorialDomains, tutorialSubjects, tutorialTopics, tutorialSubtopics } from '@quiz/db-tutorial';
+import { dbHttp, tutorialDomains, tutorialSubjects, tutorialTopics, tutorialSubtopics } from '@quiz/db-tutorial';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,10 +11,10 @@ function serializeDate(value: Date | null | undefined) {
 export async function GET() {
   try {
     const [domains, subjects, topics, subtopics] = await Promise.all([
-      db.select().from(tutorialDomains),
-      db.select().from(tutorialSubjects),
-      db.select().from(tutorialTopics),
-      db.select().from(tutorialSubtopics),
+      dbHttp.select().from(tutorialDomains),
+      dbHttp.select().from(tutorialSubjects),
+      dbHttp.select().from(tutorialTopics),
+      dbHttp.select().from(tutorialSubtopics),
     ]);
 
     return NextResponse.json({
