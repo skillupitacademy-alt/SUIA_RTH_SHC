@@ -51,10 +51,10 @@ function getRuntimeBrandConfig(brandId: Exclude<TutorialSidebarBrandId, 'shared'
         tagline: 'Build Skills That Move Careers',
       },
       theme: {
-        primary: '#e11d48',
-        primaryDark: '#be123c',
-        secondary: '#f97316',
-        activeBackground: '#fff1f2',
+        primary: '#f54a8d',
+        primaryDark: '#d63d7a',
+        secondary: '#133382',
+        activeBackground: '#fff0f6',
         completed: '#08a64a',
       },
     };

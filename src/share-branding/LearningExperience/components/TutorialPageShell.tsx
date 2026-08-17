@@ -20,6 +20,7 @@ export function TutorialPageShell({ payload }: TutorialPageShellProps) {
       <TutorialHeader
         crumbs={[payload.hierarchy.domain.name, payload.hierarchy.subject.name, payload.hierarchy.topic.name]}
         active={payload.hierarchy.subtopic.name}
+        brand={payload.sidebar.brand}
         theme={payload.theme}
         onMenuClick={() => setIsSidebarOpen((current) => !current)}
       />

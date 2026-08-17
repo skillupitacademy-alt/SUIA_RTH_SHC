@@ -1,11 +1,12 @@
 'use client';
 
 import { Bell, Menu, Search } from 'lucide-react';
-import type { BrandTutorialTheme, TutorialFooterNavigationItem } from '@quiz/types';
+import type { BrandTutorialTheme, TutorialFooterNavigationItem, TutorialNavigationTree } from '@quiz/types';
 
 interface TutorialHeaderProps {
   crumbs: string[];
   active: string;
+  brand: TutorialNavigationTree['brand'];
   theme: BrandTutorialTheme;
   onMenuClick?: () => void;
 }
@@ -16,19 +17,22 @@ interface TutorialFooterProps {
   theme: BrandTutorialTheme;
 }
 
-export function TutorialHeader({ crumbs, active, theme, onMenuClick }: TutorialHeaderProps) {
+export function TutorialHeader({ crumbs, active, brand, theme, onMenuClick }: TutorialHeaderProps) {
+  const badgeLabel = brand.shortName?.slice(0, 1) || brand.name.slice(0, 1);
+
   return (
     <header className="sticky top-0 z-20 border-b border-[#e6ebf2] bg-white/95 backdrop-blur">
       <div className="flex min-h-[70px] items-center gap-5 px-6">
         <button
           type="button"
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-[#dfe7f1] text-[#071f63]"
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-[#dfe7f1]"
+          style={{ color: theme.secondary }}
           onClick={onMenuClick}
           aria-label="Toggle tutorial sidebar"
         >
           <Menu className="h-4 w-4" />
         </button>
-        <nav className="flex min-w-0 flex-1 items-center gap-2 text-sm font-bold text-[#071f63]">
+        <nav className="flex min-w-0 flex-1 items-center gap-2 text-sm font-bold" style={{ color: theme.secondary }}>
           {crumbs.map((crumb) => (
             <span key={crumb} className="truncate">
               {crumb}
@@ -39,14 +43,14 @@ export function TutorialHeader({ crumbs, active, theme, onMenuClick }: TutorialH
         </nav>
         <div className="hidden h-10 w-[280px] items-center gap-2 rounded-lg border border-[#dfe7f1] px-3 text-xs font-semibold text-[#7a8aa2] md:flex">
           <span className="flex-1">Search anything...</span>
-          <Search className="h-4 w-4 text-[#071f63]" />
+          <Search className="h-4 w-4" style={{ color: theme.secondary }} />
         </div>
-        <button type="button" className="relative flex h-10 w-10 items-center justify-center rounded-full border border-[#dfe7f1] text-[#071f63]" aria-label="Notifications">
+        <button type="button" className="relative flex h-10 w-10 items-center justify-center rounded-full border border-[#dfe7f1]" style={{ color: theme.secondary }} aria-label="Notifications">
           <Bell className="h-4 w-4" />
           <span className="absolute right-2 top-1 h-2 w-2 rounded-full" style={{ backgroundColor: theme.primary }} />
         </button>
-        <div className="flex h-10 w-10 items-center justify-center rounded-full text-sm font-black text-white" style={{ backgroundColor: theme.primary }}>
-          S
+        <div className="flex h-10 w-10 items-center justify-center rounded-full text-sm font-black uppercase text-white" style={{ backgroundColor: theme.primary }} title={brand.name} aria-label={brand.name}>
+          {badgeLabel}
         </div>
       </div>
     </header>
