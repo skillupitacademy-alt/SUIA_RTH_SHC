@@ -1,5 +1,6 @@
 /* istanbul ignore file */
-import { neonConfig, Pool } from '@neondatabase/serverless';
+import { neon, neonConfig, Pool } from '@neondatabase/serverless';
+import { drizzle as drizzleHttp } from 'drizzle-orm/neon-http';
 import { drizzle } from 'drizzle-orm/neon-serverless';
 import WebSocket from 'ws';
 
@@ -9,9 +10,11 @@ neonConfig.webSocketConstructor = WebSocket;
 
 type Schema = typeof schema;
 type DbClient = ReturnType<typeof drizzle<Schema>>;
+type HttpDbClient = ReturnType<typeof drizzleHttp<Schema>>;
 
 let pooledDbInstance: DbClient | null = null;
 let directDbInstance: DbClient | null = null;
+let httpDbInstance: HttpDbClient | null = null;
 
 const createTestDb = (): DbClient => {
   const resolved = <T>(value: T) => Promise.resolve(value);
@@ -80,6 +83,23 @@ export const getTutorialDb = (type: 'primary' | 'direct' = 'primary'): DbClient 
   return pooledDbInstance;
 };
 
+export const getTutorialHttpDb = (): HttpDbClient => {
+  const databaseUrl = process.env.DATABASE_URL_TUTORIAL;
+
+  if (databaseUrl === undefined || databaseUrl.trim().length === 0) {
+    if (process.env.NODE_ENV === 'test') {
+      return createTestDb() as unknown as HttpDbClient;
+    }
+    throw new Error('DATABASE_URL_TUTORIAL environment variable is required');
+  }
+
+  if (httpDbInstance === null) {
+    httpDbInstance = drizzleHttp(neon(databaseUrl), { schema });
+  }
+
+  return httpDbInstance;
+};
+
 export const db = new Proxy({} as DbClient, {
   get: (target, prop) => {
     if (Object.prototype.hasOwnProperty.call(target, prop)) {
@@ -95,6 +115,15 @@ export const dbDirect = new Proxy({} as DbClient, {
       return (target as any)[prop];
     }
     return (getTutorialDb('direct') as any)[prop];
+  },
+});
+
+export const dbHttp = new Proxy({} as HttpDbClient, {
+  get: (target, prop) => {
+    if (Object.prototype.hasOwnProperty.call(target, prop)) {
+      return (target as any)[prop];
+    }
+    return (getTutorialHttpDb() as any)[prop];
   },
 });
 

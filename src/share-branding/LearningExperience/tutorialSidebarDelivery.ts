@@ -1,7 +1,7 @@
 import { and, eq } from 'drizzle-orm';
 
 import {
-  db,
+  dbHttp,
   tutorialDomains,
   tutorialPageContentV2,
   tutorialSubjects,
@@ -73,7 +73,7 @@ function flattenNavigation(nodes: TutorialNavigationNode[]): FlatNavigationItem[
 }
 
 async function resolveHierarchy(params: TutorialSidebarDeliveryParams) {
-  const [domain] = await db
+  const [domain] = await dbHttp
     .select()
     .from(tutorialDomains)
     .where(eq(tutorialDomains.slug, params.domainSlug))
@@ -83,7 +83,7 @@ async function resolveHierarchy(params: TutorialSidebarDeliveryParams) {
     return null;
   }
 
-  const [subject] = await db
+  const [subject] = await dbHttp
     .select()
     .from(tutorialSubjects)
     .where(and(
@@ -96,7 +96,7 @@ async function resolveHierarchy(params: TutorialSidebarDeliveryParams) {
     return null;
   }
 
-  const [topic] = await db
+  const [topic] = await dbHttp
     .select()
     .from(tutorialTopics)
     .where(and(
@@ -109,7 +109,7 @@ async function resolveHierarchy(params: TutorialSidebarDeliveryParams) {
     return null;
   }
 
-  const [subtopic] = await db
+  const [subtopic] = await dbHttp
     .select()
     .from(tutorialSubtopics)
     .where(and(
@@ -131,7 +131,7 @@ export async function getPublishedTutorialSidebar(params: TutorialSidebarDeliver
     return null;
   }
 
-  const brandRows = await db
+  const brandRows = await dbHttp
     .select()
     .from(tutorialSidebarTreesV2)
     .where(and(
@@ -143,7 +143,7 @@ export async function getPublishedTutorialSidebar(params: TutorialSidebarDeliver
 
   const sharedRows = brandRows.length > 0
     ? []
-    : await db
+    : await dbHttp
       .select()
       .from(tutorialSidebarTreesV2)
       .where(and(
@@ -176,7 +176,7 @@ export async function getPublishedTutorialPagePayload(params: TutorialSidebarDel
   }
 
   const { hierarchy, tree, activeUrl } = sidebarPayload;
-  const brandRows = await db
+  const brandRows = await dbHttp
     .select()
     .from(tutorialPageContentV2)
     .where(and(
@@ -187,7 +187,7 @@ export async function getPublishedTutorialPagePayload(params: TutorialSidebarDel
 
   const sharedRows = brandRows.length > 0
     ? []
-    : await db
+    : await dbHttp
       .select()
       .from(tutorialPageContentV2)
       .where(and(
