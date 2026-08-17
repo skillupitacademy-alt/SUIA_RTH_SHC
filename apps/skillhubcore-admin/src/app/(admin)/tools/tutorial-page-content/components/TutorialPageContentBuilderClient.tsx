@@ -47,20 +47,22 @@ const definitionExample: TutorialDefinitionPayload = {
     category: 'Python Fundamentals',
     title: 'What Is a Variable?',
     intro: 'A variable is a name given to a value or an object in memory so that we can use it later in our program.',
-    definition: 'A variable is a symbolic name that refers to an object stored in memory.',
+    definition: 'A variable is a symbolic name (identifier) that refers to an object stored in memory. It acts as a container for data that can be used, updated, and referenced throughout your program.',
     explanation: [
-      'When you create a variable, Python allocates memory for a value or object and binds it to the variable name.',
-      'Variables make your code easier to read, maintain, and reuse.',
+      'When you create a variable, Python allocates memory for a value or object and binds it to the variable name. You can perform operations on the data through that name.',
+      'Variables make your code easier to read, maintain, and reuse. Instead of using values directly, you use meaningful names.',
     ],
     example: {
       language: 'python',
-      code: 'x = 10\nx = 20\nprint(x)',
+      code: 'x = 10          # 10 is stored in memory and x refers to it\nx = 20          # Now x refers to the new value 20\nprint(x)        # Output: 20',
     },
     characteristics: [
-      { icon: 'R', title: 'Named Reference', description: 'A variable is a name that refers to a value or object.' },
-      { icon: 'D', title: 'Stores Data', description: 'It stores data in memory that can be of any type.' },
+      { icon: '○', title: 'Named Reference', description: 'A variable is a name that refers to a value or object.' },
+      { icon: '◆', title: 'Stores Data', description: 'It stores data in memory that can be of any type.' },
+      { icon: '✎', title: 'Mutable', description: 'The value stored in a variable can be changed anytime.' },
+      { icon: '↗', title: 'Reusable', description: 'Once created, the variable can be used multiple times.' },
     ],
-    takeaway: 'A variable is a name that points to an object in memory.',
+    takeaway: 'A variable is a name that points to an object in memory. It helps you store, manage, and reuse data efficiently in your program.',
   },
 };
 
@@ -68,7 +70,7 @@ const codeExample: TutorialCodePayload = {
   page: {
     type: 'CODE + EXPLANATION',
     title: 'Example: Sum of Two Numbers in Python',
-    introduction: 'This example demonstrates how Python accepts two numbers, converts input into integers, adds them, and displays the result.',
+    introduction: 'This example demonstrates how Python accepts two numbers from the user, converts the input into integers, adds the numbers, stores the result, and displays the final answer.',
   },
   code: {
     language: 'Python',
@@ -77,9 +79,12 @@ const codeExample: TutorialCodePayload = {
   },
   explanation: {
     steps: [
-      { number: 1, code: 'input("Enter first number: ")', description: 'The <code>input()</code> function asks the user to enter the first number.' },
-      { number: 2, code: 'int(input(...))', description: 'The <code>int()</code> function converts text into an integer.' },
-      { number: 3, code: 'result = x + y', description: 'Python adds the two values and assigns the result to <code>result</code>.' },
+      { number: 1, code: 'input("Enter first number: ")', description: 'The <code>input()</code> function pauses the program and asks the user to enter the first number. The value entered by the user is initially received as text.' },
+      { number: 2, code: 'int(input(...))', description: 'The <code>int()</code> function converts the text received from <code>input()</code> into an integer so that mathematical addition can be performed.' },
+      { number: 3, code: 'x = int(input(...))', description: 'The converted first number is assigned to the variable <code>x</code>. For example, if the user enters <code>10</code>, then <code>x</code> references the integer value <code>10</code>.' },
+      { number: 4, code: 'y = int(input(...))', description: 'The program asks for the second number, converts it into an integer, and assigns the resulting value to the variable <code>y</code>. For example, if the user enters <code>20</code>, then <code>y</code> references the integer value <code>20</code>.' },
+      { number: 5, code: 'result = x + y', description: 'Python evaluates the expression <code>x + y</code>. If <code>x</code> is <code>10</code> and <code>y</code> is <code>20</code>, the addition produces <code>30</code>. That result is assigned to <code>result</code>.' },
+      { number: 6, code: 'print("Sum:", result)', description: 'The <code>print()</code> function displays the text <code>Sum:</code> followed by the value stored in <code>result</code>.' },
     ],
   },
   output: {
@@ -87,24 +92,48 @@ const codeExample: TutorialCodePayload = {
   },
   memoryModel: {
     type: 'reference-flow',
-    description: 'Python variables reference objects in memory.',
+    description: 'Python variables reference objects. After the two inputs are converted to integers, x and y reference integer objects. The addition expression produces the result value, which is then referenced by result.',
+    layout: {
+      type: 'grid',
+    },
     columns: [
       { id: 'variables', title: 'Variables (References)', width: 'minmax(160px, 1fr)' },
-      { id: 'objects', title: 'Objects in Memory', width: 'minmax(260px, 1.5fr)' },
-      { id: 'values', title: 'Values', width: 'minmax(160px, 1fr)' },
+      { id: 'objects', title: 'Objects in Memory', width: 'minmax(280px, 1.6fr)' },
+      { id: 'values', title: 'Values', width: 'minmax(180px, 1fr)' },
     ],
     nodes: [
       { id: 'variable-x', label: 'x', column: 'variables', row: 1, variant: 'reference', monospace: true },
       { id: 'object-x', label: 'id: 140723458765120', column: 'objects', row: 1, variant: 'object', monospace: true },
       { id: 'value-x', label: '10 (int)', column: 'values', row: 1, variant: 'value', monospace: true },
-      { id: 'variable-result', label: 'result', column: 'variables', row: 2, variant: 'result', monospace: true },
-      { id: 'object-result', label: 'id: 140723458765376', column: 'objects', row: 2, variant: 'result', monospace: true },
-      { id: 'value-result', label: '30 (int)', column: 'values', row: 2, variant: 'result', monospace: true },
+      { id: 'variable-y', label: 'y', column: 'variables', row: 2, variant: 'reference', monospace: true },
+      { id: 'object-y', label: 'id: 140723458765248', column: 'objects', row: 2, variant: 'object', monospace: true },
+      { id: 'value-y', label: '20 (int)', column: 'values', row: 2, variant: 'value', monospace: true },
+      { id: 'variable-result', label: 'result', column: 'variables', row: 3, variant: 'result', monospace: true },
+      { id: 'object-result', label: 'id: 140723458765376', column: 'objects', row: 3, variant: 'result', monospace: true },
+      { id: 'value-result', label: '30 (int)', column: 'values', row: 3, variant: 'result', monospace: true },
     ],
-    note: 'Object identities are illustrative.',
+    connections: [
+      { id: 'x-to-object-x', from: 'variable-x', to: 'object-x', type: 'reference', fromSide: 'right', toSide: 'left' },
+      { id: 'object-x-to-value-x', from: 'object-x', to: 'value-x', type: 'value', fromSide: 'right', toSide: 'left' },
+      { id: 'y-to-object-y', from: 'variable-y', to: 'object-y', type: 'reference', fromSide: 'right', toSide: 'left' },
+      { id: 'object-y-to-value-y', from: 'object-y', to: 'value-y', type: 'value', fromSide: 'right', toSide: 'left' },
+      { id: 'result-to-object-result', from: 'variable-result', to: 'object-result', type: 'reference', fromSide: 'right', toSide: 'left' },
+      { id: 'object-result-to-value-result', from: 'object-result', to: 'value-result', type: 'value', fromSide: 'right', toSide: 'left' },
+    ],
+    note: 'Variables store references to objects, not the actual values. The object identities shown above are illustrative.',
   },
   takeaway: {
-    items: ['The <code>input()</code> function receives user data.', 'The <code>+</code> operator performs addition.'],
+    items: [
+      'The <code>input()</code> function receives data from the user.',
+      'The <code>int()</code> function converts numeric text into an integer.',
+      'The <code>+</code> operator performs the addition.',
+      'The expression <code>x + y</code> produces the calculated value.',
+      'The variable <code>result</code> references the calculated result.',
+      'The <code>print()</code> function displays the final result.',
+    ],
+  },
+  tip: {
+    text: 'Try entering different numbers, such as 25 and 75, and predict the output before running the program.',
   },
 };
 
@@ -119,12 +148,12 @@ const initialForm: FormState = {
 };
 
 function themeForBrand(brandId: TutorialSidebarBrandId): BrandTutorialTheme {
-  if (brandId === 'skillup') {
+  if (brandId === 'skillup' || brandId === 'shared') {
     return {
-      primary: '#e11d48',
-      primaryDark: '#be123c',
-      secondary: '#f97316',
-      activeBackground: '#fff1f2',
+      primary: '#f54a8d',
+      primaryDark: '#d63d7a',
+      secondary: '#133382',
+      activeBackground: '#fff0f6',
       completed: '#08a64a',
     };
   }

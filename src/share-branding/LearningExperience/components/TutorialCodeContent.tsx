@@ -1,3 +1,8 @@
+'use client';
+
+import { useState } from 'react';
+import type { ReactNode } from 'react';
+import { Code2, Copy, Lightbulb, MessageCircle, Monitor, Star, Terminal, Check, Boxes } from 'lucide-react';
 import type { BrandTutorialTheme, TutorialCodePayload } from '@quiz/types';
 
 interface TutorialCodeContentProps {
@@ -9,95 +14,185 @@ function html(value: string) {
   return { __html: value };
 }
 
-export function TutorialCodeContent({ payload, theme }: TutorialCodeContentProps) {
+function withAlpha(hex: string, alphaHex: string) {
+  return `${hex}${alphaHex}`;
+}
+
+function variantStyles(variant: string | undefined) {
+  if (variant === 'value') {
+    return { color: '#079447', backgroundColor: '#effaf4', borderColor: '#bfe8d1' };
+  }
+  if (variant === 'result') {
+    return { color: '#a56b00', backgroundColor: '#fff9e9', borderColor: '#f4dba1' };
+  }
+  return { color: '#1554c7', backgroundColor: '#eef4ff', borderColor: '#c9d9ff' };
+}
+
+function TerminalWindow({ title, children, copySource }: { title: string; children: ReactNode; copySource?: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const copy = async () => {
+    if (!copySource) return;
+    await navigator.clipboard?.writeText(copySource);
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1500);
+  };
+
   return (
-    <section className="rounded-xl border border-[#e4eaf2] bg-white p-6 shadow-sm">
-      <div className="mb-5">
-        <p className="text-xs font-bold uppercase tracking-[0.18em]" style={{ color: theme.primary }}>
-          {payload.page.type}
-        </p>
-        <h2 className="mt-2 text-2xl font-black leading-tight text-[#071f63]">{payload.page.title}</h2>
-        <p className="mt-3 text-[15px] leading-7 text-[#38527a]">{payload.page.introduction}</p>
-      </div>
-
-      <div className="overflow-hidden rounded-lg border border-[#dfe7f1] bg-[#071024]">
-        <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-          <span className="text-xs font-bold uppercase tracking-[0.16em] text-white/60">{payload.code.language}</span>
+    <div className="w-full overflow-hidden rounded-[11px] border border-[#172b52] bg-[#07142f] shadow-[0_8px_24px_rgba(7,20,47,0.12)]">
+      <div className="flex min-h-[58px] items-center gap-3.5 border-b border-white/10 bg-[#0d1d40] px-[18px] text-[#f8fafc]">
+        <div className="flex items-center gap-[7px]" aria-hidden="true">
+          <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
+          <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
+          <span className="h-3 w-3 rounded-full bg-[#28c840]" />
         </div>
-        <pre className="overflow-x-auto p-4 text-sm leading-6 text-[#e6edf7]"><code>{payload.code.source}</code></pre>
+        <span className="text-sm font-bold leading-snug">{title}</span>
+        {copySource ? (
+          <button
+            type="button"
+            onClick={copy}
+            className="ml-auto inline-flex items-center gap-[7px] rounded-md border border-white/15 px-3 py-2 text-[13px] font-bold text-white transition hover:border-white/25 hover:bg-white/10"
+          >
+            {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+            <span>{copied ? 'Copied' : 'Copy'}</span>
+          </button>
+        ) : null}
       </div>
+      {children}
+    </div>
+  );
+}
 
-      {payload.explanation?.steps?.length ? (
-        <div className="mt-6 space-y-3">
-          {payload.explanation.steps.map((step) => (
-            <div key={step.number} className="grid gap-3 rounded-lg border border-[#e4eaf2] bg-[#fbfcfe] p-4 sm:grid-cols-[44px_1fr]">
-              <span className="flex h-9 w-9 items-center justify-center rounded-full text-sm font-black text-white" style={{ backgroundColor: theme.primary }}>
-                {step.number}
-              </span>
-              <div>
-                <code className="rounded bg-[#eef3fa] px-2 py-1 text-sm font-bold text-[#071f63]">{step.code}</code>
-                <p className="mt-2 text-sm leading-6 text-[#425c7d]" dangerouslySetInnerHTML={html(step.description)} />
+export function TutorialCodeContent({ payload, theme }: TutorialCodeContentProps) {
+  const page = payload.page ?? { type: 'CODE + EXPLANATION', title: 'Code Example', introduction: '' };
+  const code = payload.code ?? { language: 'Code', source: '' };
+  const steps = Array.isArray(payload.explanation?.steps) ? payload.explanation.steps : [];
+  const memory = payload.memoryModel;
+  const columns = Array.isArray(memory?.columns) ? memory.columns : [];
+  const nodes = Array.isArray(memory?.nodes) ? memory.nodes : [];
+  const rows = [...new Set(nodes.map((node) => node.row))].sort((a, b) => a - b);
+  const takeawayItems = Array.isArray(payload.takeaway?.items) ? payload.takeaway.items : [];
+
+  return (
+    <article className="w-full bg-white px-[5%] py-10 text-[#0b1b3d]">
+      <header className="mb-[30px] w-full">
+        <div className="mb-[13px] inline-flex items-center gap-[9px] rounded-[5px] px-2.5 py-[5px] text-[13px] font-extrabold leading-snug" style={{ color: theme.primaryDark, backgroundColor: withAlpha(theme.primary, '14') }}>
+          <Code2 className="h-5 w-5" style={{ color: theme.primary }} />
+          <span>{page.type || 'CODE + EXPLANATION'}</span>
+        </div>
+        <h1 className="text-[clamp(34px,4vw,52px)] font-extrabold leading-[1.1] tracking-[-1.1px]" style={{ color: theme.secondary }}>
+          {page.title || 'Code Example'}
+        </h1>
+        <div className="mt-3 h-[3px] w-[34px] rounded-full" style={{ backgroundColor: theme.primary }} />
+        {page.introduction && <p className="mt-[13px] max-w-[900px] text-[17px] font-medium leading-[1.65]" style={{ color: theme.secondary }}>{page.introduction}</p>}
+      </header>
+
+      <section className="mb-[30px] w-full">
+        <div className="mb-[14px] flex items-center gap-2.5">
+          <Terminal className="h-[25px] w-[25px]" style={{ color: theme.primary }} />
+          <h2 className="text-[21px] font-extrabold leading-snug" style={{ color: theme.secondary }}>Code Example</h2>
+        </div>
+        <TerminalWindow title={code.language || 'Code'} copySource={code.source || ''}>
+          <div className="overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <pre className="m-0 bg-[#07142f] px-[22px] pb-7 pt-6">
+              <code className="block whitespace-pre font-mono text-base font-medium leading-[1.8] text-[#f8fafc]">{code.source || ''}</code>
+            </pre>
+          </div>
+        </TerminalWindow>
+      </section>
+
+      {steps.length > 0 && (
+        <section className="mb-[30px] w-full">
+          <div className="mb-[14px] flex items-center gap-2.5">
+            <MessageCircle className="h-[25px] w-[25px]" style={{ color: theme.primary }} />
+            <h2 className="text-[21px] font-extrabold leading-snug" style={{ color: theme.secondary }}>Explanation</h2>
+          </div>
+          <div className="w-full overflow-hidden rounded-[10px] border bg-white" style={{ borderColor: withAlpha(theme.primary, '66') }}>
+            {steps.map((step, index) => (
+              <div key={`${step.number}-${step.code}`} className="grid min-h-20 w-full grid-cols-[48px_minmax(150px,250px)_minmax(0,1fr)] items-center border-b last:border-b-0" style={{ borderColor: withAlpha(theme.primary, '33') }}>
+                <div className="ml-3 flex h-[35px] w-[35px] items-center justify-center rounded-full text-[15px] font-extrabold text-white" style={{ backgroundColor: theme.primary }}>
+                  {step.number || index + 1}
+                </div>
+                <code className="inline-flex max-w-full justify-self-start rounded-md px-2.5 py-1.5 font-mono text-sm font-bold leading-snug" style={{ color: theme.primaryDark, backgroundColor: withAlpha(theme.primary, '14') }}>
+                  {step.code}
+                </code>
+                <div className="px-5 py-[17px] pl-2.5 text-base font-medium leading-[1.65] [&_code]:rounded [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:font-bold" style={{ color: theme.secondary }} dangerouslySetInnerHTML={html(step.description || '')} />
               </div>
-            </div>
-          ))}
-        </div>
-      ) : null}
-
-      {payload.output && (
-        <div className="mt-6 rounded-lg border border-[#dfe7f1] bg-[#f8fafc] p-4">
-          <h3 className="text-sm font-bold uppercase tracking-[0.16em] text-[#60738f]">Output</h3>
-          <pre className="mt-3 overflow-x-auto rounded-md bg-white p-4 text-sm leading-6 text-[#071f63]">{payload.output.value}</pre>
-        </div>
+            ))}
+          </div>
+        </section>
       )}
 
-      {payload.memoryModel && (
-        <div className="mt-6 rounded-lg border border-[#dfe7f1] bg-[#fbfcfe] p-4">
-          <h3 className="text-sm font-bold uppercase tracking-[0.16em] text-[#60738f]">Memory Model</h3>
-          {payload.memoryModel.description && <p className="mt-2 text-sm leading-6 text-[#425c7d]">{payload.memoryModel.description}</p>}
-          {payload.memoryModel.columns && payload.memoryModel.nodes ? (
-            <div className="mt-4 overflow-x-auto">
-              <div
-                className="grid min-w-[680px] gap-3"
-                style={{ gridTemplateColumns: payload.memoryModel.columns.map((column) => column.width ?? '1fr').join(' ') }}
-              >
-                {payload.memoryModel.columns.map((column) => (
-                  <div key={column.id} className="rounded-md bg-[#eef3fa] px-3 py-2 text-xs font-black uppercase tracking-[0.12em] text-[#071f63]">
-                    {column.title}
-                  </div>
+      {payload.output?.value && (
+        <section className="mb-8 w-full">
+          <div className="mb-[14px] flex items-center gap-2.5">
+            <Monitor className="h-[25px] w-[25px]" style={{ color: theme.primary }} />
+            <h2 className="text-[21px] font-extrabold leading-snug" style={{ color: theme.secondary }}>Output</h2>
+          </div>
+          <TerminalWindow title="Terminal">
+            <pre className="m-0 whitespace-pre-wrap bg-[#07142f] p-[22px] font-mono text-base leading-[1.7] text-[#d7e2f5]">{payload.output.value}</pre>
+          </TerminalWindow>
+        </section>
+      )}
+
+      {memory && (
+        <section className="mb-8 w-full">
+          <div className="mb-[14px] flex items-center gap-2.5">
+            <Boxes className="h-[25px] w-[25px]" style={{ color: theme.primary }} />
+            <h2 className="text-[21px] font-extrabold leading-snug" style={{ color: theme.secondary }}>Memory / Model</h2>
+          </div>
+          {memory.description && <p className="mb-4 text-base font-medium leading-[1.65]" style={{ color: theme.secondary }}>{memory.description}</p>}
+          {columns.length > 0 && nodes.length > 0 && (
+            <div className="w-full overflow-x-auto rounded-[10px] border bg-white p-[22px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" style={{ borderColor: withAlpha(theme.primary, '66') }}>
+              <div className="grid min-w-[760px] items-center justify-center gap-x-[26px] gap-y-[18px]" style={{ gridTemplateColumns: columns.map((column) => column.width ?? 'minmax(160px,1fr)').join(' ') }}>
+                {columns.map((column) => (
+                  <div key={column.id} className="min-h-[25px] text-base font-extrabold leading-snug" style={{ color: theme.primaryDark }}>{column.title}</div>
                 ))}
-                {payload.memoryModel.nodes
-                  .slice()
-                  .sort((a, b) => a.row - b.row || a.column.localeCompare(b.column))
-                  .map((node) => (
+                {rows.flatMap((row) => columns.map((column) => {
+                  const node = nodes.find((item) => item.row === row && item.column === column.id);
+                  return (
                     <div
-                      key={node.id}
-                      className="rounded-lg border px-3 py-3 text-sm font-bold text-[#071f63]"
-                      style={{
-                        borderColor: node.variant === 'result' ? theme.primary : '#d9e3ef',
-                        backgroundColor: node.variant === 'result' ? theme.activeBackground : '#ffffff',
-                        fontFamily: node.monospace ? 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace' : undefined,
-                      }}
+                      key={`${row}-${column.id}`}
+                      className="flex min-h-12 items-center justify-center rounded-lg border px-3.5 py-[9px] text-center text-[15px] font-bold leading-snug"
+                      style={node ? { ...variantStyles(node.variant), fontFamily: node.monospace ? 'SFMono-Regular, Cascadia Code, Consolas, monospace' : undefined } : { borderColor: 'transparent' }}
                     >
-                      {node.label}
+                      {node?.label ?? ''}
                     </div>
-                  ))}
+                  );
+                }))}
               </div>
             </div>
-          ) : null}
-          {payload.memoryModel.note && <p className="mt-3 text-xs font-semibold text-[#60738f]">{payload.memoryModel.note}</p>}
-        </div>
+          )}
+          {memory.note && <div className="mt-3 rounded-[7px] border border-[#dce5f8] bg-[#f6f8ff] px-[13px] py-2.5 text-[13px] font-semibold leading-[1.55]" style={{ color: theme.secondary }}>{memory.note}</div>}
+        </section>
       )}
 
-      {payload.takeaway?.items?.length ? (
-        <div className="mt-6 rounded-lg px-5 py-4" style={{ backgroundColor: theme.activeBackground }}>
-          <h3 className="text-sm font-bold text-[#071f63]">Takeaway</h3>
-          <ul className="mt-2 space-y-2 text-sm leading-6 text-[#2d4567]">
-            {payload.takeaway.items.map((item, index) => (
+      {takeawayItems.length > 0 && (
+        <section className="relative mb-6 w-full rounded-[10px] border py-[22px] pl-5 pr-[90px]" style={{ backgroundColor: '#fffaf0', borderColor: '#f0d9a2' }}>
+          <div className="mb-3 flex items-center gap-[9px]">
+            <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#f59e0b] text-white">
+              <Star className="h-[13px] w-[13px] fill-current" />
+            </span>
+            <h2 className="text-lg font-extrabold leading-snug text-[#d97706]">Key Takeaway</h2>
+          </div>
+          <ul className="flex list-disc flex-col gap-2 pl-5 text-[15px] font-medium leading-[1.55] [&_code]:rounded [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:font-bold" style={{ color: theme.secondary }}>
+            {takeawayItems.map((item, index) => (
               <li key={index} dangerouslySetInnerHTML={html(item)} />
             ))}
           </ul>
-        </div>
-      ) : null}
-    </section>
+          <Lightbulb className="absolute bottom-[18px] right-[25px] h-12 w-12 text-[#f59e0b]" />
+        </section>
+      )}
+
+      {payload.tip?.text && (
+        <section className="w-full rounded-[10px] border border-[#d9e0ea] bg-[#f7f9fc] p-5">
+          <div className="mb-[9px] flex items-center gap-[9px]">
+            <Lightbulb className="h-[19px] w-[19px]" style={{ color: theme.primary }} />
+            <h2 className="text-lg font-extrabold leading-snug" style={{ color: theme.secondary }}>Tip</h2>
+          </div>
+          <p className="text-[15px] font-medium leading-[1.65]" style={{ color: theme.secondary }}>{payload.tip.text}</p>
+        </section>
+      )}
+    </article>
   );
 }

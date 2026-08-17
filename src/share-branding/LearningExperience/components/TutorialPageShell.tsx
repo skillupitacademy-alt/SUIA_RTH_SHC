@@ -29,7 +29,7 @@ export function TutorialPageShell({ payload }: TutorialPageShellProps) {
           <TutorialLeftSidebar tree={payload.sidebar} activeUrl={payload.activeUrl} />
         )}
         <div className="min-w-0 flex-1 px-6 py-6">
-          <div className="mx-auto max-w-[980px] space-y-6">
+          <div className="mx-auto w-full space-y-6">
             {payload.content.definition && <TutorialDefinitionContent payload={payload.content.definition} theme={payload.theme} />}
             {payload.content.code && <TutorialCodeContent payload={payload.content.code} theme={payload.theme} />}
             {!payload.content.definition && !payload.content.code && (
