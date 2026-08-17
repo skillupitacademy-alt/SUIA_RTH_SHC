@@ -61,37 +61,6 @@ const saveSchema = z.object({
   status: z.enum(['draft', 'published']),
 });
 
-async function ensureSidebarTable() {
-  await db.execute(sql`
-    CREATE TABLE IF NOT EXISTS tutorial_sidebar_trees_v2 (
-      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-      brand_id text NOT NULL,
-      domain_id uuid NOT NULL REFERENCES tutorial_domains(id),
-      subject_id uuid NOT NULL REFERENCES tutorial_subjects(id),
-      topic_id uuid NOT NULL REFERENCES tutorial_topics(id),
-      active_subtopic_id uuid REFERENCES tutorial_subtopics(id),
-      tree jsonb NOT NULL,
-      source_format text NOT NULL DEFAULT 'json',
-      source_content text NOT NULL,
-      status text NOT NULL DEFAULT 'draft',
-      version integer NOT NULL DEFAULT 1,
-      published_at timestamp,
-      created_at timestamp NOT NULL DEFAULT now(),
-      updated_at timestamp NOT NULL DEFAULT now()
-    )
-  `);
-
-  await db.execute(sql`
-    CREATE UNIQUE INDEX IF NOT EXISTS uq_tutorial_sidebar_trees_v2_scope
-    ON tutorial_sidebar_trees_v2 (brand_id, topic_id)
-  `);
-
-  await db.execute(sql`
-    CREATE INDEX IF NOT EXISTS idx_tutorial_sidebar_trees_v2_scope
-    ON tutorial_sidebar_trees_v2 (brand_id, domain_id, subject_id, topic_id)
-  `);
-}
-
 async function getHierarchyNames(domainId: string, subjectId: string, topicId: string, activeSubtopicId: string | null) {
   const [domain] = await db.select().from(tutorialDomains).where(eq(tutorialDomains.id, domainId)).limit(1);
   const [subject] = await db.select().from(tutorialSubjects).where(eq(tutorialSubjects.id, subjectId)).limit(1);
@@ -132,8 +101,6 @@ async function responseFromRow(row: typeof tutorialSidebarTreesV2.$inferSelect) 
 
 export async function GET(request: NextRequest) {
   try {
-    await ensureSidebarTable();
-
     const { searchParams } = new URL(request.url);
     const brandId = searchParams.get('brandId') as TutorialSidebarBrandId | null;
     const topicId = searchParams.get('topicId');
@@ -164,8 +131,6 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    await ensureSidebarTable();
-
     const parsed = saveSchema.safeParse(await request.json());
     if (!parsed.success) {
       return NextResponse.json({ error: 'Invalid sidebar payload.', details: parsed.error.flatten() }, { status: 400 });

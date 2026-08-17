@@ -63,10 +63,29 @@ export const tutorialSectionNotes = pgTable('tutorial_section_notes', {
 });
 
 // ==========================================
-// 3. LAYMAN SECTION DOMAIN - REMOVED
+// 3. LAYMAN SECTION DOMAIN
 // ==========================================
-// Table tutorialSectionLayman has been removed as of 2026-08-15
-// Backup available in: backup-layman-table.sql
+export const tutorialSectionLayman = pgTable('tutorial_section_layman', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  sectionId: uuid('section_id')
+    .notNull()
+    .references(() => tutorialSections.id, { onDelete: 'cascade' }),
+
+  simpleOverview: jsonb('simple_overview').notNull(),
+  everydayAnalogy: jsonb('everyday_analogy').notNull(),
+  whyItExists: jsonb('why_it_exists').notNull(),
+  simpleUseCases: jsonb('simple_use_cases').notNull(),
+  beginnerBreakdown: jsonb('beginner_breakdown').notNull(),
+  mentalModel: jsonb('mental_model').notNull(),
+  commonConfusions: jsonb('common_confusions').notNull(),
+  simpleRecap: jsonb('simple_recap').notNull(),
+  heroVisualSvg: jsonb('hero_visual_svg'),
+  analogySvg: jsonb('analogy_svg'),
+  mentalModelSvg: jsonb('mental_model_svg'),
+
+  createdAt: timestamp('created_at', { mode: 'date' }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { mode: 'date' }).notNull().defaultNow(),
+});
 
 // ==========================================
 // 4. REAL-LIFE SECTION DOMAIN
