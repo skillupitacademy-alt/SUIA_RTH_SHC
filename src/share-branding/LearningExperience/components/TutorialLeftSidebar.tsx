@@ -179,17 +179,12 @@ function TreeNode({
           color: isActive ? colors.secondary : '#071f63',
         }}
         aria-current={isActive ? 'page' : undefined}
+        aria-expanded={hasChildren ? isExpanded : undefined}
       >
         {hasChildren ? (
           <span
-            role="button"
-            aria-label={isExpanded ? `Collapse ${node.name}` : `Expand ${node.name}`}
-            aria-expanded={isExpanded}
             className="flex h-8 w-8 items-center justify-center rounded-[7px] text-[#071f63] transition-colors hover:bg-[#edf2f8]"
-            onClick={(event) => {
-              event.stopPropagation();
-              toggle();
-            }}
+            aria-hidden="true"
           >
             <ChevronRight className={`h-[16px] w-[16px] transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
           </span>
