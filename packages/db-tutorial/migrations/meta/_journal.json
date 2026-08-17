@@ -141,6 +141,13 @@
       "when": 1786995512007,
       "tag": "0019_add_tutorial_sidebar_trees_v2",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1786997739194,
+      "tag": "0020_add_tutorial_page_content_v2",
+      "breakpoints": true
     }
   ]
 }

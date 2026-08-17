@@ -3,12 +3,18 @@ import { and, eq } from 'drizzle-orm';
 import {
   db,
   tutorialDomains,
+  tutorialPageContentV2,
   tutorialSubjects,
   tutorialTopics,
   tutorialSubtopics,
   tutorialSidebarTreesV2,
 } from '@quiz/db-tutorial';
-import type { TutorialNavigationNode, TutorialNavigationTree, TutorialSidebarBrandId } from '@quiz/types';
+import type {
+  TutorialNavigationNode,
+  TutorialNavigationTree,
+  TutorialPagePayload,
+  TutorialSidebarBrandId,
+} from '@quiz/types';
 
 export interface TutorialSidebarDeliveryParams {
   brandId: Exclude<TutorialSidebarBrandId, 'shared'>;
@@ -29,6 +35,12 @@ export interface TutorialSidebarDeliveryPayload {
   };
 }
 
+interface FlatNavigationItem {
+  name: string;
+  slug: string;
+  url?: string;
+}
+
 function findUrlBySlug(nodes: TutorialNavigationNode[], slug: string): string {
   for (const node of nodes) {
     if (node.slug === slug && node.url) {
@@ -42,6 +54,22 @@ function findUrlBySlug(nodes: TutorialNavigationNode[], slug: string): string {
   }
 
   return '';
+}
+
+function flattenNavigation(nodes: TutorialNavigationNode[]): FlatNavigationItem[] {
+  const items: FlatNavigationItem[] = [];
+
+  function walk(branch: TutorialNavigationNode[]) {
+    for (const node of branch) {
+      if (node.url) {
+        items.push({ name: node.name, slug: node.slug, url: node.url });
+      }
+      walk(node.children ?? []);
+    }
+  }
+
+  walk(nodes);
+  return items;
 }
 
 async function resolveHierarchy(params: TutorialSidebarDeliveryParams) {
@@ -138,5 +166,66 @@ export async function getPublishedTutorialSidebar(params: TutorialSidebarDeliver
     tree: sidebar.tree,
     activeUrl,
     hierarchy,
+  };
+}
+
+export async function getPublishedTutorialPagePayload(params: TutorialSidebarDeliveryParams): Promise<TutorialPagePayload | null> {
+  const sidebarPayload = await getPublishedTutorialSidebar(params);
+  if (!sidebarPayload) {
+    return null;
+  }
+
+  const { hierarchy, tree, activeUrl } = sidebarPayload;
+  const brandRows = await db
+    .select()
+    .from(tutorialPageContentV2)
+    .where(and(
+      eq(tutorialPageContentV2.brandId, params.brandId),
+      eq(tutorialPageContentV2.subtopicId, hierarchy.subtopic.id),
+      eq(tutorialPageContentV2.status, 'published')
+    ));
+
+  const sharedRows = brandRows.length > 0
+    ? []
+    : await db
+      .select()
+      .from(tutorialPageContentV2)
+      .where(and(
+        eq(tutorialPageContentV2.brandId, 'shared'),
+        eq(tutorialPageContentV2.subtopicId, hierarchy.subtopic.id),
+        eq(tutorialPageContentV2.status, 'published')
+      ));
+
+  const contentRows = brandRows.length > 0 ? brandRows : sharedRows;
+  const content: TutorialPagePayload['content'] = {};
+
+  for (const row of contentRows) {
+    if (row.contentType === 'definition') {
+      content.definition = row.payload as TutorialPagePayload['content']['definition'];
+    }
+    if (row.contentType === 'code') {
+      content.code = row.payload as TutorialPagePayload['content']['code'];
+    }
+  }
+
+  const flatItems = flattenNavigation(tree.topics);
+  const activeIndex = flatItems.findIndex((item) => item.slug === params.subtopicSlug || item.slug === hierarchy.subtopic.slug || item.url === activeUrl);
+
+  return {
+    brandId: params.brandId,
+    theme: tree.theme,
+    sidebar: tree,
+    activeUrl,
+    hierarchy: {
+      domain: hierarchy.domain,
+      subject: hierarchy.subject,
+      topic: hierarchy.topic,
+      subtopic: hierarchy.subtopic,
+    },
+    content,
+    footer: {
+      previous: activeIndex > 0 ? flatItems[activeIndex - 1] : null,
+      next: activeIndex >= 0 && activeIndex < flatItems.length - 1 ? flatItems[activeIndex + 1] : null,
+    },
   };
 }
