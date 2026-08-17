@@ -13,6 +13,7 @@ import type {
 } from './types';
 
 type SourceFormat = 'json' | 'markdown';
+const SHARED_BRAND_ID: TutorialSidebarBrandId = 'shared';
 
 interface FormState {
   brandId: TutorialSidebarBrandId;
@@ -23,7 +24,7 @@ interface FormState {
 }
 
 const initialForm: FormState = {
-  brandId: 'realtutorialhub',
+  brandId: SHARED_BRAND_ID,
   domainId: '',
   subjectId: '',
   topicId: '',
@@ -187,7 +188,8 @@ function parseMarkdownTree(source: string): TutorialNavigationNode[] {
   function clean(nodes: TutorialNavigationNode[]): TutorialNavigationNode[] {
     return nodes.map((node) => {
       const children = clean(node.children ?? []);
-      const { children: _children, ...rest } = node;
+      const rest = { ...node };
+      delete rest.children;
       return children.length > 0 ? { ...rest, children } : rest;
     });
   }
@@ -195,21 +197,23 @@ function parseMarkdownTree(source: string): TutorialNavigationNode[] {
   return clean(roots);
 }
 
-function parseSource(format: SourceFormat, source: string, form: FormState, subjectName: string): TutorialNavigationTree {
+function parseSource(format: SourceFormat, source: string, subjectName: string): TutorialNavigationTree {
+  const defaults = getBrandTreeDefaults(SHARED_BRAND_ID, subjectName);
+
   if (format === 'json') {
     const parsed = JSON.parse(source) as Partial<TutorialNavigationTree> | TutorialNavigationNode[];
     if (Array.isArray(parsed)) {
       return {
-        ...getBrandTreeDefaults(form.brandId, subjectName),
+        ...defaults,
         topics: parsed,
       };
     }
 
     return {
-      ...getBrandTreeDefaults(form.brandId, subjectName),
+      ...defaults,
       ...parsed,
       subject: {
-        ...getBrandTreeDefaults(form.brandId, subjectName).subject,
+        ...defaults.subject,
         ...(parsed.subject ?? {}),
       },
       topics: parsed.topics ?? [],
@@ -217,7 +221,7 @@ function parseSource(format: SourceFormat, source: string, form: FormState, subj
   }
 
   return {
-    ...getBrandTreeDefaults(form.brandId, subjectName),
+    ...defaults,
     topics: parseMarkdownTree(source),
   };
 }
@@ -275,22 +279,20 @@ export function SidebarBuilderClient() {
     };
   }, []);
 
-  const selectedDomain = hierarchy.domains.find((row) => row.id === form.domainId);
   const availableSubjects = hierarchy.subjects.filter((row) => row.domainId === form.domainId);
   const selectedSubject = hierarchy.subjects.find((row) => row.id === form.subjectId);
   const availableTopics = hierarchy.topics.filter((row) => row.subjectId === form.subjectId);
-  const selectedTopic = hierarchy.topics.find((row) => row.id === form.topicId);
   const availableSubtopics = hierarchy.subtopics.filter((row) => row.topicId === form.topicId);
   const selectedActiveSubtopic = hierarchy.subtopics.find((row) => row.id === form.activeSubtopicId);
 
   const parsed = useMemo(() => {
     try {
-      const tree = parseSource(format, source, form, selectedSubject?.name || 'Frontend Development');
+      const tree = parseSource(format, source, selectedSubject?.name || 'Frontend Development');
       return { tree, error: '' };
     } catch (error) {
       return { tree: null, error: error instanceof Error ? error.message : 'Invalid sidebar content.' };
     }
-  }, [format, form, selectedSubject?.name, source]);
+  }, [format, selectedSubject?.name, source]);
 
   const activeUrl = parsed.tree ? getActiveUrl(parsed.tree, selectedActiveSubtopic?.slug || '') : '';
 
@@ -301,7 +303,7 @@ export function SidebarBuilderClient() {
   const loadExisting = async () => {
     setMessage('Loading sidebar tree...');
     const params = new URLSearchParams({
-      brandId: form.brandId,
+      brandId: SHARED_BRAND_ID,
       topicId: form.topicId,
     });
     const response = await fetch(`/api/tutorial-left-sidebar?${params.toString()}`);
@@ -338,7 +340,7 @@ export function SidebarBuilderClient() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          brandId: form.brandId,
+          brandId: SHARED_BRAND_ID,
           domainId: form.domainId,
           subjectId: form.subjectId,
           topicId: form.topicId,
@@ -356,10 +358,8 @@ export function SidebarBuilderClient() {
         return;
       }
 
-      const deliveryPath = form.brandId === 'skillup'
-        ? result.deliveryUrls?.skillup
-        : result.deliveryUrls?.realtutorialhub;
-      setMessage(deliveryPath ? `${result.message || 'Saved.'} URL: ${deliveryPath}` : result.message || 'Saved.');
+      const deliveryPath = result.deliveryUrls?.realtutorialhub ?? result.deliveryUrls?.skillup;
+      setMessage(deliveryPath ? `${result.message || 'Saved.'} Common path: ${deliveryPath}` : result.message || 'Saved.');
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Save failed.');
     } finally {
@@ -392,14 +392,6 @@ export function SidebarBuilderClient() {
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <label className="grid gap-1 text-sm font-bold text-slate-700">
-            Brand
-            <select value={form.brandId} onChange={(event) => setField('brandId', event.target.value)} className="rounded-lg border border-slate-300 px-3 py-2 font-semibold">
-              <option value="realtutorialhub">RTH</option>
-              <option value="skillup">SUIA</option>
-              <option value="shared">Shared</option>
-            </select>
-          </label>
           <label className="grid gap-1 text-sm font-bold text-slate-700">
             Domain
             <select

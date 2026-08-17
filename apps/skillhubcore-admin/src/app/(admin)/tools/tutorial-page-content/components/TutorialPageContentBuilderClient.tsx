@@ -14,6 +14,7 @@ import type {
 } from '@quiz/types';
 
 type SourceFormat = 'json' | 'markdown';
+const SHARED_BRAND_ID: TutorialSidebarBrandId = 'shared';
 
 interface HierarchyRow {
   id: string;
@@ -109,7 +110,7 @@ const codeExample: TutorialCodePayload = {
 
 const initialHierarchy: HierarchyState = { domains: [], subjects: [], topics: [], subtopics: [] };
 const initialForm: FormState = {
-  brandId: 'realtutorialhub',
+  brandId: SHARED_BRAND_ID,
   domainId: '',
   subjectId: '',
   topicId: '',
@@ -236,6 +237,7 @@ export function TutorialPageContentBuilderClient() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...form,
+          brandId: SHARED_BRAND_ID,
           payload,
           sourceFormat,
           sourceContent,
@@ -246,7 +248,8 @@ export function TutorialPageContentBuilderClient() {
       if (!response.ok) {
         throw new Error(result.error ?? 'Save failed.');
       }
-      setMessage(`${result.message} URL: ${result.deliveryUrls?.realtutorialhub ?? ''}`);
+      const deliveryPath = result.deliveryUrls?.realtutorialhub ?? result.deliveryUrls?.skillup;
+      setMessage(deliveryPath ? `${result.message} Common path: ${deliveryPath}` : result.message);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Save failed.');
     } finally {
@@ -262,11 +265,6 @@ export function TutorialPageContentBuilderClient() {
           <h1 className="mt-2 text-2xl font-black text-[#071f63]">Definition & Code Content</h1>
 
           <div className="mt-5 grid gap-3">
-            <select className="rounded-lg border border-[#dfe7f1] px-3 py-2" value={form.brandId} onChange={(event) => updateForm('brandId', event.target.value as TutorialSidebarBrandId)}>
-              <option value="realtutorialhub">RealTutorialHub</option>
-              <option value="skillup">SkillUp IT Academy</option>
-              <option value="shared">Shared</option>
-            </select>
             <select className="rounded-lg border border-[#dfe7f1] px-3 py-2" value={form.domainId} onChange={(event) => updateForm('domainId', event.target.value)}>
               <option value="">Select domain</option>
               {hierarchy.domains.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
