@@ -3,7 +3,7 @@ import { and, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 
 import {
-  db,
+  dbHttp,
   tutorialDomains,
   tutorialSubjects,
   tutorialTopics,
@@ -62,11 +62,11 @@ const saveSchema = z.object({
 });
 
 async function getHierarchyNames(domainId: string, subjectId: string, topicId: string, activeSubtopicId: string | null) {
-  const [domain] = await db.select().from(tutorialDomains).where(eq(tutorialDomains.id, domainId)).limit(1);
-  const [subject] = await db.select().from(tutorialSubjects).where(eq(tutorialSubjects.id, subjectId)).limit(1);
-  const [topic] = await db.select().from(tutorialTopics).where(eq(tutorialTopics.id, topicId)).limit(1);
+  const [domain] = await dbHttp.select().from(tutorialDomains).where(eq(tutorialDomains.id, domainId)).limit(1);
+  const [subject] = await dbHttp.select().from(tutorialSubjects).where(eq(tutorialSubjects.id, subjectId)).limit(1);
+  const [topic] = await dbHttp.select().from(tutorialTopics).where(eq(tutorialTopics.id, topicId)).limit(1);
   const [activeSubtopic] = activeSubtopicId
-    ? await db.select().from(tutorialSubtopics).where(eq(tutorialSubtopics.id, activeSubtopicId)).limit(1)
+    ? await dbHttp.select().from(tutorialSubtopics).where(eq(tutorialSubtopics.id, activeSubtopicId)).limit(1)
     : [null];
 
   return { domain, subject, topic, activeSubtopic };
@@ -109,7 +109,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'brandId and topicId are required.' }, { status: 400 });
     }
 
-    const [row] = await db
+    const [row] = await dbHttp
       .select()
       .from(tutorialSidebarTreesV2)
       .where(and(
@@ -152,7 +152,7 @@ export async function POST(request: NextRequest) {
       updatedAt: now,
     };
 
-    const [saved] = await db
+    const [saved] = await dbHttp
       .insert(tutorialSidebarTreesV2)
       .values(values)
       .onConflictDoUpdate({
