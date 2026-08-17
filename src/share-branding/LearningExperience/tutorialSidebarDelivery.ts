@@ -10,6 +10,7 @@ import {
   tutorialSidebarTreesV2,
 } from '@quiz/db-tutorial';
 import type {
+  BrandTutorialTheme,
   TutorialNavigationNode,
   TutorialNavigationTree,
   TutorialPagePayload,
@@ -39,6 +40,53 @@ interface FlatNavigationItem {
   name: string;
   slug: string;
   url?: string;
+}
+
+function getRuntimeBrandConfig(brandId: Exclude<TutorialSidebarBrandId, 'shared'>): Pick<TutorialNavigationTree, 'brand' | 'theme'> {
+  if (brandId === 'skillup') {
+    return {
+      brand: {
+        name: 'SkillUp IT Academy',
+        shortName: 'SUIA',
+        tagline: 'Build Skills That Move Careers',
+      },
+      theme: {
+        primary: '#e11d48',
+        primaryDark: '#be123c',
+        secondary: '#f97316',
+        activeBackground: '#fff1f2',
+        completed: '#08a64a',
+      },
+    };
+  }
+
+  return {
+    brand: {
+      name: 'RealTutorialHub',
+      shortName: 'RTH',
+      tagline: 'Learn Smarter, Not Harder',
+    },
+    theme: {
+      primary: '#d03f00',
+      primaryDark: '#b63600',
+      secondary: '#124fd6',
+      activeBackground: '#eef3fa',
+      completed: '#08a64a',
+    },
+  };
+}
+
+function withRuntimeBrand(tree: TutorialNavigationTree, brandId: Exclude<TutorialSidebarBrandId, 'shared'>): TutorialNavigationTree {
+  const runtimeBrand = getRuntimeBrandConfig(brandId);
+
+  return {
+    ...tree,
+    brand: {
+      ...runtimeBrand.brand,
+      logoUrl: tree.brand.logoUrl,
+    },
+    theme: runtimeBrand.theme satisfies BrandTutorialTheme,
+  };
 }
 
 function findUrlBySlug(nodes: TutorialNavigationNode[], slug: string): string {
@@ -158,12 +206,14 @@ export async function getPublishedTutorialSidebar(params: TutorialSidebarDeliver
     return null;
   }
 
+  const brandedTree = withRuntimeBrand(sidebar.tree, params.brandId);
+
   const activeUrl =
-    findUrlBySlug(sidebar.tree.topics, params.subtopicSlug)
-    || findUrlBySlug(sidebar.tree.topics, hierarchy.subtopic.slug);
+    findUrlBySlug(brandedTree.topics, params.subtopicSlug)
+    || findUrlBySlug(brandedTree.topics, hierarchy.subtopic.slug);
 
   return {
-    tree: sidebar.tree,
+    tree: brandedTree,
     activeUrl,
     hierarchy,
   };
