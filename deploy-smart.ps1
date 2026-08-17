@@ -528,7 +528,7 @@ Write-Host ""
 
 Write-Host "Deployed Services:" -ForegroundColor Cyan
 foreach ($service in $servicesToDeploy) {
-    Write-Host "  ✓ $service" -ForegroundColor Green
+    Write-Host "  - $service" -ForegroundColor Green
 }
 Write-Host ""
 
@@ -564,140 +564,11 @@ Write-Host "================================================================" -F
 Write-Host "   LOCAL DOCKER CLEANUP" -ForegroundColor Blue
 Write-Host "================================================================" -ForegroundColor Blue
 Write-Host ""
-Write-Info "Step 9/9: Cleaning up old Docker images..."
-
-try {
-    # Check if Docker is running
-    docker info 2>&1 | Out-Null
-    if ($LASTEXITCODE -ne 0) {
-        Write-Warn "Docker Desktop is not running. Skipping cleanup."
-    } else {
-        Write-Host ""
-        Write-Host "  Current local images for deployed services:" -ForegroundColor Cyan
-        
-        # Get service map to find image names
-        $serviceMapPath = ".\infra\hostinger\config\service-map.json"
-        $serviceMap = Get-Content -Raw $serviceMapPath | ConvertFrom-Json
-        
-        $cleanupStats = @{
-            imagesRemoved = 0
-            spaceFreed = 0
-            imagesKept = 0
-        }
-        
-        foreach ($service in $servicesToDeploy) {
-            $imageName = $serviceMap.services.$service.image_name
-            
-            if (-not $imageName) {
-                continue
-            }
-            
-            Write-Host ""
-            Write-Host "  -> Processing $imageName..." -ForegroundColor Gray
-            
-            # List all tags for this image
-            $allImages = docker images --format "{{.Repository}}:{{.Tag}}|{{.ID}}|{{.Size}}" --filter "reference=$imageName" 2>$null
-            
-            if (-not $allImages) {
-                Write-Host "     No local images found" -ForegroundColor DarkGray
-                continue
-            }
-            
-            $imageList = @()
-            foreach ($line in $allImages) {
-                if ($line) {
-                    $parts = $line -split '\|'
-                    $imageList += @{
-                        FullName = $parts[0]
-                        ID = $parts[1]
-                        Size = $parts[2]
-                    }
-                }
-            }
-            
-            if ($imageList.Count -eq 0) {
-                Write-Host "     No local images found" -ForegroundColor DarkGray
-                continue
-            }
-            
-            Write-Host "     Found $($imageList.Count) image(s)" -ForegroundColor Cyan
-            
-            # Keep latest and current tag, remove others
-            $tagsToKeep = @("latest", $tag)
-            $imagesToRemove = @()
-            
-            foreach ($img in $imageList) {
-                $tagName = $img.FullName -replace "^$imageName:", ""
-                
-                if ($tagsToKeep -contains $tagName) {
-                    Write-Host "     ✓ Keeping: $($img.FullName) [$($img.Size)]" -ForegroundColor Green
-                    $cleanupStats.imagesKept++
-                } else {
-                    Write-Host "     ✗ Will remove: $($img.FullName) [$($img.Size)]" -ForegroundColor Yellow
-                    $imagesToRemove += $img
-                }
-            }
-            
-            # Remove old images
-            if ($imagesToRemove.Count -gt 0) {
-                Write-Host "     Removing $($imagesToRemove.Count) old image(s)..." -ForegroundColor Gray
-                
-                foreach ($img in $imagesToRemove) {
-                    try {
-                        docker rmi $img.FullName 2>&1 | Out-Null
-                        if ($LASTEXITCODE -eq 0) {
-                            $cleanupStats.imagesRemoved++
-                            Write-Host "     Removed: $($img.FullName)" -ForegroundColor DarkGray
-                        } else {
-                            Write-Warn "     Could not remove: $($img.FullName) (might be in use)"
-                        }
-                    } catch {
-                        Write-Warn "     Failed to remove: $($img.FullName)"
-                    }
-                }
-            }
-        }
-        
-        Write-Host ""
-        Write-Host "  Cleanup summary:" -ForegroundColor Cyan
-        Write-Host "    - Images removed: $($cleanupStats.imagesRemoved)" -ForegroundColor Gray
-        Write-Host "    - Images kept: $($cleanupStats.imagesKept)" -ForegroundColor Gray
-        
-        # Prune dangling images
-        Write-Host ""
-        Write-Host "  -> Removing dangling images..." -ForegroundColor Gray
-        $pruneOutput = docker image prune -f 2>&1
-        
-        if ($pruneOutput -match "Total reclaimed space: (.+)") {
-            $reclaimedSpace = $Matches[1]
-            Write-Host "    Reclaimed space: $reclaimedSpace" -ForegroundColor Gray
-        }
-        
-        # Optional: Remove unused images
-        Write-Host ""
-        $cleanupUnused = Read-Host "Remove all unused Docker images? (y/N)"
-        if ($cleanupUnused -eq 'y' -or $cleanupUnused -eq 'Y') {
-            Write-Host "  -> Removing all unused images..." -ForegroundColor Gray
-            $pruneAllOutput = docker image prune -a -f 2>&1
-            
-            if ($pruneAllOutput -match "Total reclaimed space: (.+)") {
-                $reclaimedSpace = $Matches[1]
-                Write-Host "    Additional space reclaimed: $reclaimedSpace" -ForegroundColor Gray
-            }
-        }
-        
-        Write-Host ""
-        Write-Success "Docker cleanup completed"
-    }
-} catch {
-    Write-Warn "Docker cleanup failed: $_"
-    Write-Host "  You can manually clean up later with:" -ForegroundColor Yellow
-    Write-Host "    docker image prune -a" -ForegroundColor Gray
-}
+Write-Warn "Skipping local Docker cleanup in deploy-smart.ps1. Run 'docker image prune -a' manually when needed."
 
 Write-Host ""
 Write-Host "================================================================" -ForegroundColor Green
 Write-Host "   ALL DONE!" -ForegroundColor Green
 Write-Host "================================================================" -ForegroundColor Green
 Write-Host ""
-Write-Success "Deployment and cleanup completed successfully! 🎉"
+Write-Success "Deployment completed successfully."
