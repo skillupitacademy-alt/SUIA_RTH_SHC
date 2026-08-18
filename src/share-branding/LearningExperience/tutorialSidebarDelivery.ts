@@ -1,14 +1,17 @@
-import { and, eq } from 'drizzle-orm';
+import { and, eq, isNull } from 'drizzle-orm';
 
 import {
   dbHttp,
-  tutorialDomains,
   tutorialPageContentV2,
-  tutorialSubjects,
-  tutorialTopics,
-  tutorialSubtopics,
   tutorialSidebarTreesV2,
 } from '@quiz/db-tutorial';
+import {
+  domains as shcDomains,
+  getDb,
+  subjects as shcSubjects,
+  subtopics as shcSubtopics,
+  topics as shcTopics,
+} from '@quiz/db';
 import type {
   BrandTutorialTheme,
   TutorialNavigationNode,
@@ -29,10 +32,10 @@ export interface TutorialSidebarDeliveryPayload {
   tree: TutorialNavigationTree;
   activeUrl: string;
   hierarchy: {
-    domain: typeof tutorialDomains.$inferSelect;
-    subject: typeof tutorialSubjects.$inferSelect;
-    topic: typeof tutorialTopics.$inferSelect;
-    subtopic: typeof tutorialSubtopics.$inferSelect;
+    domain: { id: string; name: string; slug: string };
+    subject: { id: string; name: string; slug: string };
+    topic: { id: string; name: string; slug: string };
+    subtopic: { id: string; name: string; slug: string };
   };
 }
 
@@ -40,6 +43,15 @@ interface FlatNavigationItem {
   name: string;
   slug: string;
   url?: string;
+}
+
+function slugify(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/['"]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
 }
 
 function getRuntimeBrandConfig(brandId: Exclude<TutorialSidebarBrandId, 'shared'>): Pick<TutorialNavigationTree, 'brand' | 'theme'> {
@@ -121,56 +133,62 @@ function flattenNavigation(nodes: TutorialNavigationNode[]): FlatNavigationItem[
 }
 
 async function resolveHierarchy(params: TutorialSidebarDeliveryParams) {
-  const [domain] = await dbHttp
+  const db = getDb();
+  const domainRows = await db
     .select()
-    .from(tutorialDomains)
-    .where(eq(tutorialDomains.slug, params.domainSlug))
-    .limit(1);
+    .from(shcDomains)
+    .where(isNull(shcDomains.deletedAt));
+  const domain = domainRows.find((row) => slugify(row.name) === params.domainSlug);
 
   if (!domain) {
     return null;
   }
 
-  const [subject] = await dbHttp
+  const subjectRows = await db
     .select()
-    .from(tutorialSubjects)
+    .from(shcSubjects)
     .where(and(
-      eq(tutorialSubjects.domainId, domain.id),
-      eq(tutorialSubjects.slug, params.subjectSlug)
-    ))
-    .limit(1);
+      eq(shcSubjects.domainId, domain.id),
+      isNull(shcSubjects.deletedAt)
+    ));
+  const subject = subjectRows.find((row) => slugify(row.name) === params.subjectSlug);
 
   if (!subject) {
     return null;
   }
 
-  const [topic] = await dbHttp
+  const topicRows = await db
     .select()
-    .from(tutorialTopics)
+    .from(shcTopics)
     .where(and(
-      eq(tutorialTopics.subjectId, subject.id),
-      eq(tutorialTopics.slug, params.topicSlug)
-    ))
-    .limit(1);
+      eq(shcTopics.subjectId, subject.id),
+      isNull(shcTopics.deletedAt)
+    ));
+  const topic = topicRows.find((row) => slugify(row.name) === params.topicSlug);
 
   if (!topic) {
     return null;
   }
 
-  const [subtopic] = await dbHttp
+  const subtopicRows = await db
     .select()
-    .from(tutorialSubtopics)
+    .from(shcSubtopics)
     .where(and(
-      eq(tutorialSubtopics.topicId, topic.id),
-      eq(tutorialSubtopics.slug, params.subtopicSlug)
-    ))
-    .limit(1);
+      eq(shcSubtopics.topicId, topic.id),
+      isNull(shcSubtopics.deletedAt)
+    ));
+  const subtopic = subtopicRows.find((row) => slugify(row.name) === params.subtopicSlug);
 
   if (!subtopic) {
     return null;
   }
 
-  return { domain, subject, topic, subtopic };
+  return {
+    domain: { id: domain.id, name: domain.name, slug: slugify(domain.name) },
+    subject: { id: subject.id, name: subject.name, slug: slugify(subject.name) },
+    topic: { id: topic.id, name: topic.name, slug: slugify(topic.name) },
+    subtopic: { id: subtopic.id, name: subtopic.name, slug: slugify(subtopic.name) },
+  };
 }
 
 export async function getPublishedTutorialSidebar(params: TutorialSidebarDeliveryParams): Promise<TutorialSidebarDeliveryPayload | null> {
@@ -179,29 +197,29 @@ export async function getPublishedTutorialSidebar(params: TutorialSidebarDeliver
     return null;
   }
 
-  const brandRows = await dbHttp
+  const sharedRows = await dbHttp
     .select()
     .from(tutorialSidebarTreesV2)
     .where(and(
-      eq(tutorialSidebarTreesV2.brandId, params.brandId),
+      eq(tutorialSidebarTreesV2.brandId, 'shared'),
       eq(tutorialSidebarTreesV2.topicId, hierarchy.topic.id),
       eq(tutorialSidebarTreesV2.status, 'published')
     ))
     .limit(1);
 
-  const sharedRows = brandRows.length > 0
+  const brandRows = sharedRows.length > 0
     ? []
     : await dbHttp
       .select()
       .from(tutorialSidebarTreesV2)
       .where(and(
-        eq(tutorialSidebarTreesV2.brandId, 'shared'),
+        eq(tutorialSidebarTreesV2.brandId, params.brandId),
         eq(tutorialSidebarTreesV2.topicId, hierarchy.topic.id),
         eq(tutorialSidebarTreesV2.status, 'published')
       ))
       .limit(1);
 
-  const sidebar = brandRows[0] ?? sharedRows[0];
+  const sidebar = sharedRows[0] ?? brandRows[0];
   if (!sidebar) {
     return null;
   }
@@ -226,27 +244,27 @@ export async function getPublishedTutorialPagePayload(params: TutorialSidebarDel
   }
 
   const { hierarchy, tree, activeUrl } = sidebarPayload;
-  const brandRows = await dbHttp
+  const sharedRows = await dbHttp
     .select()
     .from(tutorialPageContentV2)
     .where(and(
-      eq(tutorialPageContentV2.brandId, params.brandId),
+      eq(tutorialPageContentV2.brandId, 'shared'),
       eq(tutorialPageContentV2.subtopicId, hierarchy.subtopic.id),
       eq(tutorialPageContentV2.status, 'published')
     ));
 
-  const sharedRows = brandRows.length > 0
+  const brandRows = sharedRows.length > 0
     ? []
     : await dbHttp
       .select()
       .from(tutorialPageContentV2)
       .where(and(
-        eq(tutorialPageContentV2.brandId, 'shared'),
+        eq(tutorialPageContentV2.brandId, params.brandId),
         eq(tutorialPageContentV2.subtopicId, hierarchy.subtopic.id),
         eq(tutorialPageContentV2.status, 'published')
       ));
 
-  const contentRows = brandRows.length > 0 ? brandRows : sharedRows;
+  const contentRows = sharedRows.length > 0 ? sharedRows : brandRows;
   const content: TutorialPagePayload['content'] = {};
 
   for (const row of contentRows) {

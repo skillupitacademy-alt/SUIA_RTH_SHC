@@ -4,12 +4,15 @@ import { z } from 'zod';
 
 import {
   dbHttp,
-  tutorialDomains,
-  tutorialSubjects,
-  tutorialTopics,
-  tutorialSubtopics,
   tutorialSidebarTreesV2,
 } from '@quiz/db-tutorial';
+import {
+  domains as shcDomains,
+  getDb,
+  subjects as shcSubjects,
+  subtopics as shcSubtopics,
+  topics as shcTopics,
+} from '@quiz/db';
 import type { TutorialNavigationTree, TutorialSidebarBrandId } from '@quiz/types';
 
 export const dynamic = 'force-dynamic';
@@ -61,12 +64,22 @@ const saveSchema = z.object({
   status: z.enum(['draft', 'published']),
 });
 
+function slugify(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/['"]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
 async function getHierarchyNames(domainId: string, subjectId: string, topicId: string, activeSubtopicId: string | null) {
-  const [domain] = await dbHttp.select().from(tutorialDomains).where(eq(tutorialDomains.id, domainId)).limit(1);
-  const [subject] = await dbHttp.select().from(tutorialSubjects).where(eq(tutorialSubjects.id, subjectId)).limit(1);
-  const [topic] = await dbHttp.select().from(tutorialTopics).where(eq(tutorialTopics.id, topicId)).limit(1);
+  const db = getDb();
+  const [domain] = await db.select().from(shcDomains).where(eq(shcDomains.id, domainId)).limit(1);
+  const [subject] = await db.select().from(shcSubjects).where(eq(shcSubjects.id, subjectId)).limit(1);
+  const [topic] = await db.select().from(shcTopics).where(eq(shcTopics.id, topicId)).limit(1);
   const [activeSubtopic] = activeSubtopicId
-    ? await dbHttp.select().from(tutorialSubtopics).where(eq(tutorialSubtopics.id, activeSubtopicId)).limit(1)
+    ? await db.select().from(shcSubtopics).where(eq(shcSubtopics.id, activeSubtopicId)).limit(1)
     : [null];
 
   return { domain, subject, topic, activeSubtopic };
@@ -78,16 +91,16 @@ async function responseFromRow(row: typeof tutorialSidebarTreesV2.$inferSelect) 
     scope: {
       brandId: row.brandId,
       domainId: row.domainId,
-      domainSlug: hierarchy.domain?.slug ?? '',
+      domainSlug: hierarchy.domain ? slugify(hierarchy.domain.name) : '',
       domainName: hierarchy.domain?.name ?? '',
       subjectId: row.subjectId,
-      subjectSlug: hierarchy.subject?.slug ?? '',
+      subjectSlug: hierarchy.subject ? slugify(hierarchy.subject.name) : '',
       subjectName: hierarchy.subject?.name ?? '',
       topicId: row.topicId,
-      topicSlug: hierarchy.topic?.slug ?? '',
+      topicSlug: hierarchy.topic ? slugify(hierarchy.topic.name) : '',
       topicName: hierarchy.topic?.name ?? '',
       activeSubtopicId: row.activeSubtopicId ?? undefined,
-      activeSubtopicSlug: hierarchy.activeSubtopic?.slug,
+      activeSubtopicSlug: hierarchy.activeSubtopic ? slugify(hierarchy.activeSubtopic.name) : undefined,
     },
     tree: row.tree,
     sourceFormat: row.sourceFormat,

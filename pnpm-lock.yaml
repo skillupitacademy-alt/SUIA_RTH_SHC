@@ -1238,6 +1238,9 @@ importers:
       '@quiz/auth':
         specifier: workspace:*
         version: link:../../packages/auth
+      '@quiz/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       '@quiz/db-payment':
         specifier: workspace:*
         version: link:../../packages/db-payment

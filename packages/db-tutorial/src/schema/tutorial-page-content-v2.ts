@@ -8,18 +8,13 @@ import type {
   TutorialSidebarBrandId,
 } from '@quiz/types';
 
-import { tutorialDomains } from './tutorial-domains';
-import { tutorialSubjects } from './tutorial-subjects';
-import { tutorialTopics } from './tutorial-topics';
-import { tutorialSubtopics } from './tutorial-subtopics';
-
 export const tutorialPageContentV2 = pgTable('tutorial_page_content_v2', {
   id: uuid('id').primaryKey().defaultRandom(),
   brandId: text('brand_id').$type<TutorialSidebarBrandId>().notNull(),
-  domainId: uuid('domain_id').notNull().references(() => tutorialDomains.id),
-  subjectId: uuid('subject_id').notNull().references(() => tutorialSubjects.id),
-  topicId: uuid('topic_id').notNull().references(() => tutorialTopics.id),
-  subtopicId: uuid('subtopic_id').notNull().references(() => tutorialSubtopics.id),
+  domainId: uuid('domain_id').notNull(),
+  subjectId: uuid('subject_id').notNull(),
+  topicId: uuid('topic_id').notNull(),
+  subtopicId: uuid('subtopic_id').notNull(),
   contentType: text('content_type').$type<TutorialPageContentType>().notNull(),
   payload: jsonb('payload').$type<TutorialContentPayloadByType[TutorialPageContentType]>().notNull(),
   sourceFormat: text('source_format').$type<TutorialContentSourceFormat>().notNull().default('json'),

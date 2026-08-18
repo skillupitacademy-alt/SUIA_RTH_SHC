@@ -2,18 +2,13 @@
 import { integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid, index } from 'drizzle-orm/pg-core';
 import type { TutorialNavigationTree, TutorialSidebarBrandId } from '@quiz/types';
 
-import { tutorialDomains } from './tutorial-domains';
-import { tutorialSubjects } from './tutorial-subjects';
-import { tutorialTopics } from './tutorial-topics';
-import { tutorialSubtopics } from './tutorial-subtopics';
-
 export const tutorialSidebarTreesV2 = pgTable('tutorial_sidebar_trees_v2', {
   id: uuid('id').primaryKey().defaultRandom(),
   brandId: text('brand_id').$type<TutorialSidebarBrandId>().notNull(),
-  domainId: uuid('domain_id').notNull().references(() => tutorialDomains.id),
-  subjectId: uuid('subject_id').notNull().references(() => tutorialSubjects.id),
-  topicId: uuid('topic_id').notNull().references(() => tutorialTopics.id),
-  activeSubtopicId: uuid('active_subtopic_id').references(() => tutorialSubtopics.id),
+  domainId: uuid('domain_id').notNull(),
+  subjectId: uuid('subject_id').notNull(),
+  topicId: uuid('topic_id').notNull(),
+  activeSubtopicId: uuid('active_subtopic_id'),
   tree: jsonb('tree').$type<TutorialNavigationTree>().notNull(),
   sourceFormat: text('source_format').notNull().default('json'),
   sourceContent: text('source_content').notNull(),

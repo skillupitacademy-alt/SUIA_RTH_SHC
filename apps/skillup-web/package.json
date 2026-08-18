@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@quiz/auth": "workspace:*",
+    "@quiz/db": "workspace:*",
     "@quiz/db-people": "workspace:*",
     "@quiz/db-payment": "workspace:*",
     "@quiz/db-placement": "workspace:*",
