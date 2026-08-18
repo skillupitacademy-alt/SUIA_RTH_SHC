@@ -58,6 +58,14 @@ function compactSlug(value: string | undefined) {
   return (value ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
+function matchesSlug(value: string, slug: string) {
+  return slugify(value) === slug || compactSlug(value) === compactSlug(slug);
+}
+
+function canonicalSubtopicSlug(value: string | undefined) {
+  return compactSlug(value);
+}
+
 function getRuntimeBrandConfig(brandId: Exclude<TutorialSidebarBrandId, 'shared'>): Pick<TutorialNavigationTree, 'brand' | 'theme'> {
   if (brandId === 'skillup') {
     return {
@@ -139,7 +147,7 @@ function flattenNavigation(nodes: TutorialNavigationNode[]): FlatNavigationItem[
 function withTutorialV2Url(item: FlatNavigationItem, hierarchy: TutorialSidebarDeliveryPayload['hierarchy']): FlatNavigationItem {
   return {
     ...item,
-    url: `/tutorial-v2/${hierarchy.domain.slug}/${hierarchy.subject.slug}/${hierarchy.topic.slug}/${item.slug}`,
+    url: `/tutorial-v2/${hierarchy.domain.slug}/${hierarchy.subject.slug}/${hierarchy.topic.slug}/${canonicalSubtopicSlug(item.slug || item.name)}`,
   };
 }
 
@@ -166,7 +174,7 @@ async function resolveHierarchy(params: TutorialSidebarDeliveryParams) {
     .select()
     .from(shcDomains)
     .where(isNull(shcDomains.deletedAt));
-  const domain = domainRows.find((row) => slugify(row.name) === params.domainSlug);
+  const domain = domainRows.find((row) => matchesSlug(row.name, params.domainSlug));
 
   if (!domain) {
     return null;
@@ -179,7 +187,7 @@ async function resolveHierarchy(params: TutorialSidebarDeliveryParams) {
       eq(shcSubjects.domainId, domain.id),
       isNull(shcSubjects.deletedAt)
     ));
-  const subject = subjectRows.find((row) => slugify(row.name) === params.subjectSlug);
+  const subject = subjectRows.find((row) => matchesSlug(row.name, params.subjectSlug));
 
   if (!subject) {
     return null;
@@ -192,7 +200,7 @@ async function resolveHierarchy(params: TutorialSidebarDeliveryParams) {
       eq(shcTopics.subjectId, subject.id),
       isNull(shcTopics.deletedAt)
     ));
-  const topic = topicRows.find((row) => slugify(row.name) === params.topicSlug);
+  const topic = topicRows.find((row) => matchesSlug(row.name, params.topicSlug));
 
   if (!topic) {
     return null;
@@ -205,7 +213,7 @@ async function resolveHierarchy(params: TutorialSidebarDeliveryParams) {
       eq(shcSubtopics.topicId, topic.id),
       isNull(shcSubtopics.deletedAt)
     ));
-  const subtopic = subtopicRows.find((row) => slugify(row.name) === params.subtopicSlug);
+  const subtopic = subtopicRows.find((row) => matchesSlug(row.name, params.subtopicSlug));
 
   if (!subtopic) {
     return null;
@@ -215,7 +223,7 @@ async function resolveHierarchy(params: TutorialSidebarDeliveryParams) {
     domain: { id: domain.id, name: domain.name, slug: slugify(domain.name) },
     subject: { id: subject.id, name: subject.name, slug: slugify(subject.name) },
     topic: { id: topic.id, name: topic.name, slug: slugify(topic.name) },
-    subtopic: { id: subtopic.id, name: subtopic.name, slug: slugify(subtopic.name) },
+    subtopic: { id: subtopic.id, name: subtopic.name, slug: canonicalSubtopicSlug(subtopic.name) },
   };
 }
 

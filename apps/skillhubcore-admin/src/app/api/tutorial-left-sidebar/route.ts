@@ -73,6 +73,10 @@ function slugify(value: string) {
     .replace(/^-+|-+$/g, '');
 }
 
+function compactSlug(value: string | undefined) {
+  return (value ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
 async function getHierarchyNames(domainId: string, subjectId: string, topicId: string, activeSubtopicId: string | null) {
   const db = getDb();
   const [domain] = await db.select().from(shcDomains).where(eq(shcDomains.id, domainId)).limit(1);
@@ -83,6 +87,25 @@ async function getHierarchyNames(domainId: string, subjectId: string, topicId: s
     : [null];
 
   return { domain, subject, topic, activeSubtopic };
+}
+
+function normalizeTreeUrls(tree: TutorialNavigationTree, scope: { domainSlug: string; subjectSlug: string; topicSlug: string }): TutorialNavigationTree {
+  function normalizeNodes(nodes: TutorialNavigationTree['topics']): TutorialNavigationTree['topics'] {
+    return nodes.map((node) => {
+      const canonicalSlug = compactSlug(node.slug || node.name);
+      return {
+        ...node,
+        slug: canonicalSlug || node.slug,
+        url: node.url ? `/tutorial-v2/${scope.domainSlug}/${scope.subjectSlug}/${scope.topicSlug}/${canonicalSlug || node.slug}` : node.url,
+        children: node.children ? normalizeNodes(node.children) : node.children,
+      };
+    });
+  }
+
+  return {
+    ...tree,
+    topics: normalizeNodes(tree.topics),
+  };
 }
 
 async function responseFromRow(row: typeof tutorialSidebarTreesV2.$inferSelect) {
@@ -100,7 +123,7 @@ async function responseFromRow(row: typeof tutorialSidebarTreesV2.$inferSelect) 
       topicSlug: hierarchy.topic ? slugify(hierarchy.topic.name) : '',
       topicName: hierarchy.topic?.name ?? '',
       activeSubtopicId: row.activeSubtopicId ?? undefined,
-      activeSubtopicSlug: hierarchy.activeSubtopic ? slugify(hierarchy.activeSubtopic.name) : undefined,
+      activeSubtopicSlug: hierarchy.activeSubtopic ? compactSlug(hierarchy.activeSubtopic.name) : undefined,
     },
     tree: row.tree,
     sourceFormat: row.sourceFormat,
@@ -151,13 +174,19 @@ export async function POST(request: NextRequest) {
 
     const body = parsed.data;
     const now = new Date();
+    const hierarchy = await getHierarchyNames(body.domainId, body.subjectId, body.topicId, body.activeSubtopicId ?? null);
+    const normalizedTree = normalizeTreeUrls(body.tree as TutorialNavigationTree, {
+      domainSlug: hierarchy.domain ? slugify(hierarchy.domain.name) : '',
+      subjectSlug: hierarchy.subject ? slugify(hierarchy.subject.name) : '',
+      topicSlug: hierarchy.topic ? slugify(hierarchy.topic.name) : '',
+    });
     const values = {
       brandId: body.brandId,
       domainId: body.domainId,
       subjectId: body.subjectId,
       topicId: body.topicId,
       activeSubtopicId: body.activeSubtopicId ?? null,
-      tree: body.tree as TutorialNavigationTree,
+      tree: normalizedTree,
       sourceFormat: body.sourceFormat,
       sourceContent: body.sourceContent,
       status: body.status,

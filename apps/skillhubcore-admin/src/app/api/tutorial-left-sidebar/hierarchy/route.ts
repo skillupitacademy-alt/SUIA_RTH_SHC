@@ -18,6 +18,10 @@ function slugify(value: string) {
     .replace(/^-+|-+$/g, '');
 }
 
+function compactSlug(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
 export async function GET() {
   try {
     const db = getDb();
@@ -60,7 +64,7 @@ export async function GET() {
           id: row.id,
           topicId: row.topicId,
           name: row.name,
-          slug: slugify(row.name),
+          slug: compactSlug(row.name),
           difficultyLevels: [],
           deletedAt: serializeDate(row.deletedAt),
           createdAt: row.createdAt.toISOString(),

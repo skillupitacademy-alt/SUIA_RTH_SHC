@@ -2,13 +2,16 @@ export type TutorialSidebarBrandId = 'realtutorialhub' | 'skillup' | 'shared';
 
 export type TutorialNodeStatus = 'completed' | 'in-progress' | 'not-started';
 
+export type TutorialNodeType = 'group' | 'page';
+
 export interface TutorialNavigationNode {
   id: string;
-  slug: string;
   name: string;
+  type?: TutorialNodeType;
   icon?: string;
-  status: TutorialNodeStatus;
   expanded?: boolean;
+  slug?: string;
+  status?: TutorialNodeStatus;
   url?: string;
   children?: TutorialNavigationNode[];
 }

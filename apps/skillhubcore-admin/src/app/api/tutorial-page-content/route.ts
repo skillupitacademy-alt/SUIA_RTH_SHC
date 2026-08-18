@@ -151,6 +151,10 @@ function slugify(value: string) {
     .replace(/^-+|-+$/g, '');
 }
 
+function compactSlug(value: string | undefined) {
+  return (value ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
 async function getHierarchy(domainId: string, subjectId: string, topicId: string, subtopicId: string) {
   const db = getDb();
   const [domain] = await db.select().from(shcDomains).where(eq(shcDomains.id, domainId)).limit(1);
@@ -177,7 +181,7 @@ async function responseFromRow(row: typeof tutorialPageContentV2.$inferSelect) {
       topicSlug: hierarchy.topic ? slugify(hierarchy.topic.name) : '',
       topicName: hierarchy.topic?.name ?? '',
       subtopicId: row.subtopicId,
-      subtopicSlug: hierarchy.subtopic ? slugify(hierarchy.subtopic.name) : '',
+      subtopicSlug: hierarchy.subtopic ? compactSlug(hierarchy.subtopic.name) : '',
       subtopicName: hierarchy.subtopic?.name ?? '',
     },
     contentType: row.contentType,

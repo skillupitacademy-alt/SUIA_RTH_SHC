@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Eye, FileDown, Save, Send } from 'lucide-react';
 
 import { TutorialLeftSidebar } from '@/share-branding/LearningExperience/components/TutorialLeftSidebar';
-import { sampleNavigationTree } from './sample-navigation-tree';
+import { sampleNavigationTree, universalNavigationTemplate } from './sample-navigation-tree';
 import type {
   TutorialNavigationNode,
   TutorialNavigationTree,
@@ -49,15 +49,11 @@ interface HierarchyState {
 
 const markdownExample = `- [~] JavaScript | javascript
   - [~] JavaScript Fundamentals | javascript-fundamentals
-    - [x] What Is JavaScript? | what-is-javascript | /fullstackdevelopment/frontenddevelopment/javascript/javascript-fundamentals/what-is-javascript
-    - [ ] JavaScript Syntax | javascript-syntax | /fullstackdevelopment/frontenddevelopment/javascript/javascript-fundamentals/javascript-syntax
+    - [x] What Is JavaScript? | what-is-javascript
+    - [ ] JavaScript Syntax | javascript-syntax
   - [~] Functions | functions
-    - [~] What Is Function? | what-is-function | /fullstackdevelopment/frontenddevelopment/javascript/functions/what-is-function
-      - [x] Definition | definition | /fullstackdevelopment/frontenddevelopment/javascript/functions/what-is-function/definition
-      - [ ] Explanation | explanation | /fullstackdevelopment/frontenddevelopment/javascript/functions/what-is-function/explanation
-      - [~] Characteristics | characteristics
-        - [x] Accepts Input | accepts-input | /fullstackdevelopment/frontenddevelopment/javascript/functions/what-is-function/characteristics/accepts-input
-        - [ ] Returns Output | returns-output | /fullstackdevelopment/frontenddevelopment/javascript/functions/what-is-function/characteristics/returns-output`;
+    - [~] What Is Function? | what-is-function
+    - [ ] Function Declaration | function-declaration`;
 
 function slugify(value: string) {
   return value
@@ -66,6 +62,26 @@ function slugify(value: string) {
     .replace(/['"]/g, '')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
+}
+
+function compactSlug(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+function stripPresentationData(node: TutorialNavigationNode): TutorialNavigationNode {
+  const { status, url, slug, ...clean } = node;
+  return {
+    ...clean,
+    children: node.children?.map(stripPresentationData)
+  };
+}
+
+function normalizeNavigationForStorage(tree: TutorialNavigationTree): { topics: TutorialNavigationNode[] } {
+  // Strip out presentation-only data (brand, theme, progress, status, url)
+  // Keep only the universal navigation structure
+  return {
+    topics: tree.topics.map(stripPresentationData)
+  };
 }
 
 function getBrandTreeDefaults(brandId: TutorialSidebarBrandId, subjectName: string): Pick<TutorialNavigationTree, 'brand' | 'theme' | 'subject' | 'progress'> {
@@ -156,17 +172,14 @@ function parseMarkdownTree(source: string): TutorialNavigationNode[] {
     const level = Math.floor(match[1].replace(/\t/g, '  ').length / 2);
     const parts = match[3].split('|').map((part) => part.trim()).filter(Boolean);
     const name = parts[0];
-    const slug = slugify(parts[1] || name);
-    const url = parts[2];
+    const id = parts[1] || compactSlug(name);
 
     const node: TutorialNavigationNode = {
-      id: slug,
-      slug,
+      id,
       name,
       icon: inferIcon(level, name),
-      status: mapStatus(match[2]?.toLowerCase()),
+      type: level >= 2 ? 'page' : 'group',
       expanded: level <= 1,
-      ...(url ? { url } : {}),
       children: [],
     };
 
@@ -202,10 +215,32 @@ function parseSource(format: SourceFormat, source: string, subjectName: string):
 
   if (format === 'json') {
     const parsed = JSON.parse(source) as Partial<TutorialNavigationTree> | TutorialNavigationNode[];
+    let topics: TutorialNavigationNode[] = [];
+    
+    if (Array.isArray(parsed)) {
+      topics = parsed;
+    } else {
+      topics = parsed.topics ?? [];
+    }
+
+    // Validate max depth of 3 levels
+    function validateDepth(nodes: TutorialNavigationNode[], currentDepth: number, path: string): void {
+      if (currentDepth > 3) {
+        throw new Error(`Navigation depth exceeds maximum of 3 levels at: ${path}. Move deeper content into tutorial page content.`);
+      }
+      nodes.forEach((node) => {
+        if (node.children && node.children.length > 0) {
+          validateDepth(node.children, currentDepth + 1, `${path} → ${node.name}`);
+        }
+      });
+    }
+
+    validateDepth(topics, 1, 'Root');
+
     if (Array.isArray(parsed)) {
       return {
         ...defaults,
-        topics: parsed,
+        topics,
       };
     }
 
@@ -216,7 +251,7 @@ function parseSource(format: SourceFormat, source: string, subjectName: string):
         ...defaults.subject,
         ...(parsed.subject ?? {}),
       },
-      topics: parsed.topics ?? [],
+      topics,
     };
   }
 
@@ -246,7 +281,7 @@ function getActiveUrl(tree: TutorialNavigationTree, activeSubtopicSlug: string) 
 export function SidebarBuilderClient() {
   const [form, setForm] = useState<FormState>(initialForm);
   const [format, setFormat] = useState<SourceFormat>('json');
-  const [source, setSource] = useState(JSON.stringify(sampleNavigationTree, null, 2));
+  const [source, setSource] = useState('');
   const [message, setMessage] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [hierarchy, setHierarchy] = useState<HierarchyState>({ domains: [], subjects: [], topics: [], subtopics: [] });
@@ -300,6 +335,15 @@ export function SidebarBuilderClient() {
     setForm((previous) => ({ ...previous, [field]: value }));
   };
 
+  const loadTemplate = () => {
+    const template = {
+      topics: universalNavigationTemplate
+    };
+    setSource(JSON.stringify(template, null, 2));
+    setFormat('json');
+    setMessage('Universal navigation template loaded. Customize as needed.');
+  };
+
   const loadExisting = async () => {
     setMessage('Loading sidebar tree...');
     const params = new URLSearchParams({
@@ -336,6 +380,9 @@ export function SidebarBuilderClient() {
     setMessage(status === 'published' ? 'Publishing sidebar...' : 'Saving draft...');
 
     try {
+      // Normalize navigation to universal format (strip brand/theme/progress/status/url)
+      const universalNavigation = normalizeNavigationForStorage(parsed.tree);
+      
       const response = await fetch('/api/tutorial-left-sidebar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -345,9 +392,9 @@ export function SidebarBuilderClient() {
           subjectId: form.subjectId,
           topicId: form.topicId,
           activeSubtopicId: form.activeSubtopicId || undefined,
-          tree: parsed.tree,
-          sourceFormat: format,
-          sourceContent: source,
+          tree: { ...parsed.tree, topics: universalNavigation.topics },
+          sourceFormat: 'json',
+          sourceContent: JSON.stringify(universalNavigation, null, 2),
           status,
         }),
       });
@@ -376,9 +423,13 @@ export function SidebarBuilderClient() {
             <h1 className="mt-2 text-3xl font-black tracking-normal text-slate-950">Left Sidebar Builder</h1>
           </div>
           <div className="flex flex-wrap gap-2">
+            <button type="button" onClick={loadTemplate} className="inline-flex items-center gap-2 rounded-lg border border-blue-300 bg-blue-50 px-4 py-2 text-sm font-bold text-blue-700 hover:bg-blue-100">
+              <FileDown className="h-4 w-4" />
+              Load Template
+            </button>
             <button type="button" onClick={loadExisting} className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-800 hover:bg-slate-50">
               <FileDown className="h-4 w-4" />
-              Load
+              Load Existing
             </button>
             <button type="button" disabled={isSaving} onClick={() => save('draft')} className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-800 hover:bg-slate-50 disabled:opacity-60">
               <Save className="h-4 w-4" />
@@ -444,21 +495,6 @@ export function SidebarBuilderClient() {
 
         <div className="mt-4 grid gap-4 md:grid-cols-[220px_minmax(0,1fr)]">
           <label className="grid gap-1 text-sm font-bold text-slate-700">
-            Content Format
-            <select
-              value={format}
-              onChange={(event) => {
-                const next = event.target.value as SourceFormat;
-                setFormat(next);
-                setSource(next === 'markdown' ? markdownExample : JSON.stringify(sampleNavigationTree, null, 2));
-              }}
-              className="rounded-lg border border-slate-300 px-3 py-2 font-semibold"
-            >
-              <option value="json">JSON</option>
-              <option value="markdown">Markdown</option>
-            </select>
-          </label>
-          <label className="grid gap-1 text-sm font-bold text-slate-700">
             Active Subtopic Slug
             <select value={form.activeSubtopicId} onChange={(event) => setField('activeSubtopicId', event.target.value)} className="rounded-lg border border-slate-300 px-3 py-2 font-semibold">
               <option value="">None</option>
@@ -468,14 +504,25 @@ export function SidebarBuilderClient() {
         </div>
 
         <label className="mt-5 grid gap-2 text-sm font-bold text-slate-700">
-          Paste Left Sidebar Content
+          Navigation JSON
           <textarea
             value={source}
             onChange={(event) => setSource(event.target.value)}
+            placeholder='Click "Load Template" to start with the universal navigation structure'
             spellCheck={false}
             className="hide-scrollbar min-h-[460px] rounded-xl border border-slate-300 bg-slate-950 p-4 font-mono text-xs leading-6 text-slate-100 outline-none focus:ring-2 focus:ring-[#124fd6]"
           />
         </label>
+
+        <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-relaxed text-amber-800">
+          <p className="font-bold">📋 Navigation JSON Guidelines:</p>
+          <ul className="ml-4 mt-2 list-disc space-y-1">
+            <li><strong>Structure:</strong> Use "id", "name", "type" (group/page), "icon", "expanded", and "children"</li>
+            <li><strong>Do NOT include:</strong> brand, theme, progress, status, or manual URLs</li>
+            <li><strong>Max depth:</strong> 3 visual levels (Topic → Group → Page)</li>
+            <li><strong>System generates:</strong> URLs, slugs, and applies brand/theme at runtime</li>
+          </ul>
+        </div>
 
         <div className={`mt-4 rounded-lg border px-4 py-3 text-sm font-bold ${parsed.error ? 'border-red-200 bg-red-50 text-red-700' : 'border-emerald-200 bg-emerald-50 text-emerald-700'}`}>
           <div className="flex items-center gap-2">

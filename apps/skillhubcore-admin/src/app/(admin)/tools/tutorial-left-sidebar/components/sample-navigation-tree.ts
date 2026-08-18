@@ -1,5 +1,91 @@
-import type { TutorialNavigationTree } from './types';
+import type { TutorialNavigationNode, TutorialNavigationTree } from './types';
 
+// UNIVERSAL NAVIGATION JSON TEMPLATE
+// This is the standard structure for sidebar navigation.
+// DO NOT include brand, theme, progress, or status in your navigation JSON.
+// Those are applied at runtime based on brand and user context.
+export const universalNavigationTemplate: TutorialNavigationNode[] = [
+  {
+    id: 'javascript',
+    name: 'JavaScript',
+    type: 'group',
+    icon: 'javascript',
+    expanded: true,
+    children: [
+      {
+        id: 'javascript-fundamentals',
+        name: 'JavaScript Fundamentals',
+        type: 'group',
+        icon: 'book',
+        expanded: true,
+        children: [
+          {
+            id: 'what-is-javascript',
+            name: 'What Is JavaScript?',
+            type: 'page',
+            icon: 'folder'
+          },
+          {
+            id: 'javascript-syntax',
+            name: 'JavaScript Syntax',
+            type: 'page',
+            icon: 'folder'
+          },
+          {
+            id: 'javascript-statements',
+            name: 'JavaScript Statements',
+            type: 'page',
+            icon: 'folder'
+          }
+        ]
+      },
+      {
+        id: 'variables',
+        name: 'Variables',
+        type: 'group',
+        icon: 'folder',
+        children: [
+          {
+            id: 'what-is-variable',
+            name: 'What Is a Variable?',
+            type: 'page',
+            icon: 'folder'
+          },
+          {
+            id: 'let-var-const',
+            name: 'let vs var vs const',
+            type: 'page',
+            icon: 'folder'
+          }
+        ]
+      },
+      {
+        id: 'functions',
+        name: 'Functions',
+        type: 'group',
+        icon: 'folder',
+        expanded: true,
+        children: [
+          {
+            id: 'what-is-function',
+            name: 'What Is Function?',
+            type: 'page',
+            icon: 'folder'
+          },
+          {
+            id: 'function-declaration',
+            name: 'Function Declaration',
+            type: 'page',
+            icon: 'folder'
+          }
+        ]
+      }
+    ]
+  }
+];
+
+// PRESENTATION SAMPLE (for preview only - includes brand/theme/progress)
+// This demonstrates what the final rendered sidebar looks like with runtime data applied
 export const sampleNavigationTree: TutorialNavigationTree = {
   brand: {
     name: 'RealTutorialHub',
@@ -20,226 +106,19 @@ export const sampleNavigationTree: TutorialNavigationTree = {
   progress: {
     percentage: 35,
   },
-  topics: [
-    {
-      id: 'javascript',
-      slug: 'javascript',
-      name: 'JavaScript',
-      icon: 'javascript',
-      expanded: true,
-      status: 'in-progress',
-      children: [
-        {
-          id: 'javascript-fundamentals',
-          slug: 'javascript-fundamentals',
-          name: 'JavaScript Fundamentals',
-          icon: 'book',
-          expanded: true,
-          status: 'in-progress',
-          children: [
-            {
-              id: 'what-is-javascript',
-              slug: 'what-is-javascript',
-              name: 'What Is JavaScript?',
-              icon: 'folder',
-              status: 'completed',
-              url: '/fullstackdevelopment/frontenddevelopment/javascript/javascript-fundamentals/what-is-javascript',
-            },
-            {
-              id: 'javascript-syntax',
-              slug: 'javascript-syntax',
-              name: 'JavaScript Syntax',
-              icon: 'folder',
-              status: 'not-started',
-              url: '/fullstackdevelopment/frontenddevelopment/javascript/javascript-fundamentals/javascript-syntax',
-            },
-            {
-              id: 'javascript-statements',
-              slug: 'javascript-statements',
-              name: 'JavaScript Statements',
-              icon: 'folder',
-              status: 'not-started',
-              url: '/fullstackdevelopment/frontenddevelopment/javascript/javascript-fundamentals/javascript-statements',
-            },
-          ],
-        },
-        {
-          id: 'variables',
-          slug: 'variables',
-          name: 'Variables',
-          icon: 'folder',
-          status: 'not-started',
-          children: [
-            {
-              id: 'what-is-variable',
-              slug: 'what-is-variable',
-              name: 'What Is a Variable?',
-              icon: 'folder',
-              status: 'not-started',
-              url: '/fullstackdevelopment/frontenddevelopment/javascript/variables/what-is-variable',
-            },
-            {
-              id: 'let-var-const',
-              slug: 'let-var-const',
-              name: 'let vs var vs const',
-              icon: 'folder',
-              status: 'not-started',
-              url: '/fullstackdevelopment/frontenddevelopment/javascript/variables/let-var-const',
-            },
-          ],
-        },
-        {
-          id: 'functions',
-          slug: 'functions',
-          name: 'Functions',
-          icon: 'folder',
-          expanded: true,
-          status: 'in-progress',
-          children: [
-            {
-              id: 'what-is-function',
-              slug: 'what-is-function',
-              name: 'What Is Function?',
-              icon: 'folder',
-              expanded: true,
-              status: 'in-progress',
-              url: '/fullstackdevelopment/frontenddevelopment/javascript/functions/what-is-function',
-              children: [
-                {
-                  id: 'function-definition',
-                  slug: 'function-definition',
-                  name: 'Definition',
-                  icon: 'file',
-                  status: 'completed',
-                  url: '/fullstackdevelopment/frontenddevelopment/javascript/functions/what-is-function/definition',
-                },
-                {
-                  id: 'function-explanation',
-                  slug: 'function-explanation',
-                  name: 'Explanation',
-                  icon: 'file',
-                  status: 'in-progress',
-                  url: '/fullstackdevelopment/frontenddevelopment/javascript/functions/what-is-function/explanation',
-                },
-                {
-                  id: 'function-characteristics',
-                  slug: 'function-characteristics',
-                  name: 'Characteristics',
-                  icon: 'folder',
-                  expanded: true,
-                  status: 'in-progress',
-                  children: [
-                    {
-                      id: 'function-reusable',
-                      slug: 'function-reusable',
-                      name: 'Reusable',
-                      icon: 'file',
-                      status: 'completed',
-                      url: '/fullstackdevelopment/frontenddevelopment/javascript/functions/what-is-function/characteristics/reusable',
-                    },
-                    {
-                      id: 'function-input',
-                      slug: 'function-input',
-                      name: 'Accepts Input',
-                      icon: 'file',
-                      status: 'completed',
-                      url: '/fullstackdevelopment/frontenddevelopment/javascript/functions/what-is-function/characteristics/accepts-input',
-                    },
-                    {
-                      id: 'function-output',
-                      slug: 'function-output',
-                      name: 'Returns Output',
-                      icon: 'file',
-                      status: 'not-started',
-                      url: '/fullstackdevelopment/frontenddevelopment/javascript/functions/what-is-function/characteristics/returns-output',
-                    },
-                  ],
-                },
-              ],
-            },
-            {
-              id: 'function-declaration',
-              slug: 'function-declaration',
-              name: 'Function Declaration',
-              icon: 'folder',
-              status: 'completed',
-              children: [
-                {
-                  id: 'function-declaration-syntax',
-                  slug: 'function-declaration-syntax',
-                  name: 'Syntax',
-                  icon: 'file',
-                  status: 'completed',
-                  url: '/fullstackdevelopment/frontenddevelopment/javascript/functions/function-declaration/syntax',
-                },
-              ],
-            },
-          ],
-        },
-        {
-          id: 'ecmascript',
-          slug: 'ecmascript',
-          name: 'ECMAScript',
-          icon: 'branch',
-          expanded: true,
-          status: 'in-progress',
-          children: [
-            {
-              id: 'es5',
-              slug: 'es5',
-              name: 'ES5',
-              icon: 'folder',
-              expanded: true,
-              status: 'in-progress',
-              children: [
-                {
-                  id: 'es5-array-methods',
-                  slug: 'es5-array-methods',
-                  name: 'Array Methods',
-                  icon: 'folder',
-                  expanded: true,
-                  status: 'in-progress',
-                  children: [
-                    {
-                      id: 'es5-foreach',
-                      slug: 'es5-foreach',
-                      name: 'forEach()',
-                      icon: 'file',
-                      status: 'not-started',
-                      url: '/fullstackdevelopment/frontenddevelopment/javascript/ecmascript/es5/array-methods/foreach',
-                    },
-                    {
-                      id: 'es5-map',
-                      slug: 'es5-map',
-                      name: 'map()',
-                      icon: 'file',
-                      status: 'not-started',
-                      url: '/fullstackdevelopment/frontenddevelopment/javascript/ecmascript/es5/array-methods/map',
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
-        },
-        {
-          id: 'dom',
-          slug: 'dom',
-          name: 'DOM',
-          icon: 'sitemap',
-          status: 'not-started',
-          children: [
-            {
-              id: 'dom-definition',
-              slug: 'dom-definition',
-              name: 'Definition',
-              icon: 'file',
-              status: 'not-started',
-              url: '/fullstackdevelopment/frontenddevelopment/javascript/dom/what-is-dom/definition',
-            },
-          ],
-        },
-      ],
-    },
-  ],
+  topics: universalNavigationTemplate.map((node) => ({
+    ...node,
+    slug: node.id,
+    status: 'not-started' as const,
+    children: node.children?.map((child) => ({
+      ...child,
+      slug: child.id,
+      status: 'not-started' as const,
+      children: child.children?.map((grandchild) => ({
+        ...grandchild,
+        slug: grandchild.id,
+        status: 'not-started' as const,
+      }))
+    }))
+  }))
 };
