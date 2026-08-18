@@ -50,6 +50,12 @@ scratch
 phasewise
 digitalmarketing
 audit-reports
+infra/hostinger/dist
+infra/hostinger/dist/**
+infra/hostinger/tmp
+infra/hostinger/tmp/**
+infra/hostinger/**/dist
+infra/hostinger/**/dist/**
 docs
 !docs
 !docs/**
