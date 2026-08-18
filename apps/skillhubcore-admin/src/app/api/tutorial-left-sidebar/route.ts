@@ -93,10 +93,13 @@ function normalizeTreeUrls(tree: TutorialNavigationTree, scope: { domainSlug: st
   function normalizeNodes(nodes: TutorialNavigationTree['topics']): TutorialNavigationTree['topics'] {
     return nodes.map((node) => {
       const canonicalSlug = compactSlug(node.slug || node.name);
+      const hasChildren = node.children && node.children.length > 0;
+      const isPageNode = node.type === 'page' || (!hasChildren && !node.type);
+      
       return {
         ...node,
         slug: canonicalSlug || node.slug,
-        url: node.url ? `/tutorial-v2/${scope.domainSlug}/${scope.subjectSlug}/${scope.topicSlug}/${canonicalSlug || node.slug}` : node.url,
+        url: isPageNode ? `/tutorial-v2/${scope.domainSlug}/${scope.subjectSlug}/${scope.topicSlug}/${canonicalSlug}` : undefined,
         children: node.children ? normalizeNodes(node.children) : node.children,
       };
     });
