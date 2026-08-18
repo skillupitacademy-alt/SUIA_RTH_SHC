@@ -54,6 +54,10 @@ function slugify(value: string) {
     .replace(/^-+|-+$/g, '');
 }
 
+function compactSlug(value: string | undefined) {
+  return (value ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
 function getRuntimeBrandConfig(brandId: Exclude<TutorialSidebarBrandId, 'shared'>): Pick<TutorialNavigationTree, 'brand' | 'theme'> {
   if (brandId === 'skillup') {
     return {
@@ -103,7 +107,7 @@ function withRuntimeBrand(tree: TutorialNavigationTree, brandId: Exclude<Tutoria
 
 function findUrlBySlug(nodes: TutorialNavigationNode[], slug: string): string {
   for (const node of nodes) {
-    if (node.slug === slug && node.url) {
+    if ((node.slug === slug || compactSlug(node.slug) === compactSlug(slug)) && node.url) {
       return node.url;
     }
 
@@ -130,6 +134,30 @@ function flattenNavigation(nodes: TutorialNavigationNode[]): FlatNavigationItem[
 
   walk(nodes);
   return items;
+}
+
+function withTutorialV2Url(item: FlatNavigationItem, hierarchy: TutorialSidebarDeliveryPayload['hierarchy']): FlatNavigationItem {
+  return {
+    ...item,
+    url: `/tutorial-v2/${hierarchy.domain.slug}/${hierarchy.subject.slug}/${hierarchy.topic.slug}/${item.slug}`,
+  };
+}
+
+function lastPathSegment(value: string | undefined) {
+  const parts = (value ?? '').split('/').filter(Boolean);
+  return parts[parts.length - 1] ?? '';
+}
+
+function isActiveNavigationItem(item: FlatNavigationItem, params: TutorialSidebarDeliveryParams, hierarchy: TutorialSidebarDeliveryPayload['hierarchy'], activeUrl: string) {
+  const itemSlug = compactSlug(item.slug);
+  const itemUrlSlug = compactSlug(lastPathSegment(item.url));
+  return (
+    itemSlug === compactSlug(params.subtopicSlug)
+    || itemSlug === compactSlug(hierarchy.subtopic.slug)
+    || item.url === activeUrl
+    || itemUrlSlug === compactSlug(params.subtopicSlug)
+    || itemUrlSlug === compactSlug(hierarchy.subtopic.slug)
+  );
 }
 
 async function resolveHierarchy(params: TutorialSidebarDeliveryParams) {
@@ -279,8 +307,8 @@ export async function getPublishedTutorialPagePayload(params: TutorialSidebarDel
     }
   }
 
-  const flatItems = flattenNavigation(tree.topics);
-  const activeIndex = flatItems.findIndex((item) => item.slug === params.subtopicSlug || item.slug === hierarchy.subtopic.slug || item.url === activeUrl);
+  const flatItems = flattenNavigation(tree.topics).map((item) => withTutorialV2Url(item, hierarchy));
+  const activeIndex = flatItems.findIndex((item) => isActiveNavigationItem(item, params, hierarchy, activeUrl));
 
   return {
     brandId: params.brandId,
