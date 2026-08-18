@@ -5,6 +5,7 @@ import { useState } from 'react';
 import type { TutorialPagePayload } from '@quiz/types';
 import { TutorialCodeContent } from './TutorialCodeContent';
 import { TutorialDefinitionContent } from './TutorialDefinitionContent';
+import { TutorialSummaryContent } from './TutorialSummaryContent';
 import { TutorialLeftSidebar } from './TutorialLeftSidebar';
 import { TutorialFooterNavigation, TutorialHeader } from './TutorialPageChrome';
 
@@ -32,7 +33,8 @@ export function TutorialPageShell({ payload }: TutorialPageShellProps) {
           <div className="mx-auto w-full space-y-6">
             {payload.content.definition && <TutorialDefinitionContent payload={payload.content.definition} theme={payload.theme} />}
             {payload.content.code && <TutorialCodeContent payload={payload.content.code} theme={payload.theme} />}
-            {!payload.content.definition && !payload.content.code && (
+            {payload.content.summary && <TutorialSummaryContent payload={payload.content.summary} theme={payload.theme} />}
+            {!payload.content.definition && !payload.content.code && !payload.content.summary && (
               <section className="rounded-xl border border-[#e4eaf2] bg-white p-6 text-[#071f63] shadow-sm">
                 Content is not published for this subtopic yet.
               </section>

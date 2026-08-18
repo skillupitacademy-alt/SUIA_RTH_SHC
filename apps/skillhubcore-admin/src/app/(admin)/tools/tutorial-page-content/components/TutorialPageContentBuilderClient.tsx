@@ -5,12 +5,14 @@ import { Eye, Save, Send } from 'lucide-react';
 
 import { TutorialCodeContent } from '@/share-branding/LearningExperience/components/TutorialCodeContent';
 import { TutorialDefinitionContent } from '@/share-branding/LearningExperience/components/TutorialDefinitionContent';
+import { TutorialSummaryContent } from '@/share-branding/LearningExperience/components/TutorialSummaryContent';
 import type {
   BrandTutorialTheme,
   TutorialCodePayload,
   TutorialDefinitionPayload,
   TutorialPageContentType,
   TutorialSidebarBrandId,
+  TutorialSummaryPayload,
 } from '@quiz/types';
 
 type SourceFormat = 'json' | 'markdown';
@@ -137,6 +139,81 @@ const codeExample: TutorialCodePayload = {
   },
 };
 
+const summaryExample: TutorialSummaryPayload = {
+  page: {
+    badge: 'REVISION & SUMMARY',
+    badgeIcon: 'fa-book-open',
+    title: 'Revision: Variables and id()',
+    introduction: "Let's quickly revise what we learned about variables, objects, and identity in Python.",
+  },
+  summary: [
+    { text: 'A variable is a name that <code>references</code> an object in memory.' },
+    { text: 'Variables store references, <code>not</code> the actual values.' },
+    { text: '<code>id()</code> returns the identity of the object, not its value.' },
+    { text: 'Two variables can have the same value but different identities.' },
+    { text: 'When a variable is assigned a new value, it may start referring to a new object.' },
+  ],
+  revisionTable: {
+    columns: [
+      { id: 'concept', title: 'Concept', icon: 'fa-regular fa-lightbulb' },
+      { id: 'keyPoint', title: 'Key Point', icon: 'fa-solid fa-bullseye' },
+      { id: 'example', title: 'Example', icon: 'fa-solid fa-code' },
+      { id: 'remember', title: 'Remember', icon: 'fa-solid fa-star' },
+    ],
+    rows: [
+      {
+        concept: { name: 'Variable', icon: 'fa-solid fa-xmark' },
+        keyPoint: {
+          title: 'References an object.',
+          description: 'A variable is just a name that refers to an object stored in memory.',
+          code: 'x = 10',
+        },
+        example: { code: 'x = 10' },
+        remember: {
+          title: 'Variable != object',
+          description: 'The variable holds a reference, not the actual value.',
+        },
+      },
+      {
+        concept: { name: 'Object', icon: 'fa-solid fa-cube' },
+        keyPoint: {
+          title: 'Contains value/type information.',
+          description: 'An object stores the actual data along with its type and other internal information.',
+          code: 'type(x) -> int',
+        },
+        example: { code: '10' },
+        remember: {
+          title: 'Objects exist in memory',
+          description: 'Objects are created in memory and can be shared by multiple variables.',
+        },
+      },
+      {
+        concept: { name: 'Assignment', icon: 'fa-solid fa-equals' },
+        keyPoint: {
+          title: 'Binds a variable to an object.',
+          description: 'Assignment makes a variable reference an object produced by an expression.',
+          code: 'x = 20',
+        },
+        example: { code: 'x = 20' },
+        remember: {
+          title: 'Reference can change',
+          description: 'After assignment, <code>x</code> now refers to the object containing <code>20</code>.',
+        },
+      },
+    ],
+  },
+  quickTips: [
+    { text: 'Use meaningful variable names to make your code readable.' },
+    { text: 'Use <code>id()</code> to understand how Python manages objects in memory.' },
+    { text: "Don't rely on <code>id()</code> for program logic; its value can change between runs." },
+    { text: 'Practice with small examples and predict the output before running the code.' },
+  ],
+  finalTip: {
+    title: 'Quick Revision Tip',
+    text: 'Review this table regularly. Strong fundamentals make advanced topics much easier.',
+  },
+};
+
 const initialHierarchy: HierarchyState = { domains: [], subjects: [], topics: [], subtopics: [] };
 const initialForm: FormState = {
   brandId: SHARED_BRAND_ID,
@@ -167,6 +244,16 @@ function themeForBrand(brandId: TutorialSidebarBrandId): BrandTutorialTheme {
   };
 }
 
+function exampleForContentType(contentType: TutorialPageContentType) {
+  if (contentType === 'definition') {
+    return definitionExample;
+  }
+  if (contentType === 'code') {
+    return codeExample;
+  }
+  return summaryExample;
+}
+
 function parseSource(format: SourceFormat, source: string, contentType: TutorialPageContentType) {
   if (format === 'json') {
     return JSON.parse(source);
@@ -182,6 +269,18 @@ function parseSource(format: SourceFormat, source: string, contentType: Tutorial
         definition: lines[2] || '',
         explanation: lines.slice(3),
       },
+    };
+  }
+
+  if (contentType === 'summary') {
+    const lines = source.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+    return {
+      page: {
+        badge: 'REVISION & SUMMARY',
+        title: lines[0]?.replace(/^#\s*/, '') || 'Revision Summary',
+        introduction: lines[1] || '',
+      },
+      summary: lines.slice(2).map((line) => ({ text: line.replace(/^[-*]\s*/, '') })),
     };
   }
 
@@ -205,7 +304,7 @@ export function TutorialPageContentBuilderClient() {
   const [form, setForm] = useState<FormState>(initialForm);
   const [sourceFormat, setSourceFormat] = useState<SourceFormat>('json');
   const [sourceContent, setSourceContent] = useState(JSON.stringify(definitionExample, null, 2));
-  const [preview, setPreview] = useState<TutorialDefinitionPayload | TutorialCodePayload>(definitionExample);
+  const [preview, setPreview] = useState<TutorialDefinitionPayload | TutorialCodePayload | TutorialSummaryPayload>(definitionExample);
   const [message, setMessage] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
@@ -217,7 +316,7 @@ export function TutorialPageContentBuilderClient() {
   }, []);
 
   useEffect(() => {
-    const example = form.contentType === 'definition' ? definitionExample : codeExample;
+    const example = exampleForContentType(form.contentType);
     setSourceContent(JSON.stringify(example, null, 2));
     setPreview(example);
   }, [form.contentType]);
@@ -314,6 +413,7 @@ export function TutorialPageContentBuilderClient() {
               <select className="rounded-lg border border-[#dfe7f1] px-3 py-2" value={form.contentType} onChange={(event) => updateForm('contentType', event.target.value as TutorialPageContentType)}>
                 <option value="definition">Definition</option>
                 <option value="code">Code</option>
+                <option value="summary">Summary</option>
               </select>
               <select className="rounded-lg border border-[#dfe7f1] px-3 py-2" value={sourceFormat} onChange={(event) => setSourceFormat(event.target.value as SourceFormat)}>
                 <option value="json">JSON</option>
@@ -346,9 +446,9 @@ export function TutorialPageContentBuilderClient() {
           <div className="mb-4 rounded-xl border border-[#dfe7f1] bg-white p-4 text-sm font-bold text-[#071f63]">
             Preview target: {selectedSubtopic?.name ?? 'Select a subtopic'}
           </div>
-          {form.contentType === 'definition'
-            ? <TutorialDefinitionContent payload={preview as TutorialDefinitionPayload} theme={themeForBrand(form.brandId)} />
-            : <TutorialCodeContent payload={preview as TutorialCodePayload} theme={themeForBrand(form.brandId)} />}
+          {form.contentType === 'definition' && <TutorialDefinitionContent payload={preview as TutorialDefinitionPayload} theme={themeForBrand(form.brandId)} />}
+          {form.contentType === 'code' && <TutorialCodeContent payload={preview as TutorialCodePayload} theme={themeForBrand(form.brandId)} />}
+          {form.contentType === 'summary' && <TutorialSummaryContent payload={preview as TutorialSummaryPayload} theme={themeForBrand(form.brandId)} />}
         </section>
       </div>
     </main>

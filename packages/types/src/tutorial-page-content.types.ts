@@ -1,6 +1,6 @@
 import type { BrandTutorialTheme, TutorialNavigationTree, TutorialSidebarBrandId } from './tutorial-sidebar.types';
 
-export type TutorialPageContentType = 'definition' | 'code';
+export type TutorialPageContentType = 'definition' | 'code' | 'summary';
 export type TutorialContentSourceFormat = 'json' | 'markdown';
 export type TutorialContentStatus = 'draft' | 'published';
 
@@ -86,9 +86,54 @@ export interface TutorialCodePayload {
   };
 }
 
+export interface TutorialSummaryPayload {
+  page: {
+    badge?: string;
+    badgeIcon?: string;
+    title: string;
+    introduction: string;
+  };
+  summary: Array<{
+    text: string;
+  }>;
+  revisionTable?: {
+    columns: Array<{
+      id: string;
+      title: string;
+      icon?: string;
+    }>;
+    rows: Array<{
+      concept?: {
+        name: string;
+        icon?: string;
+      };
+      keyPoint?: {
+        title: string;
+        description: string;
+        code?: string;
+      };
+      example?: {
+        code: string;
+      };
+      remember?: {
+        title: string;
+        description: string;
+      };
+    }>;
+  };
+  quickTips?: Array<{
+    text: string;
+  }>;
+  finalTip?: {
+    title: string;
+    text: string;
+  };
+}
+
 export type TutorialContentPayloadByType = {
   definition: TutorialDefinitionPayload;
   code: TutorialCodePayload;
+  summary: TutorialSummaryPayload;
 };
 
 export interface TutorialPageContentRecord<T extends TutorialPageContentType = TutorialPageContentType> {
@@ -122,6 +167,7 @@ export interface TutorialPagePayload {
   content: Partial<{
     definition: TutorialDefinitionPayload;
     code: TutorialCodePayload;
+    summary: TutorialSummaryPayload;
   }>;
   footer: {
     previous: TutorialFooterNavigationItem | null;

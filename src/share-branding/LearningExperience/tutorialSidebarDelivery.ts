@@ -274,6 +274,9 @@ export async function getPublishedTutorialPagePayload(params: TutorialSidebarDel
     if (row.contentType === 'code') {
       content.code = row.payload as TutorialPagePayload['content']['code'];
     }
+    if (row.contentType === 'summary') {
+      content.summary = row.payload as TutorialPagePayload['content']['summary'];
+    }
   }
 
   const flatItems = flattenNavigation(tree.topics);

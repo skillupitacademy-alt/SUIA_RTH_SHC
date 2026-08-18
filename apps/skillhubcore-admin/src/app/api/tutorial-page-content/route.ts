@@ -18,6 +18,7 @@ import type {
   TutorialDefinitionPayload,
   TutorialPageContentType,
   TutorialSidebarBrandId,
+  TutorialSummaryPayload,
 } from '@quiz/types';
 
 export const dynamic = 'force-dynamic';
@@ -74,13 +75,57 @@ const codeSchema: z.ZodType<TutorialCodePayload> = z.object({
   }).optional(),
 });
 
+const summarySchema: z.ZodType<TutorialSummaryPayload> = z.object({
+  page: z.object({
+    badge: z.string().optional(),
+    badgeIcon: z.string().optional(),
+    title: z.string().min(1),
+    introduction: z.string().min(1),
+  }),
+  summary: z.array(z.object({
+    text: z.string().min(1),
+  })),
+  revisionTable: z.object({
+    columns: z.array(z.object({
+      id: z.string().min(1),
+      title: z.string().min(1),
+      icon: z.string().optional(),
+    })),
+    rows: z.array(z.object({
+      concept: z.object({
+        name: z.string().min(1),
+        icon: z.string().optional(),
+      }).optional(),
+      keyPoint: z.object({
+        title: z.string().min(1),
+        description: z.string().min(1),
+        code: z.string().optional(),
+      }).optional(),
+      example: z.object({
+        code: z.string().min(1),
+      }).optional(),
+      remember: z.object({
+        title: z.string().min(1),
+        description: z.string().min(1),
+      }).optional(),
+    })),
+  }).optional(),
+  quickTips: z.array(z.object({
+    text: z.string().min(1),
+  })).optional(),
+  finalTip: z.object({
+    title: z.string().min(1),
+    text: z.string().min(1),
+  }).optional(),
+});
+
 const saveSchema = z.object({
   brandId: z.enum(['realtutorialhub', 'skillup', 'shared']),
   domainId: z.string().uuid(),
   subjectId: z.string().uuid(),
   topicId: z.string().uuid(),
   subtopicId: z.string().uuid(),
-  contentType: z.enum(['definition', 'code']),
+  contentType: z.enum(['definition', 'code', 'summary']),
   payload: z.unknown(),
   sourceFormat: z.enum(['json', 'markdown']),
   sourceContent: z.string().min(1),
@@ -88,9 +133,13 @@ const saveSchema = z.object({
 });
 
 function validatePayload(contentType: TutorialPageContentType, payload: unknown) {
-  return contentType === 'definition'
-    ? definitionSchema.safeParse(payload)
-    : codeSchema.safeParse(payload);
+  if (contentType === 'definition') {
+    return definitionSchema.safeParse(payload);
+  }
+  if (contentType === 'code') {
+    return codeSchema.safeParse(payload);
+  }
+  return summarySchema.safeParse(payload);
 }
 
 function slugify(value: string) {
