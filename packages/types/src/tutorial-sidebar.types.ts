@@ -53,6 +53,23 @@ export interface TutorialSidebarScope {
   activeSubtopicSlug?: string;
 }
 
+// Normalized navigation node (system-generated slug/url, no presentation data)
+export interface TutorialNormalizedNavigationNode {
+  id: string;
+  name: string;
+  type: TutorialNodeType;
+  icon?: string;
+  expanded?: boolean;
+  slug: string;  // System-generated
+  url?: string;  // System-generated (page nodes only)
+  children?: TutorialNormalizedNavigationNode[];
+}
+
+// Normalized navigation tree (stored in database - NO brand/theme/progress/status)
+export interface TutorialNormalizedNavigationTree {
+  topics: TutorialNormalizedNavigationNode[];
+}
+
 export interface TutorialSidebarPayload {
   scope: TutorialSidebarScope;
   tree: TutorialNavigationTree;

@@ -16,6 +16,8 @@ import type {
   BrandTutorialTheme,
   TutorialNavigationNode,
   TutorialNavigationTree,
+  TutorialNormalizedNavigationNode,
+  TutorialNormalizedNavigationTree,
   TutorialPagePayload,
   TutorialSidebarBrandId,
 } from '@quiz/types';
@@ -42,7 +44,7 @@ export interface TutorialSidebarDeliveryPayload {
 interface FlatNavigationItem {
   name: string;
   slug: string;
-  url?: string;
+  url: string;
 }
 
 function slugify(value: string) {
@@ -100,16 +102,32 @@ function getRuntimeBrandConfig(brandId: Exclude<TutorialSidebarBrandId, 'shared'
   };
 }
 
-function withRuntimeBrand(tree: TutorialNavigationTree, brandId: Exclude<TutorialSidebarBrandId, 'shared'>): TutorialNavigationTree {
+// Transform normalized tree (from DB) into complete runtime tree with brand/theme/subject/progress
+function withRuntimeBrand(
+  normalizedTree: TutorialNormalizedNavigationTree, 
+  brandId: Exclude<TutorialSidebarBrandId, 'shared'>,
+  subjectName: string
+): TutorialNavigationTree {
   const runtimeBrand = getRuntimeBrandConfig(brandId);
 
+  // Convert normalized nodes to runtime nodes (copy all fields as-is)
+  function toRuntimeNodes(nodes: TutorialNormalizedNavigationNode[]): TutorialNavigationNode[] {
+    return nodes.map((node) => ({
+      ...node,
+      children: node.children ? toRuntimeNodes(node.children) : undefined,
+    }));
+  }
+
   return {
-    ...tree,
-    brand: {
-      ...runtimeBrand.brand,
-      logoUrl: tree.brand.logoUrl,
-    },
+    brand: runtimeBrand.brand,
     theme: runtimeBrand.theme satisfies BrandTutorialTheme,
+    subject: {
+      name: subjectName,
+    },
+    progress: {
+      percentage: 0, // TODO: Calculate from tutorial_progress table
+    },
+    topics: toRuntimeNodes(normalizedTree.topics),
   };
 }
 
@@ -133,10 +151,13 @@ function flattenNavigation(nodes: TutorialNavigationNode[]): FlatNavigationItem[
 
   function walk(branch: TutorialNavigationNode[]) {
     for (const node of branch) {
+      // Only include nodes with both url and slug (pages with generated URLs)
       if (node.url && node.slug) {
         items.push({ name: node.name, slug: node.slug, url: node.url });
       }
-      walk(node.children ?? []);
+      if (node.children) {
+        walk(node.children);
+      }
     }
   }
 
@@ -260,7 +281,8 @@ export async function getPublishedTutorialSidebar(params: TutorialSidebarDeliver
     return null;
   }
 
-  const brandedTree = withRuntimeBrand(sidebar.tree, params.brandId);
+  // Transform normalized tree (from DB) into complete runtime tree
+  const brandedTree = withRuntimeBrand(sidebar.tree, params.brandId, hierarchy.subject.name);
 
   const activeUrl =
     findUrlBySlug(brandedTree.topics, params.subtopicSlug)

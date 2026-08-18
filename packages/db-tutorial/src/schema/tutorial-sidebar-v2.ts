@@ -1,6 +1,6 @@
 /* istanbul ignore file */
 import { integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid, index } from 'drizzle-orm/pg-core';
-import type { TutorialNavigationTree, TutorialSidebarBrandId } from '@quiz/types';
+import type { TutorialNormalizedNavigationTree, TutorialSidebarBrandId } from '@quiz/types';
 
 export const tutorialSidebarTreesV2 = pgTable('tutorial_sidebar_trees_v2', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -9,7 +9,7 @@ export const tutorialSidebarTreesV2 = pgTable('tutorial_sidebar_trees_v2', {
   subjectId: uuid('subject_id').notNull(),
   topicId: uuid('topic_id').notNull(),
   activeSubtopicId: uuid('active_subtopic_id'),
-  tree: jsonb('tree').$type<TutorialNavigationTree>().notNull(),
+  tree: jsonb('tree').$type<TutorialNormalizedNavigationTree>().notNull(),
   sourceFormat: text('source_format').notNull().default('json'),
   sourceContent: text('source_content').notNull(),
   status: text('status').$type<'draft' | 'published'>().notNull().default('draft'),
