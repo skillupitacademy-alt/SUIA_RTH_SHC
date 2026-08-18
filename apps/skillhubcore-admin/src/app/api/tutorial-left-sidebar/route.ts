@@ -268,6 +268,34 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('[Tutorial Left Sidebar API] POST failed', error);
-    return NextResponse.json({ error: error instanceof Error ? error.message : 'Internal server error' }, { status: 500 });
+    
+    // Enhanced diagnostic logging for PostgreSQL errors
+    if (error && typeof error === 'object') {
+      console.error('[Tutorial Left Sidebar API] Error details:', {
+        message: (error as any).message,
+        code: (error as any).code,
+        detail: (error as any).detail,
+        constraint: (error as any).constraint,
+        table: (error as any).table,
+        column: (error as any).column,
+        cause: (error as any).cause,
+        causeMessage: (error as any).cause?.message,
+        causeCode: (error as any).cause?.code,
+        causeDetail: (error as any).cause?.detail,
+        stack: (error as any).stack,
+      });
+    }
+    
+    return NextResponse.json({ 
+      error: error instanceof Error ? error.message : 'Internal server error',
+      // Include diagnostic info in development
+      ...(process.env.NODE_ENV === 'development' && error && typeof error === 'object' ? {
+        details: {
+          code: (error as any).code,
+          detail: (error as any).detail,
+          constraint: (error as any).constraint,
+        }
+      } : {})
+    }, { status: 500 });
   }
 }
