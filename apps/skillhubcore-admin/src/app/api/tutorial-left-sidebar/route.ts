@@ -77,6 +77,38 @@ function compactSlug(value: string | undefined) {
   return (value ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
+function validateNavigationDepth(nodes: TutorialNavigationTree['topics'], currentDepth = 1, path = 'Root'): void {
+  if (currentDepth > 3) {
+    throw new Error(`Navigation depth exceeds maximum of 3 levels at: ${path}. Move deeper content into tutorial page content.`);
+  }
+  
+  nodes.forEach((node) => {
+    if (node.children && node.children.length > 0) {
+      validateNavigationDepth(node.children, currentDepth + 1, `${path} → ${node.name}`);
+    }
+  });
+}
+
+function validateNodeTypes(nodes: TutorialNavigationTree['topics'], path = 'Root'): void {
+  nodes.forEach((node) => {
+    if (!node.type || (node.type !== 'group' && node.type !== 'page')) {
+      throw new Error(`Invalid or missing node type at: ${path} → ${node.name}. Must be 'group' or 'page'.`);
+    }
+    
+    if (node.type === 'page' && node.children && node.children.length > 0) {
+      throw new Error(`Page node cannot have children at: ${path} → ${node.name}. Pages are leaf nodes.`);
+    }
+    
+    if (node.type === 'group' && (!node.children || node.children.length === 0)) {
+      throw new Error(`Group node must have children at: ${path} → ${node.name}. Use type='page' for leaf nodes.`);
+    }
+    
+    if (node.children && node.children.length > 0) {
+      validateNodeTypes(node.children, `${path} → ${node.name}`);
+    }
+  });
+}
+
 async function getHierarchyNames(domainId: string, subjectId: string, topicId: string, activeSubtopicId: string | null) {
   const db = getDb();
   const [domain] = await db.select().from(shcDomains).where(eq(shcDomains.id, domainId)).limit(1);
@@ -93,8 +125,7 @@ function normalizeTreeUrls(tree: TutorialNavigationTree, scope: { domainSlug: st
   function normalizeNodes(nodes: TutorialNavigationTree['topics']): TutorialNavigationTree['topics'] {
     return nodes.map((node) => {
       const canonicalSlug = compactSlug(node.slug || node.name);
-      const hasChildren = node.children && node.children.length > 0;
-      const isPageNode = node.type === 'page' || (!hasChildren && !node.type);
+      const isPageNode = node.type === 'page';
       
       return {
         ...node,
@@ -176,6 +207,17 @@ export async function POST(request: NextRequest) {
     }
 
     const body = parsed.data;
+    
+    // Validate navigation structure
+    try {
+      validateNavigationDepth(body.tree.topics);
+      validateNodeTypes(body.tree.topics);
+    } catch (validationError) {
+      return NextResponse.json({ 
+        error: validationError instanceof Error ? validationError.message : 'Navigation validation failed.' 
+      }, { status: 400 });
+    }
+    
     const now = new Date();
     const hierarchy = await getHierarchyNames(body.domainId, body.subjectId, body.topicId, body.activeSubtopicId ?? null);
     const normalizedTree = normalizeTreeUrls(body.tree as TutorialNavigationTree, {
