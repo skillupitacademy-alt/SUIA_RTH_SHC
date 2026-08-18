@@ -4,11 +4,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { Eye, FileDown, Save, Send } from 'lucide-react';
 
 import { TutorialLeftSidebar } from '@/share-branding/LearningExperience/components/TutorialLeftSidebar';
-import { sampleNavigationTree, universalNavigationTemplate } from './sample-navigation-tree';
+import { universalNavigationTemplate } from './sample-navigation-tree';
 import type {
   TutorialNavigationNode,
   TutorialNavigationTree,
-  TutorialNodeStatus,
   TutorialSidebarBrandId,
 } from './types';
 
@@ -47,14 +46,6 @@ interface HierarchyState {
   subtopics: HierarchyRow[];
 }
 
-const markdownExample = `- [~] JavaScript | javascript
-  - [~] JavaScript Fundamentals | javascript-fundamentals
-    - [x] What Is JavaScript? | what-is-javascript
-    - [ ] JavaScript Syntax | javascript-syntax
-  - [~] Functions | functions
-    - [~] What Is Function? | what-is-function
-    - [ ] Function Declaration | function-declaration`;
-
 function slugify(value: string) {
   return value
     .trim()
@@ -69,7 +60,7 @@ function compactSlug(value: string) {
 }
 
 function stripPresentationData(node: TutorialNavigationNode): TutorialNavigationNode {
-  const { status, url, slug, ...clean } = node;
+  const { status: _status, url: _url, slug: _slug, ...clean } = node;
   return {
     ...clean,
     children: node.children?.map(stripPresentationData)
@@ -132,15 +123,6 @@ function getBrandTreeDefaults(brandId: TutorialSidebarBrandId, subjectName: stri
   };
 }
 
-function mapStatus(token: string | undefined): TutorialNodeStatus {
-  if (token === 'x') {
-    return 'completed';
-  }
-  if (token === '~') {
-    return 'in-progress';
-  }
-  return 'not-started';
-}
 
 function inferIcon(level: number, name: string) {
   if (level === 0 && name.toLowerCase().includes('javascript')) {
@@ -210,6 +192,17 @@ function parseMarkdownTree(source: string): TutorialNavigationNode[] {
   return clean(roots);
 }
 
+function validateNavigationDepthClient(nodes: TutorialNavigationNode[], currentDepth: number, path: string): void {
+  if (currentDepth > 3) {
+    throw new Error(`Navigation depth exceeds maximum of 3 levels at: ${path}. Move deeper content into tutorial page content.`);
+  }
+  nodes.forEach((node) => {
+    if (node.children && node.children.length > 0) {
+      validateNavigationDepthClient(node.children, currentDepth + 1, `${path} → ${node.name}`);
+    }
+  });
+}
+
 function parseSource(format: SourceFormat, source: string, subjectName: string): TutorialNavigationTree {
   const defaults = getBrandTreeDefaults(SHARED_BRAND_ID, subjectName);
 
@@ -224,18 +217,7 @@ function parseSource(format: SourceFormat, source: string, subjectName: string):
     }
 
     // Validate max depth of 3 levels
-    function validateDepth(nodes: TutorialNavigationNode[], currentDepth: number, path: string): void {
-      if (currentDepth > 3) {
-        throw new Error(`Navigation depth exceeds maximum of 3 levels at: ${path}. Move deeper content into tutorial page content.`);
-      }
-      nodes.forEach((node) => {
-        if (node.children && node.children.length > 0) {
-          validateDepth(node.children, currentDepth + 1, `${path} → ${node.name}`);
-        }
-      });
-    }
-
-    validateDepth(topics, 1, 'Root');
+    validateNavigationDepthClient(topics, 1, 'Root');
 
     if (Array.isArray(parsed)) {
       return {
@@ -517,7 +499,7 @@ export function SidebarBuilderClient() {
         <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-relaxed text-amber-800">
           <p className="font-bold">📋 Navigation JSON Guidelines:</p>
           <ul className="ml-4 mt-2 list-disc space-y-1">
-            <li><strong>Structure:</strong> Use "id", "name", "type" (group/page), "icon", "expanded", and "children"</li>
+            <li><strong>Structure:</strong> Use &ldquo;id&rdquo;, &ldquo;name&rdquo;, &ldquo;type&rdquo; (group/page), &ldquo;icon&rdquo;, &ldquo;expanded&rdquo;, and &ldquo;children&rdquo;</li>
             <li><strong>Do NOT include:</strong> brand, theme, progress, status, or manual URLs</li>
             <li><strong>Max depth:</strong> 3 visual levels (Topic → Group → Page)</li>
             <li><strong>System generates:</strong> URLs, slugs, and applies brand/theme at runtime</li>
