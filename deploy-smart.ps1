@@ -27,6 +27,12 @@
 .PARAMETER Force
     Force mode: Display all buildable services for interactive selection,
     regardless of detected changes.
+
+.PARAMETER SkipChecks
+    Skip ESLint and TypeScript checks. Use only after running checks/builds separately.
+
+.PARAMETER NoCache
+    Build Docker images with --no-cache to avoid stale Docker layers.
     
 .EXAMPLE
     .\deploy-smart.ps1
@@ -35,6 +41,10 @@
 .EXAMPLE
     .\deploy-smart.ps1 -Services "api-server","skillhubcore-admin"
     Deploy specific services explicitly
+
+.EXAMPLE
+    .\deploy-smart.ps1 -Services "skillhubcore-admin","realtutorialhub-web","skillup-web" -SkipChecks -NoCache
+    Deploy selected services after separate verification and force fresh Docker builds
     
 .EXAMPLE
     .\deploy-smart.ps1 -BaseBranch "origin/develop"
@@ -59,7 +69,9 @@
 param(
     [string[]]$Services = @(),
     [string]$BaseBranch = "origin/main",
-    [switch]$Force
+    [switch]$Force,
+    [switch]$SkipChecks,
+    [switch]$NoCache
 )
 
 $ErrorActionPreference = 'Stop'
@@ -294,6 +306,9 @@ if ($gitStatus) {
 }
 
 # Step 3: Run linting
+if ($SkipChecks) {
+    Write-Warn "Step 3/8: Skipping ESLint checks because -SkipChecks was provided"
+} else {
 Write-Info "Step 3/8: Running ESLint checks..."
 
 $hasLintErrors = $false
@@ -334,8 +349,12 @@ if ($hasLintErrors) {
 } else {
     Write-Success "All linting checks passed"
 }
+}
 
 # Step 4: Run TypeScript checks
+if ($SkipChecks) {
+    Write-Warn "Step 4/8: Skipping TypeScript checks because -SkipChecks was provided"
+} else {
 Write-Info "Step 4/8: Running TypeScript compilation checks..."
 
 $hasTypeErrors = $false
@@ -370,13 +389,19 @@ if ($hasTypeErrors) {
 } else {
     Write-Success "All TypeScript checks passed"
 }
+}
 
 # Step 5: Build Docker images
 Write-Info "Step 5/8: Building and saving Docker images..."
 Write-Host "  -> Building: $($servicesToDeploy -join ', ')..." -ForegroundColor Gray
-& .\infra\hostinger\scripts\build-save-images.ps1 `
-    -ImageTag $tag `
-    -Services $servicesToDeploy
+$buildSaveParams = @{
+    ImageTag = $tag
+    Services = $servicesToDeploy
+}
+if ($NoCache) {
+    $buildSaveParams.NoCache = $true
+}
+& .\infra\hostinger\scripts\build-save-images.ps1 @buildSaveParams
 
 if ($LASTEXITCODE -ne 0) {
     Write-Err "Failed to build Docker images"
