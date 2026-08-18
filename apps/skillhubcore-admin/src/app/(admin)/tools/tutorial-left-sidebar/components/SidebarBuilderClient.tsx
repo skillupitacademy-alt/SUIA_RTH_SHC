@@ -374,7 +374,7 @@ export function SidebarBuilderClient() {
           subjectId: form.subjectId,
           topicId: form.topicId,
           activeSubtopicId: form.activeSubtopicId || undefined,
-          tree: { ...parsed.tree, topics: universalNavigation.topics },
+          tree: universalNavigation,
           sourceFormat: 'json',
           sourceContent: JSON.stringify(universalNavigation, null, 2),
           status,

@@ -17,40 +17,22 @@ import type { TutorialNavigationTree, TutorialSidebarBrandId } from '@quiz/types
 
 export const dynamic = 'force-dynamic';
 
-const nodeSchema: z.ZodType<any> = z.lazy(() => z.object({
+// Universal Navigation authoring schema - only structure, no presentation
+const authoringNodeSchema: z.ZodType<any> = z.lazy(() => z.object({
   id: z.string().min(1),
-  slug: z.string().min(1),
   name: z.string().min(1),
+  type: z.enum(['group', 'page']),
   icon: z.string().optional(),
-  status: z.enum(['completed', 'in-progress', 'not-started']),
   expanded: z.boolean().optional(),
-  url: z.string().optional(),
-  children: z.array(nodeSchema).optional(),
-}));
+  children: z.array(authoringNodeSchema).optional(),
+}).strict());
 
-const treeSchema = z.object({
-  brand: z.object({
-    name: z.string().min(1),
-    shortName: z.string().min(1),
-    tagline: z.string().min(1),
-    logoUrl: z.string().optional(),
-  }),
-  theme: z.object({
-    primary: z.string().min(1),
-    primaryDark: z.string().min(1),
-    secondary: z.string().min(1),
-    activeBackground: z.string().min(1),
-    completed: z.string().min(1),
-  }),
-  subject: z.object({
-    name: z.string().min(1),
-    icon: z.string().optional(),
-  }),
-  progress: z.object({
-    percentage: z.number().min(0).max(100),
-  }),
-  topics: z.array(nodeSchema).min(1),
-});
+// Universal Navigation tree - contains only topics array
+const authoringTreeSchema = z.object({
+  topics: z.array(authoringNodeSchema).min(1),
+}).strict();
+
+type AuthoringTree = z.infer<typeof authoringTreeSchema>;
 
 const saveSchema = z.object({
   brandId: z.enum(['realtutorialhub', 'skillup', 'shared']),
@@ -58,7 +40,7 @@ const saveSchema = z.object({
   subjectId: z.string().uuid(),
   topicId: z.string().uuid(),
   activeSubtopicId: z.string().uuid().optional(),
-  tree: treeSchema,
+  tree: authoringTreeSchema,
   sourceFormat: z.enum(['json', 'markdown']),
   sourceContent: z.string().min(1),
   status: z.enum(['draft', 'published']),
@@ -121,15 +103,65 @@ async function getHierarchyNames(domainId: string, subjectId: string, topicId: s
   return { domain, subject, topic, activeSubtopic };
 }
 
-function normalizeTreeUrls(tree: TutorialNavigationTree, scope: { domainSlug: string; subjectSlug: string; topicSlug: string }): TutorialNavigationTree {
-  function normalizeNodes(nodes: TutorialNavigationTree['topics']): TutorialNavigationTree['topics'] {
+function getBrandDefaults(brandId: TutorialSidebarBrandId, subjectName: string): Pick<TutorialNavigationTree, 'brand' | 'theme' | 'subject' | 'progress'> {
+  if (brandId === 'skillup') {
+    return {
+      brand: {
+        name: 'SkillUp IT Academy',
+        shortName: 'SUIA',
+        tagline: 'Build Skills That Move Careers',
+      },
+      theme: {
+        primary: '#e11d48',
+        primaryDark: '#be123c',
+        secondary: '#f97316',
+        activeBackground: '#fff1f2',
+        completed: '#08a64a',
+      },
+      subject: {
+        name: subjectName,
+        icon: 'code',
+      },
+      progress: {
+        percentage: 0,
+      },
+    };
+  }
+
+  // Default to RealTutorialHub
+  return {
+    brand: {
+      name: 'RealTutorialHub',
+      shortName: 'RTH',
+      tagline: 'Learn Smarter, Not Harder',
+    },
+    theme: {
+      primary: '#d03f00',
+      primaryDark: '#b63600',
+      secondary: '#124fd6',
+      activeBackground: '#eef3fa',
+      completed: '#08a64a',
+    },
+    subject: {
+      name: subjectName,
+      icon: 'code',
+    },
+    progress: {
+      percentage: 0,
+    },
+  };
+}
+
+function normalizeTreeUrls(authoringTree: AuthoringTree, scope: { domainSlug: string; subjectSlug: string; topicSlug: string }, brandDefaults: Pick<TutorialNavigationTree, 'brand' | 'theme' | 'subject' | 'progress'>): TutorialNavigationTree {
+  function normalizeNodes(nodes: AuthoringTree['topics']): TutorialNavigationTree['topics'] {
     return nodes.map((node) => {
-      const canonicalSlug = compactSlug(node.slug || node.name);
+      const canonicalSlug = compactSlug(node.name);
       const isPageNode = node.type === 'page';
       
       return {
         ...node,
-        slug: canonicalSlug || node.slug,
+        slug: canonicalSlug,
+        status: 'not-started' as const,
         url: isPageNode ? `/tutorial-v2/${scope.domainSlug}/${scope.subjectSlug}/${scope.topicSlug}/${canonicalSlug}` : undefined,
         children: node.children ? normalizeNodes(node.children) : node.children,
       };
@@ -137,8 +169,8 @@ function normalizeTreeUrls(tree: TutorialNavigationTree, scope: { domainSlug: st
   }
 
   return {
-    ...tree,
-    topics: normalizeNodes(tree.topics),
+    ...brandDefaults,
+    topics: normalizeNodes(authoringTree.topics),
   };
 }
 
@@ -220,11 +252,15 @@ export async function POST(request: NextRequest) {
     
     const now = new Date();
     const hierarchy = await getHierarchyNames(body.domainId, body.subjectId, body.topicId, body.activeSubtopicId ?? null);
-    const normalizedTree = normalizeTreeUrls(body.tree as TutorialNavigationTree, {
+    
+    // Get brand/theme defaults for delivery representation
+    const brandDefaults = getBrandDefaults(body.brandId, hierarchy.subject?.name ?? 'Programming');
+    
+    const normalizedTree = normalizeTreeUrls(body.tree, {
       domainSlug: hierarchy.domain ? slugify(hierarchy.domain.name) : '',
       subjectSlug: hierarchy.subject ? slugify(hierarchy.subject.name) : '',
       topicSlug: hierarchy.topic ? slugify(hierarchy.topic.name) : '',
-    });
+    }, brandDefaults);
     const values = {
       brandId: body.brandId,
       domainId: body.domainId,
