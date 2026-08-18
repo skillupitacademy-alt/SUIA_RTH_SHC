@@ -133,7 +133,7 @@ function flattenNavigation(nodes: TutorialNavigationNode[]): FlatNavigationItem[
 
   function walk(branch: TutorialNavigationNode[]) {
     for (const node of branch) {
-      if (node.url) {
+      if (node.url && node.slug) {
         items.push({ name: node.name, slug: node.slug, url: node.url });
       }
       walk(node.children ?? []);
