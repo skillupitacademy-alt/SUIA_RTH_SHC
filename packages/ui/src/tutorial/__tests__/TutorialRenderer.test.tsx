@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import React from 'react';
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
@@ -182,20 +183,29 @@ describe('Universal Tutorial Renderer (Prompt 17D)', () => {
       expect(screen.getByText('Always close database resources in a try-with-resources block.')).toBeInTheDocument();
     });
 
-    it('8. definition: renders semantic dl, dt, dd elements', () => {
-      const definition: DefinitionBlock = {
+    it('8. definition: renders semantic definition D1 elements', () => {
+      const definition: any = {
         id: 'b-def1',
         type: 'definition',
+        version: 'D1',
         content: {
-          term: 'Bytecode',
-          definition: 'A platform-independent intermediate representation of Java program code.',
-          example: 'Compiled .class files contain bytecode executed by the JVM.',
+          page: {
+            category: 'Core Concept',
+            title: 'Bytecode',
+            intro: 'Understanding Bytecode in Java runtime.',
+            definition: 'A platform-independent intermediate representation of Java program code.',
+            explanation: ['Compiled .class files contain bytecode executed by the JVM.'],
+            characteristics: [
+              { title: 'Portability', description: 'Write once run anywhere', icon: '🚀' }
+            ],
+            takeaway: 'Bytecode is executed by JVM.'
+          }
         },
       };
       render(<TutorialBlockRenderer block={definition} />);
       expect(screen.getByText('Bytecode')).toBeInTheDocument();
       expect(screen.getByText('A platform-independent intermediate representation of Java program code.')).toBeInTheDocument();
-      expect(screen.getByText(/Compiled .class files/)).toBeInTheDocument();
+      expect(screen.getByText(/Compiled \.class files/)).toBeInTheDocument();
     });
 
     it('9. example: renders walkthrough section with code and output', () => {

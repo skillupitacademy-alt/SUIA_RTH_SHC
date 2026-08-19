@@ -13,7 +13,7 @@ export function NotesLeftSidebar({ data, isOpen, activeId, onSelect }: { data: S
   return (
     <aside 
       aria-label="Learning Path Sidebar" 
-      className={`fixed bottom-0 left-0 top-16 z-40 flex w-[78vw] flex-col overflow-y-auto bg-white p-4 hide-scrollbar transition-transform duration-300 shadow-2xl min-[440px]:w-[280px] sm:p-5 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
+      className={`fixed bottom-0 left-0 top-16 z-40 flex w-[78vw] flex-col overflow-y-auto bg-white p-4 hide-scrollbar transition-transform duration-300 shadow-2xl min-[440px]:w-[280px] sm:p-5 ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:sticky lg:top-16 lg:z-10 lg:h-[calc(100dvh-4rem)] lg:w-[280px] lg:shrink-0 lg:translate-x-0 lg:shadow-none lg:border-r lg:border-slate-200`}
       tabIndex={0}
       role="region"
     >

@@ -94,7 +94,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAITutorClick, onSectionScrol
     <>
       {isOpen && <div className="fixed inset-0 z-[45] bg-black/40 backdrop-blur-sm lg:hidden" onClick={onClose} />}
 
-      <aside aria-label="Tutorial curriculum menu" className={`fixed bottom-0 left-0 top-[80px] z-[50] flex w-[calc(100vw-1rem)] max-w-[280px] min-w-0 flex-col overflow-hidden p-2 transition-transform duration-300 sm:top-[98px] sm:p-4 lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside aria-label="Tutorial curriculum menu" className={`fixed bottom-0 left-0 top-[80px] z-[50] flex w-[calc(100vw-1rem)] max-w-[280px] min-w-0 flex-col overflow-hidden p-2 transition-transform duration-300 sm:top-[98px] sm:p-4 ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:sticky lg:top-[98px] lg:z-10 lg:h-[calc(100dvh-98px)] lg:w-[280px] lg:shrink-0 lg:translate-x-0 lg:p-0 lg:border-r lg:border-slate-200`}>
         <div className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-gray-200 bg-white p-4 shadow-xl sm:p-5 lg:shadow-sm">
           <div className="mb-4 flex items-center justify-between border-b border-slate-100 pb-4 lg:hidden">
             <span className="font-bold text-slate-950">Tutorial Menu</span>

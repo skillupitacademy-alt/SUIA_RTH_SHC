@@ -36,7 +36,7 @@ export function SubtopicSidebar({ data, progress, isOpen }: SubtopicSidebarProps
   const bgLight = hexToRgba(brand.primaryColor, 0.05);
 
   return (
-    <aside aria-label="Curriculum sidebar" className={`fixed bottom-0 left-0 top-16 z-40 flex w-[78vw] flex-col bg-white transition-all duration-300 min-[480px]:w-[min(350px,calc(100vw-1rem))] ${isOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full shadow-none'}`}>
+    <aside aria-label="Curriculum sidebar" className={`fixed bottom-0 left-0 top-16 z-40 flex w-[78vw] flex-col bg-white transition-all duration-300 min-[480px]:w-[280px] ${isOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full shadow-none'} lg:sticky lg:top-16 lg:z-10 lg:h-[calc(100dvh-4rem)] lg:w-[280px] lg:shrink-0 lg:translate-x-0 lg:shadow-none lg:border-r lg:border-slate-200`}>
       <div className="flex flex-col h-full">
         
         {/* Scrollable Content */}

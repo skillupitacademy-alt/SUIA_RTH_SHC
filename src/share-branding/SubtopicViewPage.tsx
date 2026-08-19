@@ -101,11 +101,13 @@ export function SubtopicViewPage({ data, hideTopBar = false, hideSidebars = fals
             tabIndex={0} 
             className="min-w-0 flex-1 overflow-y-auto hide-scrollbar bg-slate-50/30 focus:outline-none"
             onClick={() => {
-              if (isSidebarOpen) setIsSidebarOpen(false);
-              if (isRightSidebarOpen) setIsRightSidebarOpen(false);
+              if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+                if (isSidebarOpen) setIsSidebarOpen(false);
+                if (isRightSidebarOpen) setIsRightSidebarOpen(false);
+              }
             }}
           >
-            <div className="mx-auto flex min-h-full w-full max-w-[1600px] min-w-0 flex-col px-4 py-6 transition-all duration-500 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+            <div className="flex min-h-full w-full min-w-0 flex-col px-4 py-6 transition-all duration-500 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
               {/* Main Content Body */}
               <div className="min-w-0 flex-1 space-y-8 lg:space-y-10">
                   {/* Breadcrumbs */}

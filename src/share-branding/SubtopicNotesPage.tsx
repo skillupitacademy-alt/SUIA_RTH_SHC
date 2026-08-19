@@ -127,7 +127,7 @@ export function SubtopicNotesPage({
   const activeSectionError = activeSectionType ? notesData.sectionErrors?.[activeSectionType] : undefined;
 
   return (
-    <div className="flex h-screen w-full flex-col overflow-hidden bg-[#F8FAFC]">
+    <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-[#F8FAFC]">
       {/* Dynamic Branding Styles */}
       <style dangerouslySetInnerHTML={{
         __html: `
@@ -151,18 +151,20 @@ export function SubtopicNotesPage({
         onToggleRight={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
       />
 
+      {/* Main Shell - CSS Grid / Flex with gap: 0 */}
       <div className="relative flex min-w-0 flex-1 overflow-hidden">
         {/* Mobile Overlay */}
         {(isSidebarOpen || isRightSidebarOpen) && (
           <div 
-            className="absolute inset-0 z-30 bg-slate-900/40 backdrop-blur-[2px] transition-opacity"
+            className="fixed inset-0 z-30 bg-slate-900/40 backdrop-blur-[2px] transition-opacity lg:hidden"
             onClick={() => {
               setIsSidebarOpen(false);
               setIsRightSidebarOpen(false);
             }}
           />
         )}
-        {/* Left Sidebar - Learning Path */}
+
+        {/* Left Sidebar - Learning Path (Full Height, Independent Scroll) */}
         <NotesLeftSidebar
           data={notesData.leftSidebar}
           isOpen={isSidebarOpen}
@@ -170,17 +172,19 @@ export function SubtopicNotesPage({
           onSelect={handleTabChange}
         />
 
-        {/* Main Scrollable Content */}
+        {/* Main Scrollable Content (Directly Meets Sidebar, No Empty Column Gap) */}
         <main 
           id="main-content-area"
           className="min-w-0 flex-1 overflow-y-auto hide-scrollbar bg-white"
           tabIndex={0}
           onClick={() => {
-            if (isSidebarOpen) setIsSidebarOpen(false);
-            if (isRightSidebarOpen) setIsRightSidebarOpen(false);
+            if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+              if (isSidebarOpen) setIsSidebarOpen(false);
+              if (isRightSidebarOpen) setIsRightSidebarOpen(false);
+            }
           }}
         >
-          <div className="mx-auto flex min-h-full w-full min-w-0 flex-col px-4 py-6 transition-all duration-500 sm:px-6 sm:py-8 lg:px-10 xl:px-12">
+          <div className="flex min-h-full w-full min-w-0 flex-col px-4 py-6 sm:px-6 sm:py-8 lg:px-8 xl:px-10">
             <div className="min-w-0 flex-1">
                 {/* Centralized Breadcrumbs */}
                 <nav aria-label="Breadcrumbs" className="mb-8 flex min-w-0 flex-wrap items-center gap-2 text-[13px] font-bold text-slate-500">
@@ -284,36 +288,40 @@ export function SubtopicNotesPage({
                 {!activeSectionError && activeTab === 'ai-tutor' && (
                   <>
                     <h1 className="sr-only">{brand.tutorLabel} - {notesData.mainContent.title}</h1>
-                    <AITutorContent
+                    <AITutorContent 
                       data={notesData.mainContent.aiTutorContent}
                       sidebar={notesData.rightSidebar.aiTutor}
                       title={notesData.mainContent.title}
                     />
                   </>
                 )}
-                {activeTab === 'progress' && (
-                  <ProgressContent notesData={notesData} onSelectTab={handleTabChange} />
+                {!activeSectionError && activeTab === 'progress' && (
+                  <>
+                    <h1 className="sr-only">Progress - {notesData.mainContent.title}</h1>
+                    <ProgressContent 
+                      notesData={notesData}
+                      onSelectTab={handleTabChange}
+                    />
+                  </>
                 )}
-            </div>
 
-            {/* Standardized Navigation Footer - Centralized for Stability */}
-            <div className="mt-12 min-w-0 pt-8">
+                {/* Bottom Footer Navigation */}
                 <TabFooter 
-                    prevLabel={prevTab?.label}
-                    nextLabel={nextTab?.label}
-                    onPrev={prevTab ? () => handleTabChange(prevTab.id) : undefined}
-                    onNext={nextTab ? () => handleTabChange(nextTab.id) : undefined}
+                  prevLabel={prevTab?.label}
+                  nextLabel={nextTab?.label}
+                  onPrev={prevTab ? () => handleTabChange(prevTab.id) : undefined}
+                  onNext={nextTab ? () => handleTabChange(nextTab.id) : undefined}
                 />
             </div>
           </div>
         </main>
 
-        {/* Right Sidebar - Stats & Tutor */}
-        <NotesRightSidebar
+        {/* Right Sidebar */}
+        <NotesRightSidebar 
           data={notesData.rightSidebar}
           isOpen={isRightSidebarOpen}
           activeTab={activeTab}
-          quizData={notesData.mainContent.quiz}
+          quizData={activeTab === 'quiz' ? notesData.mainContent.quiz : undefined}
           currentQuestionIndex={currentQuestionIndex}
           onQuestionChange={setCurrentQuestionIndex}
         />

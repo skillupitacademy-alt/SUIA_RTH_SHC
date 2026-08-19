@@ -86,27 +86,29 @@ function TutorialEngineContent() {
         </div>
       </nav>
 
-      <Sidebar
-        onAITutorClick={() => setIsAITutorOpen(true)}
-        onSectionScroll={(id) => {
-          scrollToSection(id);
-          setIsMobileMenuOpen(false);
-        }}
-        isOpen={isMobileMenuOpen}
-        onClose={() => setIsMobileMenuOpen(false)}
-      />
+      <div className="flex min-h-screen w-full pt-[80px] sm:pt-[98px]">
+        <Sidebar
+          onAITutorClick={() => setIsAITutorOpen(true)}
+          onSectionScroll={(id) => {
+            scrollToSection(id);
+            setIsMobileMenuOpen(false);
+          }}
+          isOpen={isMobileMenuOpen}
+          onClose={() => setIsMobileMenuOpen(false)}
+        />
 
-      <main className="min-h-screen w-full max-w-full overflow-x-hidden pt-[80px] transition-all sm:pt-[98px] lg:pl-[280px]">
-        <div className="mx-auto w-full max-w-[1200px] min-w-0 space-y-6 p-4 sm:space-y-8 sm:p-6">
-          <div id="learner-flow">
-            <LearnerFlowDashboard completedCount={completedSections} totalCount={totalSections} />
+        <main className="min-w-0 flex-1 overflow-y-auto px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+          <div className="w-full min-w-0 space-y-6 sm:space-y-8">
+            <div id="learner-flow">
+              <LearnerFlowDashboard completedCount={completedSections} totalCount={totalSections} />
+            </div>
+
+            <CurriculumSection onViewChange={handleSectionView} />
+
+            <FacultySupport />
           </div>
-
-          <CurriculumSection onViewChange={handleSectionView} />
-
-          <FacultySupport />
-        </div>
-      </main>
+        </main>
+      </div>
 
       <div className="w-full max-w-full overflow-x-hidden">
         <button
