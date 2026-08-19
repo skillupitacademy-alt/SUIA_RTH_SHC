@@ -1,5 +1,6 @@
-import { Pool } from '@neondatabase/serverless';
+import { neonConfig, Pool } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
+import WebSocket from 'ws';
 import * as authSchema from './schema/auth';
 import * as domainSchema from './schema/domain';
 import * as questionSchema from './schema/question';
@@ -11,6 +12,10 @@ import * as tutorSchema from './schema/tutor';
 import * as reportSchema from './schema/reports';
 
 import * as relationsSchema from './schema/relations';
+
+// Configure Neon to use WebSocket in Node.js environments (Docker, VPS, local dev)
+// This is required for @neondatabase/serverless to work in non-serverless runtimes
+neonConfig.webSocketConstructor = WebSocket;
 
 const schema = {
     ...authSchema,
