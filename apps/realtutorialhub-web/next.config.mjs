@@ -18,6 +18,14 @@ const nextConfig = {
   compress: true,
   output: process.env.CLOUD_RUN_BUILD === 'true' ? 'standalone' : undefined,
   transpilePackages: ['@quiz/api-client', '@quiz/auth', '@quiz/db', '@quiz/db-tutorial', '@quiz/events', '@quiz/types', '@quiz/validation', '@quiz/ui', 'lucide-react'],
+  experimental: {
+    // Include ws package in standalone output for @neondatabase/serverless WebSocket support
+    outputFileTracingIncludes: {
+      '/tutorial-v2/**': ['./node_modules/.pnpm/ws@*/node_modules/**'],
+      '/api/tutorial/**': ['./node_modules/.pnpm/ws@*/node_modules/**'],
+      '/learn/**': ['./node_modules/.pnpm/ws@*/node_modules/**'],
+    },
+  },
   webpack: (config) => {
     config.ignoreWarnings = [
       ...(config.ignoreWarnings ?? []),
