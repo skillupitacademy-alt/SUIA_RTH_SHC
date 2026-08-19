@@ -462,10 +462,10 @@ export function TutorialPageContentBuilderClient() {
             </div>
           </div>
 
-          {/* Horizontal Hierarchy & Content Selector Toolbar */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-2.5 items-end">
+          {/* Horizontal Hierarchy & Content Selector Toolbar with Controlled Responsive Wrapping */}
+          <div className="flex flex-wrap items-end gap-3">
             {/* 1. Domain */}
-            <div className="min-w-0">
+            <div className="flex-1 min-w-[180px]">
               <label htmlFor="select-domain" className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
                 Domain
               </label>
@@ -483,7 +483,7 @@ export function TutorialPageContentBuilderClient() {
             </div>
 
             {/* 2. Subject */}
-            <div className="min-w-0">
+            <div className="flex-1 min-w-[180px]">
               <label htmlFor="select-subject" className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
                 Subject
               </label>
@@ -502,7 +502,7 @@ export function TutorialPageContentBuilderClient() {
             </div>
 
             {/* 3. Topic */}
-            <div className="min-w-0">
+            <div className="flex-1 min-w-[160px]">
               <label htmlFor="select-topic" className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
                 Topic
               </label>
@@ -521,7 +521,7 @@ export function TutorialPageContentBuilderClient() {
             </div>
 
             {/* 4. Subtopic */}
-            <div className="min-w-0">
+            <div className="flex-1 min-w-[180px]">
               <label htmlFor="select-subtopic" className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
                 Subtopic
               </label>
@@ -540,7 +540,7 @@ export function TutorialPageContentBuilderClient() {
             </div>
 
             {/* 5. Block (Independent Dropdown) */}
-            <div className="min-w-0">
+            <div className="w-[140px] min-w-[130px]">
               <label htmlFor="select-block" className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
                 Block
               </label>
@@ -557,7 +557,7 @@ export function TutorialPageContentBuilderClient() {
             </div>
 
             {/* 6. Version (Dependent on Block) */}
-            <div className="min-w-0">
+            <div className="w-[170px] min-w-[150px]">
               <label htmlFor="select-version" className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
                 Version
               </label>
@@ -575,7 +575,7 @@ export function TutorialPageContentBuilderClient() {
             </div>
 
             {/* 7. Format */}
-            <div className="min-w-0">
+            <div className="w-[110px] min-w-[100px]">
               <label htmlFor="select-format" className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
                 Format
               </label>
@@ -865,7 +865,7 @@ Generate valid, production-ready ${blockType} (${versionId.toUpperCase()}) conte
             {blockType === 'definition' ? (
               <ul className="list-disc pl-4 space-y-1 text-[11px] text-slate-600 leading-relaxed">
                 <li><strong>2 to 4 cards:</strong> Generate 2–4 genuinely distinct properties.</li>
-                <li><strong>Short titles:</strong> Keep titles to 2–6 words (e.g., "Named Reference", "Mutable").</li>
+                <li><strong>Short titles:</strong> Keep titles to 2–6 words (e.g., &quot;Named Reference&quot;, &quot;Mutable&quot;).</li>
                 <li><strong>Focused descriptions:</strong> 1–3 clear sentences explaining that single property.</li>
                 <li><strong>Responsive presentation:</strong> UI automatically handles 1 col (mobile), 2 col (tablet), 3–4 col (desktop). <em>Do NOT add UI layout metadata to the JSON.</em></li>
                 <li><strong>Strict JSON only:</strong> Return pure JSON matching the D1 schema with no markdown code blocks or system metadata.</li>
