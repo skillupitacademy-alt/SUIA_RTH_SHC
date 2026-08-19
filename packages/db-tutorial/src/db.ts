@@ -58,6 +58,8 @@ export const getTutorialDb = (type: 'primary' | 'direct' = 'primary'): DbClient 
       ? process.env.DATABASE_DIRECT_URL_TUTORIAL
       : process.env.DATABASE_URL_TUTORIAL;
 
+  // For integration tests: if DATABASE_URL_TUTORIAL is set, use real database even in test mode
+  // Only fall back to test stub if no connection string is available
   if (databaseUrl === undefined || databaseUrl.trim().length === 0) {
     if (process.env.NODE_ENV === 'test') {
       return createTestDb();
@@ -69,6 +71,7 @@ export const getTutorialDb = (type: 'primary' | 'direct' = 'primary'): DbClient 
     );
   }
 
+  // DATABASE_URL_TUTORIAL is set, use real database (even in test mode for integration tests)
   if (type === 'direct') {
     if (directDbInstance === null) {
       directDbInstance = createDb(databaseUrl, true);
@@ -86,6 +89,8 @@ export const getTutorialDb = (type: 'primary' | 'direct' = 'primary'): DbClient 
 export const getTutorialHttpDb = (): HttpDbClient => {
   const databaseUrl = process.env.DATABASE_URL_TUTORIAL;
 
+  // For integration tests: if DATABASE_URL_TUTORIAL is set, use real database even in test mode
+  // Only fall back to test stub if no connection string is available
   if (databaseUrl === undefined || databaseUrl.trim().length === 0) {
     if (process.env.NODE_ENV === 'test') {
       return createTestDb() as unknown as HttpDbClient;
@@ -93,6 +98,7 @@ export const getTutorialHttpDb = (): HttpDbClient => {
     throw new Error('DATABASE_URL_TUTORIAL environment variable is required');
   }
 
+  // DATABASE_URL_TUTORIAL is set, use real database (even in test mode for integration tests)
   if (httpDbInstance === null) {
     httpDbInstance = drizzleHttp(neon(databaseUrl), { schema });
   }

@@ -126,16 +126,11 @@ export const CalloutBlockSchema = z.object({
   presentation: PresentationConfigSchema,
 });
 
-export const DefinitionBlockSchema = z.object({
-  id: BlockIdSchema,
-  type: z.literal('definition'),
-  content: z.object({
-    term: z.string().min(1).max(200),
-    definition: z.string().min(1),
-    example: z.string().optional(),
-  }),
-  presentation: PresentationConfigSchema,
-});
+// Definition D1 Block Schema (version-scoped architecture)
+// Reuses the canonical D1 schemas from definition-d1.schema.ts
+import { DefinitionD1BlockSchema } from './definition-d1.schema';
+
+export const DefinitionBlockSchema = DefinitionD1BlockSchema;
 
 export const ExampleBlockSchema = z.object({
   id: BlockIdSchema,

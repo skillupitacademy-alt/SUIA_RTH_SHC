@@ -18,6 +18,20 @@ export * from './tutorial-page-content.types';
 // Rich Tutorial Document Model (Schema Version 1)
 export * from './tutorial-rich-document';
 
+// Definition Block Version Registry and Schemas
+export {
+  DEFINITION_VERSION_REGISTRY,
+  ACTIVE_DEFINITION_VERSIONS,
+  type DefinitionVersion,
+} from './tutorial-rich-document/registries/definition-versions';
+
+export {
+  DefinitionD1PageSchema,
+  DefinitionD1AuthorContentSchema,
+  DefinitionD1BlockSchema,
+  validateDefinitionD1AIOutput,
+} from './tutorial-rich-document/schemas/definition-d1.schema';
+
 // NEW Tutorial Composer (API Contracts & Domain Types)
 // Selective exports to avoid naming conflicts
 export type {
@@ -170,3 +184,11 @@ export {
   ComposerInitialDraftResponseSchema,
   ComposerAutoSavePayloadSchema,
 } from './tutorial-composer/composer-contracts';
+
+// Tutorial Composer - AI Context
+export type {
+  TutorialAIHierarchyContext,
+  TutorialAIBlockContext,
+  TutorialAIOutputFormat,
+  DefinitionD1AIInputContext,
+} from './tutorial-composer/ai-context';

@@ -148,16 +148,55 @@ export interface CalloutBlock extends BaseBlock {
 }
 
 /**
- * Definition block for terminology
+ * Definition D1 - Page Structure
+ * Author content contract for Definition D1 version
  */
-export interface DefinitionBlock extends BaseBlock {
+export interface DefinitionD1Page {
   type: 'definition';
-  content: {
-    term: string;
-    definition: string;
-    example?: string;
+  category: string;
+  title: string;
+  intro: string;
+  definition: string;
+  explanation: string[];
+  example: {
+    language: string;
+    code: string;
   };
+  characteristics: Array<{
+    icon: string;
+    title: string;
+    description: string;
+  }>;
+  takeaway: string;
 }
+
+/**
+ * Definition D1 - Author Content
+ * Wraps page structure in content.page
+ */
+export interface DefinitionD1AuthorContent {
+  page: DefinitionD1Page;
+}
+
+/**
+ * Definition D1 Block
+ * Canonical block with version envelope
+ */
+export interface DefinitionD1Block extends BaseBlock {
+  type: 'definition';
+  version: 'D1';
+  content: DefinitionD1AuthorContent;
+}
+
+/**
+ * Definition Block (Version Union)
+ * All Definition block versions
+ */
+export type DefinitionBlock = DefinitionD1Block;
+// Future versions:
+// | DefinitionD2Block
+// | DefinitionD3Block
+// ...
 
 /**
  * Example block

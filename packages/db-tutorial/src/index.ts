@@ -66,6 +66,19 @@ export type {
   GenerateComposerDraftResult,
 } from './services/composer-draft-generator.service';
 
+// AI Context Builder - Phase 1E
+export { buildDefinitionD1AIContext } from './services/ai-context-builder';
+export type { ComposerSelection } from './services/ai-context-builder';
+
+// Canonical Block Builder - Phase 1G
+export { buildCanonicalDefinitionD1Block } from './services/canonical-block-builder';
+
+// Tutorial Document Builder - Phase 1G
+export { buildTutorialDocument } from './services/tutorial-document-builder';
+
+// Definition D1 Prompt Generator - Phase 1I
+export { buildDefinitionD1AIPrompt } from './services/definition-d1-prompt-generator';
+
 // Validators, Types, DTOs
 export * from './validators/layman.validator';
 

@@ -7,6 +7,7 @@
 export * from './contracts';
 export * from './presentation-ideas-contracts';
 export * from './composer-contracts';
+export * from './ai-context';
 
 // Errors
 export * from './errors';

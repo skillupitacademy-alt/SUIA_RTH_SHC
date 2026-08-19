@@ -443,13 +443,26 @@ export class BlockTransformationService {
     // Extract term and definition
     const { term, definition } = this.parseDefinition(text);
 
-    // Create canonical DefinitionBlock
+    // Create canonical DefinitionD1Block
     const definitionBlock: DefinitionBlock = {
       id: crypto.randomUUID(),
       type: 'definition',
+      version: 'D1',
       content: {
-        term,
-        definition,
+        page: {
+          type: 'definition',
+          category: 'Generated Definition',
+          title: term,
+          intro: definition,
+          definition: definition,
+          explanation: [definition],
+          example: {
+            language: 'javascript',
+            code: '// Example code here',
+          },
+          characteristics: [],
+          takeaway: definition,
+        },
       },
     };
 

@@ -1156,7 +1156,24 @@ describe('BlockSuggestionService', () => {
             case 'callout':
               return { id, type: 'callout' as const, content: { variant: 'info', text: 'Note' } };
             case 'definition':
-              return { id, type: 'definition' as const, content: { term: 'Term', definition: 'Def' } };
+              return {
+                id,
+                type: 'definition' as const,
+                version: 'D1' as const,
+                content: {
+                  page: {
+                    type: 'definition' as const,
+                    category: 'Test Category',
+                    title: 'Test Definition',
+                    intro: 'Test intro',
+                    definition: 'Test definition',
+                    explanation: ['Test explanation'],
+                    example: { language: 'javascript', code: 'const x = 1;' },
+                    characteristics: [],
+                    takeaway: 'Test takeaway',
+                  },
+                },
+              };
             case 'example':
               return { id, type: 'example' as const, content: { explanation: 'Example' } };
             case 'quote':
@@ -1212,7 +1229,24 @@ describe('BlockSuggestionService', () => {
           { id: 'ca1', type: 'callout', content: { variant: 'warning', text: 'Important: This is critical' } },
           
           // Existing definition - should NOT generate another definition suggestion
-          { id: 'd1', type: 'definition', content: { term: 'Closure', definition: 'A function with access to outer scope' } },
+          {
+            id: 'd1',
+            type: 'definition',
+            version: 'D1',
+            content: {
+              page: {
+                type: 'definition',
+                category: 'Test Category',
+                title: 'What Is a Closure?',
+                intro: 'A closure is a function with access to outer scope',
+                definition: 'A function with access to outer scope',
+                explanation: ['Closures capture variables from their surrounding scope'],
+                example: { language: 'javascript', code: 'function outer() { let x = 1; return function() { return x; }; }' },
+                characteristics: [],
+                takeaway: 'Closures provide lexical scoping',
+              },
+            },
+          },
           
           // Existing example - should NOT generate another example suggestion
           { id: 'e1', type: 'example', content: { explanation: 'For example, you can use map()' } },
