@@ -47,12 +47,23 @@ function getBaseUrl() {
   return value.endsWith('/') ? value.slice(0, -1) : value;
 }
 
+interface TutorialBlock {
+  type: string;
+  content?: {
+    text?: string;
+  };
+}
+
+interface TutorialSection {
+  blocks?: TutorialBlock[];
+}
+
 function deriveDescription(sections: Partial<Record<string, unknown>>, fallback: string): string {
   // Support canonical TutorialDocument paragraph extraction for SEO description
   for (const key of ['overview', 'notes', 'layman']) {
     const sec = sections[key];
-    if (sec && typeof sec === 'object' && 'blocks' in sec && Array.isArray((sec as any).blocks)) {
-      const pBlock = (sec as any).blocks.find((b: any) => b.type === 'paragraph');
+    if (sec && typeof sec === 'object' && 'blocks' in sec && Array.isArray((sec as TutorialSection).blocks)) {
+      const pBlock = (sec as TutorialSection).blocks?.find((b) => b.type === 'paragraph');
       if (pBlock?.content?.text) {
         return pBlock.content.text;
       }

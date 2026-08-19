@@ -2,7 +2,7 @@ import { unstable_cache } from 'next/cache';
 import { headers } from 'next/headers';
 import { Redis } from '@upstash/redis';
 
-import type { TutorialDifficulty, TutorialSectionId, TutorialContentJSON, TutorialDocument } from '@quiz/types';
+import type { TutorialDifficulty, TutorialSectionId, TutorialContentJSON } from '@quiz/types';
 import { TUTORIAL_SECTION_CONTRACTS, isTutorialDocument, TutorialDocumentSchema } from '@quiz/types';
 import {
   formatTutorialSectionValidationIssues,

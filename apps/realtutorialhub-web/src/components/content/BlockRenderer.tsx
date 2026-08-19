@@ -42,7 +42,7 @@ export function BlockRenderer({
   // Use activeBlockType if type is not provided
   const targetType = type || activeBlockType || 'notes';
 
-  const sectionData = (content as any)?.[targetType];
+  const sectionData = (content as Record<string, unknown>)?.[targetType];
 
   const renderedBlock = useMemo(() => {
     // If section content is a canonical TutorialDocument, render via Universal TutorialRenderer
