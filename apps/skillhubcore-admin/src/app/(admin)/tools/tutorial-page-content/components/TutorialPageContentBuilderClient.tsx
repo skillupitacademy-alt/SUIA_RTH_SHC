@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Eye, Save, Send } from 'lucide-react';
+import { Bot, Check, ChevronDown, ChevronUp, Copy, Eye, Save, Send, Sparkles } from 'lucide-react';
 
 import { TutorialCodeContent } from '@/share-branding/LearningExperience/components/TutorialCodeContent';
 import { TutorialDefinitionContent } from '@/share-branding/LearningExperience/components/TutorialDefinitionContent';
@@ -411,7 +411,7 @@ export function TutorialPageContentBuilderClient() {
             </select>
             <div className="grid grid-cols-2 gap-3">
               <select className="rounded-lg border border-[#dfe7f1] px-3 py-2" value={form.contentType} onChange={(event) => updateForm('contentType', event.target.value as TutorialPageContentType)}>
-                <option value="definition">Definition</option>
+                <option value="definition">Definition (D1)</option>
                 <option value="code">Code</option>
                 <option value="summary">Summary</option>
               </select>
@@ -422,11 +422,28 @@ export function TutorialPageContentBuilderClient() {
             </div>
           </div>
 
-          <textarea
-            className="mt-4 h-[460px] w-full rounded-lg border border-[#dfe7f1] bg-[#071024] p-4 font-mono text-xs leading-5 text-white"
-            value={sourceContent}
-            onChange={(event) => setSourceContent(event.target.value)}
+          {/* AI Generation Instructions / Contract Guidance Container */}
+          <AiInstructionContainer
+            domainName={hierarchy.domains.find((d) => d.id === form.domainId)?.name || 'Not selected'}
+            subjectName={subjects.find((s) => s.id === form.subjectId)?.name || 'Not selected'}
+            topicName={topics.find((t) => t.id === form.topicId)?.name || 'Not selected'}
+            subtopicName={selectedSubtopic?.name || 'Not selected'}
+            contentType={form.contentType}
           />
+
+          {/* JSON Content Editor */}
+          <div className="mt-4">
+            <div className="flex items-center justify-between pb-1.5 text-xs font-bold uppercase tracking-wider text-slate-600">
+              <span>JSON Content Editor</span>
+              <span className="text-[10px] text-slate-400 font-mono">D1 Content Contract</span>
+            </div>
+            <textarea
+              className="h-[380px] w-full rounded-lg border border-[#dfe7f1] bg-[#071024] p-4 font-mono text-xs leading-5 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              value={sourceContent}
+              onChange={(event) => setSourceContent(event.target.value)}
+              placeholder="Paste or edit D1 JSON content here..."
+            />
+          </div>
 
           <div className="mt-4 flex flex-wrap gap-3">
             <button type="button" className="inline-flex items-center gap-2 rounded-lg border border-[#dfe7f1] px-4 py-2 font-bold text-[#071f63]" onClick={handlePreview}>
@@ -454,3 +471,184 @@ export function TutorialPageContentBuilderClient() {
     </main>
   );
 }
+
+interface AiInstructionContainerProps {
+  domainName: string;
+  subjectName: string;
+  topicName: string;
+  subtopicName: string;
+  contentType: TutorialPageContentType;
+}
+
+function AiInstructionContainer({
+  domainName,
+  subjectName,
+  topicName,
+  subtopicName,
+  contentType,
+}: AiInstructionContainerProps) {
+  const [isOpen, setIsOpen] = useState(true);
+  const [copied, setCopied] = useState(false);
+
+  const blockLabel = contentType === 'definition' ? 'Definition D1' : contentType === 'code' ? 'Code Example' : 'Revision Summary';
+
+  const promptText = useMemo(() => {
+    if (contentType === 'definition') {
+      return `You are generating educational content for a tutorial platform.
+
+# TARGET HIERARCHY
+- Domain: ${domainName}
+- Subject: ${subjectName}
+- Topic: ${topicName}
+- Subtopic: ${subtopicName}
+- Block: Definition D1
+
+# OUTPUT REQUIREMENTS (Pure JSON Content Contract)
+Return ONLY a valid JSON object matching this exact schema:
+
+{
+  "page": {
+    "type": "definition",
+    "category": "${topicName}",
+    "title": "What Is ${subtopicName}?",
+    "intro": "A concise 1-2 sentence learner-friendly introduction.",
+    "definition": "Authoritative, technically accurate conceptual definition.",
+    "explanation": [
+      "First paragraph building intuition from simple to deep.",
+      "Second paragraph with technical depth and practical context."
+    ],
+    "example": {
+      "language": "python",
+      "code": "x = 10\\nprint(x)"
+    },
+    "characteristics": [
+      {
+        "icon": "○",
+        "title": "Short Title (2-6 words)",
+        "description": "Clear explanation of this single distinct property (1-3 sentences)."
+      },
+      {
+        "icon": "◆",
+        "title": "Second Property",
+        "description": "Another distinct property. Total 2-4 characteristics."
+      }
+    ],
+    "takeaway": "One strong closing sentence summarizing the key learning point."
+  }
+}
+
+# KEY CHARACTERISTICS RULES
+1. Generate 2 to 4 characteristics representing genuinely distinct properties.
+2. Titles must be short (2-6 words).
+3. Descriptions must be concise (1-3 sentences) and avoid repeating the definition or takeaway.
+4. The platform renderer automatically handles responsive presentation (1 col mobile, 2 col tablet, 3-4 col desktop). Do NOT include CSS, column numbers, or layout metadata in the JSON.
+
+# PROHIBITED SYSTEM METADATA
+Do NOT include id, blockId, version, domainId, subjectId, topicId, subtopicId, brandId, theme, status, publishedAt, or schemaVersion.`;
+    }
+
+    return `Target Hierarchy:
+- Domain: ${domainName}
+- Subject: ${subjectName}
+- Topic: ${topicName}
+- Subtopic: ${subtopicName}
+- Block Type: ${blockLabel}
+
+Generate valid, production-ready ${contentType} content conforming to the official schema.`;
+  }, [domainName, subjectName, topicName, subtopicName, contentType, blockLabel]);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(promptText);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="mt-4 rounded-xl border border-indigo-200 bg-indigo-50/50 p-4 transition-all">
+      {/* Container Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-600 text-white shadow-sm">
+            <Bot size={16} />
+          </div>
+          <div>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-950">
+              AI Generation Instructions
+            </h3>
+            <span className="text-[11px] font-semibold text-indigo-600">
+              {blockLabel} Contract Guidance
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleCopy}
+            className="inline-flex items-center gap-1 rounded-md bg-white border border-indigo-200 px-2.5 py-1 text-xs font-bold text-indigo-700 shadow-sm hover:bg-indigo-50 active:scale-95 transition-all"
+            title="Copy prompt for AI"
+          >
+            {copied ? (
+              <>
+                <Check size={12} className="text-emerald-600" />
+                <span className="text-emerald-600">Copied!</span>
+              </>
+            ) : (
+              <>
+                <Copy size={12} />
+                <span>Copy Prompt</span>
+              </>
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsOpen(!isOpen)}
+            className="rounded-md p-1 text-indigo-700 hover:bg-indigo-100 transition-colors"
+            aria-label={isOpen ? 'Collapse instructions' : 'Expand instructions'}
+          >
+            {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </button>
+        </div>
+      </div>
+
+      {/* Dynamic Hierarchy Tags */}
+      <div className="mt-3 flex flex-wrap items-center gap-1.5 text-[11px] font-medium text-slate-700">
+        <span className="rounded bg-white border border-indigo-100 px-2 py-0.5 font-bold text-indigo-900">
+          {domainName}
+        </span>
+        <span className="text-slate-400">›</span>
+        <span className="rounded bg-white border border-indigo-100 px-2 py-0.5 font-bold text-indigo-900">
+          {subjectName}
+        </span>
+        <span className="text-slate-400">›</span>
+        <span className="rounded bg-white border border-indigo-100 px-2 py-0.5 font-bold text-indigo-900">
+          {topicName}
+        </span>
+        <span className="text-slate-400">›</span>
+        <span className="rounded bg-indigo-600 text-white px-2 py-0.5 font-bold">
+          {subtopicName}
+        </span>
+      </div>
+
+      {/* Collapsible Content */}
+      {isOpen && (
+        <div className="mt-3.5 space-y-2.5 border-t border-indigo-100 pt-3 text-xs text-slate-700">
+          <div className="rounded-lg bg-white/80 border border-indigo-100 p-3">
+            <h4 className="font-bold text-indigo-950 mb-1 flex items-center gap-1.5">
+              <Sparkles size={13} className="text-indigo-600" />
+              Key Characteristics Visual & Content Rules (D1)
+            </h4>
+            <ul className="list-disc pl-4 space-y-1 text-[11px] text-slate-600 leading-relaxed">
+              <li><strong>2 to 4 cards:</strong> Generate 2–4 genuinely distinct properties.</li>
+              <li><strong>Short titles:</strong> Keep titles to 2–6 words (e.g., "Mutable", "Ordered Sequence").</li>
+              <li><strong>Focused descriptions:</strong> 1–3 clear sentences explaining that single property.</li>
+              <li><strong>Responsive presentation:</strong> UI automatically handles 1 col (mobile), 2 col (tablet), 3–4 col (desktop). <em>Do NOT add UI layout metadata to the JSON.</em></li>
+              <li><strong>Strict JSON only:</strong> Return pure JSON matching the D1 schema with no markdown code blocks or system metadata.</li>
+            </ul>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+

@@ -213,7 +213,7 @@ export function TutorialExperience({ params, subtopicId, content, theme, mode, p
       <LearningActivityTracker subtopicPath={subtopicPath} subtopicName={subtopicName} />
       <TutorialNavbar />
       <DomainBreadcrumb domain={domainName} subtopic={subtopicName} theme={theme} />
-      <div style={{ display: 'flex', alignItems: 'stretch', maxWidth: 1680, margin: '0 auto' }}>
+      <div style={{ display: 'flex', alignItems: 'stretch', width: '100%', minWidth: 0, gap: 0 }}>
         <TutorialSidebar
           currentDomain={currentDomain}
           topicGroups={topicGroups}
@@ -222,8 +222,10 @@ export function TutorialExperience({ params, subtopicId, content, theme, mode, p
           activeSubtopicSlug={params.subtopicSlug}
           onOpenAiTutor={() => setIsAiTutorOpen(true)}
         />
-        <main style={{ flex: 1, minWidth: 0, padding: 24 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 18, alignItems: 'start' }}>{renderPanel()}</div>
+        <main style={{ flex: 1, minWidth: 0, padding: '24px 32px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 18, alignItems: 'start', width: '100%', minWidth: 0 }}>
+            {renderPanel()}
+          </div>
         </main>
       </div>
     </div>

@@ -101,13 +101,13 @@ export function TutorialSidebar({ currentDomain, topicGroups, notes, theme, acti
   return (
     <aside
       style={{
-        width: 260,
+        width: 280,
         flexShrink: 0,
         background: 'var(--tutorial-surface)',
         borderRight: '1px solid var(--tutorial-border)',
         position: 'sticky',
         top: 98,
-        height: 'calc(100vh - 98px)',
+        height: 'calc(100dvh - 98px)',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',

@@ -25,12 +25,12 @@ export function TutorialPageShell({ payload }: TutorialPageShellProps) {
         theme={payload.theme}
         onMenuClick={() => setIsSidebarOpen((current) => !current)}
       />
-      <div className="flex">
+      <div className="flex w-full min-w-0 gap-0">
         {isSidebarOpen && (
           <TutorialLeftSidebar tree={payload.sidebar} activeUrl={payload.activeUrl} />
         )}
-        <div className="min-w-0 flex-1 px-6 py-6">
-          <div className="mx-auto w-full space-y-6">
+        <div className="min-w-0 flex-1 px-4 py-6 sm:px-8 sm:py-8">
+          <div className="w-full space-y-6">
             {payload.content.definition && <TutorialDefinitionContent payload={payload.content.definition} theme={payload.theme} />}
             {payload.content.code && <TutorialCodeContent payload={payload.content.code} theme={payload.theme} />}
             {payload.content.summary && <TutorialSummaryContent payload={payload.content.summary} theme={payload.theme} />}

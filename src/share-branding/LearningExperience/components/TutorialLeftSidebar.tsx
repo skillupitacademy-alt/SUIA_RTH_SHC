@@ -225,7 +225,7 @@ export function TutorialLeftSidebar({ tree, activeUrl, completedUrls, onNavigate
   const progress = clampProgress(tree.progress.percentage);
 
   return (
-    <aside aria-label="Tutorial navigation" className="flex h-screen w-full max-w-[404px] flex-col overflow-hidden border-r border-[#e5eaf1] bg-white text-[#071f63] shadow-sm">
+    <aside aria-label="Tutorial navigation" className="sticky top-0 z-10 flex h-[100dvh] w-[280px] shrink-0 flex-col overflow-hidden border-r border-[#e5eaf1] bg-white text-[#071f63] shadow-sm">
       <header className="flex shrink-0 items-center gap-4 px-6 pb-5 pt-8">
         <div className="flex h-[68px] w-[68px] shrink-0 items-center justify-center overflow-hidden rounded-[14px] text-[20px] font-extrabold text-white" style={{ backgroundColor: tree.theme.primary }}>
           {tree.brand.logoUrl ? (

@@ -69,19 +69,30 @@ export function TutorialDefinitionContent({ payload, theme }: TutorialDefinition
       )}
 
       {characteristics.length > 0 && (
-        <section className="my-7">
-          <div className="mb-[14px] flex items-center gap-3">
+        <section className="my-8">
+          <div className="mb-4 flex items-center gap-3">
             <Star className="h-6 w-6 fill-current" style={{ color: theme.primary }} />
             <h2 className="text-2xl font-extrabold leading-snug tracking-[-0.3px]" style={{ color: theme.secondary }}>Key Characteristics</h2>
           </div>
-          <div className="grid w-full grid-cols-1 gap-[17px] sm:grid-cols-2 xl:grid-cols-4">
-            {characteristics.map((item) => (
-              <div key={item.title} className="min-h-[200px] rounded-[10px] border bg-white px-4 pb-[18px] pt-5 text-center transition hover:-translate-y-0.5 hover:shadow-md" style={{ borderColor: '#e0dce6' }}>
-                <div className="mx-auto mb-3 flex h-[58px] w-[58px] items-center justify-center rounded-full border text-[25px] font-bold" style={{ backgroundColor: withAlpha(theme.primary, '14'), borderColor: withAlpha(theme.primary, '73'), color: theme.primary }}>
+          <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {characteristics.map((item, index) => (
+              <div 
+                key={item.title || index} 
+                className="flex flex-col rounded-xl border bg-white p-5 text-center transition hover:-translate-y-0.5 hover:shadow-md" 
+                style={{ borderColor: '#e0dce6' }}
+              >
+                <div 
+                  className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full border text-xl font-bold shrink-0" 
+                  style={{ backgroundColor: withAlpha(theme.primary, '14'), borderColor: withAlpha(theme.primary, '73'), color: theme.primary }}
+                >
                   {item.icon || <Sparkles className="h-5 w-5" />}
                 </div>
-                <h3 className="mb-2.5 text-base font-extrabold leading-snug tracking-[-0.1px]" style={{ color: theme.secondary }}>{item.title}</h3>
-                <p className="text-sm font-medium leading-[1.65]" style={{ color: theme.secondary }}>{item.description}</p>
+                <h3 className="mb-2 text-base font-extrabold leading-snug tracking-[-0.1px] break-words" style={{ color: theme.secondary }}>
+                  {item.title}
+                </h3>
+                <p className="text-sm font-medium leading-[1.65] text-slate-600 break-words flex-1">
+                  {item.description}
+                </p>
               </div>
             ))}
           </div>

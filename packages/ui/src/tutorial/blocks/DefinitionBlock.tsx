@@ -113,29 +113,33 @@ function DefinitionD1View({
         </div>
       )}
 
-      {/* Key Characteristics */}
+      {/* Key Characteristics - Responsive Grid (1 col mobile, 2 col tablet, 3-4 col desktop) */}
       {page.characteristics && page.characteristics.length > 0 && (
-        <div className="my-4">
-          <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-3">
-            Key Characteristics
+        <div className="my-6">
+          <div className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide mb-3 flex items-center gap-1.5">
+            <span>✨</span>
+            <span>Key Characteristics</span>
           </div>
-          <ul className="space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5 w-full">
             {page.characteristics.map((char, index) => (
-              <li key={index} className="flex items-start gap-3">
-                <span className="text-indigo-500 text-base mt-0.5 flex-shrink-0">
-                  {char.icon}
-                </span>
-                <div className="flex-1">
-                  <div className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-1">
+              <div 
+                key={index} 
+                className="flex flex-col rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-800/90 p-4 shadow-sm hover:shadow-md transition-shadow"
+              >
+                <div className="flex items-center gap-2.5 mb-2">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 text-sm font-bold shrink-0">
+                    {char.icon || '○'}
+                  </span>
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white leading-snug break-words flex-1">
                     {char.title}
-                  </div>
-                  <div className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                    {char.description}
-                  </div>
+                  </h4>
                 </div>
-              </li>
+                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed break-words flex-1">
+                  {char.description}
+                </p>
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
       )}
 
