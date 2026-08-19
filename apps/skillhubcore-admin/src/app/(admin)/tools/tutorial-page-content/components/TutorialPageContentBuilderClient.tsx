@@ -34,13 +34,52 @@ interface HierarchyState {
   subtopics: HierarchyRow[];
 }
 
+export interface BlockVersionOption {
+  id: string;
+  label: string;
+  description?: string;
+}
+
+export interface BlockTypeOption {
+  id: TutorialPageContentType;
+  label: string;
+  versions: BlockVersionOption[];
+}
+
+export const SUPPORTED_BLOCKS: BlockTypeOption[] = [
+  {
+    id: 'definition',
+    label: 'Definition',
+    versions: [
+      { id: 'v1', label: 'V1 - Concept (D1)', description: 'Authoritative definition with intuition, example & responsive key characteristics' },
+      { id: 'v2', label: 'V2 - Deep Dive', description: 'Advanced conceptual breakdown and architectural mechanisms' },
+    ],
+  },
+  {
+    id: 'code',
+    label: 'Code',
+    versions: [
+      { id: 'v1', label: 'V1 - Basic Example', description: 'Step-by-step code execution with memory model' },
+      { id: 'v2', label: 'V2 - Advanced Pattern', description: 'Production-grade idioms and error handling' },
+    ],
+  },
+  {
+    id: 'summary',
+    label: 'Summary',
+    versions: [
+      { id: 'v1', label: 'V1 - Revision Table', description: 'Quick revision table with key points, remember cards and takeaways' },
+    ],
+  },
+];
+
 interface FormState {
   brandId: TutorialSidebarBrandId;
   domainId: string;
   subjectId: string;
   topicId: string;
   subtopicId: string;
-  contentType: TutorialPageContentType;
+  blockType: TutorialPageContentType;
+  versionId: string;
 }
 
 const definitionExample: TutorialDefinitionPayload = {
@@ -221,7 +260,8 @@ const initialForm: FormState = {
   subjectId: '',
   topicId: '',
   subtopicId: '',
-  contentType: 'definition',
+  blockType: 'definition',
+  versionId: 'v1',
 };
 
 function themeForBrand(brandId: TutorialSidebarBrandId): BrandTutorialTheme {
@@ -316,15 +356,25 @@ export function TutorialPageContentBuilderClient() {
   }, []);
 
   useEffect(() => {
-    const example = exampleForContentType(form.contentType);
+    const example = exampleForContentType(form.blockType);
     setSourceContent(JSON.stringify(example, null, 2));
     setPreview(example);
-  }, [form.contentType]);
+  }, [form.blockType]);
 
   const subjects = useMemo(() => hierarchy.subjects.filter((item) => item.domainId === form.domainId), [hierarchy.subjects, form.domainId]);
   const topics = useMemo(() => hierarchy.topics.filter((item) => item.subjectId === form.subjectId), [hierarchy.topics, form.subjectId]);
   const subtopics = useMemo(() => hierarchy.subtopics.filter((item) => item.topicId === form.topicId), [hierarchy.subtopics, form.topicId]);
   const selectedSubtopic = subtopics.find((item) => item.id === form.subtopicId);
+
+  const currentBlockConfig = useMemo(() => {
+    return SUPPORTED_BLOCKS.find((b) => b.id === form.blockType) || SUPPORTED_BLOCKS[0];
+  }, [form.blockType]);
+
+  const availableVersions = currentBlockConfig.versions;
+
+  const selectedVersion = useMemo(() => {
+    return availableVersions.find((v) => v.id === form.versionId) || availableVersions[0];
+  }, [availableVersions, form.versionId]);
 
   function updateForm<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((current) => {
@@ -341,13 +391,17 @@ export function TutorialPageContentBuilderClient() {
       if (key === 'topicId') {
         next.subtopicId = '';
       }
+      if (key === 'blockType') {
+        const block = SUPPORTED_BLOCKS.find((b) => b.id === value);
+        next.versionId = block?.versions[0]?.id || 'v1';
+      }
       return next;
     });
   }
 
   function handlePreview() {
     try {
-      setPreview(parseSource(sourceFormat, sourceContent, form.contentType));
+      setPreview(parseSource(sourceFormat, sourceContent, form.blockType));
       setMessage('Preview updated.');
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Preview failed.');
@@ -358,13 +412,15 @@ export function TutorialPageContentBuilderClient() {
     setIsSaving(true);
     setMessage('');
     try {
-      const payload = parseSource(sourceFormat, sourceContent, form.contentType);
+      const payload = parseSource(sourceFormat, sourceContent, form.blockType);
       setPreview(payload);
       const response = await fetch('/api/tutorial-page-content', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...form,
+          contentType: form.blockType,
+          version: form.versionId,
           brandId: SHARED_BRAND_ID,
           payload,
           sourceFormat,
@@ -385,88 +441,239 @@ export function TutorialPageContentBuilderClient() {
     }
   }
 
-  return (
-    <main className="min-h-screen bg-[#f4f7fa] p-6">
-      <div className="mx-auto grid max-w-[1500px] gap-6 xl:grid-cols-[420px_1fr]">
-        <section className="rounded-xl border border-[#dfe7f1] bg-white p-5 shadow-sm">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#e11d48]">Tutorial Page Builder</p>
-          <h1 className="mt-2 text-2xl font-black text-[#071f63]">Definition & Code Content</h1>
+  const domainName = hierarchy.domains.find((d) => d.id === form.domainId)?.name || 'Not selected';
+  const subjectName = subjects.find((s) => s.id === form.subjectId)?.name || 'Not selected';
+  const topicName = topics.find((t) => t.id === form.topicId)?.name || 'Not selected';
+  const subtopicName = selectedSubtopic?.name || 'Not selected';
 
-          <div className="mt-5 grid gap-3">
-            <select className="rounded-lg border border-[#dfe7f1] px-3 py-2" value={form.domainId} onChange={(event) => updateForm('domainId', event.target.value)}>
-              <option value="">Select domain</option>
-              {hierarchy.domains.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
-            </select>
-            <select className="rounded-lg border border-[#dfe7f1] px-3 py-2" value={form.subjectId} onChange={(event) => updateForm('subjectId', event.target.value)}>
-              <option value="">Select subject</option>
-              {subjects.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
-            </select>
-            <select className="rounded-lg border border-[#dfe7f1] px-3 py-2" value={form.topicId} onChange={(event) => updateForm('topicId', event.target.value)}>
-              <option value="">Select topic</option>
-              {topics.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
-            </select>
-            <select className="rounded-lg border border-[#dfe7f1] px-3 py-2" value={form.subtopicId} onChange={(event) => updateForm('subtopicId', event.target.value)}>
-              <option value="">Select subtopic</option>
-              {subtopics.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
-            </select>
-            <div className="grid grid-cols-2 gap-3">
-              <select className="rounded-lg border border-[#dfe7f1] px-3 py-2" value={form.contentType} onChange={(event) => updateForm('contentType', event.target.value as TutorialPageContentType)}>
-                <option value="definition">Definition (D1)</option>
-                <option value="code">Code</option>
-                <option value="summary">Summary</option>
+  return (
+    <main className="min-h-screen bg-[#f4f7fa] p-4 sm:p-6">
+      <div className="mx-auto max-w-[1600px] space-y-4">
+        {/* Top Header & Compact Horizontal Authoring Toolbar */}
+        <header className="rounded-xl border border-slate-200/80 bg-white p-4 sm:p-5 shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3 mb-3.5">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#e11d48]">Tutorial Page Builder</p>
+              <h1 className="text-xl font-extrabold text-[#071f63]">Definition & Code Content</h1>
+            </div>
+            <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
+              <span className="inline-block h-2 w-2 rounded-full bg-emerald-500"></span>
+              Authoring Workspace
+            </div>
+          </div>
+
+          {/* Horizontal Hierarchy & Content Selector Toolbar */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-2.5 items-end">
+            {/* 1. Domain */}
+            <div className="min-w-0">
+              <label htmlFor="select-domain" className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                Domain
+              </label>
+              <select
+                id="select-domain"
+                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                value={form.domainId}
+                onChange={(event) => updateForm('domainId', event.target.value)}
+              >
+                <option value="">Select Domain</option>
+                {hierarchy.domains.map((item) => (
+                  <option key={item.id} value={item.id}>{item.name}</option>
+                ))}
               </select>
-              <select className="rounded-lg border border-[#dfe7f1] px-3 py-2" value={sourceFormat} onChange={(event) => setSourceFormat(event.target.value as SourceFormat)}>
+            </div>
+
+            {/* 2. Subject */}
+            <div className="min-w-0">
+              <label htmlFor="select-subject" className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                Subject
+              </label>
+              <select
+                id="select-subject"
+                disabled={!form.domainId}
+                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed"
+                value={form.subjectId}
+                onChange={(event) => updateForm('subjectId', event.target.value)}
+              >
+                <option value="">Select Subject</option>
+                {subjects.map((item) => (
+                  <option key={item.id} value={item.id}>{item.name}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* 3. Topic */}
+            <div className="min-w-0">
+              <label htmlFor="select-topic" className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                Topic
+              </label>
+              <select
+                id="select-topic"
+                disabled={!form.subjectId}
+                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed"
+                value={form.topicId}
+                onChange={(event) => updateForm('topicId', event.target.value)}
+              >
+                <option value="">Select Topic</option>
+                {topics.map((item) => (
+                  <option key={item.id} value={item.id}>{item.name}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* 4. Subtopic */}
+            <div className="min-w-0">
+              <label htmlFor="select-subtopic" className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                Subtopic
+              </label>
+              <select
+                id="select-subtopic"
+                disabled={!form.topicId}
+                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed"
+                value={form.subtopicId}
+                onChange={(event) => updateForm('subtopicId', event.target.value)}
+              >
+                <option value="">Select Subtopic</option>
+                {subtopics.map((item) => (
+                  <option key={item.id} value={item.id}>{item.name}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* 5. Block (Independent Dropdown) */}
+            <div className="min-w-0">
+              <label htmlFor="select-block" className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                Block
+              </label>
+              <select
+                id="select-block"
+                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                value={form.blockType}
+                onChange={(event) => updateForm('blockType', event.target.value as TutorialPageContentType)}
+              >
+                {SUPPORTED_BLOCKS.map((block) => (
+                  <option key={block.id} value={block.id}>{block.label}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* 6. Version (Dependent on Block) */}
+            <div className="min-w-0">
+              <label htmlFor="select-version" className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                Version
+              </label>
+              <select
+                id="select-version"
+                disabled={availableVersions.length === 0}
+                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed"
+                value={form.versionId}
+                onChange={(event) => updateForm('versionId', event.target.value)}
+              >
+                {availableVersions.map((version) => (
+                  <option key={version.id} value={version.id}>{version.label}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* 7. Format */}
+            <div className="min-w-0">
+              <label htmlFor="select-format" className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                Format
+              </label>
+              <select
+                id="select-format"
+                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                value={sourceFormat}
+                onChange={(event) => setSourceFormat(event.target.value as SourceFormat)}
+              >
                 <option value="json">JSON</option>
                 <option value="markdown">Markdown</option>
               </select>
             </div>
           </div>
+        </header>
 
-          {/* AI Generation Instructions / Contract Guidance Container */}
-          <AiInstructionContainer
-            domainName={hierarchy.domains.find((d) => d.id === form.domainId)?.name || 'Not selected'}
-            subjectName={subjects.find((s) => s.id === form.subjectId)?.name || 'Not selected'}
-            topicName={topics.find((t) => t.id === form.topicId)?.name || 'Not selected'}
-            subtopicName={selectedSubtopic?.name || 'Not selected'}
-            contentType={form.contentType}
-          />
-
-          {/* JSON Content Editor */}
-          <div className="mt-4">
-            <div className="flex items-center justify-between pb-1.5 text-xs font-bold uppercase tracking-wider text-slate-600">
-              <span>JSON Content Editor</span>
-              <span className="text-[10px] text-slate-400 font-mono">D1 Content Contract</span>
-            </div>
-            <textarea
-              className="h-[380px] w-full rounded-lg border border-[#dfe7f1] bg-[#071024] p-4 font-mono text-xs leading-5 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              value={sourceContent}
-              onChange={(event) => setSourceContent(event.target.value)}
-              placeholder="Paste or edit D1 JSON content here..."
+        {/* 2-Column Authoring Workspace */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+          {/* Left Column: AI Instructions + JSON Editor + Action Buttons */}
+          <section className="lg:col-span-6 xl:col-span-6 space-y-4">
+            {/* AI Generation Instructions / Contract Guidance Container (Moved Up) */}
+            <AiInstructionContainer
+              domainName={domainName}
+              subjectName={subjectName}
+              topicName={topicName}
+              subtopicName={subtopicName}
+              blockName={currentBlockConfig.label}
+              versionName={selectedVersion.label}
+              blockType={form.blockType}
+              versionId={form.versionId}
             />
-          </div>
 
-          <div className="mt-4 flex flex-wrap gap-3">
-            <button type="button" className="inline-flex items-center gap-2 rounded-lg border border-[#dfe7f1] px-4 py-2 font-bold text-[#071f63]" onClick={handlePreview}>
-              <Eye className="h-4 w-4" /> Preview
-            </button>
-            <button type="button" disabled={isSaving || !form.subtopicId} className="inline-flex items-center gap-2 rounded-lg border border-[#dfe7f1] px-4 py-2 font-bold text-[#071f63] disabled:opacity-50" onClick={() => save('draft')}>
-              <Save className="h-4 w-4" /> Save Draft
-            </button>
-            <button type="button" disabled={isSaving || !form.subtopicId} className="inline-flex items-center gap-2 rounded-lg bg-[#e11d48] px-4 py-2 font-bold text-white disabled:opacity-50" onClick={() => save('published')}>
-              <Send className="h-4 w-4" /> Publish
-            </button>
-          </div>
-          {message && <p className="mt-4 rounded-lg bg-[#f8fafc] p-3 text-sm font-semibold text-[#071f63]">{message}</p>}
-        </section>
+            {/* JSON Content Editor with Expanded Height */}
+            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+              <div className="flex items-center justify-between pb-2 text-xs font-bold uppercase tracking-wider text-slate-600">
+                <span className="flex items-center gap-1.5">
+                  <span>JSON Content Editor</span>
+                  <span className="text-[10px] text-slate-400 font-mono">({currentBlockConfig.label} {selectedVersion.id.toUpperCase()})</span>
+                </span>
+                <span className="text-[10px] text-indigo-600 font-mono font-semibold">Pure JSON Contract</span>
+              </div>
+              <textarea
+                className="h-[480px] w-full rounded-lg border border-slate-800 bg-[#071024] p-4 font-mono text-xs leading-5 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-y"
+                value={sourceContent}
+                onChange={(event) => setSourceContent(event.target.value)}
+                placeholder="Paste or edit JSON content here..."
+                aria-label="JSON Content Editor"
+              />
 
-        <section className="min-w-0">
-          <div className="mb-4 rounded-xl border border-[#dfe7f1] bg-white p-4 text-sm font-bold text-[#071f63]">
-            Preview target: {selectedSubtopic?.name ?? 'Select a subtopic'}
-          </div>
-          {form.contentType === 'definition' && <TutorialDefinitionContent payload={preview as TutorialDefinitionPayload} theme={themeForBrand(form.brandId)} />}
-          {form.contentType === 'code' && <TutorialCodeContent payload={preview as TutorialCodePayload} theme={themeForBrand(form.brandId)} />}
-          {form.contentType === 'summary' && <TutorialSummaryContent payload={preview as TutorialSummaryPayload} theme={themeForBrand(form.brandId)} />}
-        </section>
+              <div className="mt-4 flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-[#071f63] shadow-sm hover:bg-slate-50 transition-colors"
+                  onClick={handlePreview}
+                >
+                  <Eye className="h-4 w-4" /> Preview
+                </button>
+                <button
+                  type="button"
+                  disabled={isSaving || !form.subtopicId}
+                  className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-[#071f63] shadow-sm hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={() => save('draft')}
+                >
+                  <Save className="h-4 w-4" /> Save Draft
+                </button>
+                <button
+                  type="button"
+                  disabled={isSaving || !form.subtopicId}
+                  className="inline-flex items-center gap-2 rounded-lg bg-[#e11d48] px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-[#be123c] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={() => save('published')}
+                >
+                  <Send className="h-4 w-4" /> Publish
+                </button>
+              </div>
+              {message && (
+                <p className="mt-3.5 rounded-lg bg-slate-50 border border-slate-100 p-3 text-xs font-semibold text-[#071f63]">
+                  {message}
+                </p>
+              )}
+            </div>
+          </section>
+
+          {/* Right Column: Live Target Preview */}
+          <section className="lg:col-span-6 xl:col-span-6 space-y-3 min-w-0">
+            <div className="rounded-xl border border-slate-200 bg-white p-3.5 text-sm font-bold text-[#071f63] shadow-sm flex items-center justify-between">
+              <span className="truncate">Preview Target: {selectedSubtopic?.name ?? 'Select a subtopic'}</span>
+              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 shrink-0">
+                {currentBlockConfig.label} ({selectedVersion.label})
+              </span>
+            </div>
+
+            <div className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm min-h-[580px] overflow-y-auto">
+              {form.blockType === 'definition' && <TutorialDefinitionContent payload={preview as TutorialDefinitionPayload} theme={themeForBrand(form.brandId)} />}
+              {form.blockType === 'code' && <TutorialCodeContent payload={preview as TutorialCodePayload} theme={themeForBrand(form.brandId)} />}
+              {form.blockType === 'summary' && <TutorialSummaryContent payload={preview as TutorialSummaryPayload} theme={themeForBrand(form.brandId)} />}
+            </div>
+          </section>
+        </div>
       </div>
     </main>
   );
@@ -477,7 +684,10 @@ interface AiInstructionContainerProps {
   subjectName: string;
   topicName: string;
   subtopicName: string;
-  contentType: TutorialPageContentType;
+  blockName: string;
+  versionName: string;
+  blockType: TutorialPageContentType;
+  versionId: string;
 }
 
 function AiInstructionContainer({
@@ -485,15 +695,16 @@ function AiInstructionContainer({
   subjectName,
   topicName,
   subtopicName,
-  contentType,
+  blockName,
+  versionName,
+  blockType,
+  versionId,
 }: AiInstructionContainerProps) {
   const [isOpen, setIsOpen] = useState(true);
   const [copied, setCopied] = useState(false);
 
-  const blockLabel = contentType === 'definition' ? 'Definition D1' : contentType === 'code' ? 'Code Example' : 'Revision Summary';
-
   const promptText = useMemo(() => {
-    if (contentType === 'definition') {
+    if (blockType === 'definition') {
       return `You are generating educational content for a tutorial platform.
 
 # TARGET HIERARCHY
@@ -501,7 +712,8 @@ function AiInstructionContainer({
 - Subject: ${subjectName}
 - Topic: ${topicName}
 - Subtopic: ${subtopicName}
-- Block: Definition D1
+- Block: ${blockName}
+- Version: ${versionName}
 
 # OUTPUT REQUIREMENTS (Pure JSON Content Contract)
 Return ONLY a valid JSON object matching this exact schema:
@@ -547,15 +759,19 @@ Return ONLY a valid JSON object matching this exact schema:
 Do NOT include id, blockId, version, domainId, subjectId, topicId, subtopicId, brandId, theme, status, publishedAt, or schemaVersion.`;
     }
 
-    return `Target Hierarchy:
+    return `You are generating educational content for a tutorial platform.
+
+# TARGET HIERARCHY
 - Domain: ${domainName}
 - Subject: ${subjectName}
 - Topic: ${topicName}
 - Subtopic: ${subtopicName}
-- Block Type: ${blockLabel}
+- Block: ${blockName}
+- Version: ${versionName}
 
-Generate valid, production-ready ${contentType} content conforming to the official schema.`;
-  }, [domainName, subjectName, topicName, subtopicName, contentType, blockLabel]);
+# OUTPUT REQUIREMENTS
+Generate valid, production-ready ${blockType} (${versionId.toUpperCase()}) content conforming strictly to the official platform schema without system metadata or styling fields.`;
+  }, [domainName, subjectName, topicName, subtopicName, blockName, versionName, blockType, versionId]);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(promptText);
@@ -564,7 +780,7 @@ Generate valid, production-ready ${contentType} content conforming to the offici
   };
 
   return (
-    <div className="mt-4 rounded-xl border border-indigo-200 bg-indigo-50/50 p-4 transition-all">
+    <div className="rounded-xl border border-indigo-200 bg-indigo-50/50 p-4 transition-all">
       {/* Container Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -576,7 +792,7 @@ Generate valid, production-ready ${contentType} content conforming to the offici
               AI Generation Instructions
             </h3>
             <span className="text-[11px] font-semibold text-indigo-600">
-              {blockLabel} Contract Guidance
+              {blockName} ({versionName}) Contract Guidance
             </span>
           </div>
         </div>
@@ -628,6 +844,14 @@ Generate valid, production-ready ${contentType} content conforming to the offici
         <span className="rounded bg-indigo-600 text-white px-2 py-0.5 font-bold">
           {subtopicName}
         </span>
+        <span className="text-slate-400">›</span>
+        <span className="rounded bg-white border border-indigo-200 px-2 py-0.5 font-bold text-indigo-700">
+          {blockName}
+        </span>
+        <span className="text-slate-400">›</span>
+        <span className="rounded bg-indigo-100 text-indigo-800 px-2 py-0.5 font-bold">
+          {versionName}
+        </span>
       </div>
 
       {/* Collapsible Content */}
@@ -636,19 +860,24 @@ Generate valid, production-ready ${contentType} content conforming to the offici
           <div className="rounded-lg bg-white/80 border border-indigo-100 p-3">
             <h4 className="font-bold text-indigo-950 mb-1 flex items-center gap-1.5">
               <Sparkles size={13} className="text-indigo-600" />
-              Key Characteristics Visual & Content Rules (D1)
+              {blockName} {versionName} Visual & Content Rules
             </h4>
-            <ul className="list-disc pl-4 space-y-1 text-[11px] text-slate-600 leading-relaxed">
-              <li><strong>2 to 4 cards:</strong> Generate 2–4 genuinely distinct properties.</li>
-              <li><strong>Short titles:</strong> Keep titles to 2–6 words (e.g., "Mutable", "Ordered Sequence").</li>
-              <li><strong>Focused descriptions:</strong> 1–3 clear sentences explaining that single property.</li>
-              <li><strong>Responsive presentation:</strong> UI automatically handles 1 col (mobile), 2 col (tablet), 3–4 col (desktop). <em>Do NOT add UI layout metadata to the JSON.</em></li>
-              <li><strong>Strict JSON only:</strong> Return pure JSON matching the D1 schema with no markdown code blocks or system metadata.</li>
-            </ul>
+            {blockType === 'definition' ? (
+              <ul className="list-disc pl-4 space-y-1 text-[11px] text-slate-600 leading-relaxed">
+                <li><strong>2 to 4 cards:</strong> Generate 2–4 genuinely distinct properties.</li>
+                <li><strong>Short titles:</strong> Keep titles to 2–6 words (e.g., "Named Reference", "Mutable").</li>
+                <li><strong>Focused descriptions:</strong> 1–3 clear sentences explaining that single property.</li>
+                <li><strong>Responsive presentation:</strong> UI automatically handles 1 col (mobile), 2 col (tablet), 3–4 col (desktop). <em>Do NOT add UI layout metadata to the JSON.</em></li>
+                <li><strong>Strict JSON only:</strong> Return pure JSON matching the D1 schema with no markdown code blocks or system metadata.</li>
+              </ul>
+            ) : (
+              <p className="text-[11px] text-slate-600">
+                Generate production-ready content matching the canonical {blockName} ({versionName}) schema with pure educational data and no system metadata.
+              </p>
+            )}
           </div>
         </div>
       )}
     </div>
   );
 }
-
