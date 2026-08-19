@@ -11,6 +11,7 @@ FROM base AS deps
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/skillup-web/package.json ./apps/skillup-web/
 COPY packages/auth/package.json ./packages/auth/
+COPY packages/db/package.json ./packages/db/
 COPY packages/db-people/package.json ./packages/db-people/
 COPY packages/db-payment/package.json ./packages/db-payment/
 COPY packages/db-placement/package.json ./packages/db-placement/
@@ -24,6 +25,7 @@ ENV CLOUD_RUN_BUILD=true
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps/skillup-web/node_modules ./apps/skillup-web/node_modules
 COPY --from=deps /app/packages/auth/node_modules ./packages/auth/node_modules
+COPY --from=deps /app/packages/db/node_modules ./packages/db/node_modules
 COPY --from=deps /app/packages/db-people/node_modules ./packages/db-people/node_modules
 COPY --from=deps /app/packages/db-payment/node_modules ./packages/db-payment/node_modules
 COPY --from=deps /app/packages/db-placement/node_modules ./packages/db-placement/node_modules
