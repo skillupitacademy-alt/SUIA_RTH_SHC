@@ -125,11 +125,38 @@ describe('TutorialProgressRepository', () => {
 
   it('markBlockComplete completes the subtopic once all blocks are present', async () => {
     const existing = makeRow({
-      blocksCompleted: ['notes', 'layman', 'real_life', 'technical', 'code'],
+      blocksCompleted: [
+        'notes',
+        'layman',
+        'real_life',
+        'technical',
+        'code',
+        'visual',
+        'practice',
+        'assignment',
+        'project',
+        'quiz',
+        'summary',
+        'interview',
+      ],
     });
     const completed = makeRow({
       status: 'completed',
-      blocksCompleted: ['notes', 'layman', 'real_life', 'technical', 'code', 'ai_tutor'],
+      blocksCompleted: [
+        'notes',
+        'layman',
+        'real_life',
+        'technical',
+        'code',
+        'visual',
+        'practice',
+        'assignment',
+        'project',
+        'quiz',
+        'summary',
+        'interview',
+        'ai_tutor',
+      ],
       completedAt: new Date('2026-01-02T00:00:00.000Z'),
     });
     const db = createDbMock({ selectRows: [existing], updateRow: completed });
@@ -162,7 +189,21 @@ describe('TutorialProgressRepository', () => {
 
   it('isSubtopicComplete returns true when all required blocks are done', async () => {
     const completed = makeRow({
-      blocksCompleted: ['notes', 'layman', 'real_life', 'technical', 'code', 'ai_tutor'],
+      blocksCompleted: [
+        'notes',
+        'layman',
+        'real_life',
+        'technical',
+        'code',
+        'visual',
+        'practice',
+        'assignment',
+        'project',
+        'quiz',
+        'summary',
+        'interview',
+        'ai_tutor',
+      ],
       status: 'completed',
     });
     const db = createDbMock({ selectRows: [completed] });

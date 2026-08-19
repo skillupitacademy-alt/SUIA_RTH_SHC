@@ -587,8 +587,9 @@ describe('BlockTransformationService', () => {
       expect(result.blocks[0].type).toBe('definition');
 
       const definitionBlock = result.blocks[0] as any;
-      expect(definitionBlock.content.term).toBe('Recursion');
-      expect(definitionBlock.content.definition).toContain('technique');
+      expect(definitionBlock.version).toBe('D1');
+      expect(definitionBlock.content.page.title).toBe('Recursion');
+      expect(definitionBlock.content.page.definition).toContain('technique');
     });
   });
 
