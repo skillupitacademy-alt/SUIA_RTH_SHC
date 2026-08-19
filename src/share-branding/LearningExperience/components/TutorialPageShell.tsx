@@ -17,7 +17,7 @@ export function TutorialPageShell({ payload }: TutorialPageShellProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   return (
-    <main className="min-h-screen bg-[#f4f7fa]">
+    <main className="min-h-screen bg-white">
       <TutorialHeader
         crumbs={[payload.hierarchy.domain.name, payload.hierarchy.subject.name, payload.hierarchy.topic.name]}
         active={payload.hierarchy.subtopic.name}
@@ -25,11 +25,11 @@ export function TutorialPageShell({ payload }: TutorialPageShellProps) {
         theme={payload.theme}
         onMenuClick={() => setIsSidebarOpen((current) => !current)}
       />
-      <div className="flex w-full min-w-0 gap-0">
+      <div className="flex w-full min-w-0 gap-0 bg-white">
         {isSidebarOpen && (
           <TutorialLeftSidebar tree={payload.sidebar} activeUrl={payload.activeUrl} />
         )}
-        <div className="min-w-0 flex-1 px-4 py-6 sm:px-8 sm:py-8">
+        <div className="min-w-0 flex-1 px-4 py-6 sm:px-8 sm:py-8 bg-white">
           <div className="w-full space-y-6">
             {payload.content.definition && <TutorialDefinitionContent payload={payload.content.definition} theme={payload.theme} />}
             {payload.content.code && <TutorialCodeContent payload={payload.content.code} theme={payload.theme} />}
