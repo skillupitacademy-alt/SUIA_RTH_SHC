@@ -447,116 +447,141 @@ export function TutorialPageContentBuilderClient() {
   const subtopicName = selectedSubtopic?.name || 'Not selected';
 
   return (
-    <main className="min-h-screen bg-[#f4f7fa] p-6">
-      <div className="mx-auto grid max-w-[1500px] gap-6 xl:grid-cols-[460px_1fr]">
-        {/* Left Authoring Section: Header, Selectors, AI Instructions, JSON Editor, Actions */}
-        <section className="rounded-xl border border-[#dfe7f1] bg-white p-5 shadow-sm">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#e11d48]">Tutorial Page Builder</p>
-          <h1 className="mt-2 text-2xl font-black text-[#071f63]">Definition & Code Content</h1>
-
-          {/* Hierarchy & Block / Version Selection */}
-          <div className="mt-5 grid gap-3">
+    <main className="min-h-screen bg-[#f4f7fa] p-4 sm:p-6">
+      <div className="mx-auto max-w-[1700px] space-y-5">
+        {/* Top Header & Compact Horizontal Authoring Toolbar */}
+        <header className="rounded-xl border border-slate-200/90 bg-white p-5 shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3 mb-4">
             <div>
-              <label htmlFor="select-domain" className="sr-only">Domain</label>
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#e11d48]">Tutorial Page Builder</p>
+              <h1 className="text-xl font-extrabold text-[#071f63]">Definition & Code Content</h1>
+            </div>
+            <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
+              <span className="inline-block h-2 w-2 rounded-full bg-emerald-500"></span>
+              Authoring Toolbar
+            </div>
+          </div>
+
+          {/* Horizontal Hierarchy & Content Selector Toolbar */}
+          <div className="flex flex-wrap items-end gap-3">
+            {/* 1. Domain */}
+            <div className="flex-1 min-w-[170px]">
+              <label htmlFor="select-domain" className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                Domain
+              </label>
               <select
                 id="select-domain"
-                className="w-full rounded-lg border border-[#dfe7f1] px-3 py-2 text-sm text-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
                 value={form.domainId}
                 onChange={(event) => updateForm('domainId', event.target.value)}
               >
-                <option value="">Select domain</option>
+                <option value="">Select Domain</option>
                 {hierarchy.domains.map((item) => (
                   <option key={item.id} value={item.id}>{item.name}</option>
                 ))}
               </select>
             </div>
 
-            <div>
-              <label htmlFor="select-subject" className="sr-only">Subject</label>
+            {/* 2. Subject */}
+            <div className="flex-1 min-w-[170px]">
+              <label htmlFor="select-subject" className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                Subject
+              </label>
               <select
                 id="select-subject"
                 disabled={!form.domainId}
-                className="w-full rounded-lg border border-[#dfe7f1] px-3 py-2 text-sm text-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:bg-slate-50 disabled:text-slate-400"
+                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed"
                 value={form.subjectId}
                 onChange={(event) => updateForm('subjectId', event.target.value)}
               >
-                <option value="">Select subject</option>
+                <option value="">Select Subject</option>
                 {subjects.map((item) => (
                   <option key={item.id} value={item.id}>{item.name}</option>
                 ))}
               </select>
             </div>
 
-            <div>
-              <label htmlFor="select-topic" className="sr-only">Topic</label>
+            {/* 3. Topic */}
+            <div className="flex-1 min-w-[150px]">
+              <label htmlFor="select-topic" className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                Topic
+              </label>
               <select
                 id="select-topic"
                 disabled={!form.subjectId}
-                className="w-full rounded-lg border border-[#dfe7f1] px-3 py-2 text-sm text-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:bg-slate-50 disabled:text-slate-400"
+                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed"
                 value={form.topicId}
                 onChange={(event) => updateForm('topicId', event.target.value)}
               >
-                <option value="">Select topic</option>
+                <option value="">Select Topic</option>
                 {topics.map((item) => (
                   <option key={item.id} value={item.id}>{item.name}</option>
                 ))}
               </select>
             </div>
 
-            <div>
-              <label htmlFor="select-subtopic" className="sr-only">Subtopic</label>
+            {/* 4. Subtopic */}
+            <div className="flex-1 min-w-[170px]">
+              <label htmlFor="select-subtopic" className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                Subtopic
+              </label>
               <select
                 id="select-subtopic"
                 disabled={!form.topicId}
-                className="w-full rounded-lg border border-[#dfe7f1] px-3 py-2 text-sm text-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:bg-slate-50 disabled:text-slate-400"
+                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed"
                 value={form.subtopicId}
                 onChange={(event) => updateForm('subtopicId', event.target.value)}
               >
-                <option value="">Select subtopic</option>
+                <option value="">Select Subtopic</option>
                 {subtopics.map((item) => (
                   <option key={item.id} value={item.id}>{item.name}</option>
                 ))}
               </select>
             </div>
 
-            {/* Block & Version Selection */}
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label htmlFor="select-block" className="sr-only">Block</label>
-                <select
-                  id="select-block"
-                  className="w-full rounded-lg border border-[#dfe7f1] px-3 py-2 text-sm text-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
-                  value={form.blockType}
-                  onChange={(event) => updateForm('blockType', event.target.value as TutorialPageContentType)}
-                >
-                  {SUPPORTED_BLOCKS.map((block) => (
-                    <option key={block.id} value={block.id}>{block.label}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label htmlFor="select-version" className="sr-only">Version</label>
-                <select
-                  id="select-version"
-                  disabled={availableVersions.length === 0}
-                  className="w-full rounded-lg border border-[#dfe7f1] px-3 py-2 text-sm text-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:bg-slate-50 disabled:text-slate-400"
-                  value={form.versionId}
-                  onChange={(event) => updateForm('versionId', event.target.value)}
-                >
-                  {availableVersions.map((version) => (
-                    <option key={version.id} value={version.id}>{version.label}</option>
-                  ))}
-                </select>
-              </div>
+            {/* 5. Block (Independent Dropdown) */}
+            <div className="w-[140px] min-w-[130px]">
+              <label htmlFor="select-block" className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                Block
+              </label>
+              <select
+                id="select-block"
+                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                value={form.blockType}
+                onChange={(event) => updateForm('blockType', event.target.value as TutorialPageContentType)}
+              >
+                {SUPPORTED_BLOCKS.map((block) => (
+                  <option key={block.id} value={block.id}>{block.label}</option>
+                ))}
+              </select>
             </div>
 
-            {/* Format Selection */}
-            <div>
-              <label htmlFor="select-format" className="sr-only">Format</label>
+            {/* 6. Version (Dependent on Block) */}
+            <div className="w-[170px] min-w-[150px]">
+              <label htmlFor="select-version" className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                Version
+              </label>
+              <select
+                id="select-version"
+                disabled={availableVersions.length === 0}
+                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed"
+                value={form.versionId}
+                onChange={(event) => updateForm('versionId', event.target.value)}
+              >
+                {availableVersions.map((version) => (
+                  <option key={version.id} value={version.id}>{version.label}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* 7. Format */}
+            <div className="w-[110px] min-w-[100px]">
+              <label htmlFor="select-format" className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                Format
+              </label>
               <select
                 id="select-format"
-                className="w-full rounded-lg border border-[#dfe7f1] px-3 py-2 text-sm text-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
                 value={sourceFormat}
                 onChange={(event) => setSourceFormat(event.target.value as SourceFormat)}
               >
@@ -565,65 +590,90 @@ export function TutorialPageContentBuilderClient() {
               </select>
             </div>
           </div>
+        </header>
 
-          {/* AI Generation Instructions / Contract Guidance Container */}
-          <AiInstructionContainer
-            domainName={domainName}
-            subjectName={subjectName}
-            topicName={topicName}
-            subtopicName={subtopicName}
-            blockName={currentBlockConfig.label}
-            versionName={selectedVersion.label}
-            blockType={form.blockType}
-            versionId={form.versionId}
-          />
-
-          {/* JSON Content Editor */}
-          <div className="mt-4">
-            <div className="flex items-center justify-between pb-1.5 text-xs font-bold uppercase tracking-wider text-slate-600">
-              <span className="flex items-center gap-1.5">
-                <span>JSON Content Editor</span>
-                <span className="text-[10px] text-slate-400 font-mono">({currentBlockConfig.label} {selectedVersion.id.toUpperCase()})</span>
-              </span>
-              <span className="text-[10px] text-indigo-600 font-mono font-semibold">Pure JSON Contract</span>
-            </div>
-            <textarea
-              className="h-[380px] w-full rounded-lg border border-[#dfe7f1] bg-[#071024] p-4 font-mono text-xs leading-5 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              value={sourceContent}
-              onChange={(event) => setSourceContent(event.target.value)}
-              placeholder="Paste or edit JSON content here..."
-              aria-label="JSON Content Editor"
+        {/* 2-Column Workspace below the Horizontal Toolbar */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Left Column: AI Generation Instructions + JSON Editor + Action Buttons */}
+          <section className="lg:col-span-6 xl:col-span-6 space-y-4">
+            {/* AI Generation Instructions / Contract Guidance Container */}
+            <AiInstructionContainer
+              domainName={domainName}
+              subjectName={subjectName}
+              topicName={topicName}
+              subtopicName={subtopicName}
+              blockName={currentBlockConfig.label}
+              versionName={selectedVersion.label}
+              blockType={form.blockType}
+              versionId={form.versionId}
             />
-          </div>
 
-          <div className="mt-4 flex flex-wrap gap-3">
-            <button type="button" className="inline-flex items-center gap-2 rounded-lg border border-[#dfe7f1] px-4 py-2 font-bold text-[#071f63] hover:bg-slate-50 transition-colors" onClick={handlePreview}>
-              <Eye className="h-4 w-4" /> Preview
-            </button>
-            <button type="button" disabled={isSaving || !form.subtopicId} className="inline-flex items-center gap-2 rounded-lg border border-[#dfe7f1] px-4 py-2 font-bold text-[#071f63] hover:bg-slate-50 transition-colors disabled:opacity-50" onClick={() => save('draft')}>
-              <Save className="h-4 w-4" /> Save Draft
-            </button>
-            <button type="button" disabled={isSaving || !form.subtopicId} className="inline-flex items-center gap-2 rounded-lg bg-[#e11d48] px-4 py-2 font-bold text-white hover:bg-[#be123c] transition-colors disabled:opacity-50" onClick={() => save('published')}>
-              <Send className="h-4 w-4" /> Publish
-            </button>
-          </div>
-          {message && <p className="mt-4 rounded-lg bg-[#f8fafc] p-3 text-sm font-semibold text-[#071f63]">{message}</p>}
-        </section>
+            {/* JSON Content Editor */}
+            <div className="rounded-xl border border-slate-200/90 bg-white p-5 shadow-sm">
+              <div className="flex items-center justify-between pb-2 text-xs font-bold uppercase tracking-wider text-slate-600">
+                <span className="flex items-center gap-1.5">
+                  <span>JSON Content Editor</span>
+                  <span className="text-[10px] text-slate-400 font-mono">({currentBlockConfig.label} {selectedVersion.id.toUpperCase()})</span>
+                </span>
+                <span className="text-[10px] text-indigo-600 font-mono font-semibold">Pure JSON Contract</span>
+              </div>
+              <textarea
+                className="h-[460px] w-full rounded-lg border border-slate-800 bg-[#071024] p-4 font-mono text-xs leading-5 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-y"
+                value={sourceContent}
+                onChange={(event) => setSourceContent(event.target.value)}
+                placeholder="Paste or edit JSON content here..."
+                aria-label="JSON Content Editor"
+              />
 
-        {/* Right Section: Original Preview Target and Below Rendered Preview Component */}
-        <section className="min-w-0">
-          <div className="mb-4 rounded-xl border border-[#dfe7f1] bg-white p-4 text-sm font-bold text-[#071f63] shadow-sm flex items-center justify-between">
-            <span>Preview target: {selectedSubtopic?.name ?? 'Select a subtopic'}</span>
-            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700">
-              {currentBlockConfig.label} ({selectedVersion.label})
-            </span>
-          </div>
-          <div className="rounded-xl border border-[#e4eaf2] bg-white p-6 shadow-sm">
-            {form.blockType === 'definition' && <TutorialDefinitionContent payload={preview as TutorialDefinitionPayload} theme={themeForBrand(form.brandId)} />}
-            {form.blockType === 'code' && <TutorialCodeContent payload={preview as TutorialCodePayload} theme={themeForBrand(form.brandId)} />}
-            {form.blockType === 'summary' && <TutorialSummaryContent payload={preview as TutorialSummaryPayload} theme={themeForBrand(form.brandId)} />}
-          </div>
-        </section>
+              <div className="mt-4 flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-[#071f63] shadow-sm hover:bg-slate-50 transition-colors"
+                  onClick={handlePreview}
+                >
+                  <Eye className="h-4 w-4" /> Preview
+                </button>
+                <button
+                  type="button"
+                  disabled={isSaving || !form.subtopicId}
+                  className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-[#071f63] shadow-sm hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={() => save('draft')}
+                >
+                  <Save className="h-4 w-4" /> Save Draft
+                </button>
+                <button
+                  type="button"
+                  disabled={isSaving || !form.subtopicId}
+                  className="inline-flex items-center gap-2 rounded-lg bg-[#e11d48] px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-[#be123c] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={() => save('published')}
+                >
+                  <Send className="h-4 w-4" /> Publish
+                </button>
+              </div>
+              {message && (
+                <p className="mt-3.5 rounded-lg bg-slate-50 border border-slate-100 p-3 text-xs font-semibold text-[#071f63]">
+                  {message}
+                </p>
+              )}
+            </div>
+          </section>
+
+          {/* Right Column: Preview Target Header & Live Preview Pane */}
+          <section className="lg:col-span-6 xl:col-span-6 space-y-4 min-w-0">
+            <div className="rounded-xl border border-slate-200/90 bg-white p-4 text-sm font-bold text-[#071f63] shadow-sm flex items-center justify-between">
+              <span className="truncate">Preview Target: {selectedSubtopic?.name ?? 'Select a subtopic'}</span>
+              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 shrink-0">
+                {currentBlockConfig.label} ({selectedVersion.label})
+              </span>
+            </div>
+
+            <div className="rounded-xl border border-slate-200/90 bg-white p-6 shadow-sm min-h-[580px] overflow-y-auto">
+              {form.blockType === 'definition' && <TutorialDefinitionContent payload={preview as TutorialDefinitionPayload} theme={themeForBrand(form.brandId)} />}
+              {form.blockType === 'code' && <TutorialCodeContent payload={preview as TutorialCodePayload} theme={themeForBrand(form.brandId)} />}
+              {form.blockType === 'summary' && <TutorialSummaryContent payload={preview as TutorialSummaryPayload} theme={themeForBrand(form.brandId)} />}
+            </div>
+          </section>
+        </div>
       </div>
     </main>
   );
@@ -730,7 +780,7 @@ Generate valid, production-ready ${blockType} (${versionId.toUpperCase()}) conte
   };
 
   return (
-    <div className="mt-4 rounded-xl border border-indigo-200 bg-indigo-50/50 p-4 transition-all">
+    <div className="rounded-xl border border-indigo-200 bg-indigo-50/50 p-4 transition-all">
       {/* Container Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -815,7 +865,7 @@ Generate valid, production-ready ${blockType} (${versionId.toUpperCase()}) conte
             {blockType === 'definition' ? (
               <ul className="list-disc pl-4 space-y-1 text-[11px] text-slate-600 leading-relaxed">
                 <li><strong>2 to 4 cards:</strong> Generate 2–4 genuinely distinct properties.</li>
-                <li><strong>Short titles:</strong> Keep titles to 2–6 words (e.g., &quot;Named Reference&quot;, &quot;Mutable&quot;).</li>
+                <li><strong>Short titles:</strong> Keep titles to 2–6 words (e.g., "Named Reference", "Mutable").</li>
                 <li><strong>Focused descriptions:</strong> 1–3 clear sentences explaining that single property.</li>
                 <li><strong>Responsive presentation:</strong> UI automatically handles 1 col (mobile), 2 col (tablet), 3–4 col (desktop). <em>Do NOT add UI layout metadata to the JSON.</em></li>
                 <li><strong>Strict JSON only:</strong> Return pure JSON matching the D1 schema with no markdown code blocks or system metadata.</li>
