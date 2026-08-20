@@ -25,6 +25,7 @@ import {
   FolderTree,
   Award,
   BadgeCheck,
+  Layers,
 } from 'lucide-react';
 
 interface LeftSidebarProps {
@@ -48,8 +49,9 @@ export function LeftSidebar({ isLeftSidebarOpen, setIsLeftSidebarOpen, pathname 
 
       {/* Left Sidebar (Overlay) */}
       <aside
-        className={`fixed top-0 left-0 bottom-0 z-50 bg-[#111827] text-slate-300 flex flex-col w-[280px] overflow-y-auto hide-scrollbar transition-transform duration-300 shadow-2xl ${isLeftSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-          }`}
+        className={`fixed top-0 left-0 bottom-0 z-50 bg-[#111827] text-slate-300 flex flex-col w-[280px] overflow-y-auto hide-scrollbar transition-transform duration-300 shadow-2xl ${
+          isLeftSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
       >
         <div className="p-6 pb-4 w-[280px] flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -82,9 +84,15 @@ export function LeftSidebar({ isLeftSidebarOpen, setIsLeftSidebarOpen, pathname 
                 { icon: Box, label: 'Architecture Governance', href: '#' },
                 { icon: Settings, label: 'Brand & Deployment', href: '#' },
                 { icon: Settings, label: 'System Settings', href: '#' },
-                { icon: CheckSquare, label: 'Audit & Compliance', href: '#' }
+                { icon: CheckSquare, label: 'Audit & Compliance', href: '#' },
               ].map((item, i) => (
-                <Link key={i} href={item.href || '#'} className={`flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors focus:ring-2 focus:ring-pink-500 outline-none ${pathname === item.href ? 'bg-slate-800 text-white font-bold' : 'text-slate-300 hover:text-white hover:bg-slate-800'}`}>
+                <Link
+                  key={i}
+                  href={item.href || '#'}
+                  className={`flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors focus:ring-2 focus:ring-pink-500 outline-none ${
+                    pathname === item.href ? 'bg-slate-800 text-white font-bold' : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                  }`}
+                >
                   <div className="flex items-center gap-3 overflow-hidden">
                     <item.icon size={18} className="shrink-0" />
                     <span className="whitespace-nowrap truncate">{item.label}</span>
@@ -104,9 +112,13 @@ export function LeftSidebar({ isLeftSidebarOpen, setIsLeftSidebarOpen, pathname 
                 { icon: ClipboardList, label: 'Exam Engine', color: 'text-orange-400' },
                 { icon: Briefcase, label: 'Placement Engine', color: 'text-pink-400' },
                 { icon: Users, label: 'Faculty Engine', color: 'text-orange-400' },
-                { icon: Briefcase, label: 'Internship Engine', color: 'text-pink-400' }
+                { icon: Briefcase, label: 'Internship Engine', color: 'text-pink-400' },
               ].map((item, i) => (
-                <Link key={i} href="#" className="flex items-center justify-between px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors focus:ring-2 focus:ring-pink-500 outline-none">
+                <Link
+                  key={i}
+                  href="#"
+                  className="flex items-center justify-between px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors focus:ring-2 focus:ring-pink-500 outline-none"
+                >
                   <div className="flex items-center gap-3 overflow-hidden">
                     <div className={`p-1 rounded bg-slate-800/50 shrink-0 ${item.color}`}><item.icon size={14} /></div>
                     <span className="whitespace-nowrap truncate">{item.label}</span>
@@ -155,9 +167,15 @@ export function LeftSidebar({ isLeftSidebarOpen, setIsLeftSidebarOpen, pathname 
               {[
                 { icon: LayoutGrid, label: 'Overview', href: '#' },
                 { icon: FileText, label: 'Notes Generation', href: '#', color: 'text-orange-400' },
-                { icon: Compass, label: 'Technical Generation', href: '#', color: 'text-pink-400' }
+                { icon: Compass, label: 'Technical Generation', href: '#', color: 'text-pink-400' },
               ].map((item, i) => (
-                <Link key={i} href={item.href} className={`flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors focus:ring-2 focus:ring-pink-500 outline-none ${pathname === item.href ? 'bg-slate-800 text-white font-bold' : 'text-slate-300 hover:text-white hover:bg-slate-800'}`}>
+                <Link
+                  key={i}
+                  href={item.href}
+                  className={`flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors focus:ring-2 focus:ring-pink-500 outline-none ${
+                    pathname === item.href ? 'bg-slate-800 text-white font-bold' : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                  }`}
+                >
                   <div className="flex items-center gap-3 overflow-hidden">
                     <div className={`p-1 rounded bg-slate-800/50 shrink-0 ${item.color || 'text-slate-400'}`}><item.icon size={14} /></div>
                     <span className="whitespace-nowrap truncate">{item.label}</span>
@@ -173,11 +191,18 @@ export function LeftSidebar({ isLeftSidebarOpen, setIsLeftSidebarOpen, pathname 
             <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 px-2 whitespace-nowrap">AI Content Workspace</h2>
             <nav className="space-y-1">
               {[
+                { icon: Layers, label: 'Tutorial Block Composer', href: '/tools/tutorial-block-composer', color: 'text-rose-400' },
                 { icon: Edit, label: 'Granular Content Manager', href: '/tools/content-manager', color: 'text-sky-400' },
                 { icon: BookOpen, label: 'Tutorial Left Sidebar', href: '/tools/tutorial-left-sidebar', color: 'text-orange-400' },
-                { icon: FileText, label: 'Tutorial Page Content', href: '/tools/tutorial-page-content', color: 'text-pink-400' }
+                { icon: FileText, label: 'Tutorial Page Content', href: '/tools/tutorial-page-content', color: 'text-pink-400' },
               ].map((item, i) => (
-                <Link key={i} href={item.href} className={`flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors focus:ring-2 focus:ring-pink-500 outline-none ${pathname === item.href ? 'bg-slate-800 text-white font-bold' : 'text-slate-300 hover:text-white hover:bg-slate-800'}`}>
+                <Link
+                  key={i}
+                  href={item.href}
+                  className={`flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors focus:ring-2 focus:ring-pink-500 outline-none ${
+                    pathname === item.href ? 'bg-slate-800 text-white font-bold' : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                  }`}
+                >
                   <div className="flex items-center gap-3 overflow-hidden">
                     <div className={`p-1 rounded bg-slate-800/50 shrink-0 ${item.color || 'text-slate-400'}`}><item.icon size={14} /></div>
                     <span className="whitespace-nowrap truncate">{item.label}</span>
@@ -194,9 +219,15 @@ export function LeftSidebar({ isLeftSidebarOpen, setIsLeftSidebarOpen, pathname 
             <nav className="space-y-1">
               {[
                 { icon: Award, label: 'Certificate Generator', href: '/certificate-generator', color: 'text-emerald-400' },
-                { icon: BadgeCheck, label: 'Certificate Preview', href: '/certificate-preview', color: 'text-sky-400' }
+                { icon: BadgeCheck, label: 'Certificate Preview', href: '/certificate-preview', color: 'text-sky-400' },
               ].map((item, i) => (
-                <Link key={i} href={item.href} className={`flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors focus:ring-2 focus:ring-pink-500 outline-none ${pathname === item.href ? 'bg-slate-800 text-white font-bold' : 'text-slate-300 hover:text-white hover:bg-slate-800'}`}>
+                <Link
+                  key={i}
+                  href={item.href}
+                  className={`flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors focus:ring-2 focus:ring-pink-500 outline-none ${
+                    pathname === item.href ? 'bg-slate-800 text-white font-bold' : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                  }`}
+                >
                   <div className="flex items-center gap-3 overflow-hidden">
                     <div className={`p-1 rounded bg-slate-800/50 shrink-0 ${item.color}`}><item.icon size={14} /></div>
                     <span className="whitespace-nowrap truncate">{item.label}</span>
