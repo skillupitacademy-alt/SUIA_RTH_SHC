@@ -18,7 +18,7 @@
     "@quiz/types": "workspace:*",
     "bcryptjs": "^3.0.3",
     "@vitejs/plugin-react": "^5.1.4",
-    "@types/node": "^20",
+    "@types/node": "^26",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "autoprefixer": "^10.4.23",
