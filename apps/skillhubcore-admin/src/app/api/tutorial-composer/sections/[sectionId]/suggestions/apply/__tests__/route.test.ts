@@ -29,7 +29,6 @@ import {
   SectionNotFoundError,
   SuggestionNotFoundError,
   SuggestionFingerprintMismatchError,
-  InvalidSuggestionError,
   InvalidTransformationError,
   VersionConflictError,
 } from '@quiz/types';

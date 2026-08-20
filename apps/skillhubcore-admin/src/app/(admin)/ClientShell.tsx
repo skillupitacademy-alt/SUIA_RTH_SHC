@@ -88,7 +88,6 @@ export default function ClientShell({ children }: { children: ReactNode }) {
           setIsRightSidebarOpen={setIsRightSidebarOpen}
           rightSidebarContent={rightSidebarContent}
           rightSidebarWidth={rightSidebarWidth}
-          pathname={pathname}
         />
 
         <style>{`

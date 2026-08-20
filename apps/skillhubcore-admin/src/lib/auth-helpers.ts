@@ -71,7 +71,7 @@ async function verifyToken(token: string): Promise<AuthenticatedUser | null> {
       payload = await TokenService.verifyAdminAccessToken(token, { 
         audience: 'shc-admin' 
       });
-    } catch (audienceError) {
+    } catch {
       // Fallback to 'admin' audience for compatibility
       payload = await TokenService.verifyAdminAccessToken(token, { 
         audience: 'admin' 
@@ -86,6 +86,7 @@ async function verifyToken(token: string): Promise<AuthenticatedUser | null> {
       console.error('[AUTH] Token missing user ID claims', {
         hasOriginalUserId: !!payload.originalUserId,
         hasSub: !!payload.sub,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         hasUserId: !!(payload as any).userId,
       });
       return null;
@@ -97,6 +98,7 @@ async function verifyToken(token: string): Promise<AuthenticatedUser | null> {
       shadowUserId,
       roles: (payload.roles ?? []) as Role[],
       isAdmin: payload.isAdmin ?? true,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       email: (payload as any).email,
     };
   } catch (error) {
@@ -168,6 +170,7 @@ export function createAuthErrorResponse(error: AuthError): NextResponse {
   }
 
   // Exhaustiveness check
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const _exhaustive: never = error;
   return NextResponse.json({ error: 'Unknown auth error' }, { status: 500 });
 }

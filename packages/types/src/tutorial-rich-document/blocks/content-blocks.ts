@@ -162,7 +162,60 @@ export type DefinitionBlock = DefinitionD1Block;
 // ...
 
 /**
- * 9. Example Block (educational example with explanation)
+ * 9. Code Block (Version-aware)
+ * 
+ * Code C1 - Page Structure
+ * Author content contract for Code C1 version
+ */
+export interface CodeC1Page {
+  type: 'code';
+  title: string;
+  introduction: string;
+  language: string;
+  code: string;
+  filename?: string;
+  explanation: Array<{
+    focus: string;
+    description: string;
+  }>;
+  output?: {
+    value: string;
+    description?: string;
+  };
+  takeaway: string;
+  practiceHint?: string;
+}
+
+/**
+ * Code C1 - Author Content
+ * Wraps page structure in content.page
+ */
+export interface CodeC1AuthorContent {
+  page: CodeC1Page;
+}
+
+/**
+ * Code C1 Block
+ * Canonical block with version envelope
+ */
+export interface CodeC1Block extends BaseBlock {
+  type: 'code';
+  version: 'C1';
+  content: CodeC1AuthorContent;
+}
+
+/**
+ * Code Block (Version Union)
+ * All Code block versions
+ */
+export type CodeBlockVersioned = CodeC1Block;
+// Future versions:
+// | CodeC2Block
+// | CodeC3Block
+// ...
+
+/**
+ * 10. Example Block (educational example with explanation)
  */
 export interface ExampleBlock extends BaseBlock {
   type: 'example';

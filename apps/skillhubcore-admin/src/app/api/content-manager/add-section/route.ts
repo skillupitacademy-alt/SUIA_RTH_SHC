@@ -441,6 +441,7 @@ const SECTION_TRANSFORMERS: Record<TutorialSectionId, (content: JsonRecord, subt
   summary: transformSummarySection,
   interview: transformInterviewSection,
   ai_tutor: transformAiTutorSection,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as any; // Type assertion to allow missing layman
 
 function slugify(text: string) {

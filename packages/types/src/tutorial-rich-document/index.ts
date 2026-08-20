@@ -19,10 +19,12 @@ export * from './schemas/document.schema';
 export * from './schemas/blocks.schema';
 export * from './schemas/presentation.schema';
 export * from './schemas/definition-d1.schema';
+export * from './schemas/code-c1.schema';
 
 // Registry and validation
 export * from './registry';
 export * from './registries/definition-versions';
+export * from './registries/code-versions';
 export * from './validation';
 
 // Re-export key types for convenience
@@ -44,6 +46,9 @@ export type {
   DefinitionD1Block,
   DefinitionD1Page,
   DefinitionD1AuthorContent,
+  CodeC1Block,
+  CodeC1Page,
+  CodeC1AuthorContent,
   ExampleBlock,
   QuoteBlock,
   SummaryBlock,

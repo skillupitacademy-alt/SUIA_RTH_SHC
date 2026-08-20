@@ -13,13 +13,13 @@
  * - No admin-only metadata exposure
  */
 
-import { NextRequest, NextResponse } from 'next/server';
 import {
-  tutorialDeliveryService,
-  SubtopicNotFoundError,
   type DeliveryOptions,
+  SubtopicNotFoundError,
+  tutorialDeliveryService,
 } from '@quiz/db-tutorial';
-import type { TutorialDifficulty, SectionType, Brand } from '@quiz/types';
+import type { Brand, SectionType, TutorialDifficulty } from '@quiz/types';
+import { NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -56,7 +56,7 @@ export async function GET(
     };
     
     // If specific section type requested
-    if (sectionTypeParam) {
+    if (sectionTypeParam !== null && sectionTypeParam !== '') {
       options.sectionType = sectionTypeParam as SectionType;
     }
     
@@ -67,7 +67,7 @@ export async function GET(
     );
     
     // If single section requested, return simplified response
-    if (sectionTypeParam && delivery.sections.length === 1) {
+    if (sectionTypeParam !== null && sectionTypeParam !== '' && delivery.sections.length === 1) {
       const section = delivery.sections[0];
       return NextResponse.json({
         subtopicId: params.subtopicId,

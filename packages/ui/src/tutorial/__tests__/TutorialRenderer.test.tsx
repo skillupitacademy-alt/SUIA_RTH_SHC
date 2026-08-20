@@ -509,3 +509,133 @@ describe('Universal Tutorial Renderer (Prompt 17D)', () => {
     });
   });
 });
+
+// Phase 2D: Code C1/Legacy Routing Tests
+describe('Phase 2D - Code Block Version Routing', () => {
+  it('TEST R1 — routes code/C1 to CodeC1Block renderer', () => {
+    const c1Block: any = {
+      id: 'c1-block',
+      type: 'code',
+      version: 'C1',
+      content: {
+        page: {
+          type: 'code',
+          title: 'Python Print Statement',
+          introduction: 'The print() function displays output to the console in Python programs.',
+          language: 'python',
+          code: 'print("Hello, World!")',
+          explanation: [
+            {
+              focus: 'print() function',
+              description: 'Built-in function that outputs text to the console for debugging.',
+            },
+            {
+              focus: 'String argument',
+              description: 'The text "Hello, World!" is passed as a string parameter to print().',
+            },
+          ],
+          takeaway: 'Use print() to display output and debug Python programs.',
+        },
+      },
+    };
+
+    const { container } = render(<TutorialBlockRenderer block={c1Block} />);
+    
+    // Verify C1-specific rendering (title, introduction, explanation sections)
+    expect(screen.getByText('Python Print Statement')).toBeInTheDocument();
+    expect(screen.getByText(/The print\(\) function displays output/)).toBeInTheDocument();
+    expect(screen.getByText('print() function')).toBeInTheDocument();
+    expect(screen.getByText('String argument')).toBeInTheDocument();
+    
+    // Verify data attributes specific to C1
+    const article = container.querySelector('article[data-block-version="C1"]');
+    expect(article).toBeInTheDocument();
+  });
+
+  it('TEST R2 — routes legacy code without version to CodeBlock renderer', () => {
+    const legacyBlock: CodeBlock = {
+      id: 'legacy-code',
+      type: 'code',
+      content: {
+        language: 'python',
+        code: 'print("legacy")',
+        filename: 'legacy.py',
+        caption: 'Legacy code example',
+      },
+    };
+
+    const { container } = render(<TutorialBlockRenderer block={legacyBlock} />);
+    
+    // Verify legacy code is rendered
+    expect(screen.getByText('print("legacy")')).toBeInTheDocument();
+    expect(screen.getByText('legacy.py')).toBeInTheDocument();
+    
+    // Verify C1-specific elements are NOT present (no version attribute)
+    const c1Article = container.querySelector('article[data-block-version="C1"]');
+    expect(c1Article).not.toBeInTheDocument();
+    
+    // Verify legacy structure is present
+    expect(screen.getByText('Legacy code example')).toBeInTheDocument();
+  });
+
+  it('TEST R3 — does not route C1 block to legacy renderer', () => {
+    const c1Block: any = {
+      id: 'c1-verify',
+      type: 'code',
+      version: 'C1',
+      content: {
+        page: {
+          type: 'code',
+          title: 'JavaScript Variable',
+          introduction: 'The const keyword creates a block-scoped constant variable that cannot be reassigned.',
+          language: 'javascript',
+          code: 'const x = 42;',
+          explanation: [
+            {
+              focus: 'const keyword',
+              description: 'Declares a constant that cannot be reassigned after initialization.',
+            },
+            {
+              focus: 'Block scope',
+              description: 'The variable x is only accessible within its containing block.',
+            },
+          ],
+          takeaway: 'Use const for values that should not be reassigned.',
+        },
+      },
+    };
+
+    const { container } = render(<TutorialBlockRenderer block={c1Block} />);
+    
+    // Verify C1 renderer is used (has version attribute)
+    const article = container.querySelector('article[data-block-version="C1"]');
+    expect(article).toBeInTheDocument();
+    
+    // Verify C1-specific structure (title as h3, not just caption)
+    expect(screen.getByText('JavaScript Variable')).toBeInTheDocument();
+    expect(screen.getByText('const keyword')).toBeInTheDocument();
+    
+    // Legacy renderer would only show caption, not structured title
+    const h3 = container.querySelector('h3');
+    expect(h3).toBeInTheDocument();
+  });
+
+  it('TEST R4 — rejects unsupported code version (unknown version)', () => {
+    const unknownVersionBlock: any = {
+      id: 'unknown-version',
+      type: 'code',
+      version: 'C999',
+      content: {},
+    };
+
+    const { container } = render(<TutorialBlockRenderer block={unknownVersionBlock} />);
+    
+    // Should render error state, not fallback to legacy
+    const errorAlert = container.querySelector('[role="alert"]');
+    expect(errorAlert).toBeInTheDocument();
+    
+    // Verify it does NOT silently use legacy renderer
+    const c1Article = container.querySelector('article[data-block-version="C1"]');
+    expect(c1Article).not.toBeInTheDocument();
+  });
+});

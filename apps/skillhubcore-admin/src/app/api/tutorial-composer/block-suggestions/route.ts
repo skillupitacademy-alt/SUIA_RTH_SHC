@@ -24,7 +24,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { blockSuggestionService, contentAnalysisService } from '@quiz/db-tutorial';
+import { blockSuggestionService } from '@quiz/db-tutorial';
 import {
   BlockSuggestionsRequestSchema,
   createSuccessResponse,
@@ -59,6 +59,7 @@ export async function POST(request: NextRequest) {
           userId: 'dev-admin-preview',
           originalUserId: 'dev-admin-preview',
           shadowUserId: 'dev-admin-preview',
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           roles: ['admin', 'super_admin'] as any[],
           isAdmin: true,
           email: 'admin@skillhubcore.local',
@@ -88,7 +89,7 @@ export async function POST(request: NextRequest) {
     let body;
     try {
       body = await request.json();
-    } catch (error) {
+    } catch {
       return NextResponse.json(
         createErrorResponse(
           'VALIDATION_ERROR',
@@ -155,6 +156,7 @@ export async function POST(request: NextRequest) {
     // Step 7: Generate block suggestions (analysis is REQUIRED)
     // Type assertion: After successful Zod validation, document has all required fields
     const suggestionResult = blockSuggestionService.generateSuggestions(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       document as any,
       analysis,
       {

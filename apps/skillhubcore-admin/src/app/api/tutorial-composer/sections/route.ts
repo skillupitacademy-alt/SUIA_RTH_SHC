@@ -80,7 +80,8 @@ function handleServiceError(error: unknown) {
  * @deprecated - Remove after migration complete
  * This function is no longer needed. Use authenticateRequest() instead.
  */
-function getAuthenticatedContext(request: NextRequest): TutorialComposerServiceContext {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function getAuthenticatedContext(_request: NextRequest): TutorialComposerServiceContext {
   // This placeholder is replaced by real authentication above
   throw new Error('getAuthenticatedContext() is deprecated. Use authenticateRequest() instead.');
 }
@@ -226,6 +227,7 @@ export async function GET(request: NextRequest) {
     );
 
     // Step 5: Format response
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const data = result.sections.map((section: any) => ({
       id: section.id,
       subtopicId: section.subtopicId,

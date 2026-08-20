@@ -12,7 +12,6 @@ interface RightSidebarProps {
   setIsRightSidebarOpen: (open: boolean) => void;
   rightSidebarContent: React.ReactNode;
   rightSidebarWidth: string;
-  pathname: string;
 }
 
 export function RightSidebar({
@@ -20,7 +19,6 @@ export function RightSidebar({
   setIsRightSidebarOpen,
   rightSidebarContent,
   rightSidebarWidth,
-  pathname
 }: RightSidebarProps) {
   return (
     <>

@@ -13,7 +13,12 @@
  * - Block does NOT contain schemaVersion (document-level metadata)
  */
 
-import type { DefinitionD1AuthorContent, DefinitionD1Block } from '@quiz/types';
+import type {
+  DefinitionD1AuthorContent,
+  DefinitionD1Block,
+  CodeC1AuthorContent,
+  CodeC1Block,
+} from '@quiz/types';
 import { randomUUID } from 'crypto';
 
 /**
@@ -34,5 +39,31 @@ export function buildCanonicalDefinitionD1Block(
     type: 'definition',
     version: 'D1',
     content: authorContent,
+  };
+}
+
+/**
+ * Build Canonical Code C1 Block
+ * Phase 2C: Code C1 - Basic Syntax
+ * 
+ * Transforms validated AI author content into canonical block format
+ * 
+ * SECURITY: Only extracts { page } from authorContent to prevent field injection
+ * 
+ * @param authorContent - Validated CodeC1AuthorContent (already passed Zod)
+ * @param blockId - Optional UUID; if not provided, system generates one
+ * @returns CodeC1Block with system metadata
+ */
+export function buildCanonicalCodeC1Block(
+  authorContent: CodeC1AuthorContent,
+  blockId?: string
+): CodeC1Block {
+  return {
+    id: blockId || randomUUID(),
+    type: 'code',
+    version: 'C1',
+    content: {
+      page: authorContent.page,
+    },
   };
 }

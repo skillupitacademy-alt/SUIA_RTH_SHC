@@ -78,7 +78,8 @@ function handleServiceError(error: unknown) {
  * Helper: Get authenticated context
  * @deprecated - Remove after migration complete
  */
-function getAuthenticatedContext(request: NextRequest): TutorialComposerServiceContext {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function getAuthenticatedContext(_request: NextRequest): TutorialComposerServiceContext {
   throw new Error('getAuthenticatedContext() is deprecated. Use authenticateRequest() instead.');
 }
 

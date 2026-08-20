@@ -107,3 +107,38 @@ export interface DefinitionD1AIInputContext {
   block: TutorialAIBlockContext<'definition', 'D1'>;
   output: TutorialAIOutputFormat;
 }
+
+/**
+ * Code C1 AI Input Context
+ * Complete context for generating Code C1 content
+ * 
+ * This is the deterministic input provided to AI.
+ * System constructs this from existing Composer Selection.
+ * 
+ * Example for "Hello World" (Python):
+ * {
+ *   context: {
+ *     domainId: "domain-001",
+ *     domainName: "Full Stack Development",
+ *     subjectId: "subject-001",
+ *     subjectName: "Backend Development",
+ *     topicId: "topic-001",
+ *     topicName: "Python",
+ *     subtopicId: "subtopic-001",
+ *     subtopicName: "Hello World"
+ *   },
+ *   block: {
+ *     type: "code",
+ *     version: "C1"
+ *   },
+ *   output: {
+ *     format: "json",
+ *     rootKey: "page"
+ *   }
+ * }
+ */
+export interface CodeC1AIInputContext {
+  context: TutorialAIHierarchyContext;
+  block: TutorialAIBlockContext<'code', 'C1'>;
+  output: TutorialAIOutputFormat;
+}

@@ -6,14 +6,18 @@
 export * from './content';
 export * from './container';
 
-import type { ContentBlock } from './content';
+// Export version-specific Code block types from content-blocks
+export type { CodeC1Page, CodeC1AuthorContent, CodeC1Block, CodeBlockVersioned } from './content-blocks';
+
+import type { ContentBlockExtended } from './content';
 import type { ContainerBlock } from './container';
 
 /**
  * Discriminated union of ALL block types
  * This is the core type that everything else builds on
+ * Includes both legacy blocks and versioned blocks (CodeC1, etc.)
  */
-export type TutorialBlock = ContentBlock | ContainerBlock;
+export type TutorialBlock = ContentBlockExtended | ContainerBlock;
 
 /**
  * Extract block type from discriminated union
@@ -35,7 +39,7 @@ export function isContainerBlock(block: TutorialBlock): block is ContainerBlock 
 /**
  * Type guard to check if a block is a content block
  */
-export function isContentBlock(block: TutorialBlock): block is ContentBlock {
+export function isContentBlock(block: TutorialBlock): block is ContentBlockExtended {
   return !isContainerBlock(block);
 }
 

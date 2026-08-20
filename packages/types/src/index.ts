@@ -32,6 +32,20 @@ export {
   validateDefinitionD1AIOutput,
 } from './tutorial-rich-document/schemas/definition-d1.schema';
 
+// Code Block Version Registry and Schemas
+export {
+  CODE_VERSION_REGISTRY,
+  ACTIVE_CODE_VERSIONS,
+  type CodeVersion,
+} from './tutorial-rich-document/registries/code-versions';
+
+export {
+  CodeC1PageSchema,
+  CodeC1AuthorContentSchema,
+  CodeC1BlockSchema,
+  validateCodeC1AIOutput,
+} from './tutorial-rich-document/schemas/code-c1.schema';
+
 // NEW Tutorial Composer (API Contracts & Domain Types)
 // Selective exports to avoid naming conflicts
 export type {
@@ -191,4 +205,5 @@ export type {
   TutorialAIBlockContext,
   TutorialAIOutputFormat,
   DefinitionD1AIInputContext,
+  CodeC1AIInputContext,
 } from './tutorial-composer/ai-context';

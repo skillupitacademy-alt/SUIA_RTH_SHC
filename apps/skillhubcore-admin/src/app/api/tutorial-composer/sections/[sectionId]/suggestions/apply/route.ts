@@ -59,7 +59,6 @@ import {
 import {
   suggestionApplicationService,
   tutorialComposerService,
-  type TutorialComposerServiceContext,
 } from '@quiz/db-tutorial';
 import {
   authenticateRequest,
@@ -80,6 +79,7 @@ function errorResponse(
   code: ApplySuggestionErrorCode,
   message: string,
   status: number,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   details?: any
 ) {
   return NextResponse.json(

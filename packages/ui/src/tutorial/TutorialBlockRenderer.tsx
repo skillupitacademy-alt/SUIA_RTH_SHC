@@ -6,6 +6,7 @@ import { HeadingBlock } from './blocks/HeadingBlock';
 import { ParagraphBlock } from './blocks/ParagraphBlock';
 import { ListBlock } from './blocks/ListBlock';
 import { CodeBlock } from './blocks/CodeBlock';
+import { CodeC1Block } from './blocks/CodeC1Block';
 import { TableBlock } from './blocks/TableBlock';
 import { ImageBlock } from './blocks/ImageBlock';
 import { CalloutBlock } from './blocks/CalloutBlock';
@@ -62,7 +63,17 @@ export function TutorialBlockRenderer({ block, depth = 0, theme, className = '' 
       case 'list':
         return <ListBlock block={block} depth={depth} theme={theme} className={className} />;
       case 'code':
-        return <CodeBlock block={block} depth={depth} theme={theme} className={className} />;
+        // Runtime check: CodeC1Block has version property, legacy CodeBlock does not
+        if ('version' in block) {
+          if (block.version === 'C1') {
+            // CodeC1Block - use versioned renderer
+            return <CodeC1Block block={block as any} depth={depth} theme={theme} className={className} />;
+          }
+          // Unknown version - throw error
+          throw new Error(`Unsupported code block version: ${(block as any).version}`);
+        }
+        // Legacy CodeBlock (no version property)
+        return <CodeBlock block={block as any} depth={depth} theme={theme} className={className} />;
       case 'table':
         return <TableBlock block={block} depth={depth} theme={theme} className={className} />;
       case 'image':

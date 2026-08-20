@@ -60,6 +60,7 @@ function compactSlug(value: string) {
 }
 
 function stripPresentationData(node: TutorialNavigationNode): TutorialNavigationNode {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { status: _status, url: _url, slug: _slug, ...clean } = node;
   return {
     ...clean,

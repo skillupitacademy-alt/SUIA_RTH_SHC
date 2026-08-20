@@ -70,14 +70,18 @@ export type {
 export { buildDefinitionD1AIContext } from './services/ai-context-builder';
 export type { ComposerSelection } from './services/ai-context-builder';
 
-// Canonical Block Builder - Phase 1G
-export { buildCanonicalDefinitionD1Block } from './services/canonical-block-builder';
+// Canonical Block Builder - Phase 1G + Phase 2C
+export { buildCanonicalDefinitionD1Block, buildCanonicalCodeC1Block } from './services/canonical-block-builder';
 
 // Tutorial Document Builder - Phase 1G
 export { buildTutorialDocument } from './services/tutorial-document-builder';
 
 // Definition D1 Prompt Generator - Phase 1I
 export { buildDefinitionD1AIPrompt } from './services/definition-d1-prompt-generator';
+
+// Code C1 Prompt Generator - Phase 2B
+export { buildCodeC1AIPrompt } from './services/code-c1-prompt-generator';
+export { buildCodeC1AIContext } from './services/ai-context-builder';
 
 // Validators, Types, DTOs
 export * from './validators/layman.validator';

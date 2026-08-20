@@ -290,3 +290,12 @@ export type ContentBlock =
   | SummaryBlock
   | DiagramBlock
   | ComparisonBlock;
+
+// Import CodeBlockVersioned from content-blocks for version-specific Code blocks
+import type { CodeBlockVersioned } from './content-blocks';
+
+/**
+ * Extended ContentBlock including versioned blocks
+ * This allows TutorialBlock to include both legacy and versioned blocks
+ */
+export type ContentBlockExtended = ContentBlock | CodeBlockVersioned;

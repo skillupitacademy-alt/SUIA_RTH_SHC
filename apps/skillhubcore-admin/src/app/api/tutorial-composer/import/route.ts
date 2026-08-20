@@ -78,6 +78,7 @@ export async function POST(request: NextRequest) {
           userId: 'dev-admin-preview',
           originalUserId: 'dev-admin-preview',
           shadowUserId: 'dev-admin-preview',
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           roles: ['admin', 'super_admin'] as any[],
           isAdmin: true,
           email: 'admin@skillhubcore.local',

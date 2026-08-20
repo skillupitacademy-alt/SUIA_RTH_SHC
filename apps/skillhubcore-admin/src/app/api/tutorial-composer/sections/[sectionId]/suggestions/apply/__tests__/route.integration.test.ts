@@ -50,7 +50,6 @@ import {
   db,
   tutorialSections,
   blockSuggestions,
-  tutorialComposerService,
   suggestionApplicationService,
 } from '@quiz/db-tutorial';
 import { eq, sql } from 'drizzle-orm';
@@ -522,6 +521,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply - IN
         .where(eq(tutorialSections.id, testSectionId));
 
       const addedBlock = persistedSection.content.blocks.find(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (b: any) => b.id === 'cards_block'
       );
       expect(addedBlock).toBeDefined();

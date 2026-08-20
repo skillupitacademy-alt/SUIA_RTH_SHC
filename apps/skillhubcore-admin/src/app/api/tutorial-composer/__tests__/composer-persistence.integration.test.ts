@@ -26,7 +26,7 @@
 import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from 'vitest';
 import { NextRequest } from 'next/server';
 import { POST as CreateSection } from '../sections/route';
-import { PATCH as UpdateSection, GET as GetSection } from '../sections/[sectionId]/route';
+import { PATCH as UpdateSection } from '../sections/[sectionId]/route';
 import { POST as PublishSection } from '../sections/[sectionId]/publish/route';
 import {
   db,

@@ -18,6 +18,7 @@ import type { TutorialNavigationTree, TutorialSidebarBrandId } from '@quiz/types
 export const dynamic = 'force-dynamic';
 
 // Universal Navigation authoring schema - only structure, no presentation
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const authoringNodeSchema: z.ZodType<any> = z.lazy(() => z.object({
   id: z.string().min(1),
   name: z.string().min(1),
@@ -270,6 +271,7 @@ export async function POST(request: NextRequest) {
     console.error('[Tutorial Left Sidebar API] POST failed', error);
     
     // Enhanced diagnostic logging for PostgreSQL errors
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     if (error && typeof error === 'object') {
       console.error('[Tutorial Left Sidebar API] Error details:', {
         message: (error as any).message,
@@ -296,6 +298,7 @@ export async function POST(request: NextRequest) {
           constraint: (error as any).constraint,
         }
       } : {})
+    /* eslint-enable @typescript-eslint/no-explicit-any */
     }, { status: 500 });
   }
 }
