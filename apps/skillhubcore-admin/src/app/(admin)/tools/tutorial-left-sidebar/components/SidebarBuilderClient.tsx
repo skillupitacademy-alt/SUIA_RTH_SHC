@@ -398,37 +398,61 @@ export function SidebarBuilderClient() {
   };
 
   return (
-    <div className="grid min-h-[calc(100vh-150px)] gap-6 xl:grid-cols-[minmax(0,1fr)_404px]">
+    <div className="grid min-h-[calc(100vh-150px)] gap-6 xl:grid-cols-[minmax(0,1fr)_404px] items-start">
+      {/* Left Builder Workspace */}
       <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        {/* Header & Actions */}
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-4">
           <div>
-            <p className="alpha-terminal text-slate-500">Universal Tutorial Layer</p>
-            <h1 className="mt-2 text-3xl font-black tracking-normal text-slate-950">Left Sidebar Builder</h1>
+            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#e11d48]">Universal Tutorial Layer</p>
+            <h1 className="mt-1 text-2xl font-black text-slate-900 font-outfit tracking-tight">Left Sidebar Builder</h1>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <button type="button" onClick={loadTemplate} className="inline-flex items-center gap-2 rounded-lg border border-blue-300 bg-blue-50 px-4 py-2 text-sm font-bold text-blue-700 hover:bg-blue-100">
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={loadTemplate}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-pink-200 bg-pink-50 px-3.5 py-2 text-xs font-bold text-pink-700 shadow-sm transition-all hover:bg-pink-100 active:scale-95"
+            >
               <FileDown className="h-4 w-4" />
               Load Template
             </button>
-            <button type="button" onClick={loadExisting} className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-800 hover:bg-slate-50">
+            <button
+              type="button"
+              onClick={loadExisting}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 active:scale-95"
+            >
               <FileDown className="h-4 w-4" />
               Load Existing
             </button>
-            <button type="button" disabled={isSaving} onClick={() => save('draft')} className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-800 hover:bg-slate-50 disabled:opacity-60">
+            <button
+              type="button"
+              disabled={isSaving}
+              onClick={() => save('draft')}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
+            >
               <Save className="h-4 w-4" />
               Save Draft
             </button>
-            <button type="button" disabled={isSaving} onClick={() => save('published')} className="inline-flex items-center gap-2 rounded-lg bg-[#d03f00] px-4 py-2 text-sm font-bold text-white hover:bg-[#b63600] disabled:opacity-60">
+            <button
+              type="button"
+              disabled={isSaving}
+              onClick={() => save('published')}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-[#e11d48] px-4 py-2 text-xs font-bold text-white shadow-sm transition-all hover:bg-[#be123c] active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
+            >
               <Send className="h-4 w-4" />
               Publish & Save
             </button>
           </div>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <label className="grid gap-1 text-sm font-bold text-slate-700">
-            Domain
+        {/* Hierarchy Selectors */}
+        <div className="grid gap-3.5 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="space-y-1">
+            <label htmlFor="select-domain" className="block text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              Domain
+            </label>
             <select
+              id="select-domain"
               value={form.domainId}
               onChange={(event) => {
                 const domainId = event.target.value;
@@ -437,15 +461,22 @@ export function SidebarBuilderClient() {
                 const activeSubtopicId = hierarchy.subtopics.find((subtopic) => subtopic.topicId === topicId)?.id || '';
                 setForm((previous) => ({ ...previous, domainId, subjectId, topicId, activeSubtopicId }));
               }}
-              className="rounded-lg border border-slate-300 px-3 py-2 font-semibold"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 transition-colors focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500/20"
             >
               <option value="">Select domain</option>
-              {hierarchy.domains.map((domain) => <option key={domain.id} value={domain.id}>{domain.name}</option>)}
+              {hierarchy.domains.map((domain) => (
+                <option key={domain.id} value={domain.id}>{domain.name}</option>
+              ))}
             </select>
-          </label>
-          <label className="grid gap-1 text-sm font-bold text-slate-700">
-            Subject
+          </div>
+
+          <div className="space-y-1">
+            <label htmlFor="select-subject" className="block text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              Subject
+            </label>
             <select
+              id="select-subject"
+              disabled={!form.domainId}
               value={form.subjectId}
               onChange={(event) => {
                 const subjectId = event.target.value;
@@ -453,74 +484,102 @@ export function SidebarBuilderClient() {
                 const activeSubtopicId = hierarchy.subtopics.find((subtopic) => subtopic.topicId === topicId)?.id || '';
                 setForm((previous) => ({ ...previous, subjectId, topicId, activeSubtopicId }));
               }}
-              className="rounded-lg border border-slate-300 px-3 py-2 font-semibold"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 transition-colors focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500/20 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
             >
               <option value="">Select subject</option>
-              {availableSubjects.map((subject) => <option key={subject.id} value={subject.id}>{subject.name}</option>)}
+              {availableSubjects.map((subject) => (
+                <option key={subject.id} value={subject.id}>{subject.name}</option>
+              ))}
             </select>
-          </label>
-          <label className="grid gap-1 text-sm font-bold text-slate-700">
-            Topic
+          </div>
+
+          <div className="space-y-1">
+            <label htmlFor="select-topic" className="block text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              Topic
+            </label>
             <select
+              id="select-topic"
+              disabled={!form.subjectId}
               value={form.topicId}
               onChange={(event) => {
                 const topicId = event.target.value;
                 const activeSubtopicId = hierarchy.subtopics.find((subtopic) => subtopic.topicId === topicId)?.id || '';
                 setForm((previous) => ({ ...previous, topicId, activeSubtopicId }));
               }}
-              className="rounded-lg border border-slate-300 px-3 py-2 font-semibold"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 transition-colors focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500/20 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
             >
               <option value="">Select topic</option>
-              {availableTopics.map((topic) => <option key={topic.id} value={topic.id}>{topic.name}</option>)}
+              {availableTopics.map((topic) => (
+                <option key={topic.id} value={topic.id}>{topic.name}</option>
+              ))}
             </select>
-          </label>
+          </div>
+
+          <div className="space-y-1">
+            <label htmlFor="select-active-subtopic" className="block text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              Active Subtopic Preview
+            </label>
+            <select
+              id="select-active-subtopic"
+              disabled={!form.topicId}
+              value={form.activeSubtopicId}
+              onChange={(event) => setField('activeSubtopicId', event.target.value)}
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 transition-colors focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500/20 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+            >
+              <option value="">None (Root Overview)</option>
+              {availableSubtopics.map((subtopic) => (
+                <option key={subtopic.id} value={subtopic.id}>{subtopic.name}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
-        <div className="mt-4 grid gap-4 md:grid-cols-[220px_minmax(0,1fr)]">
-          <label className="grid gap-1 text-sm font-bold text-slate-700">
-            Active Subtopic Slug
-            <select value={form.activeSubtopicId} onChange={(event) => setField('activeSubtopicId', event.target.value)} className="rounded-lg border border-slate-300 px-3 py-2 font-semibold">
-              <option value="">None</option>
-              {availableSubtopics.map((subtopic) => <option key={subtopic.id} value={subtopic.id}>{subtopic.name}</option>)}
-            </select>
-          </label>
-        </div>
-
-        <label className="mt-5 grid gap-2 text-sm font-bold text-slate-700">
-          Navigation JSON
+        {/* JSON Navigation Editor */}
+        <div className="mt-5 space-y-2">
+          <div className="flex items-center justify-between pb-1 text-xs font-bold uppercase tracking-wider text-slate-600">
+            <span className="flex items-center gap-2">
+              <span>Navigation JSON Structure</span>
+              <span className="rounded bg-slate-100 px-2 py-0.5 text-[10px] font-mono font-semibold text-slate-600">Universal Tree</span>
+            </span>
+            <span className="font-mono text-[10px] font-semibold text-pink-600">Pure Content Contract</span>
+          </div>
           <textarea
             value={source}
             onChange={(event) => setSource(event.target.value)}
             placeholder='Click "Load Template" to start with the universal navigation structure'
             spellCheck={false}
-            className="hide-scrollbar min-h-[460px] rounded-xl border border-slate-300 bg-slate-950 p-4 font-mono text-xs leading-6 text-slate-100 outline-none focus:ring-2 focus:ring-[#124fd6]"
+            aria-label="Navigation JSON Structure"
+            className="min-h-[460px] w-full resize-y rounded-xl border border-slate-800 bg-[#071024] p-4 font-mono text-xs leading-6 text-slate-100 outline-none transition-all focus:ring-2 focus:ring-pink-500"
           />
-        </label>
+        </div>
 
-        <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-relaxed text-amber-800">
-          <p className="font-bold">📋 Navigation JSON Guidelines:</p>
-          <ul className="ml-4 mt-2 list-disc space-y-1">
+        {/* Guidelines Card */}
+        <div className="mt-4 rounded-xl border border-pink-200 bg-pink-50/40 p-4 text-xs leading-relaxed text-slate-700">
+          <p className="font-bold text-pink-950">📋 Universal Navigation Guidelines:</p>
+          <ul className="ml-4 mt-2 list-disc space-y-1 text-[11px] text-slate-600">
             <li><strong>Structure:</strong> Use &ldquo;id&rdquo;, &ldquo;name&rdquo;, &ldquo;type&rdquo; (group/page), &ldquo;icon&rdquo;, &ldquo;expanded&rdquo;, and &ldquo;children&rdquo;</li>
             <li><strong>Do NOT include:</strong> brand, theme, progress, status, or manual URLs</li>
             <li><strong>Max depth:</strong> 3 visual levels (Topic → Group → Page)</li>
-            <li><strong>System generates:</strong> URLs, slugs, and applies brand/theme at runtime</li>
+            <li><strong>Runtime behavior:</strong> The engine automatically generates URLs, active states, and brand themes dynamically</li>
           </ul>
         </div>
 
-        <div className={`mt-4 rounded-lg border px-4 py-3 text-sm font-bold ${parsed.error ? 'border-red-200 bg-red-50 text-red-700' : 'border-emerald-200 bg-emerald-50 text-emerald-700'}`}>
+        {/* Status / Error Alert */}
+        <div className={`mt-4 rounded-xl border p-3.5 text-xs font-bold ${parsed.error ? 'border-red-200 bg-red-50 text-red-700' : 'border-emerald-200 bg-emerald-50 text-emerald-800'}`}>
           <div className="flex items-center gap-2">
-            <Eye className="h-4 w-4" />
-            {parsed.error || message || 'Preview is ready.'}
+            <Eye className="h-4 w-4 shrink-0" />
+            <span>{parsed.error || message || 'Live preview ready.'}</span>
           </div>
         </div>
       </section>
 
+      {/* Right Column: Live Navigation Tree Preview (Preserved for Navigation JSON container) */}
       <div className="xl:sticky xl:top-6 xl:h-[calc(100vh-180px)]">
         {parsed.tree ? (
           <TutorialLeftSidebar tree={parsed.tree} activeUrl={activeUrl} />
         ) : (
-          <div className="flex h-screen max-w-[404px] items-center justify-center border border-red-200 bg-red-50 p-6 text-center text-sm font-bold text-red-700">
-            Fix the sidebar content before previewing.
+          <div className="flex h-64 max-w-[404px] items-center justify-center rounded-xl border border-red-200 bg-red-50 p-6 text-center text-xs font-bold text-red-700 shadow-sm">
+            Fix the sidebar JSON content before previewing.
           </div>
         )}
       </div>
