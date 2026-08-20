@@ -190,6 +190,27 @@ export class TutorialComposerService {
   }
 
   /**
+   * Get section by logical key (subtopic + sectionType + difficulty + brand)
+   * 
+   * Phase 2E: Helper to check if section exists before creating
+   * Returns null if section doesn't exist
+   */
+  async getSectionByKey(
+    subtopicId: string,
+    sectionType: SectionType,
+    difficulty: Difficulty,
+    brandId: string = 'shared'
+  ): Promise<TutorialSection | null> {
+    const section = await this.repository.getSectionByKey(
+      subtopicId,
+      sectionType,
+      difficulty,
+      brandId
+    );
+    return section ?? null;
+  }
+
+  /**
    * Update section
    */
   async updateSection(
@@ -346,6 +367,103 @@ export class TutorialComposerService {
 
     // TODO: Cache invalidation
     // await cacheService.invalidateSubtopic(section.subtopicId);
+  }
+
+  /**
+   * Append block to existing section
+   * 
+   * Phase 2E: Support for adding block instances to existing TutorialDocument
+   * 
+   * This method:
+   * 1. Loads existing section
+   * 2. Validates new block
+   * 3. Appends block to document.blocks[]
+   * 4. Validates complete document against section constraints
+   * 5. Persists updated document
+   * 
+   * IMPORTANT: This does NOT create a new section.
+   * It updates an existing section's TutorialDocument.
+   */
+  async appendBlockToSection(
+    sectionId: string,
+    newBlock: TutorialDocument['blocks'][number],
+    context: TutorialComposerServiceContext
+  ): Promise<TutorialSection> {
+    // Step 1: Load existing section
+    const existingSection = await this.repository.getSectionById(sectionId);
+
+    if (!existingSection) {
+      throw new SectionNotFoundError(sectionId);
+    }
+
+    // TODO: Add authorization check
+    // await this.assertCanEditSection(context, existingSection);
+
+    // Step 2: Parse existing content as TutorialDocument
+    const parseResult = TutorialDocumentSchema.safeParse(existingSection.content);
+    if (!parseResult.success) {
+      throw new TutorialDocumentValidationError([
+        {
+          code: 'STORED_DOCUMENT_INVALID',
+          message: 'Existing section content is not a valid TutorialDocument',
+          path: 'content',
+        },
+      ]);
+    }
+
+    const existingDocument: TutorialDocument = parseResult.data as TutorialDocument;
+
+    // Step 3: Create updated document with appended block
+    const updatedDocument: TutorialDocument = {
+      ...existingDocument,
+      blocks: [
+        ...existingDocument.blocks,
+        newBlock,
+      ],
+    };
+
+    // Step 4: Validate updated document schema
+    const updatedParseResult = TutorialDocumentSchema.safeParse(updatedDocument);
+    if (!updatedParseResult.success) {
+      throw new TutorialDocumentValidationError([
+        {
+          code: 'SCHEMA_INVALID',
+          message: 'Updated TutorialDocument schema validation failed',
+          path: 'content',
+        },
+      ]);
+    }
+
+    const validatedDocument: TutorialDocument = updatedParseResult.data as TutorialDocument;
+
+    // Step 5: Validate section-specific constraints
+    const sectionValidation = validateDocumentForSection(
+      validatedDocument,
+      existingSection.sectionType
+    );
+
+    if (!sectionValidation.valid) {
+      throw new TutorialDocumentValidationError(sectionValidation.errors);
+    }
+
+    // Step 6: Update section with appended block
+    const repositoryInput: UpdateTutorialSectionInput = {
+      content: validatedDocument,
+    };
+
+    const updatedSection = await this.repository.updateSection(
+      sectionId,
+      repositoryInput
+    );
+
+    if (!updatedSection) {
+      throw new SectionNotFoundError(sectionId);
+    }
+
+    // TODO: Cache invalidation
+    // await cacheService.invalidateSubtopic(updatedSection.subtopicId);
+
+    return updatedSection;
   }
 }
 

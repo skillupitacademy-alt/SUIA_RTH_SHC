@@ -115,7 +115,7 @@ export default function TutorialBlockComposerPage() {
   return (
     <div className="space-y-8">
       {/* Top Header Card */}
-      <section className="rounded-2xl border border-slate-200/80 bg-white p-6 sm:p-8 shadow-sm">
+      <section className="rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-sm p-6 sm:p-8 shadow-xl border-t border-white/60 -translate-y-1 transition-all">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
@@ -137,7 +137,7 @@ export default function TutorialBlockComposerPage() {
           <div className="flex items-center gap-3 shrink-0">
             <Link
               href="/tools/tutorial-page-content"
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-pink-500 to-orange-500 px-5 py-3 text-xs font-bold text-white shadow-md shadow-pink-500/20 hover:scale-[1.02] active:scale-95 transition-all"
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-pink-500 to-orange-500 px-5 py-3 text-xs font-bold text-white shadow-lg shadow-pink-500/25 hover:scale-[1.02] active:scale-95 transition-all"
             >
               <Plus size={16} />
               <span>New Block Instance</span>
@@ -146,22 +146,22 @@ export default function TutorialBlockComposerPage() {
         </div>
       </section>
 
-      {/* Grid of Operation Cards */}
+      {/* Grid of Operation Cards (Elevated by default with rich hover highlights) */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
         {OPERATION_CARDS.map((card) => {
           const Icon = card.icon;
           return (
             <div
               key={card.id}
-              className="group relative flex flex-col justify-between rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm hover:shadow-xl transition-all duration-300 -translate-y-0.5 hover:-translate-y-1.5"
+              className="group relative flex flex-col justify-between rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-sm p-6 shadow-xl border-t border-white/60 -translate-y-1 hover:border-pink-300/80 hover:shadow-2xl transition-all duration-300 cursor-pointer"
             >
               <div className="space-y-4">
                 {/* Top Row: Icon Badge & Status Tag */}
                 <div className="flex items-center justify-between">
-                  <div className={`flex h-12 w-12 items-center justify-center rounded-xl shadow-lg transition-transform group-hover:scale-110 ${card.iconBg}`}>
+                  <div className={`flex h-12 w-12 items-center justify-center rounded-xl shadow-lg transition-transform duration-300 group-hover:scale-110 ${card.iconBg}`}>
                     <Icon size={24} />
                   </div>
-                  <span className={`rounded-md border px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase font-mono ${card.badgeColor}`}>
+                  <span className={`rounded-md border px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase font-mono transition-colors ${card.badgeColor}`}>
                     {card.badge}
                   </span>
                 </div>
@@ -178,16 +178,16 @@ export default function TutorialBlockComposerPage() {
               </div>
 
               {/* Action Button */}
-              <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
+              <div className="mt-6 pt-4 border-t border-slate-100/90 flex items-center justify-between">
                 <span className="text-[11px] font-mono font-medium text-slate-400">
                   {card.href.replace('/tools/tutorial-page-content', '~')}
                 </span>
                 <Link
                   href={card.href}
-                  className={`inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-bold shadow-sm transition-all active:scale-95 ${card.buttonColor}`}
+                  className={`inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-bold shadow-sm transition-all duration-200 hover:scale-105 active:scale-95 ${card.buttonColor}`}
                 >
                   <span>Open</span>
-                  <ArrowRight size={13} className="transition-transform group-hover:translate-x-0.5" />
+                  <ArrowRight size={13} className="transition-transform duration-200 group-hover:translate-x-1" />
                 </Link>
               </div>
             </div>
@@ -196,7 +196,7 @@ export default function TutorialBlockComposerPage() {
       </div>
 
       {/* Architectural Concept Info Banner */}
-      <section className="rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50/60 via-white to-pink-50/40 p-6 sm:p-7 shadow-sm">
+      <section className="rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50/70 via-white to-pink-50/50 p-6 sm:p-7 shadow-xl border-t border-white/60 -translate-y-1 transition-all">
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
           <div className="space-y-2 max-w-2xl">
             <div className="flex items-center gap-2">
@@ -205,21 +205,21 @@ export default function TutorialBlockComposerPage() {
                 Canonical Document Architecture
               </h3>
             </div>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              In the SkillHubCore Tutorial Engine, a <strong>Tutorial Section</strong> owns a single <code className="font-mono font-bold text-indigo-900">TutorialDocument</code> with an ordered <code className="font-mono font-bold text-indigo-900">blocks[]</code> array. Multiple block instances of the same type/version (e.g. <em>Definition D1</em>, <em>Code C1</em>, <em>Code C1</em>) are treated as distinct instances with unique IDs.
+            <p className="text-xs text-slate-600 leading-relaxed font-medium">
+              In the SkillHubCore Tutorial Engine, a <strong>Tutorial Section</strong> owns a single <code className="font-mono font-bold text-indigo-900 bg-white/80 px-1.5 py-0.5 rounded border border-indigo-100">TutorialDocument</code> with an ordered <code className="font-mono font-bold text-indigo-900 bg-white/80 px-1.5 py-0.5 rounded border border-indigo-100">blocks[]</code> array. Multiple block instances of the same type/version (e.g. <em>Definition D1</em>, <em>Code C1</em>, <em>Code C1</em>) are treated as distinct instances with unique IDs.
             </p>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 w-full lg:w-auto shrink-0 font-mono text-[11px]">
-            <div className="rounded-xl border border-slate-200/80 bg-white p-3 text-center shadow-sm">
+            <div className="rounded-xl border border-slate-200/80 bg-white/90 backdrop-blur-sm p-3 text-center shadow-md">
               <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Model</p>
               <p className="mt-1 font-bold text-slate-800">blocks[] Array</p>
             </div>
-            <div className="rounded-xl border border-slate-200/80 bg-white p-3 text-center shadow-sm">
+            <div className="rounded-xl border border-slate-200/80 bg-white/90 backdrop-blur-sm p-3 text-center shadow-md">
               <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Ordering</p>
               <p className="mt-1 font-bold text-slate-800">Array Sequence</p>
             </div>
-            <div className="rounded-xl border border-slate-200/80 bg-white p-3 text-center shadow-sm col-span-2 sm:col-span-1">
+            <div className="rounded-xl border border-slate-200/80 bg-white/90 backdrop-blur-sm p-3 text-center shadow-md col-span-2 sm:col-span-1">
               <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Identity</p>
               <p className="mt-1 font-bold text-slate-800">Unique block.id</p>
             </div>
