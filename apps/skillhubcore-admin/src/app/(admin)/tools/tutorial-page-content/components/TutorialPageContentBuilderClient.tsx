@@ -592,10 +592,10 @@ export function TutorialPageContentBuilderClient() {
           </div>
         </header>
 
-        {/* 2-Column Workspace below the Horizontal Toolbar */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* Left Column: AI Generation Instructions + JSON Editor + Action Buttons */}
-          <section className="lg:col-span-6 xl:col-span-6 space-y-4">
+        {/* 2-Column Workspace below the Horizontal Toolbar (Original Proportions: 460px Authoring Column + 1fr Wide Preview Column) */}
+        <div className="grid grid-cols-1 xl:grid-cols-[460px_1fr] gap-6 items-start">
+          {/* Left Column: AI Generation Instructions + JSON Editor + Action Buttons (Original 460px Width) */}
+          <section className="space-y-4">
             {/* AI Generation Instructions / Contract Guidance Container */}
             <AiInstructionContainer
               domainName={domainName}
@@ -658,8 +658,8 @@ export function TutorialPageContentBuilderClient() {
             </div>
           </section>
 
-          {/* Right Column: Preview Target Header & Live Preview Pane */}
-          <section className="lg:col-span-6 xl:col-span-6 space-y-4 min-w-0">
+          {/* Right Column: Preview Target Header & Live Preview Pane (Expanded Wide Preview Area) */}
+          <section className="space-y-4 min-w-0">
             <div className="rounded-xl border border-slate-200/90 bg-white p-4 text-sm font-bold text-[#071f63] shadow-sm flex items-center justify-between">
               <span className="truncate">Preview Target: {selectedSubtopic?.name ?? 'Select a subtopic'}</span>
               <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 shrink-0">
