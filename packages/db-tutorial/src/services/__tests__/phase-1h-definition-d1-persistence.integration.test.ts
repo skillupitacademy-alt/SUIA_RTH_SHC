@@ -12,11 +12,13 @@
  *   ↓
  * Phase 1G: buildTutorialDocument()
  *   ↓
- * TutorialComposerService.createSection()
+ * TutorialComposerService.createTutorial()
  *   ↓
  * tutorial_sections.content (JSONB)
  *   ↓
  * TutorialDeliveryService.getTutorialById()
+ *   ↓
+ * TutorialDeliveryV2 { tutorial: DeliveredTutorial | null }
  *   ↓
  * DefinitionD1Block (canonical)
  * 
@@ -34,7 +36,7 @@
 import { describe, it, expect, beforeAll, afterEach } from 'vitest';
 import { db } from '../../db';
 import { tutorialSections, tutorialSubtopics } from '../../schema';
-import { eq, sql, inArray } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import {
   validateDefinitionD1AIOutput,
   type DefinitionD1AuthorContent,
@@ -51,11 +53,21 @@ import {
 
 describe('Phase 1H — Definition D1 Persistence Integration', () => {
   let testSubtopicId: string;
-  let createdSectionIds: string[] = [];
+  let createdTutorialIds: string[] = [];
 
   const mockContext: TutorialComposerServiceContext = {
     userId: 'phase-1h-test-user',
   };
+
+  // Test brands to ensure unique (subtopicId, brandId) identity
+  const TEST_BRANDS = ['realtutorialhub', 'skillup'] as const;
+  let brandIndex = 0;
+  
+  function getNextBrand() {
+    const brand = TEST_BRANDS[brandIndex % TEST_BRANDS.length];
+    brandIndex++;
+    return brand;
+  }
 
   // Deterministic AI output fixture
   const validAIOutput = {
@@ -91,7 +103,7 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
   };
 
   beforeAll(async () => {
-    // Get test subtopic
+    // Get one test subtopic - we'll use different brands for uniqueness
     const result = await db
       .select({ id: tutorialSubtopics.id })
       .from(tutorialSubtopics)
@@ -102,25 +114,27 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
     }
 
     testSubtopicId = result[0].id;
-
-    // Clean up any existing test sections for this subtopic to avoid conflicts
+    
+    // Clean up any existing test tutorials for this subtopic
     await db
       .delete(tutorialSections)
       .where(eq(tutorialSections.subtopicId, testSubtopicId));
   });
 
   afterEach(async () => {
-    // Cleanup created sections
-    if (createdSectionIds.length > 0) {
+    // Cleanup created tutorials
+    if (createdTutorialIds.length > 0) {
       await db
         .delete(tutorialSections)
-        .where(inArray(tutorialSections.id, createdSectionIds));
-      createdSectionIds = [];
+        .where(inArray(tutorialSections.id, createdTutorialIds));
+      createdTutorialIds = [];
     }
   });
 
   describe('Phase 1H-B: Repository Round-Trip', () => {
     it('should persist D1 block to JSONB and retrieve exactly', async () => {
+      
+      
       // Phase 1F: Validate AI output
       const authorContent: DefinitionD1AuthorContent = validateDefinitionD1AIOutput(validAIOutput);
 
@@ -133,44 +147,43 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
         tags: ['python', 'variables'],
       });
 
-      // Create section via service
-      const section = await tutorialComposerService.createSection(
+      // V2: Create tutorial via service
+      const tutorial = await tutorialComposerService.createTutorial(
         {
           subtopicId: testSubtopicId,
-          sectionType: 'notes',
-          difficulty: 'intermediate',
+          brandId: getNextBrand(),
           content: document,
         },
         mockContext
       );
 
-      createdSectionIds.push(section.id);
+      createdTutorialIds.push(tutorial.id);
 
-      // ✅ VERIFY: Section created
-      expect(section.id).toBeTruthy();
-      expect(section.subtopicId).toBe(testSubtopicId);
-      expect(section.sectionType).toBe('notes');
-      expect(section.status).toBe('draft');
+      // ✅ VERIFY: Tutorial created
+      expect(tutorial.id).toBeTruthy();
+      expect(tutorial.subtopicId).toBe(testSubtopicId);
+      expect(tutorial.brandId).toBe('realtutorialhub');
+      expect(tutorial.status).toBe('draft');
 
       // ✅ VERIFY: Read from database
       const dbRows = await db
         .select()
         .from(tutorialSections)
-        .where(eq(tutorialSections.id, section.id));
+        .where(eq(tutorialSections.id, tutorial.id));
 
       expect(dbRows).toHaveLength(1);
-      const dbSection = dbRows[0];
+      const dbTutorial = dbRows[0];
 
       // ✅ VERIFY: Hierarchy in column, NOT in JSONB
-      expect(dbSection.subtopicId).toBe(testSubtopicId);
-      const contentJSON = JSON.stringify(dbSection.content);
+      expect(dbTutorial.subtopicId).toBe(testSubtopicId);
+      const contentJSON = JSON.stringify(dbTutorial.content);
       expect(contentJSON).not.toContain('subtopicId');
       expect(contentJSON).not.toContain('domainId');
       expect(contentJSON).not.toContain('subjectId');
       expect(contentJSON).not.toContain('topicId');
 
       // ✅ VERIFY: Content is TutorialDocument
-      const persistedDoc = dbSection.content as TutorialDocument;
+      const persistedDoc = dbTutorial.content as TutorialDocument;
       expect(persistedDoc.schemaVersion).toBe(1);
       expect(persistedDoc.blocks).toHaveLength(1);
 
@@ -199,30 +212,33 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
     });
 
     it('should preserve block ID through persistence', async () => {
+      
       const customBlockId = '550e8400-e29b-41d4-a716-446655440000';
 
       const authorContent = validateDefinitionD1AIOutput(validAIOutput);
       const block = buildCanonicalDefinitionD1Block(authorContent, customBlockId);
       const document = buildTutorialDocument([block]);
 
-      const section = await tutorialComposerService.createSection(
+      // V2: Create tutorial
+      const tutorial = await tutorialComposerService.createTutorial(
         {
           subtopicId: testSubtopicId,
-          sectionType: 'notes',
-          difficulty: 'intermediate',
+          brandId: getNextBrand(),
           content: document,
         },
         mockContext
       );
 
-      createdSectionIds.push(section.id);
+      createdTutorialIds.push(tutorial.id);
 
       // ✅ VERIFY: Block ID preserved
-      const persistedDoc = section.content as TutorialDocument;
+      const persistedDoc = tutorial.content as TutorialDocument;
       expect(persistedDoc.blocks[0].id).toBe(customBlockId);
     });
 
     it('should support multiple D1 blocks in same document', async () => {
+      
+      
       const authorContent1 = validateDefinitionD1AIOutput({
         page: {
           ...validAIOutput.page,
@@ -241,20 +257,20 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
       const block2 = buildCanonicalDefinitionD1Block(authorContent2);
       const document = buildTutorialDocument([block1, block2]);
 
-      const section = await tutorialComposerService.createSection(
+      // V2: Create tutorial
+      const tutorial = await tutorialComposerService.createTutorial(
         {
           subtopicId: testSubtopicId,
-          sectionType: 'notes',
-          difficulty: 'intermediate',
+          brandId: getNextBrand(),
           content: document,
         },
         mockContext
       );
 
-      createdSectionIds.push(section.id);
+      createdTutorialIds.push(tutorial.id);
 
       // ✅ VERIFY: Both blocks persisted
-      const persistedDoc = section.content as TutorialDocument;
+      const persistedDoc = tutorial.content as TutorialDocument;
       expect(persistedDoc.blocks).toHaveLength(2);
 
       const d1Block1 = persistedDoc.blocks[0] as DefinitionD1Block;
@@ -269,6 +285,8 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
 
   describe('Phase 1H-D: Full Pipeline Integration', () => {
     it('should execute complete AI → Persistence → Delivery pipeline', async () => {
+      const brandId = getNextBrand(); // Capture once for entire test
+      
       // Step 1: AI Output (fixture)
       const aiOutput = validAIOutput;
 
@@ -285,44 +303,40 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
         tags: ['python', 'fundamentals', 'variables'],
       });
 
-      // Step 5: Persist via Composer Service
-      const section = await tutorialComposerService.createSection(
+      // Step 5: V2 - Persist via Composer Service
+      const tutorial = await tutorialComposerService.createTutorial(
         {
           subtopicId: testSubtopicId,
-          sectionType: 'notes',
-          difficulty: 'intermediate',
+          brandId,
           content: document,
         },
         mockContext
       );
 
-      createdSectionIds.push(section.id);
+      createdTutorialIds.push(tutorial.id);
 
-      // Step 6: Publish section (make it deliverable)
-      await tutorialComposerService.publishSection(section.id, mockContext);
+      // Step 6: V2 - Publish tutorial (make it deliverable)
+      await tutorialComposerService.publishTutorial(tutorial.id, mockContext);
 
-      // Step 7: Retrieve via Delivery Service
-      const delivery = await tutorialDeliveryService.getTutorialById(
-        testSubtopicId,
-        {
-          difficulty: 'intermediate',
-        sectionType: 'notes',
-      }
-      );
+      // Step 7: V2 - Retrieve via Delivery Service
+      const delivery = await tutorialDeliveryService.getTutorialById(testSubtopicId, {
+        brandId,
+        includeUnpublished: false,
+      });
 
-      // ✅ VERIFY: Delivery contains section
-      expect(delivery.sections).toHaveLength(1);
-      const deliverySection = delivery.sections[0];
+      // ✅ VERIFY: Delivery contains tutorial
+      expect(delivery.tutorial).toBeTruthy();
+      expect(delivery.tutorial!.id).toBe(tutorial.id);
 
-      // ✅ VERIFY: Section is published
-      expect(deliverySection.id).toBe(section.id);
+      // ✅ VERIFY: Tutorial was published (has publishedAt timestamp)
+      expect(delivery.tutorial!.publishedAt).toBeTruthy();
 
       // ✅ VERIFY: Content is TutorialDocument
-      expect(deliverySection.content.schemaVersion).toBe(1);
-      expect(deliverySection.content.blocks).toHaveLength(1);
+      expect(delivery.tutorial!.content.schemaVersion).toBe(1);
+      expect(delivery.tutorial!.content.blocks).toHaveLength(1);
 
       // ✅ VERIFY: Block is canonical DefinitionD1Block
-      const deliveredBlock = deliverySection.content.blocks[0] as DefinitionD1Block;
+      const deliveredBlock = delivery.tutorial!.content.blocks[0] as DefinitionD1Block;
       expect(deliveredBlock.type).toBe('definition');
       expect(deliveredBlock.version).toBe('D1');
       expect(deliveredBlock.id).toBe(block.id);
@@ -336,8 +350,8 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
       expect(deliveredBlock.content.page.characteristics).toEqual(aiOutput.page.characteristics);
 
       // ✅ VERIFY: Metadata preserved
-      expect(deliverySection.content.metadata?.estimatedReadTime).toBe(5);
-      expect(deliverySection.content.metadata?.tags).toContain('python');
+      expect(delivery.tutorial!.content.metadata?.estimatedReadTime).toBe(5);
+      expect(delivery.tutorial!.content.metadata?.tags).toContain('python');
     });
   });
 
@@ -411,33 +425,33 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
 
   describe('Phase 1H-F: Delivery Round-Trip', () => {
     it('should deliver canonical D1 block after persistence', async () => {
+      const brandId = getNextBrand(); // Capture once
+      
       const authorContent = validateDefinitionD1AIOutput(validAIOutput);
       const block = buildCanonicalDefinitionD1Block(authorContent);
       const document = buildTutorialDocument([block]);
 
-      const section = await tutorialComposerService.createSection(
+      // V2: Create and publish
+      const tutorial = await tutorialComposerService.createTutorial(
         {
           subtopicId: testSubtopicId,
-          sectionType: 'notes',
-          difficulty: 'intermediate',
+          brandId,
           content: document,
         },
         mockContext
       );
 
-      createdSectionIds.push(section.id);
+      createdTutorialIds.push(tutorial.id);
+      await tutorialComposerService.publishTutorial(tutorial.id, mockContext);
 
-      // Publish
-      await tutorialComposerService.publishSection(section.id, mockContext);
-
-      // Deliver
+      // V2: Deliver
       const delivery = await tutorialDeliveryService.getTutorialById(testSubtopicId, {
-        difficulty: 'intermediate',
-        sectionType: 'notes',
+        brandId,
       });
 
       // ✅ VERIFY: Delivered block matches saved block
-      const deliveredBlock = delivery.sections[0].content.blocks[0] as DefinitionD1Block;
+      expect(delivery.tutorial).toBeTruthy();
+      const deliveredBlock = delivery.tutorial!.content.blocks[0] as DefinitionD1Block;
       expect(deliveredBlock.id).toBe(block.id);
       expect(deliveredBlock.type).toBe('definition');
       expect(deliveredBlock.version).toBe('D1');
@@ -445,30 +459,33 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
     });
 
     it('should not include hierarchy in delivered content', async () => {
+      const brandId = getNextBrand(); // Capture once
+      
       const authorContent = validateDefinitionD1AIOutput(validAIOutput);
       const block = buildCanonicalDefinitionD1Block(authorContent);
       const document = buildTutorialDocument([block]);
 
-      const section = await tutorialComposerService.createSection(
+      // V2: Create and publish
+      const tutorial = await tutorialComposerService.createTutorial(
         {
           subtopicId: testSubtopicId,
-          sectionType: 'notes',
-          difficulty: 'intermediate',
+          brandId,
           content: document,
         },
         mockContext
       );
 
-      createdSectionIds.push(section.id);
-      await tutorialComposerService.publishSection(section.id, mockContext);
+      createdTutorialIds.push(tutorial.id);
+      await tutorialComposerService.publishTutorial(tutorial.id, mockContext);
 
+      // V2: Deliver
       const delivery = await tutorialDeliveryService.getTutorialById(testSubtopicId, {
-        difficulty: 'intermediate',
-        sectionType: 'notes',
+        brandId,
       });
 
       // ✅ VERIFY: No hierarchy in delivered content
-      const contentJSON = JSON.stringify(delivery.sections[0].content);
+      expect(delivery.tutorial).toBeTruthy();
+      const contentJSON = JSON.stringify(delivery.tutorial!.content);
       expect(contentJSON).not.toContain('subtopicId');
       expect(contentJSON).not.toContain('domainId');
       expect(contentJSON).not.toContain('subjectId');
@@ -480,64 +497,70 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
     });
 
     it('should not leak admin metadata in delivery', async () => {
+      const brandId = getNextBrand(); // Capture once
+      
       const authorContent = validateDefinitionD1AIOutput(validAIOutput);
       const block = buildCanonicalDefinitionD1Block(authorContent);
       const document = buildTutorialDocument([block]);
 
-      const section = await tutorialComposerService.createSection(
+      // V2: Create and publish
+      const tutorial = await tutorialComposerService.createTutorial(
         {
           subtopicId: testSubtopicId,
-          sectionType: 'notes',
-          difficulty: 'intermediate',
+          brandId,
           content: document,
         },
         mockContext
       );
 
-      createdSectionIds.push(section.id);
-      await tutorialComposerService.publishSection(section.id, mockContext);
+      createdTutorialIds.push(tutorial.id);
+      await tutorialComposerService.publishTutorial(tutorial.id, mockContext);
 
+      // V2: Deliver
       const delivery = await tutorialDeliveryService.getTutorialById(testSubtopicId, {
-        difficulty: 'intermediate',
-        sectionType: 'notes',
+        brandId,
       });
 
-      const deliverySection = delivery.sections[0];
+      expect(delivery.tutorial).toBeTruthy();
+      const deliveryTutorial = delivery.tutorial!;
 
       // ✅ VERIFY: Admin-only fields not in delivery
-      expect((deliverySection as any).generatedByAi).toBeUndefined();
-      expect((deliverySection as any).aiModelUsed).toBeUndefined();
-      expect((deliverySection as any).qualityScore).toBeUndefined();
-      expect((deliverySection as any).approvedBy).toBeUndefined();
-      expect((deliverySection as any).generationJobId).toBeUndefined();
+      expect((deliveryTutorial as any).generatedByAi).toBeUndefined();
+      expect((deliveryTutorial as any).aiModelUsed).toBeUndefined();
+      expect((deliveryTutorial as any).qualityScore).toBeUndefined();
+      expect((deliveryTutorial as any).approvedBy).toBeUndefined();
+      expect((deliveryTutorial as any).generationJobId).toBeUndefined();
     });
   });
 
   describe('Phase 1H-G: Content Preservation', () => {
     it('should preserve all page.* fields exactly through pipeline', async () => {
+      const brandId = getNextBrand(); // Capture once
+      
       const authorContent = validateDefinitionD1AIOutput(validAIOutput);
       const block = buildCanonicalDefinitionD1Block(authorContent);
       const document = buildTutorialDocument([block]);
 
-      const section = await tutorialComposerService.createSection(
+      // V2: Create and publish
+      const tutorial = await tutorialComposerService.createTutorial(
         {
           subtopicId: testSubtopicId,
-          sectionType: 'notes',
-          difficulty: 'intermediate',
+          brandId,
           content: document,
         },
         mockContext
       );
 
-      createdSectionIds.push(section.id);
-      await tutorialComposerService.publishSection(section.id, mockContext);
+      createdTutorialIds.push(tutorial.id);
+      await tutorialComposerService.publishTutorial(tutorial.id, mockContext);
 
+      // V2: Deliver
       const delivery = await tutorialDeliveryService.getTutorialById(testSubtopicId, {
-        difficulty: 'intermediate',
-        sectionType: 'notes',
+        brandId,
       });
 
-      const deliveredBlock = delivery.sections[0].content.blocks[0] as DefinitionD1Block;
+      expect(delivery.tutorial).toBeTruthy();
+      const deliveredBlock = delivery.tutorial!.content.blocks[0] as DefinitionD1Block;
 
       // ✅ VERIFY: All page fields preserved
       const pageFields = [
@@ -560,29 +583,32 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
     });
 
     it('should preserve complex nested structures (characteristics, example)', async () => {
+      const brandId = getNextBrand(); // Capture once
+      
       const authorContent = validateDefinitionD1AIOutput(validAIOutput);
       const block = buildCanonicalDefinitionD1Block(authorContent);
       const document = buildTutorialDocument([block]);
 
-      const section = await tutorialComposerService.createSection(
+      // V2: Create and publish
+      const tutorial = await tutorialComposerService.createTutorial(
         {
           subtopicId: testSubtopicId,
-          sectionType: 'notes',
-          difficulty: 'intermediate',
+          brandId,
           content: document,
         },
         mockContext
       );
 
-      createdSectionIds.push(section.id);
-      await tutorialComposerService.publishSection(section.id, mockContext);
+      createdTutorialIds.push(tutorial.id);
+      await tutorialComposerService.publishTutorial(tutorial.id, mockContext);
 
+      // V2: Deliver
       const delivery = await tutorialDeliveryService.getTutorialById(testSubtopicId, {
-        difficulty: 'intermediate',
-        sectionType: 'notes',
+        brandId,
       });
 
-      const deliveredBlock = delivery.sections[0].content.blocks[0] as DefinitionD1Block;
+      expect(delivery.tutorial).toBeTruthy();
+      const deliveredBlock = delivery.tutorial!.content.blocks[0] as DefinitionD1Block;
 
       // ✅ VERIFY: Characteristics array preserved
       expect(deliveredBlock.content.page.characteristics).toHaveLength(2);
