@@ -51,6 +51,7 @@ export {
 export type {
   SectionType as ComposerSectionType,
   Difficulty,
+  TutorialDifficulty,
   SectionStatus,
   BrandId,
   CreateTutorialSectionRequest,
@@ -87,6 +88,7 @@ export type {
 export {
   SectionTypeSchema as ComposerSectionTypeSchema,
   DifficultySchema,
+  TutorialDifficultySchema,
   SectionStatusSchema,
   BrandIdSchema,
   CreateTutorialSectionRequestSchema,

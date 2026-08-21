@@ -33,7 +33,12 @@ import type {
   ProjectSubmissionStatus,
 } from './project.types';
 
-export type TutorialDifficulty = 'simple' | 'mixed' | 'intermediate' | 'expert';
+// Import canonical TutorialDifficulty from tutorial-composer contracts
+import type { TutorialDifficulty } from './tutorial-composer/contracts';
+
+// Re-export for backward compatibility
+export type { TutorialDifficulty };
+
 export type TutorialProjectLevel = 'simple' | 'intermediate' | 'expert';
 export type TutorialProjectSubmissionStatus =
   | 'pending'

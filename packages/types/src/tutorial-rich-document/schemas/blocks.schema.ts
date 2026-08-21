@@ -27,22 +27,28 @@ import {
   CardGridBlockSchema,
   TimelineBlockSchema,
 } from './container-blocks.schema';
+import { CodeC1BlockSchema } from './code-c1.schema';
 
 // Re-export individual block schemas
 export * from './content-blocks.schema';
 export * from './container-blocks.schema';
+export * from './code-c1.schema';
+
+/**
+ * Union of Code blocks: legacy CodeBlock + versioned CodeC1Block
+ */
+const CodeBlockUnionSchema = z.union([CodeBlockSchema, CodeC1BlockSchema]);
 
 /**
  * Complete TutorialBlock schema with recursive support
  * This is the main schema used for validation
  */
 export const TutorialBlockSchema: z.ZodType<any> = z.lazy(() =>
-  z.discriminatedUnion('type', [
-    // Content blocks
+  z.union([
+    // Type-based blocks
     HeadingBlockSchema,
     ParagraphBlockSchema,
     ListBlockSchema,
-    CodeBlockSchema,
     TableBlockSchema,
     ImageBlockSchema,
     CalloutBlockSchema,
@@ -52,6 +58,8 @@ export const TutorialBlockSchema: z.ZodType<any> = z.lazy(() =>
     SummaryBlockSchema,
     DiagramBlockSchema,
     ComparisonBlockSchema,
+    // Code blocks (legacy + versioned)
+    CodeBlockUnionSchema,
     // Container blocks
     TwoColumnBlockSchema,
     ThreeColumnBlockSchema,

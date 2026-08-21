@@ -15,7 +15,7 @@ import {
   validateDocumentForSection,
   type TutorialDocument,
   type SectionType,
-  type Difficulty,
+  type TutorialDifficulty,
   TutorialDocumentValidationError,
   SectionNotFoundError,
   SectionAlreadyExistsError,
@@ -43,7 +43,7 @@ export interface TutorialComposerServiceContext {
 export interface CreateSectionInput {
   subtopicId: string;
   sectionType: SectionType;
-  difficulty: Difficulty;
+  difficulty: TutorialDifficulty;
   content: TutorialDocument;
   brandId?: string;
   orderIndex?: number;
@@ -54,7 +54,7 @@ export interface CreateSectionInput {
  */
 export interface UpdateSectionInput {
   content?: TutorialDocument;
-  difficulty?: Difficulty;
+  difficulty?: TutorialDifficulty;
   orderIndex?: number;
 }
 
@@ -198,7 +198,7 @@ export class TutorialComposerService {
   async getSectionByKey(
     subtopicId: string,
     sectionType: SectionType,
-    difficulty: Difficulty,
+    difficulty: TutorialDifficulty,
     brandId: string = 'shared'
   ): Promise<TutorialSection | null> {
     const section = await this.repository.getSectionByKey(

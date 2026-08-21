@@ -48,7 +48,7 @@ describe('TutorialComposerService', () => {
         {
           subtopicId: crypto.randomUUID(),
           sectionType: 'notes',
-          difficulty: 'beginner',
+          difficulty: 'simple',
           content: document,
         },
         mockContext
@@ -69,7 +69,7 @@ describe('TutorialComposerService', () => {
           {
             subtopicId: crypto.randomUUID(),
             sectionType: 'notes',
-            difficulty: 'beginner',
+            difficulty: 'simple',
             content: invalidDocument,
           },
           mockContext
@@ -94,7 +94,7 @@ describe('TutorialComposerService', () => {
           {
             subtopicId: crypto.randomUUID(),
             sectionType: 'notes',
-            difficulty: 'beginner',
+            difficulty: 'simple',
             content: invalidDocument,
           },
           mockContext
@@ -124,7 +124,7 @@ describe('TutorialComposerService', () => {
           {
             subtopicId: crypto.randomUUID(),
             sectionType: 'notes',
-            difficulty: 'beginner',
+            difficulty: 'simple',
             content: documentWithDuplicates,
           },
           mockContext
@@ -153,7 +153,7 @@ describe('TutorialComposerService', () => {
           {
             subtopicId: crypto.randomUUID(),
             sectionType: 'overview',
-            difficulty: 'beginner',
+            difficulty: 'simple',
             content: document,
           },
           mockContext
@@ -179,7 +179,7 @@ describe('TutorialComposerService', () => {
         {
           subtopicId,
           sectionType: 'notes',
-          difficulty: 'beginner',
+          difficulty: 'simple',
           content: document,
         },
         mockContext
@@ -191,7 +191,7 @@ describe('TutorialComposerService', () => {
           {
             subtopicId,
             sectionType: 'notes',
-            difficulty: 'beginner',
+            difficulty: 'simple',
             content: document,
           },
           mockContext
@@ -217,7 +217,7 @@ describe('TutorialComposerService', () => {
         {
           subtopicId: crypto.randomUUID(),
           sectionType: 'notes',
-          difficulty: 'beginner',
+          difficulty: 'simple',
           content: initialDocument,
         },
         mockContext
@@ -254,7 +254,7 @@ describe('TutorialComposerService', () => {
         {
           subtopicId: crypto.randomUUID(),
           sectionType: 'notes',
-          difficulty: 'beginner',
+          difficulty: 'simple',
           content: initialDocument,
         },
         mockContext
@@ -292,7 +292,7 @@ describe('TutorialComposerService', () => {
         {
           subtopicId: crypto.randomUUID(),
           sectionType: 'notes',
-          difficulty: 'beginner',
+          difficulty: 'simple',
           content: document,
         },
         mockContext
@@ -314,7 +314,7 @@ describe('TutorialComposerService', () => {
         {
           subtopicId: crypto.randomUUID(),
           sectionType: 'notes',
-          difficulty: 'beginner',
+          difficulty: 'simple',
           content: emptyDocument,
         },
         mockContext
@@ -351,7 +351,7 @@ describe('TutorialComposerService', () => {
         {
           subtopicId: crypto.randomUUID(),
           sectionType: 'notes',
-          difficulty: 'beginner',
+          difficulty: 'simple',
           content: document,
         },
         mockContext

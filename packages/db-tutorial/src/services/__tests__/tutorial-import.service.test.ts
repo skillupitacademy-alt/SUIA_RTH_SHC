@@ -235,7 +235,7 @@ Conclusion paragraph.`;
       const response = await tutorialImportService.importRawContent({
         subtopicId: '00000000-0000-0000-0000-000000000001',
         sectionType: 'notes',
-        difficulty: 'beginner',
+        difficulty: 'simple',
         sourceType: 'markdown',
         rawContent: `# Sample Tutorial
 
@@ -275,7 +275,7 @@ const x = 10;
         tutorialImportService.importRawContent({
           subtopicId: '00000000-0000-0000-0000-000000000001',
           sectionType: 'notes',
-          difficulty: 'beginner',
+          difficulty: 'simple',
           sourceType: 'markdown',
           rawContent: '   ',
         })

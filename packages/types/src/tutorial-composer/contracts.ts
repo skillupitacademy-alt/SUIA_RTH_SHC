@@ -39,11 +39,18 @@ export const SectionTypeSchema = z.enum([
 export type SectionType = z.infer<typeof SectionTypeSchema>;
 
 /**
- * Difficulty levels (from database enum)
+ * Difficulty levels (generic - used for non-tutorial domains)
  */
 export const DifficultySchema = z.enum(['beginner', 'intermediate', 'advanced']);
 
 export type Difficulty = z.infer<typeof DifficultySchema>;
+
+/**
+ * Tutorial-specific difficulty levels (from database enum tutorial_difficulty)
+ */
+export const TutorialDifficultySchema = z.enum(['simple', 'mixed', 'intermediate', 'expert']);
+
+export type TutorialDifficulty = z.infer<typeof TutorialDifficultySchema>;
 
 /**
  * Section status (from database enum)
@@ -87,7 +94,7 @@ export const CreateTutorialSectionRequestSchema = z
   .object({
     subtopicId: z.string().uuid('Invalid subtopic ID'),
     sectionType: SectionTypeSchema,
-    difficulty: DifficultySchema,
+    difficulty: TutorialDifficultySchema,
     content: TutorialDocumentSchema,
     brandId: BrandIdSchema.optional(),
     orderIndex: z.number().int().min(0).optional(),
@@ -109,7 +116,7 @@ export type CreateTutorialSectionRequest = z.infer<
 export const UpdateTutorialSectionRequestSchema = z
   .object({
     content: TutorialDocumentSchema.optional(),
-    difficulty: DifficultySchema.optional(),
+    difficulty: TutorialDifficultySchema.optional(),
     orderIndex: z.number().int().min(0).optional(),
   })
   .strict();
@@ -145,7 +152,7 @@ export const TutorialSectionResponseSchema = z
     id: z.string().uuid(),
     subtopicId: z.string().uuid(),
     sectionType: SectionTypeSchema,
-    difficulty: DifficultySchema,
+    difficulty: TutorialDifficultySchema,
     orderIndex: z.number().int(),
     content: TutorialDocumentSchema,
     version: z.number().int().min(1),
@@ -179,7 +186,7 @@ export type TutorialSectionResponse = z.infer<
 export const ListTutorialSectionsQuerySchema = z.object({
   subtopicId: z.string().uuid().optional(),
   sectionType: SectionTypeSchema.optional(),
-  difficulty: DifficultySchema.optional(),
+  difficulty: TutorialDifficultySchema.optional(),
   status: SectionStatusSchema.optional(),
   brandId: BrandIdSchema.optional(),
   limit: z.coerce.number().int().min(1).max(100).default(20),
@@ -265,7 +272,7 @@ export const RawContentImportRequestSchema = z
   .object({
     subtopicId: z.string().uuid('Invalid subtopic ID'),
     sectionType: SectionTypeSchema,
-    difficulty: DifficultySchema,
+    difficulty: TutorialDifficultySchema,
     brandId: BrandIdSchema.optional(),
     sourceType: RawContentSourceTypeSchema,
     rawContent: z.string().min(1, 'Raw content cannot be empty').max(1_000_000, 'Content exceeds 1MB limit'),
