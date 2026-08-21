@@ -1,7 +1,24 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Bot, Check, ChevronDown, ChevronUp, Copy, Eye, Save, Send, Sparkles } from 'lucide-react';
+import {
+  Bot,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Copy,
+  Eye,
+  Layers,
+  Plus,
+  Save,
+  Send,
+  Sparkles,
+  Trash2,
+  FileCode,
+  BookOpen,
+  ListOrdered,
+  CheckCircle2,
+} from 'lucide-react';
 
 import { TutorialCodeContent } from '@/share-branding/LearningExperience/components/TutorialCodeContent';
 import { TutorialDefinitionContent } from '@/share-branding/LearningExperience/components/TutorialDefinitionContent';
@@ -13,6 +30,8 @@ import type {
   TutorialPageContentType,
   TutorialSidebarBrandId,
   TutorialSummaryPayload,
+  TutorialDocument,
+  TutorialBlock,
 } from '@quiz/types';
 
 type SourceFormat = 'json' | 'markdown';
@@ -37,6 +56,7 @@ interface HierarchyState {
 export interface BlockVersionOption {
   id: string;
   label: string;
+  code: string;
   description?: string;
 }
 
@@ -51,26 +71,37 @@ export const SUPPORTED_BLOCKS: BlockTypeOption[] = [
     id: 'definition',
     label: 'Definition',
     versions: [
-      { id: 'v1', label: 'V1 - Concept (D1)', description: 'Authoritative definition with intuition, example & responsive key characteristics' },
-      { id: 'v2', label: 'V2 - Deep Dive', description: 'Advanced conceptual breakdown and architectural mechanisms' },
+      { id: 'v1', code: 'D1', label: 'D1 - Concept Definition', description: 'Authoritative definition with intuition, example & responsive key characteristics' },
+      { id: 'v2', code: 'D2', label: 'D2 - Deep Dive', description: 'Advanced conceptual breakdown and architectural mechanisms' },
     ],
   },
   {
     id: 'code',
     label: 'Code',
     versions: [
-      { id: 'v1', label: 'V1 - Basic Example', description: 'Step-by-step code execution with memory model' },
-      { id: 'v2', label: 'V2 - Advanced Pattern', description: 'Production-grade idioms and error handling' },
+      { id: 'v1', code: 'C1', label: 'C1 - Basic Example', description: 'Step-by-step code execution with memory model' },
+      { id: 'v2', code: 'C2', label: 'C2 - Advanced Pattern', description: 'Production-grade idioms and error handling' },
     ],
   },
   {
     id: 'summary',
     label: 'Summary',
     versions: [
-      { id: 'v1', label: 'V1 - Revision Table', description: 'Quick revision table with key points, remember cards and takeaways' },
+      { id: 'v1', code: 'S1', label: 'S1 - Revision Table', description: 'Quick revision table with key points, remember cards and takeaways' },
     ],
   },
 ];
+
+export interface BlockInstance {
+  id: string;
+  type: TutorialPageContentType;
+  version: string;
+  versionCode: string;
+  title: string;
+  payload: TutorialDefinitionPayload | TutorialCodePayload | TutorialSummaryPayload | unknown;
+  sourceFormat: SourceFormat;
+  sourceContent: string;
+}
 
 interface FormState {
   brandId: TutorialSidebarBrandId;
@@ -253,6 +284,19 @@ const summaryExample: TutorialSummaryPayload = {
   },
 };
 
+/**
+ * Pure helper to append a block to a TutorialDocument immutably
+ */
+export function appendTutorialBlock(
+  document: TutorialDocument,
+  block: TutorialBlock
+): TutorialDocument {
+  return {
+    ...document,
+    blocks: [...document.blocks, block],
+  };
+}
+
 const initialHierarchy: HierarchyState = { domains: [], subjects: [], topics: [], subtopics: [] };
 const initialForm: FormState = {
   brandId: SHARED_BRAND_ID,
@@ -292,6 +336,16 @@ function exampleForContentType(contentType: TutorialPageContentType) {
     return codeExample;
   }
   return summaryExample;
+}
+
+function extractBlockTitle(payload: any, type: TutorialPageContentType): string {
+  if (!payload) return 'Untitled Block';
+  if (payload.page?.title) return payload.page.title;
+  if (payload.title) return payload.title;
+  if (type === 'definition') return payload.page?.intro || 'Concept Definition';
+  if (type === 'code') return payload.code?.language ? `${payload.code.language} Example` : 'Code Example';
+  if (type === 'summary') return 'Revision Summary';
+  return 'Block Instance';
 }
 
 function parseSource(format: SourceFormat, source: string, contentType: TutorialPageContentType) {
@@ -344,9 +398,24 @@ export function TutorialPageContentBuilderClient() {
   const [form, setForm] = useState<FormState>(initialForm);
   const [sourceFormat, setSourceFormat] = useState<SourceFormat>('json');
   const [sourceContent, setSourceContent] = useState(JSON.stringify(definitionExample, null, 2));
-  const [preview, setPreview] = useState<TutorialDefinitionPayload | TutorialCodePayload | TutorialSummaryPayload>(definitionExample);
+  const [activeBlockPreview, setActiveBlockPreview] = useState<any>(definitionExample);
+  const [previewMode, setPreviewMode] = useState<'document' | 'active-block'>('document');
   const [message, setMessage] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+
+  // Document block instances collection
+  const [documentBlocks, setDocumentBlocks] = useState<BlockInstance[]>([
+    {
+      id: 'block-d1-init',
+      type: 'definition',
+      version: 'v1',
+      versionCode: 'D1',
+      title: 'What Is a Variable?',
+      payload: definitionExample,
+      sourceFormat: 'json',
+      sourceContent: JSON.stringify(definitionExample, null, 2),
+    },
+  ]);
 
   useEffect(() => {
     fetch('/api/tutorial-left-sidebar/hierarchy')
@@ -358,7 +427,7 @@ export function TutorialPageContentBuilderClient() {
   useEffect(() => {
     const example = exampleForContentType(form.blockType);
     setSourceContent(JSON.stringify(example, null, 2));
-    setPreview(example);
+    setActiveBlockPreview(example);
   }, [form.blockType]);
 
   const subjects = useMemo(() => hierarchy.subjects.filter((item) => item.domainId === form.domainId), [hierarchy.subjects, form.domainId]);
@@ -399,21 +468,58 @@ export function TutorialPageContentBuilderClient() {
     });
   }
 
-  function handlePreview() {
+  function handlePreviewCurrent() {
     try {
-      setPreview(parseSource(sourceFormat, sourceContent, form.blockType));
-      setMessage('Preview updated.');
+      const parsed = parseSource(sourceFormat, sourceContent, form.blockType);
+      setActiveBlockPreview(parsed);
+      setMessage('Active block preview updated.');
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Preview failed.');
+      setMessage(error instanceof Error ? error.message : 'Preview parsing failed.');
     }
+  }
+
+  /**
+   * Append new block instance to TutorialDocument
+   */
+  function handleAddBlockInstance() {
+    try {
+      const payload = parseSource(sourceFormat, sourceContent, form.blockType);
+      const uniqueId = `block-${form.blockType}-${selectedVersion.code.toLowerCase()}-${Date.now().toString(36)}`;
+      const title = extractBlockTitle(payload, form.blockType);
+
+      const newInstance: BlockInstance = {
+        id: uniqueId,
+        type: form.blockType,
+        version: form.versionId,
+        versionCode: selectedVersion.code,
+        title,
+        payload,
+        sourceFormat,
+        sourceContent,
+      };
+
+      setDocumentBlocks((prev) => [...prev, newInstance]);
+      setPreviewMode('document');
+      setMessage(`Appended new block instance: ${selectedVersion.code} (${title})`);
+    } catch (error) {
+      setMessage(error instanceof Error ? `Cannot add block: ${error.message}` : 'Failed to add block instance.');
+    }
+  }
+
+  /**
+   * Remove a block instance from the local list
+   */
+  function handleRemoveBlockInstance(id: string) {
+    setDocumentBlocks((prev) => prev.filter((b) => b.id !== id));
+    setMessage('Block instance removed from document.');
   }
 
   async function save(status: 'draft' | 'published') {
     setIsSaving(true);
     setMessage('');
     try {
+      // Validate all blocks
       const payload = parseSource(sourceFormat, sourceContent, form.blockType);
-      setPreview(payload);
       const response = await fetch('/api/tutorial-page-content', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -423,6 +529,7 @@ export function TutorialPageContentBuilderClient() {
           version: form.versionId,
           brandId: SHARED_BRAND_ID,
           payload,
+          documentBlocks,
           sourceFormat,
           sourceContent,
           status,
@@ -448,17 +555,17 @@ export function TutorialPageContentBuilderClient() {
 
   return (
     <main className="min-h-screen bg-[#f4f7fa] p-4 sm:p-6">
-      <div className="mx-auto max-w-[1700px] space-y-5">
+      <div className="mx-auto max-w-[1700px] space-y-6">
         {/* Top Header & Compact Horizontal Authoring Toolbar */}
-        <header className="rounded-xl border border-slate-200/90 bg-white p-5 shadow-sm">
+        <header className="rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-sm p-6 shadow-xl border-t border-white/60 -translate-y-1 transition-all">
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3 mb-4">
             <div>
               <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#e11d48]">Tutorial Page Builder</p>
-              <h1 className="text-xl font-extrabold text-[#071f63]">Definition & Code Content</h1>
+              <h1 className="text-xl font-extrabold text-[#071f63] font-outfit">Create & Append Block Instances</h1>
             </div>
             <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
-              <span className="inline-block h-2 w-2 rounded-full bg-emerald-500"></span>
-              Authoring Toolbar
+              <span className="inline-block h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span className="font-mono text-slate-600">Document blocks: <strong>{documentBlocks.length}</strong></span>
             </div>
           </div>
 
@@ -471,7 +578,7 @@ export function TutorialPageContentBuilderClient() {
               </label>
               <select
                 id="select-domain"
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 transition-colors focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500/20"
                 value={form.domainId}
                 onChange={(event) => updateForm('domainId', event.target.value)}
               >
@@ -490,7 +597,7 @@ export function TutorialPageContentBuilderClient() {
               <select
                 id="select-subject"
                 disabled={!form.domainId}
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed"
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 transition-colors focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500/20 disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed"
                 value={form.subjectId}
                 onChange={(event) => updateForm('subjectId', event.target.value)}
               >
@@ -509,7 +616,7 @@ export function TutorialPageContentBuilderClient() {
               <select
                 id="select-topic"
                 disabled={!form.subjectId}
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed"
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 transition-colors focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500/20 disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed"
                 value={form.topicId}
                 onChange={(event) => updateForm('topicId', event.target.value)}
               >
@@ -528,7 +635,7 @@ export function TutorialPageContentBuilderClient() {
               <select
                 id="select-subtopic"
                 disabled={!form.topicId}
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed"
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 transition-colors focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500/20 disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed"
                 value={form.subtopicId}
                 onChange={(event) => updateForm('subtopicId', event.target.value)}
               >
@@ -539,14 +646,14 @@ export function TutorialPageContentBuilderClient() {
               </select>
             </div>
 
-            {/* 5. Block (Independent Dropdown) */}
+            {/* 5. Block Type (Independent Dropdown) */}
             <div className="w-[140px] min-w-[130px]">
               <label htmlFor="select-block" className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
-                Block
+                Block Type
               </label>
               <select
                 id="select-block"
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 transition-colors focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500/20"
                 value={form.blockType}
                 onChange={(event) => updateForm('blockType', event.target.value as TutorialPageContentType)}
               >
@@ -556,15 +663,15 @@ export function TutorialPageContentBuilderClient() {
               </select>
             </div>
 
-            {/* 6. Version (Dependent on Block) */}
-            <div className="w-[170px] min-w-[150px]">
+            {/* 6. Version (Dependent on Block Type) */}
+            <div className="w-[180px] min-w-[150px]">
               <label htmlFor="select-version" className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
-                Version
+                Version Code
               </label>
               <select
                 id="select-version"
                 disabled={availableVersions.length === 0}
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed"
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 transition-colors focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500/20 disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed"
                 value={form.versionId}
                 onChange={(event) => updateForm('versionId', event.target.value)}
               >
@@ -581,7 +688,7 @@ export function TutorialPageContentBuilderClient() {
               </label>
               <select
                 id="select-format"
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 transition-colors focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500/20"
                 value={sourceFormat}
                 onChange={(event) => setSourceFormat(event.target.value as SourceFormat)}
               >
@@ -592,11 +699,11 @@ export function TutorialPageContentBuilderClient() {
           </div>
         </header>
 
-        {/* 2-Column Workspace below the Horizontal Toolbar (Original Proportions: 460px Authoring Column + 1fr Wide Preview Column) */}
+        {/* 2-Column Workspace below the Horizontal Toolbar (460px Authoring Column + 1fr Preview Column) */}
         <div className="grid grid-cols-1 xl:grid-cols-[460px_1fr] gap-6 items-start">
-          {/* Left Column: AI Generation Instructions + JSON Editor + Action Buttons (Original 460px Width) */}
-          <section className="space-y-4">
-            {/* AI Generation Instructions / Contract Guidance Container */}
+          {/* Left Column: AI Instructions + JSON Editor + Action Buttons + Document Blocks List */}
+          <section className="space-y-5">
+            {/* AI Generation Instructions Container */}
             <AiInstructionContainer
               domainName={domainName}
               subjectName={subjectName}
@@ -608,69 +715,214 @@ export function TutorialPageContentBuilderClient() {
               versionId={form.versionId}
             />
 
-            {/* JSON Content Editor */}
-            <div className="rounded-xl border border-slate-200/90 bg-white p-5 shadow-sm">
+            {/* JSON Content Editor & Append Controls */}
+            <div className="rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-sm p-5 shadow-xl border-t border-white/60 -translate-y-1 transition-all">
               <div className="flex items-center justify-between pb-2 text-xs font-bold uppercase tracking-wider text-slate-600">
                 <span className="flex items-center gap-1.5">
-                  <span>JSON Content Editor</span>
-                  <span className="text-[10px] text-slate-400 font-mono">({currentBlockConfig.label} {selectedVersion.id.toUpperCase()})</span>
+                  <FileCode size={14} className="text-pink-600" />
+                  <span>Block Content Editor</span>
+                  <span className="text-[10px] text-slate-400 font-mono">({selectedVersion.code})</span>
                 </span>
-                <span className="text-[10px] text-indigo-600 font-mono font-semibold">Pure JSON Contract</span>
+                <span className="text-[10px] text-pink-600 font-mono font-semibold">Pure Block Schema</span>
               </div>
               <textarea
-                className="h-[460px] w-full rounded-lg border border-slate-800 bg-[#071024] p-4 font-mono text-xs leading-5 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-y"
+                className="h-[400px] w-full rounded-xl border border-slate-800 bg-[#071024] p-4 font-mono text-xs leading-5 text-white focus:outline-none focus:ring-2 focus:ring-pink-500 resize-y"
                 value={sourceContent}
                 onChange={(event) => setSourceContent(event.target.value)}
                 placeholder="Paste or edit JSON content here..."
                 aria-label="JSON Content Editor"
               />
 
-              <div className="mt-4 flex flex-wrap items-center gap-3">
+              {/* Main Action Buttons */}
+              <div className="mt-4 space-y-2.5">
+                {/* Primary Add Block Action */}
                 <button
                   type="button"
-                  className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-[#071f63] shadow-sm hover:bg-slate-50 transition-colors"
-                  onClick={handlePreview}
+                  onClick={handleAddBlockInstance}
+                  className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-pink-500 to-orange-500 px-4 py-3 text-xs font-bold text-white shadow-lg shadow-pink-500/25 hover:scale-[1.01] active:scale-95 transition-all"
                 >
-                  <Eye className="h-4 w-4" /> Preview
+                  <Plus size={16} />
+                  <span>+ Add {selectedVersion.code} Block Instance to Document</span>
                 </button>
-                <button
-                  type="button"
-                  disabled={isSaving || !form.subtopicId}
-                  className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-[#071f63] shadow-sm hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={() => save('draft')}
-                >
-                  <Save className="h-4 w-4" /> Save Draft
-                </button>
-                <button
-                  type="button"
-                  disabled={isSaving || !form.subtopicId}
-                  className="inline-flex items-center gap-2 rounded-lg bg-[#e11d48] px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-[#be123c] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={() => save('published')}
-                >
-                  <Send className="h-4 w-4" /> Publish
-                </button>
+
+                {/* Secondary Actions Row */}
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 shadow-sm hover:bg-slate-50 active:scale-95 transition-all"
+                    onClick={handlePreviewCurrent}
+                  >
+                    <Eye className="h-3.5 w-3.5" /> Preview Block
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isSaving || !form.subtopicId}
+                    className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 shadow-sm hover:bg-slate-50 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={() => save('draft')}
+                  >
+                    <Save className="h-3.5 w-3.5" /> Save Draft
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isSaving || !form.subtopicId}
+                    className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#e11d48] px-3 py-2 text-xs font-bold text-white shadow-sm hover:bg-[#be123c] active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={() => save('published')}
+                  >
+                    <Send className="h-3.5 w-3.5" /> Publish
+                  </button>
+                </div>
               </div>
+
               {message && (
-                <p className="mt-3.5 rounded-lg bg-slate-50 border border-slate-100 p-3 text-xs font-semibold text-[#071f63]">
-                  {message}
-                </p>
+                <div className="mt-3 rounded-lg bg-pink-50/70 border border-pink-100 p-3 text-xs font-semibold text-[#071f63] flex items-center gap-2">
+                  <Sparkles size={14} className="text-pink-600 shrink-0" />
+                  <span>{message}</span>
+                </div>
               )}
+            </div>
+
+            {/* Document Blocks List (Ordered Block Instances in TutorialDocument) */}
+            <div className="rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-sm p-5 shadow-xl border-t border-white/60 -translate-y-1 transition-all">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <ListOrdered size={16} className="text-[#e11d48]" />
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 font-outfit">
+                    Tutorial Document Blocks
+                  </h3>
+                </div>
+                <span className="rounded-full bg-pink-50 border border-pink-200 px-2.5 py-0.5 text-[10px] font-bold text-pink-700 font-mono">
+                  {documentBlocks.length} {documentBlocks.length === 1 ? 'instance' : 'instances'}
+                </span>
+              </div>
+
+              <div className="mt-3.5 space-y-2 max-h-[380px] overflow-y-auto pr-1">
+                {documentBlocks.length === 0 ? (
+                  <p className="text-center py-6 text-xs text-slate-400 font-medium">
+                    No blocks added yet. Click &ldquo;+ Add Block Instance&rdquo; above to append blocks.
+                  </p>
+                ) : (
+                  documentBlocks.map((block, index) => (
+                    <div
+                      key={block.id}
+                      className="group flex items-center justify-between rounded-xl border border-slate-200/80 bg-white p-3 shadow-sm hover:border-pink-300 hover:shadow-md transition-all"
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <span className="flex h-6 w-6 items-center justify-center rounded-md bg-slate-100 text-[11px] font-mono font-bold text-slate-600 shrink-0">
+                          {String(index + 1).padStart(2, '0')}
+                        </span>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-bold text-xs text-slate-900 truncate">
+                              {block.title}
+                            </span>
+                            <span className="rounded bg-pink-50 border border-pink-200 px-1.5 py-0.2 text-[9px] font-bold text-pink-700 font-mono shrink-0">
+                              {block.versionCode}
+                            </span>
+                          </div>
+                          <p className="text-[10px] font-mono text-slate-400 truncate mt-0.5">
+                            ID: {block.id}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1 shrink-0 ml-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSourceContent(block.sourceContent);
+                            setActiveBlockPreview(block.payload);
+                            setForm((prev) => ({ ...prev, blockType: block.type, versionId: block.version }));
+                            setMessage(`Loaded block #${index + 1} (${block.versionCode}) into editor.`);
+                          }}
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                          title="Load into editor"
+                        >
+                          <FileCode size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveBlockInstance(block.id)}
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                          title="Remove block instance"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           </section>
 
-          {/* Right Column: Preview Target Header & Live Preview Pane (Expanded Wide Preview Area) */}
+          {/* Right Column: Preview Target Header & Live Preview Pane */}
           <section className="space-y-4 min-w-0">
-            <div className="rounded-xl border border-slate-200/90 bg-white p-4 text-sm font-bold text-[#071f63] shadow-sm flex items-center justify-between">
+            <div className="rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-sm p-4 text-sm font-bold text-[#071f63] shadow-xl border-t border-white/60 -translate-y-1 flex flex-wrap items-center justify-between gap-2">
               <span className="truncate">Preview Target: {selectedSubtopic?.name ?? 'Select a subtopic'}</span>
-              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 shrink-0">
-                {currentBlockConfig.label} ({selectedVersion.label})
-              </span>
+              
+              {/* Preview Mode Switcher */}
+              <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl">
+                <button
+                  type="button"
+                  onClick={() => setPreviewMode('document')}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                    previewMode === 'document'
+                      ? 'bg-white text-slate-900 shadow-sm'
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  Full Document ({documentBlocks.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreviewMode('active-block')}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                    previewMode === 'active-block'
+                      ? 'bg-white text-slate-900 shadow-sm'
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  Active Block ({selectedVersion.code})
+                </button>
+              </div>
             </div>
 
-            <div className="rounded-xl border border-slate-200/90 bg-white p-6 shadow-sm min-h-[580px] overflow-y-auto">
-              {form.blockType === 'definition' && <TutorialDefinitionContent payload={preview as TutorialDefinitionPayload} theme={themeForBrand(form.brandId)} />}
-              {form.blockType === 'code' && <TutorialCodeContent payload={preview as TutorialCodePayload} theme={themeForBrand(form.brandId)} />}
-              {form.blockType === 'summary' && <TutorialSummaryContent payload={preview as TutorialSummaryPayload} theme={themeForBrand(form.brandId)} />}
+            {/* Live Rendered Content Container (Preserving original component themes) */}
+            <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xl min-h-[600px] overflow-y-auto space-y-8">
+              {previewMode === 'active-block' ? (
+                <div>
+                  <div className="mb-4 pb-2 border-b border-slate-100 flex items-center justify-between text-xs text-slate-400 font-mono">
+                    <span>Active Editor Preview</span>
+                    <span>{selectedVersion.code} Block</span>
+                  </div>
+                  {form.blockType === 'definition' && <TutorialDefinitionContent payload={activeBlockPreview as TutorialDefinitionPayload} theme={themeForBrand(form.brandId)} />}
+                  {form.blockType === 'code' && <TutorialCodeContent payload={activeBlockPreview as TutorialCodePayload} theme={themeForBrand(form.brandId)} />}
+                  {form.blockType === 'summary' && <TutorialSummaryContent payload={activeBlockPreview as TutorialSummaryPayload} theme={themeForBrand(form.brandId)} />}
+                </div>
+              ) : (
+                documentBlocks.length === 0 ? (
+                  <div className="py-16 text-center text-slate-400 text-sm">
+                    No blocks in document yet. Add blocks from the left authoring panel to preview the full document.
+                  </div>
+                ) : (
+                  documentBlocks.map((instance, idx) => (
+                    <div key={instance.id} className="relative">
+                      {idx > 0 && <div className="my-8 border-t border-dashed border-slate-200" />}
+                      <div className="mb-3 flex items-center justify-between">
+                        <span className="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-mono font-bold text-slate-600">
+                          <span>Instance #{idx + 1}</span>
+                          <span>•</span>
+                          <span>{instance.versionCode}</span>
+                        </span>
+                        <span className="text-[10px] font-mono text-slate-400">ID: {instance.id}</span>
+                      </div>
+                      {instance.type === 'definition' && <TutorialDefinitionContent payload={instance.payload as TutorialDefinitionPayload} theme={themeForBrand(form.brandId)} />}
+                      {instance.type === 'code' && <TutorialCodeContent payload={instance.payload as TutorialCodePayload} theme={themeForBrand(form.brandId)} />}
+                      {instance.type === 'summary' && <TutorialSummaryContent payload={instance.payload as TutorialSummaryPayload} theme={themeForBrand(form.brandId)} />}
+                    </div>
+                  ))
+                )
+              )}
             </div>
           </section>
         </div>
@@ -780,7 +1032,7 @@ Generate valid, production-ready ${blockType} (${versionId.toUpperCase()}) conte
   };
 
   return (
-    <div className="rounded-xl border border-indigo-200 bg-indigo-50/50 p-4 transition-all">
+    <div className="rounded-2xl border border-indigo-200 bg-indigo-50/50 p-4 transition-all shadow-md">
       {/* Container Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
