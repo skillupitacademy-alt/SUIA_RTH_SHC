@@ -1,6 +1,6 @@
 /**
  * Test Database Helpers
- * 
+ *
  * Follows Phase 1H proven pattern for test isolation
  */
 
@@ -8,10 +8,15 @@ import { db, tutorialSections, tutorialSubtopics } from '@quiz/db-tutorial';
 import { inArray, sql } from 'drizzle-orm';
 
 /**
- * Get a test subtopic ID from the database
+ * Get any existing subtopic ID from the database.
+ *
+ * IMPORTANT:
+ * This does not identify a dedicated test fixture.
+ * Tests using this ID MUST only clean up records they created.
+ *
  * Throws if no subtopics exist (seed required)
  */
-export async function getTestSubtopicId(): Promise<string> {
+export async function getAnySubtopicId(): Promise<string> {
   const result = await db
     .select({ id: tutorialSubtopics.id })
     .from(tutorialSubtopics)
@@ -25,6 +30,9 @@ export async function getTestSubtopicId(): Promise<string> {
 
   return result[0].id;
 }
+
+/** @deprecated Use getAnySubtopicId() instead */
+export const getTestSubtopicId = getAnySubtopicId;
 
 /**
  * Hard delete test sections by IDs

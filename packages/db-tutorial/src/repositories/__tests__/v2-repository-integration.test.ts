@@ -1,19 +1,19 @@
 /**
  * V2 Repository Integration Test
- * 
+ *
  * OBJECTIVE: Prove V2 repository works with real V2 database
- * 
+ *
  * Tests V2 identity: (subtopic_id, brand_id)
  * Tests TutorialDocument JSONB persistence
  * Tests Definition D1 round-trip
- * 
+ *
  * DOES NOT test:
  * - Composer service (Step 3)
  * - Delivery service (Step 4)
  * - Phase 1H educational pipeline (Step 5)
  */
 
-import { describe, it, expect, beforeAll, afterEach } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest';
 import { db } from '../../db';
 import { tutorialSections, tutorialSubtopics } from '../../schema';
 import { eq, inArray } from 'drizzle-orm';
@@ -40,13 +40,18 @@ describe('V2 Repository Integration Test', () => {
     console.log(`Using test subtopic: ${testSubtopicId}`);
   });
 
+  beforeEach(() => {
+    // Reset the array to track tutorials created in this test
+    createdTutorialIds = [];
+  });
+
   afterEach(async () => {
     // Cleanup created tutorials
     if (createdTutorialIds.length > 0) {
       await db
         .delete(tutorialSections)
         .where(inArray(tutorialSections.id, createdTutorialIds));
-      
+
       createdTutorialIds = [];
     }
   });
@@ -272,14 +277,17 @@ describe('V2 Repository Integration Test', () => {
 
       expect(retrieved).toBeDefined();
       expect(retrieved!.content.blocks).toHaveLength(1);
-      expect(retrieved!.content.blocks[0].type).toBe('definition');
-      expect(retrieved!.content.blocks[0].version).toBe('D1');
-      
-      const d1Block = retrieved!.content.blocks[0] as any;
-      expect(d1Block.content.page.type).toBe('definition');
-      expect(d1Block.content.page.title).toBe('What Is a Variable?');
-      expect(d1Block.content.page.explanation).toHaveLength(3);
-      expect(d1Block.content.page.characteristics).toHaveLength(2);
+
+      // Narrow type using discriminator
+      const block = retrieved!.content.blocks[0];
+      if (block.type !== 'definition') {
+        throw new Error('Expected definition block');
+      }
+      expect(block.version).toBe('D1');
+      expect(block.content.page.type).toBe('definition');
+      expect(block.content.page.title).toBe('What Is a Variable?');
+      expect(block.content.page.explanation).toHaveLength(3);
+      expect(block.content.page.characteristics).toHaveLength(2);
     });
   });
 

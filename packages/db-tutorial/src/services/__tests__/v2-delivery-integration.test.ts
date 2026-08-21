@@ -1,8 +1,8 @@
 /**
  * V2 Delivery Integration Test
- * 
+ *
  * OBJECTIVE: Prove Delivery service works with V2 repository/composer
- * 
+ *
  * Tests:
  * - V2 identity (subtopicId, brandId) delivery
  * - Single tutorial return (not sections[])
@@ -15,14 +15,14 @@
  * - TutorialDocument validation
  * - Content sanitization (security)
  * - No V1 dependency (sectionType, difficulty)
- * 
+ *
  * DOES NOT test:
  * - Repository internals (covered by v2-repository-integration)
  * - Composer internals (covered by v2-composer-integration)
  * - AI generation pipeline
  */
 
-import { describe, it, expect, beforeAll, afterEach } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest';
 import { randomUUID } from 'node:crypto';
 import { db } from '../../db';
 import { tutorialSections, tutorialSubtopics } from '../../schema';
@@ -36,7 +36,7 @@ describe('V2 Delivery Integration Test', () => {
   let createdTutorialIds: string[] = [];
   const composerService = new TutorialComposerService();
   const deliveryService = new TutorialDeliveryService();
-  
+
   const mockContext = {
     userId: 'v2-delivery-test-user'
   };
@@ -58,12 +58,16 @@ describe('V2 Delivery Integration Test', () => {
     console.log(`Using test subtopic: ${testSubtopicId}`);
   });
 
+  beforeEach(() => {
+    createdTutorialIds = [];
+  });
+
   afterEach(async () => {
     if (createdTutorialIds.length > 0) {
       await db
         .delete(tutorialSections)
         .where(inArray(tutorialSections.id, createdTutorialIds));
-      
+
       createdTutorialIds = [];
     }
   });
@@ -562,7 +566,7 @@ describe('V2 Delivery Integration Test', () => {
 
       expect(delivery.tutorial).not.toBeNull();
       const diagramBlock = delivery.tutorial!.content.blocks[0];
-      
+
       if (diagramBlock.type === 'diagram' && 'content' in diagramBlock) {
         const content = diagramBlock.content as any;
         expect(content.diagramData).not.toContain('<script>');
@@ -600,7 +604,7 @@ describe('V2 Delivery Integration Test', () => {
 
       expect(delivery.tutorial).not.toBeNull();
       const imageBlock = delivery.tutorial!.content.blocks[0];
-      
+
       if (imageBlock.type === 'image' && 'content' in imageBlock) {
         const content = imageBlock.content as any;
         expect(content.assetId).toBe('#unsafe-url');
@@ -636,7 +640,7 @@ describe('V2 Delivery Integration Test', () => {
 
       expect(delivery.tutorial).not.toBeNull();
       const imageBlock = delivery.tutorial!.content.blocks[0];
-      
+
       if (imageBlock.type === 'image' && 'content' in imageBlock) {
         const content = imageBlock.content as any;
         expect(content.assetId).toBe('#unsafe-url');
@@ -675,7 +679,7 @@ describe('V2 Delivery Integration Test', () => {
 
       expect(delivery.tutorial).not.toBeNull();
       const diagramBlock = delivery.tutorial!.content.blocks[0];
-      
+
       if (diagramBlock.type === 'diagram' && 'content' in diagramBlock) {
         const content = diagramBlock.content as any;
         expect(content.diagramData).not.toContain('<SCRIPT>');
@@ -725,15 +729,15 @@ describe('V2 Delivery Integration Test', () => {
       });
 
       expect(delivery.tutorial).not.toBeNull();
-      
+
       const diagramBlock = delivery.tutorial!.content.blocks[0];
       const imageBlock = delivery.tutorial!.content.blocks[1];
-      
+
       if (diagramBlock.type === 'diagram' && 'content' in diagramBlock) {
         const content = diagramBlock.content as any;
         expect(content.diagramData).toBe(safeSVG);
       }
-      
+
       if (imageBlock.type === 'image' && 'content' in imageBlock) {
         const content = imageBlock.content as any;
         expect(content.assetId).toBe('https://example.com/image.png');

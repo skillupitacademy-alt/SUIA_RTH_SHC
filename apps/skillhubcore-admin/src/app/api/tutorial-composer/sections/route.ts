@@ -1,17 +1,17 @@
 /**
- * Tutorial Composer API - Sections
- * NEW Composer API routes (clean separation from legacy ContentManager)
- * 
- * POST   /api/tutorial-composer/sections      - Create section
- * GET    /api/tutorial-composer/sections      - List sections
+ * Tutorial Composer API - Sections (V2)
+ * V2 API using (subtopicId, brandId) identity
+ *
+ * POST   /api/tutorial-composer/sections      - Create tutorial
+ * GET    /api/tutorial-composer/sections      - List tutorials
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import {
-  CreateTutorialSectionRequestSchema,
-  ListTutorialSectionsQuerySchema,
-  TutorialSectionResponseSchema,
-  ListTutorialSectionsResponseSchema,
+  CreateTutorialRequestSchema,
+  ListTutorialsQuerySchema,
+  TutorialResponseSchema,
+  ListTutorialsResponseSchema,
   type ApiErrorCode,
   type ValidationErrorDetail,
 } from '@quiz/types';
@@ -88,7 +88,7 @@ function getAuthenticatedContext(_request: NextRequest): TutorialComposerService
 
 /**
  * POST /api/tutorial-composer/sections
- * Create new tutorial section
+ * Create new tutorial (V2)
  */
 export async function POST(request: NextRequest) {
   try {
@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     // Step 3: Validate request schema
-    const parseResult = CreateTutorialSectionRequestSchema.safeParse(body);
+    const parseResult = CreateTutorialRequestSchema.safeParse(body);
     if (!parseResult.success) {
       return errorResponse(
         'VALIDATION_ERROR',
@@ -137,8 +137,8 @@ export async function POST(request: NextRequest) {
       userId: user.userId,
     };
 
-    // Step 7: Create section via service
-    const section = await tutorialComposerService.createSection(
+    // Step 7: Create tutorial via V2 service
+    const tutorial = await tutorialComposerService.createTutorial(
       requestData,
       context
     );
@@ -152,24 +152,34 @@ export async function POST(request: NextRequest) {
       });
     });
 
-    // Step 9: Format response
-    const response = TutorialSectionResponseSchema.parse({
-      id: section.id,
-      subtopicId: section.subtopicId,
-      sectionType: section.sectionType,
-      difficulty: section.difficulty,
-      orderIndex: section.orderIndex,
-      content: section.content,
-      version: section.version,
-      language: section.language,
-      status: section.status,
-      brandId: section.brandId,
-      generatedByAi: section.generatedByAi,
-      aiModelUsed: section.aiModelUsed,
-      qualityScore: section.qualityScore,
-      createdAt: section.createdAt.toISOString(),
-      updatedAt: section.updatedAt.toISOString(),
-      publishedAt: section.publishedAt?.toISOString() || null,
+    // Step 9: Format V2 response
+    const response = TutorialResponseSchema.parse({
+      id: tutorial.id,
+      subtopicId: tutorial.subtopicId,
+      brandId: tutorial.brandId,
+      orderIndex: tutorial.orderIndex,
+      content: tutorial.content,
+      version: tutorial.version,
+      language: tutorial.language,
+      status: tutorial.status,
+      generatedByAi: tutorial.generatedByAi,
+      aiModelUsed: tutorial.aiModelUsed,
+      generationJobId: tutorial.generationJobId,
+      qualityScore: tutorial.qualityScore,
+      hallucinationScore: tutorial.hallucinationScore,
+      regenerationCount: tutorial.regenerationCount,
+      approvedBy: tutorial.approvedBy,
+      approvedAt: tutorial.approvedAt?.toISOString() || null,
+      rejectionReason: tutorial.rejectionReason,
+      promptTemplateId: tutorial.promptTemplateId,
+      educationalArchitectureId: tutorial.educationalArchitectureId,
+      uiArchitectureId: tutorial.uiArchitectureId,
+      brandVisibility: tutorial.brandVisibility,
+      brandCustomizations: tutorial.brandCustomizations,
+      createdAt: tutorial.createdAt.toISOString(),
+      updatedAt: tutorial.updatedAt.toISOString(),
+      publishedAt: tutorial.publishedAt?.toISOString() || null,
+      deletedAt: tutorial.deletedAt?.toISOString() || null,
     });
 
     return NextResponse.json({ data: response }, { status: 201 });
@@ -180,24 +190,28 @@ export async function POST(request: NextRequest) {
 
 /**
  * GET /api/tutorial-composer/sections
- * List tutorial sections with filters
+ * List tutorials with filters (V2)
  */
 export async function GET(request: NextRequest) {
   try {
-    // Step 1: Parse query parameters
+    // Step 1: Authenticate request (admin API requires authentication)
+    const authResult = await authenticateRequest(request);
+    if ('type' in authResult) {
+      return createAuthErrorResponse(authResult);
+    }
+
+    // Step 2: Parse query parameters
     const searchParams = request.nextUrl.searchParams;
     const queryParams = {
       subtopicId: searchParams.get('subtopicId') || undefined,
-      sectionType: searchParams.get('sectionType') || undefined,
-      difficulty: searchParams.get('difficulty') || undefined,
-      status: searchParams.get('status') || undefined,
       brandId: searchParams.get('brandId') || undefined,
+      status: searchParams.get('status') || undefined,
       limit: searchParams.get('limit') || '20',
       cursor: searchParams.get('cursor') || undefined,
     };
 
-    // Step 2: Validate query parameters
-    const parseResult = ListTutorialSectionsQuerySchema.safeParse(queryParams);
+    // Step 3: Validate query parameters
+    const parseResult = ListTutorialsQuerySchema.safeParse(queryParams);
     if (!parseResult.success) {
       return errorResponse(
         'VALIDATION_ERROR',
@@ -213,41 +227,49 @@ export async function GET(request: NextRequest) {
 
     const filters = parseResult.data;
 
-    // Step 4: Query sections
-    const result = await tutorialComposerService.querySections(
+    // Step 4: Query tutorials via V2 service
+    const result = await tutorialComposerService.queryTutorials(
       {
         subtopicId: filters.subtopicId,
-        sectionType: filters.sectionType,
-        difficulty: filters.difficulty,
-        status: filters.status,
         brandId: filters.brandId,
+        status: filters.status,
       },
       filters.limit,
       filters.cursor
     );
 
-    // Step 5: Format response
+    // Step 5: Format V2 response
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const data = result.sections.map((section: any) => ({
-      id: section.id,
-      subtopicId: section.subtopicId,
-      sectionType: section.sectionType,
-      difficulty: section.difficulty,
-      orderIndex: section.orderIndex,
-      content: section.content,
-      version: section.version,
-      language: section.language,
-      status: section.status,
-      brandId: section.brandId,
-      generatedByAi: section.generatedByAi,
-      aiModelUsed: section.aiModelUsed,
-      qualityScore: section.qualityScore,
-      createdAt: section.createdAt.toISOString(),
-      updatedAt: section.updatedAt.toISOString(),
-      publishedAt: section.publishedAt?.toISOString() || null,
+    const data = result.tutorials.map((tutorial: any) => ({
+      id: tutorial.id,
+      subtopicId: tutorial.subtopicId,
+      brandId: tutorial.brandId,
+      orderIndex: tutorial.orderIndex,
+      content: tutorial.content,
+      version: tutorial.version,
+      language: tutorial.language,
+      status: tutorial.status,
+      generatedByAi: tutorial.generatedByAi,
+      aiModelUsed: tutorial.aiModelUsed,
+      generationJobId: tutorial.generationJobId,
+      qualityScore: tutorial.qualityScore,
+      hallucinationScore: tutorial.hallucinationScore,
+      regenerationCount: tutorial.regenerationCount,
+      approvedBy: tutorial.approvedBy,
+      approvedAt: tutorial.approvedAt?.toISOString() || null,
+      rejectionReason: tutorial.rejectionReason,
+      promptTemplateId: tutorial.promptTemplateId,
+      educationalArchitectureId: tutorial.educationalArchitectureId,
+      uiArchitectureId: tutorial.uiArchitectureId,
+      brandVisibility: tutorial.brandVisibility,
+      brandCustomizations: tutorial.brandCustomizations,
+      createdAt: tutorial.createdAt.toISOString(),
+      updatedAt: tutorial.updatedAt.toISOString(),
+      publishedAt: tutorial.publishedAt?.toISOString() || null,
+      deletedAt: tutorial.deletedAt?.toISOString() || null,
     }));
 
-    const response = ListTutorialSectionsResponseSchema.parse({
+    const response = ListTutorialsResponseSchema.parse({
       data,
       nextCursor: result.nextCursor,
       hasMore: result.hasMore,

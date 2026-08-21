@@ -1,8 +1,8 @@
 /**
  * V2 Composer Integration Test
- * 
+ *
  * OBJECTIVE: Prove Composer service uses V2 repository correctly
- * 
+ *
  * Tests:
  * - Composer validates TutorialDocument
  * - Composer uses V2 identity (subtopicId, brandId)
@@ -10,14 +10,14 @@
  * - Multiple blocks preserved
  * - Block ordering preserved
  * - appendBlockToTutorial() works
- * 
+ *
  * DOES NOT test:
  * - Delivery service (Step 4)
  * - Phase 1H educational pipeline (Step 5)
  * - Renderers
  */
 
-import { describe, it, expect, beforeAll, afterEach } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest';
 import { randomUUID } from 'node:crypto';
 import { db } from '../../db';
 import { tutorialSections, tutorialSubtopics } from '../../schema';
@@ -30,7 +30,7 @@ describe('V2 Composer Integration Test', () => {
   let testSubtopicId: string;
   let createdTutorialIds: string[] = [];
   const composerService = new TutorialComposerService();
-  
+
   const mockContext = {
     userId: 'v2-composer-test-user'
   };
@@ -49,12 +49,16 @@ describe('V2 Composer Integration Test', () => {
     console.log(`Using test subtopic: ${testSubtopicId}`);
   });
 
+  beforeEach(() => {
+    createdTutorialIds = [];
+  });
+
   afterEach(async () => {
     if (createdTutorialIds.length > 0) {
       await db
         .delete(tutorialSections)
         .where(inArray(tutorialSections.id, createdTutorialIds));
-      
+
       createdTutorialIds = [];
     }
   });
@@ -110,9 +114,13 @@ describe('V2 Composer Integration Test', () => {
       expect(tutorial.brandId).toBe('shared');
       expect(tutorial.content.blocks).toHaveLength(1);
       expect(tutorial.content.blocks[0].type).toBe('definition');
-      expect(tutorial.content.blocks[0].version).toBe('D1');
-      
-      const block = tutorial.content.blocks[0] as any;
+
+      // Narrow type using discriminator
+      const block = tutorial.content.blocks[0];
+      if (block.type !== 'definition') {
+        throw new Error('Expected definition block');
+      }
+      expect(block.version).toBe('D1');
       expect(block.content.page.title).toBe('What Is a Variable?');
       expect(block.content.page.explanation).toHaveLength(3);
       expect(block.content.page.characteristics).toHaveLength(2);
@@ -223,10 +231,24 @@ describe('V2 Composer Integration Test', () => {
       createdTutorialIds.push(tutorial.id);
 
       expect(tutorial.content.blocks).toHaveLength(3);
-      expect(tutorial.content.blocks[0].type).toBe('definition');
-      expect(tutorial.content.blocks[0].version).toBe('D1');
-      expect(tutorial.content.blocks[1].type).toBe('code');
-      expect(tutorial.content.blocks[1].version).toBe('C1');
+
+      // Narrow types using discriminators
+      const block0 = tutorial.content.blocks[0];
+      if (block0.type !== 'definition') {
+        throw new Error('Expected definition block at index 0');
+      }
+      expect(block0.version).toBe('D1');
+
+      const block1 = tutorial.content.blocks[1];
+      if (block1.type !== 'code') {
+        throw new Error('Expected code block at index 1');
+      }
+      // Type narrowing: CodeBlock union includes both base CodeBlock and CodeC1Block
+      if (!('version' in block1)) {
+        throw new Error('Expected versioned code block');
+      }
+      expect(block1.version).toBe('C1');
+
       expect(tutorial.content.blocks[2].type).toBe('summary');
     });
   });
@@ -238,7 +260,7 @@ describe('V2 Composer Integration Test', () => {
       const c1FirstId = randomUUID();
       const c1SecondId = randomUUID();
       const summaryFinalId = randomUUID();
-      
+
       const blocks: TutorialBlock[] = [
         {
           id: d1FirstId,
@@ -342,7 +364,7 @@ describe('V2 Composer Integration Test', () => {
       expect(tutorial.content.blocks[2].id).toBe(c1FirstId);
       expect(tutorial.content.blocks[3].id).toBe(c1SecondId);
       expect(tutorial.content.blocks[4].id).toBe(summaryFinalId);
-      
+
       // Verify both D1 blocks are distinct
       const d1First = tutorial.content.blocks[0] as any;
       const d1Second = tutorial.content.blocks[1] as any;
@@ -394,7 +416,7 @@ describe('V2 Composer Integration Test', () => {
     it('should append block to existing tutorial', async () => {
       const initialBlockId = randomUUID();
       const appendedBlockId = randomUUID();
-      
+
       const initialDocument: TutorialDocument = {
         schemaVersion: 1,
         blocks: [{
@@ -432,7 +454,7 @@ describe('V2 Composer Integration Test', () => {
     it('should preserve existing blocks when appending', async () => {
       const d1OriginalId = randomUUID();
       const summaryAppendedId = randomUUID();
-      
+
       const d1Block: TutorialBlock = {
         id: d1OriginalId,
         type: 'definition',
@@ -480,13 +502,16 @@ describe('V2 Composer Integration Test', () => {
       );
 
       expect(updated.content.blocks).toHaveLength(2);
-      expect(updated.content.blocks[0].type).toBe('definition');
-      expect(updated.content.blocks[0].version).toBe('D1');
+
+      // Narrow type using discriminator
+      const block0 = updated.content.blocks[0];
+      if (block0.type !== 'definition') {
+        throw new Error('Expected definition block at index 0');
+      }
+      expect(block0.version).toBe('D1');
+      expect(block0.content.page.title).toBe('Original');
+
       expect(updated.content.blocks[1].type).toBe('summary');
-      
-      // Verify D1 content unchanged
-      const preservedD1 = updated.content.blocks[0] as any;
-      expect(preservedD1.content.page.title).toBe('Original');
     });
   });
 
@@ -494,7 +519,7 @@ describe('V2 Composer Integration Test', () => {
     it('should update tutorial content', async () => {
       const b1Id = randomUUID();
       const b2Id = randomUUID();
-      
+
       const originalDoc: TutorialDocument = {
         schemaVersion: 1,
         blocks: [{ id: b1Id, type: 'paragraph', content: { text: 'Original' } }]
