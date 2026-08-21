@@ -1,0 +1,91 @@
+{
+  "timestamp": "2026-08-21T11:16:31.359Z",
+  "phase": "B.2 - Emergency Recovery",
+  "preflight_checks": {
+    "table_does_not_exist": true,
+    "enum_section_status_exists": true,
+    "enum_brand_exists": true,
+    "enum_brand_visibility_exists": true,
+    "tutorial_subtopics_exists": true,
+    "prompt_templates_exists": true,
+    "educational_architectures_exists": true,
+    "ui_architectures_exists": true,
+    "overall": "PASSED"
+  },
+  "operations": [
+    {
+      "sequence": 1,
+      "type": "TRANSACTION",
+      "target": "BEGIN",
+      "result": "SUCCESS",
+      "timestamp": "2026-08-21T11:16:32.639Z"
+    },
+    {
+      "sequence": 2,
+      "type": "CREATE_TABLE",
+      "target": "tutorial_sections",
+      "result": "SUCCESS",
+      "timestamp": "2026-08-21T11:16:32.749Z"
+    },
+    {
+      "sequence": 3,
+      "type": "CREATE_CONSTRAINT",
+      "target": "uq_tutorial_v2_identity",
+      "result": "SUCCESS",
+      "timestamp": "2026-08-21T11:16:32.834Z"
+    },
+    {
+      "sequence": 4,
+      "type": "CREATE_INDEX",
+      "target": "idx_tutorial_v2_delivery",
+      "result": "SUCCESS",
+      "timestamp": "2026-08-21T11:16:32.918Z"
+    },
+    {
+      "sequence": 5,
+      "type": "CREATE_INDEX",
+      "target": "idx_tutorial_v2_by_brand",
+      "result": "SUCCESS",
+      "timestamp": "2026-08-21T11:16:33.002Z"
+    },
+    {
+      "sequence": 6,
+      "type": "CREATE_INDEX",
+      "target": "idx_tutorial_v2_by_status",
+      "result": "SUCCESS",
+      "timestamp": "2026-08-21T11:16:33.087Z"
+    },
+    {
+      "sequence": 7,
+      "type": "CREATE_INDEX",
+      "target": "idx_tutorial_v2_by_architecture",
+      "result": "SUCCESS",
+      "timestamp": "2026-08-21T11:16:33.172Z"
+    },
+    {
+      "sequence": 8,
+      "type": "CREATE_INDEX",
+      "target": "idx_tutorial_v2_subtopic_status",
+      "result": "SUCCESS",
+      "timestamp": "2026-08-21T11:16:33.257Z"
+    },
+    {
+      "sequence": 9,
+      "type": "TRANSACTION",
+      "target": "COMMIT",
+      "result": "SUCCESS",
+      "timestamp": "2026-08-21T11:16:33.257Z"
+    }
+  ],
+  "postflight_verification": {
+    "table_exists": true,
+    "has_v2_columns": true,
+    "no_legacy_columns": true,
+    "v2_unique_constraint_exists": true,
+    "v2_indexes_count": 5,
+    "v2_indexes_correct": true,
+    "fk_constraints_count": 4,
+    "overall": "PASSED"
+  },
+  "result": "SUCCESS"
+}

@@ -1,0 +1,630 @@
+{
+  "timestamp": "2026-08-21T10:42:13.788Z",
+  "phase": "A.2 - Shared Consumer Closure",
+  "findings": {
+    "tutorial_sections_references": {
+      "total_count": 21,
+      "tables": [
+        {
+          "table": "code_interactions",
+          "column": "section_id",
+          "constraint": "code_interactions_section_id_tutorial_sections_id_fk",
+          "row_count": 0,
+          "classification": "LEGACY",
+          "v2_required": false,
+          "reason": "Legacy tutorial architecture (Phase A.1 classified)",
+          "action": "DROP"
+        },
+        {
+          "table": "content_deployments",
+          "column": "section_id",
+          "constraint": "content_deployments_section_id_tutorial_sections_id_fk",
+          "row_count": 0,
+          "classification": "LEGACY",
+          "v2_required": false,
+          "reason": "Legacy tutorial architecture (Phase A.1 classified)",
+          "action": "DROP"
+        },
+        {
+          "table": "practice_test_answers",
+          "column": "section_id",
+          "constraint": "practice_test_answers_section_id_tutorial_sections_id_fk",
+          "row_count": 0,
+          "classification": "LEGACY",
+          "v2_required": false,
+          "reason": "Legacy tutorial architecture (Phase A.1 classified)",
+          "action": "DROP"
+        },
+        {
+          "table": "quiz_answers",
+          "column": "section_id",
+          "constraint": "quiz_answers_section_id_tutorial_sections_id_fk",
+          "row_count": 0,
+          "classification": "LEGACY",
+          "v2_required": false,
+          "reason": "Legacy tutorial architecture (Phase A.1 classified)",
+          "action": "DROP"
+        },
+        {
+          "table": "section_completions",
+          "column": "section_id",
+          "constraint": "section_completions_section_id_tutorial_sections_id_fk",
+          "row_count": 0,
+          "classification": "LEGACY",
+          "v2_required": false,
+          "reason": "Legacy tutorial architecture (Phase A.1 classified)",
+          "action": "DROP"
+        },
+        {
+          "table": "tutorial_learning_metrics",
+          "column": "section_id",
+          "constraint": "tutorial_learning_metrics_section_id_tutorial_sections_id_fk",
+          "row_count": 0,
+          "classification": "LEGACY",
+          "v2_required": false,
+          "reason": "Legacy tutorial architecture (Phase A.1 classified)",
+          "action": "DROP"
+        },
+        {
+          "table": "tutorial_section_ai_tutor",
+          "column": "section_id",
+          "constraint": "tutorial_section_ai_tutor_section_id_tutorial_sections_id_fk",
+          "row_count": 0,
+          "classification": "LEGACY",
+          "v2_required": false,
+          "reason": "Legacy tutorial architecture (Phase A.1 classified)",
+          "action": "DROP"
+        },
+        {
+          "table": "tutorial_section_assignment",
+          "column": "section_id",
+          "constraint": "tutorial_section_assignment_section_id_tutorial_sections_id_fk",
+          "row_count": 0,
+          "classification": "LEGACY",
+          "v2_required": false,
+          "reason": "Legacy tutorial architecture (Phase A.1 classified)",
+          "action": "DROP"
+        },
+        {
+          "table": "tutorial_section_code",
+          "column": "section_id",
+          "constraint": "tutorial_section_code_section_id_tutorial_sections_id_fk",
+          "row_count": 0,
+          "classification": "LEGACY",
+          "v2_required": false,
+          "reason": "Legacy tutorial architecture (Phase A.1 classified)",
+          "action": "DROP"
+        },
+        {
+          "table": "tutorial_section_interview",
+          "column": "section_id",
+          "constraint": "tutorial_section_interview_section_id_tutorial_sections_id_fk",
+          "row_count": 0,
+          "classification": "LEGACY",
+          "v2_required": false,
+          "reason": "Legacy tutorial architecture (Phase A.1 classified)",
+          "action": "DROP"
+        },
+        {
+          "table": "tutorial_section_notes",
+          "column": "section_id",
+          "constraint": "tutorial_section_notes_section_id_tutorial_sections_id_fk",
+          "row_count": 0,
+          "classification": "LEGACY",
+          "v2_required": false,
+          "reason": "Legacy tutorial architecture (Phase A.1 classified)",
+          "action": "DROP"
+        },
+        {
+          "table": "tutorial_section_overview",
+          "column": "section_id",
+          "constraint": "tutorial_section_overview_section_id_tutorial_sections_id_fk",
+          "row_count": 0,
+          "classification": "LEGACY",
+          "v2_required": false,
+          "reason": "Legacy tutorial architecture (Phase A.1 classified)",
+          "action": "DROP"
+        },
+        {
+          "table": "tutorial_section_practice",
+          "column": "section_id",
+          "constraint": "tutorial_section_practice_section_id_tutorial_sections_id_fk",
+          "row_count": 0,
+          "classification": "LEGACY",
+          "v2_required": false,
+          "reason": "Legacy tutorial architecture (Phase A.1 classified)",
+          "action": "DROP"
+        },
+        {
+          "table": "tutorial_section_project",
+          "column": "section_id",
+          "constraint": "tutorial_section_project_section_id_tutorial_sections_id_fk",
+          "row_count": 0,
+          "classification": "LEGACY",
+          "v2_required": false,
+          "reason": "Legacy tutorial architecture (Phase A.1 classified)",
+          "action": "DROP"
+        },
+        {
+          "table": "tutorial_section_quiz",
+          "column": "section_id",
+          "constraint": "tutorial_section_quiz_section_id_tutorial_sections_id_fk",
+          "row_count": 0,
+          "classification": "LEGACY",
+          "v2_required": false,
+          "reason": "Legacy tutorial architecture (Phase A.1 classified)",
+          "action": "DROP"
+        },
+        {
+          "table": "tutorial_section_real_life",
+          "column": "section_id",
+          "constraint": "tutorial_section_real_life_section_id_tutorial_sections_id_fk",
+          "row_count": 0,
+          "classification": "LEGACY",
+          "v2_required": false,
+          "reason": "Legacy tutorial architecture (Phase A.1 classified)",
+          "action": "DROP"
+        },
+        {
+          "table": "tutorial_section_summary",
+          "column": "section_id",
+          "constraint": "tutorial_section_summary_section_id_tutorial_sections_id_fk",
+          "row_count": 0,
+          "classification": "LEGACY",
+          "v2_required": false,
+          "reason": "Legacy tutorial architecture (Phase A.1 classified)",
+          "action": "DROP"
+        },
+        {
+          "table": "tutorial_section_technical",
+          "column": "section_id",
+          "constraint": "tutorial_section_technical_section_id_tutorial_sections_id_fk",
+          "row_count": 0,
+          "classification": "LEGACY",
+          "v2_required": false,
+          "reason": "Legacy tutorial architecture (Phase A.1 classified)",
+          "action": "DROP"
+        },
+        {
+          "table": "tutorial_section_visual",
+          "column": "section_id",
+          "constraint": "tutorial_section_visual_section_id_tutorial_sections_id_fk",
+          "row_count": 0,
+          "classification": "LEGACY",
+          "v2_required": false,
+          "reason": "Legacy tutorial architecture (Phase A.1 classified)",
+          "action": "DROP"
+        },
+        {
+          "table": "tutorial_subsections",
+          "column": "section_id",
+          "constraint": "tutorial_subsections_section_id_tutorial_sections_id_fk",
+          "row_count": 0,
+          "classification": "LEGACY",
+          "v2_required": false,
+          "reason": "Legacy tutorial architecture (Phase A.1 classified)",
+          "action": "DROP"
+        },
+        {
+          "table": "visual_interactions",
+          "column": "section_id",
+          "constraint": "visual_interactions_section_id_tutorial_sections_id_fk",
+          "row_count": 0,
+          "classification": "LEGACY",
+          "v2_required": false,
+          "reason": "Legacy tutorial architecture (Phase A.1 classified)",
+          "action": "DROP"
+        }
+      ],
+      "classification_summary": {
+        "legacy": 21,
+        "current": 0,
+        "backup": 0,
+        "unknown": 0
+      },
+      "all_classified": true,
+      "safe_for_drop": true
+    },
+    "ai_section_generation_jobs": {
+      "exists": true,
+      "row_count": 0,
+      "section_type_column": {
+        "classification": "LEGACY",
+        "reason": "Empty AI generation table, likely for legacy tutorial_sections",
+        "action": "DROP_TABLE_AND_COLUMN",
+        "enum_decision": "CAN_DROP_AFTER_TABLE_DROP"
+      },
+      "schema": [
+        {
+          "column_name": "id",
+          "data_type": "uuid",
+          "udt_name": "uuid",
+          "is_nullable": "NO",
+          "column_default": "gen_random_uuid()"
+        },
+        {
+          "column_name": "orchestration_id",
+          "data_type": "uuid",
+          "udt_name": "uuid",
+          "is_nullable": "NO",
+          "column_default": null
+        },
+        {
+          "column_name": "section_type",
+          "data_type": "USER-DEFINED",
+          "udt_name": "section_type",
+          "is_nullable": "NO",
+          "column_default": null
+        },
+        {
+          "column_name": "subtopic_id",
+          "data_type": "uuid",
+          "udt_name": "uuid",
+          "is_nullable": "NO",
+          "column_default": null
+        },
+        {
+          "column_name": "difficulty",
+          "data_type": "USER-DEFINED",
+          "udt_name": "tutorial_difficulty",
+          "is_nullable": "NO",
+          "column_default": null
+        },
+        {
+          "column_name": "prompt_template_id",
+          "data_type": "uuid",
+          "udt_name": "uuid",
+          "is_nullable": "NO",
+          "column_default": null
+        },
+        {
+          "column_name": "prompt_version",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "is_nullable": "NO",
+          "column_default": null
+        },
+        {
+          "column_name": "system_prompt",
+          "data_type": "text",
+          "udt_name": "text",
+          "is_nullable": "NO",
+          "column_default": null
+        },
+        {
+          "column_name": "user_prompt",
+          "data_type": "text",
+          "udt_name": "text",
+          "is_nullable": "NO",
+          "column_default": null
+        },
+        {
+          "column_name": "prompt_variables",
+          "data_type": "jsonb",
+          "udt_name": "jsonb",
+          "is_nullable": "NO",
+          "column_default": null
+        },
+        {
+          "column_name": "ai_provider",
+          "data_type": "text",
+          "udt_name": "text",
+          "is_nullable": "NO",
+          "column_default": null
+        },
+        {
+          "column_name": "model_name",
+          "data_type": "text",
+          "udt_name": "text",
+          "is_nullable": "NO",
+          "column_default": null
+        },
+        {
+          "column_name": "temperature",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "is_nullable": "NO",
+          "column_default": "70"
+        },
+        {
+          "column_name": "max_tokens",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "is_nullable": "NO",
+          "column_default": "4000"
+        },
+        {
+          "column_name": "status",
+          "data_type": "USER-DEFINED",
+          "udt_name": "job_status",
+          "is_nullable": "NO",
+          "column_default": "'pending'::job_status"
+        },
+        {
+          "column_name": "raw_output",
+          "data_type": "text",
+          "udt_name": "text",
+          "is_nullable": "YES",
+          "column_default": null
+        },
+        {
+          "column_name": "parsed_output",
+          "data_type": "jsonb",
+          "udt_name": "jsonb",
+          "is_nullable": "YES",
+          "column_default": null
+        },
+        {
+          "column_name": "validation_status",
+          "data_type": "text",
+          "udt_name": "text",
+          "is_nullable": "YES",
+          "column_default": null
+        },
+        {
+          "column_name": "validation_errors",
+          "data_type": "jsonb",
+          "udt_name": "jsonb",
+          "is_nullable": "YES",
+          "column_default": null
+        },
+        {
+          "column_name": "validation_warnings",
+          "data_type": "jsonb",
+          "udt_name": "jsonb",
+          "is_nullable": "YES",
+          "column_default": null
+        },
+        {
+          "column_name": "quality_score",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "is_nullable": "YES",
+          "column_default": null
+        },
+        {
+          "column_name": "hallucination_score",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "is_nullable": "YES",
+          "column_default": null
+        },
+        {
+          "column_name": "hallucination_flags",
+          "data_type": "jsonb",
+          "udt_name": "jsonb",
+          "is_nullable": "YES",
+          "column_default": null
+        },
+        {
+          "column_name": "tokens_used",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "is_nullable": "YES",
+          "column_default": null
+        },
+        {
+          "column_name": "cost_usd",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "is_nullable": "YES",
+          "column_default": null
+        },
+        {
+          "column_name": "generation_time_ms",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "is_nullable": "YES",
+          "column_default": null
+        },
+        {
+          "column_name": "error",
+          "data_type": "text",
+          "udt_name": "text",
+          "is_nullable": "YES",
+          "column_default": null
+        },
+        {
+          "column_name": "retry_count",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "is_nullable": "NO",
+          "column_default": "0"
+        },
+        {
+          "column_name": "started_at",
+          "data_type": "timestamp without time zone",
+          "udt_name": "timestamp",
+          "is_nullable": "YES",
+          "column_default": null
+        },
+        {
+          "column_name": "completed_at",
+          "data_type": "timestamp without time zone",
+          "udt_name": "timestamp",
+          "is_nullable": "YES",
+          "column_default": null
+        },
+        {
+          "column_name": "created_at",
+          "data_type": "timestamp without time zone",
+          "udt_name": "timestamp",
+          "is_nullable": "NO",
+          "column_default": "now()"
+        },
+        {
+          "column_name": "updated_at",
+          "data_type": "timestamp without time zone",
+          "udt_name": "timestamp",
+          "is_nullable": "NO",
+          "column_default": "now()"
+        }
+      ],
+      "sample_data": []
+    },
+    "prompt_templates": {
+      "exists": false,
+      "error": "Failed query: \n      SELECT \n        id,\n        name,\n        section_type,\n        subsection_type,\n        template_type,\n        created_at\n      FROM prompt_templates\n      ORDER BY created_at DESC\n      LIMIT 10\n    \nparams: ",
+      "section_type_column": {
+        "classification": "TABLE_NOT_FOUND"
+      },
+      "subsection_type_column": {
+        "classification": "TABLE_NOT_FOUND"
+      }
+    },
+    "tutorial_video_links": {
+      "exists": true,
+      "row_count": 0,
+      "assignment_difficulty_column": {
+        "classification": "EMPTY_UNKNOWN_DOMAIN",
+        "reason": "Empty table, domain unclear",
+        "action": "INVESTIGATE_SCHEMA",
+        "v2_required": null,
+        "enum_decision": "INVESTIGATE",
+        "references_assignments": false
+      },
+      "foreign_keys": [],
+      "schema": [
+        {
+          "column_name": "id",
+          "data_type": "uuid",
+          "udt_name": "uuid",
+          "is_nullable": "NO",
+          "column_default": "gen_random_uuid()"
+        },
+        {
+          "column_name": "subtopic_id",
+          "data_type": "uuid",
+          "udt_name": "uuid",
+          "is_nullable": "YES",
+          "column_default": null
+        },
+        {
+          "column_name": "project_id",
+          "data_type": "uuid",
+          "udt_name": "uuid",
+          "is_nullable": "YES",
+          "column_default": null
+        },
+        {
+          "column_name": "assignment_difficulty",
+          "data_type": "USER-DEFINED",
+          "udt_name": "tutorial_difficulty",
+          "is_nullable": "YES",
+          "column_default": null
+        },
+        {
+          "column_name": "provider",
+          "data_type": "USER-DEFINED",
+          "udt_name": "tutorial_video_provider",
+          "is_nullable": "NO",
+          "column_default": null
+        },
+        {
+          "column_name": "url",
+          "data_type": "text",
+          "udt_name": "text",
+          "is_nullable": "NO",
+          "column_default": null
+        },
+        {
+          "column_name": "title",
+          "data_type": "text",
+          "udt_name": "text",
+          "is_nullable": "NO",
+          "column_default": null
+        },
+        {
+          "column_name": "thumbnail_url",
+          "data_type": "text",
+          "udt_name": "text",
+          "is_nullable": "YES",
+          "column_default": null
+        },
+        {
+          "column_name": "duration_seconds",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "is_nullable": "YES",
+          "column_default": null
+        },
+        {
+          "column_name": "captions_available",
+          "data_type": "boolean",
+          "udt_name": "bool",
+          "is_nullable": "NO",
+          "column_default": "false"
+        },
+        {
+          "column_name": "approved_by_admin",
+          "data_type": "boolean",
+          "udt_name": "bool",
+          "is_nullable": "NO",
+          "column_default": "false"
+        },
+        {
+          "column_name": "created_at",
+          "data_type": "timestamp without time zone",
+          "udt_name": "timestamp",
+          "is_nullable": "NO",
+          "column_default": "now()"
+        },
+        {
+          "column_name": "updated_at",
+          "data_type": "timestamp without time zone",
+          "udt_name": "timestamp",
+          "is_nullable": "NO",
+          "column_default": "now()"
+        },
+        {
+          "column_name": "deleted_at",
+          "data_type": "timestamp without time zone",
+          "udt_name": "timestamp",
+          "is_nullable": "YES",
+          "column_default": null
+        }
+      ],
+      "sample_data": []
+    }
+  },
+  "executive_summary": {
+    "phase_a2_status": "REQUIRES_MANUAL_REVIEW",
+    "tutorial_sections_references": {
+      "total": 21,
+      "legacy": 21,
+      "current": 0,
+      "backup": 0,
+      "unknown": 0,
+      "all_classified": true,
+      "safe_for_drop": true
+    },
+    "enum_final_decisions": {
+      "tutorial_difficulty": {
+        "decision": "KEEP",
+        "evidence": "Used by assessments (3 columns) and AI generation (3 columns)",
+        "action": "Remove tutorial_sections.difficulty and tutorial_content.difficulty columns only"
+      },
+      "section_type": {
+        "decision": "INVESTIGATE",
+        "evidence": "Requires manual review of ai_section_generation_jobs and prompt_templates",
+        "action": "Investigate ai_section_generation_jobs usage before deciding"
+      },
+      "subsection_type": {
+        "decision": "DROP",
+        "evidence": "Only used by legacy tutorial_subsections",
+        "action": "Drop tutorial_subsections table and enum"
+      }
+    },
+    "tutorial_video_links_assignment_difficulty": {
+      "classification": "EMPTY_UNKNOWN_DOMAIN",
+      "decision": "INVESTIGATE",
+      "evidence": "Empty table, domain unclear",
+      "action": "INVESTIGATE_SCHEMA"
+    },
+    "safe_for_phase_b": false,
+    "blockers": [
+      "section_type enum usage in ai_section_generation_jobs requires manual review",
+      "tutorial_video_links.assignment_difficulty classification requires manual review"
+    ]
+  }
+}

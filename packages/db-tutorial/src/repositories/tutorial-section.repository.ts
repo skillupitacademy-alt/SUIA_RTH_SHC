@@ -1,12 +1,13 @@
 /**
- * Tutorial Section Repository
+ * Tutorial Section Repository - V2 Architecture
  * Data access layer for tutorial_sections table
  * 
- * ARCHITECTURE:
- * - Reads/writes ONLY tutorial_sections table
- * - NO child table dependencies (tutorial_section_*)
+ * V2 ARCHITECTURE:
+ * - Identity: (subtopic_id, brand_id) - ONE tutorial per subtopic per brand
+ * - Content: TutorialDocument JSONB (blocks[])
+ * - NO section_type, NO difficulty columns
+ * - NO child tables
  * - NO legacy transformers
- * - Content stored as TutorialDocument in JSONB
  */
 
 import { and, desc, eq, isNull, sql } from 'drizzle-orm';
@@ -17,41 +18,46 @@ import { TutorialRepositoryBase } from './base.repository';
 import type { TutorialDbClientLike } from '@quiz/types';
 
 /**
- * Section filters for querying
+ * V2 Tutorial filters for querying
  */
-export interface TutorialSectionFilters {
+export interface TutorialFilters {
   subtopicId?: string;
-  sectionType?: string;
-  difficulty?: string;
-  status?: string;
   brandId?: string;
+  status?: string;
 }
 
 /**
- * Section create input
+ * V2 Tutorial create input
  */
-export interface CreateTutorialSectionInput {
+export interface CreateTutorialInput {
   subtopicId: string;
-  sectionType: string;
-  difficulty: string;
-  content: TutorialDocument;
   brandId?: string;
+  content: TutorialDocument;
   orderIndex?: number;
+  promptTemplateId?: string;
+  educationalArchitectureId?: string;
+  uiArchitectureId?: string;
 }
 
 /**
- * Section update input
+ * V2 Tutorial update input
  */
-export interface UpdateTutorialSectionInput {
-  content?: TutorialDocument;
-  difficulty?: string;
-  orderIndex?: number;
-  status?: string;
+export interface UpdateTutorialContentInput {
+  content: TutorialDocument;
 }
 
 /**
- * Tutorial Section Repository
- * Handles CRUD operations for tutorial_sections
+ * V2 Tutorial status update input
+ */
+export interface UpdateTutorialStatusInput {
+  status: 'draft' | 'generating' | 'validating' | 'pending_review' | 'in_review' | 'changes_requested' | 'approved' | 'deploying' | 'deployed' | 'archived';
+  approvedBy?: string;
+  rejectionReason?: string;
+}
+
+/**
+ * Tutorial Section Repository - V2
+ * Handles CRUD operations using V2 identity (subtopic_id, brand_id)
  */
 export class TutorialSectionRepository extends TutorialRepositoryBase {
   /**
@@ -62,33 +68,31 @@ export class TutorialSectionRepository extends TutorialRepositoryBase {
   }
 
   /**
-   * Get section by ID
+   * V2: Get tutorial by ID
    */
-  async getSectionById(sectionId: string): Promise<TutorialSection | undefined> {
+  async getTutorialById(tutorialId: string): Promise<TutorialSection | undefined> {
     const rows = await this.runRead(
       this.dbInstance
         .select()
         .from(tutorialSections)
         .where(
           and(
-            eq(tutorialSections.id, sectionId),
+            eq(tutorialSections.id, tutorialId),
             isNull(tutorialSections.deletedAt)
           )
         )
         .limit(1),
-      'TutorialSectionRepository.getSectionById'
+      'TutorialSectionRepository.getTutorialById'
     );
 
     return rows[0];
   }
 
   /**
-   * Get section by subtopic, type, difficulty, and brand
+   * V2: Get tutorial by V2 identity (subtopic_id, brand_id)
    */
-  async getSectionByKey(
+  async getTutorialBySubtopic(
     subtopicId: string,
-    sectionType: string,
-    difficulty: string,
     brandId: string = 'shared'
   ): Promise<TutorialSection | undefined> {
     const rows = await this.runRead(
@@ -98,47 +102,82 @@ export class TutorialSectionRepository extends TutorialRepositoryBase {
         .where(
           and(
             eq(tutorialSections.subtopicId, subtopicId),
-            eq(tutorialSections.sectionType, sectionType as any),
-            eq(tutorialSections.difficulty, difficulty as any),
             eq(tutorialSections.brandId, brandId as any),
             isNull(tutorialSections.deletedAt)
           )
         )
         .limit(1),
-      'TutorialSectionRepository.getSectionByKey'
+      'TutorialSectionRepository.getTutorialBySubtopic'
     );
 
     return rows[0];
   }
 
   /**
-   * Query sections with filters
+   * V2: Get all tutorials for a subtopic (across brands)
    */
-  async querySections(
-    filters: TutorialSectionFilters,
+  async getTutorialsBySubtopic(subtopicId: string): Promise<TutorialSection[]> {
+    return await this.runRead(
+      this.dbInstance
+        .select()
+        .from(tutorialSections)
+        .where(
+          and(
+            eq(tutorialSections.subtopicId, subtopicId),
+            isNull(tutorialSections.deletedAt)
+          )
+        )
+        .orderBy(tutorialSections.brandId),
+      'TutorialSectionRepository.getTutorialsBySubtopic'
+    );
+  }
+
+  /**
+   * V2: Get tutorials by brand with optional status filter
+   */
+  async getTutorialsByBrand(
+    brandId: string,
+    status?: string
+  ): Promise<TutorialSection[]> {
+    const conditions = [
+      eq(tutorialSections.brandId, brandId as any),
+      isNull(tutorialSections.deletedAt)
+    ];
+
+    if (status) {
+      conditions.push(eq(tutorialSections.status, status as any));
+    }
+
+    return await this.runRead(
+      this.dbInstance
+        .select()
+        .from(tutorialSections)
+        .where(and(...conditions))
+        .orderBy(desc(tutorialSections.updatedAt)),
+      'TutorialSectionRepository.getTutorialsByBrand'
+    );
+  }
+
+  /**
+   * V2: Query tutorials with filters
+   */
+  async queryTutorials(
+    filters: TutorialFilters,
     limit: number = 20,
     cursor?: string
-  ): Promise<{ sections: TutorialSection[]; hasMore: boolean; nextCursor: string | null }> {
+  ): Promise<{ tutorials: TutorialSection[]; hasMore: boolean; nextCursor: string | null }> {
     const conditions = [isNull(tutorialSections.deletedAt)];
 
     if (filters.subtopicId) {
       conditions.push(eq(tutorialSections.subtopicId, filters.subtopicId));
     }
-    if (filters.sectionType) {
-      conditions.push(eq(tutorialSections.sectionType, filters.sectionType as any));
-    }
-    if (filters.difficulty) {
-      conditions.push(eq(tutorialSections.difficulty, filters.difficulty as any));
+    if (filters.brandId) {
+      conditions.push(eq(tutorialSections.brandId, filters.brandId as any));
     }
     if (filters.status) {
       conditions.push(eq(tutorialSections.status, filters.status as any));
     }
-    if (filters.brandId) {
-      conditions.push(eq(tutorialSections.brandId, filters.brandId as any));
-    }
     if (cursor) {
-      // Cursor-based pagination (assumes cursor is section ID)
-      // In a real implementation, this would use a more sophisticated cursor
       conditions.push(sql`${tutorialSections.createdAt} < (SELECT created_at FROM ${tutorialSections} WHERE id = ${cursor})`);
     }
 
@@ -149,35 +188,63 @@ export class TutorialSectionRepository extends TutorialRepositoryBase {
         .where(and(...conditions))
         .orderBy(desc(tutorialSections.createdAt))
         .limit(limit + 1),
-      'TutorialSectionRepository.querySections'
+      'TutorialSectionRepository.queryTutorials'
     );
 
     const hasMore = rows.length > limit;
-    const sections = hasMore ? rows.slice(0, limit) : rows;
-    const nextCursor = hasMore ? sections[sections.length - 1]?.id : null;
+    const tutorials = hasMore ? rows.slice(0, limit) : rows;
+    const nextCursor = hasMore ? tutorials[tutorials.length - 1]?.id : null;
 
-    return { sections, hasMore, nextCursor: nextCursor || null };
+    return { tutorials, hasMore, nextCursor: nextCursor || null };
   }
 
   /**
-   * Create new section
-   * CRITICAL: Only writes to tutorial_sections, NOT child tables
+   * V2: Count tutorials by filters
    */
-  async createSection(input: CreateTutorialSectionInput): Promise<TutorialSection> {
+  async countTutorials(filters: TutorialFilters): Promise<number> {
+    const conditions = [isNull(tutorialSections.deletedAt)];
+
+    if (filters.subtopicId) {
+      conditions.push(eq(tutorialSections.subtopicId, filters.subtopicId));
+    }
+    if (filters.brandId) {
+      conditions.push(eq(tutorialSections.brandId, filters.brandId as any));
+    }
+    if (filters.status) {
+      conditions.push(eq(tutorialSections.status, filters.status as any));
+    }
+
+    const result = await this.runRead(
+      this.dbInstance
+        .select({ count: sql<number>`cast(count(*) as integer)` })
+        .from(tutorialSections)
+        .where(and(...conditions)),
+      'TutorialSectionRepository.countTutorials'
+    );
+
+    return result[0]?.count ?? 0;
+  }
+
+  /**
+   * V2: Create new tutorial
+   * Identity: (subtopicId, brandId) - enforced by database UNIQUE constraint
+   */
+  async createTutorial(input: CreateTutorialInput): Promise<TutorialSection> {
     const now = new Date();
 
     const values: NewTutorialSection = {
       subtopicId: input.subtopicId,
-      sectionType: input.sectionType as any,
-      difficulty: input.difficulty as any,
-      content: input.content as any, // TutorialDocument stored as JSONB
       brandId: (input.brandId || 'shared') as any,
+      content: input.content as any, // TutorialDocument stored as JSONB
       orderIndex: input.orderIndex ?? 0,
       status: 'draft',
       version: 1,
       language: 'en',
       generatedByAi: false,
       regenerationCount: 0,
+      promptTemplateId: input.promptTemplateId,
+      educationalArchitectureId: input.educationalArchitectureId,
+      uiArchitectureId: input.uiArchitectureId,
       createdAt: now,
       updatedAt: now,
     };
@@ -187,151 +254,124 @@ export class TutorialSectionRepository extends TutorialRepositoryBase {
         .insert(tutorialSections)
         .values(values)
         .returning(),
-      'TutorialSectionRepository.createSection'
+      'TutorialSectionRepository.createTutorial'
     );
 
     return row;
   }
 
   /**
-   * Update section
-   * CRITICAL: Only updates tutorial_sections, NOT child tables
+   * V2: Update tutorial content (increments version)
    */
-  async updateSection(
-    sectionId: string,
-    input: UpdateTutorialSectionInput
+  async updateTutorialContent(
+    tutorialId: string,
+    input: UpdateTutorialContentInput
   ): Promise<TutorialSection | undefined> {
     const updateData: any = {
+      content: input.content,
       updatedAt: new Date(),
+      // Increment version when content changes
+      version: sql`${tutorialSections.version} + 1`,
     };
 
-    if (input.content !== undefined) {
-      updateData.content = input.content;
-      // Increment version when content changes
-      updateData.version = sql`${tutorialSections.version} + 1`;
-    }
-
-    if (input.difficulty !== undefined) {
-      updateData.difficulty = input.difficulty;
-    }
-
-    if (input.orderIndex !== undefined) {
-      updateData.orderIndex = input.orderIndex;
-    }
-
-    if (input.status !== undefined) {
-      updateData.status = input.status;
-      
-      // Set publishedAt when deploying
-      if (input.status === 'deployed' && !updateData.publishedAt) {
-        updateData.publishedAt = new Date();
-      }
-    }
-
-    const rows = await this.runRead(
+    const [row] = await this.runRead(
       this.dbInstance
         .update(tutorialSections)
         .set(updateData)
         .where(
           and(
-            eq(tutorialSections.id, sectionId),
+            eq(tutorialSections.id, tutorialId),
             isNull(tutorialSections.deletedAt)
           )
         )
         .returning(),
-      'TutorialSectionRepository.updateSection'
+      'TutorialSectionRepository.updateTutorialContent'
     );
 
-    return rows[0];
+    return row;
   }
 
   /**
-   * Update section with optimistic concurrency control
-   * 
-   * This method provides atomic version checking at the database level.
-   * If the current version does not match expectedVersion, the update fails
-   * and returns null, preventing concurrent modification conflicts.
-   * 
-   * CRITICAL: Version check is performed in the WHERE clause (database-level),
-   * NOT in application code, ensuring true atomicity.
-   * 
-   * @param sectionId - Section UUID to update
-   * @param expectedVersion - Expected current version (for optimistic concurrency)
-   * @param input - Update data
-   * @returns Updated section if version matches, null if version conflict
-   * 
-   * @example
-   * ```ts
-   * const section = await repo.updateSectionWithVersion(
-   *   sectionId,
-   *   5,  // Expected version
-   *   { content: newDocument }
-   * );
-   * 
-   * if (!section) {
-   *   // Version conflict - document was modified by another request
-   *   throw new VersionConflictError();
-   * }
-   * ```
+   * V2: Update tutorial content with optimistic concurrency control
    */
-  async updateSectionWithVersion(
-    sectionId: string,
+  async updateTutorialContentWithVersion(
+    tutorialId: string,
     expectedVersion: number,
-    input: UpdateTutorialSectionInput
+    input: UpdateTutorialContentInput
   ): Promise<TutorialSection | null> {
     const updateData: any = {
+      content: input.content,
       updatedAt: new Date(),
+      version: sql`${tutorialSections.version} + 1`,
     };
 
-    if (input.content !== undefined) {
-      updateData.content = input.content;
-      // Increment version when content changes
-      updateData.version = sql`${tutorialSections.version} + 1`;
-    }
-
-    if (input.difficulty !== undefined) {
-      updateData.difficulty = input.difficulty;
-    }
-
-    if (input.orderIndex !== undefined) {
-      updateData.orderIndex = input.orderIndex;
-    }
-
-    if (input.status !== undefined) {
-      updateData.status = input.status;
-      
-      // Set publishedAt when deploying
-      if (input.status === 'deployed' && !updateData.publishedAt) {
-        updateData.publishedAt = new Date();
-      }
-    }
-
-    const rows = await this.runRead(
+    const [row] = await this.runRead(
       this.dbInstance
         .update(tutorialSections)
         .set(updateData)
         .where(
           and(
-            eq(tutorialSections.id, sectionId),
-            eq(tutorialSections.version, expectedVersion), // ← Optimistic concurrency check
+            eq(tutorialSections.id, tutorialId),
+            eq(tutorialSections.version, expectedVersion),
             isNull(tutorialSections.deletedAt)
           )
         )
         .returning(),
-      'TutorialSectionRepository.updateSectionWithVersion'
+      'TutorialSectionRepository.updateTutorialContentWithVersion'
     );
 
-    // Return null if no rows affected (version conflict)
-    return rows[0] ?? null;
+    return row ?? null;
   }
 
   /**
-   * Publish section (change status to deployed)
+   * V2: Update tutorial status
    */
-  async publishSection(sectionId: string): Promise<TutorialSection | undefined> {
+  async updateTutorialStatus(
+    tutorialId: string,
+    input: UpdateTutorialStatusInput
+  ): Promise<TutorialSection | undefined> {
+    const updateData: any = {
+      status: input.status,
+      updatedAt: new Date(),
+    };
+
+    if (input.approvedBy) {
+      updateData.approvedBy = input.approvedBy;
+      updateData.approvedAt = new Date();
+    }
+
+    if (input.rejectionReason) {
+      updateData.rejectionReason = input.rejectionReason;
+    }
+
+    if (input.status === 'deployed' && !updateData.publishedAt) {
+      updateData.publishedAt = new Date();
+    }
+
+    const [row] = await this.runRead(
+      this.dbInstance
+        .update(tutorialSections)
+        .set(updateData)
+        .where(
+          and(
+            eq(tutorialSections.id, tutorialId),
+            isNull(tutorialSections.deletedAt)
+          )
+        )
+        .returning(),
+      'TutorialSectionRepository.updateTutorialStatus'
+    );
+
+    return row;
+  }
+
+  /**
+   * V2: Publish tutorial (deploy status)
+   */
+  async publishTutorial(tutorialId: string): Promise<TutorialSection | undefined> {
     const now = new Date();
 
-    const rows = await this.runRead(
+    const [row] = await this.runRead(
       this.dbInstance
         .update(tutorialSections)
         .set({
@@ -341,24 +381,24 @@ export class TutorialSectionRepository extends TutorialRepositoryBase {
         })
         .where(
           and(
-            eq(tutorialSections.id, sectionId),
+            eq(tutorialSections.id, tutorialId),
             isNull(tutorialSections.deletedAt)
           )
         )
         .returning(),
-      'TutorialSectionRepository.publishSection'
+      'TutorialSectionRepository.publishTutorial'
     );
 
-    return rows[0];
+    return row;
   }
 
   /**
-   * Archive section (soft delete)
+   * V2: Archive tutorial (soft delete)
    */
-  async archiveSection(sectionId: string): Promise<TutorialSection | undefined> {
+  async archiveTutorial(tutorialId: string): Promise<TutorialSection | undefined> {
     const now = new Date();
 
-    const rows = await this.runRead(
+    const [row] = await this.runRead(
       this.dbInstance
         .update(tutorialSections)
         .set({
@@ -368,48 +408,39 @@ export class TutorialSectionRepository extends TutorialRepositoryBase {
         })
         .where(
           and(
-            eq(tutorialSections.id, sectionId),
+            eq(tutorialSections.id, tutorialId),
             isNull(tutorialSections.deletedAt)
           )
         )
         .returning(),
-      'TutorialSectionRepository.archiveSection'
+      'TutorialSectionRepository.archiveTutorial'
     );
 
-    return rows[0];
+    return row;
   }
 
   /**
-   * Count sections by filters
+   * V2: Delete tutorial (soft delete)
    */
-  async countSections(filters: TutorialSectionFilters): Promise<number> {
-    const conditions = [isNull(tutorialSections.deletedAt)];
-
-    if (filters.subtopicId) {
-      conditions.push(eq(tutorialSections.subtopicId, filters.subtopicId));
-    }
-    if (filters.sectionType) {
-      conditions.push(eq(tutorialSections.sectionType, filters.sectionType as any));
-    }
-    if (filters.difficulty) {
-      conditions.push(eq(tutorialSections.difficulty, filters.difficulty as any));
-    }
-    if (filters.status) {
-      conditions.push(eq(tutorialSections.status, filters.status as any));
-    }
-    if (filters.brandId) {
-      conditions.push(eq(tutorialSections.brandId, filters.brandId as any));
-    }
-
+  async deleteTutorial(tutorialId: string): Promise<boolean> {
     const result = await this.runRead(
       this.dbInstance
-        .select({ count: sql<number>`cast(count(*) as integer)` })
-        .from(tutorialSections)
-        .where(and(...conditions)),
-      'TutorialSectionRepository.countSections'
+        .update(tutorialSections)
+        .set({
+          deletedAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(tutorialSections.id, tutorialId),
+            isNull(tutorialSections.deletedAt)
+          )
+        )
+        .returning({ id: tutorialSections.id }),
+      'TutorialSectionRepository.deleteTutorial'
     );
 
-    return result[0]?.count ?? 0;
+    return result.length > 0;
   }
 }
 

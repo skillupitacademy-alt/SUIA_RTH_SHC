@@ -1,0 +1,616 @@
+{
+  "timestamp": "2026-08-21T10:31:40.116Z",
+  "phase": "A - Discovery",
+  "findings": {
+    "tutorial_sections": {
+      "total_rows": 0,
+      "has_section_type": 0,
+      "has_difficulty": 0,
+      "unique_section_types": 0,
+      "unique_difficulties": 0,
+      "verdict": "SAFE_TO_MODIFY"
+    },
+    "legacy_child_tables": {
+      "tutorial_section_notes": {
+        "row_count": 0,
+        "verdict": "EMPTY_SAFE_TO_DROP"
+      },
+      "tutorial_section_layman": {
+        "row_count": null,
+        "error": "Failed query: SELECT COUNT(*) as count FROM tutorial_section_layman\nparams: ",
+        "verdict": "TABLE_NOT_FOUND"
+      },
+      "tutorial_section_technical": {
+        "row_count": 0,
+        "verdict": "EMPTY_SAFE_TO_DROP"
+      },
+      "tutorial_section_code": {
+        "row_count": 0,
+        "verdict": "EMPTY_SAFE_TO_DROP"
+      },
+      "tutorial_section_practice": {
+        "row_count": 0,
+        "verdict": "EMPTY_SAFE_TO_DROP"
+      },
+      "tutorial_section_visual": {
+        "row_count": 0,
+        "verdict": "EMPTY_SAFE_TO_DROP"
+      },
+      "tutorial_section_overview": {
+        "row_count": 0,
+        "verdict": "EMPTY_SAFE_TO_DROP"
+      },
+      "tutorial_section_real_life": {
+        "row_count": 0,
+        "verdict": "EMPTY_SAFE_TO_DROP"
+      },
+      "tutorial_section_summary": {
+        "row_count": 0,
+        "verdict": "EMPTY_SAFE_TO_DROP"
+      },
+      "tutorial_section_assignment": {
+        "row_count": 0,
+        "verdict": "EMPTY_SAFE_TO_DROP"
+      },
+      "tutorial_section_project": {
+        "row_count": 0,
+        "verdict": "EMPTY_SAFE_TO_DROP"
+      },
+      "tutorial_section_quiz": {
+        "row_count": 0,
+        "verdict": "EMPTY_SAFE_TO_DROP"
+      },
+      "tutorial_section_interview": {
+        "row_count": 0,
+        "verdict": "EMPTY_SAFE_TO_DROP"
+      },
+      "tutorial_section_ai_tutor": {
+        "row_count": 0,
+        "verdict": "EMPTY_SAFE_TO_DROP"
+      }
+    },
+    "backup_tables": {
+      "tutorial_section_layman_backup_20260815": {
+        "row_count": 0,
+        "size": "8192 bytes",
+        "verdict": "EMPTY_SAFE_TO_DROP"
+      },
+      "tutorial_sections_layman_backup_20260815": {
+        "row_count": 0,
+        "size": "8192 bytes",
+        "verdict": "EMPTY_SAFE_TO_DROP"
+      }
+    },
+    "tutorial_difficulty_enum": {
+      "database_columns": [
+        {
+          "table": "ai_generation_orchestration",
+          "column": "difficulty",
+          "nullable": false
+        },
+        {
+          "table": "ai_section_generation_jobs",
+          "column": "difficulty",
+          "nullable": false
+        },
+        {
+          "table": "assignment_progress",
+          "column": "difficulty",
+          "nullable": false
+        },
+        {
+          "table": "content_generation_jobs",
+          "column": "difficulty",
+          "nullable": false
+        },
+        {
+          "table": "tutorial_assignments",
+          "column": "difficulty",
+          "nullable": false
+        },
+        {
+          "table": "tutorial_content",
+          "column": "difficulty",
+          "nullable": false
+        },
+        {
+          "table": "tutorial_project_submissions",
+          "column": "difficulty",
+          "nullable": false
+        },
+        {
+          "table": "tutorial_sections",
+          "column": "difficulty",
+          "nullable": false
+        },
+        {
+          "table": "tutorial_sections_layman_backup_20260815",
+          "column": "difficulty",
+          "nullable": true
+        },
+        {
+          "table": "tutorial_video_links",
+          "column": "assignment_difficulty",
+          "nullable": true
+        }
+      ],
+      "usage_count": 10,
+      "classification": {
+        "tutorial": [
+          {
+            "location": "tutorial_content.difficulty",
+            "action": "REMOVE",
+            "reason": "Legacy tutorial section difficulty"
+          },
+          {
+            "location": "tutorial_sections.difficulty",
+            "action": "REMOVE",
+            "reason": "Legacy tutorial section difficulty"
+          }
+        ],
+        "assessment": [
+          {
+            "location": "assignment_progress.difficulty",
+            "action": "KEEP",
+            "reason": "Assessment domain"
+          },
+          {
+            "location": "tutorial_assignments.difficulty",
+            "action": "KEEP",
+            "reason": "Assessment domain"
+          },
+          {
+            "location": "tutorial_project_submissions.difficulty",
+            "action": "KEEP",
+            "reason": "Assessment domain"
+          }
+        ],
+        "ai_generation": [
+          {
+            "location": "ai_generation_orchestration.difficulty",
+            "action": "AUDIT",
+            "reason": "AI generation - needs investigation"
+          },
+          {
+            "location": "ai_section_generation_jobs.difficulty",
+            "action": "AUDIT",
+            "reason": "AI generation - needs investigation"
+          },
+          {
+            "location": "content_generation_jobs.difficulty",
+            "action": "AUDIT",
+            "reason": "AI generation - needs investigation"
+          }
+        ],
+        "other": [
+          {
+            "location": "tutorial_sections_layman_backup_20260815.difficulty",
+            "action": "INVESTIGATE",
+            "reason": "Unknown domain"
+          },
+          {
+            "location": "tutorial_video_links.assignment_difficulty",
+            "action": "INVESTIGATE",
+            "reason": "Unknown domain"
+          }
+        ]
+      },
+      "can_drop": false,
+      "recommendation": "KEEP_ENUM_REMOVE_TUTORIAL_COLUMNS_ONLY"
+    },
+    "section_type_enum": {
+      "database_columns": [
+        {
+          "table": "ai_section_generation_jobs",
+          "column": "section_type",
+          "nullable": false
+        },
+        {
+          "table": "prompt_templates",
+          "column": "section_type",
+          "nullable": false
+        },
+        {
+          "table": "tutorial_sections",
+          "column": "section_type",
+          "nullable": false
+        },
+        {
+          "table": "tutorial_sections_layman_backup_20260815",
+          "column": "section_type",
+          "nullable": true
+        }
+      ],
+      "usage_count": 4,
+      "can_drop": false,
+      "recommendation": "INVESTIGATE_NON_TUTORIAL_USAGE"
+    },
+    "subsection_type_enum": {
+      "database_columns": [
+        {
+          "table": "tutorial_subsections",
+          "column": "subsection_type"
+        },
+        {
+          "table": "prompt_templates",
+          "column": "subsection_type"
+        }
+      ],
+      "usage_count": 2,
+      "recommendation": "AUDIT_USAGE_BEFORE_DROP"
+    },
+    "foreign_keys": {
+      "total_count": 34,
+      "dependencies": [
+        {
+          "table": "ai_generation_orchestration",
+          "column": "subtopic_id",
+          "references_table": "tutorial_subtopics",
+          "references_column": "id",
+          "constraint_name": "ai_generation_orchestration_subtopic_id_tutorial_subtopics_id_f"
+        },
+        {
+          "table": "assignment_help_requests",
+          "column": "assignment_id",
+          "references_table": "tutorial_assignments",
+          "references_column": "id",
+          "constraint_name": "assignment_help_requests_assignment_id_tutorial_assignments_id_"
+        },
+        {
+          "table": "code_interactions",
+          "column": "section_id",
+          "references_table": "tutorial_sections",
+          "references_column": "id",
+          "constraint_name": "code_interactions_section_id_tutorial_sections_id_fk"
+        },
+        {
+          "table": "content_deployments",
+          "column": "section_id",
+          "references_table": "tutorial_sections",
+          "references_column": "id",
+          "constraint_name": "content_deployments_section_id_tutorial_sections_id_fk"
+        },
+        {
+          "table": "practice_test_answers",
+          "column": "section_id",
+          "references_table": "tutorial_sections",
+          "references_column": "id",
+          "constraint_name": "practice_test_answers_section_id_tutorial_sections_id_fk"
+        },
+        {
+          "table": "quiz_answers",
+          "column": "section_id",
+          "references_table": "tutorial_sections",
+          "references_column": "id",
+          "constraint_name": "quiz_answers_section_id_tutorial_sections_id_fk"
+        },
+        {
+          "table": "section_completions",
+          "column": "section_id",
+          "references_table": "tutorial_sections",
+          "references_column": "id",
+          "constraint_name": "section_completions_section_id_tutorial_sections_id_fk"
+        },
+        {
+          "table": "student_badges",
+          "column": "project_submission_id",
+          "references_table": "tutorial_project_submissions",
+          "references_column": "id",
+          "constraint_name": "student_badges_project_submission_id_tutorial_project_submissio"
+        },
+        {
+          "table": "subsection_engagement_metrics",
+          "column": "subsection_id",
+          "references_table": "tutorial_subsections",
+          "references_column": "id",
+          "constraint_name": "subsection_engagement_metrics_subsection_id_tutorial_subsection"
+        },
+        {
+          "table": "tutorial_learning_metrics",
+          "column": "section_id",
+          "references_table": "tutorial_sections",
+          "references_column": "id",
+          "constraint_name": "tutorial_learning_metrics_section_id_tutorial_sections_id_fk"
+        },
+        {
+          "table": "tutorial_project_submissions",
+          "column": "project_id",
+          "references_table": "tutorial_projects",
+          "references_column": "id",
+          "constraint_name": "tutorial_project_submissions_project_id_tutorial_projects_id_fk"
+        },
+        {
+          "table": "tutorial_section_ai_tutor",
+          "column": "section_id",
+          "references_table": "tutorial_sections",
+          "references_column": "id",
+          "constraint_name": "tutorial_section_ai_tutor_section_id_tutorial_sections_id_fk"
+        },
+        {
+          "table": "tutorial_section_assignment",
+          "column": "section_id",
+          "references_table": "tutorial_sections",
+          "references_column": "id",
+          "constraint_name": "tutorial_section_assignment_section_id_tutorial_sections_id_fk"
+        },
+        {
+          "table": "tutorial_section_code",
+          "column": "section_id",
+          "references_table": "tutorial_sections",
+          "references_column": "id",
+          "constraint_name": "tutorial_section_code_section_id_tutorial_sections_id_fk"
+        },
+        {
+          "table": "tutorial_section_interview",
+          "column": "section_id",
+          "references_table": "tutorial_sections",
+          "references_column": "id",
+          "constraint_name": "tutorial_section_interview_section_id_tutorial_sections_id_fk"
+        },
+        {
+          "table": "tutorial_section_notes",
+          "column": "section_id",
+          "references_table": "tutorial_sections",
+          "references_column": "id",
+          "constraint_name": "tutorial_section_notes_section_id_tutorial_sections_id_fk"
+        },
+        {
+          "table": "tutorial_section_overview",
+          "column": "section_id",
+          "references_table": "tutorial_sections",
+          "references_column": "id",
+          "constraint_name": "tutorial_section_overview_section_id_tutorial_sections_id_fk"
+        },
+        {
+          "table": "tutorial_section_practice",
+          "column": "section_id",
+          "references_table": "tutorial_sections",
+          "references_column": "id",
+          "constraint_name": "tutorial_section_practice_section_id_tutorial_sections_id_fk"
+        },
+        {
+          "table": "tutorial_section_project",
+          "column": "section_id",
+          "references_table": "tutorial_sections",
+          "references_column": "id",
+          "constraint_name": "tutorial_section_project_section_id_tutorial_sections_id_fk"
+        },
+        {
+          "table": "tutorial_section_quiz",
+          "column": "section_id",
+          "references_table": "tutorial_sections",
+          "references_column": "id",
+          "constraint_name": "tutorial_section_quiz_section_id_tutorial_sections_id_fk"
+        },
+        {
+          "table": "tutorial_section_real_life",
+          "column": "section_id",
+          "references_table": "tutorial_sections",
+          "references_column": "id",
+          "constraint_name": "tutorial_section_real_life_section_id_tutorial_sections_id_fk"
+        },
+        {
+          "table": "tutorial_section_summary",
+          "column": "section_id",
+          "references_table": "tutorial_sections",
+          "references_column": "id",
+          "constraint_name": "tutorial_section_summary_section_id_tutorial_sections_id_fk"
+        },
+        {
+          "table": "tutorial_section_technical",
+          "column": "section_id",
+          "references_table": "tutorial_sections",
+          "references_column": "id",
+          "constraint_name": "tutorial_section_technical_section_id_tutorial_sections_id_fk"
+        },
+        {
+          "table": "tutorial_section_visual",
+          "column": "section_id",
+          "references_table": "tutorial_sections",
+          "references_column": "id",
+          "constraint_name": "tutorial_section_visual_section_id_tutorial_sections_id_fk"
+        },
+        {
+          "table": "tutorial_sections",
+          "column": "educational_architecture_id",
+          "references_table": "educational_architectures",
+          "references_column": "id",
+          "constraint_name": "tutorial_sections_educational_architecture_id_educational_archi"
+        },
+        {
+          "table": "tutorial_sections",
+          "column": "prompt_template_id",
+          "references_table": "prompt_templates",
+          "references_column": "id",
+          "constraint_name": "tutorial_sections_prompt_template_id_prompt_templates_id_fk"
+        },
+        {
+          "table": "tutorial_sections",
+          "column": "subtopic_id",
+          "references_table": "tutorial_subtopics",
+          "references_column": "id",
+          "constraint_name": "tutorial_sections_subtopic_id_tutorial_subtopics_id_fk"
+        },
+        {
+          "table": "tutorial_sections",
+          "column": "ui_architecture_id",
+          "references_table": "ui_architectures",
+          "references_column": "id",
+          "constraint_name": "tutorial_sections_ui_architecture_id_ui_architectures_id_fk"
+        },
+        {
+          "table": "tutorial_subjects",
+          "column": "domain_id",
+          "references_table": "tutorial_domains",
+          "references_column": "id",
+          "constraint_name": "tutorial_subjects_domain_id_tutorial_domains_id_fk"
+        },
+        {
+          "table": "tutorial_subsections",
+          "column": "prompt_template_id",
+          "references_table": "prompt_templates",
+          "references_column": "id",
+          "constraint_name": "tutorial_subsections_prompt_template_id_prompt_templates_id_fk"
+        },
+        {
+          "table": "tutorial_subsections",
+          "column": "section_id",
+          "references_table": "tutorial_sections",
+          "references_column": "id",
+          "constraint_name": "tutorial_subsections_section_id_tutorial_sections_id_fk"
+        },
+        {
+          "table": "tutorial_subtopics",
+          "column": "topic_id",
+          "references_table": "tutorial_topics",
+          "references_column": "id",
+          "constraint_name": "tutorial_subtopics_topic_id_tutorial_topics_id_fk"
+        },
+        {
+          "table": "tutorial_topics",
+          "column": "subject_id",
+          "references_table": "tutorial_subjects",
+          "references_column": "id",
+          "constraint_name": "tutorial_topics_subject_id_tutorial_subjects_id_fk"
+        },
+        {
+          "table": "visual_interactions",
+          "column": "section_id",
+          "references_table": "tutorial_sections",
+          "references_column": "id",
+          "constraint_name": "visual_interactions_section_id_tutorial_sections_id_fk"
+        }
+      ],
+      "tutorial_sections_references": 21
+    },
+    "database_objects": {
+      "views": [],
+      "functions": [],
+      "triggers": [],
+      "verdict": "NO_LEGACY_OBJECTS"
+    },
+    "typescript_imports": {
+      "SectionType": [
+        "\"\""
+      ],
+      "TutorialDifficulty": [
+        "\"\""
+      ],
+      "SECTION_BLOCK_PALETTES": [
+        "\"\""
+      ],
+      "getSectionByKey": [
+        "\"\""
+      ]
+    },
+    "api_routes": {
+      "using_section_type": [
+        "\"\""
+      ],
+      "using_difficulty": [
+        "\"\""
+      ]
+    },
+    "infrastructure": {
+      "delivery": [
+        "\"\""
+      ],
+      "cache": [
+        "\"\""
+      ],
+      "vector": [
+        "\"\""
+      ]
+    },
+    "tests": {
+      "using_section_type": [
+        "\"\""
+      ],
+      "using_difficulty": [
+        "\"\""
+      ],
+      "requires_fixture_update": true
+    }
+  },
+  "dependency_matrix": [
+    {
+      "component": "tutorial_sections.section_type",
+      "legacy": true,
+      "v2_required": false,
+      "action": "REMOVE",
+      "protected_data": "NO",
+      "confidence": "HIGH"
+    },
+    {
+      "component": "tutorial_sections.difficulty",
+      "legacy": true,
+      "v2_required": false,
+      "action": "REMOVE",
+      "protected_data": "NO",
+      "confidence": "HIGH"
+    },
+    {
+      "component": "section_type enum",
+      "legacy": true,
+      "v2_required": false,
+      "action": "INVESTIGATE",
+      "protected_data": "N/A",
+      "confidence": "MEDIUM"
+    },
+    {
+      "component": "tutorial_difficulty enum",
+      "legacy": "PARTIAL",
+      "v2_required": false,
+      "action": "KEEP_ENUM_REMOVE_TUTORIAL_COLUMNS_ONLY",
+      "protected_data": "Used by assessments",
+      "confidence": "HIGH"
+    },
+    {
+      "component": "SECTION_BLOCK_PALETTES",
+      "legacy": true,
+      "v2_required": false,
+      "action": "REMOVE",
+      "protected_data": "N/A",
+      "confidence": "HIGH"
+    },
+    {
+      "component": "Definition D1/D2 schemas",
+      "legacy": false,
+      "v2_required": true,
+      "action": "KEEP",
+      "protected_data": "Active V2 contracts",
+      "confidence": "HIGH"
+    },
+    {
+      "component": "Code C1/C2 schemas",
+      "legacy": false,
+      "v2_required": true,
+      "action": "KEEP",
+      "protected_data": "Active V2 contracts",
+      "confidence": "HIGH"
+    }
+  ],
+  "executive_summary": {
+    "status": "SAFE_TO_PROCEED",
+    "key_findings": {
+      "tutorial_sections_empty": true,
+      "child_tables_empty": true,
+      "backup_tables_empty": true,
+      "difficulty_used_by_assessments": true,
+      "section_type_tutorial_only": false,
+      "no_database_objects": true
+    },
+    "recommendations": {
+      "can_proceed_to_phase_b": true,
+      "enum_actions": {
+        "section_type": "INVESTIGATE_NON_TUTORIAL_USAGE",
+        "tutorial_difficulty": "KEEP_ENUM_REMOVE_TUTORIAL_COLUMNS_ONLY",
+        "subsection_type": "AUDIT_USAGE_BEFORE_DROP"
+      }
+    },
+    "surprises": [],
+    "warnings": [
+      "tutorial_difficulty enum is used by assessments - KEEP ENUM, REMOVE TUTORIAL COLUMNS ONLY"
+    ]
+  }
+}

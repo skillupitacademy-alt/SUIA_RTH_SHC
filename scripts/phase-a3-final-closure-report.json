@@ -1,0 +1,556 @@
+{
+  "timestamp": "2026-08-21T10:51:58.560Z",
+  "phase": "A.3 - Final Shared Consumer & Orphan Dependency Closure",
+  "findings": {
+    "prompt_templates": {
+      "exists": true,
+      "row_count": 0,
+      "classification": "CURRENT_V2",
+      "reason": "Has V2 indicators (brand_id, active usage, application references)",
+      "v2_required": true,
+      "schema": [
+        {
+          "column_name": "id",
+          "data_type": "uuid",
+          "udt_name": "uuid",
+          "is_nullable": "NO",
+          "column_default": "gen_random_uuid()"
+        },
+        {
+          "column_name": "section_type",
+          "data_type": "USER-DEFINED",
+          "udt_name": "section_type",
+          "is_nullable": "NO",
+          "column_default": null
+        },
+        {
+          "column_name": "subsection_type",
+          "data_type": "USER-DEFINED",
+          "udt_name": "subsection_type",
+          "is_nullable": "YES",
+          "column_default": null
+        },
+        {
+          "column_name": "name",
+          "data_type": "text",
+          "udt_name": "text",
+          "is_nullable": "NO",
+          "column_default": null
+        },
+        {
+          "column_name": "version",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "is_nullable": "NO",
+          "column_default": "1"
+        },
+        {
+          "column_name": "system_prompt",
+          "data_type": "text",
+          "udt_name": "text",
+          "is_nullable": "NO",
+          "column_default": null
+        },
+        {
+          "column_name": "user_prompt_template",
+          "data_type": "text",
+          "udt_name": "text",
+          "is_nullable": "NO",
+          "column_default": null
+        },
+        {
+          "column_name": "variables",
+          "data_type": "jsonb",
+          "udt_name": "jsonb",
+          "is_nullable": "NO",
+          "column_default": null
+        },
+        {
+          "column_name": "output_schema",
+          "data_type": "jsonb",
+          "udt_name": "jsonb",
+          "is_nullable": "NO",
+          "column_default": null
+        },
+        {
+          "column_name": "validation_rules",
+          "data_type": "jsonb",
+          "udt_name": "jsonb",
+          "is_nullable": "YES",
+          "column_default": null
+        },
+        {
+          "column_name": "success_criteria",
+          "data_type": "jsonb",
+          "udt_name": "jsonb",
+          "is_nullable": "YES",
+          "column_default": null
+        },
+        {
+          "column_name": "model_name",
+          "data_type": "text",
+          "udt_name": "text",
+          "is_nullable": "NO",
+          "column_default": "'gpt-4'::text"
+        },
+        {
+          "column_name": "temperature",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "is_nullable": "NO",
+          "column_default": "70"
+        },
+        {
+          "column_name": "max_tokens",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "is_nullable": "NO",
+          "column_default": "4000"
+        },
+        {
+          "column_name": "brand_id",
+          "data_type": "USER-DEFINED",
+          "udt_name": "brand",
+          "is_nullable": "NO",
+          "column_default": "'shared'::brand"
+        },
+        {
+          "column_name": "brand_visibility",
+          "data_type": "USER-DEFINED",
+          "udt_name": "brand_visibility",
+          "is_nullable": "NO",
+          "column_default": "'shared_visible'::brand_visibility"
+        },
+        {
+          "column_name": "brand_variants",
+          "data_type": "jsonb",
+          "udt_name": "jsonb",
+          "is_nullable": "YES",
+          "column_default": null
+        },
+        {
+          "column_name": "is_active",
+          "data_type": "boolean",
+          "udt_name": "bool",
+          "is_nullable": "NO",
+          "column_default": "true"
+        },
+        {
+          "column_name": "usage_count",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "is_nullable": "NO",
+          "column_default": "0"
+        },
+        {
+          "column_name": "success_rate",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "is_nullable": "NO",
+          "column_default": "0"
+        },
+        {
+          "column_name": "created_at",
+          "data_type": "timestamp without time zone",
+          "udt_name": "timestamp",
+          "is_nullable": "NO",
+          "column_default": "now()"
+        },
+        {
+          "column_name": "updated_at",
+          "data_type": "timestamp without time zone",
+          "udt_name": "timestamp",
+          "is_nullable": "NO",
+          "column_default": "now()"
+        }
+      ],
+      "outgoing_fks": [],
+      "incoming_fks": [
+        {
+          "table_name": "prompt_template_performance",
+          "column_name": "template_id"
+        },
+        {
+          "table_name": "tutorial_sections",
+          "column_name": "prompt_template_id"
+        },
+        {
+          "table_name": "tutorial_subsections",
+          "column_name": "prompt_template_id"
+        }
+      ],
+      "indexes": [
+        "prompt_templates_pkey",
+        "uq_prompt_section_subsection_version_brand",
+        "idx_prompt_brand",
+        "idx_prompt_section",
+        "idx_prompt_subsection"
+      ],
+      "sample_data": [],
+      "application_references": {
+        "total": 32,
+        "files": [
+          "apps/api-server/src/app/api/admin/layman/prompt/generate/route.ts",
+          "apps/api-server/src/app/api/tutorial/sections/[subtopicId]/__tests__/route.test.ts",
+          "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/suggestions/apply/__tests__/route.test.ts",
+          "packages/db-tutorial/src/dto/layman-prompt.dto.ts",
+          "packages/db-tutorial/src/dto/layman.dto.ts",
+          "packages/db-tutorial/src/migrations/p1-p0-foundation/run-migration.ts",
+          "packages/db-tutorial/src/migrations/p1-p0-foundation/validate-gap-remediation.ts",
+          "packages/db-tutorial/src/repositories/layman.repository.ts",
+          "packages/db-tutorial/src/schema/ai-section-generation-jobs.ts",
+          "packages/db-tutorial/src/schema/analytics-architecture-performance.ts"
+        ],
+        "section_type_context": 3,
+        "subsection_type_context": 3
+      },
+      "enum_decisions": {
+        "section_type": "KEEP",
+        "subsection_type": "KEEP"
+      }
+    },
+    "subsection_engagement_metrics": {
+      "exists": true,
+      "row_count": 0,
+      "classification": "EMPTY_BUT_REFERENCED",
+      "reason": "Empty but has application references",
+      "action": "INVESTIGATE_USAGE",
+      "blocks_tutorial_subsections_drop": true,
+      "references_tutorial_subsections": true,
+      "schema": [
+        {
+          "column_name": "id",
+          "data_type": "uuid",
+          "udt_name": "uuid",
+          "is_nullable": "NO"
+        },
+        {
+          "column_name": "date",
+          "data_type": "timestamp without time zone",
+          "udt_name": "timestamp",
+          "is_nullable": "NO"
+        },
+        {
+          "column_name": "hour",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "is_nullable": "YES"
+        },
+        {
+          "column_name": "aggregation_level",
+          "data_type": "text",
+          "udt_name": "text",
+          "is_nullable": "NO"
+        },
+        {
+          "column_name": "subsection_id",
+          "data_type": "uuid",
+          "udt_name": "uuid",
+          "is_nullable": "YES"
+        },
+        {
+          "column_name": "subsection_type",
+          "data_type": "text",
+          "udt_name": "text",
+          "is_nullable": "NO"
+        },
+        {
+          "column_name": "brand_id",
+          "data_type": "USER-DEFINED",
+          "udt_name": "brand",
+          "is_nullable": "NO"
+        },
+        {
+          "column_name": "total_views",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "is_nullable": "NO"
+        },
+        {
+          "column_name": "unique_users",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "is_nullable": "NO"
+        },
+        {
+          "column_name": "average_time_spent",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "is_nullable": "NO"
+        },
+        {
+          "column_name": "completion_rate",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "is_nullable": "NO"
+        },
+        {
+          "column_name": "scroll_depth",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "is_nullable": "NO"
+        },
+        {
+          "column_name": "interaction_count",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "is_nullable": "NO"
+        },
+        {
+          "column_name": "created_at",
+          "data_type": "timestamp without time zone",
+          "udt_name": "timestamp",
+          "is_nullable": "NO"
+        }
+      ],
+      "outgoing_fks": [
+        {
+          "references_table": "tutorial_subsections",
+          "references_column": "id",
+          "column_name": "subsection_id"
+        }
+      ],
+      "application_references": {
+        "count": 3,
+        "files": [
+          "packages/db-tutorial/src/migrations/p1-p0-foundation/validate-gap-remediation.ts",
+          "packages/db-tutorial/src/schema/analytics-learning-metrics.ts",
+          "scripts/phase-a3-final-closure.ts"
+        ]
+      }
+    },
+    "tutorial_video_links": {
+      "exists": true,
+      "row_count": 0,
+      "classification": "EMPTY_BUT_REFERENCED_CONFLICTS_ARCHITECTURE",
+      "reason": "Empty but has application references, architecture says REMOVED",
+      "action": "INVESTIGATE_REFERENCES",
+      "architecture_document_says_removed": true,
+      "has_assignment_difficulty_column": true,
+      "assignment_difficulty_enum_impact": "INVESTIGATE",
+      "schema": [
+        {
+          "column_name": "id",
+          "data_type": "uuid",
+          "udt_name": "uuid",
+          "is_nullable": "NO"
+        },
+        {
+          "column_name": "subtopic_id",
+          "data_type": "uuid",
+          "udt_name": "uuid",
+          "is_nullable": "YES"
+        },
+        {
+          "column_name": "project_id",
+          "data_type": "uuid",
+          "udt_name": "uuid",
+          "is_nullable": "YES"
+        },
+        {
+          "column_name": "assignment_difficulty",
+          "data_type": "USER-DEFINED",
+          "udt_name": "tutorial_difficulty",
+          "is_nullable": "YES"
+        },
+        {
+          "column_name": "provider",
+          "data_type": "USER-DEFINED",
+          "udt_name": "tutorial_video_provider",
+          "is_nullable": "NO"
+        },
+        {
+          "column_name": "url",
+          "data_type": "text",
+          "udt_name": "text",
+          "is_nullable": "NO"
+        },
+        {
+          "column_name": "title",
+          "data_type": "text",
+          "udt_name": "text",
+          "is_nullable": "NO"
+        },
+        {
+          "column_name": "thumbnail_url",
+          "data_type": "text",
+          "udt_name": "text",
+          "is_nullable": "YES"
+        },
+        {
+          "column_name": "duration_seconds",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "is_nullable": "YES"
+        },
+        {
+          "column_name": "captions_available",
+          "data_type": "boolean",
+          "udt_name": "bool",
+          "is_nullable": "NO"
+        },
+        {
+          "column_name": "approved_by_admin",
+          "data_type": "boolean",
+          "udt_name": "bool",
+          "is_nullable": "NO"
+        },
+        {
+          "column_name": "created_at",
+          "data_type": "timestamp without time zone",
+          "udt_name": "timestamp",
+          "is_nullable": "NO"
+        },
+        {
+          "column_name": "updated_at",
+          "data_type": "timestamp without time zone",
+          "udt_name": "timestamp",
+          "is_nullable": "NO"
+        },
+        {
+          "column_name": "deleted_at",
+          "data_type": "timestamp without time zone",
+          "udt_name": "timestamp",
+          "is_nullable": "YES"
+        }
+      ],
+      "outgoing_fks": [],
+      "application_references": {
+        "count": 4,
+        "files": [
+          "packages/db-tutorial/src/schema/index.ts",
+          "packages/db-tutorial/src/schema/tutorial-video-links.ts",
+          "scripts/phase-a2-shared-consumer-closure.ts",
+          "scripts/phase-a3-final-closure.ts"
+        ]
+      }
+    },
+    "enum_consumer_matrix": {
+      "tutorial_difficulty": {
+        "consumers": [
+          {
+            "table": "tutorial_sections",
+            "column": "difficulty",
+            "classification": "LEGACY",
+            "action": "REMOVE"
+          },
+          {
+            "table": "tutorial_content",
+            "column": "difficulty",
+            "classification": "LEGACY",
+            "action": "REMOVE"
+          },
+          {
+            "table": "tutorial_video_links",
+            "column": "assignment_difficulty",
+            "classification": "EMPTY_BUT_REFERENCED_CONFLICTS_ARCHITECTURE",
+            "action": "INVESTIGATE_REFERENCES"
+          },
+          {
+            "table": "assignment_progress",
+            "column": "difficulty",
+            "classification": "ASSESSMENT",
+            "action": "KEEP"
+          },
+          {
+            "table": "tutorial_assignments",
+            "column": "difficulty",
+            "classification": "ASSESSMENT",
+            "action": "KEEP"
+          },
+          {
+            "table": "tutorial_project_submissions",
+            "column": "difficulty",
+            "classification": "ASSESSMENT",
+            "action": "KEEP"
+          },
+          {
+            "table": "ai_generation_orchestration",
+            "column": "difficulty",
+            "classification": "AI_GENERATION",
+            "action": "KEEP"
+          },
+          {
+            "table": "ai_section_generation_jobs",
+            "column": "difficulty",
+            "classification": "LEGACY",
+            "action": "DROP_WITH_TABLE"
+          },
+          {
+            "table": "content_generation_jobs",
+            "column": "difficulty",
+            "classification": "AI_GENERATION",
+            "action": "KEEP"
+          }
+        ],
+        "decision": "INVESTIGATE",
+        "evidence": "5 KEEP, 3 REMOVE, 1 INVESTIGATE",
+        "action": "Resolve investigation items before deciding"
+      },
+      "section_type": {
+        "consumers": [
+          {
+            "table": "tutorial_sections",
+            "column": "section_type",
+            "classification": "LEGACY",
+            "action": "REMOVE"
+          },
+          {
+            "table": "ai_section_generation_jobs",
+            "column": "section_type",
+            "classification": "LEGACY",
+            "action": "DROP_WITH_TABLE"
+          },
+          {
+            "table": "prompt_templates",
+            "column": "section_type",
+            "classification": "CURRENT_V2",
+            "action": "KEEP"
+          }
+        ],
+        "decision": "KEEP",
+        "evidence": "prompt_templates requires enum (V2 current)",
+        "action": "Remove tutorial_sections.section_type, drop ai_section_generation_jobs, keep enum"
+      },
+      "subsection_type": {
+        "consumers": [
+          {
+            "table": "tutorial_subsections",
+            "column": "subsection_type",
+            "classification": "LEGACY",
+            "action": "DROP_WITH_TABLE"
+          },
+          {
+            "table": "prompt_templates",
+            "column": "subsection_type",
+            "classification": "CURRENT_V2",
+            "action": "KEEP"
+          }
+        ],
+        "decision": "KEEP",
+        "evidence": "prompt_templates requires enum (V2 current)",
+        "action": "Drop tutorial_subsections, keep enum for prompt_templates"
+      }
+    }
+  },
+  "executive_summary": {
+    "phase_a3_status": "REQUIRES_MANUAL_REVIEW",
+    "all_resolved": false,
+    "safe_for_phase_b": false,
+    "blockers": [
+      "subsection_engagement_metrics blocks tutorial_subsections drop",
+      "tutorial_video_links has data/references conflicting with architecture document",
+      "tutorial_difficulty enum has unresolved consumers"
+    ],
+    "classifications": {
+      "prompt_templates": "CURRENT_V2",
+      "subsection_engagement_metrics": "EMPTY_BUT_REFERENCED",
+      "tutorial_video_links": "EMPTY_BUT_REFERENCED_CONFLICTS_ARCHITECTURE"
+    },
+    "enum_decisions": {
+      "tutorial_difficulty": "INVESTIGATE",
+      "section_type": "KEEP",
+      "subsection_type": "KEEP"
+    }
+  }
+}

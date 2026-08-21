@@ -42,10 +42,10 @@ export type { SuggestionContext } from './services/block-suggestion.service';
 export { suggestionApplicationService, SuggestionApplicationService } from './services/suggestion-application.service';
 export type { ApplySuggestionInput, ApplySuggestionResult } from './services/suggestion-application.service';
 
-// Tutorial Delivery - NEW architecture (Prompt 10)
+// Tutorial Delivery - V2 Architecture
 export { tutorialDeliveryService, TutorialDeliveryService } from './services/tutorial-delivery.service';
-export type { DeliverySection, TutorialDelivery, DeliveryOptions } from './services/tutorial-delivery.service';
-export { SubtopicNotFoundError, SectionNotFoundError, InvalidSectionContentError } from './services/tutorial-delivery.service';
+export type { DeliveredTutorial, TutorialDeliveryV2, DeliveryOptions } from './services/tutorial-delivery.service';
+export { SubtopicNotFoundError, TutorialNotFoundError, InvalidTutorialContentError } from './services/tutorial-delivery.service';
 
 // Tutorial Content Sanitization - NEW architecture (Prompt 12)
 export { tutorialContentSanitizationService, TutorialContentSanitizationService } from './services/tutorial-content-sanitization.service';

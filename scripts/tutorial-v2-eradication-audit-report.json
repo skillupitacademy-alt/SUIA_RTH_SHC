@@ -1,0 +1,583 @@
+{
+  "timestamp": "2026-08-21T09:27:55.091Z",
+  "database": "tutorial_prod",
+  "sections": {
+    "rowCount": {
+      "total_rows": "0",
+      "active_rows": "0",
+      "deleted_rows": "0"
+    },
+    "sectionTypes": [],
+    "difficulties": [],
+    "allTables": [
+      "ai_generation_metrics",
+      "ai_generation_orchestration",
+      "ai_section_generation_jobs",
+      "assignment_help_requests",
+      "assignment_progress",
+      "badges",
+      "brand_performance_metrics",
+      "certificates",
+      "code_interactions",
+      "content_deployments",
+      "content_generation_jobs",
+      "content_review_queue",
+      "deployment_cohort_metrics",
+      "domain_content_config",
+      "domains",
+      "educational_architecture_performance",
+      "educational_architectures",
+      "layman_audit_logs",
+      "layman_content_revisions",
+      "layman_prompt_history",
+      "live_session_requests",
+      "practice_test_answers",
+      "prompt_template_performance",
+      "prompt_templates",
+      "quiz_answers",
+      "remediation_triggers",
+      "revenue_attribution_metrics",
+      "section_completions",
+      "skills",
+      "student_badges",
+      "student_streaks",
+      "subjects",
+      "subsection_engagement_metrics",
+      "subtopic_flow_progress",
+      "subtopics",
+      "topic_skills",
+      "topics",
+      "tutorial_assignments",
+      "tutorial_content",
+      "tutorial_content_audit",
+      "tutorial_content_versions",
+      "tutorial_domains",
+      "tutorial_learning_metrics",
+      "tutorial_page_content_v2",
+      "tutorial_progress",
+      "tutorial_project_submissions",
+      "tutorial_projects",
+      "tutorial_section_ai_tutor",
+      "tutorial_section_assignment",
+      "tutorial_section_code",
+      "tutorial_section_interview",
+      "tutorial_section_layman_backup_20260815",
+      "tutorial_section_notes",
+      "tutorial_section_overview",
+      "tutorial_section_practice",
+      "tutorial_section_project",
+      "tutorial_section_quiz",
+      "tutorial_section_real_life",
+      "tutorial_section_summary",
+      "tutorial_section_technical",
+      "tutorial_section_visual",
+      "tutorial_sections",
+      "tutorial_sections_layman_backup_20260815",
+      "tutorial_sidebar_trees_v2",
+      "tutorial_subjects",
+      "tutorial_subsections",
+      "tutorial_subtopics",
+      "tutorial_topics",
+      "tutorial_video_links",
+      "ui_architecture_performance",
+      "ui_architectures",
+      "visual_interactions"
+    ],
+    "legacyTables": {
+      "tutorial_content": 0,
+      "tutorial_subsections": 0
+    },
+    "foreignKeys": [
+      {
+        "table_name": "ai_generation_orchestration",
+        "column_name": "educational_architecture_id",
+        "referenced_table": "educational_architectures",
+        "referenced_column": "id",
+        "constraint_name": "ai_generation_orchestration_educational_architecture_id_educati"
+      },
+      {
+        "table_name": "ai_generation_orchestration",
+        "column_name": "subtopic_id",
+        "referenced_table": "tutorial_subtopics",
+        "referenced_column": "id",
+        "constraint_name": "ai_generation_orchestration_subtopic_id_tutorial_subtopics_id_f"
+      },
+      {
+        "table_name": "ai_section_generation_jobs",
+        "column_name": "orchestration_id",
+        "referenced_table": "ai_generation_orchestration",
+        "referenced_column": "id",
+        "constraint_name": "ai_section_generation_jobs_orchestration_id_ai_generation_orche"
+      },
+      {
+        "table_name": "assignment_help_requests",
+        "column_name": "assignment_id",
+        "referenced_table": "tutorial_assignments",
+        "referenced_column": "id",
+        "constraint_name": "assignment_help_requests_assignment_id_tutorial_assignments_id_"
+      },
+      {
+        "table_name": "code_interactions",
+        "column_name": "section_id",
+        "referenced_table": "tutorial_sections",
+        "referenced_column": "id",
+        "constraint_name": "code_interactions_section_id_tutorial_sections_id_fk"
+      },
+      {
+        "table_name": "content_deployments",
+        "column_name": "section_id",
+        "referenced_table": "tutorial_sections",
+        "referenced_column": "id",
+        "constraint_name": "content_deployments_section_id_tutorial_sections_id_fk"
+      },
+      {
+        "table_name": "educational_architecture_performance",
+        "column_name": "architecture_id",
+        "referenced_table": "educational_architectures",
+        "referenced_column": "id",
+        "constraint_name": "educational_architecture_performance_architecture_id_educationa"
+      },
+      {
+        "table_name": "practice_test_answers",
+        "column_name": "section_id",
+        "referenced_table": "tutorial_sections",
+        "referenced_column": "id",
+        "constraint_name": "practice_test_answers_section_id_tutorial_sections_id_fk"
+      },
+      {
+        "table_name": "prompt_template_performance",
+        "column_name": "template_id",
+        "referenced_table": "prompt_templates",
+        "referenced_column": "id",
+        "constraint_name": "prompt_template_performance_template_id_prompt_templates_id_fk"
+      },
+      {
+        "table_name": "quiz_answers",
+        "column_name": "section_id",
+        "referenced_table": "tutorial_sections",
+        "referenced_column": "id",
+        "constraint_name": "quiz_answers_section_id_tutorial_sections_id_fk"
+      },
+      {
+        "table_name": "section_completions",
+        "column_name": "section_id",
+        "referenced_table": "tutorial_sections",
+        "referenced_column": "id",
+        "constraint_name": "section_completions_section_id_tutorial_sections_id_fk"
+      },
+      {
+        "table_name": "student_badges",
+        "column_name": "badge_id",
+        "referenced_table": "badges",
+        "referenced_column": "id",
+        "constraint_name": "student_badges_badge_id_badges_id_fk"
+      },
+      {
+        "table_name": "student_badges",
+        "column_name": "project_submission_id",
+        "referenced_table": "tutorial_project_submissions",
+        "referenced_column": "id",
+        "constraint_name": "student_badges_project_submission_id_tutorial_project_submissio"
+      },
+      {
+        "table_name": "subjects",
+        "column_name": "domain_id",
+        "referenced_table": "domains",
+        "referenced_column": "id",
+        "constraint_name": "subjects_domain_id_fk"
+      },
+      {
+        "table_name": "subsection_engagement_metrics",
+        "column_name": "subsection_id",
+        "referenced_table": "tutorial_subsections",
+        "referenced_column": "id",
+        "constraint_name": "subsection_engagement_metrics_subsection_id_tutorial_subsection"
+      },
+      {
+        "table_name": "subtopics",
+        "column_name": "topic_id",
+        "referenced_table": "topics",
+        "referenced_column": "id",
+        "constraint_name": "subtopics_topic_id_fk"
+      },
+      {
+        "table_name": "topic_skills",
+        "column_name": "skill_id",
+        "referenced_table": "skills",
+        "referenced_column": "id",
+        "constraint_name": "topic_skills_skill_id_fk"
+      },
+      {
+        "table_name": "topic_skills",
+        "column_name": "topic_id",
+        "referenced_table": "topics",
+        "referenced_column": "id",
+        "constraint_name": "topic_skills_topic_id_fk"
+      },
+      {
+        "table_name": "topics",
+        "column_name": "subject_id",
+        "referenced_table": "subjects",
+        "referenced_column": "id",
+        "constraint_name": "topics_subject_id_fk"
+      },
+      {
+        "table_name": "tutorial_learning_metrics",
+        "column_name": "section_id",
+        "referenced_table": "tutorial_sections",
+        "referenced_column": "id",
+        "constraint_name": "tutorial_learning_metrics_section_id_tutorial_sections_id_fk"
+      },
+      {
+        "table_name": "tutorial_project_submissions",
+        "column_name": "project_id",
+        "referenced_table": "tutorial_projects",
+        "referenced_column": "id",
+        "constraint_name": "tutorial_project_submissions_project_id_tutorial_projects_id_fk"
+      },
+      {
+        "table_name": "tutorial_section_ai_tutor",
+        "column_name": "section_id",
+        "referenced_table": "tutorial_sections",
+        "referenced_column": "id",
+        "constraint_name": "tutorial_section_ai_tutor_section_id_tutorial_sections_id_fk"
+      },
+      {
+        "table_name": "tutorial_section_assignment",
+        "column_name": "section_id",
+        "referenced_table": "tutorial_sections",
+        "referenced_column": "id",
+        "constraint_name": "tutorial_section_assignment_section_id_tutorial_sections_id_fk"
+      },
+      {
+        "table_name": "tutorial_section_code",
+        "column_name": "section_id",
+        "referenced_table": "tutorial_sections",
+        "referenced_column": "id",
+        "constraint_name": "tutorial_section_code_section_id_tutorial_sections_id_fk"
+      },
+      {
+        "table_name": "tutorial_section_interview",
+        "column_name": "section_id",
+        "referenced_table": "tutorial_sections",
+        "referenced_column": "id",
+        "constraint_name": "tutorial_section_interview_section_id_tutorial_sections_id_fk"
+      },
+      {
+        "table_name": "tutorial_section_notes",
+        "column_name": "section_id",
+        "referenced_table": "tutorial_sections",
+        "referenced_column": "id",
+        "constraint_name": "tutorial_section_notes_section_id_tutorial_sections_id_fk"
+      },
+      {
+        "table_name": "tutorial_section_overview",
+        "column_name": "section_id",
+        "referenced_table": "tutorial_sections",
+        "referenced_column": "id",
+        "constraint_name": "tutorial_section_overview_section_id_tutorial_sections_id_fk"
+      },
+      {
+        "table_name": "tutorial_section_practice",
+        "column_name": "section_id",
+        "referenced_table": "tutorial_sections",
+        "referenced_column": "id",
+        "constraint_name": "tutorial_section_practice_section_id_tutorial_sections_id_fk"
+      },
+      {
+        "table_name": "tutorial_section_project",
+        "column_name": "section_id",
+        "referenced_table": "tutorial_sections",
+        "referenced_column": "id",
+        "constraint_name": "tutorial_section_project_section_id_tutorial_sections_id_fk"
+      },
+      {
+        "table_name": "tutorial_section_quiz",
+        "column_name": "section_id",
+        "referenced_table": "tutorial_sections",
+        "referenced_column": "id",
+        "constraint_name": "tutorial_section_quiz_section_id_tutorial_sections_id_fk"
+      },
+      {
+        "table_name": "tutorial_section_real_life",
+        "column_name": "section_id",
+        "referenced_table": "tutorial_sections",
+        "referenced_column": "id",
+        "constraint_name": "tutorial_section_real_life_section_id_tutorial_sections_id_fk"
+      },
+      {
+        "table_name": "tutorial_section_summary",
+        "column_name": "section_id",
+        "referenced_table": "tutorial_sections",
+        "referenced_column": "id",
+        "constraint_name": "tutorial_section_summary_section_id_tutorial_sections_id_fk"
+      },
+      {
+        "table_name": "tutorial_section_technical",
+        "column_name": "section_id",
+        "referenced_table": "tutorial_sections",
+        "referenced_column": "id",
+        "constraint_name": "tutorial_section_technical_section_id_tutorial_sections_id_fk"
+      },
+      {
+        "table_name": "tutorial_section_visual",
+        "column_name": "section_id",
+        "referenced_table": "tutorial_sections",
+        "referenced_column": "id",
+        "constraint_name": "tutorial_section_visual_section_id_tutorial_sections_id_fk"
+      },
+      {
+        "table_name": "tutorial_sections",
+        "column_name": "educational_architecture_id",
+        "referenced_table": "educational_architectures",
+        "referenced_column": "id",
+        "constraint_name": "tutorial_sections_educational_architecture_id_educational_archi"
+      },
+      {
+        "table_name": "tutorial_sections",
+        "column_name": "prompt_template_id",
+        "referenced_table": "prompt_templates",
+        "referenced_column": "id",
+        "constraint_name": "tutorial_sections_prompt_template_id_prompt_templates_id_fk"
+      },
+      {
+        "table_name": "tutorial_sections",
+        "column_name": "subtopic_id",
+        "referenced_table": "tutorial_subtopics",
+        "referenced_column": "id",
+        "constraint_name": "tutorial_sections_subtopic_id_tutorial_subtopics_id_fk"
+      },
+      {
+        "table_name": "tutorial_sections",
+        "column_name": "ui_architecture_id",
+        "referenced_table": "ui_architectures",
+        "referenced_column": "id",
+        "constraint_name": "tutorial_sections_ui_architecture_id_ui_architectures_id_fk"
+      },
+      {
+        "table_name": "tutorial_subjects",
+        "column_name": "domain_id",
+        "referenced_table": "tutorial_domains",
+        "referenced_column": "id",
+        "constraint_name": "tutorial_subjects_domain_id_tutorial_domains_id_fk"
+      },
+      {
+        "table_name": "tutorial_subsections",
+        "column_name": "prompt_template_id",
+        "referenced_table": "prompt_templates",
+        "referenced_column": "id",
+        "constraint_name": "tutorial_subsections_prompt_template_id_prompt_templates_id_fk"
+      },
+      {
+        "table_name": "tutorial_subsections",
+        "column_name": "section_id",
+        "referenced_table": "tutorial_sections",
+        "referenced_column": "id",
+        "constraint_name": "tutorial_subsections_section_id_tutorial_sections_id_fk"
+      },
+      {
+        "table_name": "tutorial_subtopics",
+        "column_name": "topic_id",
+        "referenced_table": "tutorial_topics",
+        "referenced_column": "id",
+        "constraint_name": "tutorial_subtopics_topic_id_tutorial_topics_id_fk"
+      },
+      {
+        "table_name": "tutorial_topics",
+        "column_name": "subject_id",
+        "referenced_table": "tutorial_subjects",
+        "referenced_column": "id",
+        "constraint_name": "tutorial_topics_subject_id_tutorial_subjects_id_fk"
+      },
+      {
+        "table_name": "ui_architecture_performance",
+        "column_name": "architecture_id",
+        "referenced_table": "ui_architectures",
+        "referenced_column": "id",
+        "constraint_name": "ui_architecture_performance_architecture_id_ui_architectures_id"
+      },
+      {
+        "table_name": "visual_interactions",
+        "column_name": "section_id",
+        "referenced_table": "tutorial_sections",
+        "referenced_column": "id",
+        "constraint_name": "visual_interactions_section_id_tutorial_sections_id_fk"
+      }
+    ],
+    "indexes": [
+      {
+        "indexname": "idx_sections_architecture",
+        "indexdef": "CREATE INDEX idx_sections_architecture ON public.tutorial_sections USING btree (educational_architecture_id)"
+      },
+      {
+        "indexname": "idx_sections_brand",
+        "indexdef": "CREATE INDEX idx_sections_brand ON public.tutorial_sections USING btree (brand_id)"
+      },
+      {
+        "indexname": "idx_sections_delivery",
+        "indexdef": "CREATE INDEX idx_sections_delivery ON public.tutorial_sections USING btree (subtopic_id, difficulty, status, order_index)"
+      },
+      {
+        "indexname": "idx_sections_delivery_by_type",
+        "indexdef": "CREATE INDEX idx_sections_delivery_by_type ON public.tutorial_sections USING btree (subtopic_id, difficulty, section_type, status)"
+      },
+      {
+        "indexname": "idx_sections_published",
+        "indexdef": "CREATE INDEX idx_sections_published ON public.tutorial_sections USING btree (subtopic_id, status)"
+      },
+      {
+        "indexname": "idx_sections_status",
+        "indexdef": "CREATE INDEX idx_sections_status ON public.tutorial_sections USING btree (status)"
+      },
+      {
+        "indexname": "idx_sections_subtopic",
+        "indexdef": "CREATE INDEX idx_sections_subtopic ON public.tutorial_sections USING btree (subtopic_id)"
+      },
+      {
+        "indexname": "idx_sections_type",
+        "indexdef": "CREATE INDEX idx_sections_type ON public.tutorial_sections USING btree (section_type)"
+      },
+      {
+        "indexname": "tutorial_sections_pkey",
+        "indexdef": "CREATE UNIQUE INDEX tutorial_sections_pkey ON public.tutorial_sections USING btree (id)"
+      },
+      {
+        "indexname": "uq_section_subtopic_type_difficulty_brand",
+        "indexdef": "CREATE UNIQUE INDEX uq_section_subtopic_type_difficulty_brand ON public.tutorial_sections USING btree (subtopic_id, section_type, difficulty, brand_id)"
+      }
+    ],
+    "enums": {
+      "section_status": [
+        "draft",
+        "generating",
+        "validating",
+        "pending_review",
+        "in_review",
+        "changes_requested",
+        "approved",
+        "deploying",
+        "deployed",
+        "archived"
+      ],
+      "section_type": [
+        "overview",
+        "notes",
+        "layman",
+        "visual",
+        "real_life",
+        "technical",
+        "code",
+        "practice",
+        "assignment",
+        "project",
+        "quiz",
+        "summary",
+        "interview",
+        "ai_tutor"
+      ],
+      "subsection_type": [
+        "definition",
+        "concept",
+        "syntax",
+        "analogy",
+        "example",
+        "visual",
+        "diagram",
+        "animation",
+        "pitfall",
+        "antipattern",
+        "gotcha",
+        "code",
+        "exercise",
+        "challenge",
+        "sandbox",
+        "checklist",
+        "cheatsheet",
+        "faq",
+        "glossary",
+        "interview_question",
+        "quiz_question",
+        "project_step",
+        "project_milestone",
+        "project_deliverable"
+      ],
+      "tutorial_content_audit_action": [
+        "created",
+        "updated",
+        "published",
+        "unpublished",
+        "restored"
+      ],
+      "tutorial_content_job_status": [
+        "pending",
+        "processing",
+        "completed",
+        "failed"
+      ],
+      "tutorial_deliverable_type": [
+        "code",
+        "repo",
+        "live_demo",
+        "document"
+      ],
+      "tutorial_difficulty": [
+        "simple",
+        "mixed",
+        "intermediate",
+        "expert"
+      ],
+      "tutorial_evaluation_type": [
+        "auto",
+        "ai_review",
+        "peer_review",
+        "admin_review"
+      ],
+      "tutorial_progress_status": [
+        "not_started",
+        "in_progress",
+        "completed"
+      ],
+      "tutorial_project_level": [
+        "simple",
+        "intermediate",
+        "expert"
+      ],
+      "tutorial_project_scope": [
+        "topic",
+        "subject",
+        "domain"
+      ],
+      "tutorial_project_submission_status": [
+        "pending",
+        "submitted",
+        "ai_reviewing",
+        "needs_review",
+        "approved",
+        "revision_needed",
+        "graded",
+        "revision-requested"
+      ],
+      "tutorial_question_type": [
+        "mcq",
+        "short_answer",
+        "code",
+        "drag_drop",
+        "fill_blank"
+      ],
+      "tutorial_trigger_status": [
+        "pending",
+        "accepted",
+        "dismissed",
+        "completed",
+        "failed"
+      ],
+      "tutorial_video_provider": [
+        "youtube",
+        "vimeo",
+        "custom",
+        "loom"
+      ]
+    },
+    "uniqueConstraints": []
+  }
+}

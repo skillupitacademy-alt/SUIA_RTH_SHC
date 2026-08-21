@@ -3,14 +3,16 @@
  * Tutorial Sections - Modular Content System
  * Phase 1 P0 Foundation - Database Governance
  * Enhanced with Gap Remediation (GAP 3 & GAP 4)
+ * UPDATED: Phase B.2 - Legacy Eradication (removed section_type, difficulty)
  * 
- * Replaces monolithic tutorial_content with modular 12-section architecture
+ * V2 Architecture: One tutorial per subtopic per brand (multi-brand support)
  */
 
 import { boolean, integer, jsonb, pgTable, text, timestamp, uuid, index, uniqueIndex } from 'drizzle-orm/pg-core';
 import { tutorialSubtopics } from './tutorial-subtopics';
-import { tutorialDifficultyEnum } from './enums';
-import { sectionTypeEnum, sectionStatusEnum, brandEnum, brandVisibilityEnum } from './enums-modular';
+// REMOVED: tutorialDifficultyEnum (legacy)
+// REMOVED: sectionTypeEnum (legacy)
+import { sectionStatusEnum, brandEnum, brandVisibilityEnum } from './enums-modular';
 import { educationalArchitectures } from './educational-architectures';
 import { uiArchitectures } from './ui-architectures';
 import { promptTemplates } from './prompt-templates';
@@ -29,8 +31,8 @@ export const tutorialSections = pgTable('tutorial_sections', {
     .references(() => tutorialSubtopics.id, { onDelete: 'cascade' }),
   
   // Section Configuration
-  sectionType: sectionTypeEnum('section_type').notNull(),
-  difficulty: tutorialDifficultyEnum('difficulty').notNull(),
+  // REMOVED: sectionType (legacy - dropped in Phase B)
+  // REMOVED: difficulty (legacy - dropped in Phase B)
   orderIndex: integer('order_index').notNull().default(0),
   
   // Content Storage (JSONB for flexibility)
@@ -80,21 +82,16 @@ export const tutorialSections = pgTable('tutorial_sections', {
   publishedAt: timestamp('published_at', { mode: 'date' }),
   deletedAt: timestamp('deleted_at', { mode: 'date' }),
 }, (table) => ({
-  // Indexes for performance
-  idxSectionsSubtopic: index('idx_sections_subtopic').on(table.subtopicId),
-  idxSectionsStatus: index('idx_sections_status').on(table.status),
-  idxSectionsType: index('idx_sections_type').on(table.sectionType),
-  idxSectionsPublished: index('idx_sections_published').on(table.subtopicId, table.status),
-  idxSectionsDelivery: index('idx_sections_delivery').on(table.subtopicId, table.difficulty, table.status, table.orderIndex),
-  idxSectionsDeliveryByType: index('idx_sections_delivery_by_type').on(table.subtopicId, table.difficulty, table.sectionType, table.status),
-  idxSectionsBrand: index('idx_sections_brand').on(table.brandId),
-  idxSectionsArchitecture: index('idx_sections_architecture').on(table.educationalArchitectureId),
+  // V2 Optimized Indexes (Phase B.2 - Post-Eradication)
+  idxTutorialV2Delivery: index('idx_tutorial_v2_delivery').on(table.subtopicId, table.brandId, table.status),
+  idxTutorialV2ByBrand: index('idx_tutorial_v2_by_brand').on(table.brandId, table.status, table.updatedAt),
+  idxTutorialV2ByStatus: index('idx_tutorial_v2_by_status').on(table.status, table.updatedAt),
+  idxTutorialV2ByArchitecture: index('idx_tutorial_v2_by_architecture').on(table.educationalArchitectureId),
+  idxTutorialV2SubtopicStatus: index('idx_tutorial_v2_subtopic_status').on(table.subtopicId, table.status),
   
-  // Unique constraint: one section type per subtopic per difficulty per brand
-  uqSectionSubtopicTypeDifficultyBrand: uniqueIndex('uq_section_subtopic_type_difficulty_brand').on(
+  // V2 Identity Constraint: one tutorial per subtopic per brand
+  uqTutorialV2Identity: uniqueIndex('uq_tutorial_v2_identity').on(
     table.subtopicId,
-    table.sectionType,
-    table.difficulty,
     table.brandId
   ),
 }));
