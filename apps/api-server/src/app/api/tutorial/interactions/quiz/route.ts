@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     if (!parsed.success) return parsed.response;
     const { sectionId, questionId, selectedAnswer, correctAnswer, timeSpent } = parsed.data;
 
-    const section = await getTutorialSection(sectionId, 'quiz');
+    const section = await getTutorialSection(sectionId);
     if (!section) {
       return NextResponse.json(
         { error: 'Quiz section not found' },

@@ -105,8 +105,8 @@ export class SuggestionVerificationService {
    * ```
    */
   async verify(input: VerifySuggestionInput): Promise<VerifiedSuggestion> {
-    // Step 1: Load current section
-    const section = await this.sectionRepository.getSectionById(input.sectionId);
+    // Step 1: Load current tutorial (V2 method)
+    const section = await this.sectionRepository.getTutorialById(input.sectionId);
 
     if (!section) {
       throw new SectionNotFoundError(input.sectionId);
@@ -114,7 +114,7 @@ export class SuggestionVerificationService {
 
     // Step 2: Verify version (early rejection for clear error messages)
     // IMPORTANT: This is NOT the final concurrency check.
-    // The final mutation MUST still use updateSectionWithVersion()
+    // The final mutation MUST still use updateTutorialContentWithVersion()
     // to prevent TOCTOU races.
     if (section.version !== input.expectedVersion) {
       throw new VersionConflictError(input.expectedVersion, section.version);
@@ -129,12 +129,12 @@ export class SuggestionVerificationService {
 
     // Step 5: Regenerate suggestions from CURRENT document
     // This ensures we're working with server-authoritative data
+    // V2 MIGRATION: Removed sectionType (legacy Tutorial Page column)
     const suggestionResult = this.suggestionService.generateSuggestions(
       document,
       analysis,
       {
         subtopicId: section.subtopicId,
-        sectionType: section.sectionType,
         brandId: section.brandId,
       }
     );
@@ -184,8 +184,8 @@ export class SuggestionVerificationService {
     expectedVersion: number,
     suggestionRefs: Array<{ suggestionId: string; suggestionFingerprint: string }>
   ): Promise<VerifiedSuggestion[]> {
-    // Load section once
-    const section = await this.sectionRepository.getSectionById(sectionId);
+    // Load tutorial once (V2 method)
+    const section = await this.sectionRepository.getTutorialById(sectionId);
 
     if (!section) {
       throw new SectionNotFoundError(sectionId);
@@ -198,12 +198,12 @@ export class SuggestionVerificationService {
     // Regenerate suggestions once
     const document = section.content as any;
     const analysis = this.analysisService.analyzeDocument(document);
+    // V2 MIGRATION: Removed sectionType (legacy Tutorial Page column)
     const suggestionResult = this.suggestionService.generateSuggestions(
       document,
       analysis,
       {
         subtopicId: section.subtopicId,
-        sectionType: section.sectionType,
         brandId: section.brandId,
       }
     );

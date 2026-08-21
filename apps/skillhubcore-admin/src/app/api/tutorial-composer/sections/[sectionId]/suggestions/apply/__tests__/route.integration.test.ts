@@ -126,40 +126,32 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply - IN
     vi.mocked(requireBrandAccess).mockReturnValue(null);
     vi.mocked(invalidateTutorialDeliveryCache).mockResolvedValue(undefined);
 
-    // Create a test section
-    const [section] = await db
+    // Create a test section (V2 schema - no sectionType/difficulty)
+    const sections = await db
       .insert(tutorialSections)
-      .values({
+      .values([{
         subtopicId: testSubtopicId,
-        sectionType: 'notes',
-        difficulty: 'intermediate',
         orderIndex: 1,
         content: {
           schemaVersion: 1,
-          metadata: {
-            title: 'Integration Test Section',
-            description: 'Test section for integration tests',
-            brandVisibility: 'shared_visible',
-            documentLanguage: 'en',
-            contentClassification: 'educational',
-          },
           blocks: [
             {
               id: 'block_1',
               type: 'paragraph',
-              content: 'Original paragraph content.',
+              content: { text: 'Original paragraph content.' },
             },
           ],
-        },
+        } as any,
         version: 1,
         language: 'en',
-        status: 'draft',
-        brandId: 'realtutorialhub',
-        brandVisibility: 'shared_visible',
+        status: 'draft' as const,
+        brandId: 'realtutorialhub' as const,
+        brandVisibility: 'shared_visible' as const,
         generatedByAi: false,
-      })
+      }])
       .returning();
 
+    const section = sections[0];
     testSectionId = section.id;
 
     // Create a test suggestion via raw SQL (blockSuggestions table not exported from schema)

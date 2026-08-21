@@ -192,7 +192,6 @@ export function LeftSidebar({ isLeftSidebarOpen, setIsLeftSidebarOpen, pathname 
             <nav className="space-y-1">
               {[
                 { icon: Layers, label: 'Tutorial Block Composer', href: '/tools/tutorial-block-composer', color: 'text-rose-400' },
-                { icon: Edit, label: 'Granular Content Manager', href: '/tools/content-manager', color: 'text-sky-400' },
                 { icon: BookOpen, label: 'Tutorial Left Sidebar', href: '/tools/tutorial-left-sidebar', color: 'text-orange-400' },
                 { icon: FileText, label: 'Tutorial Page Content', href: '/tools/tutorial-page-content', color: 'text-pink-400' },
               ].map((item, i) => (

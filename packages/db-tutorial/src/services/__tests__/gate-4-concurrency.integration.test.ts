@@ -12,7 +12,8 @@ import { db } from '../../db';
 import { tutorialSubtopics, tutorialSections } from '../../schema';
 import { inArray } from 'drizzle-orm';
 import { TutorialComposerService } from '../tutorial-composer.service';
-import type { CreateTutorialInput, TutorialDocument } from '@quiz/types';
+import type { CreateTutorialInput } from '../../repositories/tutorial-section.repository';
+import type { TutorialDocument } from '@quiz/types';
 
 describe('GATE 4 — V2 Concurrency & Duplicate Prevention', () => {
   let service: TutorialComposerService;

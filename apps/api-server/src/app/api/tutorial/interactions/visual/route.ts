@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     if (!parsed.success) return parsed.response;
     const { sectionId, componentId, interactionType, interactionData, timeSpent } = parsed.data;
 
-    const section = await getTutorialSection(sectionId, 'visual');
+    const section = await getTutorialSection(sectionId);
     if (!section) {
       return NextResponse.json(
         { error: 'Visual section not found' },

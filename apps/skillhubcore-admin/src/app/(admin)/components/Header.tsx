@@ -116,7 +116,7 @@ export function Header({
           <span className="hidden md:inline">{isLoggingOut ? 'Logging out...' : 'Logout'}</span>
         </button>
 
-        {(pathname !== '/tools/content-manager' || rightSidebarContent) && (
+        {rightSidebarContent && (
           <>
             <div className="h-8 w-[1px] bg-slate-200 mx-1"></div>
 

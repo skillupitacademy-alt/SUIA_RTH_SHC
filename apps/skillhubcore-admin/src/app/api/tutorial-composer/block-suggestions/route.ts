@@ -161,7 +161,6 @@ export async function POST(request: NextRequest) {
       analysis,
       {
         subtopicId,
-        sectionType,
         brandId,
       }
     );

@@ -56,10 +56,10 @@ import type {
 
 /**
  * Suggestion context (optional metadata)
+ * V2 MIGRATION: sectionType removed (legacy Tutorial Page column)
  */
 export interface SuggestionContext {
   subtopicId?: string;
-  sectionType?: string;
   brandId?: string;
 }
 

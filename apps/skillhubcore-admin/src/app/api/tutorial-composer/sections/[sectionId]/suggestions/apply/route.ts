@@ -363,12 +363,11 @@ export async function POST(
     // ========================================
     // STEP 10: Format Response
     // ========================================
+    // V2 MIGRATION: Removed sectionType and difficulty (legacy columns)
     const response = ApplySuggestionResponseSchema.parse({
       section: TutorialSectionResponseSchema.parse({
         id: result.section.id,
         subtopicId: result.section.subtopicId,
-        sectionType: result.section.sectionType,
-        difficulty: result.section.difficulty,
         orderIndex: result.section.orderIndex,
         content: result.section.content,
         version: result.section.version,

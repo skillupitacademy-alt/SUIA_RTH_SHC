@@ -33,7 +33,7 @@
  * 1. Phase B: Verify suggestion (regenerate + fingerprint check + version check)
  * 2. Phase C: Transform verified suggestion → canonical TutorialDocument
  * 3. Validate: TutorialDocumentSchema.parse()
- * 4. Phase A: updateSectionWithVersion() for atomic persistence
+ * 4. Phase A: updateTutorialContentWithVersion() for atomic persistence
  * 5. Return: Updated section with new version
  * 
  * ERROR HANDLING:
@@ -222,7 +222,8 @@ export class SuggestionApplicationService {
     // Even though Phase B checked version, another process may have
     // modified the document between verification and now.
     // The database WHERE clause provides the atomic guarantee.
-    const updatedSection = await this.sectionRepository.updateSectionWithVersion(
+    // V2 METHOD: updateTutorialContentWithVersion (not updateSectionWithVersion)
+    const updatedSection = await this.sectionRepository.updateTutorialContentWithVersion(
       input.sectionId,
       input.expectedVersion,
       {
@@ -233,7 +234,7 @@ export class SuggestionApplicationService {
     // =================================================================
     // STEP 5: Handle version conflict
     // =================================================================
-    // If updateSectionWithVersion returns null, it means:
+    // If updateTutorialContentWithVersion returns null, it means:
     // - Zero rows were updated
     // - Version conflict occurred (TOCTOU race)
     // - Current database version ≠ expectedVersion
@@ -269,16 +270,16 @@ export class SuggestionApplicationService {
    */
   async getSectionVersion(
     sectionId: string
-  ): Promise<{ version: number; sectionType: string } | null> {
-    const section = await this.sectionRepository.getSectionById(sectionId);
+  ): Promise<{ version: number } | null> {
+    const section = await this.sectionRepository.getTutorialById(sectionId);
 
     if (!section) {
       return null;
     }
 
+    // V2 MIGRATION: Removed sectionType (legacy Tutorial Page column)
     return {
       version: section.version,
-      sectionType: section.sectionType,
     };
   }
 }

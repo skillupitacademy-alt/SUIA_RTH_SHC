@@ -39,26 +39,27 @@ export async function parseJsonBody<T>(
 
 type TutorialSectionRow = typeof tutorialSections.$inferSelect;
 
-export async function getTutorialSection(sectionId: string, sectionType?: string): Promise<TutorialSectionRow | undefined> {
-  const conditions = sectionType !== undefined && sectionType !== ''
-    ? and(eq(tutorialSections.id, sectionId), eq(tutorialSections.sectionType, sectionType as TutorialSectionRow['sectionType']))
-    : eq(tutorialSections.id, sectionId);
-
+/**
+ * Get tutorial section by ID
+ * V2 MIGRATION: Removed sectionType filtering (legacy column)
+ */
+export async function getTutorialSection(sectionId: string): Promise<TutorialSectionRow | undefined> {
   const rows = await db
     .select()
     .from(tutorialSections)
-    .where(conditions)
+    .where(eq(tutorialSections.id, sectionId))
     .limit(1);
 
   return rows[0];
 }
 
-export async function updateProgressForSection(userId: string, section: { subtopicId: string; sectionType: string }) {
-  if (!isTutorialMasterySection(section.sectionType)) {
-    return calculateTutorialProgress({ completedSections: [] });
-  }
-
-  const progressRepo = new TutorialProgressRepository();
-  const progress = await progressRepo.markBlockComplete(userId, section.subtopicId, section.sectionType);
-  return calculateTutorialProgress({ completedSections: progress.blocksCompleted });
+/**
+ * Update progress for section
+ * V2 MIGRATION: sectionType-based progress tracking is legacy
+ * TODO: Migrate to V2 block-based progress tracking
+ */
+export async function updateProgressForSection(userId: string, section: { subtopicId: string }) {
+  // Legacy mastery tracking temporarily disabled during V2 migration
+  // Will be replaced with block-level progress tracking
+  return calculateTutorialProgress({ completedSections: [] });
 }

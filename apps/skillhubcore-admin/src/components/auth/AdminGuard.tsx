@@ -21,7 +21,6 @@ apiClient.client.setPortalIdentity('admin');
 
 const LOCAL_TEST_BYPASS_PREFIXES = [
   '/questions',
-  '/tools/content-manager',
 ];
 
 const isLocalTestBypassRoute = (pathname: string) => (
