@@ -4,6 +4,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { AuthenticatedUser } from '@/lib/auth-helpers';
 import { POST } from '../route';
 import { NextRequest } from 'next/server';
 import type {
@@ -32,11 +33,11 @@ import { authenticateRequest, requireTutorialEditPermission } from '@/lib/auth-h
 import { presentationIdeasService } from '@quiz/db-tutorial';
 
 describe('POST /api/tutorial-composer/presentation-ideas', () => {
-  const mockUser = {
+  const mockUser: AuthenticatedUser = {
     userId: 'user-123',
     originalUserId: 'user-123',
     shadowUserId: 'user-123',
-    roles: ['author'],
+    roles: ['admin' as const],
     isAdmin: false,
     email: 'author@example.com',
   };
@@ -186,6 +187,7 @@ describe('POST /api/tutorial-composer/presentation-ideas', () => {
 
   it('should return 403 for unauthorized user', async () => {
     vi.mocked(requireTutorialEditPermission).mockReturnValue({
+      type: 'FORBIDDEN',
       message: 'User does not have tutorial edit permission',
     });
 
@@ -279,7 +281,8 @@ describe('POST /api/tutorial-composer/presentation-ideas', () => {
     const originalEnv = process.env.NODE_ENV;
     const originalBypass = process.env.TUTORIAL_COMPOSER_DEV_AUTH_BYPASS;
     
-    process.env.NODE_ENV = 'development';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (process.env as any).NODE_ENV = 'development';
     process.env.TUTORIAL_COMPOSER_DEV_AUTH_BYPASS = 'true';
 
     const mockResult = {
@@ -324,7 +327,8 @@ describe('POST /api/tutorial-composer/presentation-ideas', () => {
     );
 
     // Cleanup
-    process.env.NODE_ENV = originalEnv;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (process.env as any).NODE_ENV = originalEnv;
     process.env.TUTORIAL_COMPOSER_DEV_AUTH_BYPASS = originalBypass;
   });
 

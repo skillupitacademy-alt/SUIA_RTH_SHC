@@ -99,7 +99,8 @@ export function createEmptyTestDocument(): TutorialDocument {
  * Create invalid block structure for validation testing
  * This bypasses the builder to create intentionally invalid content
  */
-export function createInvalidBlockDocument(): unknown {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Intentionally invalid test fixture
+export function createInvalidBlockDocument(): any {
   return {
     schemaVersion: 1,
     blocks: [

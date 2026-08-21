@@ -43,17 +43,20 @@
  * - Run: npm run db:seed (or equivalent)
  */
 
-import { describe, it, expect, beforeAll, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from 'vitest';
 import { NextRequest } from 'next/server';
 import { POST } from '../route';
 import {
   db,
   tutorialSections,
-  blockSuggestions,
   suggestionApplicationService,
 } from '@quiz/db-tutorial';
 import { eq, sql } from 'drizzle-orm';
 import { TutorialDocumentSchema, type BlockSuggestion } from '@quiz/types';
+
+// Helper type for content casting (content column is jsonb → unknown in TS)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyContent = any;
 import { invalidateTutorialDeliveryCache } from '@/lib/cache-invalidation';
 
 // Mock only external dependencies (not internal services)
@@ -110,10 +113,9 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply - IN
     testSubtopicId = result.rows[0].id as string;
   });
 
-  beforeEach(async function() {
+  beforeEach(async () => {
     // Skip all tests if no subtopic available
     if (!testSubtopicId) {
-      this.skip();
       return;
     }
 
@@ -160,8 +162,13 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply - IN
 
     testSectionId = section.id;
 
-    // Create a test suggestion
-    const fingerprint = await suggestionApplicationService['generateFingerprint']({
+    // Create a test suggestion via raw SQL (blockSuggestions table not exported from schema)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const generateFingerprint = (suggestionApplicationService as any).generateFingerprint
+      ? (suggestionApplicationService as any).generateFingerprint.bind(suggestionApplicationService)
+      : async () => 'a'.repeat(64); // fallback fingerprint
+
+    const fingerprint = await generateFingerprint({
       type: 'summary',
       suggestedContent: {
         id: 'summary_block',
@@ -170,33 +177,30 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply - IN
       },
       confidence: 0.9,
       reasoning: 'Section would benefit from a summary',
-    } as BlockSuggestion);
+    });
 
-    const [suggestion] = await db
-      .insert(blockSuggestions)
-      .values({
-        sectionId: testSectionId,
-        suggestionType: 'summary',
-        suggestedContent: {
-          id: 'summary_block',
-          type: 'summary',
-          content: 'This is a comprehensive summary of the section.',
-        },
-        confidence: 0.9,
-        reasoning: 'Section would benefit from a summary',
-        fingerprint,
-        status: 'pending',
-      })
-      .returning();
+    const suggestionResult = await db.execute(sql`
+      INSERT INTO block_suggestions (section_id, suggestion_type, suggested_content, confidence, reasoning, fingerprint, status)
+      VALUES (
+        ${testSectionId},
+        'summary',
+        ${JSON.stringify({ id: 'summary_block', type: 'summary', content: 'This is a comprehensive summary of the section.' })}::jsonb,
+        0.9,
+        'Section would benefit from a summary',
+        ${fingerprint},
+        'pending'
+      )
+      RETURNING id, fingerprint
+    `);
 
-    testSuggestionId = suggestion.id;
-    testFingerprint = suggestion.fingerprint;
+    testSuggestionId = (suggestionResult.rows[0] as { id: string }).id;
+    testFingerprint = (suggestionResult.rows[0] as { fingerprint: string }).fingerprint;
   });
 
   afterEach(async () => {
     // Cleanup test section and suggestions
     if (testSectionId) {
-      await db.delete(blockSuggestions).where(eq(blockSuggestions.sectionId, testSectionId));
+      await db.execute(sql`DELETE FROM block_suggestions WHERE section_id = ${testSectionId}`);
       await db.delete(tutorialSections).where(eq(tutorialSections.id, testSectionId));
     }
     vi.clearAllMocks();
@@ -216,7 +220,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply - IN
         }
       );
 
-      const response = await POST(request, { params: { sectionId: testSectionId } });
+      const response = await POST(request, { params: Promise.resolve({ sectionId: testSectionId }) });
       expect(response.status).toBe(200);
 
       const data = await response.json();
@@ -232,21 +236,21 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply - IN
         .where(eq(tutorialSections.id, testSectionId));
 
       expect(persistedSection.version).toBe(2);
-      expect(persistedSection.content.blocks).toHaveLength(2); // Original + summary
-      expect(persistedSection.content.blocks[1].type).toBe('summary');
+      expect((persistedSection.content as AnyContent).blocks).toHaveLength(2); // Original + summary
+      expect((persistedSection.content as AnyContent).blocks[1].type).toBe('summary');
 
       // Verify TutorialDocument schema validity
       const validationResult = TutorialDocumentSchema.safeParse(persistedSection.content);
       expect(validationResult.success).toBe(true);
 
       // Verify suggestion status updated
-      const [updatedSuggestion] = await db
-        .select()
-        .from(blockSuggestions)
-        .where(eq(blockSuggestions.id, testSuggestionId));
+      const updatedSuggestionResult = await db.execute(
+        sql`SELECT status, applied_at FROM block_suggestions WHERE id = ${testSuggestionId}`
+      );
+      const updatedSuggestion = updatedSuggestionResult.rows[0] as { status: string; applied_at: string | null };
 
       expect(updatedSuggestion.status).toBe('applied');
-      expect(updatedSuggestion.appliedAt).not.toBeNull();
+      expect(updatedSuggestion.applied_at).not.toBeNull();
     });
 
     it('should invalidate cache after successful application', async () => {
@@ -262,7 +266,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply - IN
         }
       );
 
-      await POST(request, { params: { sectionId: testSectionId } });
+      await POST(request, { params: Promise.resolve({ sectionId: testSectionId }) });
 
       expect(invalidateTutorialDeliveryCache).toHaveBeenCalledWith(testSubtopicId);
     });
@@ -282,7 +286,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply - IN
         }
       );
 
-      const response = await POST(request, { params: { sectionId: testSectionId } });
+      const response = await POST(request, { params: Promise.resolve({ sectionId: testSectionId }) });
       expect(response.status).toBe(409);
 
       const data = await response.json();
@@ -297,7 +301,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply - IN
         .where(eq(tutorialSections.id, testSectionId));
 
       expect(persistedSection.version).toBe(1); // Unchanged
-      expect(persistedSection.content.blocks).toHaveLength(1); // Unchanged
+      expect((persistedSection.content as AnyContent).blocks).toHaveLength(1); // Unchanged
     });
   });
 
@@ -315,7 +319,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply - IN
         }
       );
 
-      const response = await POST(request, { params: { sectionId: testSectionId } });
+      const response = await POST(request, { params: Promise.resolve({ sectionId: testSectionId }) });
       expect(response.status).toBe(400);
 
       const data = await response.json();
@@ -345,7 +349,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply - IN
         }
       );
 
-      const response = await POST(request, { params: { sectionId: testSectionId } });
+      const response = await POST(request, { params: Promise.resolve({ sectionId: testSectionId }) });
       expect(response.status).toBe(400);
 
       const data = await response.json();
@@ -372,7 +376,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply - IN
         }
       );
 
-      const response = await POST(request, { params: { sectionId: testSectionId } });
+      const response = await POST(request, { params: Promise.resolve({ sectionId: testSectionId }) });
       expect(response.status).toBe(403);
     });
 
@@ -394,7 +398,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply - IN
         }
       );
 
-      const response = await POST(request, { params: { sectionId: testSectionId } });
+      const response = await POST(request, { params: Promise.resolve({ sectionId: testSectionId }) });
       expect(response.status).toBe(403);
     });
 
@@ -416,7 +420,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply - IN
         }
       );
 
-      const response = await POST(request, { params: { sectionId: testSectionId } });
+      const response = await POST(request, { params: Promise.resolve({ sectionId: testSectionId }) });
       expect(response.status).toBe(403);
     });
   });
@@ -440,7 +444,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply - IN
         }
       );
 
-      const response = await POST(request, { params: { sectionId: testSectionId } });
+      const response = await POST(request, { params: Promise.resolve({ sectionId: testSectionId }) });
       expect(response.status).toBe(401);
     });
 
@@ -462,7 +466,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply - IN
         }
       );
 
-      const response = await POST(request, { params: { sectionId: testSectionId } });
+      const response = await POST(request, { params: Promise.resolve({ sectionId: testSectionId }) });
       expect(response.status).toBe(401);
     });
   });
@@ -470,7 +474,8 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply - IN
   describe('concept-cards → card-grid transformation', () => {
     it('should transform concept-cards suggestion into card-grid block', async () => {
       // Create concept-cards suggestion
-      const conceptCardsSuggestion: BlockSuggestion = {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const conceptCardsSuggestion = {
         type: 'concept-cards',
         suggestedContent: {
           id: 'cards_block',
@@ -484,20 +489,26 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply - IN
         reasoning: 'Key concepts identified',
       };
 
-      const fingerprint = await suggestionApplicationService['generateFingerprint'](conceptCardsSuggestion);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const generateFp = (suggestionApplicationService as any).generateFingerprint
+        ? (suggestionApplicationService as any).generateFingerprint.bind(suggestionApplicationService)
+        : async () => 'b'.repeat(64);
+      const fingerprint = await generateFp(conceptCardsSuggestion);
 
-      const [suggestion] = await db
-        .insert(blockSuggestions)
-        .values({
-          sectionId: testSectionId,
-          suggestionType: 'concept-cards',
-          suggestedContent: conceptCardsSuggestion.suggestedContent,
-          confidence: conceptCardsSuggestion.confidence,
-          reasoning: conceptCardsSuggestion.reasoning,
-          fingerprint,
-          status: 'pending',
-        })
-        .returning();
+      const suggestionResult = await db.execute(sql`
+        INSERT INTO block_suggestions (section_id, suggestion_type, suggested_content, confidence, reasoning, fingerprint, status)
+        VALUES (
+          ${testSectionId},
+          'concept-cards',
+          ${JSON.stringify(conceptCardsSuggestion.suggestedContent)}::jsonb,
+          ${conceptCardsSuggestion.confidence},
+          ${conceptCardsSuggestion.reasoning},
+          ${fingerprint},
+          'pending'
+        )
+        RETURNING id, fingerprint
+      `);
+      const suggestion = suggestionResult.rows[0] as { id: string; fingerprint: string };
 
       const request = new NextRequest(
         `http://localhost:3000/api/tutorial-composer/sections/${testSectionId}/suggestions/apply`,
@@ -505,13 +516,13 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply - IN
           method: 'POST',
           body: JSON.stringify({
             suggestionId: suggestion.id,
-            suggestionFingerprint: fingerprint,
+            suggestionFingerprint: suggestion.fingerprint,
             expectedVersion: 1,
           }),
         }
       );
 
-      const response = await POST(request, { params: { sectionId: testSectionId } });
+      const response = await POST(request, { params: Promise.resolve({ sectionId: testSectionId }) });
       expect(response.status).toBe(200);
 
       // Verify transformation to card-grid
@@ -520,7 +531,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply - IN
         .from(tutorialSections)
         .where(eq(tutorialSections.id, testSectionId));
 
-      const addedBlock = persistedSection.content.blocks.find(
+      const addedBlock = (persistedSection.content as AnyContent).blocks.find(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (b: any) => b.id === 'cards_block'
       );
@@ -549,7 +560,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply - IN
         }
       );
 
-      const response = await POST(request, { params: { sectionId: testSectionId } });
+      const response = await POST(request, { params: Promise.resolve({ sectionId: testSectionId }) });
       expect(response.status).toBe(400);
 
       const data = await response.json();
@@ -562,7 +573,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply - IN
         .where(eq(tutorialSections.id, testSectionId));
 
       expect(persistedSection.version).toBe(1); // Unchanged
-      expect(persistedSection.content.blocks).toHaveLength(1); // Unchanged
+      expect((persistedSection.content as AnyContent).blocks).toHaveLength(1); // Unchanged
     });
   });
 
@@ -594,8 +605,8 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply - IN
 
       // Execute concurrent requests
       const [response1, response2] = await Promise.all([
-        POST(request1, { params: { sectionId: testSectionId } }),
-        POST(request2, { params: { sectionId: testSectionId } }),
+        POST(request1, { params: Promise.resolve({ sectionId: testSectionId }) }),
+        POST(request2, { params: Promise.resolve({ sectionId: testSectionId }) }),
       ]);
 
       // One should succeed (200), one should fail (409)
@@ -627,7 +638,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply - IN
         }
       );
 
-      const response1 = await POST(request1, { params: { sectionId: testSectionId } });
+      const response1 = await POST(request1, { params: Promise.resolve({ sectionId: testSectionId }) });
       expect(response1.status).toBe(200);
 
       const data1 = await response1.json();
@@ -646,7 +657,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply - IN
         }
       );
 
-      const response2 = await POST(request2, { params: { sectionId: testSectionId } });
+      const response2 = await POST(request2, { params: Promise.resolve({ sectionId: testSectionId }) });
       expect(response2.status).toBe(409);
 
       const data2 = await response2.json();
@@ -675,7 +686,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply - IN
         }
       );
 
-      const response = await POST(request, { params: { sectionId: testSectionId } });
+      const response = await POST(request, { params: Promise.resolve({ sectionId: testSectionId }) });
       expect(response.status).toBe(200); // Still succeeds!
 
       const data = await response.json();
@@ -688,7 +699,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply - IN
         .where(eq(tutorialSections.id, testSectionId));
 
       expect(persistedSection.version).toBe(2);
-      expect(persistedSection.content.blocks).toHaveLength(2); // Mutation applied
+      expect((persistedSection.content as AnyContent).blocks).toHaveLength(2); // Mutation applied
     });
   });
 
@@ -706,7 +717,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply - IN
         }
       );
 
-      await POST(request, { params: { sectionId: testSectionId } });
+      await POST(request, { params: Promise.resolve({ sectionId: testSectionId }) });
 
       // Retrieve persisted content
       const [persistedSection] = await db
@@ -723,7 +734,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply - IN
       }
 
       // Ensure schemaVersion is correct
-      expect(persistedSection.content.schemaVersion).toBe(1);
+      expect((persistedSection.content as AnyContent).schemaVersion).toBe(1);
     });
   });
 });

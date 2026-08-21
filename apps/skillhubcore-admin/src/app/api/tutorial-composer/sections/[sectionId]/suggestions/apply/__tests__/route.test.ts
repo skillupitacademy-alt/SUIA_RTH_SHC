@@ -174,7 +174,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply', ()
         }),
       });
 
-      const response = await POST(request, { params: { sectionId: 'section_123' } });
+      const response = await POST(request, { params: Promise.resolve({ sectionId: 'section_123' }) });
       expect(response.status).toBe(401);
     });
 
@@ -193,7 +193,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply', ()
         }),
       });
 
-      const response = await POST(request, { params: { sectionId: 'section_123' } });
+      const response = await POST(request, { params: Promise.resolve({ sectionId: 'section_123' }) });
       expect(response.status).toBe(401);
     });
   });
@@ -219,7 +219,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply', ()
         }),
       });
 
-      const response = await POST(request, { params: { sectionId: 'section_123' } });
+      const response = await POST(request, { params: Promise.resolve({ sectionId: 'section_123' }) });
       expect(response.status).toBe(403);
     });
 
@@ -239,7 +239,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply', ()
         }),
       });
 
-      const response = await POST(request, { params: { sectionId: 'section_123' } });
+      const response = await POST(request, { params: Promise.resolve({ sectionId: 'section_123' }) });
       expect(response.status).toBe(403);
     });
 
@@ -260,7 +260,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply', ()
         }),
       });
 
-      const response = await POST(request, { params: { sectionId: 'section_123' } });
+      const response = await POST(request, { params: Promise.resolve({ sectionId: 'section_123' }) });
       expect(response.status).toBe(403);
     });
   });
@@ -283,7 +283,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply', ()
         }),
       });
 
-      const response = await POST(request, { params: { sectionId: 'section_123' } });
+      const response = await POST(request, { params: Promise.resolve({ sectionId: 'section_123' }) });
       expect(response.status).toBe(400);
       
       const data = await response.json();
@@ -300,7 +300,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply', ()
         }),
       });
 
-      const response = await POST(request, { params: { sectionId: 'section_123' } });
+      const response = await POST(request, { params: Promise.resolve({ sectionId: 'section_123' }) });
       expect(response.status).toBe(400);
       
       const data = await response.json();
@@ -318,7 +318,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply', ()
         }),
       });
 
-      const response = await POST(request, { params: { sectionId: 'section_123' } });
+      const response = await POST(request, { params: Promise.resolve({ sectionId: 'section_123' }) });
       expect(response.status).toBe(400);
       
       const data = await response.json();
@@ -336,7 +336,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply', ()
         }),
       });
 
-      const response = await POST(request, { params: { sectionId: 'section_123' } });
+      const response = await POST(request, { params: Promise.resolve({ sectionId: 'section_123' }) });
       expect(response.status).toBe(400);
       
       const data = await response.json();
@@ -354,7 +354,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply', ()
         }),
       });
 
-      const response = await POST(request, { params: { sectionId: 'section_123' } });
+      const response = await POST(request, { params: Promise.resolve({ sectionId: 'section_123' }) });
       expect(response.status).toBe(400);
       
       const data = await response.json();
@@ -372,7 +372,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply', ()
         }),
       });
 
-      const response = await POST(request, { params: { sectionId: 'section_123' } });
+      const response = await POST(request, { params: Promise.resolve({ sectionId: 'section_123' }) });
       expect(response.status).toBe(400);
       
       const data = await response.json();
@@ -403,7 +403,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply', ()
         }),
       });
 
-      const response = await POST(request, { params: { sectionId: 'section_123' } });
+      const response = await POST(request, { params: Promise.resolve({ sectionId: 'section_123' }) });
       expect(response.status).toBe(200);
       
       const data = await response.json();
@@ -429,7 +429,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply', ()
         }),
       });
 
-      await POST(request, { params: { sectionId: 'section_123' } });
+      await POST(request, { params: Promise.resolve({ sectionId: 'section_123' }) });
 
       expect(suggestionApplicationService.applySuggestion).toHaveBeenCalledWith({
         sectionId: 'section_123',
@@ -463,7 +463,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply', ()
         }),
       });
 
-      const response = await POST(request, { params: { sectionId: 'section_123' } });
+      const response = await POST(request, { params: Promise.resolve({ sectionId: 'section_123' }) });
       expect(response.status).toBe(404);
       
       const data = await response.json();
@@ -484,7 +484,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply', ()
         }),
       });
 
-      const response = await POST(request, { params: { sectionId: 'section_123' } });
+      const response = await POST(request, { params: Promise.resolve({ sectionId: 'section_123' }) });
       expect(response.status).toBe(400);
       
       const data = await response.json();
@@ -505,7 +505,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply', ()
         }),
       });
 
-      const response = await POST(request, { params: { sectionId: 'section_123' } });
+      const response = await POST(request, { params: Promise.resolve({ sectionId: 'section_123' }) });
       expect(response.status).toBe(400);
       
       const data = await response.json();
@@ -526,7 +526,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply', ()
         }),
       });
 
-      const response = await POST(request, { params: { sectionId: 'section_123' } });
+      const response = await POST(request, { params: Promise.resolve({ sectionId: 'section_123' }) });
       expect(response.status).toBe(400);
       
       const data = await response.json();
@@ -547,7 +547,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply', ()
         }),
       });
 
-      const response = await POST(request, { params: { sectionId: 'section_123' } });
+      const response = await POST(request, { params: Promise.resolve({ sectionId: 'section_123' }) });
       expect(response.status).toBe(409);
       
       const data = await response.json();
@@ -570,7 +570,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply', ()
         }),
       });
 
-      const response = await POST(request, { params: { sectionId: 'section_123' } });
+      const response = await POST(request, { params: Promise.resolve({ sectionId: 'section_123' }) });
       expect(response.status).toBe(500);
       
       const data = await response.json();
@@ -602,7 +602,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply', ()
         }),
       });
 
-      await POST(request, { params: { sectionId: 'section_123' } });
+      await POST(request, { params: Promise.resolve({ sectionId: 'section_123' }) });
 
       // Cache invalidation should be called with the result's subtopicId
       expect(invalidateTutorialDeliveryCache).toHaveBeenCalledWith(
@@ -625,7 +625,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply', ()
         }),
       });
 
-      await POST(request, { params: { sectionId: 'section_123' } });
+      await POST(request, { params: Promise.resolve({ sectionId: 'section_123' }) });
 
       // Cache invalidation should NOT be called when application fails
       expect(invalidateTutorialDeliveryCache).not.toHaveBeenCalled();
@@ -648,7 +648,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply', ()
         }),
       });
 
-      const response = await POST(request, { params: { sectionId: 'section_123' } });
+      const response = await POST(request, { params: Promise.resolve({ sectionId: 'section_123' }) });
 
       // Response should still be 200 (cache failure is non-blocking)
       expect(response.status).toBe(200);
@@ -681,7 +681,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply', ()
         }),
       });
 
-      await POST(request, { params: { sectionId: 'section_123' } });
+      await POST(request, { params: Promise.resolve({ sectionId: 'section_123' }) });
 
       // Should use the result's subtopicId, not the pre-fetched section's
       expect(invalidateTutorialDeliveryCache).toHaveBeenCalledWith(
@@ -720,7 +720,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply', ()
         }),
       });
 
-      const response = await POST(request, { params: { sectionId: 'section_123' } });
+      const response = await POST(request, { params: Promise.resolve({ sectionId: 'section_123' }) });
       expect(response.status).toBe(409);
 
       const data = await response.json();
@@ -744,7 +744,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply', ()
         }),
       });
 
-      const response = await POST(request, { params: { sectionId: 'section_123' } });
+      const response = await POST(request, { params: Promise.resolve({ sectionId: 'section_123' }) });
       const data = await response.json();
 
       // Client can compare: currentVersion (7) > expectedVersion (5)
@@ -774,7 +774,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply', ()
         }),
       });
 
-      const response1 = await POST(request1, { params: { sectionId: 'section_123' } });
+      const response1 = await POST(request1, { params: Promise.resolve({ sectionId: 'section_123' }) });
       expect(response1.status).toBe(200);
 
       // Second request (retry) with same parameters
@@ -791,7 +791,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply', ()
         }),
       });
 
-      const response2 = await POST(request2, { params: { sectionId: 'section_123' } });
+      const response2 = await POST(request2, { params: Promise.resolve({ sectionId: 'section_123' }) });
       
       // Retry gets 409, NOT cached 200
       // This documents MVP constraint: mutation safety, not HTTP idempotency
@@ -818,7 +818,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply', ()
         }),
       });
 
-      const response1 = await POST(request1, { params: { sectionId: 'section_123' } });
+      const response1 = await POST(request1, { params: Promise.resolve({ sectionId: 'section_123' }) });
       expect(response1.status).toBe(200);
 
       // Second mutation with updated version
@@ -838,7 +838,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply', ()
         }),
       });
 
-      const response2 = await POST(request2, { params: { sectionId: 'section_123' } });
+      const response2 = await POST(request2, { params: Promise.resolve({ sectionId: 'section_123' }) });
       expect(response2.status).toBe(200);
 
       const data2 = await response2.json();

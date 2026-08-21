@@ -335,13 +335,14 @@ function exampleForContentType(contentType: TutorialPageContentType) {
   return summaryExample;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function extractBlockTitle(payload: any, type: TutorialPageContentType): string {
-  if (!payload) return 'Untitled Block';
-  if (payload.page?.title) return payload.page.title;
-  if (payload.title) return payload.title;
-  if (type === 'definition') return payload.page?.intro || 'Concept Definition';
-  if (type === 'code') return payload.code?.language ? `${payload.code.language} Example` : 'Code Example';
+function extractBlockTitle(payload: unknown, type: TutorialPageContentType): string {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Dynamic payload access requires any, type refinement tracked in backlog
+  const p = payload as any;
+  if (!p) return 'Untitled Block';
+  if (p.page?.title) return p.page.title;
+  if (p.title) return p.title;
+  if (type === 'definition') return p.page?.intro || 'Concept Definition';
+  if (type === 'code') return p.code?.language ? `${p.code.language} Example` : 'Code Example';
   if (type === 'summary') return 'Revision Summary';
   return 'Block Instance';
 }
@@ -396,7 +397,7 @@ export function TutorialPageContentBuilderClient() {
   const [form, setForm] = useState<FormState>(initialForm);
   const [sourceFormat, setSourceFormat] = useState<SourceFormat>('json');
   const [sourceContent, setSourceContent] = useState(JSON.stringify(definitionExample, null, 2));
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Legacy preview state, type refinement tracked in backlog
   const [activeBlockPreview, setActiveBlockPreview] = useState<any>(definitionExample);
   const [previewMode, setPreviewMode] = useState<'document' | 'active-block'>('document');
   const [message, setMessage] = useState('');
