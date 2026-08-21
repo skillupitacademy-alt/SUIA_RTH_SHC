@@ -1,18 +1,20 @@
 import path from 'node:path';
+import { loadEnv } from 'vite';
 
 import { defineConfig } from 'vitest/config';
-import tsconfigPaths from 'vite-tsconfig-paths';
 
-export default defineConfig({
-  plugins: [tsconfigPaths()],
+export default defineConfig(({ mode }) => ({
   test: {
     environment: 'node',
     globals: true,
-    include: ['src/**/*.test.ts', 'src/**/*.test.tsx', 'src/**/__tests__/**/*.test.ts'],
+    include: ['src/**/*.test.ts', 'src/**/*.test.tsx', 'src/**/__tests__/**/*.test.ts', 'src/**/*.integration.test.ts'],
+    env: loadEnv(mode, process.cwd(), ''),
   },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
+    // Use native TypeScript path resolution
+    tsconfigPaths: true,
   },
-});
+}));
