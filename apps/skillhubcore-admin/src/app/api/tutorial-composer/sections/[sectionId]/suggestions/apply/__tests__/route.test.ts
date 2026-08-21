@@ -14,7 +14,7 @@
  * 
  * MOCKED DEPENDENCIES:
  * - authenticateRequest (auth-helpers)
- * - tutorialComposerService.getSection
+ * - tutorialComposerService.getTutorial
  * - suggestionApplicationService.applySuggestion
  * 
  * NOT TESTED (deferred to Wave 3 integration tests):
@@ -52,7 +52,7 @@ vi.mock('@quiz/db-tutorial', () => ({
     applySuggestion: vi.fn(),
   },
   tutorialComposerService: {
-    getSection: vi.fn(),
+    getTutorial: vi.fn(),
   },
 }));
 

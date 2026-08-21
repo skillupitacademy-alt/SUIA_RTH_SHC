@@ -9,6 +9,7 @@
  */
 
 import { boolean, integer, jsonb, pgTable, text, timestamp, uuid, index, uniqueIndex } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 import type { TutorialDocument } from '@quiz/types';
 import { tutorialSubtopics } from './tutorial-subtopics';
 // REMOVED: tutorialDifficultyEnum (legacy)
@@ -90,11 +91,12 @@ export const tutorialSections = pgTable('tutorial_sections', {
   idxTutorialV2ByArchitecture: index('idx_tutorial_v2_by_architecture').on(table.educationalArchitectureId),
   idxTutorialV2SubtopicStatus: index('idx_tutorial_v2_subtopic_status').on(table.subtopicId, table.status),
 
-  // V2 Identity Constraint: one tutorial per subtopic per brand
-  uqTutorialV2Identity: uniqueIndex('uq_tutorial_v2_identity').on(
-    table.subtopicId,
-    table.brandId
-  ),
+  // V2 Identity Constraint: one ACTIVE tutorial per subtopic per brand
+  // Partial unique index: applies only to active tutorials (deleted_at IS NULL)
+  // Allows multiple archived tutorials for same identity
+  uqTutorialV2IdentityActive: uniqueIndex('uq_tutorial_v2_identity_active')
+    .on(table.subtopicId, table.brandId)
+    .where(sql`${table.deletedAt} IS NULL`),
 }));
 
 /**

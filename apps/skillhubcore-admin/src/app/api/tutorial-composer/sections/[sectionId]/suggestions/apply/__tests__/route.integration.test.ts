@@ -52,7 +52,7 @@ import {
   suggestionApplicationService,
 } from '@quiz/db-tutorial';
 import { eq, sql } from 'drizzle-orm';
-import { TutorialDocumentSchema, type BlockSuggestion } from '@quiz/types';
+import { TutorialDocumentSchema } from '@quiz/types';
 
 // Helper type for content casting (content column is jsonb → unknown in TS)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -163,8 +163,9 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply - IN
     testSectionId = section.id;
 
     // Create a test suggestion via raw SQL (blockSuggestions table not exported from schema)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- accessing private method for testing
     const generateFingerprint = (suggestionApplicationService as any).generateFingerprint
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- accessing private method for testing
       ? (suggestionApplicationService as any).generateFingerprint.bind(suggestionApplicationService)
       : async () => 'a'.repeat(64); // fallback fingerprint
 
@@ -489,8 +490,9 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply - IN
         reasoning: 'Key concepts identified',
       };
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- accessing private method for testing
       const generateFp = (suggestionApplicationService as any).generateFingerprint
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- accessing private method for testing
         ? (suggestionApplicationService as any).generateFingerprint.bind(suggestionApplicationService)
         : async () => 'b'.repeat(64);
       const fingerprint = await generateFp(conceptCardsSuggestion);

@@ -276,9 +276,9 @@ export async function POST(
     // ========================================
     // STEP 2: Fetch Section (for authorization)
     // ========================================
-    // We need to fetch the section BEFORE applying the suggestion
+    // We need to fetch the tutorial BEFORE applying the suggestion
     // to perform authorization checks on subtopicId and brandId.
-    const existingSection = await tutorialComposerService.getSection(sectionId);
+    const existingSection = await tutorialComposerService.getTutorial(sectionId);
 
     // ========================================
     // STEP 3: Authorize Tutorial Edit Permission
