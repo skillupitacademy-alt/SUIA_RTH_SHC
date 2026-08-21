@@ -8,16 +8,13 @@ import {
   ChevronUp,
   Copy,
   Eye,
-  Layers,
   Plus,
   Save,
   Send,
   Sparkles,
   Trash2,
   FileCode,
-  BookOpen,
   ListOrdered,
-  CheckCircle2,
 } from 'lucide-react';
 
 import { TutorialCodeContent } from '@/share-branding/LearningExperience/components/TutorialCodeContent';
@@ -338,6 +335,7 @@ function exampleForContentType(contentType: TutorialPageContentType) {
   return summaryExample;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function extractBlockTitle(payload: any, type: TutorialPageContentType): string {
   if (!payload) return 'Untitled Block';
   if (payload.page?.title) return payload.page.title;
@@ -398,6 +396,7 @@ export function TutorialPageContentBuilderClient() {
   const [form, setForm] = useState<FormState>(initialForm);
   const [sourceFormat, setSourceFormat] = useState<SourceFormat>('json');
   const [sourceContent, setSourceContent] = useState(JSON.stringify(definitionExample, null, 2));
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [activeBlockPreview, setActiveBlockPreview] = useState<any>(definitionExample);
   const [previewMode, setPreviewMode] = useState<'document' | 'active-block'>('document');
   const [message, setMessage] = useState('');

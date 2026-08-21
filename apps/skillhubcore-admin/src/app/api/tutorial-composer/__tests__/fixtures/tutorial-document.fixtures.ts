@@ -99,7 +99,7 @@ export function createEmptyTestDocument(): TutorialDocument {
  * Create invalid block structure for validation testing
  * This bypasses the builder to create intentionally invalid content
  */
-export function createInvalidBlockDocument(): any {
+export function createInvalidBlockDocument(): unknown {
   return {
     schemaVersion: 1,
     blocks: [
